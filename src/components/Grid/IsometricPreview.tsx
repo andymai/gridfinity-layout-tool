@@ -18,6 +18,56 @@ import {
 const PREVIEW_SIZE = 280; // ~1/3 visual space
 const PADDING = 20;
 
+// World-space lighting configuration
+// Light direction pointing FROM light TO scene (normalized)
+// This creates light from top-front-left in world coordinates
+const LIGHT_DIR = (() => {
+  const raw = { x: -0.4, y: -0.6, z: 0.7 }; // From front-left and above
+  const mag = Math.sqrt(raw.x ** 2 + raw.y ** 2 + raw.z ** 2);
+  return { x: raw.x / mag, y: raw.y / mag, z: raw.z / mag };
+})();
+
+// Wall normals in local space (before rotation), indexed by wall
+// Wall 0-1 (front): normal points -Y, Wall 1-2 (right): +X, etc.
+const WALL_NORMALS = [
+  { x: 0, y: -1, z: 0 },  // Wall 0: front (y=0)
+  { x: 1, y: 0, z: 0 },   // Wall 1: right (x=width)
+  { x: 0, y: 1, z: 0 },   // Wall 2: back (y=depth)
+  { x: -1, y: 0, z: 0 },  // Wall 3: left (x=0)
+];
+
+/**
+ * Calculate wall brightness using world-space lighting.
+ * Rotates the wall normal by the view rotation, then dots with light direction.
+ */
+function getWallBrightness(wallIndex: number, rotation: number): number {
+  const normal = WALL_NORMALS[wallIndex];
+  const rotRad = (rotation * Math.PI) / 180;
+  const cosR = Math.cos(rotRad);
+  const sinR = Math.sin(rotRad);
+
+  // Rotate normal around Z axis
+  const rotatedNormal = {
+    x: normal.x * cosR - normal.y * sinR,
+    y: normal.x * sinR + normal.y * cosR,
+    z: normal.z,
+  };
+
+  // Dot product with light direction (negative because LIGHT_DIR points toward scene)
+  const dot = -(rotatedNormal.x * LIGHT_DIR.x + rotatedNormal.y * LIGHT_DIR.y + rotatedNormal.z * LIGHT_DIR.z);
+
+  // Scale to reasonable brightness range (±25% for more visible contrast)
+  return dot * 0.25;
+}
+
+/**
+ * Calculate top surface brightness based on light's Z component.
+ */
+function getTopBrightness(): number {
+  // Top surface normal is (0, 0, 1), dot with -LIGHT_DIR
+  return -LIGHT_DIR.z * 0.2;
+}
+
 /**
  * Isometric 3D preview of the drawer layout.
  * Shows all layers stacked with bins colored by category.
@@ -84,7 +134,8 @@ export function IsometricPreview() {
 
       // Optionally dim non-active layers by darkening their color
       const isActiveLayer = bin.layerId === activeLayerId;
-      const color = (dimInactiveLayers && !isActiveLayer) ? darkenColor(baseColor, 0.4) : baseColor;
+      const isDimmed = dimInactiveLayers && !isActiveLayer;
+      const color = isDimmed ? darkenColor(baseColor, 0.4) : baseColor;
 
       // Y-axis: In grid, y=0 is front (bottom of screen), y increases toward back (top of screen)
       // Flip Y so back of drawer (high Y) appears at back of isometric view
@@ -99,7 +150,7 @@ export function IsometricPreview() {
         depth: bin.depth,
         height: bin.height * HEIGHT_TO_GRID_SCALE,
         color,
-        opacity: 1,
+        opacity: isDimmed ? 0.5 : 1, // Use opacity to track dimmed state for split lines
       });
     }
 
@@ -517,8 +568,9 @@ function drawBox(
   // Corner radius - subtle rounding on vertical edges (proportional to bin size)
   const cornerRadius = Math.min(width, depth) * 0.12;
 
-  // Fixed 45° lighting from top-left (in screen space, not model space)
-  const topRim = lightenColor(color, 0.15);
+  // World-space lighting - top brightness based on light angle
+  const topBrightness = getTopBrightness();
+  const topRim = topBrightness > 0 ? lightenColor(color, topBrightness) : darkenColor(color, -topBrightness);
   const interior = darkenColor(color, 0.45);
 
   // Helper to convert 3D point to 2D screen coords
@@ -621,26 +673,19 @@ function drawBox(
   ctx.closePath();
   ctx.fill();
 
-  // Now draw individual walls with lighting on top of the solid base
+  // Now draw individual walls with world-space lighting
+  // Wall corners for drawing
+  const wallCorners = [
+    { b1: c0, b2: c1, t1: t0, t2: t1 }, // wall 0-1 (front)
+    { b1: c1, b2: c2, t1: t1, t2: t2 }, // wall 1-2 (right)
+    { b1: c2, b2: c3, t1: t2, t2: t3 }, // wall 2-3 (back)
+    { b1: c3, b2: c0, t1: t3, t2: t0 }, // wall 3-0 (left)
+  ];
+
   for (const wall of visibleWalls) {
-    const wallDx = wall.b2 === 1 || wall.b2 === 2 ? 1 : -1;
-    const wallDy = wall.b2 === 2 || wall.b2 === 3 ? 1 : -1;
-    const normalX = -wallDy;
-    const normalY = wallDx;
-    const lightDot = (-normalX - normalY) / Math.sqrt(2);
-    const brightness = lightDot * 0.15;
-    const wallColor = brightness > 0 ? lightenColor(color, brightness) : darkenColor(color, -brightness);
-
-    // Draw wall face including the full corner-to-corner span (no gaps)
-    // Use the actual corner points, not the inset points
-    const wallCorners = [
-      { b1: c0, b2: c1, t1: t0, t2: t1 }, // wall 0-1 (front)
-      { b1: c1, b2: c2, t1: t1, t2: t2 }, // wall 1-2 (right)
-      { b1: c2, b2: c3, t1: t2, t2: t3 }, // wall 2-3 (back)
-      { b1: c3, b2: c0, t1: t3, t2: t0 }, // wall 3-0 (left)
-    ];
-
     const wallIndex = wall.b1;
+    const brightness = getWallBrightness(wallIndex, rotation);
+    const wallColor = brightness > 0 ? lightenColor(color, brightness) : darkenColor(color, -brightness);
     const pts = wallCorners[wallIndex];
 
     // Main wall fill - full rectangle from corner to corner
@@ -852,7 +897,7 @@ function drawSplitLines(
   offsetX: number,
   offsetY: number
 ) {
-  const { x, y, z, width, depth, height } = box;
+  const { x, y, z, width, depth, height, opacity } = box;
   const topZ = z + height;
 
   // Helper to convert 3D point to 2D screen coords
@@ -862,7 +907,9 @@ function drawSplitLines(
   };
 
   ctx.save();
-  ctx.strokeStyle = 'rgba(251, 191, 36, 0.9)'; // Amber color matching UI warning
+  // Amber color matching UI warning, with opacity for dimmed bins
+  const alpha = opacity < 1 ? 0.4 : 0.9;
+  ctx.strokeStyle = `rgba(251, 191, 36, ${alpha})`;
   ctx.lineWidth = 1.5;
   ctx.setLineDash([4, 3]);
 
