@@ -1,102 +1,37 @@
-import { useRef, useEffect, useMemo, useState, useCallback } from 'react';
-import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore } from '../../store';
-import { STAGING_ID, DEFAULT_CATEGORY_COLOR, calcMaxGridUnits } from '../../constants';
-import { useResponsive } from '../../hooks/useResponsive';
+import { useMemo, useCallback, useEffect, useRef } from "react"
+import { Canvas } from "@react-three/fiber"
+import { useShallow } from "zustand/shallow"
+import { useLayoutStore, useUIStore } from "../../store"
+import {
+  STAGING_ID,
+  DEFAULT_CATEGORY_COLOR,
+  calcMaxGridUnits,
+} from "../../constants"
+import { useResponsive } from "../../hooks/useResponsive"
+import { getLayerZStart } from "../../utils/collision"
+import { darkenColor } from "../../utils/isometric"
+import { Scene, type SceneHandle } from "./IsometricPreview/Scene"
+import { BinMesh } from "./IsometricPreview/BinMesh"
+import { SplitLineOverlay } from "./IsometricPreview/SplitLineOverlay"
 
 // Height units (7mm) to grid units (42mm) conversion for proper proportions
-const HEIGHT_TO_GRID_SCALE = 7 / 42;
-import { getLayerZStart } from '../../utils/collision';
-import {
-  toIsometric,
-  sortBoxesForRendering,
-  darkenColor,
-  lightenColor,
-  calculateIsometricBounds,
-  type IsometricBox,
-} from '../../utils/isometric';
+const HEIGHT_TO_GRID_SCALE = 7 / 42
 
-const PREVIEW_SIZE_SMALL = 280; // Default small preview
-const PADDING = 20;
-
-// World-space lighting configuration
-// Light direction pointing FROM light TO scene (normalized)
-// This creates light from top-front-left in world coordinates
-const LIGHT_DIR = (() => {
-  const raw = { x: -0.4, y: -0.6, z: 0.7 }; // From front-left and above
-  const mag = Math.sqrt(raw.x ** 2 + raw.y ** 2 + raw.z ** 2);
-  return { x: raw.x / mag, y: raw.y / mag, z: raw.z / mag };
-})();
-
-// Wall normals in local space (before rotation), indexed by wall
-// Wall 0-1 (front): normal points -Y, Wall 1-2 (right): +X, etc.
-const WALL_NORMALS = [
-  { x: 0, y: -1, z: 0 },  // Wall 0: front (y=0)
-  { x: 1, y: 0, z: 0 },   // Wall 1: right (x=width)
-  { x: 0, y: 1, z: 0 },   // Wall 2: back (y=depth)
-  { x: -1, y: 0, z: 0 },  // Wall 3: left (x=0)
-];
+const PREVIEW_SIZE_SMALL = 280 // Default small preview
 
 /**
- * Calculate wall brightness using world-space lighting with smooth falloff.
- * Uses "wrapped diffuse" technique for softer shadow transitions.
- */
-function getWallBrightness(wallIndex: number, rotation: number): number {
-  const normal = WALL_NORMALS[wallIndex];
-  const rotRad = (rotation * Math.PI) / 180;
-  const cosR = Math.cos(rotRad);
-  const sinR = Math.sin(rotRad);
-
-  // Rotate normal around Z axis
-  const rotatedNormal = {
-    x: normal.x * cosR - normal.y * sinR,
-    y: normal.x * sinR + normal.y * cosR,
-    z: normal.z,
-  };
-
-  // Dot product with light direction (negative because LIGHT_DIR points toward scene)
-  const dot = -(rotatedNormal.x * LIGHT_DIR.x + rotatedNormal.y * LIGHT_DIR.y + rotatedNormal.z * LIGHT_DIR.z);
-
-  // "Wrapped diffuse" - remap [-1, 1] to [0, 1] for smoother shadow transitions
-  // This prevents the harsh lit/shadow boundary
-  const wrapped = dot * 0.5 + 0.5;
-
-  // Apply subtle S-curve for even smoother transitions (smoothstep-like)
-  const smooth = wrapped * wrapped * (3 - 2 * wrapped);
-
-  // Map from [0, 1] to brightness range: -0.18 (shadow) to +0.08 (lit)
-  // Darker shadows, subtle highlights for natural depth
-  return smooth * 0.26 - 0.18;
-}
-
-/**
- * Calculate top surface brightness based on light's Z component.
- * Top surfaces are gently lit from above.
- */
-function getTopBrightness(): number {
-  // Top surface normal is (0, 0, 1), light from above = positive Z component
-  // Very subtle - top surfaces just slightly lighter than base
-  return LIGHT_DIR.z * 0.04;
-}
-
-/**
- * Isometric 3D preview of the drawer layout.
+ * Isometric 3D preview of the drawer layout using Three.js.
  * Shows all layers stacked with bins colored by category.
  */
 export function IsometricPreview() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const lastX = useRef(0);
-
-  const { isMobile, isTablet } = useResponsive();
+  const sceneRef = useRef<SceneHandle>(null)
+  const { isMobile, isTablet } = useResponsive()
 
   const {
     showIsometricPreview,
-    isometricRotation,
     hideLayersAbove,
     dimInactiveLayers,
     isPreviewExpanded,
-    setIsometricRotation,
     toggleHideLayersAbove,
     toggleDimInactiveLayers,
     togglePreviewExpanded,
@@ -104,308 +39,297 @@ export function IsometricPreview() {
   } = useUIStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
-      isometricRotation: state.isometricRotation,
       hideLayersAbove: state.hideLayersAbove,
       dimInactiveLayers: state.dimInactiveLayers,
       isPreviewExpanded: state.isPreviewExpanded,
-      setIsometricRotation: state.setIsometricRotation,
       toggleHideLayersAbove: state.toggleHideLayersAbove,
       toggleDimInactiveLayers: state.toggleDimInactiveLayers,
       togglePreviewExpanded: state.togglePreviewExpanded,
       setPreviewExpanded: state.setPreviewExpanded,
     }))
-  );
+  )
 
   // Calculate preview size based on expanded state and device
   const previewSize = useMemo(() => {
-    if (!isPreviewExpanded) return PREVIEW_SIZE_SMALL;
+    if (!isPreviewExpanded) return PREVIEW_SIZE_SMALL
 
-    const vw = typeof window !== 'undefined' ? window.innerWidth : 800;
-    const vh = typeof window !== 'undefined' ? window.innerHeight : 600;
-    const minDimension = Math.min(vw, vh);
+    const vw = typeof window !== "undefined" ? window.innerWidth : 800
+    const vh = typeof window !== "undefined" ? window.innerHeight : 600
 
     if (isMobile) {
-      // Mobile: nearly fullscreen (95% of smaller dimension)
-      return Math.max(minDimension * 0.95, 300);
+      // Mobile: nearly fullscreen (98% of viewport)
+      return Math.min(vw * 0.98, vh * 0.98)
     } else if (isTablet) {
-      // Tablet: large but with some margin (90%)
-      return Math.min(minDimension * 0.9, 600);
+      // Tablet: large but with some margin (95%)
+      return Math.min(vw * 0.95, vh * 0.95)
     } else {
-      // Desktop: capped at reasonable max
-      return Math.min(Math.max(minDimension * 0.8, 400), 800);
+      // Desktop: fill most of viewport (90%)
+      return Math.min(vw * 0.9, vh * 0.9)
     }
-  }, [isPreviewExpanded, isMobile, isTablet]);
+  }, [isPreviewExpanded, isMobile, isTablet])
 
   // Handle Escape key to collapse expanded preview
   useEffect(() => {
-    if (!isPreviewExpanded) return;
+    if (!isPreviewExpanded) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setPreviewExpanded(false);
+      if (e.key === "Escape") {
+        setPreviewExpanded(false)
       }
-    };
+    }
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isPreviewExpanded, setPreviewExpanded]);
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [isPreviewExpanded, setPreviewExpanded])
 
   // Handle backdrop click
-  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      setPreviewExpanded(false);
-    }
-  }, [setPreviewExpanded]);
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) {
+        setPreviewExpanded(false)
+      }
+    },
+    [setPreviewExpanded]
+  )
 
-  const layout = useLayoutStore((state) => state.layout);
-  const activeLayerId = useUIStore((state) => state.activeLayerId);
+  const layout = useLayoutStore((state) => state.layout)
+  const activeLayerId = useUIStore((state) => state.activeLayerId)
 
   // Get layer indices for filtering
-  const activeLayerIndex = layout.layers.findIndex(l => l.id === activeLayerId);
+  const activeLayerIndex = layout.layers.findIndex(
+    (l) => l.id === activeLayerId
+  )
 
   // Calculate max print size for split line visualization
   const maxGridUnits = useMemo(
     () => calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm),
     [layout.printBedSize, layout.gridUnitMm]
-  );
+  )
 
-  // Drawer floor (drawn separately, always first)
-  const floor: IsometricBox = useMemo(() => ({
-    id: '__drawer_floor__',
-    x: 0,
-    y: 0,
-    z: 0,
-    width: layout.drawer.width,
-    depth: layout.drawer.depth,
-    height: 0.02,
-    color: '#2a2a3e',
-    opacity: 1,
-  }), [layout.drawer.width, layout.drawer.depth]);
+  // Convert layout bins to renderable format with layer filtering
+  const binsToRender = useMemo(() => {
+    const result: Array<{
+      bin: (typeof layout.bins)[0]
+      x: number
+      y: number
+      z: number
+      height: number
+      color: string
+      opacity: number
+    }> = []
 
-  // Convert layout data to isometric boxes
-  const boxes = useMemo(() => {
-    const result: IsometricBox[] = [];
-
-    // Add bins (scale heights from height units to grid units for proper proportions)
     for (const bin of layout.bins) {
-      if (bin.layerId === STAGING_ID) continue;
+      if (bin.layerId === STAGING_ID) continue
 
       // Filter out bins from layers above active layer if hideLayersAbove is enabled
       if (hideLayersAbove && activeLayerIndex >= 0) {
-        const binLayerIndex = layout.layers.findIndex(l => l.id === bin.layerId);
-        if (binLayerIndex > activeLayerIndex) continue;
+        const binLayerIndex = layout.layers.findIndex(
+          (l) => l.id === bin.layerId
+        )
+        if (binLayerIndex > activeLayerIndex) continue
       }
 
-      const zStart = getLayerZStart(bin.layerId, layout.layers) * HEIGHT_TO_GRID_SCALE;
-      const category = layout.categories.find(c => c.id === bin.category);
-      const baseColor = category?.color || DEFAULT_CATEGORY_COLOR;
+      const zStart =
+        getLayerZStart(bin.layerId, layout.layers) * HEIGHT_TO_GRID_SCALE
+      const category = layout.categories.find((c) => c.id === bin.category)
+      const baseColor = category?.color || DEFAULT_CATEGORY_COLOR
 
-      // Optionally dim non-active layers by darkening their color
-      const isActiveLayer = bin.layerId === activeLayerId;
-      const isDimmed = dimInactiveLayers && !isActiveLayer;
-      const color = isDimmed ? darkenColor(baseColor, 0.4) : baseColor;
+      // Optionally dim non-active layers
+      const isActiveLayer = bin.layerId === activeLayerId
+      const isDimmed = dimInactiveLayers && !isActiveLayer
+      const color = isDimmed ? darkenColor(baseColor, 0.4) : baseColor
 
-      // Y-axis: In grid, y=0 is front (bottom of screen), y increases toward back (top of screen)
-      // Flip Y so back of drawer (high Y) appears at back of isometric view
-      const flippedY = layout.drawer.depth - bin.y - bin.depth;
-
+      // Y-axis: In grid, y=0 is front (bottom), y increases toward back (top)
+      // In 3D: Y=0 is front (toward camera), Y increases away (toward back)
+      // Direct mapping - no flip needed
       result.push({
-        id: bin.id,
+        bin,
         x: bin.x,
-        y: flippedY,
+        y: bin.y,
         z: zStart,
-        width: bin.width,
-        depth: bin.depth,
         height: bin.height * HEIGHT_TO_GRID_SCALE,
         color,
-        opacity: isDimmed ? 0.5 : 1, // Use opacity to track dimmed state for split lines
-      });
+        opacity: isDimmed ? 0.5 : 1,
+      })
     }
 
-    return result;
-  }, [layout.bins, layout.layers, layout.drawer, layout.categories, activeLayerId, hideLayersAbove, activeLayerIndex, dimInactiveLayers]);
-
-  // Render the isometric view
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !showIsometricPreview) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const width = previewSize;
-    const height = previewSize;
-
-    // Set canvas size with device pixel ratio
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    ctx.scale(dpr, dpr);
-
-    // Clear canvas
-    ctx.fillStyle = '#0a0a0f';
-    ctx.fillRect(0, 0, width, height);
-
-    // Calculate scale based on floor only (keeps view stable when filtering layers)
-    const bounds = calculateIsometricBounds([floor], isometricRotation, 1);
-    const boundsWidth = bounds.maxX - bounds.minX;
-    const boundsHeight = bounds.maxY - bounds.minY;
-
-    const availableWidth = width - PADDING * 2;
-    const availableHeight = height - PADDING * 2;
-
-    // Scale limit varies by preview size - allow larger scale for bigger preview
-    const maxScale = isPreviewExpanded ? 40 : 15;
-    const scale = Math.min(
-      availableWidth / Math.max(boundsWidth, 1),
-      availableHeight / Math.max(boundsHeight, 1),
-      maxScale
-    );
-
-    // Center offset
-    const centerX = width / 2 - ((bounds.minX + bounds.maxX) / 2) * scale;
-    const centerY = height / 2 - ((bounds.minY + bounds.maxY) / 2) * scale + height * 0.1;
-
-    // Draw drop shadow under drawer (grounding effect)
-    drawDropShadow(ctx, floor, isometricRotation, scale, centerX, centerY);
-
-    // Draw floor first (always behind everything)
-    drawFloor(ctx, floor, isometricRotation, scale, centerX, centerY);
-
-    // Draw floor edge definition (baseplate rim)
-    drawFloorEdge(ctx, floor, isometricRotation, scale, centerX, centerY);
-
-    // Draw gridlines on floor (constrained to drawer bounds)
-    drawGridlines(ctx, layout.drawer.width, layout.drawer.depth, isometricRotation, scale, centerX, centerY);
-
-    // Draw vertical height ticks (every 3 height units)
-    const maxHeight = layout.drawer.height;
-    drawHeightTicks(ctx, layout.drawer.width, layout.drawer.depth, maxHeight, isometricRotation, scale, centerX, centerY);
-
-    // Sort and draw bins on top
-    const sortedBoxes = sortBoxesForRendering(boxes, isometricRotation);
-    for (const box of sortedBoxes) {
-      drawBox(ctx, box, isometricRotation, scale, centerX, centerY);
-      // Draw split lines for oversized bins
-      if (box.width > maxGridUnits || box.depth > maxGridUnits) {
-        drawSplitLines(ctx, box, maxGridUnits, isometricRotation, scale, centerX, centerY);
+    // Sort bins for correct depth ordering with camera at front-right viewing toward center
+    // Camera is at: (centerX + dist, centerY - dist, centerZ + dist) = (X+, Y-, Z+)
+    // Distance from camera increases as X decreases and Y increases
+    // So depth = (x - y): low value = far, high value = close
+    result.sort((a, b) => {
+      // Layer depth (z) is primary
+      if (a.z !== b.z) {
+        return a.z - b.z
       }
-    }
 
-    // Draw vignette overlay (final polish)
-    drawVignette(ctx, width, height);
+      // Within same layer, sort by distance from camera
+      // Camera at (X+, Y-) means close bins have high (x-y), far bins have low (x-y)
+      // Sort ascending (x-y) to render far bins first (with low z-offsets)
+      const depthA = a.x - a.y
+      const depthB = b.x - b.y
 
-    // Apply subtle noise texture (matte 3D-print look)
-    drawNoiseTexture(ctx, width, height);
+      return depthA - depthB
+    })
 
-  }, [floor, boxes, isometricRotation, showIsometricPreview, layout.drawer.width, layout.drawer.depth, layout.drawer.height, maxGridUnits, previewSize, isPreviewExpanded]);
+    // Add tiny z-offsets to prevent z-fighting on coplanar surfaces
+    // 0.0002 units = 0.2mm per bin - imperceptible but prevents flickering
+    result.forEach((binData, index) => {
+      binData.z += index * 0.0002
+    })
+
+    return result
+  }, [
+    layout,
+    activeLayerId,
+    hideLayersAbove,
+    activeLayerIndex,
+    dimInactiveLayers,
+  ])
 
   if (!showIsometricPreview) {
-    return null;
+    return null
   }
-
-  // Drag handlers for free rotation
-  const handlePointerDown = (e: React.PointerEvent) => {
-    if (e.button !== 0) return;
-    setIsDragging(true);
-    lastX.current = e.clientX;
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    const deltaX = e.clientX - lastX.current;
-    lastX.current = e.clientX;
-    // Rotate 1 degree per 2 pixels of drag
-    setIsometricRotation(isometricRotation + deltaX * 0.5);
-  };
-
-  const handlePointerUp = () => {
-    setIsDragging(false);
-  };
-
-  // Check if rotation is not at default
-  const isRotated = Math.abs(isometricRotation) > 1;
 
   // Preview container content (shared between small and expanded modes)
   const previewContent = (
     <div
       className={`rounded-lg overflow-hidden shadow-lg border border-stroke-subtle select-none ${
-        isPreviewExpanded ? '' : 'absolute top-14 right-4'
+        isPreviewExpanded ? "" : "absolute top-14 right-4"
       }`}
       style={{
         width: previewSize,
         height: previewSize,
-        cursor: isDragging ? 'grabbing' : 'grab',
         zIndex: isPreviewExpanded ? undefined : 20,
       }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
-      title="Drag to rotate"
     >
-      <canvas
-        ref={canvasRef}
-        className="block pointer-events-none"
-      />
-      {/* Reset rotation button */}
-      {isRotated && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsometricRotation(0);
-          }}
-          className={`absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content transition-colors ${
-            isPreviewExpanded ? 'text-xs' : 'text-[10px]'
-          }`}
-          title="Reset rotation"
+      <Canvas
+        orthographic
+        camera={{
+          position: [10, 10, 10],
+          zoom: 30,
+          near: 0.1,
+          far: 1000,
+        }}
+        style={{ background: "#0a0a0f" }}
+      >
+        <Scene
+          ref={sceneRef}
+          drawerWidth={layout.drawer.width}
+          drawerDepth={layout.drawer.depth}
+          drawerHeight={layout.drawer.height}
+          isExpanded={isPreviewExpanded}
         >
-          Reset
-        </button>
-      )}
+          {binsToRender.map((binData) => (
+            <group key={binData.bin.id}>
+              <BinMesh
+                bin={binData.bin}
+                x={binData.x}
+                y={binData.y}
+                z={binData.z}
+                height={binData.height}
+                color={binData.color}
+                opacity={binData.opacity}
+              />
+              {/* Split lines for oversized bins */}
+              {(binData.bin.width > maxGridUnits ||
+                binData.bin.depth > maxGridUnits) && (
+                <SplitLineOverlay
+                  x={binData.x}
+                  y={binData.y}
+                  z={binData.z}
+                  width={binData.bin.width}
+                  depth={binData.bin.depth}
+                  height={binData.height}
+                  maxGridUnits={maxGridUnits}
+                  opacity={binData.opacity}
+                />
+              )}
+            </group>
+          ))}
+        </Scene>
+      </Canvas>
+      {/* Reset view button - resets rotation, zoom, and pan */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          sceneRef.current?.resetView()
+        }}
+        className={`absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content transition-colors ${
+          isPreviewExpanded ? "text-xs" : "text-[10px]"
+        }`}
+        title="Reset view (rotation, zoom, and pan)"
+      >
+        Reset View
+      </button>
       {/* Layer controls - only show when multiple layers */}
       {layout.layers.length > 1 && (
-        <div className={`absolute bottom-1 right-1 flex ${isPreviewExpanded ? 'gap-1' : 'gap-0.5'}`}>
+        <div
+          className={`absolute bottom-1 right-1 flex ${
+            isPreviewExpanded ? "gap-1" : "gap-0.5"
+          }`}
+        >
           {/* Dim inactive layers toggle */}
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              toggleDimInactiveLayers();
+              e.stopPropagation()
+              toggleDimInactiveLayers()
             }}
             className={`flex items-center justify-center gap-1 rounded font-medium transition-colors ${
-              isPreviewExpanded ? 'h-7 px-2 text-xs' : 'h-5 px-1.5 text-[9px]'
+              isPreviewExpanded ? "h-7 px-2 text-xs" : "h-5 px-1.5 text-[9px]"
             } ${
               dimInactiveLayers
-                ? 'bg-accent/90 text-white'
-                : 'bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content'
+                ? "bg-accent/90 text-white"
+                : "bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content"
             }`}
-            title={dimInactiveLayers ? 'Dim inactive layers (on)' : 'Dim inactive layers (off)'}
+            title={
+              dimInactiveLayers
+                ? "Dim inactive layers (on)"
+                : "Dim inactive layers (off)"
+            }
           >
-            <svg className={isPreviewExpanded ? 'w-4 h-4' : 'w-3 h-3'} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            <svg
+              className={isPreviewExpanded ? "w-4 h-4" : "w-3 h-3"}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+              />
             </svg>
             <span>Dim</span>
           </button>
           {/* Slice view toggle - hide layers above active */}
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              toggleHideLayersAbove();
+              e.stopPropagation()
+              toggleHideLayersAbove()
             }}
             className={`flex items-center justify-center gap-1 rounded font-medium transition-colors ${
-              isPreviewExpanded ? 'h-7 px-2 text-xs' : 'h-5 px-1.5 text-[9px]'
+              isPreviewExpanded ? "h-7 px-2 text-xs" : "h-5 px-1.5 text-[9px]"
             } ${
               hideLayersAbove
-                ? 'bg-accent/90 text-white'
-                : 'bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content'
+                ? "bg-accent/90 text-white"
+                : "bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content"
             }`}
-            title={hideLayersAbove ? 'Slice view (on)' : 'Slice view (off)'}
+            title={hideLayersAbove ? "Slice view (on)" : "Slice view (off)"}
           >
-            <svg className={isPreviewExpanded ? 'w-4 h-4' : 'w-3 h-3'} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5h16M4 12h16m-7 7h7" />
+            <svg
+              className={isPreviewExpanded ? "w-4 h-4" : "w-3 h-3"}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 5h16M4 12h16m-7 7h7"
+              />
             </svg>
             <span>Slice</span>
           </button>
@@ -416,48 +340,78 @@ export function IsometricPreview() {
         {/* Expand/Collapse button */}
         <button
           onClick={(e) => {
-            e.stopPropagation();
-            togglePreviewExpanded();
+            e.stopPropagation()
+            togglePreviewExpanded()
           }}
           className={`flex items-center justify-center rounded bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content transition-colors ${
-            isPreviewExpanded ? 'w-7 h-7' : 'w-5 h-5'
+            isPreviewExpanded ? "w-7 h-7" : "w-5 h-5"
           }`}
-          title={isPreviewExpanded ? 'Collapse preview' : 'Expand preview'}
+          title={isPreviewExpanded ? "Collapse preview" : "Expand preview"}
         >
           {isPreviewExpanded ? (
             // Collapse icon (arrows pointing inward)
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9L4 4m0 0v4m0-4h4m6 6l5 5m0 0v-4m0 4h-4M9 15l-5 5m0 0v-4m0 4h4m6-6l5-5m0 0v4m0-4h-4" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 9L4 4m0 0v4m0-4h4m6 6l5 5m0 0v-4m0 4h-4M9 15l-5 5m0 0v-4m0 4h4m6-6l5-5m0 0v4m0-4h-4"
+              />
             </svg>
           ) : (
             // Expand icon (arrows pointing outward)
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
+              />
             </svg>
           )}
         </button>
         {/* Close button */}
         <button
           onClick={(e) => {
-            e.stopPropagation();
+            e.stopPropagation()
             if (isPreviewExpanded) {
-              setPreviewExpanded(false);
+              setPreviewExpanded(false)
             } else {
-              useUIStore.getState().toggleIsometricPreview();
+              useUIStore.getState().toggleIsometricPreview()
             }
           }}
           className={`flex items-center justify-center rounded bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content transition-colors ${
-            isPreviewExpanded ? 'w-7 h-7' : 'w-5 h-5'
+            isPreviewExpanded ? "w-7 h-7" : "w-5 h-5"
           }`}
-          title={isPreviewExpanded ? 'Collapse preview' : 'Close preview'}
+          title={isPreviewExpanded ? "Collapse preview" : "Close preview"}
         >
-          <svg className={isPreviewExpanded ? 'w-4 h-4' : 'w-3 h-3'} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className={isPreviewExpanded ? "w-4 h-4" : "w-3 h-3"}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
     </div>
-  );
+  )
 
   // Expanded mode: render as modal with backdrop
   if (isPreviewExpanded) {
@@ -465,819 +419,16 @@ export function IsometricPreview() {
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fade-in"
         onClick={handleBackdropClick}
-        style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
         {previewContent}
       </div>
-    );
+    )
   }
 
   // Small mode: render in corner
-  return previewContent;
-}
-
-/**
- * Draw a floor/base quad
- */
-function drawFloor(
-  ctx: CanvasRenderingContext2D,
-  box: IsometricBox,
-  rotation: number,
-  scale: number,
-  offsetX: number,
-  offsetY: number
-) {
-  const corners = [
-    { x: box.x, y: box.y, z: 0 },
-    { x: box.x + box.width, y: box.y, z: 0 },
-    { x: box.x + box.width, y: box.y + box.depth, z: 0 },
-    { x: box.x, y: box.y + box.depth, z: 0 },
-  ];
-
-  ctx.beginPath();
-  corners.forEach((corner, i) => {
-    const screen = toIsometric(corner, rotation, scale);
-    const x = screen.x + offsetX;
-    const y = screen.y + offsetY;
-    if (i === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
-  });
-  ctx.closePath();
-
-  ctx.fillStyle = box.color;
-  ctx.globalAlpha = box.opacity;
-  ctx.fill();
-  ctx.globalAlpha = 1;
-
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-  ctx.lineWidth = 0.5;
-  ctx.stroke();
-}
-
-/**
- * Draw a soft drop shadow beneath the drawer floor (grounding effect)
- */
-function drawDropShadow(
-  ctx: CanvasRenderingContext2D,
-  box: IsometricBox,
-  rotation: number,
-  scale: number,
-  offsetX: number,
-  offsetY: number
-) {
-  const shadowOffset = 0.4; // How far shadow extends beyond floor
-  const shadowDrop = 0.15; // Vertical drop of shadow (appears below floor)
-
-  const corners = [
-    { x: box.x - shadowOffset, y: box.y - shadowOffset, z: -shadowDrop },
-    { x: box.x + box.width + shadowOffset, y: box.y - shadowOffset, z: -shadowDrop },
-    { x: box.x + box.width + shadowOffset, y: box.y + box.depth + shadowOffset, z: -shadowDrop },
-    { x: box.x - shadowOffset, y: box.y + box.depth + shadowOffset, z: -shadowDrop },
-  ];
-
-  // Get screen coordinates
-  const screenCorners = corners.map(corner => {
-    const screen = toIsometric(corner, rotation, scale);
-    return { x: screen.x + offsetX, y: screen.y + offsetY };
-  });
-
-  // Calculate center for radial gradient
-  const centerX = (screenCorners[0].x + screenCorners[2].x) / 2;
-  const centerY = (screenCorners[0].y + screenCorners[2].y) / 2;
-  const radius = Math.max(
-    Math.abs(screenCorners[0].x - screenCorners[2].x),
-    Math.abs(screenCorners[0].y - screenCorners[2].y)
-  ) * 0.6;
-
-  // Draw radial gradient shadow
-  const shadowGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-  shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.12)');
-  shadowGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.08)');
-  shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-  ctx.fillStyle = shadowGrad;
-  ctx.beginPath();
-  ctx.moveTo(screenCorners[0].x, screenCorners[0].y);
-  ctx.lineTo(screenCorners[1].x, screenCorners[1].y);
-  ctx.lineTo(screenCorners[2].x, screenCorners[2].y);
-  ctx.lineTo(screenCorners[3].x, screenCorners[3].y);
-  ctx.closePath();
-  ctx.fill();
-}
-
-/**
- * Draw an edge stroke around the floor perimeter (baseplate rim definition)
- */
-function drawFloorEdge(
-  ctx: CanvasRenderingContext2D,
-  box: IsometricBox,
-  rotation: number,
-  scale: number,
-  offsetX: number,
-  offsetY: number
-) {
-  const corners = [
-    { x: box.x, y: box.y, z: 0 },
-    { x: box.x + box.width, y: box.y, z: 0 },
-    { x: box.x + box.width, y: box.y + box.depth, z: 0 },
-    { x: box.x, y: box.y + box.depth, z: 0 },
-  ];
-
-  ctx.beginPath();
-  corners.forEach((corner, i) => {
-    const screen = toIsometric(corner, rotation, scale);
-    const x = screen.x + offsetX;
-    const y = screen.y + offsetY;
-    if (i === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
-  });
-  ctx.closePath();
-
-  // Subtle highlight stroke defining the baseplate edge
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
-  ctx.lineWidth = 1.2;
-  ctx.stroke();
-}
-
-/**
- * Draw vignette overlay (darkens corners for polished look)
- */
-function drawVignette(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number
-) {
-  const centerX = width / 2;
-  const centerY = height / 2;
-  const radius = Math.max(width, height) * 0.7;
-
-  const vignetteGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-  vignetteGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-  vignetteGrad.addColorStop(0.6, 'rgba(0, 0, 0, 0)');
-  vignetteGrad.addColorStop(1, 'rgba(0, 0, 0, 0.25)');
-
-  ctx.fillStyle = vignetteGrad;
-  ctx.fillRect(0, 0, width, height);
-}
-
-// Cache noise pattern to avoid regenerating every frame
-let cachedNoisePattern: ImageData | null = null;
-let cachedNoiseSize = 0;
-
-/**
- * Draw subtle noise texture overlay (matte 3D-print surface look)
- * Uses a cached noise pattern for performance
- */
-function drawNoiseTexture(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number
-) {
-  const patternSize = 64; // Small pattern that tiles
-
-  // Generate or reuse cached noise pattern
-  if (!cachedNoisePattern || cachedNoiseSize !== patternSize) {
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = patternSize;
-    tempCanvas.height = patternSize;
-    const tempCtx = tempCanvas.getContext('2d');
-    if (tempCtx) {
-      const imageData = tempCtx.createImageData(patternSize, patternSize);
-      const data = imageData.data;
-
-      // Generate subtle noise pattern
-      for (let i = 0; i < data.length; i += 4) {
-        // Random brightness variation (very subtle)
-        const noise = Math.random() * 20 - 10; // -10 to +10
-        const alpha = Math.abs(noise) * 0.8; // 0-8 alpha
-
-        if (noise > 0) {
-          // Slightly lighter
-          data[i] = 255;     // R
-          data[i + 1] = 255; // G
-          data[i + 2] = 255; // B
-          data[i + 3] = alpha;
-        } else {
-          // Slightly darker
-          data[i] = 0;       // R
-          data[i + 1] = 0;   // G
-          data[i + 2] = 0;   // B
-          data[i + 3] = alpha;
-        }
-      }
-
-      cachedNoisePattern = imageData;
-      cachedNoiseSize = patternSize;
-    }
-  }
-
-  // Apply noise pattern by tiling
-  if (cachedNoisePattern) {
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = patternSize;
-    tempCanvas.height = patternSize;
-    const tempCtx = tempCanvas.getContext('2d');
-    if (tempCtx) {
-      tempCtx.putImageData(cachedNoisePattern, 0, 0);
-      const pattern = ctx.createPattern(tempCanvas, 'repeat');
-      if (pattern) {
-        ctx.globalAlpha = 0.4; // Very subtle
-        ctx.fillStyle = pattern;
-        ctx.fillRect(0, 0, width, height);
-        ctx.globalAlpha = 1;
-      }
-    }
-  }
-}
-
-/**
- * Draw gridlines on the floor plane (constrained to drawer bounds)
- */
-function drawGridlines(
-  ctx: CanvasRenderingContext2D,
-  drawerWidth: number,
-  drawerDepth: number,
-  rotation: number,
-  scale: number,
-  offsetX: number,
-  offsetY: number
-) {
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-  ctx.lineWidth = 0.5;
-
-  // Helper to convert 3D point to 2D screen coords
-  const to2D = (x: number, y: number, z: number) => {
-    const screen = toIsometric({ x, y, z }, rotation, scale);
-    return { x: screen.x + offsetX, y: screen.y + offsetY };
-  };
-
-  // Draw lines parallel to X-axis (along depth) - constrained to drawer bounds
-  for (let x = 0; x <= drawerWidth; x++) {
-    const start = to2D(x, 0, 0);
-    const end = to2D(x, drawerDepth, 0);
-    ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    ctx.lineTo(end.x, end.y);
-    ctx.stroke();
-  }
-
-  // Draw lines parallel to Y-axis (along width) - constrained to drawer bounds
-  for (let y = 0; y <= drawerDepth; y++) {
-    const start = to2D(0, y, 0);
-    const end = to2D(drawerWidth, y, 0);
-    ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    ctx.lineTo(end.x, end.y);
-    ctx.stroke();
-  }
-}
-
-/**
- * Draw a wireframe cube backdrop showing the full drawer volume with height ticks
- */
-function drawHeightTicks(
-  ctx: CanvasRenderingContext2D,
-  drawerWidth: number,
-  drawerDepth: number,
-  maxHeight: number,
-  rotation: number,
-  scale: number,
-  offsetX: number,
-  offsetY: number
-) {
-  const tickInterval = 3; // Every 3 height units
-
-  // Helper to convert 3D point to 2D screen coords
-  const to2D = (x: number, y: number, z: number) => {
-    const screen = toIsometric({ x, y, z }, rotation, scale);
-    return { x: screen.x + offsetX, y: screen.y + offsetY };
-  };
-
-  // Determine rotation quadrant
-  const r = ((rotation % 360) + 360) % 360;
-
-  // Draw colored back wall faces
-  const wallMaxZ = maxHeight * HEIGHT_TO_GRID_SCALE;
-  const w0 = to2D(0, 0, 0);
-  const w1 = to2D(drawerWidth, 0, 0);
-  const w2 = to2D(drawerWidth, drawerDepth, 0);
-  const w3 = to2D(0, drawerDepth, 0);
-  const w4 = to2D(0, 0, wallMaxZ);
-  const w5 = to2D(drawerWidth, 0, wallMaxZ);
-  const w6 = to2D(drawerWidth, drawerDepth, wallMaxZ);
-  const w7 = to2D(0, drawerDepth, wallMaxZ);
-
-  // Draw walls with vertical gradient (lighter at top for ambient sky light)
-  // Helper to create wall gradient: bottom color → slightly lighter at top
-  const createWallGradient = (bottomPt: {x: number, y: number}, topPt: {x: number, y: number}, baseColor: string) => {
-    const grad = ctx.createLinearGradient(bottomPt.x, bottomPt.y, topPt.x, topPt.y);
-    grad.addColorStop(0, baseColor);
-    grad.addColorStop(1, baseColor === '#2a2a3e' ? '#32324a' : '#2d2d40'); // Slightly lighter at top
-    return grad;
-  };
-
-  ctx.globalAlpha = 1;
-  if (r >= 315 || r < 45) {
-    // 0°: front wall (y=0) and left wall (x=0) form backdrop
-    ctx.fillStyle = createWallGradient(w0, w4, '#2a2a3e');
-    ctx.beginPath();
-    ctx.moveTo(w0.x, w0.y); ctx.lineTo(w1.x, w1.y); ctx.lineTo(w5.x, w5.y); ctx.lineTo(w4.x, w4.y);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = createWallGradient(w0, w4, '#252535');
-    ctx.beginPath();
-    ctx.moveTo(w0.x, w0.y); ctx.lineTo(w3.x, w3.y); ctx.lineTo(w7.x, w7.y); ctx.lineTo(w4.x, w4.y);
-    ctx.closePath(); ctx.fill();
-  } else if (r >= 45 && r < 135) {
-    // 90°: left wall (x=0) and back wall (y=depth) form backdrop
-    ctx.fillStyle = createWallGradient(w0, w4, '#2a2a3e');
-    ctx.beginPath();
-    ctx.moveTo(w0.x, w0.y); ctx.lineTo(w3.x, w3.y); ctx.lineTo(w7.x, w7.y); ctx.lineTo(w4.x, w4.y);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = createWallGradient(w3, w7, '#252535');
-    ctx.beginPath();
-    ctx.moveTo(w3.x, w3.y); ctx.lineTo(w2.x, w2.y); ctx.lineTo(w6.x, w6.y); ctx.lineTo(w7.x, w7.y);
-    ctx.closePath(); ctx.fill();
-  } else if (r >= 135 && r < 225) {
-    // 180°: back wall (y=depth) and right wall (x=width) form backdrop
-    ctx.fillStyle = createWallGradient(w3, w7, '#2a2a3e');
-    ctx.beginPath();
-    ctx.moveTo(w3.x, w3.y); ctx.lineTo(w2.x, w2.y); ctx.lineTo(w6.x, w6.y); ctx.lineTo(w7.x, w7.y);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = createWallGradient(w1, w5, '#252535');
-    ctx.beginPath();
-    ctx.moveTo(w1.x, w1.y); ctx.lineTo(w2.x, w2.y); ctx.lineTo(w6.x, w6.y); ctx.lineTo(w5.x, w5.y);
-    ctx.closePath(); ctx.fill();
-  } else {
-    // 270°: right wall (x=width) and front wall (y=0) form backdrop
-    ctx.fillStyle = createWallGradient(w1, w5, '#2a2a3e');
-    ctx.beginPath();
-    ctx.moveTo(w1.x, w1.y); ctx.lineTo(w2.x, w2.y); ctx.lineTo(w6.x, w6.y); ctx.lineTo(w5.x, w5.y);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = createWallGradient(w0, w4, '#252535');
-    ctx.beginPath();
-    ctx.moveTo(w0.x, w0.y); ctx.lineTo(w1.x, w1.y); ctx.lineTo(w5.x, w5.y); ctx.lineTo(w4.x, w4.y);
-    ctx.closePath(); ctx.fill();
-  }
-
-  // Draw horizontal lines at each tick height on back walls only (softened)
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-  ctx.lineWidth = 0.8;
-  ctx.setLineDash([4, 4]);
-
-  // Determine back edges based on rotation (must match wall faces above)
-  // corners: 0=(0,0), 1=(w,0), 2=(w,d), 3=(0,d)
-  for (let h = tickInterval; h <= maxHeight; h += tickInterval) {
-    const z = h * HEIGHT_TO_GRID_SCALE;
-
-    const h0 = to2D(0, 0, z);
-    const h1 = to2D(drawerWidth, 0, z);
-    const h2 = to2D(drawerWidth, drawerDepth, z);
-    const h3 = to2D(0, drawerDepth, z);
-
-    ctx.beginPath();
-
-    // Draw only back two edges based on view angle (matching filled walls)
-    if (r >= 315 || r < 45) {
-      // 0°: front wall (y=0) + left wall (x=0) form backdrop
-      ctx.moveTo(h1.x, h1.y);
-      ctx.lineTo(h0.x, h0.y);
-      ctx.lineTo(h3.x, h3.y);
-    } else if (r >= 45 && r < 135) {
-      // 90°: left wall (x=0) + back wall (y=depth) form backdrop
-      ctx.moveTo(h0.x, h0.y);
-      ctx.lineTo(h3.x, h3.y);
-      ctx.lineTo(h2.x, h2.y);
-    } else if (r >= 135 && r < 225) {
-      // 180°: back wall (y=depth) + right wall (x=width) form backdrop
-      ctx.moveTo(h3.x, h3.y);
-      ctx.lineTo(h2.x, h2.y);
-      ctx.lineTo(h1.x, h1.y);
-    } else {
-      // 270°: right wall (x=width) + front wall (y=0) form backdrop
-      ctx.moveTo(h2.x, h2.y);
-      ctx.lineTo(h1.x, h1.y);
-      ctx.lineTo(h0.x, h0.y);
-    }
-
-    ctx.stroke();
-  }
-
-  ctx.setLineDash([]);
-}
-
-/**
- * Draw an open-top bin (like a Gridfinity container) with 45° lighting
- * Light source is from top-left, creating shadows on right and interior
- * Features subtle rounded corners and realistic shadows
- */
-function drawBox(
-  ctx: CanvasRenderingContext2D,
-  box: IsometricBox,
-  rotation: number,
-  scale: number,
-  offsetX: number,
-  offsetY: number
-) {
-  const { x, y, z, width, depth, height, color, opacity } = box;
-
-  // Wall thickness - exaggerated for visibility (real bins are 0.01-0.03 units)
-  const wallThickness = 0.12;
-
-  // Corner radius - subtle rounding on vertical edges (proportional to bin size)
-  const cornerRadius = Math.min(width, depth) * 0.12;
-
-  // World-space lighting - top brightness based on light angle
-  const topBrightness = getTopBrightness();
-  const topRim = topBrightness > 0 ? lightenColor(color, topBrightness) : darkenColor(color, -topBrightness);
-  const interior = darkenColor(color, 0.55); // Deeper interior for more 3D depth
-
-  // Helper to convert 3D point to 2D screen coords
-  const to2D = (px: number, py: number, pz: number) => {
-    const screen = toIsometric({ x: px, y: py, z: pz }, rotation, scale);
-    return { x: screen.x + offsetX, y: screen.y + offsetY };
-  };
-
-  // Small Z gap to lift bins off the floor (no X/Y gap so bins touch each other)
-  const zGap = 0.03;
-
-  // Outer corners (bottom) - raised slightly off floor
-  const r = cornerRadius;
-  const c0 = to2D(x, y, z + zGap);
-  const c1 = to2D(x + width, y, z + zGap);
-  const c2 = to2D(x + width, y + depth, z + zGap);
-  const c3 = to2D(x, y + depth, z + zGap);
-
-  // Top corners with inset points for rounded rim
-  const t0 = to2D(x, y, z + height);
-  const t0_x = to2D(x + r, y, z + height);
-  const t0_y = to2D(x, y + r, z + height);
-
-  const t1 = to2D(x + width, y, z + height);
-  const t1_x = to2D(x + width - r, y, z + height);
-  const t1_y = to2D(x + width, y + r, z + height);
-
-  const t2 = to2D(x + width, y + depth, z + height);
-  const t2_x = to2D(x + width - r, y + depth, z + height);
-  const t2_y = to2D(x + width, y + depth - r, z + height);
-
-  const t3 = to2D(x, y + depth, z + height);
-  const t3_x = to2D(x + r, y + depth, z + height);
-  const t3_y = to2D(x, y + depth - r, z + height);
-
-  // Inner corners (for cavity)
-  const ib = [
-    to2D(x + wallThickness, y + wallThickness, z + zGap),
-    to2D(x + width - wallThickness, y + wallThickness, z + zGap),
-    to2D(x + width - wallThickness, y + depth - wallThickness, z + zGap),
-    to2D(x + wallThickness, y + depth - wallThickness, z + zGap),
-  ];
-  const it = [
-    to2D(x + wallThickness, y + wallThickness, z + height),
-    to2D(x + width - wallThickness, y + wallThickness, z + height),
-    to2D(x + width - wallThickness, y + depth - wallThickness, z + height),
-    to2D(x + wallThickness, y + depth - wallThickness, z + height),
-  ];
-
-  ctx.globalAlpha = opacity;
-
-  const wallDrawOrder = getOuterWallsInDrawOrder(rotation);
-
-  // === SOLID BASE FILL ===
-  // Draw a solid base color for the entire visible bin to prevent any see-through gaps
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  // Draw outer silhouette (all visible walls as one shape)
-  ctx.moveTo(c0.x, c0.y);
-  ctx.lineTo(c1.x, c1.y);
-  ctx.lineTo(c2.x, c2.y);
-  ctx.lineTo(c3.x, c3.y);
-  ctx.closePath();
-  ctx.fill();
-  // Top face base
-  ctx.beginPath();
-  ctx.moveTo(t0.x, t0.y);
-  ctx.lineTo(t1.x, t1.y);
-  ctx.lineTo(t2.x, t2.y);
-  ctx.lineTo(t3.x, t3.y);
-  ctx.closePath();
-  ctx.fill();
-  // Fill vertical edges to connect bottom and top
-  ctx.beginPath();
-  ctx.moveTo(c0.x, c0.y);
-  ctx.lineTo(c1.x, c1.y);
-  ctx.lineTo(t1.x, t1.y);
-  ctx.lineTo(t0.x, t0.y);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(c1.x, c1.y);
-  ctx.lineTo(c2.x, c2.y);
-  ctx.lineTo(t2.x, t2.y);
-  ctx.lineTo(t1.x, t1.y);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(c2.x, c2.y);
-  ctx.lineTo(c3.x, c3.y);
-  ctx.lineTo(t3.x, t3.y);
-  ctx.lineTo(t2.x, t2.y);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(c3.x, c3.y);
-  ctx.lineTo(c0.x, c0.y);
-  ctx.lineTo(t0.x, t0.y);
-  ctx.lineTo(t3.x, t3.y);
-  ctx.closePath();
-  ctx.fill();
-
-  // Now draw individual walls with world-space lighting
-  // Wall corners for drawing
-  const wallCorners = [
-    { b1: c0, b2: c1, t1: t0, t2: t1 }, // wall 0-1 (front)
-    { b1: c1, b2: c2, t1: t1, t2: t2 }, // wall 1-2 (right)
-    { b1: c2, b2: c3, t1: t2, t2: t3 }, // wall 2-3 (back)
-    { b1: c3, b2: c0, t1: t3, t2: t0 }, // wall 3-0 (left)
-  ];
-
-  // Helper to draw a single wall with lighting
-  const drawWall = (wallIndex: number, addAO: boolean) => {
-    const brightness = getWallBrightness(wallIndex, rotation);
-    const wallColor = brightness > 0 ? lightenColor(color, brightness) : darkenColor(color, -brightness);
-    const pts = wallCorners[wallIndex];
-
-    // Main wall fill
-    ctx.fillStyle = wallColor;
-    ctx.beginPath();
-    ctx.moveTo(pts.b1.x, pts.b1.y);
-    ctx.lineTo(pts.b2.x, pts.b2.y);
-    ctx.lineTo(pts.t2.x, pts.t2.y);
-    ctx.lineTo(pts.t1.x, pts.t1.y);
-    ctx.closePath();
-    ctx.fill();
-
-    // Note: AO removed from outer walls - inner cavity shadows provide sufficient depth
-    // and outer wall AO created visual noise in uniform grids
-    void addAO; // Parameter kept for API compatibility but no longer used
-  };
-
-  // STEP 1: Draw interior floor with gradient (darker in back corner)
-  ctx.fillStyle = interior;
-  ctx.beginPath();
-  ctx.moveTo(ib[0].x, ib[0].y);
-  ctx.lineTo(ib[1].x, ib[1].y);
-  ctx.lineTo(ib[2].x, ib[2].y);
-  ctx.lineTo(ib[3].x, ib[3].y);
-  ctx.closePath();
-  ctx.fill();
-
-  // Add interior shadow gradient (darker in the back) - enhanced for depth
-  const interiorGrad = ctx.createLinearGradient(ib[0].x, ib[0].y, ib[2].x, ib[2].y);
-  interiorGrad.addColorStop(0, 'rgba(0,0,0,0)');
-  interiorGrad.addColorStop(0.6, 'rgba(0,0,0,0.15)');
-  interiorGrad.addColorStop(1, 'rgba(0,0,0,0.35)');
-  ctx.fillStyle = interiorGrad;
-  ctx.beginPath();
-  ctx.moveTo(ib[0].x, ib[0].y);
-  ctx.lineTo(ib[1].x, ib[1].y);
-  ctx.lineTo(ib[2].x, ib[2].y);
-  ctx.lineTo(ib[3].x, ib[3].y);
-  ctx.closePath();
-  ctx.fill();
-
-  // === CORNER SHADOW POOLING ===
-  // Add additional darkening at the back corners where shadows naturally pool
-  const cornerSize = Math.min(width, depth) * 0.3;
-  // Back-left corner (ib[3])
-  const cornerGrad1 = ctx.createRadialGradient(ib[3].x, ib[3].y, 0, ib[3].x, ib[3].y, cornerSize * scale);
-  cornerGrad1.addColorStop(0, 'rgba(0,0,0,0.25)');
-  cornerGrad1.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = cornerGrad1;
-  ctx.fill();
-  // Back-right corner (ib[2])
-  const cornerGrad2 = ctx.createRadialGradient(ib[2].x, ib[2].y, 0, ib[2].x, ib[2].y, cornerSize * scale);
-  cornerGrad2.addColorStop(0, 'rgba(0,0,0,0.2)');
-  cornerGrad2.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = cornerGrad2;
-  ctx.fill();
-
-  // Draw inner walls with ambient occlusion
-  const drawInnerWalls = getVisibleInnerWalls(rotation);
-  for (const wall of drawInnerWalls) {
-    ctx.fillStyle = interior;
-    ctx.beginPath();
-    ctx.moveTo(ib[wall.b1].x, ib[wall.b1].y);
-    ctx.lineTo(ib[wall.b2].x, ib[wall.b2].y);
-    ctx.lineTo(it[wall.b2].x, it[wall.b2].y);
-    ctx.lineTo(it[wall.b1].x, it[wall.b1].y);
-    ctx.closePath();
-    ctx.fill();
-
-    // Interior wall AO - darker at the bottom (increased for deeper shadow)
-    const iwAO = 0.4;
-    const iwMid1 = { x: ib[wall.b1].x + (it[wall.b1].x - ib[wall.b1].x) * iwAO, y: ib[wall.b1].y + (it[wall.b1].y - ib[wall.b1].y) * iwAO };
-    const iwMid2 = { x: ib[wall.b2].x + (it[wall.b2].x - ib[wall.b2].x) * iwAO, y: ib[wall.b2].y + (it[wall.b2].y - ib[wall.b2].y) * iwAO };
-
-    const iwGrad = ctx.createLinearGradient(ib[wall.b1].x, ib[wall.b1].y, iwMid1.x, iwMid1.y);
-    iwGrad.addColorStop(0, 'rgba(0,0,0,0.3)');
-    iwGrad.addColorStop(1, 'rgba(0,0,0,0)');
-
-    ctx.fillStyle = iwGrad;
-    ctx.beginPath();
-    ctx.moveTo(ib[wall.b1].x, ib[wall.b1].y);
-    ctx.lineTo(ib[wall.b2].x, ib[wall.b2].y);
-    ctx.lineTo(iwMid2.x, iwMid2.y);
-    ctx.lineTo(iwMid1.x, iwMid1.y);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  // STEP 2: Draw ALL outer walls in back-to-front order (after interior so they're never covered)
-  // Back walls (furthest from camera) - no AO needed
-  drawWall(wallDrawOrder[0], false);
-  drawWall(wallDrawOrder[1], false);
-  // Front walls (nearest to camera) - with AO for grounding
-  drawWall(wallDrawOrder[2], true);
-  drawWall(wallDrawOrder[3], true);
-
-  // STEP 3: Draw top rim with rounded outer edge
-  ctx.fillStyle = topRim;
-  ctx.beginPath();
-  // Outer edge with curves at corners
-  ctx.moveTo(t0_x.x, t0_x.y);
-  ctx.lineTo(t1_x.x, t1_x.y);
-  ctx.quadraticCurveTo(t1.x, t1.y, t1_y.x, t1_y.y);
-  ctx.lineTo(t2_y.x, t2_y.y);
-  ctx.quadraticCurveTo(t2.x, t2.y, t2_x.x, t2_x.y);
-  ctx.lineTo(t3_x.x, t3_x.y);
-  ctx.quadraticCurveTo(t3.x, t3.y, t3_y.x, t3_y.y);
-  ctx.lineTo(t0_y.x, t0_y.y);
-  ctx.quadraticCurveTo(t0.x, t0.y, t0_x.x, t0_x.y);
-  ctx.closePath();
-  // Inner edge (hole) - straight for simplicity
-  ctx.moveTo(it[0].x, it[0].y);
-  ctx.lineTo(it[3].x, it[3].y);
-  ctx.lineTo(it[2].x, it[2].y);
-  ctx.lineTo(it[1].x, it[1].y);
-  ctx.closePath();
-  ctx.fill('evenodd');
-
-  // === INNER RIM SHADOW (cavity edge) ===
-  // Dark line at inner rim edge for depth definition
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
-  ctx.lineWidth = 0.6;
-  ctx.beginPath();
-  ctx.moveTo(it[0].x, it[0].y);
-  ctx.lineTo(it[1].x, it[1].y);
-  ctx.lineTo(it[2].x, it[2].y);
-  ctx.lineTo(it[3].x, it[3].y);
-  ctx.closePath();
-  ctx.stroke();
-
-  ctx.globalAlpha = 1;
-}
-
-/**
- * Get all 4 outer walls sorted in back-to-front order for painter's algorithm.
- * Returns wall indices (0=front, 1=right, 2=back, 3=left) sorted so furthest walls draw first.
- */
-function getOuterWallsInDrawOrder(rotation: number): number[] {
-  // Normalize rotation to 0-360
-  const r = ((rotation % 360) + 360) % 360;
-
-  // Wall indices: 0=front (normal -Y), 1=right (normal +X), 2=back (normal +Y), 3=left (normal -X)
-  // At rotation 0°: camera looks from front-right, so back (2) and left (3) are furthest
-  // At rotation 90°: camera looks from back-right, so front (0) and left (3) are furthest
-  // etc.
-
-  // Return walls from furthest to nearest based on rotation quadrant
-  if (r >= 315 || r < 45) {
-    // 0°: Looking from front-right. Back and left are far, front and right are near.
-    return [2, 3, 0, 1]; // back, left, front, right
-  } else if (r >= 45 && r < 135) {
-    // 90°: Looking from back-right. Front and left are far, back and right are near.
-    return [0, 3, 2, 1]; // front, left, back, right
-  } else if (r >= 135 && r < 225) {
-    // 180°: Looking from back-left. Front and right are far, back and left are near.
-    return [0, 1, 2, 3]; // front, right, back, left
-  } else {
-    // 270°: Looking from front-left. Back and right are far, front and left are near.
-    return [2, 1, 0, 3]; // back, right, front, left
-  }
-}
-
-/**
- * Get visible inner walls based on rotation (works with any angle)
- * Inner corners: 0=front-left, 1=front-right, 2=back-right, 3=back-left
- *
- * When looking into a bin cavity, you see the TWO inner walls on the FAR sides
- * from the camera (forming an L-shape at the back of the cavity).
- */
-function getVisibleInnerWalls(rotation: number): { b1: number; b2: number }[] {
-  const r = ((rotation % 360) + 360) % 360;
-  const walls: { b1: number; b2: number }[] = [];
-
-  // At each angle, we see two inner walls - the ones on the FAR side of the cavity
-  // from where the camera is positioned.
-
-  if (r >= 315 || r < 45) {
-    // 0°: Camera at front-right, see inner BACK and inner LEFT walls
-    walls.push({ b1: 3, b2: 2 }); // back wall: back-left to back-right
-    walls.push({ b1: 0, b2: 3 }); // left wall: front-left to back-left
-  } else if (r >= 45 && r < 135) {
-    // 90°: Camera at back-right, see inner FRONT and inner LEFT walls
-    walls.push({ b1: 1, b2: 0 }); // front wall: front-right to front-left
-    walls.push({ b1: 0, b2: 3 }); // left wall: front-left to back-left
-  } else if (r >= 135 && r < 225) {
-    // 180°: Camera at back-left, see inner FRONT and inner RIGHT walls
-    walls.push({ b1: 1, b2: 0 }); // front wall: front-right to front-left
-    walls.push({ b1: 2, b2: 1 }); // right wall: back-right to front-right
-  } else {
-    // 270°: Camera at front-left, see inner BACK and inner RIGHT walls
-    walls.push({ b1: 3, b2: 2 }); // back wall: back-left to back-right
-    walls.push({ b1: 2, b2: 1 }); // right wall: back-right to front-right
-  }
-
-  return walls;
-}
-
-/**
- * Calculate split line positions along an axis using greedy halving.
- * Returns positions relative to 0 (start of bin).
- * Example: getSplitPositions(5, 4) → [3] (splits at position 3, making 3+2)
- * Example: getSplitPositions(9, 4) → [5, 3] (splits at 5 and 3, making 4+3+2)
- */
-function getSplitPositions(size: number, maxSize: number, offset: number = 0): number[] {
-  if (size <= maxSize) return [];
-
-  const splitAt = Math.ceil(size / 2);
-  const positions: number[] = [offset + splitAt];
-
-  // Recursively get splits for left and right halves
-  positions.push(...getSplitPositions(splitAt, maxSize, offset));
-  positions.push(...getSplitPositions(size - splitAt, maxSize, offset + splitAt));
-
-  return positions;
-}
-
-/**
- * Draw dashed split lines on the top face of an oversized bin.
- * Uses amber color matching the split warning in UI.
- */
-function drawSplitLines(
-  ctx: CanvasRenderingContext2D,
-  box: IsometricBox,
-  maxSize: number,
-  rotation: number,
-  scale: number,
-  offsetX: number,
-  offsetY: number
-) {
-  const { x, y, z, width, depth, height, opacity } = box;
-  const topZ = z + height;
-
-  // Helper to convert 3D point to 2D screen coords
-  const to2D = (px: number, py: number, pz: number) => {
-    const screen = toIsometric({ x: px, y: py, z: pz }, rotation, scale);
-    return { x: screen.x + offsetX, y: screen.y + offsetY };
-  };
-
-  ctx.save();
-  // Amber color matching UI warning, with opacity for dimmed bins
-  const alpha = opacity < 1 ? 0.4 : 0.9;
-  ctx.strokeStyle = `rgba(251, 191, 36, ${alpha})`;
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([4, 3]);
-
-  // Get split positions for width (X axis) and depth (Y axis)
-  const xSplits = getSplitPositions(width, maxSize);
-  const ySplits = getSplitPositions(depth, maxSize);
-
-  // Draw vertical split lines (parallel to Y axis) at X positions
-  for (const splitX of xSplits) {
-    const start = to2D(x + splitX, y, topZ);
-    const end = to2D(x + splitX, y + depth, topZ);
-    ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    ctx.lineTo(end.x, end.y);
-    ctx.stroke();
-  }
-
-  // Draw horizontal split lines (parallel to X axis) at Y positions
-  for (const splitY of ySplits) {
-    const start = to2D(x, y + splitY, topZ);
-    const end = to2D(x + width, y + splitY, topZ);
-    ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    ctx.lineTo(end.x, end.y);
-    ctx.stroke();
-  }
-
-  ctx.restore();
+  return previewContent
 }

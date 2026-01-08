@@ -1,0 +1,148 @@
+import { useEffect, useRef, useImperativeHandle, forwardRef, useMemo } from 'react';
+import { OrbitControls, ContactShadows } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
+import { OrthographicCamera } from 'three';
+import { useUIStore } from '../../../store';
+import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
+import { FloorGrid } from './FloorGrid';
+import { FrontLabel } from './FrontLabel';
+
+interface SceneProps {
+  children: React.ReactNode;
+  drawerWidth: number;
+  drawerDepth: number;
+  drawerHeight: number;
+  isExpanded?: boolean;
+}
+
+export interface SceneHandle {
+  resetView: () => void;
+}
+
+/**
+ * Main scene component with camera, lights, orbit controls, and environment.
+ * Handles rotation sync with UI store and renders floor grid.
+ */
+export const Scene = forwardRef<SceneHandle, SceneProps>(
+  ({ children, drawerWidth, drawerDepth, drawerHeight, isExpanded }, ref) => {
+    const controlsRef = useRef<OrbitControlsType>(null);
+    const { camera, size } = useThree();
+
+    const setIsometricRotation = useUIStore((state) => state.setIsometricRotation);
+
+    // Calculate scene center for camera target
+    const centerX = drawerWidth / 2;
+    const centerY = drawerDepth / 2;
+    const centerZ = (drawerHeight * 7 / 42) / 2; // Convert height units to grid units
+
+    // Calculate default camera position - front-right view so FRONT is at bottom-left
+    const defaultCameraPosition = useMemo(() => {
+      const maxDimension = Math.max(drawerWidth, drawerDepth);
+      const cameraDistance = maxDimension * 0.8;
+      return [
+        centerX + cameraDistance,
+        centerY - cameraDistance,
+        centerZ + cameraDistance * 0.7,
+      ] as [number, number, number];
+    }, [drawerWidth, drawerDepth, centerX, centerY, centerZ]);
+
+    // Set camera up vector to Z-up and position to default view
+    useEffect(() => {
+      camera.up.set(0, 0, 1);
+      camera.position.set(...defaultCameraPosition);
+      camera.updateProjectionMatrix();
+    }, [camera, defaultCameraPosition]);
+
+    // Auto-zoom when expanded to fit drawer in view
+    useEffect(() => {
+      if (!camera || !(camera instanceof OrthographicCamera)) return;
+
+      if (isExpanded) {
+        // Scale zoom proportionally with canvas size
+        // Baseline: zoom=30 for 280px canvas
+        // For larger canvas, scale up zoom to keep similar relative size, then zoom in more
+        const baseCanvasSize = 280;
+        const scaleFactor = Math.min(size.width, size.height) / baseCanvasSize;
+        const zoomInFactor = 1.5; // Additional zoom to fill viewport better
+        // eslint-disable-next-line react-hooks/immutability -- Three.js requires direct mutation of camera properties
+        camera.zoom = 30 * scaleFactor * zoomInFactor;
+      } else {
+        // Reset to default zoom when not expanded
+        camera.zoom = 30;
+      }
+
+       
+      camera.updateProjectionMatrix();
+    }, [isExpanded, size, camera]);
+
+    // Handle rotation changes from OrbitControls
+    const handleChange = () => {
+      if (!controlsRef.current) return;
+
+      // Convert radians back to degrees for UI store
+      const angle = controlsRef.current.getAzimuthalAngle();
+      const degrees = (angle * 180) / Math.PI;
+      setIsometricRotation(degrees);
+    };
+
+    // Expose reset function to parent
+    useImperativeHandle(ref, () => ({
+      resetView: () => {
+        if (!controlsRef.current || !camera) return;
+
+        // Reset camera position to default front-right view
+        camera.position.set(...defaultCameraPosition);
+        controlsRef.current.target.set(centerX, centerY, centerZ);
+        controlsRef.current.update();
+        setIsometricRotation(0);
+      },
+    }));
+
+  return (
+    <>
+      {/* Orbit controls with full 3D rotation, zoom, and pan */}
+      <OrbitControls
+        ref={controlsRef}
+        makeDefault
+        enablePan={true}
+        enableZoom={true}
+        target={[centerX, centerY, centerZ]}
+        onChange={handleChange}
+      />
+
+      {/* Ambient light - brighter to preserve category colors */}
+      <ambientLight intensity={0.5} />
+
+      {/* Hemisphere light - ambient fill with sky/ground colors */}
+      <hemisphereLight
+        color="#4a5a6a"      // Lighter cool blue (sky)
+        groundColor="#3a3530" // Lighter warm (ground)
+        intensity={0.4}
+      />
+
+      {/* Directional light - main lighting direction */}
+      <directionalLight
+        position={[-4, 6, 7]}
+        intensity={0.8}
+      />
+
+      {/* Contact shadows for ground connection */}
+      <ContactShadows
+        position={[centerX, centerY, 0.01]}
+        opacity={0.20}
+        scale={Math.max(drawerWidth, drawerDepth) * 1.2}
+        blur={3.5}
+        far={drawerHeight * 7/42}
+        resolution={256}
+        color="#000000"
+      />
+
+      {/* Floor grid and front label */}
+      <FloorGrid width={drawerWidth} depth={drawerDepth} />
+      <FrontLabel drawerWidth={drawerWidth} />
+
+      {/* Bins */}
+      {children}
+    </>
+  );
+});
