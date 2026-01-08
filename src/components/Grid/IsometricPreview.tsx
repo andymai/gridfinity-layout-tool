@@ -1,7 +1,7 @@
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore } from '../../store';
-import { STAGING_ID, DEFAULT_CATEGORY_COLOR } from '../../constants';
+import { STAGING_ID, DEFAULT_CATEGORY_COLOR, calcMaxGridUnits } from '../../constants';
 
 // Height units (7mm) to grid units (42mm) conversion for proper proportions
 const HEIGHT_TO_GRID_SCALE = 7 / 42;
@@ -24,7 +24,7 @@ const PADDING = 20;
  */
 export function IsometricPreview() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isDragging = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
   const lastX = useRef(0);
 
   const { showIsometricPreview, isometricRotation, hideLayersAbove, dimInactiveLayers, setIsometricRotation, toggleHideLayersAbove, toggleDimInactiveLayers } = useUIStore(
@@ -44,6 +44,12 @@ export function IsometricPreview() {
 
   // Get layer indices for filtering
   const activeLayerIndex = layout.layers.findIndex(l => l.id === activeLayerId);
+
+  // Calculate max print size for split line visualization
+  const maxGridUnits = useMemo(
+    () => calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm),
+    [layout.printBedSize, layout.gridUnitMm]
+  );
 
   // Drawer floor (drawn separately, always first)
   const floor: IsometricBox = useMemo(() => ({
@@ -155,9 +161,13 @@ export function IsometricPreview() {
     const sortedBoxes = sortBoxesForRendering(boxes, isometricRotation);
     for (const box of sortedBoxes) {
       drawBox(ctx, box, isometricRotation, scale, centerX, centerY);
+      // Draw split lines for oversized bins
+      if (box.width > maxGridUnits || box.depth > maxGridUnits) {
+        drawSplitLines(ctx, box, maxGridUnits, isometricRotation, scale, centerX, centerY);
+      }
     }
 
-  }, [floor, boxes, isometricRotation, showIsometricPreview, layout.drawer.width, layout.drawer.depth, layout.drawer.height]);
+  }, [floor, boxes, isometricRotation, showIsometricPreview, layout.drawer.width, layout.drawer.depth, layout.drawer.height, maxGridUnits]);
 
   if (!showIsometricPreview) {
     return null;
@@ -166,13 +176,13 @@ export function IsometricPreview() {
   // Drag handlers for free rotation
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return;
-    isDragging.current = true;
+    setIsDragging(true);
     lastX.current = e.clientX;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging.current) return;
+    if (!isDragging) return;
     const deltaX = e.clientX - lastX.current;
     lastX.current = e.clientX;
     // Rotate 1 degree per 2 pixels of drag
@@ -180,7 +190,7 @@ export function IsometricPreview() {
   };
 
   const handlePointerUp = () => {
-    isDragging.current = false;
+    setIsDragging(false);
   };
 
   // Check if rotation is not at default
@@ -189,7 +199,7 @@ export function IsometricPreview() {
   return (
     <div
       className="absolute top-14 right-4 z-20 rounded-lg overflow-hidden shadow-lg border border-stroke-subtle select-none"
-      style={{ width: PREVIEW_SIZE, height: PREVIEW_SIZE, cursor: isDragging.current ? 'grabbing' : 'grab' }}
+      style={{ width: PREVIEW_SIZE, height: PREVIEW_SIZE, cursor: isDragging ? 'grabbing' : 'grab' }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -808,4 +818,77 @@ function getVisibleInnerWalls(rotation: number): { b1: number; b2: number }[] {
   }
 
   return walls;
+}
+
+/**
+ * Calculate split line positions along an axis using greedy halving.
+ * Returns positions relative to 0 (start of bin).
+ * Example: getSplitPositions(5, 4) → [3] (splits at position 3, making 3+2)
+ * Example: getSplitPositions(9, 4) → [5, 3] (splits at 5 and 3, making 4+3+2)
+ */
+function getSplitPositions(size: number, maxSize: number, offset: number = 0): number[] {
+  if (size <= maxSize) return [];
+
+  const splitAt = Math.ceil(size / 2);
+  const positions: number[] = [offset + splitAt];
+
+  // Recursively get splits for left and right halves
+  positions.push(...getSplitPositions(splitAt, maxSize, offset));
+  positions.push(...getSplitPositions(size - splitAt, maxSize, offset + splitAt));
+
+  return positions;
+}
+
+/**
+ * Draw dashed split lines on the top face of an oversized bin.
+ * Uses amber color matching the split warning in UI.
+ */
+function drawSplitLines(
+  ctx: CanvasRenderingContext2D,
+  box: IsometricBox,
+  maxSize: number,
+  rotation: number,
+  scale: number,
+  offsetX: number,
+  offsetY: number
+) {
+  const { x, y, z, width, depth, height } = box;
+  const topZ = z + height;
+
+  // Helper to convert 3D point to 2D screen coords
+  const to2D = (px: number, py: number, pz: number) => {
+    const screen = toIsometric({ x: px, y: py, z: pz }, rotation, scale);
+    return { x: screen.x + offsetX, y: screen.y + offsetY };
+  };
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(251, 191, 36, 0.9)'; // Amber color matching UI warning
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 3]);
+
+  // Get split positions for width (X axis) and depth (Y axis)
+  const xSplits = getSplitPositions(width, maxSize);
+  const ySplits = getSplitPositions(depth, maxSize);
+
+  // Draw vertical split lines (parallel to Y axis) at X positions
+  for (const splitX of xSplits) {
+    const start = to2D(x + splitX, y, topZ);
+    const end = to2D(x + splitX, y + depth, topZ);
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+  }
+
+  // Draw horizontal split lines (parallel to X axis) at Y positions
+  for (const splitY of ySplits) {
+    const start = to2D(x, y + splitY, topZ);
+    const end = to2D(x + width, y + splitY, topZ);
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+  }
+
+  ctx.restore();
 }
