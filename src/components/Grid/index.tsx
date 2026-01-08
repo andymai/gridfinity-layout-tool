@@ -6,6 +6,7 @@ import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS } from '../../constants';
 import { clamp } from '../../utils/validation';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
+import { IsometricPreview } from './IsometricPreview';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { MobileGridToolbar } from '../mobile';
 
@@ -36,6 +37,8 @@ export function Grid() {
     leftPanelCollapsed,
     toggleLeftPanel,
     interaction,
+    showIsometricPreview,
+    toggleIsometricPreview,
   } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
@@ -53,6 +56,8 @@ export function Grid() {
       leftPanelCollapsed: state.leftPanelCollapsed,
       toggleLeftPanel: state.toggleLeftPanel,
       interaction: state.interaction,
+      showIsometricPreview: state.showIsometricPreview,
+      toggleIsometricPreview: state.toggleIsometricPreview,
     }))
   );
 
@@ -200,7 +205,9 @@ export function Grid() {
 
     // Available space (minus padding)
     const padding = 48; // 24px padding on each side
-    const availableWidth = container.clientWidth - padding;
+    // Account for isometric preview width when visible (280px + margins)
+    const previewOffset = showIsometricPreview ? 300 : 0;
+    const availableWidth = container.clientWidth - padding - previewOffset;
     const availableHeight = container.clientHeight - padding;
 
     // Grid dimensions at zoom=1 (including labels and gaps)
@@ -220,7 +227,7 @@ export function Grid() {
     );
 
     setZoom(clampedZoom);
-  }, [drawer.width, drawer.depth, gap, setZoom]);
+  }, [drawer.width, drawer.depth, gap, setZoom, showIsometricPreview]);
 
   // Fit to screen on initial mount and when drawer size changes
   useEffect(() => {
@@ -268,7 +275,7 @@ export function Grid() {
   const rowLabels = Array.from({ length: drawer.depth }, (_, i) => drawer.depth - i);
 
   return (
-    <div className="flex flex-col h-full bg-surface">
+    <div className="flex flex-col h-full bg-surface relative">
       {/* Toolbar - mobile vs desktop */}
       {isMobile ? (
         <MobileGridToolbar onFitToScreen={fitToScreen} />
@@ -384,6 +391,18 @@ export function Grid() {
                 Fit
               </button>
             </div>
+
+            {/* 3D Preview toggle */}
+            <button
+              onClick={toggleIsometricPreview}
+              className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-ghost'} p-1.5`}
+              aria-label={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
+              title={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </button>
           </div>
         </div>
       )}
@@ -610,6 +629,9 @@ export function Grid() {
         onConfirm={confirmResize}
         onCancel={cancelResize}
       />
+
+      {/* Isometric 3D preview - positioned in top-right corner */}
+      <IsometricPreview />
     </div>
   );
 }

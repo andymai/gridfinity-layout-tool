@@ -45,6 +45,12 @@ interface UIState {
   // Context menu (for long-press on mobile)
   contextMenu: ContextMenuState | null;
 
+  // Isometric preview
+  showIsometricPreview: boolean;
+  isometricRotation: number; // Horizontal rotation degrees, 0-360
+  hideLayersAbove: boolean; // Hide layers above active layer in 3D preview
+  dimInactiveLayers: boolean; // Dim non-active layers in 3D preview
+
   // Actions
   setActiveLayer: (id: string) => void;
   setSelectedBin: (id: string | null) => void; // Single select (clears others)
@@ -78,6 +84,13 @@ interface UIState {
   // Context menu actions
   showContextMenu: (binId: string, position: { x: number; y: number }) => void;
   hideContextMenu: () => void;
+
+  // Isometric preview actions
+  toggleIsometricPreview: () => void;
+  setIsometricRotation: (rotation: number) => void;
+  toggleHideLayersAbove: () => void;
+  toggleDimInactiveLayers: () => void;
+  snapToIsometric: () => void; // Snap to nearest 90°
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -94,6 +107,10 @@ export const useUIStore = create<UIState>((set) => ({
   paintSize: null,
   activeMobilePanel: null,
   contextMenu: null,
+  showIsometricPreview: true, // Open by default
+  isometricRotation: 0,
+  hideLayersAbove: false,
+  dimInactiveLayers: true, // Enabled by default
 
   setActiveLayer: (id) => set({
     activeLayerId: id,
@@ -181,4 +198,23 @@ export const useUIStore = create<UIState>((set) => ({
   // Context menu actions
   showContextMenu: (binId, position) => set({ contextMenu: { binId, position } }),
   hideContextMenu: () => set({ contextMenu: null }),
+
+  // Isometric preview actions
+  toggleIsometricPreview: () => set(state => ({
+    showIsometricPreview: !state.showIsometricPreview
+  })),
+  setIsometricRotation: (rotation) => set({
+    isometricRotation: ((rotation % 360) + 360) % 360 // Normalize to 0-360
+  }),
+  toggleHideLayersAbove: () => set(state => ({
+    hideLayersAbove: !state.hideLayersAbove
+  })),
+  toggleDimInactiveLayers: () => set(state => ({
+    dimInactiveLayers: !state.dimInactiveLayers
+  })),
+  snapToIsometric: () => set(state => {
+    // Snap to nearest 90° angle
+    const snapped = Math.round(state.isometricRotation / 90) * 90;
+    return { isometricRotation: snapped % 360 };
+  }),
 }));
