@@ -16,6 +16,37 @@ npm run test:run     # Run Vitest once (CI mode)
 npm run lint         # ESLint check
 ```
 
+## Code Style (Pre-commit Enforced)
+
+Husky + lint-staged runs ESLint on staged `.ts/.tsx` files. Code must pass with zero warnings.
+
+**Required patterns:**
+```typescript
+// Use 'import type' for type-only imports
+import type { Bin, Layer } from '../types';
+import { someFunction } from '../utils';
+
+// Use explicit types, never 'any'
+function process(data: Layout): ValidationResult { ... }
+
+// Prefix unused params with underscore
+function handler(_event: MouseEvent, value: number) { ... }
+
+// Use strict equality
+if (value === null) { ... }  // not ==
+```
+
+**Prohibited:**
+- `any` type → use `unknown` or specific types
+- `console.log` → use `console.warn` or `console.error` if needed
+- `var` → use `const` or `let`
+- `==` / `!=` → use `===` / `!==`
+- Non-null assertions (`!`) → avoid or handle null explicitly
+
+**React patterns:**
+- All hooks rules enforced (no conditional hooks, proper deps arrays)
+- Use `useShallow` when selecting multiple store values
+
 ## Architecture
 
 ### State Management (Zustand + Immer)
