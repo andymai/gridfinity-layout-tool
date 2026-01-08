@@ -143,33 +143,28 @@ export function getDepthSortKey(box: IsometricBox, rotation: IsometricRotation):
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
 
-  // For correct painter's algorithm with bins of varying sizes, we need to sort by
-  // the corner NEAREST to the camera, not the center. Otherwise a wide bin at the front
-  // could be drawn before smaller bins behind it that have higher center coordinates.
+  // For a drawer organizer, bins at the physical back should ALWAYS render behind
+  // bins at the front, regardless of viewing angle. The back-to-front ordering is
+  // determined by the bin's position in drawer space, not by rotation-dependent projection.
   //
-  // The camera direction at each rotation determines which corner is nearest:
-  //   0°: camera at front-right (+X, -Y) → nearest corner: max X, min Y
-  //  90°: camera at back-right (+X, +Y) → nearest corner: max X, max Y
-  // 180°: camera at back-left (-X, +Y) → nearest corner: min X, max Y
-  // 270°: camera at front-left (-X, -Y) → nearest corner: min X, min Y
-  const coeffX = cos + sin; // Positive → want max X, Negative → want min X
-  const coeffY = sin - cos; // Positive → want max Y, Negative → want min Y
+  // Primary sort: (x + y) gives consistent back-to-front ordering
+  //   - Low (x + y) = back-left corner of drawer = draw first
+  //   - High (x + y) = front-right corner of drawer = draw last
+  //
+  // Use the bin's minimum corner (x, y) for consistent ordering regardless of size.
+  const primaryDepth = x + y;
 
-  // Select the corner nearest to camera based on coefficient signs
-  const nearestX = coeffX >= 0 ? x + width : x;
-  const nearestY = coeffY >= 0 ? y + depth : y;
+  // Secondary sort: rotation-dependent depth for correct occlusion within same (x+y) band
+  const rx = x * cos - y * sin;
+  const ry = x * sin + y * cos;
+  const rotationalDepth = (rx + ry) * 0.01;
 
-  const rx = nearestX * cos - nearestY * sin;
-  const ry = nearestX * sin + nearestY * cos;
-
-  // Primary depth: sum of rotated coordinates gives distance along isometric depth axis.
-  // Secondary sort by perpendicular axis breaks ties for consistent ordering.
-  const primaryDepth = rx + ry;
-  const tieBreaker = (rx - ry) * 0.001;
+  // Tertiary: bin extent as final tiebreaker
+  const tieBreaker = (width + depth) * 0.0001;
 
   // Weight Z heavily so higher layers always render on top of lower layers.
   // XY position still affects within-layer sorting for correct front/back occlusion.
-  return primaryDepth + tieBreaker + topZ * LAYER_WEIGHT;
+  return primaryDepth + rotationalDepth + tieBreaker + topZ * LAYER_WEIGHT;
 }
 
 /**

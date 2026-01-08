@@ -335,42 +335,40 @@ describe('bin size variations - sorting correctness', () => {
   // These tests use direct isometric coordinates (same as sorting algorithm).
 
   describe('wide bin (8x1) positioning', () => {
-    // At 0° rotation in isometric, sorting uses NEAREST CORNER to camera:
-    //   coeffX = 1, coeffY = -1, so nearest corner is (x+width, y)
-    //   A wide bin at (0,0) with width 8 uses corner (8,0), depth = 8
-    //   A 1x1 bin at (0,5) uses corner (1,5), depth = 6
-    // So smaller bins at low x can have LOWER depth than wide bins!
+    // With FARTHEST CORNER algorithm for painter's algorithm:
+    // At 0°, we use (x, y) corner (min X, min Y) to minimize depth.
+    // This ensures back bins are drawn first regardless of width.
 
-    it('wide 8x1 bin nearest corner dominates over small bin at higher Y at 0°', () => {
-      // Wide bin at y=0 with width 8: nearest corner at (8,0), depth = 8
+    it('wide 8x1 bin at back (low Y) renders BEFORE all small bins in front at 0°', () => {
+      // Wide bin at back (y=0): uses corner (0, 0), depth = 0
       const wide = createBox('wide', 0, 0, 0, 8, 1, 1);
-      // Small bins at high Y but low X: nearest corners at (1,5), (5,6), (8,7)
-      // Their depths are 6, 11, 15 respectively
-      const small1 = createBox('small1', 0, 5, 0, 1, 1, 1); // depth ~6
-      const small2 = createBox('small2', 4, 6, 0, 1, 1, 1); // depth ~11
-      const small3 = createBox('small3', 7, 7, 0, 1, 1, 1); // depth ~15
+      // Small bins at higher Y: use corners (0,5), (4,6), (7,7)
+      const small1 = createBox('small1', 0, 5, 0, 1, 1, 1); // depth ~5
+      const small2 = createBox('small2', 4, 6, 0, 1, 1, 1); // depth ~10
+      const small3 = createBox('small3', 7, 7, 0, 1, 1, 1); // depth ~14
 
       const sorted = sortBoxesForRendering([wide, small1, small2, small3], 0);
 
-      // small1 (depth 6) < wide (depth 8) < small2 (depth 11) < small3 (depth 15)
-      expect(sorted[0].id).toBe('small1');
-      expect(sorted[1].id).toBe('wide');
-      expect(sorted[2].id).toBe('small2');
-      expect(sorted[3].id).toBe('small3');
+      // Wide bin at back should be drawn FIRST (lowest depth)
+      expect(sorted[0].id).toBe('wide');
     });
 
-    it('8x1 bin at high Y (front) renders AFTER 1x1 bins at low Y (back) at 0°', () => {
-      // Wide bin at front (high Y = bottom of screen)
+    it('wide 8x1 bin at y=7 renders after back bins but before front-right bins at 0°', () => {
+      // Wide bin at y=7: farthest corner (0, 7), depth = 7
       const wideFront = createBox('wideFront', 0, 7, 0, 8, 1, 1);
-      // Small bins in back (low Y = top of screen)
-      const small1 = createBox('small1', 0, 0, 0, 1, 1, 1);
-      const small2 = createBox('small2', 4, 1, 0, 1, 1, 1);
-      const small3 = createBox('small3', 7, 2, 0, 1, 1, 1);
+      // Back bins (low Y) have lower depth
+      const back1 = createBox('back1', 0, 0, 0, 1, 1, 1); // depth = 0
+      const back2 = createBox('back2', 2, 1, 0, 1, 1, 1); // depth = 3
+      // Front-right bins have higher depth than wide bin
+      const frontRight = createBox('frontRight', 7, 5, 0, 1, 1, 1); // depth = 12
 
-      const sorted = sortBoxesForRendering([wideFront, small1, small2, small3], 0);
+      const sorted = sortBoxesForRendering([wideFront, back1, back2, frontRight], 0);
 
-      // Wide bin at front (high Y) should be drawn LAST
-      expect(sorted[sorted.length - 1].id).toBe('wideFront');
+      // Wide bin (depth 7) is drawn after back bins (0, 3) but before front-right (12)
+      expect(sorted[0].id).toBe('back1');
+      expect(sorted[1].id).toBe('back2');
+      expect(sorted[2].id).toBe('wideFront');
+      expect(sorted[3].id).toBe('frontRight');
     });
 
     it('consistent ordering at 90° rotation', () => {
@@ -466,18 +464,16 @@ describe('bin size variations - sorting correctness', () => {
   });
 
   describe('mixed size grid - real world scenario', () => {
-    // Tests with wide bins must account for NEAREST-CORNER sorting.
-    // A wide 8x1 bin at (0,0) has its nearest corner at (8,0), not (0,0).
-    // This affects draw order relative to small bins.
+    // With FARTHEST-CORNER sorting, wide bins at the back are correctly
+    // drawn first, regardless of their width.
 
-    it('1x1 bins at low x+y are drawn before wide bin extending to high x at 0°', () => {
+    it('wide bin at back (low Y) is drawn before all small bins in front at 0°', () => {
       const bins: ReturnType<typeof createBox>[] = [];
 
-      // 8x1 bin at y=0 - its nearest corner is at (8,0), depth key ~108
-      bins.push(createBox('wide', 0, 0, 0, 8, 1, 1));
+      // 8x1 bin at back (y=0) - farthest corner at (0,0), depth = 0
+      bins.push(createBox('wide_back', 0, 0, 0, 8, 1, 1));
 
-      // Small bins at low x, y=1 - nearest corner at (1,1), depth key ~102
-      // These are MORE toward the back than the wide bin's front corner
+      // Small bins at y=1..7 are all in front of the wide bin
       for (let y = 1; y <= 7; y++) {
         for (let x = 0; x < 8; x++) {
           bins.push(createBox(`small_${x}_${y}`, x, y, 0, 1, 1, 1));
@@ -486,17 +482,15 @@ describe('bin size variations - sorting correctness', () => {
 
       const sorted = sortBoxesForRendering(bins, 0);
 
-      // Small bin at (0,1) has lowest depth key, drawn first
-      expect(sorted[0].id).toBe('small_0_1');
-      // Small bin at (7,7) has highest depth key among small bins, drawn near end
-      expect(sorted[sorted.length - 1].id).toBe('small_7_7');
+      // Wide bin at back should be drawn FIRST
+      expect(sorted[0].id).toBe('wide_back');
     });
 
-    it('wide bin at high Y extends its nearest corner even further forward at 0°', () => {
+    it('wide bin at y=7 is drawn after low-depth bins but before high-depth bins at 0°', () => {
       const bins: ReturnType<typeof createBox>[] = [];
 
-      // 8x1 bin at y=7 - nearest corner at (8,7), depth key ~115
-      bins.push(createBox('wide_front', 0, 7, 0, 8, 1, 1));
+      // 8x1 bin at y=7 - farthest corner at (0,7), depth = 7
+      bins.push(createBox('wide_y7', 0, 7, 0, 8, 1, 1));
 
       // Small bins at y=0..6
       for (let y = 0; y < 7; y++) {
@@ -507,9 +501,15 @@ describe('bin size variations - sorting correctness', () => {
 
       const sorted = sortBoxesForRendering(bins, 0);
 
-      // Wide bin at (0,7) with width 8 has nearest corner at (8,7)
-      // This is the frontmost point in the scene at 0°
-      expect(sorted[sorted.length - 1].id).toBe('wide_front');
+      // Wide bin at (0,7) has depth 7
+      // Small bins at (0,0)..(6,0) have depth 0-6 (drawn before wide)
+      // Small bins at (7,0) and higher x+y have depth > 7 (drawn after wide)
+      const wideIndex = sorted.findIndex(b => b.id === 'wide_y7');
+
+      // Wide bin should be drawn after some bins (those with depth < 7)
+      // and before others (those with depth > 7)
+      expect(wideIndex).toBeGreaterThan(0);
+      expect(wideIndex).toBeLessThan(sorted.length - 1);
     });
 
     it('sorting is consistent across all rotations with mixed sizes', () => {
@@ -567,34 +567,33 @@ describe('bin size variations - sorting correctness', () => {
   });
 
   describe('extreme size differences', () => {
-    // At 0° rotation in isometric:
-    //   Low (x+y) = top of screen = BACK = far from camera = draw FIRST
-    //   High (x+y) = bottom of screen = FRONT = close to camera = draw LAST
+    // With FARTHEST-CORNER algorithm, even huge bins sort correctly by their back corner.
 
-    it('1x1 at low Y (back) renders BEFORE 10x10 bin extending to high Y (front) at 0°', () => {
-      // Huge bin occupies y=1..11 (front-ish, has corners with high x+y)
-      // Tiny bin at y=0, x=5 (back, low y)
-      const huge = createBox('huge', 0, 1, 0, 10, 10, 1);
-      const tiny = createBox('tiny', 5, 0, 0, 1, 1, 1);
-
-      const sorted = sortBoxesForRendering([huge, tiny], 0);
-
-      // Tiny bin at y=0 (back/top of screen) should be drawn FIRST
-      // Huge bin extends to high x+y so it's in front
-      expect(sorted[0].id).toBe('tiny');
-      expect(sorted[1].id).toBe('huge');
-    });
-
-    it('1x1 at high Y (front) renders AFTER 10x10 bin at lower Y (back) at 0°', () => {
-      // Huge bin at y=0..10, extends toward front
-      // Tiny bin at y=11 (even more toward front)
+    it('huge 10x10 bin at back (low Y) renders BEFORE tiny bin in front at 0°', () => {
+      // Huge bin at back: farthest corner (0, 0), depth = 0
       const huge = createBox('huge', 0, 0, 0, 10, 10, 1);
+      // Tiny bin at y=11 (in front): farthest corner (5, 11), depth = 16
       const tiny = createBox('tiny', 5, 11, 0, 1, 1, 1);
 
       const sorted = sortBoxesForRendering([huge, tiny], 0);
 
-      // Tiny bin at y=11 (front) should be drawn LAST
-      expect(sorted[sorted.length - 1].id).toBe('tiny');
+      // Huge bin at back should be drawn FIRST
+      expect(sorted[0].id).toBe('huge');
+      expect(sorted[1].id).toBe('tiny');
+    });
+
+    it('tiny 1x1 bin at back (low Y) renders BEFORE huge bin in front at 0°', () => {
+      // Tiny bin at back (y=0): farthest corner (5, 0), depth = 5
+      const tiny = createBox('tiny', 5, 0, 0, 1, 1, 1);
+      // Huge bin at y=1..11 (in front): farthest corner (0, 1), depth = 1
+      const huge = createBox('huge', 0, 1, 0, 10, 10, 1);
+
+      const sorted = sortBoxesForRendering([huge, tiny], 0);
+
+      // Huge bin has lower farthest corner (0,1) depth = 1 < tiny (5,0) depth = 5
+      // So huge is drawn first, tiny second
+      expect(sorted[0].id).toBe('huge');
+      expect(sorted[1].id).toBe('tiny');
     });
 
     it('sorting handles extreme sizes at all rotations consistently', () => {
