@@ -21,9 +21,6 @@ export function fillAllWithSize(
   const newBins: Bin[] = [];
   let skippedCells = 0;
 
-  // Track which cells are covered by new bins
-  const covered = new Set<string>();
-
   for (let y = 0; y < layout.drawer.depth; y += binDepth) {
     for (let x = 0; x < layout.drawer.width; x += binWidth) {
       if (newBins.length >= CONSTRAINTS.QUICK_FILL_MAX_BINS) {
@@ -32,19 +29,6 @@ export function fillAllWithSize(
 
       // Skip if the full bin size doesn't fit within drawer bounds
       if (x + binWidth > layout.drawer.width || y + binDepth > layout.drawer.depth) {
-        skippedCells++;
-        continue;
-      }
-
-      let alreadyCovered = false;
-      for (let cx = x; cx < x + binWidth && !alreadyCovered; cx++) {
-        for (let cy = y; cy < y + binDepth && !alreadyCovered; cy++) {
-          if (covered.has(`${cx},${cy}`)) {
-            alreadyCovered = true;
-          }
-        }
-      }
-      if (alreadyCovered) {
         skippedCells++;
         continue;
       }
@@ -74,12 +58,6 @@ export function fillAllWithSize(
           notes: '',
         };
         newBins.push(newBin);
-
-        for (let cx = x; cx < x + binWidth; cx++) {
-          for (let cy = y; cy < y + binDepth; cy++) {
-            covered.add(`${cx},${cy}`);
-          }
-        }
       } else {
         skippedCells++;
       }

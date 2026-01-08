@@ -153,6 +153,29 @@ describe('generatePrintList', () => {
     expect(rows[0].pieces).toHaveLength(1); // All identical, merged
     expect(rows[0].pieces[0].count).toBe(4);
   });
+
+  it('keeps labeled bins separate even with same dimensions', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: 'Screws', notes: '' },
+      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: 'Bolts', notes: '' },
+    ];
+    const rows = generatePrintList(bins, 4);
+    // Each labeled bin gets its own row
+    expect(rows).toHaveLength(2);
+    expect(rows[0].labels).toContain('Screws');
+    expect(rows[1].labels).toContain('Bolts');
+  });
+
+  it('groups unlabeled bins with same dimensions', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
+      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
+      { id: '3', layerId: 'l1', x: 0, y: 2, width: 2, depth: 2, height: 3, category: 'c1', label: 'Special', notes: '' },
+    ];
+    const rows = generatePrintList(bins, 4);
+    // Two unlabeled bins grouped, one labeled bin separate
+    expect(rows).toHaveLength(2);
+  });
 });
 
 describe('getTotalPieces', () => {
