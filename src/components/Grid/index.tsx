@@ -476,7 +476,7 @@ export function Grid() {
                 onStartDrag={startDrag}
                 onStartResize={startResize}
               />
-              <Overlay gridRef={gridRef} cellSize={cellSize} gap={gap} />
+              <Overlay cellSize={cellSize} gap={gap} />
 
               {/* Empty state overlay - hide while dragging */}
               {isEmpty && !interaction && (

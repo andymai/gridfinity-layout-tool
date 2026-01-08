@@ -1,12 +1,40 @@
-import type { RefObject } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
 import { clamp } from '../../utils/validation';
 
 interface OverlayProps {
-  gridRef: RefObject<HTMLDivElement | null>;
   cellSize: number;
   gap: number;
+}
+
+// Estimated tooltip width in pixels (varies by content)
+const TOOLTIP_WIDTH_ESTIMATE = 120;
+const TOOLTIP_OFFSET = 8;
+
+/**
+ * Calculate tooltip position with boundary detection.
+ * Positions tooltip to right of element by default, flips to left if would overflow.
+ */
+function getTooltipPosition(
+  elemLeft: number,
+  elemTop: number,
+  elemWidth: number,
+  elemHeight: number,
+  containerWidth: number
+): { left: number; top: number } {
+  const rightPosition = elemLeft + elemWidth + TOOLTIP_OFFSET;
+  const topPosition = elemTop + elemHeight - 24;
+
+  // Check if tooltip would overflow right edge
+  if (rightPosition + TOOLTIP_WIDTH_ESTIMATE > containerWidth) {
+    // Position to left of element instead
+    return {
+      left: Math.max(TOOLTIP_OFFSET, elemLeft - TOOLTIP_WIDTH_ESTIMATE - TOOLTIP_OFFSET),
+      top: topPosition,
+    };
+  }
+
+  return { left: rightPosition, top: topPosition };
 }
 
 /**
@@ -24,6 +52,10 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
   );
 
   if (!interaction) return null;
+
+  // Calculate container width for tooltip boundary detection
+  // Use drawer dimensions (always accurate) rather than DOM measurement
+  const containerWidth = drawer.width * (cellSize + gap) + gap;
 
   const previews: React.ReactNode[] = [];
   let tooltipContent: string | null = null;
@@ -60,7 +92,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     );
 
     tooltipContent = `${width}×${depth}`;
-    tooltipPosition = { left: left + rectWidth + 8, top: top + rectHeight - 24 };
+    tooltipPosition = getTooltipPosition(left, top, rectWidth, rectHeight, containerWidth);
   } else if (interaction.type === 'drag') {
     const { binIds, currentCoord, valid, isOverGrid } = interaction;
 
@@ -118,7 +150,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const top = gap + (drawer.depth - currentCoord.y - primaryBin.depth) * (cellSize + gap);
       const rectWidth = primaryBin.width * cellSize + (primaryBin.width - 1) * gap;
       const rectHeight = primaryBin.depth * cellSize + (primaryBin.depth - 1) * gap;
-      tooltipPosition = { left: left + rectWidth + 8, top: top + rectHeight - 24 };
+      tooltipPosition = getTooltipPosition(left, top, rectWidth, rectHeight, containerWidth);
     }
   } else if (interaction.type === 'resize') {
     const { binIds, currentRects, valid } = interaction;
@@ -198,7 +230,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const top = gap + (drawer.depth - firstRect.y - firstRect.depth) * (cellSize + gap);
       const rectWidth = firstRect.width * cellSize + (firstRect.width - 1) * gap;
       const rectHeight = firstRect.depth * cellSize + (firstRect.depth - 1) * gap;
-      tooltipPosition = { left: left + rectWidth + 8, top: top + rectHeight - 24 };
+      tooltipPosition = getTooltipPosition(left, top, rectWidth, rectHeight, containerWidth);
     }
   } else if (interaction.type === 'stagingDrag') {
     const { binId, currentCoord, valid } = interaction;
@@ -231,7 +263,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       );
 
       tooltipContent = `${bin.width}×${bin.depth}`;
-      tooltipPosition = { left: left + rectWidth + 8, top: top + rectHeight - 24 };
+      tooltipPosition = getTooltipPosition(left, top, rectWidth, rectHeight, containerWidth);
     }
   } else if (interaction.type === 'paint') {
     const { start, current, paintSize } = interaction;
@@ -366,7 +398,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     } else {
       tooltipContent = `Area too small for ${paintSize.width}×${paintSize.depth}`;
     }
-    tooltipPosition = { left: areaLeft + areaPixelWidth + 8, top: areaTop + areaPixelHeight - 24 };
+    tooltipPosition = getTooltipPosition(areaLeft, areaTop, areaPixelWidth, areaPixelHeight, containerWidth);
   }
 
   return (
