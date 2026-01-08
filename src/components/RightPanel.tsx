@@ -328,7 +328,21 @@ export function RightPanel() {
                 aria-label="Category for selected bins"
               >
                 {!selectedBins.every(b => b.category === selectedBins[0]?.category) && (
-                  <option value="" disabled>Mixed categories</option>
+                  <option value="" disabled>
+                    {(() => {
+                      // Show category breakdown: "2 Tools, 1 Hardware"
+                      const counts = new Map<string, number>();
+                      for (const b of selectedBins) {
+                        counts.set(b.category, (counts.get(b.category) || 0) + 1);
+                      }
+                      const parts: string[] = [];
+                      counts.forEach((count, catId) => {
+                        const cat = layout.categories.find(c => c.id === catId);
+                        parts.push(`${count} ${cat?.name || 'Unknown'}`);
+                      });
+                      return parts.slice(0, 3).join(', ') + (parts.length > 3 ? '...' : '');
+                    })()}
+                  </option>
                 )}
                 {layout.categories.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
@@ -363,7 +377,12 @@ export function RightPanel() {
               <span className="flex-1 text-center font-semibold text-lg text-content">
                 {selectedBins.every(b => b.height === selectedBins[0]?.height)
                   ? `${selectedBins[0]?.height}u`
-                  : 'Mixed'}
+                  : (() => {
+                      const heights = selectedBins.map(b => b.height);
+                      const minH = Math.min(...heights);
+                      const maxH = Math.max(...heights);
+                      return `${minH}–${maxH}u`;
+                    })()}
               </span>
               <button
                 onClick={() => handleUpdateMultiHeight(1)}

@@ -292,42 +292,36 @@ export function Staging() {
               <div
                 key={bin.id}
                 data-staging-bin-id={bin.id}
-                className="relative flex flex-col items-center justify-center transition-all duration-150 cursor-move"
+                className={`relative flex flex-col items-center justify-center transition-all duration-150 cursor-move rounded-sm z-10 touch-none ${
+                  isDragging
+                    ? 'bg-transparent border-2 border-dashed border-accent pointer-events-none'
+                    : 'border border-[var(--border-on-color)] shadow-sm'
+                }`}
                 style={{
-                  touchAction: 'none',
                   gridColumn: `${bin.x + 1} / span ${bin.width}`,
                   gridRow: `${gridHeight - bin.y - bin.depth + 1} / span ${bin.depth}`,
-                  backgroundColor: bgColor,
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-on-color)',
-                  opacity: isDragging ? 0.3 : 1,
-                  pointerEvents: isDragging ? 'none' : 'auto',
-                  boxShadow: 'var(--shadow-sm)',
-                  zIndex: 10,
+                  // Only need inline style for dynamic category color
+                  ...(!isDragging && { backgroundColor: bgColor }),
                 }}
                 onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
                 title={`${bin.label || 'Unlabeled'} — ${bin.width}×${bin.depth}×${bin.height}u\nDrag to place on grid`}
               >
-                {/* Size label */}
-                <div
-                  className="text-center pointer-events-none select-none"
-                  style={{ color: textColor }}
-                >
+                {/* Size label - hidden when dragging (ghost outline only) */}
+                {!isDragging && (
                   <div
-                    className="text-sm font-semibold"
-                    style={{ textShadow: 'var(--shadow-sm)' }}
+                    className="text-center pointer-events-none select-none"
+                    style={{ color: textColor }}
                   >
-                    {bin.width}×{bin.depth}
-                  </div>
-                  {bin.label && (
-                    <div
-                      className="text-xs truncate px-1"
-                      style={{ opacity: 0.85, maxWidth: '100%' }}
-                    >
-                      {bin.label}
+                    <div className="text-sm font-semibold drop-shadow-sm">
+                      {bin.width}×{bin.depth}
                     </div>
-                  )}
-                </div>
+                    {bin.label && (
+                      <div className="text-xs truncate px-1 opacity-85 max-w-full">
+                        {bin.label}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
