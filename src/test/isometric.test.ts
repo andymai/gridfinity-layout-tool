@@ -93,32 +93,32 @@ describe('getDepthSortKey', () => {
       expect(keyTall).toBeGreaterThan(keyShort);
     });
 
-    it('position can override layer when bins are far apart (isometric depth)', () => {
-      // In true isometric, a bin at the FRONT (high x+y) of layer 1
-      // should appear in front of a bin at the BACK (low x+y) of layer 2.
-      // This is correct 3D depth sorting.
+    it('layer always dominates over XY position in depth sorting', () => {
+      // For drawer organizers, users expect layer 2 ALWAYS above layer 1.
+      // Even if layer 1 bin is at front (high x+y) and layer 2 bin is at back (low x+y),
+      // layer 2 should render on top because it's physically stacked higher.
       const layer1Corner = createBox('l1corner', 10, 10, 0, 1, 1, 1);
       const layer2Origin = createBox('l2origin', 0, 0, 2, 1, 1, 1);
 
       const keyL1 = getDepthSortKey(layer1Corner, 0);
       const keyL2 = getDepthSortKey(layer2Origin, 0);
 
-      // Layer 1 bin at front has higher depth key (closer to camera)
-      expect(keyL1).toBeGreaterThan(keyL2);
+      // Layer 2 bin always has higher depth key (drawn on top)
+      expect(keyL2).toBeGreaterThan(keyL1);
     });
 
-    it('front layer 1 bin occludes back layer 2 bin (isometric depth)', () => {
-      // In isometric view, a bin at the FRONT of layer 1 should appear
-      // in front of a bin at the BACK of layer 2, even though layer 2 is higher.
-      // This is because depth = x + y + z, and front bins have higher x+y.
+    it('layer 2 at back renders on top of layer 1 at front', () => {
+      // Even when layer 1 bin is at FRONT (high x+y) and layer 2 bin is at BACK (low x+y),
+      // layer 2 should render on top. This matches user expectations for stacked layers
+      // in a drawer organizer context, not true 3D occlusion.
       const layer1Front = createBox('l1front', 8, 8, 0, 1, 1, 1 * HEIGHT_TO_GRID_SCALE);
       const layer2Back = createBox('l2back', 0, 0, 7 * HEIGHT_TO_GRID_SCALE, 1, 1, 1 * HEIGHT_TO_GRID_SCALE);
 
       const keyL1 = getDepthSortKey(layer1Front, 0);
       const keyL2 = getDepthSortKey(layer2Back, 0);
 
-      // Front layer 1 bin should be drawn AFTER (on top of) back layer 2 bin
-      expect(keyL1).toBeGreaterThan(keyL2);
+      // Layer 2 bin should ALWAYS be drawn after (on top of) layer 1 bin
+      expect(keyL2).toBeGreaterThan(keyL1);
     });
 
     it('stacked bins at same position still respect layer order', () => {
@@ -238,6 +238,25 @@ describe('getDepthSortKey', () => {
         expect(sorted[0].id).toBe('shortL2');
         // Tall layer 1 bin (higher top) should be drawn last
         expect(sorted[1].id).toBe('tallL1');
+      });
+    }
+  });
+
+  describe('layer priority over XY position', () => {
+    // This was a bug: layer 2 bin at front (0,0) was rendering behind layer 1 bin at back (9,9)
+    // because (rx + ry) dominated the sort key over the Z difference
+    for (let rotation = 0; rotation < 360; rotation += 15) {
+      it(`layer 2 at front renders after layer 1 at back (rotation ${rotation}°)`, () => {
+        // Layer 1 bin at back of grid
+        const layer1Back = createBox('l1back', 9, 9, 0, 1, 1, 7 * HEIGHT_TO_GRID_SCALE);
+        // Layer 2 bin at front of grid (higher Z but lower XY)
+        const layer2Front = createBox('l2front', 0, 0, 7 * HEIGHT_TO_GRID_SCALE, 1, 1, 7 * HEIGHT_TO_GRID_SCALE);
+
+        const sorted = sortBoxesForRendering([layer2Front, layer1Back], rotation);
+
+        // Layer 1 should always render first (behind), layer 2 always last (in front)
+        expect(sorted[0].id).toBe('l1back');
+        expect(sorted[1].id).toBe('l2front');
       });
     }
   });

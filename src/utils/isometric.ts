@@ -121,6 +121,12 @@ export function getVisibleFaces(rotation: IsometricRotation): {
   }
 }
 
+// Weight to ensure layer Z dominates over XY position in depth sorting.
+// Without this, bins at the back of layer 1 can render on top of bins at the front of layer 2.
+// Max XY contribution is ~40 (diagonal of 20x20 drawer), so weight of 100 ensures
+// even a small Z difference (~1 grid unit = 100 weighted) always wins.
+const LAYER_WEIGHT = 100;
+
 /**
  * Calculate depth sort key for painter's algorithm.
  * Lower values are drawn first (further from camera).
@@ -143,13 +149,9 @@ export function getDepthSortKey(box: IsometricBox, rotation: IsometricRotation):
   const rx = cx * cos - cy * sin;
   const ry = cx * sin + cy * cos;
 
-  // In isometric projection, the camera is at (+∞, +∞, +∞) looking toward origin.
-  // Depth from camera = x + y + z (higher = closer to camera = drawn last).
-  // All three axes contribute equally (weight = 1) for correct occlusion:
-  // - A front layer-1 bin correctly occludes a back layer-2 bin
-  // - Stacked bins at same XY still render in layer order (higher Z on top)
-  // Using topZ ensures tall bins spanning multiple layers render correctly.
-  return (rx + ry) + topZ;
+  // Weight Z heavily so higher layers always render on top of lower layers.
+  // XY position still affects within-layer sorting for correct front/back occlusion.
+  return (rx + ry) + topZ * LAYER_WEIGHT;
 }
 
 /**
