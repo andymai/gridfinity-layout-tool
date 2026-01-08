@@ -454,10 +454,11 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
           const bin = layout.bins.find(b => b.id === interaction.binId);
           if (bin) {
             const layer = layout.layers.find(l => l.id === activeLayerId);
+            const { x, y } = interaction.currentCoord;
             execute(() => {
               updateBin(interaction.binId, {
-                x: interaction.currentCoord!.x,
-                y: interaction.currentCoord!.y,
+                x,
+                y,
                 layerId: activeLayerId,
                 height: Math.max(bin.height, layer?.height ?? bin.height),
               });
