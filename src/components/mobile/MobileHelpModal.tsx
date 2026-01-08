@@ -219,6 +219,10 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
             <ul className="space-y-2 p-3 rounded-lg" style={STYLES.tipsList}>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
+                <span>Shake your device to undo the last action</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span style={STYLES.colorPrimary}>•</span>
                 <span>Long-press a bin to duplicate, delete, or move to stash</span>
               </li>
               <li className="flex items-start gap-2">
