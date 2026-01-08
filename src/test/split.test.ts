@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { splitBinSize, generatePrintList } from '../utils/split';
-import type { Bin } from '../types';
+import {
+  splitBinSize,
+  generatePrintList,
+  getTotalPieces,
+  getTotalBins,
+  getTotalFilament,
+  getSpoolEstimate,
+} from '../utils/split';
+import type { Bin, PrintRow } from '../types';
 import { STAGING_ID } from '../constants';
 
 describe('splitBinSize', () => {
@@ -90,5 +97,82 @@ describe('generatePrintList', () => {
     const rows = generatePrintList(bins, 4);
     expect(rows[0].needsSplit).toBe(true);
     expect(rows[0].totalPieces).toBe(2); // 3×3 + 2×3
+  });
+});
+
+describe('getTotalPieces', () => {
+  it('sums totalPieces across all rows', () => {
+    const rows: PrintRow[] = [
+      { size: '2×2', height: 3, binCount: 2, pieces: [], totalPieces: 2, needsSplit: false, filament: 10, categoryIds: [], labels: [], notes: '' },
+      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 4, needsSplit: true, filament: 20, categoryIds: [], labels: [], notes: '' },
+    ];
+    expect(getTotalPieces(rows)).toBe(6);
+  });
+
+  it('returns 0 for empty array', () => {
+    expect(getTotalPieces([])).toBe(0);
+  });
+});
+
+describe('getTotalBins', () => {
+  it('sums binCount across all rows', () => {
+    const rows: PrintRow[] = [
+      { size: '2×2', height: 3, binCount: 3, pieces: [], totalPieces: 3, needsSplit: false, filament: 10, categoryIds: [], labels: [], notes: '' },
+      { size: '4×4', height: 3, binCount: 5, pieces: [], totalPieces: 5, needsSplit: false, filament: 20, categoryIds: [], labels: [], notes: '' },
+    ];
+    expect(getTotalBins(rows)).toBe(8);
+  });
+
+  it('returns 0 for empty array', () => {
+    expect(getTotalBins([])).toBe(0);
+  });
+});
+
+describe('getTotalFilament', () => {
+  it('sums filament across all rows', () => {
+    const rows: PrintRow[] = [
+      { size: '2×2', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 10.5, categoryIds: [], labels: [], notes: '' },
+      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 20.3, categoryIds: [], labels: [], notes: '' },
+    ];
+    expect(getTotalFilament(rows)).toBe(30.8);
+  });
+
+  it('rounds to one decimal place', () => {
+    const rows: PrintRow[] = [
+      { size: '2×2', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 10.123, categoryIds: [], labels: [], notes: '' },
+      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 20.456, categoryIds: [], labels: [], notes: '' },
+    ];
+    // 10.123 + 20.456 = 30.579 → 30.6
+    expect(getTotalFilament(rows)).toBe(30.6);
+  });
+
+  it('returns 0 for empty array', () => {
+    expect(getTotalFilament([])).toBe(0);
+  });
+});
+
+describe('getSpoolEstimate', () => {
+  it('estimates spools needed (330m per spool)', () => {
+    // 330m = 1 spool
+    expect(getSpoolEstimate(330)).toBe(1);
+  });
+
+  it('rounds up for partial spools', () => {
+    // 400m → 400/330 = 1.21 → rounds up to 0.1 precision
+    expect(getSpoolEstimate(400)).toBe(1.3);
+  });
+
+  it('handles small amounts', () => {
+    // 50m → 50/330 = 0.15 → 0.2
+    expect(getSpoolEstimate(50)).toBe(0.2);
+  });
+
+  it('returns 0 for zero filament', () => {
+    expect(getSpoolEstimate(0)).toBe(0);
+  });
+
+  it('handles large amounts', () => {
+    // 1000m → 1000/330 = 3.03 → 3.1
+    expect(getSpoolEstimate(1000)).toBe(3.1);
   });
 });

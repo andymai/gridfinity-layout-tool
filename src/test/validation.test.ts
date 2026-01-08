@@ -101,6 +101,65 @@ describe('canPlaceBin', () => {
     );
     expect(result).toEqual({ valid: false, reason: 'blocked_zone' });
   });
+
+  it('rejects placement exceeding depth', () => {
+    const layout = createTestLayout();
+    const result = canPlaceBin(
+      { x: 0, y: 9, width: 2, depth: 2, height: 3 },
+      'layer1',
+      layout
+    );
+    expect(result).toEqual({ valid: false, reason: 'exceeds_depth' });
+  });
+
+  it('rejects invalid layer', () => {
+    const layout = createTestLayout();
+    const result = canPlaceBin(
+      { x: 0, y: 0, width: 2, depth: 2, height: 3 },
+      'nonexistent',
+      layout
+    );
+    expect(result).toEqual({ valid: false, reason: 'invalid_layer' });
+  });
+
+  it('rejects bin taller than remaining drawer height', () => {
+    const layout = createTestLayout();
+    // layer2 starts at z=3 (layer1 height), drawer height is 12
+    // max height at layer2 = 12 - 3 = 9
+    const result = canPlaceBin(
+      { x: 0, y: 0, width: 2, depth: 2, height: 15 },
+      'layer2',
+      layout
+    );
+    expect(result).toEqual({ valid: false, reason: 'exceeds_height' });
+  });
+
+  it('rejects bin shorter than layer minimum height', () => {
+    const layout = createTestLayout();
+    // layer2 has height 6, bin must be at least 6
+    const result = canPlaceBin(
+      { x: 0, y: 0, width: 2, depth: 2, height: 3 },
+      'layer2',
+      layout
+    );
+    expect(result).toEqual({ valid: false, reason: 'exceeds_height' });
+  });
+
+  it('excludes multiple bins from collision check via excludeBinIds', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+      { id: 'bin2', layerId: 'layer1', x: 1, y: 1, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    const result = canPlaceBin(
+      { x: 0, y: 0, width: 3, depth: 3, height: 3 },
+      'layer1',
+      layout,
+      undefined,
+      new Set(['bin1', 'bin2'])
+    );
+    expect(result.valid).toBe(true);
+  });
 });
 
 describe('validateImport', () => {
@@ -133,6 +192,74 @@ describe('validateImport', () => {
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.includes('Duplicate'))).toBe(true);
+  });
+
+  it('rejects null/undefined data', () => {
+    expect(validateImport(null)).toEqual({ valid: false, errors: ['Invalid data format'] });
+    expect(validateImport(undefined)).toEqual({ valid: false, errors: ['Invalid data format'] });
+  });
+
+  it('rejects non-object data', () => {
+    expect(validateImport('string')).toEqual({ valid: false, errors: ['Invalid data format'] });
+    expect(validateImport(123)).toEqual({ valid: false, errors: ['Invalid data format'] });
+  });
+
+  it('rejects missing drawer', () => {
+    const result = validateImport({ version: '1.0', name: 'Test', layers: [], bins: [], categories: [] });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Missing drawer');
+  });
+
+  it('rejects invalid layers array', () => {
+    const result = validateImport({ version: '1.0', name: 'Test', drawer: {}, layers: 'not-an-array', bins: [], categories: [] });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Invalid layers');
+  });
+
+  it('rejects too many layers', () => {
+    const layout = createTestLayout();
+    layout.layers = Array(11).fill(null).map((_, i) => ({ id: `layer${i}`, name: `Layer ${i}`, height: 1 }));
+    const result = validateImport(layout);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('layers'))).toBe(true);
+  });
+
+  it('rejects bins referencing invalid layers', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'nonexistent', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    const result = validateImport(layout);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('invalid layer'))).toBe(true);
+  });
+
+  it('rejects bins out of bounds', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'layer1', x: 15, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    const result = validateImport(layout);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('out of bounds'))).toBe(true);
+  });
+
+  it('rejects total layer height exceeding drawer', () => {
+    const layout = createTestLayout();
+    layout.layers = [
+      { id: 'layer1', name: 'Layer 1', height: 10 },
+      { id: 'layer2', name: 'Layer 2', height: 10 },
+    ];
+    const result = validateImport(layout);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('exceeds drawer height'))).toBe(true);
+  });
+
+  it('rejects drawer depth out of range', () => {
+    const layout = createTestLayout();
+    layout.drawer.depth = 100;
+    const result = validateImport(layout);
+    expect(result.valid).toBe(false);
   });
 });
 

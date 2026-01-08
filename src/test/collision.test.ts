@@ -4,6 +4,9 @@ import {
   footprintsOverlap,
   binsCollide,
   getBlockedZones,
+  getDisplayLayers,
+  checkLayerReorderCollisions,
+  isInBlockedZone,
 } from '../utils/collision';
 import type { Layer, Bin } from '../types';
 import { STAGING_ID } from '../constants';
@@ -90,5 +93,104 @@ describe('getBlockedZones', () => {
     const zones = getBlockedZones('layer2', bins, layers);
     expect(zones).toHaveLength(1);
     expect(zones[0]).toMatchObject({ x: 0, y: 0, width: 2, depth: 2, sourceBinId: '1' });
+  });
+});
+
+describe('getDisplayLayers', () => {
+  it('reverses array for display', () => {
+    const result = getDisplayLayers(layers);
+    expect(result[0].id).toBe('layer3');
+    expect(result[1].id).toBe('layer2');
+    expect(result[2].id).toBe('layer1');
+  });
+
+  it('does not mutate original array', () => {
+    const original = [...layers];
+    getDisplayLayers(layers);
+    expect(layers).toEqual(original);
+  });
+
+  it('handles empty array', () => {
+    expect(getDisplayLayers([])).toEqual([]);
+  });
+
+  it('handles single element', () => {
+    const single = [{ id: 'only', name: 'Only', height: 3 }];
+    expect(getDisplayLayers(single)).toEqual(single);
+  });
+});
+
+describe('isInBlockedZone', () => {
+  const blockedZones = [
+    { x: 0, y: 0, width: 2, depth: 2, sourceBinId: 'bin1', sourceLayerId: 'layer1' },
+    { x: 5, y: 5, width: 3, depth: 3, sourceBinId: 'bin2', sourceLayerId: 'layer1' },
+  ];
+
+  it('returns zone when position is inside', () => {
+    const result = isInBlockedZone(1, 1, blockedZones);
+    expect(result).not.toBeNull();
+    expect(result?.sourceBinId).toBe('bin1');
+  });
+
+  it('returns null when position is outside all zones', () => {
+    expect(isInBlockedZone(3, 3, blockedZones)).toBeNull();
+  });
+
+  it('returns zone at boundary (inclusive start)', () => {
+    expect(isInBlockedZone(0, 0, blockedZones)).not.toBeNull();
+    expect(isInBlockedZone(5, 5, blockedZones)).not.toBeNull();
+  });
+
+  it('returns null at boundary (exclusive end)', () => {
+    expect(isInBlockedZone(2, 0, blockedZones)).toBeNull();
+    expect(isInBlockedZone(0, 2, blockedZones)).toBeNull();
+  });
+
+  it('returns null for empty zones array', () => {
+    expect(isInBlockedZone(0, 0, [])).toBeNull();
+  });
+});
+
+describe('checkLayerReorderCollisions', () => {
+  it('returns empty array when no collisions', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' },
+      { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' },
+    ];
+    // Swapping layers - bins still fit because they don't overlap vertically
+    const newLayers: Layer[] = [
+      { id: 'layer2', name: 'Layer 2', height: 6 },
+      { id: 'layer1', name: 'Layer 1', height: 3 },
+      { id: 'layer3', name: 'Layer 3', height: 3 },
+    ];
+    expect(checkLayerReorderCollisions(bins, layers, newLayers)).toEqual([]);
+  });
+
+  it('detects collisions when bins overlap after reorder', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+      { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+    ];
+    // With same positions and tall heights, they will collide
+    const result = checkLayerReorderCollisions(bins, layers, layers);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result[0].binA.id).toBe('1');
+    expect(result[0].binB.id).toBe('2');
+  });
+
+  it('ignores staging bins', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: STAGING_ID, x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+      { id: '2', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+    ];
+    expect(checkLayerReorderCollisions(bins, layers, layers)).toEqual([]);
+  });
+
+  it('returns empty when bins have no footprint overlap', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+      { id: '2', layerId: 'layer1', x: 5, y: 5, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+    ];
+    expect(checkLayerReorderCollisions(bins, layers, layers)).toEqual([]);
   });
 });
