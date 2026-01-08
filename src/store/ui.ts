@@ -50,6 +50,7 @@ interface UIState {
   isometricRotation: number; // Horizontal rotation degrees, 0-360
   hideLayersAbove: boolean; // Hide layers above active layer in 3D preview
   dimInactiveLayers: boolean; // Dim non-active layers in 3D preview
+  isPreviewExpanded: boolean; // Expanded modal view
 
   // Actions
   setActiveLayer: (id: string) => void;
@@ -91,6 +92,8 @@ interface UIState {
   toggleHideLayersAbove: () => void;
   toggleDimInactiveLayers: () => void;
   snapToIsometric: () => void; // Snap to nearest 90°
+  togglePreviewExpanded: () => void;
+  setPreviewExpanded: (expanded: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -111,6 +114,7 @@ export const useUIStore = create<UIState>((set) => ({
   isometricRotation: 0,
   hideLayersAbove: false,
   dimInactiveLayers: true, // Enabled by default
+  isPreviewExpanded: false,
 
   setActiveLayer: (id) => set({
     activeLayerId: id,
@@ -217,4 +221,8 @@ export const useUIStore = create<UIState>((set) => ({
     const snapped = Math.round(state.isometricRotation / 90) * 90;
     return { isometricRotation: snapped % 360 };
   }),
+  togglePreviewExpanded: () => set(state => ({
+    isPreviewExpanded: !state.isPreviewExpanded
+  })),
+  setPreviewExpanded: (expanded) => set({ isPreviewExpanded: expanded }),
 }));
