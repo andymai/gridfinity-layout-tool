@@ -153,17 +153,18 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
           );
         })}
 
-        {/* Blocked zones */}
+        {/* Blocked zones - bins from lower layers extending into this layer */}
         {blockedZones.map((zone) => {
           const sourceBin = bins.find((b) => b.id === zone.sourceBinId);
           const category = sourceBin
             ? categories.find((c) => c.id === sourceBin.category)
             : undefined;
+          const sourceLayer = sourceBin ? layers.find(l => l.id === sourceBin.layerId) : undefined;
 
           return (
             <div
               key={zone.sourceBinId}
-              className="relative cursor-pointer"
+              className="relative cursor-pointer transition-all duration-150 hover:opacity-60 hover:scale-[1.02] group"
               style={{
                 gridColumn: `${zone.x + 1} / span ${zone.width}`,
                 gridRow: `${drawer.depth - zone.y - zone.depth + 1} / span ${zone.depth}`,
@@ -172,7 +173,9 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
                 zIndex: 8,
               }}
               onClick={() => sourceBin && handleBlockedZoneClick(sourceBin.id, sourceBin.layerId)}
-              title={sourceBin ? `Click to edit on ${layers.find(l => l.id === sourceBin.layerId)?.name}` : undefined}
+              title={sourceLayer ? `Click to edit on ${sourceLayer.name}` : undefined}
+              role="button"
+              aria-label={sourceLayer ? `Blocked by bin from ${sourceLayer.name}. Click to switch layer.` : 'Blocked zone'}
             >
               {/* Diagonal hatching pattern */}
               <svg

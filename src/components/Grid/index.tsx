@@ -309,6 +309,8 @@ export function Grid() {
             {paintSize && (
               <div
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary-muted border border-accent"
+                role="status"
+                aria-live="polite"
               >
                 <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -318,12 +320,11 @@ export function Grid() {
                 </span>
                 <button
                   onClick={() => setPaintSize(null)}
-                  className="p-0.5 ml-1 rounded text-accent/70 hover:text-accent transition-colors"
-                  aria-label="Exit paint mode"
+                  className="ml-1 text-accent/70 hover:text-accent transition-colors"
+                  aria-label="Exit paint mode (Escape)"
+                  title="Exit paint mode"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <kbd className="px-1.5 py-0.5 text-xs rounded bg-accent/20 border border-accent/30">Esc</kbd>
                 </button>
               </div>
             )}

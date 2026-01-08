@@ -166,6 +166,18 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
     pointerStartRef.current = null;
   };
 
+  // Right-click context menu for desktop
+  const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isGhost) return;
+    e.preventDefault();
+    e.stopPropagation();
+    // Select the bin if not already selected
+    if (!isSelected) {
+      setSelectedBin(bin.id);
+    }
+    showContextMenu(bin.id, { x: e.clientX, y: e.clientY });
+  };
+
   const handleResizePointerDown = (e: PointerEvent<HTMLDivElement>, handle: ResizeHandle) => {
     e.preventDefault();
     e.stopPropagation();
@@ -216,6 +228,7 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
+      onContextMenu={handleContextMenu}
       role="button"
       aria-label={`Bin ${bin.width} by ${bin.depth}${bin.label ? `, labeled ${bin.label}` : ''}${category ? `, category ${category.name}` : ''}`}
       aria-pressed={isSelected}

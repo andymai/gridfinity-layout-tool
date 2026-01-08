@@ -89,8 +89,6 @@ export default function App() {
   const activeCategoryId = useUIStore(state => state.activeCategoryId);
   const setActiveLayer = useUIStore(state => state.setActiveLayer);
   const setActiveCategory = useUIStore(state => state.setActiveCategory);
-  const paintSize = useUIStore(state => state.paintSize);
-  const setPaintSize = useUIStore(state => state.setPaintSize);
 
   // Initialize activeLayerId and activeCategoryId to valid values (sync before paint)
   useLayoutEffect(() => {
@@ -168,23 +166,6 @@ export default function App() {
         {/* Floating drag preview */}
         <DragPreview />
 
-        {/* Paint mode indicator */}
-        {paintSize && (
-          <div className="paint-mode-indicator" role="status" aria-live="polite">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-            <span>Paint Mode: {paintSize.width}×{paintSize.depth}</span>
-            <button
-              onClick={() => setPaintSize(null)}
-              className="ml-1 hover:opacity-80 transition-opacity"
-              aria-label="Exit paint mode"
-            >
-              <kbd>Esc</kbd>
-            </button>
-          </div>
-        )}
-
         {/* Context menu (long-press on bin) */}
         {contextMenu && (
           <BinContextMenuWrapper
@@ -245,23 +226,6 @@ export default function App() {
         {/* Modals */}
         <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
 
-        {/* Paint mode indicator */}
-        {paintSize && (
-          <div className="paint-mode-indicator" role="status" aria-live="polite">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-            <span>Paint Mode: {paintSize.width}×{paintSize.depth}</span>
-            <button
-              onClick={() => setPaintSize(null)}
-              className="ml-1 hover:opacity-80 transition-opacity"
-              aria-label="Exit paint mode"
-            >
-              <kbd>Esc</kbd>
-            </button>
-          </div>
-        )}
-
         {/* Context menu (long-press on bin) */}
         {contextMenu && (
           <BinContextMenuWrapper
@@ -277,7 +241,7 @@ export default function App() {
     );
   }
 
-  // Desktop layout (unchanged)
+  // Desktop layout
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
       {/* Header */}
@@ -307,21 +271,13 @@ export default function App() {
       {/* Modals */}
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
 
-      {/* Paint mode indicator */}
-      {paintSize && (
-        <div className="paint-mode-indicator" role="status" aria-live="polite">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-          </svg>
-          <span>Paint Mode: {paintSize.width}×{paintSize.depth}</span>
-          <button
-            onClick={() => setPaintSize(null)}
-            className="ml-1 hover:opacity-80 transition-opacity"
-            aria-label="Exit paint mode"
-          >
-            <kbd>Esc</kbd>
-          </button>
-        </div>
+      {/* Context menu (right-click on bin) */}
+      {contextMenu && (
+        <BinContextMenuWrapper
+          binId={contextMenu.binId}
+          position={contextMenu.position}
+          onClose={hideContextMenu}
+        />
       )}
 
       {/* Toast notifications */}
