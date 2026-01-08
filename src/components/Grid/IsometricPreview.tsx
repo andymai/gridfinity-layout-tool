@@ -37,8 +37,8 @@ const WALL_NORMALS = [
 ];
 
 /**
- * Calculate wall brightness using world-space lighting.
- * Rotates the wall normal by the view rotation, then dots with light direction.
+ * Calculate wall brightness using world-space lighting with smooth falloff.
+ * Uses "wrapped diffuse" technique for softer shadow transitions.
  */
 function getWallBrightness(wallIndex: number, rotation: number): number {
   const normal = WALL_NORMALS[wallIndex];
@@ -56,8 +56,16 @@ function getWallBrightness(wallIndex: number, rotation: number): number {
   // Dot product with light direction (negative because LIGHT_DIR points toward scene)
   const dot = -(rotatedNormal.x * LIGHT_DIR.x + rotatedNormal.y * LIGHT_DIR.y + rotatedNormal.z * LIGHT_DIR.z);
 
-  // Scale to reasonable brightness range (±25% for more visible contrast)
-  return dot * 0.25;
+  // "Wrapped diffuse" - remap [-1, 1] to [0, 1] for smoother shadow transitions
+  // This prevents the harsh lit/shadow boundary
+  const wrapped = dot * 0.5 + 0.5;
+
+  // Apply subtle S-curve for even smoother transitions (smoothstep-like)
+  const smooth = wrapped * wrapped * (3 - 2 * wrapped);
+
+  // Map from [0, 1] to brightness range: -0.15 (shadow) to +0.20 (lit)
+  // Slightly brighter on lit side, subtle shadow on dark side
+  return smooth * 0.35 - 0.15;
 }
 
 /**
