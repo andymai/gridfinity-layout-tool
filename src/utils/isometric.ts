@@ -134,9 +134,6 @@ const LAYER_WEIGHT = 100;
 export function getDepthSortKey(box: IsometricBox, rotation: IsometricRotation): number {
   const { x, y, z, width, depth, height } = box;
 
-  // Use center for X/Y positioning
-  const cx = x + width / 2;
-  const cy = y + depth / 2;
   // Use TOP of bin for Z sorting - ensures tall bins that span multiple layers
   // are drawn after shorter bins they might overlap with
   const topZ = z + height;
@@ -146,12 +143,33 @@ export function getDepthSortKey(box: IsometricBox, rotation: IsometricRotation):
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
 
-  const rx = cx * cos - cy * sin;
-  const ry = cx * sin + cy * cos;
+  // For correct painter's algorithm with bins of varying sizes, we need to sort by
+  // the corner NEAREST to the camera, not the center. Otherwise a wide bin at the front
+  // could be drawn before smaller bins behind it that have higher center coordinates.
+  //
+  // The camera direction at each rotation determines which corner is nearest:
+  //   0°: camera at front-right (+X, -Y) → nearest corner: max X, min Y
+  //  90°: camera at back-right (+X, +Y) → nearest corner: max X, max Y
+  // 180°: camera at back-left (-X, +Y) → nearest corner: min X, max Y
+  // 270°: camera at front-left (-X, -Y) → nearest corner: min X, min Y
+  const coeffX = cos + sin; // Positive → want max X, Negative → want min X
+  const coeffY = sin - cos; // Positive → want max Y, Negative → want min Y
+
+  // Select the corner nearest to camera based on coefficient signs
+  const nearestX = coeffX >= 0 ? x + width : x;
+  const nearestY = coeffY >= 0 ? y + depth : y;
+
+  const rx = nearestX * cos - nearestY * sin;
+  const ry = nearestX * sin + nearestY * cos;
+
+  // Primary depth: sum of rotated coordinates gives distance along isometric depth axis.
+  // Secondary sort by perpendicular axis breaks ties for consistent ordering.
+  const primaryDepth = rx + ry;
+  const tieBreaker = (rx - ry) * 0.001;
 
   // Weight Z heavily so higher layers always render on top of lower layers.
   // XY position still affects within-layer sorting for correct front/back occlusion.
-  return (rx + ry) + topZ * LAYER_WEIGHT;
+  return primaryDepth + tieBreaker + topZ * LAYER_WEIGHT;
 }
 
 /**

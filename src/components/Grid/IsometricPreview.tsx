@@ -64,17 +64,19 @@ function getWallBrightness(wallIndex: number, rotation: number): number {
   // Apply subtle S-curve for even smoother transitions (smoothstep-like)
   const smooth = wrapped * wrapped * (3 - 2 * wrapped);
 
-  // Map from [0, 1] to brightness range: -0.15 (shadow) to +0.20 (lit)
-  // Slightly brighter on lit side, subtle shadow on dark side
-  return smooth * 0.35 - 0.15;
+  // Map from [0, 1] to brightness range: -0.18 (shadow) to +0.08 (lit)
+  // Darker shadows, subtle highlights for natural depth
+  return smooth * 0.26 - 0.18;
 }
 
 /**
  * Calculate top surface brightness based on light's Z component.
+ * Top surfaces are gently lit from above.
  */
 function getTopBrightness(): number {
-  // Top surface normal is (0, 0, 1), dot with -LIGHT_DIR
-  return -LIGHT_DIR.z * 0.2;
+  // Top surface normal is (0, 0, 1), light from above = positive Z component
+  // Very subtle - top surfaces just slightly lighter than base
+  return LIGHT_DIR.z * 0.04;
 }
 
 /**
@@ -266,10 +268,16 @@ export function IsometricPreview() {
     const centerX = width / 2 - ((bounds.minX + bounds.maxX) / 2) * scale;
     const centerY = height / 2 - ((bounds.minY + bounds.maxY) / 2) * scale + height * 0.1;
 
+    // Draw drop shadow under drawer (grounding effect)
+    drawDropShadow(ctx, floor, isometricRotation, scale, centerX, centerY);
+
     // Draw floor first (always behind everything)
     drawFloor(ctx, floor, isometricRotation, scale, centerX, centerY);
 
-    // Draw gridlines on floor (with slight overhang)
+    // Draw floor edge definition (baseplate rim)
+    drawFloorEdge(ctx, floor, isometricRotation, scale, centerX, centerY);
+
+    // Draw gridlines on floor (constrained to drawer bounds)
     drawGridlines(ctx, layout.drawer.width, layout.drawer.depth, isometricRotation, scale, centerX, centerY);
 
     // Draw vertical height ticks (every 3 height units)
@@ -285,6 +293,12 @@ export function IsometricPreview() {
         drawSplitLines(ctx, box, maxGridUnits, isometricRotation, scale, centerX, centerY);
       }
     }
+
+    // Draw vignette overlay (final polish)
+    drawVignette(ctx, width, height);
+
+    // Apply subtle noise texture (matte 3D-print look)
+    drawNoiseTexture(ctx, width, height);
 
   }, [floor, boxes, isometricRotation, showIsometricPreview, layout.drawer.width, layout.drawer.depth, layout.drawer.height, maxGridUnits, previewSize, isPreviewExpanded]);
 
@@ -504,7 +518,186 @@ function drawFloor(
 }
 
 /**
- * Draw gridlines on the floor plane with slight overhang
+ * Draw a soft drop shadow beneath the drawer floor (grounding effect)
+ */
+function drawDropShadow(
+  ctx: CanvasRenderingContext2D,
+  box: IsometricBox,
+  rotation: number,
+  scale: number,
+  offsetX: number,
+  offsetY: number
+) {
+  const shadowOffset = 0.4; // How far shadow extends beyond floor
+  const shadowDrop = 0.15; // Vertical drop of shadow (appears below floor)
+
+  const corners = [
+    { x: box.x - shadowOffset, y: box.y - shadowOffset, z: -shadowDrop },
+    { x: box.x + box.width + shadowOffset, y: box.y - shadowOffset, z: -shadowDrop },
+    { x: box.x + box.width + shadowOffset, y: box.y + box.depth + shadowOffset, z: -shadowDrop },
+    { x: box.x - shadowOffset, y: box.y + box.depth + shadowOffset, z: -shadowDrop },
+  ];
+
+  // Get screen coordinates
+  const screenCorners = corners.map(corner => {
+    const screen = toIsometric(corner, rotation, scale);
+    return { x: screen.x + offsetX, y: screen.y + offsetY };
+  });
+
+  // Calculate center for radial gradient
+  const centerX = (screenCorners[0].x + screenCorners[2].x) / 2;
+  const centerY = (screenCorners[0].y + screenCorners[2].y) / 2;
+  const radius = Math.max(
+    Math.abs(screenCorners[0].x - screenCorners[2].x),
+    Math.abs(screenCorners[0].y - screenCorners[2].y)
+  ) * 0.6;
+
+  // Draw radial gradient shadow
+  const shadowGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+  shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.12)');
+  shadowGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.08)');
+  shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+  ctx.fillStyle = shadowGrad;
+  ctx.beginPath();
+  ctx.moveTo(screenCorners[0].x, screenCorners[0].y);
+  ctx.lineTo(screenCorners[1].x, screenCorners[1].y);
+  ctx.lineTo(screenCorners[2].x, screenCorners[2].y);
+  ctx.lineTo(screenCorners[3].x, screenCorners[3].y);
+  ctx.closePath();
+  ctx.fill();
+}
+
+/**
+ * Draw an edge stroke around the floor perimeter (baseplate rim definition)
+ */
+function drawFloorEdge(
+  ctx: CanvasRenderingContext2D,
+  box: IsometricBox,
+  rotation: number,
+  scale: number,
+  offsetX: number,
+  offsetY: number
+) {
+  const corners = [
+    { x: box.x, y: box.y, z: 0 },
+    { x: box.x + box.width, y: box.y, z: 0 },
+    { x: box.x + box.width, y: box.y + box.depth, z: 0 },
+    { x: box.x, y: box.y + box.depth, z: 0 },
+  ];
+
+  ctx.beginPath();
+  corners.forEach((corner, i) => {
+    const screen = toIsometric(corner, rotation, scale);
+    const x = screen.x + offsetX;
+    const y = screen.y + offsetY;
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  });
+  ctx.closePath();
+
+  // Subtle highlight stroke defining the baseplate edge
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+}
+
+/**
+ * Draw vignette overlay (darkens corners for polished look)
+ */
+function drawVignette(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number
+) {
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radius = Math.max(width, height) * 0.7;
+
+  const vignetteGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+  vignetteGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  vignetteGrad.addColorStop(0.6, 'rgba(0, 0, 0, 0)');
+  vignetteGrad.addColorStop(1, 'rgba(0, 0, 0, 0.25)');
+
+  ctx.fillStyle = vignetteGrad;
+  ctx.fillRect(0, 0, width, height);
+}
+
+// Cache noise pattern to avoid regenerating every frame
+let cachedNoisePattern: ImageData | null = null;
+let cachedNoiseSize = 0;
+
+/**
+ * Draw subtle noise texture overlay (matte 3D-print surface look)
+ * Uses a cached noise pattern for performance
+ */
+function drawNoiseTexture(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number
+) {
+  const patternSize = 64; // Small pattern that tiles
+
+  // Generate or reuse cached noise pattern
+  if (!cachedNoisePattern || cachedNoiseSize !== patternSize) {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = patternSize;
+    tempCanvas.height = patternSize;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (tempCtx) {
+      const imageData = tempCtx.createImageData(patternSize, patternSize);
+      const data = imageData.data;
+
+      // Generate subtle noise pattern
+      for (let i = 0; i < data.length; i += 4) {
+        // Random brightness variation (very subtle)
+        const noise = Math.random() * 20 - 10; // -10 to +10
+        const alpha = Math.abs(noise) * 0.8; // 0-8 alpha
+
+        if (noise > 0) {
+          // Slightly lighter
+          data[i] = 255;     // R
+          data[i + 1] = 255; // G
+          data[i + 2] = 255; // B
+          data[i + 3] = alpha;
+        } else {
+          // Slightly darker
+          data[i] = 0;       // R
+          data[i + 1] = 0;   // G
+          data[i + 2] = 0;   // B
+          data[i + 3] = alpha;
+        }
+      }
+
+      cachedNoisePattern = imageData;
+      cachedNoiseSize = patternSize;
+    }
+  }
+
+  // Apply noise pattern by tiling
+  if (cachedNoisePattern) {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = patternSize;
+    tempCanvas.height = patternSize;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (tempCtx) {
+      tempCtx.putImageData(cachedNoisePattern, 0, 0);
+      const pattern = ctx.createPattern(tempCanvas, 'repeat');
+      if (pattern) {
+        ctx.globalAlpha = 0.4; // Very subtle
+        ctx.fillStyle = pattern;
+        ctx.fillRect(0, 0, width, height);
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+}
+
+/**
+ * Draw gridlines on the floor plane (constrained to drawer bounds)
  */
 function drawGridlines(
   ctx: CanvasRenderingContext2D,
@@ -515,8 +708,6 @@ function drawGridlines(
   offsetX: number,
   offsetY: number
 ) {
-  const overhang = 1.5; // Extend lines beyond drawer
-
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
   ctx.lineWidth = 0.5;
 
@@ -526,20 +717,20 @@ function drawGridlines(
     return { x: screen.x + offsetX, y: screen.y + offsetY };
   };
 
-  // Draw lines parallel to X-axis (along depth)
+  // Draw lines parallel to X-axis (along depth) - constrained to drawer bounds
   for (let x = 0; x <= drawerWidth; x++) {
-    const start = to2D(x, -overhang, 0);
-    const end = to2D(x, drawerDepth + overhang, 0);
+    const start = to2D(x, 0, 0);
+    const end = to2D(x, drawerDepth, 0);
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
     ctx.lineTo(end.x, end.y);
     ctx.stroke();
   }
 
-  // Draw lines parallel to Y-axis (along width)
+  // Draw lines parallel to Y-axis (along width) - constrained to drawer bounds
   for (let y = 0; y <= drawerDepth; y++) {
-    const start = to2D(-overhang, y, 0);
-    const end = to2D(drawerWidth + overhang, y, 0);
+    const start = to2D(0, y, 0);
+    const end = to2D(drawerWidth, y, 0);
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
     ctx.lineTo(end.x, end.y);
@@ -582,59 +773,62 @@ function drawHeightTicks(
   const w6 = to2D(drawerWidth, drawerDepth, wallMaxZ);
   const w7 = to2D(0, drawerDepth, wallMaxZ);
 
-  // Use same color as floor (#2a2a3e) with slight variation for depth
-  // Draw walls that form the backdrop (visually behind the bins)
-  // Note: bin Y coords are flipped, so visual "back" of scene = low isometric Y
-  const wallColor1 = '#2a2a3e'; // Same as floor
-  const wallColor2 = '#252535'; // Slightly darker for second wall
+  // Draw walls with vertical gradient (lighter at top for ambient sky light)
+  // Helper to create wall gradient: bottom color → slightly lighter at top
+  const createWallGradient = (bottomPt: {x: number, y: number}, topPt: {x: number, y: number}, baseColor: string) => {
+    const grad = ctx.createLinearGradient(bottomPt.x, bottomPt.y, topPt.x, topPt.y);
+    grad.addColorStop(0, baseColor);
+    grad.addColorStop(1, baseColor === '#2a2a3e' ? '#32324a' : '#2d2d40'); // Slightly lighter at top
+    return grad;
+  };
 
   ctx.globalAlpha = 1;
   if (r >= 315 || r < 45) {
-    // 0°: front wall (y=0) and left wall (x=0) form backdrop (high x+y appears at back visually)
-    ctx.fillStyle = wallColor1;
+    // 0°: front wall (y=0) and left wall (x=0) form backdrop
+    ctx.fillStyle = createWallGradient(w0, w4, '#2a2a3e');
     ctx.beginPath();
     ctx.moveTo(w0.x, w0.y); ctx.lineTo(w1.x, w1.y); ctx.lineTo(w5.x, w5.y); ctx.lineTo(w4.x, w4.y);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle = wallColor2;
+    ctx.fillStyle = createWallGradient(w0, w4, '#252535');
     ctx.beginPath();
     ctx.moveTo(w0.x, w0.y); ctx.lineTo(w3.x, w3.y); ctx.lineTo(w7.x, w7.y); ctx.lineTo(w4.x, w4.y);
     ctx.closePath(); ctx.fill();
   } else if (r >= 45 && r < 135) {
     // 90°: left wall (x=0) and back wall (y=depth) form backdrop
-    ctx.fillStyle = wallColor1;
+    ctx.fillStyle = createWallGradient(w0, w4, '#2a2a3e');
     ctx.beginPath();
     ctx.moveTo(w0.x, w0.y); ctx.lineTo(w3.x, w3.y); ctx.lineTo(w7.x, w7.y); ctx.lineTo(w4.x, w4.y);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle = wallColor2;
+    ctx.fillStyle = createWallGradient(w3, w7, '#252535');
     ctx.beginPath();
     ctx.moveTo(w3.x, w3.y); ctx.lineTo(w2.x, w2.y); ctx.lineTo(w6.x, w6.y); ctx.lineTo(w7.x, w7.y);
     ctx.closePath(); ctx.fill();
   } else if (r >= 135 && r < 225) {
     // 180°: back wall (y=depth) and right wall (x=width) form backdrop
-    ctx.fillStyle = wallColor1;
+    ctx.fillStyle = createWallGradient(w3, w7, '#2a2a3e');
     ctx.beginPath();
     ctx.moveTo(w3.x, w3.y); ctx.lineTo(w2.x, w2.y); ctx.lineTo(w6.x, w6.y); ctx.lineTo(w7.x, w7.y);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle = wallColor2;
+    ctx.fillStyle = createWallGradient(w1, w5, '#252535');
     ctx.beginPath();
     ctx.moveTo(w1.x, w1.y); ctx.lineTo(w2.x, w2.y); ctx.lineTo(w6.x, w6.y); ctx.lineTo(w5.x, w5.y);
     ctx.closePath(); ctx.fill();
   } else {
     // 270°: right wall (x=width) and front wall (y=0) form backdrop
-    ctx.fillStyle = wallColor1;
+    ctx.fillStyle = createWallGradient(w1, w5, '#2a2a3e');
     ctx.beginPath();
     ctx.moveTo(w1.x, w1.y); ctx.lineTo(w2.x, w2.y); ctx.lineTo(w6.x, w6.y); ctx.lineTo(w5.x, w5.y);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle = wallColor2;
+    ctx.fillStyle = createWallGradient(w0, w4, '#252535');
     ctx.beginPath();
     ctx.moveTo(w0.x, w0.y); ctx.lineTo(w1.x, w1.y); ctx.lineTo(w5.x, w5.y); ctx.lineTo(w4.x, w4.y);
     ctx.closePath(); ctx.fill();
   }
 
-  // Draw horizontal lines at each tick height on back walls only
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([6, 4]);
+  // Draw horizontal lines at each tick height on back walls only (softened)
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([4, 4]);
 
   // Determine back edges based on rotation (must match wall faces above)
   // corners: 0=(0,0), 1=(w,0), 2=(w,d), 3=(0,d)
@@ -701,7 +895,7 @@ function drawBox(
   // World-space lighting - top brightness based on light angle
   const topBrightness = getTopBrightness();
   const topRim = topBrightness > 0 ? lightenColor(color, topBrightness) : darkenColor(color, -topBrightness);
-  const interior = darkenColor(color, 0.45);
+  const interior = darkenColor(color, 0.55); // Deeper interior for more 3D depth
 
   // Helper to convert 3D point to 2D screen coords
   const to2D = (px: number, py: number, pz: number) => {
@@ -752,7 +946,7 @@ function drawBox(
 
   ctx.globalAlpha = opacity;
 
-  const visibleWalls = getVisibleOuterWalls(rotation);
+  const wallDrawOrder = getOuterWallsInDrawOrder(rotation);
 
   // === SOLID BASE FILL ===
   // Draw a solid base color for the entire visible bin to prevent any see-through gaps
@@ -812,13 +1006,13 @@ function drawBox(
     { b1: c3, b2: c0, t1: t3, t2: t0 }, // wall 3-0 (left)
   ];
 
-  for (const wall of visibleWalls) {
-    const wallIndex = wall.b1;
+  // Helper to draw a single wall with lighting
+  const drawWall = (wallIndex: number, addAO: boolean) => {
     const brightness = getWallBrightness(wallIndex, rotation);
     const wallColor = brightness > 0 ? lightenColor(color, brightness) : darkenColor(color, -brightness);
     const pts = wallCorners[wallIndex];
 
-    // Main wall fill - full rectangle from corner to corner
+    // Main wall fill
     ctx.fillStyle = wallColor;
     ctx.beginPath();
     ctx.moveTo(pts.b1.x, pts.b1.y);
@@ -828,34 +1022,12 @@ function drawBox(
     ctx.closePath();
     ctx.fill();
 
-    // === AMBIENT OCCLUSION ===
-    const aoHeight = 0.2;
-    const midB1 = { x: pts.b1.x + (pts.t1.x - pts.b1.x) * aoHeight, y: pts.b1.y + (pts.t1.y - pts.b1.y) * aoHeight };
-    const midB2 = { x: pts.b2.x + (pts.t2.x - pts.b2.x) * aoHeight, y: pts.b2.y + (pts.t2.y - pts.b2.y) * aoHeight };
+    // Note: AO removed from outer walls - inner cavity shadows provide sufficient depth
+    // and outer wall AO created visual noise in uniform grids
+    void addAO; // Parameter kept for API compatibility but no longer used
+  };
 
-    const grad = ctx.createLinearGradient(pts.b1.x, pts.b1.y, midB1.x, midB1.y);
-    grad.addColorStop(0, 'rgba(0,0,0,0.25)');
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.moveTo(pts.b1.x, pts.b1.y);
-    ctx.lineTo(pts.b2.x, pts.b2.y);
-    ctx.lineTo(midB2.x, midB2.y);
-    ctx.lineTo(midB1.x, midB1.y);
-    ctx.closePath();
-    ctx.fill();
-
-    // === CONTACT SHADOW ===
-    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(pts.b1.x, pts.b1.y);
-    ctx.lineTo(pts.b2.x, pts.b2.y);
-    ctx.stroke();
-  }
-
-  // Draw interior floor with gradient (darker in back corner)
+  // STEP 1: Draw interior floor with gradient (darker in back corner)
   ctx.fillStyle = interior;
   ctx.beginPath();
   ctx.moveTo(ib[0].x, ib[0].y);
@@ -865,10 +1037,11 @@ function drawBox(
   ctx.closePath();
   ctx.fill();
 
-  // Add interior shadow gradient (darker in the back)
+  // Add interior shadow gradient (darker in the back) - enhanced for depth
   const interiorGrad = ctx.createLinearGradient(ib[0].x, ib[0].y, ib[2].x, ib[2].y);
   interiorGrad.addColorStop(0, 'rgba(0,0,0,0)');
-  interiorGrad.addColorStop(1, 'rgba(0,0,0,0.2)');
+  interiorGrad.addColorStop(0.6, 'rgba(0,0,0,0.15)');
+  interiorGrad.addColorStop(1, 'rgba(0,0,0,0.35)');
   ctx.fillStyle = interiorGrad;
   ctx.beginPath();
   ctx.moveTo(ib[0].x, ib[0].y);
@@ -876,6 +1049,22 @@ function drawBox(
   ctx.lineTo(ib[2].x, ib[2].y);
   ctx.lineTo(ib[3].x, ib[3].y);
   ctx.closePath();
+  ctx.fill();
+
+  // === CORNER SHADOW POOLING ===
+  // Add additional darkening at the back corners where shadows naturally pool
+  const cornerSize = Math.min(width, depth) * 0.3;
+  // Back-left corner (ib[3])
+  const cornerGrad1 = ctx.createRadialGradient(ib[3].x, ib[3].y, 0, ib[3].x, ib[3].y, cornerSize * scale);
+  cornerGrad1.addColorStop(0, 'rgba(0,0,0,0.25)');
+  cornerGrad1.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = cornerGrad1;
+  ctx.fill();
+  // Back-right corner (ib[2])
+  const cornerGrad2 = ctx.createRadialGradient(ib[2].x, ib[2].y, 0, ib[2].x, ib[2].y, cornerSize * scale);
+  cornerGrad2.addColorStop(0, 'rgba(0,0,0,0.2)');
+  cornerGrad2.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = cornerGrad2;
   ctx.fill();
 
   // Draw inner walls with ambient occlusion
@@ -890,8 +1079,8 @@ function drawBox(
     ctx.closePath();
     ctx.fill();
 
-    // Interior wall AO - darker at the bottom
-    const iwAO = 0.3;
+    // Interior wall AO - darker at the bottom (increased for deeper shadow)
+    const iwAO = 0.4;
     const iwMid1 = { x: ib[wall.b1].x + (it[wall.b1].x - ib[wall.b1].x) * iwAO, y: ib[wall.b1].y + (it[wall.b1].y - ib[wall.b1].y) * iwAO };
     const iwMid2 = { x: ib[wall.b2].x + (it[wall.b2].x - ib[wall.b2].x) * iwAO, y: ib[wall.b2].y + (it[wall.b2].y - ib[wall.b2].y) * iwAO };
 
@@ -909,7 +1098,15 @@ function drawBox(
     ctx.fill();
   }
 
-  // Draw top rim with rounded outer edge
+  // STEP 2: Draw ALL outer walls in back-to-front order (after interior so they're never covered)
+  // Back walls (furthest from camera) - no AO needed
+  drawWall(wallDrawOrder[0], false);
+  drawWall(wallDrawOrder[1], false);
+  // Front walls (nearest to camera) - with AO for grounding
+  drawWall(wallDrawOrder[2], true);
+  drawWall(wallDrawOrder[3], true);
+
+  // STEP 3: Draw top rim with rounded outer edge
   ctx.fillStyle = topRim;
   ctx.beginPath();
   // Outer edge with curves at corners
@@ -931,65 +1128,80 @@ function drawBox(
   ctx.closePath();
   ctx.fill('evenodd');
 
+  // === INNER RIM SHADOW (cavity edge) ===
+  // Dark line at inner rim edge for depth definition
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+  ctx.lineWidth = 0.6;
+  ctx.beginPath();
+  ctx.moveTo(it[0].x, it[0].y);
+  ctx.lineTo(it[1].x, it[1].y);
+  ctx.lineTo(it[2].x, it[2].y);
+  ctx.lineTo(it[3].x, it[3].y);
+  ctx.closePath();
+  ctx.stroke();
+
   ctx.globalAlpha = 1;
 }
 
 /**
- * Get visible outer walls based on rotation (works with any angle)
- * Walls facing away from camera are drawn first (back to front)
+ * Get all 4 outer walls sorted in back-to-front order for painter's algorithm.
+ * Returns wall indices (0=front, 1=right, 2=back, 3=left) sorted so furthest walls draw first.
  */
-function getVisibleOuterWalls(rotation: number): { b1: number; b2: number; lit: boolean }[] {
+function getOuterWallsInDrawOrder(rotation: number): number[] {
   // Normalize rotation to 0-360
   const r = ((rotation % 360) + 360) % 360;
 
-  // Determine which quadrant we're in to decide visible walls
-  // Corners: 0=front-left, 1=front-right, 2=back-right, 3=back-left
-  // Walls: 0-1=front, 1-2=right, 2-3=back, 3-0=left
+  // Wall indices: 0=front (normal -Y), 1=right (normal +X), 2=back (normal +Y), 3=left (normal -X)
+  // At rotation 0°: camera looks from front-right, so back (2) and left (3) are furthest
+  // At rotation 90°: camera looks from back-right, so front (0) and left (3) are furthest
+  // etc.
 
-  const walls: { b1: number; b2: number; lit: boolean }[] = [];
-
-  // Back wall visible when rotation is 315-45 or 135-225
-  if ((r >= 315 || r < 45) || (r >= 135 && r < 225)) {
-    walls.push({ b1: 3, b2: 2, lit: r >= 180 && r < 360 });
+  // Return walls from furthest to nearest based on rotation quadrant
+  if (r >= 315 || r < 45) {
+    // 0°: Looking from front-right. Back and left are far, front and right are near.
+    return [2, 3, 0, 1]; // back, left, front, right
+  } else if (r >= 45 && r < 135) {
+    // 90°: Looking from back-right. Front and left are far, back and right are near.
+    return [0, 3, 2, 1]; // front, left, back, right
+  } else if (r >= 135 && r < 225) {
+    // 180°: Looking from back-left. Front and right are far, back and left are near.
+    return [0, 1, 2, 3]; // front, right, back, left
+  } else {
+    // 270°: Looking from front-left. Back and right are far, front and left are near.
+    return [2, 1, 0, 3]; // back, right, front, left
   }
-  // Front wall visible when rotation is 135-315
-  if (r >= 135 && r < 315) {
-    walls.push({ b1: 0, b2: 1, lit: r >= 180 && r < 360 });
-  }
-  // Right wall visible when rotation is 45-225
-  if (r >= 45 && r < 225) {
-    walls.push({ b1: 1, b2: 2, lit: r >= 90 && r < 270 });
-  }
-  // Left wall visible when rotation is 225-360 or 0-45
-  if (r >= 225 || r < 45) {
-    walls.push({ b1: 3, b2: 0, lit: r < 90 || r >= 270 });
-  }
-
-  return walls;
 }
 
 /**
  * Get visible inner walls based on rotation (works with any angle)
+ * Inner corners: 0=front-left, 1=front-right, 2=back-right, 3=back-left
+ *
+ * When looking into a bin cavity, you see the TWO inner walls on the FAR sides
+ * from the camera (forming an L-shape at the back of the cavity).
  */
 function getVisibleInnerWalls(rotation: number): { b1: number; b2: number }[] {
   const r = ((rotation % 360) + 360) % 360;
   const walls: { b1: number; b2: number }[] = [];
 
-  // Inner front wall visible when looking from back (rotation 315-45)
+  // At each angle, we see two inner walls - the ones on the FAR side of the cavity
+  // from where the camera is positioned.
+
   if (r >= 315 || r < 45) {
-    walls.push({ b1: 1, b2: 0 });
-  }
-  // Inner back wall visible when looking from front (rotation 135-225)
-  if (r >= 135 && r < 225) {
-    walls.push({ b1: 2, b2: 3 });
-  }
-  // Inner right wall visible when looking from left (rotation 225-315)
-  if (r >= 225 && r < 315) {
-    walls.push({ b1: 3, b2: 0 });
-  }
-  // Inner left wall visible when looking from right (rotation 45-135)
-  if (r >= 45 && r < 135) {
-    walls.push({ b1: 1, b2: 2 });
+    // 0°: Camera at front-right, see inner BACK and inner LEFT walls
+    walls.push({ b1: 3, b2: 2 }); // back wall: back-left to back-right
+    walls.push({ b1: 0, b2: 3 }); // left wall: front-left to back-left
+  } else if (r >= 45 && r < 135) {
+    // 90°: Camera at back-right, see inner FRONT and inner LEFT walls
+    walls.push({ b1: 1, b2: 0 }); // front wall: front-right to front-left
+    walls.push({ b1: 0, b2: 3 }); // left wall: front-left to back-left
+  } else if (r >= 135 && r < 225) {
+    // 180°: Camera at back-left, see inner FRONT and inner RIGHT walls
+    walls.push({ b1: 1, b2: 0 }); // front wall: front-right to front-left
+    walls.push({ b1: 2, b2: 1 }); // right wall: back-right to front-right
+  } else {
+    // 270°: Camera at front-left, see inner BACK and inner RIGHT walls
+    walls.push({ b1: 3, b2: 2 }); // back wall: back-left to back-right
+    walls.push({ b1: 2, b2: 1 }); // right wall: back-right to front-right
   }
 
   return walls;
