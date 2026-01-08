@@ -514,6 +514,22 @@ export function Grid() {
                   </div>
                 </div>
               )}
+
+              {/* Layer indicator badge - bottom left corner */}
+              {activeLayer && layers.length > 1 && (
+                <div
+                  className="absolute bottom-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium pointer-events-none z-[15] bg-surface/90 text-content-secondary border border-stroke-subtle backdrop-blur-sm"
+                  title={`Editing: ${activeLayer.name} (${activeLayer.height}u height)`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  <span className="truncate max-w-[100px]">{activeLayer.name}</span>
+                  <span className="text-content-disabled">
+                    {layers.findIndex(l => l.id === activeLayerId) + 1}/{layers.length}
+                  </span>
+                </div>
+              )}
               </div>
 
               {/* Right edge resize handle */}
