@@ -94,6 +94,36 @@ describe('getBlockedZones', () => {
     expect(zones).toHaveLength(1);
     expect(zones[0]).toMatchObject({ x: 0, y: 0, width: 2, depth: 2, sourceBinId: '1' });
   });
+
+  it('returns empty array for empty targetLayerId', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+    ];
+    expect(getBlockedZones('', bins, layers)).toEqual([]);
+  });
+
+  it('returns empty array for invalid targetLayerId', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+    ];
+    expect(getBlockedZones('nonexistent', bins, layers)).toEqual([]);
+  });
+
+  it('ignores staging bins', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: STAGING_ID, x: 0, y: 0, width: 2, depth: 2, height: 20, category: 'tools', label: '', notes: '' },
+    ];
+    expect(getBlockedZones('layer2', bins, layers)).toEqual([]);
+  });
+
+  it('ignores bins on same or higher layer', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+      { id: '2', layerId: 'layer3', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+    ];
+    // Checking layer2 - bins on layer2 or layer3 should not create blocked zones
+    expect(getBlockedZones('layer2', bins, layers)).toEqual([]);
+  });
 });
 
 describe('getDisplayLayers', () => {

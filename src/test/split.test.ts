@@ -57,6 +57,34 @@ describe('splitBinSize', () => {
     const pieces = splitBinSize(4, 4, maxSize);
     expect(pieces).toEqual([{ width: 4, depth: 4, count: 1 }]);
   });
+
+  it('splits width of 1 without creating zero-width pieces', () => {
+    // 1×5 with max 4: splits depth only → 1×3 + 1×2
+    const pieces = splitBinSize(1, 5, maxSize);
+    expect(pieces.every(p => p.width > 0 && p.depth > 0)).toBe(true);
+    expect(pieces).toHaveLength(2);
+  });
+
+  it('splits depth of 1 without creating zero-depth pieces', () => {
+    // 5×1 with max 4: splits width only → 3×1 + 2×1
+    const pieces = splitBinSize(5, 1, maxSize);
+    expect(pieces.every(p => p.width > 0 && p.depth > 0)).toBe(true);
+    expect(pieces).toHaveLength(2);
+  });
+
+  it('handles both dimensions being 1 and over max', () => {
+    // Edge case: 1×1 always fits
+    const pieces = splitBinSize(1, 1, maxSize);
+    expect(pieces).toEqual([{ width: 1, depth: 1, count: 1 }]);
+  });
+
+  it('handles odd splits correctly', () => {
+    // 3×3 with max 2: splits both → ceil(3/2)=2, floor(3/2)=1
+    // Results in 2×2, 1×2, 2×1, 1×1
+    const pieces = splitBinSize(3, 3, 2);
+    expect(pieces.length).toBe(4);
+    expect(pieces.every(p => p.width <= 2 && p.depth <= 2)).toBe(true);
+  });
 });
 
 describe('generatePrintList', () => {
@@ -97,6 +125,33 @@ describe('generatePrintList', () => {
     const rows = generatePrintList(bins, 4);
     expect(rows[0].needsSplit).toBe(true);
     expect(rows[0].totalPieces).toBe(2); // 3×3 + 2×3
+  });
+
+  it('merges identical split pieces from same bin size', () => {
+    // A 9x3 bin with maxSize 4 splits into: 3×3 + 2×3 + 4×3
+    // Two identical 9x3 bins should result in merged piece counts
+    const bins: Bin[] = [
+      { id: '1', layerId: 'l1', x: 0, y: 0, width: 9, depth: 3, height: 3, category: 'c1', label: '', notes: '' },
+      { id: '2', layerId: 'l1', x: 0, y: 3, width: 9, depth: 3, height: 3, category: 'c1', label: '', notes: '' },
+    ];
+    const rows = generatePrintList(bins, 4);
+    // Both bins are identical, so they should be grouped into one row
+    expect(rows).toHaveLength(1);
+    expect(rows[0].binCount).toBe(2);
+    // Each bin splits into 3 pieces, so total = 6
+    expect(rows[0].totalPieces).toBe(6);
+  });
+
+  it('handles bins that split into identical pieces', () => {
+    // A 6x6 bin splits into 4 identical 3x3 pieces (split both dimensions)
+    const bins: Bin[] = [
+      { id: '1', layerId: 'l1', x: 0, y: 0, width: 6, depth: 6, height: 3, category: 'c1', label: '', notes: '' },
+    ];
+    const rows = generatePrintList(bins, 4);
+    expect(rows[0].needsSplit).toBe(true);
+    // 6x6 with max 4: splits to 4 pieces of 3x3
+    expect(rows[0].pieces).toHaveLength(1); // All identical, merged
+    expect(rows[0].pieces[0].count).toBe(4);
   });
 });
 

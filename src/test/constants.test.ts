@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calcMaxGridUnits, CONSTRAINTS } from '../constants';
+import { calcMaxGridUnits, CONSTRAINTS, generateId, createDefaultLayout, DEFAULT_CATEGORIES, STAGING_ID, DEFAULT_CATEGORY_COLOR } from '../constants';
 
 describe('calcMaxGridUnits', () => {
   it('calculates max units for typical print bed', () => {
@@ -40,5 +40,64 @@ describe('calcMaxGridUnits', () => {
   it('never returns less than 1', () => {
     // Even impossible scenarios return at least 1
     expect(calcMaxGridUnits(1, 100)).toBe(1);
+  });
+});
+
+describe('generateId', () => {
+  it('generates unique IDs', () => {
+    const id1 = generateId();
+    const id2 = generateId();
+    expect(id1).not.toBe(id2);
+  });
+
+  it('generates valid string format', () => {
+    const id = generateId();
+    expect(typeof id).toBe('string');
+    expect(id.length).toBeGreaterThan(0);
+    expect(id).toContain('-');
+  });
+});
+
+describe('createDefaultLayout', () => {
+  it('creates a valid default layout', () => {
+    const layout = createDefaultLayout();
+    expect(layout.version).toBe('1.0');
+    expect(layout.name).toBe('Untitled Layout');
+    expect(layout.drawer.width).toBe(10);
+    expect(layout.drawer.depth).toBe(8);
+    expect(layout.drawer.height).toBe(12);
+  });
+
+  it('includes default categories', () => {
+    const layout = createDefaultLayout();
+    expect(layout.categories).toHaveLength(5);
+    expect(layout.categories[0].name).toBe('Coral');
+  });
+
+  it('starts with one layer', () => {
+    const layout = createDefaultLayout();
+    expect(layout.layers).toHaveLength(1);
+    expect(layout.layers[0].name).toBe('Layer 1');
+    expect(layout.layers[0].height).toBe(3);
+  });
+
+  it('starts with no bins', () => {
+    const layout = createDefaultLayout();
+    expect(layout.bins).toHaveLength(0);
+  });
+});
+
+describe('constants', () => {
+  it('exports STAGING_ID', () => {
+    expect(STAGING_ID).toBe('__staging__');
+  });
+
+  it('exports DEFAULT_CATEGORY_COLOR', () => {
+    expect(DEFAULT_CATEGORY_COLOR).toBe('#6b7280');
+  });
+
+  it('exports DEFAULT_CATEGORIES with correct colors', () => {
+    expect(DEFAULT_CATEGORIES).toHaveLength(5);
+    expect(DEFAULT_CATEGORIES.find(c => c.id === 'coral')?.color).toBe('#f87171');
   });
 });

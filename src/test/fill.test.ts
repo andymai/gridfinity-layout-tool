@@ -24,6 +24,13 @@ describe('fillAllWithSize', () => {
     expect(result.skippedCells).toBe(0);
   });
 
+  it('returns empty for invalid layer', () => {
+    const layout = createTestLayout();
+    const result = fillAllWithSize(layout, 'nonexistent', 2, 2, 'cat1');
+    expect(result.bins).toHaveLength(0);
+    expect(result.skippedCells).toBe(0);
+  });
+
   it('skips cells occupied by existing bins', () => {
     const layout = createTestLayout();
     layout.bins = [
@@ -45,6 +52,52 @@ describe('fillAllWithSize', () => {
 
     // Should create bins, some may be 1-wide at edges
     expect(result.bins.length).toBeGreaterThan(0);
+  });
+
+  it('skips cells already covered by newly placed bins', () => {
+    const layout = createTestLayout();
+    // Use 1x1 bins so each cell is tracked individually
+    const result = fillAllWithSize(layout, 'layer1', 1, 1, 'cat1');
+    // All 36 cells should be covered with no skips
+    expect(result.bins).toHaveLength(36);
+    expect(result.skippedCells).toBe(0);
+  });
+
+  it('counts skipped cells when bins partially cover positions', () => {
+    const layout = createTestLayout();
+    // Place a bin that will cause overlap detection
+    layout.bins = [
+      { id: 'existing', layerId: 'layer1', x: 1, y: 1, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    // Try to fill with 2x2 bins - some positions will be skipped
+    const result = fillAllWithSize(layout, 'layer1', 2, 2, 'cat1');
+    expect(result.skippedCells).toBeGreaterThan(0);
+  });
+
+  it('skips positions where newly placed bins already cover cells', () => {
+    // The covered set tracks cells from bins placed during this fill operation.
+    // When iterating with step size < bin size, we may revisit covered positions.
+    const layout = createTestLayout();
+    layout.drawer.width = 4;
+    layout.drawer.depth = 4;
+    // Use 3x3 bins with step of 3, but grid is 4x4
+    // First bin at (0,0) covers cells (0,0)-(2,2)
+    // Next iteration at (3,0) - doesn't overlap with covered set
+    const result = fillAllWithSize(layout, 'layer1', 3, 3, 'cat1');
+    // Should place 1 bin at (0,0) since (3,0) doesn't fit (3+3=6 > 4)
+    expect(result.bins).toHaveLength(1);
+    // (3,0), (0,3), (3,3) are all skipped due to bounds
+    expect(result.skippedCells).toBe(3);
+  });
+
+  it('stops at QUICK_FILL_MAX_BINS limit', () => {
+    const layout = createTestLayout();
+    // Large drawer to hit the 500 bin limit
+    layout.drawer.width = 50;
+    layout.drawer.depth = 50;
+    const result = fillAllWithSize(layout, 'layer1', 1, 1, 'cat1');
+    // Should stop at 500 bins even though 2500 could fit
+    expect(result.bins).toHaveLength(500);
   });
 });
 
@@ -72,6 +125,13 @@ describe('fillGaps', () => {
     const result = fillGaps(layout, 'layer1', 'cat1', 4);
 
     expect(result.bins).toHaveLength(0);
+  });
+
+  it('returns empty for invalid layer', () => {
+    const layout = createTestLayout();
+    const result = fillGaps(layout, 'nonexistent', 'cat1', 4);
+    expect(result.bins).toHaveLength(0);
+    expect(result.addedCount).toBe(0);
   });
 });
 
