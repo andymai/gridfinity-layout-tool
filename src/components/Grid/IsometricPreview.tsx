@@ -570,8 +570,8 @@ function drawBox(
 ) {
   const { x, y, z, width, depth, height, color, opacity } = box;
 
-  // Wall thickness - thin walls like real Gridfinity bins
-  const wallThickness = 0.08;
+  // Wall thickness - exaggerated for visibility (real bins are 0.01-0.03 units)
+  const wallThickness = 0.12;
 
   // Corner radius - subtle rounding on vertical edges (proportional to bin size)
   const cornerRadius = Math.min(width, depth) * 0.12;
