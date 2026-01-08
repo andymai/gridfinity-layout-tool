@@ -24,6 +24,84 @@ const STYLES = {
 } as const;
 
 /**
+ * Small visual showing how a bin compares to max print bed size.
+ * Shows print bed outline with bin overlaid, scaled proportionally.
+ */
+function PrintBedIndicator({
+  binWidth,
+  binDepth,
+  maxUnits,
+  gridUnitMm,
+  printBedSize,
+}: {
+  binWidth: number;
+  binDepth: number;
+  maxUnits: number;
+  gridUnitMm: number;
+  printBedSize: number;
+}) {
+  const size = 64; // Visual size in pixels
+  const padding = 4;
+  const innerSize = size - padding * 2;
+
+  // Scale: print bed = full inner size
+  const scale = innerSize / printBedSize;
+
+  // Bin dimensions in mm (including gap allowance)
+  const binWidthMm = binWidth * gridUnitMm;
+  const binDepthMm = binDepth * gridUnitMm;
+
+  // Max printable area indicator
+  const maxMm = maxUnits * gridUnitMm;
+
+  return (
+    <div
+      className="relative flex-shrink-0"
+      style={{ width: size, height: size }}
+      title={`Print bed: ${printBedSize}×${printBedSize}mm, Max bin: ${maxUnits}×${maxUnits} units`}
+    >
+      {/* Print bed outline */}
+      <div
+        className="absolute border-2 border-dashed border-stroke rounded-sm"
+        style={{
+          left: padding,
+          top: padding,
+          width: innerSize,
+          height: innerSize,
+        }}
+      />
+
+      {/* Max printable zone */}
+      <div
+        className="absolute bg-success/10 border border-success/30 rounded-sm"
+        style={{
+          left: padding,
+          bottom: padding,
+          width: Math.min(maxMm * scale, innerSize),
+          height: Math.min(maxMm * scale, innerSize),
+        }}
+      />
+
+      {/* Bin overlay (shows overflow) */}
+      <div
+        className="absolute bg-warning/30 border-2 border-warning rounded-sm"
+        style={{
+          left: padding,
+          bottom: padding,
+          width: Math.min(binWidthMm * scale, innerSize + padding),
+          height: Math.min(binDepthMm * scale, innerSize + padding),
+        }}
+      />
+
+      {/* Label */}
+      <div className="absolute bottom-0 right-0 text-[8px] text-content-disabled px-0.5">
+        {printBedSize}mm
+      </div>
+    </div>
+  );
+}
+
+/**
  * Visual preview of how a bin will be split for printing.
  * Shows a grid diagram with the split pieces.
  */
@@ -502,13 +580,28 @@ export function RightPanel() {
               </div>
             </div>
 
-            {/* Split warning */}
+            {/* Split warning with print bed visualization */}
             {needsSplit && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-[var(--color-warning-muted)] border border-[var(--color-warning)] text-[var(--color-warning)] text-sm">
-                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>Exceeds print bed — will be split into {Math.ceil(bin.width / maxGridUnits) * Math.ceil(bin.depth / maxGridUnits)} pieces</span>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-[var(--color-warning-muted)] border border-[var(--color-warning)] text-[var(--color-warning)] text-sm">
+                <PrintBedIndicator
+                  binWidth={bin.width}
+                  binDepth={bin.depth}
+                  maxUnits={maxGridUnits}
+                  gridUnitMm={layout.gridUnitMm}
+                  printBedSize={layout.printBedSize}
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span className="font-medium">Exceeds print bed</span>
+                  </div>
+                  <p className="text-xs opacity-80">
+                    Will be split into {Math.ceil(bin.width / maxGridUnits) * Math.ceil(bin.depth / maxGridUnits)} pieces
+                    (max {maxGridUnits}×{maxGridUnits} per piece)
+                  </p>
+                </div>
               </div>
             )}
 
