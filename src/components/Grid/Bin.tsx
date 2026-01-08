@@ -293,63 +293,87 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
       </div>
 
       {/* Resize handles - only for single selected bin, not during multi-select */}
+      {/* Touch targets are 44px (Apple HIG minimum) with smaller visual indicators */}
       {isSelected && !isGhost && !isMultiSelect && (
         <>
-          {/* Right edge handle */}
+          {/* Right edge handle - 44px touch target, 10px visual */}
           <div
-            className="absolute transition-transform hover:scale-110"
+            className="absolute transition-transform hover:scale-110 flex items-center justify-center"
             style={{
-              right: -5,
+              right: -22,
               top: '25%',
-              width: 10,
+              width: 44,
               height: '50%',
-              minHeight: 20,
-              background: 'var(--selection-ring)',
-              borderRadius: 'var(--radius-sm)',
+              minHeight: 44,
               cursor: 'ew-resize',
-              boxShadow: 'var(--shadow-sm)',
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 'e')}
             role="slider"
             aria-label="Resize width"
             aria-orientation="horizontal"
-          />
-          {/* Bottom edge handle */}
+          >
+            <div
+              style={{
+                width: 10,
+                height: '45%',
+                minHeight: 20,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            />
+          </div>
+          {/* Bottom edge handle - 44px touch target, 10px visual */}
           <div
-            className="absolute transition-transform hover:scale-110"
+            className="absolute transition-transform hover:scale-110 flex items-center justify-center"
             style={{
-              bottom: -5,
+              bottom: -22,
               left: '25%',
               width: '50%',
-              minWidth: 20,
-              height: 10,
-              background: 'var(--selection-ring)',
-              borderRadius: 'var(--radius-sm)',
+              minWidth: 44,
+              height: 44,
               cursor: 'ns-resize',
-              boxShadow: 'var(--shadow-sm)',
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 's')}
             role="slider"
             aria-label="Resize depth"
             aria-orientation="vertical"
-          />
-          {/* SE corner handle */}
+          >
+            <div
+              style={{
+                width: '45%',
+                minWidth: 20,
+                height: 10,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            />
+          </div>
+          {/* SE corner handle - 44px touch target, 12px visual */}
           <div
-            className="absolute transition-transform hover:scale-125"
+            className="absolute transition-transform hover:scale-125 flex items-center justify-center"
             style={{
-              right: -6,
-              bottom: -6,
-              width: 12,
-              height: 12,
-              background: 'var(--selection-ring)',
-              borderRadius: 'var(--radius-sm)',
+              right: -22,
+              bottom: -22,
+              width: 44,
+              height: 44,
               cursor: 'nwse-resize',
-              boxShadow: 'var(--shadow-md)',
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 'se')}
             role="slider"
             aria-label="Resize width and depth"
-          />
+          >
+            <div
+              style={{
+                width: 12,
+                height: 12,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                boxShadow: 'var(--shadow-md)',
+              }}
+            />
+          </div>
         </>
       )}
     </div>

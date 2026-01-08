@@ -22,6 +22,7 @@ import {
   MobilePrintList,
   MobileSettingsPanel,
   BinContextMenu,
+  MobileHelpModal,
 } from './components/mobile';
 import { TabletPanelOverlay } from './components/tablet';
 import { SHORTCUTS } from './constants';
@@ -39,6 +40,7 @@ try {
 
 export default function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
   const { isMobile, isTablet } = useResponsive();
   const activeMobilePanel = useUIStore(state => state.activeMobilePanel);
   const setActiveMobilePanel = useUIStore(state => state.setActiveMobilePanel);
@@ -142,7 +144,7 @@ export default function App() {
     return (
       <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
         {/* Mobile Header */}
-        <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} />
+        <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} onHelpClick={() => setIsMobileHelpOpen(true)} />
 
         {/* Main content area - Grid takes full width */}
         <main className="flex-1 flex flex-col overflow-hidden bg-surface">
@@ -194,6 +196,9 @@ export default function App() {
 
         {/* Toast notifications */}
         <ToastContainer />
+
+        {/* Mobile help modal (touch gestures guide) */}
+        <MobileHelpModal isOpen={isMobileHelpOpen} onClose={() => setIsMobileHelpOpen(false)} />
       </div>
     );
   }

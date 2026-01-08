@@ -8,7 +8,7 @@ interface MobileGridToolbarProps {
 
 /**
  * Simplified toolbar for mobile grid view.
- * Shows layer indicator, paint mode, and basic zoom.
+ * Shows layer indicator, paint mode, 3D preview toggle, and basic zoom.
  */
 export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
   const {
@@ -19,6 +19,8 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
     paintSize,
     setPaintSize,
     toggleMobilePanel,
+    showIsometricPreview,
+    toggleIsometricPreview,
   } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
@@ -28,6 +30,8 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
       paintSize: state.paintSize,
       setPaintSize: state.setPaintSize,
       toggleMobilePanel: state.toggleMobilePanel,
+      showIsometricPreview: state.showIsometricPreview,
+      toggleIsometricPreview: state.toggleIsometricPreview,
     }))
   );
 
@@ -87,8 +91,19 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
         </div>
       )}
 
-      {/* Right: Zoom controls */}
+      {/* Right: 3D preview + Zoom controls */}
       <div className="flex items-center gap-1">
+        {/* 3D Preview toggle */}
+        <button
+          onClick={toggleIsometricPreview}
+          className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-secondary'} w-10 h-10 p-0`}
+          aria-label={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
+          title={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+        </button>
         <button
           onClick={zoomOut}
           disabled={!canZoomOut}

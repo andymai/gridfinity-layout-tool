@@ -115,6 +115,7 @@ export function ActiveLayerPanel() {
           onClick={() => setRotated(!rotated)}
           className="text-xs text-content-tertiary hover:text-content flex items-center gap-1 transition-colors"
           title={rotated ? 'Showing tall bins (click for wide)' : 'Showing wide bins (click for tall)'}
+          aria-label={rotated ? 'Switch to wide rectangles' : 'Switch to tall rectangles'}
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -135,6 +136,7 @@ export function ActiveLayerPanel() {
           onClick={() => handleFill(paintSize.width, paintSize.depth)}
           className="btn btn-primary w-full justify-center mt-3 text-sm"
           title={`Fill empty space with ${paintSize.width}×${paintSize.depth} bins`}
+          aria-label={`Fill layer with ${paintSize.width} by ${paintSize.depth} bins`}
         >
           Fill with {paintSize.width}×{paintSize.depth}
         </button>
