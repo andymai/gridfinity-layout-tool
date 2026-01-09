@@ -304,14 +304,22 @@ export function IsometricPreview() {
           e.stopPropagation()
           sceneRef.current?.resetView()
         }}
-        className={`absolute bottom-1 left-1 group flex items-center gap-2 rounded transition-all ${
+        className={`absolute bottom-1 left-1 group flex items-center gap-2 rounded transition-all duration-200 hover:scale-105 ${
           isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-11 min-h-11 w-8 h-8"
         }`}
         style={{
           background: "rgba(255, 255, 255, 0.1)",
           border: "1px solid rgba(255, 255, 255, 0.2)",
           backdropFilter: "blur(8px)",
-          color: "rgba(255, 255, 255, 0.9)",
+          color: "rgba(255, 255, 255, 0.7)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
+          e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+          e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
         }}
         title="Reset view (rotation, zoom, and pan)"
       >
@@ -344,8 +352,12 @@ export function IsometricPreview() {
       {layout.layers.length > 1 && (
         <div
           className={`absolute bottom-1 right-1 flex ${
-            isPreviewExpanded ? "gap-1" : "gap-0.5"
+            isPreviewExpanded ? "gap-1 p-1 rounded-lg" : "gap-0.5"
           }`}
+          style={isPreviewExpanded ? {
+            background: "rgba(0, 0, 0, 0.2)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+          } : {}}
         >
           {/* Dim inactive layers toggle */}
           <button
@@ -353,18 +365,31 @@ export function IsometricPreview() {
               e.stopPropagation()
               toggleDimInactiveLayers()
             }}
-            className={`group flex items-center gap-2 rounded font-medium transition-all ${
+            className={`group flex items-center gap-2 rounded font-medium transition-all duration-200 hover:scale-105 ${
               isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-11 min-h-11 w-8 h-8"
             }`}
             style={{
               background: dimInactiveLayers
-                ? "rgba(var(--color-accent-rgb, 99, 102, 241), 0.9)"
+                ? "#f59e0b"
                 : "rgba(255, 255, 255, 0.1)",
               border: dimInactiveLayers
-                ? "1px solid rgba(var(--color-accent-rgb, 99, 102, 241), 1)"
+                ? "1px solid #f59e0b"
                 : "1px solid rgba(255, 255, 255, 0.2)",
               backdropFilter: "blur(8px)",
-              color: dimInactiveLayers ? "white" : "rgba(255, 255, 255, 0.9)",
+              color: dimInactiveLayers ? "white" : "rgba(255, 255, 255, 0.7)",
+              boxShadow: dimInactiveLayers ? "0 0 12px rgba(245, 158, 11, 0.4)" : "none",
+            }}
+            onMouseEnter={(e) => {
+              if (!dimInactiveLayers) {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
+                e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!dimInactiveLayers) {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
+              }
             }}
             title={
               dimInactiveLayers
@@ -403,18 +428,31 @@ export function IsometricPreview() {
               e.stopPropagation()
               toggleHideLayersAbove()
             }}
-            className={`group flex items-center gap-2 rounded font-medium transition-all ${
+            className={`group flex items-center gap-2 rounded font-medium transition-all duration-200 hover:scale-105 ${
               isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-11 min-h-11 w-8 h-8"
             }`}
             style={{
               background: hideLayersAbove
-                ? "rgba(var(--color-accent-rgb, 99, 102, 241), 0.9)"
+                ? "#f59e0b"
                 : "rgba(255, 255, 255, 0.1)",
               border: hideLayersAbove
-                ? "1px solid rgba(var(--color-accent-rgb, 99, 102, 241), 1)"
+                ? "1px solid #f59e0b"
                 : "1px solid rgba(255, 255, 255, 0.2)",
               backdropFilter: "blur(8px)",
-              color: hideLayersAbove ? "white" : "rgba(255, 255, 255, 0.9)",
+              color: hideLayersAbove ? "white" : "rgba(255, 255, 255, 0.7)",
+              boxShadow: hideLayersAbove ? "0 0 12px rgba(245, 158, 11, 0.4)" : "none",
+            }}
+            onMouseEnter={(e) => {
+              if (!hideLayersAbove) {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
+                e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!hideLayersAbove) {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
+              }
             }}
             title={hideLayersAbove ? "Slice view (on)" : "Slice view (off)"}
           >
@@ -446,21 +484,37 @@ export function IsometricPreview() {
         </div>
       )}
       {/* Top button row */}
-      <div className="absolute top-1 right-1 flex gap-1">
+      <div
+        className={`absolute top-1 right-1 flex ${
+          isPreviewExpanded ? "gap-1 p-1 rounded-lg" : "gap-1"
+        }`}
+        style={isPreviewExpanded ? {
+          background: "rgba(0, 0, 0, 0.2)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+        } : {}}
+      >
         {/* Expand/Collapse button */}
         <button
           onClick={(e) => {
             e.stopPropagation()
             togglePreviewExpanded()
           }}
-          className={`group flex items-center gap-2 rounded transition-all ${
+          className={`group flex items-center gap-2 rounded transition-all duration-200 hover:scale-105 ${
             isPreviewExpanded ? "min-w-11 min-h-11 w-10 h-10" : "min-w-11 min-h-11 w-8 h-8"
           }`}
           style={{
             background: "rgba(255, 255, 255, 0.1)",
             border: "1px solid rgba(255, 255, 255, 0.2)",
             backdropFilter: "blur(8px)",
-            color: "rgba(255, 255, 255, 0.9)",
+            color: "rgba(255, 255, 255, 0.7)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
+            e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+            e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
           }}
           title={isPreviewExpanded ? "Collapse preview" : "Expand preview"}
         >
@@ -515,14 +569,22 @@ export function IsometricPreview() {
               useUIStore.getState().toggleIsometricPreview()
             }
           }}
-          className={`group flex items-center gap-2 rounded transition-all ${
+          className={`group flex items-center gap-2 rounded transition-all duration-200 hover:scale-105 ${
             isPreviewExpanded ? "min-w-11 min-h-11 w-10 h-10" : "min-w-11 min-h-11 w-8 h-8"
           }`}
           style={{
             background: "rgba(255, 255, 255, 0.1)",
             border: "1px solid rgba(255, 255, 255, 0.2)",
             backdropFilter: "blur(8px)",
-            color: "rgba(255, 255, 255, 0.9)",
+            color: "rgba(255, 255, 255, 0.7)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
+            e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+            e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
           }}
           title={isPreviewExpanded ? "Collapse preview" : "Close preview"}
         >
