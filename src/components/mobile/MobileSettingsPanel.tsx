@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLayoutStore } from '../../store';
+import { useLayoutStore, useUndoableAction } from '../../store';
 import { calcMaxGridUnits } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { DeferredNumberInput } from '../DeferredNumberInput';
@@ -18,6 +18,12 @@ export function MobileSettingsPanel() {
   const reset = useLayoutStore(state => state.reset);
 
   const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
+  const { execute } = useUndoableAction();
+
+  const handleDrawerHeightChange = (delta: number) => {
+    const newHeight = Math.max(1, layout.drawer.height + delta);
+    execute(() => updateDrawer({ height: newHeight }));
+  };
 
   return (
     <div className="pb-4 space-y-6">
@@ -51,6 +57,37 @@ export function MobileSettingsPanel() {
               min={1}
               max={50}
             />
+          </div>
+        </div>
+
+        {/* Drawer Height */}
+        <div className="flex items-center justify-between mt-3 p-3 rounded-lg bg-surface-elevated">
+          <span className="text-content-secondary text-sm">
+            Height (units)
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleDrawerHeightChange(-1)}
+              disabled={layout.drawer.height <= 1}
+              className="btn btn-secondary w-10 h-10 p-0"
+              aria-label="Decrease drawer height"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+              </svg>
+            </button>
+            <span className="w-12 text-center font-semibold text-content text-lg">
+              {layout.drawer.height}u
+            </span>
+            <button
+              onClick={() => handleDrawerHeightChange(1)}
+              className="btn btn-secondary w-10 h-10 p-0"
+              aria-label="Increase drawer height"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
           </div>
         </div>
       </section>
