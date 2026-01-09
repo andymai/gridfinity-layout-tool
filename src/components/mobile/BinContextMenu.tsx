@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
+import { useResponsive } from '../../hooks/useResponsive';
 import { STAGING_ID } from '../../constants';
 import type { Bin } from '../../types';
 
@@ -20,8 +21,11 @@ export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) 
   const duplicateBin = useLayoutStore(state => state.duplicateBin);
   const setSelectedBins = useUIStore(state => state.setSelectedBins);
   const toggleMobilePanel = useUIStore(state => state.toggleMobilePanel);
+  const rightPanelCollapsed = useUIStore(state => state.rightPanelCollapsed);
+  const toggleRightPanel = useUIStore(state => state.toggleRightPanel);
 
   const { execute } = useUndoableAction();
+  const { isDesktop } = useResponsive();
 
   // Close on outside click - use pointerdown for unified mouse/touch handling
   useEffect(() => {
@@ -77,9 +81,20 @@ export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) 
 
   const handleEdit = () => {
     setSelectedBins([bin.id]);
-    toggleMobilePanel('inspector');
+    if (isDesktop) {
+      // On desktop, expand the right panel if it's collapsed
+      if (rightPanelCollapsed) {
+        toggleRightPanel();
+      }
+    } else {
+      // On mobile/tablet, open the inspector panel
+      toggleMobilePanel('inspector');
+    }
     onClose();
   };
+
+  // On desktop, only show Edit Properties when right panel is collapsed
+  const showEditOption = !isDesktop || rightPanelCollapsed;
 
   const isOnGrid = bin.layerId !== STAGING_ID;
 
@@ -117,15 +132,17 @@ export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) 
 
         {/* Actions */}
         <div className="py-1">
-          <button
-            onClick={handleEdit}
-            className="w-full px-4 py-3 flex items-center gap-3 transition-colors text-content hover:bg-surface-hover"
-          >
-            <svg className="w-5 h-5 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-            Edit Properties
-          </button>
+          {showEditOption && (
+            <button
+              onClick={handleEdit}
+              className="w-full px-4 py-3 flex items-center gap-3 transition-colors text-content hover:bg-surface-hover"
+            >
+              <svg className="w-5 h-5 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              Edit Properties
+            </button>
+          )}
 
           <button
             onClick={handleDuplicate}
