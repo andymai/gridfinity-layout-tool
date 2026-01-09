@@ -338,7 +338,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           sceneRef.current?.resetView()
         }}
         className={`absolute bottom-1 left-1 group flex items-center rounded transition-all duration-200 hover:scale-105 ${
-          isPreviewExpanded ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
+          isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
         }`}
         style={{
           background: "rgba(255, 255, 255, 0.1)",
@@ -357,7 +357,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         title="Reset view (rotation, zoom, and pan)"
       >
         <svg
-          className={isPreviewExpanded ? "w-5 h-5" : "w-4 h-4"}
+          className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -369,7 +369,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
           />
         </svg>
-        {isPreviewExpanded && (
+        {isPreviewExpanded && !isMobile && (
           <span className="text-xs font-medium">Reset</span>
         )}
         {!isPreviewExpanded && (
@@ -384,9 +384,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       {/* Camera preset buttons */}
       <div
         className={`absolute top-1 left-1/2 transform -translate-x-1/2 flex ${
-          isPreviewExpanded ? "gap-1 p-1 rounded-lg" : "gap-0.5"
+          isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg" : "gap-0.5"
         }`}
-        style={isPreviewExpanded ? {
+        style={isPreviewExpanded && !isMobile ? {
           background: "rgba(0, 0, 0, 0.2)",
           border: "1px solid rgba(255, 255, 255, 0.1)",
         } : {}}
@@ -404,7 +404,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               sceneRef.current?.setPreset(preset)
             }}
             className={`group flex items-center rounded transition-all duration-200 hover:scale-105 ${
-              isPreviewExpanded ? "gap-2 px-3 py-2" : "w-8 h-8 justify-center"
+              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 justify-center"
             }`}
             style={{
               background: "rgba(255, 255, 255, 0.1)",
@@ -423,7 +423,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             title={`${label} view`}
           >
             <svg
-              className={isPreviewExpanded ? "w-4 h-4" : "w-3.5 h-3.5"}
+              className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-3.5 h-3.5"}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -435,7 +435,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                 d={icon}
               />
             </svg>
-            {isPreviewExpanded && (
+            {isPreviewExpanded && !isMobile && (
               <span className="text-xs font-medium">{label}</span>
             )}
           </button>
@@ -445,9 +445,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       {layout.layers.length > 1 && (
         <div
           className={`absolute bottom-1 right-1 flex ${
-            isPreviewExpanded ? "gap-1 p-1 rounded-lg" : "gap-0.5"
+            isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg" : "gap-0.5"
           }`}
-          style={isPreviewExpanded ? {
+          style={isPreviewExpanded && !isMobile ? {
             background: "rgba(0, 0, 0, 0.2)",
             border: "1px solid rgba(255, 255, 255, 0.1)",
           } : {}}
@@ -459,7 +459,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               toggleDimInactiveLayers()
             }}
             className={`group flex items-center rounded font-medium transition-all duration-200 hover:scale-105 ${
-              isPreviewExpanded ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
+              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
             }`}
             style={{
               background: dimInactiveLayers
@@ -491,7 +491,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             }
           >
             <svg
-              className={isPreviewExpanded ? "w-5 h-5" : "w-4 h-4"}
+              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -503,7 +503,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                 d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
               />
             </svg>
-            {isPreviewExpanded && (
+            {isPreviewExpanded && !isMobile && (
               <span className="text-xs">Dim Layers</span>
             )}
             {!isPreviewExpanded && (
@@ -522,7 +522,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               toggleHideLayersAbove()
             }}
             className={`group flex items-center rounded font-medium transition-all duration-200 hover:scale-105 ${
-              isPreviewExpanded ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
+              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
             }`}
             style={{
               background: hideLayersAbove
@@ -550,7 +550,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             title={hideLayersAbove ? "Slice view (on)" : "Slice view (off)"}
           >
             <svg
-              className={isPreviewExpanded ? "w-5 h-5" : "w-4 h-4"}
+              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -562,7 +562,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                 d="M4 5h16M4 12h16m-7 7h7"
               />
             </svg>
-            {isPreviewExpanded && (
+            {isPreviewExpanded && !isMobile && (
               <span className="text-xs">Slice View</span>
             )}
             {!isPreviewExpanded && (
@@ -579,9 +579,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       {/* Top button row */}
       <div
         className={`absolute top-1 right-1 flex ${
-          isPreviewExpanded ? "gap-1 p-1 rounded-lg" : "gap-1"
+          isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg" : "gap-1"
         }`}
-        style={isPreviewExpanded ? {
+        style={isPreviewExpanded && !isMobile ? {
           background: "rgba(0, 0, 0, 0.2)",
           border: "1px solid rgba(255, 255, 255, 0.1)",
         } : {}}
@@ -593,7 +593,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             togglePreviewExpanded()
           }}
           className={`group flex items-center rounded transition-all duration-200 hover:scale-105 ${
-            isPreviewExpanded ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
+            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
           }`}
           style={{
             background: "rgba(255, 255, 255, 0.1)",
@@ -614,7 +614,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           {isPreviewExpanded ? (
             <>
               <svg
-                className="w-5 h-5"
+                className={isMobile ? "w-4 h-4" : "w-5 h-5"}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -626,7 +626,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                   d="M9 9L4 4m0 0v4m0-4h4m6 6l5 5m0 0v-4m0 4h-4M9 15l-5 5m0 0v-4m0 4h4m6-6l5-5m0 0v4m0-4h-4"
                 />
               </svg>
-              <span className="text-xs font-medium">Collapse</span>
+              {!isMobile && <span className="text-xs font-medium">Collapse</span>}
             </>
           ) : (
             <>
@@ -663,7 +663,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             }
           }}
           className={`group flex items-center rounded transition-all duration-200 hover:scale-105 ${
-            isPreviewExpanded ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
+            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
           }`}
           style={{
             background: "rgba(255, 255, 255, 0.1)",
@@ -682,7 +682,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           title={isPreviewExpanded ? "Collapse preview" : "Close preview"}
         >
           <svg
-            className={isPreviewExpanded ? "w-5 h-5" : "w-4 h-4"}
+            className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -694,7 +694,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-          {isPreviewExpanded && (
+          {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">Close</span>
           )}
           {!isPreviewExpanded && (
@@ -708,8 +708,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         </button>
       </div>
 
-      {/* Keyboard shortcuts indicator - only shown in expanded mode */}
-      {isPreviewExpanded && (
+      {/* Keyboard shortcuts indicator - only shown in expanded mode on desktop */}
+      {isPreviewExpanded && !isMobile && (
         <div
           className="absolute bottom-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg text-xs"
           style={{
@@ -730,12 +730,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     </div>
   )
 
-  // Inline mode: fill container (used in split-screen layout)
-  if (inline) {
-    return previewContent
-  }
-
-  // Expanded mode: render as modal with backdrop
+  // Expanded mode: render as modal with backdrop (takes priority over inline mode)
   if (isPreviewExpanded) {
     return (
       <div

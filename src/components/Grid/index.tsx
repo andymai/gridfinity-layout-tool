@@ -256,9 +256,11 @@ export function Grid() {
     };
   }, [resizeDirection, resizeStart, cellSize, gap, updateDrawer]);
 
-  // Label sizing - scales with zoom but has minimum size for readability
-  const labelSize = Math.max(20, Math.round(24 * zoom));
-  const labelFontSize = Math.max(9, Math.round(11 * zoom));
+  // Label sizing - must match cellSize for alignment, hide when too small
+  const labelWidth = Math.max(16, Math.round(20 * zoom)); // Width of row label column
+  const columnLabelHeight = Math.max(16, Math.round(20 * zoom)); // Height of column label row
+  const labelFontSize = cellSize < 14 ? 0 : Math.max(8, Math.round(10 * zoom)); // Hide text when cells too small
+  const labelsVisible = showLabels && cellSize >= 12; // Hide labels entirely when very zoomed out or disabled
 
   // Fit grid to screen - calculate optimal zoom to fit drawer in viewport
   const fitToScreen = useCallback(() => {
@@ -345,13 +347,35 @@ export function Grid() {
   const rowLabels = Array.from({ length: drawer.depth }, (_, i) => drawer.depth - i);
 
   return (
-    <div className={`flex h-full bg-surface ${!isMobile && showIsometricPreview ? 'flex-row' : 'flex-col'} relative`}>
-      {/* Left side: Grid area (50% when 3D preview is shown on desktop) */}
-      <div className={`flex flex-col h-full ${!isMobile && showIsometricPreview ? 'w-1/2 border-r border-stroke-subtle' : 'w-full'}`}>
-        {/* Toolbar - mobile vs desktop */}
-        {isMobile ? (
-          <MobileGridToolbar onFitToScreen={fitToScreen} />
-        ) : (
+    <div className="flex flex-col h-full bg-surface relative">
+      {/* Mobile toolbar - always at very top */}
+      {isMobile && (
+        <MobileGridToolbar onFitToScreen={fitToScreen} />
+      )}
+
+      {/* Main content area: horizontal split on desktop, vertical on mobile */}
+      <div className={`flex flex-1 min-h-0 ${!isMobile && showIsometricPreview ? 'flex-row' : 'flex-col'}`}>
+        {/* Mobile: 3D preview as top portion */}
+        {/* Keep mounted once shown to avoid WebGL context issues with StrictMode */}
+        {isMobile && hasEverShownPreview && (
+          <div
+            className={`w-full flex-1 bg-surface-secondary border-b border-stroke-subtle overflow-hidden ${!showIsometricPreview ? 'hidden' : ''}`}
+          >
+            <PanelErrorBoundary panelName="3D Preview">
+              <Suspense fallback={
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
+                </div>
+              }>
+                <IsometricPreview inline />
+              </Suspense>
+            </PanelErrorBoundary>
+          </div>
+        )}
+        {/* Grid area */}
+        <div className={`flex flex-col ${isMobile && showIsometricPreview ? 'flex-1' : 'h-full'} ${!isMobile && showIsometricPreview ? 'w-1/2 border-r border-stroke-subtle' : 'w-full'}`}>
+          {/* Desktop toolbar */}
+          {!isMobile && (
         <div
           className="flex items-center justify-between px-4 py-[7.5px] bg-surface-secondary border-b border-stroke-subtle"
         >
@@ -553,7 +577,7 @@ export function Grid() {
       {/* Grid container with scroll - click background to deselect */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-auto p-6 bg-surface"
+        className="flex-1 overflow-auto p-6 pr-8 bg-surface flex justify-center"
         onClick={(e) => {
           // Only deselect if clicking directly on this container (not children)
           if (e.target === e.currentTarget) {
@@ -561,40 +585,46 @@ export function Grid() {
           }
         }}
       >
-        {/* Grid with row/column labels wrapper */}
-        <div className="inline-flex flex-col">
+        {/* Grid with row/column labels wrapper - includes space for resize handles (24px on right/bottom) */}
+        <div className="inline-flex flex-col flex-shrink-0 pr-6 pb-6">
           {/* Main grid area with row labels */}
-          <div className="flex">
-            {/* Row labels column - uses CSS Grid to match cell alignment exactly */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateRows: `repeat(${drawer.depth}, ${cellSize}px)`,
-                gap: `${gap}px`,
-                padding: `${gap}px`,
-                paddingRight: 0,
-                marginRight: 4,
-              }}
-            >
-              {rowLabels.map((num, index) => (
-                <button
-                  key={`row-${num}`}
-                  type="button"
-                  className="group flex items-center justify-center select-none transition-all rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border border-transparent cursor-pointer hover:text-content hover:bg-surface-hover hover:border-stroke group"
-                  style={{
-                    width: labelSize,
-                    gridRow: index + 1,
-                    fontSize: labelFontSize,
-                  }}
-                  onClick={() => handleRowClick(num)}
-                  title={`Click to select all bins in row ${num}`}
-                  aria-label={`Select bins in row ${num}`}
-                >
-                  <span className="group-hover:hidden">{num}</span>
-                  <span className="hidden group-hover:inline text-lg leading-none">⋮</span>
-                </button>
-              ))}
-            </div>
+          <div className="flex items-start">
+            {/* Row labels column - uses same grid template as main grid for perfect alignment */}
+            {labelsVisible && (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateRows: `repeat(${drawer.depth}, ${cellSize}px)`,
+                  gap: gap,
+                  padding: gap,
+                  paddingRight: 0,
+                  marginRight: 4,
+                  width: labelWidth,
+                  flexShrink: 0,
+                }}
+              >
+                {rowLabels.map((num) => (
+                  <button
+                    key={`row-${num}`}
+                    type="button"
+                    className="group flex items-center justify-center select-none transition-all rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content hover:bg-surface-hover"
+                    style={{
+                      width: labelWidth,
+                      height: cellSize,
+                      fontSize: labelFontSize,
+                      minHeight: 0,
+                      minWidth: 0,
+                      padding: 0,
+                    }}
+                    onClick={() => handleRowClick(num)}
+                    title={`Click to select all bins in row ${num}`}
+                    aria-label={`Select bins in row ${num}`}
+                  >
+                    {labelFontSize > 0 && num}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Grid with resize handles */}
             <div className="relative">
@@ -685,7 +715,7 @@ export function Grid() {
               <div
                 className="absolute left-0 flex items-center justify-center group"
                 style={{
-                  top: drawer.depth * (cellSize + gap) + gap + labelSize,
+                  top: drawer.depth * (cellSize + gap) + gap + (labelsVisible ? columnLabelHeight : 0),
                   width: drawer.width * (cellSize + gap) + gap,
                   height: 24,
                   cursor: 'ns-resize',
@@ -708,7 +738,7 @@ export function Grid() {
                 className="absolute flex items-center justify-center group"
                 style={{
                   left: drawer.width * (cellSize + gap) + gap,
-                  top: drawer.depth * (cellSize + gap) + gap + labelSize,
+                  top: drawer.depth * (cellSize + gap) + gap + (labelsVisible ? columnLabelHeight : 0),
                   width: 24,
                   height: 24,
                   cursor: 'nwse-resize',
@@ -726,37 +756,42 @@ export function Grid() {
                 />
               </div>
 
-              {/* Column labels row (at bottom, 1-indexed from left) - uses CSS Grid to match cell alignment */}
-              <div
-                className="absolute left-0"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: `repeat(${drawer.width}, ${cellSize}px)`,
-                  gap: `${gap}px`,
-                  padding: `${gap}px`,
-                  paddingTop: 0,
-                  top: drawer.depth * (cellSize + gap) + gap,
-                }}
-              >
-                {columnLabels.map((num, index) => (
-                  <button
-                    key={`col-${num}`}
-                    type="button"
-                    className="group flex items-center justify-center select-none transition-all rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border border-transparent cursor-pointer hover:text-content hover:bg-surface-hover hover:border-stroke"
-                    style={{
-                      height: labelSize,
-                      gridColumn: index + 1,
-                      fontSize: labelFontSize,
-                    }}
-                    onClick={() => handleColumnClick(num)}
-                    title={`Click to select all bins in column ${num}`}
-                    aria-label={`Select bins in column ${num}`}
-                  >
-                    <span className="group-hover:hidden">{num}</span>
-                    <span className="hidden group-hover:inline text-lg leading-none">⋯</span>
-                  </button>
-                ))}
-              </div>
+              {/* Column labels row (at bottom, 1-indexed from left) - uses same grid template as main grid */}
+              {labelsVisible && (
+                <div
+                  className="absolute left-0"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${drawer.width}, ${cellSize}px)`,
+                    gap: gap,
+                    padding: gap,
+                    paddingTop: 0,
+                    top: drawer.depth * (cellSize + gap) + gap,
+                    height: columnLabelHeight,
+                  }}
+                >
+                  {columnLabels.map((num) => (
+                    <button
+                      key={`col-${num}`}
+                      type="button"
+                      className="group flex items-center justify-center select-none transition-all rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content hover:bg-surface-hover"
+                      style={{
+                        width: cellSize,
+                        height: columnLabelHeight,
+                        fontSize: labelFontSize,
+                        minHeight: 0,
+                        minWidth: 0,
+                        padding: 0,
+                      }}
+                      onClick={() => handleColumnClick(num)}
+                      title={`Click to select all bins in column ${num}`}
+                      aria-label={`Select bins in column ${num}`}
+                    >
+                      {labelFontSize > 0 && num}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -794,24 +829,7 @@ export function Grid() {
           </PanelErrorBoundary>
         </div>
       )}
-
-      {/* Mobile: 3D preview as overlay (original behavior) */}
-      {/* Keep mounted once shown to avoid WebGL context issues with StrictMode */}
-      {isMobile && hasEverShownPreview && (
-        <div
-          className={`absolute top-14 right-4 w-[280px] h-[280px] rounded-lg bg-surface-secondary border border-stroke-subtle z-20 overflow-hidden ${!showIsometricPreview ? 'hidden' : ''}`}
-        >
-          <PanelErrorBoundary panelName="3D Preview">
-            <Suspense fallback={
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
-              </div>
-            }>
-              <IsometricPreview />
-            </Suspense>
-          </PanelErrorBoundary>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
