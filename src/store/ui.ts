@@ -184,23 +184,13 @@ export const useUIStore = create<UIState>((set) => ({
     showLabels: !state.showLabels
   })),
 
-  toggleLeftPanel: () => set(state => {
-    const willBeOpen = state.leftPanelCollapsed; // Currently collapsed, will be open
-    return {
-      leftPanelCollapsed: !state.leftPanelCollapsed,
-      // On tablet, auto-close right panel when opening left panel (mutual exclusion)
-      rightPanelCollapsed: willBeOpen ? true : state.rightPanelCollapsed,
-    };
-  }),
+  toggleLeftPanel: () => set(state => ({
+    leftPanelCollapsed: !state.leftPanelCollapsed,
+  })),
 
-  toggleRightPanel: () => set(state => {
-    const willBeOpen = state.rightPanelCollapsed; // Currently collapsed, will be open
-    return {
-      rightPanelCollapsed: !state.rightPanelCollapsed,
-      // On tablet, auto-close left panel when opening right panel (mutual exclusion)
-      leftPanelCollapsed: willBeOpen ? true : state.leftPanelCollapsed,
-    };
-  }),
+  toggleRightPanel: () => set(state => ({
+    rightPanelCollapsed: !state.rightPanelCollapsed,
+  })),
 
   setInteraction: (interaction) => set({ interaction }),
 

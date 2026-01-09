@@ -107,8 +107,15 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
 
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (isGhost) return;
+    // Ignore non-primary pointer (second finger) - allow two-finger pan
+    if (!e.isPrimary) return;
     e.preventDefault();
     e.stopPropagation();
+
+    // Capture pointer to receive move/up events even if pointer leaves element
+    if (isTouchDevice) {
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    }
 
     // Reset long-press state
     longPressTriggeredRef.current = false;
@@ -247,6 +254,9 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
         border: isSelected ? 'none' : '1px solid var(--border-on-color)',
         cursor: isGhost ? 'default' : 'grab',
         touchAction: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
         pointerEvents: isGhost || isBeingDragged ? 'none' : 'auto',
         opacity: isGhost ? 0.3 : isBeingDragged ? 0.3 : 1,
         zIndex: isGhost ? 5 : isSelected ? 20 : 10,

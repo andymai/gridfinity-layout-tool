@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLayoutStore } from '../../store';
 import { calcMaxGridUnits } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { DeferredNumberInput } from '../DeferredNumberInput';
 
 /**
  * Mobile settings panel with grid configuration and app actions.
@@ -31,10 +32,9 @@ export function MobileSettingsPanel() {
             <label className="block text-sm mb-1 text-content-secondary">
               Width (units)
             </label>
-            <input
-              type="number"
+            <DeferredNumberInput
               value={layout.drawer.width}
-              onChange={(e) => updateDrawer({ width: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+              onChange={(v) => updateDrawer({ width: v })}
               className="input w-full h-12"
               min={1}
               max={50}
@@ -44,10 +44,9 @@ export function MobileSettingsPanel() {
             <label className="block text-sm mb-1 text-content-secondary">
               Depth (units)
             </label>
-            <input
-              type="number"
+            <DeferredNumberInput
               value={layout.drawer.depth}
-              onChange={(e) => updateDrawer({ depth: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+              onChange={(v) => updateDrawer({ depth: v })}
               className="input w-full h-12"
               min={1}
               max={50}
@@ -68,10 +67,9 @@ export function MobileSettingsPanel() {
               1 grid unit
             </label>
             <div className="flex items-center gap-2">
-              <input
-                type="number"
+              <DeferredNumberInput
                 value={layout.gridUnitMm}
-                onChange={(e) => setGridUnitMm(Number(e.target.value))}
+                onChange={setGridUnitMm}
                 className="input w-20 h-10 text-center"
                 min={1}
                 max={200}
@@ -85,10 +83,9 @@ export function MobileSettingsPanel() {
               1u height
             </label>
             <div className="flex items-center gap-2">
-              <input
-                type="number"
+              <DeferredNumberInput
                 value={layout.heightUnitMm}
-                onChange={(e) => setHeightUnitMm(Number(e.target.value))}
+                onChange={setHeightUnitMm}
                 className="input w-20 h-10 text-center"
                 min={1}
                 max={50}
@@ -102,10 +99,9 @@ export function MobileSettingsPanel() {
               Print bed size
             </label>
             <div className="flex items-center gap-2">
-              <input
-                type="number"
+              <DeferredNumberInput
                 value={layout.printBedSize}
-                onChange={(e) => setPrintBedSize(Number(e.target.value))}
+                onChange={setPrintBedSize}
                 className="input w-20 h-10 text-center"
                 min={42}
                 max={500}

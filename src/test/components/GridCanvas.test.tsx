@@ -325,7 +325,22 @@ describe('GridCanvas', () => {
   });
 
   describe('Touch action', () => {
-    it('disables default touch actions', () => {
+    it('allows pan when no interaction active', () => {
+      const { container } = renderGridCanvas();
+
+      const wrapper = container.firstChild as HTMLElement;
+      expect(wrapper.style.touchAction).toBe('pan-x pan-y');
+    });
+
+    it('disables touch actions during interaction', () => {
+      useUIStore.setState({
+        interaction: {
+          type: 'draw',
+          start: { x: 0, y: 0 },
+          current: { x: 1, y: 1 },
+        },
+      });
+
       const { container } = renderGridCanvas();
 
       const wrapper = container.firstChild as HTMLElement;

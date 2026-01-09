@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import type { RefObject } from 'react';
 import type { Coord, Rect, ResizeHandle } from '../types';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
@@ -7,6 +7,8 @@ import { canPlaceBin, clamp } from '../utils/validation';
 import { STAGING_ID } from '../constants';
 
 export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
+  // Track active pointer for multi-touch detection
+  const activePointerIdRef = useRef<number | null>(null);
   const { getGridCoords, clampCoords, isInBounds } = useGridCoords(gridRef);
   const interaction = useUIStore(state => state.interaction);
   const setInteraction = useUIStore(state => state.setInteraction);
@@ -118,9 +120,30 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
   // Document-level pointer tracking (unified mouse/touch/pen)
   useEffect(() => {
-    if (!interaction) return;
+    if (!interaction) {
+      // Reset pointer tracking when no interaction
+      activePointerIdRef.current = null;
+      return;
+    }
+
+    // Cancel draw/paint if a second finger arrives (allow two-finger pan)
+    const handlePointerDown = (e: PointerEvent) => {
+      if (activePointerIdRef.current !== null && e.pointerId !== activePointerIdRef.current) {
+        // Second finger - cancel current interaction to allow pan
+        if (interaction.type === 'draw' || interaction.type === 'paint') {
+          setInteraction(null);
+          activePointerIdRef.current = null;
+        }
+      }
+    };
 
     const handlePointerMove = (e: PointerEvent) => {
+      // Track the first pointer that moves during interaction
+      if (activePointerIdRef.current === null) {
+        activePointerIdRef.current = e.pointerId;
+      }
+      // Ignore events from other pointers
+      if (e.pointerId !== activePointerIdRef.current) return;
       const coords = getGridCoords(e.clientX, e.clientY);
       if (!coords) return;
       const clamped = clampCoords(coords);
@@ -247,7 +270,12 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       }
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (e: PointerEvent) => {
+      // Clear pointer tracking
+      if (e.pointerId === activePointerIdRef.current) {
+        activePointerIdRef.current = null;
+      }
+
       // Read drop target directly from store to ensure we have the latest value
       const currentDropTarget = useUIStore.getState().dropTarget;
 
@@ -472,11 +500,13 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       setInteraction(null);
     };
 
+    document.addEventListener('pointerdown', handlePointerDown);
     document.addEventListener('pointermove', handlePointerMove);
     document.addEventListener('pointerup', handlePointerUp);
     document.addEventListener('pointercancel', handlePointerUp);
 
     return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('pointermove', handlePointerMove);
       document.removeEventListener('pointerup', handlePointerUp);
       document.removeEventListener('pointercancel', handlePointerUp);

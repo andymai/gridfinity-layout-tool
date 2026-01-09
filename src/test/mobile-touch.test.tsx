@@ -107,6 +107,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 100,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -151,6 +152,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 100,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -185,6 +187,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 100,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -194,6 +197,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 115,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -231,6 +235,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 100,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -273,6 +278,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 100,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -302,6 +308,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 100,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -333,6 +340,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 100,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -342,6 +350,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 105,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -353,6 +362,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 115,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -381,6 +391,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 100,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -398,6 +409,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 115,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -458,6 +470,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 200,
           clientY: 200,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 
@@ -488,6 +501,7 @@ describe('Mobile Touch Interactions', () => {
           clientX: 100,
           clientY: 100,
           pointerId: 1,
+          isPrimary: true,
         });
       });
 

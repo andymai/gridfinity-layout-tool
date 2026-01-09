@@ -37,6 +37,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
     setSelectedBin,
     setActiveLayer,
     paintSize,
+    interaction,
   } = useUIStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
@@ -45,6 +46,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
       setSelectedBin: state.setSelectedBin,
       setActiveLayer: state.setActiveLayer,
       paintSize: state.paintSize,
+      interaction: state.interaction,
     }))
   );
 
@@ -64,6 +66,8 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   // Capture phase handler for paint mode - runs before Bin components can stop propagation
   const handlePointerDownCapture = (e: PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
+    // Ignore non-primary pointer (second finger) - allow two-finger pan
+    if (!e.isPrimary) return;
 
     // In paint mode, intercept all clicks to start paint interaction
     if (paintSize) {
@@ -80,6 +84,8 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
     // Only start draw on left click on empty space (paint mode handled in capture)
     if (e.button !== 0 || paintSize) return;
+    // Ignore non-primary pointer (second finger) - allow two-finger pan
+    if (!e.isPrimary) return;
     if ((e.target as HTMLElement).closest('[data-bin-id]')) return;
 
     const coords = getGridCoords(e.clientX, e.clientY);
@@ -118,7 +124,11 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
       className="absolute inset-0"
       onPointerDownCapture={handlePointerDownCapture}
       onPointerDown={handlePointerDown}
-      style={{ cursor: paintSize ? 'cell' : 'crosshair', touchAction: 'none' }}
+      style={{
+        cursor: paintSize ? 'cell' : 'crosshair',
+        // Allow two-finger pan when no interaction active, block during draw/drag
+        touchAction: interaction ? 'none' : 'pan-x pan-y',
+      }}
     >
       {/* CSS Grid container */}
       <div

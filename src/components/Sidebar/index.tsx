@@ -4,6 +4,7 @@ import { calcMaxGridUnits } from '../../constants';
 import { ActiveLayerPanel } from './ActiveLayerPanel';
 import { LayerPanel } from './LayerPanel';
 import { CategoriesPanel } from './CategoriesPanel';
+import { DeferredNumberInput } from '../DeferredNumberInput';
 
 export function Sidebar() {
   const { collapsed, toggle } = useUIStore(
@@ -135,11 +136,10 @@ export function Sidebar() {
                     Print bed
                   </label>
                   <div className="flex items-center gap-1">
-                    <input
+                    <DeferredNumberInput
                       id="printBedSize"
-                      type="number"
                       value={printBedSize}
-                      onChange={(e) => setPrintBedSize(Number(e.target.value))}
+                      onChange={setPrintBedSize}
                       min={42}
                       max={500}
                       step={10}
@@ -157,11 +157,10 @@ export function Sidebar() {
                     1 grid unit
                   </label>
                   <div className="flex items-center gap-1">
-                    <input
+                    <DeferredNumberInput
                       id="gridUnit"
-                      type="number"
                       value={gridUnitMm}
-                      onChange={(e) => setGridUnitMm(Number(e.target.value))}
+                      onChange={setGridUnitMm}
                       min={1}
                       max={200}
                       className="input w-12 py-0.5 px-1 text-xs text-right"
@@ -178,11 +177,10 @@ export function Sidebar() {
                     1u height
                   </label>
                   <div className="flex items-center gap-1">
-                    <input
+                    <DeferredNumberInput
                       id="heightUnit"
-                      type="number"
                       value={heightUnitMm}
-                      onChange={(e) => setHeightUnitMm(Number(e.target.value))}
+                      onChange={setHeightUnitMm}
                       min={1}
                       max={50}
                       className="input w-12 py-0.5 px-1 text-xs text-right"

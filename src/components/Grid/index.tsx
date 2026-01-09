@@ -328,20 +328,21 @@ export function Grid() {
     setZoom(clampedZoom);
   }, [drawer.width, drawer.depth, gap, setZoom, isMobile]);
 
-  // Fit to screen on initial mount and when drawer size changes
+  // Fit to screen on initial mount and when drawer size changes (but not during resize drag)
   useEffect(() => {
+    // Skip while user is actively resizing via handles
+    if (resizeDirection) return;
     // Delay to ensure container is fully rendered
     const timer = setTimeout(fitToScreen, 100);
     return () => clearTimeout(timer);
-  }, [fitToScreen, drawer.width, drawer.depth]);
+  }, [fitToScreen, drawer.width, drawer.depth, resizeDirection]);
 
-  // Refit when 3D preview is toggled (changes available width on desktop)
+  // Refit when 3D preview is toggled (changes available width on desktop, height on mobile)
   useEffect(() => {
-    if (!isMobile) {
-      const timer = setTimeout(fitToScreen, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [showIsometricPreview, isMobile, fitToScreen]);
+    const timer = setTimeout(fitToScreen, 100);
+    return () => clearTimeout(timer);
+  }, [showIsometricPreview, fitToScreen]);
+
 
   // Select all bins that occupy a given row (1-indexed row number)
   const handleRowClick = useCallback((rowNum: number) => {
@@ -394,7 +395,7 @@ export function Grid() {
         {/* Keep mounted once shown to avoid WebGL context issues with StrictMode */}
         {isMobile && hasEverShownPreview && (
           <div
-            className={`w-full flex-1 bg-surface-secondary border-b border-stroke-subtle overflow-hidden ${!showIsometricPreview ? 'hidden' : ''}`}
+            className={`w-full flex-1 min-h-0 bg-surface-secondary border-b border-stroke-subtle overflow-hidden ${!showIsometricPreview ? 'hidden' : ''}`}
           >
             <PanelErrorBoundary panelName="3D Preview">
               <Suspense fallback={
@@ -408,7 +409,7 @@ export function Grid() {
           </div>
         )}
         {/* Grid area */}
-        <div className={`flex flex-col ${isMobile && showIsometricPreview ? 'flex-1' : 'h-full'} ${!isMobile && showIsometricPreview ? 'w-1/2 border-r border-stroke-subtle' : 'w-full'}`}>
+        <div className={`flex flex-col ${isMobile && showIsometricPreview ? 'flex-1 min-h-0' : 'h-full'} ${!isMobile && showIsometricPreview ? 'w-1/2 border-r border-stroke-subtle' : 'w-full'}`}>
           {/* Desktop toolbar */}
           {!isMobile && (
         <div
@@ -665,7 +666,7 @@ export function Grid() {
       {/* Grid container with scroll - click background to deselect */}
       <div
         ref={scrollContainerRef}
-        className={`flex-1 overflow-auto bg-surface flex justify-center ${isMobile ? 'p-3' : 'p-6 pr-8'}`}
+        className={`flex-1 overflow-auto bg-surface relative ${isMobile ? 'py-3 pr-3' : 'p-6 pr-8'}`}
         onPointerDown={(e) => {
           // Deselect if clicking on container or wrapper areas (not interactive elements)
           // Bins call stopPropagation on pointerdown, so this only fires for empty space
@@ -676,53 +677,60 @@ export function Grid() {
           }
         }}
       >
-        {/* Grid with row/column labels wrapper - includes space for resize handles on desktop */}
-        <div className={`inline-flex flex-col flex-shrink-0 ${isMobile ? '' : 'pr-6 pb-6'}`}>
-          {/* Main grid area with row labels */}
-          <div className="flex items-start">
-            {/* Row labels column - uses same grid template as main grid for perfect alignment */}
-            {labelsVisible && (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateRows: `repeat(${drawer.depth}, ${cellSize}px)`,
-                  gap: gap,
-                  padding: gap,
-                  paddingRight: 0,
-                  marginRight: 4,
-                  width: labelWidth,
-                  flexShrink: 0,
-                }}
-              >
-                {rowLabels.map((num) => (
-                  <button
-                    key={`row-${num}`}
-                    type="button"
-                    className="group flex items-center justify-center select-none transition-all rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content hover:bg-surface-hover"
-                    style={{
-                      width: labelWidth,
-                      height: cellSize,
-                      fontSize: labelFontSize,
-                      minHeight: 0,
-                      minWidth: 0,
-                      padding: 0,
-                    }}
-                    onClick={() => handleRowClick(num)}
-                    title={`Click to select all bins in row ${num}`}
-                    aria-label={`Select bins in row ${num}`}
-                  >
-                    {labelFontSize > 0 && num}
-                  </button>
-                ))}
-              </div>
-            )}
+        {/* Grid with row/column labels wrapper - uses CSS Grid for sticky row labels */}
+        <div
+          className={`inline-grid ${isMobile ? 'pb-6' : 'pr-6 pb-6'}`}
+          style={{
+            gridTemplateColumns: labelsVisible ? `auto 1fr` : '1fr',
+            gridTemplateRows: '1fr',
+          }}
+        >
+          {/* Row labels column - sticky to left edge */}
+          {labelsVisible && (
+            <div
+              className="bg-surface"
+              style={{
+                display: 'grid',
+                gridTemplateRows: `repeat(${drawer.depth}, ${cellSize}px)`,
+                gap: gap,
+                padding: gap,
+                paddingRight: 4,
+                width: labelWidth + 4,
+                position: 'sticky',
+                left: 0,
+                zIndex: 30, // Above bins (z-index 10-20)
+                alignSelf: 'start',
+              }}
+            >
+              {rowLabels.map((num) => (
+                <button
+                  key={`row-${num}`}
+                  type="button"
+                  className="group flex items-center justify-center select-none transition-all rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content hover:bg-surface-hover"
+                  style={{
+                    width: labelWidth,
+                    height: cellSize,
+                    fontSize: labelFontSize,
+                    minHeight: 0,
+                    minWidth: 0,
+                    padding: 0,
+                  }}
+                  onClick={() => handleRowClick(num)}
+                  title={`Click to select all bins in row ${num}`}
+                  aria-label={`Select bins in row ${num}`}
+                >
+                  {labelFontSize > 0 && num}
+                </button>
+              ))}
+            </div>
+          )}
 
-            {/* Grid with resize handles */}
-            <div className="relative">
+          {/* Grid with resize handles */}
+          <div className="relative">
               {/* Grid itself */}
               <div
                 ref={gridRef}
-                className="relative rounded-lg"
+                className={`relative ${labelsVisible ? '' : 'rounded-lg'}`}
                 style={{
                   width: drawer.width * (cellSize + gap) + gap,
                   height: drawer.depth * (cellSize + gap) + gap,
@@ -855,7 +863,7 @@ export function Grid() {
               {/* Column labels row (at bottom, 1-indexed from left) - uses same grid template as main grid */}
               {labelsVisible && (
                 <div
-                  className="absolute left-0"
+                  className="absolute left-0 bg-surface"
                   style={{
                     display: 'grid',
                     gridTemplateColumns: `repeat(${drawer.width}, ${cellSize}px)`,
@@ -864,6 +872,7 @@ export function Grid() {
                     paddingTop: 0,
                     top: drawer.depth * (cellSize + gap) + gap,
                     height: columnLabelHeight,
+                    zIndex: 30, // Above bins (z-index 10-20)
                   }}
                 >
                   {columnLabels.map((num) => (
@@ -889,7 +898,6 @@ export function Grid() {
                 </div>
               )}
             </div>
-          </div>
         </div>
       </div>
 
