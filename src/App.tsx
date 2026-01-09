@@ -12,7 +12,7 @@ import { DragPreview } from './components/DragPreview';
 import { ToastContainer } from './components/Toast';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
 import { BinContextMenu } from './components/mobile';
-import { TabletPanelOverlay } from './components/tablet';
+import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { SHORTCUTS } from './constants';
 
 // Lazy load modals - only loaded when opened
@@ -175,6 +175,14 @@ export default function App() {
 
         {/* Floating drag preview */}
         <DragPreview />
+
+        {/* Panel trigger buttons (FABs) - shown when panels are closed */}
+        <TabletPanelTriggers
+          leftPanelOpen={tabletLeftPanelOpen}
+          rightPanelOpen={tabletRightPanelOpen}
+          onOpenLeftPanel={toggleLeftPanel}
+          onOpenRightPanel={toggleRightPanel}
+        />
 
         {/* Modals */}
         {isHelpOpen && (
