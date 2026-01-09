@@ -105,7 +105,7 @@ describe('ui store', () => {
       const { addToSelection, setInteraction, clearSelection } = useUIStore.getState();
 
       addToSelection('bin1');
-      setInteraction({ type: 'draw', startX: 0, startY: 0, currentX: 0, currentY: 0 });
+      setInteraction({ type: 'draw', start: { x: 0, y: 0 }, current: { x: 0, y: 0 } });
 
       clearSelection();
 
@@ -375,7 +375,14 @@ describe('ui store', () => {
     it('setInteraction sets interaction state', () => {
       const { setInteraction } = useUIStore.getState();
 
-      setInteraction({ type: 'drag', binIds: ['bin1'], startX: 0, startY: 0 });
+      setInteraction({
+        type: 'drag',
+        binIds: ['bin1'],
+        startCoord: { x: 0, y: 0 },
+        currentCoord: { x: 0, y: 0 },
+        valid: true,
+        isOverGrid: true,
+      });
 
       const interaction = useUIStore.getState().interaction;
       expect(interaction?.type).toBe('drag');

@@ -11,6 +11,7 @@ import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
 import { HelpModal } from './components/modals/HelpModal';
 import { ToastContainer } from './components/Toast';
+import { PanelErrorBoundary } from './components/PanelErrorBoundary';
 import {
   MobileHeader,
   BottomNavBar,
@@ -208,7 +209,9 @@ export default function App() {
           onClose={toggleLeftPanel}
           side="left"
         >
-          <Sidebar />
+          <PanelErrorBoundary panelName="Sidebar">
+            <Sidebar />
+          </PanelErrorBoundary>
         </TabletPanelOverlay>
 
         {/* Right panel as overlay */}
@@ -217,7 +220,9 @@ export default function App() {
           onClose={toggleRightPanel}
           side="right"
         >
-          <RightPanel />
+          <PanelErrorBoundary panelName="Inspector">
+            <RightPanel />
+          </PanelErrorBoundary>
         </TabletPanelOverlay>
 
         {/* Drop zones (appear when dragging) */}
@@ -253,7 +258,9 @@ export default function App() {
       {/* Main content area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left sidebar */}
-        <Sidebar />
+        <PanelErrorBoundary panelName="Sidebar">
+          <Sidebar />
+        </PanelErrorBoundary>
 
         {/* Grid area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-surface">
@@ -262,7 +269,9 @@ export default function App() {
         </main>
 
         {/* Right panel - Selection & Actions */}
-        <RightPanel />
+        <PanelErrorBoundary panelName="Inspector">
+          <RightPanel />
+        </PanelErrorBoundary>
       </div>
 
       {/* Drop zones (appear when dragging) */}
@@ -293,20 +302,38 @@ export default function App() {
  * Mobile panel content based on active panel type.
  */
 function MobilePanelContent({ panel }: { panel: string }) {
-  switch (panel) {
-    case 'layers':
-      return <MobileLayersPanel />;
-    case 'inspector':
-      return <MobileInspector />;
-    case 'categories':
-      return <MobileCategoriesPanel />;
-    case 'print':
-      return <MobilePrintList />;
-    case 'settings':
-      return <MobileSettingsPanel />;
-    default:
-      return null;
-  }
+  const content = (() => {
+    switch (panel) {
+      case 'layers':
+        return <MobileLayersPanel />;
+      case 'inspector':
+        return <MobileInspector />;
+      case 'categories':
+        return <MobileCategoriesPanel />;
+      case 'print':
+        return <MobilePrintList />;
+      case 'settings':
+        return <MobileSettingsPanel />;
+      default:
+        return null;
+    }
+  })();
+
+  if (!content) return null;
+
+  const panelNames: Record<string, string> = {
+    layers: 'Layers',
+    inspector: 'Inspector',
+    categories: 'Categories',
+    print: 'Print List',
+    settings: 'Settings',
+  };
+
+  return (
+    <PanelErrorBoundary panelName={panelNames[panel] || 'Panel'}>
+      {content}
+    </PanelErrorBoundary>
+  );
 }
 
 /**

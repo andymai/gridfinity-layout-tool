@@ -8,6 +8,7 @@ import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { MobileGridToolbar } from '../mobile';
+import { PanelErrorBoundary } from '../PanelErrorBoundary';
 
 // Lazy load the 3D preview component (includes three.js, ~800KB)
 const IsometricPreview = lazy(() => import('./IsometricPreview').then(m => ({ default: m.IsometricPreview })));
@@ -651,13 +652,17 @@ export function Grid() {
 
       {/* Isometric 3D preview - positioned in top-right corner, lazy loaded */}
       {showIsometricPreview && (
-        <Suspense fallback={
-          <div className="absolute top-14 right-4 w-[280px] h-[280px] rounded-lg bg-surface-secondary border border-stroke-subtle flex items-center justify-center z-20">
-            <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
-          </div>
-        }>
-          <IsometricPreview />
-        </Suspense>
+        <div className="absolute top-14 right-4 w-[280px] h-[280px] rounded-lg bg-surface-secondary border border-stroke-subtle z-20 overflow-hidden">
+          <PanelErrorBoundary panelName="3D Preview">
+            <Suspense fallback={
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
+              </div>
+            }>
+              <IsometricPreview />
+            </Suspense>
+          </PanelErrorBoundary>
+        </div>
       )}
     </div>
   );
