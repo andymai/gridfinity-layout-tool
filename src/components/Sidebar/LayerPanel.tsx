@@ -5,6 +5,7 @@ import { useToastStore } from '../../store/toast';
 import { CONSTRAINTS, STAGING_ID } from '../../constants';
 import { getDisplayLayers } from '../../utils/collision';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { LayerContextMenu } from './LayerContextMenu';
 
 export function LayerPanel() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -13,8 +14,9 @@ export function LayerPanel() {
   const [dragSourceIndex, setDragSourceIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
 
-  const { layout, fillLayerGaps, clearLayer, addLayer, updateLayer, deleteLayer, reorderLayers, updateDrawer } = useLayoutStore(
+  const { layout, fillLayerGaps, clearLayer, addLayer, updateLayer, deleteLayer, reorderLayers } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
       fillLayerGaps: state.fillLayerGaps,
@@ -23,7 +25,6 @@ export function LayerPanel() {
       updateLayer: state.updateLayer,
       deleteLayer: state.deleteLayer,
       reorderLayers: state.reorderLayers,
-      updateDrawer: state.updateDrawer,
     }))
   );
 
@@ -50,7 +51,6 @@ export function LayerPanel() {
   const emptyCells = totalCells - coveredCells;
 
   const hasMultipleLayers = layers.length > 1;
-  const totalLayerHeight = layers.reduce((sum, l) => sum + l.height, 0);
 
   // Total stats across all layers
   const allPlacedBins = layout.bins.filter(b => b.layerId !== STAGING_ID);
@@ -127,11 +127,10 @@ export function LayerPanel() {
     });
   };
 
-  const handleDrawerHeightChange = (delta: number) => {
-    const newHeight = Math.max(1, layout.drawer.height + delta);
-    execute(() => {
-      updateDrawer({ height: newHeight });
-    });
+  const handleOpenMenu = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setMenuPosition({ x: rect.right + 4, y: rect.top });
   };
 
   // Drag and drop handlers
@@ -203,35 +202,6 @@ export function LayerPanel() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
         </button>
-      </div>
-
-      {/* Drawer height */}
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-content-tertiary" title="Total height available for all layers (in Gridfinity height units)">Drawer height</span>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => handleDrawerHeightChange(-1)}
-            disabled={layout.drawer.height <= 1}
-            className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            aria-label="Decrease drawer height"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-            </svg>
-          </button>
-          <span className={`text-xs tabular-nums min-w-[28px] text-center ${totalLayerHeight > layout.drawer.height ? 'text-error' : 'text-content-secondary'}`}>
-            {layout.drawer.height}u
-          </span>
-          <button
-            onClick={() => handleDrawerHeightChange(1)}
-            className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content transition-colors"
-            aria-label="Increase drawer height"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-        </div>
       </div>
 
       {/* Reorder error message */}
@@ -354,6 +324,20 @@ export function LayerPanel() {
                 </span>
               )}
 
+              {/* Menu button - only for active layer */}
+              {isActive && (
+                <button
+                  onClick={handleOpenMenu}
+                  className="p-0.5 rounded text-black/40 hover:text-black transition-colors"
+                  title="Layer actions"
+                  aria-label={`Actions for ${layer.name} layer`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                  </svg>
+                </button>
+              )}
+
               {/* Delete button - only for active layer when multiple exist */}
               {isActive && hasMultipleLayers && (
                 <button
@@ -384,7 +368,7 @@ export function LayerPanel() {
       </div>
 
       {/* Coverage bar */}
-      <div className="h-1.5 rounded-full overflow-hidden bg-surface-elevated mb-3">
+      <div className="h-1.5 rounded-full overflow-hidden bg-surface-elevated">
         <div
           className="h-full rounded-full transition-all"
           style={{
@@ -394,25 +378,17 @@ export function LayerPanel() {
         />
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-3 text-xs">
-        <button
-          onClick={handleFillGaps}
-          disabled={coverage === 100}
-          className="text-content-tertiary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          title="Fill empty cells with optimally-sized bins"
-        >
-          {coverage === 100 ? 'Filled' : `Fill ${emptyCells} gap${emptyCells !== 1 ? 's' : ''}`}
-        </button>
-        <button
-          onClick={() => setShowClearConfirm(true)}
-          disabled={binCount === 0}
-          className="text-content-tertiary hover:text-error disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          title="Remove all bins from this layer"
-        >
-          Clear layer
-        </button>
-      </div>
+      {/* Layer context menu */}
+      {menuPosition && (
+        <LayerContextMenu
+          position={menuPosition}
+          onClose={() => setMenuPosition(null)}
+          onFillGaps={handleFillGaps}
+          onClearLayer={() => setShowClearConfirm(true)}
+          emptyCells={emptyCells}
+          binCount={binCount}
+        />
+      )}
 
       {/* Clear confirmation */}
       <ConfirmDialog

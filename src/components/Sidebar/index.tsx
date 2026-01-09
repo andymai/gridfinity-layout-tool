@@ -17,19 +17,28 @@ export function Sidebar() {
     gridUnitMm,
     heightUnitMm,
     printBedSize,
+    drawerHeight,
     setGridUnitMm,
     setHeightUnitMm,
     setPrintBedSize,
+    updateDrawer,
   } = useLayoutStore(
     useShallow((state) => ({
       gridUnitMm: state.layout.gridUnitMm,
       heightUnitMm: state.layout.heightUnitMm,
       printBedSize: state.layout.printBedSize,
+      drawerHeight: state.layout.drawer.height,
       setGridUnitMm: state.setGridUnitMm,
       setHeightUnitMm: state.setHeightUnitMm,
       setPrintBedSize: state.setPrintBedSize,
+      updateDrawer: state.updateDrawer,
     }))
   );
+
+  const handleDrawerHeightChange = (delta: number) => {
+    const newHeight = Math.max(1, drawerHeight + delta);
+    updateDrawer({ height: newHeight });
+  };
 
   return (
     <aside
@@ -84,8 +93,62 @@ export function Sidebar() {
               <h2 className="text-sm font-semibold text-content-secondary tracking-wide mb-3">
                 Grid Settings
               </h2>
-              <div className="text-xs text-content-secondary">
-                <div className="flex items-center justify-between mb-2">
+              <div className="text-xs text-content-secondary space-y-2">
+                <div className="flex items-center justify-between">
+                  <span
+                    className="text-content-tertiary"
+                    title="Total height available for all layers (in height units)"
+                  >
+                    Drawer height
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleDrawerHeightChange(-1)}
+                      disabled={drawerHeight <= 1}
+                      className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Decrease drawer height"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      </svg>
+                    </button>
+                    <span className="tabular-nums min-w-[28px] text-center text-content-secondary">
+                      {drawerHeight}u
+                    </span>
+                    <button
+                      onClick={() => handleDrawerHeightChange(1)}
+                      className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content transition-colors"
+                      aria-label="Increase drawer height"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="printBedSize"
+                    className="text-content-tertiary"
+                    title={`Bins larger than ${calcMaxGridUnits(printBedSize, gridUnitMm)}×${calcMaxGridUnits(printBedSize, gridUnitMm)} will be split for printing`}
+                  >
+                    Print bed
+                  </label>
+                  <div className="flex items-center gap-1">
+                    <input
+                      id="printBedSize"
+                      type="number"
+                      value={printBedSize}
+                      onChange={(e) => setPrintBedSize(Number(e.target.value))}
+                      min={42}
+                      max={500}
+                      step={10}
+                      className="input w-14 py-0.5 px-1 text-xs text-right"
+                    />
+                    <span className="text-content-tertiary">mm</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
                   <label
                     htmlFor="gridUnit"
                     className="text-content-tertiary"
@@ -102,7 +165,6 @@ export function Sidebar() {
                       min={1}
                       max={200}
                       className="input w-12 py-0.5 px-1 text-xs text-right"
-                      title="Size of one grid unit in mm (standard Gridfinity = 42mm)"
                     />
                     <span className="text-content-tertiary">mm</span>
                   </div>
@@ -124,36 +186,9 @@ export function Sidebar() {
                       min={1}
                       max={50}
                       className="input w-12 py-0.5 px-1 text-xs text-right"
-                      title="Height of one vertical unit in mm (standard = 7mm)"
                     />
                     <span className="text-content-tertiary">mm</span>
                   </div>
-                </div>
-                <div className="flex items-center justify-between mt-2">
-                  <label
-                    htmlFor="printBedSize"
-                    className="text-content-tertiary"
-                    title={`Bins larger than ${calcMaxGridUnits(printBedSize, gridUnitMm)}u will be split for printing`}
-                  >
-                    Print bed
-                  </label>
-                  <div className="flex items-center gap-1">
-                    <input
-                      id="printBedSize"
-                      type="number"
-                      value={printBedSize}
-                      onChange={(e) => setPrintBedSize(Number(e.target.value))}
-                      min={42}
-                      max={500}
-                      step={10}
-                      className="input w-14 py-0.5 px-1 text-xs text-right"
-                      title={`Your 3D printer's bed size. Bins larger than ${calcMaxGridUnits(printBedSize, gridUnitMm)}×${calcMaxGridUnits(printBedSize, gridUnitMm)} will be split.`}
-                    />
-                    <span className="text-content-tertiary">mm</span>
-                  </div>
-                </div>
-                <div className="text-[10px] text-content-disabled mt-1 text-right">
-                  Max bin size: {calcMaxGridUnits(printBedSize, gridUnitMm)}×{calcMaxGridUnits(printBedSize, gridUnitMm)}
                 </div>
               </div>
             </div>
