@@ -41,6 +41,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     isPreviewExpanded,
     isometricRotation,
     selectedBinIds,
+    setSelectedBins,
     toggleHideLayersAbove,
     toggleDimInactiveLayers,
     togglePreviewExpanded,
@@ -55,6 +56,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       isPreviewExpanded: state.isPreviewExpanded,
       isometricRotation: state.isometricRotation,
       selectedBinIds: state.selectedBinIds,
+      setSelectedBins: state.setSelectedBins,
       toggleHideLayersAbove: state.toggleHideLayersAbove,
       toggleDimInactiveLayers: state.toggleDimInactiveLayers,
       togglePreviewExpanded: state.togglePreviewExpanded,
@@ -124,6 +126,11 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     },
     [setPreviewExpanded]
   )
+
+  // Clear selection when clicking empty space in the 3D preview
+  const clearSelection = useCallback(() => {
+    setSelectedBins([])
+  }, [setSelectedBins])
 
   const layout = useLayoutStore((state) => state.layout)
   const activeLayerId = useUIStore((state) => state.activeLayerId)
@@ -247,6 +254,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           far: 1000,
         }}
         style={{ background: "#0a0a0f" }}
+        onPointerMissed={clearSelection}
       >
         <Scene
           ref={sceneRef}
