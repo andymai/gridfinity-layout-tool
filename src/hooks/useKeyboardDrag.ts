@@ -58,13 +58,15 @@ export function useKeyboardDrag() {
     );
 
     // Set interaction to show ghost preview
+    const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
+    const startCoord = firstBin ? { x: firstBin.x, y: firstBin.y } : { x: 0, y: 0 };
     setInteraction({
       type: 'drag',
       binIds: selectedBinIds,
-      startX: 0,
-      startY: 0,
-      offsetX: 0,
-      offsetY: 0,
+      startCoord,
+      currentCoord: startCoord,
+      valid: true,
+      isOverGrid: true,
     });
   }, [selectedBinIds, layout.bins, setKeyboardDragMode, announceToScreenReader, setInteraction]);
 
@@ -78,13 +80,15 @@ export function useKeyboardDrag() {
       const newOffset = { dx: prev.dx + dx, dy: prev.dy + dy };
 
       // Update interaction to show preview with new offset
+      const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
+      const startCoord = firstBin ? { x: firstBin.x, y: firstBin.y } : { x: 0, y: 0 };
       setInteraction({
         type: 'drag',
         binIds: selectedBinIds,
-        startX: 0,
-        startY: 0,
-        offsetX: newOffset.dx,
-        offsetY: newOffset.dy,
+        startCoord,
+        currentCoord: { x: startCoord.x + newOffset.dx, y: startCoord.y + newOffset.dy },
+        valid: true,
+        isOverGrid: true,
       });
 
       // Announce position change
@@ -95,7 +99,7 @@ export function useKeyboardDrag() {
 
       return newOffset;
     });
-  }, [keyboardDragMode, selectedBinIds, setInteraction, announceToScreenReader]);
+  }, [keyboardDragMode, selectedBinIds, layout.bins, setInteraction, announceToScreenReader]);
 
   /**
    * Confirm drag - apply the movement to all selected bins.

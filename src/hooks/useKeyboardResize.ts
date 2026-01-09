@@ -60,13 +60,14 @@ export function useKeyboardResize() {
     );
 
     // Set interaction to show resize preview
+    const startRect = { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth };
     setInteraction({
       type: 'resize',
-      binId: bin.id,
+      binIds: [bin.id],
       handle: 'se', // Use southeast handle for preview
-      startX: 0,
-      startY: 0,
-      originalBin: bin,
+      startRects: new Map([[bin.id, startRect]]),
+      currentRects: new Map([[bin.id, startRect]]),
+      valid: true,
     });
   }, [selectedBinIds, layout.bins, setKeyboardResizeMode, announceToScreenReader, setInteraction]);
 
@@ -81,19 +82,19 @@ export function useKeyboardResize() {
 
     setResizeDelta(prev => {
       const newDelta = { dw: prev.dw + dw, dd: prev.dd + dd };
-      const newWidth = Math.max(1, Math.min(CONSTRAINTS.BIN_WIDTH_MAX, bin.width + newDelta.dw));
-      const newDepth = Math.max(1, Math.min(CONSTRAINTS.BIN_DEPTH_MAX, bin.depth + newDelta.dd));
+      const newWidth = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, bin.width + newDelta.dw));
+      const newDepth = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, bin.depth + newDelta.dd));
 
       // Update interaction to show preview with new size
+      const startRect = { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth };
+      const currentRect = { x: bin.x, y: bin.y, width: newWidth, depth: newDepth };
       setInteraction({
         type: 'resize',
-        binId: bin.id,
+        binIds: [bin.id],
         handle: 'se',
-        startX: 0,
-        startY: 0,
-        originalBin: bin,
-        previewWidth: newWidth,
-        previewDepth: newDepth,
+        startRects: new Map([[bin.id, startRect]]),
+        currentRects: new Map([[bin.id, currentRect]]),
+        valid: true,
       });
 
       // Announce size change
@@ -113,8 +114,8 @@ export function useKeyboardResize() {
     const bin = layout.bins.find(b => b.id === selectedBinIds[0]);
     if (!bin) return;
 
-    const newWidth = Math.max(1, Math.min(CONSTRAINTS.BIN_WIDTH_MAX, bin.width + dw));
-    const newDepth = Math.max(1, Math.min(CONSTRAINTS.BIN_DEPTH_MAX, bin.depth + dd));
+    const newWidth = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, bin.width + dw));
+    const newDepth = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, bin.depth + dd));
 
     // If no size change, just exit
     if (newWidth === bin.width && newDepth === bin.depth) {

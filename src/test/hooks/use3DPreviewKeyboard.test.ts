@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { use3DPreviewKeyboard } from '../../hooks/use3DPreviewKeyboard';
 import type { SceneHandle } from '../../components/Grid/IsometricPreview/Scene';
@@ -23,15 +23,15 @@ function pressKey(key: string, target: EventTarget = document, options: Partial<
 
 describe('use3DPreviewKeyboard', () => {
   let mockSceneRef: React.RefObject<SceneHandle | null>;
-  let mockTogglePreviewVisibility: ReturnType<typeof vi.fn>;
-  let mockTogglePreviewExpanded: ReturnType<typeof vi.fn>;
-  let mockSetPreviewExpanded: ReturnType<typeof vi.fn>;
-  let mockSetIsometricRotation: ReturnType<typeof vi.fn>;
-  let mockResetView: ReturnType<typeof vi.fn>;
-  let mockSetPreset: ReturnType<typeof vi.fn>;
+  let mockTogglePreviewVisibility: Mock<() => void>;
+  let mockTogglePreviewExpanded: Mock<() => void>;
+  let mockSetPreviewExpanded: Mock<(expanded: boolean) => void>;
+  let mockSetIsometricRotation: Mock<(rotation: number) => void>;
+  let mockResetView: Mock<() => void>;
+  let mockSetPreset: Mock<SceneHandle['setPreset']>;
 
   beforeEach(() => {
-    // Create mock functions
+    // Create mock functions with proper types
     mockTogglePreviewVisibility = vi.fn();
     mockTogglePreviewExpanded = vi.fn();
     mockSetPreviewExpanded = vi.fn();
