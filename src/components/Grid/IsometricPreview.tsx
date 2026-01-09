@@ -253,6 +253,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           drawerWidth={layout.drawer.width}
           drawerDepth={layout.drawer.depth}
           drawerHeight={layout.drawer.height}
+          layoutName={layout.name}
           isExpanded={isPreviewExpanded}
         >
           {binsToRender.map((binData) => (

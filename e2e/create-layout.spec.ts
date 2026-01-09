@@ -10,7 +10,7 @@ test.describe('Create Layout Flow', () => {
 
   test('shows default layout on first load', async ({ page }) => {
     // Should display the default layout name
-    await expect(page.getByRole('button', { name: 'Untitled Layout' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Untitled layout' })).toBeVisible();
 
     // Should have the header with undo/redo buttons
     await expect(page.getByRole('button', { name: /undo/i })).toBeVisible();
@@ -22,7 +22,7 @@ test.describe('Create Layout Flow', () => {
 
   test('can edit layout name', async ({ page }) => {
     // Click on the layout name to edit
-    const layoutNameButton = page.getByRole('button', { name: 'Untitled Layout' });
+    const layoutNameButton = page.getByRole('button', { name: 'Untitled layout' });
     await layoutNameButton.click();
 
     // Should show an input field
@@ -39,7 +39,7 @@ test.describe('Create Layout Flow', () => {
 
   test('can reset layout to defaults', async ({ page }) => {
     // First, edit the layout name
-    const layoutNameButton = page.getByRole('button', { name: 'Untitled Layout' });
+    const layoutNameButton = page.getByRole('button', { name: 'Untitled layout' });
     await layoutNameButton.click();
     const input = page.locator('header input[type="text"]');
     await input.fill('Custom Name');
@@ -55,7 +55,7 @@ test.describe('Create Layout Flow', () => {
     await dialog.getByRole('button', { name: 'Reset', exact: true }).click();
 
     // Should be back to default name
-    await expect(page.getByRole('button', { name: 'Untitled Layout' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Untitled layout' })).toBeVisible();
   });
 
   test('shows help modal with keyboard shortcut', async ({ page }) => {
@@ -80,7 +80,7 @@ test.describe('Create Layout Flow', () => {
 
   test('persists layout to localStorage', async ({ page }) => {
     // Edit layout name
-    const layoutNameButton = page.getByRole('button', { name: 'Untitled Layout' });
+    const layoutNameButton = page.getByRole('button', { name: 'Untitled layout' });
     await layoutNameButton.click();
     const input = page.locator('header input[type="text"]');
     await input.fill('Persisted Layout');

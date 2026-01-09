@@ -40,7 +40,7 @@ export function MobileHeader({ onMenuClick, onHelpClick }: MobileHeaderProps) {
   };
 
   const handleNameSubmit = () => {
-    setName(editValue.trim() || 'Untitled Layout');
+    setName(editValue.trim() || 'Untitled layout');
     setIsEditing(false);
   };
 

@@ -631,7 +631,7 @@ describe('layout store', () => {
       reset();
 
       const resetLayout = useLayoutStore.getState().layout;
-      expect(resetLayout.name).toBe('Untitled Layout');
+      expect(resetLayout.name).toBe('Untitled layout');
       expect(resetLayout.bins).toHaveLength(0);
     });
   });

@@ -438,34 +438,24 @@ export function Grid() {
                 )}
               </button>
             )}
-            {/* Paint mode indicator (only shown when active) */}
+            {/* Paint mode indicator (only shown when active) - click anywhere to exit */}
             {paintSize && (
-              <div
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary-muted border border-accent ${shouldPulsePaintHint ? 'animate-pulse' : ''}`}
-                role="status"
-                aria-live="polite"
+              <button
+                onClick={() => setPaintSize(null)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary-muted border border-accent hover:bg-accent/20 transition-colors cursor-pointer ${shouldPulsePaintHint ? 'animate-pulse' : ''}`}
+                aria-label="Exit paint mode"
+                title="Click to exit paint mode"
               >
                 <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
-                <span className="text-sm text-accent font-medium">
+                <span className="text-sm text-accent font-medium leading-none">
                   Paint {paintSize.width}×{paintSize.depth}
                 </span>
-                <div className="flex items-center gap-1 ml-1">
-                  <button
-                    onClick={() => setPaintSize(null)}
-                    className="text-accent hover:text-accent/70 transition-colors p-0.5"
-                    aria-label="Exit paint mode"
-                    title="Exit paint mode"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                  <span className="text-xs text-accent/60">or</span>
-                  <kbd className="px-1.5 py-0.5 text-xs rounded bg-accent/20 border border-accent/30 text-accent/70">Esc</kbd>
-                </div>
-              </div>
+                <svg className="w-4 h-4 text-accent/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             )}
 
             {/* Keyboard drag mode indicator */}
@@ -683,6 +673,7 @@ export function Grid() {
           style={{
             gridTemplateColumns: labelsVisible ? `auto 1fr` : '1fr',
             gridTemplateRows: '1fr',
+            columnGap: labelsVisible ? 4 : 0,
           }}
         >
           {/* Row labels column - sticky to left edge */}
@@ -693,9 +684,8 @@ export function Grid() {
                 display: 'grid',
                 gridTemplateRows: `repeat(${drawer.depth}, ${cellSize}px)`,
                 gap: gap,
-                padding: gap,
-                paddingRight: 4,
-                width: labelWidth + 4,
+                paddingTop: gap,
+                paddingBottom: gap,
                 position: 'sticky',
                 left: 0,
                 zIndex: 30, // Above bins (z-index 10-20)
@@ -706,7 +696,7 @@ export function Grid() {
                 <button
                   key={`row-${num}`}
                   type="button"
-                  className="group flex items-center justify-center select-none transition-all rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content hover:bg-surface-hover"
+                  className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
                   style={{
                     width: labelWidth,
                     height: cellSize,
@@ -750,8 +740,8 @@ export function Grid() {
               />
               <Overlay cellSize={cellSize} gap={gap} />
 
-              {/* Empty state overlay - hide while dragging */}
-              {isEmpty && !interaction && (
+              {/* Empty state overlay - hide while dragging or when grid is too small */}
+              {isEmpty && !interaction && (drawer.width * cellSize > 200) && (drawer.depth * cellSize > 150) && (
                 <div
                   className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-[5]"
                 >
@@ -879,7 +869,7 @@ export function Grid() {
                     <button
                       key={`col-${num}`}
                       type="button"
-                      className="group flex items-center justify-center select-none transition-all rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content hover:bg-surface-hover"
+                      className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
                       style={{
                         width: cellSize,
                         height: columnLabelHeight,

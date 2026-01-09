@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLayoutStore, useUndoableAction } from '../../store';
-import { calcMaxGridUnits } from '../../constants';
+import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 
@@ -20,9 +20,10 @@ export function MobileSettingsPanel() {
   const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
   const { execute } = useUndoableAction();
 
-  const handleDrawerHeightChange = (delta: number) => {
-    const newHeight = Math.max(1, layout.drawer.height + delta);
-    execute(() => updateDrawer({ height: newHeight }));
+  const handleDrawerChange = (field: 'width' | 'depth' | 'height', delta: number) => {
+    const current = layout.drawer[field];
+    const newValue = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, current + delta));
+    execute(() => updateDrawer({ [field]: newValue }));
   };
 
   return (
@@ -33,56 +34,96 @@ export function MobileSettingsPanel() {
           Drawer Dimensions
         </h3>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          {/* Width */}
           <div>
-            <label className="block text-sm mb-1 text-content-secondary">
-              Width (units)
+            <label className="block text-sm mb-1 text-content-tertiary">
+              Width
             </label>
-            <DeferredNumberInput
-              value={layout.drawer.width}
-              onChange={(v) => updateDrawer({ width: v })}
-              className="input w-full h-12"
-              min={1}
-              max={50}
-            />
+            <div className="flex items-center">
+              <button
+                onClick={() => handleDrawerChange('width', -1)}
+                disabled={layout.drawer.width <= 1}
+                className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
+                aria-label="Decrease width"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </button>
+              <span className="flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content">
+                {layout.drawer.width}
+              </span>
+              <button
+                onClick={() => handleDrawerChange('width', 1)}
+                disabled={layout.drawer.width >= CONSTRAINTS.GRID_MAX}
+                className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
+                aria-label="Increase width"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
           </div>
+
+          {/* Depth */}
           <div>
-            <label className="block text-sm mb-1 text-content-secondary">
-              Depth (units)
+            <label className="block text-sm mb-1 text-content-tertiary">
+              Depth
             </label>
-            <DeferredNumberInput
-              value={layout.drawer.depth}
-              onChange={(v) => updateDrawer({ depth: v })}
-              className="input w-full h-12"
-              min={1}
-              max={50}
-            />
+            <div className="flex items-center">
+              <button
+                onClick={() => handleDrawerChange('depth', -1)}
+                disabled={layout.drawer.depth <= 1}
+                className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
+                aria-label="Decrease depth"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </button>
+              <span className="flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content">
+                {layout.drawer.depth}
+              </span>
+              <button
+                onClick={() => handleDrawerChange('depth', 1)}
+                disabled={layout.drawer.depth >= CONSTRAINTS.GRID_MAX}
+                className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
+                aria-label="Increase depth"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Drawer Height */}
-        <div className="flex items-center justify-between mt-3 p-3 rounded-lg bg-surface-elevated">
-          <span className="text-content-secondary text-sm">
-            Height (units)
-          </span>
-          <div className="flex items-center gap-2">
+        {/* Height */}
+        <div>
+          <label className="block text-sm mb-1 text-content-tertiary">
+            Height
+          </label>
+          <div className="flex items-center">
             <button
-              onClick={() => handleDrawerHeightChange(-1)}
+              onClick={() => handleDrawerChange('height', -1)}
               disabled={layout.drawer.height <= 1}
-              className="btn btn-secondary w-10 h-10 p-0"
-              aria-label="Decrease drawer height"
+              className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
+              aria-label="Decrease height"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
               </svg>
             </button>
-            <span className="w-12 text-center font-semibold text-content text-lg">
+            <span className="flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content">
               {layout.drawer.height}u
             </span>
             <button
-              onClick={() => handleDrawerHeightChange(1)}
-              className="btn btn-secondary w-10 h-10 p-0"
-              aria-label="Increase drawer height"
+              onClick={() => handleDrawerChange('height', 1)}
+              disabled={layout.drawer.height >= CONSTRAINTS.GRID_MAX}
+              className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
+              aria-label="Increase height"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -166,7 +207,7 @@ export function MobileSettingsPanel() {
             className="btn btn-danger w-full"
           >
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16m4-8h12m-12 0l4-4m-4 4l4 4" />
             </svg>
             Reset to Defaults
           </button>

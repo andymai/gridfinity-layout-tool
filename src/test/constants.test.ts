@@ -62,7 +62,7 @@ describe('createDefaultLayout', () => {
   it('creates a valid default layout', () => {
     const layout = createDefaultLayout();
     expect(layout.version).toBe('1.0');
-    expect(layout.name).toBe('Untitled Layout');
+    expect(layout.name).toBe('Untitled layout');
     expect(layout.drawer.width).toBe(10);
     expect(layout.drawer.depth).toBe(8);
     expect(layout.drawer.height).toBe(12);

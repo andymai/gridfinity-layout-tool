@@ -12,6 +12,7 @@ interface SceneProps {
   drawerWidth: number;
   drawerDepth: number;
   drawerHeight: number;
+  layoutName: string;
   isExpanded?: boolean;
 }
 
@@ -27,7 +28,7 @@ export interface SceneHandle {
  * Handles rotation sync with UI store and renders floor grid.
  */
 export const Scene = forwardRef<SceneHandle, SceneProps>(
-  ({ children, drawerWidth, drawerDepth, drawerHeight, isExpanded }, ref) => {
+  ({ children, drawerWidth, drawerDepth, drawerHeight, layoutName, isExpanded }, ref) => {
     const controlsRef = useRef<OrbitControlsType>(null);
     const prevExpandedRef = useRef<boolean | undefined>(undefined);
     const { camera, size } = useThree();
@@ -213,7 +214,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
 
       {/* Floor grid and front label */}
       <FloorGrid width={drawerWidth} depth={drawerDepth} />
-      <FrontLabel drawerWidth={drawerWidth} />
+      <FrontLabel drawerWidth={drawerWidth} label={layoutName} />
 
       {/* Bins */}
       {children}

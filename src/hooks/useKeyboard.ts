@@ -16,6 +16,8 @@ export function useKeyboard() {
   const setPaintSize = useUIStore(state => state.setPaintSize);
   const zoomIn = useUIStore(state => state.zoomIn);
   const zoomOut = useUIStore(state => state.zoomOut);
+  const activeLayerId = useUIStore(state => state.activeLayerId);
+  const setActiveLayer = useUIStore(state => state.setActiveLayer);
 
   // Grid navigation hook for spatial arrow key navigation
   const { handleNavigationKey } = useGridNavigation();
@@ -127,6 +129,117 @@ export function useKeyboard() {
       return;
     }
 
+    // Layer navigation (W/S)
+    if (key.toLowerCase() === SHORTCUTS.LAYER_UP && !ctrlOrMeta) {
+      e.preventDefault();
+      const currentIndex = layout.layers.findIndex(l => l.id === activeLayerId);
+      if (currentIndex < layout.layers.length - 1) {
+        setActiveLayer(layout.layers[currentIndex + 1].id);
+      }
+      return;
+    }
+    if (key.toLowerCase() === SHORTCUTS.LAYER_DOWN && !ctrlOrMeta) {
+      e.preventDefault();
+      const currentIndex = layout.layers.findIndex(l => l.id === activeLayerId);
+      if (currentIndex > 0) {
+        setActiveLayer(layout.layers[currentIndex - 1].id);
+      }
+      return;
+    }
+
+    // Bin selection cycling (A/D) - cycles through bins on current layer
+    if (key.toLowerCase() === SHORTCUTS.SELECT_PREV_BIN && !ctrlOrMeta) {
+      e.preventDefault();
+      const layerBins = layout.bins
+        .filter(b => b.layerId === activeLayerId && b.layerId !== STAGING_ID)
+        .sort((a, b) => a.y === b.y ? a.x - b.x : a.y - b.y); // Sort by row then column
+      if (layerBins.length === 0) return;
+
+      const currentId = selectedBinIds[0];
+      const currentIndex = layerBins.findIndex(b => b.id === currentId);
+      const prevIndex = currentIndex <= 0 ? layerBins.length - 1 : currentIndex - 1;
+      setSelectedBins([layerBins[prevIndex].id]);
+      return;
+    }
+    if (key.toLowerCase() === SHORTCUTS.SELECT_NEXT_BIN && !ctrlOrMeta) {
+      e.preventDefault();
+      const layerBins = layout.bins
+        .filter(b => b.layerId === activeLayerId && b.layerId !== STAGING_ID)
+        .sort((a, b) => a.y === b.y ? a.x - b.x : a.y - b.y); // Sort by row then column
+      if (layerBins.length === 0) return;
+
+      const currentId = selectedBinIds[0];
+      const currentIndex = layerBins.findIndex(b => b.id === currentId);
+      const nextIndex = currentIndex < 0 || currentIndex >= layerBins.length - 1 ? 0 : currentIndex + 1;
+      setSelectedBins([layerBins[nextIndex].id]);
+      return;
+    }
+
+    // Category cycling ([ / ]) - cycles category of selected bins
+    if (key === SHORTCUTS.CATEGORY_PREV && selectedBinIds.length > 0) {
+      e.preventDefault();
+      const categories = layout.categories;
+      if (categories.length === 0) return;
+
+      // Get current category from first selected bin
+      const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
+      if (!firstBin) return;
+
+      // Find current category index (undefined = -1, meaning "no category")
+      const currentIndex = firstBin.category
+        ? categories.findIndex(c => c.id === firstBin.category)
+        : -1;
+
+      // Cycle to previous (wrap from first category to "no category", then to last)
+      let newCategoryId: string | undefined;
+      if (currentIndex <= 0) {
+        // At first category or no category - go to last category
+        newCategoryId = currentIndex === 0 ? undefined : categories[categories.length - 1].id;
+      } else {
+        newCategoryId = categories[currentIndex - 1].id;
+      }
+
+      execute(() => {
+        for (const binId of selectedBinIds) {
+          updateBin(binId, { category: newCategoryId });
+        }
+      });
+      return;
+    }
+    if (key === SHORTCUTS.CATEGORY_NEXT && selectedBinIds.length > 0) {
+      e.preventDefault();
+      const categories = layout.categories;
+      if (categories.length === 0) return;
+
+      // Get current category from first selected bin
+      const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
+      if (!firstBin) return;
+
+      // Find current category index (undefined = -1, meaning "no category")
+      const currentIndex = firstBin.category
+        ? categories.findIndex(c => c.id === firstBin.category)
+        : -1;
+
+      // Cycle to next (wrap from last category to "no category", then to first)
+      let newCategoryId: string | undefined;
+      if (currentIndex === -1) {
+        // No category - go to first
+        newCategoryId = categories[0].id;
+      } else if (currentIndex >= categories.length - 1) {
+        // At last category - go to no category
+        newCategoryId = undefined;
+      } else {
+        newCategoryId = categories[currentIndex + 1].id;
+      }
+
+      execute(() => {
+        for (const binId of selectedBinIds) {
+          updateBin(binId, { category: newCategoryId });
+        }
+      });
+      return;
+    }
+
     // Arrow keys - spatial navigation OR nudge (skip if in keyboard drag/resize mode)
     const arrowKeys: readonly string[] = [SHORTCUTS.NUDGE_UP, SHORTCUTS.NUDGE_DOWN, SHORTCUTS.NUDGE_LEFT, SHORTCUTS.NUDGE_RIGHT];
     if (arrowKeys.includes(key) && !keyboardDragMode && !keyboardResizeMode) {
@@ -186,7 +299,7 @@ export function useKeyboard() {
       }
       return;
     }
-  }, [selectedBinIds, focusedBinId, keyboardDragMode, keyboardResizeMode, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, enterDragMode, enterResizeMode]);
+  }, [selectedBinIds, focusedBinId, keyboardDragMode, keyboardResizeMode, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, enterDragMode, enterResizeMode, activeLayerId, setActiveLayer]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

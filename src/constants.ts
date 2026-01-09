@@ -61,7 +61,7 @@ export function generateId(): string {
 
 export const createDefaultLayout = (): Layout => ({
   version: '1.0',
-  name: 'Untitled Layout',
+  name: 'Untitled layout',
   drawer: { width: 10, depth: 8, height: 12 },
   printBedSize: 256,  // mm - typical print bed size
   gridUnitMm: 42,
@@ -100,6 +100,13 @@ export const SHORTCUTS = {
   ZOOM_IN: ['+', '='],
   ZOOM_OUT: ['-'],
   HELP: '?',
+  // Navigation
+  LAYER_UP: 'w',
+  LAYER_DOWN: 's',
+  SELECT_PREV_BIN: 'a',
+  SELECT_NEXT_BIN: 'd',
+  CATEGORY_PREV: '[',
+  CATEGORY_NEXT: ']',
   NUDGE_UP: 'ArrowUp',
   NUDGE_DOWN: 'ArrowDown',
   NUDGE_LEFT: 'ArrowLeft',
@@ -107,10 +114,6 @@ export const SHORTCUTS = {
   // 3D Preview shortcuts
   PREVIEW_TOGGLE: 'v',
   PREVIEW_EXPAND: 'Space',
-  PREVIEW_RESET: 'r',
-  PREVIEW_ROTATE_LEFT: 'ArrowLeft',
-  PREVIEW_ROTATE_RIGHT: 'ArrowRight',
-  PREVIEW_TILT: ['ArrowUp', 'ArrowDown'],
   // Camera preset shortcuts
   PRESET_ISOMETRIC: '1',
   PRESET_TOP: '2',

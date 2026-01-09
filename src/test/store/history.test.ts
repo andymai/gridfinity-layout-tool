@@ -68,7 +68,7 @@ describe('history store', () => {
 
       // Undo
       undo();
-      expect(useLayoutStore.getState().layout.name).toBe('Untitled Layout');
+      expect(useLayoutStore.getState().layout.name).toBe('Untitled layout');
     });
 
     it('moves current state to future', () => {
@@ -121,7 +121,7 @@ describe('history store', () => {
       useLayoutStore.getState().setName('Modified');
 
       undo();
-      expect(useLayoutStore.getState().layout.name).toBe('Untitled Layout');
+      expect(useLayoutStore.getState().layout.name).toBe('Untitled layout');
 
       redo();
       expect(useLayoutStore.getState().layout.name).toBe('Modified');

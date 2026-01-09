@@ -176,13 +176,34 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 keys="Arrow keys"
                 description="Nudge selected bin"
               />
+              <div className="divider" />
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.LAYER_UP).toUpperCase()}
+                description="Go to layer above"
+              />
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase()}
+                description="Go to layer below"
+              />
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase()}
+                description="Select previous bin"
+              />
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase()}
+                description="Select next bin"
+              />
+              <ShortcutRow
+                keys={[formatKey(SHORTCUTS.CATEGORY_PREV), formatKey(SHORTCUTS.CATEGORY_NEXT)]}
+                description="Cycle bin category"
+              />
             </div>
           </section>
 
           {/* 3D Preview Shortcuts Section */}
           <section>
             <h3 className="mb-4" style={STYLES.sectionHeader}>
-              3D Preview Shortcuts
+              3D Preview (Keyboard)
             </h3>
             <div className="space-y-2 p-4 rounded-lg" style={STYLES.sectionContent}>
               <ShortcutRow
@@ -194,37 +215,25 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 description="Expand/collapse 3D preview"
               />
               <ShortcutRow
-                keys={formatKey(SHORTCUTS.PREVIEW_RESET)}
-                description="Reset 3D view"
-              />
-              <ShortcutRow
-                keys="← →"
-                description="Rotate 3D view left/right"
-              />
-              <ShortcutRow
-                keys="↑ ↓"
-                description="Tilt 3D camera up/down"
-              />
-              <ShortcutRow
                 keys={formatKey(SHORTCUTS.ESCAPE)}
                 description="Close expanded 3D preview"
               />
               <div className="divider" />
               <ShortcutRow
                 keys="1"
-                description="Switch to Isometric view"
+                description="Isometric view"
               />
               <ShortcutRow
                 keys="2"
-                description="Switch to Top view"
+                description="Top view"
               />
               <ShortcutRow
                 keys="3"
-                description="Switch to Front view"
+                description="Front view"
               />
               <ShortcutRow
                 keys="4"
-                description="Switch to Side view"
+                description="Side view"
               />
             </div>
           </section>
@@ -232,7 +241,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
           {/* Mouse Interactions Section */}
           <section>
             <h3 className="mb-4" style={STYLES.sectionHeader}>
-              Mouse Interactions
+              Mouse / Touch
             </h3>
             <div className="space-y-2 p-4 rounded-lg" style={STYLES.sectionContent}>
               <InteractionRow

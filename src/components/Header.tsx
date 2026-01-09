@@ -57,7 +57,7 @@ export function Header({ onHelpClick }: HeaderProps) {
   };
 
   const handleNameSubmit = () => {
-    setName(editValue.trim() || 'Untitled Layout');
+    setName(editValue.trim() || 'Untitled layout');
     setIsEditing(false);
   };
 
@@ -173,19 +173,17 @@ export function Header({ onHelpClick }: HeaderProps) {
           aria-label="Reset layout to defaults"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16m4-8h12m-12 0l4-4m-4 4l4 4" />
           </svg>
         </button>
 
         <button
           onClick={onHelpClick}
-          className="btn btn-ghost btn-icon"
-          title="Show keyboard shortcuts (press ?)"
+          className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary"
+          title="Show keyboard shortcuts"
           aria-label="Show help and keyboard shortcuts"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          Press <kbd className="mx-1 px-2 py-1 text-xs font-mono rounded text-content" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>?</kbd> for help
         </button>
       </div>
 
