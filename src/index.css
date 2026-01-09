@@ -86,7 +86,7 @@
   /* Text Colors */
   --text-primary: #fafafa;      /* Primary text */
   --text-secondary: #a1a1aa;    /* Secondary text */
-  --text-tertiary: #71717a;     /* Muted text */
+  --text-tertiary: #8b8c92;     /* Muted text - WCAG AA compliant (4.5:1) */
   --text-disabled: #6b6b75;     /* Disabled text - increased for WCAG AA (3:1 min) */
 
   /* Semantic Colors - DISTINCT purposes */
