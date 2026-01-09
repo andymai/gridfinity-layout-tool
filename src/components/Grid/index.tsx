@@ -581,8 +581,9 @@ export function Grid() {
       <div
         ref={scrollContainerRef}
         className="flex-1 overflow-auto p-6 pr-8 bg-surface flex justify-center"
-        onClick={(e) => {
+        onPointerDown={(e) => {
           // Deselect if clicking on container or wrapper areas (not interactive elements)
+          // Bins call stopPropagation on pointerdown, so this only fires for empty space
           const target = e.target as HTMLElement;
           // Don't deselect if clicking on buttons, inputs, or bin elements
           if (!target.closest('button') && !target.closest('input') && !target.closest('[data-bin-id]')) {
