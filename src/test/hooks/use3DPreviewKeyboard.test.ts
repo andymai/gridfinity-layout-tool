@@ -1,0 +1,791 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { use3DPreviewKeyboard } from '../../hooks/use3DPreviewKeyboard';
+import type { SceneHandle } from '../../components/Grid/IsometricPreview/Scene';
+
+// Helper to create keyboard event
+function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {
+  return new KeyboardEvent('keydown', {
+    key,
+    bubbles: true,
+    cancelable: true,
+    ...options,
+  });
+}
+
+// Helper to dispatch keyboard event
+function pressKey(key: string, target: EventTarget = document, options: Partial<KeyboardEventInit> = {}) {
+  const event = createKeyboardEvent(key, options);
+  Object.defineProperty(event, 'target', { value: target, enumerable: true });
+  document.dispatchEvent(event);
+  return event;
+}
+
+describe('use3DPreviewKeyboard', () => {
+  let mockSceneRef: React.RefObject<SceneHandle | null>;
+  let mockTogglePreviewVisibility: ReturnType<typeof vi.fn>;
+  let mockTogglePreviewExpanded: ReturnType<typeof vi.fn>;
+  let mockSetPreviewExpanded: ReturnType<typeof vi.fn>;
+  let mockSetIsometricRotation: ReturnType<typeof vi.fn>;
+  let mockResetView: ReturnType<typeof vi.fn>;
+  let mockSetPreset: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    // Create mock functions
+    mockTogglePreviewVisibility = vi.fn();
+    mockTogglePreviewExpanded = vi.fn();
+    mockSetPreviewExpanded = vi.fn();
+    mockSetIsometricRotation = vi.fn();
+    mockResetView = vi.fn();
+    mockSetPreset = vi.fn();
+
+    // Create mock scene ref
+    mockSceneRef = {
+      current: {
+        resetView: mockResetView,
+        setPreset: mockSetPreset,
+      },
+    };
+  });
+
+  describe('v key - toggle preview visibility', () => {
+    it('toggles preview visibility when v is pressed', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('v');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockTogglePreviewVisibility).toHaveBeenCalledTimes(1);
+    });
+
+    it('works when preview is hidden (special case)', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: false,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        pressKey('v');
+      });
+
+      expect(mockTogglePreviewVisibility).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Space key - toggle expand/collapse', () => {
+    it('toggles expanded state when preview is visible', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey(' ');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockTogglePreviewExpanded).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not toggle when preview is hidden', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: false,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        pressKey(' ');
+      });
+
+      expect(mockTogglePreviewExpanded).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('r key - reset view', () => {
+    it('calls resetView when preview is visible', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('r');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockResetView).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not call resetView when preview is hidden', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: false,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        pressKey('r');
+      });
+
+      expect(mockResetView).not.toHaveBeenCalled();
+    });
+
+    it('handles null scene ref gracefully', () => {
+      const nullSceneRef = { current: null };
+
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: nullSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        pressKey('r');
+      });
+
+      // Should not throw error
+      expect(mockResetView).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ArrowLeft key - rotate left', () => {
+    it('rotates left by 15 degrees when preview is visible', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 45,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('ArrowLeft');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockSetIsometricRotation).toHaveBeenCalledWith(30);
+    });
+
+    it('does not rotate when preview is hidden', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: false,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 45,
+        })
+      );
+
+      act(() => {
+        pressKey('ArrowLeft');
+      });
+
+      expect(mockSetIsometricRotation).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ArrowRight key - rotate right', () => {
+    it('rotates right by 15 degrees when preview is visible', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 45,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('ArrowRight');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockSetIsometricRotation).toHaveBeenCalledWith(60);
+    });
+
+    it('does not rotate when preview is hidden', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: false,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 45,
+        })
+      );
+
+      act(() => {
+        pressKey('ArrowRight');
+      });
+
+      expect(mockSetIsometricRotation).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ArrowUp/ArrowDown keys - tilt camera', () => {
+    it('prevents default on ArrowUp when preview is visible', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('ArrowUp');
+        expect(event.defaultPrevented).toBe(true);
+      });
+    });
+
+    it('prevents default on ArrowDown when preview is visible', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('ArrowDown');
+        expect(event.defaultPrevented).toBe(true);
+      });
+    });
+
+    it('does not prevent default when preview is hidden', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: false,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('ArrowUp');
+        expect(event.defaultPrevented).toBe(false);
+      });
+    });
+  });
+
+  describe('Escape key - close expanded view', () => {
+    it('closes expanded view when preview is visible and expanded', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: true,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('Escape');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockSetPreviewExpanded).toHaveBeenCalledWith(false);
+    });
+
+    it('does not close when preview is not expanded', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        pressKey('Escape');
+      });
+
+      expect(mockSetPreviewExpanded).not.toHaveBeenCalled();
+    });
+
+    it('does not close when preview is hidden', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: false,
+          isPreviewExpanded: true,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        pressKey('Escape');
+      });
+
+      expect(mockSetPreviewExpanded).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('1-4 keys - camera presets', () => {
+    it('sets isometric preset on 1 key', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('1');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockSetPreset).toHaveBeenCalledWith('isometric');
+    });
+
+    it('sets top preset on 2 key', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('2');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockSetPreset).toHaveBeenCalledWith('top');
+    });
+
+    it('sets front preset on 3 key', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('3');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockSetPreset).toHaveBeenCalledWith('front');
+    });
+
+    it('sets side preset on 4 key', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        const event = pressKey('4');
+        expect(event.defaultPrevented).toBe(true);
+      });
+
+      expect(mockSetPreset).toHaveBeenCalledWith('side');
+    });
+
+    it('does not set presets when preview is hidden', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: false,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        pressKey('1');
+        pressKey('2');
+        pressKey('3');
+        pressKey('4');
+      });
+
+      expect(mockSetPreset).not.toHaveBeenCalled();
+    });
+
+    it('handles null scene ref gracefully for presets', () => {
+      const nullSceneRef = { current: null };
+
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: nullSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      act(() => {
+        pressKey('1');
+      });
+
+      // Should not throw error
+      expect(mockSetPreset).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('input field detection', () => {
+    it('does not handle shortcuts when typing in INPUT element', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      const input = document.createElement('input');
+      document.body.appendChild(input);
+
+      act(() => {
+        pressKey('v', input);
+        pressKey(' ', input);
+        pressKey('r', input);
+        pressKey('1', input);
+      });
+
+      // v key should work even in input (it's a special case - only for toggle visibility)
+      // Actually, looking at the code, it checks the target BEFORE handling any key
+      // So v key should also be blocked in input fields
+      expect(mockTogglePreviewVisibility).not.toHaveBeenCalled();
+      expect(mockTogglePreviewExpanded).not.toHaveBeenCalled();
+      expect(mockResetView).not.toHaveBeenCalled();
+      expect(mockSetPreset).not.toHaveBeenCalled();
+
+      document.body.removeChild(input);
+    });
+
+    it('does not handle shortcuts when typing in TEXTAREA element', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      const textarea = document.createElement('textarea');
+      document.body.appendChild(textarea);
+
+      act(() => {
+        pressKey('v', textarea);
+        pressKey(' ', textarea);
+        pressKey('r', textarea);
+      });
+
+      expect(mockTogglePreviewVisibility).not.toHaveBeenCalled();
+      expect(mockTogglePreviewExpanded).not.toHaveBeenCalled();
+      expect(mockResetView).not.toHaveBeenCalled();
+
+      document.body.removeChild(textarea);
+    });
+
+    it('does not handle shortcuts in contentEditable elements', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      const div = document.createElement('div');
+      div.setAttribute('contenteditable', 'true');
+      // Manually set isContentEditable since jsdom doesn't fully support it
+      Object.defineProperty(div, 'isContentEditable', {
+        value: true,
+        writable: true,
+      });
+      document.body.appendChild(div);
+
+      act(() => {
+        pressKey('v', div);
+        pressKey(' ', div);
+        pressKey('r', div);
+      });
+
+      expect(mockTogglePreviewVisibility).not.toHaveBeenCalled();
+      expect(mockTogglePreviewExpanded).not.toHaveBeenCalled();
+      expect(mockResetView).not.toHaveBeenCalled();
+
+      document.body.removeChild(div);
+    });
+
+    it('handles shortcuts normally when target is a regular element', () => {
+      renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      const div = document.createElement('div');
+      document.body.appendChild(div);
+
+      act(() => {
+        pressKey('v', div);
+      });
+
+      expect(mockTogglePreviewVisibility).toHaveBeenCalledTimes(1);
+
+      document.body.removeChild(div);
+    });
+  });
+
+  describe('event listener cleanup', () => {
+    it('removes event listener on unmount', () => {
+      const addEventListenerSpy = vi.spyOn(document, 'addEventListener');
+      const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
+
+      const { unmount } = renderHook(() =>
+        use3DPreviewKeyboard({
+          sceneRef: mockSceneRef,
+          isPreviewVisible: true,
+          isPreviewExpanded: false,
+          togglePreviewVisibility: mockTogglePreviewVisibility,
+          togglePreviewExpanded: mockTogglePreviewExpanded,
+          setPreviewExpanded: mockSetPreviewExpanded,
+          setIsometricRotation: mockSetIsometricRotation,
+          isometricRotation: 0,
+        })
+      );
+
+      expect(addEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
+
+      unmount();
+
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
+
+      addEventListenerSpy.mockRestore();
+      removeEventListenerSpy.mockRestore();
+    });
+  });
+
+  describe('dependency updates', () => {
+    it('updates handler when isometricRotation changes', () => {
+      const { rerender } = renderHook(
+        ({ rotation }) =>
+          use3DPreviewKeyboard({
+            sceneRef: mockSceneRef,
+            isPreviewVisible: true,
+            isPreviewExpanded: false,
+            togglePreviewVisibility: mockTogglePreviewVisibility,
+            togglePreviewExpanded: mockTogglePreviewExpanded,
+            setPreviewExpanded: mockSetPreviewExpanded,
+            setIsometricRotation: mockSetIsometricRotation,
+            isometricRotation: rotation,
+          }),
+        { initialProps: { rotation: 0 } }
+      );
+
+      act(() => {
+        pressKey('ArrowRight');
+      });
+
+      expect(mockSetIsometricRotation).toHaveBeenCalledWith(15);
+
+      mockSetIsometricRotation.mockClear();
+
+      rerender({ rotation: 30 });
+
+      act(() => {
+        pressKey('ArrowRight');
+      });
+
+      expect(mockSetIsometricRotation).toHaveBeenCalledWith(45);
+    });
+
+    it('updates handler when visibility changes', () => {
+      const { rerender } = renderHook(
+        ({ visible }) =>
+          use3DPreviewKeyboard({
+            sceneRef: mockSceneRef,
+            isPreviewVisible: visible,
+            isPreviewExpanded: false,
+            togglePreviewVisibility: mockTogglePreviewVisibility,
+            togglePreviewExpanded: mockTogglePreviewExpanded,
+            setPreviewExpanded: mockSetPreviewExpanded,
+            setIsometricRotation: mockSetIsometricRotation,
+            isometricRotation: 0,
+          }),
+        { initialProps: { visible: true } }
+      );
+
+      act(() => {
+        pressKey('r');
+      });
+
+      expect(mockResetView).toHaveBeenCalledTimes(1);
+
+      mockResetView.mockClear();
+
+      rerender({ visible: false });
+
+      act(() => {
+        pressKey('r');
+      });
+
+      expect(mockResetView).not.toHaveBeenCalled();
+    });
+  });
+});
