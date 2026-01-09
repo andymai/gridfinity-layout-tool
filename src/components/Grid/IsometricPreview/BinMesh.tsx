@@ -10,6 +10,7 @@ interface BinMeshProps {
   y: number;
   z: number;
   height: number;
+  isSelected?: boolean;
 }
 
 /**
@@ -17,7 +18,7 @@ interface BinMeshProps {
  * Uses world-space lighting for realistic shadows and highlights.
  * Includes rounded corners for polished appearance.
  */
-export function BinMesh({ x, y, z, bin, color, opacity, height }: BinMeshProps) {
+export function BinMesh({ x, y, z, bin, color, opacity, height, isSelected = false }: BinMeshProps) {
   const geometry = useBinGeometry({
     width: bin.width,
     depth: bin.depth,
@@ -31,11 +32,13 @@ export function BinMesh({ x, y, z, bin, color, opacity, height }: BinMeshProps) 
         vertexColors
         roughness={0.7} // Matte plastic finish
         metalness={0}   // Non-metallic
-        transparent={opacity < 1}
+        transparent={opacity < 1 || isSelected}
         opacity={opacity}
-        depthWrite={opacity === 1}
+        depthWrite={opacity === 1 && !isSelected}
         flatShading={false} // Smooth shading for rounded corners
         side={THREE.DoubleSide} // Fixes clipping from incorrect face winding
+        emissive={isSelected ? '#ffffff' : '#000000'}
+        emissiveIntensity={isSelected ? 0.3 : 0}
       />
     </mesh>
   );

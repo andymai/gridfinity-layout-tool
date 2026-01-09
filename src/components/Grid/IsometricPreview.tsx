@@ -40,6 +40,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     dimInactiveLayers,
     isPreviewExpanded,
     isometricRotation,
+    selectedBinIds,
     toggleHideLayersAbove,
     toggleDimInactiveLayers,
     togglePreviewExpanded,
@@ -53,6 +54,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       dimInactiveLayers: state.dimInactiveLayers,
       isPreviewExpanded: state.isPreviewExpanded,
       isometricRotation: state.isometricRotation,
+      selectedBinIds: state.selectedBinIds,
       toggleHideLayersAbove: state.toggleHideLayersAbove,
       toggleDimInactiveLayers: state.toggleDimInactiveLayers,
       togglePreviewExpanded: state.togglePreviewExpanded,
@@ -263,6 +265,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                 height={binData.height}
                 color={binData.color}
                 opacity={binData.opacity}
+                isSelected={selectedBinIds.includes(binData.bin.id)}
               />
               {/* Split lines for oversized bins */}
               {(binData.bin.width > maxGridUnits ||
