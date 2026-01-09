@@ -304,12 +304,41 @@ export function IsometricPreview() {
           e.stopPropagation()
           sceneRef.current?.resetView()
         }}
-        className={`absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content transition-colors ${
-          isPreviewExpanded ? "text-xs" : "text-[10px]"
+        className={`absolute bottom-1 left-1 group flex items-center gap-2 rounded transition-all ${
+          isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-11 min-h-11 w-8 h-8"
         }`}
+        style={{
+          background: "rgba(255, 255, 255, 0.1)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+          backdropFilter: "blur(8px)",
+          color: "rgba(255, 255, 255, 0.9)",
+        }}
         title="Reset view (rotation, zoom, and pan)"
       >
-        Reset View
+        <svg
+          className={isPreviewExpanded ? "w-5 h-5" : "w-4 h-4"}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
+        </svg>
+        {isPreviewExpanded && (
+          <span className="text-xs font-medium">Reset</span>
+        )}
+        {!isPreviewExpanded && (
+          <span className="absolute left-full ml-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
+            background: "rgba(0, 0, 0, 0.9)",
+            color: "white",
+          }}>
+            Reset
+          </span>
+        )}
       </button>
       {/* Layer controls - only show when multiple layers */}
       {layout.layers.length > 1 && (
@@ -324,13 +353,19 @@ export function IsometricPreview() {
               e.stopPropagation()
               toggleDimInactiveLayers()
             }}
-            className={`flex items-center justify-center gap-1 rounded font-medium transition-colors ${
-              isPreviewExpanded ? "h-7 px-2 text-xs" : "h-5 px-1.5 text-[9px]"
-            } ${
-              dimInactiveLayers
-                ? "bg-accent/90 text-white"
-                : "bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content"
+            className={`group flex items-center gap-2 rounded font-medium transition-all ${
+              isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-11 min-h-11 w-8 h-8"
             }`}
+            style={{
+              background: dimInactiveLayers
+                ? "rgba(var(--color-accent-rgb, 99, 102, 241), 0.9)"
+                : "rgba(255, 255, 255, 0.1)",
+              border: dimInactiveLayers
+                ? "1px solid rgba(var(--color-accent-rgb, 99, 102, 241), 1)"
+                : "1px solid rgba(255, 255, 255, 0.2)",
+              backdropFilter: "blur(8px)",
+              color: dimInactiveLayers ? "white" : "rgba(255, 255, 255, 0.9)",
+            }}
             title={
               dimInactiveLayers
                 ? "Dim inactive layers (on)"
@@ -338,7 +373,7 @@ export function IsometricPreview() {
             }
           >
             <svg
-              className={isPreviewExpanded ? "w-4 h-4" : "w-3 h-3"}
+              className={isPreviewExpanded ? "w-5 h-5" : "w-4 h-4"}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -350,7 +385,17 @@ export function IsometricPreview() {
                 d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
               />
             </svg>
-            <span>Dim</span>
+            {isPreviewExpanded && (
+              <span className="text-xs">Dim Layers</span>
+            )}
+            {!isPreviewExpanded && (
+              <span className="absolute right-full mr-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
+                background: "rgba(0, 0, 0, 0.9)",
+                color: "white",
+              }}>
+                Dim Layers
+              </span>
+            )}
           </button>
           {/* Slice view toggle - hide layers above active */}
           <button
@@ -358,17 +403,23 @@ export function IsometricPreview() {
               e.stopPropagation()
               toggleHideLayersAbove()
             }}
-            className={`flex items-center justify-center gap-1 rounded font-medium transition-colors ${
-              isPreviewExpanded ? "h-7 px-2 text-xs" : "h-5 px-1.5 text-[9px]"
-            } ${
-              hideLayersAbove
-                ? "bg-accent/90 text-white"
-                : "bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content"
+            className={`group flex items-center gap-2 rounded font-medium transition-all ${
+              isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-11 min-h-11 w-8 h-8"
             }`}
+            style={{
+              background: hideLayersAbove
+                ? "rgba(var(--color-accent-rgb, 99, 102, 241), 0.9)"
+                : "rgba(255, 255, 255, 0.1)",
+              border: hideLayersAbove
+                ? "1px solid rgba(var(--color-accent-rgb, 99, 102, 241), 1)"
+                : "1px solid rgba(255, 255, 255, 0.2)",
+              backdropFilter: "blur(8px)",
+              color: hideLayersAbove ? "white" : "rgba(255, 255, 255, 0.9)",
+            }}
             title={hideLayersAbove ? "Slice view (on)" : "Slice view (off)"}
           >
             <svg
-              className={isPreviewExpanded ? "w-4 h-4" : "w-3 h-3"}
+              className={isPreviewExpanded ? "w-5 h-5" : "w-4 h-4"}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -380,7 +431,17 @@ export function IsometricPreview() {
                 d="M4 5h16M4 12h16m-7 7h7"
               />
             </svg>
-            <span>Slice</span>
+            {isPreviewExpanded && (
+              <span className="text-xs">Slice View</span>
+            )}
+            {!isPreviewExpanded && (
+              <span className="absolute right-full mr-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
+                background: "rgba(0, 0, 0, 0.9)",
+                color: "white",
+              }}>
+                Slice View
+              </span>
+            )}
           </button>
         </div>
       )}
@@ -392,41 +453,56 @@ export function IsometricPreview() {
             e.stopPropagation()
             togglePreviewExpanded()
           }}
-          className={`flex items-center justify-center rounded bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content transition-colors ${
-            isPreviewExpanded ? "w-7 h-7" : "w-5 h-5"
+          className={`group flex items-center gap-2 rounded transition-all ${
+            isPreviewExpanded ? "min-w-11 min-h-11 w-10 h-10" : "min-w-11 min-h-11 w-8 h-8"
           }`}
+          style={{
+            background: "rgba(255, 255, 255, 0.1)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            backdropFilter: "blur(8px)",
+            color: "rgba(255, 255, 255, 0.9)",
+          }}
           title={isPreviewExpanded ? "Collapse preview" : "Expand preview"}
         >
           {isPreviewExpanded ? (
-            // Collapse icon (arrows pointing inward)
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 9L4 4m0 0v4m0-4h4m6 6l5 5m0 0v-4m0 4h-4M9 15l-5 5m0 0v-4m0 4h4m6-6l5-5m0 0v4m0-4h-4"
-              />
-            </svg>
+            <>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 9L4 4m0 0v4m0-4h4m6 6l5 5m0 0v-4m0 4h-4M9 15l-5 5m0 0v-4m0 4h4m6-6l5-5m0 0v4m0-4h-4"
+                />
+              </svg>
+              <span className="text-xs font-medium">Collapse</span>
+            </>
           ) : (
-            // Expand icon (arrows pointing outward)
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
-              />
-            </svg>
+            <>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
+                />
+              </svg>
+              <span className="absolute right-full mr-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
+                background: "rgba(0, 0, 0, 0.9)",
+                color: "white",
+              }}>
+                Expand
+              </span>
+            </>
           )}
         </button>
         {/* Close button */}
@@ -439,13 +515,19 @@ export function IsometricPreview() {
               useUIStore.getState().toggleIsometricPreview()
             }
           }}
-          className={`flex items-center justify-center rounded bg-surface/80 hover:bg-surface text-content-tertiary hover:text-content transition-colors ${
-            isPreviewExpanded ? "w-7 h-7" : "w-5 h-5"
+          className={`group flex items-center gap-2 rounded transition-all ${
+            isPreviewExpanded ? "min-w-11 min-h-11 w-10 h-10" : "min-w-11 min-h-11 w-8 h-8"
           }`}
+          style={{
+            background: "rgba(255, 255, 255, 0.1)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            backdropFilter: "blur(8px)",
+            color: "rgba(255, 255, 255, 0.9)",
+          }}
           title={isPreviewExpanded ? "Collapse preview" : "Close preview"}
         >
           <svg
-            className={isPreviewExpanded ? "w-4 h-4" : "w-3 h-3"}
+            className={isPreviewExpanded ? "w-5 h-5" : "w-4 h-4"}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -457,6 +539,17 @@ export function IsometricPreview() {
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
+          {isPreviewExpanded && (
+            <span className="text-xs font-medium">Close</span>
+          )}
+          {!isPreviewExpanded && (
+            <span className="absolute right-full mr-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
+              background: "rgba(0, 0, 0, 0.9)",
+              color: "white",
+            }}>
+              Close
+            </span>
+          )}
         </button>
       </div>
     </div>
