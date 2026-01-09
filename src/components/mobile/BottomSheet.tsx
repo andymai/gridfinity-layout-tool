@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useUIStore } from '../../store/ui';
+import { useResponsive } from '../../hooks';
 
 interface BottomSheetProps {
   children: React.ReactNode;
@@ -13,11 +14,16 @@ interface BottomSheetProps {
 export function BottomSheet({ children, title }: BottomSheetProps) {
   const activeMobilePanel = useUIStore(state => state.activeMobilePanel);
   const closeMobilePanel = useUIStore(state => state.closeMobilePanel);
+  const { viewportHeight } = useResponsive();
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
+
+  // Adaptive dismiss threshold: 15% of viewport height, capped at 80px
+  // Smaller screens get smaller thresholds for easier dismissal
+  const dismissThreshold = Math.min(80, Math.round(viewportHeight * 0.15));
 
   const isOpen = activeMobilePanel !== null;
 
@@ -47,12 +53,12 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
     if (!isDragging) return;
 
     setIsDragging(false);
-    // If dragged more than 80px, close the sheet
-    if (dragY > 80) {
+    // If dragged more than threshold, close the sheet
+    if (dragY > dismissThreshold) {
       closeMobilePanel();
     }
     setDragY(0);
-  }, [isDragging, dragY, closeMobilePanel]);
+  }, [isDragging, dragY, dismissThreshold, closeMobilePanel]);
 
   // Close on escape key
   useEffect(() => {
