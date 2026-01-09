@@ -29,6 +29,7 @@ export interface SceneHandle {
 export const Scene = forwardRef<SceneHandle, SceneProps>(
   ({ children, drawerWidth, drawerDepth, drawerHeight, isExpanded }, ref) => {
     const controlsRef = useRef<OrbitControlsType>(null);
+    const prevExpandedRef = useRef<boolean | undefined>(undefined);
     const { camera, size } = useThree();
 
     const setIsometricRotation = useUIStore((state) => state.setIsometricRotation);
@@ -85,26 +86,31 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       camera.updateProjectionMatrix();
     }, [camera, defaultCameraPosition]);
 
-    // Auto-zoom when expanded to fit drawer in view
+    // Auto-zoom when transitioning to/from expanded mode
+    // Only recalculates zoom on expand/collapse transitions, not on every size change
+    // This preserves manual zoom adjustments from OrbitControls
     useEffect(() => {
       if (!camera || !(camera instanceof OrthographicCamera)) return;
 
-      if (isExpanded) {
+      const wasExpanded = prevExpandedRef.current;
+      const justExpanded = wasExpanded === false && isExpanded;
+      const justCollapsed = wasExpanded === true && !isExpanded;
+
+      if (justExpanded) {
         // Scale zoom proportionally with canvas size
         // Baseline: zoom=30 for 280px canvas
-        // For larger canvas, scale up zoom to keep similar relative size, then zoom in more
         const baseCanvasSize = 280;
         const scaleFactor = Math.min(size.width, size.height) / baseCanvasSize;
-        const zoomInFactor = 1.5; // Additional zoom to fill viewport better
         // eslint-disable-next-line react-hooks/immutability -- Three.js requires direct mutation of camera properties
-        camera.zoom = 30 * scaleFactor * zoomInFactor;
-      } else {
-        // Reset to default zoom when not expanded
+        camera.zoom = 30 * scaleFactor;
+        camera.updateProjectionMatrix();
+      } else if (justCollapsed) {
+         
         camera.zoom = 30;
+        camera.updateProjectionMatrix();
       }
 
-       
-      camera.updateProjectionMatrix();
+      prevExpandedRef.current = isExpanded;
     }, [isExpanded, size, camera]);
 
     // Handle rotation changes from OrbitControls
