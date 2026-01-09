@@ -23,6 +23,10 @@ export interface ResponsiveState {
   layoutMode: LayoutMode;
   /** Viewport width in pixels */
   viewportWidth: number;
+  /** Viewport height in pixels */
+  viewportHeight: number;
+  /** Device is in landscape orientation (width > height) */
+  isLandscape: boolean;
 }
 
 /**
@@ -40,6 +44,7 @@ export function useResponsive(): ResponsiveState {
     );
     const desktopQuery = window.matchMedia(`(min-width: ${BREAKPOINTS.lg}px)`);
     const touchQuery = window.matchMedia('(pointer: coarse)');
+    const landscapeQuery = window.matchMedia('(orientation: landscape)');
 
     const updateState = () => {
       setState(getResponsiveState());
@@ -50,6 +55,10 @@ export function useResponsive(): ResponsiveState {
     tabletQuery.addEventListener('change', updateState);
     desktopQuery.addEventListener('change', updateState);
     touchQuery.addEventListener('change', updateState);
+    landscapeQuery.addEventListener('change', updateState);
+
+    // Also listen to window resize for viewport dimensions
+    window.addEventListener('resize', updateState);
 
     // Initial state
     updateState();
@@ -59,6 +68,8 @@ export function useResponsive(): ResponsiveState {
       tabletQuery.removeEventListener('change', updateState);
       desktopQuery.removeEventListener('change', updateState);
       touchQuery.removeEventListener('change', updateState);
+      landscapeQuery.removeEventListener('change', updateState);
+      window.removeEventListener('resize', updateState);
     };
   }, []);
 
@@ -78,14 +89,18 @@ function getResponsiveState(): ResponsiveState {
       isTouchDevice: false,
       layoutMode: 'desktop',
       viewportWidth: 1280,
+      viewportHeight: 720,
+      isLandscape: true,
     };
   }
 
   const width = window.innerWidth;
+  const height = window.innerHeight;
   const isMobile = width < BREAKPOINTS.md;
   const isTablet = width >= BREAKPOINTS.md && width < BREAKPOINTS.lg;
   const isDesktop = width >= BREAKPOINTS.lg;
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+  const isLandscape = width > height;
 
   let layoutMode: LayoutMode = 'desktop';
   if (isMobile) {
@@ -101,6 +116,8 @@ function getResponsiveState(): ResponsiveState {
     isTouchDevice,
     layoutMode,
     viewportWidth: width,
+    viewportHeight: height,
+    isLandscape,
   };
 }
 
