@@ -385,14 +385,14 @@ export function Grid() {
   const rowLabels = Array.from({ length: drawer.depth }, (_, i) => drawer.depth - i);
 
   return (
-    <div className="flex flex-col h-full bg-surface relative">
+    <div className="flex flex-col h-full w-full overflow-hidden bg-surface relative">
       {/* Mobile toolbar - always at very top */}
       {isMobile && (
         <MobileGridToolbar onFitToScreen={fitToScreen} />
       )}
 
       {/* Main content area: horizontal split on desktop, vertical on mobile */}
-      <div className={`flex flex-1 min-h-0 ${!isMobile && showIsometricPreview ? 'flex-row' : 'flex-col'}`}>
+      <div className={`flex flex-1 min-h-0 ${!isMobile && showIsometricPreview ? 'flex-row overflow-hidden' : 'flex-col'}`}>
         {/* Mobile: 3D preview as top portion */}
         {/* Keep mounted once shown to avoid WebGL context issues with StrictMode */}
         {isMobile && hasEverShownPreview && (
@@ -411,7 +411,7 @@ export function Grid() {
           </div>
         )}
         {/* Grid area */}
-        <div className={`flex flex-col ${isMobile && showIsometricPreview ? 'flex-1 min-h-0' : 'h-full'} ${!isMobile && showIsometricPreview ? 'w-1/2 border-r border-stroke-subtle' : 'w-full'}`}>
+        <div className={`flex flex-col ${isMobile && showIsometricPreview ? 'flex-1 min-h-0' : 'h-full'} ${!isMobile && showIsometricPreview ? 'w-1/2 min-w-0 border-r border-stroke-subtle' : 'w-full'}`}>
           {/* Desktop toolbar */}
           {!isMobile && (
         <div
