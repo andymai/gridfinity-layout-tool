@@ -92,6 +92,15 @@ export function Grid() {
   // Track if grid resize handles should pulse (first load)
   const [shouldPulseResizeHandles, setShouldPulseResizeHandles] = useState(false);
 
+  // Track if 3D preview has ever been shown (keep mounted once shown to avoid WebGL context issues)
+  const [hasEverShownPreview, setHasEverShownPreview] = useState(showIsometricPreview);
+  useEffect(() => {
+    if (showIsometricPreview && !hasEverShownPreview) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- One-time state sync, only triggers once
+      setHasEverShownPreview(true);
+    }
+  }, [showIsometricPreview, hasEverShownPreview]);
+
   // Show first-time toast when paint mode is activated
   useEffect(() => {
     if (paintSize) {
@@ -769,8 +778,11 @@ export function Grid() {
       {/* End of grid area wrapper */}
 
       {/* Right side: 3D Preview (50% when shown on desktop) */}
-      {!isMobile && showIsometricPreview && (
-        <div className="w-1/2 h-full bg-surface-secondary overflow-hidden">
+      {/* Keep mounted once shown to avoid WebGL context issues with StrictMode */}
+      {!isMobile && hasEverShownPreview && (
+        <div
+          className={`w-1/2 h-full bg-surface-secondary overflow-hidden ${!showIsometricPreview ? 'hidden' : ''}`}
+        >
           <PanelErrorBoundary panelName="3D Preview">
             <Suspense fallback={
               <div className="w-full h-full flex items-center justify-center">
@@ -784,8 +796,11 @@ export function Grid() {
       )}
 
       {/* Mobile: 3D preview as overlay (original behavior) */}
-      {isMobile && showIsometricPreview && (
-        <div className="absolute top-14 right-4 w-[280px] h-[280px] rounded-lg bg-surface-secondary border border-stroke-subtle z-20 overflow-hidden">
+      {/* Keep mounted once shown to avoid WebGL context issues with StrictMode */}
+      {isMobile && hasEverShownPreview && (
+        <div
+          className={`absolute top-14 right-4 w-[280px] h-[280px] rounded-lg bg-surface-secondary border border-stroke-subtle z-20 overflow-hidden ${!showIsometricPreview ? 'hidden' : ''}`}
+        >
           <PanelErrorBoundary panelName="3D Preview">
             <Suspense fallback={
               <div className="w-full h-full flex items-center justify-center">

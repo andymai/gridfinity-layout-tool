@@ -122,7 +122,7 @@ export const useUIStore = create<UIState>((set) => ({
   paintSize: null,
   activeMobilePanel: null,
   contextMenu: null,
-  showIsometricPreview: true, // Open by default
+  showIsometricPreview: true, // On by default
   isometricRotation: 0,
   hideLayersAbove: false,
   dimInactiveLayers: true, // Enabled by default

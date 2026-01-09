@@ -1,4 +1,3 @@
-import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
@@ -9,10 +8,10 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
+// Note: StrictMode disabled due to react-three-fiber WebGL context issues
+// R3F's Canvas doesn't handle StrictMode's double-mount cycle well
 createRoot(rootElement).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </StrictMode>,
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>,
 )
