@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useEffect, useRef } from "react"
+import { useMemo, useCallback, useEffect, useRef, useState } from "react"
 import { Canvas } from "@react-three/fiber"
 import { useShallow } from "zustand/shallow"
 import { useLayoutStore, useUIStore } from "../../store"
@@ -13,6 +13,7 @@ import { darkenColor } from "../../utils/isometric"
 import { Scene, type SceneHandle } from "./IsometricPreview/Scene"
 import { BinMesh } from "./IsometricPreview/BinMesh"
 import { SplitLineOverlay } from "./IsometricPreview/SplitLineOverlay"
+import { OnboardingOverlay } from "./IsometricPreview/OnboardingOverlay"
 
 // Height units (7mm) to grid units (42mm) conversion for proper proportions
 const HEIGHT_TO_GRID_SCALE = 7 / 42
@@ -26,6 +27,7 @@ const PREVIEW_SIZE_SMALL = 280 // Default small preview
 export function IsometricPreview() {
   const sceneRef = useRef<SceneHandle>(null)
   const { isMobile, isTablet } = useResponsive()
+  const [showOnboarding, setShowOnboarding] = useState(true)
 
   const {
     showIsometricPreview,
@@ -614,6 +616,11 @@ export function IsometricPreview() {
           )}
         </button>
       </div>
+
+      {/* Onboarding overlay - shown on first preview open */}
+      {showOnboarding && (
+        <OnboardingOverlay onDismiss={() => setShowOnboarding(false)} />
+      )}
     </div>
   )
 
