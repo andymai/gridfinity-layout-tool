@@ -23,6 +23,9 @@ export function Grid() {
   const { isMobile, viewportWidth } = useResponsive();
   const gridRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const overflowMenuRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const [toolbarWidth, setToolbarWidth] = useState(0);
 
   const {
     zoom,
@@ -88,6 +91,38 @@ export function Grid() {
 
   // Track if paint mode hint should pulse (first use)
   const [shouldPulsePaintHint, setShouldPulsePaintHint] = useState(false);
+
+  // Overflow menu state for narrow toolbar
+  const [overflowMenuOpen, setOverflowMenuOpen] = useState(false);
+
+  // Close overflow menu when clicking outside
+  useEffect(() => {
+    if (!overflowMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (overflowMenuRef.current && !overflowMenuRef.current.contains(e.target as Node)) {
+        setOverflowMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [overflowMenuOpen]);
+
+  // Track actual toolbar width to determine when to show overflow menu
+  useEffect(() => {
+    const toolbar = toolbarRef.current;
+    if (!toolbar) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setToolbarWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(toolbar);
+    return () => observer.disconnect();
+  }, []);
+
+  // Derive narrow state from actual toolbar width (threshold where content starts to clip)
+  const isNarrowToolbar = !isMobile && toolbarWidth > 0 && toolbarWidth < 580;
 
   // Track if grid resize handles should pulse (first load)
   const [shouldPulseResizeHandles, setShouldPulseResizeHandles] = useState(false);
@@ -267,17 +302,17 @@ export function Grid() {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    // Available space (minus padding)
-    const padding = 48; // 24px padding on each side
-    // In split-screen mode, the grid area is already 50% width, so no offset needed
-    // The container width already reflects the available space
-    const availableWidth = container.clientWidth - padding;
-    const availableHeight = container.clientHeight - padding;
+    // Available space (minus container padding + buffer to prevent edge overflow)
+    const horizontalPadding = isMobile ? 32 : 56; // p-3 (24) + 8px buffer vs p-6 + pr-8 (56)
+    const verticalPadding = isMobile ? 32 : 48; // p-3 (24) + 8px buffer vs p-6 (48)
+    const availableWidth = container.clientWidth - horizontalPadding;
+    const availableHeight = container.clientHeight - verticalPadding;
 
-    // Grid dimensions at zoom=1 (including labels and gaps)
+    // Grid dimensions at zoom=1
     const labelGutter = 28; // Space for row/column labels
-    const gridWidth = drawer.width * BASE_CELL_SIZE + (drawer.width - 1) * gap + labelGutter;
-    const gridHeight = drawer.depth * BASE_CELL_SIZE + (drawer.depth - 1) * gap + labelGutter;
+    const resizeHandleSpace = isMobile ? 0 : 24; // pr-6/pb-6 for resize handles (hidden on mobile)
+    const gridWidth = drawer.width * BASE_CELL_SIZE + (drawer.width - 1) * gap + labelGutter + resizeHandleSpace;
+    const gridHeight = drawer.depth * BASE_CELL_SIZE + (drawer.depth - 1) * gap + labelGutter + resizeHandleSpace;
 
     // Calculate zoom to fit both dimensions
     const zoomToFitWidth = availableWidth / gridWidth;
@@ -291,7 +326,7 @@ export function Grid() {
     );
 
     setZoom(clampedZoom);
-  }, [drawer.width, drawer.depth, gap, setZoom]);
+  }, [drawer.width, drawer.depth, gap, setZoom, isMobile]);
 
   // Fit to screen on initial mount and when drawer size changes
   useEffect(() => {
@@ -377,6 +412,7 @@ export function Grid() {
           {/* Desktop toolbar */}
           {!isMobile && (
         <div
+          ref={toolbarRef}
           className="flex items-center justify-between px-4 py-[7.5px] bg-surface-secondary border-b border-stroke-subtle"
         >
           {/* Left: Layer indicator + Paint mode */}
@@ -498,8 +534,8 @@ export function Grid() {
 
           {/* Right: View controls */}
           <div className="flex items-center gap-4">
-            {/* View toggles */}
-            {placedBins.length > 0 && (
+            {/* View toggles - only show inline when not narrow */}
+            {!isNarrowToolbar && placedBins.length > 0 && (
               <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-content-secondary">
                 <input
                   type="checkbox"
@@ -510,7 +546,7 @@ export function Grid() {
                 Labels
               </label>
             )}
-            {layers.length > 1 && (
+            {!isNarrowToolbar && layers.length > 1 && (
               <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-content-secondary">
                 <input
                   type="checkbox"
@@ -571,8 +607,57 @@ export function Grid() {
                 <path d="m3.3 7 8.7 5 8.7-5"/>
                 <path d="M12 22V12"/>
               </svg>
-              <span className="text-sm">3D View</span>
+              {!isNarrowToolbar && <span className="text-sm">3D View</span>}
             </button>
+
+            {/* Overflow menu button - only when narrow */}
+            {isNarrowToolbar && (placedBins.length > 0 || layers.length > 1) && (
+              <div className="relative" ref={overflowMenuRef}>
+                <button
+                  onClick={() => setOverflowMenuOpen(!overflowMenuOpen)}
+                  className={`btn ${overflowMenuOpen ? 'btn-primary' : 'btn-ghost'} p-1.5`}
+                  aria-label="More options"
+                  aria-expanded={overflowMenuOpen}
+                  aria-haspopup="menu"
+                  title="More options"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                  </svg>
+                </button>
+
+                {/* Overflow dropdown */}
+                {overflowMenuOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-1 py-2 px-1 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg z-50 min-w-[160px]"
+                    role="menu"
+                  >
+                    {placedBins.length > 0 && (
+                      <label className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none text-sm text-content-secondary hover:bg-surface-hover rounded-md" role="menuitemcheckbox" aria-checked={showLabels}>
+                        <input
+                          type="checkbox"
+                          checked={showLabels}
+                          onChange={toggleShowLabels}
+                          className="w-4 h-4 rounded accent-accent"
+                        />
+                        Labels
+                      </label>
+                    )}
+                    {layers.length > 1 && (
+                      <label className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none text-sm text-content-secondary hover:bg-surface-hover rounded-md" role="menuitemcheckbox" aria-checked={showOtherLayers}>
+                        <input
+                          type="checkbox"
+                          checked={showOtherLayers}
+                          onChange={toggleShowOtherLayers}
+                          className="w-4 h-4 rounded accent-accent"
+                        />
+                        Show layers below
+                      </label>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -580,7 +665,7 @@ export function Grid() {
       {/* Grid container with scroll - click background to deselect */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-auto p-6 pr-8 bg-surface flex justify-center"
+        className={`flex-1 overflow-auto bg-surface flex justify-center ${isMobile ? 'p-3' : 'p-6 pr-8'}`}
         onPointerDown={(e) => {
           // Deselect if clicking on container or wrapper areas (not interactive elements)
           // Bins call stopPropagation on pointerdown, so this only fires for empty space
@@ -591,8 +676,8 @@ export function Grid() {
           }
         }}
       >
-        {/* Grid with row/column labels wrapper - includes space for resize handles (24px on right/bottom) */}
-        <div className="inline-flex flex-col flex-shrink-0 pr-6 pb-6">
+        {/* Grid with row/column labels wrapper - includes space for resize handles on desktop */}
+        <div className={`inline-flex flex-col flex-shrink-0 ${isMobile ? '' : 'pr-6 pb-6'}`}>
           {/* Main grid area with row labels */}
           <div className="flex items-start">
             {/* Row labels column - uses same grid template as main grid for perfect alignment */}
@@ -695,72 +780,77 @@ export function Grid() {
               )}
               </div>
 
-              {/* Right edge resize handle */}
-              <div
-                className="absolute top-0 flex items-center justify-center group"
-                style={{
-                  left: drawer.width * (cellSize + gap) + gap,
-                  height: drawer.depth * (cellSize + gap) + gap,
-                  width: 24,
-                  cursor: 'ew-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart('width', e)}
-                title="Drag to add/remove columns"
-              >
-                <div
-                  className={`h-16 w-1 rounded-full transition-all group-hover:h-24 group-hover:w-[3px] group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
-                  style={{
-                    backgroundColor: resizeDirection === 'width' || resizeDirection === 'both'
-                      ? 'var(--color-primary)'
-                      : 'var(--border-default)',
-                  }}
-                />
-              </div>
+              {/* Grid resize handles - hidden on mobile (use Settings to change dimensions) */}
+              {!isMobile && (
+                <>
+                  {/* Right edge resize handle */}
+                  <div
+                    className="absolute top-0 flex items-center justify-center group"
+                    style={{
+                      left: drawer.width * (cellSize + gap) + gap,
+                      height: drawer.depth * (cellSize + gap) + gap,
+                      width: 24,
+                      cursor: 'ew-resize',
+                    }}
+                    onMouseDown={(e) => handleResizeStart('width', e)}
+                    title="Drag to add/remove columns"
+                  >
+                    <div
+                      className={`h-16 w-1 rounded-full transition-all group-hover:h-24 group-hover:w-[3px] group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
+                      style={{
+                        backgroundColor: resizeDirection === 'width' || resizeDirection === 'both'
+                          ? 'var(--color-primary)'
+                          : 'var(--border-default)',
+                      }}
+                    />
+                  </div>
 
-              {/* Bottom edge resize handle - positioned below column labels */}
-              <div
-                className="absolute left-0 flex items-center justify-center group"
-                style={{
-                  top: drawer.depth * (cellSize + gap) + gap + (labelsVisible ? columnLabelHeight : 0),
-                  width: drawer.width * (cellSize + gap) + gap,
-                  height: 24,
-                  cursor: 'ns-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart('depth', e)}
-                title="Drag to add/remove rows"
-              >
-                <div
-                  className={`w-16 h-1 rounded-full transition-all group-hover:w-24 group-hover:h-[3px] group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
-                  style={{
-                    backgroundColor: resizeDirection === 'depth' || resizeDirection === 'both'
-                      ? 'var(--color-primary)'
-                      : 'var(--border-default)',
-                  }}
-                />
-              </div>
+                  {/* Bottom edge resize handle - positioned below column labels */}
+                  <div
+                    className="absolute left-0 flex items-center justify-center group"
+                    style={{
+                      top: drawer.depth * (cellSize + gap) + gap + (labelsVisible ? columnLabelHeight : 0),
+                      width: drawer.width * (cellSize + gap) + gap,
+                      height: 24,
+                      cursor: 'ns-resize',
+                    }}
+                    onMouseDown={(e) => handleResizeStart('depth', e)}
+                    title="Drag to add/remove rows"
+                  >
+                    <div
+                      className={`w-16 h-1 rounded-full transition-all group-hover:w-24 group-hover:h-[3px] group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
+                      style={{
+                        backgroundColor: resizeDirection === 'depth' || resizeDirection === 'both'
+                          ? 'var(--color-primary)'
+                          : 'var(--border-default)',
+                      }}
+                    />
+                  </div>
 
-              {/* Corner resize handle - positioned below column labels */}
-              <div
-                className="absolute flex items-center justify-center group"
-                style={{
-                  left: drawer.width * (cellSize + gap) + gap,
-                  top: drawer.depth * (cellSize + gap) + gap + (labelsVisible ? columnLabelHeight : 0),
-                  width: 24,
-                  height: 24,
-                  cursor: 'nwse-resize',
-                }}
-                onMouseDown={(e) => handleResizeStart('both', e)}
-                title="Drag to add/remove rows and columns"
-              >
-                <div
-                  className={`w-3 h-3 rounded-sm transition-all group-hover:w-5 group-hover:h-5 group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
-                  style={{
-                    backgroundColor: resizeDirection === 'both'
-                      ? 'var(--color-primary)'
-                      : 'var(--border-default)',
-                  }}
-                />
-              </div>
+                  {/* Corner resize handle - positioned below column labels */}
+                  <div
+                    className="absolute flex items-center justify-center group"
+                    style={{
+                      left: drawer.width * (cellSize + gap) + gap,
+                      top: drawer.depth * (cellSize + gap) + gap + (labelsVisible ? columnLabelHeight : 0),
+                      width: 24,
+                      height: 24,
+                      cursor: 'nwse-resize',
+                    }}
+                    onMouseDown={(e) => handleResizeStart('both', e)}
+                    title="Drag to add/remove rows and columns"
+                  >
+                    <div
+                      className={`w-3 h-3 rounded-sm transition-all group-hover:w-5 group-hover:h-5 group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
+                      style={{
+                        backgroundColor: resizeDirection === 'both'
+                          ? 'var(--color-primary)'
+                          : 'var(--border-default)',
+                      }}
+                    />
+                  </div>
+                </>
+              )}
 
               {/* Column labels row (at bottom, 1-indexed from left) - uses same grid template as main grid */}
               {labelsVisible && (
