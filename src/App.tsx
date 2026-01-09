@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, lazy, Suspense } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { useLayoutStore, useUIStore } from './store';
 import { useKeyboard, useAutoSave, useResponsive, useShakeToUndo } from './hooks';
 import { loadLayout } from './utils/storage';
@@ -128,62 +129,122 @@ export default function App() {
   // Mobile layout - lazy loaded
   if (isMobile) {
     return (
-      <Suspense fallback={<div className="h-screen bg-surface" />}>
-        <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} />
-      </Suspense>
+      <>
+        <Suspense fallback={<div className="h-screen bg-surface" />}>
+          <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} />
+        </Suspense>
+        <Analytics />
+      </>
     );
   }
 
   // Tablet layout - full width grid with overlay panels
   if (isTablet) {
     return (
+      <>
+        <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
+          {/* Header */}
+          <Header onHelpClick={() => setIsHelpOpen(true)} />
+
+          {/* Main content area - Grid takes full width */}
+          <div className="flex-1 flex overflow-hidden">
+            <main className="flex-1 flex flex-col overflow-hidden bg-surface">
+              <Grid />
+              <Staging />
+            </main>
+          </div>
+
+          {/* Left sidebar as overlay */}
+          <TabletPanelOverlay
+            isOpen={tabletLeftPanelOpen}
+            onClose={toggleLeftPanel}
+            side="left"
+          >
+            <PanelErrorBoundary panelName="Sidebar">
+              <Sidebar />
+            </PanelErrorBoundary>
+          </TabletPanelOverlay>
+
+          {/* Right panel as overlay */}
+          <TabletPanelOverlay
+            isOpen={tabletRightPanelOpen}
+            onClose={toggleRightPanel}
+            side="right"
+          >
+            <PanelErrorBoundary panelName="Inspector">
+              <RightPanel />
+            </PanelErrorBoundary>
+          </TabletPanelOverlay>
+
+          {/* Drop zones (appear when dragging) */}
+          <DropZones />
+
+          {/* Floating drag preview */}
+          <DragPreview />
+
+          {/* Panel trigger buttons (FABs) - shown when panels are closed */}
+          <TabletPanelTriggers
+            leftPanelOpen={tabletLeftPanelOpen}
+            rightPanelOpen={tabletRightPanelOpen}
+            onOpenLeftPanel={toggleLeftPanel}
+            onOpenRightPanel={toggleRightPanel}
+          />
+
+          {/* Modals */}
+          {isHelpOpen && (
+            <Suspense fallback={null}>
+              <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+            </Suspense>
+          )}
+
+          {/* Context menu (long-press on bin) */}
+          {contextMenu && (
+            <BinContextMenuWrapper
+              binId={contextMenu.binId}
+              position={contextMenu.position}
+              onClose={hideContextMenu}
+            />
+          )}
+
+          {/* Toast notifications */}
+          <ToastContainer />
+        </div>
+        <Analytics />
+      </>
+    );
+  }
+
+  // Desktop layout
+  return (
+    <>
       <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
         {/* Header */}
         <Header onHelpClick={() => setIsHelpOpen(true)} />
 
-        {/* Main content area - Grid takes full width */}
+        {/* Main content area */}
         <div className="flex-1 flex overflow-hidden">
+          {/* Left sidebar */}
+          <PanelErrorBoundary panelName="Sidebar">
+            <Sidebar />
+          </PanelErrorBoundary>
+
+          {/* Grid area */}
           <main className="flex-1 flex flex-col overflow-hidden bg-surface">
             <Grid />
             <Staging />
           </main>
-        </div>
 
-        {/* Left sidebar as overlay */}
-        <TabletPanelOverlay
-          isOpen={tabletLeftPanelOpen}
-          onClose={toggleLeftPanel}
-          side="left"
-        >
-          <PanelErrorBoundary panelName="Sidebar">
-            <Sidebar />
-          </PanelErrorBoundary>
-        </TabletPanelOverlay>
-
-        {/* Right panel as overlay */}
-        <TabletPanelOverlay
-          isOpen={tabletRightPanelOpen}
-          onClose={toggleRightPanel}
-          side="right"
-        >
+          {/* Right panel - Selection & Actions */}
           <PanelErrorBoundary panelName="Inspector">
             <RightPanel />
           </PanelErrorBoundary>
-        </TabletPanelOverlay>
+        </div>
 
         {/* Drop zones (appear when dragging) */}
         <DropZones />
 
         {/* Floating drag preview */}
         <DragPreview />
-
-        {/* Panel trigger buttons (FABs) - shown when panels are closed */}
-        <TabletPanelTriggers
-          leftPanelOpen={tabletLeftPanelOpen}
-          rightPanelOpen={tabletRightPanelOpen}
-          onOpenLeftPanel={toggleLeftPanel}
-          onOpenRightPanel={toggleRightPanel}
-        />
 
         {/* Modals */}
         {isHelpOpen && (
@@ -192,7 +253,7 @@ export default function App() {
           </Suspense>
         )}
 
-        {/* Context menu (long-press on bin) */}
+        {/* Context menu (right-click on bin) */}
         {contextMenu && (
           <BinContextMenuWrapper
             binId={contextMenu.binId}
@@ -203,63 +264,12 @@ export default function App() {
 
         {/* Toast notifications */}
         <ToastContainer />
+
+        {/* ARIA live region for screen reader announcements */}
+        <LiveRegion />
       </div>
-    );
-  }
-
-  // Desktop layout
-  return (
-    <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
-      {/* Header */}
-      <Header onHelpClick={() => setIsHelpOpen(true)} />
-
-      {/* Main content area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left sidebar */}
-        <PanelErrorBoundary panelName="Sidebar">
-          <Sidebar />
-        </PanelErrorBoundary>
-
-        {/* Grid area */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-surface">
-          <Grid />
-          <Staging />
-        </main>
-
-        {/* Right panel - Selection & Actions */}
-        <PanelErrorBoundary panelName="Inspector">
-          <RightPanel />
-        </PanelErrorBoundary>
-      </div>
-
-      {/* Drop zones (appear when dragging) */}
-      <DropZones />
-
-      {/* Floating drag preview */}
-      <DragPreview />
-
-      {/* Modals */}
-      {isHelpOpen && (
-        <Suspense fallback={null}>
-          <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-        </Suspense>
-      )}
-
-      {/* Context menu (right-click on bin) */}
-      {contextMenu && (
-        <BinContextMenuWrapper
-          binId={contextMenu.binId}
-          position={contextMenu.position}
-          onClose={hideContextMenu}
-        />
-      )}
-
-      {/* Toast notifications */}
-      <ToastContainer />
-
-      {/* ARIA live region for screen reader announcements */}
-      <LiveRegion />
-    </div>
+      <Analytics />
+    </>
   );
 }
 
