@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
 import { useInteraction, useResponsive } from '../../hooks';
@@ -6,9 +6,11 @@ import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS } from '../../constants';
 import { clamp } from '../../utils/validation';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
-import { IsometricPreview } from './IsometricPreview';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { MobileGridToolbar } from '../mobile';
+
+// Lazy load the 3D preview component (includes three.js, ~800KB)
+const IsometricPreview = lazy(() => import('./IsometricPreview').then(m => ({ default: m.IsometricPreview })));
 
 type ResizeDirection = 'width' | 'depth' | 'both' | null;
 
@@ -647,8 +649,16 @@ export function Grid() {
         onCancel={cancelResize}
       />
 
-      {/* Isometric 3D preview - positioned in top-right corner */}
-      <IsometricPreview />
+      {/* Isometric 3D preview - positioned in top-right corner, lazy loaded */}
+      {showIsometricPreview && (
+        <Suspense fallback={
+          <div className="absolute top-14 right-4 w-[280px] h-[280px] rounded-lg bg-surface-secondary border border-stroke-subtle flex items-center justify-center z-20">
+            <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
+          </div>
+        }>
+          <IsometricPreview />
+        </Suspense>
+      )}
     </div>
   );
 }
