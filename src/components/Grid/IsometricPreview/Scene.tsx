@@ -15,8 +15,11 @@ interface SceneProps {
   isExpanded?: boolean;
 }
 
+export type CameraPreset = 'isometric' | 'top' | 'front' | 'side';
+
 export interface SceneHandle {
   resetView: () => void;
+  setPreset: (preset: CameraPreset) => void;
 }
 
 /**
@@ -44,6 +47,35 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         centerY - cameraDistance,
         centerZ + cameraDistance * 0.7,
       ] as [number, number, number];
+    }, [drawerWidth, drawerDepth, centerX, centerY, centerZ]);
+
+    // Calculate preset camera positions
+    const cameraPresets = useMemo(() => {
+      const maxDimension = Math.max(drawerWidth, drawerDepth);
+      const distance = maxDimension * 0.8;
+
+      return {
+        isometric: [
+          centerX + distance,
+          centerY - distance,
+          centerZ + distance * 0.7,
+        ] as [number, number, number],
+        top: [
+          centerX,
+          centerY,
+          centerZ + distance * 1.2,
+        ] as [number, number, number],
+        front: [
+          centerX,
+          centerY - distance * 1.2,
+          centerZ,
+        ] as [number, number, number],
+        side: [
+          centerX + distance * 1.2,
+          centerY,
+          centerZ,
+        ] as [number, number, number],
+      };
     }, [drawerWidth, drawerDepth, centerX, centerY, centerZ]);
 
     // Set camera up vector to Z-up and position to default view
@@ -85,7 +117,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       setIsometricRotation(degrees);
     };
 
-    // Expose reset function to parent
+    // Expose reset function and preset setter to parent
     useImperativeHandle(ref, () => ({
       resetView: () => {
         if (!controlsRef.current || !camera) return;
@@ -96,7 +128,43 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         controlsRef.current.update();
         setIsometricRotation(0);
       },
-    }));
+      setPreset: (preset: CameraPreset) => {
+        if (!controlsRef.current || !camera) return;
+
+        const targetPosition = cameraPresets[preset];
+        const startPosition = [camera.position.x, camera.position.y, camera.position.z];
+        const duration = 400; // ms
+        const startTime = Date.now();
+
+        const animate = () => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+
+          // Ease-in-out function
+          const eased = progress < 0.5
+            ? 2 * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+          // Interpolate position
+          camera.position.x = startPosition[0] + (targetPosition[0] - startPosition[0]) * eased;
+          camera.position.y = startPosition[1] + (targetPosition[1] - startPosition[1]) * eased;
+          camera.position.z = startPosition[2] + (targetPosition[2] - startPosition[2]) * eased;
+
+          controlsRef.current?.update();
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            // Update rotation state when animation completes
+            const angle = controlsRef.current?.getAzimuthalAngle() ?? 0;
+            const degrees = (angle * 180) / Math.PI;
+            setIsometricRotation(degrees);
+          }
+        };
+
+        animate();
+      },
+    }), [defaultCameraPosition, cameraPresets, camera, centerX, centerY, centerZ, setIsometricRotation]);
 
   return (
     <>

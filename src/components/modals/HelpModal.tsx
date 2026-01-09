@@ -209,6 +209,23 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 keys={formatKey(SHORTCUTS.ESCAPE)}
                 description="Close expanded 3D preview"
               />
+              <div className="divider" />
+              <ShortcutRow
+                keys="1"
+                description="Switch to Isometric view"
+              />
+              <ShortcutRow
+                keys="2"
+                description="Switch to Top view"
+              />
+              <ShortcutRow
+                keys="3"
+                description="Switch to Front view"
+              />
+              <ShortcutRow
+                keys="4"
+                description="Switch to Side view"
+              />
             </div>
           </section>
 

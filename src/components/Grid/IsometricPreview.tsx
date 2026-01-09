@@ -355,6 +355,66 @@ export function IsometricPreview() {
           </span>
         )}
       </button>
+      {/* Camera preset buttons */}
+      <div
+        className={`absolute top-1 left-1/2 transform -translate-x-1/2 flex ${
+          isPreviewExpanded ? "gap-1 p-1 rounded-lg" : "gap-0.5"
+        }`}
+        style={isPreviewExpanded ? {
+          background: "rgba(0, 0, 0, 0.2)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+        } : {}}
+      >
+        {[
+          { preset: 'isometric' as const, icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', label: 'Isometric' },
+          { preset: 'top' as const, icon: 'M3 12h18M3 6h18M3 18h18', label: 'Top' },
+          { preset: 'front' as const, icon: 'M4 6h16M4 12h16M4 18h16', label: 'Front' },
+          { preset: 'side' as const, icon: 'M9 5l7 7-7 7', label: 'Side' },
+        ].map(({ preset, icon, label }) => (
+          <button
+            key={preset}
+            onClick={(e) => {
+              e.stopPropagation()
+              sceneRef.current?.setPreset(preset)
+            }}
+            className={`group flex items-center gap-2 rounded transition-all duration-200 hover:scale-105 ${
+              isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-9 min-h-9 w-7 h-7"
+            }`}
+            style={{
+              background: "rgba(255, 255, 255, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              backdropFilter: "blur(8px)",
+              color: "rgba(255, 255, 255, 0.7)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
+              e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+              e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
+            }}
+            title={`${label} view`}
+          >
+            <svg
+              className={isPreviewExpanded ? "w-4 h-4" : "w-3.5 h-3.5"}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d={icon}
+              />
+            </svg>
+            {isPreviewExpanded && (
+              <span className="text-xs font-medium">{label}</span>
+            )}
+          </button>
+        ))}
+      </div>
       {/* Layer controls - only show when multiple layers */}
       {layout.layers.length > 1 && (
         <div

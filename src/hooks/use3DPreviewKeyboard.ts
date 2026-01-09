@@ -98,6 +98,38 @@ export function use3DPreviewKeyboard({
             setPreviewExpanded(false);
           }
           break;
+
+        case '1':
+          // Camera preset: Isometric view
+          if (isPreviewVisible) {
+            e.preventDefault();
+            sceneRef.current?.setPreset('isometric');
+          }
+          break;
+
+        case '2':
+          // Camera preset: Top view
+          if (isPreviewVisible) {
+            e.preventDefault();
+            sceneRef.current?.setPreset('top');
+          }
+          break;
+
+        case '3':
+          // Camera preset: Front view
+          if (isPreviewVisible) {
+            e.preventDefault();
+            sceneRef.current?.setPreset('front');
+          }
+          break;
+
+        case '4':
+          // Camera preset: Side view
+          if (isPreviewVisible) {
+            e.preventDefault();
+            sceneRef.current?.setPreset('side');
+          }
+          break;
       }
     };
 

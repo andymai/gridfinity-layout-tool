@@ -100,4 +100,9 @@ export const SHORTCUTS = {
   PREVIEW_ROTATE_LEFT: 'ArrowLeft',
   PREVIEW_ROTATE_RIGHT: 'ArrowRight',
   PREVIEW_TILT: ['ArrowUp', 'ArrowDown'],
+  // Camera preset shortcuts
+  PRESET_ISOMETRIC: '1',
+  PRESET_TOP: '2',
+  PRESET_FRONT: '3',
+  PRESET_SIDE: '4',
 } as const;

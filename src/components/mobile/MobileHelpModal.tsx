@@ -231,7 +231,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>With keyboard: V to toggle 3D, Space to expand, R to reset, arrows to rotate</span>
+                <span>With keyboard: V to toggle 3D, Space to expand, R to reset, arrows to rotate, 1-4 for camera views</span>
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
