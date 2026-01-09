@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
+import { STAGING_ID } from '../../constants';
 
 // Square sizes
 const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];
@@ -18,10 +19,11 @@ const RECTANGLE_SIZES = [
 export function ActiveLayerPanel() {
   const [rotated, setRotated] = useState(false);
 
-  const { layout, fillLayer } = useLayoutStore(
+  const { layout, fillLayer, fillLayerGaps } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
       fillLayer: state.fillLayer,
+      fillLayerGaps: state.fillLayerGaps,
     }))
   );
 
@@ -46,7 +48,27 @@ export function ActiveLayerPanel() {
     paintSize?.width === w && paintSize?.depth === d;
 
   const activeLayer = layout.layers.find(l => l.id === activeLayerId);
-  const layerBins = layout.bins.filter(b => b.layerId === activeLayerId);
+  const layerBins = layout.bins.filter(b => b.layerId === activeLayerId && b.layerId !== STAGING_ID);
+
+  // Calculate empty cells for Fill gaps button
+  const totalCells = layout.drawer.width * layout.drawer.depth;
+  const coveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
+  const emptyCells = totalCells - coveredCells;
+
+  const handleFillGaps = () => {
+    if (!activeLayerId) return;
+    const beforeCount = layerBins.length;
+    execute(() => {
+      fillLayerGaps(activeLayerId, activeCategoryId);
+    });
+    setTimeout(() => {
+      const afterCount = useLayoutStore.getState().layout.bins.filter(b => b.layerId === activeLayerId).length;
+      const added = afterCount - beforeCount;
+      if (added > 0) {
+        addToast(`Added ${added} bins to fill gaps`, 'success');
+      }
+    }, 0);
+  };
 
   const handleFill = (width: number, depth: number) => {
     if (!activeLayerId) return;
@@ -146,6 +168,19 @@ export function ActiveLayerPanel() {
           Fill with {paintSize.width}×{paintSize.depth}
         </button>
       )}
+
+      {/* Fill gaps button */}
+      <button
+        onClick={handleFillGaps}
+        disabled={emptyCells === 0}
+        className="btn btn-secondary w-full justify-center mt-2 text-sm"
+        title={emptyCells > 0 ? `Fill ${emptyCells} empty cells with optimally-sized bins` : 'No gaps to fill'}
+      >
+        <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+        </svg>
+        {emptyCells > 0 ? `Fill ${emptyCells} gaps` : 'No gaps'}
+      </button>
     </div>
   );
 }

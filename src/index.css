@@ -321,6 +321,13 @@
   .hover-only {
     display: none;
   }
+
+  /* Prevent iOS auto-zoom on input focus (requires 16px minimum) */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
 
 /* ===========================================

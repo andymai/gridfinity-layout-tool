@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, lazy, Suspense } from 'react';
 import { useLayoutStore, useUIStore } from './store';
-import { useKeyboard, useAutoSave, useResponsive, useShakeToUndo } from './hooks';
+import { useKeyboard, useAutoSave, useResponsive } from './hooks';
 import { loadLayout } from './utils/storage';
 import { Grid } from './components/Grid';
 import { Sidebar } from './components/Sidebar';
@@ -94,9 +94,6 @@ export default function App() {
 
   // Auto-save to localStorage
   useAutoSave();
-
-  // Shake-to-undo on mobile devices
-  useShakeToUndo(isMobile);
 
   // Help modal keyboard shortcut
   const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {

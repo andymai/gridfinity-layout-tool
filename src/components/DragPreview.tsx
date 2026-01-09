@@ -96,16 +96,11 @@ export function DragPreview() {
               transform: 'scale(1.02)',
             }}
           >
-            <div className="text-center pointer-events-none select-none" style={{ color: textColor }}>
-              <div className="text-sm font-semibold">
-                {bin.width}×{bin.depth}
+            {bin.label && (
+              <div className="text-center pointer-events-none select-none text-xs truncate px-1" style={{ color: textColor, opacity: 0.85 }}>
+                {bin.label}
               </div>
-              {bin.label && (
-                <div className="text-xs truncate px-1" style={{ opacity: 0.85 }}>
-                  {bin.label}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         );
       })}
