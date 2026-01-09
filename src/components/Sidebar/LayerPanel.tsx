@@ -190,7 +190,20 @@ export function LayerPanel() {
 
   return (
     <div>
-      <h2 className="text-sm font-semibold text-content-secondary tracking-wide mb-3" title="Layers stack vertically in your drawer. Tall bins on lower layers block placement above.">Layers</h2>
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-sm font-semibold text-content-secondary tracking-wide" title="Layers stack vertically in your drawer. Tall bins on lower layers block placement above.">Layers</h2>
+        <button
+          onClick={handleAddLayer}
+          disabled={layers.length >= CONSTRAINTS.LAYERS_MAX}
+          className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+          title="Add a new layer"
+          aria-label="Add new layer"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
 
       {/* Drawer height */}
       <div className="flex items-center justify-between mb-3">
@@ -400,18 +413,6 @@ export function LayerPanel() {
           Clear layer
         </button>
       </div>
-
-      {/* Add layer button */}
-      <button
-        onClick={handleAddLayer}
-        className="btn btn-ghost w-full justify-center mt-2 text-xs text-content-tertiary"
-        title="Add a new layer above the current one"
-      >
-        <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
-        Add layer
-      </button>
 
       {/* Clear confirmation */}
       <ConfirmDialog
