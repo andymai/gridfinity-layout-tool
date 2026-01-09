@@ -53,9 +53,8 @@ export default function App() {
   // Track previous tablet state to detect mode entry
   const wasTabletRef = useRef(isTablet);
 
-  // Consolidated tablet panel management:
-  // 1. Collapse both panels when entering tablet mode
-  // 2. Auto-close opposite panel when one opens
+  // Tablet panel management: Collapse both panels when entering tablet mode
+  // Note: Mutual exclusion (only one panel open at a time) is handled in store actions
   useEffect(() => {
     const justEnteredTablet = isTablet && !wasTabletRef.current;
     wasTabletRef.current = isTablet;
@@ -66,13 +65,6 @@ export default function App() {
     if (justEnteredTablet) {
       if (!leftPanelCollapsed) toggleLeftPanel();
       if (!rightPanelCollapsed) toggleRightPanel();
-      return;
-    }
-
-    // Auto-close opposite panel when one opens (only one panel at a time)
-    if (!leftPanelCollapsed && !rightPanelCollapsed) {
-      // Both are open - close the right panel (left takes priority)
-      toggleRightPanel();
     }
   }, [isTablet, leftPanelCollapsed, rightPanelCollapsed, toggleLeftPanel, toggleRightPanel]);
 
