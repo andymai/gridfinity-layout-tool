@@ -75,6 +75,11 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
     }
   };
 
+  const handleClear = () => {
+    setValue('');
+    inputRef.current?.focus();
+  };
+
   if (!bin) return null;
 
   // Find the bin element to position the popover
@@ -84,36 +89,86 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
   const binRect = binElement.getBoundingClientRect();
 
   // Position popover above the bin, centered horizontally
+  // Adjust if too close to top of viewport
+  const spaceAbove = binRect.top;
+  const positionBelow = spaceAbove < 100;
+
   const popoverStyle: React.CSSProperties = {
     position: 'fixed',
-    left: binRect.left + binRect.width / 2,
-    top: binRect.top - 8,
-    transform: 'translate(-50%, -100%)',
+    left: Math.max(16, Math.min(binRect.left + binRect.width / 2, window.innerWidth - 16)),
+    top: positionBelow ? binRect.bottom + 8 : binRect.top - 8,
+    transform: positionBelow ? 'translateX(-50%)' : 'translate(-50%, -100%)',
     zIndex: 100,
   };
 
   return (
-    <div
-      ref={popoverRef}
-      style={popoverStyle}
-      className="bg-surface-elevated border border-stroke rounded-lg shadow-xl p-3 animate-scale-in"
-    >
-      <div className="flex items-center gap-2">
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
-          placeholder="Enter label..."
-          className="input px-3 py-1.5 text-sm"
-          style={{ minWidth: '180px' }}
-        />
+    <>
+      {/* Subtle backdrop for focus */}
+      <div
+        className="fixed inset-0 z-40"
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}
+        onClick={handleSave}
+      />
+
+      {/* Popover */}
+      <div
+        ref={popoverRef}
+        style={popoverStyle}
+        className="z-50 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in overflow-hidden"
+      >
+        {/* Header */}
+        <div className="px-3 py-2 border-b border-stroke-subtle bg-surface-secondary">
+          <div className="text-xs font-medium text-content-secondary">
+            Label for {bin.width}×{bin.depth} bin
+          </div>
+        </div>
+
+        {/* Input area */}
+        <div className="p-3">
+          <div className="relative">
+            <input
+              ref={inputRef}
+              type="text"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
+              placeholder="Enter label..."
+              className="input w-full px-3 py-2 pr-8 text-sm"
+              style={{ minWidth: '200px' }}
+            />
+            {value && (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+                aria-label="Clear"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center justify-between mt-3">
+            <div className="text-xs text-content-tertiary">
+              <kbd className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle" style={{ fontSize: '10px' }}>Enter</kbd>
+              <span className="mx-1">save</span>
+              <kbd className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle" style={{ fontSize: '10px' }}>Esc</kbd>
+              <span className="ml-1">cancel</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleSave}
+              className="btn btn-primary btn-sm px-3 py-1"
+            >
+              Save
+            </button>
+          </div>
+        </div>
       </div>
-      <div className="text-xs text-content-tertiary mt-2 text-center">
-        Enter to save · Esc to cancel
-      </div>
-    </div>
+    </>
   );
 }
