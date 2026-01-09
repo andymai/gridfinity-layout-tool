@@ -44,6 +44,11 @@ export function MobileInspector() {
     ? layout.drawer.height - getLayerZStart(bin.layerId, layout.layers)
     : 1;
 
+  // Calculate max clearance for selected bin
+  const maxClearance = bin && layer
+    ? layout.drawer.height - getLayerZStart(bin.layerId, layout.layers) - bin.height
+    : 0;
+
   const handleUpdateBin = (field: string, value: string | number) => {
     if (!bin) return;
     execute(() => {
@@ -53,6 +58,9 @@ export function MobileInspector() {
         const minHeight = layer?.height || 1;
         const newHeight = clamp(typeof value === 'number' ? value : parseInt(value, 10) || minHeight, minHeight, maxBinHeight);
         updateBin(bin.id, { height: newHeight });
+      } else if (field === 'clearanceHeight') {
+        const newClearance = clamp(typeof value === 'number' ? value : parseInt(value, 10) || 0, 0, maxClearance);
+        updateBin(bin.id, { clearanceHeight: newClearance });
       } else {
         updateBin(bin.id, { [field]: value });
       }
@@ -365,6 +373,41 @@ export function MobileInspector() {
           Range: {layer?.height}u – {maxBinHeight}u
         </div>
       </div>
+
+      {/* Clearance control - only show with 2+ layers */}
+      {layout.layers.length > 1 && (
+        <div className="mb-4">
+          <label className="block text-sm mb-1 text-content-tertiary">
+            Clearance
+          </label>
+          <div className="flex items-center">
+            <button
+              onClick={() => handleUpdateBin('clearanceHeight', (bin.clearanceHeight || 0) - 1)}
+              disabled={(bin.clearanceHeight || 0) <= 0}
+              className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+              </svg>
+            </button>
+            <span className="flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content">
+              {bin.clearanceHeight || 0}u
+            </span>
+            <button
+              onClick={() => handleUpdateBin('clearanceHeight', (bin.clearanceHeight || 0) + 1)}
+              disabled={(bin.clearanceHeight || 0) >= maxClearance}
+              className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+          <div className="text-center text-xs mt-1 text-content-disabled">
+            Blocks {bin.clearanceHeight || 0}u above bin
+          </div>
+        </div>
+      )}
 
       {/* Split warning */}
       {needsSplit && (

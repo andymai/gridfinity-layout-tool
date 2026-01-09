@@ -38,6 +38,7 @@ export interface Bin {
   width: number;             // >= 1
   depth: number;             // >= 1
   height: number;            // >= base layer height, <= space to drawer top
+  clearanceHeight?: number;  // additional blocked space above bin (for tall contents)
   category: string;          // references Category.id
   label: string;             // max 24 chars
   notes: string;             // max 256 chars

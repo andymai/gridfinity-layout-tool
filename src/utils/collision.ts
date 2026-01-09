@@ -24,6 +24,7 @@ export function getLayerZStart(layerId: string, layers: Layer[]): number {
 
 /**
  * Get the 3D bounding box for a bin.
+ * Includes clearanceHeight in the vertical extent for collision detection.
  */
 export function getBin3DRect(bin: Bin, layers: Layer[]): Rect3D {
   const zStart = getLayerZStart(bin.layerId, layers);
@@ -33,7 +34,7 @@ export function getBin3DRect(bin: Bin, layers: Layer[]): Rect3D {
     width: bin.width,
     depth: bin.depth,
     zStart,
-    zEnd: zStart + bin.height,
+    zEnd: zStart + bin.height + (bin.clearanceHeight || 0),
   };
 }
 

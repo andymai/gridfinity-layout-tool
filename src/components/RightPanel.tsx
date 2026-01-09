@@ -230,7 +230,12 @@ export function RightPanel() {
   const spoolEstimate = useMemo(() => getSpoolEstimate(totalFilament), [totalFilament]);
   const hasAnySplits = useMemo(() => printRows.some(r => r.needsSplit), [printRows]);
 
-  const handleUpdateBin = (field: 'width' | 'depth' | 'height' | 'category' | 'label' | 'notes', value: string | number) => {
+  // Calculate max clearance for selected bin
+  const maxClearance = bin && layer
+    ? layout.drawer.height - getLayerZStart(bin.layerId, layout.layers) - bin.height
+    : 0;
+
+  const handleUpdateBin = (field: 'width' | 'depth' | 'height' | 'clearanceHeight' | 'category' | 'label' | 'notes', value: string | number) => {
     if (!bin) return;
     execute(() => {
       if (field === 'width' || field === 'depth') {
@@ -239,6 +244,9 @@ export function RightPanel() {
         const minHeight = layer?.height || 1;
         const newHeight = clamp(typeof value === 'number' ? value : parseInt(value, 10) || minHeight, minHeight, maxBinHeight);
         updateBin(bin.id, { height: newHeight });
+      } else if (field === 'clearanceHeight') {
+        const newClearance = clamp(typeof value === 'number' ? value : parseInt(value, 10) || 0, 0, maxClearance);
+        updateBin(bin.id, { clearanceHeight: newClearance });
       } else {
         updateBin(bin.id, { [field]: value });
       }
@@ -579,6 +587,43 @@ export function RightPanel() {
                 Range: {layer?.height}u – {maxBinHeight}u
               </div>
             </div>
+
+            {/* Clearance control - only show with 2+ layers */}
+            {layout.layers.length > 1 && (
+              <div>
+                <label className="block mb-1 text-xs text-content-tertiary" title="Extra blocked space above this bin for tall contents (e.g., scissors, tools)">
+                  Clearance
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleUpdateBin('clearanceHeight', (bin.clearanceHeight || 0) - 1)}
+                    disabled={(bin.clearanceHeight || 0) <= 0}
+                    className="btn btn-secondary w-10 h-10 p-0 min-w-[40px] min-h-[40px]"
+                    aria-label="Decrease clearance"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  </button>
+                  <span className="flex-1 text-center font-semibold text-lg text-content">
+                    {bin.clearanceHeight || 0}u
+                  </span>
+                  <button
+                    onClick={() => handleUpdateBin('clearanceHeight', (bin.clearanceHeight || 0) + 1)}
+                    disabled={(bin.clearanceHeight || 0) >= maxClearance}
+                    className="btn btn-secondary w-10 h-10 p-0 min-w-[40px] min-h-[40px]"
+                    aria-label="Increase clearance"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="text-center mt-1 text-xs text-content-disabled">
+                  Blocks {bin.clearanceHeight || 0}u above bin
+                </div>
+              </div>
+            )}
 
             {/* Split warning with print bed visualization */}
             {needsSplit && (

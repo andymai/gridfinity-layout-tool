@@ -8,7 +8,7 @@ import { binsCollide, getLayerZStart, getBlockedZones, isInBlockedZone } from '.
  * @param excludeBinIds - Set of bin IDs to exclude (for multi-select operations)
  */
 export function canPlaceBin(
-  rect: Rect & { height: number },
+  rect: Rect & { height: number; clearanceHeight?: number },
   layerId: string,
   layout: Layout,
   excludeBinId?: string,
@@ -61,6 +61,7 @@ export function canPlaceBin(
     width: rect.width,
     depth: rect.depth,
     height: rect.height,
+    clearanceHeight: rect.clearanceHeight,
     category: '',
     label: '',
     notes: '',

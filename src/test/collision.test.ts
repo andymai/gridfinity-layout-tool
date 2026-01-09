@@ -224,3 +224,54 @@ describe('checkLayerReorderCollisions', () => {
     expect(checkLayerReorderCollisions(bins, layers, layers)).toEqual([]);
   });
 });
+
+describe('clearanceHeight', () => {
+  it('causes collision when clearance extends into upper layer bin', () => {
+    // Bin on layer1 with height 3 (fits exactly) but clearance 3 (extends into layer2)
+    const binA: Bin = { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, clearanceHeight: 3, category: 'tools', label: '', notes: '' };
+    // Bin on layer2 at same footprint
+    const binB: Bin = { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    // Layer2 starts at z=3, binA extends to z=3+3=6 (height + clearance), binB is at z=3-6
+    // They should collide because clearance from binA extends into binB's space
+    expect(binsCollide(binA, binB, layers)).toBe(true);
+  });
+
+  it('does not cause collision when clearance does not reach upper layer', () => {
+    // Bin on layer1 with height 2 and clearance 1 (total 3, exactly at layer boundary)
+    const binA: Bin = { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 2, clearanceHeight: 1, category: 'tools', label: '', notes: '' };
+    // Bin on layer2 at same footprint
+    const binB: Bin = { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    // binA: z=0-3 (height 2 + clearance 1), binB: z=3-6
+    // They touch but don't overlap (exclusive boundary)
+    expect(binsCollide(binA, binB, layers)).toBe(false);
+  });
+
+  it('creates blocked zone when clearance extends into upper layer', () => {
+    // Bin on layer1 with height 2 and clearance 2 (extends 1 unit into layer2)
+    const bins: Bin[] = [
+      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 2, clearanceHeight: 2, category: 'tools', label: '', notes: '' },
+    ];
+    // Layer2 starts at z=3, bin extends to z=4 (height 2 + clearance 2)
+    const zones = getBlockedZones('layer2', bins, layers);
+    expect(zones).toHaveLength(1);
+    expect(zones[0]).toMatchObject({ x: 0, y: 0, width: 2, depth: 2, sourceBinId: '1' });
+  });
+
+  it('does not create blocked zone when clearance stays within layer', () => {
+    // Bin on layer1 with height 2 and clearance 1 (total 3, exactly at layer boundary)
+    const bins: Bin[] = [
+      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 2, clearanceHeight: 1, category: 'tools', label: '', notes: '' },
+    ];
+    // Layer2 starts at z=3, bin extends to z=3 exactly - no protrusion
+    const zones = getBlockedZones('layer2', bins, layers);
+    expect(zones).toHaveLength(0);
+  });
+
+  it('defaults to 0 clearance when not specified', () => {
+    // Bin without clearanceHeight should behave same as clearanceHeight: 0
+    const binA: Bin = { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    const binB: Bin = { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    // Without clearance, layer1 bin (z=0-3) doesn't overlap with layer2 bin (z=3-6)
+    expect(binsCollide(binA, binB, layers)).toBe(false);
+  });
+});
