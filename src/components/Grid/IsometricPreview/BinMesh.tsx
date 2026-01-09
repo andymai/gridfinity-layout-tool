@@ -46,9 +46,9 @@ export function BinMesh({ x, y, z, bin, color, opacity, height, isSelected = fal
         vertexColors
         roughness={0.7} // Matte plastic finish
         metalness={0}   // Non-metallic
-        transparent={opacity < 1 || isSelected}
+        transparent={opacity < 1}
         opacity={opacity}
-        depthWrite={opacity === 1 && !isSelected}
+        depthWrite={opacity === 1}
         flatShading={false} // Smooth shading for rounded corners
         side={THREE.DoubleSide} // Fixes clipping from incorrect face winding
         emissive={isSelected ? '#ffffff' : '#000000'}
