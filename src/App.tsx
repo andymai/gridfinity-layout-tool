@@ -13,6 +13,7 @@ import { ToastContainer } from './components/Toast';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
 import { BinContextMenu } from './components/mobile';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
+import { LiveRegion } from './components/LiveRegion';
 import { SHORTCUTS } from './constants';
 
 // Lazy load modals - only loaded when opened
@@ -255,6 +256,9 @@ export default function App() {
 
       {/* Toast notifications */}
       <ToastContainer />
+
+      {/* ARIA live region for screen reader announcements */}
+      <LiveRegion />
     </div>
   );
 }

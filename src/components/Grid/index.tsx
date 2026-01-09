@@ -44,6 +44,10 @@ export function Grid() {
     interaction,
     showIsometricPreview,
     toggleIsometricPreview,
+    keyboardDragMode,
+    keyboardResizeMode,
+    setKeyboardDragMode,
+    setKeyboardResizeMode,
   } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
@@ -63,6 +67,10 @@ export function Grid() {
       interaction: state.interaction,
       showIsometricPreview: state.showIsometricPreview,
       toggleIsometricPreview: state.toggleIsometricPreview,
+      keyboardDragMode: state.keyboardDragMode,
+      keyboardResizeMode: state.keyboardResizeMode,
+      setKeyboardDragMode: state.setKeyboardDragMode,
+      setKeyboardResizeMode: state.setKeyboardResizeMode,
     }))
   );
 
@@ -391,6 +399,70 @@ export function Grid() {
                   </button>
                   <span className="text-xs text-accent/60">or</span>
                   <kbd className="px-1.5 py-0.5 text-xs rounded bg-accent/20 border border-accent/30 text-accent/70">Esc</kbd>
+                </div>
+              </div>
+            )}
+
+            {/* Keyboard drag mode indicator */}
+            {keyboardDragMode && (
+              <div
+                className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500"
+                role="status"
+                aria-live="polite"
+              >
+                <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+                <span className="text-sm text-blue-500 font-medium">
+                  Move Mode
+                </span>
+                <div className="flex items-center gap-1 ml-1">
+                  <span className="text-xs text-blue-500/80">↑↓←→</span>
+                  <span className="text-xs text-blue-500/60">to move</span>
+                  <kbd className="px-1.5 py-0.5 text-xs rounded bg-blue-500/20 border border-blue-500/30 text-blue-500/70">Enter</kbd>
+                  <span className="text-xs text-blue-500/60">to place</span>
+                  <button
+                    onClick={() => setKeyboardDragMode(false)}
+                    className="text-blue-500 hover:text-blue-500/70 transition-colors p-0.5 ml-1"
+                    aria-label="Exit move mode"
+                    title="Exit move mode (Esc)"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Keyboard resize mode indicator */}
+            {keyboardResizeMode && (
+              <div
+                className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-purple-500/10 border border-purple-500"
+                role="status"
+                aria-live="polite"
+              >
+                <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+                <span className="text-sm text-purple-500 font-medium">
+                  Resize Mode
+                </span>
+                <div className="flex items-center gap-1 ml-1">
+                  <span className="text-xs text-purple-500/80">↑↓←→</span>
+                  <span className="text-xs text-purple-500/60">to resize</span>
+                  <kbd className="px-1.5 py-0.5 text-xs rounded bg-purple-500/20 border border-purple-500/30 text-purple-500/70">Enter</kbd>
+                  <span className="text-xs text-purple-500/60">to apply</span>
+                  <button
+                    onClick={() => setKeyboardResizeMode(false)}
+                    className="text-purple-500 hover:text-purple-500/70 transition-colors p-0.5 ml-1"
+                    aria-label="Exit resize mode"
+                    title="Exit resize mode (Esc)"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             )}

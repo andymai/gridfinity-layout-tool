@@ -28,12 +28,13 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   const { isTouchDevice } = useResponsive();
 
   // Consolidate UI state selectors with shallow comparison
-  const { selectedBinIds, interaction, zoom, showLabels } = useUIStore(
+  const { selectedBinIds, interaction, zoom, showLabels, focusedBinId } = useUIStore(
     useShallow((state) => ({
       selectedBinIds: state.selectedBinIds,
       interaction: state.interaction,
       zoom: state.zoom,
       showLabels: state.showLabels,
+      focusedBinId: state.focusedBinId,
     }))
   );
 
@@ -42,6 +43,7 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   const toggleSelection = useUIStore((state) => state.toggleSelection);
   const addToSelection = useUIStore((state) => state.addToSelection);
   const showContextMenu = useUIStore((state) => state.showContextMenu);
+  const setFocusedBin = useUIStore((state) => state.setFocusedBin);
 
   // Consolidate layout state selectors with shallow comparison
   const { printBedSize, gridUnitMm } = useLayoutStore(
@@ -61,6 +63,7 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   const addToast = useToastStore(state => state.addToast);
 
   const isBeingDragged = interaction?.type === 'drag' && interaction.binIds.includes(bin.id);
+  const isFocused = focusedBinId === bin.id;
 
   // Hide resize handles during multi-select
   const isMultiSelect = selectedBinIds.length > 1;
@@ -204,7 +207,15 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   const getBoxShadow = () => {
     if (isGhost) return 'none';
     if (isSelected) {
+      // Selection ring with optional focus ring
+      if (isFocused) {
+        return '0 0 0 2px var(--selection-ring), 0 0 0 4px #3b82f6, 0 0 20px var(--selection-glow), var(--shadow-lg)';
+      }
       return '0 0 0 2px var(--selection-ring), 0 0 20px var(--selection-glow), var(--shadow-lg)';
+    }
+    if (isFocused) {
+      // Focus ring without selection
+      return '0 0 0 2px #3b82f6, var(--shadow-md)';
     }
     return 'var(--shadow-sm)';
   };
@@ -242,6 +253,8 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
       onContextMenu={handleContextMenu}
       onMouseEnter={() => !isTouchDevice && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => !isGhost && setFocusedBin(bin.id)}
+      onBlur={() => isFocused && setFocusedBin(null)}
       role="button"
       aria-label={`Bin ${bin.width} by ${bin.depth}${bin.label ? `, labeled ${bin.label}` : ''}${category ? `, category ${category.name}` : ''}`}
       aria-pressed={isSelected}

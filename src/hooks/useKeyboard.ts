@@ -2,14 +2,29 @@ import { useEffect, useCallback } from 'react';
 import { useUIStore, useLayoutStore, useHistoryStore, useUndoableAction } from '../store';
 import { canPlaceBin } from '../utils/validation';
 import { SHORTCUTS, STAGING_ID } from '../constants';
+import { useGridNavigation } from './useGridNavigation';
+import { useKeyboardDrag } from './useKeyboardDrag';
+import { useKeyboardResize } from './useKeyboardResize';
 
 export function useKeyboard() {
   const selectedBinIds = useUIStore(state => state.selectedBinIds);
+  const focusedBinId = useUIStore(state => state.focusedBinId);
+  const keyboardDragMode = useUIStore(state => state.keyboardDragMode);
+  const keyboardResizeMode = useUIStore(state => state.keyboardResizeMode);
   const setSelectedBins = useUIStore(state => state.setSelectedBins);
   const setInteraction = useUIStore(state => state.setInteraction);
   const setPaintSize = useUIStore(state => state.setPaintSize);
   const zoomIn = useUIStore(state => state.zoomIn);
   const zoomOut = useUIStore(state => state.zoomOut);
+
+  // Grid navigation hook for spatial arrow key navigation
+  const { handleNavigationKey } = useGridNavigation();
+
+  // Keyboard drag mode hook
+  const { enterDragMode } = useKeyboardDrag();
+
+  // Keyboard resize mode hook
+  const { enterResizeMode } = useKeyboardResize();
 
   const layout = useLayoutStore(state => state.layout);
   const deleteBin = useLayoutStore(state => state.deleteBin);
@@ -50,6 +65,20 @@ export function useKeyboard() {
       setInteraction(null);
       setSelectedBins([]);
       setPaintSize(null);
+      return;
+    }
+
+    // M key - enter keyboard drag mode
+    if (key.toLowerCase() === 'm' && !ctrlOrMeta && !keyboardDragMode && !keyboardResizeMode) {
+      e.preventDefault();
+      enterDragMode();
+      return;
+    }
+
+    // R key - enter keyboard resize mode
+    if (key.toLowerCase() === 'r' && !ctrlOrMeta && !keyboardDragMode && !keyboardResizeMode) {
+      e.preventDefault();
+      enterResizeMode();
       return;
     }
 
@@ -98,57 +127,66 @@ export function useKeyboard() {
       return;
     }
 
-    // Arrow nudge - move all selected bins
-    const nudgeKeys: readonly string[] = [SHORTCUTS.NUDGE_UP, SHORTCUTS.NUDGE_DOWN, SHORTCUTS.NUDGE_LEFT, SHORTCUTS.NUDGE_RIGHT];
-    if (nudgeKeys.includes(key) && selectedBinIds.length > 0) {
+    // Arrow keys - spatial navigation OR nudge (skip if in keyboard drag/resize mode)
+    const arrowKeys: readonly string[] = [SHORTCUTS.NUDGE_UP, SHORTCUTS.NUDGE_DOWN, SHORTCUTS.NUDGE_LEFT, SHORTCUTS.NUDGE_RIGHT];
+    if (arrowKeys.includes(key) && !keyboardDragMode && !keyboardResizeMode) {
       e.preventDefault();
 
-      let dx = 0, dy = 0;
-      if (key === SHORTCUTS.NUDGE_UP) dy = 1;
-      if (key === SHORTCUTS.NUDGE_DOWN) dy = -1;
-      if (key === SHORTCUTS.NUDGE_LEFT) dx = -1;
-      if (key === SHORTCUTS.NUDGE_RIGHT) dx = 1;
-
-      // Check if all bins can move
-      const excludeIds = new Set(selectedBinIds);
-      let allValid = true;
-
-      for (const binId of selectedBinIds) {
-        const bin = layout.bins.find(b => b.id === binId);
-        if (!bin || bin.layerId === STAGING_ID) {
-          allValid = false;
-          break;
-        }
-
-        const newX = bin.x + dx;
-        const newY = bin.y + dy;
-
-        const result = canPlaceBin(
-          { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
-          bin.layerId,
-          layout,
-          binId,
-          excludeIds
-        );
-
-        if (!result.valid) {
-          allValid = false;
-          break;
-        }
+      // If there's a focused bin but no selection, use spatial navigation
+      if (focusedBinId && selectedBinIds.length === 0) {
+        handleNavigationKey(key);
+        return;
       }
 
-      if (allValid) {
-        execute(() => {
-          for (const binId of selectedBinIds) {
-            const bin = layout.bins.find(b => b.id === binId);
-            if (!bin) continue;
-            updateBin(binId, { x: bin.x + dx, y: bin.y + dy });
+      // Otherwise, use existing nudge logic for selected bins
+      if (selectedBinIds.length > 0) {
+        let dx = 0, dy = 0;
+        if (key === SHORTCUTS.NUDGE_UP) dy = 1;
+        if (key === SHORTCUTS.NUDGE_DOWN) dy = -1;
+        if (key === SHORTCUTS.NUDGE_LEFT) dx = -1;
+        if (key === SHORTCUTS.NUDGE_RIGHT) dx = 1;
+
+        // Check if all bins can move
+        const excludeIds = new Set(selectedBinIds);
+        let allValid = true;
+
+        for (const binId of selectedBinIds) {
+          const bin = layout.bins.find(b => b.id === binId);
+          if (!bin || bin.layerId === STAGING_ID) {
+            allValid = false;
+            break;
           }
-        });
+
+          const newX = bin.x + dx;
+          const newY = bin.y + dy;
+
+          const result = canPlaceBin(
+            { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
+            bin.layerId,
+            layout,
+            binId,
+            excludeIds
+          );
+
+          if (!result.valid) {
+            allValid = false;
+            break;
+          }
+        }
+
+        if (allValid) {
+          execute(() => {
+            for (const binId of selectedBinIds) {
+              const bin = layout.bins.find(b => b.id === binId);
+              if (!bin) continue;
+              updateBin(binId, { x: bin.x + dx, y: bin.y + dy });
+            }
+          });
+        }
       }
       return;
     }
-  }, [selectedBinIds, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute]);
+  }, [selectedBinIds, focusedBinId, keyboardDragMode, keyboardResizeMode, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, enterDragMode, enterResizeMode]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
