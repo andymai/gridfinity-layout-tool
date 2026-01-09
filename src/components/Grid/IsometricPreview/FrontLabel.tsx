@@ -10,9 +10,9 @@ interface FrontLabelProps {
  * to help orient users viewing the 3D model.
  */
 export function FrontLabel({ drawerWidth, label }: FrontLabelProps) {
-  // Position the text centered along the front edge (Y=0)
+  // Position the text centered along the front edge, below axis labels
   const textX = drawerWidth / 2;
-  const textY = -1.0; // Slightly in front of the floor
+  const textY = -1.3; // Further in front to clear axis labels at Y=-0.5
   const textZ = 0.01; // Just above the floor to prevent z-fighting
 
   return (

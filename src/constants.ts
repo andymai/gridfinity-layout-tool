@@ -107,6 +107,7 @@ export const SHORTCUTS = {
   SELECT_NEXT_BIN: 'd',
   CATEGORY_PREV: '[',
   CATEGORY_NEXT: ']',
+  QUICK_LABEL: 'l',
   NUDGE_UP: 'ArrowUp',
   NUDGE_DOWN: 'ArrowDown',
   NUDGE_LEFT: 'ArrowLeft',

@@ -18,6 +18,7 @@ export function useKeyboard() {
   const zoomOut = useUIStore(state => state.zoomOut);
   const activeLayerId = useUIStore(state => state.activeLayerId);
   const setActiveLayer = useUIStore(state => state.setActiveLayer);
+  const showQuickLabel = useUIStore(state => state.showQuickLabel);
 
   // Grid navigation hook for spatial arrow key navigation
   const { handleNavigationKey } = useGridNavigation();
@@ -240,6 +241,13 @@ export function useKeyboard() {
       return;
     }
 
+    // L key - open quick label popover for selected bin
+    if (key.toLowerCase() === SHORTCUTS.QUICK_LABEL && !ctrlOrMeta && selectedBinIds.length === 1) {
+      e.preventDefault();
+      showQuickLabel(selectedBinIds[0]);
+      return;
+    }
+
     // Arrow keys - spatial navigation OR nudge (skip if in keyboard drag/resize mode)
     const arrowKeys: readonly string[] = [SHORTCUTS.NUDGE_UP, SHORTCUTS.NUDGE_DOWN, SHORTCUTS.NUDGE_LEFT, SHORTCUTS.NUDGE_RIGHT];
     if (arrowKeys.includes(key) && !keyboardDragMode && !keyboardResizeMode) {
@@ -299,7 +307,7 @@ export function useKeyboard() {
       }
       return;
     }
-  }, [selectedBinIds, focusedBinId, keyboardDragMode, keyboardResizeMode, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, enterDragMode, enterResizeMode, activeLayerId, setActiveLayer]);
+  }, [selectedBinIds, focusedBinId, keyboardDragMode, keyboardResizeMode, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, enterDragMode, enterResizeMode, activeLayerId, setActiveLayer, showQuickLabel]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

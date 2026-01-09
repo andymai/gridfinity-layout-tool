@@ -6,6 +6,7 @@ import { useUIStore } from '../../../store';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { FloorGrid } from './FloorGrid';
 import { FrontLabel } from './FrontLabel';
+import { AxisLabels } from './AxisLabels';
 
 interface SceneProps {
   children: React.ReactNode;
@@ -212,8 +213,9 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         color="#000000"
       />
 
-      {/* Floor grid and front label */}
+      {/* Floor grid, axis labels, and front label */}
       <FloorGrid width={drawerWidth} depth={drawerDepth} />
+      <AxisLabels width={drawerWidth} depth={drawerDepth} />
       <FrontLabel drawerWidth={drawerWidth} label={layoutName} />
 
       {/* Bins */}

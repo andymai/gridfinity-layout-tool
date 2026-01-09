@@ -7,6 +7,7 @@ import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS, getBaseCellSize } from '../../
 import { clamp } from '../../utils/validation';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
+import { QuickLabelPopover } from './QuickLabelPopover';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { MobileGridToolbar } from '../mobile';
 import { PanelErrorBoundary } from '../PanelErrorBoundary';
@@ -924,6 +925,9 @@ export function Grid() {
         </div>
       )}
       </div>
+
+      {/* Quick label popover for desktop double-click / L shortcut */}
+      <QuickLabelPopover />
     </div>
   );
 }

@@ -70,13 +70,13 @@ export function FloorGrid({ width, depth }: FloorGridProps) {
         />
       </mesh>
 
-      {/* Gridlines */}
-      <lineSegments geometry={gridGeometry}>
+      {/* Gridlines - raised slightly to prevent z-fighting with floor */}
+      <lineSegments geometry={gridGeometry} position={[0, 0, 0.01]}>
         <lineBasicMaterial color="#ffffff" opacity={0.12} transparent />
       </lineSegments>
 
-      {/* Floor edge highlight (baseplate rim) */}
-      <lineSegments geometry={edgeGeometry}>
+      {/* Floor edge highlight (baseplate rim) - raised slightly */}
+      <lineSegments geometry={edgeGeometry} position={[0, 0, 0.01]}>
         <lineBasicMaterial color="#ffffff" opacity={0.18} transparent linewidth={1.2} />
       </lineSegments>
     </group>

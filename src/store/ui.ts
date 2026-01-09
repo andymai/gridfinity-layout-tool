@@ -58,6 +58,9 @@ interface UIState {
   keyboardResizeMode: boolean; // In keyboard resize mode (R key)
   liveMessage: string | null; // Message for screen reader announcements
 
+  // Quick label popover (desktop double-click or L key)
+  quickLabelBinId: string | null;
+
   // Actions
   setActiveLayer: (id: string) => void;
   setSelectedBin: (id: string | null) => void; // Single select (clears others)
@@ -106,6 +109,10 @@ interface UIState {
   setKeyboardDragMode: (enabled: boolean) => void;
   setKeyboardResizeMode: (enabled: boolean) => void;
   announceToScreenReader: (message: string) => void;
+
+  // Quick label actions
+  showQuickLabel: (binId: string) => void;
+  hideQuickLabel: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -131,6 +138,7 @@ export const useUIStore = create<UIState>((set) => ({
   keyboardDragMode: false,
   keyboardResizeMode: false,
   liveMessage: null,
+  quickLabelBinId: null,
 
   setActiveLayer: (id) => set({
     activeLayerId: id,
@@ -261,4 +269,8 @@ export const useUIStore = create<UIState>((set) => ({
       set({ liveMessage: null });
     }, 1000);
   },
+
+  // Quick label actions
+  showQuickLabel: (binId) => set({ quickLabelBinId: binId }),
+  hideQuickLabel: () => set({ quickLabelBinId: null }),
 }));

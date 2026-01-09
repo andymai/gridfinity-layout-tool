@@ -197,6 +197,10 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 keys={[formatKey(SHORTCUTS.CATEGORY_PREV), formatKey(SHORTCUTS.CATEGORY_NEXT)]}
                 description="Cycle bin category"
               />
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase()}
+                description="Quick label selected bin"
+              />
             </div>
           </section>
 
