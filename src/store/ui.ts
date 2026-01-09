@@ -124,8 +124,8 @@ export const useUIStore = create<UIState>((set) => ({
   contextMenu: null,
   showIsometricPreview: false,
   isometricRotation: 0,
-  hideLayersAbove: false,
-  dimInactiveLayers: true, // Enabled by default
+  hideLayersAbove: true, // Show only active layer and below
+  dimInactiveLayers: true, // Dim non-active layers
   isPreviewExpanded: false,
   focusedBinId: null,
   keyboardDragMode: false,

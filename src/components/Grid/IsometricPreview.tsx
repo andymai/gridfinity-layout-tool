@@ -452,7 +452,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg bg-surface/50" : "gap-0.5"
           }`}
         >
-          {/* Dim inactive layers toggle */}
+          {/* Focus active layer - dims other layers */}
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -461,55 +461,52 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             className={`btn ${dimInactiveLayers ? 'btn-primary' : 'btn-ghost'} ${
               isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
             }`}
-            title={
-              dimInactiveLayers
-                ? "Dim inactive layers (on)"
-                : "Dim inactive layers (off)"
-            }
+            title={dimInactiveLayers ? "Focus active layer (on)" : "Focus active layer (off)"}
           >
             <svg
               className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-              />
+              {/* Eye icon - focus/visibility */}
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
             </svg>
             {isPreviewExpanded && !isMobile && (
-              <span className="text-xs">Dim</span>
+              <span className="text-xs">Focus</span>
             )}
           </button>
-          {/* Slice view toggle - hide layers above active */}
+          {/* Show all layers toggle */}
           <button
             onClick={(e) => {
               e.stopPropagation()
               toggleHideLayersAbove()
             }}
-            className={`btn ${hideLayersAbove ? 'btn-primary' : 'btn-ghost'} ${
+            className={`btn ${hideLayersAbove ? 'btn-ghost' : 'btn-primary'} ${
               isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
             }`}
-            title={hideLayersAbove ? "Slice view (on)" : "Slice view (off)"}
+            title={hideLayersAbove ? "Show all layers" : "Showing all layers"}
           >
             <svg
               className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 5h16M4 12h16m-7 7h7"
-              />
+              {/* Stacked layers icon */}
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
             </svg>
             {isPreviewExpanded && !isMobile && (
-              <span className="text-xs">Slice</span>
+              <span className="text-xs">All</span>
             )}
           </button>
         </div>
