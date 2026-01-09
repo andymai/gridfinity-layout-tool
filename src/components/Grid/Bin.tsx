@@ -8,6 +8,7 @@ import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { getContrastColor } from '../../utils/color';
 
 const LONG_PRESS_DURATION = 500; // ms
+const DOUBLE_TAP_THRESHOLD = 300; // ms
 
 interface BinProps {
   bin: BinType;
@@ -44,6 +45,7 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   const addToSelection = useUIStore((state) => state.addToSelection);
   const showContextMenu = useUIStore((state) => state.showContextMenu);
   const setFocusedBin = useUIStore((state) => state.setFocusedBin);
+  const setActiveMobilePanel = useUIStore((state) => state.setActiveMobilePanel);
 
   // Consolidate layout state selectors with shallow comparison
   const { printBedSize, gridUnitMm } = useLayoutStore(
@@ -57,6 +59,8 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   const longPressTimerRef = useRef<number | null>(null);
   const longPressTriggeredRef = useRef(false);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  // Double-tap detection for mobile
+  const lastTapTimeRef = useRef<number>(0);
 
   // Hover state for ghost handles (desktop only)
   const [isHovered, setIsHovered] = useState(false);
@@ -184,8 +188,28 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
     }
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: PointerEvent<HTMLDivElement>) => {
     clearLongPress();
+
+    // Double-tap detection for mobile - open inspector
+    if (isTouchDevice && !longPressTriggeredRef.current && pointerStartRef.current) {
+      // Check if pointer didn't move much (wasn't a drag)
+      const dx = e.clientX - pointerStartRef.current.x;
+      const dy = e.clientY - pointerStartRef.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance <= 10) {
+        const now = Date.now();
+        if (now - lastTapTimeRef.current < DOUBLE_TAP_THRESHOLD) {
+          // Double-tap detected - open inspector
+          setActiveMobilePanel('inspector');
+          lastTapTimeRef.current = 0; // Reset to prevent triple-tap
+        } else {
+          lastTapTimeRef.current = now;
+        }
+      }
+    }
+
     pointerStartRef.current = null;
   };
 
