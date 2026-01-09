@@ -624,7 +624,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       </div>
 
       {/* Keyboard shortcuts indicator - only shown in expanded mode on desktop */}
-      {isPreviewExpanded && !isMobile && (
+      {isPreviewExpanded && !isMobile && !isTablet && (
         <div
           className="absolute bottom-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg text-xs"
           style={{
