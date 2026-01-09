@@ -52,6 +52,12 @@ interface UIState {
   dimInactiveLayers: boolean; // Dim non-active layers in 3D preview
   isPreviewExpanded: boolean; // Expanded modal view
 
+  // Keyboard navigation
+  focusedBinId: string | null; // Bin with keyboard focus (separate from selection)
+  keyboardDragMode: boolean; // In keyboard drag mode (M key)
+  keyboardResizeMode: boolean; // In keyboard resize mode (R key)
+  liveMessage: string | null; // Message for screen reader announcements
+
   // Actions
   setActiveLayer: (id: string) => void;
   setSelectedBin: (id: string | null) => void; // Single select (clears others)
@@ -94,6 +100,12 @@ interface UIState {
   snapToIsometric: () => void; // Snap to nearest 90°
   togglePreviewExpanded: () => void;
   setPreviewExpanded: (expanded: boolean) => void;
+
+  // Keyboard navigation actions
+  setFocusedBin: (binId: string | null) => void;
+  setKeyboardDragMode: (enabled: boolean) => void;
+  setKeyboardResizeMode: (enabled: boolean) => void;
+  announceToScreenReader: (message: string) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -115,6 +127,10 @@ export const useUIStore = create<UIState>((set) => ({
   hideLayersAbove: false,
   dimInactiveLayers: true, // Enabled by default
   isPreviewExpanded: false,
+  focusedBinId: null,
+  keyboardDragMode: false,
+  keyboardResizeMode: false,
+  liveMessage: null,
 
   setActiveLayer: (id) => set({
     activeLayerId: id,
@@ -235,4 +251,24 @@ export const useUIStore = create<UIState>((set) => ({
     isPreviewExpanded: !state.isPreviewExpanded
   })),
   setPreviewExpanded: (expanded) => set({ isPreviewExpanded: expanded }),
+
+  // Keyboard navigation actions
+  setFocusedBin: (binId) => set({ focusedBinId: binId }),
+  setKeyboardDragMode: (enabled) => set({
+    keyboardDragMode: enabled,
+    // Exit resize mode when entering drag mode
+    keyboardResizeMode: enabled ? false : undefined,
+  }),
+  setKeyboardResizeMode: (enabled) => set({
+    keyboardResizeMode: enabled,
+    // Exit drag mode when entering resize mode
+    keyboardDragMode: enabled ? false : undefined,
+  }),
+  announceToScreenReader: (message) => {
+    set({ liveMessage: message });
+    // Clear after 1 second to allow repeat announcements of the same message
+    setTimeout(() => {
+      set({ liveMessage: null });
+    }, 1000);
+  },
 }));
