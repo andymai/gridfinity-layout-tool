@@ -562,13 +562,16 @@ export function Grid() {
             {/* 3D Preview toggle */}
             <button
               onClick={toggleIsometricPreview}
-              className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-ghost'} p-1.5`}
+              className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-ghost'} px-2.5 py-1.5 flex items-center gap-1.5`}
               aria-label={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
               title={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                <path d="m3.3 7 8.7 5 8.7-5"/>
+                <path d="M12 22V12"/>
               </svg>
+              <span className="text-sm">3D View</span>
             </button>
           </div>
         </div>
