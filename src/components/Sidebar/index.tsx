@@ -48,10 +48,10 @@ export function Sidebar() {
     >
       {collapsed ? (
         // Collapsed state - just show expand button
-        <div className="flex flex-col items-center pt-3">
+        <div className="flex flex-col items-center py-3">
           <button
             onClick={toggle}
-            className="p-2 rounded-md transition-colors text-content-secondary hover:bg-surface-hover hover:text-content"
+            className="p-1 rounded transition-colors text-content-secondary hover:bg-surface-hover hover:text-content"
             title="Expand panel"
             aria-label="Expand left panel"
           >

@@ -309,10 +309,10 @@ export function RightPanel() {
         className="flex-shrink-0 flex flex-col transition-all duration-200 ease-in-out bg-surface-secondary border-l border-stroke-subtle"
         style={{ width: '40px' }}
       >
-        <div className="flex flex-col items-center pt-3">
+        <div className="flex flex-col items-center py-3">
           <button
             onClick={toggle}
-            className="p-2 rounded-md transition-colors text-content-secondary hover:bg-surface-hover hover:text-content"
+            className="p-1 rounded transition-colors text-content-secondary hover:bg-surface-hover hover:text-content"
             title="Expand panel"
             aria-label="Expand right panel"
           >
