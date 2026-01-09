@@ -331,34 +331,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           </div>
         </div>
       )}
-      {/* Reset view button - resets rotation, zoom, and pan */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          sceneRef.current?.resetView()
-        }}
-        className={`btn btn-ghost absolute bottom-1 left-1 group ${
-          isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
-        }`}
-        title="Reset view (rotation, zoom, and pan)"
-      >
-        <svg
-          className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-          />
-        </svg>
-        {isPreviewExpanded && !isMobile && (
-          <span className="text-xs font-medium">Reset</span>
-        )}
-      </button>
       {/* Camera preset buttons */}
       <div
         className={`absolute top-1 left-1/2 transform -translate-x-1/2 flex ${
