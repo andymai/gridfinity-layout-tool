@@ -79,17 +79,24 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   // Rotate text for tall narrow bins (depth > 1.5x width)
   const shouldRotate = bin.depth > bin.width * 1.5;
 
+  // Hide all text when zoomed out too far (bins too small to show text legibly)
+  // At zoom < 0.4, bins are typically < 15px per cell which is too small for text
+  const showAnyText = zoom >= 0.4;
+
   // Hide dimensions when there's a label and not enough space:
   // - Very small bins (area < 2)
   // - Shallow bins (depth = 1) - not enough vertical space for both lines
   // - Narrow bins (width = 1) - rotation handles this but still tight
-  const showDimensions = !labelText || (bin.width * bin.depth >= 2 && bin.depth > 1 && bin.width > 1);
+  const showDimensions = showAnyText && (!labelText || (bin.width * bin.depth >= 2 && bin.depth > 1 && bin.width > 1));
 
   // Scale font size with zoom (dampened: 0.6 + 0.4 * zoom)
   // At 50% zoom: 0.8x, at 100%: 1.0x, at 200%: 1.4x
   const fontScale = 0.6 + 0.4 * zoom;
   const dimensionFontSize = Math.round(14 * fontScale);
   const labelFontSize = Math.round(12 * fontScale);
+
+  // Also hide label text when zoomed out
+  const showLabelText = showAnyText && labelText;
 
   const clearLongPress = () => {
     if (longPressTimerRef.current) {
@@ -245,6 +252,10 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
         zIndex: isGhost ? 5 : isSelected ? 20 : 10,
         boxShadow: getBoxShadow(),
         transform: getTransform(),
+        // Prevent text content from expanding bin beyond grid cell
+        overflow: 'hidden',
+        minWidth: 0,
+        minHeight: 0,
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -316,7 +327,7 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
             )}
           </div>
         )}
-        {labelText && (
+        {showLabelText && (
           <div
             className={`leading-tight ${shouldRotate ? 'whitespace-nowrap' : 'truncate w-full'}`}
             style={{
