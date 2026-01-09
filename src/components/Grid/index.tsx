@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
+import { useToastStore } from '../../store/toast';
 import { useInteraction, useResponsive } from '../../hooks';
 import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS } from '../../constants';
 import { clamp } from '../../utils/validation';
@@ -76,6 +77,47 @@ export function Grid() {
 
   const clearSelection = useCallback(() => setSelectedBins([]), [setSelectedBins]);
   const { execute } = useUndoableAction();
+  const addToast = useToastStore(state => state.addToast);
+
+  // Track if paint mode hint should pulse (first use)
+  const [shouldPulsePaintHint, setShouldPulsePaintHint] = useState(false);
+
+  // Track if grid resize handles should pulse (first load)
+  const [shouldPulseResizeHandles, setShouldPulseResizeHandles] = useState(false);
+
+  // Show first-time toast when paint mode is activated
+  useEffect(() => {
+    if (paintSize) {
+      const hintShown = localStorage.getItem('gridfinity-paint-mode-hint-shown');
+      if (!hintShown) {
+        addToast('Paint Mode: Drag to fill area, press Esc or click × to exit', 'info');
+        localStorage.setItem('gridfinity-paint-mode-hint-shown', 'true');
+        // Defer state update to avoid cascading renders
+        setTimeout(() => {
+          setShouldPulsePaintHint(true);
+          // Stop pulsing after 3 seconds
+          setTimeout(() => setShouldPulsePaintHint(false), 3000);
+        }, 0);
+      }
+    } else {
+      // Defer state update to avoid cascading renders
+      setTimeout(() => setShouldPulsePaintHint(false), 0);
+    }
+  }, [paintSize, addToast]);
+
+  // Pulse grid resize handles on first load
+  useEffect(() => {
+    const hintShown = localStorage.getItem('gridfinity-grid-resize-hint-shown');
+    if (!hintShown) {
+      localStorage.setItem('gridfinity-grid-resize-hint-shown', 'true');
+      // Defer state update to avoid cascading renders
+      setTimeout(() => {
+        setShouldPulseResizeHandles(true);
+        // Stop pulsing after 3 seconds
+        setTimeout(() => setShouldPulseResizeHandles(false), 3000);
+      }, 0);
+    }
+  }, []);
 
   // Pending resize confirmation state
   const [pendingResize, setPendingResize] = useState<{
@@ -208,9 +250,9 @@ export function Grid() {
 
     // Available space (minus padding)
     const padding = 48; // 24px padding on each side
-    // Account for isometric preview width when visible (280px + margins)
-    const previewOffset = showIsometricPreview ? 300 : 0;
-    const availableWidth = container.clientWidth - padding - previewOffset;
+    // In split-screen mode, the grid area is already 50% width, so no offset needed
+    // The container width already reflects the available space
+    const availableWidth = container.clientWidth - padding;
     const availableHeight = container.clientHeight - padding;
 
     // Grid dimensions at zoom=1 (including labels and gaps)
@@ -230,7 +272,7 @@ export function Grid() {
     );
 
     setZoom(clampedZoom);
-  }, [drawer.width, drawer.depth, gap, setZoom, showIsometricPreview]);
+  }, [drawer.width, drawer.depth, gap, setZoom]);
 
   // Fit to screen on initial mount and when drawer size changes
   useEffect(() => {
@@ -238,6 +280,14 @@ export function Grid() {
     const timer = setTimeout(fitToScreen, 100);
     return () => clearTimeout(timer);
   }, [fitToScreen, drawer.width, drawer.depth]);
+
+  // Refit when 3D preview is toggled (changes available width on desktop)
+  useEffect(() => {
+    if (!isMobile) {
+      const timer = setTimeout(fitToScreen, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIsometricPreview, isMobile, fitToScreen]);
 
   // Select all bins that occupy a given row (1-indexed row number)
   const handleRowClick = useCallback((rowNum: number) => {
@@ -278,11 +328,13 @@ export function Grid() {
   const rowLabels = Array.from({ length: drawer.depth }, (_, i) => drawer.depth - i);
 
   return (
-    <div className="flex flex-col h-full bg-surface relative">
-      {/* Toolbar - mobile vs desktop */}
-      {isMobile ? (
-        <MobileGridToolbar onFitToScreen={fitToScreen} />
-      ) : (
+    <div className={`flex h-full bg-surface ${!isMobile && showIsometricPreview ? 'flex-row' : 'flex-col'} relative`}>
+      {/* Left side: Grid area (50% when 3D preview is shown on desktop) */}
+      <div className={`flex flex-col h-full ${!isMobile && showIsometricPreview ? 'w-1/2 border-r border-stroke-subtle' : 'w-full'}`}>
+        {/* Toolbar - mobile vs desktop */}
+        {isMobile ? (
+          <MobileGridToolbar onFitToScreen={fitToScreen} />
+        ) : (
         <div
           className="flex items-center justify-between px-4 py-[7.5px] bg-surface-secondary border-b border-stroke-subtle"
         >
@@ -311,7 +363,7 @@ export function Grid() {
             {/* Paint mode indicator (only shown when active) */}
             {paintSize && (
               <div
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary-muted border border-accent"
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary-muted border border-accent ${shouldPulsePaintHint ? 'animate-pulse' : ''}`}
                 role="status"
                 aria-live="polite"
               >
@@ -321,14 +373,20 @@ export function Grid() {
                 <span className="text-sm text-accent font-medium">
                   Paint {paintSize.width}×{paintSize.depth}
                 </span>
-                <button
-                  onClick={() => setPaintSize(null)}
-                  className="ml-1 text-accent/70 hover:text-accent transition-colors"
-                  aria-label="Exit paint mode (Escape)"
-                  title="Exit paint mode"
-                >
-                  <kbd className="px-1.5 py-0.5 text-xs rounded bg-accent/20 border border-accent/30">Esc</kbd>
-                </button>
+                <div className="flex items-center gap-1 ml-1">
+                  <button
+                    onClick={() => setPaintSize(null)}
+                    className="text-accent hover:text-accent/70 transition-colors p-0.5"
+                    aria-label="Exit paint mode"
+                    title="Exit paint mode"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                  <span className="text-xs text-accent/60">or</span>
+                  <kbd className="px-1.5 py-0.5 text-xs rounded bg-accent/20 border border-accent/30 text-accent/70">Esc</kbd>
+                </div>
               </div>
             )}
           </div>
@@ -441,17 +499,18 @@ export function Grid() {
                 <button
                   key={`row-${num}`}
                   type="button"
-                  className="flex items-center justify-center select-none transition-colors rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
+                  className="group flex items-center justify-center select-none transition-all rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border border-transparent cursor-pointer hover:text-content hover:bg-surface-hover hover:border-stroke group"
                   style={{
                     width: labelSize,
                     gridRow: index + 1,
                     fontSize: labelFontSize,
                   }}
                   onClick={() => handleRowClick(num)}
-                  title={`Select bins in row ${num}`}
+                  title={`Click to select all bins in row ${num}`}
                   aria-label={`Select bins in row ${num}`}
                 >
-                  {num}
+                  <span className="group-hover:hidden">{num}</span>
+                  <span className="hidden group-hover:inline text-lg leading-none">⋮</span>
                 </button>
               ))}
             </div>
@@ -541,14 +600,14 @@ export function Grid() {
                 style={{
                   left: drawer.width * (cellSize + gap) + gap,
                   height: drawer.depth * (cellSize + gap) + gap,
-                  width: 16,
+                  width: 24,
                   cursor: 'ew-resize',
                 }}
                 onMouseDown={(e) => handleResizeStart('width', e)}
-                title="Drag to resize width"
+                title="Drag to add/remove columns"
               >
                 <div
-                  className="h-16 w-1 rounded-full transition-all group-hover:h-24 group-hover:w-1.5"
+                  className={`h-16 w-1 rounded-full transition-all group-hover:h-24 group-hover:w-[3px] group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
                   style={{
                     backgroundColor: resizeDirection === 'width' || resizeDirection === 'both'
                       ? 'var(--color-primary)'
@@ -563,14 +622,14 @@ export function Grid() {
                 style={{
                   top: drawer.depth * (cellSize + gap) + gap + labelSize,
                   width: drawer.width * (cellSize + gap) + gap,
-                  height: 16,
+                  height: 24,
                   cursor: 'ns-resize',
                 }}
                 onMouseDown={(e) => handleResizeStart('depth', e)}
-                title="Drag to resize depth"
+                title="Drag to add/remove rows"
               >
                 <div
-                  className="w-16 h-1 rounded-full transition-all group-hover:w-24 group-hover:h-1.5"
+                  className={`w-16 h-1 rounded-full transition-all group-hover:w-24 group-hover:h-[3px] group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
                   style={{
                     backgroundColor: resizeDirection === 'depth' || resizeDirection === 'both'
                       ? 'var(--color-primary)'
@@ -585,15 +644,15 @@ export function Grid() {
                 style={{
                   left: drawer.width * (cellSize + gap) + gap,
                   top: drawer.depth * (cellSize + gap) + gap + labelSize,
-                  width: 16,
-                  height: 16,
+                  width: 24,
+                  height: 24,
                   cursor: 'nwse-resize',
                 }}
                 onMouseDown={(e) => handleResizeStart('both', e)}
-                title="Drag to resize both dimensions"
+                title="Drag to add/remove rows and columns"
               >
                 <div
-                  className="w-3 h-3 rounded-sm transition-all group-hover:w-4 group-hover:h-4"
+                  className={`w-3 h-3 rounded-sm transition-all group-hover:w-5 group-hover:h-5 group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
                   style={{
                     backgroundColor: resizeDirection === 'both'
                       ? 'var(--color-primary)'
@@ -618,17 +677,18 @@ export function Grid() {
                   <button
                     key={`col-${num}`}
                     type="button"
-                    className="flex items-center justify-center select-none transition-colors rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
+                    className="group flex items-center justify-center select-none transition-all rounded-sm font-medium text-content-tertiary tabular-nums bg-transparent border border-transparent cursor-pointer hover:text-content hover:bg-surface-hover hover:border-stroke"
                     style={{
                       height: labelSize,
                       gridColumn: index + 1,
                       fontSize: labelFontSize,
                     }}
                     onClick={() => handleColumnClick(num)}
-                    title={`Select bins in column ${num}`}
+                    title={`Click to select all bins in column ${num}`}
                     aria-label={`Select bins in column ${num}`}
                   >
-                    {num}
+                    <span className="group-hover:hidden">{num}</span>
+                    <span className="hidden group-hover:inline text-lg leading-none">⋯</span>
                   </button>
                 ))}
               </div>
@@ -637,21 +697,38 @@ export function Grid() {
         </div>
       </div>
 
-      {/* Resize confirmation dialog */}
-      <ConfirmDialog
-        isOpen={pendingResize !== null}
-        title="Resize Grid"
-        message={pendingResize
-          ? `${pendingResize.clippedBinIds.length} bin${pendingResize.clippedBinIds.length > 1 ? 's' : ''} will be moved to stash. Continue?`
-          : ''
-        }
-        confirmText="Move to Stash"
-        onConfirm={confirmResize}
-        onCancel={cancelResize}
-      />
+        {/* Resize confirmation dialog */}
+        <ConfirmDialog
+          isOpen={pendingResize !== null}
+          title="Resize Grid"
+          message={pendingResize
+            ? `${pendingResize.clippedBinIds.length} bin${pendingResize.clippedBinIds.length > 1 ? 's' : ''} will be moved to stash. Continue?`
+            : ''
+          }
+          confirmText="Move to Stash"
+          onConfirm={confirmResize}
+          onCancel={cancelResize}
+        />
+      </div>
+      {/* End of grid area wrapper */}
 
-      {/* Isometric 3D preview - positioned in top-right corner, lazy loaded */}
-      {showIsometricPreview && (
+      {/* Right side: 3D Preview (50% when shown on desktop) */}
+      {!isMobile && showIsometricPreview && (
+        <div className="w-1/2 h-full bg-surface-secondary overflow-hidden">
+          <PanelErrorBoundary panelName="3D Preview">
+            <Suspense fallback={
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
+              </div>
+            }>
+              <IsometricPreview inline />
+            </Suspense>
+          </PanelErrorBoundary>
+        </div>
+      )}
+
+      {/* Mobile: 3D preview as overlay (original behavior) */}
+      {isMobile && showIsometricPreview && (
         <div className="absolute top-14 right-4 w-[280px] h-[280px] rounded-lg bg-surface-secondary border border-stroke-subtle z-20 overflow-hidden">
           <PanelErrorBoundary panelName="3D Preview">
             <Suspense fallback={

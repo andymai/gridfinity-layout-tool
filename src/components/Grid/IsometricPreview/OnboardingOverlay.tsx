@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 const STORAGE_KEY = 'gridfinity-3d-tutorial-seen';
 
@@ -47,9 +48,9 @@ export function OnboardingOverlay({ onDismiss }: OnboardingOverlayProps) {
     return null;
   }
 
-  return (
+  return createPortal(
     <div
-      className="absolute inset-0 flex items-center justify-center z-50 animate-fade-in"
+      className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in"
       style={{
         background: 'rgba(0, 0, 0, 0.75)',
         backdropFilter: 'blur(4px)',
@@ -148,7 +149,8 @@ export function OnboardingOverlay({ onDismiss }: OnboardingOverlayProps) {
           Click outside or press this button to dismiss
         </p>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

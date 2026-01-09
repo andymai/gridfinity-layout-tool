@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useRef, useState } from "react"
+import { useMemo, useCallback, useRef, useState, useEffect } from "react"
 import { Canvas } from "@react-three/fiber"
 import { useShallow } from "zustand/shallow"
 import { useLayoutStore, useUIStore } from "../../store"
@@ -21,14 +21,20 @@ const HEIGHT_TO_GRID_SCALE = 7 / 42
 
 const PREVIEW_SIZE_SMALL = 280 // Default small preview
 
+interface IsometricPreviewProps {
+  inline?: boolean // When true, fills container instead of using fixed sizing
+}
+
 /**
  * Isometric 3D preview of the drawer layout using Three.js.
  * Shows all layers stacked with bins colored by category.
  */
-export function IsometricPreview() {
+export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   const sceneRef = useRef<SceneHandle>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const { isMobile, isTablet } = useResponsive()
   const [showOnboarding, setShowOnboarding] = useState(true)
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
 
   const {
     showIsometricPreview,
@@ -58,8 +64,28 @@ export function IsometricPreview() {
     }))
   )
 
-  // Calculate preview size based on expanded state and device
+  // Track container dimensions in inline mode
+  useEffect(() => {
+    if (!inline || !containerRef.current) return
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect
+        setContainerSize({ width, height })
+      }
+    })
+
+    resizeObserver.observe(containerRef.current)
+    return () => resizeObserver.disconnect()
+  }, [inline])
+
+  // Calculate preview size based on mode, expanded state, and device
   const previewSize = useMemo(() => {
+    // In inline mode, use container dimensions (square aspect ratio)
+    if (inline && containerSize.width > 0 && containerSize.height > 0) {
+      return Math.min(containerSize.width, containerSize.height)
+    }
+
     if (!isPreviewExpanded) return PREVIEW_SIZE_SMALL
 
     const vw = typeof window !== "undefined" ? window.innerWidth : 800
@@ -75,7 +101,7 @@ export function IsometricPreview() {
       // Desktop: fill most of viewport (90%)
       return Math.min(vw * 0.9, vh * 0.9)
     }
-  }, [isPreviewExpanded, isMobile, isTablet])
+  }, [inline, containerSize, isPreviewExpanded, isMobile, isTablet])
 
   // Keyboard shortcuts for 3D preview navigation
   use3DPreviewKeyboard({
@@ -201,13 +227,15 @@ export function IsometricPreview() {
   // Preview container content (shared between small and expanded modes)
   const previewContent = (
     <div
-      className={`rounded-lg overflow-hidden shadow-lg border border-stroke-subtle select-none ${
+      ref={containerRef}
+      className={`relative rounded-lg overflow-hidden shadow-lg border border-stroke-subtle select-none ${
+        inline ? "w-full h-full flex items-center justify-center" :
         isPreviewExpanded ? "" : "absolute top-14 right-4"
       }`}
       style={{
-        width: previewSize,
-        height: previewSize,
-        zIndex: isPreviewExpanded ? undefined : 20,
+        width: inline ? undefined : previewSize,
+        height: inline ? undefined : previewSize,
+        zIndex: isPreviewExpanded ? undefined : inline ? undefined : 20,
       }}
     >
       <Canvas
@@ -311,8 +339,8 @@ export function IsometricPreview() {
           e.stopPropagation()
           sceneRef.current?.resetView()
         }}
-        className={`absolute bottom-1 left-1 group flex items-center gap-2 rounded transition-all duration-200 hover:scale-105 ${
-          isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-11 min-h-11 w-8 h-8"
+        className={`absolute bottom-1 left-1 group flex items-center rounded transition-all duration-200 hover:scale-105 ${
+          isPreviewExpanded ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
         }`}
         style={{
           background: "rgba(255, 255, 255, 0.1)",
@@ -377,8 +405,8 @@ export function IsometricPreview() {
               e.stopPropagation()
               sceneRef.current?.setPreset(preset)
             }}
-            className={`group flex items-center gap-2 rounded transition-all duration-200 hover:scale-105 ${
-              isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-9 min-h-9 w-7 h-7"
+            className={`group flex items-center rounded transition-all duration-200 hover:scale-105 ${
+              isPreviewExpanded ? "gap-2 px-3 py-2" : "w-8 h-8 justify-center"
             }`}
             style={{
               background: "rgba(255, 255, 255, 0.1)",
@@ -432,8 +460,8 @@ export function IsometricPreview() {
               e.stopPropagation()
               toggleDimInactiveLayers()
             }}
-            className={`group flex items-center gap-2 rounded font-medium transition-all duration-200 hover:scale-105 ${
-              isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-11 min-h-11 w-8 h-8"
+            className={`group flex items-center rounded font-medium transition-all duration-200 hover:scale-105 ${
+              isPreviewExpanded ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
             }`}
             style={{
               background: dimInactiveLayers
@@ -495,8 +523,8 @@ export function IsometricPreview() {
               e.stopPropagation()
               toggleHideLayersAbove()
             }}
-            className={`group flex items-center gap-2 rounded font-medium transition-all duration-200 hover:scale-105 ${
-              isPreviewExpanded ? "min-w-11 min-h-11 px-3 py-2" : "min-w-11 min-h-11 w-8 h-8"
+            className={`group flex items-center rounded font-medium transition-all duration-200 hover:scale-105 ${
+              isPreviewExpanded ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
             }`}
             style={{
               background: hideLayersAbove
@@ -566,8 +594,8 @@ export function IsometricPreview() {
             e.stopPropagation()
             togglePreviewExpanded()
           }}
-          className={`group flex items-center gap-2 rounded transition-all duration-200 hover:scale-105 ${
-            isPreviewExpanded ? "min-w-11 min-h-11 w-10 h-10" : "min-w-11 min-h-11 w-8 h-8"
+          className={`group flex items-center rounded transition-all duration-200 hover:scale-105 ${
+            isPreviewExpanded ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
           }`}
           style={{
             background: "rgba(255, 255, 255, 0.1)",
@@ -636,8 +664,8 @@ export function IsometricPreview() {
               useUIStore.getState().toggleIsometricPreview()
             }
           }}
-          className={`group flex items-center gap-2 rounded transition-all duration-200 hover:scale-105 ${
-            isPreviewExpanded ? "min-w-11 min-h-11 w-10 h-10" : "min-w-11 min-h-11 w-8 h-8"
+          className={`group flex items-center rounded transition-all duration-200 hover:scale-105 ${
+            isPreviewExpanded ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
           }`}
           style={{
             background: "rgba(255, 255, 255, 0.1)",
@@ -708,6 +736,11 @@ export function IsometricPreview() {
       )}
     </div>
   )
+
+  // Inline mode: fill container (used in split-screen layout)
+  if (inline) {
+    return previewContent
+  }
 
   // Expanded mode: render as modal with backdrop
   if (isPreviewExpanded) {

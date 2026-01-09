@@ -1,7 +1,8 @@
-import { memo, useRef, type PointerEvent } from 'react';
+import { memo, useRef, useState, type PointerEvent } from 'react';
 import { useShallow } from 'zustand/shallow';
 import type { Bin as BinType, Category, Layer, ResizeHandle } from '../../types';
 import { useUIStore, useLayoutStore } from '../../store';
+import { useToastStore } from '../../store/toast';
 import { useResponsive } from '../../hooks';
 import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { getContrastColor } from '../../utils/color';
@@ -54,6 +55,10 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   const longPressTimerRef = useRef<number | null>(null);
   const longPressTriggeredRef = useRef(false);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Hover state for ghost handles (desktop only)
+  const [isHovered, setIsHovered] = useState(false);
+  const addToast = useToastStore(state => state.addToast);
 
   const isBeingDragged = interaction?.type === 'drag' && interaction.binIds.includes(bin.id);
 
@@ -129,6 +134,12 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
         // Desktop: Normal click - single select and start drag immediately
         if (!isSelected) {
           setSelectedBin(bin.id);
+          // Show first-time hint about resize handles
+          const hintShown = localStorage.getItem('gridfinity-resize-hint-shown');
+          if (!hintShown) {
+            addToast('Tip: Drag the handles to resize', 'info');
+            localStorage.setItem('gridfinity-resize-hint-shown', 'true');
+          }
         }
         onStartDrag(bin.id, e.clientX, e.clientY);
       } else {
@@ -216,7 +227,7 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
         backgroundColor: bgColor,
         borderRadius: 'var(--radius-sm)',
         border: isSelected ? 'none' : '1px solid var(--border-on-color)',
-        cursor: isGhost ? 'default' : 'move',
+        cursor: isGhost ? 'default' : 'grab',
         touchAction: 'none',
         pointerEvents: isGhost || isBeingDragged ? 'none' : 'auto',
         opacity: isGhost ? 0.3 : isBeingDragged ? 0.3 : 1,
@@ -229,6 +240,8 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
       onContextMenu={handleContextMenu}
+      onMouseEnter={() => !isTouchDevice && setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       role="button"
       aria-label={`Bin ${bin.width} by ${bin.depth}${bin.label ? `, labeled ${bin.label}` : ''}${category ? `, category ${category.name}` : ''}`}
       aria-pressed={isSelected}
@@ -384,6 +397,76 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
                 boxShadow: 'var(--shadow-md)',
+              }}
+            />
+          </div>
+        </>
+      )}
+
+      {/* Ghost resize handles - show on hover for non-selected bins (desktop only) */}
+      {!isSelected && !isGhost && isHovered && !isTouchDevice && (
+        <>
+          {/* Right edge ghost handle */}
+          <div
+            className="absolute flex items-center justify-center pointer-events-none"
+            style={{
+              right: -22,
+              top: '25%',
+              width: 44,
+              height: '50%',
+              minHeight: 44,
+            }}
+          >
+            <div
+              style={{
+                width: 10,
+                height: '45%',
+                minHeight: 20,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                opacity: 0.4,
+              }}
+            />
+          </div>
+          {/* Bottom edge ghost handle */}
+          <div
+            className="absolute flex items-center justify-center pointer-events-none"
+            style={{
+              bottom: -22,
+              left: '25%',
+              width: '50%',
+              minWidth: 44,
+              height: 44,
+            }}
+          >
+            <div
+              style={{
+                width: '45%',
+                minWidth: 20,
+                height: 10,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                opacity: 0.4,
+              }}
+            />
+          </div>
+          {/* SE corner ghost handle */}
+          <div
+            className="absolute flex items-center justify-center pointer-events-none"
+            style={{
+              right: -22,
+              bottom: -22,
+              width: 44,
+              height: 44,
+            }}
+          >
+            <div
+              style={{
+                width: 12,
+                height: 12,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                opacity: 0.4,
               }}
             />
           </div>

@@ -98,7 +98,12 @@ export function ActiveLayerPanel() {
   return (
     <div>
       {/* Bin Palette header */}
-      <h2 className="text-sm font-semibold text-content-secondary tracking-wide mb-3" title="Select a size, then click or drag on the grid to place bins">Bin Palette</h2>
+      <div className="mb-3">
+        <h2 className="text-sm font-semibold text-content-secondary tracking-wide mb-1">Bin Palette</h2>
+        <p className="text-xs text-content-tertiary">
+          Select a size, then click or drag on grid
+        </p>
+      </div>
 
       {/* Squares section */}
       <div className="text-xs text-content-tertiary mb-1.5">Squares</div>
