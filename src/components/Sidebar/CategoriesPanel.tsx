@@ -113,16 +113,6 @@ export function CategoriesPanel() {
               key={category.id}
               className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-all ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
               onClick={() => setActiveCategory(category.id)}
-              role="button"
-              tabIndex={0}
-              aria-pressed={isActive}
-              title={isActive ? `${category.name} (selected for new bins)` : `Click to select ${category.name} for new bins`}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setActiveCategory(category.id);
-                }
-              }}
             >
               {isEditing ? (
                 <div className="flex flex-col gap-2 w-full" onClick={(e) => e.stopPropagation()}>
@@ -173,17 +163,25 @@ export function CategoriesPanel() {
                 </div>
               ) : (
                 <>
-                  <div
-                    className="w-5 h-5 rounded flex-shrink-0 shadow-sm"
-                    style={{ backgroundColor: category.color }}
-                    aria-hidden="true"
-                  />
-                  <span className="flex-1 min-w-0 text-sm truncate text-content">
-                    {category.name}
-                  </span>
+                  {/* Selectable button for the category - keyboard accessible */}
+                  <button
+                    className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                    onClick={(e) => { e.stopPropagation(); setActiveCategory(category.id); }}
+                    aria-pressed={isActive}
+                    aria-label={isActive ? `${category.name} (selected for new bins)` : `Select ${category.name} for new bins`}
+                  >
+                    <div
+                      className="w-5 h-5 rounded flex-shrink-0 shadow-sm"
+                      style={{ backgroundColor: category.color }}
+                      aria-hidden="true"
+                    />
+                    <span className="flex-1 min-w-0 text-sm truncate text-content">
+                      {category.name}
+                    </span>
+                  </button>
                   {/* Edit button - appears on hover */}
                   <button
-                    className="flex-shrink-0 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-content-tertiary hover:text-content"
+                    className="flex-shrink-0 p-1 rounded opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-content-tertiary hover:text-content"
                     onClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
                     title="Edit category"
                     aria-label={`Edit ${category.name}`}
@@ -193,7 +191,7 @@ export function CategoriesPanel() {
                     </svg>
                   </button>
                   {isActive && (
-                    <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   )}

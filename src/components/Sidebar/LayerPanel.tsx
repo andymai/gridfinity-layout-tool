@@ -253,16 +253,6 @@ export function LayerPanel() {
               onDrop={(e) => handleDrop(e, displayIndex)}
               onDragEnd={handleDragEnd}
               onClick={() => !isEditing && setActiveLayer(layer.id)}
-              onKeyDown={(e) => {
-                if ((e.key === 'Enter' || e.key === ' ') && !isEditing) {
-                  e.preventDefault();
-                  setActiveLayer(layer.id);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-pressed={isActive}
-              aria-label={`${layer.name}, ${layer.height} height units, ${layerCoverage}% coverage${isActive ? ', active' : ''}`}
               className={`group flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-all ${
                 isActive
                   ? 'bg-accent text-black'
@@ -293,20 +283,25 @@ export function LayerPanel() {
                   onClick={(e) => e.stopPropagation()}
                   className="flex-1 bg-black/10 rounded px-1 py-0.5 text-xs font-medium outline-none text-black"
                   autoFocus
+                  aria-label={`Layer name for ${layer.name}`}
                 />
               ) : (
-                <span
-                  className={`flex-1 text-left truncate ${isActive ? 'cursor-text' : ''}`}
+                <button
+                  className={`flex-1 text-left truncate bg-transparent border-none p-0 ${isActive ? 'cursor-text' : ''}`}
                   onClick={(e) => {
+                    e.stopPropagation();
                     if (isActive) {
-                      e.stopPropagation();
                       setEditingLayerId(layer.id);
+                    } else {
+                      setActiveLayer(layer.id);
                     }
                   }}
-                  title={isActive ? 'Click to rename' : undefined}
+                  aria-pressed={isActive}
+                  aria-label={`${layer.name}, ${layer.height} height units, ${layerCoverage}% coverage${isActive ? ', active - click to rename' : ''}`}
+                  title={isActive ? 'Click to rename' : `Select ${layer.name}`}
                 >
                   {layer.name}
-                </span>
+                </button>
               )}
 
               {/* Coverage percentage */}
