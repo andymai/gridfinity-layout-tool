@@ -61,6 +61,8 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   // Double-tap detection for mobile
   const lastTapTimeRef = useRef<number>(0);
+  // Track captured pointer for release on drag
+  const capturedPointerRef = useRef<{ element: HTMLElement; pointerId: number } | null>(null);
 
   // Hover state for ghost handles (desktop only)
   const [isHovered, setIsHovered] = useState(false);
@@ -117,8 +119,11 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
     e.stopPropagation();
 
     // Capture pointer to receive move/up events even if pointer leaves element
+    // We'll release this if a drag starts so document handlers can take over
     if (isTouchDevice) {
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      const element = e.target as HTMLElement;
+      element.setPointerCapture(e.pointerId);
+      capturedPointerRef.current = { element, pointerId: e.pointerId };
     }
 
     // Reset long-press state
@@ -182,6 +187,11 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
         clearLongPress();
         // Start drag on move for touch devices
         if (isTouchDevice && !longPressTriggeredRef.current) {
+          // Release pointer capture so document handlers can take over the drag
+          if (capturedPointerRef.current) {
+            capturedPointerRef.current.element.releasePointerCapture(capturedPointerRef.current.pointerId);
+            capturedPointerRef.current = null;
+          }
           onStartDrag(bin.id, e.clientX, e.clientY);
         }
       }
@@ -190,6 +200,7 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
 
   const handlePointerUp = (e: PointerEvent<HTMLDivElement>) => {
     clearLongPress();
+    capturedPointerRef.current = null;
 
     // Double-tap detection for mobile - open inspector
     if (isTouchDevice && !longPressTriggeredRef.current && pointerStartRef.current) {
@@ -215,6 +226,7 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
 
   const handlePointerCancel = () => {
     clearLongPress();
+    capturedPointerRef.current = null;
     pointerStartRef.current = null;
   };
 
