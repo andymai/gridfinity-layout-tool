@@ -249,6 +249,55 @@ export function IsometricPreview() {
           ))}
         </Scene>
       </Canvas>
+      {/* Empty state - shown when no bins are placed */}
+      {binsToRender.length === 0 && (
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          style={{ zIndex: 10 }}
+        >
+          <div
+            className="flex flex-col items-center gap-3 px-6 py-8 rounded-lg text-center"
+            style={{
+              background: "rgba(255, 255, 255, 0.08)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
+              maxWidth: isPreviewExpanded ? "400px" : "240px",
+            }}
+          >
+            {/* SVG Icon - Box/Cube */}
+            <svg
+              className={isPreviewExpanded ? "w-12 h-12" : "w-10 h-10"}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              style={{ color: "rgba(255, 255, 255, 0.6)" }}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
+            </svg>
+            {/* Heading */}
+            <h3
+              className={`font-semibold ${
+                isPreviewExpanded ? "text-lg" : "text-base"
+              }`}
+              style={{ color: "rgba(255, 255, 255, 0.9)" }}
+            >
+              No Bins Yet
+            </h3>
+            {/* Message */}
+            <p
+              className={isPreviewExpanded ? "text-sm" : "text-xs"}
+              style={{ color: "rgba(255, 255, 255, 0.7)" }}
+            >
+              Place bins on the grid to see your 3D layout
+            </p>
+          </div>
+        </div>
+      )}
       {/* Reset view button - resets rotation, zoom, and pan */}
       <button
         onClick={(e) => {
