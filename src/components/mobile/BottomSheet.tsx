@@ -30,7 +30,9 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
     setIsDragging(true);
     dragStartY.current = e.clientY;
     // Capture on the header element to ensure consistent drag tracking
-    headerEl.setPointerCapture(e.pointerId);
+    if (headerEl.setPointerCapture) {
+      headerEl.setPointerCapture(e.pointerId);
+    }
   }, []);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
