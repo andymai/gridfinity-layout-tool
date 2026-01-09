@@ -4,6 +4,10 @@ import * as THREE from 'three';
 // Wall thickness for open-top bins
 const WALL_THICKNESS = 0.08; // Thinner walls (was 0.12)
 
+// Interior surface offset to prevent Z-fighting with exterior surfaces
+// Creates a logical "bin shell thickness" - interior floor/walls/ceiling sit inside the exterior shell
+const INTERIOR_OFFSET = 0.01;
+
 /**
  * Apply brightness adjustment to a color.
  * Brightness > 0 lightens, < 0 darkens.
@@ -204,15 +208,19 @@ export function useBinGeometry({ width, depth, height, baseColor }: UseBinGeomet
     );
 
     // === INTERIOR CAVITY ===
+    // Interior surfaces use offset Z positions to prevent Z-fighting with exterior surfaces
+    const interiorFloorZ = z0 + INTERIOR_OFFSET;
+    const interiorCeilingZ = z1 - INTERIOR_OFFSET;
+
     // Interior floor (35% darkened for depth without losing color)
     const interiorFloorColor = adjustColor(color, -0.35);
 
     addQuad(
       positions, colors,
-      new THREE.Vector3(ix0, iy0, z0),
-      new THREE.Vector3(ix0, iy1, z0),
-      new THREE.Vector3(ix1, iy1, z0),
-      new THREE.Vector3(ix1, iy0, z0),
+      new THREE.Vector3(ix0, iy0, interiorFloorZ),
+      new THREE.Vector3(ix0, iy1, interiorFloorZ),
+      new THREE.Vector3(ix1, iy1, interiorFloorZ),
+      new THREE.Vector3(ix1, iy0, interiorFloorZ),
       interiorFloorColor
     );
 
@@ -224,40 +232,40 @@ export function useBinGeometry({ width, depth, height, baseColor }: UseBinGeomet
     // Inner front wall
     addQuad(
       positions, colors,
-      new THREE.Vector3(ix0, iy0, z0),
-      new THREE.Vector3(ix1, iy0, z0),
-      new THREE.Vector3(ix1, iy0, z1),
-      new THREE.Vector3(ix0, iy0, z1),
+      new THREE.Vector3(ix0, iy0, interiorFloorZ),
+      new THREE.Vector3(ix1, iy0, interiorFloorZ),
+      new THREE.Vector3(ix1, iy0, interiorCeilingZ),
+      new THREE.Vector3(ix0, iy0, interiorCeilingZ),
       interiorWallColor
     );
 
     // Inner right wall
     addQuad(
       positions, colors,
-      new THREE.Vector3(ix1, iy0, z0),
-      new THREE.Vector3(ix1, iy1, z0),
-      new THREE.Vector3(ix1, iy1, z1),
-      new THREE.Vector3(ix1, iy0, z1),
+      new THREE.Vector3(ix1, iy0, interiorFloorZ),
+      new THREE.Vector3(ix1, iy1, interiorFloorZ),
+      new THREE.Vector3(ix1, iy1, interiorCeilingZ),
+      new THREE.Vector3(ix1, iy0, interiorCeilingZ),
       interiorWallColor
     );
 
     // Inner back wall
     addQuad(
       positions, colors,
-      new THREE.Vector3(ix1, iy1, z0),
-      new THREE.Vector3(ix0, iy1, z0),
-      new THREE.Vector3(ix0, iy1, z1),
-      new THREE.Vector3(ix1, iy1, z1),
+      new THREE.Vector3(ix1, iy1, interiorFloorZ),
+      new THREE.Vector3(ix0, iy1, interiorFloorZ),
+      new THREE.Vector3(ix0, iy1, interiorCeilingZ),
+      new THREE.Vector3(ix1, iy1, interiorCeilingZ),
       interiorWallColor
     );
 
     // Inner left wall
     addQuad(
       positions, colors,
-      new THREE.Vector3(ix0, iy1, z0),
-      new THREE.Vector3(ix0, iy0, z0),
-      new THREE.Vector3(ix0, iy0, z1),
-      new THREE.Vector3(ix0, iy1, z1),
+      new THREE.Vector3(ix0, iy1, interiorFloorZ),
+      new THREE.Vector3(ix0, iy0, interiorFloorZ),
+      new THREE.Vector3(ix0, iy0, interiorCeilingZ),
+      new THREE.Vector3(ix0, iy1, interiorCeilingZ),
       interiorWallColor
     );
 
