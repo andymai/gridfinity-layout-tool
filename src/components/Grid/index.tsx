@@ -292,11 +292,12 @@ export function Grid() {
     };
   }, [resizeDirection, resizeStart, cellSize, gap, updateDrawer]);
 
-  // Label sizing - must match cellSize for alignment, hide when too small
+  // Grid axis label sizing - must match cellSize for alignment, hide when too small
+  // Note: These are separate from bin labels - axis labels always show (unless zoomed out)
   const labelWidth = Math.max(16, Math.round(20 * zoom)); // Width of row label column
   const columnLabelHeight = Math.max(16, Math.round(20 * zoom)); // Height of column label row
   const labelFontSize = cellSize < 14 ? 0 : Math.max(8, Math.round(10 * zoom)); // Hide text when cells too small
-  const labelsVisible = showLabels && cellSize >= 12; // Hide labels entirely when very zoomed out or disabled
+  const axisLabelsVisible = cellSize >= 12; // Grid x/y labels - always visible unless very zoomed out
 
   // Fit grid to screen - calculate optimal zoom to fit drawer in viewport
   const fitToScreen = useCallback(() => {
@@ -672,13 +673,13 @@ export function Grid() {
         <div
           className={`inline-grid ${isMobile ? 'pb-6' : 'pr-6 pb-6'}`}
           style={{
-            gridTemplateColumns: labelsVisible ? `auto 1fr` : '1fr',
+            gridTemplateColumns: axisLabelsVisible ? `auto 1fr` : '1fr',
             gridTemplateRows: '1fr',
-            columnGap: labelsVisible ? 4 : 0,
+            columnGap: axisLabelsVisible ? 4 : 0,
           }}
         >
           {/* Row labels column - sticky to left edge */}
-          {labelsVisible && (
+          {axisLabelsVisible && (
             <div
               className="bg-surface"
               style={{
@@ -721,7 +722,7 @@ export function Grid() {
               {/* Grid itself */}
               <div
                 ref={gridRef}
-                className={`relative ${labelsVisible ? '' : 'rounded-lg'}`}
+                className={`relative ${axisLabelsVisible ? '' : 'rounded-lg'}`}
                 style={{
                   width: drawer.width * (cellSize + gap) + gap,
                   height: drawer.depth * (cellSize + gap) + gap,
@@ -808,7 +809,7 @@ export function Grid() {
                   <div
                     className="absolute left-0 flex items-center justify-center group"
                     style={{
-                      top: drawer.depth * (cellSize + gap) + gap + (labelsVisible ? columnLabelHeight : 0),
+                      top: drawer.depth * (cellSize + gap) + gap + (axisLabelsVisible ? columnLabelHeight : 0),
                       width: drawer.width * (cellSize + gap) + gap,
                       height: 24,
                       cursor: 'ns-resize',
@@ -831,7 +832,7 @@ export function Grid() {
                     className="absolute flex items-center justify-center group"
                     style={{
                       left: drawer.width * (cellSize + gap) + gap,
-                      top: drawer.depth * (cellSize + gap) + gap + (labelsVisible ? columnLabelHeight : 0),
+                      top: drawer.depth * (cellSize + gap) + gap + (axisLabelsVisible ? columnLabelHeight : 0),
                       width: 24,
                       height: 24,
                       cursor: 'nwse-resize',
@@ -852,7 +853,7 @@ export function Grid() {
               )}
 
               {/* Column labels row (at bottom, 1-indexed from left) - uses same grid template as main grid */}
-              {labelsVisible && (
+              {axisLabelsVisible && (
                 <div
                   className="absolute left-0 bg-surface"
                   style={{

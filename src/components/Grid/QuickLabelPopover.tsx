@@ -151,21 +151,16 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
             )}
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center justify-between mt-3">
-            <div className="text-xs text-content-tertiary">
+          {/* Keyboard hints */}
+          <div className="flex items-center justify-center gap-3 mt-2 text-xs text-content-tertiary">
+            <span>
               <kbd className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle" style={{ fontSize: '10px' }}>Enter</kbd>
-              <span className="mx-1">save</span>
+              <span className="ml-1">save</span>
+            </span>
+            <span>
               <kbd className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle" style={{ fontSize: '10px' }}>Esc</kbd>
               <span className="ml-1">cancel</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleSave}
-              className="btn btn-primary btn-sm px-3 py-1"
-            >
-              Save
-            </button>
+            </span>
           </div>
         </div>
       </div>
