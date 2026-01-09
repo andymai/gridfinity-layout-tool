@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useLayoutEffect, useState, useCallback, useRef, lazy, Suspense } from 'react';
 import { useLayoutStore, useUIStore } from './store';
 import { useKeyboard, useAutoSave, useResponsive, useShakeToUndo } from './hooks';
 import { loadLayout } from './utils/storage';
@@ -9,24 +9,17 @@ import { Staging } from './components/Staging';
 import { RightPanel } from './components/RightPanel';
 import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
-import { HelpModal } from './components/modals/HelpModal';
 import { ToastContainer } from './components/Toast';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
-import {
-  MobileHeader,
-  BottomNavBar,
-  BottomSheet,
-  getPanelTitle,
-  MobileLayersPanel,
-  MobileCategoriesPanel,
-  MobileInspector,
-  MobilePrintList,
-  MobileSettingsPanel,
-  BinContextMenu,
-  MobileHelpModal,
-} from './components/mobile';
+import { BinContextMenu } from './components/mobile';
 import { TabletPanelOverlay } from './components/tablet';
 import { SHORTCUTS } from './constants';
+
+// Lazy load modals - only loaded when opened
+const HelpModal = lazy(() => import('./components/modals/HelpModal').then(m => ({ default: m.HelpModal })));
+
+// Lazy load mobile layout - only loaded on mobile devices
+const MobileLayout = lazy(() => import('./components/MobileLayout').then(m => ({ default: m.MobileLayout })));
 
 // Load layout once at module level to avoid effect setState issues
 let initialLoadError: Error | null = null;
@@ -43,8 +36,6 @@ export default function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
   const { isMobile, isTablet } = useResponsive();
-  const activeMobilePanel = useUIStore(state => state.activeMobilePanel);
-  const setActiveMobilePanel = useUIStore(state => state.setActiveMobilePanel);
   const contextMenu = useUIStore(state => state.contextMenu);
   const hideContextMenu = useUIStore(state => state.hideContextMenu);
 
@@ -141,50 +132,12 @@ export default function App() {
     );
   }
 
-  // Mobile layout
+  // Mobile layout - lazy loaded
   if (isMobile) {
     return (
-      <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
-        {/* Mobile Header */}
-        <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} onHelpClick={() => setIsMobileHelpOpen(true)} />
-
-        {/* Main content area - Grid takes full width */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-surface">
-          <Grid />
-          <Staging />
-        </main>
-
-        {/* Bottom Navigation */}
-        <BottomNavBar />
-
-        {/* Bottom Sheet for panels */}
-        {activeMobilePanel && (
-          <BottomSheet title={getPanelTitle(activeMobilePanel)}>
-            <MobilePanelContent panel={activeMobilePanel} />
-          </BottomSheet>
-        )}
-
-        {/* Drop zones (appear when dragging) */}
-        <DropZones />
-
-        {/* Floating drag preview */}
-        <DragPreview />
-
-        {/* Context menu (long-press on bin) */}
-        {contextMenu && (
-          <BinContextMenuWrapper
-            binId={contextMenu.binId}
-            position={contextMenu.position}
-            onClose={hideContextMenu}
-          />
-        )}
-
-        {/* Toast notifications */}
-        <ToastContainer />
-
-        {/* Mobile help modal (touch gestures guide) */}
-        <MobileHelpModal isOpen={isMobileHelpOpen} onClose={() => setIsMobileHelpOpen(false)} />
-      </div>
+      <Suspense fallback={<div className="h-screen bg-surface" />}>
+        <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} />
+      </Suspense>
     );
   }
 
@@ -232,7 +185,11 @@ export default function App() {
         <DragPreview />
 
         {/* Modals */}
-        <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+        {isHelpOpen && (
+          <Suspense fallback={null}>
+            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+          </Suspense>
+        )}
 
         {/* Context menu (long-press on bin) */}
         {contextMenu && (
@@ -281,7 +238,11 @@ export default function App() {
       <DragPreview />
 
       {/* Modals */}
-      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      {isHelpOpen && (
+        <Suspense fallback={null}>
+          <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+        </Suspense>
+      )}
 
       {/* Context menu (right-click on bin) */}
       {contextMenu && (
@@ -295,44 +256,6 @@ export default function App() {
       {/* Toast notifications */}
       <ToastContainer />
     </div>
-  );
-}
-
-/**
- * Mobile panel content based on active panel type.
- */
-function MobilePanelContent({ panel }: { panel: string }) {
-  const content = (() => {
-    switch (panel) {
-      case 'layers':
-        return <MobileLayersPanel />;
-      case 'inspector':
-        return <MobileInspector />;
-      case 'categories':
-        return <MobileCategoriesPanel />;
-      case 'print':
-        return <MobilePrintList />;
-      case 'settings':
-        return <MobileSettingsPanel />;
-      default:
-        return null;
-    }
-  })();
-
-  if (!content) return null;
-
-  const panelNames: Record<string, string> = {
-    layers: 'Layers',
-    inspector: 'Inspector',
-    categories: 'Categories',
-    print: 'Print List',
-    settings: 'Settings',
-  };
-
-  return (
-    <PanelErrorBoundary panelName={panelNames[panel] || 'Panel'}>
-      {content}
-    </PanelErrorBoundary>
   );
 }
 
