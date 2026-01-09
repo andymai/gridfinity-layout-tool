@@ -226,9 +226,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   const previewContent = (
     <div
       ref={containerRef}
-      className={`relative rounded-lg overflow-hidden shadow-lg border border-stroke-subtle select-none ${
+      className={`relative overflow-hidden select-none ${
         inline ? "w-full h-full flex items-center justify-center" :
-        isPreviewExpanded ? "" : "absolute top-14 right-4"
+        isPreviewExpanded ? "rounded-lg shadow-lg border border-stroke-subtle" : "absolute top-14 right-4 rounded-lg shadow-lg border border-stroke-subtle"
       }`}
       style={{
         width: inline ? undefined : previewSize,
@@ -337,23 +337,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           e.stopPropagation()
           sceneRef.current?.resetView()
         }}
-        className={`absolute bottom-1 left-1 group flex items-center rounded transition-all duration-200 hover:scale-105 ${
-          isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
+        className={`btn btn-ghost absolute bottom-1 left-1 group ${
+          isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
         }`}
-        style={{
-          background: "rgba(255, 255, 255, 0.1)",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
-          backdropFilter: "blur(8px)",
-          color: "rgba(255, 255, 255, 0.7)",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
-          e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
-          e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
-        }}
         title="Reset view (rotation, zoom, and pan)"
       >
         <svg
@@ -372,85 +358,124 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         {isPreviewExpanded && !isMobile && (
           <span className="text-xs font-medium">Reset</span>
         )}
-        {!isPreviewExpanded && (
-          <span className="absolute left-full ml-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
-            background: "rgba(0, 0, 0, 0.9)",
-            color: "white",
-          }}>
-            Reset
-          </span>
-        )}
       </button>
       {/* Camera preset buttons */}
       <div
         className={`absolute top-1 left-1/2 transform -translate-x-1/2 flex ${
-          isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg" : "gap-0.5"
+          isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg bg-surface/50" : "gap-0.5"
         }`}
-        style={isPreviewExpanded && !isMobile ? {
-          background: "rgba(0, 0, 0, 0.2)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-        } : {}}
       >
-        {[
-          { preset: 'isometric' as const, icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', label: 'Isometric' },
-          { preset: 'top' as const, icon: 'M3 12h18M3 6h18M3 18h18', label: 'Top' },
-          { preset: 'front' as const, icon: 'M4 6h16M4 12h16M4 18h16', label: 'Front' },
-          { preset: 'side' as const, icon: 'M9 5l7 7-7 7', label: 'Side' },
-        ].map(({ preset, icon, label }) => (
-          <button
-            key={preset}
-            onClick={(e) => {
-              e.stopPropagation()
-              sceneRef.current?.setPreset(preset)
-            }}
-            className={`group flex items-center rounded transition-all duration-200 hover:scale-105 ${
-              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 justify-center"
-            }`}
-            style={{
-              background: "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              backdropFilter: "blur(8px)",
-              color: "rgba(255, 255, 255, 0.7)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
-              e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
-              e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
-            }}
-            title={`${label} view`}
+        {/* Isometric view - 3D cube */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            sceneRef.current?.setPreset('isometric')
+          }}
+          className={`btn btn-ghost ${
+            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+          }`}
+          title="Isometric view"
+        >
+          <svg
+            className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <svg
-              className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-3.5 h-3.5"}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d={icon}
-              />
-            </svg>
-            {isPreviewExpanded && !isMobile && (
-              <span className="text-xs font-medium">{label}</span>
-            )}
-          </button>
-        ))}
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+            />
+          </svg>
+          {isPreviewExpanded && !isMobile && (
+            <span className="text-xs font-medium">3D</span>
+          )}
+        </button>
+        {/* Top view - eye looking down */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            sceneRef.current?.setPreset('top')
+          }}
+          className={`btn btn-ghost ${
+            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+          }`}
+          title="Top view"
+        >
+          <svg
+            className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            {/* Grid from above */}
+            <rect x="4" y="4" width="16" height="16" strokeWidth={2} rx="1" />
+            <line x1="12" y1="4" x2="12" y2="20" strokeWidth={1.5} />
+            <line x1="4" y1="12" x2="20" y2="12" strokeWidth={1.5} />
+          </svg>
+          {isPreviewExpanded && !isMobile && (
+            <span className="text-xs font-medium">Top</span>
+          )}
+        </button>
+        {/* Front view - rectangle wider than tall */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            sceneRef.current?.setPreset('front')
+          }}
+          className={`btn btn-ghost ${
+            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+          }`}
+          title="Front view"
+        >
+          <svg
+            className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            {/* Wide rectangle - front elevation */}
+            <rect x="3" y="8" width="18" height="10" strokeWidth={2} rx="1" />
+            <line x1="3" y1="13" x2="21" y2="13" strokeWidth={1.5} />
+          </svg>
+          {isPreviewExpanded && !isMobile && (
+            <span className="text-xs font-medium">Front</span>
+          )}
+        </button>
+        {/* Side view - rectangle taller than wide */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            sceneRef.current?.setPreset('side')
+          }}
+          className={`btn btn-ghost ${
+            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+          }`}
+          title="Side view"
+        >
+          <svg
+            className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            {/* Tall rectangle - side elevation */}
+            <rect x="7" y="3" width="10" height="18" strokeWidth={2} rx="1" />
+            <line x1="7" y1="12" x2="17" y2="12" strokeWidth={1.5} />
+          </svg>
+          {isPreviewExpanded && !isMobile && (
+            <span className="text-xs font-medium">Side</span>
+          )}
+        </button>
       </div>
       {/* Layer controls - only show when multiple layers */}
       {layout.layers.length > 1 && (
         <div
           className={`absolute bottom-1 right-1 flex ${
-            isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg" : "gap-0.5"
+            isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg bg-surface/50" : "gap-0.5"
           }`}
-          style={isPreviewExpanded && !isMobile ? {
-            background: "rgba(0, 0, 0, 0.2)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-          } : {}}
         >
           {/* Dim inactive layers toggle */}
           <button
@@ -458,32 +483,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               e.stopPropagation()
               toggleDimInactiveLayers()
             }}
-            className={`group flex items-center rounded font-medium transition-all duration-200 hover:scale-105 ${
-              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
+            className={`btn ${dimInactiveLayers ? 'btn-primary' : 'btn-ghost'} ${
+              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
             }`}
-            style={{
-              background: dimInactiveLayers
-                ? "#f59e0b"
-                : "rgba(255, 255, 255, 0.1)",
-              border: dimInactiveLayers
-                ? "1px solid #f59e0b"
-                : "1px solid rgba(255, 255, 255, 0.2)",
-              backdropFilter: "blur(8px)",
-              color: dimInactiveLayers ? "white" : "rgba(255, 255, 255, 0.7)",
-              boxShadow: dimInactiveLayers ? "0 0 12px rgba(245, 158, 11, 0.4)" : "none",
-            }}
-            onMouseEnter={(e) => {
-              if (!dimInactiveLayers) {
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
-                e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!dimInactiveLayers) {
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
-                e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
-              }
-            }}
             title={
               dimInactiveLayers
                 ? "Dim inactive layers (on)"
@@ -504,15 +506,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               />
             </svg>
             {isPreviewExpanded && !isMobile && (
-              <span className="text-xs">Dim Layers</span>
-            )}
-            {!isPreviewExpanded && (
-              <span className="absolute right-full mr-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
-                background: "rgba(0, 0, 0, 0.9)",
-                color: "white",
-              }}>
-                Dim Layers
-              </span>
+              <span className="text-xs">Dim</span>
             )}
           </button>
           {/* Slice view toggle - hide layers above active */}
@@ -521,32 +515,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               e.stopPropagation()
               toggleHideLayersAbove()
             }}
-            className={`group flex items-center rounded font-medium transition-all duration-200 hover:scale-105 ${
-              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
+            className={`btn ${hideLayersAbove ? 'btn-primary' : 'btn-ghost'} ${
+              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
             }`}
-            style={{
-              background: hideLayersAbove
-                ? "#f59e0b"
-                : "rgba(255, 255, 255, 0.1)",
-              border: hideLayersAbove
-                ? "1px solid #f59e0b"
-                : "1px solid rgba(255, 255, 255, 0.2)",
-              backdropFilter: "blur(8px)",
-              color: hideLayersAbove ? "white" : "rgba(255, 255, 255, 0.7)",
-              boxShadow: hideLayersAbove ? "0 0 12px rgba(245, 158, 11, 0.4)" : "none",
-            }}
-            onMouseEnter={(e) => {
-              if (!hideLayersAbove) {
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
-                e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!hideLayersAbove) {
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
-                e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
-              }
-            }}
             title={hideLayersAbove ? "Slice view (on)" : "Slice view (off)"}
           >
             <svg
@@ -563,15 +534,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               />
             </svg>
             {isPreviewExpanded && !isMobile && (
-              <span className="text-xs">Slice View</span>
-            )}
-            {!isPreviewExpanded && (
-              <span className="absolute right-full mr-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
-                background: "rgba(0, 0, 0, 0.9)",
-                color: "white",
-              }}>
-                Slice View
-              </span>
+              <span className="text-xs">Slice</span>
             )}
           </button>
         </div>
@@ -579,12 +542,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       {/* Top button row */}
       <div
         className={`absolute top-1 right-1 flex ${
-          isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg" : "gap-1"
+          isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg bg-surface/50" : "gap-0.5"
         }`}
-        style={isPreviewExpanded && !isMobile ? {
-          background: "rgba(0, 0, 0, 0.2)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-        } : {}}
       >
         {/* Expand/Collapse button */}
         <button
@@ -592,23 +551,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             e.stopPropagation()
             togglePreviewExpanded()
           }}
-          className={`group flex items-center rounded transition-all duration-200 hover:scale-105 ${
-            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
+          className={`btn btn-ghost ${
+            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
           }`}
-          style={{
-            background: "rgba(255, 255, 255, 0.1)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            backdropFilter: "blur(8px)",
-            color: "rgba(255, 255, 255, 0.7)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
-          }}
           title={isPreviewExpanded ? "Collapse preview" : "Expand preview"}
         >
           {isPreviewExpanded ? (
@@ -629,27 +574,19 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               {!isMobile && <span className="text-xs font-medium">Collapse</span>}
             </>
           ) : (
-            <>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
-                />
-              </svg>
-              <span className="absolute right-full mr-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
-                background: "rgba(0, 0, 0, 0.9)",
-                color: "white",
-              }}>
-                Expand
-              </span>
-            </>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
+              />
+            </svg>
           )}
         </button>
         {/* Close button */}
@@ -662,23 +599,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               useUIStore.getState().toggleIsometricPreview()
             }
           }}
-          className={`group flex items-center rounded transition-all duration-200 hover:scale-105 ${
-            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-9 h-9 justify-center"
+          className={`btn btn-ghost ${
+            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
           }`}
-          style={{
-            background: "rgba(255, 255, 255, 0.1)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            backdropFilter: "blur(8px)",
-            color: "rgba(255, 255, 255, 0.7)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.95)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
-          }}
           title={isPreviewExpanded ? "Collapse preview" : "Close preview"}
         >
           <svg
@@ -696,14 +619,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           </svg>
           {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">Close</span>
-          )}
-          {!isPreviewExpanded && (
-            <span className="absolute right-full mr-2 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
-              background: "rgba(0, 0, 0, 0.9)",
-              color: "white",
-            }}>
-              Close
-            </span>
           )}
         </button>
       </div>
