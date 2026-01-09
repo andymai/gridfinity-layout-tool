@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { useInteraction, useResponsive } from '../../hooks';
-import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS } from '../../constants';
+import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS, getBaseCellSize } from '../../constants';
 import { clamp } from '../../utils/validation';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
@@ -22,7 +22,7 @@ type ResizeDirection = 'width' | 'depth' | 'both' | null;
  * Displays the drawer grid with bins, handles user interactions.
  */
 export function Grid() {
-  const { isMobile } = useResponsive();
+  const { isMobile, viewportWidth } = useResponsive();
   const gridRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -133,7 +133,8 @@ export function Grid() {
   // Single interaction hook instance for the entire grid
   const { startDraw, startDrag, startResize } = useInteraction(gridRef);
 
-  const cellSize = Math.round(BASE_CELL_SIZE * zoom);
+  // Adaptive cell size based on viewport width for optimal grid density
+  const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
 
   const canZoomOut = zoom > CONSTRAINTS.ZOOM_MIN;

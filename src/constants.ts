@@ -75,7 +75,18 @@ export const createDefaultLayout = (): Layout => ({
 
 // === Grid Sizing ===
 
-export const BASE_CELL_SIZE = 32; // px at 100% zoom
+export const BASE_CELL_SIZE = 32; // px at 100% zoom (default/desktop)
+
+/**
+ * Get adaptive base cell size based on viewport width.
+ * Larger cells on tablets, smaller on tiny phones.
+ */
+export function getBaseCellSize(viewportWidth: number): number {
+  if (viewportWidth < 375) return 28; // Tiny phones (iPhone SE 1st gen, small Android)
+  if (viewportWidth < 768) return 32; // Mobile (current default)
+  if (viewportWidth < 900) return 36; // Tablet (more space available)
+  return 32; // Desktop (current default)
+}
 
 // === Keyboard Shortcuts ===
 
