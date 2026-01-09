@@ -14,7 +14,6 @@ import { darkenColor } from "../../utils/isometric"
 import { Scene, type SceneHandle } from "./IsometricPreview/Scene"
 import { BinMesh } from "./IsometricPreview/BinMesh"
 import { SplitLineOverlay } from "./IsometricPreview/SplitLineOverlay"
-import { OnboardingOverlay } from "./IsometricPreview/OnboardingOverlay"
 
 // Height units (7mm) to grid units (42mm) conversion for proper proportions
 const HEIGHT_TO_GRID_SCALE = 7 / 42
@@ -33,7 +32,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   const sceneRef = useRef<SceneHandle>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { isMobile, isTablet } = useResponsive()
-  const [showOnboarding, setShowOnboarding] = useState(true)
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
 
   const {
@@ -709,11 +707,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           )}
         </button>
       </div>
-
-      {/* Onboarding overlay - shown on first preview open */}
-      {showOnboarding && (
-        <OnboardingOverlay onDismiss={() => setShowOnboarding(false)} />
-      )}
 
       {/* Keyboard shortcuts indicator - only shown in expanded mode */}
       {isPreviewExpanded && (

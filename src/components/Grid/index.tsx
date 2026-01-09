@@ -10,8 +10,6 @@ import { Overlay } from './Overlay';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { MobileGridToolbar } from '../mobile';
 import { PanelErrorBoundary } from '../PanelErrorBoundary';
-import { GridOnboardingOverlay } from './GridOnboardingOverlay';
-
 // Lazy load the 3D preview component (includes three.js, ~800KB)
 const IsometricPreview = lazy(() => import('./IsometricPreview').then(m => ({ default: m.IsometricPreview })));
 
@@ -93,9 +91,6 @@ export function Grid() {
 
   // Track if grid resize handles should pulse (first load)
   const [shouldPulseResizeHandles, setShouldPulseResizeHandles] = useState(false);
-
-  // Track if onboarding overlay should be shown
-  const [showOnboarding, setShowOnboarding] = useState(true);
 
   // Show first-time toast when paint mode is activated
   useEffect(() => {
@@ -817,11 +812,6 @@ export function Grid() {
             </Suspense>
           </PanelErrorBoundary>
         </div>
-      )}
-
-      {/* Grid onboarding overlay - shown on first visit */}
-      {showOnboarding && (
-        <GridOnboardingOverlay onDismiss={() => setShowOnboarding(false)} />
       )}
     </div>
   );
