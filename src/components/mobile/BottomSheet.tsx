@@ -103,7 +103,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
         ref={sheetRef}
         className="fixed left-0 right-0 bottom-0 z-50 flex flex-col rounded-t-2xl transition-transform duration-200 bg-surface-secondary"
         style={{
-          maxHeight: '85vh',
+          maxHeight: '85dvh',
           transform: `translateY(${dragY}px)`,
           transitionDuration: isDragging ? '0ms' : '200ms',
           paddingBottom: 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom))',

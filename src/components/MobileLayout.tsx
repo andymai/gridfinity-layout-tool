@@ -34,7 +34,7 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLa
   const hideContextMenu = useUIStore(state => state.hideContextMenu);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
+    <div className="h-screen-safe flex flex-col overflow-hidden bg-surface text-content">
       {/* Mobile Header */}
       <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} onHelpClick={() => setIsMobileHelpOpen(true)} />
 

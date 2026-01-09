@@ -299,6 +299,15 @@
 }
 
 /* ===========================================
+   DYNAMIC VIEWPORT HEIGHT
+   Fixes mobile browser chrome covering content
+   =========================================== */
+.h-screen-safe {
+  height: 100vh; /* Fallback for older browsers */
+  height: 100dvh; /* Dynamic viewport - adjusts with browser chrome */
+}
+
+/* ===========================================
    TOUCH-SPECIFIC STYLES
    =========================================== */
 @media (pointer: coarse) {
