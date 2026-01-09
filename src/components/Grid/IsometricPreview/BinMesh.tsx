@@ -33,8 +33,8 @@ export function BinMesh({ x, y, z, bin, color, opacity, height, isSelected = fal
   // Animate emissive intensity for selected bins (slow pulse)
   useFrame(({ clock }) => {
     if (materialRef.current && isSelected) {
-      // Slow sine wave: 0.15 to 0.35 intensity over ~2 seconds
-      const pulse = 0.25 + Math.sin(clock.elapsedTime * Math.PI) * 0.1;
+      // Slow sine wave: 0.3 to 0.5 intensity over ~2 seconds
+      const pulse = 0.4 + Math.sin(clock.elapsedTime * Math.PI) * 0.1;
       materialRef.current.emissiveIntensity = pulse;
     }
   });
@@ -51,8 +51,8 @@ export function BinMesh({ x, y, z, bin, color, opacity, height, isSelected = fal
         depthWrite={opacity === 1}
         flatShading={false} // Smooth shading for rounded corners
         side={THREE.DoubleSide} // Fixes clipping from incorrect face winding
-        emissive={isSelected ? '#ffffff' : '#000000'}
-        emissiveIntensity={isSelected ? 0.25 : 0}
+        emissive={isSelected ? color : '#000000'}
+        emissiveIntensity={isSelected ? 0.4 : 0}
       />
     </mesh>
   );
