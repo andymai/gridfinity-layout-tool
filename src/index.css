@@ -230,7 +230,7 @@
      =========================================== */
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
-  --breakpoint-lg: 1024px;
+  --breakpoint-lg: 900px;
   --breakpoint-xl: 1280px;
 
   /* Mobile-specific sizing */
@@ -240,9 +240,9 @@
 }
 
 /* ===========================================
-   RESPONSIVE OVERRIDES - Tablet (768-1023px)
+   RESPONSIVE OVERRIDES - Tablet (768-899px)
    =========================================== */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 768px) and (max-width: 899px) {
   :root {
     --sidebar-width: 280px;
     --right-panel-width: 300px;

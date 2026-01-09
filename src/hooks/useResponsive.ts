@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 export const BREAKPOINTS = {
   sm: 640,   // Small phones
   md: 768,   // Large phones / small tablets
-  lg: 1024,  // Tablets / small laptops
-  xl: 1280,  // Desktop
+  lg: 900,   // Small desktop (narrower persistent sidebars)
+  xl: 1280,  // Full desktop
 } as const;
 
 export type LayoutMode = 'mobile' | 'tablet' | 'desktop';
@@ -13,9 +13,9 @@ export type LayoutMode = 'mobile' | 'tablet' | 'desktop';
 export interface ResponsiveState {
   /** Screen width < 768px */
   isMobile: boolean;
-  /** Screen width 768-1023px */
+  /** Screen width 768-899px */
   isTablet: boolean;
-  /** Screen width >= 1024px */
+  /** Screen width >= 900px */
   isDesktop: boolean;
   /** Device has touch capability (coarse pointer) */
   isTouchDevice: boolean;
