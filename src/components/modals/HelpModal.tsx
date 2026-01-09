@@ -179,6 +179,39 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
             </div>
           </section>
 
+          {/* 3D Preview Shortcuts Section */}
+          <section>
+            <h3 className="mb-4" style={STYLES.sectionHeader}>
+              3D Preview Shortcuts
+            </h3>
+            <div className="space-y-2 p-4 rounded-lg" style={STYLES.sectionContent}>
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.PREVIEW_TOGGLE)}
+                description="Toggle 3D preview visibility"
+              />
+              <ShortcutRow
+                keys="Space"
+                description="Expand/collapse 3D preview"
+              />
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.PREVIEW_RESET)}
+                description="Reset 3D view"
+              />
+              <ShortcutRow
+                keys="← →"
+                description="Rotate 3D view left/right"
+              />
+              <ShortcutRow
+                keys="↑ ↓"
+                description="Tilt 3D camera up/down"
+              />
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.ESCAPE)}
+                description="Close expanded 3D preview"
+              />
+            </div>
+          </section>
+
           {/* Mouse Interactions Section */}
           <section>
             <h3 className="mb-4" style={STYLES.sectionHeader}>

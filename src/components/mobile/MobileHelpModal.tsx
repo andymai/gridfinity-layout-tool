@@ -231,6 +231,10 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
+                <span>With keyboard: V to toggle 3D, Space to expand, R to reset, arrows to rotate</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span style={STYLES.colorPrimary}>•</span>
                 <span>Oversized bins are automatically split for printing</span>
               </li>
               <li className="flex items-start gap-2">

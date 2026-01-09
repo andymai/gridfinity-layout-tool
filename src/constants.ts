@@ -93,4 +93,11 @@ export const SHORTCUTS = {
   NUDGE_DOWN: 'ArrowDown',
   NUDGE_LEFT: 'ArrowLeft',
   NUDGE_RIGHT: 'ArrowRight',
+  // 3D Preview shortcuts
+  PREVIEW_TOGGLE: 'v',
+  PREVIEW_EXPAND: 'Space',
+  PREVIEW_RESET: 'r',
+  PREVIEW_ROTATE_LEFT: 'ArrowLeft',
+  PREVIEW_ROTATE_RIGHT: 'ArrowRight',
+  PREVIEW_TILT: ['ArrowUp', 'ArrowDown'],
 } as const;

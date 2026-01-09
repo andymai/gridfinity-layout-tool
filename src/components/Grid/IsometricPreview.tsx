@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useEffect, useRef, useState } from "react"
+import { useMemo, useCallback, useRef, useState } from "react"
 import { Canvas } from "@react-three/fiber"
 import { useShallow } from "zustand/shallow"
 import { useLayoutStore, useUIStore } from "../../store"
@@ -8,6 +8,7 @@ import {
   calcMaxGridUnits,
 } from "../../constants"
 import { useResponsive } from "../../hooks/useResponsive"
+import { use3DPreviewKeyboard } from "../../hooks/use3DPreviewKeyboard"
 import { getLayerZStart } from "../../utils/collision"
 import { darkenColor } from "../../utils/isometric"
 import { Scene, type SceneHandle } from "./IsometricPreview/Scene"
@@ -34,20 +35,26 @@ export function IsometricPreview() {
     hideLayersAbove,
     dimInactiveLayers,
     isPreviewExpanded,
+    isometricRotation,
     toggleHideLayersAbove,
     toggleDimInactiveLayers,
     togglePreviewExpanded,
     setPreviewExpanded,
+    toggleIsometricPreview,
+    setIsometricRotation,
   } = useUIStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
       hideLayersAbove: state.hideLayersAbove,
       dimInactiveLayers: state.dimInactiveLayers,
       isPreviewExpanded: state.isPreviewExpanded,
+      isometricRotation: state.isometricRotation,
       toggleHideLayersAbove: state.toggleHideLayersAbove,
       toggleDimInactiveLayers: state.toggleDimInactiveLayers,
       togglePreviewExpanded: state.togglePreviewExpanded,
       setPreviewExpanded: state.setPreviewExpanded,
+      toggleIsometricPreview: state.toggleIsometricPreview,
+      setIsometricRotation: state.setIsometricRotation,
     }))
   )
 
@@ -70,19 +77,17 @@ export function IsometricPreview() {
     }
   }, [isPreviewExpanded, isMobile, isTablet])
 
-  // Handle Escape key to collapse expanded preview
-  useEffect(() => {
-    if (!isPreviewExpanded) return
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setPreviewExpanded(false)
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [isPreviewExpanded, setPreviewExpanded])
+  // Keyboard shortcuts for 3D preview navigation
+  use3DPreviewKeyboard({
+    sceneRef,
+    isPreviewVisible: showIsometricPreview,
+    isPreviewExpanded,
+    togglePreviewVisibility: toggleIsometricPreview,
+    togglePreviewExpanded,
+    setPreviewExpanded,
+    setIsometricRotation,
+    isometricRotation,
+  })
 
   // Handle backdrop click
   const handleBackdropClick = useCallback(
@@ -620,6 +625,26 @@ export function IsometricPreview() {
       {/* Onboarding overlay - shown on first preview open */}
       {showOnboarding && (
         <OnboardingOverlay onDismiss={() => setShowOnboarding(false)} />
+      )}
+
+      {/* Keyboard shortcuts indicator - only shown in expanded mode */}
+      {isPreviewExpanded && (
+        <div
+          className="absolute bottom-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg text-xs"
+          style={{
+            background: "rgba(0, 0, 0, 0.8)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            pointerEvents: "none",
+          }}
+        >
+          <div className="flex items-center gap-4 text-content-secondary">
+            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content">V</kbd> Toggle</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content">Space</kbd> Expand</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content">R</kbd> Reset</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content">←→</kbd> Rotate</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content">Esc</kbd> Close</span>
+          </div>
+        </div>
       )}
     </div>
   )
