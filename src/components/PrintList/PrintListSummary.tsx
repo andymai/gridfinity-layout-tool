@@ -78,7 +78,7 @@ export function PrintListSummary({
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2 border-t border-stroke-subtle text-xs">
         <div className="flex justify-between text-content-secondary" title="Estimated 1.75mm PLA usage based on bin dimensions">
           <span className="text-content-tertiary">Filament</span>
-          <span>{totalFilament}m ({spoolPercentage}%)</span>
+          <span>{totalFilament}m</span>
         </div>
         <div className="flex justify-between text-content-secondary" title="Based on $15/kg filament cost">
           <span className="text-content-tertiary">Est. Cost</span>
