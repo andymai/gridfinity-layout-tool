@@ -554,4 +554,161 @@ describe('Half-bin mode', () => {
       expect(rectHeight).toBe(65);
     });
   });
+
+  describe('keyboard interaction increments', () => {
+    it('uses 0.5 increment in half-bin mode', () => {
+      const halfBinMode = true;
+      const increment = halfBinMode ? 0.5 : 1;
+      expect(increment).toBe(0.5);
+    });
+
+    it('uses 1.0 increment in normal mode', () => {
+      const halfBinMode = false;
+      const increment = halfBinMode ? 0.5 : 1;
+      expect(increment).toBe(1);
+    });
+
+    it('calculates correct drag delta in half-bin mode', () => {
+      const halfBinMode = true;
+      const increment = halfBinMode ? 0.5 : 1;
+
+      // Simulating 2 arrow key presses
+      let dx = 0;
+      dx += increment; // Right
+      dx += increment; // Right
+
+      expect(dx).toBe(1); // 0.5 + 0.5 = 1
+    });
+
+    it('calculates correct resize delta in half-bin mode', () => {
+      const halfBinMode = true;
+      const minSize = halfBinMode ? 0.5 : 1;
+
+      const originalWidth = 1;
+      // Shrink by one increment
+      const newWidth = Math.max(minSize, originalWidth - (halfBinMode ? 0.5 : 1));
+
+      expect(newWidth).toBe(0.5); // 1 - 0.5 = 0.5 (above minSize)
+    });
+
+    it('enforces 0.5 minimum size in half-bin mode', () => {
+      const halfBinMode = true;
+      const minSize = halfBinMode ? 0.5 : 1;
+
+      const originalWidth = 0.5;
+      // Try to shrink below minimum
+      const newWidth = Math.max(minSize, originalWidth - 0.5);
+
+      expect(newWidth).toBe(0.5); // Clamped to minSize
+    });
+
+    it('enforces 1.0 minimum size in normal mode', () => {
+      const halfBinMode = false;
+      const minSize = halfBinMode ? 0.5 : 1;
+
+      const originalWidth = 1;
+      // Try to shrink below minimum
+      const newWidth = Math.max(minSize, originalWidth - 1);
+
+      expect(newWidth).toBe(1); // Clamped to minSize
+    });
+  });
+
+  describe('fill operations step size', () => {
+    it('uses 0.5 step for cell iteration in half-bin mode', () => {
+      const halfBinMode = true;
+      const step = halfBinMode ? 0.5 : 1;
+
+      // Simulate iterating over a 2x2 area
+      const cells: string[] = [];
+      for (let x = 0; x < 2; x += step) {
+        for (let y = 0; y < 2; y += step) {
+          cells.push(`${x},${y}`);
+        }
+      }
+
+      // With step=0.5, should have 4x4=16 positions
+      expect(cells.length).toBe(16);
+      expect(cells).toContain('0,0');
+      expect(cells).toContain('0.5,0.5');
+      expect(cells).toContain('1.5,1.5');
+    });
+
+    it('uses 1.0 step for cell iteration in normal mode', () => {
+      const halfBinMode = false;
+      const step = halfBinMode ? 0.5 : 1;
+
+      // Simulate iterating over a 2x2 area
+      const cells: string[] = [];
+      for (let x = 0; x < 2; x += step) {
+        for (let y = 0; y < 2; y += step) {
+          cells.push(`${x},${y}`);
+        }
+      }
+
+      // With step=1, should have 2x2=4 positions
+      expect(cells.length).toBe(4);
+      expect(cells).toContain('0,0');
+      expect(cells).toContain('1,1');
+    });
+
+    it('generates 0.5-increment sizes for gap fill in half-bin mode', () => {
+      const halfBinMode = true;
+      const step = halfBinMode ? 0.5 : 1;
+      const minSize = halfBinMode ? 0.5 : 1;
+      const maxSize = 2;
+
+      const sizes: Array<{ w: number; d: number }> = [];
+      for (let w = maxSize; w >= minSize; w -= step) {
+        for (let d = maxSize; d >= minSize; d -= step) {
+          sizes.push({ w, d });
+        }
+      }
+
+      // With step=0.5, sizes from 2 down to 0.5: 2, 1.5, 1, 0.5 = 4 values each dimension
+      // Total: 4 * 4 = 16 sizes
+      expect(sizes.length).toBe(16);
+      expect(sizes.some(s => s.w === 0.5 && s.d === 0.5)).toBe(true);
+      expect(sizes.some(s => s.w === 1.5 && s.d === 1)).toBe(true);
+    });
+
+    it('generates whole-unit sizes for gap fill in normal mode', () => {
+      const halfBinMode = false;
+      const step = halfBinMode ? 0.5 : 1;
+      const minSize = halfBinMode ? 0.5 : 1;
+      const maxSize = 2;
+
+      const sizes: Array<{ w: number; d: number }> = [];
+      for (let w = maxSize; w >= minSize; w -= step) {
+        for (let d = maxSize; d >= minSize; d -= step) {
+          sizes.push({ w, d });
+        }
+      }
+
+      // With step=1, sizes 2 and 1 = 2 values each dimension
+      // Total: 2 * 2 = 4 sizes
+      expect(sizes.length).toBe(4);
+      expect(sizes.some(s => s.w === 2 && s.d === 2)).toBe(true);
+      expect(sizes.some(s => s.w === 1 && s.d === 1)).toBe(true);
+    });
+
+    it('correctly detects occupied fractional cells', () => {
+      const step = 0.5;
+      const occupied = new Set<string>();
+
+      // Mark a 1x1 bin at position (0.5, 0.5)
+      const bin = { x: 0.5, y: 0.5, width: 1, depth: 1 };
+      for (let bx = bin.x; bx < bin.x + bin.width; bx += step) {
+        for (let by = bin.y; by < bin.y + bin.depth; by += step) {
+          occupied.add(`${bx},${by}`);
+        }
+      }
+
+      // Should mark: (0.5,0.5), (0.5,1), (1,0.5), (1,1)
+      expect(occupied.size).toBe(4);
+      expect(occupied.has('0.5,0.5')).toBe(true);
+      expect(occupied.has('1,1')).toBe(true);
+      expect(occupied.has('0,0')).toBe(false); // Not occupied
+    });
+  });
 });

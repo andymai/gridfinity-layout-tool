@@ -37,6 +37,7 @@ export function ActiveLayerPanel() {
     togglePaintSize,
     setPaintSize,
     setSelectedBins,
+    halfBinMode,
   } = useUIStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
@@ -45,6 +46,7 @@ export function ActiveLayerPanel() {
       togglePaintSize: state.togglePaintSize,
       setPaintSize: state.setPaintSize,
       setSelectedBins: state.setSelectedBins,
+      halfBinMode: state.halfBinMode,
     }))
   );
 
@@ -66,7 +68,7 @@ export function ActiveLayerPanel() {
     if (!activeLayerId) return;
     const beforeCount = layerBins.length;
     execute(() => {
-      fillLayerGaps(activeLayerId, activeCategoryId);
+      fillLayerGaps(activeLayerId, activeCategoryId, halfBinMode);
     });
     setTimeout(() => {
       const afterCount = useLayoutStore.getState().layout.bins.filter(b => b.layerId === activeLayerId).length;
@@ -92,7 +94,7 @@ export function ActiveLayerPanel() {
     if (!activeLayerId) return;
     const beforeCount = layerBins.length;
     execute(() => {
-      fillLayer(activeLayerId, width, depth, activeCategoryId);
+      fillLayer(activeLayerId, width, depth, activeCategoryId, halfBinMode);
     });
     // Exit paint mode after filling
     setPaintSize(null);

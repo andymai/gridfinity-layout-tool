@@ -22,6 +22,7 @@ export function useKeyboardDrag() {
   const selectedBinIds = useUIStore(state => state.selectedBinIds);
   const announceToScreenReader = useUIStore(state => state.announceToScreenReader);
   const setInteraction = useUIStore(state => state.setInteraction);
+  const halfBinMode = useUIStore(state => state.halfBinMode);
 
   const layout = useLayoutStore(state => state.layout);
   const updateBin = useLayoutStore(state => state.updateBin);
@@ -241,25 +242,26 @@ export function useKeyboardDrag() {
       return;
     }
 
-    // Arrow keys - adjust position
+    // Arrow keys - adjust position (0.5 in half-bin mode, 1 in normal mode)
+    const increment = halfBinMode ? 0.5 : 1;
     if (e.key === 'ArrowUp') {
       e.preventDefault();
-      adjustDragOffset(0, 1);
+      adjustDragOffset(0, increment);
       return;
     }
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      adjustDragOffset(0, -1);
+      adjustDragOffset(0, -increment);
       return;
     }
     if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      adjustDragOffset(-1, 0);
+      adjustDragOffset(-increment, 0);
       return;
     }
     if (e.key === 'ArrowRight') {
       e.preventDefault();
-      adjustDragOffset(1, 0);
+      adjustDragOffset(increment, 0);
       return;
     }
 
@@ -276,7 +278,7 @@ export function useKeyboardDrag() {
       exitDragMode();
       return;
     }
-  }, [keyboardDragMode, adjustDragOffset, confirmDrag, exitDragMode]);
+  }, [keyboardDragMode, adjustDragOffset, confirmDrag, exitDragMode, halfBinMode]);
 
   // Register keyboard event listener
   useEffect(() => {

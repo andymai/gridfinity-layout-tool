@@ -30,13 +30,14 @@ export function MobileLayersPanel() {
   const bins = layout.bins;
   const drawer = layout.drawer;
 
-  const { activeLayerId, activeCategoryId, setActiveLayer, setSelectedBins, closeMobilePanel } = useUIStore(
+  const { activeLayerId, activeCategoryId, setActiveLayer, setSelectedBins, closeMobilePanel, halfBinMode } = useUIStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
       activeCategoryId: state.activeCategoryId,
       setActiveLayer: state.setActiveLayer,
       setSelectedBins: state.setSelectedBins,
       closeMobilePanel: state.closeMobilePanel,
+      halfBinMode: state.halfBinMode,
     }))
   );
 
@@ -128,7 +129,7 @@ export function MobileLayersPanel() {
     if (!activeLayerId) return;
     const beforeCount = activeLayerBins.length;
     execute(() => {
-      fillLayerGaps(activeLayerId, activeCategoryId);
+      fillLayerGaps(activeLayerId, activeCategoryId, halfBinMode);
     });
     setTimeout(() => {
       const afterCount = useLayoutStore.getState().layout.bins.filter(b => b.layerId === activeLayerId).length;
