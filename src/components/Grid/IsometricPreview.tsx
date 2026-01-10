@@ -14,7 +14,8 @@ import { darkenColor } from "../../utils/isometric"
 import { Scene, type SceneHandle } from "./IsometricPreview/Scene"
 import { BinMesh } from "./IsometricPreview/BinMesh"
 import { SplitLineOverlay } from "./IsometricPreview/SplitLineOverlay"
-import { BinCornerMarkers } from "./IsometricPreview/BinCornerMarkers"
+import { BatchedCornerMarkers } from "./IsometricPreview/BatchedCornerMarkers"
+import { MergedBinMeshes } from "./IsometricPreview/MergedBinMeshes"
 
 // Height units (7mm) to grid units (42mm) conversion for proper proportions
 const HEIGHT_TO_GRID_SCALE = 7 / 42
@@ -260,68 +261,85 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           layoutName={layout.name}
           isExpanded={isPreviewExpanded}
         >
+          {/* Non-selected bins: merged geometry for performance */}
+          <MergedBinMeshes
+            bins={binsToRender.filter(
+              (b) => !selectedBinIds.includes(b.bin.id)
+            )}
+          />
+
+          {/* Selected bins: individual meshes for glow animation */}
+          {binsToRender
+            .filter((b) => selectedBinIds.includes(b.bin.id))
+            .map((binData) => (
+              <BinMesh
+                key={binData.bin.id}
+                bin={binData.bin}
+                x={binData.x}
+                y={binData.y}
+                z={binData.z}
+                height={binData.height}
+                color={binData.color}
+                opacity={binData.opacity}
+                isSelected={true}
+              />
+            ))}
+
+          {/* Per-bin overlays (clearance zones, split lines) */}
           {binsToRender.map((binData) => (
-              <group key={binData.bin.id}>
-                <BinMesh
-                  bin={binData.bin}
-                  x={binData.x}
-                  y={binData.y}
-                  z={binData.z}
-                  height={binData.height}
-                  color={binData.color}
-                  opacity={binData.opacity}
-                  isSelected={selectedBinIds.includes(binData.bin.id)}
-                />
-                {/* Corner markers for architectural drawing style */}
-                <BinCornerMarkers
+            <group key={`overlay-${binData.bin.id}`}>
+              {/* Clearance zone visualization - translucent box above bin */}
+              {binData.clearanceHeight > 0 && (
+                <mesh
+                  position={[
+                    binData.x + binData.bin.width / 2,
+                    binData.y + binData.bin.depth / 2,
+                    binData.z + binData.height + binData.clearanceHeight / 2,
+                  ]}
+                >
+                  <boxGeometry
+                    args={[
+                      binData.bin.width - 0.05,
+                      binData.bin.depth - 0.05,
+                      binData.clearanceHeight,
+                    ]}
+                  />
+                  <meshStandardMaterial
+                    color="#ff6b6b"
+                    transparent
+                    opacity={0.25 * binData.opacity}
+                    depthWrite={false}
+                  />
+                </mesh>
+              )}
+              {/* Split lines for oversized bins */}
+              {(binData.bin.width > maxGridUnits ||
+                binData.bin.depth > maxGridUnits) && (
+                <SplitLineOverlay
                   x={binData.x}
                   y={binData.y}
                   z={binData.z}
                   width={binData.bin.width}
                   depth={binData.bin.depth}
                   height={binData.height}
+                  maxGridUnits={maxGridUnits}
                   opacity={binData.opacity}
                 />
-                {/* Clearance zone visualization - translucent box above bin */}
-                {binData.clearanceHeight > 0 && (
-                  <mesh
-                    position={[
-                      binData.x + binData.bin.width / 2,
-                      binData.y + binData.bin.depth / 2,
-                      binData.z + binData.height + binData.clearanceHeight / 2,
-                    ]}
-                  >
-                    <boxGeometry
-                      args={[
-                        binData.bin.width - 0.05,
-                        binData.bin.depth - 0.05,
-                        binData.clearanceHeight,
-                      ]}
-                    />
-                    <meshStandardMaterial
-                      color="#ff6b6b"
-                      transparent
-                      opacity={0.25 * binData.opacity}
-                      depthWrite={false}
-                    />
-                  </mesh>
-                )}
-                {/* Split lines for oversized bins */}
-                {(binData.bin.width > maxGridUnits ||
-                  binData.bin.depth > maxGridUnits) && (
-                  <SplitLineOverlay
-                    x={binData.x}
-                    y={binData.y}
-                    z={binData.z}
-                    width={binData.bin.width}
-                    depth={binData.bin.depth}
-                    height={binData.height}
-                    maxGridUnits={maxGridUnits}
-                    opacity={binData.opacity}
-                  />
-                )}
-              </group>
+              )}
+            </group>
           ))}
+          {/* Batched corner markers - single geometry for all bins */}
+          <BatchedCornerMarkers
+            bins={binsToRender.map((binData) => ({
+              x: binData.x,
+              y: binData.y,
+              z: binData.z,
+              width: binData.bin.width,
+              depth: binData.bin.depth,
+              height: binData.height,
+              opacity: binData.opacity,
+            }))}
+          />
         </Scene>
       </Canvas>
       {/* Empty state - shown when no bins are placed */}

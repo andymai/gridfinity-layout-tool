@@ -70,7 +70,7 @@ function addQuad(
   colors.push(...faceColors);
 }
 
-interface UseBinGeometryProps {
+interface BinGeometryProps {
   width: number;
   depth: number;
   height: number;
@@ -80,9 +80,9 @@ interface UseBinGeometryProps {
 /**
  * Creates custom BufferGeometry for an open-top Gridfinity bin.
  * Generates exterior walls, interior cavity, and top rim with per-face vertex colors.
+ * This is the standalone function - use useBinGeometry hook for React components.
  */
-export function useBinGeometry({ width, depth, height, baseColor }: UseBinGeometryProps) {
-  return useMemo(() => {
+export function createBinGeometry({ width, depth, height, baseColor }: BinGeometryProps): THREE.BufferGeometry {
     const geometry = new THREE.BufferGeometry();
     const positions: number[] = [];
     const colors: number[] = [];
@@ -314,11 +314,21 @@ export function useBinGeometry({ width, depth, height, baseColor }: UseBinGeomet
       topColor
     );
 
-    // Set geometry attributes
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    geometry.computeVertexNormals();
+  // Set geometry attributes
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geometry.computeVertexNormals();
 
-    return geometry;
-  }, [width, depth, height, baseColor]);
+  return geometry;
+}
+
+/**
+ * React hook wrapper for createBinGeometry with memoization.
+ * Use this in React components for automatic caching.
+ */
+export function useBinGeometry({ width, depth, height, baseColor }: BinGeometryProps): THREE.BufferGeometry {
+  return useMemo(
+    () => createBinGeometry({ width, depth, height, baseColor }),
+    [width, depth, height, baseColor]
+  );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useImperativeHandle, forwardRef, useMemo } from 'react';
+import { useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useState } from 'react';
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { OrthographicCamera, Spherical, Vector3 } from 'three';
@@ -118,14 +118,27 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       prevExpandedRef.current = isExpanded;
     }, [isExpanded, size, camera]);
 
-    // Handle rotation changes from OrbitControls
+    // Track rotation in ref during interaction (no React re-renders)
+    const rotationRef = useRef(0);
+    // Track if user is interacting (for shadow optimization)
+    const [isInteracting, setIsInteracting] = useState(false);
+
+    // Start interaction - pause shadows for performance
+    const handleStart = () => {
+      setIsInteracting(true);
+    };
+
+    // Handle rotation changes - just update ref, don't trigger React re-renders
     const handleChange = () => {
       if (!controlsRef.current) return;
+      rotationRef.current = controlsRef.current.getAzimuthalAngle();
+    };
 
-      // Convert radians back to degrees for UI store
-      const angle = controlsRef.current.getAzimuthalAngle();
-      const degrees = (angle * 180) / Math.PI;
+    // Sync rotation to Zustand and resume shadows when interaction ends
+    const handleEnd = () => {
+      const degrees = (rotationRef.current * 180) / Math.PI;
       setIsometricRotation(degrees);
+      setIsInteracting(false);
     };
 
     // Expose reset function and preset setter to parent
@@ -200,7 +213,9 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         enablePan={true}
         enableZoom={true}
         target={[centerX, centerY, centerZ]}
+        onStart={handleStart}
         onChange={handleChange}
+        onEnd={handleEnd}
       />
 
       {/* Ambient light - bright to preserve vibrant category colors */}
@@ -213,15 +228,16 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         color="#ffffff"
       />
 
-      {/* Contact shadows for ground connection */}
+      {/* Contact shadows for ground connection - paused during interaction for performance */}
       <ContactShadows
         position={[centerX, centerY, 0.01]}
         opacity={0.20}
         scale={Math.max(drawerWidth, drawerDepth) * 1.2}
         blur={3.5}
         far={drawerHeight * 7/42}
-        resolution={256}
+        resolution={128}
         color="#000000"
+        frames={isInteracting ? 0 : Infinity}
       />
 
       {/* Floor grid, axis labels, and front label */}
