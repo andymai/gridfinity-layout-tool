@@ -4,7 +4,7 @@ import type { Bin as BinType, Category, Layer, ResizeHandle } from '../../types'
 import { useUIStore, useLayoutStore } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { useResponsive } from '../../hooks';
-import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR, HALF_BIN_SCALE } from '../../constants';
+import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { getBinTextColors } from '../../utils/color';
 
 /** Clamp a value between min and max */
@@ -33,7 +33,7 @@ interface BinProps {
  * Single bin with selection ring and resize handles.
  * Features improved selection states with glow effect and refined handles.
  */
-function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBinMode = false, isGhost, isSelected, onStartDrag, onStartResize }: BinProps) {
+function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBinMode: _halfBinMode = false, isGhost, isSelected, onStartDrag, onStartResize }: BinProps) {
   const { isTouchDevice } = useResponsive();
 
   // Consolidate UI state selectors with shallow comparison
@@ -105,31 +105,35 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
   const hasLabel = showLabels && bin.label;
 
-  // Calculate grid position based on half-bin mode
-  const scale = halfBinMode ? HALF_BIN_SCALE : 1;
-  const gridCol = Math.round(bin.x * scale) + 1;
-  const gridColSpan = Math.round(bin.width * scale);
-  const gridRowStart = halfBinMode
-    ? Math.round((drawer.depth - bin.y - bin.depth) * scale) + 1
-    : drawer.depth - bin.y - bin.depth + 1;
-  const gridRowSpan = Math.round(bin.depth * scale);
-
-  // Check if bin has fractional dimensions (from half-bin mode)
+  // Calculate grid position (always use standard grid, no scaling)
+  // For fractional positions, snap to the containing whole cell(s)
+  const hasFractionalX = bin.x % 1 !== 0;
+  const hasFractionalY = bin.y % 1 !== 0;
   const hasFractionalWidth = bin.width % 1 !== 0;
   const hasFractionalDepth = bin.depth % 1 !== 0;
-  const hasFractionalDims = hasFractionalWidth || hasFractionalDepth;
+  const hasFractionalDims = hasFractionalX || hasFractionalY || hasFractionalWidth || hasFractionalDepth;
+
+  // CSS Grid positioning: row 1 is top, row drawer.depth is bottom
+  // Grid coordinates: y=0 is bottom, y=drawer.depth-1 is top
+  const gridCol = Math.floor(bin.x) + 1;
+  const gridColSpan = Math.ceil(bin.x + bin.width) - Math.floor(bin.x);
+  const gridRowStart = drawer.depth - Math.ceil(bin.y + bin.depth) + 1;
+  const gridRowSpan = Math.ceil(bin.y + bin.depth) - Math.floor(bin.y);
 
   // Calculate actual pixel dimensions of bin
-  // When halfBinMode is off but bin has fractional dimensions, calculate true pixel size
   const toPixels = (units: number) => units * cellSize + Math.max(0, units - 1) * gap;
 
-  // Use true pixel dimensions for fractional bins, otherwise use grid span
-  const binPixelWidth = hasFractionalDims && !halfBinMode
-    ? toPixels(bin.width)
-    : gridColSpan * cellSize;
-  const binPixelHeight = hasFractionalDims && !halfBinMode
-    ? toPixels(bin.depth)
-    : gridRowSpan * cellSize;
+  // Always use true pixel dimensions for fractional bins
+  const binPixelWidth = hasFractionalDims ? toPixels(bin.width) : gridColSpan * cellSize;
+  const binPixelHeight = hasFractionalDims ? toPixels(bin.depth) : gridRowSpan * cellSize;
+
+  // Calculate pixel offset for fractional positions within the cell
+  // X offset: fractional part of x * (cellSize + gap)
+  // Y offset: for Y, we need to offset from the TOP of the cell span
+  const fractionalX = bin.x - Math.floor(bin.x);
+  const fractionalYFromTop = Math.ceil(bin.y + bin.depth) - (bin.y + bin.depth);
+  const offsetX = hasFractionalDims ? fractionalX * (cellSize + gap) : 0;
+  const offsetY = hasFractionalDims ? fractionalYFromTop * (cellSize + gap) : 0;
   const binPixelMin = Math.min(binPixelWidth, binPixelHeight);
 
   // Font size constraints
@@ -357,11 +361,12 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
       style={{
         gridColumn: `${gridCol} / span ${gridColSpan}`,
         gridRow: `${gridRowStart} / span ${gridRowSpan}`,
-        // Override size for fractional bins when halfBinMode is off
-        // (CSS Grid spans only support integers, so we need explicit dimensions)
-        ...(hasFractionalDims && !halfBinMode ? {
+        // Override size and position for fractional bins (CSS Grid spans only support integers)
+        ...(hasFractionalDims ? {
           width: binPixelWidth,
           height: binPixelHeight,
+          marginLeft: offsetX,
+          marginTop: offsetY,
         } : {}),
         backgroundColor: bgColor,
         borderRadius: 'var(--radius-sm)',

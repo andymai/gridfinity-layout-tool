@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import type { RefObject } from 'react';
 import type { Coord } from '../types';
 import { useUIStore, useLayoutStore } from '../store';
-import { getBaseCellSize, HALF_BIN_SCALE, snapToHalf } from '../constants';
+import { getBaseCellSize, snapToHalf } from '../constants';
 import { clamp } from '../utils/validation';
 import { useResponsive } from './useResponsive';
 
@@ -73,12 +73,8 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
 
-  // In half-bin mode, each visual cell is smaller to fit 2x cells in the same space
-  // Formula: (cellSize - gap) / 2 ensures total grid width stays the same
-  // Normal: W * cellSize + (W+1) * gap
-  // Half-bin: 2W * visualCellSize + (2W+1) * gap = same when visualCellSize = (cellSize - gap) / 2
-  const visualCellSize = halfBinMode ? Math.round((cellSize - gap) / HALF_BIN_SCALE) : cellSize;
-  const visualGap = gap;
+  // Visual cell size (same as cellSize since grid is always standard)
+  const visualCellSize = cellSize;
 
   const getGridCoords = useCallback((clientX: number, clientY: number): Coord | null => {
     if (!gridRef.current) return null;
@@ -87,27 +83,35 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
     const relX = clientX - rect.left;
     const relY = clientY - rect.top;
 
-    if (halfBinMode) {
-      // In half-bin mode, calculate which half-cell we're in
-      // and convert to 0.5-snapped coordinates
-      const visualX = Math.floor(relX / (visualCellSize + visualGap));
-      const visualY = Math.floor(relY / (visualCellSize + visualGap));
+    // Calculate which standard cell the mouse is in
+    const cellX = Math.floor(relX / (cellSize + gap));
+    const cellY = Math.floor(relY / (cellSize + gap));
 
-      // Convert visual cell index to grid units (each visual cell = 0.5 grid units)
-      const x = visualX / HALF_BIN_SCALE;
-      // Y is inverted (0 at bottom in our coordinate system)
-      const y = drawer.depth - (visualY + 1) / HALF_BIN_SCALE;
+    if (halfBinMode) {
+      // In half-bin mode, detect which half of the cell for 0.5 snapping
+      const inCellX = relX - cellX * (cellSize + gap);
+      const inCellY = relY - cellY * (cellSize + gap);
+
+      // Determine which half of the cell
+      const isLeftHalf = inCellX < cellSize / 2;
+      const isTopHalf = inCellY < cellSize / 2;
+
+      const x = isLeftHalf ? cellX : cellX + 0.5;
+      // Y is inverted: top half of screen cell = higher grid Y
+      const y = isTopHalf
+        ? drawer.depth - cellY - 0.5
+        : drawer.depth - cellY - 1;
 
       return { x: snapToHalf(x), y: snapToHalf(y) };
     } else {
       // Standard mode - whole cell coordinates
-      const x = Math.floor(relX / (cellSize + gap));
+      const x = cellX;
       // Y is inverted (0 at bottom in our coordinate system)
-      const y = drawer.depth - 1 - Math.floor(relY / (cellSize + gap));
+      const y = drawer.depth - 1 - cellY;
 
       return { x, y };
     }
-  }, [gridRef, cellSize, visualCellSize, visualGap, drawer.depth, halfBinMode]);
+  }, [gridRef, cellSize, gap, drawer.depth, halfBinMode]);
 
   const clampCoords = useCallback((coord: Coord): Coord => {
     if (halfBinMode) {

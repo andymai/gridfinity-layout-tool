@@ -12,6 +12,37 @@ function toPixels(units: number, cellSize: number, gap: number): number {
   return units * cellSize + Math.max(0, units - 1) * gap;
 }
 
+/**
+ * Calculate CSS Grid positioning for a bin.
+ * Replicates the logic from Bin.tsx.
+ */
+function calculateGridPosition(
+  bin: { x: number; y: number; width: number; depth: number },
+  drawerDepth: number
+) {
+  const gridCol = Math.floor(bin.x) + 1;
+  const gridColSpan = Math.ceil(bin.x + bin.width) - Math.floor(bin.x);
+  const gridRowStart = drawerDepth - Math.ceil(bin.y + bin.depth) + 1;
+  const gridRowSpan = Math.ceil(bin.y + bin.depth) - Math.floor(bin.y);
+  return { gridCol, gridColSpan, gridRowStart, gridRowSpan };
+}
+
+/**
+ * Calculate pixel offset for fractional bin positions.
+ * Replicates the offset logic from Bin.tsx.
+ */
+function calculatePixelOffset(
+  bin: { x: number; y: number; width: number; depth: number },
+  cellSize: number,
+  gap: number
+) {
+  const fractionalX = bin.x - Math.floor(bin.x);
+  const fractionalYFromTop = Math.ceil(bin.y + bin.depth) - (bin.y + bin.depth);
+  const offsetX = fractionalX * (cellSize + gap);
+  const offsetY = fractionalYFromTop * (cellSize + gap);
+  return { offsetX, offsetY };
+}
+
 describe('Half-bin mode', () => {
   describe('snapToHalf', () => {
     it('snaps values to nearest 0.5', () => {
@@ -208,6 +239,319 @@ describe('Half-bin mode', () => {
 
       expect(hasFractionalDepth(0.5)).toBe(true);
       expect(hasFractionalDepth(1)).toBe(false);
+    });
+  });
+
+  describe('CSS Grid positioning for bins', () => {
+    const drawerDepth = 8;
+
+    describe('whole-unit bins (standard mode)', () => {
+      it('positions bin at origin (0,0) correctly', () => {
+        const bin = { x: 0, y: 0, width: 1, depth: 1 };
+        const pos = calculateGridPosition(bin, drawerDepth);
+
+        expect(pos.gridCol).toBe(1); // Column 1 (1-indexed)
+        expect(pos.gridColSpan).toBe(1);
+        expect(pos.gridRowStart).toBe(8); // Bottom row (Y=0 maps to row 8)
+        expect(pos.gridRowSpan).toBe(1);
+      });
+
+      it('positions bin at top-left corner correctly', () => {
+        const bin = { x: 0, y: 7, width: 1, depth: 1 };
+        const pos = calculateGridPosition(bin, drawerDepth);
+
+        expect(pos.gridCol).toBe(1);
+        expect(pos.gridRowStart).toBe(1); // Top row
+        expect(pos.gridRowSpan).toBe(1);
+      });
+
+      it('positions 2x2 bin correctly', () => {
+        const bin = { x: 3, y: 4, width: 2, depth: 2 };
+        const pos = calculateGridPosition(bin, drawerDepth);
+
+        expect(pos.gridCol).toBe(4); // x=3 -> col 4
+        expect(pos.gridColSpan).toBe(2);
+        expect(pos.gridRowStart).toBe(3); // 8 - ceil(4+2) + 1 = 3
+        expect(pos.gridRowSpan).toBe(2);
+      });
+
+      it('positions bin at right edge correctly', () => {
+        const bin = { x: 7, y: 0, width: 1, depth: 1 };
+        const pos = calculateGridPosition(bin, drawerDepth);
+
+        expect(pos.gridCol).toBe(8); // Rightmost column
+        expect(pos.gridColSpan).toBe(1);
+      });
+    });
+
+    describe('half-unit bins (half-bin mode)', () => {
+      it('positions 0.5x0.5 bin at (0.5, 0.5) correctly', () => {
+        const bin = { x: 0.5, y: 0.5, width: 0.5, depth: 0.5 };
+        const pos = calculateGridPosition(bin, drawerDepth);
+
+        // Bin occupies from 0.5 to 1.0 in both dimensions
+        // Should be in cell (1,8) with offset
+        expect(pos.gridCol).toBe(1); // floor(0.5) + 1 = 1
+        expect(pos.gridColSpan).toBe(1); // ceil(1) - floor(0.5) = 1
+        expect(pos.gridRowStart).toBe(8); // 8 - ceil(1) + 1 = 8
+        expect(pos.gridRowSpan).toBe(1); // ceil(1) - floor(0.5) = 1
+      });
+
+      it('positions 0.5x0.5 bin at (0, 0) correctly', () => {
+        const bin = { x: 0, y: 0, width: 0.5, depth: 0.5 };
+        const pos = calculateGridPosition(bin, drawerDepth);
+
+        expect(pos.gridCol).toBe(1);
+        expect(pos.gridColSpan).toBe(1);
+        expect(pos.gridRowStart).toBe(8);
+        expect(pos.gridRowSpan).toBe(1);
+      });
+
+      it('positions 1.5x1.5 bin correctly', () => {
+        const bin = { x: 0.5, y: 0.5, width: 1.5, depth: 1.5 };
+        const pos = calculateGridPosition(bin, drawerDepth);
+
+        // Bin spans from 0.5 to 2.0 in both dimensions
+        expect(pos.gridCol).toBe(1); // floor(0.5) + 1 = 1
+        expect(pos.gridColSpan).toBe(2); // ceil(2) - floor(0.5) = 2
+        expect(pos.gridRowStart).toBe(7); // 8 - ceil(2) + 1 = 7
+        expect(pos.gridRowSpan).toBe(2); // ceil(2) - floor(0.5) = 2
+      });
+
+      it('positions bin at half-unit edge positions', () => {
+        // Bin at x=7.5 (right edge for 8-wide drawer)
+        const bin = { x: 7.5, y: 0, width: 0.5, depth: 1 };
+        const pos = calculateGridPosition(bin, drawerDepth);
+
+        expect(pos.gridCol).toBe(8); // floor(7.5) + 1 = 8
+        expect(pos.gridColSpan).toBe(1); // ceil(8) - floor(7.5) = 1
+      });
+    });
+
+    describe('bins spanning cell boundaries', () => {
+      it('positions bin spanning from 0.5 to 1.5 correctly', () => {
+        const bin = { x: 0.5, y: 0, width: 1, depth: 1 };
+        const pos = calculateGridPosition(bin, drawerDepth);
+
+        // Bin spans cells 0 and 1 (columns 1 and 2)
+        expect(pos.gridCol).toBe(1);
+        expect(pos.gridColSpan).toBe(2); // ceil(1.5) - floor(0.5) = 2
+      });
+
+      it('positions bin spanning multiple cells correctly', () => {
+        const bin = { x: 1.5, y: 2.5, width: 2.5, depth: 2.5 };
+        const pos = calculateGridPosition(bin, drawerDepth);
+
+        // X: 1.5 to 4.0 -> cells 1,2,3,4 -> span 4
+        expect(pos.gridCol).toBe(2); // floor(1.5) + 1 = 2
+        expect(pos.gridColSpan).toBe(3); // ceil(4) - floor(1.5) = 3
+
+        // Y: 2.5 to 5.0 -> rows for y=2,3,4,5
+        expect(pos.gridRowSpan).toBe(3); // ceil(5) - floor(2.5) = 3
+      });
+    });
+  });
+
+  describe('pixel offset for fractional positions', () => {
+    const cellSize = 32;
+    const gap = 1;
+
+    describe('X offset calculations', () => {
+      it('returns 0 offset for whole-unit X position', () => {
+        const bin = { x: 0, y: 0, width: 1, depth: 1 };
+        const { offsetX } = calculatePixelOffset(bin, cellSize, gap);
+        expect(offsetX).toBe(0);
+      });
+
+      it('returns half-cell offset for X=0.5', () => {
+        const bin = { x: 0.5, y: 0, width: 0.5, depth: 1 };
+        const { offsetX } = calculatePixelOffset(bin, cellSize, gap);
+        expect(offsetX).toBe(0.5 * (cellSize + gap)); // 16.5px
+      });
+
+      it('returns correct offset for X=1.5', () => {
+        const bin = { x: 1.5, y: 0, width: 0.5, depth: 1 };
+        const { offsetX } = calculatePixelOffset(bin, cellSize, gap);
+        expect(offsetX).toBe(0.5 * (cellSize + gap)); // Same as 0.5
+      });
+
+      it('returns 0 offset for X=2.0', () => {
+        const bin = { x: 2, y: 0, width: 1, depth: 1 };
+        const { offsetX } = calculatePixelOffset(bin, cellSize, gap);
+        expect(offsetX).toBe(0);
+      });
+    });
+
+    describe('Y offset calculations', () => {
+      it('returns 0 offset for bin at cell top', () => {
+        // Bin from y=0 to y=1 (fills bottom cell completely)
+        const bin = { x: 0, y: 0, width: 1, depth: 1 };
+        const { offsetY } = calculatePixelOffset(bin, cellSize, gap);
+        expect(offsetY).toBe(0);
+      });
+
+      it('returns half-cell offset for bin in bottom half of cell', () => {
+        // Bin from y=0 to y=0.5 (bottom half of bottom cell)
+        const bin = { x: 0, y: 0, width: 1, depth: 0.5 };
+        const { offsetY } = calculatePixelOffset(bin, cellSize, gap);
+        // fractionalYFromTop = ceil(0.5) - 0.5 = 1 - 0.5 = 0.5
+        expect(offsetY).toBe(0.5 * (cellSize + gap)); // 16.5px from top
+      });
+
+      it('returns 0 offset for bin in top half of cell', () => {
+        // Bin from y=0.5 to y=1.0 (top half of bottom cell)
+        const bin = { x: 0, y: 0.5, width: 1, depth: 0.5 };
+        const { offsetY } = calculatePixelOffset(bin, cellSize, gap);
+        // fractionalYFromTop = ceil(1) - 1 = 0
+        expect(offsetY).toBe(0);
+      });
+
+      it('handles bins spanning multiple cells', () => {
+        // Bin from y=0.5 to y=2.0 (spans 1.5 units)
+        const bin = { x: 0, y: 0.5, width: 1, depth: 1.5 };
+        const { offsetY } = calculatePixelOffset(bin, cellSize, gap);
+        // fractionalYFromTop = ceil(2) - 2 = 0
+        expect(offsetY).toBe(0);
+      });
+    });
+
+    describe('combined X and Y offsets', () => {
+      it('calculates correct offsets for corner position', () => {
+        // Bin at (0.5, 0.5) with size (0.5, 0.5)
+        const bin = { x: 0.5, y: 0.5, width: 0.5, depth: 0.5 };
+        const { offsetX, offsetY } = calculatePixelOffset(bin, cellSize, gap);
+
+        expect(offsetX).toBe(0.5 * (cellSize + gap)); // 16.5px
+        // fractionalYFromTop = ceil(1) - 1 = 0
+        expect(offsetY).toBe(0);
+      });
+
+      it('calculates correct offsets for bottom-right quadrant', () => {
+        // Bin at (0.5, 0) with size (0.5, 0.5)
+        const bin = { x: 0.5, y: 0, width: 0.5, depth: 0.5 };
+        const { offsetX, offsetY } = calculatePixelOffset(bin, cellSize, gap);
+
+        expect(offsetX).toBe(0.5 * (cellSize + gap)); // 16.5px
+        // fractionalYFromTop = ceil(0.5) - 0.5 = 0.5
+        expect(offsetY).toBe(0.5 * (cellSize + gap)); // 16.5px
+      });
+    });
+  });
+
+  describe('draw preview size calculations', () => {
+    it('calculates correct size for standard mode draw', () => {
+      // Drawing from (0,0) to (1,1) in standard mode
+      const start = { x: 0, y: 0 };
+      const current = { x: 1, y: 1 };
+      const halfBinMode = false;
+      const minUnit = halfBinMode ? 0.5 : 1;
+
+      const x1 = Math.min(start.x, current.x);
+      const y1 = Math.min(start.y, current.y);
+      const x2 = Math.max(start.x, current.x);
+      const y2 = Math.max(start.y, current.y);
+      const width = x2 - x1 + minUnit;
+      const depth = y2 - y1 + minUnit;
+
+      expect(width).toBe(2); // 1 - 0 + 1 = 2
+      expect(depth).toBe(2); // 1 - 0 + 1 = 2
+    });
+
+    it('calculates correct size for half-bin mode draw', () => {
+      // Drawing from (0.5,0.5) to (1,1) in half-bin mode
+      const start = { x: 0.5, y: 0.5 };
+      const current = { x: 1, y: 1 };
+      const halfBinMode = true;
+      const minUnit = halfBinMode ? 0.5 : 1;
+
+      const x1 = Math.min(start.x, current.x);
+      const y1 = Math.min(start.y, current.y);
+      const x2 = Math.max(start.x, current.x);
+      const y2 = Math.max(start.y, current.y);
+      const width = x2 - x1 + minUnit;
+      const depth = y2 - y1 + minUnit;
+
+      expect(width).toBe(1); // 1 - 0.5 + 0.5 = 1
+      expect(depth).toBe(1); // 1 - 0.5 + 0.5 = 1
+    });
+
+    it('calculates minimum 0.5 size in half-bin mode', () => {
+      // Single click (same start and current) in half-bin mode
+      const start = { x: 1.5, y: 2 };
+      const current = { x: 1.5, y: 2 };
+      const halfBinMode = true;
+      const minUnit = halfBinMode ? 0.5 : 1;
+
+      const width = Math.max(start.x, current.x) - Math.min(start.x, current.x) + minUnit;
+      const depth = Math.max(start.y, current.y) - Math.min(start.y, current.y) + minUnit;
+
+      expect(width).toBe(0.5); // 0 + 0.5 = 0.5
+      expect(depth).toBe(0.5); // 0 + 0.5 = 0.5
+    });
+
+    it('calculates minimum 1 size in standard mode', () => {
+      // Single click (same start and current) in standard mode
+      const start = { x: 3, y: 4 };
+      const current = { x: 3, y: 4 };
+      const halfBinMode = false;
+      const minUnit = halfBinMode ? 0.5 : 1;
+
+      const width = Math.max(start.x, current.x) - Math.min(start.x, current.x) + minUnit;
+      const depth = Math.max(start.y, current.y) - Math.min(start.y, current.y) + minUnit;
+
+      expect(width).toBe(1); // 0 + 1 = 1
+      expect(depth).toBe(1); // 0 + 1 = 1
+    });
+  });
+
+  describe('coordinate to pixel position (Overlay)', () => {
+    const cellSize = 32;
+    const gap = 1;
+    const drawerDepth = 8;
+
+    /**
+     * Calculate pixel position for draw preview (replicates Overlay.tsx logic)
+     */
+    function calculateOverlayPosition(x: number, y: number, width: number, depth: number) {
+      const left = gap + x * (cellSize + gap);
+      const top = gap + (drawerDepth - y - depth) * (cellSize + gap);
+      const rectWidth = toPixels(width, cellSize, gap);
+      const rectHeight = toPixels(depth, cellSize, gap);
+      return { left, top, rectWidth, rectHeight };
+    }
+
+    it('calculates correct position for bin at origin', () => {
+      const { left, top, rectWidth, rectHeight } = calculateOverlayPosition(0, 0, 1, 1);
+
+      expect(left).toBe(1); // gap = 1
+      expect(top).toBe(1 + 7 * 33); // gap + (8-0-1) * 33 = 232
+      expect(rectWidth).toBe(32);
+      expect(rectHeight).toBe(32);
+    });
+
+    it('calculates correct position for bin at top-left', () => {
+      const { left, top } = calculateOverlayPosition(0, 7, 1, 1);
+
+      expect(left).toBe(1);
+      expect(top).toBe(1); // gap + (8-7-1) * 33 = 1
+    });
+
+    it('calculates correct position for half-unit bin', () => {
+      const { left, top, rectWidth, rectHeight } = calculateOverlayPosition(0.5, 0.5, 0.5, 0.5);
+
+      expect(left).toBe(1 + 0.5 * 33); // 17.5
+      expect(top).toBe(1 + 7 * 33); // 232
+      expect(rectWidth).toBe(16); // 0.5 * 32
+      expect(rectHeight).toBe(16);
+    });
+
+    it('calculates correct position for 2x2 bin', () => {
+      const { left, top, rectWidth, rectHeight } = calculateOverlayPosition(2, 3, 2, 2);
+
+      expect(left).toBe(1 + 2 * 33); // 67
+      expect(top).toBe(1 + 3 * 33); // 100 (8-3-2=3)
+      expect(rectWidth).toBe(65); // 2*32 + 1*1
+      expect(rectHeight).toBe(65);
     });
   });
 });

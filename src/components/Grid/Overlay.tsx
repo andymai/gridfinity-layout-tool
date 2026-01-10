@@ -1,6 +1,5 @@
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
-import { HALF_BIN_SCALE } from '../../constants';
 
 interface OverlayProps {
   cellSize: number;
@@ -26,13 +25,13 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     }))
   );
 
-  // In half-bin mode, use scaled cell size for visual positioning
-  // Formula accounts for extra gaps: (cellSize - gap) / 2 keeps total grid size constant
-  const visualCellSize = halfBinMode ? (cellSize - gap) / HALF_BIN_SCALE : cellSize;
-  // Scale factor for converting grid units to visual cells
-  const scale = halfBinMode ? HALF_BIN_SCALE : 1;
-  // Visual grid dimensions
-  const visualDepth = drawer.depth * scale;
+  // Always use standard cell size (grid renders at normal dimensions)
+  // Half-bin mode only affects snapping, not visual grid size
+  const visualCellSize = cellSize;
+  // No scaling needed - grid is always standard dimensions
+  const scale = 1;
+  // Visual grid dimensions (standard)
+  const visualDepth = drawer.depth;
 
   // Helper to calculate pixel dimension for grid elements
   // Uses Math.max(0, units - 1) to handle fractional dimensions correctly
@@ -49,8 +48,10 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     const y1 = Math.min(start.y, current.y);
     const x2 = Math.max(start.x, current.x);
     const y2 = Math.max(start.y, current.y);
-    const width = x2 - x1 + 1;
-    const depth = y2 - y1 + 1;
+    // In half-bin mode, minimum unit is 0.5; in normal mode it's 1
+    const minUnit = halfBinMode ? 0.5 : 1;
+    const width = x2 - x1 + minUnit;
+    const depth = y2 - y1 + minUnit;
 
     // Scale coordinates for half-bin mode
     const vx1 = x1 * scale;
@@ -254,8 +255,10 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     const y1 = Math.min(start.y, current.y);
     const x2 = Math.max(start.x, current.x);
     const y2 = Math.max(start.y, current.y);
-    const areaWidth = x2 - x1 + 1;
-    const areaDepth = y2 - y1 + 1;
+    // In half-bin mode, minimum unit is 0.5; in normal mode it's 1
+    const minUnit = halfBinMode ? 0.5 : 1;
+    const areaWidth = x2 - x1 + minUnit;
+    const areaDepth = y2 - y1 + minUnit;
 
     // Calculate how many bins fit
     const binsAcross = Math.floor(areaWidth / paintSize.width);
@@ -270,13 +273,14 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
     // Scale for half-bin mode
     const vx1 = x1 * scale;
-    const vy2 = y2 * scale;
+    const vy1 = y1 * scale;
     const vAreaWidth = areaWidth * scale;
     const vAreaDepth = areaDepth * scale;
 
     // Outer selection area (amber dashed like draw)
     const areaLeft = gap + vx1 * (visualCellSize + gap);
-    const areaTop = gap + (visualDepth - vy2 - vAreaDepth) * (visualCellSize + gap);
+    // Use y1 (min Y) to match draw mode and Bin.tsx positioning formula
+    const areaTop = gap + (visualDepth - vy1 - vAreaDepth) * (visualCellSize + gap);
     const areaPixelWidth = toPixels(vAreaWidth);
     const areaPixelHeight = toPixels(vAreaDepth);
 

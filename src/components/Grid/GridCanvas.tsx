@@ -5,7 +5,7 @@ import { useUIStore, useLayoutStore } from '../../store';
 import { useGridCoords } from '../../hooks';
 import { Bin } from './Bin';
 import { getBlockedZones } from '../../utils/collision';
-import { DEFAULT_CATEGORY_COLOR, HALF_BIN_SCALE } from '../../constants';
+import { DEFAULT_CATEGORY_COLOR } from '../../constants';
 import type { Coord, ResizeHandle } from '../../types';
 
 interface GridCanvasProps {
@@ -51,7 +51,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
     }))
   );
 
-  const { getGridCoords, halfBinMode, visualCellSize } = useGridCoords(gridRef);
+  const { getGridCoords, halfBinMode } = useGridCoords(gridRef);
 
   // Memoized: Filter bins for current layer
   const activeBins = useMemo(
@@ -109,97 +109,27 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
     setSelectedBin(binId);
   };
 
-  // Grid dimensions depend on half-bin mode
-  const gridCols = halfBinMode ? drawer.width * HALF_BIN_SCALE : drawer.width;
-  const gridRows = halfBinMode ? drawer.depth * HALF_BIN_SCALE : drawer.depth;
-  const actualCellSize = halfBinMode ? visualCellSize : cellSize;
+  // Grid always renders at standard dimensions (half-bin mode only affects snapping)
+  const gridCols = drawer.width;
+  const gridRows = drawer.depth;
 
   // Generate grid cells for visual reference
   const cells: JSX.Element[] = [];
-  if (halfBinMode) {
-    // Half-bin mode: render 2x cells with crosshairs at whole-unit intersections
-    // Y is inverted to match coordinate system (y=0 at bottom)
-    for (let vy = 0; vy < gridRows; vy++) {
-      for (let vx = 0; vx < gridCols; vx++) {
-        // Check if this is at a whole-unit boundary (for crosshairs)
-        const isAtCrosshair = vx % HALF_BIN_SCALE === 0 && vy % HALF_BIN_SCALE === 0;
-
-        cells.push(
-          <div
-            key={`${vx}-${vy}`}
-            style={{
-              gridColumn: vx + 1,
-              gridRow: gridRows - vy,
-              width: actualCellSize,
-              height: actualCellSize,
-              backgroundColor: 'var(--grid-cell)',
-              borderRadius: '2px',
-              boxSizing: 'border-box',
-              position: 'relative',
-            }}
-          >
-            {/* Crosshair at center of each 1x1 grid unit (intersection of the 2x2 half-cells) */}
-            {isAtCrosshair && (
-              <div
-                style={{
-                  position: 'absolute',
-                  // Position at bottom-right corner of this cell, then center the crosshair on that point
-                  left: '100%',
-                  top: '100%',
-                  width: 9,
-                  height: 9,
-                  transform: 'translate(-50%, -50%)',
-                  pointerEvents: 'none',
-                }}
-              >
-                {/* Horizontal line */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: 0,
-                    right: 0,
-                    height: 1,
-                    backgroundColor: 'var(--grid-line-half)',
-                    transform: 'translateY(-50%)',
-                  }}
-                />
-                {/* Vertical line */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: '50%',
-                    top: 0,
-                    bottom: 0,
-                    width: 1,
-                    backgroundColor: 'var(--grid-line-half)',
-                    transform: 'translateX(-50%)',
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        );
-      }
-    }
-  } else {
-    // Standard mode: render normal cells
-    for (let y = drawer.depth - 1; y >= 0; y--) {
-      for (let x = 0; x < drawer.width; x++) {
-        cells.push(
-          <div
-            key={`${x}-${y}`}
-            style={{
-              gridColumn: x + 1,
-              gridRow: drawer.depth - y,
-              width: actualCellSize,
-              height: actualCellSize,
-              backgroundColor: 'var(--grid-cell)',
-              borderRadius: '2px',
-            }}
-          />
-        );
-      }
+  for (let y = 0; y < gridRows; y++) {
+    for (let x = 0; x < gridCols; x++) {
+      cells.push(
+        <div
+          key={`${x}-${y}`}
+          style={{
+            gridColumn: x + 1,
+            gridRow: gridRows - y,
+            width: cellSize,
+            height: cellSize,
+            backgroundColor: 'var(--grid-cell)',
+            borderRadius: '2px',
+          }}
+        />
+      );
     }
   }
 
@@ -219,8 +149,8 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
         className="absolute inset-0"
         style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${gridCols}, ${actualCellSize}px)`,
-          gridTemplateRows: `repeat(${gridRows}, ${actualCellSize}px)`,
+          gridTemplateColumns: `repeat(${gridCols}, ${cellSize}px)`,
+          gridTemplateRows: `repeat(${gridRows}, ${cellSize}px)`,
           gap: `${gap}px`,
           padding: `${gap}px`,
         }}
@@ -239,7 +169,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               category={category}
               layer={layer}
               drawer={drawer}
-              cellSize={actualCellSize}
+              cellSize={cellSize}
               gap={gap}
               halfBinMode={halfBinMode}
               isGhost
@@ -258,21 +188,23 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
             : undefined;
           const sourceLayer = sourceBin ? layers.find(l => l.id === sourceBin.layerId) : undefined;
 
-          // Calculate grid position - multiply by scale in half-bin mode
-          const scale = halfBinMode ? HALF_BIN_SCALE : 1;
-          const gridCol = Math.round(zone.x * scale) + 1;
-          const gridColSpan = Math.round(zone.width * scale);
-          const gridRowStart = halfBinMode
-            ? Math.round((drawer.depth - zone.y - zone.depth) * scale) + 1
-            : drawer.depth - zone.y - zone.depth + 1;
-          const gridRowSpan = Math.round(zone.depth * scale);
+          // Calculate grid position (always use standard grid, no scaling)
+          const gridCol = Math.floor(zone.x) + 1;
+          const gridColSpan = Math.ceil(zone.x + zone.width) - Math.floor(zone.x);
+          const gridRowStart = drawer.depth - Math.ceil(zone.y + zone.depth) + 1;
+          const gridRowSpan = Math.ceil(zone.y + zone.depth) - Math.floor(zone.y);
 
           // Check if zone has fractional dimensions (from half-bin mode bins)
-          const hasFractionalDims = zone.width % 1 !== 0 || zone.depth % 1 !== 0;
+          const hasFractionalDims = zone.x % 1 !== 0 || zone.y % 1 !== 0 || zone.width % 1 !== 0 || zone.depth % 1 !== 0;
           // Calculate true pixel size for fractional zones
-          const toPixels = (units: number) => units * actualCellSize + Math.max(0, units - 1) * gap;
-          const zonePixelWidth = hasFractionalDims && !halfBinMode ? toPixels(zone.width) : undefined;
-          const zonePixelHeight = hasFractionalDims && !halfBinMode ? toPixels(zone.depth) : undefined;
+          const toPixels = (units: number) => units * cellSize + Math.max(0, units - 1) * gap;
+          const zonePixelWidth = hasFractionalDims ? toPixels(zone.width) : undefined;
+          const zonePixelHeight = hasFractionalDims ? toPixels(zone.depth) : undefined;
+          // Calculate pixel offset for fractional positions
+          const fractionalX = zone.x - Math.floor(zone.x);
+          const fractionalYFromTop = Math.ceil(zone.y + zone.depth) - (zone.y + zone.depth);
+          const offsetX = hasFractionalDims ? fractionalX * (cellSize + gap) : 0;
+          const offsetY = hasFractionalDims ? fractionalYFromTop * (cellSize + gap) : 0;
 
           return (
             <div
@@ -281,10 +213,12 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               style={{
                 gridColumn: `${gridCol} / span ${gridColSpan}`,
                 gridRow: `${gridRowStart} / span ${gridRowSpan}`,
-                // Override size for fractional zones when halfBinMode is off
-                ...(hasFractionalDims && !halfBinMode ? {
+                // Override size and position for fractional zones
+                ...(hasFractionalDims ? {
                   width: zonePixelWidth,
                   height: zonePixelHeight,
+                  marginLeft: offsetX,
+                  marginTop: offsetY,
                 } : {}),
                 backgroundColor: category?.color || DEFAULT_CATEGORY_COLOR,
                 opacity: 0.3,
@@ -336,7 +270,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               category={category}
               layer={layer}
               drawer={drawer}
-              cellSize={actualCellSize}
+              cellSize={cellSize}
               gap={gap}
               halfBinMode={halfBinMode}
               isGhost={false}
