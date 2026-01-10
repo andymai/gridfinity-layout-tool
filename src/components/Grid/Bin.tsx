@@ -355,12 +355,14 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   return (
     <div
       data-bin-id={bin.id}
-      className={`relative flex flex-col items-center justify-center transition-all duration-150 ${
+      className={`relative flex flex-col items-center justify-center ${
         isSelected && !isGhost ? 'animate-settle-in' : ''
       }`}
       style={{
         gridColumn: `${gridCol} / span ${gridColSpan}`,
         gridRow: `${gridRowStart} / span ${gridRowSpan}`,
+        // Only transition visual properties, not positioning (causes bounce on grid line crossing)
+        transition: 'opacity 150ms, box-shadow 150ms, transform 150ms',
         // Override size and position for fractional bins (CSS Grid spans only support integers)
         ...(hasFractionalDims ? {
           width: binPixelWidth,
