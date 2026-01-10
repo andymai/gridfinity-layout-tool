@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { STAGING_ID } from '../../constants';
+import { ConfirmDialog } from '../modals/ConfirmDialog';
 
 // Square sizes
 const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];
@@ -18,12 +19,14 @@ const RECTANGLE_SIZES = [
 
 export function ActiveLayerPanel() {
   const [rotated, setRotated] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const { layout, fillLayer, fillLayerGaps } = useLayoutStore(
+  const { layout, fillLayer, fillLayerGaps, clearLayer } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
       fillLayer: state.fillLayer,
       fillLayerGaps: state.fillLayerGaps,
+      clearLayer: state.clearLayer,
     }))
   );
 
@@ -32,12 +35,14 @@ export function ActiveLayerPanel() {
     activeCategoryId,
     paintSize,
     togglePaintSize,
+    setSelectedBins,
   } = useUIStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
       activeCategoryId: state.activeCategoryId,
       paintSize: state.paintSize,
       togglePaintSize: state.togglePaintSize,
+      setSelectedBins: state.setSelectedBins,
     }))
   );
 
@@ -68,6 +73,17 @@ export function ActiveLayerPanel() {
         addToast(`Added ${added} bins to fill gaps`, 'success');
       }
     }, 0);
+  };
+
+  const handleClearLayer = () => {
+    if (!activeLayerId || layerBins.length === 0) return;
+    const count = layerBins.length;
+    execute(() => {
+      clearLayer(activeLayerId);
+      setSelectedBins([]);
+    });
+    addToast(`Cleared ${count} bins from layer`, 'success');
+    setShowClearConfirm(false);
   };
 
   const handleFill = (width: number, depth: number) => {
@@ -181,6 +197,30 @@ export function ActiveLayerPanel() {
         </svg>
         {emptyCells > 0 ? `Fill ${emptyCells} gaps` : 'No gaps'}
       </button>
+
+      {/* Clear layer button */}
+      <button
+        onClick={() => setShowClearConfirm(true)}
+        disabled={layerBins.length === 0}
+        className="btn btn-ghost w-full justify-center mt-2 text-sm text-error hover:bg-error/10"
+        title={layerBins.length > 0 ? `Remove all ${layerBins.length} bins from this layer` : 'No bins to clear'}
+      >
+        <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        {layerBins.length > 0 ? `Clear ${layerBins.length} bins` : 'No bins'}
+      </button>
+
+      {/* Clear confirmation dialog */}
+      <ConfirmDialog
+        isOpen={showClearConfirm}
+        title="Clear Layer"
+        message={`Remove all ${layerBins.length} bin${layerBins.length !== 1 ? 's' : ''} from "${activeLayer.name}"? This can be undone.`}
+        confirmText="Clear"
+        destructive
+        onConfirm={handleClearLayer}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </div>
   );
 }

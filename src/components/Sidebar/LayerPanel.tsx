@@ -1,26 +1,20 @@
 import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
-import { useToastStore } from '../../store/toast';
 import { CONSTRAINTS, STAGING_ID } from '../../constants';
 import { getDisplayLayers } from '../../utils/collision';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
-import { LayerContextMenu } from './LayerContextMenu';
 
 export function LayerPanel() {
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [deleteLayerId, setDeleteLayerId] = useState<string | null>(null);
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [dragSourceIndex, setDragSourceIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
-  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
 
-  const { layout, fillLayerGaps, clearLayer, addLayer, updateLayer, deleteLayer, reorderLayers } = useLayoutStore(
+  const { layout, addLayer, updateLayer, deleteLayer, reorderLayers } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
-      fillLayerGaps: state.fillLayerGaps,
-      clearLayer: state.clearLayer,
       addLayer: state.addLayer,
       updateLayer: state.updateLayer,
       deleteLayer: state.deleteLayer,
@@ -28,28 +22,19 @@ export function LayerPanel() {
     }))
   );
 
-  const { activeLayerId, activeCategoryId, setSelectedBins, setActiveLayer } = useUIStore(
+  const { activeLayerId, setActiveLayer } = useUIStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
-      activeCategoryId: state.activeCategoryId,
-      setSelectedBins: state.setSelectedBins,
       setActiveLayer: state.setActiveLayer,
     }))
   );
 
-  const addToast = useToastStore(state => state.addToast);
   const { execute } = useUndoableAction();
 
   const layers = layout.layers;
   const activeLayer = layers.find(l => l.id === activeLayerId);
-  const layerBins = layout.bins.filter(b => b.layerId === activeLayerId);
-  const binCount = layerBins.length;
 
   const totalCells = layout.drawer.width * layout.drawer.depth;
-  const coveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
-  const coverage = totalCells > 0 ? Math.round((coveredCells / totalCells) * 100) : 0;
-  const emptyCells = totalCells - coveredCells;
-
   const hasMultipleLayers = layers.length > 1;
 
   // Total stats across all layers
@@ -59,35 +44,15 @@ export function LayerPanel() {
   const totalAvailableCells = totalCells * layers.length;
   const totalCoverage = totalAvailableCells > 0 ? Math.round((totalCoveredCells / totalAvailableCells) * 100) : 0;
 
+  // Single layer stats
+  const layerBins = layout.bins.filter(b => b.layerId === activeLayerId);
+  const binCount = layerBins.length;
+  const coveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
+  const coverage = totalCells > 0 ? Math.round((coveredCells / totalCells) * 100) : 0;
+
   // Display is reversed: index 0 in display = last in array (top layer)
   const displayToArrayIndex = (displayIndex: number) => layers.length - 1 - displayIndex;
   const displayLayers = getDisplayLayers(layers);
-
-  const handleFillGaps = () => {
-    if (!activeLayerId) return;
-    const beforeCount = layerBins.length;
-    execute(() => {
-      fillLayerGaps(activeLayerId, activeCategoryId);
-    });
-    setTimeout(() => {
-      const afterCount = useLayoutStore.getState().layout.bins.filter(b => b.layerId === activeLayerId).length;
-      const added = afterCount - beforeCount;
-      if (added > 0) {
-        addToast(`Added ${added} bin${added !== 1 ? 's' : ''} to fill gaps`, 'success');
-      }
-    }, 0);
-  };
-
-  const handleClear = () => {
-    if (!activeLayerId || layerBins.length === 0) return;
-    const count = layerBins.length;
-    execute(() => {
-      clearLayer(activeLayerId);
-      setSelectedBins([]);
-    });
-    addToast(`Cleared ${count} bins from layer`, 'success');
-    setShowClearConfirm(false);
-  };
 
   const handleAddLayer = () => {
     execute(() => {
@@ -125,12 +90,6 @@ export function LayerPanel() {
     execute(() => {
       updateLayer(layerId, { height: newHeight });
     });
-  };
-
-  const handleOpenMenu = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    setMenuPosition({ x: rect.right + 4, y: rect.top });
   };
 
   // Drag and drop handlers
@@ -324,20 +283,6 @@ export function LayerPanel() {
                 </span>
               )}
 
-              {/* Menu button - only for active layer */}
-              {isActive && (
-                <button
-                  onClick={handleOpenMenu}
-                  className="p-0.5 rounded text-black/40 hover:text-black transition-colors"
-                  title="Layer actions"
-                  aria-label={`Actions for ${layer.name} layer`}
-                >
-                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                  </svg>
-                </button>
-              )}
-
               {/* Delete button - only for active layer when multiple exist */}
               {isActive && hasMultipleLayers && (
                 <button
@@ -377,29 +322,6 @@ export function LayerPanel() {
           }}
         />
       </div>
-
-      {/* Layer context menu */}
-      {menuPosition && (
-        <LayerContextMenu
-          position={menuPosition}
-          onClose={() => setMenuPosition(null)}
-          onFillGaps={handleFillGaps}
-          onClearLayer={() => setShowClearConfirm(true)}
-          emptyCells={emptyCells}
-          binCount={binCount}
-        />
-      )}
-
-      {/* Clear confirmation */}
-      <ConfirmDialog
-        isOpen={showClearConfirm}
-        title="Clear Layer"
-        message={`Remove all ${binCount} bin${binCount !== 1 ? 's' : ''} from "${activeLayer.name}"? This can be undone.`}
-        confirmText="Clear"
-        destructive
-        onConfirm={handleClear}
-        onCancel={() => setShowClearConfirm(false)}
-      />
 
       {/* Delete layer confirmation */}
       <ConfirmDialog
