@@ -199,7 +199,10 @@ export function MobileSettingsPanel() {
           {/* Half-bin mode checkbox */}
           <label className="flex items-center justify-between pt-3 border-t border-stroke-subtle cursor-pointer">
             <div>
-              <span className="text-sm text-content-secondary">Half-bin mode</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm text-content-secondary">Half-bin mode</span>
+                <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
+              </div>
               <p className="text-xs text-content-tertiary">Allow 0.5 unit precision</p>
             </div>
             <input
