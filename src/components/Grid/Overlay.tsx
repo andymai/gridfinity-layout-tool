@@ -27,7 +27,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
   );
 
   // In half-bin mode, use scaled cell size for visual positioning
-  const visualCellSize = halfBinMode ? cellSize / HALF_BIN_SCALE : cellSize;
+  // Formula accounts for extra gaps: (cellSize - gap) / 2 keeps total grid size constant
+  const visualCellSize = halfBinMode ? (cellSize - gap) / HALF_BIN_SCALE : cellSize;
   // Scale factor for converting grid units to visual cells
   const scale = halfBinMode ? HALF_BIN_SCALE : 1;
   // Visual grid dimensions

@@ -73,9 +73,11 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
 
-  // In half-bin mode, each visual cell is half the size
-  // This gives us 2x the cells for 0.5 unit precision
-  const visualCellSize = halfBinMode ? Math.round(cellSize / HALF_BIN_SCALE) : cellSize;
+  // In half-bin mode, each visual cell is smaller to fit 2x cells in the same space
+  // Formula: (cellSize - gap) / 2 ensures total grid width stays the same
+  // Normal: W * cellSize + (W+1) * gap
+  // Half-bin: 2W * visualCellSize + (2W+1) * gap = same when visualCellSize = (cellSize - gap) / 2
+  const visualCellSize = halfBinMode ? Math.round((cellSize - gap) / HALF_BIN_SCALE) : cellSize;
   const visualGap = gap;
 
   const getGridCoords = useCallback((clientX: number, clientY: number): Coord | null => {
