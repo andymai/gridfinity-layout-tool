@@ -69,7 +69,7 @@ export type ResizeHandle = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 export type Interaction =
   | { type: 'draw'; start: Coord; current: Coord }
-  | { type: 'drag'; binIds: string[]; startCoord: Coord; currentCoord: Coord; valid: boolean; isOverGrid: boolean }
+  | { type: 'drag'; binIds: string[]; startCoord: Coord; currentCoord: Coord; valid: boolean; isOverGrid: boolean; clickOffset?: { x: number; y: number } }
   | { type: 'resize'; binIds: string[]; handle: ResizeHandle; startRects: Map<string, Rect>; currentRects: Map<string, Rect>; valid: boolean }
   | { type: 'stagingDrag'; binId: string; currentCoord: Coord | null; valid: boolean }
   | { type: 'paint'; paintSize: { width: number; depth: number }; start: Coord; current: Coord };

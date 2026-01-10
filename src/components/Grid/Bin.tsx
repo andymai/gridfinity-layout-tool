@@ -60,6 +60,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
   const showContextMenu = useUIStore((state) => state.showContextMenu);
   const setFocusedBin = useUIStore((state) => state.setFocusedBin);
   const setActiveMobilePanel = useUIStore((state) => state.setActiveMobilePanel);
+  const showQuickLabel = useUIStore((state) => state.showQuickLabel);
 
   // Consolidate layout state selectors with shallow comparison
   const { printBedSize, gridUnitMm } = useLayoutStore(
@@ -353,6 +354,16 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
       onContextMenu={handleContextMenu}
+      onDoubleClick={(e) => {
+        if (isGhost) return;
+        e.preventDefault();
+        e.stopPropagation();
+        // Select the bin if not selected and show quick label popover
+        if (!isSelected) {
+          setSelectedBin(bin.id);
+        }
+        showQuickLabel(bin.id);
+      }}
       onMouseEnter={() => !isTouchDevice && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => !isGhost && setFocusedBin(bin.id)}
@@ -450,20 +461,20 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
       {/* Disable pointer events during any interaction to avoid blocking draw operations */}
       {isSelected && !isGhost && !isMultiSelect && !interaction && (
         <>
-          {/* Right edge handle - 44px touch target, 10px visual */}
+          {/* Left edge handle (w) */}
           <div
             className="absolute transition-transform hover:scale-110 flex items-center justify-center"
             style={{
-              right: -22,
+              left: -22,
               top: '25%',
               width: 44,
               height: '50%',
               minHeight: 44,
               cursor: 'ew-resize',
             }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'e')}
+            onPointerDown={(e) => handleResizePointerDown(e, 'w')}
             role="slider"
-            aria-label="Resize width"
+            aria-label="Resize left edge"
             aria-orientation="horizontal"
           >
             <div
@@ -477,20 +488,47 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
               }}
             />
           </div>
-          {/* Bottom edge handle - 44px touch target, 10px visual */}
+          {/* Right edge handle (e) */}
           <div
             className="absolute transition-transform hover:scale-110 flex items-center justify-center"
             style={{
-              bottom: -22,
+              right: -22,
+              top: '25%',
+              width: 44,
+              height: '50%',
+              minHeight: 44,
+              cursor: 'ew-resize',
+            }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'e')}
+            role="slider"
+            aria-label="Resize right edge"
+            aria-orientation="horizontal"
+          >
+            <div
+              style={{
+                width: 10,
+                height: '45%',
+                minHeight: 20,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            />
+          </div>
+          {/* Top edge handle (n) - visually at top, increases Y */}
+          <div
+            className="absolute transition-transform hover:scale-110 flex items-center justify-center"
+            style={{
+              top: -22,
               left: '25%',
               width: '50%',
               minWidth: 44,
               height: 44,
               cursor: 'ns-resize',
             }}
-            onPointerDown={(e) => handleResizePointerDown(e, 's')}
+            onPointerDown={(e) => handleResizePointerDown(e, 'n')}
             role="slider"
-            aria-label="Resize depth"
+            aria-label="Resize top edge"
             aria-orientation="vertical"
           >
             <div
@@ -504,7 +542,106 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
               }}
             />
           </div>
-          {/* SE corner handle - 44px touch target, 12px visual */}
+          {/* Bottom edge handle (s) - visually at bottom, decreases Y */}
+          <div
+            className="absolute transition-transform hover:scale-110 flex items-center justify-center"
+            style={{
+              bottom: -22,
+              left: '25%',
+              width: '50%',
+              minWidth: 44,
+              height: 44,
+              cursor: 'ns-resize',
+            }}
+            onPointerDown={(e) => handleResizePointerDown(e, 's')}
+            role="slider"
+            aria-label="Resize bottom edge"
+            aria-orientation="vertical"
+          >
+            <div
+              style={{
+                width: '45%',
+                minWidth: 20,
+                height: 10,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            />
+          </div>
+          {/* NW corner handle (top-left) */}
+          <div
+            className="absolute transition-transform hover:scale-125 flex items-center justify-center"
+            style={{
+              left: -22,
+              top: -22,
+              width: 44,
+              height: 44,
+              cursor: 'nwse-resize',
+            }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'nw')}
+            role="slider"
+            aria-label="Resize top-left corner"
+          >
+            <div
+              style={{
+                width: 12,
+                height: 12,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                boxShadow: 'var(--shadow-md)',
+              }}
+            />
+          </div>
+          {/* NE corner handle (top-right) */}
+          <div
+            className="absolute transition-transform hover:scale-125 flex items-center justify-center"
+            style={{
+              right: -22,
+              top: -22,
+              width: 44,
+              height: 44,
+              cursor: 'nesw-resize',
+            }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'ne')}
+            role="slider"
+            aria-label="Resize top-right corner"
+          >
+            <div
+              style={{
+                width: 12,
+                height: 12,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                boxShadow: 'var(--shadow-md)',
+              }}
+            />
+          </div>
+          {/* SW corner handle (bottom-left) */}
+          <div
+            className="absolute transition-transform hover:scale-125 flex items-center justify-center"
+            style={{
+              left: -22,
+              bottom: -22,
+              width: 44,
+              height: 44,
+              cursor: 'nesw-resize',
+            }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'sw')}
+            role="slider"
+            aria-label="Resize bottom-left corner"
+          >
+            <div
+              style={{
+                width: 12,
+                height: 12,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                boxShadow: 'var(--shadow-md)',
+              }}
+            />
+          </div>
+          {/* SE corner handle (bottom-right) */}
           <div
             className="absolute transition-transform hover:scale-125 flex items-center justify-center"
             style={{
@@ -516,7 +653,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 'se')}
             role="slider"
-            aria-label="Resize width and depth"
+            aria-label="Resize bottom-right corner"
           >
             <div
               style={{
@@ -531,19 +668,22 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
         </>
       )}
 
-      {/* Ghost resize handles - show on hover for non-selected bins (desktop only) */}
-      {!isSelected && !isGhost && isHovered && !isTouchDevice && (
+      {/* Functional resize handles - show on hover for non-selected bins (desktop only) */}
+      {/* These are semi-transparent but fully functional, allowing resize without selection */}
+      {!isSelected && !isGhost && isHovered && !isTouchDevice && !interaction && (
         <>
-          {/* Right edge ghost handle */}
+          {/* Left edge handle (w) */}
           <div
-            className="absolute flex items-center justify-center pointer-events-none"
+            className="absolute flex items-center justify-center transition-transform hover:scale-110"
             style={{
-              right: -22,
+              left: -22,
               top: '25%',
               width: 44,
               height: '50%',
               minHeight: 44,
+              cursor: 'ew-resize',
             }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'w')}
           >
             <div
               style={{
@@ -552,20 +692,46 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
                 minHeight: 20,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                opacity: 0.4,
+                opacity: 0.5,
               }}
             />
           </div>
-          {/* Bottom edge ghost handle */}
+          {/* Right edge handle (e) */}
           <div
-            className="absolute flex items-center justify-center pointer-events-none"
+            className="absolute flex items-center justify-center transition-transform hover:scale-110"
             style={{
-              bottom: -22,
+              right: -22,
+              top: '25%',
+              width: 44,
+              height: '50%',
+              minHeight: 44,
+              cursor: 'ew-resize',
+            }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'e')}
+          >
+            <div
+              style={{
+                width: 10,
+                height: '45%',
+                minHeight: 20,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                opacity: 0.5,
+              }}
+            />
+          </div>
+          {/* Top edge handle (n) */}
+          <div
+            className="absolute flex items-center justify-center transition-transform hover:scale-110"
+            style={{
+              top: -22,
               left: '25%',
               width: '50%',
               minWidth: 44,
               height: 44,
+              cursor: 'ns-resize',
             }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'n')}
           >
             <div
               style={{
@@ -574,19 +740,45 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
                 height: 10,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                opacity: 0.4,
+                opacity: 0.5,
               }}
             />
           </div>
-          {/* SE corner ghost handle */}
+          {/* Bottom edge handle (s) */}
           <div
-            className="absolute flex items-center justify-center pointer-events-none"
+            className="absolute flex items-center justify-center transition-transform hover:scale-110"
             style={{
-              right: -22,
               bottom: -22,
+              left: '25%',
+              width: '50%',
+              minWidth: 44,
+              height: 44,
+              cursor: 'ns-resize',
+            }}
+            onPointerDown={(e) => handleResizePointerDown(e, 's')}
+          >
+            <div
+              style={{
+                width: '45%',
+                minWidth: 20,
+                height: 10,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                opacity: 0.5,
+              }}
+            />
+          </div>
+          {/* NW corner handle (top-left) */}
+          <div
+            className="absolute flex items-center justify-center transition-transform hover:scale-125"
+            style={{
+              left: -22,
+              top: -22,
               width: 44,
               height: 44,
+              cursor: 'nwse-resize',
             }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'nw')}
           >
             <div
               style={{
@@ -594,7 +786,73 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
                 height: 12,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                opacity: 0.4,
+                opacity: 0.5,
+              }}
+            />
+          </div>
+          {/* NE corner handle (top-right) */}
+          <div
+            className="absolute flex items-center justify-center transition-transform hover:scale-125"
+            style={{
+              right: -22,
+              top: -22,
+              width: 44,
+              height: 44,
+              cursor: 'nesw-resize',
+            }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'ne')}
+          >
+            <div
+              style={{
+                width: 12,
+                height: 12,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                opacity: 0.5,
+              }}
+            />
+          </div>
+          {/* SW corner handle (bottom-left) */}
+          <div
+            className="absolute flex items-center justify-center transition-transform hover:scale-125"
+            style={{
+              left: -22,
+              bottom: -22,
+              width: 44,
+              height: 44,
+              cursor: 'nesw-resize',
+            }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'sw')}
+          >
+            <div
+              style={{
+                width: 12,
+                height: 12,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                opacity: 0.5,
+              }}
+            />
+          </div>
+          {/* SE corner handle (bottom-right) */}
+          <div
+            className="absolute flex items-center justify-center transition-transform hover:scale-125"
+            style={{
+              right: -22,
+              bottom: -22,
+              width: 44,
+              height: 44,
+              cursor: 'nwse-resize',
+            }}
+            onPointerDown={(e) => handleResizePointerDown(e, 'se')}
+          >
+            <div
+              style={{
+                width: 12,
+                height: 12,
+                background: 'var(--selection-ring)',
+                borderRadius: 'var(--radius-sm)',
+                opacity: 0.5,
               }}
             />
           </div>
