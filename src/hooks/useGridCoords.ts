@@ -65,17 +65,31 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
 
-  const getGridCoords = useCallback((clientX: number, clientY: number): Coord | null => {
+  /**
+   * Convert screen coordinates to grid coordinates.
+   * @param clientX - Screen X position
+   * @param clientY - Screen Y position
+   * @param roundToNearest - If true, rounds to nearest cell center (better for drag end points).
+   *                         If false (default), uses floor for precise click positioning.
+   */
+  const getGridCoords = useCallback((clientX: number, clientY: number, roundToNearest = false): Coord | null => {
     if (!gridRef.current) return null;
 
     const rect = gridRef.current.getBoundingClientRect();
     const relX = clientX - rect.left;
     const relY = clientY - rect.top;
 
-    // Account for gap
-    const x = Math.floor(relX / (cellSize + gap));
+    const cellPitch = cellSize + gap;
+
+    // For roundToNearest: snap to whichever cell center is closest (transitions at 50% mark)
+    // For floor mode: only change cell after fully entering it (transitions at cell boundary)
+    const toGridCoord = roundToNearest
+      ? (px: number) => Math.round(px / cellPitch)
+      : (px: number) => Math.floor(px / cellPitch);
+
+    const x = toGridCoord(relX);
     // Y is inverted (0 at bottom in our coordinate system)
-    const y = drawer.depth - 1 - Math.floor(relY / (cellSize + gap));
+    const y = drawer.depth - 1 - toGridCoord(relY);
 
     return { x, y };
   }, [gridRef, cellSize, drawer.depth]);
