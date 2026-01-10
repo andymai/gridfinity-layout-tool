@@ -62,6 +62,9 @@ interface UIState {
   // Quick label popover (desktop double-click or L key)
   quickLabelBinId: string | null;
 
+  // Category highlighting (for hover preview)
+  highlightedCategoryId: string | null;
+
   // Actions
   setActiveLayer: (id: string) => void;
   setSelectedBin: (id: string | null) => void; // Single select (clears others)
@@ -113,6 +116,9 @@ interface UIState {
   // Quick label actions
   showQuickLabel: (binId: string) => void;
   hideQuickLabel: () => void;
+
+  // Category highlighting actions
+  setHighlightedCategoryId: (categoryId: string | null) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -138,6 +144,7 @@ export const useUIStore = create<UIState>((set) => ({
   keyboardResizeMode: false,
   liveMessage: null,
   quickLabelBinId: null,
+  highlightedCategoryId: null,
 
   setActiveLayer: (id) => set({
     activeLayerId: id,
@@ -267,4 +274,7 @@ export const useUIStore = create<UIState>((set) => ({
   // Quick label actions
   showQuickLabel: (binId) => set({ quickLabelBinId: binId }),
   hideQuickLabel: () => set({ quickLabelBinId: null }),
+
+  // Category highlighting actions
+  setHighlightedCategoryId: (categoryId) => set({ highlightedCategoryId: categoryId }),
 }));

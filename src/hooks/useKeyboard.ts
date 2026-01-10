@@ -34,7 +34,7 @@ function isShortcut(key: string, shortcuts: readonly string[]): boolean {
  * - +/-: Zoom in/out
  *
  * **Bin Operations:**
- * - [/]: Cycle category of selected bins
+ * - [/]: Cycle category of selected bins, or cycle active drawing category if no bin selected
  * - L: Open quick label popover for selected bin
  *
  * @example
@@ -58,6 +58,8 @@ export function useKeyboard() {
   const activeLayerId = useUIStore(state => state.activeLayerId);
   const setActiveLayer = useUIStore(state => state.setActiveLayer);
   const showQuickLabel = useUIStore(state => state.showQuickLabel);
+  const activeCategoryId = useUIStore(state => state.activeCategoryId);
+  const setActiveCategory = useUIStore(state => state.setActiveCategory);
 
   // Grid navigation hook for spatial arrow key navigation
   const { handleNavigationKey } = useGridNavigation();
@@ -195,68 +197,75 @@ export function useKeyboard() {
       return;
     }
 
-    // Category cycling ([ / ]) - cycles category of selected bins
-    if (key === SHORTCUTS.CATEGORY_PREV && selectedBinIds.length > 0) {
+    // Category cycling ([ / ]) - cycles category of selected bins, or active drawing category if none selected
+    if (key === SHORTCUTS.CATEGORY_PREV) {
       e.preventDefault();
       const categories = layout.categories;
       if (categories.length === 0) return;
 
-      // Get current category from first selected bin
-      const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
-      if (!firstBin) return;
+      if (selectedBinIds.length > 0) {
+        // Change category of selected bins
+        const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
+        if (!firstBin) return;
 
-      // Find current category index (undefined = -1, meaning "no category")
-      const currentIndex = firstBin.category
-        ? categories.findIndex(c => c.id === firstBin.category)
-        : -1;
+        const currentIndex = firstBin.category
+          ? categories.findIndex(c => c.id === firstBin.category)
+          : -1;
 
-      // Cycle to previous (wrap from first category to "no category", then to last)
-      let newCategoryId: string | undefined;
-      if (currentIndex <= 0) {
-        // At first category or no category - go to last category
-        newCategoryId = currentIndex === 0 ? undefined : categories[categories.length - 1].id;
-      } else {
-        newCategoryId = categories[currentIndex - 1].id;
-      }
-
-      execute(() => {
-        for (const binId of selectedBinIds) {
-          updateBin(binId, { category: newCategoryId });
+        let newCategoryId: string | undefined;
+        if (currentIndex <= 0) {
+          newCategoryId = currentIndex === 0 ? undefined : categories[categories.length - 1].id;
+        } else {
+          newCategoryId = categories[currentIndex - 1].id;
         }
-      });
+
+        execute(() => {
+          for (const binId of selectedBinIds) {
+            updateBin(binId, { category: newCategoryId });
+          }
+        });
+      } else {
+        // Cycle active drawing category (no "no category" option for drawing)
+        const currentIndex = categories.findIndex(c => c.id === activeCategoryId);
+        const prevIndex = currentIndex <= 0 ? categories.length - 1 : currentIndex - 1;
+        setActiveCategory(categories[prevIndex].id);
+      }
       return;
     }
-    if (key === SHORTCUTS.CATEGORY_NEXT && selectedBinIds.length > 0) {
+    if (key === SHORTCUTS.CATEGORY_NEXT) {
       e.preventDefault();
       const categories = layout.categories;
       if (categories.length === 0) return;
 
-      // Get current category from first selected bin
-      const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
-      if (!firstBin) return;
+      if (selectedBinIds.length > 0) {
+        // Change category of selected bins
+        const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
+        if (!firstBin) return;
 
-      // Find current category index (undefined = -1, meaning "no category")
-      const currentIndex = firstBin.category
-        ? categories.findIndex(c => c.id === firstBin.category)
-        : -1;
+        const currentIndex = firstBin.category
+          ? categories.findIndex(c => c.id === firstBin.category)
+          : -1;
 
-      // Cycle to next (wrap from last category to "no category", then to first)
-      let newCategoryId: string | undefined;
-      if (currentIndex === -1) {
-        // No category - go to first
-        newCategoryId = categories[0].id;
-      } else if (currentIndex >= categories.length - 1) {
-        // At last category - go to no category
-        newCategoryId = undefined;
-      } else {
-        newCategoryId = categories[currentIndex + 1].id;
-      }
-
-      execute(() => {
-        for (const binId of selectedBinIds) {
-          updateBin(binId, { category: newCategoryId });
+        let newCategoryId: string | undefined;
+        if (currentIndex === -1) {
+          newCategoryId = categories[0].id;
+        } else if (currentIndex >= categories.length - 1) {
+          newCategoryId = undefined;
+        } else {
+          newCategoryId = categories[currentIndex + 1].id;
         }
-      });
+
+        execute(() => {
+          for (const binId of selectedBinIds) {
+            updateBin(binId, { category: newCategoryId });
+          }
+        });
+      } else {
+        // Cycle active drawing category (no "no category" option for drawing)
+        const currentIndex = categories.findIndex(c => c.id === activeCategoryId);
+        const nextIndex = currentIndex >= categories.length - 1 ? 0 : currentIndex + 1;
+        setActiveCategory(categories[nextIndex].id);
+      }
       return;
     }
 
@@ -326,7 +335,7 @@ export function useKeyboard() {
       }
       return;
     }
-  }, [selectedBinIds, focusedBinId, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, activeLayerId, setActiveLayer, showQuickLabel]);
+  }, [selectedBinIds, focusedBinId, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, activeLayerId, setActiveLayer, showQuickLabel, activeCategoryId, setActiveCategory]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
