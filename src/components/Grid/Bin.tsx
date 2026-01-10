@@ -87,7 +87,8 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
 
   // Hide all text when zoomed out too far (bins too small to show text legibly)
   // At zoom < 0.4, bins are typically < 15px per cell which is too small for text
-  const showAnyText = zoom >= 0.4;
+  // Also hide text on ghost bins (bins from other layers) - only show on active layer
+  const showAnyText = zoom >= 0.4 && !isGhost;
 
   // Hide dimensions when there's a label and not enough space:
   // - Very small bins (area < 2)
