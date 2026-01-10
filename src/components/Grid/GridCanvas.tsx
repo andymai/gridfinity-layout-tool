@@ -1,11 +1,16 @@
 import type { RefObject, PointerEvent, JSX } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useRef, useCallback, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
-import { useGridCoords } from '../../hooks';
+import { useGridCoords, useResponsive } from '../../hooks';
 import { Bin } from './Bin';
 import { getBlockedZones } from '../../utils/collision';
-import { DEFAULT_CATEGORY_COLOR, HALF_BIN_SCALE } from '../../constants';
+import {
+  DEFAULT_CATEGORY_COLOR,
+  HALF_BIN_SCALE,
+  TOUCH_DRAW_HOLD_DURATION,
+  TOUCH_MOVE_THRESHOLD,
+} from '../../constants';
 import type { Coord, ResizeHandle } from '../../types';
 
 interface GridCanvasProps {
@@ -22,6 +27,7 @@ interface GridCanvasProps {
  * Uses CSS Grid to render cells and bins.
  */
 export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, onStartResize }: GridCanvasProps) {
+  const { isTouchDevice } = useResponsive();
   const { drawer, bins, layers, categories } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
@@ -52,6 +58,21 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   );
 
   const { getGridCoords, halfBinMode, visualCellSize } = useGridCoords(gridRef);
+
+  // Touch hold detection for draw mode - prevents accidental draws when scrolling
+  const touchHoldTimerRef = useRef<number | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number; coord: Coord; pointerId: number } | null>(null);
+  const [pendingDrawCoord, setPendingDrawCoord] = useState<Coord | null>(null);
+
+  // Clear touch hold timer
+  const clearTouchHold = useCallback(() => {
+    if (touchHoldTimerRef.current) {
+      clearTimeout(touchHoldTimerRef.current);
+      touchHoldTimerRef.current = null;
+    }
+    touchStartRef.current = null;
+    setPendingDrawCoord(null);
+  }, []);
 
   // Memoized: Filter bins for current layer
   const activeBins = useMemo(
@@ -85,7 +106,26 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
       if (coords) {
         e.preventDefault();
         e.stopPropagation();
-        onStartDraw(coords, e.pointerId);
+
+        // On touch, use hold delay for paint mode too
+        if (isTouchDevice) {
+          clearTouchHold();
+          touchStartRef.current = { x: e.clientX, y: e.clientY, coord: coords, pointerId: e.pointerId };
+          setPendingDrawCoord(coords);
+
+          touchHoldTimerRef.current = window.setTimeout(() => {
+            if (touchStartRef.current) {
+              // Haptic feedback when draw activates
+              if (navigator.vibrate) {
+                navigator.vibrate(30);
+              }
+              onStartDraw(touchStartRef.current.coord, touchStartRef.current.pointerId);
+              clearTouchHold();
+            }
+          }, TOUCH_DRAW_HOLD_DURATION);
+        } else {
+          onStartDraw(coords, e.pointerId);
+        }
       }
     }
   };
@@ -100,8 +140,52 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
 
     const coords = getGridCoords(e.clientX, e.clientY);
     if (coords) {
-      onStartDraw(coords, e.pointerId);
+      // On touch devices, require a brief hold before starting draw
+      // This prevents accidental draws when user intends to scroll
+      if (isTouchDevice) {
+        clearTouchHold();
+        touchStartRef.current = { x: e.clientX, y: e.clientY, coord: coords, pointerId: e.pointerId };
+        setPendingDrawCoord(coords);
+
+        touchHoldTimerRef.current = window.setTimeout(() => {
+          if (touchStartRef.current) {
+            // Haptic feedback when draw activates
+            if (navigator.vibrate) {
+              navigator.vibrate(30);
+            }
+            onStartDraw(touchStartRef.current.coord, touchStartRef.current.pointerId);
+            clearTouchHold();
+          }
+        }, TOUCH_DRAW_HOLD_DURATION);
+      } else {
+        // Desktop: immediate draw
+        onStartDraw(coords, e.pointerId);
+      }
     }
+  };
+
+  // Cancel touch hold if pointer moves too far (user is scrolling)
+  const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!touchStartRef.current) return;
+
+    const dx = e.clientX - touchStartRef.current.x;
+    const dy = e.clientY - touchStartRef.current.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // If moved past threshold, cancel the pending draw (user is scrolling)
+    if (distance > TOUCH_MOVE_THRESHOLD) {
+      clearTouchHold();
+    }
+  };
+
+  // Cancel touch hold on pointer up if draw hasn't started yet
+  const handlePointerUp = () => {
+    clearTouchHold();
+  };
+
+  // Cancel touch hold on pointer cancel (e.g., two-finger gesture)
+  const handlePointerCancel = () => {
+    clearTouchHold();
   };
 
   const handleBlockedZoneClick = (binId: string, layerId: string) => {
@@ -113,6 +197,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   const gridCols = halfBinMode ? drawer.width * HALF_BIN_SCALE : drawer.width;
   const gridRows = halfBinMode ? drawer.depth * HALF_BIN_SCALE : drawer.depth;
   const actualCellSize = halfBinMode ? visualCellSize : cellSize;
+  const scale = halfBinMode ? HALF_BIN_SCALE : 1;
 
   // Generate grid cells for visual reference
   const cells: JSX.Element[] = [];
@@ -207,10 +292,13 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
       className="absolute inset-0"
       onPointerDownCapture={handlePointerDownCapture}
       onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
       style={{
         cursor: paintSize ? 'cell' : 'crosshair',
-        // Allow two-finger pan when no interaction active, block during draw/drag
-        touchAction: interaction ? 'none' : 'pan-x pan-y',
+        // Allow two-finger pan when no interaction active, block during draw/drag or pending draw
+        touchAction: interaction || pendingDrawCoord ? 'none' : 'pan-x pan-y',
       }}
     >
       {/* CSS Grid container */}
@@ -345,6 +433,44 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
             />
           );
         })}
+
+        {/* Touch hold indicator - shows pulsing ring while waiting to start draw */}
+        {pendingDrawCoord && isTouchDevice && (
+          <div
+            className="pointer-events-none"
+            style={{
+              position: 'absolute',
+              // Position at the center of the cell
+              left: gap + pendingDrawCoord.x * scale * (actualCellSize + gap) + (actualCellSize * scale) / 2,
+              top: gap + (drawer.depth - pendingDrawCoord.y - 1) * scale * (actualCellSize + gap) + (actualCellSize * scale) / 2,
+              transform: 'translate(-50%, -50%)',
+              zIndex: 100,
+            }}
+          >
+            {/* Expanding ring animation */}
+            <div
+              className="absolute rounded-full border-2 border-accent animate-ping"
+              style={{
+                width: 40,
+                height: 40,
+                left: -20,
+                top: -20,
+                opacity: 0.6,
+              }}
+            />
+            {/* Static center dot */}
+            <div
+              className="absolute rounded-full bg-accent"
+              style={{
+                width: 12,
+                height: 12,
+                left: -6,
+                top: -6,
+                opacity: 0.8,
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -192,3 +192,23 @@ export const SHORTCUTS = {
   // Half-bin mode
   HALF_BIN_TOGGLE: 'h',
 } as const;
+
+// === Touch Interaction Constants ===
+
+/** Duration to hold before long-press context menu appears (ms) */
+export const LONG_PRESS_DURATION = 500;
+
+/** Maximum time between taps for double-tap detection (ms) */
+export const DOUBLE_TAP_THRESHOLD = 300;
+
+/** Duration to hold on empty grid before draw mode activates on touch (ms) */
+export const TOUCH_DRAW_HOLD_DURATION = 150;
+
+/** Distance threshold before interaction starts (px) */
+export const TOUCH_MOVE_THRESHOLD = 10;
+
+/** Minimum ratio of vertical movement for scroll intent detection (0.6 = 60% vertical) */
+export const SCROLL_INTENT_RATIO = 0.6;
+
+/** Distance to travel before locking in scroll vs drag direction (px) */
+export const DIRECTION_LOCK_DISTANCE = 15;

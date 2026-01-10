@@ -1,19 +1,25 @@
-import { memo, useRef, useState, type PointerEvent } from 'react';
+import { memo, useRef, useState, useEffect, type PointerEvent } from 'react';
 import { useShallow } from 'zustand/shallow';
 import type { Bin as BinType, Category, Layer, ResizeHandle } from '../../types';
 import { useUIStore, useLayoutStore } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { useResponsive } from '../../hooks';
-import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR, HALF_BIN_SCALE } from '../../constants';
+import {
+  calcMaxGridUnits,
+  DEFAULT_CATEGORY_COLOR,
+  HALF_BIN_SCALE,
+  LONG_PRESS_DURATION,
+  DOUBLE_TAP_THRESHOLD,
+  TOUCH_MOVE_THRESHOLD,
+  SCROLL_INTENT_RATIO,
+  DIRECTION_LOCK_DISTANCE,
+} from '../../constants';
 import { getBinTextColors } from '../../utils/color';
 
 /** Clamp a value between min and max */
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
-
-const LONG_PRESS_DURATION = 500; // ms
-const DOUBLE_TAP_THRESHOLD = 300; // ms
 
 interface BinProps {
   bin: BinType;
@@ -80,9 +86,16 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   const lastTapTimeRef = useRef<number>(0);
   // Track pointer ID for passing to useInteraction
   const activePointerIdRef = useRef<number | null>(null);
+  // Directional intent tracking for touch - prevents accidental drag when user intends to scroll
+  const directionLockedRef = useRef<'horizontal' | 'vertical' | null>(null);
+  // Track if drag has been initiated (to prevent re-triggering)
+  const dragInitiatedRef = useRef(false);
 
   // Hover state for ghost handles (desktop only)
   const [isHovered, setIsHovered] = useState(false);
+  // Track resize handle pulse animation for touch discoverability
+  const [showHandlePulse, setShowHandlePulse] = useState(false);
+  const wasSelectedRef = useRef(isSelected);
   const addToast = useToastStore(state => state.addToast);
 
   const isBeingDragged = interaction?.type === 'drag' && interaction.binIds.includes(bin.id);
@@ -90,6 +103,29 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
 
   // Hide resize handles during multi-select
   const isMultiSelect = selectedBinIds.length > 1;
+
+  // Pulse resize handles when bin becomes selected on touch device
+  // This helps users discover the resize handles
+  useEffect(() => {
+    // Check if bin just became selected (wasn't selected before, is now)
+    const justSelected = isSelected && !wasSelectedRef.current;
+    wasSelectedRef.current = isSelected;
+
+    // Only pulse on touch devices, single selection, when just selected
+    if (!isTouchDevice || !justSelected || isMultiSelect) {
+      return;
+    }
+
+    // Use setTimeout to defer state update and avoid synchronous setState in effect
+    const pulseTimer = setTimeout(() => setShowHandlePulse(true), 0);
+    // Stop pulsing after animation completes
+    const stopTimer = setTimeout(() => setShowHandlePulse(false), 1500);
+
+    return () => {
+      clearTimeout(pulseTimer);
+      clearTimeout(stopTimer);
+    };
+  }, [isSelected, isTouchDevice, isMultiSelect]);
 
   // Calculate max grid units that fit on print bed (accounting for gaps)
   const maxGridUnits = calcMaxGridUnits(printBedSize, gridUnitMm);
@@ -200,6 +236,10 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     longPressTriggeredRef.current = false;
     pointerStartRef.current = { x: e.clientX, y: e.clientY };
 
+    // Reset directional intent tracking for touch devices
+    directionLockedRef.current = null;
+    dragInitiatedRef.current = false;
+
     // Start long-press timer on touch devices
     if (isTouchDevice && e.button === 0) {
       clearLongPress();
@@ -248,17 +288,49 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   };
 
   const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    // Cancel long-press if pointer moved too far (10px threshold)
-    if (pointerStartRef.current) {
-      const dx = e.clientX - pointerStartRef.current.x;
-      const dy = e.clientY - pointerStartRef.current.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance > 10) {
-        clearLongPress();
-        // Start drag on move for touch devices (pass pointer ID for capture management)
-        if (isTouchDevice && !longPressTriggeredRef.current) {
-          onStartDrag(bin.id, e.clientX, e.clientY, activePointerIdRef.current ?? e.pointerId);
+    if (!pointerStartRef.current) return;
+
+    const dx = e.clientX - pointerStartRef.current.x;
+    const dy = e.clientY - pointerStartRef.current.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+
+    // Cancel long-press if pointer moved past threshold
+    if (distance > TOUCH_MOVE_THRESHOLD) {
+      clearLongPress();
+    }
+
+    // Touch device: Use directional intent detection to distinguish scroll from drag
+    if (isTouchDevice && !longPressTriggeredRef.current && !dragInitiatedRef.current) {
+      // Determine direction once we've moved far enough
+      if (directionLockedRef.current === null && distance >= DIRECTION_LOCK_DISTANCE) {
+        // Calculate ratio of vertical movement
+        const verticalRatio = absDy / (absDx + absDy);
+
+        if (verticalRatio >= SCROLL_INTENT_RATIO) {
+          // Predominantly vertical movement = scroll intent
+          directionLockedRef.current = 'vertical';
+        } else {
+          // Predominantly horizontal or diagonal = drag intent
+          directionLockedRef.current = 'horizontal';
         }
+      }
+
+      // Start drag only if horizontal intent (or if below direction lock threshold but past move threshold)
+      if (distance > TOUCH_MOVE_THRESHOLD) {
+        // If we've locked to vertical, don't start drag - user is scrolling
+        if (directionLockedRef.current === 'vertical') {
+          return;
+        }
+
+        // If horizontal locked or not yet locked (small movement), allow drag
+        // Haptic feedback on drag start
+        if (navigator.vibrate) {
+          navigator.vibrate(30);
+        }
+        dragInitiatedRef.current = true;
+        onStartDrag(bin.id, e.clientX, e.clientY, activePointerIdRef.current ?? e.pointerId);
       }
     }
   };
@@ -274,7 +346,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
       const dy = e.clientY - pointerStartRef.current.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance <= 10) {
+      if (distance <= TOUCH_MOVE_THRESHOLD) {
         const now = Date.now();
         if (now - lastTapTimeRef.current < DOUBLE_TAP_THRESHOLD) {
           // Double-tap detected - open inspector
@@ -287,12 +359,16 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     }
 
     pointerStartRef.current = null;
+    directionLockedRef.current = null;
+    dragInitiatedRef.current = false;
   };
 
   const handlePointerCancel = () => {
     clearLongPress();
     activePointerIdRef.current = null;
     pointerStartRef.current = null;
+    directionLockedRef.current = null;
+    dragInitiatedRef.current = false;
   };
 
   // Right-click context menu for desktop
@@ -510,13 +586,14 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             aria-orientation="horizontal"
           >
             <div
+              className={showHandlePulse ? 'animate-pulse' : ''}
               style={{
                 width: 10,
                 height: '45%',
                 minHeight: 20,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-sm)',
+                boxShadow: showHandlePulse ? '0 0 12px var(--color-accent)' : 'var(--shadow-sm)',
               }}
             />
           </div>
@@ -537,13 +614,14 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             aria-orientation="horizontal"
           >
             <div
+              className={showHandlePulse ? 'animate-pulse' : ''}
               style={{
                 width: 10,
                 height: '45%',
                 minHeight: 20,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-sm)',
+                boxShadow: showHandlePulse ? '0 0 12px var(--color-accent)' : 'var(--shadow-sm)',
               }}
             />
           </div>
@@ -564,13 +642,14 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             aria-orientation="vertical"
           >
             <div
+              className={showHandlePulse ? 'animate-pulse' : ''}
               style={{
                 width: '45%',
                 minWidth: 20,
                 height: 10,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-sm)',
+                boxShadow: showHandlePulse ? '0 0 12px var(--color-accent)' : 'var(--shadow-sm)',
               }}
             />
           </div>
@@ -591,13 +670,14 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             aria-orientation="vertical"
           >
             <div
+              className={showHandlePulse ? 'animate-pulse' : ''}
               style={{
                 width: '45%',
                 minWidth: 20,
                 height: 10,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-sm)',
+                boxShadow: showHandlePulse ? '0 0 12px var(--color-accent)' : 'var(--shadow-sm)',
               }}
             />
           </div>
@@ -616,12 +696,13 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             aria-label="Resize top-left corner"
           >
             <div
+              className={showHandlePulse ? 'animate-pulse' : ''}
               style={{
                 width: 12,
                 height: 12,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-md)',
+                boxShadow: showHandlePulse ? '0 0 12px var(--color-accent)' : 'var(--shadow-md)',
               }}
             />
           </div>
@@ -640,12 +721,13 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             aria-label="Resize top-right corner"
           >
             <div
+              className={showHandlePulse ? 'animate-pulse' : ''}
               style={{
                 width: 12,
                 height: 12,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-md)',
+                boxShadow: showHandlePulse ? '0 0 12px var(--color-accent)' : 'var(--shadow-md)',
               }}
             />
           </div>
@@ -664,12 +746,13 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             aria-label="Resize bottom-left corner"
           >
             <div
+              className={showHandlePulse ? 'animate-pulse' : ''}
               style={{
                 width: 12,
                 height: 12,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-md)',
+                boxShadow: showHandlePulse ? '0 0 12px var(--color-accent)' : 'var(--shadow-md)',
               }}
             />
           </div>
@@ -688,12 +771,13 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             aria-label="Resize bottom-right corner"
           >
             <div
+              className={showHandlePulse ? 'animate-pulse' : ''}
               style={{
                 width: 12,
                 height: 12,
                 background: 'var(--selection-ring)',
                 borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-md)',
+                boxShadow: showHandlePulse ? '0 0 12px var(--color-accent)' : 'var(--shadow-md)',
               }}
             />
           </div>
