@@ -202,15 +202,6 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                 keys={formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase()}
                 description="Quick label selected bin"
               />
-              <div className="divider" />
-              <ShortcutRow
-                keys={formatKey(SHORTCUTS.MOVE_MODE).toUpperCase()}
-                description="Enter move mode (with bin selected)"
-              />
-              <ShortcutRow
-                keys={formatKey(SHORTCUTS.RESIZE_MODE).toUpperCase()}
-                description="Enter resize mode (single bin)"
-              />
             </div>
           </section>
 
@@ -250,10 +241,6 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                 description="Side view"
               />
               <div className="divider" />
-              <ShortcutRow
-                keys={formatKey(SHORTCUTS.RESIZE_MODE).toUpperCase()}
-                description="Reset camera view"
-              />
               <ShortcutRow
                 keys={['←', '→']}
                 description="Rotate view left/right"

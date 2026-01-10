@@ -1,5 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { useUIStore, useLayoutStore } from '../store';
+import { lazyWithRetry, namedExport } from '../utils/lazyWithRetry';
 import { Grid } from './Grid';
 import { Staging } from './Staging';
 import { DropZones } from './DropZones';
@@ -19,8 +20,10 @@ import {
   BinContextMenu,
 } from './mobile';
 
-// Lazy load mobile help modal
-const MobileHelpModal = lazy(() => import('./mobile/MobileHelpModal').then(m => ({ default: m.MobileHelpModal })));
+// Lazy load mobile help modal (with retry for chunk load failures)
+const MobileHelpModal = lazyWithRetry(() =>
+  import('./mobile/MobileHelpModal').then(namedExport('MobileHelpModal'))
+);
 
 interface MobileLayoutProps {
   isMobileHelpOpen: boolean;

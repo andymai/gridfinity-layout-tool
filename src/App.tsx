@@ -1,7 +1,8 @@
-import { useEffect, useLayoutEffect, useState, useCallback, useRef, lazy, Suspense } from 'react';
+import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useLayoutStore, useUIStore } from './store';
 import { useKeyboard, useAutoSave, useResponsive } from './hooks';
 import { loadLayout } from './utils/storage';
+import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -16,11 +17,15 @@ import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SHORTCUTS } from './constants';
 
-// Lazy load modals - only loaded when opened
-const HelpModal = lazy(() => import('./components/modals/HelpModal').then(m => ({ default: m.HelpModal })));
+// Lazy load modals - only loaded when opened (with retry for chunk load failures)
+const HelpModal = lazyWithRetry(() =>
+  import('./components/modals/HelpModal').then(namedExport('HelpModal'))
+);
 
 // Lazy load mobile layout - only loaded on mobile devices
-const MobileLayout = lazy(() => import('./components/MobileLayout').then(m => ({ default: m.MobileLayout })));
+const MobileLayout = lazyWithRetry(() =>
+  import('./components/MobileLayout').then(namedExport('MobileLayout'))
+);
 
 // Load layout once at module level to avoid effect setState issues
 let initialLoadError: Error | null = null;

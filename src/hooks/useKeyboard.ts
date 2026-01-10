@@ -3,8 +3,6 @@ import { useUIStore, useLayoutStore, useHistoryStore, useUndoableAction } from '
 import { canPlaceBin } from '../utils/validation';
 import { SHORTCUTS, STAGING_ID } from '../constants';
 import { useGridNavigation } from './useGridNavigation';
-import { useKeyboardDrag } from './useKeyboardDrag';
-import { useKeyboardResize } from './useKeyboardResize';
 
 /**
  * Check if a key matches any shortcut in a readonly array.
@@ -36,8 +34,6 @@ function isShortcut(key: string, shortcuts: readonly string[]): boolean {
  * - +/-: Zoom in/out
  *
  * **Bin Operations:**
- * - M: Enter keyboard move mode (then arrows to move, Enter to confirm, Escape to cancel)
- * - R: Enter keyboard resize mode (then arrows to resize, Enter to confirm, Escape to cancel)
  * - [/]: Cycle category of selected bins
  * - L: Open quick label popover for selected bin
  *
@@ -54,8 +50,6 @@ function isShortcut(key: string, shortcuts: readonly string[]): boolean {
 export function useKeyboard() {
   const selectedBinIds = useUIStore(state => state.selectedBinIds);
   const focusedBinId = useUIStore(state => state.focusedBinId);
-  const keyboardDragMode = useUIStore(state => state.keyboardDragMode);
-  const keyboardResizeMode = useUIStore(state => state.keyboardResizeMode);
   const setSelectedBins = useUIStore(state => state.setSelectedBins);
   const setInteraction = useUIStore(state => state.setInteraction);
   const setPaintSize = useUIStore(state => state.setPaintSize);
@@ -67,12 +61,6 @@ export function useKeyboard() {
 
   // Grid navigation hook for spatial arrow key navigation
   const { handleNavigationKey } = useGridNavigation();
-
-  // Keyboard drag mode hook
-  const { enterDragMode } = useKeyboardDrag();
-
-  // Keyboard resize mode hook
-  const { enterResizeMode } = useKeyboardResize();
 
   const layout = useLayoutStore(state => state.layout);
   const deleteBin = useLayoutStore(state => state.deleteBin);
@@ -113,20 +101,6 @@ export function useKeyboard() {
       setInteraction(null);
       setSelectedBins([]);
       setPaintSize(null);
-      return;
-    }
-
-    // M key - enter keyboard drag mode
-    if (key.toLowerCase() === SHORTCUTS.MOVE_MODE && !ctrlOrMeta && !keyboardDragMode && !keyboardResizeMode) {
-      e.preventDefault();
-      enterDragMode();
-      return;
-    }
-
-    // R key - enter keyboard resize mode
-    if (key.toLowerCase() === SHORTCUTS.RESIZE_MODE && !ctrlOrMeta && !keyboardDragMode && !keyboardResizeMode) {
-      e.preventDefault();
-      enterResizeMode();
       return;
     }
 
@@ -293,9 +267,9 @@ export function useKeyboard() {
       return;
     }
 
-    // Arrow keys - spatial navigation OR nudge (skip if in keyboard drag/resize mode)
+    // Arrow keys - spatial navigation OR nudge
     const arrowKeys: readonly string[] = [SHORTCUTS.NUDGE_UP, SHORTCUTS.NUDGE_DOWN, SHORTCUTS.NUDGE_LEFT, SHORTCUTS.NUDGE_RIGHT];
-    if (arrowKeys.includes(key) && !keyboardDragMode && !keyboardResizeMode) {
+    if (arrowKeys.includes(key)) {
       e.preventDefault();
 
       // If there's a focused bin but no selection, use spatial navigation
@@ -352,7 +326,7 @@ export function useKeyboard() {
       }
       return;
     }
-  }, [selectedBinIds, focusedBinId, keyboardDragMode, keyboardResizeMode, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, enterDragMode, enterResizeMode, activeLayerId, setActiveLayer, showQuickLabel]);
+  }, [selectedBinIds, focusedBinId, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, activeLayerId, setActiveLayer, showQuickLabel]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

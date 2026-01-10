@@ -1,18 +1,21 @@
-import { useRef, useState, useCallback, useEffect, lazy, Suspense } from 'react';
+import { useRef, useState, useCallback, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { useInteraction, useResponsive } from '../../hooks';
 import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS, getBaseCellSize } from '../../constants';
 import { clamp } from '../../utils/validation';
+import { lazyWithRetry, namedExport } from '../../utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { MobileGridToolbar } from '../mobile';
 import { PanelErrorBoundary } from '../PanelErrorBoundary';
-// Lazy load the 3D preview component (includes three.js, ~800KB)
-const IsometricPreview = lazy(() => import('./IsometricPreview').then(m => ({ default: m.IsometricPreview })));
+// Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
+const IsometricPreview = lazyWithRetry(() =>
+  import('./IsometricPreview').then(namedExport('IsometricPreview'))
+);
 
 type ResizeDirection = 'width' | 'depth' | 'both' | null;
 

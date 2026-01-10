@@ -132,8 +132,6 @@ export const SHORTCUTS = {
   CATEGORY_PREV: '[',
   CATEGORY_NEXT: ']',
   QUICK_LABEL: 'l',
-  MOVE_MODE: 'm',
-  RESIZE_MODE: 'r',
   NUDGE_UP: 'ArrowUp',
   NUDGE_DOWN: 'ArrowDown',
   NUDGE_LEFT: 'ArrowLeft',
