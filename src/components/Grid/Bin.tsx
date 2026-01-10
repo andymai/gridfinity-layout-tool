@@ -5,7 +5,12 @@ import { useUIStore, useLayoutStore } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { useResponsive } from '../../hooks';
 import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../../constants';
-import { getContrastColor } from '../../utils/color';
+import { getBinTextColors } from '../../utils/color';
+
+/** Clamp a value between min and max */
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
 
 const LONG_PRESS_DURATION = 500; // ms
 const DOUBLE_TAP_THRESHOLD = 300; // ms
@@ -15,6 +20,7 @@ interface BinProps {
   category?: Category;
   layer?: Layer;
   drawer: { width: number; depth: number };
+  cellSize: number;
   isGhost: boolean;
   isSelected: boolean;
   onStartDrag: (binId: string, clientX: number, clientY: number) => void;
@@ -25,15 +31,14 @@ interface BinProps {
  * Single bin with selection ring and resize handles.
  * Features improved selection states with glow effect and refined handles.
  */
-function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onStartDrag, onStartResize }: BinProps) {
+function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelected, onStartDrag, onStartResize }: BinProps) {
   const { isTouchDevice } = useResponsive();
 
   // Consolidate UI state selectors with shallow comparison
-  const { selectedBinIds, interaction, zoom, showLabels, focusedBinId } = useUIStore(
+  const { selectedBinIds, interaction, showLabels, focusedBinId } = useUIStore(
     useShallow((state) => ({
       selectedBinIds: state.selectedBinIds,
       interaction: state.interaction,
-      zoom: state.zoom,
       showLabels: state.showLabels,
       focusedBinId: state.focusedBinId,
     }))
@@ -79,31 +84,38 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   const needsSplit = bin.width > maxGridUnits || bin.depth > maxGridUnits;
   const isTall = layer && bin.height > layer.height;
 
+  // ========== ADAPTIVE LABEL SYSTEM ==========
+  // Uses pixel-based sizing and context-dependent priority
+
   const dimensionsText = `${bin.width}×${bin.depth}`;
-  const labelText = showLabels ? (bin.label || '') : '';
+  const hasLabel = showLabels && bin.label;
 
-  // Rotate text for tall narrow bins (depth > 1.5x width)
-  const shouldRotate = bin.depth > bin.width * 1.5;
+  // Calculate actual pixel dimensions of bin
+  const binPixelWidth = bin.width * cellSize;
+  const binPixelHeight = bin.depth * cellSize;
+  const binPixelMin = Math.min(binPixelWidth, binPixelHeight);
 
-  // Hide all text when zoomed out too far (bins too small to show text legibly)
-  // At zoom < 0.4, bins are typically < 15px per cell which is too small for text
-  // Also hide text on ghost bins (bins from other layers) - only show on active layer
-  const showAnyText = zoom >= 0.4 && !isGhost;
+  // Pixel-based font sizing (adapts to bin size, not just zoom)
+  const primaryFontSize = clamp(Math.round(binPixelMin * 0.28), 9, 20);
+  const secondaryFontSize = clamp(Math.round(primaryFontSize * 0.8), 8, 14);
 
-  // Hide dimensions when there's a label and not enough space:
-  // - Very small bins (area < 2)
-  // - Shallow bins (depth = 1) - not enough vertical space for both lines
-  // - Narrow bins (width = 1) - rotation handles this but still tight
-  const showDimensions = showAnyText && (!labelText || (bin.width * bin.depth >= 2 && bin.depth > 1 && bin.width > 1));
+  // Visibility thresholds based on pixel space
+  const showAnyText = binPixelMin >= 24 && !isGhost;
+  const hasSpaceForSecondary = binPixelMin >= 48;
 
-  // Scale font size with zoom (dampened: 0.6 + 0.4 * zoom)
-  // At 50% zoom: 0.8x, at 100%: 1.0x, at 200%: 1.4x
-  const fontScale = 0.6 + 0.4 * zoom;
-  const dimensionFontSize = Math.round(14 * fontScale);
-  const labelFontSize = Math.round(12 * fontScale);
+  // Context-dependent priority: labels first when set, dimensions as fallback
+  const primaryText = hasLabel && bin.label ? bin.label : dimensionsText;
+  const secondaryText = hasLabel && hasSpaceForSecondary ? dimensionsText : null;
 
-  // Also hide label text when zoomed out
-  const showLabelText = showAnyText && labelText;
+  // Smart rotation: consider text length relative to available width
+  const estimatedTextWidth = primaryText.length * primaryFontSize * 0.55;
+  const availableWidth = binPixelWidth * 0.85;
+  const shouldRotate =
+    (estimatedTextWidth > availableWidth && bin.depth > bin.width * 1.2) ||
+    (bin.depth > bin.width * 2);
+
+  // Letter-spacing for small text
+  const letterSpacing = primaryFontSize < 11 ? '0.02em' : 'normal';
 
   const clearLongPress = () => {
     if (longPressTimerRef.current) {
@@ -252,7 +264,7 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
   };
 
   const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
-  const textColor = getContrastColor(bgColor);
+  const textColors = getBinTextColors(bgColor);
 
   // Selection and hover styles
   const getBoxShadow = () => {
@@ -336,58 +348,72 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
         </div>
       )}
 
-      {/* Size label in center */}
-      <div
-        className="text-center pointer-events-none select-none flex flex-col items-center justify-center overflow-hidden px-1"
-        style={{
-          color: textColor,
-          transform: shouldRotate ? 'rotate(-90deg)' : 'none',
-          // When rotated, expand width to use depth space (percentage of parent width × depth/width ratio)
-          width: shouldRotate ? `${(bin.depth / bin.width) * 90}%` : 'auto',
-          maxWidth: shouldRotate ? 'none' : '95%',
-          maxHeight: '90%',
-        }}
-      >
-        {showDimensions && (
+      {/* Adaptive label system: primary text (label or dimensions) + optional secondary */}
+      {showAnyText && (
+        <div
+          className="text-center pointer-events-none select-none flex flex-col items-center justify-center overflow-hidden px-1"
+          style={{
+            transform: shouldRotate ? 'rotate(-90deg)' : 'none',
+            width: shouldRotate ? `${(bin.depth / bin.width) * 90}%` : 'auto',
+            maxWidth: shouldRotate ? 'none' : '95%',
+            maxHeight: '90%',
+          }}
+        >
+          {/* Primary text (label if set, otherwise dimensions) */}
           <div
-            className="font-semibold flex items-center justify-center gap-0.5 leading-tight"
+            className={`flex items-center justify-center gap-0.5 leading-tight ${shouldRotate ? 'whitespace-nowrap' : 'truncate w-full'}`}
             style={{
-              fontSize: `${dimensionFontSize}px`,
-              textShadow: 'var(--shadow-sm)',
+              color: textColors.primary,
+              fontSize: `${primaryFontSize}px`,
+              fontWeight: hasLabel ? 500 : 600,
+              textShadow: `0 1px 2px ${textColors.shadow}`,
+              letterSpacing,
             }}
           >
-            {dimensionsText}
-            {needsSplit && !isGhost && (
+            {primaryText}
+            {/* Split badge (only when dimensions are primary) */}
+            {!hasLabel && needsSplit && !isGhost && (
               <span
                 className="ml-0.5 rounded-sm"
                 title="Exceeds print size, will be split"
                 style={{
-                  fontSize: `${Math.round(labelFontSize * 0.9)}px`,
+                  fontSize: `${Math.round(secondaryFontSize * 0.9)}px`,
                   padding: '0px 3px',
                   backgroundColor: 'var(--overlay-medium)',
                   color: 'var(--color-warning)',
-                  fontWeight: 'var(--font-medium)',
+                  fontWeight: 500,
                 }}
               >
                 Split
               </span>
             )}
           </div>
-        )}
-        {showLabelText && (
-          <div
-            className={`leading-tight ${shouldRotate ? 'whitespace-nowrap' : 'truncate w-full'}`}
-            style={{
-              fontSize: `${labelFontSize}px`,
-              fontWeight: showDimensions ? 'normal' : 500,
-              opacity: showDimensions ? 0.85 : 1,
-              marginTop: showDimensions ? '1px' : 0,
-            }}
-          >
-            {labelText}
-          </div>
-        )}
-      </div>
+          {/* Secondary text (dimensions when label is primary) */}
+          {secondaryText && (
+            <div
+              className="leading-tight"
+              style={{
+                color: textColors.secondary,
+                fontSize: `${secondaryFontSize}px`,
+                fontWeight: 'normal',
+                textShadow: `0 1px 1px ${textColors.shadow}`,
+                marginTop: 1,
+              }}
+            >
+              {secondaryText}
+              {needsSplit && !isGhost && (
+                <span
+                  className="ml-1"
+                  title="Exceeds print size, will be split"
+                  style={{ color: 'var(--color-warning)' }}
+                >
+                  ⚠
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Resize handles - only for single selected bin, not during multi-select */}
       {/* Touch targets are 44px (Apple HIG minimum) with smaller visual indicators */}

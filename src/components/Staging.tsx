@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../store';
 import { useToastStore } from '../store/toast';
 import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '../constants';
-import { getContrastColor } from '../utils/color';
+import { getBinTextColors } from '../utils/color';
 import { ConfirmDialog } from './modals/ConfirmDialog';
 
 interface PackedBin {
@@ -302,8 +302,11 @@ export function Staging() {
           {packedBins.map((bin) => {
             const category = getCategory(bin.category);
             const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
-            const textColor = getContrastColor(bgColor);
+            const textColors = getBinTextColors(bgColor);
             const isDragging = bin.id === draggingBinId;
+            const hasLabel = !!bin.label;
+            const primaryText = hasLabel ? bin.label : `${bin.width}×${bin.depth}`;
+            const secondaryText = hasLabel ? `${bin.width}×${bin.depth}` : null;
 
             return (
               <div
@@ -317,24 +320,33 @@ export function Staging() {
                 style={{
                   gridColumn: `${bin.x + 1} / span ${bin.width}`,
                   gridRow: `${gridHeight - bin.y - bin.depth + 1} / span ${bin.depth}`,
-                  // Only need inline style for dynamic category color
                   ...(!isDragging && { backgroundColor: bgColor }),
                 }}
                 onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
                 title={`${bin.label || 'Unlabeled'} — ${bin.width}×${bin.depth}×${bin.height}u\nDrag to place on grid`}
               >
-                {/* Size label - hidden when dragging (ghost outline only) */}
+                {/* Adaptive label: primary (label or dimensions) + optional secondary */}
                 {!isDragging && (
-                  <div
-                    className="text-center pointer-events-none select-none"
-                    style={{ color: textColor }}
-                  >
-                    <div className="text-sm font-semibold drop-shadow-sm">
-                      {bin.width}×{bin.depth}
+                  <div className="text-center pointer-events-none select-none overflow-hidden max-w-[95%]">
+                    <div
+                      className="text-sm truncate"
+                      style={{
+                        color: textColors.primary,
+                        fontWeight: hasLabel ? 500 : 600,
+                        textShadow: `0 1px 2px ${textColors.shadow}`,
+                      }}
+                    >
+                      {primaryText}
                     </div>
-                    {bin.label && (
-                      <div className="text-xs truncate px-1 opacity-85 max-w-full">
-                        {bin.label}
+                    {secondaryText && (
+                      <div
+                        className="text-xs"
+                        style={{
+                          color: textColors.secondary,
+                          textShadow: `0 1px 1px ${textColors.shadow}`,
+                        }}
+                      >
+                        {secondaryText}
                       </div>
                     )}
                   </div>

@@ -165,6 +165,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               category={category}
               layer={layer}
               drawer={drawer}
+              cellSize={cellSize}
               isGhost
               isSelected={false}
               onStartDrag={onStartDrag}
@@ -255,6 +256,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               category={category}
               layer={layer}
               drawer={drawer}
+              cellSize={cellSize}
               isGhost={false}
               isSelected={selectedBinIds.includes(bin.id)}
               onStartDrag={onStartDrag}
