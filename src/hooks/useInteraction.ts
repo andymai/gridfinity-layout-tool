@@ -74,6 +74,8 @@ import { STAGING_ID } from '../constants';
 export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   // Track active pointer for multi-touch detection
   const activePointerIdRef = useRef<number | null>(null);
+  // Track captured pointer for reliable event delivery
+  const capturedPointerRef = useRef<{ element: HTMLElement; pointerId: number } | null>(null);
   const { getGridCoords, clampCoords, isInBounds } = useGridCoords(gridRef);
   const interaction = useUIStore(state => state.interaction);
   const setInteraction = useUIStore(state => state.setInteraction);
@@ -111,13 +113,25 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   }, [paintSize, setInteraction]);
 
   // Start dragging bins (single or multiple)
-  const startDrag = useCallback((binId: string, clientX: number, clientY: number) => {
+  const startDrag = useCallback((binId: string, clientX: number, clientY: number, pointerId?: number) => {
     const bin = layout.bins.find(b => b.id === binId);
     if (!bin) return;
 
     // Convert mouse click position to grid coordinates
     const clickCoord = getGridCoords(clientX, clientY);
     if (!clickCoord) return;
+
+    // Set pointer ID immediately on interaction start (not lazily on first move)
+    if (pointerId !== undefined) {
+      activePointerIdRef.current = pointerId;
+      // Capture pointer at document level for reliable event delivery
+      try {
+        document.body.setPointerCapture(pointerId);
+        capturedPointerRef.current = { element: document.body, pointerId };
+      } catch {
+        // Ignore if capture fails (e.g., pointer already released)
+      }
+    }
 
     // Use click position as startCoord so delta is calculated from where user clicked
     const startCoord = clickCoord;
@@ -143,9 +157,21 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   }, [layout.bins, selectedBinIds, setSelectedBin, setInteraction, getGridCoords]);
 
   // Start resizing bins (single or multiple)
-  const startResize = useCallback((binId: string, handle: ResizeHandle) => {
+  const startResize = useCallback((binId: string, handle: ResizeHandle, pointerId?: number) => {
     const bin = layout.bins.find(b => b.id === binId);
     if (!bin) return;
+
+    // Set pointer ID immediately on interaction start (not lazily on first move)
+    if (pointerId !== undefined) {
+      activePointerIdRef.current = pointerId;
+      // Capture pointer at document level for reliable event delivery
+      try {
+        document.body.setPointerCapture(pointerId);
+        capturedPointerRef.current = { element: document.body, pointerId };
+      } catch {
+        // Ignore if capture fails (e.g., pointer already released)
+      }
+    }
 
     // If clicked bin is in selection, resize all selected bins
     let binIds: string[];
@@ -203,7 +229,9 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      // Track the first pointer that moves during interaction
+      // Ignore secondary touches (allow two-finger pan)
+      if (!e.isPrimary) return;
+      // Track the first pointer that moves during interaction (fallback for draw/paint mode)
       if (activePointerIdRef.current === null) {
         activePointerIdRef.current = e.pointerId;
       }
@@ -346,6 +374,16 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       // Clear pointer tracking
       if (e.pointerId === activePointerIdRef.current) {
         activePointerIdRef.current = null;
+      }
+
+      // Release pointer capture
+      if (capturedPointerRef.current) {
+        try {
+          capturedPointerRef.current.element.releasePointerCapture(capturedPointerRef.current.pointerId);
+        } catch {
+          // Ignore if release fails
+        }
+        capturedPointerRef.current = null;
       }
 
       // Read drop target directly from store to ensure we have the latest value
@@ -575,6 +613,15 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       document.removeEventListener('pointermove', handlePointerMove);
       document.removeEventListener('pointerup', handlePointerUp);
       document.removeEventListener('pointercancel', handlePointerUp);
+      // Release pointer capture on cleanup
+      if (capturedPointerRef.current) {
+        try {
+          capturedPointerRef.current.element.releasePointerCapture(capturedPointerRef.current.pointerId);
+        } catch {
+          // Ignore
+        }
+        capturedPointerRef.current = null;
+      }
     };
   }, [interaction, layout, activeLayerId, activeCategoryId, addBin, updateBin, deleteBin, setInteraction, setDropTarget, setSelectedBin, setSelectedBins, getGridCoords, clampCoords, isInBounds, execute]);
 

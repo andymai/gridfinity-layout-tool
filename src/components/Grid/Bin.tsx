@@ -23,8 +23,8 @@ interface BinProps {
   cellSize: number;
   isGhost: boolean;
   isSelected: boolean;
-  onStartDrag: (binId: string, clientX: number, clientY: number) => void;
-  onStartResize: (binId: string, handle: ResizeHandle) => void;
+  onStartDrag: (binId: string, clientX: number, clientY: number, pointerId?: number) => void;
+  onStartResize: (binId: string, handle: ResizeHandle, pointerId?: number) => void;
 }
 
 /**
@@ -75,8 +75,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   // Double-tap detection for mobile
   const lastTapTimeRef = useRef<number>(0);
-  // Track captured pointer for release on drag
-  const capturedPointerRef = useRef<{ element: HTMLElement; pointerId: number } | null>(null);
+  // Track pointer ID for passing to useInteraction
+  const activePointerIdRef = useRef<number | null>(null);
 
   // Hover state for ghost handles (desktop only)
   const [isHovered, setIsHovered] = useState(false);
@@ -140,13 +140,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
     e.preventDefault();
     e.stopPropagation();
 
-    // Capture pointer to receive move/up events even if pointer leaves element
-    // We'll release this if a drag starts so document handlers can take over
-    if (isTouchDevice) {
-      const element = e.target as HTMLElement;
-      element.setPointerCapture(e.pointerId);
-      capturedPointerRef.current = { element, pointerId: e.pointerId };
-    }
+    // Store pointer ID for passing to useInteraction when drag starts
+    activePointerIdRef.current = e.pointerId;
 
     // Reset long-press state
     longPressTriggeredRef.current = false;
@@ -189,7 +184,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
             localStorage.setItem('gridfinity-resize-hint-shown', 'true');
           }
         }
-        onStartDrag(bin.id, e.clientX, e.clientY);
+        onStartDrag(bin.id, e.clientX, e.clientY, e.pointerId);
       } else {
         // Touch: Select on pointer down, drag starts on move
         if (!isSelected) {
@@ -207,14 +202,9 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
       const distance = Math.sqrt(dx * dx + dy * dy);
       if (distance > 10) {
         clearLongPress();
-        // Start drag on move for touch devices
+        // Start drag on move for touch devices (pass pointer ID for capture management)
         if (isTouchDevice && !longPressTriggeredRef.current) {
-          // Release pointer capture so document handlers can take over the drag
-          if (capturedPointerRef.current) {
-            capturedPointerRef.current.element.releasePointerCapture(capturedPointerRef.current.pointerId);
-            capturedPointerRef.current = null;
-          }
-          onStartDrag(bin.id, e.clientX, e.clientY);
+          onStartDrag(bin.id, e.clientX, e.clientY, activePointerIdRef.current ?? e.pointerId);
         }
       }
     }
@@ -222,7 +212,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
 
   const handlePointerUp = (e: PointerEvent<HTMLDivElement>) => {
     clearLongPress();
-    capturedPointerRef.current = null;
+    activePointerIdRef.current = null;
 
     // Double-tap detection for mobile - open inspector
     if (isTouchDevice && !longPressTriggeredRef.current && pointerStartRef.current) {
@@ -248,7 +238,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
 
   const handlePointerCancel = () => {
     clearLongPress();
-    capturedPointerRef.current = null;
+    activePointerIdRef.current = null;
     pointerStartRef.current = null;
   };
 
@@ -265,10 +255,12 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
   };
 
   const handleResizePointerDown = (e: PointerEvent<HTMLDivElement>, handle: ResizeHandle) => {
+    // Ignore secondary touches (allow two-finger pan)
+    if (!e.isPrimary) return;
     e.preventDefault();
     e.stopPropagation();
     if (e.button === 0) {
-      onStartResize(bin.id, handle);
+      onStartResize(bin.id, handle, e.pointerId);
     }
   };
 
