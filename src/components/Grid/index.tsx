@@ -479,7 +479,7 @@ export function Grid() {
                 <div className="flex items-center gap-1 ml-1">
                   <span className="text-xs text-blue-500/80">↑↓←→</span>
                   <span className="text-xs text-blue-500/60">to move</span>
-                  <kbd className="px-1.5 py-0.5 text-xs rounded bg-blue-500/20 border border-blue-500/30 text-blue-500/70">Enter</kbd>
+                  <kbd className="px-1.5 pt-px pb-[3px] text-xs rounded bg-blue-500/20 border border-blue-500/30 text-blue-500/70">Enter</kbd>
                   <span className="text-xs text-blue-500/60">to place</span>
                   <button
                     onClick={() => setKeyboardDragMode(false)}
@@ -511,7 +511,7 @@ export function Grid() {
                 <div className="flex items-center gap-1 ml-1">
                   <span className="text-xs text-purple-500/80">↑↓←→</span>
                   <span className="text-xs text-purple-500/60">to resize</span>
-                  <kbd className="px-1.5 py-0.5 text-xs rounded bg-purple-500/20 border border-purple-500/30 text-purple-500/70">Enter</kbd>
+                  <kbd className="px-1.5 pt-px pb-[3px] text-xs rounded bg-purple-500/20 border border-purple-500/30 text-purple-500/70">Enter</kbd>
                   <span className="text-xs text-purple-500/60">to apply</span>
                   <button
                     onClick={() => setKeyboardResizeMode(false)}

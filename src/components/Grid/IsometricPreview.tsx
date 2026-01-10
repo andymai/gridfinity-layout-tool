@@ -717,11 +717,11 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           }}
         >
           <div className="flex items-center gap-4 text-content-secondary">
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content">V</kbd> Toggle</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content">Space</kbd> Expand</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content">R</kbd> Reset</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content">←→</kbd> Rotate</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content">Esc</kbd> Close</span>
+            <span><kbd className="px-1.5 pt-px pb-[3px] rounded bg-surface-elevated text-content">V</kbd> Toggle</span>
+            <span><kbd className="px-1.5 pt-px pb-[3px] rounded bg-surface-elevated text-content">Space</kbd> Expand</span>
+            <span><kbd className="px-1.5 pt-px pb-[3px] rounded bg-surface-elevated text-content">R</kbd> Reset</span>
+            <span><kbd className="px-1.5 pt-px pb-[3px] rounded bg-surface-elevated text-content">←→</kbd> Rotate</span>
+            <span><kbd className="px-1.5 pt-px pb-[3px] rounded bg-surface-elevated text-content">Esc</kbd> Close</span>
           </div>
         </div>
       )}
