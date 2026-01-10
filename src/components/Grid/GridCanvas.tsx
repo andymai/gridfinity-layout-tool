@@ -185,7 +185,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
           return (
             <div
               key={zone.sourceBinId}
-              className="relative cursor-pointer transition-all duration-150 hover:opacity-60 hover:scale-[1.05] group"
+              className="relative cursor-pointer transition-all duration-150 hover:opacity-50 hover:ring-2 hover:ring-white/60"
               style={{
                 gridColumn: `${zone.x + 1} / span ${zone.width}`,
                 gridRow: `${drawer.depth - zone.y - zone.depth + 1} / span ${zone.depth}`,
@@ -198,23 +198,6 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               role="button"
               aria-label={sourceLayer ? `Blocked by bin from ${sourceLayer.name}. Click to switch layer.` : 'Blocked zone'}
             >
-              {/* Upward arrow indicator */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
-                <svg
-                  className="w-6 h-6 text-white drop-shadow-lg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={3}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 10l7-7m0 0l7 7m-7-7v18"
-                  />
-                </svg>
-              </div>
-
               {/* Diagonal hatching pattern */}
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none"
