@@ -94,8 +94,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
   const isTall = layer && bin.height > layer.height;
 
   // ========== ADAPTIVE LABEL SYSTEM ==========
-  // Labels shrink to fit; if they can't fit at minimum font size, show dimensions instead
-  // Uses conservative estimates to prevent any clipping
+  // Simple rule: if label fits at calculated font size, show it. Otherwise show dimensions.
+  // Uses monospace font for predictable character widths.
 
   const dimensionsText = `${bin.width}×${bin.depth}`;
   const hasLabel = showLabels && bin.label;
@@ -105,53 +105,48 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
   const binPixelHeight = bin.depth * cellSize;
   const binPixelMin = Math.min(binPixelWidth, binPixelHeight);
 
-  // Account for padding (px-1 = 4px each side) and safety margin
-  const horizontalPadding = 10; // px-1 (8px) + safety margin
-  const verticalPadding = 8;
-  const actualAvailableWidth = binPixelWidth - horizontalPadding;
-  const actualAvailableHeight = binPixelHeight - verticalPadding;
-
   // Font size constraints
   const maxFontSize = clamp(Math.round(binPixelMin * 0.28), 9, 20);
   const minFontSize = 9;
 
-  // Monospace font: character width is ~0.6× font size (predictable)
-  const charWidthRatio = 0.6;
-
   // Smart rotation: use taller dimension for text if significantly taller
   const shouldRotate = bin.depth > bin.width * 1.5;
-  const effectiveAvailableWidth = shouldRotate ? actualAvailableHeight : actualAvailableWidth;
-  const effectiveAvailableHeight = shouldRotate ? actualAvailableWidth : actualAvailableHeight;
+
+  // Available width for text (very conservative: 75% of bin width to account for padding)
+  const rawAvailableWidth = shouldRotate ? binPixelHeight : binPixelWidth;
+  const effectiveAvailableWidth = rawAvailableWidth * 0.75;
 
   // Calculate if label fits and at what font size
   let labelFits = false;
   let labelFontSize = maxFontSize;
+
   if (hasLabel && bin.label) {
-    const label = bin.label;
+    const labelLength = bin.label.length;
 
-    // Calculate max characters that can fit at minimum font size
-    const maxCharsAtMinFont = effectiveAvailableWidth / (minFontSize * charWidthRatio);
+    // Calculate the font size needed to fit this label
+    // textWidth = labelLength * fontSize * 0.6
+    // fontSize = effectiveAvailableWidth / (labelLength * 0.6)
+    const neededFontSize = effectiveAvailableWidth / (labelLength * 0.6);
 
-    if (label.length <= maxCharsAtMinFont) {
-      // Label can fit - calculate optimal font size
+    if (neededFontSize >= minFontSize) {
+      // Label fits at a readable size
       labelFits = true;
-      const optimalFontSize = effectiveAvailableWidth / (label.length * charWidthRatio);
-      labelFontSize = clamp(Math.floor(optimalFontSize), minFontSize, maxFontSize);
+      labelFontSize = clamp(Math.floor(neededFontSize), minFontSize, maxFontSize);
     }
-    // If label.length > maxCharsAtMinFont, labelFits stays false → show dimensions
   }
 
   // Calculate font sizes
   const primaryFontSize = labelFits ? labelFontSize : maxFontSize;
   const secondaryFontSize = clamp(Math.round(primaryFontSize * 0.75), 8, 14);
 
-  // Visibility thresholds based on pixel space
+  // Visibility thresholds
   const showAnyText = binPixelMin >= 24 && !isGhost;
-  const hasSpaceForSecondary = effectiveAvailableHeight >= primaryFontSize * 2.5;
+  const rawAvailableHeight = shouldRotate ? binPixelWidth : binPixelHeight;
+  const hasSpaceForSecondary = rawAvailableHeight * 0.75 >= primaryFontSize * 2.5;
 
-  // Context-dependent priority: labels first when they fit, dimensions as fallback
+  // Show label if it fits, otherwise show dimensions
   const showLabel = hasLabel && labelFits;
-  const primaryText = showLabel && bin.label ? bin.label : dimensionsText;
+  const primaryText = showLabel ? bin.label! : dimensionsText;
   const secondaryText = showLabel && hasSpaceForSecondary ? dimensionsText : null;
 
   // Letter-spacing for small text
