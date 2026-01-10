@@ -241,14 +241,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                 keys={['←', '→']}
                 description="Rotate view left/right"
               />
-              <ShortcutRow
-                keys={['↑', '↓']}
-                description="Tilt camera up/down"
-              />
             </div>
-            <p className="mt-2 text-xs" style={STYLES.textTertiary}>
-              When 3D preview is visible, arrow keys control the camera instead of nudging bins.
-            </p>
           </section>
 
           {/* Mouse Interactions Section */}
