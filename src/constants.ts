@@ -20,6 +20,10 @@ export const CONSTRAINTS = {
   QUICK_FILL_MAX_BINS: 2500,
   QUICK_FILL_CONFIRM_THRESHOLD: 100,
   PRINT_GAP_MM: 10,  // Gap between bins on print bed
+  // Layout library constraints
+  LAYOUTS_MAX: 100,              // Max layouts in library (localStorage limit)
+  LAYOUTS_WARNING_THRESHOLD: 80, // Show warning at this count
+  RECENT_LAYOUTS_COUNT: 5,       // Number of recent layouts to show
 } as const;
 
 /**
@@ -191,4 +195,6 @@ export const SHORTCUTS = {
   PRESET_SIDE: '4',
   // Half-bin mode
   HALF_BIN_TOGGLE: 'h',
+  // Layout management
+  LAYOUT_MANAGER: 'o',  // with Ctrl/Cmd - "Open" layouts
 } as const;

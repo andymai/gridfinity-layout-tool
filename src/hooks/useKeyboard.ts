@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { useUIStore, useLayoutStore, useHistoryStore, useUndoableAction } from '../store';
+import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction } from '../store';
 import { canPlaceBin } from '../utils/validation';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '../constants';
 import { useGridNavigation } from './useGridNavigation';
@@ -62,6 +62,8 @@ export function useKeyboard() {
   const setActiveCategory = useUIStore(state => state.setActiveCategory);
   const toggleHalfBinMode = useUIStore(state => state.toggleHalfBinMode);
 
+  const setShowLayoutManager = useLibraryStore(state => state.setShowLayoutManager);
+
   // Grid navigation hook for spatial arrow key navigation
   const { handleNavigationKey } = useGridNavigation();
 
@@ -118,6 +120,13 @@ export function useKeyboard() {
     if (ctrlOrMeta && (key.toLowerCase() === SHORTCUTS.REDO || (key === SHORTCUTS.REDO_ALT && e.shiftKey))) {
       e.preventDefault();
       if (canRedo) redo();
+      return;
+    }
+
+    // Open layout manager (Ctrl+O)
+    if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.LAYOUT_MANAGER) {
+      e.preventDefault();
+      setShowLayoutManager(true);
       return;
     }
 
@@ -349,7 +358,7 @@ export function useKeyboard() {
       }
       return;
     }
-  }, [selectedBinIds, focusedBinId, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, activeLayerId, setActiveLayer, showQuickLabel, activeCategoryId, setActiveCategory, toggleHalfBinMode]);
+  }, [selectedBinIds, focusedBinId, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, activeLayerId, setActiveLayer, showQuickLabel, activeCategoryId, setActiveCategory, toggleHalfBinMode, setShowLayoutManager]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
