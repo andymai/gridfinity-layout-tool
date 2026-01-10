@@ -20,6 +20,7 @@ export function useKeyboardResize() {
   const selectedBinIds = useUIStore(state => state.selectedBinIds);
   const announceToScreenReader = useUIStore(state => state.announceToScreenReader);
   const setInteraction = useUIStore(state => state.setInteraction);
+  const halfBinMode = useUIStore(state => state.halfBinMode);
 
   const layout = useLayoutStore(state => state.layout);
   const updateBin = useLayoutStore(state => state.updateBin);
@@ -81,10 +82,13 @@ export function useKeyboardResize() {
     const bin = findBinById(layout, selectedBinIds[0]);
     if (!bin) return;
 
+    // In half-bin mode, minimum size is 0.5; in normal mode it's 1
+    const minSize = halfBinMode ? 0.5 : 1;
+
     setResizeDelta(prev => {
       const newDelta = { dw: prev.dw + dw, dd: prev.dd + dd };
-      const newWidth = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, bin.width + newDelta.dw));
-      const newDepth = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, bin.depth + newDelta.dd));
+      const newWidth = Math.max(minSize, Math.min(CONSTRAINTS.GRID_MAX, bin.width + newDelta.dw));
+      const newDepth = Math.max(minSize, Math.min(CONSTRAINTS.GRID_MAX, bin.depth + newDelta.dd));
 
       // Update interaction to show preview with new size
       const startRect = { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth };
@@ -103,7 +107,7 @@ export function useKeyboardResize() {
 
       return newDelta;
     });
-  }, [keyboardResizeMode, selectedBinIds, layout, setInteraction, announceToScreenReader]);
+  }, [keyboardResizeMode, selectedBinIds, layout, setInteraction, announceToScreenReader, halfBinMode]);
 
   /**
    * Confirm resize - apply the size change to the bin.
@@ -115,8 +119,10 @@ export function useKeyboardResize() {
     const bin = findBinById(layout, selectedBinIds[0]);
     if (!bin) return;
 
-    const newWidth = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, bin.width + dw));
-    const newDepth = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, bin.depth + dd));
+    // In half-bin mode, minimum size is 0.5; in normal mode it's 1
+    const minSize = halfBinMode ? 0.5 : 1;
+    const newWidth = Math.max(minSize, Math.min(CONSTRAINTS.GRID_MAX, bin.width + dw));
+    const newDepth = Math.max(minSize, Math.min(CONSTRAINTS.GRID_MAX, bin.depth + dd));
 
     // If no size change, just exit
     if (newWidth === bin.width && newDepth === bin.depth) {
@@ -151,7 +157,7 @@ export function useKeyboardResize() {
     setKeyboardResizeMode(false);
     setInteraction(null);
     setResizeDelta({ dw: 0, dd: 0 });
-  }, [keyboardResizeMode, resizeDelta, selectedBinIds, layout, updateBin, execute, setKeyboardResizeMode, setInteraction, announceToScreenReader]);
+  }, [keyboardResizeMode, resizeDelta, selectedBinIds, layout, updateBin, execute, setKeyboardResizeMode, setInteraction, announceToScreenReader, halfBinMode]);
 
   /**
    * Exit resize mode without applying changes.
@@ -176,26 +182,27 @@ export function useKeyboardResize() {
       return;
     }
 
-    // Arrow keys - adjust size
+    // Arrow keys - adjust size (0.5 in half-bin mode, 1 in normal mode)
     // Left/Right: width, Up/Down: depth
+    const increment = halfBinMode ? 0.5 : 1;
     if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      adjustResizeDelta(-1, 0);
+      adjustResizeDelta(-increment, 0);
       return;
     }
     if (e.key === 'ArrowRight') {
       e.preventDefault();
-      adjustResizeDelta(1, 0);
+      adjustResizeDelta(increment, 0);
       return;
     }
     if (e.key === 'ArrowUp') {
       e.preventDefault();
-      adjustResizeDelta(0, 1);
+      adjustResizeDelta(0, increment);
       return;
     }
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      adjustResizeDelta(0, -1);
+      adjustResizeDelta(0, -increment);
       return;
     }
 
@@ -212,7 +219,7 @@ export function useKeyboardResize() {
       exitResizeMode();
       return;
     }
-  }, [keyboardResizeMode, adjustResizeDelta, confirmResize, exitResizeMode]);
+  }, [keyboardResizeMode, adjustResizeDelta, confirmResize, exitResizeMode, halfBinMode]);
 
   // Register keyboard event listener
   useEffect(() => {

@@ -32,8 +32,8 @@ interface LayoutState {
   deleteCategory: (id: string) => boolean;
 
   // Bulk operations
-  fillLayer: (layerId: string, width: number, depth: number, categoryId: string) => number;
-  fillLayerGaps: (layerId: string, categoryId: string) => number;
+  fillLayer: (layerId: string, width: number, depth: number, categoryId: string, halfBinMode?: boolean) => number;
+  fillLayerGaps: (layerId: string, categoryId: string, halfBinMode?: boolean) => number;
   clearLayer: (layerId: string) => number;
 
   // I/O
@@ -328,9 +328,9 @@ export const useLayoutStore = create<LayoutState>()(
       return true;
     },
 
-    fillLayer: (layerId, width, depth, categoryId) => {
+    fillLayer: (layerId, width, depth, categoryId, halfBinMode = false) => {
       const { layout } = get();
-      const result = fillAllWithSize(layout, layerId, width, depth, categoryId);
+      const result = fillAllWithSize(layout, layerId, width, depth, categoryId, halfBinMode);
 
       if (result.bins.length > 0) {
         set(state => {
@@ -341,11 +341,11 @@ export const useLayoutStore = create<LayoutState>()(
       return result.bins.length;
     },
 
-    fillLayerGaps: (layerId, categoryId) => {
+    fillLayerGaps: (layerId, categoryId, halfBinMode = false) => {
       const { layout } = get();
       // Calculate max grid units from print bed size (accounting for gaps)
       const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
-      const result = fillGaps(layout, layerId, categoryId, maxGridUnits);
+      const result = fillGaps(layout, layerId, categoryId, maxGridUnits, halfBinMode);
 
       if (result.bins.length > 0) {
         set(state => {
