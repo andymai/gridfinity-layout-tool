@@ -137,16 +137,17 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               position: 'relative',
             }}
           >
-            {/* Crosshair at center of primary cells (marks the half-point) */}
+            {/* Crosshair at center of each 1x1 grid unit (intersection of the 2x2 half-cells) */}
             {isPrimaryCell && (
               <div
                 style={{
                   position: 'absolute',
-                  // Position at center of the 2x2 cell group (bottom-right corner of this cell)
-                  right: -1,
-                  bottom: -1,
-                  width: 7,
-                  height: 7,
+                  // Position at bottom-right corner of this cell, then center the crosshair on that point
+                  left: '100%',
+                  top: '100%',
+                  width: 9,
+                  height: 9,
+                  transform: 'translate(-50%, -50%)',
                   pointerEvents: 'none',
                 }}
               >
