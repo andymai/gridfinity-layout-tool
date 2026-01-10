@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLayoutStore, useUndoableAction } from '../../store';
+import { useLayoutStore, useUndoableAction, useUIStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { DeferredNumberInput } from '../DeferredNumberInput';
@@ -19,6 +19,9 @@ export function MobileSettingsPanel() {
 
   const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
   const { execute } = useUndoableAction();
+
+  const halfBinMode = useUIStore(state => state.halfBinMode);
+  const toggleHalfBinMode = useUIStore(state => state.toggleHalfBinMode);
 
   const handleDrawerChange = (field: 'width' | 'depth' | 'height', delta: number) => {
     const current = layout.drawer[field];
@@ -191,6 +194,28 @@ export function MobileSettingsPanel() {
 
           <div className="text-sm text-right text-content-disabled">
             Max bin size: {maxGridUnits}×{maxGridUnits}
+          </div>
+
+          {/* Half-bin mode toggle */}
+          <div className="flex items-center justify-between pt-3 border-t border-stroke-subtle">
+            <div>
+              <span className="text-sm text-content-secondary">Half-bin mode</span>
+              <p className="text-xs text-content-tertiary">Allow 0.5 unit precision</p>
+            </div>
+            <button
+              onClick={toggleHalfBinMode}
+              className={`relative w-12 h-7 rounded-full transition-colors ${
+                halfBinMode ? 'bg-accent' : 'bg-surface-elevated'
+              }`}
+              aria-pressed={halfBinMode}
+              aria-label="Toggle half-bin mode"
+            >
+              <span
+                className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                  halfBinMode ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
           </div>
         </div>
       </section>
