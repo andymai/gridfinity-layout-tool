@@ -244,24 +244,30 @@ export function Sidebar() {
                 </div>
                 {/* Half-bin mode toggle */}
                 <div className="flex items-center justify-between pt-2 mt-2 border-t border-stroke-subtle">
-                  <span
-                    className="text-content-tertiary"
-                    title="Enable 0.5 grid unit precision for half-size bins (H)"
-                  >
-                    Half-bin mode
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="text-content-tertiary"
+                      title="Enable 0.5 grid unit precision for half-size bins (H)"
+                    >
+                      Half-bin mode
+                    </span>
+                    <kbd className="text-[9px] text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">H</kbd>
+                  </div>
                   <button
                     onClick={toggleHalfBinMode}
-                    className={`relative w-9 h-5 rounded-full transition-colors ${
-                      halfBinMode ? 'bg-accent' : 'bg-surface-elevated'
+                    className={`relative w-10 h-[22px] rounded-full transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface-secondary ${
+                      halfBinMode
+                        ? 'bg-accent shadow-inner'
+                        : 'bg-surface-elevated border border-stroke-subtle'
                     }`}
                     aria-pressed={halfBinMode}
                     aria-label="Toggle half-bin mode"
-                    title="Press H to toggle"
                   >
                     <span
-                      className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                        halfBinMode ? 'translate-x-4' : 'translate-x-0.5'
+                      className={`absolute top-[3px] w-4 h-4 rounded-full shadow-sm transition-all duration-200 ease-out ${
+                        halfBinMode
+                          ? 'translate-x-[22px] bg-white'
+                          : 'translate-x-[3px] bg-content-tertiary'
                       }`}
                     />
                   </button>
