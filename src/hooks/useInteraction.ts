@@ -242,12 +242,9 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       const clamped = clampCoords(coords);
 
       if (interaction.type === 'draw') {
-        // Use roundToNearest for more responsive drawing (transitions at 50% of cell)
-        const roundedCoords = getGridCoords(e.clientX, e.clientY, true);
-        const roundedClamped = roundedCoords ? clampCoords(roundedCoords) : clamped;
         setInteraction({
           ...interaction,
-          current: roundedClamped,
+          current: clamped,
         });
       } else if (interaction.type === 'drag') {
         // Check if mouse is over the grid
@@ -365,12 +362,9 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
           valid: result.valid,
         });
       } else if (interaction.type === 'paint') {
-        // Paint mode - use roundToNearest for more responsive area selection
-        const roundedCoords = getGridCoords(e.clientX, e.clientY, true);
-        const roundedClamped = roundedCoords ? clampCoords(roundedCoords) : clamped;
         setInteraction({
           ...interaction,
-          current: roundedClamped,
+          current: clamped,
         });
       }
     };
