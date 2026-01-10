@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useUIStore, useLayoutStore, useHistoryStore, useUndoableAction } from '../store';
 import { canPlaceBin } from '../utils/validation';
-import { SHORTCUTS, STAGING_ID } from '../constants';
+import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '../constants';
 import { useGridNavigation } from './useGridNavigation';
 
 /**
@@ -297,11 +297,17 @@ export function useKeyboard() {
 
       // Otherwise, use existing nudge logic for selected bins
       if (selectedBinIds.length > 0) {
+        // Check if any selected bins have fractional dimensions
+        const selectedBins = selectedBinIds
+          .map(id => layout.bins.find(b => b.id === id))
+          .filter((b): b is typeof layout.bins[number] => b !== undefined);
+        const increment = selectedBins.some(bin => hasFractionalDimensions(bin)) ? 0.5 : 1;
+
         let dx = 0, dy = 0;
-        if (key === SHORTCUTS.NUDGE_UP) dy = 1;
-        if (key === SHORTCUTS.NUDGE_DOWN) dy = -1;
-        if (key === SHORTCUTS.NUDGE_LEFT) dx = -1;
-        if (key === SHORTCUTS.NUDGE_RIGHT) dx = 1;
+        if (key === SHORTCUTS.NUDGE_UP) dy = increment;
+        if (key === SHORTCUTS.NUDGE_DOWN) dy = -increment;
+        if (key === SHORTCUTS.NUDGE_LEFT) dx = -increment;
+        if (key === SHORTCUTS.NUDGE_RIGHT) dx = increment;
 
         // Check if all bins can move
         const excludeIds = new Set(selectedBinIds);
