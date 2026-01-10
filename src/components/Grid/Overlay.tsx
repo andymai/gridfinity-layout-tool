@@ -54,12 +54,16 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
     // Scale coordinates for half-bin mode
     const vx1 = x1 * scale;
-    const vy2 = y2 * scale;
     const vWidth = width * scale;
     const vDepth = depth * scale;
 
     const left = gap + vx1 * (visualCellSize + gap);
-    const top = gap + (visualDepth - vy2 - vDepth) * (visualCellSize + gap);
+    // Use y1 (min Y) to match Bin.tsx positioning formula:
+    // gridRowStart = (drawer.depth - bin.y - bin.depth) * scale + 1
+    // which equals: visualDepth - y1*scale - depth*scale + 1 (in 1-indexed CSS)
+    // or in 0-indexed pixels: visualDepth - vy1 - vDepth
+    const vy1 = y1 * scale;
+    const top = gap + (visualDepth - vy1 - vDepth) * (visualCellSize + gap);
     const rectWidth = toPixels(vWidth);
     const rectHeight = toPixels(vDepth);
 

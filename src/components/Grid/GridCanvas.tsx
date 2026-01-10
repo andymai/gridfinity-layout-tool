@@ -118,6 +118,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   const cells: JSX.Element[] = [];
   if (halfBinMode) {
     // Half-bin mode: render 2x cells with crosshairs at whole-unit intersections
+    // Y is inverted to match coordinate system (y=0 at bottom)
     for (let vy = 0; vy < gridRows; vy++) {
       for (let vx = 0; vx < gridCols; vx++) {
         // Check if this is at a whole-unit boundary (for crosshairs)
@@ -128,7 +129,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
             key={`${vx}-${vy}`}
             style={{
               gridColumn: vx + 1,
-              gridRow: vy + 1,
+              gridRow: gridRows - vy,
               width: actualCellSize,
               height: actualCellSize,
               backgroundColor: 'var(--grid-cell)',
