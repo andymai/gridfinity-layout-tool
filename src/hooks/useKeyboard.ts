@@ -117,14 +117,14 @@ export function useKeyboard() {
     }
 
     // M key - enter keyboard drag mode
-    if (key.toLowerCase() === 'm' && !ctrlOrMeta && !keyboardDragMode && !keyboardResizeMode) {
+    if (key.toLowerCase() === SHORTCUTS.MOVE_MODE && !ctrlOrMeta && !keyboardDragMode && !keyboardResizeMode) {
       e.preventDefault();
       enterDragMode();
       return;
     }
 
     // R key - enter keyboard resize mode
-    if (key.toLowerCase() === 'r' && !ctrlOrMeta && !keyboardDragMode && !keyboardResizeMode) {
+    if (key.toLowerCase() === SHORTCUTS.RESIZE_MODE && !ctrlOrMeta && !keyboardDragMode && !keyboardResizeMode) {
       e.preventDefault();
       enterResizeMode();
       return;

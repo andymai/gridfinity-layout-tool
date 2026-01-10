@@ -62,9 +62,10 @@ const STYLES = {
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isTablet?: boolean;
 }
 
-export function HelpModal({ isOpen, onClose }: HelpModalProps) {
+export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps) {
   useEffect(() => {
     if (!isOpen) return;
 
@@ -201,6 +202,15 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 keys={formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase()}
                 description="Quick label selected bin"
               />
+              <div className="divider" />
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.MOVE_MODE).toUpperCase()}
+                description="Enter move mode (with bin selected)"
+              />
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.RESIZE_MODE).toUpperCase()}
+                description="Enter resize mode (single bin)"
+              />
             </div>
           </section>
 
@@ -239,7 +249,23 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 keys="4"
                 description="Side view"
               />
+              <div className="divider" />
+              <ShortcutRow
+                keys={formatKey(SHORTCUTS.RESIZE_MODE).toUpperCase()}
+                description="Reset camera view"
+              />
+              <ShortcutRow
+                keys={['←', '→']}
+                description="Rotate view left/right"
+              />
+              <ShortcutRow
+                keys={['↑', '↓']}
+                description="Tilt camera up/down"
+              />
             </div>
+            <p className="mt-2 text-xs" style={STYLES.textTertiary}>
+              When 3D preview is visible, arrow keys control the camera instead of nudging bins.
+            </p>
           </section>
 
           {/* Mouse Interactions Section */}
@@ -270,6 +296,48 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
               />
             </div>
           </section>
+
+          {/* Touch Gestures Section - Only shown on tablet */}
+          {isTablet && (
+            <section>
+              <h3 className="mb-4" style={STYLES.sectionHeader}>
+                Touch Gestures
+              </h3>
+              <div className="space-y-3 p-4 rounded-lg" style={STYLES.sectionContent}>
+                <GestureRow
+                  icon={<TapIcon />}
+                  gesture="Tap bin"
+                  description="Select bin"
+                />
+                <GestureRow
+                  icon={<DragIcon />}
+                  gesture="Drag on empty grid"
+                  description="Draw new bin"
+                />
+                <GestureRow
+                  icon={<DragIcon />}
+                  gesture="Drag selected bin"
+                  description="Move bin"
+                />
+                <GestureRow
+                  icon={<LongPressIcon />}
+                  gesture="Long-press bin"
+                  description="Open context menu"
+                />
+                <div className="divider" />
+                <GestureRow
+                  icon={<DragEdgeIcon />}
+                  gesture="Drag bin edge"
+                  description="Resize bin"
+                />
+                <GestureRow
+                  icon={<DragCornerIcon />}
+                  gesture="Drag corner handle"
+                  description="Resize width & depth"
+                />
+              </div>
+            </section>
+          )}
 
           {/* Tips Section */}
           <section>
@@ -360,5 +428,72 @@ function InteractionRow({
       <span style={STYLES.rowDescription}>{description}</span>
       <span className="italic" style={STYLES.rowAction}>{action}</span>
     </div>
+  );
+}
+
+function GestureRow({
+  icon,
+  gesture,
+  description,
+}: {
+  icon: React.ReactNode;
+  gesture: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-accent">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div style={STYLES.rowDescription}>{description}</div>
+        <div style={STYLES.rowAction}>{gesture}</div>
+      </div>
+    </div>
+  );
+}
+
+// Gesture icons for tablet touch gestures section
+function TapIcon() {
+  return (
+    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <circle cx="12" cy="12" r="3" strokeWidth={2} />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v4m0 12v4m10-10h-4M6 12H2" />
+    </svg>
+  );
+}
+
+function DragIcon() {
+  return (
+    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+    </svg>
+  );
+}
+
+function LongPressIcon() {
+  return (
+    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <circle cx="12" cy="12" r="8" strokeWidth={2} strokeDasharray="4 2" />
+      <circle cx="12" cy="12" r="3" fill="currentColor" />
+    </svg>
+  );
+}
+
+function DragEdgeIcon() {
+  return (
+    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <rect x="4" y="6" width="12" height="12" rx="1" strokeWidth={2} />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12h4m0 0l-2-2m2 2l-2 2" />
+    </svg>
+  );
+}
+
+function DragCornerIcon() {
+  return (
+    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <rect x="4" y="4" width="10" height="10" rx="1" strokeWidth={2} />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 14l6 6m0 0h-4m4 0v-4" />
+    </svg>
   );
 }

@@ -185,7 +185,7 @@ export default function App() {
         {/* Modals */}
         {isHelpOpen && (
           <Suspense fallback={null}>
-            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet />
           </Suspense>
         )}
 
