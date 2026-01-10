@@ -1,7 +1,9 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
 import { canPlaceBin } from '../utils/validation';
+import { constrainGroupDelta } from '../utils/selection';
 import { findBinById } from '../utils/entity';
+import type { Bin } from '../types';
 import { STAGING_ID } from '../constants';
 
 /**
@@ -65,7 +67,7 @@ export function useKeyboardDrag() {
       type: 'drag',
       binIds: selectedBinIds,
       startCoord,
-      currentCoord: startCoord,
+      currentCoord: { x: 0, y: 0 }, // Delta starts at zero (no movement yet)
       valid: true,
       isOverGrid: true,
     });
@@ -78,17 +80,59 @@ export function useKeyboardDrag() {
     if (!keyboardDragMode) return;
 
     setDragOffset(prev => {
-      const newOffset = { dx: prev.dx + dx, dy: prev.dy + dy };
+      // Get all selected bins
+      const selectedBins = selectedBinIds
+        .map(id => findBinById(layout, id))
+        .filter((b): b is Bin => b !== undefined && b.layerId !== STAGING_ID);
 
-      // Update interaction to show preview with new offset
-      const firstBin = findBinById(layout, selectedBinIds[0]);
-      const startCoord = firstBin ? { x: firstBin.x, y: firstBin.y } : { x: 0, y: 0 };
+      if (selectedBins.length === 0) return prev;
+
+      // Calculate new raw offset
+      const rawDeltaX = prev.dx + dx;
+      const rawDeltaY = prev.dy + dy;
+
+      // Constrain delta to keep entire group in bounds (preserves arrangement)
+      const { deltaX, deltaY } = constrainGroupDelta(
+        selectedBins,
+        rawDeltaX,
+        rawDeltaY,
+        layout.drawer
+      );
+
+      // If constrained delta equals previous, the group can't move further
+      if (deltaX === prev.dx && deltaY === prev.dy) {
+        announceToScreenReader('Cannot move further in this direction');
+        return prev;
+      }
+
+      const newOffset = { dx: deltaX, dy: deltaY };
+
+      // Validate all bins at their new positions
+      const excludeIds = new Set(selectedBinIds);
+      let allValid = true;
+      for (const bin of selectedBins) {
+        const result = canPlaceBin(
+          { x: bin.x + deltaX, y: bin.y + deltaY, width: bin.width, depth: bin.depth, height: bin.height },
+          bin.layerId,
+          layout,
+          bin.id,
+          excludeIds
+        );
+        if (!result.valid) {
+          allValid = false;
+          break;
+        }
+      }
+
+      // Update interaction to show preview with new offset (delta semantic)
+      const firstBin = selectedBins[0];
+      const startCoord = { x: firstBin.x, y: firstBin.y };
       setInteraction({
         type: 'drag',
         binIds: selectedBinIds,
         startCoord,
-        currentCoord: { x: startCoord.x + newOffset.dx, y: startCoord.y + newOffset.dy },
-        valid: true,
+        currentCoord: { x: deltaX, y: deltaY }, // Store delta, not absolute position
+        valid: allValid,
         isOverGrid: true,
       });
 

@@ -1,9 +1,10 @@
 import { useEffect, useCallback, useRef } from 'react';
 import type { RefObject } from 'react';
-import type { Coord, Rect, ResizeHandle } from '../types';
+import type { Bin, Coord, Rect, ResizeHandle } from '../types';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
 import { useGridCoords } from './useGridCoords';
 import { canPlaceBin, clamp } from '../utils/validation';
+import { constrainGroupDelta } from '../utils/selection';
 import { STAGING_ID } from '../constants';
 
 /**
@@ -135,7 +136,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       type: 'drag',
       binIds,
       startCoord,
-      currentCoord: { x: bin.x, y: bin.y },
+      currentCoord: { x: 0, y: 0 }, // Delta starts at zero (no movement yet)
       valid: true,
       isOverGrid: true,
     });
@@ -221,31 +222,41 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         // Check if mouse is over the grid
         const overGrid = isInBounds(coords);
 
-        // Calculate delta from original position
-        const primaryBin = layout.bins.find(b => b.id === interaction.binIds[0]);
-        if (!primaryBin) return;
+        // Get all bins being dragged
+        const draggedBins = interaction.binIds
+          .map(id => layout.bins.find(b => b.id === id))
+          .filter((b): b is Bin => b !== undefined);
 
-        const deltaX = clamped.x - interaction.startCoord.x;
-        const deltaY = clamped.y - interaction.startCoord.y;
+        if (draggedBins.length === 0) return;
 
-        // Check if all bins can be placed at their new positions
+        // Calculate raw delta from start position
+        const rawDeltaX = clamped.x - interaction.startCoord.x;
+        const rawDeltaY = clamped.y - interaction.startCoord.y;
+
+        // Constrain delta to keep ENTIRE GROUP in bounds (preserves arrangement)
+        const { deltaX, deltaY } = constrainGroupDelta(
+          draggedBins,
+          rawDeltaX,
+          rawDeltaY,
+          layout.drawer
+        );
+
+        // Validate all bins at their new positions (with uniform delta applied)
         let allValid = overGrid; // Only valid if over grid
         const otherBinIds = new Set(interaction.binIds);
 
         if (overGrid) {
-          for (const binId of interaction.binIds) {
-            const bin = layout.bins.find(b => b.id === binId);
-            if (!bin) continue;
-
-            const newX = clamp(bin.x + deltaX, 0, layout.drawer.width - bin.width);
-            const newY = clamp(bin.y + deltaY, 0, layout.drawer.depth - bin.depth);
+          for (const bin of draggedBins) {
+            // Apply uniform delta - NO individual clamping
+            const newX = bin.x + deltaX;
+            const newY = bin.y + deltaY;
 
             // Check placement excluding all bins being dragged
             const result = canPlaceBin(
               { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
               activeLayerId,
               layout,
-              binId,
+              bin.id,
               otherBinIds // Pass all dragged bins to exclude from collision check
             );
 
@@ -256,13 +267,10 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
           }
         }
 
-        // Calculate new position for primary bin (used for preview)
-        const newX = clamp(primaryBin.x + deltaX, 0, layout.drawer.width - primaryBin.width);
-        const newY = clamp(primaryBin.y + deltaY, 0, layout.drawer.depth - primaryBin.depth);
-
+        // Store the constrained delta (not absolute position) for use in drop and overlay
         setInteraction({
           ...interaction,
-          currentCoord: { x: newX, y: newY },
+          currentCoord: { x: deltaX, y: deltaY },
           valid: allValid,
           isOverGrid: overGrid,
         });
@@ -464,30 +472,22 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
         // Normal drag placement
         if (interaction.valid) {
-          const primaryBin = layout.bins.find(b => b.id === interaction.binIds[0]);
-          if (!primaryBin) {
-            setInteraction(null);
-            return;
-          }
-
-          // Calculate delta from original position
-          const deltaX = interaction.currentCoord.x - primaryBin.x;
-          const deltaY = interaction.currentCoord.y - primaryBin.y;
+          // currentCoord now stores the constrained delta, not absolute position
+          const deltaX = interaction.currentCoord.x;
+          const deltaY = interaction.currentCoord.y;
 
           if (deltaX !== 0 || deltaY !== 0) {
             const layer = layout.layers.find(l => l.id === activeLayerId);
             execute(() => {
-              // Update all dragged bins
+              // Update all dragged bins with uniform delta (preserves arrangement)
               for (const binId of interaction.binIds) {
                 const bin = layout.bins.find(b => b.id === binId);
                 if (!bin) continue;
 
-                const newX = clamp(bin.x + deltaX, 0, layout.drawer.width - bin.width);
-                const newY = clamp(bin.y + deltaY, 0, layout.drawer.depth - bin.depth);
-
+                // Apply uniform delta - NO individual clamping
                 updateBin(binId, {
-                  x: newX,
-                  y: newY,
+                  x: bin.x + deltaX,
+                  y: bin.y + deltaY,
                   layerId: activeLayerId,
                   height: Math.max(bin.height, layer?.height ?? bin.height),
                 });
@@ -495,6 +495,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
             });
           }
         }
+        // If not valid, interaction ends without changes (bins stay in original positions)
       } else if (interaction.type === 'resize' && interaction.valid) {
         let hasChanges = false;
 

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../store';
-import { BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '../constants';
+import { getBaseCellSize, DEFAULT_CATEGORY_COLOR } from '../constants';
 import { getContrastColor } from '../utils/color';
+import { useResponsive } from '../hooks';
 
 /**
  * Floating drag preview that follows the cursor during drag operations.
@@ -42,9 +43,12 @@ export function DragPreview() {
     };
   }, [isDragging]);
 
+  // Must call hooks unconditionally before any early returns
+  const { viewportWidth } = useResponsive();
+  const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
+
   if (!interaction || !mousePos) return null;
 
-  const cellSize = Math.round(BASE_CELL_SIZE * zoom);
   const gap = 1;
 
   let draggedBins: typeof bins = [];
@@ -57,9 +61,11 @@ export function DragPreview() {
 
   if (draggedBins.length === 0) return null;
 
-  // Calculate bounding box of all dragged bins (relative to first bin)
+  // Calculate bounding box of all dragged bins
   const minX = Math.min(...draggedBins.map(b => b.x));
-  const minY = Math.min(...draggedBins.map(b => b.y));
+  // Use TOP of bins (y + depth) for Y alignment, since bins may have different depths
+  // but share the same visual top edge
+  const maxYTop = Math.max(...draggedBins.map(b => b.y + b.depth));
 
   return (
     <div
@@ -74,9 +80,11 @@ export function DragPreview() {
         const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
         const textColor = getContrastColor(bgColor);
 
-        // Position relative to first bin
+        // Position relative to bounding box
         const offsetX = (bin.x - minX) * (cellSize + gap);
-        const offsetY = -(bin.y - minY) * (cellSize + gap); // Invert Y for screen coords
+        // Calculate offset from the top of the bounding box (maxYTop)
+        // Bins with the same top edge (y + depth) get the same offsetY
+        const offsetY = (maxYTop - (bin.y + bin.depth)) * (cellSize + gap);
 
         const width = bin.width * cellSize + (bin.width - 1) * gap;
         const height = bin.depth * cellSize + (bin.depth - 1) * gap;

@@ -635,7 +635,8 @@ describe('useKeyboardDrag', () => {
       const interaction = useUIStore.getState().interaction;
       expect(interaction?.type).toBe('drag');
       if (interaction?.type === 'drag') {
-        expect(interaction.currentCoord.x).toBe(3);
+        // currentCoord now stores delta, not absolute position
+        expect(interaction.currentCoord.x).toBe(1); // Delta of 1
       }
     });
 
@@ -662,8 +663,9 @@ describe('useKeyboardDrag', () => {
 
       const interaction = useUIStore.getState().interaction;
       if (interaction?.type === 'drag') {
-        expect(interaction.currentCoord.x).toBe(4); // 2 + 2
-        expect(interaction.currentCoord.y).toBe(3); // 2 + 1
+        // currentCoord now stores cumulative delta, not absolute position
+        expect(interaction.currentCoord.x).toBe(2); // Delta of 2 (1+1)
+        expect(interaction.currentCoord.y).toBe(1); // Delta of 1
       }
     });
   });
@@ -733,7 +735,7 @@ describe('useKeyboardDrag', () => {
       expect(bin2?.x).toBe(3);
     });
 
-    it('rejects move that would go out of bounds', () => {
+    it('constrains move to stay within bounds', () => {
       const { addBin, layout } = useLayoutStore.getState();
       const binId = addBin({
         layerId: layout.layers[0].id,
@@ -749,15 +751,21 @@ describe('useKeyboardDrag', () => {
       });
 
       act(() => {
-        result.current.adjustDragOffset(5, 0); // Would exceed width
+        result.current.adjustDragOffset(5, 0); // Would exceed width - constrained to 0
       });
+
+      // Delta is constrained to 0 since bin is already at right edge (x=8, width=2, drawer=10)
+      const interaction = useUIStore.getState().interaction;
+      if (interaction?.type === 'drag') {
+        expect(interaction.currentCoord.x).toBe(0); // Constrained to 0
+      }
 
       act(() => {
         result.current.confirmDrag();
       });
 
-      // Should still be in drag mode
-      expect(result.current.keyboardDragMode).toBe(true);
+      // No movement occurred, so exits drag mode
+      expect(result.current.keyboardDragMode).toBe(false);
 
       const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
       expect(bin?.x).toBe(8); // Unchanged

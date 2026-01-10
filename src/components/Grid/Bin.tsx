@@ -295,7 +295,7 @@ function BinComponent({ bin, category, layer, drawer, isGhost, isSelected, onSta
         WebkitUserSelect: 'none',
         userSelect: 'none',
         pointerEvents: isGhost || isBeingDragged ? 'none' : 'auto',
-        opacity: isGhost ? 0.3 : isBeingDragged ? 0.3 : 1,
+        opacity: isGhost ? 0.3 : isBeingDragged ? 0.5 : 1,
         zIndex: isGhost ? 5 : isSelected ? 20 : 10,
         boxShadow: getBoxShadow(),
         transform: getTransform(),

@@ -1,6 +1,5 @@
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
-import { clamp } from '../../utils/validation';
 
 interface OverlayProps {
   cellSize: number;
@@ -105,17 +104,18 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
       const color = valid ? '#10b981' : '#ef4444'; // green or red
 
-      // Calculate delta from primary bin's original position
-      const deltaX = currentCoord.x - primaryBin.x;
-      const deltaY = currentCoord.y - primaryBin.y;
+      // currentCoord now stores the constrained delta (not absolute position)
+      const deltaX = currentCoord.x;
+      const deltaY = currentCoord.y;
 
-      // Draw preview for each bin being dragged
+      // Draw preview for each bin being dragged with uniform delta applied
       for (const binId of binIds) {
         const bin = bins.find((b) => b.id === binId);
         if (!bin) continue;
 
-        const newX = clamp(bin.x + deltaX, 0, drawer.width - bin.width);
-        const newY = clamp(bin.y + deltaY, 0, drawer.depth - bin.depth);
+        // Apply uniform delta - NO individual clamping (preserves arrangement)
+        const newX = bin.x + deltaX;
+        const newY = bin.y + deltaY;
 
         const left = gap + newX * (cellSize + gap);
         const top = gap + (drawer.depth - newY - bin.depth) * (cellSize + gap);
@@ -146,8 +146,11 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         tooltipContent = `${primaryBin.width}×${primaryBin.depth}`;
       }
 
-      const left = gap + currentCoord.x * (cellSize + gap);
-      const top = gap + (drawer.depth - currentCoord.y - primaryBin.depth) * (cellSize + gap);
+      // Calculate tooltip position based on primary bin's new position
+      const primaryNewX = primaryBin.x + deltaX;
+      const primaryNewY = primaryBin.y + deltaY;
+      const left = gap + primaryNewX * (cellSize + gap);
+      const top = gap + (drawer.depth - primaryNewY - primaryBin.depth) * (cellSize + gap);
       const rectWidth = primaryBin.width * cellSize + (primaryBin.width - 1) * gap;
       const rectHeight = primaryBin.depth * cellSize + (primaryBin.depth - 1) * gap;
       tooltipPosition = getTooltipPosition(left, top, rectWidth, rectHeight, containerWidth);

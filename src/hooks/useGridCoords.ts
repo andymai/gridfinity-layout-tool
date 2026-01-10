@@ -2,8 +2,9 @@ import { useCallback } from 'react';
 import type { RefObject } from 'react';
 import type { Coord } from '../types';
 import { useUIStore, useLayoutStore } from '../store';
-import { BASE_CELL_SIZE } from '../constants';
+import { getBaseCellSize } from '../constants';
 import { clamp } from '../utils/validation';
+import { useResponsive } from './useResponsive';
 
 /**
  * Hook for converting between screen (pixel) coordinates and grid coordinates.
@@ -58,8 +59,10 @@ import { clamp } from '../utils/validation';
 export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
   const zoom = useUIStore(state => state.zoom);
   const drawer = useLayoutStore(state => state.layout.drawer);
+  const { viewportWidth } = useResponsive();
 
-  const cellSize = Math.round(BASE_CELL_SIZE * zoom);
+  // Use same cellSize calculation as Grid component for consistent coordinate conversion
+  const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
 
   const getGridCoords = useCallback((clientX: number, clientY: number): Coord | null => {
