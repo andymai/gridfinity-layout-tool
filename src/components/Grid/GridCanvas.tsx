@@ -117,14 +117,11 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   // Generate grid cells for visual reference
   const cells: JSX.Element[] = [];
   if (halfBinMode) {
-    // Half-bin mode: render 2x cells with visual differentiation
-    // Primary cells (whole units) are slightly brighter, secondary cells (half units) are subtler
+    // Half-bin mode: render 2x cells with crosshairs at whole-unit intersections
     for (let vy = 0; vy < gridRows; vy++) {
       for (let vx = 0; vx < gridCols; vx++) {
-        // Check if this is a primary cell (top-left of each whole unit)
-        const isPrimaryCell = vx % HALF_BIN_SCALE === 0 && vy % HALF_BIN_SCALE === 0;
         // Check if this is at a whole-unit boundary (for crosshairs)
-        const isAtCrosshair = isPrimaryCell;
+        const isAtCrosshair = vx % HALF_BIN_SCALE === 0 && vy % HALF_BIN_SCALE === 0;
 
         cells.push(
           <div
@@ -134,8 +131,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               gridRow: vy + 1,
               width: actualCellSize,
               height: actualCellSize,
-              // Primary cells use standard color, secondary cells are subtly different
-              backgroundColor: isPrimaryCell ? 'var(--grid-cell)' : 'var(--grid-cell-half)',
+              backgroundColor: 'var(--grid-cell)',
               borderRadius: '2px',
               boxSizing: 'border-box',
               position: 'relative',
