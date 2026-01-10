@@ -3,6 +3,27 @@ import type { Interaction } from '../types';
 import { CONSTRAINTS } from '../constants';
 import { clamp } from '../utils/validation';
 
+// Storage key for half-bin mode preference
+const HALF_BIN_MODE_KEY = 'gridfinity-half-bin-mode';
+
+// Load half-bin mode from localStorage (default to false)
+function loadHalfBinMode(): boolean {
+  try {
+    return localStorage.getItem(HALF_BIN_MODE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+// Save half-bin mode to localStorage
+function saveHalfBinMode(enabled: boolean): void {
+  try {
+    localStorage.setItem(HALF_BIN_MODE_KEY, enabled.toString());
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 export type DropTarget = 'trash' | 'staging' | null;
 
 export type MobilePanel = 'layers' | 'inspector' | 'categories' | 'print' | 'settings' | null;
@@ -65,6 +86,9 @@ interface UIState {
   // Category highlighting (for hover preview)
   highlightedCategoryId: string | null;
 
+  // Half-bin mode (power user feature for 0.5 unit increments)
+  halfBinMode: boolean;
+
   // Actions
   setActiveLayer: (id: string) => void;
   setSelectedBin: (id: string | null) => void; // Single select (clears others)
@@ -119,6 +143,10 @@ interface UIState {
 
   // Category highlighting actions
   setHighlightedCategoryId: (categoryId: string | null) => void;
+
+  // Half-bin mode actions
+  toggleHalfBinMode: () => void;
+  setHalfBinMode: (enabled: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -145,6 +173,7 @@ export const useUIStore = create<UIState>((set) => ({
   liveMessage: null,
   quickLabelBinId: null,
   highlightedCategoryId: null,
+  halfBinMode: loadHalfBinMode(),
 
   setActiveLayer: (id) => set({
     activeLayerId: id,
@@ -277,4 +306,15 @@ export const useUIStore = create<UIState>((set) => ({
 
   // Category highlighting actions
   setHighlightedCategoryId: (categoryId) => set({ highlightedCategoryId: categoryId }),
+
+  // Half-bin mode actions
+  toggleHalfBinMode: () => set(state => {
+    const newValue = !state.halfBinMode;
+    saveHalfBinMode(newValue);
+    return { halfBinMode: newValue };
+  }),
+  setHalfBinMode: (enabled) => {
+    saveHalfBinMode(enabled);
+    set({ halfBinMode: enabled });
+  },
 }));
