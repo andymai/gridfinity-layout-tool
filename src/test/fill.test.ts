@@ -92,12 +92,12 @@ describe('fillAllWithSize', () => {
 
   it('stops at QUICK_FILL_MAX_BINS limit', () => {
     const layout = createTestLayout();
-    // Large drawer to hit the 500 bin limit
-    layout.drawer.width = 50;
-    layout.drawer.depth = 50;
+    // Large drawer to hit the 2500 bin limit
+    layout.drawer.width = 60;
+    layout.drawer.depth = 60;
     const result = fillAllWithSize(layout, 'layer1', 1, 1, 'cat1');
-    // Should stop at 500 bins even though 2500 could fit
-    expect(result.bins).toHaveLength(500);
+    // Should stop at 2500 bins even though 3600 could fit
+    expect(result.bins).toHaveLength(2500);
   });
 });
 
