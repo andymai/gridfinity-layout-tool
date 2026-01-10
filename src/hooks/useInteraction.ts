@@ -5,7 +5,7 @@ import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
 import { useGridCoords } from './useGridCoords';
 import { canPlaceBin, clamp } from '../utils/validation';
 import { constrainGroupDelta } from '../utils/selection';
-import { STAGING_ID } from '../constants';
+import { STAGING_ID, getBaseCellSize } from '../constants';
 
 /**
  * Hook for managing all grid interactions including bin creation, movement, and resizing.
@@ -144,6 +144,32 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       }
     }
 
+    // Calculate pixel offset from bin origin to click position
+    // This allows the bin to stay at the same relative position under the cursor
+    let clickOffset: { x: number; y: number } | undefined;
+    if (gridRef.current) {
+      const rect = gridRef.current.getBoundingClientRect();
+      const zoom = useUIStore.getState().zoom;
+      const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1280;
+      const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
+      const gap = 1;
+
+      // Calculate the pixel position of the bin's visual top-left corner
+      // Note: Y is inverted - bin.y is from bottom, but visual top is at drawer.depth - bin.y - bin.depth
+      const binVisualLeft = gap + bin.x * (cellSize + gap);
+      const binVisualTop = gap + (layout.drawer.depth - bin.y - bin.depth) * (cellSize + gap);
+
+      // Calculate click position relative to grid
+      const clickRelX = clientX - rect.left;
+      const clickRelY = clientY - rect.top;
+
+      // Store offset from bin's visual corner to click point
+      clickOffset = {
+        x: clickRelX - binVisualLeft,
+        y: clickRelY - binVisualTop,
+      };
+    }
+
     // Use click position as startCoord so delta is calculated from where user clicked
     const startCoord = clickCoord;
 
@@ -164,8 +190,9 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       currentCoord: { x: 0, y: 0 }, // Delta starts at zero (no movement yet)
       valid: true,
       isOverGrid: true,
+      clickOffset,
     });
-  }, [layout.bins, selectedBinIds, setSelectedBin, setInteraction, getGridCoords]);
+  }, [layout.bins, layout.drawer.depth, selectedBinIds, setSelectedBin, setInteraction, getGridCoords, gridRef]);
 
   // Start resizing bins (single or multiple)
   const startResize = useCallback((binId: string, handle: ResizeHandle, pointerId?: number) => {
