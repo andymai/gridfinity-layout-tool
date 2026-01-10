@@ -725,22 +725,31 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     </div>
   )
 
-  // Expanded mode: render as modal with backdrop (takes priority over inline mode)
-  if (isPreviewExpanded) {
-    return (
+  // Always render in same DOM location to preserve Canvas state (camera angle, etc.)
+  // Use CSS to switch between corner mode and expanded modal mode
+  return (
+    <>
+      {/* Backdrop for expanded mode */}
+      {isPreviewExpanded && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 animate-fade-in"
+          onClick={handleBackdropClick}
+        />
+      )}
+      {/* Preview wrapper - changes positioning based on expanded state */}
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fade-in"
-        onClick={handleBackdropClick}
-        style={{
+        className={isPreviewExpanded
+          ? "fixed inset-0 z-50 flex items-center justify-center"
+          : "contents"
+        }
+        style={isPreviewExpanded ? {
           paddingTop: "env(safe-area-inset-top)",
           paddingBottom: "env(safe-area-inset-bottom)",
-        }}
+        } : undefined}
+        onClick={isPreviewExpanded ? handleBackdropClick : undefined}
       >
         {previewContent}
       </div>
-    )
-  }
-
-  // Small mode: render in corner
-  return previewContent
+    </>
+  )
 }

@@ -28,13 +28,45 @@ export interface SceneHandle {
 }
 
 /**
+ * Calculate zoom level to fit the drawer in the viewport.
+ * For orthographic camera, zoom determines how many world units fit in the view.
+ */
+function calculateFitZoom(
+  drawerWidth: number,
+  drawerDepth: number,
+  drawerHeight: number,
+  viewportWidth: number,
+  viewportHeight: number
+): number {
+  // Convert drawer height from height units to grid units (7mm per height unit, 42mm per grid unit)
+  const heightInGridUnits = (drawerHeight * 7) / 42;
+
+  // For isometric view, estimate the projected bounding box
+  // The diagonal footprint is roughly width + depth (at 45° view)
+  // Height adds to the vertical extent
+  const projectedWidth = (drawerWidth + drawerDepth) * 0.7; // Isometric projection factor
+  const projectedHeight = (drawerWidth + drawerDepth) * 0.35 + heightInGridUnits; // Depth contributes to height
+
+  // Calculate zoom to fit with 15% margin on each side
+  const marginFactor = 0.7; // 70% of viewport used for content
+  const zoomForWidth = (viewportWidth * marginFactor) / projectedWidth;
+  const zoomForHeight = (viewportHeight * marginFactor) / projectedHeight;
+
+  // Use the smaller zoom to ensure everything fits
+  return Math.min(zoomForWidth, zoomForHeight);
+}
+
+/**
  * Main scene component with camera, lights, orbit controls, and environment.
  * Handles rotation sync with UI store and renders floor grid.
  */
 export const Scene = forwardRef<SceneHandle, SceneProps>(
   ({ children, drawerWidth, drawerDepth, drawerHeight, gridUnitMm, layoutName, isExpanded }, ref) => {
     const controlsRef = useRef<OrbitControlsType>(null);
+    const hasInitializedRef = useRef(false);
+    const pendingFitZoomRef = useRef(false);
     const prevExpandedRef = useRef<boolean | undefined>(undefined);
+    const prevSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
     const { camera, size } = useThree();
 
     const setIsometricRotation = useUIStore((state) => state.setIsometricRotation);
@@ -79,39 +111,55 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       };
     }, [drawerWidth, drawerDepth, centerX, centerY, centerZ]);
 
-    // Set camera up vector to Z-up and position to default view
+    // Set camera up vector to Z-up and position to default view (only on initial mount)
     useEffect(() => {
+      if (hasInitializedRef.current) return;
       camera.up.set(0, 0, 1);
       camera.position.set(...defaultCameraPosition);
       camera.updateProjectionMatrix();
     }, [camera, defaultCameraPosition]);
 
-    // Auto-zoom when transitioning to/from expanded mode
-    // Only recalculates zoom on expand/collapse transitions, not on every size change
-    // This preserves manual zoom adjustments from OrbitControls
+    // Track expand/collapse changes - schedule a fit zoom for when size updates
     useEffect(() => {
-      if (!camera || !(camera instanceof OrthographicCamera)) return;
-
       const wasExpanded = prevExpandedRef.current;
-      const justExpanded = wasExpanded === false && isExpanded;
-      const justCollapsed = wasExpanded === true && !isExpanded;
+      const expandedChanged = wasExpanded !== undefined && wasExpanded !== isExpanded;
 
-      if (justExpanded) {
-        // Scale zoom proportionally with canvas size
-        // Baseline: zoom=30 for 280px canvas
-        const baseCanvasSize = 280;
-        const scaleFactor = Math.min(size.width, size.height) / baseCanvasSize;
-        // eslint-disable-next-line react-hooks/immutability -- Three.js requires direct mutation of camera properties
-        camera.zoom = 30 * scaleFactor;
-        camera.updateProjectionMatrix();
-      } else if (justCollapsed) {
-         
-        camera.zoom = 30;
-        camera.updateProjectionMatrix();
+      if (expandedChanged) {
+        pendingFitZoomRef.current = true;
       }
 
       prevExpandedRef.current = isExpanded;
-    }, [isExpanded, size, camera]);
+    }, [isExpanded]);
+
+    // Apply fit zoom when:
+    // - Initial mount (first time we have valid size)
+    // - Size changes after expand/collapse (pendingFitZoom is set)
+    useEffect(() => {
+      if (!camera || !(camera instanceof OrthographicCamera)) return;
+      if (size.width === 0 || size.height === 0) return;
+
+      const prevSize = prevSizeRef.current;
+      const sizeChanged = prevSize.width !== size.width || prevSize.height !== size.height;
+      const isInitialMount = !hasInitializedRef.current;
+      const shouldFitZoom = isInitialMount || (sizeChanged && pendingFitZoomRef.current);
+
+      if (shouldFitZoom) {
+        const fitZoom = calculateFitZoom(
+          drawerWidth,
+          drawerDepth,
+          drawerHeight,
+          size.width,
+          size.height
+        );
+        // eslint-disable-next-line react-hooks/immutability -- Three.js requires direct mutation of camera properties
+        camera.zoom = fitZoom;
+        camera.updateProjectionMatrix();
+        hasInitializedRef.current = true;
+        pendingFitZoomRef.current = false;
+      }
+
+      prevSizeRef.current = { width: size.width, height: size.height };
+    }, [size, camera, drawerWidth, drawerDepth, drawerHeight]);
 
     // Track rotation in ref during interaction (no React re-renders)
     const rotationRef = useRef(0);
