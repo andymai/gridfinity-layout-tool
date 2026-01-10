@@ -92,6 +92,24 @@ export interface ValidationResult {
            'invalid_layer' | 'collision' | 'blocked_zone';
 }
 
+/**
+ * Standardized result type for store operations.
+ * Use this pattern for operations that can fail with a user-facing error message.
+ *
+ * @example
+ * // Success with data
+ * return { success: true, data: newBin };
+ *
+ * // Success without data
+ * return { success: true };
+ *
+ * // Failure
+ * return { success: false, error: 'Cannot delete the last layer' };
+ */
+export type OperationResult<T = void> =
+  | { success: true; data?: T }
+  | { success: false; error: string };
+
 // === Print List ===
 
 export interface PrintPiece {

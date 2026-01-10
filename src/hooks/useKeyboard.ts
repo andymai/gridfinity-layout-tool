@@ -14,6 +14,43 @@ function isShortcut(key: string, shortcuts: readonly string[]): boolean {
   return shortcuts.includes(key);
 }
 
+/**
+ * Hook for global keyboard shortcut handling in the layout editor.
+ *
+ * Handles all keyboard interactions except when focus is in input/textarea elements.
+ * Automatically registers and cleans up event listeners.
+ *
+ * ## Supported Shortcuts
+ *
+ * **Selection & Editing:**
+ * - Delete/Backspace: Delete selected bins
+ * - Escape: Clear selection and exit paint mode
+ * - Ctrl+D: Duplicate selected bins
+ * - Ctrl+Z: Undo
+ * - Ctrl+Y / Ctrl+Shift+Z: Redo
+ *
+ * **Navigation:**
+ * - Arrow keys: Move selected bins (nudge) or navigate between bins (when focused)
+ * - W/S: Navigate layers (up/down)
+ * - A/D: Cycle through bins on current layer
+ * - +/-: Zoom in/out
+ *
+ * **Bin Operations:**
+ * - M: Enter keyboard move mode (then arrows to move, Enter to confirm, Escape to cancel)
+ * - R: Enter keyboard resize mode (then arrows to resize, Enter to confirm, Escape to cancel)
+ * - [/]: Cycle category of selected bins
+ * - L: Open quick label popover for selected bin
+ *
+ * @example
+ * ```tsx
+ * function GridEditor() {
+ *   // Register keyboard shortcuts globally
+ *   useKeyboard();
+ *
+ *   return <GridCanvas />;
+ * }
+ * ```
+ */
 export function useKeyboard() {
   const selectedBinIds = useUIStore(state => state.selectedBinIds);
   const focusedBinId = useUIStore(state => state.focusedBinId);

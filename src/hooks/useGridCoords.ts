@@ -6,7 +6,54 @@ import { BASE_CELL_SIZE } from '../constants';
 import { clamp } from '../utils/validation';
 
 /**
- * Convert mouse position to grid coordinates.
+ * Hook for converting between screen (pixel) coordinates and grid coordinates.
+ *
+ * ## Coordinate System
+ *
+ * The grid uses a bottom-left origin coordinate system:
+ * - **X axis**: 0 at left, increases rightward
+ * - **Y axis**: 0 at bottom, increases upward
+ *
+ * This differs from typical screen coordinates where Y=0 is at the top.
+ * The conversion handles this inversion automatically.
+ *
+ * ```
+ * Grid:           Screen:
+ *   y               top
+ *   ↑               ↓
+ *   │               │
+ *   └───→ x         └───→ x
+ * (0,0)           (0,0)
+ * ```
+ *
+ * ## Zoom Support
+ *
+ * All coordinate calculations account for the current zoom level.
+ * Cell sizes are scaled by the zoom factor when converting.
+ *
+ * @param gridRef - React ref to the grid container element
+ * @returns Object with coordinate utilities:
+ *   - `getGridCoords(clientX, clientY)` - Convert screen position to grid coords (or null if outside)
+ *   - `clampCoords(coord)` - Clamp coordinates to valid grid bounds
+ *   - `isInBounds(coord)` - Check if coordinates are within grid bounds
+ *   - `cellSize` - Current cell size in pixels (accounts for zoom)
+ *
+ * @example
+ * ```tsx
+ * function GridOverlay() {
+ *   const gridRef = useRef<HTMLDivElement>(null);
+ *   const { getGridCoords, isInBounds } = useGridCoords(gridRef);
+ *
+ *   const handleClick = (e: React.MouseEvent) => {
+ *     const coord = getGridCoords(e.clientX, e.clientY);
+ *     if (coord && isInBounds(coord)) {
+ *       console.log(`Clicked cell at (${coord.x}, ${coord.y})`);
+ *     }
+ *   };
+ *
+ *   return <div ref={gridRef} onClick={handleClick} />;
+ * }
+ * ```
  */
 export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
   const zoom = useUIStore(state => state.zoom);

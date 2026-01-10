@@ -6,6 +6,70 @@ import { useGridCoords } from './useGridCoords';
 import { canPlaceBin, clamp } from '../utils/validation';
 import { STAGING_ID } from '../constants';
 
+/**
+ * Hook for managing all grid interactions including bin creation, movement, and resizing.
+ *
+ * This hook provides the core interaction logic for the grid editor, handling five distinct
+ * interaction modes:
+ *
+ * ## Interaction Modes
+ *
+ * 1. **draw** - Create a new bin by clicking and dragging on an empty grid area.
+ *    The drawn rectangle becomes a new bin when the mouse is released.
+ *
+ * 2. **drag** - Move one or more selected bins by clicking and dragging them.
+ *    Supports multi-select dragging when bins are already selected.
+ *
+ * 3. **resize** - Resize bins using corner/edge handles. Supports resizing multiple
+ *    selected bins simultaneously with proportional scaling.
+ *
+ * 4. **stagingDrag** - Drag a bin from the staging area (stash) onto the grid.
+ *    Shows a ghost preview until the bin is placed.
+ *
+ * 5. **paint** - Fill mode where dragging selects an area to fill with uniform-sized bins.
+ *    Activated when paintSize is set in UI state.
+ *
+ * ## Validation
+ *
+ * All interactions validate placement against:
+ * - Grid bounds (drawer dimensions)
+ * - Collision with existing bins
+ * - Blocked zones from bins on lower layers
+ * - Height constraints (bin must fit within remaining drawer height)
+ *
+ * @param gridRef - React ref to the grid container element for coordinate conversion
+ * @returns Object with interaction handlers:
+ *   - `startDraw(coord)` - Begin drawing a new bin
+ *   - `startDrag(binId, clientX, clientY)` - Begin dragging bin(s)
+ *   - `startResize(binId, handle)` - Begin resizing bin(s)
+ *   - `startStagingDrag(binId)` - Begin dragging from staging area
+ *   - `handlePointerDown(e)` - Generic pointer down handler
+ *   - `handlePointerMove(e)` - Generic pointer move handler
+ *   - `handlePointerUp(e)` - Generic pointer up handler
+ *
+ * @example
+ * ```tsx
+ * function GridCanvas() {
+ *   const gridRef = useRef<HTMLDivElement>(null);
+ *   const {
+ *     handlePointerDown,
+ *     handlePointerMove,
+ *     handlePointerUp,
+ *   } = useInteraction(gridRef);
+ *
+ *   return (
+ *     <div
+ *       ref={gridRef}
+ *       onPointerDown={handlePointerDown}
+ *       onPointerMove={handlePointerMove}
+ *       onPointerUp={handlePointerUp}
+ *     >
+ *       {/* Grid content *\/}
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   // Track active pointer for multi-touch detection
   const activePointerIdRef = useRef<number | null>(null);
