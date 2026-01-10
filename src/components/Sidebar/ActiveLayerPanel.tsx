@@ -35,6 +35,7 @@ export function ActiveLayerPanel() {
     activeCategoryId,
     paintSize,
     togglePaintSize,
+    setPaintSize,
     setSelectedBins,
   } = useUIStore(
     useShallow((state) => ({
@@ -42,6 +43,7 @@ export function ActiveLayerPanel() {
       activeCategoryId: state.activeCategoryId,
       paintSize: state.paintSize,
       togglePaintSize: state.togglePaintSize,
+      setPaintSize: state.setPaintSize,
       setSelectedBins: state.setSelectedBins,
     }))
   );
@@ -92,6 +94,8 @@ export function ActiveLayerPanel() {
     execute(() => {
       fillLayer(activeLayerId, width, depth, activeCategoryId);
     });
+    // Exit paint mode after filling
+    setPaintSize(null);
     setTimeout(() => {
       const afterCount = useLayoutStore.getState().layout.bins.filter(b => b.layerId === activeLayerId).length;
       const added = afterCount - beforeCount;
