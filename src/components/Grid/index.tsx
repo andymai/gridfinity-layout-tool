@@ -54,6 +54,7 @@ export function Grid() {
     setKeyboardDragMode,
     setKeyboardResizeMode,
     halfBinMode,
+    selectedBinIds,
   } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
@@ -68,6 +69,7 @@ export function Grid() {
       paintSize: state.paintSize,
       setPaintSize: state.setPaintSize,
       setSelectedBins: state.setSelectedBins,
+      selectedBinIds: state.selectedBinIds,
       leftPanelCollapsed: state.leftPanelCollapsed,
       toggleLeftPanel: state.toggleLeftPanel,
       interaction: state.interaction,
@@ -132,6 +134,10 @@ export function Grid() {
 
   // Track if grid resize handles should pulse (first load)
   const [shouldPulseResizeHandles, setShouldPulseResizeHandles] = useState(false);
+
+  // Track last clicked row/column for shift-click range selection
+  const [lastClickedRow, setLastClickedRow] = useState<number | null>(null);
+  const [lastClickedCol, setLastClickedCol] = useState<number | null>(null);
 
   // Track if 3D preview has ever been shown (keep mounted once shown to avoid WebGL context issues)
   const [hasEverShownPreview, setHasEverShownPreview] = useState(showIsometricPreview);
@@ -357,8 +363,35 @@ export function Grid() {
   }, [showIsometricPreview, fitToScreen]);
 
 
+  // Get all bins that occupy any row in the given range (1-indexed row numbers)
+  const getBinsInRowRange = useCallback((startRow: number, endRow: number) => {
+    const minRow = Math.min(startRow, endRow) - 1; // Convert to 0-indexed
+    const maxRow = Math.max(startRow, endRow) - 1;
+    return bins.filter(b =>
+      b.layerId === activeLayerId &&
+      b.layerId !== STAGING_ID &&
+      // Bin occupies rows from b.y to b.y + b.depth - 1
+      // Check if bin overlaps with range [minRow, maxRow]
+      b.y + b.depth - 1 >= minRow && b.y <= maxRow
+    );
+  }, [bins, activeLayerId]);
+
+  // Get all bins that occupy any column in the given range (1-indexed column numbers)
+  const getBinsInColRange = useCallback((startCol: number, endCol: number) => {
+    const minCol = Math.min(startCol, endCol) - 1; // Convert to 0-indexed
+    const maxCol = Math.max(startCol, endCol) - 1;
+    return bins.filter(b =>
+      b.layerId === activeLayerId &&
+      b.layerId !== STAGING_ID &&
+      // Bin occupies columns from b.x to b.x + b.width - 1
+      // Check if bin overlaps with range [minCol, maxCol]
+      b.x + b.width - 1 >= minCol && b.x <= maxCol
+    );
+  }, [bins, activeLayerId]);
+
   // Select all bins that occupy a given row (1-indexed row number)
-  const handleRowClick = useCallback((rowNum: number) => {
+  // Supports shift-click for range selection and ctrl/cmd-click to add/remove
+  const handleRowClick = useCallback((rowNum: number, event: React.MouseEvent) => {
     // Convert 1-indexed to 0-indexed Y coordinate
     const rowY = rowNum - 1;
     // Find all bins on the active layer that occupy this row
@@ -367,13 +400,40 @@ export function Grid() {
       b.layerId !== STAGING_ID &&
       rowY >= b.y && rowY < b.y + b.depth
     );
-    if (binsInRow.length > 0) {
-      setSelectedBins(binsInRow.map(b => b.id));
+
+    const binIds = binsInRow.map(b => b.id);
+
+    if (event.shiftKey && lastClickedRow !== null) {
+      // Shift-click: select range from last clicked row to this row
+      const rangeBins = getBinsInRowRange(lastClickedRow, rowNum);
+      const rangeIds = rangeBins.map(b => b.id);
+      // Add range to existing selection (deduplicated)
+      setSelectedBins([...new Set([...selectedBinIds, ...rangeIds])]);
+    } else if (event.ctrlKey || event.metaKey) {
+      // Ctrl/Cmd-click: toggle bins in this row
+      if (binIds.length > 0) {
+        const allSelected = binIds.every(id => selectedBinIds.includes(id));
+        if (allSelected) {
+          // Remove all bins in this row from selection
+          setSelectedBins(selectedBinIds.filter(id => !binIds.includes(id)));
+        } else {
+          // Add all bins in this row to selection
+          setSelectedBins([...new Set([...selectedBinIds, ...binIds])]);
+        }
+      }
+      setLastClickedRow(rowNum);
+    } else {
+      // Normal click: replace selection
+      if (binIds.length > 0) {
+        setSelectedBins(binIds);
+      }
+      setLastClickedRow(rowNum);
     }
-  }, [bins, activeLayerId, setSelectedBins]);
+  }, [bins, activeLayerId, setSelectedBins, lastClickedRow, selectedBinIds, getBinsInRowRange]);
 
   // Select all bins that occupy a given column (1-indexed column number)
-  const handleColumnClick = useCallback((colNum: number) => {
+  // Supports shift-click for range selection and ctrl/cmd-click to add/remove
+  const handleColumnClick = useCallback((colNum: number, event: React.MouseEvent) => {
     // Convert 1-indexed to 0-indexed X coordinate
     const colX = colNum - 1;
     // Find all bins on the active layer that occupy this column
@@ -382,10 +442,36 @@ export function Grid() {
       b.layerId !== STAGING_ID &&
       colX >= b.x && colX < b.x + b.width
     );
-    if (binsInCol.length > 0) {
-      setSelectedBins(binsInCol.map(b => b.id));
+
+    const binIds = binsInCol.map(b => b.id);
+
+    if (event.shiftKey && lastClickedCol !== null) {
+      // Shift-click: select range from last clicked column to this column
+      const rangeBins = getBinsInColRange(lastClickedCol, colNum);
+      const rangeIds = rangeBins.map(b => b.id);
+      // Add range to existing selection (deduplicated)
+      setSelectedBins([...new Set([...selectedBinIds, ...rangeIds])]);
+    } else if (event.ctrlKey || event.metaKey) {
+      // Ctrl/Cmd-click: toggle bins in this column
+      if (binIds.length > 0) {
+        const allSelected = binIds.every(id => selectedBinIds.includes(id));
+        if (allSelected) {
+          // Remove all bins in this column from selection
+          setSelectedBins(selectedBinIds.filter(id => !binIds.includes(id)));
+        } else {
+          // Add all bins in this column to selection
+          setSelectedBins([...new Set([...selectedBinIds, ...binIds])]);
+        }
+      }
+      setLastClickedCol(colNum);
+    } else {
+      // Normal click: replace selection
+      if (binIds.length > 0) {
+        setSelectedBins(binIds);
+      }
+      setLastClickedCol(colNum);
     }
-  }, [bins, activeLayerId, setSelectedBins]);
+  }, [bins, activeLayerId, setSelectedBins, lastClickedCol, selectedBinIds, getBinsInColRange]);
 
   // Generate column numbers (1-indexed, displayed at bottom)
   const columnLabels = Array.from({ length: drawer.width }, (_, i) => i + 1);
@@ -720,8 +806,8 @@ export function Grid() {
                     minWidth: 0,
                     padding: 0,
                   }}
-                  onClick={() => handleRowClick(num)}
-                  title={`Click to select all bins in row ${num}`}
+                  onClick={(e) => handleRowClick(num, e)}
+                  title={`Click to select row ${num}. Shift-click for range. Ctrl-click to add/remove.`}
                   aria-label={`Select bins in row ${num}`}
                 >
                   {labelFontSize > 0 && num}
@@ -896,8 +982,8 @@ export function Grid() {
                         minWidth: 0,
                         padding: 0,
                       }}
-                      onClick={() => handleColumnClick(num)}
-                      title={`Click to select all bins in column ${num}`}
+                      onClick={(e) => handleColumnClick(num, e)}
+                      title={`Click to select column ${num}. Shift-click for range. Ctrl-click to add/remove.`}
                       aria-label={`Select bins in column ${num}`}
                     >
                       {labelFontSize > 0 && num}
