@@ -10,7 +10,7 @@ interface MobileHeaderProps {
 
 /**
  * Compact header for mobile layout.
- * Shows layout name (editable) and essential actions.
+ * Shows app title, tip link, layout name (editable) and essential actions.
  */
 export function MobileHeader({ onMenuClick, onHelpClick }: MobileHeaderProps) {
   const layout = useLayoutStore(state => state.layout);
@@ -59,9 +59,24 @@ export function MobileHeader({ onMenuClick, onHelpClick }: MobileHeaderProps) {
   };
 
   return (
-    <header
-      className="mobile-header h-12 flex items-center justify-between px-3 flex-shrink-0 bg-surface-secondary border-b border-stroke-subtle"
-    >
+    <div className="flex-shrink-0">
+      {/* App title bar */}
+      <div className="h-7 flex items-center justify-between px-3 bg-surface border-b border-stroke-subtle">
+        <span className="text-xs font-medium text-content-secondary">Gridfinity Layout Tool</span>
+        <a
+          href="https://ko-fi.com/andyaragon"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-xs text-accent hover:underline"
+        >
+          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          Tip
+        </a>
+      </div>
+      {/* Action bar */}
+      <header className="mobile-header h-12 flex items-center justify-between px-3 bg-surface-secondary border-b border-stroke-subtle">
       {/* Left: Settings button */}
       <button
         onClick={onMenuClick}
@@ -172,5 +187,6 @@ export function MobileHeader({ onMenuClick, onHelpClick }: MobileHeaderProps) {
         </button>
       </div>
     </header>
+    </div>
   );
 }
