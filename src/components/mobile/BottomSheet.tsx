@@ -106,7 +106,6 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
           maxHeight: '85dvh',
           transform: `translateY(${dragY}px)`,
           transitionDuration: isDragging ? '0ms' : '200ms',
-          paddingBottom: 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom))',
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -163,7 +162,10 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
         {/* Content */}
         <div
           className="flex-1 overflow-y-auto px-4"
-          style={{ overscrollBehavior: 'contain' }}
+          style={{
+            overscrollBehavior: 'contain',
+            paddingBottom: 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom))',
+          }}
         >
           {children}
         </div>

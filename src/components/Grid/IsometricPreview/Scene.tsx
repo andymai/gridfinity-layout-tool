@@ -1,7 +1,7 @@
 import { useEffect, useRef, useImperativeHandle, forwardRef, useMemo } from 'react';
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
-import { OrthographicCamera } from 'three';
+import { OrthographicCamera, Spherical, Vector3 } from 'three';
 import { useUIStore } from '../../../store';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { FloorGrid } from './FloorGrid';
@@ -142,24 +142,38 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       setPreset: (preset: CameraPreset) => {
         if (!controlsRef.current || !camera) return;
 
-        const targetPosition = cameraPresets[preset];
-        const startPosition = [camera.position.x, camera.position.y, camera.position.z];
-        const duration = 400; // ms
+        const target = new Vector3(centerX, centerY, centerZ);
+        const targetPosition = new Vector3(...cameraPresets[preset]);
+        const startPosition = camera.position.clone();
+
+        // Convert to spherical coordinates for smooth arc interpolation
+        const startSpherical = new Spherical().setFromVector3(
+          startPosition.clone().sub(target)
+        );
+        const targetSpherical = new Spherical().setFromVector3(
+          targetPosition.clone().sub(target)
+        );
+
+        const duration = 500; // ms - slightly longer for smoother feel
         const startTime = Date.now();
 
         const animate = () => {
           const elapsed = Date.now() - startTime;
           const progress = Math.min(elapsed / duration, 1);
 
-          // Ease-in-out function
-          const eased = progress < 0.5
-            ? 2 * progress * progress
-            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+          // Smooth ease-out cubic for natural deceleration
+          const eased = 1 - Math.pow(1 - progress, 3);
 
-          // Interpolate position
-          camera.position.x = startPosition[0] + (targetPosition[0] - startPosition[0]) * eased;
-          camera.position.y = startPosition[1] + (targetPosition[1] - startPosition[1]) * eased;
-          camera.position.z = startPosition[2] + (targetPosition[2] - startPosition[2]) * eased;
+          // Interpolate in spherical coordinates for smooth arc
+          const currentSpherical = new Spherical(
+            startSpherical.radius + (targetSpherical.radius - startSpherical.radius) * eased,
+            startSpherical.phi + (targetSpherical.phi - startSpherical.phi) * eased,
+            startSpherical.theta + (targetSpherical.theta - startSpherical.theta) * eased
+          );
+
+          // Convert back to Cartesian and apply
+          const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
+          camera.position.copy(newPosition);
 
           controlsRef.current?.update();
 
