@@ -93,7 +93,18 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const { execute } = useUndoableAction();
 
   // Start drawing a new bin (or start paint drag if paint mode active)
-  const startDraw = useCallback((coord: Coord) => {
+  const startDraw = useCallback((coord: Coord, pointerId?: number) => {
+    // Capture pointer for reliable event delivery during draw
+    if (pointerId !== undefined) {
+      activePointerIdRef.current = pointerId;
+      try {
+        document.body.setPointerCapture(pointerId);
+        capturedPointerRef.current = { element: document.body, pointerId };
+      } catch {
+        // Ignore if capture fails
+      }
+    }
+
     // If paint mode is active, start paint area selection (like draw mode)
     if (paintSize) {
       setInteraction({

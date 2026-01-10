@@ -12,7 +12,7 @@ interface GridCanvasProps {
   gridRef: RefObject<HTMLDivElement | null>;
   cellSize: number;
   gap: number;
-  onStartDraw: (coord: Coord) => void;
+  onStartDraw: (coord: Coord, pointerId?: number) => void;
   onStartDrag: (binId: string, clientX: number, clientY: number) => void;
   onStartResize: (binId: string, handle: ResizeHandle) => void;
 }
@@ -85,7 +85,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
       if (coords) {
         e.preventDefault();
         e.stopPropagation();
-        onStartDraw(coords);
+        onStartDraw(coords, e.pointerId);
       }
     }
   };
@@ -100,7 +100,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
 
     const coords = getGridCoords(e.clientX, e.clientY);
     if (coords) {
-      onStartDraw(coords);
+      onStartDraw(coords, e.pointerId);
     }
   };
 
