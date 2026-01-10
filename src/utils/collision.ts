@@ -80,9 +80,19 @@ export function binsCollide(binA: Bin, binB: Bin, layers: Layer[]): boolean {
   return verticalRangesOverlap(rectA, rectB);
 }
 
+// Simple cache for getBlockedZones - avoids recomputation when called repeatedly
+// with same inputs (common during drag/resize interactions)
+let blockedZonesCache: {
+  targetLayerId: string;
+  bins: Bin[];
+  layers: Layer[];
+  result: BlockedZone[];
+} | null = null;
+
 /**
  * Find all blocked zones for a given layer.
  * A blocked zone is where a bin from a lower layer protrudes upward.
+ * Results are cached by reference equality for performance during interactions.
  */
 export function getBlockedZones(
   targetLayerId: string,
@@ -90,6 +100,16 @@ export function getBlockedZones(
   layers: Layer[]
 ): BlockedZone[] {
   if (!targetLayerId) return [];
+
+  // Check cache - use reference equality for arrays (Zustand returns same refs when unchanged)
+  if (
+    blockedZonesCache &&
+    blockedZonesCache.targetLayerId === targetLayerId &&
+    blockedZonesCache.bins === bins &&
+    blockedZonesCache.layers === layers
+  ) {
+    return blockedZonesCache.result;
+  }
 
   const targetLayerIndex = layers.findIndex(l => l.id === targetLayerId);
   if (targetLayerIndex === -1) return [];
@@ -116,6 +136,9 @@ export function getBlockedZones(
       });
     }
   }
+
+  // Update cache
+  blockedZonesCache = { targetLayerId, bins, layers, result: blocked };
 
   return blocked;
 }

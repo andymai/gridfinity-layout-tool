@@ -1,4 +1,5 @@
 import type { RefObject, PointerEvent, JSX } from 'react';
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
 import { useGridCoords } from '../../hooks';
@@ -52,16 +53,25 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
 
   const { getGridCoords } = useGridCoords(gridRef);
 
-  // Filter bins for current and layers below
-  const activeBins = bins.filter((b) => b.layerId === activeLayerId);
-  const activeLayerIndex = layers.findIndex((l) => l.id === activeLayerId);
-  const layersBelowIds = layers.slice(0, activeLayerIndex).map((l) => l.id);
-  const ghostBins = showOtherLayers
-    ? bins.filter((b) => layersBelowIds.includes(b.layerId))
-    : [];
+  // Memoized: Filter bins for current layer
+  const activeBins = useMemo(
+    () => bins.filter((b) => b.layerId === activeLayerId),
+    [bins, activeLayerId]
+  );
 
-  // Get blocked zones for current layer
-  const blockedZones = getBlockedZones(activeLayerId, bins, layers);
+  // Memoized: Filter ghost bins (bins from layers below)
+  const ghostBins = useMemo(() => {
+    if (!showOtherLayers) return [];
+    const activeLayerIndex = layers.findIndex((l) => l.id === activeLayerId);
+    const layersBelowIds = layers.slice(0, activeLayerIndex).map((l) => l.id);
+    return bins.filter((b) => layersBelowIds.includes(b.layerId));
+  }, [bins, layers, activeLayerId, showOtherLayers]);
+
+  // Memoized: Get blocked zones for current layer
+  const blockedZones = useMemo(
+    () => getBlockedZones(activeLayerId, bins, layers),
+    [activeLayerId, bins, layers]
+  );
 
   // Capture phase handler for paint mode - runs before Bin components can stop propagation
   const handlePointerDownCapture = (e: PointerEvent<HTMLDivElement>) => {

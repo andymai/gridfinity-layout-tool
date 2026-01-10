@@ -122,24 +122,37 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     [setPreviewExpanded]
   )
 
-  const layout = useLayoutStore((state) => state.layout)
+  // Select only needed layout properties to prevent unnecessary re-renders
+  const { bins, layers, categories, drawer, printBedSize, gridUnitMm, layoutName } = useLayoutStore(
+    useShallow((state) => ({
+      bins: state.layout.bins,
+      layers: state.layout.layers,
+      categories: state.layout.categories,
+      drawer: state.layout.drawer,
+      printBedSize: state.layout.printBedSize,
+      gridUnitMm: state.layout.gridUnitMm,
+      layoutName: state.layout.name,
+    }))
+  )
   const activeLayerId = useUIStore((state) => state.activeLayerId)
 
-  // Get layer indices for filtering
-  const activeLayerIndex = layout.layers.findIndex(
-    (l) => l.id === activeLayerId
+  // Memoize active layer index calculation
+  const activeLayerIndex = useMemo(
+    () => layers.findIndex((l) => l.id === activeLayerId),
+    [layers, activeLayerId]
   )
 
   // Calculate max print size for split line visualization
   const maxGridUnits = useMemo(
-    () => calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm),
-    [layout.printBedSize, layout.gridUnitMm]
+    () => calcMaxGridUnits(printBedSize, gridUnitMm),
+    [printBedSize, gridUnitMm]
   )
 
   // Convert layout bins to renderable format with layer filtering
+  // Dependencies are specific properties (bins, layers, categories) not entire layout object
   const binsToRender = useMemo(() => {
     const result: Array<{
-      bin: (typeof layout.bins)[0]
+      bin: (typeof bins)[0]
       x: number
       y: number
       z: number
@@ -149,12 +162,12 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       opacity: number
     }> = []
 
-    for (const bin of layout.bins) {
+    for (const bin of bins) {
       if (bin.layerId === STAGING_ID) continue
 
       // Filter bins based on layer view mode
       if (activeLayerIndex >= 0) {
-        const binLayerIndex = layout.layers.findIndex(
+        const binLayerIndex = layers.findIndex(
           (l) => l.id === bin.layerId
         )
 
@@ -174,8 +187,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       }
 
       const zStart =
-        getLayerZStart(bin.layerId, layout.layers) * HEIGHT_TO_GRID_SCALE
-      const category = layout.categories.find((c) => c.id === bin.category)
+        getLayerZStart(bin.layerId, layers) * HEIGHT_TO_GRID_SCALE
+      const category = categories.find((c) => c.id === bin.category)
       const baseColor = category?.color || DEFAULT_CATEGORY_COLOR
 
       // No dimming needed since focus mode now hides other layers entirely
@@ -223,7 +236,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
 
     return result
   }, [
-    layout,
+    bins,
+    layers,
+    categories,
     activeLayerIndex,
     layerViewMode,
   ])
@@ -287,11 +302,11 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       >
         <Scene
           ref={sceneRef}
-          drawerWidth={layout.drawer.width}
-          drawerDepth={layout.drawer.depth}
-          drawerHeight={layout.drawer.height}
-          gridUnitMm={layout.gridUnitMm}
-          layoutName={layout.name}
+          drawerWidth={drawer.width}
+          drawerDepth={drawer.depth}
+          drawerHeight={drawer.height}
+          gridUnitMm={gridUnitMm}
+          layoutName={layoutName}
           isExpanded={isPreviewExpanded}
         >
           {/* Non-selected bins: merged geometry for performance */}
@@ -530,7 +545,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         </button>
       </div>
       {/* Layer view mode selector - only show when multiple layers */}
-      {layout.layers.length > 1 && (
+      {layers.length > 1 && (
         <div
           className={`absolute bottom-1 right-1 flex ${
             isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg bg-surface/50" : "gap-0.5"

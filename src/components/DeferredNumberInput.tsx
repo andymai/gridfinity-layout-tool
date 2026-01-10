@@ -42,13 +42,13 @@ export function DeferredNumberInput({
     }
   }, [localValue, min, max, onChange, value]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       commit();
-      (e.target as HTMLInputElement).blur();
+      e.currentTarget.blur();
     } else if (e.key === 'Escape') {
       setLocalValue(String(value));
-      (e.target as HTMLInputElement).blur();
+      e.currentTarget.blur();
     }
   };
 
