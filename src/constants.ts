@@ -23,13 +23,12 @@ export const CONSTRAINTS = {
 } as const;
 
 /**
- * Calculate max grid units that fit on a print bed with gaps between bins.
- * Formula: N bins fit when N*gridUnit + (N-1)*gap ≤ bedSize
- * Solved: N ≤ (bedSize + gap) / (gridUnit + gap)
+ * Calculate max grid units for a single bin that fits on a print bed.
+ * A bin of N grid units has size N * gridUnitMm, which must fit on the bed.
+ * Formula: N * gridUnitMm ≤ printBedSizeMm → N ≤ printBedSizeMm / gridUnitMm
  */
 export function calcMaxGridUnits(printBedSizeMm: number, gridUnitMm: number): number {
-  const gap = CONSTRAINTS.PRINT_GAP_MM;
-  return Math.max(1, Math.floor((printBedSizeMm + gap) / (gridUnitMm + gap)));
+  return Math.max(1, Math.floor(printBedSizeMm / gridUnitMm));
 }
 
 // === Staging ===
