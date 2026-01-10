@@ -34,6 +34,11 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
   // Visual grid dimensions
   const visualDepth = drawer.depth * scale;
 
+  // Helper to calculate pixel dimension for grid elements
+  // Uses Math.max(0, units - 1) to handle fractional dimensions correctly
+  // (avoids negative gap contribution when units < 1)
+  const toPixels = (units: number) => units * visualCellSize + Math.max(0, units - 1) * gap;
+
   if (!interaction) return null;
 
   const previews: React.ReactNode[] = [];
@@ -55,8 +60,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
     const left = gap + vx1 * (visualCellSize + gap);
     const top = gap + (visualDepth - vy2 - vDepth) * (visualCellSize + gap);
-    const rectWidth = vWidth * visualCellSize + (vWidth - 1) * gap;
-    const rectHeight = vDepth * visualCellSize + (vDepth - 1) * gap;
+    const rectWidth = toPixels(vWidth);
+    const rectHeight = toPixels(vDepth);
 
     previews.push(
       <div
@@ -106,8 +111,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
         const left = gap + vNewX * (visualCellSize + gap);
         const top = gap + (visualDepth - vNewY - vBinDepth) * (visualCellSize + gap);
-        const rectWidth = vBinWidth * visualCellSize + (vBinWidth - 1) * gap;
-        const rectHeight = vBinDepth * visualCellSize + (vBinDepth - 1) * gap;
+        const rectWidth = toPixels(vBinWidth);
+        const rectHeight = toPixels(vBinDepth);
 
         previews.push(
           <div
@@ -144,8 +149,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
       const left = gap + vRectX * (visualCellSize + gap);
       const top = gap + (visualDepth - vRectY - vRectDepth) * (visualCellSize + gap);
-      const rectWidth = vRectWidth * visualCellSize + (vRectWidth - 1) * gap;
-      const rectHeight = vRectDepth * visualCellSize + (vRectDepth - 1) * gap;
+      const rectWidth = toPixels(vRectWidth);
+      const rectHeight = toPixels(vRectDepth);
 
       // Ghost outline of original size (dashed gray border)
       const sizeChanged = currentRect.x !== originalBin.x ||
@@ -162,8 +167,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
         const origLeft = gap + vOrigX * (visualCellSize + gap);
         const origTop = gap + (visualDepth - vOrigY - vOrigDepth) * (visualCellSize + gap);
-        const origWidth = vOrigWidth * visualCellSize + (vOrigWidth - 1) * gap;
-        const origHeight = vOrigDepth * visualCellSize + (vOrigDepth - 1) * gap;
+        const origWidth = toPixels(vOrigWidth);
+        const origHeight = toPixels(vOrigDepth);
 
         previews.push(
           <div
@@ -219,8 +224,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
       const left = gap + vCoordX * (visualCellSize + gap);
       const top = gap + (visualDepth - vCoordY - vBinDepth) * (visualCellSize + gap);
-      const rectWidth = vBinWidth * visualCellSize + (vBinWidth - 1) * gap;
-      const rectHeight = vBinDepth * visualCellSize + (vBinDepth - 1) * gap;
+      const rectWidth = toPixels(vBinWidth);
+      const rectHeight = toPixels(vBinDepth);
 
       previews.push(
         <div
@@ -268,8 +273,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     // Outer selection area (amber dashed like draw)
     const areaLeft = gap + vx1 * (visualCellSize + gap);
     const areaTop = gap + (visualDepth - vy2 - vAreaDepth) * (visualCellSize + gap);
-    const areaPixelWidth = vAreaWidth * visualCellSize + (vAreaWidth - 1) * gap;
-    const areaPixelHeight = vAreaDepth * visualCellSize + (vAreaDepth - 1) * gap;
+    const areaPixelWidth = toPixels(vAreaWidth);
+    const areaPixelHeight = toPixels(vAreaDepth);
 
     previews.push(
       <div
@@ -304,8 +309,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
           const left = gap + vBinX * (visualCellSize + gap);
           const top = gap + (visualDepth - vBinY - vPaintDepth) * (visualCellSize + gap);
-          const rectWidth = vPaintWidth * visualCellSize + (vPaintWidth - 1) * gap;
-          const rectHeight = vPaintDepth * visualCellSize + (vPaintDepth - 1) * gap;
+          const rectWidth = toPixels(vPaintWidth);
+          const rectHeight = toPixels(vPaintDepth);
 
           previews.push(
             <div
@@ -341,8 +346,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
         const stripLeft = gap + vStripX * (visualCellSize + gap);
         const stripTop = gap + (visualDepth - vy1 - vUsedDepth) * (visualCellSize + gap);
-        const stripWidth = vRemainderWidth * visualCellSize + (vRemainderWidth - 1) * gap;
-        const stripHeight = vUsedDepth * visualCellSize + (vUsedDepth - 1) * gap;
+        const stripWidth = toPixels(vRemainderWidth);
+        const stripHeight = toPixels(vUsedDepth);
 
         previews.push(
           <div
@@ -367,8 +372,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
         const stripLeft = gap + vx1 * (visualCellSize + gap);
         const stripTop = gap + (visualDepth - vStripY - vRemainderDepth) * (visualCellSize + gap);
-        const stripWidth = vAreaWidth * visualCellSize + (vAreaWidth - 1) * gap;
-        const stripHeight = vRemainderDepth * visualCellSize + (vRemainderDepth - 1) * gap;
+        const stripWidth = toPixels(vAreaWidth);
+        const stripHeight = toPixels(vRemainderDepth);
 
         previews.push(
           <div
