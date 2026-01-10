@@ -212,7 +212,7 @@ describe('Mobile Touch Interactions', () => {
       expect(useUIStore.getState().contextMenu).toBeNull();
 
       // Drag should have started instead
-      expect(mockStartDrag).toHaveBeenCalledWith(testBin.id, 115, 100);
+      expect(mockStartDrag).toHaveBeenCalledWith(testBin.id, 115, 100, expect.any(Number));
     });
 
     it('cancels long press on pointer up', () => {
@@ -372,7 +372,7 @@ describe('Mobile Touch Interactions', () => {
         });
       });
 
-      expect(mockStartDrag).toHaveBeenCalledWith(testBin.id, 115, 100);
+      expect(mockStartDrag).toHaveBeenCalledWith(testBin.id, 115, 100, expect.any(Number));
     });
 
     it('does not start drag after long press triggers', () => {
@@ -483,7 +483,7 @@ describe('Mobile Touch Interactions', () => {
         });
       });
 
-      expect(mockStartResize).toHaveBeenCalledWith(testBin.id, 'se');
+      expect(mockStartResize).toHaveBeenCalledWith(testBin.id, 'se', expect.any(Number));
     });
   });
 
