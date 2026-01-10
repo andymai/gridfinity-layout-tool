@@ -2,6 +2,9 @@
 
 /* Extend Tailwind with CSS variable mappings using semantic naming */
 @theme {
+  /* Font families */
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+
   /* Surface colors (backgrounds) - use as bg-surface, bg-surface-secondary, etc. */
   --color-surface: var(--bg-primary);
   --color-surface-secondary: var(--bg-secondary);
