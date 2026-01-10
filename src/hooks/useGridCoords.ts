@@ -81,10 +81,10 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
 
     const cellPitch = cellSize + gap;
 
-    // For roundToNearest: snap to whichever cell center is closest (transitions at 50% mark)
+    // For roundToNearest: transitions at 70% into the cell (more forgiving than 50%, more responsive than 100%)
     // For floor mode: only change cell after fully entering it (transitions at cell boundary)
     const toGridCoord = roundToNearest
-      ? (px: number) => Math.round(px / cellPitch)
+      ? (px: number) => Math.floor((px + cellPitch * 0.3) / cellPitch)
       : (px: number) => Math.floor(px / cellPitch);
 
     const x = toGridCoord(relX);
