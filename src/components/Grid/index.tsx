@@ -53,8 +53,6 @@ export function Grid() {
     keyboardResizeMode,
     setKeyboardDragMode,
     setKeyboardResizeMode,
-    halfBinMode,
-    toggleHalfBinMode,
   } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
@@ -78,8 +76,6 @@ export function Grid() {
       keyboardResizeMode: state.keyboardResizeMode,
       setKeyboardDragMode: state.setKeyboardDragMode,
       setKeyboardResizeMode: state.setKeyboardResizeMode,
-      halfBinMode: state.halfBinMode,
-      toggleHalfBinMode: state.toggleHalfBinMode,
     }))
   );
 
@@ -594,20 +590,6 @@ export function Grid() {
                 Fit
               </button>
             </div>
-
-            {/* Half-bin mode toggle - power user feature for 0.5 unit increments */}
-            <button
-              onClick={toggleHalfBinMode}
-              className={`btn ${halfBinMode ? 'btn-primary' : 'btn-ghost'} px-2.5 py-1.5 flex items-center gap-1.5`}
-              aria-label={halfBinMode ? 'Disable half-bin mode' : 'Enable half-bin mode'}
-              title={halfBinMode ? 'Disable half-bin mode (H)' : 'Enable half-bin mode for 0.5 unit precision (H)'}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4h16M4 8h16M4 12h16M4 16h16M4 20h16" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8 4v16M16 4v16" />
-              </svg>
-              {!isNarrowToolbar && <span className="text-sm">½</span>}
-            </button>
 
             {/* 3D Preview toggle */}
             <button
