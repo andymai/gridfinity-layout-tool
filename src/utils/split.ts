@@ -168,9 +168,10 @@ export function generatePrintList(
   }
 
   // Sort by total area descending (batch efficiency)
+  // Use parseFloat to support fractional bin sizes (half-bin mode)
   rows.sort((a, b) => {
-    const areaA = parseInt(a.size.split('×')[0], 10) * parseInt(a.size.split('×')[1], 10) * a.binCount;
-    const areaB = parseInt(b.size.split('×')[0], 10) * parseInt(b.size.split('×')[1], 10) * b.binCount;
+    const areaA = parseFloat(a.size.split('×')[0]) * parseFloat(a.size.split('×')[1]) * a.binCount;
+    const areaB = parseFloat(b.size.split('×')[0]) * parseFloat(b.size.split('×')[1]) * b.binCount;
     return areaB - areaA;
   });
 

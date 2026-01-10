@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import type { RefObject } from 'react';
 import type { Coord } from '../types';
 import { useUIStore, useLayoutStore } from '../store';
-import { getBaseCellSize } from '../constants';
+import { getBaseCellSize, HALF_BIN_SCALE, snapToHalf } from '../constants';
 import { clamp } from '../utils/validation';
 import { useResponsive } from './useResponsive';
 
@@ -32,12 +32,19 @@ import { useResponsive } from './useResponsive';
  * All coordinate calculations account for the current zoom level.
  * Cell sizes are scaled by the zoom factor when converting.
  *
+ * ## Half-bin Mode
+ *
+ * When half-bin mode is enabled, coordinates snap to 0.5 unit increments
+ * instead of whole units. The visual grid shows sub-cells for each half-unit.
+ *
  * @param gridRef - React ref to the grid container element
  * @returns Object with coordinate utilities:
  *   - `getGridCoords(clientX, clientY)` - Convert screen position to grid coords (or null if outside)
  *   - `clampCoords(coord)` - Clamp coordinates to valid grid bounds
  *   - `isInBounds(coord)` - Check if coordinates are within grid bounds
  *   - `cellSize` - Current cell size in pixels (accounts for zoom)
+ *   - `halfBinMode` - Whether half-bin mode is active
+ *   - `visualCellSize` - Size of each visual cell (half of cellSize when halfBinMode active)
  *
  * @example
  * ```tsx
@@ -58,12 +65,20 @@ import { useResponsive } from './useResponsive';
  */
 export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
   const zoom = useUIStore(state => state.zoom);
+  const halfBinMode = useUIStore(state => state.halfBinMode);
   const drawer = useLayoutStore(state => state.layout.drawer);
   const { viewportWidth } = useResponsive();
 
-  // Use same cellSize calculation as Grid component for consistent coordinate conversion
+  // Base cell size at current zoom (represents 1 grid unit)
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
+
+  // In half-bin mode, each visual cell is smaller to fit 2x cells in the same space
+  // Formula: (cellSize - gap) / 2 ensures total grid width stays the same
+  // Normal: W * cellSize + (W+1) * gap
+  // Half-bin: 2W * visualCellSize + (2W+1) * gap = same when visualCellSize = (cellSize - gap) / 2
+  const visualCellSize = halfBinMode ? Math.round((cellSize - gap) / HALF_BIN_SCALE) : cellSize;
+  const visualGap = gap;
 
   const getGridCoords = useCallback((clientX: number, clientY: number): Coord | null => {
     if (!gridRef.current) return null;
@@ -72,23 +87,48 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
     const relX = clientX - rect.left;
     const relY = clientY - rect.top;
 
-    // Account for gap
-    const x = Math.floor(relX / (cellSize + gap));
-    // Y is inverted (0 at bottom in our coordinate system)
-    const y = drawer.depth - 1 - Math.floor(relY / (cellSize + gap));
+    if (halfBinMode) {
+      // In half-bin mode, calculate which half-cell we're in
+      // and convert to 0.5-snapped coordinates
+      const visualX = Math.floor(relX / (visualCellSize + visualGap));
+      const visualY = Math.floor(relY / (visualCellSize + visualGap));
 
-    return { x, y };
-  }, [gridRef, cellSize, drawer.depth]);
+      // Convert visual cell index to grid units (each visual cell = 0.5 grid units)
+      const x = visualX / HALF_BIN_SCALE;
+      // Y is inverted (0 at bottom in our coordinate system)
+      const y = drawer.depth - (visualY + 1) / HALF_BIN_SCALE;
 
-  const clampCoords = useCallback((coord: Coord): Coord => ({
-    x: clamp(coord.x, 0, drawer.width - 1),
-    y: clamp(coord.y, 0, drawer.depth - 1),
-  }), [drawer.width, drawer.depth]);
+      return { x: snapToHalf(x), y: snapToHalf(y) };
+    } else {
+      // Standard mode - whole cell coordinates
+      const x = Math.floor(relX / (cellSize + gap));
+      // Y is inverted (0 at bottom in our coordinate system)
+      const y = drawer.depth - 1 - Math.floor(relY / (cellSize + gap));
+
+      return { x, y };
+    }
+  }, [gridRef, cellSize, visualCellSize, visualGap, drawer.depth, halfBinMode]);
+
+  const clampCoords = useCallback((coord: Coord): Coord => {
+    if (halfBinMode) {
+      // In half-bin mode, clamp to 0.5 increments within bounds
+      // Max coordinate is drawer dimension - 0.5 (to allow 0.5-width bins at edge)
+      return {
+        x: clamp(snapToHalf(coord.x), 0, drawer.width - 0.5),
+        y: clamp(snapToHalf(coord.y), 0, drawer.depth - 0.5),
+      };
+    } else {
+      return {
+        x: clamp(coord.x, 0, drawer.width - 1),
+        y: clamp(coord.y, 0, drawer.depth - 1),
+      };
+    }
+  }, [drawer.width, drawer.depth, halfBinMode]);
 
   const isInBounds = useCallback((coord: Coord): boolean => {
     return coord.x >= 0 && coord.x < drawer.width &&
            coord.y >= 0 && coord.y < drawer.depth;
   }, [drawer.width, drawer.depth]);
 
-  return { getGridCoords, clampCoords, isInBounds, cellSize };
+  return { getGridCoords, clampCoords, isInBounds, cellSize, halfBinMode, visualCellSize };
 }

@@ -1,4 +1,5 @@
 import { STAGING_ID, CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
+import { useUIStore } from '../../store';
 import type { UseBinInspectorReturn } from './useBinInspector';
 import { SplitWarning } from './SplitWarning';
 
@@ -31,10 +32,17 @@ export function SingleBinInspector({
     clearSelection,
   } = inspector;
 
+  const halfBinMode = useUIStore(state => state.halfBinMode);
+
   if (!bin) return null;
 
   const isMobile = variant === 'mobile';
   const canMoveToStaging = bin.layerId !== STAGING_ID;
+
+  // Format dimensions - show decimal if fractional (half-bin mode)
+  const formatDim = (val: number) => val % 1 === 0 ? val.toString() : val.toFixed(1);
+  const minSize = halfBinMode ? 0.5 : 1;
+  const stepSize = halfBinMode ? 0.5 : 1;
 
   // Button sizing for mobile vs desktop
   const btnSize = isMobile ? 'w-12 h-12' : 'w-10 h-10';
@@ -53,7 +61,7 @@ export function SingleBinInspector({
           aria-hidden="true"
         />
         <h2 className="flex-1 text-lg font-semibold text-content">
-          {bin.width}×{bin.depth} Bin
+          {formatDim(bin.width)}×{formatDim(bin.depth)} Bin
         </h2>
         {onClose && (
           <button
@@ -81,7 +89,8 @@ export function SingleBinInspector({
               value={bin.width}
               onChange={(e) => updateField('width', e.target.value)}
               className={`input w-full ${inputHeight}`}
-              min={1}
+              min={minSize}
+              step={stepSize}
               aria-label="Bin width"
             />
           </div>
@@ -94,7 +103,8 @@ export function SingleBinInspector({
               value={bin.depth}
               onChange={(e) => updateField('depth', e.target.value)}
               className={`input w-full ${inputHeight}`}
-              min={1}
+              min={minSize}
+              step={stepSize}
               aria-label="Bin depth"
             />
           </div>

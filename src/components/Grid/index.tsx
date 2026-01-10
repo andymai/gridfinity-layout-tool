@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { useInteraction, useResponsive } from '../../hooks';
-import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS, getBaseCellSize } from '../../constants';
+import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS, getBaseCellSize, HALF_BIN_SCALE } from '../../constants';
 import { clamp } from '../../utils/validation';
 import { lazyWithRetry, namedExport } from '../../utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
@@ -53,6 +53,7 @@ export function Grid() {
     keyboardResizeMode,
     setKeyboardDragMode,
     setKeyboardResizeMode,
+    halfBinMode,
   } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
@@ -76,6 +77,7 @@ export function Grid() {
       keyboardResizeMode: state.keyboardResizeMode,
       setKeyboardDragMode: state.setKeyboardDragMode,
       setKeyboardResizeMode: state.setKeyboardResizeMode,
+      halfBinMode: state.halfBinMode,
     }))
   );
 
@@ -187,6 +189,12 @@ export function Grid() {
   // Adaptive cell size based on viewport width for optimal grid density
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
+
+  // In half-bin mode, visual cells are smaller to fit 2x cells in the same space
+  // Formula accounts for extra gaps: (cellSize - gap) / 2 keeps total grid size constant
+  const visualCellSize = halfBinMode ? (cellSize - gap) / HALF_BIN_SCALE : cellSize;
+  // Scale factor for grid dimensions
+  const scale = halfBinMode ? HALF_BIN_SCALE : 1;
 
   const canZoomOut = zoom > CONSTRAINTS.ZOOM_MIN;
   const canZoomIn = zoom < CONSTRAINTS.ZOOM_MAX;
@@ -687,7 +695,8 @@ export function Grid() {
               className="bg-surface"
               style={{
                 display: 'grid',
-                gridTemplateRows: `repeat(${drawer.depth}, ${cellSize}px)`,
+                // In half-bin mode, each label spans 2 visual cells (one whole unit)
+                gridTemplateRows: `repeat(${drawer.depth}, ${scale * visualCellSize + (scale - 1) * gap}px)`,
                 gap: gap,
                 paddingTop: gap,
                 paddingBottom: gap,
@@ -704,7 +713,8 @@ export function Grid() {
                   className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
                   style={{
                     width: labelWidth,
-                    height: cellSize,
+                    // Each label covers one whole grid unit (2 visual cells in half-bin mode)
+                    height: scale * visualCellSize + (scale - 1) * gap,
                     fontSize: labelFontSize,
                     minHeight: 0,
                     minWidth: 0,
@@ -727,8 +737,9 @@ export function Grid() {
                 ref={gridRef}
                 className={`relative ${axisLabelsVisible ? '' : 'rounded-lg'}`}
                 style={{
-                  width: drawer.width * (cellSize + gap) + gap,
-                  height: drawer.depth * (cellSize + gap) + gap,
+                  // In half-bin mode, grid has 2x cells at half the size
+                  width: drawer.width * scale * (visualCellSize + gap) + gap,
+                  height: drawer.depth * scale * (visualCellSize + gap) + gap,
                   backgroundColor: 'var(--grid-bg)',
                   boxShadow: 'var(--shadow-lg)',
                 }}
@@ -790,8 +801,8 @@ export function Grid() {
                   <div
                     className="absolute top-0 flex items-center justify-center group"
                     style={{
-                      left: drawer.width * (cellSize + gap) + gap,
-                      height: drawer.depth * (cellSize + gap) + gap,
+                      left: drawer.width * scale * (visualCellSize + gap) + gap,
+                      height: drawer.depth * scale * (visualCellSize + gap) + gap,
                       width: 24,
                       cursor: 'ew-resize',
                     }}
@@ -812,8 +823,8 @@ export function Grid() {
                   <div
                     className="absolute left-0 flex items-center justify-center group"
                     style={{
-                      top: drawer.depth * (cellSize + gap) + gap + (axisLabelsVisible ? columnLabelHeight : 0),
-                      width: drawer.width * (cellSize + gap) + gap,
+                      top: drawer.depth * scale * (visualCellSize + gap) + gap + (axisLabelsVisible ? columnLabelHeight : 0),
+                      width: drawer.width * scale * (visualCellSize + gap) + gap,
                       height: 24,
                       cursor: 'ns-resize',
                     }}
@@ -834,8 +845,8 @@ export function Grid() {
                   <div
                     className="absolute flex items-center justify-center group"
                     style={{
-                      left: drawer.width * (cellSize + gap) + gap,
-                      top: drawer.depth * (cellSize + gap) + gap + (axisLabelsVisible ? columnLabelHeight : 0),
+                      left: drawer.width * scale * (visualCellSize + gap) + gap,
+                      top: drawer.depth * scale * (visualCellSize + gap) + gap + (axisLabelsVisible ? columnLabelHeight : 0),
                       width: 24,
                       height: 24,
                       cursor: 'nwse-resize',
@@ -861,11 +872,12 @@ export function Grid() {
                   className="absolute left-0 bg-surface"
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: `repeat(${drawer.width}, ${cellSize}px)`,
+                    // In half-bin mode, each label spans 2 visual cells (one whole unit)
+                    gridTemplateColumns: `repeat(${drawer.width}, ${scale * visualCellSize + (scale - 1) * gap}px)`,
                     gap: gap,
                     padding: gap,
                     paddingTop: 0,
-                    top: drawer.depth * (cellSize + gap) + gap,
+                    top: drawer.depth * scale * (visualCellSize + gap) + gap,
                     height: columnLabelHeight,
                     zIndex: 30, // Above bins (z-index 10-20)
                   }}
@@ -876,7 +888,8 @@ export function Grid() {
                       type="button"
                       className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
                       style={{
-                        width: cellSize,
+                        // Each label covers one whole grid unit (2 visual cells in half-bin mode)
+                        width: scale * visualCellSize + (scale - 1) * gap,
                         height: columnLabelHeight,
                         fontSize: labelFontSize,
                         minHeight: 0,
