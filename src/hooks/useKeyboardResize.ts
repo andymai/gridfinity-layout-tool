@@ -2,7 +2,7 @@ import { useEffect, useCallback, useState } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
 import { canPlaceBin } from '../utils/validation';
 import { findBinById } from '../utils/entity';
-import { CONSTRAINTS, STAGING_ID } from '../constants';
+import { CONSTRAINTS, STAGING_ID, hasFractionalDimensions } from '../constants';
 
 /**
  * Hook for keyboard-based bin resizing.
@@ -20,7 +20,6 @@ export function useKeyboardResize() {
   const selectedBinIds = useUIStore(state => state.selectedBinIds);
   const announceToScreenReader = useUIStore(state => state.announceToScreenReader);
   const setInteraction = useUIStore(state => state.setInteraction);
-  const halfBinMode = useUIStore(state => state.halfBinMode);
 
   const layout = useLayoutStore(state => state.layout);
   const updateBin = useLayoutStore(state => state.updateBin);
@@ -82,8 +81,8 @@ export function useKeyboardResize() {
     const bin = findBinById(layout, selectedBinIds[0]);
     if (!bin) return;
 
-    // In half-bin mode, minimum size is 0.5; in normal mode it's 1
-    const minSize = halfBinMode ? 0.5 : 1;
+    // If bin has fractional dimensions, use 0.5 increments; otherwise 1
+    const minSize = hasFractionalDimensions(bin) ? 0.5 : 1;
 
     setResizeDelta(prev => {
       const newDelta = { dw: prev.dw + dw, dd: prev.dd + dd };
@@ -107,7 +106,7 @@ export function useKeyboardResize() {
 
       return newDelta;
     });
-  }, [keyboardResizeMode, selectedBinIds, layout, setInteraction, announceToScreenReader, halfBinMode]);
+  }, [keyboardResizeMode, selectedBinIds, layout, setInteraction, announceToScreenReader]);
 
   /**
    * Confirm resize - apply the size change to the bin.
@@ -119,8 +118,8 @@ export function useKeyboardResize() {
     const bin = findBinById(layout, selectedBinIds[0]);
     if (!bin) return;
 
-    // In half-bin mode, minimum size is 0.5; in normal mode it's 1
-    const minSize = halfBinMode ? 0.5 : 1;
+    // If bin has fractional dimensions, use 0.5 increments; otherwise 1
+    const minSize = hasFractionalDimensions(bin) ? 0.5 : 1;
     const newWidth = Math.max(minSize, Math.min(CONSTRAINTS.GRID_MAX, bin.width + dw));
     const newDepth = Math.max(minSize, Math.min(CONSTRAINTS.GRID_MAX, bin.depth + dd));
 
@@ -157,7 +156,7 @@ export function useKeyboardResize() {
     setKeyboardResizeMode(false);
     setInteraction(null);
     setResizeDelta({ dw: 0, dd: 0 });
-  }, [keyboardResizeMode, resizeDelta, selectedBinIds, layout, updateBin, execute, setKeyboardResizeMode, setInteraction, announceToScreenReader, halfBinMode]);
+  }, [keyboardResizeMode, resizeDelta, selectedBinIds, layout, updateBin, execute, setKeyboardResizeMode, setInteraction, announceToScreenReader]);
 
   /**
    * Exit resize mode without applying changes.
@@ -182,9 +181,10 @@ export function useKeyboardResize() {
       return;
     }
 
-    // Arrow keys - adjust size (0.5 in half-bin mode, 1 in normal mode)
+    // Arrow keys - adjust size (0.5 if bin has fractional dimensions, 1 otherwise)
     // Left/Right: width, Up/Down: depth
-    const increment = halfBinMode ? 0.5 : 1;
+    const bin = findBinById(layout, selectedBinIds[0]);
+    const increment = bin && hasFractionalDimensions(bin) ? 0.5 : 1;
     if (e.key === 'ArrowLeft') {
       e.preventDefault();
       adjustResizeDelta(-increment, 0);
@@ -219,7 +219,7 @@ export function useKeyboardResize() {
       exitResizeMode();
       return;
     }
-  }, [keyboardResizeMode, adjustResizeDelta, confirmResize, exitResizeMode, halfBinMode]);
+  }, [keyboardResizeMode, adjustResizeDelta, confirmResize, exitResizeMode, selectedBinIds, layout]);
 
   // Register keyboard event listener
   useEffect(() => {

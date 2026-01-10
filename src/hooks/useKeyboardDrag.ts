@@ -4,7 +4,7 @@ import { canPlaceBin } from '../utils/validation';
 import { constrainGroupDelta } from '../utils/selection';
 import { findBinById } from '../utils/entity';
 import type { Bin } from '../types';
-import { STAGING_ID } from '../constants';
+import { STAGING_ID, hasFractionalDimensions } from '../constants';
 
 /**
  * Hook for keyboard-based bin dragging.
@@ -22,7 +22,6 @@ export function useKeyboardDrag() {
   const selectedBinIds = useUIStore(state => state.selectedBinIds);
   const announceToScreenReader = useUIStore(state => state.announceToScreenReader);
   const setInteraction = useUIStore(state => state.setInteraction);
-  const halfBinMode = useUIStore(state => state.halfBinMode);
 
   const layout = useLayoutStore(state => state.layout);
   const updateBin = useLayoutStore(state => state.updateBin);
@@ -242,8 +241,12 @@ export function useKeyboardDrag() {
       return;
     }
 
-    // Arrow keys - adjust position (0.5 in half-bin mode, 1 in normal mode)
-    const increment = halfBinMode ? 0.5 : 1;
+    // Arrow keys - adjust position (0.5 if any selected bin has fractional dimensions)
+    const selectedBins = selectedBinIds
+      .map(id => findBinById(layout, id))
+      .filter((b): b is Bin => b !== undefined);
+    const hasHalfBins = selectedBins.some(bin => hasFractionalDimensions(bin));
+    const increment = hasHalfBins ? 0.5 : 1;
     if (e.key === 'ArrowUp') {
       e.preventDefault();
       adjustDragOffset(0, increment);
@@ -278,7 +281,7 @@ export function useKeyboardDrag() {
       exitDragMode();
       return;
     }
-  }, [keyboardDragMode, adjustDragOffset, confirmDrag, exitDragMode, halfBinMode]);
+  }, [keyboardDragMode, adjustDragOffset, confirmDrag, exitDragMode, selectedBinIds, layout]);
 
   // Register keyboard event listener
   useEffect(() => {
