@@ -256,28 +256,28 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
             <h3 className="mb-4" style={STYLES.sectionHeader}>
               Mouse / Touch
             </h3>
-            <div className="space-y-2 p-4 rounded-lg" style={STYLES.sectionContent}>
-              <InteractionRow
-                action="Click + drag on empty cell"
-                description="Draw a new bin"
-              />
-              <InteractionRow
-                action="Click on bin"
-                description="Select bin"
-              />
-              <InteractionRow
-                action="Drag selected bin"
-                description="Move bin"
-              />
-              <InteractionRow
-                action="Drag edge or corner handle"
-                description="Resize bin"
-              />
-              <InteractionRow
-                action="Click empty area"
-                description="Deselect bin"
-              />
-            </div>
+            <ul className="space-y-2 p-4 rounded-lg" style={STYLES.sectionContent}>
+              <li className="flex items-start gap-2" style={STYLES.rowDescription}>
+                <span style={STYLES.colorPrimary}>•</span>
+                <span><strong>Draw a new bin:</strong> Click and drag on empty cells</span>
+              </li>
+              <li className="flex items-start gap-2" style={STYLES.rowDescription}>
+                <span style={STYLES.colorPrimary}>•</span>
+                <span><strong>Select bin:</strong> Click on it</span>
+              </li>
+              <li className="flex items-start gap-2" style={STYLES.rowDescription}>
+                <span style={STYLES.colorPrimary}>•</span>
+                <span><strong>Move bin:</strong> Drag while selected</span>
+              </li>
+              <li className="flex items-start gap-2" style={STYLES.rowDescription}>
+                <span style={STYLES.colorPrimary}>•</span>
+                <span><strong>Resize bin:</strong> Drag edge or corner handles</span>
+              </li>
+              <li className="flex items-start gap-2" style={STYLES.rowDescription}>
+                <span style={STYLES.colorPrimary}>•</span>
+                <span><strong>Deselect:</strong> Click empty area or press Escape</span>
+              </li>
+            </ul>
           </section>
 
           {/* Touch Gestures Section - Only shown on tablet */}
@@ -370,6 +370,31 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
               </p>
             </div>
           </section>
+
+          {/* Bin Clearance Section */}
+          <section>
+            <h3 className="mb-4" style={STYLES.sectionHeader}>
+              Bin Clearance
+            </h3>
+            <div className="p-4 rounded-lg" style={STYLES.blockedZonesContent}>
+              <p className="mb-3">
+                <strong style={STYLES.textPrimary}>What is clearance?</strong>
+              </p>
+              <p className="mb-3">
+                Clearance reserves empty space above a bin for tall contents that stick out,
+                like scissors handles or tool grips. This space blocks bins on layers above
+                without adding physical bin height.
+              </p>
+              <p className="mb-3">
+                <strong style={STYLES.textPrimary}>Example:</strong> A 2u tall bin with 1u clearance
+                will block 3u total of vertical space, but only prints as a 2u bin.
+              </p>
+              <p>
+                Set clearance in the bin inspector (right panel) when you have multiple layers.
+                The 3D preview shows clearance as a translucent red zone above the bin.
+              </p>
+            </div>
+          </section>
         </div>
       </div>
     </div>
@@ -395,21 +420,6 @@ function ShortcutRow({
           </kbd>
         ))}
       </div>
-    </div>
-  );
-}
-
-function InteractionRow({
-  action,
-  description,
-}: {
-  action: string;
-  description: string;
-}) {
-  return (
-    <div className="flex justify-between items-center">
-      <span style={STYLES.rowDescription}>{description}</span>
-      <span className="italic" style={STYLES.rowAction}>{action}</span>
     </div>
   );
 }

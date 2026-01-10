@@ -161,23 +161,25 @@ export function MobileLayersPanel() {
 
   return (
     <div className="pb-4">
-      {/* Layer usage indicator */}
-      <div className="flex items-center gap-2 mb-3 px-1">
-        <div className="flex-1 h-2 rounded-full overflow-hidden bg-surface-elevated">
-          <div
-            className="h-full rounded-full transition-all"
-            style={{
-              width: `${Math.min(100, (totalLayerHeight / drawer.height) * 100)}%`,
-              backgroundColor: totalLayerHeight > drawer.height ? 'var(--color-error)' : 'var(--color-primary)',
-            }}
-          />
+      {/* Layer usage indicator - only show for multiple layers */}
+      {hasMultipleLayers && (
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <div className="flex-1 h-2 rounded-full overflow-hidden bg-surface-elevated">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min(100, (totalLayerHeight / drawer.height) * 100)}%`,
+                backgroundColor: totalLayerHeight >= drawer.height ? 'var(--color-warning)' : 'var(--color-info)',
+              }}
+            />
+          </div>
+          <span
+            className={`text-xs ${totalLayerHeight >= drawer.height ? 'text-warning' : 'text-content-tertiary'}`}
+          >
+            {totalLayerHeight}/{drawer.height}u
+          </span>
         </div>
-        <span
-          className={`text-xs ${totalLayerHeight > drawer.height ? 'text-error' : 'text-content-tertiary'}`}
-        >
-          {totalLayerHeight}/{drawer.height}u
-        </span>
-      </div>
+      )}
 
       {/* Reorder error message */}
       {reorderError && (
@@ -202,7 +204,7 @@ export function MobileLayersPanel() {
           return (
             <div
               key={layer.id}
-              className={`rounded-lg overflow-hidden ${isActive ? 'bg-surface-hover border-2 border-accent' : 'bg-surface-elevated border-2 border-transparent'}`}
+              className={`rounded-r-lg border-l-4 overflow-hidden ${isActive ? 'bg-surface-hover border-l-accent' : 'bg-surface-elevated border-l-transparent'}`}
             >
               <button
                 className="w-full p-4 text-left"
@@ -223,7 +225,7 @@ export function MobileLayersPanel() {
                       />
                     ) : (
                       <span
-                        className={`font-medium truncate block text-content text-base ${isActive ? 'underline decoration-dotted underline-offset-2' : ''}`}
+                        className={`truncate block text-content text-base ${isActive ? 'font-semibold' : 'font-medium'}`}
                         onClick={(e) => {
                           if (isActive) {
                             e.stopPropagation();
@@ -237,16 +239,9 @@ export function MobileLayersPanel() {
                     <span
                       className="text-sm mt-1 block text-content-tertiary"
                     >
-                      {binCount} bin{binCount !== 1 ? 's' : ''} · {layer.height}u · {layerCoverage}%
+                      {binCount} bin{binCount !== 1 ? 's' : ''} · {layer.height}u{hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
                     </span>
                   </div>
-                  {isActive && (
-                    <span
-                      className="px-2 py-1 rounded text-xs font-medium bg-accent text-black"
-                    >
-                      Active
-                    </span>
-                  )}
                 </div>
               </button>
 
@@ -370,7 +365,7 @@ export function MobileLayersPanel() {
             width: `${hasMultipleLayers ? totalCoverage : activeCoverage}%`,
             backgroundColor: (hasMultipleLayers ? totalCoverage : activeCoverage) === 100
               ? 'var(--color-success)'
-              : 'var(--color-primary)',
+              : 'var(--text-tertiary)',
           }}
         />
       </div>
