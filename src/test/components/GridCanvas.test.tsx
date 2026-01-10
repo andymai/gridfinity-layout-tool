@@ -54,8 +54,7 @@ describe('GridCanvas', () => {
       contextMenu: null,
       showIsometricPreview: true,
       isometricRotation: 0,
-      hideLayersAbove: false,
-      dimInactiveLayers: true,
+      layerViewMode: 'focus',
       isPreviewExpanded: false,
     });
   });

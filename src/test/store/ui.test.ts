@@ -21,8 +21,7 @@ describe('ui store', () => {
       contextMenu: null,
       showIsometricPreview: true,
       isometricRotation: 0,
-      hideLayersAbove: false,
-      dimInactiveLayers: true,
+      layerViewMode: 'focus',
       isPreviewExpanded: false,
     });
   });
@@ -336,20 +335,16 @@ describe('ui store', () => {
       expect(useUIStore.getState().isometricRotation).toBe(0);
     });
 
-    it('toggleHideLayersAbove toggles state', () => {
-      const { toggleHideLayersAbove } = useUIStore.getState();
+    it('setLayerViewMode changes layer view mode', () => {
+      const { setLayerViewMode } = useUIStore.getState();
 
-      expect(useUIStore.getState().hideLayersAbove).toBe(false);
-      toggleHideLayersAbove();
-      expect(useUIStore.getState().hideLayersAbove).toBe(true);
-    });
-
-    it('toggleDimInactiveLayers toggles state', () => {
-      const { toggleDimInactiveLayers } = useUIStore.getState();
-
-      expect(useUIStore.getState().dimInactiveLayers).toBe(true);
-      toggleDimInactiveLayers();
-      expect(useUIStore.getState().dimInactiveLayers).toBe(false);
+      expect(useUIStore.getState().layerViewMode).toBe('focus');
+      setLayerViewMode('stack');
+      expect(useUIStore.getState().layerViewMode).toBe('stack');
+      setLayerViewMode('all');
+      expect(useUIStore.getState().layerViewMode).toBe('all');
+      setLayerViewMode('focus');
+      expect(useUIStore.getState().layerViewMode).toBe('focus');
     });
 
     it('togglePreviewExpanded toggles expanded state', () => {

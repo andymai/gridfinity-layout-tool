@@ -47,8 +47,7 @@ describe('useInteraction', () => {
       contextMenu: null,
       showIsometricPreview: true,
       isometricRotation: 0,
-      hideLayersAbove: false,
-      dimInactiveLayers: true,
+      layerViewMode: 'focus',
       isPreviewExpanded: false,
     });
     useHistoryStore.setState({
@@ -432,8 +431,7 @@ describe('resize rect calculation (integration)', () => {
       contextMenu: null,
       showIsometricPreview: true,
       isometricRotation: 0,
-      hideLayersAbove: false,
-      dimInactiveLayers: true,
+      layerViewMode: 'focus',
       isPreviewExpanded: false,
     });
     useHistoryStore.setState({
@@ -532,8 +530,7 @@ describe('pointer events', () => {
       contextMenu: null,
       showIsometricPreview: true,
       isometricRotation: 0,
-      hideLayersAbove: false,
-      dimInactiveLayers: true,
+      layerViewMode: 'focus',
       isPreviewExpanded: false,
     });
     useHistoryStore.setState({
@@ -910,8 +907,7 @@ describe('stagingDrag interaction', () => {
       contextMenu: null,
       showIsometricPreview: true,
       isometricRotation: 0,
-      hideLayersAbove: false,
-      dimInactiveLayers: true,
+      layerViewMode: 'focus',
       isPreviewExpanded: false,
     });
     useHistoryStore.setState({
@@ -1124,8 +1120,7 @@ describe('staging drag', () => {
       contextMenu: null,
       showIsometricPreview: true,
       isometricRotation: 0,
-      hideLayersAbove: false,
-      dimInactiveLayers: true,
+      layerViewMode: 'focus',
       isPreviewExpanded: false,
     });
     useHistoryStore.setState({

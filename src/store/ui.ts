@@ -7,6 +7,8 @@ export type DropTarget = 'trash' | 'staging' | null;
 
 export type MobilePanel = 'layers' | 'inspector' | 'categories' | 'print' | 'settings' | null;
 
+export type LayerViewMode = 'focus' | 'stack' | 'all';
+
 export interface PaintSize {
   width: number;
   depth: number;
@@ -48,8 +50,7 @@ interface UIState {
   // Isometric preview
   showIsometricPreview: boolean;
   isometricRotation: number; // Horizontal rotation degrees, 0-360
-  hideLayersAbove: boolean; // Hide layers above active layer in 3D preview
-  dimInactiveLayers: boolean; // Dim non-active layers in 3D preview
+  layerViewMode: LayerViewMode; // 'focus' (active only), 'stack' (active+below), 'all'
   isPreviewExpanded: boolean; // Expanded modal view
 
   // Keyboard navigation
@@ -98,8 +99,7 @@ interface UIState {
   // Isometric preview actions
   toggleIsometricPreview: () => void;
   setIsometricRotation: (rotation: number) => void;
-  toggleHideLayersAbove: () => void;
-  toggleDimInactiveLayers: () => void;
+  setLayerViewMode: (mode: LayerViewMode) => void;
   snapToIsometric: () => void; // Snap to nearest 90°
   togglePreviewExpanded: () => void;
   setPreviewExpanded: (expanded: boolean) => void;
@@ -131,8 +131,7 @@ export const useUIStore = create<UIState>((set) => ({
   contextMenu: null,
   showIsometricPreview: false,
   isometricRotation: 0,
-  hideLayersAbove: true, // Show only active layer and below
-  dimInactiveLayers: true, // Dim non-active layers
+  layerViewMode: 'focus', // Default: show only active layer
   isPreviewExpanded: false,
   focusedBinId: null,
   keyboardDragMode: false,
@@ -234,12 +233,7 @@ export const useUIStore = create<UIState>((set) => ({
   setIsometricRotation: (rotation) => set({
     isometricRotation: ((rotation % 360) + 360) % 360 // Normalize to 0-360
   }),
-  toggleHideLayersAbove: () => set(state => ({
-    hideLayersAbove: !state.hideLayersAbove
-  })),
-  toggleDimInactiveLayers: () => set(state => ({
-    dimInactiveLayers: !state.dimInactiveLayers
-  })),
+  setLayerViewMode: (mode) => set({ layerViewMode: mode }),
   snapToIsometric: () => set(state => {
     // Snap to nearest 90° angle
     const snapped = Math.round(state.isometricRotation / 90) * 90;

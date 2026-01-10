@@ -218,14 +218,24 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         onEnd={handleEnd}
       />
 
-      {/* Ambient light - bright to preserve vibrant category colors */}
-      <ambientLight intensity={0.75} />
+      {/* Hemisphere light - sky color from above, dark ground bounce from below
+          Creates natural shadowing where interiors facing down get darker */}
+      <hemisphereLight
+        args={['#ffffff', '#1a1a2e', 0.5]}
+      />
 
-      {/* Directional light - subtle shadows for depth */}
+      {/* Key light - main directional for depth and shadows */}
       <directionalLight
         position={[-4, 6, 7]}
-        intensity={0.6}
-        color="#ffffff"
+        intensity={0.7}
+        color="#fff8f0"
+      />
+
+      {/* Fill light - subtle cool light from opposite side to prevent pitch black */}
+      <directionalLight
+        position={[4, -4, 3]}
+        intensity={0.15}
+        color="#e0e8ff"
       />
 
       {/* Contact shadows for ground connection - paused during interaction for performance */}

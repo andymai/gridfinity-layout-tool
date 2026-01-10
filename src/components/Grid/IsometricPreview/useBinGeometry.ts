@@ -9,20 +9,38 @@ const WALL_THICKNESS = 0.08; // Thinner walls (was 0.12)
 const INTERIOR_OFFSET = 0.01;
 
 /**
- * Apply brightness adjustment to a color.
+ * Apply brightness adjustment to a color using proper color theory.
  * Brightness > 0 lightens, < 0 darkens.
+ *
+ * For shadows (negative brightness):
+ * - Decrease lightness
+ * - Shift hue slightly toward blue (cooler shadows)
+ * - Maintain or boost saturation (shadows aren't gray)
  */
 function adjustColor(baseColor: THREE.Color, brightness: number): THREE.Color {
   const result = baseColor.clone();
+  const hsl = { h: 0, s: 0, l: 0 };
+  result.getHSL(hsl);
 
   if (brightness > 0) {
-    // Lighten: lerp toward white
-    result.lerp(new THREE.Color(1, 1, 1), brightness);
+    // Lighten: increase lightness toward 1
+    hsl.l = hsl.l + (1 - hsl.l) * brightness;
   } else {
-    // Darken: multiply by (1 + brightness), where brightness is negative
-    result.multiplyScalar(1 + brightness);
+    // Darken with color theory:
+    // 1. Reduce lightness
+    const darkenAmount = -brightness;
+    hsl.l = hsl.l * (1 - darkenAmount * 0.8);
+
+    // 2. Shift hue toward blue (0.6 in HSL) for cooler shadows
+    const blueHue = 0.6;
+    const hueShift = darkenAmount * 0.08; // Subtle shift
+    hsl.h = hsl.h + (blueHue - hsl.h) * hueShift;
+
+    // 3. Boost saturation slightly (shadows are rich, not gray)
+    hsl.s = Math.min(1, hsl.s * (1 + darkenAmount * 0.2));
   }
 
+  result.setHSL(hsl.h, hsl.s, hsl.l);
   return result;
 }
 
@@ -212,8 +230,8 @@ export function createBinGeometry({ width, depth, height, baseColor }: BinGeomet
     const interiorFloorZ = z0 + INTERIOR_OFFSET;
     const interiorCeilingZ = z1 - INTERIOR_OFFSET;
 
-    // Interior floor (35% darkened for depth without losing color)
-    const interiorFloorColor = adjustColor(color, -0.35);
+    // Interior floor (50% darkened - HSL-based for proper shadow hue)
+    const interiorFloorColor = adjustColor(color, -0.50);
 
     addQuad(
       positions, colors,
@@ -224,10 +242,10 @@ export function createBinGeometry({ width, depth, height, baseColor }: BinGeomet
       interiorFloorColor
     );
 
-    // Interior walls (25% darkened for depth without losing color)
+    // Interior walls (35% darkened - HSL-based for proper shadow hue)
     // Note: Only 2 inner walls are visible from any given angle
     // For simplicity, we'll render all 4 and let z-buffer handle visibility
-    const interiorWallColor = adjustColor(color, -0.25);
+    const interiorWallColor = adjustColor(color, -0.35);
 
     // Inner front wall
     addQuad(

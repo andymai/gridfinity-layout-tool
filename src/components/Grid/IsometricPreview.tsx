@@ -10,7 +10,6 @@ import {
 import { useResponsive } from "../../hooks/useResponsive"
 import { use3DPreviewKeyboard } from "../../hooks/use3DPreviewKeyboard"
 import { getLayerZStart } from "../../utils/collision"
-import { darkenColor } from "../../utils/isometric"
 import { Scene, type SceneHandle } from "./IsometricPreview/Scene"
 import { BinMesh } from "./IsometricPreview/BinMesh"
 import { SplitLineOverlay } from "./IsometricPreview/SplitLineOverlay"
@@ -38,13 +37,11 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
 
   const {
     showIsometricPreview,
-    hideLayersAbove,
-    dimInactiveLayers,
+    layerViewMode,
     isPreviewExpanded,
     isometricRotation,
     selectedBinIds,
-    toggleHideLayersAbove,
-    toggleDimInactiveLayers,
+    setLayerViewMode,
     togglePreviewExpanded,
     setPreviewExpanded,
     toggleIsometricPreview,
@@ -52,13 +49,11 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   } = useUIStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
-      hideLayersAbove: state.hideLayersAbove,
-      dimInactiveLayers: state.dimInactiveLayers,
+      layerViewMode: state.layerViewMode,
       isPreviewExpanded: state.isPreviewExpanded,
       isometricRotation: state.isometricRotation,
       selectedBinIds: state.selectedBinIds,
-      toggleHideLayersAbove: state.toggleHideLayersAbove,
-      toggleDimInactiveLayers: state.toggleDimInactiveLayers,
+      setLayerViewMode: state.setLayerViewMode,
       togglePreviewExpanded: state.togglePreviewExpanded,
       setPreviewExpanded: state.setPreviewExpanded,
       toggleIsometricPreview: state.toggleIsometricPreview,
@@ -157,12 +152,25 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     for (const bin of layout.bins) {
       if (bin.layerId === STAGING_ID) continue
 
-      // Filter out bins from layers above active layer if hideLayersAbove is enabled
-      if (hideLayersAbove && activeLayerIndex >= 0) {
+      // Filter bins based on layer view mode
+      if (activeLayerIndex >= 0) {
         const binLayerIndex = layout.layers.findIndex(
           (l) => l.id === bin.layerId
         )
-        if (binLayerIndex > activeLayerIndex) continue
+
+        switch (layerViewMode) {
+          case 'focus':
+            // Show only the active layer
+            if (binLayerIndex !== activeLayerIndex) continue
+            break
+          case 'stack':
+            // Show active layer and layers below (slice view)
+            if (binLayerIndex > activeLayerIndex) continue
+            break
+          case 'all':
+            // Show all layers
+            break
+        }
       }
 
       const zStart =
@@ -170,10 +178,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       const category = layout.categories.find((c) => c.id === bin.category)
       const baseColor = category?.color || DEFAULT_CATEGORY_COLOR
 
-      // Optionally dim non-active layers
-      const isActiveLayer = bin.layerId === activeLayerId
-      const isDimmed = dimInactiveLayers && !isActiveLayer
-      const color = isDimmed ? darkenColor(baseColor, 0.4) : baseColor
+      // No dimming needed since focus mode now hides other layers entirely
+      const color = baseColor
 
       // Y-axis: In grid, y=0 is front (bottom), y increases toward back (top)
       // In 3D: Y=0 is front (toward camera), Y increases away (toward back)
@@ -186,7 +192,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         height: bin.height * HEIGHT_TO_GRID_SCALE,
         clearanceHeight: (bin.clearanceHeight || 0) * HEIGHT_TO_GRID_SCALE,
         color,
-        opacity: isDimmed ? 0.5 : 1,
+        opacity: 1,
       })
     }
 
@@ -218,10 +224,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     return result
   }, [
     layout,
-    activeLayerId,
-    hideLayersAbove,
     activeLayerIndex,
-    dimInactiveLayers,
+    layerViewMode,
   ])
 
   // Memoize filtered bin arrays to prevent recalculation on every render
@@ -525,23 +529,23 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           )}
         </button>
       </div>
-      {/* Layer controls - only show when multiple layers */}
+      {/* Layer view mode selector - only show when multiple layers */}
       {layout.layers.length > 1 && (
         <div
           className={`absolute bottom-1 right-1 flex ${
             isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg bg-surface/50" : "gap-0.5"
           }`}
         >
-          {/* Focus active layer - dims other layers */}
+          {/* Focus - show only active layer */}
           <button
             onClick={(e) => {
               e.stopPropagation()
-              toggleDimInactiveLayers()
+              setLayerViewMode('focus')
             }}
-            className={`btn ${dimInactiveLayers ? 'btn-primary' : 'btn-ghost'} ${
+            className={`btn ${layerViewMode === 'focus' ? 'btn-primary' : 'btn-ghost'} ${
               isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
             }`}
-            title={dimInactiveLayers ? "Focus active layer (on)" : "Focus active layer (off)"}
+            title="Show only active layer"
           >
             <svg
               className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
@@ -552,7 +556,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              {/* Eye icon - focus/visibility */}
+              {/* Eye icon - focus */}
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
@@ -560,16 +564,16 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               <span className="text-xs">Focus</span>
             )}
           </button>
-          {/* Show all layers toggle */}
+          {/* Stack - show active layer and below */}
           <button
             onClick={(e) => {
               e.stopPropagation()
-              toggleHideLayersAbove()
+              setLayerViewMode('stack')
             }}
-            className={`btn ${hideLayersAbove ? 'btn-ghost' : 'btn-primary'} ${
+            className={`btn ${layerViewMode === 'stack' ? 'btn-primary' : 'btn-ghost'} ${
               isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
             }`}
-            title={hideLayersAbove ? "Show all layers" : "Showing all layers"}
+            title="Show active layer and below"
           >
             <svg
               className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
@@ -580,7 +584,35 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              {/* Stacked layers icon */}
+              {/* Two layers stacked - slice view */}
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+            {isPreviewExpanded && !isMobile && (
+              <span className="text-xs">Stack</span>
+            )}
+          </button>
+          {/* All - show all layers */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setLayerViewMode('all')
+            }}
+            className={`btn ${layerViewMode === 'all' ? 'btn-primary' : 'btn-ghost'} ${
+              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+            }`}
+            title="Show all layers"
+          >
+            <svg
+              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {/* Three layers stacked - all layers */}
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
               <path d="M2 17l10 5 10-5" />
               <path d="M2 12l10 5 10-5" />
