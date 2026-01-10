@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '../store';
 
@@ -26,6 +26,24 @@ export function DropZones() {
 
   // Determine if we're in a dragging state
   const isDragging = interactionType === 'drag' || interactionType === 'stagingDrag';
+
+  // Only show drop zones after actual pointer movement during drag.
+  // On desktop, drag interaction starts immediately on pointerDown, but we only
+  // want to show drop zones when the user actually starts moving (not just clicking).
+  const [hasMoved, setHasMoved] = useState(false);
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMove = () => setHasMoved(true);
+    // Listen for first pointer move after drag starts
+    document.addEventListener('pointermove', handleMove, { once: true });
+    return () => {
+      document.removeEventListener('pointermove', handleMove);
+      setHasMoved(false);
+    };
+  }, [isDragging]);
+
+  const showZones = isDragging && hasMoved;
 
   useEffect(() => {
     if (!isDragging) {
@@ -55,7 +73,7 @@ export function DropZones() {
     return () => document.removeEventListener('pointermove', handlePointerMove);
   }, [isDragging, setDropTarget]);
 
-  if (!isDragging || !interaction) {
+  if (!showZones || !interaction) {
     return null;
   }
 

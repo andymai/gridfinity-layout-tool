@@ -147,6 +147,23 @@ export function Staging() {
   const draggingBinId = isDraggingStagingBin ? interaction.binId : null;
   const isDropTarget = dropTarget === 'staging';
 
+  // Only show as drop target after actual pointer movement during drag.
+  // On desktop, drag interaction starts immediately on pointerDown, but we only
+  // want to show the stash drop target when the user actually starts moving.
+  const [hasMoved, setHasMoved] = useState(false);
+  useEffect(() => {
+    if (!isDraggingFromGrid) return;
+
+    const handleMove = () => setHasMoved(true);
+    document.addEventListener('pointermove', handleMove, { once: true });
+    return () => {
+      document.removeEventListener('pointermove', handleMove);
+      setHasMoved(false);
+    };
+  }, [isDraggingFromGrid]);
+
+  const showAsDropTarget = isDraggingFromGrid && hasMoved;
+
   // Track pointer position to set drop target when hovering over stash
   useEffect(() => {
     if (!isDraggingFromGrid) return;
@@ -193,12 +210,12 @@ export function Staging() {
 
   // Show when bins are stashed OR when dragging from grid (as drop target)
   const hasBins = stagingBins.length > 0;
-  if (!hasBins && !isDraggingFromGrid) {
+  if (!hasBins && !showAsDropTarget) {
     return null;
   }
 
   // Empty drop zone when dragging but no bins stashed
-  if (!hasBins && isDraggingFromGrid) {
+  if (!hasBins && showAsDropTarget) {
     return (
       <div
         ref={containerRef}
