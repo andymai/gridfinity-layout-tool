@@ -251,7 +251,6 @@ export function Sidebar() {
                     >
                       Half-bin mode
                     </span>
-                    <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
                     <kbd className="text-[9px] text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">H</kbd>
                   </div>
                   <input

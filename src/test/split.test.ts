@@ -87,6 +87,41 @@ describe('splitBinSize', () => {
   });
 });
 
+describe('splitBinSize with fractional dimensions (half-bin mode)', () => {
+  it('does not split 1.5×1.5 when maxSize is 2', () => {
+    const pieces = splitBinSize(1.5, 1.5, 2);
+    expect(pieces).toEqual([{ width: 1.5, depth: 1.5, count: 1 }]);
+  });
+
+  it('handles 1.5×1.5 with maxSize 1', () => {
+    const pieces = splitBinSize(1.5, 1.5, 1);
+    // Should split to: 1×1, 0.5×1, 1×0.5, 0.5×0.5
+    expect(pieces).toHaveLength(4);
+    expect(pieces.every(p => p.width <= 1 && p.depth <= 1)).toBe(true);
+    expect(pieces.every(p => p.width > 0 && p.depth > 0)).toBe(true);
+  });
+
+  it('handles 2.5×3 with maxSize 2', () => {
+    const pieces = splitBinSize(2.5, 3, 2);
+    expect(pieces.every(p => p.width <= 2 && p.depth <= 2)).toBe(true);
+    expect(pieces.every(p => p.width > 0 && p.depth > 0)).toBe(true);
+  });
+
+  it('handles 0.5×0.5 without creating zero-dimension pieces', () => {
+    // Smallest half-bin should not split further
+    const pieces = splitBinSize(0.5, 0.5, 1);
+    expect(pieces).toEqual([{ width: 0.5, depth: 0.5, count: 1 }]);
+  });
+
+  it('preserves fractional dimensions in output', () => {
+    // A 2.5×2 bin with max 2 should produce pieces with 0.5 dimensions
+    const pieces = splitBinSize(2.5, 2, 2);
+    // Should split width: 1.5 + 1 (uses 0.5-aware rounding for fractional input)
+    expect(pieces.some(p => p.width === 1.5 || p.width === 1)).toBe(true);
+    expect(pieces.every(p => p.width <= 2 && p.depth <= 2)).toBe(true);
+  });
+});
+
 describe('generatePrintList', () => {
   it('groups identical bins', () => {
     const bins: Bin[] = [
