@@ -6,6 +6,14 @@ import { useGridNavigation } from './useGridNavigation';
 import { useKeyboardDrag } from './useKeyboardDrag';
 import { useKeyboardResize } from './useKeyboardResize';
 
+/**
+ * Check if a key matches any shortcut in a readonly array.
+ * This helper handles the type widening needed for `as const` tuple types.
+ */
+function isShortcut(key: string, shortcuts: readonly string[]): boolean {
+  return shortcuts.includes(key);
+}
+
 export function useKeyboard() {
   const selectedBinIds = useUIStore(state => state.selectedBinIds);
   const focusedBinId = useUIStore(state => state.focusedBinId);
@@ -51,7 +59,7 @@ export function useKeyboard() {
     const ctrlOrMeta = e.ctrlKey || e.metaKey;
 
     // Delete all selected bins
-    if ((SHORTCUTS.DELETE as readonly string[]).includes(key) && selectedBinIds.length > 0) {
+    if (isShortcut(key, SHORTCUTS.DELETE) && selectedBinIds.length > 0) {
       e.preventDefault();
       execute(() => {
         for (const binId of selectedBinIds) {
@@ -63,7 +71,7 @@ export function useKeyboard() {
     }
 
     // Escape - clear selection and exit paint mode
-    if ((SHORTCUTS.ESCAPE as readonly string[]).includes(key)) {
+    if (isShortcut(key, SHORTCUTS.ESCAPE)) {
       e.preventDefault();
       setInteraction(null);
       setSelectedBins([]);
@@ -119,12 +127,12 @@ export function useKeyboard() {
     }
 
     // Zoom
-    if ((SHORTCUTS.ZOOM_IN as readonly string[]).includes(key)) {
+    if (isShortcut(key, SHORTCUTS.ZOOM_IN)) {
       e.preventDefault();
       zoomIn();
       return;
     }
-    if ((SHORTCUTS.ZOOM_OUT as readonly string[]).includes(key)) {
+    if (isShortcut(key, SHORTCUTS.ZOOM_OUT)) {
       e.preventDefault();
       zoomOut();
       return;

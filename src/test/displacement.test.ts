@@ -303,7 +303,6 @@ describe('bin displacement logic', () => {
 
     it('updates bin height to match target layer height', () => {
       const { addBin, addLayer, updateLayer, moveBinFromStaging, layout } = useLayoutStore.getState();
-      const _layer1Id = layout.layers[0].id; // Unused but documents context
       const categoryId = layout.categories[0].id;
 
       // Add second layer with different height

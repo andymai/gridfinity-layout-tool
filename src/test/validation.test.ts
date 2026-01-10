@@ -207,7 +207,7 @@ describe('validateImport', () => {
   it('rejects missing drawer', () => {
     const result = validateImport({ version: '1.0', name: 'Test', layers: [], bins: [], categories: [] });
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Missing drawer');
+    expect(result.errors).toContain('Invalid drawer: must have width, depth, and height as numbers');
   });
 
   it('rejects invalid layers array', () => {
