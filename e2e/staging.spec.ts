@@ -1,0 +1,284 @@
+import type { Page } from '@playwright/test';
+import { test, expect, waitForAppReady, drawBinOnGrid, getGridBounds } from './fixtures';
+
+/**
+ * Helper to get the stash container (has border-dashed styling and staging bins)
+ */
+function getStashContainer(page: Page) {
+  // The stash container has a specific class pattern with border-dashed
+  return page.locator('div.border-dashed').filter({ has: page.locator('[data-staging-bin-id]') });
+}
+
+/**
+ * Helper to check stash bin count badge
+ */
+function getStashBinCount(page: Page) {
+  // The bin count badge is a span with "N bins" text inside the stash header area
+  return page.locator('div.border-dashed').locator('span.text-xs').filter({ hasText: /^\d+ bins?$/ });
+}
+
+test.describe('Staging Area (Stash)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await waitForAppReady(page);
+  });
+
+  test('stash is hidden when empty', async ({ page }) => {
+    // Stash should not be visible when no bins are stashed
+    // Look for the stash container specifically
+    const stashContainer = getStashContainer(page);
+    await expect(stashContainer).not.toBeVisible();
+  });
+
+  test('can move bin to stash via inspector', async ({ page }) => {
+    // Create a bin
+    await drawBinOnGrid(page, 50, 50, 100, 100);
+    await page.waitForTimeout(200);
+
+    // Select the bin
+    const bin = page.locator('[data-bin-id]').first();
+    await bin.click();
+    await page.waitForTimeout(100);
+
+    // Inspector should show with "To Stash" button
+    const inspector = page.locator('aside').last();
+    const toStashButton = inspector.getByRole('button', { name: /to stash/i });
+    await expect(toStashButton).toBeVisible();
+
+    // Click to move to stash
+    await toStashButton.click();
+    await page.waitForTimeout(300);
+
+    // Stash should now be visible with the bin
+    const stashContainer = getStashContainer(page);
+    await expect(stashContainer).toBeVisible();
+    await expect(getStashBinCount(page)).toHaveText('1 bin');
+  });
+
+  test('stash shows bin count', async ({ page }) => {
+    // Create multiple bins
+    await drawBinOnGrid(page, 50, 50, 80, 80);
+    await page.waitForTimeout(200);
+    await drawBinOnGrid(page, 150, 50, 180, 80);
+    await page.waitForTimeout(200);
+
+    // Move first bin to stash
+    const bins = page.locator('[data-bin-id]');
+    await bins.first().click();
+    await page.waitForTimeout(100);
+
+    const inspector = page.locator('aside').last();
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Verify count shows 1 bin
+    await expect(getStashBinCount(page)).toHaveText('1 bin');
+
+    // Move second bin to stash
+    await bins.first().click();
+    await page.waitForTimeout(100);
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Verify count shows 2 bins
+    await expect(getStashBinCount(page)).toHaveText('2 bins');
+  });
+
+  test('stashed bins display with correct dimensions', async ({ page }) => {
+    // Create a 2x3 bin
+    await drawBinOnGrid(page, 50, 50, 114, 146);
+    await page.waitForTimeout(200);
+
+    // Move to stash
+    const bin = page.locator('[data-bin-id]').first();
+    await bin.click();
+    await page.waitForTimeout(100);
+
+    const inspector = page.locator('aside').last();
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Stash bin should show dimensions
+    const stagingBin = page.locator('[data-staging-bin-id]').first();
+    await expect(stagingBin).toBeVisible();
+    // The bin shows its dimensions as text inside
+    await expect(stagingBin.getByText(/\d×\d/)).toBeVisible();
+  });
+
+  test('can clear all stashed bins', async ({ page }) => {
+    // Create and stash a bin
+    await drawBinOnGrid(page, 50, 50, 100, 100);
+    await page.waitForTimeout(200);
+
+    const bin = page.locator('[data-bin-id]').first();
+    await bin.click();
+    await page.waitForTimeout(100);
+
+    const inspector = page.locator('aside').last();
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Click Clear All button in the stash container
+    const stashContainer = getStashContainer(page);
+    const clearButton = stashContainer.getByRole('button', { name: /clear all/i });
+    await expect(clearButton).toBeVisible();
+    await clearButton.click();
+
+    // Confirm dialog should appear
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/delete all.*stashed bins/i)).toBeVisible();
+
+    // Confirm deletion
+    await dialog.getByRole('button', { name: /clear all/i }).click();
+    await page.waitForTimeout(300);
+
+    // Stash should be hidden again
+    await expect(stashContainer).not.toBeVisible();
+  });
+
+  test('can cancel clear all confirmation', async ({ page }) => {
+    // Create and stash a bin
+    await drawBinOnGrid(page, 50, 50, 100, 100);
+    await page.waitForTimeout(200);
+
+    const bin = page.locator('[data-bin-id]').first();
+    await bin.click();
+    await page.waitForTimeout(100);
+
+    const inspector = page.locator('aside').last();
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Click Clear All button in the stash container
+    const stashContainer = getStashContainer(page);
+    await stashContainer.getByRole('button', { name: /clear all/i }).click();
+
+    // Cancel the dialog
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('button', { name: /cancel/i }).click();
+    await page.waitForTimeout(200);
+
+    // Stash should still be visible with the bin
+    await expect(stashContainer).toBeVisible();
+    await expect(getStashBinCount(page)).toHaveText('1 bin');
+  });
+
+  test('dragging from stash starts stagingDrag interaction', async ({ page }) => {
+    // Create and stash a bin
+    await drawBinOnGrid(page, 50, 50, 100, 100);
+    await page.waitForTimeout(200);
+
+    const bin = page.locator('[data-bin-id]').first();
+    await bin.click();
+    await page.waitForTimeout(100);
+
+    const inspector = page.locator('aside').last();
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Start dragging the stashed bin
+    const stagingBin = page.locator('[data-staging-bin-id]').first();
+    const bounds = await stagingBin.boundingBox();
+    if (!bounds) throw new Error('Staging bin not found');
+
+    // Pointer down on staging bin
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(100);
+
+    // The staging bin should show as being dragged (dashed outline)
+    await expect(stagingBin).toHaveClass(/border-dashed/);
+
+    // Release
+    await page.mouse.up();
+  });
+
+  test('can drag bin from stash back to grid', async ({ page }) => {
+    // Create and stash a bin
+    await drawBinOnGrid(page, 50, 50, 100, 100);
+    await page.waitForTimeout(200);
+
+    const gridBin = page.locator('[data-bin-id]').first();
+    await gridBin.click();
+    await page.waitForTimeout(100);
+
+    const inspector = page.locator('aside').last();
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Should have 0 bins on grid, 1 in stash
+    await expect(page.locator('[data-bin-id]')).toHaveCount(0);
+    await expect(page.locator('[data-staging-bin-id]')).toHaveCount(1);
+
+    // Drag from stash to grid
+    const stagingBin = page.locator('[data-staging-bin-id]').first();
+    const stagingBounds = await stagingBin.boundingBox();
+    if (!stagingBounds) throw new Error('Staging bin not found');
+    const gridBounds = await getGridBounds(page);
+
+    await page.mouse.move(stagingBounds.x + stagingBounds.width / 2, stagingBounds.y + stagingBounds.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(gridBounds.x + 100, gridBounds.y + 100, { steps: 10 });
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+
+    // Should have 1 bin on grid, 0 in stash
+    await expect(page.locator('[data-bin-id]')).toHaveCount(1);
+    // Stash should be hidden when empty
+    await expect(getStashContainer(page)).not.toBeVisible();
+  });
+
+  test('stash appears as drop target when dragging bin from grid', async ({ page }) => {
+    // Create a bin on the grid
+    await drawBinOnGrid(page, 50, 50, 100, 100);
+    await page.waitForTimeout(200);
+
+    // Start dragging the bin
+    const bin = page.locator('[data-bin-id]').first();
+    const bounds = await bin.boundingBox();
+    if (!bounds) throw new Error('Bin not found');
+
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    await page.mouse.down();
+
+    // Move slightly to trigger movement detection
+    await page.mouse.move(bounds.x + bounds.width / 2 + 50, bounds.y + bounds.height / 2, { steps: 5 });
+    await page.waitForTimeout(200);
+
+    // Drop zone should appear (shows "Drop here to stash" or similar)
+    await expect(page.getByText(/drop.*stash/i)).toBeVisible();
+
+    // Release
+    await page.mouse.up();
+  });
+
+  test('undo restores bin from stash to grid', async ({ page }) => {
+    // Create a bin
+    await drawBinOnGrid(page, 50, 50, 100, 100);
+    await page.waitForTimeout(200);
+
+    // Move to stash
+    const bin = page.locator('[data-bin-id]').first();
+    await bin.click();
+    await page.waitForTimeout(100);
+
+    const inspector = page.locator('aside').last();
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Verify bin is in stash
+    await expect(page.locator('[data-staging-bin-id]')).toHaveCount(1);
+    await expect(page.locator('[data-bin-id]')).toHaveCount(0);
+
+    // Undo
+    await page.keyboard.press('Control+z');
+    await page.waitForTimeout(300);
+
+    // Bin should be back on grid
+    await expect(page.locator('[data-bin-id]')).toHaveCount(1);
+    await expect(getStashContainer(page)).not.toBeVisible();
+  });
+});
