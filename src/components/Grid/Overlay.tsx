@@ -6,36 +6,6 @@ interface OverlayProps {
   gap: number;
 }
 
-// Estimated tooltip width in pixels (varies by content)
-const TOOLTIP_WIDTH_ESTIMATE = 120;
-const TOOLTIP_OFFSET = 8;
-
-/**
- * Calculate tooltip position with boundary detection.
- * Positions tooltip to right of element by default, flips to left if would overflow.
- */
-function getTooltipPosition(
-  elemLeft: number,
-  elemTop: number,
-  elemWidth: number,
-  elemHeight: number,
-  containerWidth: number
-): { left: number; top: number } {
-  const rightPosition = elemLeft + elemWidth + TOOLTIP_OFFSET;
-  const topPosition = elemTop + elemHeight - 24;
-
-  // Check if tooltip would overflow right edge
-  if (rightPosition + TOOLTIP_WIDTH_ESTIMATE > containerWidth) {
-    // Position to left of element instead
-    return {
-      left: Math.max(TOOLTIP_OFFSET, elemLeft - TOOLTIP_WIDTH_ESTIMATE - TOOLTIP_OFFSET),
-      top: topPosition,
-    };
-  }
-
-  return { left: rightPosition, top: topPosition };
-}
-
 /**
  * Draw/drag/resize preview overlay.
  * Shows amber dashed border for draw, green/red for drag/resize.
@@ -52,13 +22,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
   if (!interaction) return null;
 
-  // Calculate container width for tooltip boundary detection
-  // Use drawer dimensions (always accurate) rather than DOM measurement
-  const containerWidth = drawer.width * (cellSize + gap) + gap;
-
   const previews: React.ReactNode[] = [];
-  let tooltipContent: string | null = null;
-  let tooltipPosition: { left: number; top: number } | null = null;
 
   if (interaction.type === 'draw') {
     const { start, current } = interaction;
@@ -89,9 +53,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         }}
       />
     );
-
-    tooltipContent = `${width}×${depth}`;
-    tooltipPosition = getTooltipPosition(left, top, rectWidth, rectHeight, containerWidth);
   } else if (interaction.type === 'drag') {
     const { binIds, currentCoord, valid, isOverGrid } = interaction;
 
@@ -138,22 +99,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
           />
         );
       }
-
-      // Tooltip for multi-select shows count
-      if (binIds.length > 1) {
-        tooltipContent = `${binIds.length} bins`;
-      } else {
-        tooltipContent = `${primaryBin.width}×${primaryBin.depth}`;
-      }
-
-      // Calculate tooltip position based on primary bin's new position
-      const primaryNewX = primaryBin.x + deltaX;
-      const primaryNewY = primaryBin.y + deltaY;
-      const left = gap + primaryNewX * (cellSize + gap);
-      const top = gap + (drawer.depth - primaryNewY - primaryBin.depth) * (cellSize + gap);
-      const rectWidth = primaryBin.width * cellSize + (primaryBin.width - 1) * gap;
-      const rectHeight = primaryBin.depth * cellSize + (primaryBin.depth - 1) * gap;
-      tooltipPosition = getTooltipPosition(left, top, rectWidth, rectHeight, containerWidth);
     }
   } else if (interaction.type === 'resize') {
     const { binIds, currentRects, valid } = interaction;
@@ -220,21 +165,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       );
     }
 
-    // Use first bin's rect for tooltip
-    const firstBinId = binIds[0];
-    const firstRect = currentRects.get(firstBinId);
-    if (firstRect) {
-      if (binIds.length > 1) {
-        tooltipContent = `${binIds.length} bins`;
-      } else {
-        tooltipContent = `${firstRect.width}×${firstRect.depth}`;
-      }
-      const left = gap + firstRect.x * (cellSize + gap);
-      const top = gap + (drawer.depth - firstRect.y - firstRect.depth) * (cellSize + gap);
-      const rectWidth = firstRect.width * cellSize + (firstRect.width - 1) * gap;
-      const rectHeight = firstRect.depth * cellSize + (firstRect.depth - 1) * gap;
-      tooltipPosition = getTooltipPosition(left, top, rectWidth, rectHeight, containerWidth);
-    }
   } else if (interaction.type === 'stagingDrag') {
     const { binId, currentCoord, valid } = interaction;
     const bin = bins.find((b) => b.id === binId);
@@ -264,9 +194,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
           }}
         />
       );
-
-      tooltipContent = `${bin.width}×${bin.depth}`;
-      tooltipPosition = getTooltipPosition(left, top, rectWidth, rectHeight, containerWidth);
     }
   } else if (interaction.type === 'paint') {
     const { start, current, paintSize } = interaction;
@@ -280,7 +207,6 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     // Calculate how many bins fit
     const binsAcross = Math.floor(areaWidth / paintSize.width);
     const binsDown = Math.floor(areaDepth / paintSize.depth);
-    const totalBins = binsAcross * binsDown;
 
     // Calculate remainder (leftover space)
     const usedWidth = binsAcross * paintSize.width;
@@ -392,33 +318,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         );
       }
     }
-
-    // Tooltip
-    if (totalBins > 0) {
-      tooltipContent = hasRemainder
-        ? `${totalBins}× ${paintSize.width}×${paintSize.depth} (${remainderWidth > 0 ? `${remainderWidth}w` : ''}${remainderWidth > 0 && remainderDepth > 0 ? ', ' : ''}${remainderDepth > 0 ? `${remainderDepth}d` : ''} unused)`
-        : `${totalBins}× ${paintSize.width}×${paintSize.depth}`;
-    } else {
-      tooltipContent = `Area too small for ${paintSize.width}×${paintSize.depth}`;
-    }
-    tooltipPosition = getTooltipPosition(areaLeft, areaTop, areaPixelWidth, areaPixelHeight, containerWidth);
   }
 
-  return (
-    <>
-      {previews}
-      {tooltipContent && tooltipPosition && (
-        <div
-          className="absolute bg-zinc-900 text-amber-400 text-xs font-bold px-2 py-1 rounded shadow-lg pointer-events-none whitespace-nowrap"
-          style={{
-            left: tooltipPosition.left,
-            top: tooltipPosition.top,
-            zIndex: 50,
-          }}
-        >
-          {tooltipContent}
-        </div>
-      )}
-    </>
-  );
+  return <>{previews}</>;
 }
