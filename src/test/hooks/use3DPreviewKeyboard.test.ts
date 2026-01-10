@@ -128,69 +128,6 @@ describe('use3DPreviewKeyboard', () => {
     });
   });
 
-  describe('r key - reset view', () => {
-    it('calls resetView when preview is visible', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
-
-      act(() => {
-        const event = pressKey('r');
-        expect(event.defaultPrevented).toBe(true);
-      });
-
-      expect(mockResetView).toHaveBeenCalledTimes(1);
-    });
-
-    it('does not call resetView when preview is hidden', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: false,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
-
-      act(() => {
-        pressKey('r');
-      });
-
-      expect(mockResetView).not.toHaveBeenCalled();
-    });
-
-    it('handles null scene ref gracefully', () => {
-      const nullSceneRef = { current: null };
-
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: nullSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
-
-      act(() => {
-        pressKey('r');
-      });
-
-      // Should not throw error
-      expect(mockResetView).not.toHaveBeenCalled();
-    });
-  });
-
   describe('Escape key - close expanded view', () => {
     it('closes expanded view when preview is visible and expanded', () => {
       renderHook(() =>
@@ -398,7 +335,6 @@ describe('use3DPreviewKeyboard', () => {
       act(() => {
         pressKey('v', input);
         pressKey(' ', input);
-        pressKey('r', input);
         pressKey('1', input);
       });
 
@@ -407,7 +343,6 @@ describe('use3DPreviewKeyboard', () => {
       // So v key should also be blocked in input fields
       expect(mockTogglePreviewVisibility).not.toHaveBeenCalled();
       expect(mockTogglePreviewExpanded).not.toHaveBeenCalled();
-      expect(mockResetView).not.toHaveBeenCalled();
       expect(mockSetPreset).not.toHaveBeenCalled();
 
       document.body.removeChild(input);
@@ -431,12 +366,10 @@ describe('use3DPreviewKeyboard', () => {
       act(() => {
         pressKey('v', textarea);
         pressKey(' ', textarea);
-        pressKey('r', textarea);
       });
 
       expect(mockTogglePreviewVisibility).not.toHaveBeenCalled();
       expect(mockTogglePreviewExpanded).not.toHaveBeenCalled();
-      expect(mockResetView).not.toHaveBeenCalled();
 
       document.body.removeChild(textarea);
     });
@@ -465,12 +398,10 @@ describe('use3DPreviewKeyboard', () => {
       act(() => {
         pressKey('v', div);
         pressKey(' ', div);
-        pressKey('r', div);
       });
 
       expect(mockTogglePreviewVisibility).not.toHaveBeenCalled();
       expect(mockTogglePreviewExpanded).not.toHaveBeenCalled();
-      expect(mockResetView).not.toHaveBeenCalled();
 
       document.body.removeChild(div);
     });
@@ -543,20 +474,20 @@ describe('use3DPreviewKeyboard', () => {
       );
 
       act(() => {
-        pressKey('r');
+        pressKey('1');
       });
 
-      expect(mockResetView).toHaveBeenCalledTimes(1);
+      expect(mockSetPreset).toHaveBeenCalledTimes(1);
 
-      mockResetView.mockClear();
+      mockSetPreset.mockClear();
 
       rerender({ visible: false });
 
       act(() => {
-        pressKey('r');
+        pressKey('1');
       });
 
-      expect(mockResetView).not.toHaveBeenCalled();
+      expect(mockSetPreset).not.toHaveBeenCalled();
     });
   });
 });

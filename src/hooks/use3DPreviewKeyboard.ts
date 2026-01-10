@@ -54,14 +54,6 @@ export function use3DPreviewKeyboard({
           }
           break;
 
-        case 'r':
-          // Reset view
-          if (isPreviewVisible) {
-            e.preventDefault();
-            sceneRef.current?.resetView();
-          }
-          break;
-
         case 'Escape':
           // Close expanded view
           if (isPreviewVisible && isPreviewExpanded) {
