@@ -34,6 +34,12 @@ export function LayerPanel() {
   const layers = layout.layers;
   const activeLayer = layers.find(l => l.id === activeLayerId);
 
+  // Height capacity tracking
+  const totalLayerHeight = layers.reduce((sum, l) => sum + l.height, 0);
+  const drawerHeight = layout.drawer.height;
+  const canAddLayer = layers.length < CONSTRAINTS.LAYERS_MAX && totalLayerHeight < drawerHeight;
+  const heightFull = totalLayerHeight >= drawerHeight;
+
   const totalCells = layout.drawer.width * layout.drawer.depth;
   const hasMultipleLayers = layers.length > 1;
 
@@ -152,15 +158,33 @@ export function LayerPanel() {
         <h2 className="text-sm font-semibold text-content-secondary tracking-wide" title="Layers stack vertically in your drawer. Tall bins on lower layers block placement above.">Layers</h2>
         <button
           onClick={handleAddLayer}
-          disabled={layers.length >= CONSTRAINTS.LAYERS_MAX}
+          disabled={!canAddLayer}
           className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-          title="Add a new layer"
+          title={!canAddLayer
+            ? (heightFull ? `Drawer height full (${totalLayerHeight}/${drawerHeight}u)` : `Maximum ${CONSTRAINTS.LAYERS_MAX} layers`)
+            : "Add a new layer"}
           aria-label="Add new layer"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
         </button>
+      </div>
+
+      {/* Height capacity indicator */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-surface-elevated">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${Math.min(100, (totalLayerHeight / drawerHeight) * 100)}%`,
+              backgroundColor: heightFull ? 'var(--color-warning)' : 'var(--color-primary)',
+            }}
+          />
+        </div>
+        <span className={`text-xs tabular-nums ${heightFull ? 'text-warning' : 'text-content-tertiary'}`}>
+          {totalLayerHeight}/{drawerHeight}u
+        </span>
       </div>
 
       {/* Reorder error message */}
