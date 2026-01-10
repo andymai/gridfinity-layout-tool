@@ -22,15 +22,23 @@ interface DrawerDimensionCalculatorProps {
  * Shows users exactly how many grid units will fit and the actual usable space.
  */
 export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCalculatorProps) {
-  const { gridUnitMm, heightUnitMm, updateDrawer } = useLayoutStore(
+  const { gridUnitMm, heightUnitMm, drawerWidth, drawerDepth, drawerHeight, updateDrawer } = useLayoutStore(
     useShallow((state) => ({
       gridUnitMm: state.layout.gridUnitMm,
       heightUnitMm: state.layout.heightUnitMm,
+      drawerWidth: state.layout.drawer.width,
+      drawerDepth: state.layout.drawer.depth,
+      drawerHeight: state.layout.drawer.height,
       updateDrawer: state.updateDrawer,
     }))
   );
 
   const { execute } = useUndoableAction();
+
+  // Current dimensions in mm (used as placeholders)
+  const currentWidthMm = drawerWidth * gridUnitMm;
+  const currentDepthMm = drawerDepth * gridUnitMm;
+  const currentHeightMm = drawerHeight * heightUnitMm;
 
   // Input state for mm dimensions
   const [widthMm, setWidthMm] = useState('');
@@ -107,7 +115,7 @@ export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCa
               value={widthMm}
               onChange={handleInputChange(setWidthMm)}
               onKeyDown={handleKeyDown}
-              placeholder="420"
+              placeholder={String(currentWidthMm)}
               className="input w-full h-10 text-center text-sm"
               min={1}
             />
@@ -121,7 +129,7 @@ export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCa
               value={depthMm}
               onChange={handleInputChange(setDepthMm)}
               onKeyDown={handleKeyDown}
-              placeholder="336"
+              placeholder={String(currentDepthMm)}
               className="input w-full h-10 text-center text-sm"
               min={1}
             />
@@ -135,7 +143,7 @@ export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCa
               value={heightMm}
               onChange={handleInputChange(setHeightMm)}
               onKeyDown={handleKeyDown}
-              placeholder="84"
+              placeholder={String(currentHeightMm)}
               className="input w-full h-10 text-center text-sm"
               min={1}
             />
@@ -171,7 +179,7 @@ export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCa
   return (
     <div className="space-y-2">
       <div className="text-[10px] text-content-disabled mb-2">
-        Enter drawer dimensions to calculate grid units
+        Enter your drawer's inner dimensions (current: {currentWidthMm}×{currentDepthMm}×{currentHeightMm}mm)
       </div>
 
       <div className="space-y-1.5">
@@ -182,7 +190,7 @@ export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCa
             value={widthMm}
             onChange={handleInputChange(setWidthMm)}
             onKeyDown={handleKeyDown}
-            placeholder="420"
+            placeholder={String(currentWidthMm)}
             className="input flex-1 py-0.5 px-1.5 text-xs text-right"
             min={1}
           />
@@ -195,7 +203,7 @@ export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCa
             value={depthMm}
             onChange={handleInputChange(setDepthMm)}
             onKeyDown={handleKeyDown}
-            placeholder="336"
+            placeholder={String(currentDepthMm)}
             className="input flex-1 py-0.5 px-1.5 text-xs text-right"
             min={1}
           />
@@ -208,7 +216,7 @@ export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCa
             value={heightMm}
             onChange={handleInputChange(setHeightMm)}
             onKeyDown={handleKeyDown}
-            placeholder="84"
+            placeholder={String(currentHeightMm)}
             className="input flex-1 py-0.5 px-1.5 text-xs text-right"
             min={1}
           />
