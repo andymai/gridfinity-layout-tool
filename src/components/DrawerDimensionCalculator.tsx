@@ -10,6 +10,14 @@ interface CalculatedDimensions {
   actualWidthMm: number;
   actualDepthMm: number;
   actualHeightMm: number;
+  // Original input values for gap calculation
+  inputWidthMm: number;
+  inputDepthMm: number;
+  inputHeightMm: number;
+  // Gaps (leftover space)
+  widthGapMm: number;
+  depthGapMm: number;
+  heightGapMm: number;
 }
 
 interface DrawerDimensionCalculatorProps {
@@ -65,13 +73,23 @@ export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCa
     const clampedDepth = Math.max(CONSTRAINTS.GRID_MIN, Math.min(CONSTRAINTS.GRID_MAX, depthUnits));
     const clampedHeight = heightUnits > 0 ? Math.max(1, heightUnits) : 0;
 
+    const actualWidth = clampedWidth * gridUnitMm;
+    const actualDepth = clampedDepth * gridUnitMm;
+    const actualHeight = clampedHeight * heightUnitMm;
+
     return {
       width: clampedWidth,
       depth: clampedDepth,
       height: clampedHeight,
-      actualWidthMm: clampedWidth * gridUnitMm,
-      actualDepthMm: clampedDepth * gridUnitMm,
-      actualHeightMm: clampedHeight * heightUnitMm,
+      actualWidthMm: actualWidth,
+      actualDepthMm: actualDepth,
+      actualHeightMm: actualHeight,
+      inputWidthMm: w,
+      inputDepthMm: d,
+      inputHeightMm: !isNaN(h) && h > 0 ? h : 0,
+      widthGapMm: Math.round((w - actualWidth) * 10) / 10,
+      depthGapMm: Math.round((d - actualDepth) * 10) / 10,
+      heightGapMm: !isNaN(h) && h > 0 ? Math.round((h - actualHeight) * 10) / 10 : 0,
     };
   }, [widthMm, depthMm, heightMm, gridUnitMm, heightUnitMm]);
 
@@ -150,27 +168,38 @@ export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCa
           </div>
         </div>
 
-        {calculated && (
-          <div className="bg-surface-elevated rounded-lg p-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-content-secondary">Result:</span>
-              <span className="font-semibold text-content">
-                {calculated.width} × {calculated.depth}
-                {calculated.height > 0 && ` × ${calculated.height}u`}
-              </span>
+        {calculated && (() => {
+          const hasGap = calculated.widthGapMm > 0 || calculated.depthGapMm > 0 || calculated.heightGapMm > 0;
+          return (
+            <div className="bg-surface-elevated rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-content-secondary">Result:</span>
+                <span className="font-semibold text-content">
+                  {calculated.width} × {calculated.depth}
+                  {calculated.height > 0 && ` × ${calculated.height}u`}
+                </span>
+              </div>
+              <div className="text-xs text-content-tertiary mb-1">
+                Grid area: {calculated.actualWidthMm} × {calculated.actualDepthMm}
+                {calculated.height > 0 && ` × ${calculated.actualHeightMm}`} mm
+              </div>
+              {hasGap && (
+                <div className="text-xs text-amber-500/80 mb-2">
+                  Gap: {calculated.widthGapMm > 0 && `${calculated.widthGapMm}mm `}
+                  {calculated.widthGapMm > 0 && calculated.depthGapMm > 0 && '× '}
+                  {calculated.depthGapMm > 0 && `${calculated.depthGapMm}mm`}
+                  {calculated.heightGapMm > 0 && ` (${calculated.heightGapMm}mm headroom)`}
+                </div>
+              )}
+              <button
+                onClick={handleApply}
+                className="btn btn-primary w-full h-10"
+              >
+                Apply Dimensions
+              </button>
             </div>
-            <div className="text-xs text-content-tertiary mb-3">
-              Actual: {calculated.actualWidthMm} × {calculated.actualDepthMm}
-              {calculated.height > 0 && ` × ${calculated.actualHeightMm}`} mm
-            </div>
-            <button
-              onClick={handleApply}
-              className="btn btn-primary w-full h-10"
-            >
-              Apply Dimensions
-            </button>
-          </div>
-        )}
+          );
+        })()}
       </div>
     );
   }
@@ -224,32 +253,44 @@ export function DrawerDimensionCalculator({ compact = false }: DrawerDimensionCa
         </div>
       </div>
 
-      {calculated && (
-        <div className="bg-surface-elevated rounded p-2 mt-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-content-tertiary">Grid units:</span>
-            <span className="font-medium text-content tabular-nums">
-              {calculated.width} × {calculated.depth}
-              {calculated.height > 0 && (
-                <span className="text-content-secondary"> × {calculated.height}u</span>
-              )}
-            </span>
+      {calculated && (() => {
+        const hasGap = calculated.widthGapMm > 0 || calculated.depthGapMm > 0 || calculated.heightGapMm > 0;
+        return (
+          <div className="bg-surface-elevated rounded p-2 mt-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-content-tertiary">Grid units:</span>
+              <span className="font-medium text-content tabular-nums">
+                {calculated.width} × {calculated.depth}
+                {calculated.height > 0 && (
+                  <span className="text-content-secondary"> × {calculated.height}u</span>
+                )}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[10px] text-content-disabled mt-0.5">
+              <span>Grid area:</span>
+              <span className="tabular-nums">
+                {calculated.actualWidthMm} × {calculated.actualDepthMm}
+                {calculated.height > 0 && ` × ${calculated.actualHeightMm}`} mm
+              </span>
+            </div>
+            {hasGap && (
+              <div className="flex items-center justify-between text-[10px] text-amber-500/80 mt-0.5">
+                <span>Gap:</span>
+                <span className="tabular-nums">
+                  {calculated.widthGapMm > 0 ? `${calculated.widthGapMm}` : '0'} × {calculated.depthGapMm > 0 ? `${calculated.depthGapMm}` : '0'}
+                  {calculated.heightGapMm > 0 && ` × ${calculated.heightGapMm}`} mm
+                </span>
+              </div>
+            )}
+            <button
+              onClick={handleApply}
+              className="btn btn-primary w-full mt-2 py-1 text-xs"
+            >
+              Apply
+            </button>
           </div>
-          <div className="flex items-center justify-between text-[10px] text-content-disabled mt-0.5">
-            <span>Actual size:</span>
-            <span className="tabular-nums">
-              {calculated.actualWidthMm} × {calculated.actualDepthMm}
-              {calculated.height > 0 && ` × ${calculated.actualHeightMm}`} mm
-            </span>
-          </div>
-          <button
-            onClick={handleApply}
-            className="btn btn-primary w-full mt-2 py-1 text-xs"
-          >
-            Apply
-          </button>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
