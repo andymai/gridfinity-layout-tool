@@ -238,6 +238,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               layer={layer}
               drawer={drawer}
               cellSize={actualCellSize}
+              gap={gap}
               halfBinMode={halfBinMode}
               isGhost
               isSelected={false}
@@ -264,6 +265,13 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
             : drawer.depth - zone.y - zone.depth + 1;
           const gridRowSpan = Math.round(zone.depth * scale);
 
+          // Check if zone has fractional dimensions (from half-bin mode bins)
+          const hasFractionalDims = zone.width % 1 !== 0 || zone.depth % 1 !== 0;
+          // Calculate true pixel size for fractional zones
+          const toPixels = (units: number) => units * actualCellSize + Math.max(0, units - 1) * gap;
+          const zonePixelWidth = hasFractionalDims && !halfBinMode ? toPixels(zone.width) : undefined;
+          const zonePixelHeight = hasFractionalDims && !halfBinMode ? toPixels(zone.depth) : undefined;
+
           return (
             <div
               key={zone.sourceBinId}
@@ -271,6 +279,11 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               style={{
                 gridColumn: `${gridCol} / span ${gridColSpan}`,
                 gridRow: `${gridRowStart} / span ${gridRowSpan}`,
+                // Override size for fractional zones when halfBinMode is off
+                ...(hasFractionalDims && !halfBinMode ? {
+                  width: zonePixelWidth,
+                  height: zonePixelHeight,
+                } : {}),
                 backgroundColor: category?.color || DEFAULT_CATEGORY_COLOR,
                 opacity: 0.3,
                 zIndex: 8,
@@ -322,6 +335,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               layer={layer}
               drawer={drawer}
               cellSize={actualCellSize}
+              gap={gap}
               halfBinMode={halfBinMode}
               isGhost={false}
               isSelected={selectedBinIds.includes(bin.id)}
