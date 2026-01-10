@@ -2,12 +2,24 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import { useLayoutStore } from '../../store/layout';
+import { useLibraryStore } from '../../store/library';
 import { useToastStore } from '../../store/toast';
 import { createDefaultLayout } from '../../constants';
 import * as storage from '../../utils/storage';
+import type { LayoutLibrary } from '../../types';
 
 // Mock the storage module
 vi.mock('../../utils/storage', () => ({
+  saveLayoutById: vi.fn(),
+  saveLibrary: vi.fn(),
+  computeLayoutPreview: vi.fn(() => ({
+    drawerWidth: 10,
+    drawerDepth: 8,
+    drawerHeight: 12,
+    binCount: 0,
+    layerCount: 1,
+  })),
+  // Legacy functions that may still be imported elsewhere
   saveLayout: vi.fn(),
   loadLayout: vi.fn(),
   clearStorage: vi.fn(),
@@ -16,6 +28,28 @@ vi.mock('../../utils/storage', () => ({
 }));
 
 const SAVE_DEBOUNCE_MS = 1000;
+const TEST_LAYOUT_ID = 'test-layout-id';
+
+function createTestLibrary(): LayoutLibrary {
+  return {
+    version: '1.0',
+    activeLayoutId: TEST_LAYOUT_ID,
+    settings: {},
+    entries: [{
+      id: TEST_LAYOUT_ID,
+      name: 'Test Layout',
+      createdAt: Date.now(),
+      modifiedAt: Date.now(),
+      preview: {
+        drawerWidth: 10,
+        drawerDepth: 8,
+        drawerHeight: 12,
+        binCount: 0,
+        layerCount: 1,
+      },
+    }],
+  };
+}
 
 describe('useAutoSave', () => {
   beforeEach(() => {
@@ -24,7 +58,12 @@ describe('useAutoSave', () => {
 
     // Reset stores
     const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout });
+    useLayoutStore.setState({ layout: defaultLayout, activeLayoutId: TEST_LAYOUT_ID });
+    useLibraryStore.setState({
+      library: createTestLibrary(),
+      isLoaded: true,
+      showLayoutManager: false,
+    });
     useToastStore.setState({ toasts: [] });
 
     // Clear localStorage
@@ -40,7 +79,7 @@ describe('useAutoSave', () => {
       renderHook(() => useAutoSave());
 
       // Immediately after mount, save should not have been called
-      expect(storage.saveLayout).not.toHaveBeenCalled();
+      expect(storage.saveLayoutById).not.toHaveBeenCalled();
 
       // Advance time past debounce
       act(() => {
@@ -48,8 +87,11 @@ describe('useAutoSave', () => {
       });
 
       // Now save should have been called
-      expect(storage.saveLayout).toHaveBeenCalledTimes(1);
-      expect(storage.saveLayout).toHaveBeenCalledWith(useLayoutStore.getState().layout);
+      expect(storage.saveLayoutById).toHaveBeenCalledTimes(1);
+      expect(storage.saveLayoutById).toHaveBeenCalledWith(
+        TEST_LAYOUT_ID,
+        useLayoutStore.getState().layout
+      );
     });
 
     it('does not save before debounce delay completes', () => {
@@ -60,7 +102,7 @@ describe('useAutoSave', () => {
         vi.advanceTimersByTime(SAVE_DEBOUNCE_MS - 100);
       });
 
-      expect(storage.saveLayout).not.toHaveBeenCalled();
+      expect(storage.saveLayoutById).not.toHaveBeenCalled();
     });
 
     it('resets debounce timer on layout change', () => {
@@ -82,7 +124,7 @@ describe('useAutoSave', () => {
       });
 
       // Save should NOT have been called (timer was reset)
-      expect(storage.saveLayout).not.toHaveBeenCalled();
+      expect(storage.saveLayoutById).not.toHaveBeenCalled();
 
       // Advance to complete the new debounce
       act(() => {
@@ -90,7 +132,7 @@ describe('useAutoSave', () => {
       });
 
       // Now save should be called
-      expect(storage.saveLayout).toHaveBeenCalledTimes(1);
+      expect(storage.saveLayoutById).toHaveBeenCalledTimes(1);
     });
 
     it('saves with latest layout data after multiple rapid changes', () => {
@@ -115,8 +157,8 @@ describe('useAutoSave', () => {
       });
 
       // Should only save once with final values
-      expect(storage.saveLayout).toHaveBeenCalledTimes(1);
-      const savedLayout = (storage.saveLayout as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(storage.saveLayoutById).toHaveBeenCalledTimes(1);
+      const savedLayout = (storage.saveLayoutById as ReturnType<typeof vi.fn>).mock.calls[0][1];
       expect(savedLayout.drawer.width).toBe(16);
       expect(savedLayout.drawer.depth).toBe(14);
     });
@@ -140,7 +182,7 @@ describe('useAutoSave', () => {
       });
 
       // Save should not have been called
-      expect(storage.saveLayout).not.toHaveBeenCalled();
+      expect(storage.saveLayoutById).not.toHaveBeenCalled();
     });
 
     it('does not throw when unmounted after save completed', () => {
@@ -151,7 +193,7 @@ describe('useAutoSave', () => {
         vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
       });
 
-      expect(storage.saveLayout).toHaveBeenCalledTimes(1);
+      expect(storage.saveLayoutById).toHaveBeenCalledTimes(1);
 
       // Unmount should not throw
       expect(() => unmount()).not.toThrow();
@@ -159,7 +201,7 @@ describe('useAutoSave', () => {
   });
 
   describe('localStorage integration', () => {
-    it('calls saveLayout with current layout', () => {
+    it('calls saveLayoutById with current layout', () => {
       const layout = useLayoutStore.getState().layout;
       renderHook(() => useAutoSave());
 
@@ -167,7 +209,7 @@ describe('useAutoSave', () => {
         vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
       });
 
-      expect(storage.saveLayout).toHaveBeenCalledWith(layout);
+      expect(storage.saveLayoutById).toHaveBeenCalledWith(TEST_LAYOUT_ID, layout);
     });
 
     it('saves updated layout after modification', () => {
@@ -193,15 +235,29 @@ describe('useAutoSave', () => {
         vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
       });
 
-      const savedLayout = (storage.saveLayout as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const savedLayout = (storage.saveLayoutById as ReturnType<typeof vi.fn>).mock.calls[0][1];
       expect(savedLayout.bins.length).toBeGreaterThan(0);
       expect(savedLayout.bins[0].label).toBe('Test');
+    });
+
+    it('does not save when activeLayoutId is null', () => {
+      // Set activeLayoutId to null
+      useLayoutStore.setState({ activeLayoutId: null });
+
+      renderHook(() => useAutoSave());
+
+      act(() => {
+        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+      });
+
+      // Should not have called save
+      expect(storage.saveLayoutById).not.toHaveBeenCalled();
     });
   });
 
   describe('error handling', () => {
     it('shows error toast when save fails', () => {
-      vi.mocked(storage.saveLayout).mockImplementation(() => {
+      vi.mocked(storage.saveLayoutById).mockImplementation(() => {
         throw new Error('Storage full. Export your layout to save it.');
       });
 
@@ -218,7 +274,7 @@ describe('useAutoSave', () => {
     });
 
     it('shows generic error message for non-Error exceptions', () => {
-      vi.mocked(storage.saveLayout).mockImplementation(() => {
+      vi.mocked(storage.saveLayoutById).mockImplementation(() => {
         throw 'string error';
       });
 
@@ -234,7 +290,7 @@ describe('useAutoSave', () => {
     });
 
     it('only shows error toast once per failure session', () => {
-      vi.mocked(storage.saveLayout).mockImplementation(() => {
+      vi.mocked(storage.saveLayoutById).mockImplementation(() => {
         throw new Error('Storage full');
       });
 
@@ -261,10 +317,10 @@ describe('useAutoSave', () => {
     });
 
     it('resets error flag after successful save', () => {
-      const saveLayoutMock = vi.mocked(storage.saveLayout);
+      const saveLayoutByIdMock = vi.mocked(storage.saveLayoutById);
 
       // First call fails
-      saveLayoutMock.mockImplementationOnce(() => {
+      saveLayoutByIdMock.mockImplementationOnce(() => {
         throw new Error('Storage full');
       });
 
@@ -281,7 +337,7 @@ describe('useAutoSave', () => {
       useToastStore.setState({ toasts: [] });
 
       // Next save succeeds (default mock)
-      saveLayoutMock.mockImplementation(() => {});
+      saveLayoutByIdMock.mockImplementation(() => {});
 
       act(() => {
         useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
@@ -295,7 +351,7 @@ describe('useAutoSave', () => {
       expect(useToastStore.getState().toasts).toHaveLength(0);
 
       // Make it fail again
-      saveLayoutMock.mockImplementation(() => {
+      saveLayoutByIdMock.mockImplementation(() => {
         throw new Error('Storage full again');
       });
 
@@ -323,10 +379,33 @@ describe('useAutoSave', () => {
       });
 
       // Both instances should trigger save
-      expect(storage.saveLayout).toHaveBeenCalledTimes(2);
+      expect(storage.saveLayoutById).toHaveBeenCalledTimes(2);
 
       unmount1();
       unmount2();
+    });
+  });
+
+  describe('library entry updates', () => {
+    it('updates library entry modifiedAt on save', () => {
+      // Get initial modifiedAt
+      const initialEntry = useLibraryStore.getState().library.entries[0];
+      const initialModifiedAt = initialEntry.modifiedAt;
+
+      renderHook(() => useAutoSave());
+
+      // Trigger a layout change
+      act(() => {
+        useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+      });
+
+      // Check that modifiedAt was updated
+      const updatedEntry = useLibraryStore.getState().library.entries[0];
+      expect(updatedEntry.modifiedAt).toBeGreaterThanOrEqual(initialModifiedAt);
     });
   });
 });

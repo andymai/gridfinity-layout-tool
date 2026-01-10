@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
-import { useLayoutStore, useUIStore } from './store';
-import { useKeyboard, useAutoSave, useResponsive } from './hooks';
-import { loadLayout } from './utils/storage';
+import { useLayoutStore, useUIStore, useLibraryStore } from './store';
+import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync } from './hooks';
+import { initializeLayoutLibrary } from './utils/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
 import { Sidebar } from './components/Sidebar';
@@ -27,13 +27,12 @@ const MobileLayout = lazyWithRetry(() =>
   import('./components/MobileLayout').then(namedExport('MobileLayout'))
 );
 
-// Load layout once at module level to avoid effect setState issues
+// Initialize layout library once at module level to avoid effect setState issues
 let initialLoadError: Error | null = null;
 try {
-  const savedLayout = loadLayout();
-  if (savedLayout) {
-    useLayoutStore.getState().importLayout(savedLayout);
-  }
+  const { library, activeLayout } = initializeLayoutLibrary();
+  useLibraryStore.getState().initLibrary(library);
+  useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId);
 } catch (e) {
   initialLoadError = e as Error;
 }
@@ -99,6 +98,9 @@ export default function App() {
 
   // Auto-save to localStorage
   useAutoSave();
+
+  // Cross-tab sync detection
+  useCrossTabSync();
 
   // Help modal keyboard shortcut
   const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {
