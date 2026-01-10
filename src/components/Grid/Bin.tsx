@@ -85,61 +85,34 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
   const isTall = layer && bin.height > layer.height;
 
   // ========== ADAPTIVE LABEL SYSTEM ==========
-  // Priority: show full label if it fits, otherwise just dimensions
-  // Never truncate words mid-word - either fits or doesn't
+  // Uses pixel-based sizing and context-dependent priority
 
   const dimensionsText = `${bin.width}×${bin.depth}`;
-  const labelText = bin.label || '';
+  const hasLabel = showLabels && bin.label;
 
   // Calculate actual pixel dimensions of bin
   const binPixelWidth = bin.width * cellSize;
   const binPixelHeight = bin.depth * cellSize;
   const binPixelMin = Math.min(binPixelWidth, binPixelHeight);
 
-  // Visibility thresholds
+  // Pixel-based font sizing (adapts to bin size, not just zoom)
+  const primaryFontSize = clamp(Math.round(binPixelMin * 0.28), 9, 20);
+  const secondaryFontSize = clamp(Math.round(primaryFontSize * 0.8), 8, 14);
+
+  // Visibility thresholds based on pixel space
   const showAnyText = binPixelMin >= 24 && !isGhost;
+  const hasSpaceForSecondary = binPixelMin >= 48;
 
-  // Available space for text (with padding)
+  // Context-dependent priority: labels first when set, dimensions as fallback
+  const primaryText = hasLabel && bin.label ? bin.label : dimensionsText;
+  const secondaryText = hasLabel && hasSpaceForSecondary ? dimensionsText : null;
+
+  // Smart rotation: consider text length relative to available width
+  const estimatedTextWidth = primaryText.length * primaryFontSize * 0.55;
   const availableWidth = binPixelWidth * 0.85;
-  const availableHeight = binPixelHeight * 0.82;
-
-  // Font size constraints
-  const maxFontSize = 28;
-  const minFontSize = 9;
-  const charWidthRatio = 0.62; // Conservative: accounts for wide chars
-
-  // Check if label can fit without clipping any word
-  const labelWords = labelText.split(/\s+/).filter(Boolean);
-  const longestWord = labelWords.reduce((max, w) => (w.length > max.length ? w : max), '');
-  const minWidthForLongestWord = longestWord.length * minFontSize * charWidthRatio;
-  const labelCanFit = showLabels && labelText && minWidthForLongestWord <= availableWidth;
-
-  // Dynamic font sizing based on bin pixel size
-  const scaleFactor = binPixelMin < 60 ? 0.30 : binPixelMin < 120 ? 0.25 : 0.20;
-  const baseFontSize = clamp(Math.round(binPixelMin * scaleFactor), minFontSize, maxFontSize);
-
-  // Calculate optimal font size for label (shrink to fit longest word)
-  let primaryFontSize = baseFontSize;
-  if (labelCanFit && longestWord.length > 0) {
-    const maxFontForWord = availableWidth / (longestWord.length * charWidthRatio);
-    primaryFontSize = clamp(Math.round(Math.min(baseFontSize, maxFontForWord)), minFontSize, maxFontSize);
-  }
-
-  const secondaryFontSize = clamp(Math.round(primaryFontSize * 0.75), 8, 16);
-  const lineHeight = primaryFontSize * 1.25;
-
-  // Calculate line capacity
-  const secondaryHeight = labelCanFit ? secondaryFontSize + 4 : 0;
-  const maxLines = Math.max(1, Math.floor((availableHeight - secondaryHeight) / lineHeight));
-  const hasSpaceForSecondary = availableHeight >= lineHeight + secondaryFontSize + 6;
-
-  // Show label only if it fits completely, otherwise just dimensions
-  const showLabelText = labelCanFit;
-  const primaryText = showLabelText ? labelText : dimensionsText;
-  const secondaryText = showLabelText && hasSpaceForSecondary ? dimensionsText : null;
-
-  // Rotate only for tall narrow bins showing dimensions (labels use word-wrap)
-  const shouldRotate = !showLabelText && bin.depth > bin.width * 2;
+  const shouldRotate =
+    (estimatedTextWidth > availableWidth && bin.depth > bin.width * 1.2) ||
+    (bin.depth > bin.width * 2);
 
   // Letter-spacing for small text
   const letterSpacing = primaryFontSize < 11 ? '0.02em' : 'normal';
@@ -382,37 +355,24 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
           style={{
             transform: shouldRotate ? 'rotate(-90deg)' : 'none',
             width: shouldRotate ? `${(bin.depth / bin.width) * 90}%` : 'auto',
-            maxWidth: shouldRotate ? 'none' : '88%',
-            maxHeight: '85%',
+            maxWidth: shouldRotate ? 'none' : '95%',
+            maxHeight: '90%',
           }}
         >
-          {/* Primary text: labels wrap at word boundaries, dimensions stay single-line */}
+          {/* Primary text (label if set, otherwise dimensions) */}
           <div
-            className="flex items-center justify-center gap-0.5"
+            className={`flex items-center justify-center gap-0.5 leading-tight ${shouldRotate ? 'whitespace-nowrap' : 'truncate w-full'}`}
             style={{
               color: textColors.primary,
               fontSize: `${primaryFontSize}px`,
-              fontWeight: showLabelText ? 500 : 600,
+              fontWeight: hasLabel ? 500 : 600,
               textShadow: `0 1px 2px ${textColors.shadow}`,
               letterSpacing,
-              lineHeight: 1.25,
-              // Word-wrap for labels (no truncation - we already verified it fits)
-              ...(showLabelText
-                ? {
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word',
-                    display: '-webkit-box',
-                    WebkitLineClamp: maxLines,
-                    WebkitBoxOrient: 'vertical' as const,
-                    overflow: 'hidden',
-                    width: '100%',
-                  }
-                : { whiteSpace: 'nowrap' as const }),
             }}
           >
             {primaryText}
             {/* Split badge (only when dimensions are primary) */}
-            {!showLabelText && needsSplit && !isGhost && (
+            {!hasLabel && needsSplit && !isGhost && (
               <span
                 className="ml-0.5 rounded-sm"
                 title="Exceeds print size, will be split"
@@ -431,14 +391,13 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
           {/* Secondary text (dimensions when label is primary) */}
           {secondaryText && (
             <div
+              className="leading-tight"
               style={{
                 color: textColors.secondary,
                 fontSize: `${secondaryFontSize}px`,
                 fontWeight: 'normal',
                 textShadow: `0 1px 1px ${textColors.shadow}`,
                 marginTop: 1,
-                lineHeight: 1.3,
-                whiteSpace: 'nowrap',
               }}
             >
               {secondaryText}
@@ -654,11 +613,6 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
   // Re-render if drawer dimensions change
   if (prevProps.drawer.width !== nextProps.drawer.width ||
       prevProps.drawer.depth !== nextProps.drawer.depth) {
-    return false;
-  }
-
-  // Re-render if cell size changes (zoom or viewport resize)
-  if (prevProps.cellSize !== nextProps.cellSize) {
     return false;
   }
 

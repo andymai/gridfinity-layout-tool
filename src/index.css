@@ -312,11 +312,6 @@
    TOUCH-SPECIFIC STYLES
    =========================================== */
 @media (pointer: coarse) {
-  /* Disable double-tap-to-zoom for native app feel */
-  html {
-    touch-action: manipulation;
-  }
-
   /* Larger resize handles on touch devices */
   .resize-handle {
     width: 32px !important;
@@ -368,11 +363,6 @@
 /* ===========================================
    BASE STYLES
    =========================================== */
-html {
-  /* Prevent overscroll/bounce on iOS and Android */
-  overscroll-behavior: none;
-}
-
 body {
   font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   background-color: var(--bg-primary);
@@ -385,10 +375,6 @@ body {
   text-rendering: optimizeLegibility;
   font-feature-settings: 'kern' 1, 'liga' 1;
   font-variant-numeric: tabular-nums;
-  /* Prevent overscroll/bounce */
-  overscroll-behavior: none;
-  /* Prevent pull-to-refresh */
-  overscroll-behavior-y: contain;
 }
 
 /* ===========================================
