@@ -57,10 +57,14 @@ export function MobileInspector() {
       } else if (field === 'height') {
         const minHeight = layer?.height || 1;
         const newHeight = clamp(typeof value === 'number' ? value : parseInt(value, 10) || minHeight, minHeight, maxBinHeight);
-        // Adjust clearance to keep total (height + clearance) constant
-        const currentTotal = bin.height + (bin.clearanceHeight || 0);
-        const newClearance = Math.max(0, currentTotal - newHeight);
-        updateBin(bin.id, { height: newHeight, clearanceHeight: newClearance });
+        // Only preserve clearance if bin already has clearance and there are multiple layers
+        if (bin.clearanceHeight && bin.clearanceHeight > 0 && layout.layers.length > 1) {
+          const currentTotal = bin.height + bin.clearanceHeight;
+          const newClearance = Math.max(0, currentTotal - newHeight);
+          updateBin(bin.id, { height: newHeight, clearanceHeight: newClearance });
+        } else {
+          updateBin(bin.id, { height: newHeight });
+        }
       } else if (field === 'clearanceHeight') {
         const newClearance = clamp(typeof value === 'number' ? value : parseInt(value, 10) || 0, 0, maxClearance);
         updateBin(bin.id, { clearanceHeight: newClearance });
