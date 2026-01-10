@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
@@ -5,8 +6,11 @@ import { ActiveLayerPanel } from './ActiveLayerPanel';
 import { LayerPanel } from './LayerPanel';
 import { CategoriesPanel } from './CategoriesPanel';
 import { DeferredNumberInput } from '../DeferredNumberInput';
+import { DrawerDimensionCalculator } from '../DrawerDimensionCalculator';
 
 export function Sidebar() {
+  const [showCalculator, setShowCalculator] = useState(false);
+
   const { collapsed, toggle, halfBinMode, toggleHalfBinMode } = useUIStore(
     useShallow((state) => ({
       collapsed: state.leftPanelCollapsed,
@@ -109,6 +113,34 @@ export function Sidebar() {
                 Grid Settings
               </h2>
               <div className="text-xs text-content-secondary space-y-2">
+                {/* Dimension Calculator Toggle */}
+                <button
+                  onClick={() => setShowCalculator(!showCalculator)}
+                  className="w-full flex items-center justify-between py-1.5 px-2 -mx-2 rounded transition-colors hover:bg-surface-hover text-content-tertiary hover:text-content"
+                  aria-expanded={showCalculator}
+                >
+                  <span className="flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Dimension Calculator
+                  </span>
+                  <svg
+                    className={`w-3 h-3 transition-transform ${showCalculator ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {showCalculator && (
+                  <div className="pb-2 mb-2 border-b border-stroke-subtle">
+                    <DrawerDimensionCalculator />
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <label
                     htmlFor="gridWidth"

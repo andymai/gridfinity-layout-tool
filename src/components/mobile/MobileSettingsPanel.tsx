@@ -3,12 +3,14 @@ import { useLayoutStore, useUndoableAction, useUIStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { DeferredNumberInput } from '../DeferredNumberInput';
+import { DrawerDimensionCalculator } from '../DrawerDimensionCalculator';
 
 /**
  * Mobile settings panel with grid configuration and app actions.
  */
 export function MobileSettingsPanel() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
 
   const layout = useLayoutStore(state => state.layout);
   const setGridUnitMm = useLayoutStore(state => state.setGridUnitMm);
@@ -36,6 +38,34 @@ export function MobileSettingsPanel() {
         <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
           Drawer Dimensions
         </h3>
+
+        {/* Dimension Calculator Toggle */}
+        <button
+          onClick={() => setShowCalculator(!showCalculator)}
+          className="w-full flex items-center justify-between py-3 px-4 mb-3 rounded-lg bg-surface-elevated text-content-secondary"
+          aria-expanded={showCalculator}
+        >
+          <span className="flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            Calculate from mm
+          </span>
+          <svg
+            className={`w-5 h-5 transition-transform ${showCalculator ? 'rotate-180' : ''}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {showCalculator && (
+          <div className="mb-4 p-4 rounded-lg bg-surface-elevated">
+            <DrawerDimensionCalculator compact />
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           {/* Width */}
