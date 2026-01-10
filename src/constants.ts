@@ -78,13 +78,37 @@ export const createDefaultLayout = (): Layout => ({
 export const BASE_CELL_SIZE = 32; // px at 100% zoom (default/desktop)
 
 /**
+ * Responsive breakpoints for adapting UI across device sizes.
+ *
+ * ## Breakpoint Guide
+ * - < TINY_PHONE (375): Very small phones with reduced UI
+ * - < SM (640): Small phones
+ * - < MD (768): Mobile layout (stacked panels, bottom nav)
+ * - < LG (900): Tablet layout (collapsible sidebars)
+ * - >= LG (900): Desktop layout (persistent sidebars)
+ * - >= XL (1280): Full desktop with extra space
+ */
+export const BREAKPOINTS = {
+  /** Below this: extra small UI for tiny phones (iPhone SE 1st gen, small Android) */
+  TINY_PHONE: 375,
+  /** Small phones */
+  SM: 640,
+  /** At or above: tablet-size (large phones / small tablets) */
+  MD: 768,
+  /** At or above: desktop layout with sidebars */
+  LG: 900,
+  /** At or above: full desktop with extra space */
+  XL: 1280,
+} as const;
+
+/**
  * Get adaptive base cell size based on viewport width.
  * Larger cells on tablets, smaller on tiny phones.
  */
 export function getBaseCellSize(viewportWidth: number): number {
-  if (viewportWidth < 375) return 28; // Tiny phones (iPhone SE 1st gen, small Android)
-  if (viewportWidth < 768) return 32; // Mobile (current default)
-  if (viewportWidth < 900) return 36; // Tablet (more space available)
+  if (viewportWidth < BREAKPOINTS.TINY_PHONE) return 28; // Tiny phones
+  if (viewportWidth < BREAKPOINTS.MD) return 32; // Mobile (current default)
+  if (viewportWidth < BREAKPOINTS.LG) return 36; // Tablet (more space available)
   return 32; // Desktop (current default)
 }
 

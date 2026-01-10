@@ -1,12 +1,5 @@
 import { useState, useEffect } from 'react';
-
-// Breakpoint values in pixels
-export const BREAKPOINTS = {
-  sm: 640,   // Small phones
-  md: 768,   // Large phones / small tablets
-  lg: 900,   // Small desktop (narrower persistent sidebars)
-  xl: 1280,  // Full desktop
-} as const;
+import { BREAKPOINTS } from '../constants';
 
 export type LayoutMode = 'mobile' | 'tablet' | 'desktop';
 
@@ -38,11 +31,11 @@ export function useResponsive(): ResponsiveState {
 
   useEffect(() => {
     // Media queries for breakpoints
-    const mobileQuery = window.matchMedia(`(max-width: ${BREAKPOINTS.md - 1}px)`);
+    const mobileQuery = window.matchMedia(`(max-width: ${BREAKPOINTS.MD - 1}px)`);
     const tabletQuery = window.matchMedia(
-      `(min-width: ${BREAKPOINTS.md}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`
+      `(min-width: ${BREAKPOINTS.MD}px) and (max-width: ${BREAKPOINTS.LG - 1}px)`
     );
-    const desktopQuery = window.matchMedia(`(min-width: ${BREAKPOINTS.lg}px)`);
+    const desktopQuery = window.matchMedia(`(min-width: ${BREAKPOINTS.LG}px)`);
     const touchQuery = window.matchMedia('(pointer: coarse)');
     const landscapeQuery = window.matchMedia('(orientation: landscape)');
 
@@ -96,9 +89,9 @@ function getResponsiveState(): ResponsiveState {
 
   const width = window.innerWidth;
   const height = window.innerHeight;
-  const isMobile = width < BREAKPOINTS.md;
-  const isTablet = width >= BREAKPOINTS.md && width < BREAKPOINTS.lg;
-  const isDesktop = width >= BREAKPOINTS.lg;
+  const isMobile = width < BREAKPOINTS.MD;
+  const isTablet = width >= BREAKPOINTS.MD && width < BREAKPOINTS.LG;
+  const isDesktop = width >= BREAKPOINTS.LG;
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
   const isLandscape = width > height;
 
