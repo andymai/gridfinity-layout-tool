@@ -467,32 +467,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <span className="text-xs font-medium">3D</span>
           )}
         </button>
-        {/* Top view - eye looking down */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            sceneRef.current?.setPreset('top')
-          }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
-          }`}
-          title="Top view"
-        >
-          <svg
-            className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-          >
-            {/* Grid from above */}
-            <rect x="4" y="4" width="16" height="16" strokeWidth={2} rx="1" />
-            <line x1="12" y1="4" x2="12" y2="20" strokeWidth={1.5} />
-            <line x1="4" y1="12" x2="20" y2="12" strokeWidth={1.5} />
-          </svg>
-          {isPreviewExpanded && !isMobile && (
-            <span className="text-xs font-medium">Top</span>
-          )}
-        </button>
         {/* Front view - rectangle wider than tall */}
         <button
           onClick={(e) => {

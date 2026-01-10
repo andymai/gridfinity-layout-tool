@@ -20,7 +20,7 @@ interface SceneProps {
   isExpanded?: boolean;
 }
 
-export type CameraPreset = 'isometric' | 'top' | 'front' | 'side';
+export type CameraPreset = 'isometric' | 'front' | 'side';
 
 export interface SceneHandle {
   resetView: () => void;
@@ -65,11 +65,6 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           centerX + distance,
           centerY - distance,
           centerZ + distance * 0.7,
-        ] as [number, number, number],
-        top: [
-          centerX,
-          centerY,
-          centerZ + distance * 1.2,
         ] as [number, number, number],
         front: [
           centerX,
@@ -187,13 +182,13 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           // Convert back to Cartesian and apply
           const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
           camera.position.copy(newPosition);
-
-          controlsRef.current?.update();
+          camera.lookAt(target); // Keep camera oriented toward target during animation
 
           if (progress < 1) {
             requestAnimationFrame(animate);
           } else {
-            // Update rotation state when animation completes
+            // Sync controls with final camera state
+            controlsRef.current?.update();
             const angle = controlsRef.current?.getAzimuthalAngle() ?? 0;
             const degrees = (angle * 180) / Math.PI;
             setIsometricRotation(degrees);

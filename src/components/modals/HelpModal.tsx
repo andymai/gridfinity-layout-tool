@@ -230,14 +230,10 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
               />
               <ShortcutRow
                 keys="2"
-                description="Top view"
-              />
-              <ShortcutRow
-                keys="3"
                 description="Front view"
               />
               <ShortcutRow
-                keys="4"
+                keys="3"
                 description="Side view"
               />
               <div className="divider" />

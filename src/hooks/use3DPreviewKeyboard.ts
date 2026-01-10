@@ -108,14 +108,6 @@ export function use3DPreviewKeyboard({
           break;
 
         case '2':
-          // Camera preset: Top view
-          if (isPreviewVisible) {
-            e.preventDefault();
-            sceneRef.current?.setPreset('top');
-          }
-          break;
-
-        case '3':
           // Camera preset: Front view
           if (isPreviewVisible) {
             e.preventDefault();
@@ -123,7 +115,7 @@ export function use3DPreviewKeyboard({
           }
           break;
 
-        case '4':
+        case '3':
           // Camera preset: Side view
           if (isPreviewVisible) {
             e.preventDefault();
