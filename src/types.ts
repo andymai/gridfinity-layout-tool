@@ -129,6 +129,40 @@ export interface PrintRow {
   categoryIds: string[];     // Category IDs for bins of this size (for color display)
   labels: string[];          // Non-empty labels from bins of this size
   notes: string;             // Notes (only for labeled/individual bins)
+  binIds: string[];          // Original bin IDs for click-to-select
+}
+
+// === Enhanced Print List Types ===
+
+export interface PrintListConfig {
+  filamentCostPerKg: number;      // $/kg - user configurable (default 20)
+  metersPerKg: number;            // Meters per 1kg spool (~330m for 1.75mm PLA)
+}
+
+export interface EnhancedPrintRow extends PrintRow {
+  area: number;                   // width * depth (for sorting)
+  costEstimate: number;           // $ based on filament usage
+  spoolPercentage: number;        // % of 1kg spool
+}
+
+export interface PrintListGroup {
+  categoryId: string;
+  categoryName: string;
+  categoryColor: string;
+  rows: EnhancedPrintRow[];
+  totalFilament: number;
+  totalCost: number;
+  totalBins: number;
+}
+
+export type PrintListSortKey = 'default' | 'area' | 'height' | 'filament';
+export type PrintListSortOrder = 'asc' | 'desc';
+
+export interface PrintListFilters {
+  hiddenCategoryIds: Set<string>;
+  sortKey: PrintListSortKey;
+  sortOrder: PrintListSortOrder;
+  groupByCategory: boolean;
 }
 
 // === Blocked Zone ===

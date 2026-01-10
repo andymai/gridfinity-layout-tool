@@ -181,8 +181,8 @@ describe('generatePrintList', () => {
 describe('getTotalPieces', () => {
   it('sums totalPieces across all rows', () => {
     const rows: PrintRow[] = [
-      { size: '2×2', height: 3, binCount: 2, pieces: [], totalPieces: 2, needsSplit: false, filament: 10, categoryIds: [], labels: [], notes: '' },
-      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 4, needsSplit: true, filament: 20, categoryIds: [], labels: [], notes: '' },
+      { size: '2×2', height: 3, binCount: 2, pieces: [], totalPieces: 2, needsSplit: false, filament: 10, categoryIds: [], labels: [], notes: '', binIds: [] },
+      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 4, needsSplit: true, filament: 20, categoryIds: [], labels: [], notes: '', binIds: [] },
     ];
     expect(getTotalPieces(rows)).toBe(6);
   });
@@ -195,8 +195,8 @@ describe('getTotalPieces', () => {
 describe('getTotalBins', () => {
   it('sums binCount across all rows', () => {
     const rows: PrintRow[] = [
-      { size: '2×2', height: 3, binCount: 3, pieces: [], totalPieces: 3, needsSplit: false, filament: 10, categoryIds: [], labels: [], notes: '' },
-      { size: '4×4', height: 3, binCount: 5, pieces: [], totalPieces: 5, needsSplit: false, filament: 20, categoryIds: [], labels: [], notes: '' },
+      { size: '2×2', height: 3, binCount: 3, pieces: [], totalPieces: 3, needsSplit: false, filament: 10, categoryIds: [], labels: [], notes: '', binIds: [] },
+      { size: '4×4', height: 3, binCount: 5, pieces: [], totalPieces: 5, needsSplit: false, filament: 20, categoryIds: [], labels: [], notes: '', binIds: [] },
     ];
     expect(getTotalBins(rows)).toBe(8);
   });
@@ -209,16 +209,16 @@ describe('getTotalBins', () => {
 describe('getTotalFilament', () => {
   it('sums filament across all rows', () => {
     const rows: PrintRow[] = [
-      { size: '2×2', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 10.5, categoryIds: [], labels: [], notes: '' },
-      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 20.3, categoryIds: [], labels: [], notes: '' },
+      { size: '2×2', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 10.5, categoryIds: [], labels: [], notes: '', binIds: [] },
+      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 20.3, categoryIds: [], labels: [], notes: '', binIds: [] },
     ];
     expect(getTotalFilament(rows)).toBe(30.8);
   });
 
   it('rounds to one decimal place', () => {
     const rows: PrintRow[] = [
-      { size: '2×2', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 10.123, categoryIds: [], labels: [], notes: '' },
-      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 20.456, categoryIds: [], labels: [], notes: '' },
+      { size: '2×2', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 10.123, categoryIds: [], labels: [], notes: '', binIds: [] },
+      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 20.456, categoryIds: [], labels: [], notes: '', binIds: [] },
     ];
     // 10.123 + 20.456 = 30.579 → 30.6
     expect(getTotalFilament(rows)).toBe(30.6);

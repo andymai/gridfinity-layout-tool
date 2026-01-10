@@ -1,24 +1,15 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
 import { STAGING_ID, CONSTRAINTS, calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../constants';
-import { generatePrintList, getTotalBins, getTotalPieces, getTotalFilament, getSpoolEstimate } from '../utils/split';
 import { getLayerZStart } from '../utils/collision';
 import { clamp } from '../utils/validation';
 import { exportPrintListTSV } from '../utils/storage';
 import { ConfirmDialog } from './modals/ConfirmDialog';
-import type { PrintPiece } from '../types';
+import { usePrintList } from '../hooks/usePrintList';
+import { SplitPreview, PrintListSummary, PrintListEmpty } from './PrintList';
 
 const STYLES = {
-  // Split preview piece - custom colors not in Tailwind
-  splitPiece: {
-    backgroundColor: 'var(--color-primary-muted)',
-    border: '1px solid var(--color-primary)',
-    borderRadius: '2px',
-    fontSize: '9px',
-    color: 'var(--text-secondary)',
-  },
-
   // Dynamic inline styles for hover effects
   textareaResize: { resize: 'vertical' as const, minHeight: '60px' },
 } as const;
@@ -101,80 +92,6 @@ function PrintBedIndicator({
   );
 }
 
-/**
- * Visual preview of how a bin will be split for printing.
- * Shows a grid diagram with the split pieces.
- */
-function SplitPreview({ width, depth, pieces }: { width: number; depth: number; pieces: PrintPiece[] }) {
-  // Create a 2D grid to place pieces
-  const grid: (PrintPiece | null)[][] = Array.from({ length: depth }, () =>
-    Array.from({ length: width }, () => null)
-  );
-
-  // Place pieces using greedy left-to-right, bottom-to-top
-  const placedPieces: Array<{ piece: PrintPiece; x: number; y: number }> = [];
-  const piecesToPlace = pieces.flatMap(p => Array(p.count).fill({ width: p.width, depth: p.depth }));
-
-  for (const piece of piecesToPlace) {
-    // Find first available position
-    outer: for (let y = 0; y < depth; y++) {
-      for (let x = 0; x < width; x++) {
-        // Check if piece fits at this position
-        let fits = true;
-        if (x + piece.width > width || y + piece.depth > depth) {
-          fits = false;
-        } else {
-          for (let py = y; py < y + piece.depth && fits; py++) {
-            for (let px = x; px < x + piece.width && fits; px++) {
-              if (grid[py][px] !== null) fits = false;
-            }
-          }
-        }
-
-        if (fits) {
-          // Place the piece
-          for (let py = y; py < y + piece.depth; py++) {
-            for (let px = x; px < x + piece.width; px++) {
-              grid[py][px] = piece;
-            }
-          }
-          placedPieces.push({ piece, x, y });
-          break outer;
-        }
-      }
-    }
-  }
-
-  const cellSize = 16;
-  const gap = 2;
-
-  return (
-    <div
-      className="relative"
-      style={{
-        width: width * cellSize + (width - 1) * gap,
-        height: depth * cellSize + (depth - 1) * gap,
-      }}
-    >
-      {placedPieces.map((placed) => (
-        <div
-          key={`${placed.x}-${placed.y}-${placed.piece.width}x${placed.piece.depth}`}
-          className="absolute flex items-center justify-center"
-          style={{
-            left: placed.x * (cellSize + gap),
-            bottom: placed.y * (cellSize + gap),
-            width: placed.piece.width * cellSize + (placed.piece.width - 1) * gap,
-            height: placed.piece.depth * cellSize + (placed.piece.depth - 1) * gap,
-            ...STYLES.splitPiece,
-          }}
-        >
-          {placed.piece.width}×{placed.piece.depth}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export function RightPanel() {
   const [confirmDelete, setConfirmDelete] = useState<{
     title: string;
@@ -204,6 +121,9 @@ export function RightPanel() {
 
   const { execute } = useUndoableAction();
 
+  // Use the print list hook
+  const printList = usePrintList();
+
   // Single selection vs multi-selection
   const selectedBins = layout.bins.filter(b => selectedBinIds.includes(b.id));
   const isMultiSelect = selectedBins.length > 1;
@@ -218,17 +138,6 @@ export function RightPanel() {
 
   // Calculate max grid units from print bed size (accounting for gaps between bins)
   const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
-
-  // Memoize print list calculation - expensive operation
-  const printRows = useMemo(
-    () => generatePrintList(layout.bins, maxGridUnits),
-    [layout.bins, maxGridUnits]
-  );
-  const totalBins = useMemo(() => getTotalBins(printRows), [printRows]);
-  const totalPieces = useMemo(() => getTotalPieces(printRows), [printRows]);
-  const totalFilament = useMemo(() => getTotalFilament(printRows), [printRows]);
-  const spoolEstimate = useMemo(() => getSpoolEstimate(totalFilament), [totalFilament]);
-  const hasAnySplits = useMemo(() => printRows.some(r => r.needsSplit), [printRows]);
 
   // Calculate max clearance for selected bin
   const maxClearance = bin && layer
@@ -777,15 +686,15 @@ export function RightPanel() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
             <h2 className="section-header m-0">Bin List</h2>
-            {printRows.length > 0 && (
-              <span className="badge badge-info">{totalBins}</span>
+            {printList.rows.length > 0 && (
+              <span className="badge badge-info">{printList.totalBins}</span>
             )}
           </button>
-          {printRows.length > 0 && (
+          {printList.rows.length > 0 && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                const tsv = exportPrintListTSV(printRows);
+                const tsv = exportPrintListTSV(printList.rows);
                 navigator.clipboard.writeText(tsv);
                 setCopyFeedback(true);
                 setTimeout(() => setCopyFeedback(false), 2000);
@@ -808,23 +717,11 @@ export function RightPanel() {
         </div>
 
         <div
-          className={`flex-1 flex flex-col min-h-0 transition-all duration-200 ${printListExpanded ? 'opacity-100' : 'opacity-0 max-h-0'}`}
+          className={`flex-1 flex flex-col min-h-0 transition-all duration-200 ${printListExpanded ? 'opacity-100' : 'opacity-0 max-h-0 overflow-hidden'}`}
         >
           <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0">
-            {printRows.length === 0 ? (
-              <div className="empty-state py-6 px-4">
-                <div className="empty-state-icon">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <p className="text-sm text-content-secondary mb-1">
-                  No bins placed yet
-                </p>
-                <p className="text-xs text-content-disabled">
-                  Draw or click to place bins on the grid
-                </p>
-              </div>
+            {printList.rows.length === 0 ? (
+              <PrintListEmpty />
             ) : (
               <table className="w-full text-sm">
                 <thead className="bg-surface-elevated">
@@ -838,7 +735,7 @@ export function RightPanel() {
                     <th className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated" title="Quantity">
                       Qty
                     </th>
-                    {hasAnySplits && (
+                    {printList.hasAnySplits && (
                       <th className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated" title="Pieces after split">
                         Pcs
                       </th>
@@ -849,15 +746,22 @@ export function RightPanel() {
                   </tr>
                 </thead>
                 <tbody>
-                  {printRows.map((row, index) => {
+                  {printList.rows.map((row, index) => {
                     const isExpanded = expandedSplitRow === index;
                     const [w, d] = row.size.split('×').map(Number);
 
                     return (
-                      <React.Fragment key={`${row.size}-${row.height}-${row.labels.join(',')}`}>
+                      <React.Fragment key={`${row.size}-${row.height}-${row.labels.join(',')}-${index}`}>
                         <tr
-                          className={`transition-colors hover:bg-surface-hover ${isExpanded ? '' : 'border-b border-stroke-subtle'} ${row.needsSplit ? 'cursor-pointer' : 'cursor-default'}`}
-                          onClick={() => row.needsSplit && setExpandedSplitRow(isExpanded ? null : index)}
+                          className={`transition-colors hover:bg-surface-hover cursor-pointer ${isExpanded ? '' : 'border-b border-stroke-subtle'}`}
+                          onClick={() => {
+                            // Always select bins on click
+                            printList.selectBinsByRow(row);
+                            // Toggle split preview if needed
+                            if (row.needsSplit) {
+                              setExpandedSplitRow(isExpanded ? null : index);
+                            }
+                          }}
                         >
                           <td className="pl-4 pr-2 py-2 text-content">
                             <div className="flex flex-col gap-0.5">
@@ -928,7 +832,7 @@ export function RightPanel() {
                           <td className="px-2 py-2 text-right text-content">
                             {row.binCount}
                           </td>
-                          {hasAnySplits && (
+                          {printList.hasAnySplits && (
                             <td className="px-2 py-2 text-right text-content">
                               {row.totalPieces}
                             </td>
@@ -940,7 +844,7 @@ export function RightPanel() {
                         {isExpanded && (
                           <tr className="bg-surface-elevated">
                             <td
-                              colSpan={hasAnySplits ? 5 : 4}
+                              colSpan={printList.hasAnySplits ? 5 : 4}
                               className="px-4 py-3 border-b border-stroke-subtle"
                             >
                               <div className="flex items-start gap-4">
@@ -967,17 +871,16 @@ export function RightPanel() {
             )}
           </div>
 
-          {printRows.length > 0 && (
-            <div className="px-4 py-3 border-t border-stroke-subtle bg-surface-elevated">
-              <div className="flex justify-between font-medium mb-2 text-sm text-content">
-                <span>Total</span>
-                <span>{totalBins} bins{hasAnySplits ? `, ${totalPieces} pieces` : ''}</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-stroke-subtle text-xs text-content-secondary">
-                <span className="text-content-tertiary">Est. filament</span>
-                <span title="Based on 1kg spool (~330m of 1.75mm PLA)">{totalFilament}m (~{spoolEstimate}× 1kg)</span>
-              </div>
-            </div>
+          {printList.rows.length > 0 && (
+            <PrintListSummary
+              totalBins={printList.totalBins}
+              totalPieces={printList.totalPieces}
+              totalFilament={printList.totalFilament}
+              totalCost={printList.totalCost}
+              totalPrintTimeHours={printList.totalPrintTimeHours}
+              spoolPercentage={printList.spoolPercentage}
+              hasAnySplits={printList.hasAnySplits}
+            />
           )}
         </div>
       </div>

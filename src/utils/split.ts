@@ -1,6 +1,10 @@
-import type { Bin, PrintPiece, PrintRow } from '../types';
+import type { Bin, PrintPiece, PrintRow, EnhancedPrintRow, PrintListConfig } from '../types';
 import { STAGING_ID } from '../constants';
+import { calcFilamentCost, calcSpoolPercentage, DEFAULT_METERS_PER_KG, DEFAULT_COST_PER_KG } from './printEstimates';
 
+
+// Default height unit size in mm (used as reference for scaling)
+const DEFAULT_HEIGHT_UNIT_MM = 7;
 
 /**
  * Estimate filament usage in meters for a single bin.
@@ -11,9 +15,9 @@ import { STAGING_ID } from '../constants';
  *
  * Formula uses grid units directly:
  * - Base: 0.5m per grid unit² (floor, stacking features, internal structure)
- * - Walls: 0.15m per perimeter unit per height unit
+ * - Walls: 0.15m per perimeter unit per height unit (scaled by heightUnitMm)
  *
- * Examples:
+ * Examples (at default 7mm height units):
  * - 1×1×3u: 0.5 + 1.8 = 2.3m
  * - 2×2×3u: 2 + 3.6 = 5.6m
  * - 4×4×3u: 8 + 7.2 = 15.2m (vs 11.67m light = ~30% buffer for dividers)
@@ -21,14 +25,17 @@ import { STAGING_ID } from '../constants';
 function calcFilament(
   width: number,
   depth: number,
-  height: number
+  height: number,
+  heightUnitMm: number
 ): number {
   // Base: floor, stacking lip, and internal grid structure
   const baseContribution = 0.5 * width * depth;
 
   // Walls: perimeter walls scaled by height
+  // Scale the wall coefficient by heightUnitMm so taller height units use more filament
   const perimeter = 2 * (width + depth);
-  const wallContribution = 0.15 * perimeter * height;
+  const wallCoefficient = 0.15 * (heightUnitMm / DEFAULT_HEIGHT_UNIT_MM);
+  const wallContribution = wallCoefficient * perimeter * height;
 
   return Math.round((baseContribution + wallContribution) * 10) / 10;
 }
@@ -106,13 +113,14 @@ function mergePieces(pieces: PrintPiece[]): PrintPiece[] {
  */
 export function generatePrintList(
   bins: Bin[],
-  maxPrintSize: number
+  maxPrintSize: number,
+  heightUnitMm: number = DEFAULT_HEIGHT_UNIT_MM
 ): PrintRow[] {
   // Filter out staging bins
   const placedBins = bins.filter(b => b.layerId !== STAGING_ID);
 
   // Group by size, height, category, and label (labeled bins are not grouped together)
-  const groups = new Map<string, { width: number; depth: number; height: number; count: number; categoryId: string; label: string; notes: string }>();
+  const groups = new Map<string, { width: number; depth: number; height: number; count: number; categoryId: string; label: string; notes: string; binIds: string[] }>();
 
   for (const bin of placedBins) {
     // Labeled bins get their own row; unlabeled bins are grouped by size+height+category
@@ -122,8 +130,9 @@ export function generatePrintList(
     const existing = groups.get(key);
     if (existing) {
       existing.count++;
+      existing.binIds.push(bin.id);
     } else {
-      groups.set(key, { width: bin.width, depth: bin.depth, height: bin.height, count: 1, categoryId: bin.category, label: bin.label, notes: bin.notes });
+      groups.set(key, { width: bin.width, depth: bin.depth, height: bin.height, count: 1, categoryId: bin.category, label: bin.label, notes: bin.notes, binIds: [bin.id] });
     }
   }
 
@@ -138,7 +147,7 @@ export function generatePrintList(
 
     // Calculate filament for all pieces in this row
     const filamentPerBin = mergedPieces.reduce(
-      (sum, p) => sum + calcFilament(p.width, p.depth, group.height) * p.count,
+      (sum, p) => sum + calcFilament(p.width, p.depth, group.height, heightUnitMm) * p.count,
       0
     );
     const filament = Math.round(filamentPerBin * group.count * 10) / 10; // Round to 1 decimal
@@ -154,6 +163,7 @@ export function generatePrintList(
       categoryIds: [group.categoryId],
       labels: group.label ? [group.label] : [],
       notes: group.notes,
+      binIds: group.binIds,
     });
   }
 
@@ -194,4 +204,29 @@ export function getTotalFilament(rows: PrintRow[]): number {
 export function getSpoolEstimate(totalFilament: number): number {
   const METERS_PER_SPOOL = 330;
   return Math.ceil(totalFilament / METERS_PER_SPOOL * 10) / 10; // Round up to 0.1
+}
+
+/**
+ * Generate enhanced print list with cost estimates and area calculations.
+ * Extends the base PrintRow with additional computed fields for sorting and display.
+ */
+export function generateEnhancedPrintList(
+  bins: Bin[],
+  maxPrintSize: number,
+  heightUnitMm: number = DEFAULT_HEIGHT_UNIT_MM,
+  config: PrintListConfig = { filamentCostPerKg: DEFAULT_COST_PER_KG, metersPerKg: DEFAULT_METERS_PER_KG }
+): EnhancedPrintRow[] {
+  const baseRows = generatePrintList(bins, maxPrintSize, heightUnitMm);
+
+  return baseRows.map(row => {
+    const [width, depth] = row.size.split('×').map(Number);
+    const area = width * depth;
+
+    return {
+      ...row,
+      area,
+      costEstimate: calcFilamentCost(row.filament, config.filamentCostPerKg, config.metersPerKg),
+      spoolPercentage: calcSpoolPercentage(row.filament, config.metersPerKg),
+    };
+  });
 }
