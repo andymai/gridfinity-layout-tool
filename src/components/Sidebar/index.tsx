@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
-import { calcMaxGridUnits } from '../../constants';
+import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
 import { ActiveLayerPanel } from './ActiveLayerPanel';
 import { LayerPanel } from './LayerPanel';
 import { CategoriesPanel } from './CategoriesPanel';
@@ -18,6 +18,8 @@ export function Sidebar() {
     gridUnitMm,
     heightUnitMm,
     printBedSize,
+    drawerWidth,
+    drawerDepth,
     drawerHeight,
     setGridUnitMm,
     setHeightUnitMm,
@@ -28,6 +30,8 @@ export function Sidebar() {
       gridUnitMm: state.layout.gridUnitMm,
       heightUnitMm: state.layout.heightUnitMm,
       printBedSize: state.layout.printBedSize,
+      drawerWidth: state.layout.drawer.width,
+      drawerDepth: state.layout.drawer.depth,
       drawerHeight: state.layout.drawer.height,
       setGridUnitMm: state.setGridUnitMm,
       setHeightUnitMm: state.setHeightUnitMm,
@@ -39,6 +43,14 @@ export function Sidebar() {
   const handleDrawerHeightChange = (delta: number) => {
     const newHeight = Math.max(1, drawerHeight + delta);
     updateDrawer({ height: newHeight });
+  };
+
+  const handleDrawerWidthChange = (width: number) => {
+    updateDrawer({ width: Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, width)) });
+  };
+
+  const handleDrawerDepthChange = (depth: number) => {
+    updateDrawer({ depth: Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, depth)) });
   };
 
   return (
@@ -95,6 +107,46 @@ export function Sidebar() {
                 Grid Settings
               </h2>
               <div className="text-xs text-content-secondary space-y-2">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="gridWidth"
+                    className="text-content-tertiary"
+                    title="Number of grid units wide (you can also drag the grid edge handles)"
+                  >
+                    Grid width
+                  </label>
+                  <div className="flex items-center gap-1">
+                    <DeferredNumberInput
+                      id="gridWidth"
+                      value={drawerWidth}
+                      onChange={handleDrawerWidthChange}
+                      min={1}
+                      max={CONSTRAINTS.GRID_MAX}
+                      className="input w-12 py-0.5 px-1 text-xs text-right"
+                    />
+                    <span className="text-content-tertiary">units</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="gridDepth"
+                    className="text-content-tertiary"
+                    title="Number of grid units deep (you can also drag the grid edge handles)"
+                  >
+                    Grid depth
+                  </label>
+                  <div className="flex items-center gap-1">
+                    <DeferredNumberInput
+                      id="gridDepth"
+                      value={drawerDepth}
+                      onChange={handleDrawerDepthChange}
+                      min={1}
+                      max={CONSTRAINTS.GRID_MAX}
+                      className="input w-12 py-0.5 px-1 text-xs text-right"
+                    />
+                    <span className="text-content-tertiary">units</span>
+                  </div>
+                </div>
                 <div className="flex items-center justify-between">
                   <span
                     className="text-content-tertiary"
