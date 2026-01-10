@@ -44,6 +44,15 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
     }))
   );
 
+  // Performance: Use derived selector for category highlighting.
+  // This only re-renders bins whose highlight state actually changes.
+  const isCategoryHighlighted = useUIStore(
+    (state) => state.highlightedCategoryId !== null && state.highlightedCategoryId === bin.category
+  );
+  const isAnyCategoryHighlighted = useUIStore(
+    (state) => state.highlightedCategoryId !== null
+  );
+
   // Actions are stable, select individually
   const setSelectedBin = useUIStore((state) => state.setSelectedBin);
   const toggleSelection = useUIStore((state) => state.toggleSelection);
@@ -266,6 +275,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
   const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
   const textColors = getBinTextColors(bgColor);
 
+
   // Selection and hover styles
   const getBoxShadow = () => {
     if (isGhost) return 'none';
@@ -279,6 +289,10 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
     if (isFocused) {
       // Focus ring without selection
       return '0 0 0 2px #3b82f6, var(--shadow-md)';
+    }
+    // Category highlight (when hovering category in sidebar)
+    if (isCategoryHighlighted) {
+      return '0 0 0 2px var(--color-accent), 0 0 12px rgba(34, 197, 94, 0.4)';
     }
     return 'var(--shadow-sm)';
   };
@@ -307,8 +321,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
         WebkitUserSelect: 'none',
         userSelect: 'none',
         pointerEvents: isGhost || isBeingDragged ? 'none' : 'auto',
-        opacity: isGhost ? 0.3 : isBeingDragged ? 0.5 : 1,
-        zIndex: isGhost ? 5 : isSelected ? 20 : 10,
+        opacity: isGhost ? 0.3 : isBeingDragged ? 0.5 : (isAnyCategoryHighlighted && !isCategoryHighlighted) ? 0.4 : 1,
+        zIndex: isGhost ? 5 : isSelected ? 20 : isCategoryHighlighted ? 15 : 10,
         boxShadow: getBoxShadow(),
         transform: getTransform(),
         // Prevent text content from expanding bin beyond grid cell

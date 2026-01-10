@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { useToastStore } from '../../store/toast';
 
 // Curated color palette optimized for dark UI backgrounds
 // Colors chosen for: visual distinction, balanced saturation, good contrast
@@ -26,6 +27,7 @@ const COLOR_PALETTE = [
 export function CategoriesPanel() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+  const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
 
   const { categories, bins, addCategory, updateCategory, deleteCategory } = useLayoutStore(
     useShallow((state) => ({
@@ -37,14 +39,32 @@ export function CategoriesPanel() {
     }))
   );
 
-  const { activeCategoryId, setActiveCategory } = useUIStore(
+  const { activeCategoryId, setActiveCategory, setHighlightedCategoryId } = useUIStore(
     useShallow((state) => ({
       activeCategoryId: state.activeCategoryId,
       setActiveCategory: state.setActiveCategory,
+      setHighlightedCategoryId: state.setHighlightedCategoryId,
     }))
   );
 
+  const addToast = useToastStore(state => state.addToast);
   const { execute } = useUndoableAction();
+
+  // Calculate bin counts per category
+  const binCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const bin of bins) {
+      counts.set(bin.category, (counts.get(bin.category) || 0) + 1);
+    }
+    return counts;
+  }, [bins]);
+
+  // Cleanup: Clear highlighted category when panel unmounts (e.g., sidebar collapses)
+  useEffect(() => {
+    return () => {
+      setHighlightedCategoryId(null);
+    };
+  }, [setHighlightedCategoryId]);
 
   const handleAddCategory = () => {
     execute(() => {
@@ -62,9 +82,20 @@ export function CategoriesPanel() {
 
   const handleDeleteCategory = (id: string, name: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    // Can't delete if in use or if it's the last category
-    const inUse = bins.some(b => b.category === id);
-    if (inUse || categories.length <= CONSTRAINTS.CATEGORIES_MIN) return;
+    const binCount = binCounts.get(id) || 0;
+
+    // Show helpful message if category is in use
+    if (binCount > 0) {
+      addToast(`${binCount} bin${binCount > 1 ? 's' : ''} use "${name}". Reassign them first.`, 'error');
+      return;
+    }
+
+    // Show message if it's the last category
+    if (categories.length <= CONSTRAINTS.CATEGORIES_MIN) {
+      addToast('Cannot delete the last category', 'error');
+      return;
+    }
+
     setDeleteConfirm({ id, name });
   };
 
@@ -73,9 +104,11 @@ export function CategoriesPanel() {
     const { id } = deleteConfirm;
     execute(() => {
       deleteCategory(id);
-      if (activeCategoryId === id && categories.length > 1) {
-        const remaining = categories.filter(c => c.id !== id);
-        setActiveCategory(remaining[0].id);
+      // Access fresh state to avoid stale closure issues
+      const currentCategories = useLayoutStore.getState().layout.categories;
+      const currentActiveCategoryId = useUIStore.getState().activeCategoryId;
+      if (currentActiveCategoryId === id && currentCategories.length > 0) {
+        setActiveCategory(currentCategories[0].id);
       }
     });
     setEditingId(null);
@@ -105,14 +138,23 @@ export function CategoriesPanel() {
         {categories.map((category) => {
           const isActive = category.id === activeCategoryId;
           const isEditing = editingId === category.id;
-          const inUse = bins.some(b => b.category === category.id);
-          const canDelete = !inUse && categories.length > CONSTRAINTS.CATEGORIES_MIN;
+          const binCount = binCounts.get(category.id) || 0;
+          const canDelete = binCount === 0 && categories.length > CONSTRAINTS.CATEGORIES_MIN;
+          const isHovered = hoveredCategoryId === category.id;
 
           return (
             <div
               key={category.id}
               className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-all ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
               onClick={() => setActiveCategory(category.id)}
+              onMouseEnter={() => {
+                setHoveredCategoryId(category.id);
+                setHighlightedCategoryId(category.id);
+              }}
+              onMouseLeave={() => {
+                setHoveredCategoryId(null);
+                setHighlightedCategoryId(null);
+              }}
             >
               {isEditing ? (
                 <div className="flex flex-col gap-2 w-full" onClick={(e) => e.stopPropagation()}>
@@ -143,15 +185,14 @@ export function CategoriesPanel() {
                   </div>
                   {/* Action buttons */}
                   <div className="flex gap-2 mt-1">
-                    {canDelete && (
-                      <button
-                        onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
-                        className="btn btn-danger btn-sm flex-1 justify-center"
-                        aria-label={`Delete ${category.name} category`}
-                      >
-                        Delete
-                      </button>
-                    )}
+                    <button
+                      onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
+                      className={`btn btn-sm flex-1 justify-center ${canDelete ? 'btn-danger' : 'btn-secondary opacity-50 cursor-not-allowed'}`}
+                      aria-label={canDelete ? `Delete ${category.name} category` : `Cannot delete: ${binCount} bins use this category`}
+                      title={canDelete ? 'Delete category' : `${binCount} bins use this category`}
+                    >
+                      Delete
+                    </button>
                     <button
                       onClick={() => setEditingId(null)}
                       className="btn btn-secondary btn-sm flex-1 justify-center"
@@ -163,38 +204,49 @@ export function CategoriesPanel() {
                 </div>
               ) : (
                 <>
-                  {/* Selectable button for the category - keyboard accessible */}
+                  {/* Color swatch with checkmark overlay */}
+                  <div
+                    className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm cursor-pointer transition-transform hover:scale-110"
+                    style={{ backgroundColor: category.color }}
+                    onClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
+                    title="Click to edit color"
+                    aria-hidden="true"
+                  >
+                    {isActive && (
+                      <svg
+                        className="absolute inset-0 w-5 h-5 p-0.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="white"
+                        style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }}
+                        aria-hidden="true"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  {/* Category name - click to select, double-click to edit */}
                   <button
-                    className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                    className="flex-1 min-w-0 text-left"
                     onClick={(e) => { e.stopPropagation(); setActiveCategory(category.id); }}
+                    onDoubleClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
                     aria-pressed={isActive}
                     aria-label={isActive ? `${category.name} (selected for new bins)` : `Select ${category.name} for new bins`}
+                    title="Double-click to edit"
                   >
-                    <div
-                      className="w-5 h-5 rounded flex-shrink-0 shadow-sm"
-                      style={{ backgroundColor: category.color }}
-                      aria-hidden="true"
-                    />
-                    <span className="flex-1 min-w-0 text-sm truncate text-content">
+                    <span className="text-sm truncate text-content block">
                       {category.name}
                     </span>
                   </button>
-                  {/* Edit button - appears on hover */}
-                  <button
-                    className="flex-shrink-0 p-1 rounded opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-content-tertiary hover:text-content"
-                    onClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
-                    title="Edit category"
-                    aria-label={`Edit ${category.name}`}
+                  {/* Bin count badge */}
+                  <span
+                    className={`text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${
+                      isHovered && binCount > 0 ? 'bg-accent/20 text-accent' : 'text-content-tertiary'
+                    }`}
+                    title={binCount > 0 ? `${binCount} bin${binCount > 1 ? 's' : ''} use this category` : 'No bins use this category'}
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
-                  {isActive && (
-                    <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
+                    {binCount > 0 ? binCount : ''}
+                  </span>
                 </>
               )}
             </div>

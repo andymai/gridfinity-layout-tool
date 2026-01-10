@@ -196,7 +196,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
               />
               <ShortcutRow
                 keys={[formatKey(SHORTCUTS.CATEGORY_PREV), formatKey(SHORTCUTS.CATEGORY_NEXT)]}
-                description="Cycle bin category"
+                description="Cycle category (bin or drawing)"
               />
               <ShortcutRow
                 keys={formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase()}

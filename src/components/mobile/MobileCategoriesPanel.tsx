@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
+import { useToastStore } from '../../store/toast';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 
@@ -44,7 +45,17 @@ export function MobileCategoriesPanel() {
     }))
   );
 
+  const addToast = useToastStore(state => state.addToast);
   const { execute } = useUndoableAction();
+
+  // Calculate bin counts per category
+  const binCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const bin of bins) {
+      counts.set(bin.category, (counts.get(bin.category) || 0) + 1);
+    }
+    return counts;
+  }, [bins]);
 
   const handleSelectCategory = (id: string) => {
     setActiveCategory(id);
@@ -72,8 +83,20 @@ export function MobileCategoriesPanel() {
   };
 
   const handleDelete = (id: string, name: string) => {
-    const inUse = bins.some(b => b.category === id);
-    if (inUse || categories.length <= CONSTRAINTS.CATEGORIES_MIN) return;
+    const binCount = binCounts.get(id) || 0;
+
+    // Show helpful message if category is in use
+    if (binCount > 0) {
+      addToast(`${binCount} bin${binCount > 1 ? 's' : ''} use "${name}". Reassign them first.`, 'error');
+      return;
+    }
+
+    // Show message if it's the last category
+    if (categories.length <= CONSTRAINTS.CATEGORIES_MIN) {
+      addToast('Cannot delete the last category', 'error');
+      return;
+    }
+
     setDeleteConfirm({ id, name });
   };
 
@@ -82,9 +105,11 @@ export function MobileCategoriesPanel() {
     const { id } = deleteConfirm;
     execute(() => {
       deleteCategory(id);
-      if (activeCategoryId === id && categories.length > 1) {
-        const remaining = categories.filter(c => c.id !== id);
-        setActiveCategory(remaining[0].id);
+      // Access fresh state to avoid stale closure issues
+      const currentCategories = useLayoutStore.getState().layout.categories;
+      const currentActiveCategoryId = useUIStore.getState().activeCategoryId;
+      if (currentActiveCategoryId === id && currentCategories.length > 0) {
+        setActiveCategory(currentCategories[0].id);
       }
     });
     setEditingId(null);
@@ -105,8 +130,8 @@ export function MobileCategoriesPanel() {
         {categories.map((category) => {
           const isActive = category.id === activeCategoryId;
           const isEditing = editingId === category.id;
-          const inUse = bins.some(b => b.category === category.id);
-          const canDelete = !inUse && categories.length > CONSTRAINTS.CATEGORIES_MIN;
+          const binCount = binCounts.get(category.id) || 0;
+          const canDelete = binCount === 0 && categories.length > CONSTRAINTS.CATEGORIES_MIN;
 
           return (
             <div
@@ -146,14 +171,12 @@ export function MobileCategoriesPanel() {
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
-                    {canDelete && (
-                      <button
-                        onClick={() => handleDelete(category.id, category.name)}
-                        className="btn btn-danger flex-1"
-                      >
-                        Delete
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleDelete(category.id, category.name)}
+                      className={`btn flex-1 ${canDelete ? 'btn-danger' : 'btn-secondary opacity-50'}`}
+                    >
+                      Delete{binCount > 0 ? ` (${binCount} bins)` : ''}
+                    </button>
                     <button
                       onClick={() => setEditingId(null)}
                       className="btn btn-secondary flex-1"
@@ -176,6 +199,13 @@ export function MobileCategoriesPanel() {
                   >
                     {category.name}
                   </span>
+                  {binCount > 0 && (
+                    <span
+                      className="px-2 py-1 rounded-full text-xs font-medium bg-surface text-content-tertiary"
+                    >
+                      {binCount}
+                    </span>
+                  )}
                   {isActive && (
                     <span
                       className="px-2 py-1 rounded text-xs font-medium bg-accent text-black"
