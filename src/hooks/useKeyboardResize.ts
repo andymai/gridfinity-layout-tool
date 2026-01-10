@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
 import { canPlaceBin } from '../utils/validation';
+import { findBinById } from '../utils/entity';
 import { CONSTRAINTS, STAGING_ID } from '../constants';
 
 /**
@@ -42,7 +43,7 @@ export function useKeyboardResize() {
       return;
     }
 
-    const bin = layout.bins.find(b => b.id === selectedBinIds[0]);
+    const bin = findBinById(layout, selectedBinIds[0]);
     if (!bin) return;
 
     if (bin.layerId === STAGING_ID) {
@@ -69,7 +70,7 @@ export function useKeyboardResize() {
       currentRects: new Map([[bin.id, startRect]]),
       valid: true,
     });
-  }, [selectedBinIds, layout.bins, setKeyboardResizeMode, announceToScreenReader, setInteraction]);
+  }, [selectedBinIds, layout, setKeyboardResizeMode, announceToScreenReader, setInteraction]);
 
   /**
    * Adjust resize delta (called by arrow keys).
@@ -77,7 +78,7 @@ export function useKeyboardResize() {
   const adjustResizeDelta = useCallback((dw: number, dd: number) => {
     if (!keyboardResizeMode || selectedBinIds.length !== 1) return;
 
-    const bin = layout.bins.find(b => b.id === selectedBinIds[0]);
+    const bin = findBinById(layout, selectedBinIds[0]);
     if (!bin) return;
 
     setResizeDelta(prev => {
@@ -102,7 +103,7 @@ export function useKeyboardResize() {
 
       return newDelta;
     });
-  }, [keyboardResizeMode, selectedBinIds, layout.bins, setInteraction, announceToScreenReader]);
+  }, [keyboardResizeMode, selectedBinIds, layout, setInteraction, announceToScreenReader]);
 
   /**
    * Confirm resize - apply the size change to the bin.
@@ -111,7 +112,7 @@ export function useKeyboardResize() {
     if (!keyboardResizeMode || selectedBinIds.length !== 1) return;
 
     const { dw, dd } = resizeDelta;
-    const bin = layout.bins.find(b => b.id === selectedBinIds[0]);
+    const bin = findBinById(layout, selectedBinIds[0]);
     if (!bin) return;
 
     const newWidth = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, bin.width + dw));

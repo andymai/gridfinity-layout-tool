@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
 import { canPlaceBin } from '../utils/validation';
+import { findBinById } from '../utils/entity';
 import { STAGING_ID } from '../constants';
 
 /**
@@ -39,7 +40,7 @@ export function useKeyboardDrag() {
 
     // Check if any selected bins are in staging
     const hasStaging = selectedBinIds.some(id => {
-      const bin = layout.bins.find(b => b.id === id);
+      const bin = findBinById(layout, id);
       return bin?.layerId === STAGING_ID;
     });
 
@@ -58,7 +59,7 @@ export function useKeyboardDrag() {
     );
 
     // Set interaction to show ghost preview
-    const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
+    const firstBin = findBinById(layout, selectedBinIds[0]);
     const startCoord = firstBin ? { x: firstBin.x, y: firstBin.y } : { x: 0, y: 0 };
     setInteraction({
       type: 'drag',
@@ -68,7 +69,7 @@ export function useKeyboardDrag() {
       valid: true,
       isOverGrid: true,
     });
-  }, [selectedBinIds, layout.bins, setKeyboardDragMode, announceToScreenReader, setInteraction]);
+  }, [selectedBinIds, layout, setKeyboardDragMode, announceToScreenReader, setInteraction]);
 
   /**
    * Adjust drag offset (called by arrow keys).
@@ -80,7 +81,7 @@ export function useKeyboardDrag() {
       const newOffset = { dx: prev.dx + dx, dy: prev.dy + dy };
 
       // Update interaction to show preview with new offset
-      const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
+      const firstBin = findBinById(layout, selectedBinIds[0]);
       const startCoord = firstBin ? { x: firstBin.x, y: firstBin.y } : { x: 0, y: 0 };
       setInteraction({
         type: 'drag',
@@ -99,7 +100,7 @@ export function useKeyboardDrag() {
 
       return newOffset;
     });
-  }, [keyboardDragMode, selectedBinIds, layout.bins, setInteraction, announceToScreenReader]);
+  }, [keyboardDragMode, selectedBinIds, layout, setInteraction, announceToScreenReader]);
 
   /**
    * Confirm drag - apply the movement to all selected bins.
@@ -124,7 +125,7 @@ export function useKeyboardDrag() {
     const validationErrors: string[] = [];
 
     for (const binId of selectedBinIds) {
-      const bin = layout.bins.find(b => b.id === binId);
+      const bin = findBinById(layout, binId);
       if (!bin || bin.layerId === STAGING_ID) {
         allValid = false;
         break;
@@ -159,7 +160,7 @@ export function useKeyboardDrag() {
     // Apply the movement
     execute(() => {
       for (const binId of selectedBinIds) {
-        const bin = layout.bins.find(b => b.id === binId);
+        const bin = findBinById(layout, binId);
         if (!bin) continue;
         updateBin(binId, { x: bin.x + dx, y: bin.y + dy });
       }
