@@ -117,19 +117,12 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   // Generate grid cells for visual reference
   const cells: JSX.Element[] = [];
   if (halfBinMode) {
-    // Half-bin mode: render 2x cells with clear visual distinction
-    // Use alternating pattern within each primary cell to show quadrants
+    // Half-bin mode: render 2x cells with dashed sub-grid lines
     for (let vy = 0; vy < gridRows; vy++) {
       for (let vx = 0; vx < gridCols; vx++) {
-        // Check if this is a primary cell corner (whole unit intersection)
-        const isPrimaryX = vx % HALF_BIN_SCALE === 0;
-        const isPrimaryY = vy % HALF_BIN_SCALE === 0;
-        const isPrimaryCell = isPrimaryX && isPrimaryY;
-
-        // Create checkerboard pattern within each primary cell
-        const quadrantX = vx % HALF_BIN_SCALE;
-        const quadrantY = vy % HALF_BIN_SCALE;
-        const isAlternate = (quadrantX + quadrantY) % 2 === 1;
+        // Check if this is a sub-cell (not a primary cell corner)
+        const isSubCellX = vx % HALF_BIN_SCALE !== 0;
+        const isSubCellY = vy % HALF_BIN_SCALE !== 0;
 
         cells.push(
           <div
@@ -139,16 +132,12 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               gridRow: vy + 1,
               width: actualCellSize,
               height: actualCellSize,
-              backgroundColor: isPrimaryCell
-                ? 'var(--grid-cell)'
-                : isAlternate
-                  ? 'var(--grid-cell-half)'
-                  : 'var(--grid-cell)',
+              backgroundColor: 'var(--grid-cell)',
               borderRadius: '2px',
               boxSizing: 'border-box',
-              // Visible divider lines on non-primary cells
-              borderLeft: !isPrimaryX ? '1px solid var(--grid-line-half)' : 'none',
-              borderTop: !isPrimaryY ? '1px solid var(--grid-line-half)' : 'none',
+              // Dashed divider lines on sub-cells
+              borderLeft: isSubCellX ? '1px dashed var(--grid-line-half)' : 'none',
+              borderTop: isSubCellY ? '1px dashed var(--grid-line-half)' : 'none',
             }}
           />
         );

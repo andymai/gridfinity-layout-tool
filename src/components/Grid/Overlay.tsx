@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
+import { HALF_BIN_SCALE } from '../../constants';
 
 interface OverlayProps {
   cellSize: number;
@@ -12,13 +13,25 @@ interface OverlayProps {
  * Supports multi-bin drag and resize previews.
  */
 export function Overlay({ cellSize, gap }: OverlayProps) {
-  const interaction = useUIStore((state) => state.interaction);
+  const { interaction, halfBinMode } = useUIStore(
+    useShallow((state) => ({
+      interaction: state.interaction,
+      halfBinMode: state.halfBinMode,
+    }))
+  );
   const { drawer, bins } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
       bins: state.layout.bins,
     }))
   );
+
+  // In half-bin mode, use scaled cell size for visual positioning
+  const visualCellSize = halfBinMode ? cellSize / HALF_BIN_SCALE : cellSize;
+  // Scale factor for converting grid units to visual cells
+  const scale = halfBinMode ? HALF_BIN_SCALE : 1;
+  // Visual grid dimensions
+  const visualDepth = drawer.depth * scale;
 
   if (!interaction) return null;
 
@@ -33,10 +46,16 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     const width = x2 - x1 + 1;
     const depth = y2 - y1 + 1;
 
-    const left = gap + x1 * (cellSize + gap);
-    const top = gap + (drawer.depth - y2 - 1) * (cellSize + gap);
-    const rectWidth = width * cellSize + (width - 1) * gap;
-    const rectHeight = depth * cellSize + (depth - 1) * gap;
+    // Scale coordinates for half-bin mode
+    const vx1 = x1 * scale;
+    const vy2 = y2 * scale;
+    const vWidth = width * scale;
+    const vDepth = depth * scale;
+
+    const left = gap + vx1 * (visualCellSize + gap);
+    const top = gap + (visualDepth - vy2 - vDepth) * (visualCellSize + gap);
+    const rectWidth = vWidth * visualCellSize + (vWidth - 1) * gap;
+    const rectHeight = vDepth * visualCellSize + (vDepth - 1) * gap;
 
     previews.push(
       <div
@@ -78,10 +97,16 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         const newX = bin.x + deltaX;
         const newY = bin.y + deltaY;
 
-        const left = gap + newX * (cellSize + gap);
-        const top = gap + (drawer.depth - newY - bin.depth) * (cellSize + gap);
-        const rectWidth = bin.width * cellSize + (bin.width - 1) * gap;
-        const rectHeight = bin.depth * cellSize + (bin.depth - 1) * gap;
+        // Scale for half-bin mode
+        const vNewX = newX * scale;
+        const vNewY = newY * scale;
+        const vBinWidth = bin.width * scale;
+        const vBinDepth = bin.depth * scale;
+
+        const left = gap + vNewX * (visualCellSize + gap);
+        const top = gap + (visualDepth - vNewY - vBinDepth) * (visualCellSize + gap);
+        const rectWidth = vBinWidth * visualCellSize + (vBinWidth - 1) * gap;
+        const rectHeight = vBinDepth * visualCellSize + (vBinDepth - 1) * gap;
 
         previews.push(
           <div
@@ -110,10 +135,16 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const originalBin = bins.find((b) => b.id === binId);
       if (!currentRect || !originalBin) continue;
 
-      const left = gap + currentRect.x * (cellSize + gap);
-      const top = gap + (drawer.depth - currentRect.y - currentRect.depth) * (cellSize + gap);
-      const rectWidth = currentRect.width * cellSize + (currentRect.width - 1) * gap;
-      const rectHeight = currentRect.depth * cellSize + (currentRect.depth - 1) * gap;
+      // Scale for half-bin mode
+      const vRectX = currentRect.x * scale;
+      const vRectY = currentRect.y * scale;
+      const vRectWidth = currentRect.width * scale;
+      const vRectDepth = currentRect.depth * scale;
+
+      const left = gap + vRectX * (visualCellSize + gap);
+      const top = gap + (visualDepth - vRectY - vRectDepth) * (visualCellSize + gap);
+      const rectWidth = vRectWidth * visualCellSize + (vRectWidth - 1) * gap;
+      const rectHeight = vRectDepth * visualCellSize + (vRectDepth - 1) * gap;
 
       // Ghost outline of original size (dashed gray border)
       const sizeChanged = currentRect.x !== originalBin.x ||
@@ -122,10 +153,16 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
                           currentRect.depth !== originalBin.depth;
 
       if (sizeChanged) {
-        const origLeft = gap + originalBin.x * (cellSize + gap);
-        const origTop = gap + (drawer.depth - originalBin.y - originalBin.depth) * (cellSize + gap);
-        const origWidth = originalBin.width * cellSize + (originalBin.width - 1) * gap;
-        const origHeight = originalBin.depth * cellSize + (originalBin.depth - 1) * gap;
+        // Scale original bin dimensions
+        const vOrigX = originalBin.x * scale;
+        const vOrigY = originalBin.y * scale;
+        const vOrigWidth = originalBin.width * scale;
+        const vOrigDepth = originalBin.depth * scale;
+
+        const origLeft = gap + vOrigX * (visualCellSize + gap);
+        const origTop = gap + (visualDepth - vOrigY - vOrigDepth) * (visualCellSize + gap);
+        const origWidth = vOrigWidth * visualCellSize + (vOrigWidth - 1) * gap;
+        const origHeight = vOrigDepth * visualCellSize + (vOrigDepth - 1) * gap;
 
         previews.push(
           <div
@@ -173,10 +210,16 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     if (bin && currentCoord) {
       const color = valid ? '#10b981' : '#ef4444'; // green or red
 
-      const left = gap + currentCoord.x * (cellSize + gap);
-      const top = gap + (drawer.depth - currentCoord.y - bin.depth) * (cellSize + gap);
-      const rectWidth = bin.width * cellSize + (bin.width - 1) * gap;
-      const rectHeight = bin.depth * cellSize + (bin.depth - 1) * gap;
+      // Scale for half-bin mode
+      const vCoordX = currentCoord.x * scale;
+      const vCoordY = currentCoord.y * scale;
+      const vBinWidth = bin.width * scale;
+      const vBinDepth = bin.depth * scale;
+
+      const left = gap + vCoordX * (visualCellSize + gap);
+      const top = gap + (visualDepth - vCoordY - vBinDepth) * (visualCellSize + gap);
+      const rectWidth = vBinWidth * visualCellSize + (vBinWidth - 1) * gap;
+      const rectHeight = vBinDepth * visualCellSize + (vBinDepth - 1) * gap;
 
       previews.push(
         <div
@@ -215,11 +258,17 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     const remainderDepth = areaDepth - usedDepth;
     const hasRemainder = remainderWidth > 0 || remainderDepth > 0;
 
+    // Scale for half-bin mode
+    const vx1 = x1 * scale;
+    const vy2 = y2 * scale;
+    const vAreaWidth = areaWidth * scale;
+    const vAreaDepth = areaDepth * scale;
+
     // Outer selection area (amber dashed like draw)
-    const areaLeft = gap + x1 * (cellSize + gap);
-    const areaTop = gap + (drawer.depth - y2 - 1) * (cellSize + gap);
-    const areaPixelWidth = areaWidth * cellSize + (areaWidth - 1) * gap;
-    const areaPixelHeight = areaDepth * cellSize + (areaDepth - 1) * gap;
+    const areaLeft = gap + vx1 * (visualCellSize + gap);
+    const areaTop = gap + (visualDepth - vy2 - vAreaDepth) * (visualCellSize + gap);
+    const areaPixelWidth = vAreaWidth * visualCellSize + (vAreaWidth - 1) * gap;
+    const areaPixelHeight = vAreaDepth * visualCellSize + (vAreaDepth - 1) * gap;
 
     previews.push(
       <div
@@ -239,15 +288,23 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
     // Draw grid of bin previews
     if (binsAcross > 0 && binsDown > 0) {
+      // Scale paint size for visual display
+      const vPaintWidth = paintSize.width * scale;
+      const vPaintDepth = paintSize.depth * scale;
+
       for (let row = 0; row < binsDown; row++) {
         for (let col = 0; col < binsAcross; col++) {
           const binX = x1 + col * paintSize.width;
           const binY = y1 + row * paintSize.depth;
 
-          const left = gap + binX * (cellSize + gap);
-          const top = gap + (drawer.depth - binY - paintSize.depth) * (cellSize + gap);
-          const rectWidth = paintSize.width * cellSize + (paintSize.width - 1) * gap;
-          const rectHeight = paintSize.depth * cellSize + (paintSize.depth - 1) * gap;
+          // Scale coordinates
+          const vBinX = binX * scale;
+          const vBinY = binY * scale;
+
+          const left = gap + vBinX * (visualCellSize + gap);
+          const top = gap + (visualDepth - vBinY - vPaintDepth) * (visualCellSize + gap);
+          const rectWidth = vPaintWidth * visualCellSize + (vPaintWidth - 1) * gap;
+          const rectHeight = vPaintDepth * visualCellSize + (vPaintDepth - 1) * gap;
 
           previews.push(
             <div
@@ -270,13 +327,21 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
     // Show remainder area as red/warning if it exists
     if (hasRemainder) {
+      // Scale remainder dimensions
+      const vRemainderWidth = remainderWidth * scale;
+      const vRemainderDepth = remainderDepth * scale;
+      const vUsedDepth = usedDepth * scale;
+
       // Right remainder strip
       if (remainderWidth > 0 && binsDown > 0) {
         const stripX = x1 + usedWidth;
-        const stripLeft = gap + stripX * (cellSize + gap);
-        const stripTop = gap + (drawer.depth - y1 - usedDepth) * (cellSize + gap);
-        const stripWidth = remainderWidth * cellSize + (remainderWidth - 1) * gap;
-        const stripHeight = usedDepth * cellSize + (usedDepth - 1) * gap;
+        const vStripX = stripX * scale;
+        const vy1 = y1 * scale;
+
+        const stripLeft = gap + vStripX * (visualCellSize + gap);
+        const stripTop = gap + (visualDepth - vy1 - vUsedDepth) * (visualCellSize + gap);
+        const stripWidth = vRemainderWidth * visualCellSize + (vRemainderWidth - 1) * gap;
+        const stripHeight = vUsedDepth * visualCellSize + (vUsedDepth - 1) * gap;
 
         previews.push(
           <div
@@ -297,10 +362,12 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       // Top remainder strip (full width)
       if (remainderDepth > 0) {
         const stripY = y1 + usedDepth;
-        const stripLeft = gap + x1 * (cellSize + gap);
-        const stripTop = gap + (drawer.depth - stripY - remainderDepth) * (cellSize + gap);
-        const stripWidth = areaWidth * cellSize + (areaWidth - 1) * gap;
-        const stripHeight = remainderDepth * cellSize + (remainderDepth - 1) * gap;
+        const vStripY = stripY * scale;
+
+        const stripLeft = gap + vx1 * (visualCellSize + gap);
+        const stripTop = gap + (visualDepth - vStripY - vRemainderDepth) * (visualCellSize + gap);
+        const stripWidth = vAreaWidth * visualCellSize + (vAreaWidth - 1) * gap;
+        const stripHeight = vRemainderDepth * visualCellSize + (vRemainderDepth - 1) * gap;
 
         previews.push(
           <div
