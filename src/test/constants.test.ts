@@ -1,40 +1,35 @@
 import { describe, it, expect } from 'vitest';
-import { calcMaxGridUnits, CONSTRAINTS, generateId, createDefaultLayout, DEFAULT_CATEGORIES, STAGING_ID, DEFAULT_CATEGORY_COLOR } from '../constants';
+import { calcMaxGridUnits, generateId, createDefaultLayout, DEFAULT_CATEGORIES, STAGING_ID, DEFAULT_CATEGORY_COLOR } from '../constants';
 
 describe('calcMaxGridUnits', () => {
   it('calculates max units for typical print bed', () => {
-    // 256mm bed, 42mm grid, 10mm gap
-    // N ≤ (256 + 10) / (42 + 10) = 266 / 52 = 5.11 → 5
-    expect(calcMaxGridUnits(256, 42)).toBe(5);
+    // 256mm bed, 42mm grid
+    // N ≤ 256 / 42 = 6.09 → 6 (bin size = 252mm fits on 256mm bed)
+    expect(calcMaxGridUnits(256, 42)).toBe(6);
   });
 
   it('returns 1 for small print bed', () => {
-    // 40mm bed can only fit 1 unit of 42mm grid
+    // 40mm bed can only fit 1 unit of 42mm grid (clamped to minimum)
     expect(calcMaxGridUnits(40, 42)).toBe(1);
   });
 
   it('calculates correctly for large print bed', () => {
-    // 300mm bed, 42mm grid, 10mm gap
-    // N ≤ (300 + 10) / (42 + 10) = 310 / 52 = 5.96 → 5
-    expect(calcMaxGridUnits(300, 42)).toBe(5);
+    // 300mm bed, 42mm grid
+    // N ≤ 300 / 42 = 7.14 → 7 (bin size = 294mm fits on 300mm bed)
+    expect(calcMaxGridUnits(300, 42)).toBe(7);
   });
 
   it('handles exact fit scenarios', () => {
-    // Bed size that fits exactly 3 units: 3*42 + 2*10 = 146mm
-    // N ≤ (146 + 10) / (42 + 10) = 156 / 52 = 3
-    expect(calcMaxGridUnits(146, 42)).toBe(3);
-  });
-
-  it('uses PRINT_GAP_MM constant', () => {
-    // Verify the calculation uses the gap constant
-    const gap = CONSTRAINTS.PRINT_GAP_MM;
-    expect(gap).toBe(10);
+    // 126mm bed fits exactly 3 units: 3 * 42 = 126mm
+    expect(calcMaxGridUnits(126, 42)).toBe(3);
+    // 125mm bed fits only 2 units: floor(125 / 42) = 2
+    expect(calcMaxGridUnits(125, 42)).toBe(2);
   });
 
   it('handles small grid units', () => {
     // 256mm bed, 20mm grid
-    // N ≤ (256 + 10) / (20 + 10) = 266 / 30 = 8.86 → 8
-    expect(calcMaxGridUnits(256, 20)).toBe(8);
+    // N ≤ 256 / 20 = 12.8 → 12 (bin size = 240mm fits on 256mm bed)
+    expect(calcMaxGridUnits(256, 20)).toBe(12);
   });
 
   it('never returns less than 1', () => {
