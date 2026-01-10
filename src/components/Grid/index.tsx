@@ -190,8 +190,9 @@ export function Grid() {
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
 
-  // In half-bin mode, visual cells are half the size
-  const visualCellSize = halfBinMode ? cellSize / HALF_BIN_SCALE : cellSize;
+  // In half-bin mode, visual cells are smaller to fit 2x cells in the same space
+  // Formula accounts for extra gaps: (cellSize - gap) / 2 keeps total grid size constant
+  const visualCellSize = halfBinMode ? (cellSize - gap) / HALF_BIN_SCALE : cellSize;
   // Scale factor for grid dimensions
   const scale = halfBinMode ? HALF_BIN_SCALE : 1;
 
