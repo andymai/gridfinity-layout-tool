@@ -51,8 +51,8 @@ export function BinMesh({ x, y, z, bin, color, opacity, height, isSelected = fal
         depthWrite={opacity === 1}
         flatShading={false} // Smooth shading for rounded corners
         side={THREE.DoubleSide} // Fixes clipping from incorrect face winding
-        emissive={isSelected ? color : '#000000'}
-        emissiveIntensity={isSelected ? 0.4 : 0}
+        emissive={color}
+        emissiveIntensity={isSelected ? 0.4 : 0.2}
       />
     </mesh>
   );

@@ -87,6 +87,8 @@ export function MergedBinMeshes({ bins }: MergedBinMeshesProps) {
         opacity={opacity}
         depthWrite={opacity === 1}
         side={THREE.DoubleSide}
+        emissive="#808080"
+        emissiveIntensity={0.15}
       />
     </mesh>
   );

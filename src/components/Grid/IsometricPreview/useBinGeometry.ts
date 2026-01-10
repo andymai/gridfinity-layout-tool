@@ -215,7 +215,7 @@ export function createBinGeometry({ width, depth, height, baseColor }: BinGeomet
 
     // === EXTERIOR FLOOR ===
     // Bottom face (slightly darkened) - winding order for upward-facing normal
-    const exteriorFloorColor = adjustColor(color, -0.15);
+    const exteriorFloorColor = adjustColor(color, -0.08);
     addQuad(
       positions, colors,
       new THREE.Vector3(x0, y0, z0),
@@ -230,8 +230,8 @@ export function createBinGeometry({ width, depth, height, baseColor }: BinGeomet
     const interiorFloorZ = z0 + INTERIOR_OFFSET;
     const interiorCeilingZ = z1 - INTERIOR_OFFSET;
 
-    // Interior floor (50% darkened - HSL-based for proper shadow hue)
-    const interiorFloorColor = adjustColor(color, -0.50);
+    // Interior floor (30% darkened - HSL-based for proper shadow hue)
+    const interiorFloorColor = adjustColor(color, -0.30);
 
     addQuad(
       positions, colors,
@@ -242,10 +242,10 @@ export function createBinGeometry({ width, depth, height, baseColor }: BinGeomet
       interiorFloorColor
     );
 
-    // Interior walls (35% darkened - HSL-based for proper shadow hue)
+    // Interior walls (20% darkened - HSL-based for proper shadow hue)
     // Note: Only 2 inner walls are visible from any given angle
     // For simplicity, we'll render all 4 and let z-buffer handle visibility
-    const interiorWallColor = adjustColor(color, -0.35);
+    const interiorWallColor = adjustColor(color, -0.20);
 
     // Inner front wall
     addQuad(

@@ -221,13 +221,13 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       {/* Hemisphere light - sky color from above, dark ground bounce from below
           Creates natural shadowing where interiors facing down get darker */}
       <hemisphereLight
-        args={['#ffffff', '#1a1a2e', 0.5]}
+        args={['#ffffff', '#1a1a2e', 0.65]}
       />
 
       {/* Key light - main directional for depth and shadows */}
       <directionalLight
         position={[-4, 6, 7]}
-        intensity={0.7}
+        intensity={0.85}
         color="#fff8f0"
       />
 
