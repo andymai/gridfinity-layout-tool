@@ -146,7 +146,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
 
   // Show label if it fits, otherwise show dimensions
   const showLabel = hasLabel && labelFits;
-  const primaryText = showLabel ? bin.label! : dimensionsText;
+  const primaryText = showLabel && bin.label ? bin.label : dimensionsText;
   const secondaryText = showLabel && hasSpaceForSecondary ? dimensionsText : null;
 
   // Letter-spacing for small text
@@ -447,7 +447,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
 
       {/* Resize handles - only for single selected bin, not during multi-select */}
       {/* Touch targets are 44px (Apple HIG minimum) with smaller visual indicators */}
-      {isSelected && !isGhost && !isMultiSelect && (
+      {/* Disable pointer events during any interaction to avoid blocking draw operations */}
+      {isSelected && !isGhost && !isMultiSelect && !interaction && (
         <>
           {/* Right edge handle - 44px touch target, 10px visual */}
           <div
