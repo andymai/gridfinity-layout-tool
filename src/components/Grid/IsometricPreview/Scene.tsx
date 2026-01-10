@@ -7,12 +7,15 @@ import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { FloorGrid } from './FloorGrid';
 import { FrontLabel } from './FrontLabel';
 import { AxisLabels } from './AxisLabels';
+import { DrawerDimensions } from './DrawerDimensions';
+import { ScaleIndicator } from './ScaleIndicator';
 
 interface SceneProps {
   children: React.ReactNode;
   drawerWidth: number;
   drawerDepth: number;
   drawerHeight: number;
+  gridUnitMm: number;
   layoutName: string;
   isExpanded?: boolean;
 }
@@ -29,7 +32,7 @@ export interface SceneHandle {
  * Handles rotation sync with UI store and renders floor grid.
  */
 export const Scene = forwardRef<SceneHandle, SceneProps>(
-  ({ children, drawerWidth, drawerDepth, drawerHeight, layoutName, isExpanded }, ref) => {
+  ({ children, drawerWidth, drawerDepth, drawerHeight, gridUnitMm, layoutName, isExpanded }, ref) => {
     const controlsRef = useRef<OrbitControlsType>(null);
     const prevExpandedRef = useRef<boolean | undefined>(undefined);
     const { camera, size } = useThree();
@@ -217,6 +220,15 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       <FloorGrid width={drawerWidth} depth={drawerDepth} />
       <AxisLabels width={drawerWidth} depth={drawerDepth} />
       <FrontLabel drawerWidth={drawerWidth} label={layoutName} />
+
+      {/* Architectural dimension lines and scale indicator */}
+      <DrawerDimensions
+        width={drawerWidth}
+        depth={drawerDepth}
+        height={drawerHeight}
+        gridUnitMm={gridUnitMm}
+      />
+      <ScaleIndicator gridUnitMm={gridUnitMm} drawerDepth={drawerDepth} />
 
       {/* Bins */}
       {children}

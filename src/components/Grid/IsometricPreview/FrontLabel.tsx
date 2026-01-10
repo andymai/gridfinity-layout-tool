@@ -1,33 +1,54 @@
-import { Text } from '@react-three/drei';
+import { Line, Text } from '@react-three/drei';
 
 interface FrontLabelProps {
   drawerWidth: number;
   label: string;
 }
 
+const TEXT_COLOR = '#ffffff';
+const TEXT_OPACITY = 0.6;
+const LINE_OPACITY = 0.25;
+
 /**
  * Renders the layout name along the front edge of the floor
- * to help orient users viewing the 3D model.
+ * with a subtle underline for technical drawing aesthetic.
  */
 export function FrontLabel({ drawerWidth, label }: FrontLabelProps) {
-  // Position the text centered along the front edge, below axis labels
+  // Position the text centered along the front edge, below dimension lines
   const textX = drawerWidth / 2;
-  const textY = -1.3; // Further in front to clear axis labels at Y=-0.5
+  const textY = -2.2; // Well below the width dimension line (at Y = -0.8 to -1.1)
   const textZ = 0.01; // Just above the floor to prevent z-fighting
 
+  // Calculate underline width based on approximate text width
+  const underlineHalfWidth = Math.min(label.length * 0.22, drawerWidth * 0.8) / 2;
+
   return (
-    <Text
-      position={[textX, textY, textZ]}
-      rotation={[0, 0, 0]} // No rotation - text faces camera in Z-up system
-      fontSize={0.8}
-      color="#ffffff"
-      fillOpacity={0.7}
-      anchorX="center"
-      anchorY="middle"
-      letterSpacing={0.05}
-      maxWidth={drawerWidth * 1.5}
-    >
-      {label}
-    </Text>
+    <group>
+      <Text
+        position={[textX, textY, textZ]}
+        rotation={[0, 0, 0]}
+        fontSize={0.5}
+        color={TEXT_COLOR}
+        fillOpacity={TEXT_OPACITY}
+        anchorX="center"
+        anchorY="middle"
+        letterSpacing={0.08}
+        maxWidth={drawerWidth * 1.5}
+      >
+        {label.toUpperCase()}
+      </Text>
+
+      {/* Subtle underline */}
+      <Line
+        points={[
+          [textX - underlineHalfWidth, textY - 0.35, textZ],
+          [textX + underlineHalfWidth, textY - 0.35, textZ],
+        ]}
+        color={TEXT_COLOR}
+        lineWidth={1}
+        transparent
+        opacity={LINE_OPACITY}
+      />
+    </group>
   );
 }
