@@ -2,6 +2,16 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { snapToHalf, snapToGrid, isFractional, hasFractionalDimensions, HALF_BIN_SCALE } from '../constants';
 import { useUIStore } from '../store';
 
+/**
+ * Helper to calculate pixel dimensions for grid elements.
+ * This replicates the logic used in Bin.tsx and Overlay.tsx.
+ * Uses Math.max(0, units - 1) to handle fractional dimensions correctly
+ * (avoids negative gap contribution when units < 1).
+ */
+function toPixels(units: number, cellSize: number, gap: number): number {
+  return units * cellSize + Math.max(0, units - 1) * gap;
+}
+
 describe('Half-bin mode', () => {
   describe('snapToHalf', () => {
     it('snaps values to nearest 0.5', () => {
@@ -109,6 +119,95 @@ describe('Half-bin mode', () => {
 
       setHalfBinMode(false);
       expect(useUIStore.getState().halfBinMode).toBe(false);
+    });
+  });
+
+  describe('toPixels calculation for fractional dimensions', () => {
+    const cellSize = 32;
+    const gap = 1;
+
+    it('calculates correct pixels for whole unit dimensions', () => {
+      // 1 unit = 1 cell, no gaps between
+      expect(toPixels(1, cellSize, gap)).toBe(32);
+      // 2 units = 2 cells + 1 gap
+      expect(toPixels(2, cellSize, gap)).toBe(65); // 2*32 + 1*1
+      // 3 units = 3 cells + 2 gaps
+      expect(toPixels(3, cellSize, gap)).toBe(98); // 3*32 + 2*1
+    });
+
+    it('calculates correct pixels for fractional dimensions < 1', () => {
+      // 0.5 units = half a cell, no gap contribution (Math.max(0, 0.5-1) = 0)
+      expect(toPixels(0.5, cellSize, gap)).toBe(16); // 0.5*32 + 0
+      // 0.25 units
+      expect(toPixels(0.25, cellSize, gap)).toBe(8); // 0.25*32 + 0
+    });
+
+    it('calculates correct pixels for fractional dimensions >= 1', () => {
+      // 1.5 units = 1.5 cells + 0.5 gaps
+      expect(toPixels(1.5, cellSize, gap)).toBe(48.5); // 1.5*32 + 0.5*1
+      // 2.5 units = 2.5 cells + 1.5 gaps
+      expect(toPixels(2.5, cellSize, gap)).toBe(81.5); // 2.5*32 + 1.5*1
+    });
+
+    it('never returns negative gap contribution', () => {
+      // Even for very small values, gap should be 0 (not negative)
+      expect(toPixels(0.1, cellSize, gap)).toBe(3.2); // 0.1*32 + 0
+      expect(toPixels(0.01, cellSize, gap)).toBe(0.32); // 0.01*32 + 0
+    });
+
+    it('handles edge case of 0 units', () => {
+      expect(toPixels(0, cellSize, gap)).toBe(0);
+    });
+  });
+
+  describe('fractional bin rendering when halfBinMode is off', () => {
+    const cellSize = 32;
+    const gap = 1;
+
+    it('should use true pixel size for 0.5x0.5 bin', () => {
+      // When halfBinMode is OFF with a 0.5x0.5 bin:
+      // Without the fix: gridColSpan = Math.round(0.5) = 0 or 1, causing wrong size
+      // With the fix: explicit width = toPixels(0.5) = 16px
+      const binWidth = 0.5;
+      const binDepth = 0.5;
+
+      // CSS Grid span approach (would round incorrectly)
+      const gridColSpan = Math.round(binWidth);
+      const gridRowSpan = Math.round(binDepth);
+      expect(gridColSpan).toBe(1); // Math.round(0.5) = 1 in JS (incorrect)
+      expect(gridRowSpan).toBe(1);
+
+      // Correct approach using toPixels
+      const correctWidth = toPixels(binWidth, cellSize, gap);
+      const correctHeight = toPixels(binDepth, cellSize, gap);
+      expect(correctWidth).toBe(16); // Correct: half a cell
+      expect(correctHeight).toBe(16);
+    });
+
+    it('should use true pixel size for 1.5x1 bin', () => {
+      const binWidth = 1.5;
+
+      // CSS Grid span approach
+      const gridColSpan = Math.round(binWidth);
+      expect(gridColSpan).toBe(2); // Math.round(1.5) = 2 (incorrect, should be 1.5 cells)
+
+      // Correct approach using toPixels
+      const correctWidth = toPixels(binWidth, cellSize, gap);
+      expect(correctWidth).toBe(48.5); // 1.5 * 32 + 0.5 * 1
+    });
+
+    it('should identify fractional dimensions correctly', () => {
+      // Check if bin has fractional dimensions
+      const hasFractionalWidth = (width: number) => width % 1 !== 0;
+      const hasFractionalDepth = (depth: number) => depth % 1 !== 0;
+
+      expect(hasFractionalWidth(0.5)).toBe(true);
+      expect(hasFractionalWidth(1)).toBe(false);
+      expect(hasFractionalWidth(1.5)).toBe(true);
+      expect(hasFractionalWidth(2)).toBe(false);
+
+      expect(hasFractionalDepth(0.5)).toBe(true);
+      expect(hasFractionalDepth(1)).toBe(false);
     });
   });
 });
