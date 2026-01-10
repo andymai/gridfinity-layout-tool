@@ -41,13 +41,35 @@ function calcFilament(
 }
 
 /**
+ * Split a dimension in half, rounding appropriately.
+ * - For integer dimensions: ceil gives larger piece (5→3), floor gives smaller (5→2)
+ * - For fractional dimensions (half-bin mode): uses 0.5-aware rounding
+ *
+ * @param dimension The original dimension being split
+ * @param useCeil If true, round up; if false, round down
+ */
+function splitHalf(dimension: number, useCeil: boolean): number {
+  const half = dimension / 2;
+
+  // If original dimension is a whole number, use integer rounding
+  if (Number.isInteger(dimension)) {
+    return useCeil ? Math.ceil(half) : Math.floor(half);
+  }
+
+  // For fractional dimensions (half-bin mode), use 0.5-aware rounding
+  return useCeil ? Math.ceil(half * 2) / 2 : Math.floor(half * 2) / 2;
+}
+
+/**
  * Recursively split a bin size until all pieces fit within maxSize.
  * Uses greedy halving strategy from PRD.
+ * Supports fractional dimensions (0.5 increments) for half-bin mode.
  *
  * Examples (maxSize = 4):
  * - 5×3 → [3×3, 2×3]
  * - 9×3 → [5×3, 4×3] → [3×3, 2×3, 4×3]
  * - 5×6 → [3×3, 2×3, 3×3, 2×3]
+ * - 1.5×1.5 (maxSize=1) → [1×1, 0.5×1, 1×0.5, 0.5×0.5]
  */
 export function splitBinSize(width: number, depth: number, maxSize: number): PrintPiece[] {
   if (width <= maxSize && depth <= maxSize) {
@@ -57,27 +79,27 @@ export function splitBinSize(width: number, depth: number, maxSize: number): Pri
   const pieces: PrintPiece[] = [];
 
   if (width > maxSize && depth <= maxSize) {
-    // Split width only
-    const left = Math.ceil(width / 2);
-    const right = Math.floor(width / 2);
+    // Split width only - preserves integer vs fractional behavior
+    const left = splitHalf(width, true);
+    const right = splitHalf(width, false);
     pieces.push(...splitBinSize(left, depth, maxSize));
     if (right > 0) {
       pieces.push(...splitBinSize(right, depth, maxSize));
     }
   } else if (width <= maxSize && depth > maxSize) {
     // Split depth only
-    const top = Math.ceil(depth / 2);
-    const bottom = Math.floor(depth / 2);
+    const top = splitHalf(depth, true);
+    const bottom = splitHalf(depth, false);
     pieces.push(...splitBinSize(width, top, maxSize));
     if (bottom > 0) {
       pieces.push(...splitBinSize(width, bottom, maxSize));
     }
   } else {
     // Split both dimensions
-    const leftW = Math.ceil(width / 2);
-    const rightW = Math.floor(width / 2);
-    const topD = Math.ceil(depth / 2);
-    const bottomD = Math.floor(depth / 2);
+    const leftW = splitHalf(width, true);
+    const rightW = splitHalf(width, false);
+    const topD = splitHalf(depth, true);
+    const bottomD = splitHalf(depth, false);
 
     pieces.push(...splitBinSize(leftW, topD, maxSize));
     if (rightW > 0) pieces.push(...splitBinSize(rightW, topD, maxSize));
