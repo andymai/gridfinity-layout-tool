@@ -224,6 +224,35 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     dimInactiveLayers,
   ])
 
+  // Memoize filtered bin arrays to prevent recalculation on every render
+  const { selectedBins, nonSelectedBins, binsWithOverlays } = useMemo(() => {
+    const selected: typeof binsToRender = []
+    const nonSelected: typeof binsToRender = []
+    const withOverlays: typeof binsToRender = []
+
+    for (const binData of binsToRender) {
+      if (selectedBinIds.includes(binData.bin.id)) {
+        selected.push(binData)
+      } else {
+        nonSelected.push(binData)
+      }
+
+      // Only include bins that need overlays (clearance or split lines)
+      const needsClearance = binData.clearanceHeight > 0
+      const needsSplitLines =
+        binData.bin.width > maxGridUnits || binData.bin.depth > maxGridUnits
+      if (needsClearance || needsSplitLines) {
+        withOverlays.push(binData)
+      }
+    }
+
+    return {
+      selectedBins: selected,
+      nonSelectedBins: nonSelected,
+      binsWithOverlays: withOverlays,
+    }
+  }, [binsToRender, selectedBinIds, maxGridUnits])
+
   if (!showIsometricPreview) {
     return null
   }
@@ -262,31 +291,25 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           isExpanded={isPreviewExpanded}
         >
           {/* Non-selected bins: merged geometry for performance */}
-          <MergedBinMeshes
-            bins={binsToRender.filter(
-              (b) => !selectedBinIds.includes(b.bin.id)
-            )}
-          />
+          <MergedBinMeshes bins={nonSelectedBins} />
 
           {/* Selected bins: individual meshes for glow animation */}
-          {binsToRender
-            .filter((b) => selectedBinIds.includes(b.bin.id))
-            .map((binData) => (
-              <BinMesh
-                key={binData.bin.id}
-                bin={binData.bin}
-                x={binData.x}
-                y={binData.y}
-                z={binData.z}
-                height={binData.height}
-                color={binData.color}
-                opacity={binData.opacity}
-                isSelected={true}
-              />
-            ))}
+          {selectedBins.map((binData) => (
+            <BinMesh
+              key={binData.bin.id}
+              bin={binData.bin}
+              x={binData.x}
+              y={binData.y}
+              z={binData.z}
+              height={binData.height}
+              color={binData.color}
+              opacity={binData.opacity}
+              isSelected={true}
+            />
+          ))}
 
-          {/* Per-bin overlays (clearance zones, split lines) */}
-          {binsToRender.map((binData) => (
+          {/* Per-bin overlays (clearance zones, split lines) - only for bins that need them */}
+          {binsWithOverlays.map((binData) => (
             <group key={`overlay-${binData.bin.id}`}>
               {/* Clearance zone visualization - translucent box above bin */}
               {binData.clearanceHeight > 0 && (

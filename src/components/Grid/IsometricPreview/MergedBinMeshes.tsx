@@ -22,95 +22,72 @@ interface MergedBinMeshesProps {
 }
 
 /**
- * Renders bins grouped by color with merged geometries.
- * Reduces draw calls from N bins to ~number of unique colors.
+ * Build a single merged geometry for all bins using detailed bin geometry.
+ * Creates individual geometries with full detail (open-top, interior, bevels)
+ * then merges them into a single draw call.
  */
-export function MergedBinMeshes({ bins }: MergedBinMeshesProps) {
-  // Group bins by color
-  const binsByColor = useMemo(() => {
-    const groups = new Map<string, BinData[]>();
-    for (const bin of bins) {
-      const existing = groups.get(bin.color);
-      if (existing) {
-        existing.push(bin);
-      } else {
-        groups.set(bin.color, [bin]);
-      }
-    }
-    return groups;
-  }, [bins]);
-
-  // Create merged geometry for each color group
-  const colorGroups = useMemo(() => {
-    const result: Array<{
-      color: string;
-      geometry: THREE.BufferGeometry;
-      opacity: number;
-    }> = [];
-
-    for (const [color, colorBins] of binsByColor) {
-      if (colorBins.length === 0) continue;
-
-      // Create individual geometries and translate to position
-      const geometries: THREE.BufferGeometry[] = [];
-      for (const binData of colorBins) {
-        const geo = createBinGeometry({
-          width: binData.bin.width,
-          depth: binData.bin.depth,
-          height: binData.height,
-          baseColor: color,
-        });
-        // Translate geometry to bin position
-        geo.translate(binData.x, binData.y, binData.z);
-        geometries.push(geo);
-      }
-
-      // Merge all geometries in this color group
-      const merged = mergeGeometries(geometries, false);
-      if (merged) {
-        // Use the first bin's opacity (assume all same opacity per color group)
-        result.push({
-          color,
-          geometry: merged,
-          opacity: colorBins[0].opacity,
-        });
-      }
-
-      // Dispose individual geometries (merged creates a copy)
-      for (const geo of geometries) {
-        geo.dispose();
-      }
-    }
-
-    return result;
-  }, [binsByColor]);
-
-  // Cleanup merged geometries on unmount
-  useEffect(() => {
-    return () => {
-      for (const group of colorGroups) {
-        group.geometry.dispose();
-      }
-    };
-  }, [colorGroups]);
-
+function buildMergedGeometry(bins: BinData[]): THREE.BufferGeometry | null {
   if (bins.length === 0) return null;
 
+  const geometries: THREE.BufferGeometry[] = [];
+
+  for (const binData of bins) {
+    // Create detailed bin geometry (open-top with interior cavity)
+    const geo = createBinGeometry({
+      width: binData.bin.width,
+      depth: binData.bin.depth,
+      height: binData.height,
+      baseColor: binData.color,
+    });
+
+    // Translate to bin position
+    geo.translate(binData.x, binData.y, binData.z);
+    geometries.push(geo);
+  }
+
+  // Merge all geometries into single BufferGeometry
+  const merged = mergeGeometries(geometries, false);
+
+  // Dispose individual geometries after merging
+  for (const geo of geometries) {
+    geo.dispose();
+  }
+
+  return merged;
+}
+
+/**
+ * Renders all non-selected bins as a single merged mesh.
+ * Optimized for large bin counts by merging all geometries into one draw call
+ * while preserving the detailed bin appearance (open-top, interior, bevels).
+ */
+export function MergedBinMeshes({ bins }: MergedBinMeshesProps) {
+  // Build merged geometry for all bins
+  const geometry = useMemo(() => buildMergedGeometry(bins), [bins]);
+
+  // Cleanup geometry on change or unmount
+  useEffect(() => {
+    return () => {
+      geometry?.dispose();
+    };
+  }, [geometry]);
+
+  if (!geometry || bins.length === 0) return null;
+
+  // Determine opacity (assume uniform for non-selected bins)
+  const opacity = bins[0]?.opacity ?? 1;
+
   return (
-    <>
-      {colorGroups.map((group) => (
-        <mesh key={group.color} geometry={group.geometry}>
-          <meshStandardMaterial
-            vertexColors
-            roughness={0.4}
-            metalness={0}
-            transparent={group.opacity < 1}
-            opacity={group.opacity}
-            depthWrite={group.opacity === 1}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      ))}
-    </>
+    <mesh geometry={geometry}>
+      <meshStandardMaterial
+        vertexColors
+        roughness={0.4}
+        metalness={0}
+        transparent={opacity < 1}
+        opacity={opacity}
+        depthWrite={opacity === 1}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
   );
 }
