@@ -118,6 +118,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   const cells: JSX.Element[] = [];
   if (halfBinMode) {
     // Half-bin mode: render 2x cells with visual distinction
+    // Primary cells (whole units) are more prominent, sub-cells are subtler with dashed borders
     for (let vy = 0; vy < gridRows; vy++) {
       for (let vx = 0; vx < gridCols; vx++) {
         // Check if this is a primary cell boundary (whole unit)
@@ -133,9 +134,16 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               gridRow: vy + 1,
               width: actualCellSize,
               height: actualCellSize,
-              backgroundColor: isPrimaryCell ? 'var(--grid-cell)' : 'var(--grid-cell-half, var(--grid-cell))',
-              borderRadius: isPrimaryCell ? '2px' : '1px',
-              opacity: isPrimaryCell ? 1 : 0.6,
+              backgroundColor: isPrimaryCell ? 'var(--grid-cell)' : 'var(--grid-cell-half)',
+              borderRadius: isPrimaryCell ? '3px' : '2px',
+              // Add dashed border on sub-cells to show the half-unit divisions
+              borderLeft: !isPrimaryX ? '1px dashed var(--grid-line-half)' : 'none',
+              borderTop: !isPrimaryY ? '1px dashed var(--grid-line-half)' : 'none',
+              // Subtle size difference - sub-cells slightly smaller visually
+              boxSizing: 'border-box',
+              opacity: isPrimaryCell ? 1 : 0.85,
+              // Inner shadow on primary cells for depth
+              boxShadow: isPrimaryCell ? 'inset 0 1px 2px rgba(255,255,255,0.03)' : 'none',
             }}
           />
         );
