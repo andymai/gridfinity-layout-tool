@@ -236,11 +236,6 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                 keys="3"
                 description="Side view"
               />
-              <div className="divider" />
-              <ShortcutRow
-                keys={['←', '→']}
-                description="Rotate view left/right"
-              />
             </div>
           </section>
 

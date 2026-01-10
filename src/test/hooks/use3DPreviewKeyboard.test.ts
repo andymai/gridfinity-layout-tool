@@ -26,7 +26,6 @@ describe('use3DPreviewKeyboard', () => {
   let mockTogglePreviewVisibility: Mock<() => void>;
   let mockTogglePreviewExpanded: Mock<() => void>;
   let mockSetPreviewExpanded: Mock<(expanded: boolean) => void>;
-  let mockSetIsometricRotation: Mock<(rotation: number) => void>;
   let mockResetView: Mock<() => void>;
   let mockSetPreset: Mock<SceneHandle['setPreset']>;
 
@@ -35,7 +34,6 @@ describe('use3DPreviewKeyboard', () => {
     mockTogglePreviewVisibility = vi.fn();
     mockTogglePreviewExpanded = vi.fn();
     mockSetPreviewExpanded = vi.fn();
-    mockSetIsometricRotation = vi.fn();
     mockResetView = vi.fn();
     mockSetPreset = vi.fn();
 
@@ -58,8 +56,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -80,8 +76,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -103,8 +97,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -125,8 +117,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -148,8 +138,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -170,8 +158,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -193,8 +179,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -204,158 +188,6 @@ describe('use3DPreviewKeyboard', () => {
 
       // Should not throw error
       expect(mockResetView).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('ArrowLeft key - rotate left', () => {
-    it('rotates left by 15 degrees when preview is visible', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 45,
-        })
-      );
-
-      act(() => {
-        const event = pressKey('ArrowLeft');
-        expect(event.defaultPrevented).toBe(true);
-      });
-
-      expect(mockSetIsometricRotation).toHaveBeenCalledWith(30);
-    });
-
-    it('does not rotate when preview is hidden', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: false,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 45,
-        })
-      );
-
-      act(() => {
-        pressKey('ArrowLeft');
-      });
-
-      expect(mockSetIsometricRotation).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('ArrowRight key - rotate right', () => {
-    it('rotates right by 15 degrees when preview is visible', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 45,
-        })
-      );
-
-      act(() => {
-        const event = pressKey('ArrowRight');
-        expect(event.defaultPrevented).toBe(true);
-      });
-
-      expect(mockSetIsometricRotation).toHaveBeenCalledWith(60);
-    });
-
-    it('does not rotate when preview is hidden', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: false,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 45,
-        })
-      );
-
-      act(() => {
-        pressKey('ArrowRight');
-      });
-
-      expect(mockSetIsometricRotation).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('ArrowUp/ArrowDown keys - tilt camera', () => {
-    it('prevents default on ArrowUp when preview is visible', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
-        })
-      );
-
-      act(() => {
-        const event = pressKey('ArrowUp');
-        expect(event.defaultPrevented).toBe(true);
-      });
-    });
-
-    it('prevents default on ArrowDown when preview is visible', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
-        })
-      );
-
-      act(() => {
-        const event = pressKey('ArrowDown');
-        expect(event.defaultPrevented).toBe(true);
-      });
-    });
-
-    it('does not prevent default when preview is hidden', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: false,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
-        })
-      );
-
-      act(() => {
-        const event = pressKey('ArrowUp');
-        expect(event.defaultPrevented).toBe(false);
-      });
     });
   });
 
@@ -369,8 +201,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -391,8 +221,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -412,8 +240,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -425,7 +251,7 @@ describe('use3DPreviewKeyboard', () => {
     });
   });
 
-  describe('1-4 keys - camera presets', () => {
+  describe('1-3 keys - camera presets', () => {
     it('sets isometric preset on 1 key', () => {
       renderHook(() =>
         use3DPreviewKeyboard({
@@ -435,8 +261,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -457,8 +281,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -479,8 +301,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -501,8 +321,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -525,8 +343,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -551,8 +367,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -575,8 +389,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -610,8 +422,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -640,8 +450,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -676,8 +484,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -707,8 +513,6 @@ describe('use3DPreviewKeyboard', () => {
           togglePreviewVisibility: mockTogglePreviewVisibility,
           togglePreviewExpanded: mockTogglePreviewExpanded,
           setPreviewExpanded: mockSetPreviewExpanded,
-          setIsometricRotation: mockSetIsometricRotation,
-          isometricRotation: 0,
         })
       );
 
@@ -724,39 +528,6 @@ describe('use3DPreviewKeyboard', () => {
   });
 
   describe('dependency updates', () => {
-    it('updates handler when isometricRotation changes', () => {
-      const { rerender } = renderHook(
-        ({ rotation }) =>
-          use3DPreviewKeyboard({
-            sceneRef: mockSceneRef,
-            isPreviewVisible: true,
-            isPreviewExpanded: false,
-            togglePreviewVisibility: mockTogglePreviewVisibility,
-            togglePreviewExpanded: mockTogglePreviewExpanded,
-            setPreviewExpanded: mockSetPreviewExpanded,
-            setIsometricRotation: mockSetIsometricRotation,
-            isometricRotation: rotation,
-          }),
-        { initialProps: { rotation: 0 } }
-      );
-
-      act(() => {
-        pressKey('ArrowRight');
-      });
-
-      expect(mockSetIsometricRotation).toHaveBeenCalledWith(15);
-
-      mockSetIsometricRotation.mockClear();
-
-      rerender({ rotation: 30 });
-
-      act(() => {
-        pressKey('ArrowRight');
-      });
-
-      expect(mockSetIsometricRotation).toHaveBeenCalledWith(45);
-    });
-
     it('updates handler when visibility changes', () => {
       const { rerender } = renderHook(
         ({ visible }) =>
@@ -767,8 +538,6 @@ describe('use3DPreviewKeyboard', () => {
             togglePreviewVisibility: mockTogglePreviewVisibility,
             togglePreviewExpanded: mockTogglePreviewExpanded,
             setPreviewExpanded: mockSetPreviewExpanded,
-            setIsometricRotation: mockSetIsometricRotation,
-            isometricRotation: 0,
           }),
         { initialProps: { visible: true } }
       );
