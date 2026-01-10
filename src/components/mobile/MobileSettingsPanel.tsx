@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLayoutStore, useUndoableAction } from '../../store';
+import { useLayoutStore, useUndoableAction, useUIStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { DeferredNumberInput } from '../DeferredNumberInput';
@@ -19,6 +19,9 @@ export function MobileSettingsPanel() {
 
   const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
   const { execute } = useUndoableAction();
+
+  const halfBinMode = useUIStore(state => state.halfBinMode);
+  const toggleHalfBinMode = useUIStore(state => state.toggleHalfBinMode);
 
   const handleDrawerChange = (field: 'width' | 'depth' | 'height', delta: number) => {
     const current = layout.drawer[field];
@@ -192,6 +195,24 @@ export function MobileSettingsPanel() {
           <div className="text-sm text-right text-content-disabled">
             Max bin size: {maxGridUnits}×{maxGridUnits}
           </div>
+
+          {/* Half-bin mode checkbox */}
+          <label className="flex items-center justify-between pt-3 border-t border-stroke-subtle cursor-pointer">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm text-content-secondary">Half-bin mode</span>
+                <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
+              </div>
+              <p className="text-xs text-content-tertiary">Allow 0.5 unit precision</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={halfBinMode}
+              onChange={toggleHalfBinMode}
+              className="w-5 h-5 rounded accent-accent"
+              aria-label="Toggle half-bin mode"
+            />
+          </label>
         </div>
       </section>
 

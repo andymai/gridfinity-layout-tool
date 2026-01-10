@@ -4,7 +4,7 @@ import type { Bin as BinType, Category, Layer, ResizeHandle } from '../../types'
 import { useUIStore, useLayoutStore } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { useResponsive } from '../../hooks';
-import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../../constants';
+import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR, HALF_BIN_SCALE } from '../../constants';
 import { getBinTextColors } from '../../utils/color';
 
 /** Clamp a value between min and max */
@@ -21,6 +21,8 @@ interface BinProps {
   layer?: Layer;
   drawer: { width: number; depth: number };
   cellSize: number;
+  gap?: number;
+  halfBinMode?: boolean;
   isGhost: boolean;
   isSelected: boolean;
   onStartDrag: (binId: string, clientX: number, clientY: number, pointerId?: number) => void;
@@ -31,7 +33,7 @@ interface BinProps {
  * Single bin with selection ring and resize handles.
  * Features improved selection states with glow effect and refined handles.
  */
-function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelected, onStartDrag, onStartResize }: BinProps) {
+function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBinMode = false, isGhost, isSelected, onStartDrag, onStartResize }: BinProps) {
   const { isTouchDevice } = useResponsive();
 
   // Consolidate UI state selectors with shallow comparison
@@ -98,12 +100,36 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
   // Simple rule: if label fits at calculated font size, show it. Otherwise show dimensions.
   // Uses monospace font for predictable character widths.
 
-  const dimensionsText = `${bin.width}×${bin.depth}`;
+  // Format dimensions - show decimal if fractional (half-bin mode)
+  const formatDim = (val: number) => val % 1 === 0 ? val.toString() : val.toFixed(1);
+  const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
   const hasLabel = showLabels && bin.label;
 
+  // Calculate grid position based on half-bin mode
+  const scale = halfBinMode ? HALF_BIN_SCALE : 1;
+  const gridCol = Math.round(bin.x * scale) + 1;
+  const gridColSpan = Math.round(bin.width * scale);
+  const gridRowStart = halfBinMode
+    ? Math.round((drawer.depth - bin.y - bin.depth) * scale) + 1
+    : drawer.depth - bin.y - bin.depth + 1;
+  const gridRowSpan = Math.round(bin.depth * scale);
+
+  // Check if bin has fractional dimensions (from half-bin mode)
+  const hasFractionalWidth = bin.width % 1 !== 0;
+  const hasFractionalDepth = bin.depth % 1 !== 0;
+  const hasFractionalDims = hasFractionalWidth || hasFractionalDepth;
+
   // Calculate actual pixel dimensions of bin
-  const binPixelWidth = bin.width * cellSize;
-  const binPixelHeight = bin.depth * cellSize;
+  // When halfBinMode is off but bin has fractional dimensions, calculate true pixel size
+  const toPixels = (units: number) => units * cellSize + Math.max(0, units - 1) * gap;
+
+  // Use true pixel dimensions for fractional bins, otherwise use grid span
+  const binPixelWidth = hasFractionalDims && !halfBinMode
+    ? toPixels(bin.width)
+    : gridColSpan * cellSize;
+  const binPixelHeight = hasFractionalDims && !halfBinMode
+    ? toPixels(bin.depth)
+    : gridRowSpan * cellSize;
   const binPixelMin = Math.min(binPixelWidth, binPixelHeight);
 
   // Font size constraints
@@ -329,8 +355,14 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
         isSelected && !isGhost ? 'animate-settle-in' : ''
       }`}
       style={{
-        gridColumn: `${bin.x + 1} / span ${bin.width}`,
-        gridRow: `${drawer.depth - bin.y - bin.depth + 1} / span ${bin.depth}`,
+        gridColumn: `${gridCol} / span ${gridColSpan}`,
+        gridRow: `${gridRowStart} / span ${gridRowSpan}`,
+        // Override size for fractional bins when halfBinMode is off
+        // (CSS Grid spans only support integers, so we need explicit dimensions)
+        ...(hasFractionalDims && !halfBinMode ? {
+          width: binPixelWidth,
+          height: binPixelHeight,
+        } : {}),
         backgroundColor: bgColor,
         borderRadius: 'var(--radius-sm)',
         border: isSelected ? 'none' : '1px solid var(--border-on-color)',
@@ -905,8 +937,14 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
     return false;
   }
 
-  // Re-render if cellSize changes (affects label sizing)
-  if (prevProps.cellSize !== nextProps.cellSize) {
+  // Re-render if cellSize or gap changes (affects sizing)
+  if (prevProps.cellSize !== nextProps.cellSize ||
+      prevProps.gap !== nextProps.gap) {
+    return false;
+  }
+
+  // Re-render if halfBinMode changes (affects grid positioning)
+  if (prevProps.halfBinMode !== nextProps.halfBinMode) {
     return false;
   }
 

@@ -35,6 +35,52 @@ export function calcMaxGridUnits(printBedSizeMm: number, gridUnitMm: number): nu
 
 export const STAGING_ID = '__staging__';
 
+// === Half-bin Mode ===
+
+/**
+ * Scale factor for half-bin mode.
+ * In half-bin mode, the grid is rendered at 2x resolution to support 0.5 unit increments.
+ * Visual cells = internal grid * HALF_BIN_SCALE
+ */
+export const HALF_BIN_SCALE = 2;
+
+/**
+ * Snap a coordinate to the nearest 0.5 increment.
+ * @param value - The raw coordinate value
+ * @returns Value snapped to nearest 0.5 (e.g., 0, 0.5, 1, 1.5, 2, ...)
+ */
+export function snapToHalf(value: number): number {
+  return Math.round(value * 2) / 2;
+}
+
+/**
+ * Snap a coordinate to grid based on half-bin mode.
+ * @param value - The raw coordinate value
+ * @param halfBinMode - Whether half-bin mode is active
+ * @returns Value snapped to appropriate grid (0.5 increments if halfBinMode, whole numbers otherwise)
+ */
+export function snapToGrid(value: number, halfBinMode: boolean): number {
+  return halfBinMode ? snapToHalf(value) : Math.floor(value);
+}
+
+/**
+ * Check if a value has a fractional component (is at 0.5 position).
+ * @param value - The value to check
+ * @returns True if value is at a 0.5 position (e.g., 1.5, 2.5)
+ */
+export function isFractional(value: number): boolean {
+  return value % 1 !== 0;
+}
+
+/**
+ * Check if a bin or rect has any fractional dimensions or position.
+ * @param rect - Object with x, y, width, depth properties
+ * @returns True if any dimension is fractional
+ */
+export function hasFractionalDimensions(rect: { x: number; y: number; width: number; depth: number }): boolean {
+  return isFractional(rect.x) || isFractional(rect.y) || isFractional(rect.width) || isFractional(rect.depth);
+}
+
 // === Default Colors ===
 
 /** Default category color (slate gray) - used as fallback when category is undefined */
@@ -143,4 +189,6 @@ export const SHORTCUTS = {
   PRESET_TOP: '2',
   PRESET_FRONT: '3',
   PRESET_SIDE: '4',
+  // Half-bin mode
+  HALF_BIN_TOGGLE: 'h',
 } as const;

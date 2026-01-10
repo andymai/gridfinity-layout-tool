@@ -60,6 +60,7 @@ export function useKeyboard() {
   const showQuickLabel = useUIStore(state => state.showQuickLabel);
   const activeCategoryId = useUIStore(state => state.activeCategoryId);
   const setActiveCategory = useUIStore(state => state.setActiveCategory);
+  const toggleHalfBinMode = useUIStore(state => state.toggleHalfBinMode);
 
   // Grid navigation hook for spatial arrow key navigation
   const { handleNavigationKey } = useGridNavigation();
@@ -276,6 +277,13 @@ export function useKeyboard() {
       return;
     }
 
+    // H key - toggle half-bin mode
+    if (key.toLowerCase() === SHORTCUTS.HALF_BIN_TOGGLE && !ctrlOrMeta) {
+      e.preventDefault();
+      toggleHalfBinMode();
+      return;
+    }
+
     // Arrow keys - spatial navigation OR nudge
     const arrowKeys: readonly string[] = [SHORTCUTS.NUDGE_UP, SHORTCUTS.NUDGE_DOWN, SHORTCUTS.NUDGE_LEFT, SHORTCUTS.NUDGE_RIGHT];
     if (arrowKeys.includes(key)) {
@@ -335,7 +343,7 @@ export function useKeyboard() {
       }
       return;
     }
-  }, [selectedBinIds, focusedBinId, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, activeLayerId, setActiveLayer, showQuickLabel, activeCategoryId, setActiveCategory]);
+  }, [selectedBinIds, focusedBinId, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, activeLayerId, setActiveLayer, showQuickLabel, activeCategoryId, setActiveCategory, toggleHalfBinMode]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

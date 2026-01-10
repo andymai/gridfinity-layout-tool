@@ -7,10 +7,12 @@ import { CategoriesPanel } from './CategoriesPanel';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 
 export function Sidebar() {
-  const { collapsed, toggle } = useUIStore(
+  const { collapsed, toggle, halfBinMode, toggleHalfBinMode } = useUIStore(
     useShallow((state) => ({
       collapsed: state.leftPanelCollapsed,
       toggle: state.toggleLeftPanel,
+      halfBinMode: state.halfBinMode,
+      toggleHalfBinMode: state.toggleHalfBinMode,
     }))
   );
 
@@ -240,6 +242,26 @@ export function Sidebar() {
                     <span className="text-content-tertiary">mm</span>
                   </div>
                 </div>
+                {/* Half-bin mode checkbox */}
+                <label className="flex items-center justify-between pt-2 mt-2 border-t border-stroke-subtle cursor-pointer">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="text-content-tertiary"
+                      title="Enable 0.5 grid unit precision for half-size bins (H)"
+                    >
+                      Half-bin mode
+                    </span>
+                    <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
+                    <kbd className="text-[9px] text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">H</kbd>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={halfBinMode}
+                    onChange={toggleHalfBinMode}
+                    className="w-4 h-4 rounded accent-accent"
+                    aria-label="Toggle half-bin mode"
+                  />
+                </label>
               </div>
             </div>
 

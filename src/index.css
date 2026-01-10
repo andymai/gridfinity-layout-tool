@@ -145,8 +145,10 @@
 
   /* Grid Colors */
   --grid-bg: #1e1e24;
-  --grid-cell: #252530;
+  --grid-cell: #2a2a36;
   --grid-cell-hover: #2d2d38;
+  --grid-cell-half: #222230;
+  --grid-line-half: rgba(255, 255, 255, 0.15);
 
   /* Staging Colors */
   --staging-bg: #1a1a1f;
