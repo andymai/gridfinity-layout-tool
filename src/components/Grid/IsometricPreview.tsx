@@ -36,25 +36,21 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     showIsometricPreview,
     layerViewMode,
     isPreviewExpanded,
-    isometricRotation,
     selectedBinIds,
     setLayerViewMode,
     togglePreviewExpanded,
     setPreviewExpanded,
     toggleIsometricPreview,
-    setIsometricRotation,
   } = useUIStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
       layerViewMode: state.layerViewMode,
       isPreviewExpanded: state.isPreviewExpanded,
-      isometricRotation: state.isometricRotation,
       selectedBinIds: state.selectedBinIds,
       setLayerViewMode: state.setLayerViewMode,
       togglePreviewExpanded: state.togglePreviewExpanded,
       setPreviewExpanded: state.setPreviewExpanded,
       toggleIsometricPreview: state.toggleIsometricPreview,
-      setIsometricRotation: state.setIsometricRotation,
     }))
   )
 
@@ -105,8 +101,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     togglePreviewVisibility: toggleIsometricPreview,
     togglePreviewExpanded,
     setPreviewExpanded,
-    setIsometricRotation,
-    isometricRotation,
   })
 
   // Handle backdrop click
@@ -720,7 +714,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">V</kbd> Toggle</span>
             <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">Space</kbd> Expand</span>
             <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">R</kbd> Reset</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">←→</kbd> Rotate</span>
             <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">Esc</kbd> Close</span>
           </div>
         </div>

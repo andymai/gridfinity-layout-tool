@@ -8,8 +8,6 @@ interface Use3DPreviewKeyboardProps {
   togglePreviewVisibility: () => void;
   togglePreviewExpanded: () => void;
   setPreviewExpanded: (expanded: boolean) => void;
-  setIsometricRotation: (rotation: number) => void;
-  isometricRotation: number;
 }
 
 /**
@@ -23,8 +21,6 @@ export function use3DPreviewKeyboard({
   togglePreviewVisibility,
   togglePreviewExpanded,
   setPreviewExpanded,
-  setIsometricRotation,
-  isometricRotation,
 }: Use3DPreviewKeyboardProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -63,31 +59,6 @@ export function use3DPreviewKeyboard({
           if (isPreviewVisible) {
             e.preventDefault();
             sceneRef.current?.resetView();
-          }
-          break;
-
-        case 'ArrowLeft':
-          // Rotate left 15 degrees
-          if (isPreviewVisible) {
-            e.preventDefault();
-            setIsometricRotation(isometricRotation - 15);
-          }
-          break;
-
-        case 'ArrowRight':
-          // Rotate right 15 degrees
-          if (isPreviewVisible) {
-            e.preventDefault();
-            setIsometricRotation(isometricRotation + 15);
-          }
-          break;
-
-        case 'ArrowUp':
-        case 'ArrowDown':
-          // Tilt camera (handled by OrbitControls directly)
-          // We prevent default to avoid page scrolling
-          if (isPreviewVisible) {
-            e.preventDefault();
           }
           break;
 
@@ -137,7 +108,5 @@ export function use3DPreviewKeyboard({
     togglePreviewVisibility,
     togglePreviewExpanded,
     setPreviewExpanded,
-    setIsometricRotation,
-    isometricRotation,
   ]);
 }
