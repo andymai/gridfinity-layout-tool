@@ -171,21 +171,23 @@ export function LayerPanel() {
         </button>
       </div>
 
-      {/* Height capacity indicator */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-surface-elevated">
-          <div
-            className="h-full rounded-full transition-all"
-            style={{
-              width: `${Math.min(100, (totalLayerHeight / drawerHeight) * 100)}%`,
-              backgroundColor: heightFull ? 'var(--color-warning)' : 'var(--color-primary)',
-            }}
-          />
+      {/* Height capacity indicator - only show for multiple layers */}
+      {hasMultipleLayers && (
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-surface-elevated">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min(100, (totalLayerHeight / drawerHeight) * 100)}%`,
+                backgroundColor: heightFull ? 'var(--color-warning)' : 'var(--color-info)',
+              }}
+            />
+          </div>
+          <span className={`text-xs tabular-nums ${heightFull ? 'text-warning' : 'text-content-tertiary'}`}>
+            {totalLayerHeight}/{drawerHeight}u
+          </span>
         </div>
-        <span className={`text-xs tabular-nums ${heightFull ? 'text-warning' : 'text-content-tertiary'}`}>
-          {totalLayerHeight}/{drawerHeight}u
-        </span>
-      </div>
+      )}
 
       {/* Reorder error message */}
       {reorderError && (
@@ -219,19 +221,19 @@ export function LayerPanel() {
               onDrop={(e) => handleDrop(e, displayIndex)}
               onDragEnd={handleDragEnd}
               onClick={() => !isEditing && setActiveLayer(layer.id)}
-              className={`group flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-all ${
+              className={`group flex items-center gap-2 px-2 py-1.5 text-xs transition-all rounded-r border-l-2 ${
                 isActive
-                  ? 'bg-accent text-black'
-                  : 'bg-surface-elevated text-content-secondary hover:bg-surface-hover cursor-pointer'
+                  ? 'bg-surface-hover border-l-accent text-content'
+                  : 'bg-surface-elevated text-content-secondary hover:bg-surface-hover cursor-pointer border-l-transparent'
               }`}
               style={{
                 opacity: isDragging ? 0.5 : 1,
-                border: isDragOver ? '2px solid var(--color-primary)' : '2px solid transparent',
+                outline: isDragOver ? '2px solid var(--color-primary)' : 'none',
               }}
             >
               {/* Drag handle - only show for multiple layers */}
               {hasMultipleLayers && (
-                <div className={`flex-shrink-0 cursor-grab active:cursor-grabbing ${isActive ? 'text-black/40' : 'text-content-disabled'}`}>
+                <div className="flex-shrink-0 cursor-grab active:cursor-grabbing text-content-disabled">
                   <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
                   </svg>
@@ -247,13 +249,13 @@ export function LayerPanel() {
                   onBlur={() => setEditingLayerId(null)}
                   onKeyDown={(e) => e.key === 'Enter' && setEditingLayerId(null)}
                   onClick={(e) => e.stopPropagation()}
-                  className="flex-1 bg-black/10 rounded px-1 py-0.5 text-xs font-medium outline-none text-black"
+                  className="flex-1 bg-surface-elevated rounded px-1 py-0.5 text-xs font-medium outline-none text-content"
                   autoFocus
                   aria-label={`Layer name for ${layer.name}`}
                 />
               ) : (
                 <button
-                  className={`flex-1 text-left truncate bg-transparent border-none p-0 ${isActive ? 'cursor-text' : ''}`}
+                  className={`flex-1 text-left truncate bg-transparent border-none p-0 ${isActive ? 'cursor-text font-medium' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     if (isActive) {
@@ -270,30 +272,32 @@ export function LayerPanel() {
                 </button>
               )}
 
-              {/* Coverage percentage */}
-              <span className={`${isActive ? 'text-black/60' : 'text-content-disabled'}`}>
-                {layerCoverage}%
-              </span>
+              {/* Coverage percentage - only show for multiple layers */}
+              {hasMultipleLayers && (
+                <span className="text-content-disabled">
+                  {layerCoverage}%
+                </span>
+              )}
 
-              {/* Height controls - show +/- when active, badge otherwise */}
-              {isActive ? (
+              {/* Height controls - show +/- when active and multiple layers, or always for single layer */}
+              {(isActive || !hasMultipleLayers) ? (
                 <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => handleHeightChange(layer.id, -1)}
                     disabled={layer.height <= 1}
-                    className="w-5 h-5 flex items-center justify-center text-black/50 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     aria-label="Decrease layer height"
                   >
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     </svg>
                   </button>
-                  <span className="text-[10px] tabular-nums min-w-[24px] text-center text-black/80" title="Minimum bin height for this layer">
+                  <span className="text-[10px] tabular-nums min-w-[24px] text-center text-content-secondary" title="Minimum bin height for this layer">
                     {layer.height}u
                   </span>
                   <button
                     onClick={() => handleHeightChange(layer.id, 1)}
-                    className="w-5 h-5 flex items-center justify-center text-black/50 hover:text-black transition-colors"
+                    className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content transition-colors"
                     aria-label="Increase layer height"
                   >
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -314,7 +318,7 @@ export function LayerPanel() {
                     e.stopPropagation();
                     setDeleteLayerId(layer.id);
                   }}
-                  className="p-0.5 rounded text-black/40 hover:text-black transition-colors"
+                  className="p-0.5 rounded text-content-disabled hover:text-error transition-colors"
                   title="Delete this layer"
                   aria-label={`Delete ${layer.name} layer`}
                 >
@@ -342,7 +346,7 @@ export function LayerPanel() {
           className="h-full rounded-full transition-all"
           style={{
             width: `${hasMultipleLayers ? totalCoverage : coverage}%`,
-            backgroundColor: (hasMultipleLayers ? totalCoverage : coverage) === 100 ? 'var(--color-success)' : 'var(--color-primary)',
+            backgroundColor: (hasMultipleLayers ? totalCoverage : coverage) === 100 ? 'var(--color-success)' : 'var(--text-tertiary)',
           }}
         />
       </div>
