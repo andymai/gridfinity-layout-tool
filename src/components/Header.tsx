@@ -183,7 +183,7 @@ export function Header({ onHelpClick }: HeaderProps) {
           title="Show keyboard shortcuts"
           aria-label="Show help and keyboard shortcuts"
         >
-          Press <kbd className="mx-1 px-2 pt-[3px] pb-[5px] text-xs font-mono rounded text-content" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>?</kbd> for help
+          Press <kbd className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>?</kbd> for help
         </button>
       </div>
 
