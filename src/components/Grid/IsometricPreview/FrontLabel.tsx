@@ -41,8 +41,8 @@ export function FrontLabel({ drawerWidth, label }: FrontLabelProps) {
       {/* Subtle underline */}
       <Line
         points={[
-          [textX - underlineHalfWidth, textY - 0.35, textZ],
-          [textX + underlineHalfWidth, textY - 0.35, textZ],
+          [textX - underlineHalfWidth, textY - 0.45, textZ],
+          [textX + underlineHalfWidth, textY - 0.45, textZ],
         ]}
         color={TEXT_COLOR}
         lineWidth={1}
