@@ -94,8 +94,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
   const isTall = layer && bin.height > layer.height;
 
   // ========== ADAPTIVE LABEL SYSTEM ==========
-  // Uses pixel-based sizing with shrink-to-fit strategy
-  // Labels shrink to fit; if they can't fit at min font size, show dimensions instead
+  // Labels shrink to fit; if they can't fit at minimum font size, show dimensions instead
+  // Uses conservative estimates to prevent any clipping
 
   const dimensionsText = `${bin.width}×${bin.depth}`;
   const hasLabel = showLabels && bin.label;
@@ -105,35 +105,40 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
   const binPixelHeight = bin.depth * cellSize;
   const binPixelMin = Math.min(binPixelWidth, binPixelHeight);
 
-  // Available space for text (conservative padding for safety)
-  const textAvailableWidth = binPixelWidth * 0.85;
-  const textAvailableHeight = binPixelHeight * 0.8;
+  // Account for padding (px-1 = 4px each side) and safety margin
+  const horizontalPadding = 10; // px-1 (8px) + safety margin
+  const verticalPadding = 8;
+  const actualAvailableWidth = binPixelWidth - horizontalPadding;
+  const actualAvailableHeight = binPixelHeight - verticalPadding;
 
   // Font size constraints
   const maxFontSize = clamp(Math.round(binPixelMin * 0.28), 9, 20);
   const minFontSize = 9;
 
-  // Smart rotation: use taller dimension for text if significantly taller
-  const shouldRotate = bin.depth > bin.width * 1.5;
-  const effectiveAvailableWidth = shouldRotate ? textAvailableHeight : textAvailableWidth;
-
-  // Character width ratio - conservative estimate for sans-serif (0.6 accounts for varying char widths)
+  // Monospace font: character width is ~0.6× font size (predictable)
   const charWidthRatio = 0.6;
 
-  // Calculate font size that makes label fit (direct calculation)
+  // Smart rotation: use taller dimension for text if significantly taller
+  const shouldRotate = bin.depth > bin.width * 1.5;
+  const effectiveAvailableWidth = shouldRotate ? actualAvailableHeight : actualAvailableWidth;
+  const effectiveAvailableHeight = shouldRotate ? actualAvailableWidth : actualAvailableHeight;
+
+  // Calculate if label fits and at what font size
   let labelFits = false;
   let labelFontSize = maxFontSize;
   if (hasLabel && bin.label) {
     const label = bin.label;
-    // Direct calculation: what font size makes this text fit?
-    const requiredFontSize = effectiveAvailableWidth / (label.length * charWidthRatio);
 
-    if (requiredFontSize >= minFontSize) {
-      // Label can fit - use the smaller of required or max
+    // Calculate max characters that can fit at minimum font size
+    const maxCharsAtMinFont = effectiveAvailableWidth / (minFontSize * charWidthRatio);
+
+    if (label.length <= maxCharsAtMinFont) {
+      // Label can fit - calculate optimal font size
       labelFits = true;
-      labelFontSize = Math.min(Math.floor(requiredFontSize), maxFontSize);
+      const optimalFontSize = effectiveAvailableWidth / (label.length * charWidthRatio);
+      labelFontSize = clamp(Math.floor(optimalFontSize), minFontSize, maxFontSize);
     }
-    // If requiredFontSize < minFontSize, labelFits stays false → show dimensions
+    // If label.length > maxCharsAtMinFont, labelFits stays false → show dimensions
   }
 
   // Calculate font sizes
@@ -142,7 +147,6 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
 
   // Visibility thresholds based on pixel space
   const showAnyText = binPixelMin >= 24 && !isGhost;
-  const effectiveAvailableHeight = shouldRotate ? textAvailableWidth : textAvailableHeight;
   const hasSpaceForSecondary = effectiveAvailableHeight >= primaryFontSize * 2.5;
 
   // Context-dependent priority: labels first when they fit, dimensions as fallback
@@ -392,7 +396,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
         >
           {/* Primary text (label if set, otherwise dimensions) */}
           <div
-            className="flex items-center justify-center gap-0.5 leading-tight whitespace-nowrap"
+            className="flex items-center justify-center gap-0.5 leading-tight whitespace-nowrap font-mono"
             style={{
               color: textColors.primary,
               fontSize: `${primaryFontSize}px`,
@@ -422,7 +426,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, isGhost, isSelec
           {/* Secondary text (dimensions when label is primary) */}
           {secondaryText && (
             <div
-              className="leading-tight"
+              className="leading-tight font-mono"
               style={{
                 color: textColors.secondary,
                 fontSize: `${secondaryFontSize}px`,
