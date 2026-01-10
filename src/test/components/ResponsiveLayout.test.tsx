@@ -41,9 +41,9 @@ describe('Responsive Layout Switching', () => {
       expect(result.current.layoutMode).toBe('mobile');
     });
 
-    it('detects tablet viewport (768px - 1023px)', () => {
+    it('detects tablet viewport (768px - 899px)', () => {
       Object.defineProperty(window, 'innerWidth', {
-        value: 900,
+        value: 850,
         writable: true,
       });
 
@@ -126,7 +126,7 @@ describe('Responsive Layout Switching', () => {
 
     it('returns tablet layout mode for medium screens', () => {
       Object.defineProperty(window, 'innerWidth', {
-        value: 900,
+        value: 850,
         writable: true,
       });
 
@@ -191,7 +191,7 @@ describe('Responsive Layout Switching', () => {
 
     it('returns tablet viewport width', () => {
       Object.defineProperty(window, 'innerWidth', {
-        value: 900,
+        value: 850,
         writable: true,
       });
 
@@ -201,7 +201,7 @@ describe('Responsive Layout Switching', () => {
 
       const { result } = renderHook(() => useResponsive());
 
-      expect(result.current.viewportWidth).toBe(900);
+      expect(result.current.viewportWidth).toBe(850);
     });
   });
 
