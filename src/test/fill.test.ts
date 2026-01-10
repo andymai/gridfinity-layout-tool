@@ -158,3 +158,260 @@ describe('getLayerCoverage', () => {
     expect(getLayerCoverage(layout, 'layer1')).toBe(100);
   });
 });
+
+describe('fillAllWithSize with blocked zones', () => {
+  const createMultiLayerLayout = (): Layout => ({
+    version: '1.0',
+    name: 'Test',
+    drawer: { width: 6, depth: 6, height: 12 },
+    printBedSize: 168,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    categories: [{ id: 'cat1', name: 'Test', color: '#000' }],
+    layers: [
+      { id: 'layer1', name: 'Layer 1', height: 3 },
+      { id: 'layer2', name: 'Layer 2', height: 3 },
+    ],
+    bins: [],
+  });
+
+  it('skips blocked zones from protruding lower layer bins', () => {
+    const layout = createMultiLayerLayout();
+    // Add a bin on layer 1 with clearanceHeight that protrudes into layer 2
+    // Layer 1 starts at z=0, has height=3
+    // Bin has height=3 and clearanceHeight=2, so it extends to z=5
+    // Layer 2 starts at z=3, so the protruding bin blocks footprint on layer 2
+    layout.bins = [
+      {
+        id: 'protruding',
+        layerId: 'layer1',
+        x: 0, y: 0,
+        width: 2, depth: 2,
+        height: 3,
+        clearanceHeight: 2,  // Protrudes into layer 2
+        category: 'cat1',
+        label: '', notes: '',
+      },
+    ];
+
+    // Fill layer 2 with 2x2 bins
+    const result = fillAllWithSize(layout, 'layer2', 2, 2, 'cat1');
+
+    // 6×6 grid with 2×2 bins = 9 positions normally
+    // But (0,0) is blocked by protruding bin
+    // So we should get 8 bins
+    expect(result.bins).toHaveLength(8);
+
+    // Verify none of the bins overlap with the blocked zone (0,0 to 2,2)
+    for (const bin of result.bins) {
+      const overlapsBlocked = (
+        bin.x < 2 && bin.x + bin.width > 0 &&
+        bin.y < 2 && bin.y + bin.depth > 0
+      );
+      expect(overlapsBlocked).toBe(false);
+    }
+  });
+
+  it('handles multiple blocked zones from multiple protruding bins', () => {
+    const layout = createMultiLayerLayout();
+    // Add two bins on layer 1 that protrude into layer 2
+    layout.bins = [
+      {
+        id: 'protruding1',
+        layerId: 'layer1',
+        x: 0, y: 0,
+        width: 2, depth: 2,
+        height: 3,
+        clearanceHeight: 2,
+        category: 'cat1',
+        label: '', notes: '',
+      },
+      {
+        id: 'protruding2',
+        layerId: 'layer1',
+        x: 4, y: 4,
+        width: 2, depth: 2,
+        height: 3,
+        clearanceHeight: 2,
+        category: 'cat1',
+        label: '', notes: '',
+      },
+    ];
+
+    const result = fillAllWithSize(layout, 'layer2', 2, 2, 'cat1');
+
+    // 9 positions - 2 blocked = 7 bins
+    expect(result.bins).toHaveLength(7);
+  });
+
+  it('allows filling when lower layer bins do not protrude', () => {
+    const layout = createMultiLayerLayout();
+    // Bin without clearanceHeight - doesn't protrude
+    layout.bins = [
+      {
+        id: 'nonprotruding',
+        layerId: 'layer1',
+        x: 0, y: 0,
+        width: 2, depth: 2,
+        height: 3,
+        // No clearanceHeight, so doesn't protrude
+        category: 'cat1',
+        label: '', notes: '',
+      },
+    ];
+
+    const result = fillAllWithSize(layout, 'layer2', 2, 2, 'cat1');
+
+    // All 9 positions should be available
+    expect(result.bins).toHaveLength(9);
+  });
+
+  it('handles blocked zone covering entire layer', () => {
+    const layout = createMultiLayerLayout();
+    // Add a bin that blocks the entire layer 2
+    layout.bins = [
+      {
+        id: 'bigprotruding',
+        layerId: 'layer1',
+        x: 0, y: 0,
+        width: 6, depth: 6,
+        height: 3,
+        clearanceHeight: 2,
+        category: 'cat1',
+        label: '', notes: '',
+      },
+    ];
+
+    const result = fillAllWithSize(layout, 'layer2', 2, 2, 'cat1');
+
+    // All positions blocked
+    expect(result.bins).toHaveLength(0);
+    expect(result.skippedCells).toBe(9); // All 9 2x2 positions skipped
+  });
+});
+
+describe('fillGaps with blocked zones', () => {
+  const createMultiLayerLayout = (): Layout => ({
+    version: '1.0',
+    name: 'Test',
+    drawer: { width: 6, depth: 6, height: 12 },
+    printBedSize: 168,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    categories: [{ id: 'cat1', name: 'Test', color: '#000' }],
+    layers: [
+      { id: 'layer1', name: 'Layer 1', height: 3 },
+      { id: 'layer2', name: 'Layer 2', height: 3 },
+    ],
+    bins: [],
+  });
+
+  it('respects blocked zones when filling gaps', () => {
+    const layout = createMultiLayerLayout();
+    // Protruding bin from layer 1
+    layout.bins = [
+      {
+        id: 'protruding',
+        layerId: 'layer1',
+        x: 0, y: 0,
+        width: 3, depth: 3,
+        height: 3,
+        clearanceHeight: 2,
+        category: 'cat1',
+        label: '', notes: '',
+      },
+    ];
+
+    // Fill gaps on layer 2
+    const result = fillGaps(layout, 'layer2', 'cat1', 4);
+
+    // Should have some bins, but not in the blocked zone
+    expect(result.bins.length).toBeGreaterThan(0);
+
+    // Verify no bins overlap with blocked zone (0,0 to 3,3)
+    for (const bin of result.bins) {
+      const overlapsBlocked = (
+        bin.x < 3 && bin.x + bin.width > 0 &&
+        bin.y < 3 && bin.y + bin.depth > 0
+      );
+      expect(overlapsBlocked).toBe(false);
+    }
+  });
+
+  it('fills around partial blocked zones optimally', () => {
+    const layout = createMultiLayerLayout();
+    // Protruding bin blocking corner
+    layout.bins = [
+      {
+        id: 'cornerblock',
+        layerId: 'layer1',
+        x: 0, y: 0,
+        width: 2, depth: 2,
+        height: 3,
+        clearanceHeight: 2,
+        category: 'cat1',
+        label: '', notes: '',
+      },
+    ];
+
+    const result = fillGaps(layout, 'layer2', 'cat1', 4);
+
+    // Calculate expected coverage: 36 total cells - 4 blocked = 32 available
+    const totalBinCells = result.bins.reduce((sum, b) => sum + b.width * b.depth, 0);
+    expect(totalBinCells).toBe(32);
+  });
+
+  it('returns empty when entire layer is blocked', () => {
+    const layout = createMultiLayerLayout();
+    layout.bins = [
+      {
+        id: 'fullblock',
+        layerId: 'layer1',
+        x: 0, y: 0,
+        width: 6, depth: 6,
+        height: 3,
+        clearanceHeight: 2,
+        category: 'cat1',
+        label: '', notes: '',
+      },
+    ];
+
+    const result = fillGaps(layout, 'layer2', 'cat1', 4);
+
+    expect(result.bins).toHaveLength(0);
+    expect(result.addedCount).toBe(0);
+  });
+
+  it('combines blocked zones with existing bins on target layer', () => {
+    const layout = createMultiLayerLayout();
+    layout.bins = [
+      // Protruding bin from layer 1 blocking (0,0)-(2,2)
+      {
+        id: 'protruding',
+        layerId: 'layer1',
+        x: 0, y: 0,
+        width: 2, depth: 2,
+        height: 3,
+        clearanceHeight: 2,
+        category: 'cat1',
+        label: '', notes: '',
+      },
+      // Existing bin on layer 2 at (4,4)-(6,6)
+      {
+        id: 'existing',
+        layerId: 'layer2',
+        x: 4, y: 4,
+        width: 2, depth: 2,
+        height: 3,
+        category: 'cat1',
+        label: '', notes: '',
+      },
+    ];
+
+    const result = fillGaps(layout, 'layer2', 'cat1', 4);
+
+    // 36 cells - 4 blocked - 4 existing = 28 cells to fill
+    const totalBinCells = result.bins.reduce((sum, b) => sum + b.width * b.depth, 0);
+    expect(totalBinCells).toBe(28);
+  });
+});
