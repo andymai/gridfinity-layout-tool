@@ -390,7 +390,7 @@ function ShortcutRow({
       <span style={STYLES.rowDescription}>{description}</span>
       <div className="flex gap-1">
         {keyArray.map((key) => (
-          <kbd key={key} className="px-2 pt-[3px] pb-[5px] rounded font-mono" style={STYLES.kbd}>
+          <kbd key={key} className="px-2 py-1 rounded font-mono leading-none" style={STYLES.kbd}>
             {key}
           </kbd>
         ))}
