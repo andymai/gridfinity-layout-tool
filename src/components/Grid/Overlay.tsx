@@ -54,12 +54,12 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
     // Scale coordinates for half-bin mode
     const vx1 = x1 * scale;
-    const vy2 = y2 * scale;
+    const vy1 = y1 * scale;
     const vWidth = width * scale;
     const vDepth = depth * scale;
 
     const left = gap + vx1 * (visualCellSize + gap);
-    const top = gap + (visualDepth - vy2 - vDepth) * (visualCellSize + gap);
+    const top = gap + (visualDepth - vy1 - vDepth) * (visualCellSize + gap);
     const rectWidth = toPixels(vWidth);
     const rectHeight = toPixels(vDepth);
 
