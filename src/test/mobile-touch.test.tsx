@@ -442,9 +442,9 @@ describe('Mobile Touch Interactions', () => {
       );
 
       // Find resize handles by their aria-label
-      const rightHandle = container.querySelector('[aria-label="Resize width"]');
-      const bottomHandle = container.querySelector('[aria-label="Resize depth"]');
-      const cornerHandle = container.querySelector('[aria-label="Resize width and depth"]');
+      const rightHandle = container.querySelector('[aria-label="Resize right edge"]');
+      const bottomHandle = container.querySelector('[aria-label="Resize bottom edge"]');
+      const cornerHandle = container.querySelector('[aria-label="Resize bottom-right corner"]');
 
       expect(rightHandle).not.toBeNull();
       expect(bottomHandle).not.toBeNull();
@@ -471,7 +471,7 @@ describe('Mobile Touch Interactions', () => {
         />
       );
 
-      const cornerHandle = container.querySelector('[aria-label="Resize width and depth"]');
+      const cornerHandle = container.querySelector('[aria-label="Resize bottom-right corner"]');
 
       act(() => {
         fireEvent.pointerDown(cornerHandle!, {

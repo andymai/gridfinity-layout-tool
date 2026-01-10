@@ -67,12 +67,22 @@ export function DragPreview() {
   // but share the same visual top edge
   const maxYTop = Math.max(...draggedBins.map(b => b.y + b.depth));
 
+  // Use clickOffset from interaction if available for smooth dragging
+  // Otherwise fall back to centering on cursor
+  let previewOffsetX = cellSize / 2;
+  let previewOffsetY = cellSize / 2;
+
+  if (interaction.type === 'drag' && interaction.clickOffset) {
+    previewOffsetX = interaction.clickOffset.x;
+    previewOffsetY = interaction.clickOffset.y;
+  }
+
   return (
     <div
       className="fixed pointer-events-none z-[100]"
       style={{
-        left: mousePos.x - cellSize / 2,
-        top: mousePos.y - cellSize / 2,
+        left: mousePos.x - previewOffsetX,
+        top: mousePos.y - previewOffsetY,
       }}
     >
       {draggedBins.map((bin) => {
