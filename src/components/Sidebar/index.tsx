@@ -242,8 +242,8 @@ export function Sidebar() {
                     <span className="text-content-tertiary">mm</span>
                   </div>
                 </div>
-                {/* Half-bin mode toggle */}
-                <div className="flex items-center justify-between pt-2 mt-2 border-t border-stroke-subtle">
+                {/* Half-bin mode checkbox */}
+                <label className="flex items-center justify-between pt-2 mt-2 border-t border-stroke-subtle cursor-pointer">
                   <div className="flex items-center gap-1.5">
                     <span
                       className="text-content-tertiary"
@@ -253,25 +253,14 @@ export function Sidebar() {
                     </span>
                     <kbd className="text-[9px] text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">H</kbd>
                   </div>
-                  <button
-                    onClick={toggleHalfBinMode}
-                    className={`relative w-10 h-[22px] rounded-full transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface-secondary ${
-                      halfBinMode
-                        ? 'bg-accent shadow-inner'
-                        : 'bg-surface-elevated border border-stroke-subtle'
-                    }`}
-                    aria-pressed={halfBinMode}
+                  <input
+                    type="checkbox"
+                    checked={halfBinMode}
+                    onChange={toggleHalfBinMode}
+                    className="w-4 h-4 rounded accent-accent"
                     aria-label="Toggle half-bin mode"
-                  >
-                    <span
-                      className={`absolute top-[3px] w-4 h-4 rounded-full shadow-sm transition-all duration-200 ease-out ${
-                        halfBinMode
-                          ? 'translate-x-[22px] bg-white'
-                          : 'translate-x-[3px] bg-content-tertiary'
-                      }`}
-                    />
-                  </button>
-                </div>
+                  />
+                </label>
               </div>
             </div>
 
