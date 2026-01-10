@@ -204,19 +204,19 @@ export function MobileSettingsPanel() {
             </div>
             <button
               onClick={toggleHalfBinMode}
-              className={`relative w-14 h-8 rounded-full transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+              className={`relative w-[52px] h-8 rounded-full transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
                 halfBinMode
-                  ? 'bg-accent shadow-inner'
+                  ? 'bg-accent'
                   : 'bg-surface-elevated border border-stroke-subtle'
               }`}
               aria-pressed={halfBinMode}
               aria-label="Toggle half-bin mode"
             >
               <span
-                className={`absolute top-1 w-6 h-6 rounded-full shadow-md transition-all duration-200 ease-out ${
+                className={`absolute top-1 left-1 w-6 h-6 rounded-full shadow-md transition-transform duration-200 ease-out ${
                   halfBinMode
-                    ? 'translate-x-7 bg-white'
-                    : 'translate-x-1 bg-content-tertiary'
+                    ? 'translate-x-5 bg-white'
+                    : 'translate-x-0 bg-content-tertiary'
                 }`}
               />
             </button>
