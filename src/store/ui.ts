@@ -131,7 +131,7 @@ export const useUIStore = create<UIState>((set) => ({
   contextMenu: null,
   showIsometricPreview: false,
   isometricRotation: 0,
-  layerViewMode: 'focus', // Default: show only active layer
+  layerViewMode: 'stack', // Default: show active layer and below
   isPreviewExpanded: false,
   focusedBinId: null,
   keyboardDragMode: false,

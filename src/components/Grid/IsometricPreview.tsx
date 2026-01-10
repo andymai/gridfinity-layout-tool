@@ -544,11 +544,13 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           )}
         </button>
       </div>
-      {/* Layer view mode selector - only show when multiple layers */}
+      {/* Layer view mode selector - segmented control, only show when multiple layers */}
       {layers.length > 1 && (
         <div
-          className={`absolute bottom-1 right-1 flex ${
-            isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg bg-surface/50" : "gap-0.5"
+          className={`absolute bottom-1 right-1 flex rounded-lg overflow-hidden ${
+            isPreviewExpanded && !isMobile
+              ? "gap-0.5 p-1 bg-surface/50"
+              : "bg-surface-secondary/80 border border-stroke-subtle"
           }`}
         >
           {/* Focus - show only active layer */}
@@ -557,13 +559,15 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               e.stopPropagation()
               setLayerViewMode('focus')
             }}
-            className={`btn ${layerViewMode === 'focus' ? 'btn-primary' : 'btn-ghost'} ${
-              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+            className={`flex items-center justify-center transition-colors ${
+              isPreviewExpanded && !isMobile
+                ? `btn ${layerViewMode === 'focus' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
+                : `w-7 h-7 ${layerViewMode === 'focus' ? 'bg-accent text-white' : 'hover:bg-surface-elevated'}`
             }`}
-            title="Show only active layer"
+            title="Focus: Show only active layer"
           >
             <svg
-              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
+              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-3.5 h-3.5"}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -571,9 +575,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              {/* Eye icon - focus */}
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
+              {/* Single layer icon */}
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
             </svg>
             {isPreviewExpanded && !isMobile && (
               <span className="text-xs">Focus</span>
@@ -585,13 +588,15 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               e.stopPropagation()
               setLayerViewMode('stack')
             }}
-            className={`btn ${layerViewMode === 'stack' ? 'btn-primary' : 'btn-ghost'} ${
-              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+            className={`flex items-center justify-center transition-colors ${
+              isPreviewExpanded && !isMobile
+                ? `btn ${layerViewMode === 'stack' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
+                : `w-7 h-7 ${layerViewMode === 'stack' ? 'bg-accent text-white' : 'hover:bg-surface-elevated'}`
             }`}
-            title="Show active layer and below"
+            title="Stack: Show active layer and below"
           >
             <svg
-              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
+              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-3.5 h-3.5"}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -599,7 +604,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              {/* Two layers stacked - slice view */}
+              {/* Two layers stacked */}
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
               <path d="M2 12l10 5 10-5" />
             </svg>
@@ -613,13 +618,15 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               e.stopPropagation()
               setLayerViewMode('all')
             }}
-            className={`btn ${layerViewMode === 'all' ? 'btn-primary' : 'btn-ghost'} ${
-              isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+            className={`flex items-center justify-center transition-colors ${
+              isPreviewExpanded && !isMobile
+                ? `btn ${layerViewMode === 'all' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
+                : `w-7 h-7 ${layerViewMode === 'all' ? 'bg-accent text-white' : 'hover:bg-surface-elevated'}`
             }`}
-            title="Show all layers"
+            title="All: Show all layers"
           >
             <svg
-              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
+              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-3.5 h-3.5"}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -627,7 +634,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              {/* Three layers stacked - all layers */}
+              {/* Three layers stacked */}
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
               <path d="M2 17l10 5 10-5" />
               <path d="M2 12l10 5 10-5" />
