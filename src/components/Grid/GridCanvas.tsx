@@ -117,12 +117,11 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   // Generate grid cells for visual reference
   const cells: JSX.Element[] = [];
   if (halfBinMode) {
-    // Half-bin mode: render 2x cells with dashed sub-grid lines
+    // Half-bin mode: render 2x cells with crosshair at center of each primary cell
     for (let vy = 0; vy < gridRows; vy++) {
       for (let vx = 0; vx < gridCols; vx++) {
-        // Check if this is a sub-cell (not a primary cell corner)
-        const isSubCellX = vx % HALF_BIN_SCALE !== 0;
-        const isSubCellY = vy % HALF_BIN_SCALE !== 0;
+        // Check if this is a primary cell corner (top-left of each whole unit)
+        const isPrimaryCell = vx % HALF_BIN_SCALE === 0 && vy % HALF_BIN_SCALE === 0;
 
         cells.push(
           <div
@@ -135,11 +134,49 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               backgroundColor: 'var(--grid-cell)',
               borderRadius: '2px',
               boxSizing: 'border-box',
-              // Dashed divider lines on sub-cells
-              borderLeft: isSubCellX ? '1px dashed var(--grid-line-half)' : 'none',
-              borderTop: isSubCellY ? '1px dashed var(--grid-line-half)' : 'none',
+              position: 'relative',
             }}
-          />
+          >
+            {/* Crosshair at center of primary cells (marks the half-point) */}
+            {isPrimaryCell && (
+              <div
+                style={{
+                  position: 'absolute',
+                  // Position at center of the 2x2 cell group (bottom-right corner of this cell)
+                  right: -1,
+                  bottom: -1,
+                  width: 7,
+                  height: 7,
+                  pointerEvents: 'none',
+                }}
+              >
+                {/* Horizontal line */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: 0,
+                    right: 0,
+                    height: 1,
+                    backgroundColor: 'var(--grid-line-half)',
+                    transform: 'translateY(-50%)',
+                  }}
+                />
+                {/* Vertical line */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: 0,
+                    bottom: 0,
+                    width: 1,
+                    backgroundColor: 'var(--grid-line-half)',
+                    transform: 'translateX(-50%)',
+                  }}
+                />
+              </div>
+            )}
+          </div>
         );
       }
     }
