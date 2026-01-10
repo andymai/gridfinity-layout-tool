@@ -15,19 +15,19 @@ test.describe('Drawer Settings', () => {
     await expect(sidebar.getByText('Grid Settings')).toBeVisible();
 
     // Should see all setting labels
-    await expect(sidebar.getByText('Drawer height')).toBeVisible();
+    await expect(sidebar.getByText('Max height')).toBeVisible();
     await expect(sidebar.getByText('Print bed')).toBeVisible();
     await expect(sidebar.getByText('1 grid unit')).toBeVisible();
     await expect(sidebar.getByText('1u height')).toBeVisible();
   });
 
-  test('can increase drawer height', async ({ page }) => {
+  test('can increase max height', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    // The drawer height is displayed between the +/- buttons with min-w-[28px]
+    // The max height is displayed between the +/- buttons with min-w-[28px]
     // It's the only span with that width class showing "Nu" format in the Grid Settings section
-    const increaseButton = sidebar.getByRole('button', { name: /increase drawer height/i });
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease drawer height/i });
+    const increaseButton = sidebar.getByRole('button', { name: /increase max height/i });
+    const decreaseButton = sidebar.getByRole('button', { name: /decrease max height/i });
 
     // Get parent container of the buttons to find the height display
     // The height display is between decrease and increase buttons
@@ -45,11 +45,11 @@ test.describe('Drawer Settings', () => {
     expect(updated).toBe(initial + 1);
   });
 
-  test('can decrease drawer height', async ({ page }) => {
+  test('can decrease max height', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    const increaseButton = sidebar.getByRole('button', { name: /increase drawer height/i });
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease drawer height/i });
+    const increaseButton = sidebar.getByRole('button', { name: /increase max height/i });
+    const decreaseButton = sidebar.getByRole('button', { name: /decrease max height/i });
 
     // First increase height to ensure we can decrease
     await increaseButton.click();
@@ -70,10 +70,10 @@ test.describe('Drawer Settings', () => {
     expect(after).toBe(before - 1);
   });
 
-  test('drawer height has minimum constraint', async ({ page }) => {
+  test('max height has minimum constraint', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease drawer height/i });
+    const decreaseButton = sidebar.getByRole('button', { name: /decrease max height/i });
     const heightDisplay = decreaseButton.locator('+ span');
 
     // Decrease 15 times to approach minimum
@@ -193,7 +193,7 @@ test.describe('Drawer Settings', () => {
     await expect(reloadedSidebar.locator('input#gridUnit')).toHaveValue('45');
   });
 
-  test('drawer height change affects layout', async ({ page }) => {
+  test('max height change affects layout', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
     await page.waitForTimeout(200);
@@ -202,28 +202,28 @@ test.describe('Drawer Settings', () => {
     const initialBinCount = await page.locator('[data-bin-id]').count();
     expect(initialBinCount).toBeGreaterThanOrEqual(1);
 
-    // Increase drawer height several times
+    // Increase max height several times
     const sidebar = getSidebar(page);
-    const increaseDrawerHeight = sidebar.getByRole('button', { name: /increase drawer height/i });
+    const increaseMaxHeight = sidebar.getByRole('button', { name: /increase max height/i });
 
     for (let i = 0; i < 3; i++) {
-      await increaseDrawerHeight.click();
+      await increaseMaxHeight.click();
       await page.waitForTimeout(100);
     }
 
-    // Verify bin is still present (drawer height increase shouldn't remove bins)
+    // Verify bin is still present (max height increase shouldn't remove bins)
     await expect(page.locator('[data-bin-id]')).toHaveCount(initialBinCount);
 
-    // Now decrease drawer height
-    const decreaseDrawerHeight = sidebar.getByRole('button', { name: /decrease drawer height/i });
+    // Now decrease max height
+    const decreaseMaxHeight = sidebar.getByRole('button', { name: /decrease max height/i });
     for (let i = 0; i < 3; i++) {
-      if (await decreaseDrawerHeight.isEnabled()) {
-        await decreaseDrawerHeight.click();
+      if (await decreaseMaxHeight.isEnabled()) {
+        await decreaseMaxHeight.click();
         await page.waitForTimeout(100);
       }
     }
 
-    // Bin should still be on grid (drawer height change with no bins taller than new height)
+    // Bin should still be on grid (max height change with no bins taller than new height)
     await expect(page.locator('[data-bin-id]').count()).resolves.toBeGreaterThanOrEqual(0);
   });
 

@@ -16,6 +16,7 @@ interface SceneProps {
   drawerDepth: number;
   drawerHeight: number;
   gridUnitMm: number;
+  heightUnitMm: number;
   layoutName: string;
   isExpanded?: boolean;
 }
@@ -35,11 +36,12 @@ function calculateFitZoom(
   drawerWidth: number,
   drawerDepth: number,
   drawerHeight: number,
+  heightToGridScale: number,
   viewportWidth: number,
   viewportHeight: number
 ): number {
-  // Convert drawer height from height units to grid units (7mm per height unit, 42mm per grid unit)
-  const heightInGridUnits = (drawerHeight * 7) / 42;
+  // Convert drawer height from height units to grid units
+  const heightInGridUnits = drawerHeight * heightToGridScale;
 
   // For isometric view, estimate the projected bounding box
   // The diagonal footprint is roughly width + depth (at 45° view)
@@ -61,7 +63,7 @@ function calculateFitZoom(
  * Handles rotation sync with UI store and renders floor grid.
  */
 export const Scene = forwardRef<SceneHandle, SceneProps>(
-  ({ children, drawerWidth, drawerDepth, drawerHeight, gridUnitMm, layoutName, isExpanded }, ref) => {
+  ({ children, drawerWidth, drawerDepth, drawerHeight, gridUnitMm, heightUnitMm, layoutName, isExpanded }, ref) => {
     const controlsRef = useRef<OrbitControlsType>(null);
     const hasInitializedRef = useRef(false);
     const pendingFitZoomRef = useRef(false);
@@ -71,10 +73,13 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
 
     const setIsometricRotation = useUIStore((state) => state.setIsometricRotation);
 
+    // Calculate height-to-grid scale from user settings
+    const heightToGridScale = heightUnitMm / gridUnitMm;
+
     // Calculate scene center for camera target
     const centerX = drawerWidth / 2;
     const centerY = drawerDepth / 2;
-    const centerZ = (drawerHeight * 7 / 42) / 2; // Convert height units to grid units
+    const centerZ = (drawerHeight * heightToGridScale) / 2;
 
     // Calculate default camera position - front-right view so FRONT is at bottom-left
     const defaultCameraPosition = useMemo(() => {
@@ -148,6 +153,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           drawerWidth,
           drawerDepth,
           drawerHeight,
+          heightToGridScale,
           size.width,
           size.height
         );
@@ -159,7 +165,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       }
 
       prevSizeRef.current = { width: size.width, height: size.height };
-    }, [size, camera, drawerWidth, drawerDepth, drawerHeight]);
+    }, [size, camera, drawerWidth, drawerDepth, drawerHeight, heightToGridScale]);
 
     // Track rotation in ref during interaction (no React re-renders)
     const rotationRef = useRef(0);
@@ -287,7 +293,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         opacity={0.20}
         scale={Math.max(drawerWidth, drawerDepth) * 1.2}
         blur={3.5}
-        far={drawerHeight * 7/42}
+        far={drawerHeight * heightToGridScale}
         resolution={128}
         color="#000000"
         frames={isInteracting ? 0 : Infinity}
@@ -304,6 +310,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         depth={drawerDepth}
         height={drawerHeight}
         gridUnitMm={gridUnitMm}
+        heightUnitMm={heightUnitMm}
       />
       <ScaleIndicator gridUnitMm={gridUnitMm} drawerDepth={drawerDepth} />
 

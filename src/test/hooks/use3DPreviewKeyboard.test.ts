@@ -448,7 +448,7 @@ describe('use3DPreviewKeyboard', () => {
       expect(mockSetPreset).toHaveBeenCalledWith('isometric');
     });
 
-    it('sets top preset on 2 key', () => {
+    it('sets front preset on 2 key', () => {
       renderHook(() =>
         use3DPreviewKeyboard({
           sceneRef: mockSceneRef,
@@ -467,10 +467,10 @@ describe('use3DPreviewKeyboard', () => {
         expect(event.defaultPrevented).toBe(true);
       });
 
-      expect(mockSetPreset).toHaveBeenCalledWith('top');
+      expect(mockSetPreset).toHaveBeenCalledWith('front');
     });
 
-    it('sets front preset on 3 key', () => {
+    it('sets side preset on 3 key', () => {
       renderHook(() =>
         use3DPreviewKeyboard({
           sceneRef: mockSceneRef,
@@ -489,10 +489,10 @@ describe('use3DPreviewKeyboard', () => {
         expect(event.defaultPrevented).toBe(true);
       });
 
-      expect(mockSetPreset).toHaveBeenCalledWith('front');
+      expect(mockSetPreset).toHaveBeenCalledWith('side');
     });
 
-    it('sets side preset on 4 key', () => {
+    it('does not handle 4 key (no top preset)', () => {
       renderHook(() =>
         use3DPreviewKeyboard({
           sceneRef: mockSceneRef,
@@ -508,10 +508,12 @@ describe('use3DPreviewKeyboard', () => {
 
       act(() => {
         const event = pressKey('4');
-        expect(event.defaultPrevented).toBe(true);
+        // Key 4 is not handled, so default is not prevented
+        expect(event.defaultPrevented).toBe(false);
       });
 
-      expect(mockSetPreset).toHaveBeenCalledWith('side');
+      // No preset should be set for key 4
+      expect(mockSetPreset).not.toHaveBeenCalled();
     });
 
     it('does not set presets when preview is hidden', () => {

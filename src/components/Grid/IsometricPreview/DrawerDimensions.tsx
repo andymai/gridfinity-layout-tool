@@ -6,6 +6,7 @@ interface DrawerDimensionsProps {
   depth: number;
   height: number;
   gridUnitMm: number;
+  heightUnitMm: number;
 }
 
 // Dimension line offset from drawer edges
@@ -20,14 +21,14 @@ const FONT_SIZE = 0.32;
  * Architectural dimension lines showing drawer width, depth, and height.
  * Positioned just outside the drawer bounds with end caps and centered labels.
  */
-export function DrawerDimensions({ width, depth, height, gridUnitMm }: DrawerDimensionsProps) {
+export function DrawerDimensions({ width, depth, height, gridUnitMm, heightUnitMm }: DrawerDimensionsProps) {
   // Convert height from height-units to grid-units for 3D space
-  const heightInGridUnits = height * (7 / 42);
+  const heightInGridUnits = height * (heightUnitMm / gridUnitMm);
 
   // Calculate real-world dimensions in mm
   const widthMm = width * gridUnitMm;
   const depthMm = depth * gridUnitMm;
-  const heightMm = height * 7; // Height units are 7mm each
+  const heightMm = height * heightUnitMm;
 
   const dimensions = useMemo(() => ({
     // Width dimension - along front edge (Y = -OFFSET)

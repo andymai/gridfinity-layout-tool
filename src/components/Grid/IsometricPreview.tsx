@@ -16,9 +16,6 @@ import { SplitLineOverlay } from "./IsometricPreview/SplitLineOverlay"
 import { BatchedCornerMarkers } from "./IsometricPreview/BatchedCornerMarkers"
 import { MergedBinMeshes } from "./IsometricPreview/MergedBinMeshes"
 
-// Height units (7mm) to grid units (42mm) conversion for proper proportions
-const HEIGHT_TO_GRID_SCALE = 7 / 42
-
 const PREVIEW_SIZE_SMALL = 280 // Default small preview
 
 interface IsometricPreviewProps {
@@ -123,7 +120,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   )
 
   // Select only needed layout properties to prevent unnecessary re-renders
-  const { bins, layers, categories, drawer, printBedSize, gridUnitMm, layoutName } = useLayoutStore(
+  const { bins, layers, categories, drawer, printBedSize, gridUnitMm, heightUnitMm, layoutName } = useLayoutStore(
     useShallow((state) => ({
       bins: state.layout.bins,
       layers: state.layout.layers,
@@ -131,9 +128,13 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       drawer: state.layout.drawer,
       printBedSize: state.layout.printBedSize,
       gridUnitMm: state.layout.gridUnitMm,
+      heightUnitMm: state.layout.heightUnitMm,
       layoutName: state.layout.name,
     }))
   )
+
+  // Calculate height-to-grid scale from user settings
+  const heightToGridScale = heightUnitMm / gridUnitMm
   const activeLayerId = useUIStore((state) => state.activeLayerId)
 
   // Memoize active layer index calculation
@@ -187,7 +188,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       }
 
       const zStart =
-        getLayerZStart(bin.layerId, layers) * HEIGHT_TO_GRID_SCALE
+        getLayerZStart(bin.layerId, layers) * heightToGridScale
       const category = categories.find((c) => c.id === bin.category)
       const baseColor = category?.color || DEFAULT_CATEGORY_COLOR
 
@@ -202,8 +203,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         x: bin.x,
         y: bin.y,
         z: zStart,
-        height: bin.height * HEIGHT_TO_GRID_SCALE,
-        clearanceHeight: (bin.clearanceHeight || 0) * HEIGHT_TO_GRID_SCALE,
+        height: bin.height * heightToGridScale,
+        clearanceHeight: (bin.clearanceHeight || 0) * heightToGridScale,
         color,
         opacity: 1,
       })
@@ -241,6 +242,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     categories,
     activeLayerIndex,
     layerViewMode,
+    heightToGridScale,
   ])
 
   // Memoize filtered bin arrays to prevent recalculation on every render
@@ -306,6 +308,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           drawerDepth={drawer.depth}
           drawerHeight={drawer.height}
           gridUnitMm={gridUnitMm}
+          heightUnitMm={heightUnitMm}
           layoutName={layoutName}
           isExpanded={isPreviewExpanded}
         >

@@ -98,16 +98,16 @@ export function Sidebar() {
                 <div className="flex items-center justify-between">
                   <span
                     className="text-content-tertiary"
-                    title="Total height available for all layers (in height units)"
+                    title="Maximum height available for all layers (in height units)"
                   >
-                    Drawer height
+                    Max height
                   </span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleDrawerHeightChange(-1)}
                       disabled={drawerHeight <= 1}
                       className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                      aria-label="Decrease drawer height"
+                      aria-label="Decrease max height"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -119,7 +119,7 @@ export function Sidebar() {
                     <button
                       onClick={() => handleDrawerHeightChange(1)}
                       className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content transition-colors"
-                      aria-label="Increase drawer height"
+                      aria-label="Increase max height"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

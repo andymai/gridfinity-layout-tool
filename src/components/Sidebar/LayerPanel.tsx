@@ -161,7 +161,7 @@ export function LayerPanel() {
           disabled={!canAddLayer}
           className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
           title={!canAddLayer
-            ? (heightFull ? `Drawer height full (${totalLayerHeight}/${drawerHeight}u)` : `Maximum ${CONSTRAINTS.LAYERS_MAX} layers`)
+            ? (heightFull ? `Max height full (${totalLayerHeight}/${drawerHeight}u)` : `Maximum ${CONSTRAINTS.LAYERS_MAX} layers`)
             : "Add a new layer"}
           aria-label="Add new layer"
         >
