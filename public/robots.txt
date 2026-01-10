@@ -1,0 +1,8 @@
+# Robots.txt for Gridfinity Layout Tool
+# https://gridfinitylayouttool.com
+
+User-agent: *
+Allow: /
+
+# Sitemap (single-page app, main page only)
+Sitemap: https://gridfinitylayouttool.com/sitemap.xml

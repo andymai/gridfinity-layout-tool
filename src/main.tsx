@@ -1,4 +1,5 @@
 import { createRoot } from 'react-dom/client'
+import { Analytics } from '@vercel/analytics/react'
 import './index.css'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
@@ -13,5 +14,6 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <ErrorBoundary>
     <App />
+    <Analytics />
   </ErrorBoundary>,
 )

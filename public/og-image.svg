@@ -1,0 +1,170 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Subtle gradient for depth -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f12"/>
+      <stop offset="100%" style="stop-color:#18181b"/>
+    </linearGradient>
+    <!-- Bin colors with subtle gradients -->
+    <linearGradient id="blue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#2563eb"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#22c55e"/>
+      <stop offset="100%" style="stop-color:#16a34a"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ef4444"/>
+      <stop offset="100%" style="stop-color:#dc2626"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+
+  <!-- Grid area (right side) - 12x9 grid, 50px per cell -->
+  <g transform="translate(510, 65)">
+    <!-- Grid background with rounded corners -->
+    <rect x="0" y="0" width="604" height="454" fill="#1a1a1f" rx="12"/>
+
+    <!-- Grid lines - 12 columns x 9 rows, 50px cells -->
+    <g stroke="#2a2a32" stroke-width="1" fill="none">
+      <!-- Vertical lines -->
+      <line x1="50" y1="0" x2="50" y2="454"/>
+      <line x1="100" y1="0" x2="100" y2="454"/>
+      <line x1="150" y1="0" x2="150" y2="454"/>
+      <line x1="200" y1="0" x2="200" y2="454"/>
+      <line x1="250" y1="0" x2="250" y2="454"/>
+      <line x1="300" y1="0" x2="300" y2="454"/>
+      <line x1="350" y1="0" x2="350" y2="454"/>
+      <line x1="400" y1="0" x2="400" y2="454"/>
+      <line x1="450" y1="0" x2="450" y2="454"/>
+      <line x1="500" y1="0" x2="500" y2="454"/>
+      <line x1="550" y1="0" x2="550" y2="454"/>
+      <!-- Horizontal lines -->
+      <line x1="0" y1="50" x2="604" y2="50"/>
+      <line x1="0" y1="100" x2="604" y2="100"/>
+      <line x1="0" y1="150" x2="604" y2="150"/>
+      <line x1="0" y1="200" x2="604" y2="200"/>
+      <line x1="0" y1="250" x2="604" y2="250"/>
+      <line x1="0" y1="300" x2="604" y2="300"/>
+      <line x1="0" y1="350" x2="604" y2="350"/>
+      <line x1="0" y1="400" x2="604" y2="400"/>
+    </g>
+
+    <!-- Bins - properly aligned to 50px grid with 4px gaps -->
+    <!-- Gap formula: x = col*50 + 2, y = row*50 + 2, w = cols*50 - 4, h = rows*50 - 4 -->
+
+    <!-- Row 0-1: Top row -->
+    <!-- 2x2 blue -->
+    <rect x="2" y="2" width="96" height="96" fill="url(#blue)" rx="6"/>
+    <!-- 2x2 green -->
+    <rect x="102" y="2" width="96" height="96" fill="url(#green)" rx="6"/>
+    <!-- 3x2 amber -->
+    <rect x="202" y="2" width="146" height="96" fill="url(#amber)" rx="6"/>
+    <!-- 2x2 purple -->
+    <rect x="352" y="2" width="96" height="96" fill="url(#purple)" rx="6"/>
+    <!-- 2x2 red -->
+    <rect x="452" y="2" width="96" height="96" fill="url(#red)" rx="6"/>
+    <!-- 1x2 blue -->
+    <rect x="552" y="2" width="46" height="96" fill="url(#blue)" rx="6"/>
+
+    <!-- Row 2-3 -->
+    <!-- 3x2 green -->
+    <rect x="2" y="102" width="146" height="96" fill="url(#green)" rx="6"/>
+    <!-- 1x2 red -->
+    <rect x="152" y="102" width="46" height="96" fill="url(#red)" rx="6"/>
+    <!-- 2x2 blue -->
+    <rect x="202" y="102" width="96" height="96" fill="url(#blue)" rx="6"/>
+    <!-- 2x2 amber -->
+    <rect x="302" y="102" width="96" height="96" fill="url(#amber)" rx="6"/>
+    <!-- 3x2 purple -->
+    <rect x="402" y="102" width="146" height="96" fill="url(#purple)" rx="6"/>
+    <!-- 1x2 green -->
+    <rect x="552" y="102" width="46" height="96" fill="url(#green)" rx="6"/>
+
+    <!-- Row 4-5 -->
+    <!-- 2x2 amber -->
+    <rect x="2" y="202" width="96" height="96" fill="url(#amber)" rx="6"/>
+    <!-- 2x2 purple -->
+    <rect x="102" y="202" width="96" height="96" fill="url(#purple)" rx="6"/>
+    <!-- 2x2 green -->
+    <rect x="202" y="202" width="96" height="96" fill="url(#green)" rx="6"/>
+    <!-- 3x2 red -->
+    <rect x="302" y="202" width="146" height="96" fill="url(#red)" rx="6"/>
+    <!-- 2x2 blue -->
+    <rect x="452" y="202" width="96" height="96" fill="url(#blue)" rx="6"/>
+    <!-- 1x2 amber -->
+    <rect x="552" y="202" width="46" height="96" fill="url(#amber)" rx="6"/>
+
+    <!-- Row 6-7 -->
+    <!-- 4x2 blue -->
+    <rect x="2" y="302" width="196" height="96" fill="url(#blue)" rx="6"/>
+    <!-- 2x2 red -->
+    <rect x="202" y="302" width="96" height="96" fill="url(#red)" rx="6"/>
+    <!-- 2x2 green -->
+    <rect x="302" y="302" width="96" height="96" fill="url(#green)" rx="6"/>
+    <!-- 2x2 purple -->
+    <rect x="402" y="302" width="96" height="96" fill="url(#purple)" rx="6"/>
+    <!-- 2x2 amber -->
+    <rect x="502" y="302" width="96" height="96" fill="url(#amber)" rx="6"/>
+
+    <!-- Row 8 (bottom, single row) -->
+    <!-- 3x1 purple -->
+    <rect x="2" y="402" width="146" height="46" fill="url(#purple)" rx="6"/>
+    <!-- 2x1 amber -->
+    <rect x="152" y="402" width="96" height="46" fill="url(#amber)" rx="6"/>
+    <!-- 2x1 blue -->
+    <rect x="252" y="402" width="96" height="46" fill="url(#blue)" rx="6"/>
+    <!-- 3x1 green -->
+    <rect x="352" y="402" width="146" height="46" fill="url(#green)" rx="6"/>
+    <!-- 2x1 red -->
+    <rect x="502" y="402" width="96" height="46" fill="url(#red)" rx="6"/>
+  </g>
+
+  <!-- Text content (left side) -->
+  <g transform="translate(60, 140)">
+    <!-- App icon - 4-square grid icon -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="64" height="64" fill="#3b82f6" rx="14"/>
+      <rect x="10" y="10" width="18" height="18" fill="#0f0f12" rx="3"/>
+      <rect x="36" y="10" width="18" height="18" fill="#0f0f12" rx="3"/>
+      <rect x="10" y="36" width="18" height="18" fill="#0f0f12" rx="3"/>
+      <rect x="36" y="36" width="18" height="18" fill="#0f0f12" rx="3"/>
+    </g>
+
+    <!-- Title -->
+    <text x="0" y="120" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="52" font-weight="700" fill="#ffffff">Gridfinity</text>
+    <text x="0" y="180" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="52" font-weight="700" fill="#ffffff">Layout Tool</text>
+
+    <!-- Tagline -->
+    <text x="0" y="235" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" fill="#a1a1aa">Design drawer layouts for 3D printing</text>
+
+    <!-- Features -->
+    <g transform="translate(0, 280)" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="17" fill="#71717a">
+      <circle cx="8" cy="-4" r="5" fill="#3b82f6"/>
+      <text x="22" y="0">Drag-and-drop bin placement</text>
+
+      <circle cx="8" cy="28" r="5" fill="#22c55e"/>
+      <text x="22" y="32">Labeling and color coding</text>
+
+      <circle cx="8" cy="60" r="5" fill="#f59e0b"/>
+      <text x="22" y="64">Multi-layer support</text>
+
+      <circle cx="8" cy="92" r="5" fill="#8b5cf6"/>
+      <text x="22" y="96">Works offline as a PWA</text>
+    </g>
+  </g>
+
+  <!-- URL at bottom -->
+  <text x="600" y="598" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" fill="#52525b">GridfinityLayoutTool.com</text>
+</svg>
