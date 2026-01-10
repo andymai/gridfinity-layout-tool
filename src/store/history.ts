@@ -4,6 +4,18 @@ import type { Layout } from '../types';
 import { useLayoutStore } from './layout';
 import { CONSTRAINTS } from '../constants';
 
+/**
+ * Deep clone a layout object.
+ * Uses structuredClone for performance when available (modern browsers),
+ * falls back to JSON serialization for older environments.
+ */
+function cloneLayout(layout: Layout): Layout {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(layout);
+  }
+  return JSON.parse(JSON.stringify(layout));
+}
+
 interface HistoryState {
   past: Layout[];
   future: Layout[];
@@ -92,7 +104,7 @@ export function useUndoableAction() {
   }, [layout]);
 
   const execute = useCallback((action: () => void) => {
-    push(JSON.parse(JSON.stringify(layoutRef.current)));
+    push(cloneLayout(layoutRef.current));
     action();
   }, [push]); // Only depends on push, which is stable from Zustand
 

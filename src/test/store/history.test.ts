@@ -193,6 +193,61 @@ describe('history store', () => {
     });
   });
 
+  describe('performance', () => {
+    it('handles large layouts with 2500 bins efficiently', () => {
+      const { push, undo, redo } = useHistoryStore.getState();
+
+      // Create a layout with 2500 bins (the fill limit)
+      const layout = createDefaultLayout();
+      layout.drawer = { width: 50, depth: 50, height: 12 };
+
+      // Generate 2500 bins (50x50 grid of 1x1 bins)
+      const bins = [];
+      for (let y = 0; y < 50; y++) {
+        for (let x = 0; x < 50; x++) {
+          bins.push({
+            id: `bin-${x}-${y}`,
+            layerId: layout.layers[0].id,
+            x,
+            y,
+            width: 1,
+            depth: 1,
+            height: 3,
+            category: layout.categories[0].id,
+            label: `Bin ${x},${y}`,
+            notes: '',
+          });
+        }
+      }
+      layout.bins = bins;
+      expect(layout.bins).toHaveLength(2500);
+
+      // Set the layout
+      useLayoutStore.setState({ layout });
+
+      // Measure time for 10 push operations (simulating 10 undoable actions)
+      const startPush = performance.now();
+      for (let i = 0; i < 10; i++) {
+        push(structuredClone ? structuredClone(layout) : JSON.parse(JSON.stringify(layout)));
+      }
+      const pushDuration = performance.now() - startPush;
+
+      // Should complete in reasonable time (<500ms for 10 pushes)
+      expect(pushDuration).toBeLessThan(500);
+
+      // Measure undo/redo performance
+      const startUndoRedo = performance.now();
+      for (let i = 0; i < 5; i++) {
+        undo();
+        redo();
+      }
+      const undoRedoDuration = performance.now() - startUndoRedo;
+
+      // Should complete in reasonable time
+      expect(undoRedoDuration).toBeLessThan(200);
+    });
+  });
+
   describe('undo/redo workflow', () => {
     it('handles complex undo/redo sequence', () => {
       const { push, undo, redo } = useHistoryStore.getState();
