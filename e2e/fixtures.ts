@@ -104,3 +104,31 @@ export function getInspector(page: Page): Locator {
 export function getSidebar(page: Page): Locator {
   return page.locator('aside').first();
 }
+
+// Mobile viewport configurations
+export const MOBILE_VIEWPORT = { width: 375, height: 667 };
+export const TABLET_VIEWPORT = { width: 768, height: 1024 };
+
+/**
+ * Wait for mobile layout to be ready (bottom nav visible).
+ */
+export async function waitForMobileAppReady(page: Page) {
+  // Wait for the bottom nav bar that's unique to mobile (has .bottom-nav class)
+  await page.waitForSelector('nav.bottom-nav', { timeout: 10000 });
+  // Wait for grid to be rendered
+  await page.waitForSelector('[role="application"]', { timeout: 10000 });
+}
+
+/**
+ * Get the mobile bottom navigation bar.
+ */
+export function getBottomNav(page: Page): Locator {
+  return page.locator('nav.bottom-nav');
+}
+
+/**
+ * Get the mobile bottom sheet (when a panel is open).
+ */
+export function getBottomSheet(page: Page): Locator {
+  return page.locator('[role="dialog"]').filter({ hasText: /(Layers|Categories|Inspector|Settings|Print)/ });
+}
