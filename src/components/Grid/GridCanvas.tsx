@@ -5,7 +5,7 @@ import { useUIStore, useLayoutStore } from '../../store';
 import { useGridCoords } from '../../hooks';
 import { Bin } from './Bin';
 import { getBlockedZones } from '../../utils/collision';
-import { DEFAULT_CATEGORY_COLOR } from '../../constants';
+import { DEFAULT_CATEGORY_COLOR, HALF_BIN_SCALE } from '../../constants';
 import type { Coord, ResizeHandle } from '../../types';
 
 interface GridCanvasProps {
@@ -51,7 +51,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
     }))
   );
 
-  const { getGridCoords } = useGridCoords(gridRef);
+  const { getGridCoords, halfBinMode, visualCellSize } = useGridCoords(gridRef);
 
   // Memoized: Filter bins for current layer
   const activeBins = useMemo(
@@ -109,23 +109,56 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
     setSelectedBin(binId);
   };
 
+  // Grid dimensions depend on half-bin mode
+  const gridCols = halfBinMode ? drawer.width * HALF_BIN_SCALE : drawer.width;
+  const gridRows = halfBinMode ? drawer.depth * HALF_BIN_SCALE : drawer.depth;
+  const actualCellSize = halfBinMode ? visualCellSize : cellSize;
+
   // Generate grid cells for visual reference
   const cells: JSX.Element[] = [];
-  for (let y = drawer.depth - 1; y >= 0; y--) {
-    for (let x = 0; x < drawer.width; x++) {
-      cells.push(
-        <div
-          key={`${x}-${y}`}
-          style={{
-            gridColumn: x + 1,
-            gridRow: drawer.depth - y,
-            width: cellSize,
-            height: cellSize,
-            backgroundColor: 'var(--grid-cell)',
-            borderRadius: '2px',
-          }}
-        />
-      );
+  if (halfBinMode) {
+    // Half-bin mode: render 2x cells with visual distinction
+    for (let vy = 0; vy < gridRows; vy++) {
+      for (let vx = 0; vx < gridCols; vx++) {
+        // Check if this is a primary cell boundary (whole unit)
+        const isPrimaryX = vx % HALF_BIN_SCALE === 0;
+        const isPrimaryY = vy % HALF_BIN_SCALE === 0;
+        const isPrimaryCell = isPrimaryX && isPrimaryY;
+
+        cells.push(
+          <div
+            key={`${vx}-${vy}`}
+            style={{
+              gridColumn: vx + 1,
+              gridRow: vy + 1,
+              width: actualCellSize,
+              height: actualCellSize,
+              backgroundColor: isPrimaryCell ? 'var(--grid-cell)' : 'var(--grid-cell-half, var(--grid-cell))',
+              borderRadius: isPrimaryCell ? '2px' : '1px',
+              opacity: isPrimaryCell ? 1 : 0.6,
+            }}
+          />
+        );
+      }
+    }
+  } else {
+    // Standard mode: render normal cells
+    for (let y = drawer.depth - 1; y >= 0; y--) {
+      for (let x = 0; x < drawer.width; x++) {
+        cells.push(
+          <div
+            key={`${x}-${y}`}
+            style={{
+              gridColumn: x + 1,
+              gridRow: drawer.depth - y,
+              width: actualCellSize,
+              height: actualCellSize,
+              backgroundColor: 'var(--grid-cell)',
+              borderRadius: '2px',
+            }}
+          />
+        );
+      }
     }
   }
 
@@ -145,8 +178,8 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
         className="absolute inset-0"
         style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${drawer.width}, ${cellSize}px)`,
-          gridTemplateRows: `repeat(${drawer.depth}, ${cellSize}px)`,
+          gridTemplateColumns: `repeat(${gridCols}, ${actualCellSize}px)`,
+          gridTemplateRows: `repeat(${gridRows}, ${actualCellSize}px)`,
           gap: `${gap}px`,
           padding: `${gap}px`,
         }}
@@ -165,7 +198,8 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               category={category}
               layer={layer}
               drawer={drawer}
-              cellSize={cellSize}
+              cellSize={actualCellSize}
+              halfBinMode={halfBinMode}
               isGhost
               isSelected={false}
               onStartDrag={onStartDrag}
@@ -182,13 +216,22 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
             : undefined;
           const sourceLayer = sourceBin ? layers.find(l => l.id === sourceBin.layerId) : undefined;
 
+          // Calculate grid position - multiply by scale in half-bin mode
+          const scale = halfBinMode ? HALF_BIN_SCALE : 1;
+          const gridCol = Math.round(zone.x * scale) + 1;
+          const gridColSpan = Math.round(zone.width * scale);
+          const gridRowStart = halfBinMode
+            ? Math.round((drawer.depth - zone.y - zone.depth) * scale) + 1
+            : drawer.depth - zone.y - zone.depth + 1;
+          const gridRowSpan = Math.round(zone.depth * scale);
+
           return (
             <div
               key={zone.sourceBinId}
               className="relative cursor-pointer transition-all duration-150 hover:opacity-50 hover:ring-2 hover:ring-white/60"
               style={{
-                gridColumn: `${zone.x + 1} / span ${zone.width}`,
-                gridRow: `${drawer.depth - zone.y - zone.depth + 1} / span ${zone.depth}`,
+                gridColumn: `${gridCol} / span ${gridColSpan}`,
+                gridRow: `${gridRowStart} / span ${gridRowSpan}`,
                 backgroundColor: category?.color || DEFAULT_CATEGORY_COLOR,
                 opacity: 0.3,
                 zIndex: 8,
@@ -239,7 +282,8 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               category={category}
               layer={layer}
               drawer={drawer}
-              cellSize={cellSize}
+              cellSize={actualCellSize}
+              halfBinMode={halfBinMode}
               isGhost={false}
               isSelected={selectedBinIds.includes(bin.id)}
               onStartDrag={onStartDrag}

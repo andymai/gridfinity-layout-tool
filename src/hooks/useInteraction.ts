@@ -351,11 +351,15 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
           const startRect = interaction.startRects.get(binId);
           if (!bin || !startRect) continue;
 
+          // Get current minSize from halfBinMode state
+          const halfBinModeNow = useUIStore.getState().halfBinMode;
+          const minSizeNow = halfBinModeNow ? 0.5 : 1;
           const newRect = calculateResizeRect(
             startRect,
             interaction.handle,
             clamped,
-            layout.drawer
+            layout.drawer,
+            minSizeNow
           );
           newRects.set(binId, newRect);
 
@@ -432,8 +436,12 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         const y1 = Math.min(start.y, current.y);
         const x2 = Math.max(start.x, current.x);
         const y2 = Math.max(start.y, current.y);
-        const width = x2 - x1 + 1;
-        const depth = y2 - y1 + 1;
+        // In half-bin mode, minimum size is 0.5; otherwise it's 1
+        // Width/depth = end - start + minSize (inclusive)
+        const halfBinModeNow = useUIStore.getState().halfBinMode;
+        const minSizeNow = halfBinModeNow ? 0.5 : 1;
+        const width = x2 - x1 + minSizeNow;
+        const depth = y2 - y1 + minSizeNow;
 
         const layer = layout.layers.find(l => l.id === activeLayerId);
         if (layer) {
@@ -461,8 +469,10 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         const y1 = Math.min(start.y, current.y);
         const x2 = Math.max(start.x, current.x);
         const y2 = Math.max(start.y, current.y);
-        const areaWidth = x2 - x1 + 1;
-        const areaDepth = y2 - y1 + 1;
+        const halfBinModeNow = useUIStore.getState().halfBinMode;
+        const minSizeNow = halfBinModeNow ? 0.5 : 1;
+        const areaWidth = x2 - x1 + minSizeNow;
+        const areaDepth = y2 - y1 + minSizeNow;
 
         const layer = layout.layers.find(l => l.id === activeLayerId);
         if (layer && ps) {
@@ -673,28 +683,30 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
 /**
  * Calculate new rectangle based on resize handle and cursor position.
+ * @param minSize - Minimum size for width/depth (0.5 in half-bin mode, 1 normally)
  */
 function calculateResizeRect(
   start: Rect,
   handle: ResizeHandle,
   cursor: Coord,
-  drawer: { width: number; depth: number }
+  drawer: { width: number; depth: number },
+  minSize: number = 1
 ): Rect {
   let { x, y, width, depth } = start;
 
   if (handle.includes('e')) {
-    width = Math.max(1, cursor.x - x + 1);
+    width = Math.max(minSize, cursor.x - x + minSize);
   }
   if (handle.includes('w')) {
-    const newX = Math.min(cursor.x, x + width - 1);
+    const newX = Math.min(cursor.x, x + width - minSize);
     width = x + width - newX;
     x = newX;
   }
   if (handle.includes('n')) {
-    depth = Math.max(1, cursor.y - y + 1);
+    depth = Math.max(minSize, cursor.y - y + minSize);
   }
   if (handle.includes('s')) {
-    const newY = Math.min(cursor.y, y + depth - 1);
+    const newY = Math.min(cursor.y, y + depth - minSize);
     depth = y + depth - newY;
     y = newY;
   }
@@ -704,8 +716,8 @@ function calculateResizeRect(
   y = Math.max(0, y);
   if (x + width > drawer.width) width = drawer.width - x;
   if (y + depth > drawer.depth) depth = drawer.depth - y;
-  width = Math.max(1, width);
-  depth = Math.max(1, depth);
+  width = Math.max(minSize, width);
+  depth = Math.max(minSize, depth);
 
   return { x, y, width, depth };
 }

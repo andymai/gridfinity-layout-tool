@@ -128,8 +128,10 @@ export function useBinInspector(): UseBinInspectorReturn {
 
       execute(() => {
         if (field === 'width' || field === 'depth') {
-          const numValue = typeof value === 'number' ? value : parseInt(value, 10) || 1;
-          updateBin(bin.id, { [field]: Math.max(1, numValue) });
+          // Support fractional values for half-bin mode
+          const numValue = typeof value === 'number' ? value : parseFloat(value) || 0.5;
+          // Minimum 0.5 (for half-bin mode compatibility)
+          updateBin(bin.id, { [field]: Math.max(0.5, numValue) });
         } else if (field === 'height') {
           const minHeight = layer?.height || 1;
           const newHeight = clamp(
