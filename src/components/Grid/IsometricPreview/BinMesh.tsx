@@ -44,7 +44,7 @@ export function BinMesh({ x, y, z, bin, color, opacity, height, isSelected = fal
       <meshStandardMaterial
         ref={materialRef}
         vertexColors
-        roughness={0.7} // Matte plastic finish
+        roughness={0.4} // Smoother finish for vibrant colors
         metalness={0}   // Non-metallic
         transparent={opacity < 1}
         opacity={opacity}

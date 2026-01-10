@@ -203,20 +203,14 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         onChange={handleChange}
       />
 
-      {/* Ambient light - brighter to preserve category colors */}
-      <ambientLight intensity={0.5} />
+      {/* Ambient light - bright to preserve vibrant category colors */}
+      <ambientLight intensity={0.75} />
 
-      {/* Hemisphere light - ambient fill with sky/ground colors */}
-      <hemisphereLight
-        color="#4a5a6a"      // Lighter cool blue (sky)
-        groundColor="#3a3530" // Lighter warm (ground)
-        intensity={0.4}
-      />
-
-      {/* Directional light - main lighting direction */}
+      {/* Directional light - subtle shadows for depth */}
       <directionalLight
         position={[-4, 6, 7]}
-        intensity={0.8}
+        intensity={0.6}
+        color="#ffffff"
       />
 
       {/* Contact shadows for ground connection */}
