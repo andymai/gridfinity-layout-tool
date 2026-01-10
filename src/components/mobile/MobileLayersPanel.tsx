@@ -204,7 +204,7 @@ export function MobileLayersPanel() {
           return (
             <div
               key={layer.id}
-              className={`rounded-r-lg border-l-4 overflow-hidden ${isActive ? 'bg-surface-hover border-l-accent' : 'bg-surface-elevated border-l-transparent'}`}
+              className={`border-l-4 overflow-hidden ${isActive ? 'bg-surface-hover border-l-accent' : 'bg-surface-elevated border-l-transparent'}`}
             >
               <button
                 className="w-full p-4 text-left"

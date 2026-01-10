@@ -221,7 +221,7 @@ export function LayerPanel() {
               onDrop={(e) => handleDrop(e, displayIndex)}
               onDragEnd={handleDragEnd}
               onClick={() => !isEditing && setActiveLayer(layer.id)}
-              className={`group flex items-center gap-2 px-2 py-1.5 text-xs transition-all rounded-r border-l-2 ${
+              className={`group flex items-center gap-2 px-2 py-1.5 text-xs transition-all border-l-2 ${
                 isActive
                   ? 'bg-surface-hover border-l-accent text-content'
                   : 'bg-surface-elevated text-content-secondary hover:bg-surface-hover cursor-pointer border-l-transparent'
