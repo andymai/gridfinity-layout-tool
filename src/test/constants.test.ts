@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calcMaxGridUnits, generateId, createDefaultLayout, DEFAULT_CATEGORIES, STAGING_ID, DEFAULT_CATEGORY_COLOR } from '../constants';
+import { calcMaxGridUnits, generateId, createDefaultLayout, createLayoutWithSettings, DEFAULT_CATEGORIES, STAGING_ID, DEFAULT_CATEGORY_COLOR } from '../constants';
 
 describe('calcMaxGridUnits', () => {
   it('calculates max units for typical print bed', () => {
@@ -78,6 +78,75 @@ describe('createDefaultLayout', () => {
 
   it('starts with no bins', () => {
     const layout = createDefaultLayout();
+    expect(layout.bins).toHaveLength(0);
+  });
+});
+
+describe('createLayoutWithSettings', () => {
+  it('creates a layout using provided settings', () => {
+    const settings = {
+      defaultDrawerWidth: 20,
+      defaultDrawerDepth: 15,
+      defaultDrawerHeight: 10,
+      defaultPrintBedSize: 300,
+      defaultGridUnitMm: 50,
+      defaultHeightUnitMm: 10,
+    };
+
+    const layout = createLayoutWithSettings(settings);
+
+    expect(layout.drawer.width).toBe(20);
+    expect(layout.drawer.depth).toBe(15);
+    expect(layout.drawer.height).toBe(10);
+    expect(layout.printBedSize).toBe(300);
+    expect(layout.gridUnitMm).toBe(50);
+    expect(layout.heightUnitMm).toBe(10);
+  });
+
+  it('includes default categories regardless of settings', () => {
+    const settings = {
+      defaultDrawerWidth: 20,
+      defaultDrawerDepth: 15,
+      defaultDrawerHeight: 10,
+      defaultPrintBedSize: 300,
+      defaultGridUnitMm: 50,
+      defaultHeightUnitMm: 10,
+    };
+
+    const layout = createLayoutWithSettings(settings);
+
+    expect(layout.categories).toHaveLength(5);
+    expect(layout.categories[0].name).toBe('Coral');
+  });
+
+  it('starts with one layer', () => {
+    const settings = {
+      defaultDrawerWidth: 20,
+      defaultDrawerDepth: 15,
+      defaultDrawerHeight: 10,
+      defaultPrintBedSize: 300,
+      defaultGridUnitMm: 50,
+      defaultHeightUnitMm: 10,
+    };
+
+    const layout = createLayoutWithSettings(settings);
+
+    expect(layout.layers).toHaveLength(1);
+    expect(layout.layers[0].name).toBe('Layer 1');
+  });
+
+  it('starts with no bins', () => {
+    const settings = {
+      defaultDrawerWidth: 20,
+      defaultDrawerDepth: 15,
+      defaultDrawerHeight: 10,
+      defaultPrintBedSize: 300,
+      defaultGridUnitMm: 50,
+      defaultHeightUnitMm: 10,
+    };
+
+    const layout = createLayoutWithSettings(settings);
+
     expect(layout.bins).toHaveLength(0);
   });
 });

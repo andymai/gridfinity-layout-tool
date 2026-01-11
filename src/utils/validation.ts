@@ -280,6 +280,37 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
 }
 
 /**
+ * Validate layout integrity for switching.
+ * Checks that all bins reference valid layers and categories.
+ * This is a lighter check than full import validation, used before switching layouts.
+ */
+export function validateLayoutIntegrity(layout: Layout): { valid: boolean; error?: string } {
+  const layerIds = new Set(layout.layers.map(l => l.id));
+  const categoryIds = new Set(layout.categories.map(c => c.id));
+
+  for (const bin of layout.bins) {
+    // Check layer reference (staging is always valid)
+    if (bin.layerId !== STAGING_ID && !layerIds.has(bin.layerId)) {
+      return { valid: false, error: `Bin "${bin.label || bin.id}" references missing layer` };
+    }
+    // Check category reference
+    if (!categoryIds.has(bin.category)) {
+      return { valid: false, error: `Bin "${bin.label || bin.id}" references missing category` };
+    }
+  }
+
+  // Check we have at least one layer and category
+  if (layout.layers.length === 0) {
+    return { valid: false, error: 'Layout has no layers' };
+  }
+  if (layout.categories.length === 0) {
+    return { valid: false, error: 'Layout has no categories' };
+  }
+
+  return { valid: true };
+}
+
+/**
  * Clamp a value to a range.
  */
 export function clamp(value: number, min: number, max: number): number {

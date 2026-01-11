@@ -15,6 +15,8 @@ export function getPanelTitle(panel: MobilePanel): string {
       return 'Bin List';
     case 'settings':
       return 'Settings';
+    case 'layouts':
+      return 'My Layouts';
     default:
       return '';
   }

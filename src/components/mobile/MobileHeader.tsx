@@ -130,7 +130,7 @@ export function MobileHeader({ onMenuClick, onHelpClick }: MobileHeaderProps) {
         </button>
       </div>
 
-      {/* Center: Layout name */}
+      {/* Center: Layout name - tap to open layouts panel, long press to edit */}
       <div className="flex-1 mx-3 min-w-0">
         {isEditing ? (
           <input
@@ -145,10 +145,18 @@ export function MobileHeader({ onMenuClick, onHelpClick }: MobileHeaderProps) {
           />
         ) : (
           <button
-            onClick={handleNameClick}
-            className="w-full text-sm truncate py-1 rounded transition-colors text-content"
+            onClick={() => toggleMobilePanel('layouts')}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              handleNameClick();
+            }}
+            className="w-full text-sm truncate py-1 rounded transition-colors text-content flex items-center justify-center gap-1"
+            aria-label="Open layouts panel"
           >
-            {layout.name}
+            <span className="truncate">{layout.name}</span>
+            <svg className="w-3 h-3 flex-shrink-0 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
         )}
       </div>
