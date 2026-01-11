@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Interaction } from '../types';
+import type { Interaction, Layout } from '../types';
 import { CONSTRAINTS } from '../constants';
 import { clamp } from '../utils/validation';
 
@@ -89,6 +89,10 @@ interface UIState {
   // Half-bin mode (power user feature for 0.5 unit increments)
   halfBinMode: boolean;
 
+  // Shared layout preview (viewing but not saved)
+  sharedLayoutPreview: Layout | null;
+  sharedLayoutOriginalName: string | null; // For forkedFrom metadata
+
   // Actions
   setActiveLayer: (id: string) => void;
   setSelectedBin: (id: string | null) => void; // Single select (clears others)
@@ -147,6 +151,10 @@ interface UIState {
   // Half-bin mode actions
   toggleHalfBinMode: () => void;
   setHalfBinMode: (enabled: boolean) => void;
+
+  // Shared layout preview actions
+  setSharedLayoutPreview: (layout: Layout | null, originalName?: string) => void;
+  clearSharedLayoutPreview: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -174,6 +182,8 @@ export const useUIStore = create<UIState>((set) => ({
   quickLabelBinId: null,
   highlightedCategoryId: null,
   halfBinMode: loadHalfBinMode(),
+  sharedLayoutPreview: null,
+  sharedLayoutOriginalName: null,
 
   setActiveLayer: (id) => set({
     activeLayerId: id,
@@ -317,4 +327,14 @@ export const useUIStore = create<UIState>((set) => ({
     saveHalfBinMode(enabled);
     set({ halfBinMode: enabled });
   },
+
+  // Shared layout preview actions
+  setSharedLayoutPreview: (layout, originalName) => set({
+    sharedLayoutPreview: layout,
+    sharedLayoutOriginalName: originalName ?? layout?.name ?? null,
+  }),
+  clearSharedLayoutPreview: () => set({
+    sharedLayoutPreview: null,
+    sharedLayoutOriginalName: null,
+  }),
 }));
