@@ -338,6 +338,9 @@ export function useLayoutSwitcher() {
     }
 
     saveLibrary(useLibraryStore.getState().library);
+
+    // Track analytics
+    trackLayoutAction('renamed');
   }, [activeLayoutId, updateEntry]);
 
   /**
