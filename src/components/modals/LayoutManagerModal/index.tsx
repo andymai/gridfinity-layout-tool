@@ -198,7 +198,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
             className={`
               flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2
               ${activeTab === 'layouts'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-accent text-white'
                 : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
               }
             `}
@@ -217,7 +217,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
             className={`
               flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2
               ${activeTab === 'import'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-accent text-white'
                 : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
               }
             `}
