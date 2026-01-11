@@ -141,13 +141,13 @@ export function SharedLayoutBanner() {
       <div className="flex items-center gap-2">
         <button
           onClick={handleSave}
-          className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-primary hover:bg-gray-100 transition-colors"
+          className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-slate-900 hover:bg-slate-100 transition-colors"
         >
           Save to My Layouts
         </button>
         <button
           onClick={handleDiscard}
-          className="px-3 py-1.5 text-sm font-medium rounded-md bg-transparent border border-white/30 hover:bg-white/10 transition-colors"
+          className="px-3 py-1.5 text-sm font-medium rounded-md bg-white/15 hover:bg-white/25 transition-colors"
         >
           Discard
         </button>

@@ -2,8 +2,8 @@
 active: true
 iteration: 1
 max_iterations: 15
-completion_promise: "HELP_COMPLETE"
-started_at: "2026-01-11T03:19:17Z"
+completion_promise: "TESTS_COMPLETE"
+started_at: "2026-01-11T03:31:11Z"
 ---
 
-Add keyboard shortcuts help overlay enhancement. Currently Help Modal (?) shows shortcuts in a list - improve it to: (1) Group shortcuts by context (Navigation, Selection, Editing, 3D Preview, etc), (2) Add visual key indicators that look like keyboard keys, (3) Make it searchable/filterable for quick lookup. Update src/components/modals/HelpModal.tsx and create any needed sub-components. Run tests after changes. Output HELP_COMPLETE in a promise tag when enhanced help modal works and tests pass.
+Add comprehensive tests for the library store (src/store/library.ts) and storage functions (saveLayoutById, loadLayoutById, deleteLayoutById, initializeLayoutLibrary in src/utils/storage.ts). Cover edge cases: storage quota exceeded, corrupted data, missing entries, concurrent access. Run tests after each change. Output TESTS_COMPLETE in a promise tag when coverage is thorough and all tests pass.
