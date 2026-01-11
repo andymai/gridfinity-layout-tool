@@ -6,3 +6,4 @@ export { useResponsive, prefersTouch } from './useResponsive';
 export type { ResponsiveState, LayoutMode } from './useResponsive';
 export { usePrintList } from './usePrintList';
 export type { UsePrintListReturn } from './usePrintList';
+export { usePWAUpdate } from './usePWAUpdate';
