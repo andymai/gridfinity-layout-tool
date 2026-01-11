@@ -29,21 +29,23 @@ export function CategoriesPanel() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
 
-  const { categories, bins, addCategory, updateCategory, deleteCategory } = useLayoutStore(
+  const { categories, bins, addCategory, updateCategory, deleteCategory, updateBin } = useLayoutStore(
     useShallow((state) => ({
       categories: state.layout.categories,
       bins: state.layout.bins,
       addCategory: state.addCategory,
       updateCategory: state.updateCategory,
       deleteCategory: state.deleteCategory,
+      updateBin: state.updateBin,
     }))
   );
 
-  const { activeCategoryId, setActiveCategory, setHighlightedCategoryId } = useUIStore(
+  const { activeCategoryId, setActiveCategory, setHighlightedCategoryId, selectedBinIds } = useUIStore(
     useShallow((state) => ({
       activeCategoryId: state.activeCategoryId,
       setActiveCategory: state.setActiveCategory,
       setHighlightedCategoryId: state.setHighlightedCategoryId,
+      selectedBinIds: state.selectedBinIds,
     }))
   );
 
@@ -65,6 +67,26 @@ export function CategoriesPanel() {
       setHighlightedCategoryId(null);
     };
   }, [setHighlightedCategoryId]);
+
+  // Handle category selection: applies to selected bins if any, always sets active category
+  const handleCategorySelect = (categoryId: string, categoryName: string) => {
+    // Always set active category for new bins
+    setActiveCategory(categoryId);
+
+    // If bins are selected, update their categories
+    if (selectedBinIds.length > 0) {
+      execute(() => {
+        for (const binId of selectedBinIds) {
+          updateBin(binId, { category: categoryId });
+        }
+      });
+      const binCount = selectedBinIds.length;
+      addToast(
+        `Changed ${binCount} bin${binCount > 1 ? 's' : ''} to "${categoryName}"`,
+        'success'
+      );
+    }
+  };
 
   const handleAddCategory = () => {
     execute(() => {
@@ -146,7 +168,7 @@ export function CategoriesPanel() {
             <div
               key={category.id}
               className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-all ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
-              onClick={() => setActiveCategory(category.id)}
+              onClick={() => handleCategorySelect(category.id, category.name)}
               onMouseEnter={() => {
                 setHoveredCategoryId(category.id);
                 setHighlightedCategoryId(category.id);
@@ -228,11 +250,17 @@ export function CategoriesPanel() {
                   {/* Category name - click to select, double-click to edit */}
                   <button
                     className="flex-1 min-w-0 text-left"
-                    onClick={(e) => { e.stopPropagation(); setActiveCategory(category.id); }}
+                    onClick={(e) => { e.stopPropagation(); handleCategorySelect(category.id, category.name); }}
                     onDoubleClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
                     aria-pressed={isActive}
-                    aria-label={isActive ? `${category.name} (selected for new bins)` : `Select ${category.name} for new bins`}
-                    title="Double-click to edit"
+                    aria-label={
+                      selectedBinIds.length > 0
+                        ? `Apply ${category.name} to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}`
+                        : isActive
+                          ? `${category.name} (selected for new bins)`
+                          : `Select ${category.name} for new bins`
+                    }
+                    title={selectedBinIds.length > 0 ? `Apply to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}` : 'Double-click to edit'}
                   >
                     <span className="text-sm truncate text-content block">
                       {category.name}
