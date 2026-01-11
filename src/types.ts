@@ -204,6 +204,16 @@ export interface LayoutPreview {
 }
 
 /**
+ * Cloud share metadata stored locally for re-sharing.
+ */
+export interface CloudShareInfo {
+  id: string;           // 12-char share ID
+  deleteToken: string;  // 32-char hex token (stored locally only)
+  sharedAt: number;     // Unix timestamp
+  expiresAt: number;    // Unix timestamp
+}
+
+/**
  * Metadata entry for a layout in the library.
  * The actual layout data is stored separately by ID.
  */
@@ -218,7 +228,13 @@ export interface LayoutEntry {
     author?: string;
   };
   preview: LayoutPreview;        // Cached preview data
+  cloudShare?: CloudShareInfo;   // Cloud sharing metadata (if shared)
 }
+
+/**
+ * Valid expiration options for cloud shares (in days).
+ */
+export type ShareExpiration = 30 | 60 | 90 | 365;
 
 /**
  * The layout library index stored in localStorage.
@@ -229,6 +245,7 @@ export interface LayoutLibrary {
   activeLayoutId: string;        // Currently active layout ID
   settings: {
     authorName?: string;         // Default author name for new layouts
+    lastShareExpiration?: ShareExpiration; // Remember last-used expiration
   };
   entries: LayoutEntry[];        // All layout entries (metadata only)
 }
