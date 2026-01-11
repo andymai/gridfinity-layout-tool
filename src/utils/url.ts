@@ -3,11 +3,11 @@
  * Handles hash-based routing for bookmarkable layout URLs.
  *
  * URL formats:
- * - #layout/{id} - Direct link to a layout (only works on same device)
+ * - #local/{id} - Direct link to a layout (only works on same device)
  * - #share={data} - Shared layout with embedded data (works anywhere)
  */
 
-const LAYOUT_HASH_PREFIX = '#layout/';
+const LAYOUT_HASH_PREFIX = '#local/';
 const SHARE_HASH_PREFIX = '#share=';
 
 /**

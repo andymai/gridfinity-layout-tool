@@ -4,6 +4,7 @@ import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
 import { useLayoutSwitcher } from '../../hooks/useLayoutSwitcher';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { LayoutThumbnail } from '../LayoutThumbnail';
 import { loadLayoutById, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../utils/storage';
 import type { LayoutEntry } from '../../types';
 
@@ -226,32 +227,42 @@ export function MobileLayoutsPanel() {
                   onClick={() => handleSelectLayout(entry.id)}
                   aria-current={isActive ? 'true' : undefined}
                 >
-                  {/* Layout name and active badge */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`truncate text-base ${isActive ? 'font-semibold text-content' : 'font-medium text-content'}`}>
-                      {entry.name}
-                    </span>
-                    {isActive && (
-                      <span className="text-xs px-2 py-0.5 bg-accent text-white rounded flex-shrink-0">
-                        Active
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Preview stats */}
-                  <LayoutPreviewInfo entry={entry} />
-
-                  {/* Modified date */}
-                  <div className="text-xs text-content-tertiary mt-1">
-                    {formatDate(entry.modifiedAt)}
-                  </div>
-
-                  {/* Forked from info */}
-                  {entry.forkedFrom && (
-                    <div className="text-xs text-content-disabled mt-1">
-                      Forked from {entry.forkedFrom.name}
+                  <div className="flex items-center gap-3">
+                    {/* Thumbnail */}
+                    <div className="flex-shrink-0">
+                      <LayoutThumbnail preview={entry.preview} size={48} />
                     </div>
-                  )}
+
+                    {/* Layout info */}
+                    <div className="flex-1 min-w-0">
+                      {/* Layout name and active badge */}
+                      <div className="flex items-center gap-2">
+                        <span className={`truncate text-base ${isActive ? 'font-semibold text-content' : 'font-medium text-content'}`}>
+                          {entry.name}
+                        </span>
+                        {isActive && (
+                          <span className="text-xs px-2 py-0.5 bg-accent text-white rounded flex-shrink-0">
+                            Active
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Preview stats */}
+                      <LayoutPreviewInfo entry={entry} />
+
+                      {/* Modified date */}
+                      <div className="text-xs text-content-tertiary mt-0.5">
+                        {formatDate(entry.modifiedAt)}
+                      </div>
+
+                      {/* Forked from info */}
+                      {entry.forkedFrom && (
+                        <div className="text-xs text-content-disabled">
+                          Forked from {entry.forkedFrom.name}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </button>
 
                 {/* Action buttons for active layout */}

@@ -179,6 +179,18 @@ export interface BlockedZone {
 // === Layout Library (Multi-Layout Management) ===
 
 /**
+ * Simplified bin data for thumbnail rendering.
+ * Compact representation to minimize storage.
+ */
+export interface ThumbnailBin {
+  x: number;      // Grid position
+  y: number;
+  w: number;      // Width in grid units
+  d: number;      // Depth in grid units
+  c: string;      // Category color (hex)
+}
+
+/**
  * Preview data cached in library entry for display without loading full layout.
  */
 export interface LayoutPreview {
@@ -187,6 +199,8 @@ export interface LayoutPreview {
   drawerHeight: number;
   binCount: number;
   layerCount: number;
+  /** Simplified bin positions for thumbnail (top-down view, all layers merged) */
+  binMap?: ThumbnailBin[];
 }
 
 /**

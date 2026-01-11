@@ -1,19 +1,38 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, OperationResult } from '../types';
-import { CONSTRAINTS } from '../constants';
+import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, OperationResult, ThumbnailBin } from '../types';
+import { CONSTRAINTS, STAGING_ID } from '../constants';
 import { generateUUID } from '../utils/uuid';
 
 /**
  * Compute preview data from a layout for display in the library.
+ * Includes a binMap for thumbnail rendering (top-down view of all bins).
  */
 export function computePreview(layout: Layout): LayoutPreview {
+  // Build category color lookup
+  const categoryColors = new Map<string, string>();
+  for (const cat of layout.categories) {
+    categoryColors.set(cat.id, cat.color);
+  }
+
+  // Generate bin map for thumbnail (exclude staged bins)
+  const binMap: ThumbnailBin[] = layout.bins
+    .filter(bin => bin.layerId !== STAGING_ID)
+    .map(bin => ({
+      x: bin.x,
+      y: bin.y,
+      w: bin.width,
+      d: bin.depth,
+      c: categoryColors.get(bin.category) || '#6B7280', // fallback gray
+    }));
+
   return {
     drawerWidth: layout.drawer.width,
     drawerDepth: layout.drawer.depth,
     drawerHeight: layout.drawer.height,
     binCount: layout.bins.length,
     layerCount: layout.layers.length,
+    binMap,
   };
 }
 
@@ -49,6 +68,9 @@ interface LibraryState {
   // Initialize library
   initLibrary: (library: LayoutLibrary) => void;
 
+  // Replace library (for cross-tab sync)
+  setLibrary: (library: LayoutLibrary) => void;
+
   // Entry CRUD (pure library operations, no cross-store mutations)
   createEntry: (name: string, layoutId: string, preview: LayoutPreview, author?: string) => LayoutEntry;
   deleteEntry: (id: string) => OperationResult;
@@ -77,6 +99,10 @@ export const useLibraryStore = create<LibraryState>()(
 
     initLibrary: (library) => {
       set({ library, isLoaded: true });
+    },
+
+    setLibrary: (library) => {
+      set({ library });
     },
 
     createEntry: (name, layoutId, preview, author) => {

@@ -1,4 +1,4 @@
-import type { Layout, LayoutLibrary, LayoutEntry, LayoutPreview } from '../types';
+import type { Layout, LayoutLibrary, LayoutEntry, LayoutPreview, ThumbnailBin } from '../types';
 import { validateImport } from './validation';
 import { generateId, STAGING_ID } from '../constants';
 import { generateUUID } from './uuid';
@@ -94,9 +94,17 @@ export function clearStorage(): void {
 
 /**
  * Export layout as JSON string.
+ * Adds metadata for user reference (source URL, export time).
  */
 export function exportLayoutJSON(layout: Layout): string {
-  return JSON.stringify(layout, null, 2);
+  const exportData = {
+    ...layout,
+    _meta: {
+      exportedFrom: 'https://gridfinitylayouttool.com',
+      exportedAt: new Date().toISOString(),
+    },
+  };
+  return JSON.stringify(exportData, null, 2);
 }
 
 /**
@@ -106,6 +114,12 @@ export function exportLayoutJSON(layout: Layout): string {
 export function importLayoutJSON(json: string): { layout: Layout | null; errors: string[] } {
   try {
     const parsed = JSON.parse(json);
+
+    // Strip export metadata if present (not part of Layout type)
+    if (parsed._meta) {
+      delete parsed._meta;
+    }
+
     const validation = validateImport(parsed);
 
     if (!validation.valid) {
@@ -278,14 +292,33 @@ export function loadLibrary(): LayoutLibrary | null {
 
 /**
  * Compute preview data from a layout.
+ * Includes binMap for thumbnail rendering (top-down view of all bins).
  */
 export function computeLayoutPreview(layout: Layout): LayoutPreview {
+  // Build category color lookup
+  const categoryColors = new Map<string, string>();
+  for (const cat of layout.categories) {
+    categoryColors.set(cat.id, cat.color);
+  }
+
+  // Generate bin map for thumbnail (exclude staged bins)
+  const binMap: ThumbnailBin[] = layout.bins
+    .filter(bin => bin.layerId !== STAGING_ID)
+    .map(bin => ({
+      x: bin.x,
+      y: bin.y,
+      w: bin.width,
+      d: bin.depth,
+      c: categoryColors.get(bin.category) || '#6B7280', // fallback gray
+    }));
+
   return {
     drawerWidth: layout.drawer.width,
     drawerDepth: layout.drawer.depth,
     drawerHeight: layout.drawer.height,
     binCount: layout.bins.length,
     layerCount: layout.layers.length,
+    binMap,
   };
 }
 

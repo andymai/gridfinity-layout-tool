@@ -463,12 +463,15 @@ describe('library store', () => {
 });
 
 describe('computePreview', () => {
-  it('computes preview from layout', () => {
+  it('computes preview from layout including binMap', () => {
     const layout = createDefaultLayout();
     layout.drawer = { width: 15, depth: 12, height: 10 };
+    layout.categories = [
+      { id: 'cat1', name: 'Category 1', color: '#3B82F6' },
+    ];
     layout.bins = [
       { id: '1', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: 'layer1', category: 'cat1', label: '', notes: '' },
-      { id: '2', x: 1, y: 0, width: 1, depth: 1, height: 3, layerId: 'layer1', category: 'cat1', label: '', notes: '' },
+      { id: '2', x: 1, y: 0, width: 2, depth: 3, height: 3, layerId: 'layer1', category: 'cat1', label: '', notes: '' },
     ];
     layout.layers = [
       { id: 'layer1', name: 'Layer 1', height: 3 },
@@ -483,7 +486,39 @@ describe('computePreview', () => {
       drawerHeight: 10,
       binCount: 2,
       layerCount: 2,
+      binMap: [
+        { x: 0, y: 0, w: 1, d: 1, c: '#3B82F6' },
+        { x: 1, y: 0, w: 2, d: 3, c: '#3B82F6' },
+      ],
     });
+  });
+
+  it('excludes staged bins from binMap', () => {
+    const layout = createDefaultLayout();
+    layout.categories = [{ id: 'cat1', name: 'Category', color: '#FF0000' }];
+    layout.bins = [
+      { id: '1', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: 'layer1', category: 'cat1', label: '', notes: '' },
+      { id: '2', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: '__staging__', category: 'cat1', label: '', notes: '' },
+    ];
+
+    const preview = computePreview(layout);
+
+    // binCount includes all bins, but binMap excludes staged
+    expect(preview.binCount).toBe(2);
+    expect(preview.binMap).toHaveLength(1);
+    expect(preview.binMap![0].c).toBe('#FF0000');
+  });
+
+  it('uses fallback color for unknown category', () => {
+    const layout = createDefaultLayout();
+    layout.categories = [];
+    layout.bins = [
+      { id: '1', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: 'layer1', category: 'unknown', label: '', notes: '' },
+    ];
+
+    const preview = computePreview(layout);
+
+    expect(preview.binMap![0].c).toBe('#6B7280'); // fallback gray
   });
 });
 
