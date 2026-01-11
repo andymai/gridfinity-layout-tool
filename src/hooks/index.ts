@@ -10,4 +10,8 @@ export { useLayoutSwitcher } from './useLayoutSwitcher';
 export { useCrossTabSync } from './useCrossTabSync';
 export { useLayoutRouting } from './useLayoutRouting';
 export { usePWAUpdate } from './usePWAUpdate';
+export type { PWAUpdateState } from './usePWAUpdate';
+export { useNetworkStatus } from './useNetworkStatus';
+export type { NetworkStatus } from './useNetworkStatus';
+export { useChunkPreloader } from './useChunkPreloader';
 export { useAnalytics } from './useAnalytics';

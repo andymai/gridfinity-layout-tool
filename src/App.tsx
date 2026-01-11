@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useLayoutStore, useUIStore, useLibraryStore } from './store';
-import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics } from './hooks';
+import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useChunkPreloader, useAnalytics } from './hooks';
 import { initializeLayoutLibrary } from './utils/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
@@ -17,6 +17,8 @@ import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter } from './components/SharedLayoutImporter';
 import { SharedLayoutBanner } from './components/SharedLayoutBanner';
+import { UpdatePrompt } from './components/UpdatePrompt';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { SHORTCUTS } from './constants';
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
@@ -107,11 +109,14 @@ export default function App() {
   // URL-based layout routing (bookmarkable URLs)
   useLayoutRouting();
 
-  // PWA update detection and auto-reload
-  usePWAUpdate();
+  // PWA update detection and user-controlled reload
+  const pwaState = usePWAUpdate();
 
   // Analytics session tracking
   useAnalytics();
+
+  // Preload critical chunks for better offline experience
+  useChunkPreloader();
 
   // Help modal keyboard shortcut
   const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {
@@ -144,7 +149,7 @@ export default function App() {
   if (isMobile) {
     return (
       <Suspense fallback={<div className="h-screen bg-surface" />}>
-        <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} />
+        <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} pwaState={pwaState} />
       </Suspense>
     );
   }
@@ -224,6 +229,12 @@ export default function App() {
 
         {/* Shared layout URL importer */}
         <SharedLayoutImporter />
+
+        {/* PWA update prompt */}
+        <UpdatePrompt pwaState={pwaState} />
+
+        {/* Offline status indicator */}
+        <OfflineIndicator />
       </div>
     );
   }
@@ -286,6 +297,12 @@ export default function App() {
 
       {/* Shared layout URL importer */}
       <SharedLayoutImporter />
+
+      {/* PWA update prompt */}
+      <UpdatePrompt pwaState={pwaState} />
+
+      {/* Offline status indicator */}
+      <OfflineIndicator />
     </div>
   );
 }

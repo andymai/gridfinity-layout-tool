@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { useUIStore, useLayoutStore } from '../store';
 import { lazyWithRetry, namedExport } from '../utils/lazyWithRetry';
+import type { PWAUpdateState } from '../hooks/usePWAUpdate';
 import { Grid } from './Grid';
 import { Staging } from './Staging';
 import { DropZones } from './DropZones';
@@ -9,6 +10,8 @@ import { ToastContainer } from './Toast';
 import { PanelErrorBoundary } from './PanelErrorBoundary';
 import { SharedLayoutImporter } from './SharedLayoutImporter';
 import { SharedLayoutBanner } from './SharedLayoutBanner';
+import { UpdatePrompt } from './UpdatePrompt';
+import { OfflineIndicator } from './OfflineIndicator';
 import {
   MobileHeader,
   BottomNavBar,
@@ -31,9 +34,10 @@ const MobileHelpModal = lazyWithRetry(() =>
 interface MobileLayoutProps {
   isMobileHelpOpen: boolean;
   setIsMobileHelpOpen: (open: boolean) => void;
+  pwaState: PWAUpdateState;
 }
 
-export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLayoutProps) {
+export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen, pwaState }: MobileLayoutProps) {
   const activeMobilePanel = useUIStore(state => state.activeMobilePanel);
   const setActiveMobilePanel = useUIStore(state => state.setActiveMobilePanel);
   const contextMenu = useUIStore(state => state.contextMenu);
@@ -90,6 +94,12 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLa
 
       {/* Shared layout URL importer */}
       <SharedLayoutImporter />
+
+      {/* PWA update prompt */}
+      <UpdatePrompt pwaState={pwaState} />
+
+      {/* Offline status indicator */}
+      <OfflineIndicator />
     </div>
   );
 }

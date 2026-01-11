@@ -46,14 +46,22 @@ export default defineConfig({
         clientsClaim: true,
         // Clean up old caches from previous versions
         cleanupOutdatedCaches: true,
+        // Enable navigation preload for faster page loads
+        navigationPreload: true,
         runtimeCaching: [
+          // Google Fonts stylesheets - StaleWhileRevalidate with size limit
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'google-fonts-stylesheets',
+              expiration: {
+                maxEntries: 5,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
             },
           },
+          // Google Fonts webfonts - CacheFirst with size limit
           {
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
             handler: 'CacheFirst',
@@ -62,6 +70,37 @@ export default defineConfig({
               expiration: {
                 maxEntries: 10,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          // Share API responses - NetworkFirst with fallback for offline resilience
+          {
+            urlPattern: /^https:\/\/.*\/api\/share\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'share-api-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60, // 1 hour
+              },
+              networkTimeoutSeconds: 10,
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          // Images and static assets - CacheFirst
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
             },
           },
