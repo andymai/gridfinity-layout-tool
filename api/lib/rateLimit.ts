@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import Redis from 'ioredis';
 
 export type RateLimitAction = 'create' | 'update' | 'view' | 'delete' | 'report';
 
@@ -22,9 +22,26 @@ interface RateLimitResult {
   retryAfterSeconds?: number;
 }
 
+// Lazy-initialize Redis connection
+let redis: Redis | null = null;
+
+function getRedis(): Redis | null {
+  if (!process.env.REDIS_URL) {
+    return null;
+  }
+  if (!redis) {
+    redis = new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: 1,
+      connectTimeout: 5000,
+      commandTimeout: 5000,
+    });
+  }
+  return redis;
+}
+
 /**
  * Check and consume rate limit for an IP address and action type.
- * Uses sliding window counter pattern with Vercel KV.
+ * Uses sliding window counter pattern with Redis.
  */
 export async function checkRateLimit(
   ip: string,
@@ -35,13 +52,24 @@ export async function checkRateLimit(
   const windowStart = now - config.windowSeconds;
   const key = `ratelimit:${action}:${hashIP(ip)}`;
 
+  const client = getRedis();
+
+  // If Redis is not configured, allow all requests
+  if (!client) {
+    return {
+      allowed: true,
+      remaining: config.limit,
+      resetAt: now + config.windowSeconds,
+    };
+  }
+
   try {
     // Get current count within window
-    const count = await kv.zcount(key, windowStart, '+inf');
+    const count = await client.zcount(key, windowStart, '+inf');
 
     if (count >= config.limit) {
       // Get oldest entry to calculate reset time
-      const oldest = await kv.zrange(key, 0, 0, { withScores: true });
+      const oldest = await client.zrange(key, 0, 0, 'WITHSCORES');
       const resetAt = oldest.length > 1
         ? Math.ceil(Number(oldest[1]) + config.windowSeconds)
         : now + config.windowSeconds;
@@ -56,11 +84,11 @@ export async function checkRateLimit(
 
     // Add new entry with current timestamp as score
     const entryId = `${now}:${Math.random().toString(36).slice(2, 8)}`;
-    await kv.zadd(key, { score: now, member: entryId });
+    await client.zadd(key, now, entryId);
 
     // Clean up old entries and set TTL
-    await kv.zremrangebyscore(key, 0, windowStart);
-    await kv.expire(key, config.windowSeconds + 60);
+    await client.zremrangebyscore(key, 0, windowStart);
+    await client.expire(key, config.windowSeconds + 60);
 
     return {
       allowed: true,
@@ -68,7 +96,7 @@ export async function checkRateLimit(
       resetAt: now + config.windowSeconds,
     };
   } catch (error) {
-    // If KV is unavailable, allow the request but log
+    // If Redis is unavailable, allow the request but log
     console.error('Rate limit check failed:', error);
     return {
       allowed: true,
@@ -80,7 +108,7 @@ export async function checkRateLimit(
 
 /**
  * Hash IP address for privacy (don't store raw IPs).
- * Using simple hash for KV keys only.
+ * Using simple hash for Redis keys only.
  */
 function hashIP(ip: string): string {
   let hash = 0;
