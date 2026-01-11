@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
@@ -26,11 +26,12 @@ export function MobileSettingsPanel() {
   const saveCurrentAsDefaults = useSettingsStore(state => state.saveCurrentAsDefaults);
 
   // Get active layer's height to save as default
-  const activeLayer = useLayoutStore(state => {
-    const layers = state.layout.layers;
-    const activeLayerId = useUIStore.getState().activeLayerId;
-    return layers.find(l => l.id === activeLayerId);
-  });
+  const activeLayerId = useUIStore((state) => state.activeLayerId);
+  const layers = useLayoutStore((state) => state.layout.layers);
+  const activeLayer = useMemo(
+    () => layers.find((l) => l.id === activeLayerId),
+    [layers, activeLayerId]
+  );
 
   const handleSaveDefaults = () => {
     const layerHeight = activeLayer?.height ?? 3;
