@@ -42,7 +42,7 @@ describe('url utilities', () => {
       expect(parseLayoutIdFromHash()).toBeNull();
     });
 
-    it('returns null for non-layout hash', () => {
+    it('returns null for non-local hash', () => {
       window.location.hash = '#something-else';
       expect(parseLayoutIdFromHash()).toBeNull();
     });
@@ -53,17 +53,17 @@ describe('url utilities', () => {
     });
 
     it('returns layout ID from valid hash', () => {
-      window.location.hash = '#layout/abc-123-uuid';
+      window.location.hash = '#local/abc-123-uuid';
       expect(parseLayoutIdFromHash()).toBe('abc-123-uuid');
     });
 
     it('returns null for empty layout ID', () => {
-      window.location.hash = '#layout/';
+      window.location.hash = '#local/';
       expect(parseLayoutIdFromHash()).toBeNull();
     });
 
     it('handles complex layout IDs', () => {
-      window.location.hash = '#layout/550e8400-e29b-41d4-a716-446655440000';
+      window.location.hash = '#local/550e8400-e29b-41d4-a716-446655440000';
       expect(parseLayoutIdFromHash()).toBe('550e8400-e29b-41d4-a716-446655440000');
     });
   });
@@ -75,7 +75,7 @@ describe('url utilities', () => {
       expect(window.history.replaceState).toHaveBeenCalledWith(
         { layoutId: 'test-id' },
         '',
-        '#layout/test-id'
+        '#local/test-id'
       );
       expect(window.history.pushState).not.toHaveBeenCalled();
     });
@@ -86,7 +86,7 @@ describe('url utilities', () => {
       expect(window.history.pushState).toHaveBeenCalledWith(
         { layoutId: 'test-id' },
         '',
-        '#layout/test-id'
+        '#local/test-id'
       );
       expect(window.history.replaceState).not.toHaveBeenCalled();
     });
@@ -126,8 +126,8 @@ describe('url utilities', () => {
       expect(hasShareHash()).toBe(false);
     });
 
-    it('returns false for layout hash', () => {
-      window.location.hash = '#layout/abc';
+    it('returns false for local hash', () => {
+      window.location.hash = '#local/abc';
       expect(hasShareHash()).toBe(false);
     });
 

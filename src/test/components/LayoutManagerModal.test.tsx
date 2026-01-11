@@ -128,12 +128,23 @@ describe('LayoutManagerModal Accessibility', () => {
       expect(activeOption).toBeInTheDocument();
     });
 
-    it('action buttons have descriptive aria-labels', () => {
+    it('action buttons are accessible via overflow menu', () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      expect(screen.getByLabelText('Rename Test Layout')).toBeInTheDocument();
-      expect(screen.getByLabelText('Duplicate Test Layout')).toBeInTheDocument();
-      expect(screen.getByLabelText('Delete Test Layout')).toBeInTheDocument();
+      // Each layout has an actions menu button
+      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      expect(actionButtons.length).toBe(2);
+
+      // Open the menu for the first layout
+      act(() => {
+        fireEvent.click(actionButtons[0]);
+      });
+
+      // Menu items should be visible
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /Rename/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /Duplicate/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /Delete/i })).toBeInTheDocument();
     });
 
     it('close button has accessible label', () => {
@@ -258,7 +269,14 @@ describe('LayoutManagerModal Accessibility', () => {
     it('announces delete confirmation', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      const deleteButton = screen.getByLabelText('Delete Test Layout');
+      // Open menu for first layout
+      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      act(() => {
+        fireEvent.click(actionButtons[0]);
+      });
+
+      // Click delete in menu
+      const deleteButton = screen.getByRole('menuitem', { name: /Delete/i });
       act(() => {
         fireEvent.click(deleteButton);
       });
@@ -269,24 +287,37 @@ describe('LayoutManagerModal Accessibility', () => {
       });
     });
 
-    it('updates delete button aria-label when confirming', async () => {
+    it('shows confirmation text when delete clicked', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      const deleteButton = screen.getByLabelText('Delete Test Layout');
+      // Open menu for first layout
+      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      act(() => {
+        fireEvent.click(actionButtons[0]);
+      });
+
+      // Click delete in menu
+      const deleteButton = screen.getByRole('menuitem', { name: /Delete/i });
       act(() => {
         fireEvent.click(deleteButton);
       });
 
       await waitFor(() => {
-        expect(screen.getByLabelText('Confirm delete Test Layout')).toBeInTheDocument();
+        expect(screen.getByText(/Click to confirm/i)).toBeInTheDocument();
       });
     });
 
     it('announces when delete is cancelled', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
+      // Open menu for first layout
+      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      act(() => {
+        fireEvent.click(actionButtons[0]);
+      });
+
       // Click delete to enter confirm state
-      const deleteButton = screen.getByLabelText('Delete Test Layout');
+      const deleteButton = screen.getByRole('menuitem', { name: /Delete/i });
       act(() => {
         fireEvent.click(deleteButton);
       });
@@ -307,7 +338,13 @@ describe('LayoutManagerModal Accessibility', () => {
     it('input has aria-label', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      const renameButton = screen.getByLabelText('Rename Test Layout');
+      // Open menu for first layout
+      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      act(() => {
+        fireEvent.click(actionButtons[0]);
+      });
+
+      const renameButton = screen.getByRole('menuitem', { name: /Rename/i });
       act(() => {
         fireEvent.click(renameButton);
       });
@@ -321,7 +358,13 @@ describe('LayoutManagerModal Accessibility', () => {
     it('announces when starting rename', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      const renameButton = screen.getByLabelText('Rename Test Layout');
+      // Open menu for first layout
+      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      act(() => {
+        fireEvent.click(actionButtons[0]);
+      });
+
+      const renameButton = screen.getByRole('menuitem', { name: /Rename/i });
       act(() => {
         fireEvent.click(renameButton);
       });
@@ -335,7 +378,13 @@ describe('LayoutManagerModal Accessibility', () => {
     it('focuses input when rename starts', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      const renameButton = screen.getByLabelText('Rename Test Layout');
+      // Open menu for first layout
+      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      act(() => {
+        fireEvent.click(actionButtons[0]);
+      });
+
+      const renameButton = screen.getByRole('menuitem', { name: /Rename/i });
       act(() => {
         fireEvent.click(renameButton);
       });

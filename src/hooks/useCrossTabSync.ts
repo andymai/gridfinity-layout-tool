@@ -1,41 +1,63 @@
-import { useEffect, useRef } from 'react';
-import { useToastStore } from '../store';
+import { useEffect } from 'react';
+import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore } from '../store';
+import { loadLayoutById, loadLibrary } from '../utils/storage';
+import { validateLayoutIntegrity } from '../utils/validation';
 
 /**
- * Hook to detect when layout data is modified in another browser tab.
- * Shows a warning toast when storage changes are detected from another context.
+ * Hook to automatically sync layout data when modified in another browser tab.
+ * The storage event only fires for changes from OTHER tabs, so this won't loop.
  */
 export function useCrossTabSync() {
-  const addToast = useToastStore(state => state.addToast);
-  const hasWarnedRef = useRef(false);
-
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      // Only care about our layout storage keys
-      if (
-        e.key === 'gridfinity-library-v1' ||
-        e.key?.startsWith('gridfinity-layout-')
-      ) {
-        // Only warn once per session to avoid spam
-        if (!hasWarnedRef.current) {
-          hasWarnedRef.current = true;
-          addToast(
-            'Layout modified in another tab. Reload to sync.',
-            'info',
-            0 // Don't auto-dismiss - user needs to take action
-          );
+      // Library index changed - reload it
+      if (e.key === 'gridfinity-library-v1') {
+        const newLibrary = loadLibrary();
+        if (newLibrary) {
+          useLibraryStore.getState().setLibrary(newLibrary);
+        }
+        return;
+      }
+
+      // A specific layout changed - check if it's the active one
+      if (e.key?.startsWith('gridfinity-layout-')) {
+        const layoutId = e.key.replace('gridfinity-layout-', '');
+        const activeLayoutId = useLayoutStore.getState().activeLayoutId;
+
+        // Only reload if it's the currently active layout
+        if (layoutId === activeLayoutId) {
+          const newLayout = loadLayoutById(layoutId);
+          if (newLayout) {
+            // Validate before applying
+            const validation = validateLayoutIntegrity(newLayout);
+            if (validation.valid) {
+              // Update layout store
+              useLayoutStore.getState().importLayout(newLayout, layoutId);
+
+              // Clear undo history since we're syncing external changes
+              useHistoryStore.getState().clear();
+
+              // Update active layer/category if they no longer exist
+              const uiState = useUIStore.getState();
+              const activeLayer = uiState.activeLayerId;
+              const activeCategory = uiState.activeCategoryId;
+
+              if (activeLayer && !newLayout.layers.find(l => l.id === activeLayer)) {
+                uiState.setActiveLayer(newLayout.layers[0]?.id ?? '');
+              }
+              if (activeCategory && !newLayout.categories.find(c => c.id === activeCategory)) {
+                uiState.setActiveCategory(newLayout.categories[0]?.id ?? '');
+              }
+
+              // Clear selection since bins may have changed
+              uiState.clearSelection();
+            }
+          }
         }
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [addToast]);
-
-  // Reset warning flag when component unmounts/remounts
-  useEffect(() => {
-    return () => {
-      hasWarnedRef.current = false;
-    };
   }, []);
 }
