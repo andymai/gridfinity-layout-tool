@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '../store';
+import { useUIStore, useLayoutStore } from '../store';
 import { DEFAULT_CATEGORY_COLOR } from '../constants';
 import { exportPrintListTSV } from '../utils/storage';
+import { trackLayoutSnapshot } from '../utils/analytics';
 import { ConfirmDialog } from './modals/ConfirmDialog';
 import { usePrintList } from '../hooks/usePrintList';
 import { SplitPreview, PrintListSummary, PrintListEmpty } from './PrintList';
@@ -135,6 +136,7 @@ export function RightPanel() {
                 const tsv = exportPrintListTSV(printList.rows);
                 navigator.clipboard.writeText(tsv);
                 setCopyFeedback(true);
+                trackLayoutSnapshot(useLayoutStore.getState().layout, 'export_tsv');
                 setTimeout(() => setCopyFeedback(false), 2000);
               }}
               className="btn btn-ghost p-1.5 min-w-0 min-h-0"

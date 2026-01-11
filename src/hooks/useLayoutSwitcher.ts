@@ -13,6 +13,7 @@ import { setLayoutHash } from '../utils/url';
 import { validateLayoutIntegrity } from '../utils/validation';
 import { generateUUID } from '../utils/uuid';
 import { createLayoutWithSettings } from '../constants';
+import { trackLayoutAction } from '../utils/analytics';
 
 /**
  * Orchestration hook for layout switching and management.
@@ -146,6 +147,9 @@ export function useLayoutSwitcher() {
       // 11. Update URL hash (add to browser history for back/forward navigation)
       setLayoutHash(targetId, true);
 
+      // 12. Track analytics
+      trackLayoutAction('switched');
+
       return { success: true };
     } catch (error) {
       addToast('Failed to switch layout', 'error');
@@ -210,6 +214,9 @@ export function useLayoutSwitcher() {
       // Update URL hash (add to browser history)
       setLayoutHash(layoutId, true);
 
+      // Track analytics
+      trackLayoutAction('created');
+
       addToast('New layout created', 'success');
       return { success: true, data: layoutId };
     } catch (error) {
@@ -263,6 +270,9 @@ export function useLayoutSwitcher() {
       // Save library
       saveLibrary(useLibraryStore.getState().library);
 
+      // Track analytics
+      trackLayoutAction('deleted');
+
       addToast('Layout deleted', 'success');
       return { success: true };
     } catch (error) {
@@ -304,6 +314,9 @@ export function useLayoutSwitcher() {
 
       // Save library
       saveLibrary(useLibraryStore.getState().library);
+
+      // Track analytics
+      trackLayoutAction('duplicated');
 
       addToast('Layout duplicated', 'success');
       return { success: true, data: newLayoutId };
@@ -356,6 +369,9 @@ export function useLayoutSwitcher() {
 
       // Save library
       saveLibrary(useLibraryStore.getState().library);
+
+      // Track analytics
+      trackLayoutAction('imported', forkedFrom ? 'url' : 'json');
 
       addToast(`Imported "${importedLayout.name}"`, 'success');
       return { success: true, data: layoutId };
