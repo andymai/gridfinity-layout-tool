@@ -1,4 +1,11 @@
-import { test, expect, waitForAppReady, drawBinOnGrid } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  drawBinOnGrid,
+  waitForCanvas,
+  waitForCanvasHidden,
+} from './fixtures';
 
 test.describe('3D Preview', () => {
   test.beforeEach(async ({ page }) => {
@@ -21,14 +28,13 @@ test.describe('3D Preview', () => {
     await toggleButton.click();
 
     // Wait for canvas to appear (WebGL loading can be slow)
-    const canvas = page.locator('canvas');
-    await expect(canvas.first()).toBeVisible({ timeout: 10000 });
+    await waitForCanvas(page);
 
     // Click again to hide
     await toggleButton.click();
 
     // Canvas should be hidden
-    await expect(canvas).not.toBeVisible();
+    await waitForCanvasHidden(page);
   });
 
   test('3D preview shows bins from grid', async ({ page }) => {
@@ -40,8 +46,7 @@ test.describe('3D Preview', () => {
     await toggleButton.click();
 
     // Wait for canvas to appear (WebGL loading can be slow)
-    const canvas = page.locator('canvas');
-    await expect(canvas.first()).toBeVisible({ timeout: 10000 });
+    await waitForCanvas(page);
   });
 
   test('space key expands 3D preview when visible', async ({ page }) => {
@@ -49,8 +54,8 @@ test.describe('3D Preview', () => {
     const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
     await toggleButton.click();
 
+    await waitForCanvas(page);
     const canvas = page.locator('canvas');
-    await expect(canvas.first()).toBeVisible({ timeout: 10000 });
 
     // Get initial canvas size
     const initialSize = await canvas.first().boundingBox();
@@ -81,8 +86,8 @@ test.describe('3D Preview', () => {
     const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
     await toggleButton.click();
 
+    await waitForCanvas(page);
     const canvas = page.locator('canvas');
-    await expect(canvas.first()).toBeVisible({ timeout: 10000 });
 
     // Expand with Space
     await page.keyboard.press('Space');
@@ -107,8 +112,7 @@ test.describe('3D Preview', () => {
     await toggleButton.click();
 
     // Wait for canvas to appear
-    const canvas = page.locator('canvas');
-    await expect(canvas.first()).toBeVisible({ timeout: 10000 });
+    await waitForCanvas(page);
 
     // Look for layer view mode controls (buttons for focus/stack/all modes)
     // These are typically near the preview or in a controls panel
@@ -128,8 +132,8 @@ test.describe('3D Preview', () => {
     const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
     await toggleButton.click();
 
+    await waitForCanvas(page);
     const canvas = page.locator('canvas');
-    await expect(canvas.first()).toBeVisible({ timeout: 10000 });
 
     // Press number keys to change camera preset (1-6)
     // These should change the camera angle
@@ -150,8 +154,7 @@ test.describe('3D Preview', () => {
     await toggleButton.click();
 
     // Canvas should still render (shows empty drawer base)
-    const canvas = page.locator('canvas');
-    await expect(canvas.first()).toBeVisible({ timeout: 10000 });
+    await waitForCanvas(page);
   });
 
   test('3D preview toggle button changes state', async ({ page }) => {
@@ -184,7 +187,6 @@ test.describe('3D Preview', () => {
     await toggleButton.click();
 
     // Canvas should be visible with all bins rendered
-    const canvas = page.locator('canvas');
-    await expect(canvas.first()).toBeVisible({ timeout: 10000 });
+    await waitForCanvas(page);
   });
 });

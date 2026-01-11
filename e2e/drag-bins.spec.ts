@@ -1,4 +1,15 @@
-import { test, expect, waitForAppReady, getGridBounds, drawBinOnGrid, selectBinAt, getInspector } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  getGridBounds,
+  drawBinOnGrid,
+  selectBinAt,
+  getInspector,
+  waitForBinCount,
+  waitForNoSelection,
+  waitForUndoEnabled,
+} from './fixtures';
 
 test.describe('Drag Bins Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -23,8 +34,8 @@ test.describe('Drag Bins Flow', () => {
     await page.mouse.move(bounds.x + 200, bounds.y + 50, { steps: 10 });
     await page.mouse.up();
 
-    // Bin should now be at the new position
-    await page.waitForTimeout(200);
+    // Verify the operation created an undoable action
+    await waitForUndoEnabled(page);
   });
 
   test('can use arrow keys to nudge selected bin', async ({ page }) => {
@@ -33,11 +44,10 @@ test.describe('Drag Bins Flow', () => {
 
     // Use arrow keys to nudge
     await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(100);
+    await waitForUndoEnabled(page);
+
     await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(100);
     await page.keyboard.press('ArrowUp');
-    await page.waitForTimeout(100);
 
     // Bin should have moved (we can verify by checking it's still selected)
     const inspector = getInspector(page);
@@ -49,16 +59,13 @@ test.describe('Drag Bins Flow', () => {
     await selectBinAt(page, 70, 130);
 
     // Verify we have 1 bin
-    const binsBefore = await page.locator('[data-bin-id]').count();
-    expect(binsBefore).toBe(1);
+    await waitForBinCount(page, 1);
 
     // Duplicate with Ctrl+D
     await page.keyboard.press('Control+d');
-    await page.waitForTimeout(200);
 
     // Should now have 2 bins
-    const binsAfter = await page.locator('[data-bin-id]').count();
-    expect(binsAfter).toBe(2);
+    await waitForBinCount(page, 2);
   });
 
   test('can delete selected bin with Delete key', async ({ page }) => {
@@ -66,16 +73,13 @@ test.describe('Drag Bins Flow', () => {
     await selectBinAt(page, 70, 130);
 
     // Verify we have 1 bin
-    const binsBefore = await page.locator('[data-bin-id]').count();
-    expect(binsBefore).toBe(1);
+    await waitForBinCount(page, 1);
 
     // Delete with Delete key
     await page.keyboard.press('Delete');
-    await page.waitForTimeout(200);
 
     // Should have 0 bins now
-    const binsAfter = await page.locator('[data-bin-id]').count();
-    expect(binsAfter).toBe(0);
+    await waitForBinCount(page, 0);
 
     // Inspector should show "No bin selected"
     const inspector = getInspector(page);
@@ -88,11 +92,9 @@ test.describe('Drag Bins Flow', () => {
 
     // Delete with Backspace key
     await page.keyboard.press('Backspace');
-    await page.waitForTimeout(200);
 
     // Should have 0 bins now
-    const binsAfter = await page.locator('[data-bin-id]').count();
-    expect(binsAfter).toBe(0);
+    await waitForBinCount(page, 0);
   });
 
   test('Escape key clears selection', async ({ page }) => {
@@ -105,9 +107,11 @@ test.describe('Drag Bins Flow', () => {
 
     // Press Escape
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(100);
 
-    // Selection should be cleared
+    // Wait for selection to be cleared
+    await waitForNoSelection(page);
+
+    // Inspector should show "No bin selected"
     await expect(inspector.getByText(/no bin selected/i)).toBeVisible({ timeout: 3000 });
   });
 });

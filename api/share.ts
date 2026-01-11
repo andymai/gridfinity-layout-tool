@@ -1,8 +1,8 @@
 import { put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { checkRateLimit, getClientIP } from './lib/rateLimit';
-import { validateShareLayout, validateExpiration } from './lib/validation';
-import { filterLayoutContent } from './lib/contentFilter';
+import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
+import { validateShareLayout, validateExpiration } from './lib/validation.js';
+import { filterLayoutContent } from './lib/contentFilter.js';
 
 /**
  * Generate a 12-character alphanumeric share ID.
@@ -66,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     // Rate limiting
-    const clientIP = getClientIP(req as unknown as Request);
+    const clientIP = getClientIP(req);
     const rateLimit = await checkRateLimit(clientIP, 'create');
 
     if (!rateLimit.allowed) {

@@ -1,10 +1,31 @@
 import type { Page } from '@playwright/test';
-import { test, expect, waitForAppReady, drawBinOnGrid, getInspector } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  drawBinOnGrid,
+  getInspector,
+  waitForBinSelected,
+} from './fixtures';
 
 // Helper to get zoom display within zoom controls group
 function getZoomDisplay(page: Page) {
   // Find the zoom controls group and get the span with percentage
   return page.locator('[role="group"][aria-label="Zoom controls"] span.tabular-nums');
+}
+
+// Helper to wait for zoom to change
+async function waitForZoomChange(page: Page, previousZoom: number, direction: 'increase' | 'decrease') {
+  const zoomDisplay = getZoomDisplay(page);
+  await expect(async () => {
+    const text = await zoomDisplay.textContent();
+    const currentZoom = parseInt(text || '0');
+    if (direction === 'increase') {
+      expect(currentZoom).toBeGreaterThan(previousZoom);
+    } else {
+      expect(currentZoom).toBeLessThan(previousZoom);
+    }
+  }).toPass({ timeout: 2000 });
 }
 
 test.describe('Zoom Controls Flow', () => {
@@ -34,16 +55,11 @@ test.describe('Zoom Controls Flow', () => {
     // Click zoom in button multiple times to ensure visible change
     const zoomInButton = page.getByRole('button', { name: /zoom in/i });
     await zoomInButton.click();
-    await page.waitForTimeout(50);
     await zoomInButton.click();
-    await page.waitForTimeout(50);
     await zoomInButton.click();
-    await page.waitForTimeout(100);
 
-    // Zoom should have increased
-    const newZoomText = await zoomDisplay.textContent();
-    const newZoom = parseInt(newZoomText || '0');
-    expect(newZoom).toBeGreaterThan(initialZoom);
+    // Wait for zoom to increase
+    await waitForZoomChange(page, initialZoom, 'increase');
   });
 
   test('can zoom out with button', async ({ page }) => {
@@ -51,20 +67,24 @@ test.describe('Zoom Controls Flow', () => {
     const zoomInButton = page.getByRole('button', { name: /zoom in/i });
     await zoomInButton.click();
     await zoomInButton.click();
-    await page.waitForTimeout(100);
 
     const zoomDisplay = getZoomDisplay(page);
     await expect(zoomDisplay).toBeVisible();
-    const beforeZoom = await zoomDisplay.textContent();
+
+    // Wait briefly for zoom to settle, then get value
+    await expect(async () => {
+      const text = await zoomDisplay.textContent();
+      expect(parseInt(text || '0')).toBeGreaterThan(100);
+    }).toPass({ timeout: 2000 });
+
+    const beforeZoom = parseInt(await zoomDisplay.textContent() || '0');
 
     // Click zoom out button
     const zoomOutButton = page.getByRole('button', { name: /zoom out/i });
     await zoomOutButton.click();
-    await page.waitForTimeout(100);
 
-    // Zoom should have decreased
-    const afterZoom = await zoomDisplay.textContent();
-    expect(parseInt(afterZoom || '0')).toBeLessThan(parseInt(beforeZoom || '100'));
+    // Wait for zoom to decrease
+    await waitForZoomChange(page, beforeZoom, 'decrease');
   });
 
   test('can zoom in with = key', async ({ page }) => {
@@ -75,35 +95,34 @@ test.describe('Zoom Controls Flow', () => {
 
     // = key is an alternative to + for zoom in - press multiple times
     await page.keyboard.press('Equal');
-    await page.waitForTimeout(50);
     await page.keyboard.press('Equal');
-    await page.waitForTimeout(50);
     await page.keyboard.press('Equal');
-    await page.waitForTimeout(100);
 
-    // Zoom should have increased
-    const newZoomText = await zoomDisplay.textContent();
-    const newZoom = parseInt(newZoomText || '0');
-    expect(newZoom).toBeGreaterThan(initialZoom);
+    // Wait for zoom to increase
+    await waitForZoomChange(page, initialZoom, 'increase');
   });
 
   test('can zoom out with - key', async ({ page }) => {
     // First zoom in using = key
     await page.keyboard.press('Equal');
     await page.keyboard.press('Equal');
-    await page.waitForTimeout(100);
 
     const zoomDisplay = getZoomDisplay(page);
     await expect(zoomDisplay).toBeVisible();
-    const beforeZoom = await zoomDisplay.textContent();
+
+    // Wait for zoom to settle
+    await expect(async () => {
+      const text = await zoomDisplay.textContent();
+      expect(parseInt(text || '0')).toBeGreaterThan(100);
+    }).toPass({ timeout: 2000 });
+
+    const beforeZoom = parseInt(await zoomDisplay.textContent() || '0');
 
     // Press - to zoom out
     await page.keyboard.press('Minus');
-    await page.waitForTimeout(100);
 
-    // Zoom should have decreased
-    const afterZoom = await zoomDisplay.textContent();
-    expect(parseInt(afterZoom || '0')).toBeLessThan(parseInt(beforeZoom || '100'));
+    // Wait for zoom to decrease
+    await waitForZoomChange(page, beforeZoom, 'decrease');
   });
 
   test('fit to screen button adjusts zoom', async ({ page }) => {
@@ -112,40 +131,45 @@ test.describe('Zoom Controls Flow', () => {
     for (let i = 0; i < 5; i++) {
       await zoomInButton.click();
     }
-    await page.waitForTimeout(100);
 
     const zoomDisplay = getZoomDisplay(page);
     await expect(zoomDisplay).toBeVisible();
+
+    // Wait for zoom to settle and get value
+    await expect(async () => {
+      const text = await zoomDisplay.textContent();
+      expect(parseInt(text || '0')).toBeGreaterThan(100);
+    }).toPass({ timeout: 2000 });
+
     const beforeZoom = await zoomDisplay.textContent();
 
     // Click fit button
     const fitButton = page.getByRole('button', { name: /fit/i });
     await fitButton.click();
-    await page.waitForTimeout(200);
 
-    // Zoom should be adjusted
-    const afterZoom = await zoomDisplay.textContent();
-    // After fit, zoom is optimized for the viewport
-    expect(afterZoom).not.toBe(beforeZoom);
+    // Zoom should be adjusted - wait for change
+    await expect(async () => {
+      const afterZoom = await zoomDisplay.textContent();
+      expect(afterZoom).not.toBe(beforeZoom);
+    }).toPass({ timeout: 2000 });
   });
 
   test('zoom persists bin interactions', async ({ page }) => {
     // Create a bin
-    await drawBinOnGrid(page, 50, 50, 100, 100);
-    expect(await page.locator('[data-bin-id]').count()).toBe(1);
+    const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Zoom in using = key
     await page.keyboard.press('Equal');
     await page.keyboard.press('Equal');
-    await page.waitForTimeout(200);
 
     // Bins should still be visible
-    expect(await page.locator('[data-bin-id]').count()).toBe(1);
+    await expect(page.locator('[data-bin-id]')).toHaveCount(1);
 
-    // Click on a bin
-    const bin = page.locator('[data-bin-id]').first();
+    // Click on a bin to select it
     await bin.click();
-    await page.waitForTimeout(200);
+
+    // Verify bin is selected
+    await waitForBinSelected(bin);
 
     // Inspector should show bin details
     const inspector = getInspector(page);
@@ -160,15 +184,10 @@ test.describe('Zoom Controls Flow', () => {
 
     // + requires Shift on most keyboards - press multiple times
     await page.keyboard.press('Shift+Equal');
-    await page.waitForTimeout(50);
     await page.keyboard.press('Shift+Equal');
-    await page.waitForTimeout(50);
     await page.keyboard.press('Shift+Equal');
-    await page.waitForTimeout(100);
 
-    // Zoom should have increased
-    const newZoomText = await zoomDisplay.textContent();
-    const newZoom = parseInt(newZoomText || '0');
-    expect(newZoom).toBeGreaterThan(initialZoom);
+    // Wait for zoom to increase
+    await waitForZoomChange(page, initialZoom, 'increase');
   });
 });

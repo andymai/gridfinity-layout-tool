@@ -1,4 +1,9 @@
-import { test, expect, waitForAppReady } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  waitForDialog,
+} from './fixtures';
 
 test.describe('Create Layout Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -42,6 +47,7 @@ test.describe('Create Layout Flow', () => {
     await page.keyboard.press('?');
 
     // Wait for help modal with title "Help & Shortcuts"
+    await waitForDialog(page);
     const modal = page.locator('[role="dialog"]').filter({
       has: page.getByRole('heading', { name: /help/i })
     });

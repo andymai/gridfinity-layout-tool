@@ -1,4 +1,15 @@
-import { test, expect, MOBILE_VIEWPORT, waitForMobileAppReady, getBottomNav, getGridBounds } from './fixtures';
+import {
+  test,
+  expect,
+  MOBILE_VIEWPORT,
+  waitForMobileAppReady,
+  getBottomNav,
+  getGridBounds,
+  waitForBinCount,
+  waitForDialog,
+  waitForDialogClosed,
+  waitForBinSelected,
+} from './fixtures';
 
 test.describe('Mobile Layout', () => {
   test.beforeEach(async ({ page }) => {
@@ -31,11 +42,10 @@ test.describe('Mobile Layout', () => {
 
     // Tap layers button
     await bottomNav.getByRole('button', { name: /layers panel/i }).click();
-    await page.waitForTimeout(300);
 
     // Bottom sheet should open - look for the dialog
+    await waitForDialog(page);
     const sheet = page.locator('[role="dialog"]');
-    await expect(sheet).toBeVisible();
 
     // Sheet should contain layer management content - look for "Add layer" button
     await expect(sheet.getByRole('button', { name: /add.*layer/i })).toBeVisible();
@@ -46,11 +56,10 @@ test.describe('Mobile Layout', () => {
 
     // Tap categories button
     await bottomNav.getByRole('button', { name: /categories panel/i }).click();
-    await page.waitForTimeout(300);
 
     // Bottom sheet should open
+    await waitForDialog(page);
     const sheet = page.locator('[role="dialog"]');
-    await expect(sheet).toBeVisible();
 
     // Should see default categories in the sheet
     await expect(sheet.getByText('Coral')).toBeVisible();
@@ -61,18 +70,15 @@ test.describe('Mobile Layout', () => {
 
     // Open layers panel
     await bottomNav.getByRole('button', { name: /layers panel/i }).click();
-    await page.waitForTimeout(300);
 
     // Sheet should be visible
-    const sheet = page.locator('[role="dialog"]');
-    await expect(sheet).toBeVisible();
+    await waitForDialog(page);
 
     // Close using Escape key
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
 
     // Sheet should be closed
-    await expect(sheet).not.toBeVisible();
+    await waitForDialogClosed(page);
   });
 
   test('can add bin by tapping on grid', async ({ page }) => {
@@ -81,12 +87,9 @@ test.describe('Mobile Layout', () => {
 
     // Tap on grid to add a 1x1 bin
     await page.mouse.click(bounds.x + 50, bounds.y + 50);
-    await page.waitForTimeout(200);
 
     // Should have created a bin
-    const bins = page.locator('[data-bin-id]');
-    const count = await bins.count();
-    expect(count).toBeGreaterThanOrEqual(1);
+    await waitForBinCount(page, 1);
   });
 
   test('bin panel shows selected bin details', async ({ page }) => {
@@ -97,19 +100,19 @@ test.describe('Mobile Layout', () => {
     await page.mouse.click(bounds.x + 50, bounds.y + 50);
 
     // Wait for bin to appear
+    await waitForBinCount(page, 1);
     const bin = page.locator('[data-bin-id]').first();
-    await expect(bin).toBeVisible({ timeout: 5000 });
 
     // Click on the bin to select it
     await bin.click();
+    await waitForBinSelected(bin);
 
     // Open Bin panel via bottom nav
     await bottomNav.getByRole('button', { name: /bin panel/i }).click();
 
     // Inspector should open in bottom sheet showing bin details
-    // The bin size is in an h2 heading with format "1×1 Bin"
+    await waitForDialog(page);
     const sheet = page.locator('[role="dialog"]');
-    await expect(sheet).toBeVisible({ timeout: 5000 });
     await expect(sheet.getByRole('heading', { name: /^\d×\d Bin$/ })).toBeVisible({ timeout: 5000 });
   });
 
@@ -118,24 +121,21 @@ test.describe('Mobile Layout', () => {
 
     // Open layers panel
     await bottomNav.getByRole('button', { name: /layers panel/i }).click();
-    await page.waitForTimeout(300);
 
     // Verify layers panel is open
+    await waitForDialog(page);
     const sheet = page.locator('[role="dialog"]');
-    await expect(sheet).toBeVisible();
     await expect(sheet.getByRole('button', { name: /add.*layer/i })).toBeVisible();
 
     // Close the sheet via Escape key (sheet intercepts nav clicks when open)
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
-    await expect(sheet).not.toBeVisible();
+    await waitForDialogClosed(page);
 
     // Now open categories
     await bottomNav.getByRole('button', { name: /categories panel/i }).click();
-    await page.waitForTimeout(300);
 
     // Categories should now be visible
-    await expect(sheet).toBeVisible();
+    await waitForDialog(page);
     await expect(sheet.getByText('Coral')).toBeVisible();
   });
 
@@ -144,11 +144,9 @@ test.describe('Mobile Layout', () => {
     const settingsButton = page.getByRole('button', { name: /settings|menu/i }).first();
     if (await settingsButton.isVisible()) {
       await settingsButton.click();
-      await page.waitForTimeout(300);
 
       // Settings panel should show drawer settings
-      const sheet = page.locator('[role="dialog"]');
-      await expect(sheet).toBeVisible();
+      await waitForDialog(page);
     }
   });
 
@@ -157,7 +155,6 @@ test.describe('Mobile Layout', () => {
     const helpButton = page.getByRole('button', { name: /help|\?/i }).first();
     if (await helpButton.isVisible()) {
       await helpButton.click();
-      await page.waitForTimeout(300);
 
       // Help modal should be visible
       await expect(page.getByText(/touch gestures|keyboard shortcuts/i)).toBeVisible({ timeout: 3000 });
@@ -184,7 +181,7 @@ test.describe('Mobile Layout', () => {
     // Click layers
     const layersTab = bottomNav.getByRole('button', { name: /layers panel/i });
     await layersTab.click();
-    await page.waitForTimeout(300);
+    await waitForDialog(page);
 
     // Layers tab should now be active (has aria-pressed="true")
     await expect(layersTab).toHaveAttribute('aria-pressed', 'true');
