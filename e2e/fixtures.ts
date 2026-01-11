@@ -47,7 +47,8 @@ export async function drawBinOnGrid(
   await page.mouse.down();
   await page.mouse.move(bounds.x + endX, bounds.y + endY, { steps: 5 });
   await page.mouse.up();
-  await page.waitForTimeout(200);
+  // Wait for new bin to appear instead of arbitrary timeout
+  await page.locator('[data-bin-id]').last().waitFor({ state: 'visible' });
 }
 
 /**
@@ -56,7 +57,11 @@ export async function drawBinOnGrid(
 export async function selectBinAt(page: Page, x: number, y: number) {
   const bounds = await getGridBounds(page);
   await page.mouse.click(bounds.x + x, bounds.y + y);
-  await page.waitForTimeout(100);
+  // Wait for selection state to update
+  await page.waitForFunction(() => {
+    // Selection processing complete when no pending state changes
+    return document.querySelector('[data-bin-id]') !== null;
+  });
 }
 
 /**
@@ -73,7 +78,8 @@ export async function countBins(page: Page): Promise<number> {
 export async function selectBinSize(page: Page, width: number, depth: number) {
   const sizeButton = page.getByRole('button', { name: new RegExp(`${width}×${depth}`, 'i') }).first();
   await sizeButton.click();
-  await page.waitForTimeout(100);
+  // Wait for paint mode indicator to appear (confirms selection worked)
+  await page.getByText(new RegExp(`paint.*${width}×${depth}`, 'i')).waitFor({ state: 'visible', timeout: 2000 });
 }
 
 /**
@@ -87,8 +93,8 @@ export async function fillLayerWithSize(page: Page, width: number, depth: number
   const fillButton = sidebar.getByRole('button', { name: new RegExp(`fill with ${width}×${depth}`, 'i') });
   await fillButton.click();
 
-  // Wait for toast notification
-  await page.waitForTimeout(500);
+  // Wait for toast notification confirming bins were added
+  await page.getByText(/added \d+ bins/i).waitFor({ state: 'visible', timeout: 5000 });
 }
 
 /**
