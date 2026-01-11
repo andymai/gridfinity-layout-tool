@@ -152,7 +152,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="layout-manager-title"
-        className="bg-surface-elevated rounded-lg p-6 max-w-2xl w-full mx-4 min-h-[500px] max-h-[80vh] flex flex-col animate-scale-in"
+        className="bg-surface-elevated rounded-lg p-6 max-w-2xl w-full mx-4 min-h-[500px] max-h-[80vh] flex flex-col animate-scale-in overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
