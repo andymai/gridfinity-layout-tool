@@ -153,9 +153,9 @@ export function LayoutList({
   );
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Create Button */}
-      <div className="mb-4">
+    <div className="h-full grid grid-rows-[auto_1fr_auto]">
+      {/* Header: Create Button + Search */}
+      <div className="space-y-4 pb-4">
         <button
           onClick={onCreate}
           className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
@@ -165,42 +165,42 @@ export function LayoutList({
           </svg>
           New Layout
         </button>
-      </div>
 
-      {/* Search (appears with 6+ layouts) */}
-      {showSearch && (
-        <div className="relative mb-4">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            ref={searchRef}
-            type="text"
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Search layouts..."
-            className="w-full pl-9 pr-8 py-2 bg-surface border border-stroke rounded-lg text-sm text-content placeholder:text-content-tertiary focus:outline-none focus:border-blue-500"
-            aria-label="Search layouts"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => handleSearchChange('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-content"
-              aria-label="Clear search"
+        {/* Search (appears with 6+ layouts) */}
+        {showSearch && (
+          <div className="relative">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
-      )}
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              ref={searchRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Search layouts..."
+              className="w-full pl-9 pr-8 py-2 bg-surface border border-stroke rounded-lg text-sm text-content placeholder:text-content-tertiary focus:outline-none focus:border-blue-500"
+              aria-label="Search layouts"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => handleSearchChange('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-content"
+                aria-label="Clear search"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Layout List */}
       <div
@@ -208,7 +208,7 @@ export function LayoutList({
         role="listbox"
         aria-label="Available layouts"
         aria-activedescendant={sortedEntries[focusedIndex]?.id}
-        className="overflow-y-auto space-y-2 max-h-[calc(80vh-320px)]"
+        className="overflow-y-auto space-y-2 min-h-0"
         onKeyDown={handleListKeyDown}
       >
         {sortedEntries.length === 0 && searchQuery && (
