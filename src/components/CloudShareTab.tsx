@@ -7,6 +7,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLibraryStore } from '../store/library';
 import { useCloudShare } from '../hooks/useCloudShare';
+import { EXPIRATION_OPTIONS, formatShareDate, calculateDaysRemaining } from '../utils/cloudShare';
 import type { ShareExpiration } from '../types';
 
 /**
@@ -63,6 +64,7 @@ function DeleteTokenSection({
               type="text"
               value={token}
               readOnly
+              aria-label="Delete token"
               className="flex-1 bg-surface text-content p-2 rounded font-mono text-xs focus:outline-none"
             />
             <button
@@ -83,8 +85,7 @@ function useDaysRemaining(expiresAt: number | undefined): number {
   const [now] = useState(() => Date.now());
   return useMemo(() => {
     if (!expiresAt) return 0;
-    const days = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
-    return Math.max(0, days);
+    return calculateDaysRemaining(expiresAt, now);
   }, [expiresAt, now]);
 }
 
@@ -93,13 +94,6 @@ interface CloudShareTabProps {
   onClose: () => void;
   onSwitchToUrlTab: () => void;
 }
-
-const EXPIRATION_OPTIONS: { value: ShareExpiration; label: string }[] = [
-  { value: 30, label: '30 days' },
-  { value: 60, label: '60 days' },
-  { value: 90, label: '90 days' },
-  { value: 365, label: '1 year' },
-];
 
 export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShareTabProps) {
   const lastExpiration = useLibraryStore(
@@ -172,15 +166,6 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
     if (success) setTokenCopied(true);
   };
 
-  // Format expiration date
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   // Calculate days remaining using stable time reference
   const daysRemaining = useDaysRemaining(existingShare?.expiresAt);
 
@@ -227,10 +212,10 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
       <div className="space-y-4">
         <div className="bg-surface rounded-lg p-4">
           <div className="text-sm text-content-secondary mb-1">
-            Shared on {formatDate(existingShare.sharedAt)}
+            Shared on {formatShareDate(existingShare.sharedAt)}
           </div>
           <div className="text-sm text-content">
-            Expires: {formatDate(existingShare.expiresAt)}{' '}
+            Expires: {formatShareDate(existingShare.expiresAt)}{' '}
             <span className="text-content-tertiary">
               ({daysRemaining} days remaining)
             </span>
