@@ -26,7 +26,6 @@ test.describe('3D Preview', () => {
 
     // Click again to hide
     await toggleButton.click();
-    await page.waitForTimeout(500);
 
     // Canvas should be hidden
     await expect(canvas).not.toBeVisible();
@@ -35,7 +34,6 @@ test.describe('3D Preview', () => {
   test('3D preview shows bins from grid', async ({ page }) => {
     // Create a bin on the grid
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
 
     // Enable 3D preview via button click (more reliable)
     const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
@@ -59,7 +57,6 @@ test.describe('3D Preview', () => {
 
     // Press Space to expand (should open modal/fullscreen view)
     await page.keyboard.press('Space');
-    await page.waitForTimeout(500);
 
     // Look for expanded view indicators (modal overlay or larger container)
     const expandedView = page.locator('.fixed.inset-0').filter({
@@ -89,11 +86,13 @@ test.describe('3D Preview', () => {
 
     // Expand with Space
     await page.keyboard.press('Space');
-    await page.waitForTimeout(500);
+
+    // Wait for expanded view to appear
+    const expandedView = page.locator('.fixed.inset-0').filter({ has: page.locator('canvas') });
+    await expandedView.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
 
     // Press Escape to close expanded view
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
 
     // The preview should still be shown (just not expanded)
     await expect(canvas.first()).toBeVisible();
@@ -102,11 +101,14 @@ test.describe('3D Preview', () => {
   test('3D preview has layer view controls', async ({ page }) => {
     // Create bins on grid to have content to display
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
 
-    // Show 3D preview
-    await page.keyboard.press('v');
-    await page.waitForTimeout(500);
+    // Show 3D preview via button (more reliable than keyboard)
+    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    await toggleButton.click();
+
+    // Wait for canvas to appear
+    const canvas = page.locator('canvas');
+    await expect(canvas.first()).toBeVisible({ timeout: 10000 });
 
     // Look for layer view mode controls (buttons for focus/stack/all modes)
     // These are typically near the preview or in a controls panel
@@ -132,14 +134,12 @@ test.describe('3D Preview', () => {
     // Press number keys to change camera preset (1-6)
     // These should change the camera angle
     await page.keyboard.press('1');
-    await page.waitForTimeout(200);
 
     // Canvas should still be visible (camera changed but view persists)
     await expect(canvas.first()).toBeVisible();
 
     // Try another preset
     await page.keyboard.press('2');
-    await page.waitForTimeout(200);
 
     await expect(canvas.first()).toBeVisible();
   });
@@ -162,14 +162,12 @@ test.describe('3D Preview', () => {
 
     // Click to show
     await toggleButton.click();
-    await page.waitForTimeout(500);
 
     // Button label should change to "Hide"
     await expect(toggleButton).toHaveAttribute('aria-label', /hide 3d preview/i);
 
     // Click to hide
     await toggleButton.click();
-    await page.waitForTimeout(300);
 
     // Button label should change back to "Show"
     await expect(toggleButton).toHaveAttribute('aria-label', /show 3d preview/i);
@@ -178,11 +176,8 @@ test.describe('3D Preview', () => {
   test('3D preview renders multiple bins', async ({ page }) => {
     // Create multiple bins
     await drawBinOnGrid(page, 50, 50, 80, 80);
-    await page.waitForTimeout(200);
     await drawBinOnGrid(page, 150, 50, 180, 80);
-    await page.waitForTimeout(200);
     await drawBinOnGrid(page, 50, 150, 80, 180);
-    await page.waitForTimeout(200);
 
     // Enable 3D preview via button
     const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
