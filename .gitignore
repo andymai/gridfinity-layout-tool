@@ -30,3 +30,5 @@ playwright/.cache/
 coverage/
 
 .env
+.vercel
+.env*.local
