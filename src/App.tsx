@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useLayoutStore, useUIStore, useLibraryStore } from './store';
-import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync } from './hooks';
+import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting } from './hooks';
 import { initializeLayoutLibrary } from './utils/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
@@ -103,6 +103,9 @@ export default function App() {
 
   // Cross-tab sync detection
   useCrossTabSync();
+
+  // URL-based layout routing (bookmarkable URLs)
+  useLayoutRouting();
 
   // Help modal keyboard shortcut
   const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {
