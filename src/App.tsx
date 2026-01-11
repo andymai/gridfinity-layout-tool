@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useLayoutStore, useUIStore } from './store';
-import { useKeyboard, useAutoSave, useResponsive } from './hooks';
+import { useKeyboard, useAutoSave, useResponsive, usePWAUpdate } from './hooks';
 import { loadLayout } from './utils/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
@@ -99,6 +99,9 @@ export default function App() {
 
   // Auto-save to localStorage
   useAutoSave();
+
+  // PWA update detection and auto-reload
+  usePWAUpdate();
 
   // Help modal keyboard shortcut
   const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {
