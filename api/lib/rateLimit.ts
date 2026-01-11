@@ -123,11 +123,23 @@ function hashIP(ip: string): string {
 /**
  * Get client IP from request headers.
  * Vercel sets x-forwarded-for header.
+ * Supports both Fetch API Request and Node.js IncomingHttpHeaders.
  */
-export function getClientIP(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
+export function getClientIP(request: Request | { headers: Record<string, string | string[] | undefined> }): string {
+  // Handle Fetch API Request
+  if ('get' in request.headers && typeof request.headers.get === 'function') {
+    const forwarded = request.headers.get('x-forwarded-for');
+    if (forwarded) {
+      return forwarded.split(',')[0].trim();
+    }
+  } else {
+    // Handle Node.js IncomingHttpHeaders (VercelRequest)
+    const headers = request.headers as Record<string, string | string[] | undefined>;
+    const forwarded = headers['x-forwarded-for'];
+    if (forwarded) {
+      const ip = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+      return ip.split(',')[0].trim();
+    }
   }
   // Fallback (shouldn't happen on Vercel)
   return '127.0.0.1';

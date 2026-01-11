@@ -1,4 +1,13 @@
-import { test, expect, waitForAppReady, drawBinOnGrid, selectBinAt, getInspector, getSidebar } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  drawBinOnGrid,
+  selectBinAt,
+  getInspector,
+  getSidebar,
+  waitForDialog,
+} from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 
 /**
@@ -84,9 +93,9 @@ test.describe('Accessibility', () => {
   test('help modal dialog is accessible', async ({ page }) => {
     // Open help modal with ? key
     await page.keyboard.press('Shift+?');
-    await page.waitForTimeout(200);
 
     // Verify modal is visible
+    await waitForDialog(page);
     const modal = page.locator('[role="dialog"]');
     await expect(modal).toBeVisible({ timeout: 3000 });
 
@@ -104,15 +113,14 @@ test.describe('Accessibility', () => {
   });
 
   test('confirm dialog is accessible', async ({ page }) => {
-    // Create and select a bin to trigger delete confirmation
-    await drawBinOnGrid(page, 0, 0, 2, 2);
-    await selectBinAt(page, 0, 0);
-
-    // Click delete in the inspector panel to trigger confirm dialog
-    const inspector = getInspector(page);
-    await inspector.getByRole('button', { name: /delete/i }).click();
+    // Scroll to see the "Save Current as Defaults" button in the sidebar
+    const sidebar = getSidebar(page);
+    const saveDefaultsButton = sidebar.getByRole('button', { name: 'Save Current as Defaults' });
+    await saveDefaultsButton.scrollIntoViewIfNeeded();
+    await saveDefaultsButton.click();
 
     // Verify dialog is visible
+    await waitForDialog(page);
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
 

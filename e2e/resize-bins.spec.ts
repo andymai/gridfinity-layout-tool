@@ -1,4 +1,12 @@
-import { test, expect, waitForAppReady, drawBinOnGrid, selectBinAt, getInspector } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  drawBinOnGrid,
+  selectBinAt,
+  getInspector,
+  waitForRedoEnabled,
+} from './fixtures';
 
 test.describe('Resize Bins Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -42,11 +50,9 @@ test.describe('Resize Bins Flow', () => {
       const initialHeight = await inspector.getByText(/\du/).first().textContent();
 
       await increaseButton.first().click();
-      await page.waitForTimeout(200);
 
-      // Height should have changed (or at least the button clicked successfully)
+      // Wait for state to update - verify height display exists
       const newHeight = await inspector.getByText(/\du/).first().textContent();
-      // Verify the height display exists (either changed or at max)
       expect(newHeight).toBeTruthy();
       expect(initialHeight).toBeTruthy();
     }
@@ -62,15 +68,12 @@ test.describe('Resize Bins Flow', () => {
     const increaseButton = inspector.getByRole('button', { name: /increase height|▲|\+/i });
     if (await increaseButton.count() > 0) {
       await increaseButton.first().click();
-      await page.waitForTimeout(200);
 
       // Undo
       await page.keyboard.press('Control+z');
-      await page.waitForTimeout(200);
 
       // Verify redo is enabled (undo worked)
-      const redoButton = page.getByRole('button', { name: /redo/i });
-      await expect(redoButton).toBeEnabled();
+      await waitForRedoEnabled(page);
     }
   });
 
@@ -85,7 +88,6 @@ test.describe('Resize Bins Flow', () => {
     if (await labelInput.isVisible()) {
       await labelInput.fill('My Bin');
       await labelInput.press('Tab');
-      await page.waitForTimeout(200);
 
       // Label should be shown
       await expect(inspector.getByText('My Bin')).toBeVisible();

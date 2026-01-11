@@ -1,4 +1,14 @@
-import { test, expect, waitForAppReady, drawBinOnGrid } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  drawBinOnGrid,
+  waitForBinCount,
+  waitForNoSelection,
+  waitForUndoEnabled,
+  waitForBinSelected,
+  waitForDialog,
+} from './fixtures';
 
 test.describe('Keyboard Navigation', () => {
   test.beforeEach(async ({ page }) => {
@@ -11,16 +21,13 @@ test.describe('Keyboard Navigation', () => {
   test('tab navigates between focusable elements', async ({ page }) => {
     // Create some bins to navigate to
     await drawBinOnGrid(page, 50, 50, 80, 80);
-    await page.waitForTimeout(200);
     await drawBinOnGrid(page, 150, 50, 180, 80);
-    await page.waitForTimeout(200);
 
     // Start from the body
     await page.locator('body').focus();
 
     // Tab should navigate to focusable elements
     await page.keyboard.press('Tab');
-    await page.waitForTimeout(100);
 
     // Some element should now be focused
     const focusedElement = await page.evaluate(() => document.activeElement?.tagName);
@@ -29,14 +36,10 @@ test.describe('Keyboard Navigation', () => {
 
   test('bins are keyboard focusable', async ({ page }) => {
     // Create a bin
-    await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
-
-    const bin = page.locator('[data-bin-id]').first();
+    const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Focus the bin directly
     await bin.focus();
-    await page.waitForTimeout(100);
 
     // Verify it received focus
     const isFocused = await bin.evaluate((el) => document.activeElement === el);
@@ -49,127 +52,99 @@ test.describe('Keyboard Navigation', () => {
 
   test('enter key on focused bin selects it', async ({ page }) => {
     // Create a bin
-    await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
-
-    const bin = page.locator('[data-bin-id]').first();
+    const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Focus the bin
     await bin.focus();
-    await page.waitForTimeout(100);
 
     // Press Enter to select
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(100);
 
     // Bin should be selected
-    await expect(bin).toHaveAttribute('aria-pressed', 'true');
+    await waitForBinSelected(bin);
   });
 
   test('space key on focused bin selects it', async ({ page }) => {
     // Create a bin
-    await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
-
-    const bin = page.locator('[data-bin-id]').first();
+    const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Focus the bin
     await bin.focus();
-    await page.waitForTimeout(100);
 
     // Press Space to select
     await page.keyboard.press('Space');
-    await page.waitForTimeout(100);
 
     // Bin should be selected
-    await expect(bin).toHaveAttribute('aria-pressed', 'true');
+    await waitForBinSelected(bin);
   });
 
   test('arrow keys nudge selected bin', async ({ page }) => {
     // Create and select a bin
-    await drawBinOnGrid(page, 100, 100, 150, 150);
-    await page.waitForTimeout(200);
-
-    const bin = page.locator('[data-bin-id]').first();
+    const bin = await drawBinOnGrid(page, 100, 100, 150, 150);
     await bin.click();
-    await page.waitForTimeout(100);
+    await waitForBinSelected(bin);
 
     // Nudge with arrow keys
     await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(200);
 
     // Bin should have moved (checking that undo becomes available indicates a change)
-    // Since position might change, we verify the nudge was processed
-    // by checking that undo is now available
-    const undoButton = page.getByRole('button', { name: /undo/i });
-    await expect(undoButton).toBeEnabled();
+    await waitForUndoEnabled(page);
   });
 
   test('delete key removes selected bin', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
 
     const bins = page.locator('[data-bin-id]');
     await expect(bins).toHaveCount(1);
 
     // Select the bin
     await bins.first().click();
-    await page.waitForTimeout(100);
+    await waitForBinSelected(bins.first());
 
     // Press Delete
     await page.keyboard.press('Delete');
-    await page.waitForTimeout(200);
 
     // Bin should be deleted
-    await expect(bins).toHaveCount(0);
+    await waitForBinCount(page, 0);
   });
 
   test('backspace key also removes selected bin', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
 
     const bins = page.locator('[data-bin-id]');
     await expect(bins).toHaveCount(1);
 
     // Select the bin
     await bins.first().click();
-    await page.waitForTimeout(100);
+    await waitForBinSelected(bins.first());
 
     // Press Backspace
     await page.keyboard.press('Backspace');
-    await page.waitForTimeout(200);
 
     // Bin should be deleted
-    await expect(bins).toHaveCount(0);
+    await waitForBinCount(page, 0);
   });
 
   test('escape clears selection', async ({ page }) => {
     // Create and select a bin
-    await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
-
-    const bin = page.locator('[data-bin-id]').first();
+    const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
     await bin.click();
-    await page.waitForTimeout(100);
 
     // Verify selected
-    await expect(bin).toHaveAttribute('aria-pressed', 'true');
+    await waitForBinSelected(bin);
 
     // Press Escape
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(100);
 
     // Selection should be cleared
-    const isSelected = await bin.getAttribute('aria-pressed');
-    expect(isSelected).not.toBe('true');
+    await waitForNoSelection(page);
   });
 
   test('ctrl+z triggers undo', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
 
     const bins = page.locator('[data-bin-id]');
     await expect(bins).toHaveCount(1);
@@ -177,21 +152,18 @@ test.describe('Keyboard Navigation', () => {
     // Select and delete the bin
     await bins.first().click();
     await page.keyboard.press('Delete');
-    await page.waitForTimeout(200);
-    await expect(bins).toHaveCount(0);
+    await waitForBinCount(page, 0);
 
     // Undo with Ctrl+Z
     await page.keyboard.press('Control+z');
-    await page.waitForTimeout(200);
 
     // Bin should be restored
-    await expect(bins).toHaveCount(1);
+    await waitForBinCount(page, 1);
   });
 
   test('ctrl+y triggers redo', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
 
     const bins = page.locator('[data-bin-id]');
     await expect(bins).toHaveCount(1);
@@ -199,40 +171,35 @@ test.describe('Keyboard Navigation', () => {
     // Select and delete
     await bins.first().click();
     await page.keyboard.press('Delete');
-    await page.waitForTimeout(200);
-    await expect(bins).toHaveCount(0);
+    await waitForBinCount(page, 0);
 
     // Undo
     await page.keyboard.press('Control+z');
-    await page.waitForTimeout(200);
-    await expect(bins).toHaveCount(1);
+    await waitForBinCount(page, 1);
 
     // Redo with Ctrl+Y
     await page.keyboard.press('Control+y');
-    await page.waitForTimeout(200);
 
     // Bin should be deleted again
-    await expect(bins).toHaveCount(0);
+    await waitForBinCount(page, 0);
   });
 
   test('ctrl+d duplicates selected bin', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
 
     const bins = page.locator('[data-bin-id]');
     await expect(bins).toHaveCount(1);
 
     // Select the bin
     await bins.first().click();
-    await page.waitForTimeout(100);
+    await waitForBinSelected(bins.first());
 
     // Duplicate with Ctrl+D
     await page.keyboard.press('Control+d');
-    await page.waitForTimeout(300);
 
     // Should have 2 bins now
-    await expect(bins).toHaveCount(2);
+    await waitForBinCount(page, 2);
   });
 
   test('= key zooms in', async ({ page }) => {
@@ -244,33 +211,40 @@ test.describe('Keyboard Navigation', () => {
 
     // Press Equal key multiple times (= key is 'Equal' in Playwright)
     await page.keyboard.press('Equal');
-    await page.waitForTimeout(50);
     await page.keyboard.press('Equal');
-    await page.waitForTimeout(100);
 
     // Zoom should have increased
-    const newZoomText = await zoomDisplay.textContent();
-    const newZoom = parseInt(newZoomText || '0');
-    expect(newZoom).toBeGreaterThan(initialZoom);
+    await expect(async () => {
+      const newZoomText = await zoomDisplay.textContent();
+      const newZoom = parseInt(newZoomText || '0');
+      expect(newZoom).toBeGreaterThan(initialZoom);
+    }).toPass({ timeout: 2000 });
   });
 
   test('- key zooms out', async ({ page }) => {
     // First zoom in so we have room to zoom out
     await page.keyboard.press('Equal');
     await page.keyboard.press('Equal');
-    await page.waitForTimeout(100);
 
     const zoomDisplay = page.locator('[role="group"][aria-label="Zoom controls"] span.tabular-nums');
     await expect(zoomDisplay).toBeVisible();
-    const beforeZoom = await zoomDisplay.textContent();
+
+    // Wait for zoom to settle
+    await expect(async () => {
+      const text = await zoomDisplay.textContent();
+      expect(parseInt(text || '0')).toBeGreaterThan(100);
+    }).toPass({ timeout: 2000 });
+
+    const beforeZoom = parseInt(await zoomDisplay.textContent() || '0');
 
     // Press Minus key to zoom out
     await page.keyboard.press('Minus');
-    await page.waitForTimeout(100);
 
     // Zoom should have decreased
-    const afterZoom = await zoomDisplay.textContent();
-    expect(parseInt(afterZoom || '0')).toBeLessThan(parseInt(beforeZoom || '100'));
+    await expect(async () => {
+      const afterZoom = await zoomDisplay.textContent();
+      expect(parseInt(afterZoom || '0')).toBeLessThan(beforeZoom);
+    }).toPass({ timeout: 2000 });
   });
 
   test('? key opens help modal', async ({ page }) => {
@@ -278,10 +252,11 @@ test.describe('Keyboard Navigation', () => {
     await page.keyboard.press('?');
 
     // Help modal should be visible with heading "Help & Shortcuts"
+    await waitForDialog(page);
     const helpModal = page.locator('[role="dialog"]').filter({
       has: page.getByRole('heading', { name: /help/i })
     });
-    await expect(helpModal).toBeVisible({ timeout: 5000 });
+    await expect(helpModal).toBeVisible();
   });
 
   test('escape closes help modal', async ({ page }) => {
@@ -289,10 +264,11 @@ test.describe('Keyboard Navigation', () => {
     await page.keyboard.press('?');
 
     // Wait for modal to open
+    await waitForDialog(page);
     const helpModal = page.locator('[role="dialog"]').filter({
       has: page.getByRole('heading', { name: /help/i })
     });
-    await expect(helpModal).toBeVisible({ timeout: 5000 });
+    await expect(helpModal).toBeVisible();
 
     // Close with Escape
     await page.keyboard.press('Escape');
@@ -303,31 +279,26 @@ test.describe('Keyboard Navigation', () => {
 
   test('[ and ] cycle through categories for selected bin', async ({ page }) => {
     // Create and select a bin
-    await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
-
-    const bin = page.locator('[data-bin-id]').first();
+    const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
     await bin.click();
-    await page.waitForTimeout(100);
+    await waitForBinSelected(bin);
 
     // Get initial category from aria-label
     const initialLabel = await bin.getAttribute('aria-label');
 
     // Press ] to go to next category
     await page.keyboard.press(']');
-    await page.waitForTimeout(200);
 
     // Category should have changed
-    const newLabel = await bin.getAttribute('aria-label');
-    expect(newLabel).not.toBe(initialLabel);
+    await expect(async () => {
+      const newLabel = await bin.getAttribute('aria-label');
+      expect(newLabel).not.toBe(initialLabel);
+    }).toPass({ timeout: 2000 });
   });
 
   test('bins have accessible labels', async ({ page }) => {
     // Create a bin
-    await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
-
-    const bin = page.locator('[data-bin-id]').first();
+    const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Check accessible label contains dimension info
     const ariaLabel = await bin.getAttribute('aria-label');
@@ -337,14 +308,11 @@ test.describe('Keyboard Navigation', () => {
 
   test('selected state is announced via aria-pressed', async ({ page }) => {
     // Create a bin
-    await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
-
-    const bin = page.locator('[data-bin-id]').first();
+    const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Clear any auto-selection first
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(100);
+    await waitForNoSelection(page);
 
     // Initially not selected
     const initialPressed = await bin.getAttribute('aria-pressed');
@@ -352,30 +320,23 @@ test.describe('Keyboard Navigation', () => {
 
     // Select the bin
     await bin.click();
-    await page.waitForTimeout(100);
 
     // aria-pressed should be true
-    await expect(bin).toHaveAttribute('aria-pressed', 'true');
+    await waitForBinSelected(bin);
 
     // Deselect
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(100);
 
     // aria-pressed should be false
-    const finalPressed = await bin.getAttribute('aria-pressed');
-    expect(finalPressed).not.toBe('true');
+    await waitForNoSelection(page);
   });
 
   test('keyboard focus ring is visible', async ({ page }) => {
     // Create a bin
-    await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
-
-    const bin = page.locator('[data-bin-id]').first();
+    const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Focus the bin via keyboard
     await bin.focus();
-    await page.waitForTimeout(100);
 
     // Check that focus is visible (the bin should have focus-visible styles)
     // We can verify by checking computed styles or just that focus was received
