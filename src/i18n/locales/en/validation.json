@@ -1,0 +1,62 @@
+{
+  "bin": {
+    "outOfBounds": "Bin is outside drawer boundaries",
+    "exceedsWidth": "Bin exceeds drawer width",
+    "exceedsDepth": "Bin exceeds drawer depth",
+    "exceedsHeight": "Bin exceeds available height",
+    "collision": "Bin collides with another bin",
+    "blockedZone": "Area is blocked by bins from higher layers",
+    "invalidLayer": "Invalid layer selected",
+    "invalidSize": "Invalid bin size",
+    "invalidPosition": "Invalid bin position"
+  },
+  "import": {
+    "invalidFormat": "Invalid data format",
+    "missingVersion": "Missing version information",
+    "missingName": "Missing layout name",
+    "invalidVersion": "Unsupported layout version",
+    "invalidLayers": "Invalid layer configuration",
+    "invalidBins": "Invalid bin data",
+    "invalidCategories": "Invalid category data",
+    "invalidDrawer": "Invalid drawer: must have width, depth, and height as numbers",
+    "drawerWidthRange": "Drawer width must be between {{min}} and {{max}}",
+    "drawerDepthRange": "Drawer depth must be between {{min}} and {{max}}",
+    "drawerHeightRange": "Drawer height must be between {{min}} and {{max}}",
+    "layerCountRange": "Must have between {{min}} and {{max}} layers",
+    "categoryCountRange": "Must have between {{min}} and {{max}} categories",
+    "layerInvalid": "Layer {{index}} is invalid: {{reason}}",
+    "layerMissingId": "Layer {{index}} is missing an ID",
+    "layerMissingName": "Layer {{index}} is missing a name",
+    "layerMissingHeight": "Layer {{index}} is missing a height",
+    "layerInvalidHeight": "Layer {{index}} has an invalid height",
+    "binOutOfBounds": "Bin {{index}} is out of bounds",
+    "binInvalidLayer": "Bin {{index}} references an invalid layer",
+    "binInvalidCategory": "Bin {{index}} references an invalid category",
+    "layerHeightExceeds": "Total layer height exceeds drawer height",
+    "duplicateCategoryName": "Duplicate category name: {{name}}",
+    "duplicateLayerId": "Duplicate layer ID: {{id}}",
+    "duplicateCategoryId": "Duplicate category ID: {{id}}"
+  },
+  "layout": {
+    "notFound": "Layout not found",
+    "loadFailed": "Failed to load layout data",
+    "corrupted": "Layout data is corrupted",
+    "saveFailed": "Failed to save layout",
+    "deleteFailed": "Failed to delete layout",
+    "nameRequired": "Layout name is required",
+    "nameTooLong": "Layout name is too long (max {{max}} characters)"
+  },
+  "layer": {
+    "nameRequired": "Layer name is required",
+    "nameTooLong": "Layer name is too long (max {{max}} characters)",
+    "heightRequired": "Layer height is required",
+    "heightInvalid": "Layer height must be a positive number"
+  },
+  "category": {
+    "nameRequired": "Category name is required",
+    "nameTooLong": "Category name is too long (max {{max}} characters)",
+    "nameDuplicate": "A category with this name already exists",
+    "colorRequired": "Category color is required",
+    "colorInvalid": "Invalid color format"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "title": "Share Layout",
+  "subtitle": "Share your layout with others",
+  "createLink": "Create Share Link",
+  "copyLink": "Copy Link",
+  "deleteLink": "Delete Share Link",
+  "updateLink": "Update Share Link",
+  "linkActive": "Share link is active",
+  "linkExpired": "Share link has expired",
+  "noActiveShare": "No active share link",
+  "status": {
+    "idle": "Ready to share",
+    "sharing": "Creating share link...",
+    "updating": "Updating share...",
+    "deleting": "Removing share...",
+    "success": "Shared successfully",
+    "error": "Share failed"
+  },
+  "expiration": {
+    "title": "Link Expiration",
+    "days": "Expires in {{count}} day",
+    "days_other": "Expires in {{count}} days",
+    "option30": "30 days",
+    "option60": "60 days",
+    "option90": "90 days",
+    "option365": "1 year",
+    "expired": "Expired"
+  },
+  "errors": {
+    "rateLimited": "Too many requests. Try again in {{minutes}} minute.",
+    "rateLimited_other": "Too many requests. Try again in {{minutes}} minutes.",
+    "sizeLimit": "Layout is too large (max {{size}}). Try removing some bins.",
+    "binLimit": "Too many bins (max {{max}}). Remove some bins before sharing.",
+    "contentBlocked": "Content blocked. Please check bin labels and notes for inappropriate content.",
+    "notFound": "Share not found or has expired.",
+    "unauthorized": "Invalid delete token.",
+    "invalidExpiration": "Invalid expiration. Choose 30, 60, 90, or 365 days.",
+    "networkError": "Connection failed. Check your internet connection.",
+    "unknown": "An error occurred. Please try again."
+  },
+  "import": {
+    "title": "Import Shared Layout",
+    "loading": "Loading shared layout...",
+    "success": "Layout loaded successfully",
+    "saveToLibrary": "Save to My Layouts",
+    "viewOnly": "View Only Mode",
+    "viewOnlyHint": "This is a shared layout. Save it to make changes."
+  },
+  "banner": {
+    "viewing": "Viewing shared layout",
+    "save": "Save to My Layouts",
+    "dismiss": "Dismiss"
+  }
+}

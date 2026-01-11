@@ -1,0 +1,76 @@
+{
+  "title": "Print List",
+  "subtitle": "Bins needed for printing",
+  "empty": {
+    "noBins": "No bins to print",
+    "noBinsPlaced": "No bins placed yet",
+    "hint": "Draw bins on the grid to see them here",
+    "allInStash": "All bins are in the stash"
+  },
+  "columns": {
+    "size": "Size",
+    "dimensions": "W×D×H",
+    "quantity": "Qty",
+    "filament": "Filament",
+    "category": "Category",
+    "layer": "Layer"
+  },
+  "summary": {
+    "totalBins": "{{count}} bin total",
+    "totalBins_other": "{{count}} bins total",
+    "uniqueSizes": "{{count}} unique size",
+    "uniqueSizes_other": "{{count}} unique sizes",
+    "totalFilament": "~{{grams}}g filament",
+    "estimatedCost": "~{{cost}} estimated"
+  },
+  "split": {
+    "title": "Split for Print Bed",
+    "fits": "Fits print bed",
+    "willSplit": "Will be split into {{count}} piece for printing",
+    "willSplit_other": "Will be split into {{count}} pieces for printing",
+    "exceeds": "Exceeds print bed",
+    "exceedsHint": "This bin is too large for your print bed",
+    "splitPreview": "Split Preview",
+    "showSplitLines": "Show split lines"
+  },
+  "export": {
+    "title": "Export Print List",
+    "copyTsv": "Copy as TSV",
+    "copyTsvHint": "Copy as tab-separated values for spreadsheets",
+    "copied": "Copied to clipboard",
+    "downloadCsv": "Download CSV",
+    "downloadJson": "Download JSON"
+  },
+  "settings": {
+    "title": "Print Settings",
+    "printBedSize": "Print Bed Size",
+    "printBedHint": "Maximum dimension for your 3D printer",
+    "gridUnit": "Grid Unit",
+    "gridUnitHint": "Size of one grid unit in mm",
+    "heightUnit": "Height Unit",
+    "heightUnitHint": "Height of one height unit in mm",
+    "filamentDensity": "Filament Density",
+    "filamentCost": "Filament Cost"
+  },
+  "filter": {
+    "title": "Filter",
+    "all": "All Bins",
+    "byLayer": "By Layer",
+    "byCategory": "By Category",
+    "oversizedOnly": "Oversized Only"
+  },
+  "sort": {
+    "title": "Sort",
+    "bySize": "By Size",
+    "byQuantity": "By Quantity",
+    "byFilament": "By Filament",
+    "ascending": "Ascending",
+    "descending": "Descending"
+  },
+  "warnings": {
+    "oversized": "{{count}} bin exceeds print bed size",
+    "oversized_other": "{{count}} bins exceed print bed size",
+    "splitRequired": "Splitting required for {{count}} bin",
+    "splitRequired_other": "Splitting required for {{count}} bins"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "layout": {
+    "created": "New layout created",
+    "deleted": "Layout deleted",
+    "saved": "Saved \"{{name}}\" to your layouts",
+    "loadFailed": "Failed to load: {{message}}",
+    "switched": "Switched to \"{{name}}\"",
+    "imported": "Layout imported successfully",
+    "exported": "Layout exported",
+    "duplicated": "Layout duplicated",
+    "renamed": "Layout renamed"
+  },
+  "bin": {
+    "deleted": "Deleted {{count}} bin",
+    "deleted_other": "Deleted {{count}} bins",
+    "duplicated": "Duplicated {{count}} bin",
+    "duplicated_other": "Duplicated {{count}} bins",
+    "movedToStaging": "Moved to stash",
+    "movedToLayer": "Moved to {{layer}}",
+    "created": "Bin created",
+    "resized": "Bin resized",
+    "noSpace": "No space available for duplication"
+  },
+  "category": {
+    "created": "Category created",
+    "deleted": "Category deleted",
+    "renamed": "Category renamed",
+    "inUse": "{{count}} bin uses \"{{name}}\". Reassign first.",
+    "inUse_other": "{{count}} bins use \"{{name}}\". Reassign first.",
+    "cannotDeleteLast": "Cannot delete the last category",
+    "limitReached": "Maximum {{max}} categories allowed"
+  },
+  "layer": {
+    "created": "Layer created",
+    "deleted": "Layer deleted",
+    "renamed": "Layer renamed",
+    "cannotDeleteLast": "Cannot delete the last layer",
+    "cannotDeleteWithBins": "Move or delete bins on this layer first",
+    "limitReached": "Maximum {{max}} layers allowed"
+  },
+  "clipboard": {
+    "copied": "Copied to clipboard",
+    "copyFailed": "Failed to copy to clipboard",
+    "linkCopied": "Link copied to clipboard"
+  },
+  "share": {
+    "linkCopied": "Share link copied!",
+    "created": "Share link created",
+    "updated": "Share link updated",
+    "deleted": "Share link deleted",
+    "failed": "Failed to share: {{message}}",
+    "loadFailed": "Failed to load shared layout: {{message}}"
+  },
+  "fill": {
+    "completed": "Filled with {{count}} bin",
+    "completed_other": "Filled with {{count}} bins",
+    "noGaps": "No gaps to fill",
+    "cancelled": "Fill cancelled"
+  },
+  "app": {
+    "updating": "Updating to latest version...",
+    "updateReady": "Update ready. Refresh to apply.",
+    "offline": "You are offline",
+    "online": "Back online"
+  },
+  "error": {
+    "generic": "An error occurred",
+    "network": "Network error. Check your connection.",
+    "storage": "Storage error. Try clearing browser data."
+  }
+}

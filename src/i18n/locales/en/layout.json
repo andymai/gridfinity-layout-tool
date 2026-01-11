@@ -1,0 +1,106 @@
+{
+  "drawer": {
+    "title": "Drawer Settings",
+    "width": "Drawer Width",
+    "depth": "Drawer Depth",
+    "height": "Drawer Height",
+    "gridUnit": "Grid Unit",
+    "heightUnit": "Height Unit"
+  },
+  "layer": {
+    "title": "Layers",
+    "add": "Add Layer",
+    "delete": "Delete Layer",
+    "rename": "Rename Layer",
+    "moveUp": "Move Layer Up",
+    "moveDown": "Move Layer Down",
+    "height": "Layer Height",
+    "minHeight": "Minimum Height",
+    "defaultName": "Layer {{number}}",
+    "selectLayer": "Select Layer",
+    "viewMode": {
+      "single": "Single Layer",
+      "all": "All Layers"
+    }
+  },
+  "category": {
+    "title": "Categories",
+    "add": "Add Category",
+    "delete": "Delete Category",
+    "rename": "Rename Category",
+    "changeColor": "Change Color",
+    "defaultName": "Category {{number}}",
+    "selectCategory": "Select Category",
+    "uncategorized": "Uncategorized",
+    "paint": "Paint Mode",
+    "paintHint": "Click or drag to paint bins with selected category"
+  },
+  "bin": {
+    "title": "Bin",
+    "titlePlural": "Bins",
+    "label": "Label",
+    "notes": "Notes",
+    "clearanceHeight": "Clearance Height",
+    "clearanceHint": "Space needed above bin",
+    "position": "Position",
+    "size": "Size",
+    "dimensions": "{{width}} × {{depth}} × {{height}}",
+    "selected": "{{count}} bin selected",
+    "selected_other": "{{count}} bins selected",
+    "noSelection": "No bin selected",
+    "multiSelection": "Multiple bins selected",
+    "dragToCreate": "Drag to create a bin",
+    "clickToSelect": "Click to select"
+  },
+  "staging": {
+    "title": "Stash",
+    "hint": "Displaced bins appear here",
+    "empty": "Stash is empty",
+    "dragToGrid": "Drag bins back to grid",
+    "binCount": "{{count}} bin in stash",
+    "binCount_other": "{{count}} bins in stash"
+  },
+  "library": {
+    "title": "My Layouts",
+    "newLayout": "New Layout",
+    "createLayout": "Create Layout",
+    "untitled": "Untitled layout",
+    "lastModified": "Last modified {{date}}",
+    "switchTo": "Switch to {{name}}",
+    "deleteConfirm": "Delete \"{{name}}\"?",
+    "deleteWarning": "This layout will be permanently deleted.",
+    "duplicate": "Duplicate Layout",
+    "duplicateName": "{{name}} (Copy)",
+    "import": "Import Layout",
+    "export": "Export Layout"
+  },
+  "grid": {
+    "title": "Grid",
+    "zoom": "Zoom",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "zoomReset": "Reset Zoom",
+    "zoomLevel": "{{percent}}%",
+    "pan": "Pan",
+    "fitToView": "Fit to View"
+  },
+  "fill": {
+    "title": "Fill",
+    "fillAll": "Fill All",
+    "fillGaps": "Fill Gaps",
+    "fillWithSize": "Fill with {{width}}×{{depth}} bins",
+    "confirmLarge": "This will create {{count}} bins. Continue?",
+    "maxBinsWarning": "Too many bins (max {{max}})"
+  },
+  "actions": {
+    "deleteSelected": "Delete Selected",
+    "duplicateSelected": "Duplicate Selected",
+    "moveToLayer": "Move to Layer",
+    "assignCategory": "Assign Category",
+    "nudge": "Nudge",
+    "nudgeUp": "Nudge Up",
+    "nudgeDown": "Nudge Down",
+    "nudgeLeft": "Nudge Left",
+    "nudgeRight": "Nudge Right"
+  }
+}

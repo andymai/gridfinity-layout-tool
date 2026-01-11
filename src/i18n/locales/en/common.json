@@ -1,0 +1,76 @@
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "close": "Close",
+    "edit": "Edit",
+    "duplicate": "Duplicate",
+    "add": "Add",
+    "remove": "Remove",
+    "create": "Create",
+    "rename": "Rename",
+    "copy": "Copy",
+    "paste": "Paste",
+    "export": "Export",
+    "import": "Import",
+    "clear": "Clear",
+    "reset": "Reset",
+    "apply": "Apply",
+    "done": "Done",
+    "back": "Back",
+    "next": "Next",
+    "ok": "OK"
+  },
+  "labels": {
+    "name": "Name",
+    "width": "Width",
+    "depth": "Depth",
+    "height": "Height",
+    "layer": "Layer",
+    "category": "Category",
+    "color": "Color",
+    "label": "Label",
+    "notes": "Notes",
+    "position": "Position",
+    "size": "Size",
+    "quantity": "Quantity",
+    "total": "Total",
+    "settings": "Settings"
+  },
+  "placeholders": {
+    "search": "Search...",
+    "searchShortcuts": "Search shortcuts...",
+    "enterName": "Enter name",
+    "enterLabel": "Enter label",
+    "enterNotes": "Enter notes",
+    "optional": "Optional"
+  },
+  "units": {
+    "gridUnit": "{{count}} unit",
+    "gridUnit_other": "{{count}} units",
+    "mm": "{{value}}mm",
+    "pieces": "{{count}} piece",
+    "pieces_other": "{{count}} pieces"
+  },
+  "status": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "error": "Error",
+    "success": "Success",
+    "empty": "Empty",
+    "none": "None"
+  },
+  "confirmations": {
+    "areYouSure": "Are you sure?",
+    "cannotBeUndone": "This cannot be undone.",
+    "unsavedChanges": "You have unsaved changes."
+  },
+  "errors": {
+    "unknown": "An unknown error occurred",
+    "tryAgain": "Please try again",
+    "somethingWentWrong": "Something went wrong"
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "bin": {
+    "description": "Bin {{width}} by {{depth}}",
+    "descriptionFull": "Bin {{width}} by {{depth}} by {{height}}",
+    "descriptionWithLabel": "Bin {{width}} by {{depth}}, labeled {{label}}",
+    "descriptionFullWithLabel": "Bin {{width}} by {{depth}} by {{height}}, labeled {{label}}",
+    "selected": "Selected",
+    "unselected": "Not selected",
+    "onLayer": "on {{layer}}",
+    "inCategory": "in category {{category}}",
+    "blockedBy": "Blocked by bin from {{layer}}",
+    "dragHandle": "Drag handle",
+    "resize": {
+      "handle": "Resize handle",
+      "left": "Resize left edge",
+      "right": "Resize right edge",
+      "top": "Resize top edge",
+      "bottom": "Resize bottom edge",
+      "topLeft": "Resize top-left corner",
+      "topRight": "Resize top-right corner",
+      "bottomLeft": "Resize bottom-left corner",
+      "bottomRight": "Resize bottom-right corner"
+    }
+  },
+  "grid": {
+    "main": "Main grid area",
+    "cell": "Grid cell at {{x}}, {{y}}",
+    "cellEmpty": "Empty cell at {{x}}, {{y}}",
+    "cellOccupied": "Occupied cell at {{x}}, {{y}}",
+    "drawingArea": "Drawing area",
+    "dropTarget": "Drop target"
+  },
+  "navigation": {
+    "mainContent": "Main content",
+    "sidebar": "Sidebar",
+    "layerPanel": "Layer management panel",
+    "categoryPanel": "Category panel",
+    "inspector": "Selection inspector",
+    "printList": "Print list",
+    "staging": "Stash area for displaced bins",
+    "header": "Application header",
+    "toolbar": "Toolbar"
+  },
+  "panels": {
+    "layers": "Layers panel",
+    "categories": "Categories panel",
+    "settings": "Settings panel",
+    "inspector": "Inspector panel",
+    "printList": "Print list panel",
+    "library": "Layout library panel"
+  },
+  "actions": {
+    "togglePanel": "Toggle {{panel}} panel",
+    "openPanel": "Open {{panel}} panel",
+    "closePanel": "Close {{panel}} panel",
+    "expandSection": "Expand {{section}}",
+    "collapseSection": "Collapse {{section}}",
+    "closeModal": "Close modal",
+    "closeDialog": "Close dialog",
+    "dismiss": "Dismiss",
+    "more": "More options",
+    "menu": "Menu",
+    "contextMenu": "Context menu"
+  },
+  "buttons": {
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "add": "Add",
+    "remove": "Remove",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "undo": "Undo",
+    "redo": "Redo"
+  },
+  "inputs": {
+    "nameInput": "Name input",
+    "labelInput": "Label input",
+    "notesInput": "Notes input",
+    "searchInput": "Search input",
+    "numberInput": "Number input for {{field}}",
+    "colorPicker": "Color picker for {{field}}"
+  },
+  "modals": {
+    "help": "Keyboard shortcuts help",
+    "confirm": "Confirmation dialog",
+    "layoutManager": "Layout manager",
+    "import": "Import layout",
+    "share": "Share layout",
+    "settings": "Settings"
+  },
+  "status": {
+    "loading": "Loading",
+    "saving": "Saving",
+    "saved": "Saved",
+    "error": "Error",
+    "success": "Success"
+  },
+  "announcements": {
+    "binCreated": "Bin created at {{x}}, {{y}}",
+    "binDeleted": "Bin deleted",
+    "binsDeleted": "{{count}} bins deleted",
+    "binMoved": "Bin moved to {{x}}, {{y}}",
+    "binResized": "Bin resized to {{width}} by {{depth}}",
+    "binSelected": "Bin selected",
+    "binDeselected": "Bin deselected",
+    "selectionCleared": "Selection cleared",
+    "layerChanged": "Switched to {{layer}}",
+    "categoryChanged": "Category changed to {{category}}",
+    "layoutSwitched": "Switched to layout {{name}}",
+    "zoomChanged": "Zoom level {{percent}}%",
+    "undoAction": "Undone",
+    "redoAction": "Redone"
+  },
+  "live": {
+    "polite": "Status update",
+    "assertive": "Important update"
+  }
+}
