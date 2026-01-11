@@ -107,10 +107,10 @@ test.describe('Mobile Layout', () => {
     await bottomNav.getByRole('button', { name: /bin panel/i }).click();
 
     // Inspector should open in bottom sheet showing bin details
-    // The bin size is in an h3 tag with format "1×1 Bin"
+    // The bin size is in an h2 heading with format "1×1 Bin"
     const sheet = page.locator('[role="dialog"]');
     await expect(sheet).toBeVisible({ timeout: 5000 });
-    await expect(sheet.locator('h3').filter({ hasText: /^\d×\d Bin$/ })).toBeVisible({ timeout: 5000 });
+    await expect(sheet.getByRole('heading', { name: /^\d×\d Bin$/ })).toBeVisible({ timeout: 5000 });
   });
 
   test('switching panels via escape and reopen', async ({ page }) => {

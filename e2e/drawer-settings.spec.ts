@@ -11,14 +11,20 @@ test.describe('Drawer Settings', () => {
   test('grid settings section is visible in sidebar', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    // Wait for Grid Settings section to be visible (may need time to render)
-    await expect(sidebar.getByText('Grid Settings')).toBeVisible({ timeout: 10000 });
+    // Grid Settings is at the bottom of the sidebar - scroll it into view
+    const gridSettingsHeading = sidebar.getByText('Grid Settings');
+    await gridSettingsHeading.scrollIntoViewIfNeeded();
+    await expect(gridSettingsHeading).toBeVisible({ timeout: 10000 });
 
-    // Should see all setting labels
+    // Scroll to the bottom label to ensure all settings are visible
+    const heightLabel = sidebar.getByText('1u height');
+    await heightLabel.scrollIntoViewIfNeeded();
+
+    // Now verify all setting labels are present (use exact match to avoid "Print bed: 256mm" in preferences)
     await expect(sidebar.getByText('Max height')).toBeVisible({ timeout: 5000 });
-    await expect(sidebar.getByText('Print bed')).toBeVisible({ timeout: 5000 });
+    await expect(sidebar.getByText('Print bed', { exact: true })).toBeVisible({ timeout: 5000 });
     await expect(sidebar.getByText('1 grid unit')).toBeVisible({ timeout: 5000 });
-    await expect(sidebar.getByText('1u height')).toBeVisible({ timeout: 5000 });
+    await expect(heightLabel).toBeVisible({ timeout: 5000 });
   });
 
   test('can increase max height', async ({ page }) => {
