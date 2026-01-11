@@ -110,6 +110,14 @@ export function SingleBinInspector({
           </div>
         </div>
 
+        {/* Real-world dimensions */}
+        <div className="px-3 py-2 bg-surface-secondary rounded-md">
+          <div className="text-xs text-content-tertiary mb-1">Real dimensions</div>
+          <div className="text-sm text-content-secondary">
+            {(bin.width * layout.gridUnitMm).toFixed(0)} × {(bin.depth * layout.gridUnitMm).toFixed(0)} × {(bin.height * layout.heightUnitMm).toFixed(0)} mm
+          </div>
+        </div>
+
         {/* Height control with +/- buttons */}
         <div>
           <label className={`block ${labelSize} text-content-tertiary`}>
