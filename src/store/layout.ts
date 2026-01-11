@@ -5,6 +5,7 @@ import { createDefaultLayout, generateId, STAGING_ID, CONSTRAINTS, calcMaxGridUn
 import { canPlaceBin, clamp } from '../utils/validation';
 import { fillAllWithSize, fillGaps } from '../utils/fill';
 import { checkLayerReorderCollisions } from '../utils/collision';
+import { useSettingsStore } from './settings';
 
 interface LayoutState {
   layout: Layout;
@@ -207,11 +208,14 @@ export const useLayoutStore = create<LayoutState>()(
       const remaining = layout.drawer.height - totalHeight;
       if (remaining < 1) return null;
 
+      // Get default layer height from settings
+      const defaultLayerHeight = useSettingsStore.getState().settings.defaultLayerHeight;
+
       const id = generateId();
       const newLayer: Layer = {
         id,
         name: `Layer ${layout.layers.length + 1}`,
-        height: Math.min(remaining, 3),
+        height: Math.min(remaining, defaultLayerHeight),
       };
 
       set(state => {
