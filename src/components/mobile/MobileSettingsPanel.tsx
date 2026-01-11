@@ -143,11 +143,13 @@ export function MobileSettingsPanel() {
         </div>
 
         {/* Real-world drawer dimensions */}
-        <div className="mt-2 px-3 py-2 bg-surface-elevated rounded-lg">
-          <div className="text-xs text-content-tertiary">Real dimensions</div>
-          <div className="text-sm text-content-secondary">
-            {layout.drawer.width * layout.gridUnitMm} × {layout.drawer.depth * layout.gridUnitMm} × {layout.drawer.height * layout.heightUnitMm} mm
-          </div>
+        <div className="mt-3 flex items-center gap-1.5 text-sm text-content-tertiary">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2" />
+          </svg>
+          <span className="tabular-nums">
+            {(layout.drawer.width * layout.gridUnitMm).toFixed(0)} × {(layout.drawer.depth * layout.gridUnitMm).toFixed(0)} × {(layout.drawer.height * layout.heightUnitMm).toFixed(0)} mm
+          </span>
         </div>
       </section>
 

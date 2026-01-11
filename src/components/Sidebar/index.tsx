@@ -120,87 +120,161 @@ export function Sidebar() {
               <CategoriesPanel />
             </div>
 
-            {/* Grid Settings */}
+            {/* Grid Size */}
             <div className="mt-auto px-4 py-4">
               <h2 className="text-sm font-semibold text-content-secondary tracking-wide mb-3">
-                Grid Settings
+                Grid Size
+              </h2>
+              <div className="text-xs text-content-secondary space-y-2">
+                {/* Width / Depth / Height in compact grid with minimal steppers */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  <div>
+                    <label className="block text-content-tertiary mb-1" title="Number of grid units wide">
+                      Width
+                    </label>
+                    <div className="flex items-center h-6">
+                      <button
+                        onClick={() => handleDrawerWidthChange(drawerWidth - 1)}
+                        disabled={drawerWidth <= 1}
+                        className="h-full px-1 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                        aria-label="Decrease width"
+                      >
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" d="M20 12H4" />
+                        </svg>
+                      </button>
+                      <span className="flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs">
+                        {drawerWidth}
+                      </span>
+                      <button
+                        onClick={() => handleDrawerWidthChange(drawerWidth + 1)}
+                        disabled={drawerWidth >= CONSTRAINTS.GRID_MAX}
+                        className="h-full px-1 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                        aria-label="Increase width"
+                      >
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-content-tertiary mb-1" title="Number of grid units deep">
+                      Depth
+                    </label>
+                    <div className="flex items-center h-6">
+                      <button
+                        onClick={() => handleDrawerDepthChange(drawerDepth - 1)}
+                        disabled={drawerDepth <= 1}
+                        className="h-full px-1 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                        aria-label="Decrease depth"
+                      >
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" d="M20 12H4" />
+                        </svg>
+                      </button>
+                      <span className="flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs">
+                        {drawerDepth}
+                      </span>
+                      <button
+                        onClick={() => handleDrawerDepthChange(drawerDepth + 1)}
+                        disabled={drawerDepth >= CONSTRAINTS.GRID_MAX}
+                        className="h-full px-1 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                        aria-label="Increase depth"
+                      >
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-content-tertiary mb-1" title="Maximum height in units">
+                      Height
+                    </label>
+                    <div className="flex items-center h-6">
+                      <button
+                        onClick={() => handleDrawerHeightChange(-1)}
+                        disabled={drawerHeight <= 1}
+                        className="h-full px-1 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                        aria-label="Decrease height"
+                      >
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" d="M20 12H4" />
+                        </svg>
+                      </button>
+                      <span className="flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs">
+                        {drawerHeight}u
+                      </span>
+                      <button
+                        onClick={() => handleDrawerHeightChange(1)}
+                        className="h-full px-1 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+                        aria-label="Increase height"
+                      >
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                {/* Real-world drawer dimensions */}
+                <div className="flex items-center justify-center gap-1 pt-1 text-content-tertiary">
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2" />
+                  </svg>
+                  <span className="tabular-nums">
+                    {(drawerWidth * gridUnitMm).toFixed(0)} × {(drawerDepth * gridUnitMm).toFixed(0)} × {(drawerHeight * heightUnitMm).toFixed(0)} mm
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Physical Units */}
+            <div className="px-4 py-4 border-t border-stroke-subtle">
+              <h2 className="text-sm font-semibold text-content-secondary tracking-wide mb-3">
+                Physical Units
               </h2>
               <div className="text-xs text-content-secondary space-y-2">
                 <div className="flex items-center justify-between">
                   <label
-                    htmlFor="gridWidth"
+                    htmlFor="gridUnit"
                     className="text-content-tertiary"
-                    title="Number of grid units wide (you can also drag the grid edge handles)"
+                    title="Size of one grid unit in mm (standard Gridfinity = 42mm)"
                   >
-                    Grid width
+                    Grid unit
                   </label>
                   <div className="flex items-center gap-1">
                     <DeferredNumberInput
-                      id="gridWidth"
-                      value={drawerWidth}
-                      onChange={handleDrawerWidthChange}
+                      id="gridUnit"
+                      value={gridUnitMm}
+                      onChange={setGridUnitMm}
                       min={1}
-                      max={CONSTRAINTS.GRID_MAX}
-                      className="input w-12 py-0.5 px-1 text-xs text-right"
+                      max={200}
+                      className="input w-14 py-0.5 px-1 text-xs text-right"
                     />
-                    <span className="text-content-tertiary">units</span>
+                    <span className="text-content-tertiary">mm</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <label
-                    htmlFor="gridDepth"
+                    htmlFor="heightUnit"
                     className="text-content-tertiary"
-                    title="Number of grid units deep (you can also drag the grid edge handles)"
+                    title="Height of one vertical unit in mm (standard = 7mm)"
                   >
-                    Grid depth
+                    Height unit
                   </label>
                   <div className="flex items-center gap-1">
                     <DeferredNumberInput
-                      id="gridDepth"
-                      value={drawerDepth}
-                      onChange={handleDrawerDepthChange}
+                      id="heightUnit"
+                      value={heightUnitMm}
+                      onChange={setHeightUnitMm}
                       min={1}
-                      max={CONSTRAINTS.GRID_MAX}
-                      className="input w-12 py-0.5 px-1 text-xs text-right"
+                      max={50}
+                      className="input w-14 py-0.5 px-1 text-xs text-right"
                     />
-                    <span className="text-content-tertiary">units</span>
+                    <span className="text-content-tertiary">mm</span>
                   </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span
-                    className="text-content-tertiary"
-                    title="Maximum height available for all layers (in height units)"
-                  >
-                    Max height
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => handleDrawerHeightChange(-1)}
-                      disabled={drawerHeight <= 1}
-                      className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                      aria-label="Decrease max height"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                      </svg>
-                    </button>
-                    <span className="tabular-nums min-w-[28px] text-center text-content-secondary">
-                      {drawerHeight}u
-                    </span>
-                    <button
-                      onClick={() => handleDrawerHeightChange(1)}
-                      className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content transition-colors"
-                      aria-label="Increase max height"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {/* Real-world drawer dimensions */}
-                <div className="pt-1 text-content-disabled text-right">
-                  = {drawerWidth * gridUnitMm} × {drawerDepth * gridUnitMm} × {drawerHeight * heightUnitMm} mm
                 </div>
                 <div className="flex items-center justify-between">
                   <label
@@ -219,46 +293,6 @@ export function Sidebar() {
                       max={500}
                       step={10}
                       className="input w-14 py-0.5 px-1 text-xs text-right"
-                    />
-                    <span className="text-content-tertiary">mm</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label
-                    htmlFor="gridUnit"
-                    className="text-content-tertiary"
-                    title="Size of one grid unit in mm (standard Gridfinity = 42mm)"
-                  >
-                    1 grid unit
-                  </label>
-                  <div className="flex items-center gap-1">
-                    <DeferredNumberInput
-                      id="gridUnit"
-                      value={gridUnitMm}
-                      onChange={setGridUnitMm}
-                      min={1}
-                      max={200}
-                      className="input w-12 py-0.5 px-1 text-xs text-right"
-                    />
-                    <span className="text-content-tertiary">mm</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label
-                    htmlFor="heightUnit"
-                    className="text-content-tertiary"
-                    title="Height of one vertical unit in mm (standard = 7mm)"
-                  >
-                    1u height
-                  </label>
-                  <div className="flex items-center gap-1">
-                    <DeferredNumberInput
-                      id="heightUnit"
-                      value={heightUnitMm}
-                      onChange={setHeightUnitMm}
-                      min={1}
-                      max={50}
-                      className="input w-12 py-0.5 px-1 text-xs text-right"
                     />
                     <span className="text-content-tertiary">mm</span>
                   </div>
