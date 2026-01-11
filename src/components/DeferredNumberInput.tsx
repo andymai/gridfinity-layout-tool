@@ -8,6 +8,7 @@ interface DeferredNumberInputProps {
   step?: number;
   className?: string;
   id?: string;
+  'aria-label'?: string;
 }
 
 /**
@@ -22,23 +23,29 @@ export function DeferredNumberInput({
   step,
   className,
   id,
+  'aria-label': ariaLabel,
 }: DeferredNumberInputProps) {
   const [localValue, setLocalValue] = useState(String(value));
 
+  // Format a number for display (show decimal only if fractional)
+  const formatValue = (val: number) => val % 1 === 0 ? String(val) : val.toFixed(1);
+
   // Sync local state when external value changes (e.g., from undo/redo)
+  // This is intentional: we need to reset local input state when the controlled value changes
   useEffect(() => {
-    setLocalValue(String(value));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Legitimate sync with controlled prop
+    setLocalValue(formatValue(value));
   }, [value]);
 
   const commit = useCallback(() => {
-    const parsed = parseInt(localValue, 10);
+    const parsed = parseFloat(localValue);
     if (!isNaN(parsed)) {
       const clamped = Math.max(min, Math.min(max, parsed));
       onChange(clamped);
-      setLocalValue(String(clamped));
+      setLocalValue(formatValue(clamped));
     } else {
       // Invalid input - reset to current value
-      setLocalValue(String(value));
+      setLocalValue(formatValue(value));
     }
   }, [localValue, min, max, onChange, value]);
 
@@ -47,7 +54,7 @@ export function DeferredNumberInput({
       commit();
       e.currentTarget.blur();
     } else if (e.key === 'Escape') {
-      setLocalValue(String(value));
+      setLocalValue(formatValue(value));
       e.currentTarget.blur();
     }
   };
@@ -58,12 +65,14 @@ export function DeferredNumberInput({
       type="number"
       value={localValue}
       onChange={(e) => setLocalValue(e.target.value)}
+      onFocus={(e) => e.target.select()}
       onBlur={commit}
       onKeyDown={handleKeyDown}
       min={min}
       max={max}
       step={step}
       className={className}
+      aria-label={ariaLabel}
     />
   );
 }

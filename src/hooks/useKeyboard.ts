@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction } from '../store';
+import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction, useToastStore } from '../store';
 import { canPlaceBin } from '../utils/validation';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '../constants';
 import { useGridNavigation } from './useGridNavigation';
@@ -63,6 +63,7 @@ export function useKeyboard() {
   const toggleHalfBinMode = useUIStore(state => state.toggleHalfBinMode);
 
   const setShowLayoutManager = useLibraryStore(state => state.setShowLayoutManager);
+  const addToast = useToastStore(state => state.addToast);
 
   // Grid navigation hook for spatial arrow key navigation
   const { handleNavigationKey } = useGridNavigation();
@@ -145,6 +146,51 @@ export function useKeyboard() {
         if (newIds.length > 0) {
           setSelectedBins(newIds);
         }
+      });
+      return;
+    }
+
+    // Rotate selected bin (R) - swap width and depth
+    if (key.toLowerCase() === SHORTCUTS.ROTATE && !ctrlOrMeta && selectedBinIds.length === 1) {
+      e.preventDefault();
+      const bin = layout.bins.find(b => b.id === selectedBinIds[0]);
+      if (!bin || bin.layerId === STAGING_ID) return;
+
+      // Check if rotated bin would fit (swap width and depth)
+      const rotatedRect = {
+        x: bin.x,
+        y: bin.y,
+        width: bin.depth,  // Swapped
+        depth: bin.width,  // Swapped
+        height: bin.height,
+        clearanceHeight: bin.clearanceHeight,
+      };
+
+      const validation = canPlaceBin(rotatedRect, bin.layerId, layout, bin.id);
+
+      if (!validation.valid) {
+        // Show appropriate error message based on reason
+        let message = 'Cannot rotate bin';
+        switch (validation.reason) {
+          case 'exceeds_width':
+          case 'exceeds_depth':
+          case 'out_of_bounds':
+            message = 'Cannot rotate: bin would exceed drawer bounds';
+            break;
+          case 'collision':
+            message = 'Cannot rotate: would collide with another bin';
+            break;
+          case 'blocked_zone':
+            message = 'Cannot rotate: space is blocked by a bin below';
+            break;
+        }
+        addToast(message, 'error');
+        return;
+      }
+
+      // Rotation is valid, perform it
+      execute(() => {
+        updateBin(bin.id, { width: bin.depth, depth: bin.width });
       });
       return;
     }
@@ -358,7 +404,7 @@ export function useKeyboard() {
       }
       return;
     }
-  }, [selectedBinIds, focusedBinId, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, activeLayerId, setActiveLayer, showQuickLabel, activeCategoryId, setActiveCategory, toggleHalfBinMode, setShowLayoutManager]);
+  }, [selectedBinIds, focusedBinId, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, activeLayerId, setActiveLayer, showQuickLabel, activeCategoryId, setActiveCategory, toggleHalfBinMode, setShowLayoutManager, addToast]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

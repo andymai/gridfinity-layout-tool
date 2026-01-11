@@ -1,9 +1,9 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
-import { calcMaxGridUnits } from '../../constants';
+import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '../../store';
+import { calcMaxGridUnits, STAGING_ID } from '../../constants';
 import { getLayerZStart } from '../../utils/collision';
-import { clamp } from '../../utils/validation';
+import { clamp, canPlaceBin } from '../../utils/validation';
 import type { Bin, Category, Layer, Layout } from '../../types';
 
 export type BinField = 'width' | 'depth' | 'height' | 'clearanceHeight' | 'category' | 'label' | 'notes';
@@ -45,6 +45,7 @@ export interface UseBinInspectorReturn {
   cancelDelete: () => void;
   moveToStaging: () => void;
   clearSelection: () => void;
+  rotateBin: () => boolean;
 
   // Confirmation state
   deleteConfirmState: ConfirmDeleteState | null;
@@ -263,6 +264,53 @@ export function useBinInspector(): UseBinInspectorReturn {
     setSelectedBins([]);
   }, [setSelectedBins]);
 
+  // Get toast store for error messages
+  const addToast = useToastStore((state) => state.addToast);
+
+  // Rotate bin (swap width and depth)
+  // Returns true if rotation succeeded, false if blocked by collision
+  const rotateBin = useCallback(() => {
+    if (!bin || bin.layerId === STAGING_ID) return false;
+
+    // Check if rotated bin would fit (swap width and depth)
+    const rotatedRect = {
+      x: bin.x,
+      y: bin.y,
+      width: bin.depth,  // Swapped
+      depth: bin.width,  // Swapped
+      height: bin.height,
+      clearanceHeight: bin.clearanceHeight,
+    };
+
+    const validation = canPlaceBin(rotatedRect, bin.layerId, layout, bin.id);
+
+    if (!validation.valid) {
+      // Show appropriate error message based on reason
+      let message = 'Cannot rotate bin';
+      switch (validation.reason) {
+        case 'exceeds_width':
+        case 'exceeds_depth':
+        case 'out_of_bounds':
+          message = 'Cannot rotate: bin would exceed drawer bounds';
+          break;
+        case 'collision':
+          message = 'Cannot rotate: would collide with another bin';
+          break;
+        case 'blocked_zone':
+          message = 'Cannot rotate: space is blocked by a bin below';
+          break;
+      }
+      addToast(message, 'error');
+      return false;
+    }
+
+    // Rotation is valid, perform it
+    execute(() => {
+      updateBin(bin.id, { width: bin.depth, depth: bin.width });
+    });
+    return true;
+  }, [bin, layout, execute, updateBin, addToast]);
+
   return {
     // Selection state
     selectedBins,
@@ -286,6 +334,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     cancelDelete,
     moveToStaging,
     clearSelection,
+    rotateBin,
 
     // Confirmation state
     deleteConfirmState,
