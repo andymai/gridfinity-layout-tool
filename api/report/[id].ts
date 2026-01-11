@@ -1,7 +1,7 @@
 import { put, head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { checkRateLimit, getClientIP } from '../lib/rateLimit';
-import { REPORT_THRESHOLD } from '../lib/contentFilter';
+import { checkRateLimit, getClientIP } from '../lib/rateLimit.js';
+import { REPORT_THRESHOLD } from '../lib/contentFilter.js';
 
 interface ShareMetadata {
   deleteTokenHash: string;
@@ -42,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     // Rate limiting
-    const clientIP = getClientIP(req as unknown as Request);
+    const clientIP = getClientIP(req);
     const rateLimit = await checkRateLimit(clientIP, 'report');
 
     if (!rateLimit.allowed) {

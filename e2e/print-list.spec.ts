@@ -1,4 +1,12 @@
-import { test, expect, waitForAppReady, drawBinOnGrid, getSidebar } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  drawBinOnGrid,
+  getSidebar,
+  waitForBinCount,
+  waitForBinSelected,
+} from './fixtures';
 
 test.describe('Print List', () => {
   test.beforeEach(async ({ page }) => {
@@ -21,7 +29,6 @@ test.describe('Print List', () => {
   test('shows bins in bin list after creation', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(300);
 
     // Bin List section should show the bin
     const binList = page.getByRole('heading', { name: /bin list/i });
@@ -35,9 +42,7 @@ test.describe('Print List', () => {
   test('groups identical bins together', async ({ page }) => {
     // Create two bins of the same size
     await drawBinOnGrid(page, 50, 50, 80, 80);
-    await page.waitForTimeout(200);
     await drawBinOnGrid(page, 150, 50, 180, 80);
-    await page.waitForTimeout(200);
 
     // Should show "×2" for the grouped bins
     const groupCount = page.getByText(/×2/);
@@ -47,7 +52,6 @@ test.describe('Print List', () => {
   test('shows filament estimate', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(300);
 
     // Should show filament estimate (contains "m" for meters)
     const filamentEstimate = page.getByText(/\d+\.?\d*\s*m/);
@@ -61,11 +65,12 @@ test.describe('Print List', () => {
     const printBedInput = sidebar.locator('input#printBedSize');
     await printBedInput.fill('80');
     await printBedInput.blur();
-    await page.waitForTimeout(200);
+
+    // Wait for setting to apply
+    await expect(printBedInput).toHaveValue('80');
 
     // Create a large bin that exceeds print bed
     await drawBinOnGrid(page, 50, 50, 250, 250);
-    await page.waitForTimeout(300);
 
     // Should show "Split" indicator
     const splitIndicator = page.getByText(/split/i);
@@ -75,7 +80,6 @@ test.describe('Print List', () => {
   test('bin list can be collapsed', async ({ page }) => {
     // Create a bin so bin list has content
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(300);
 
     // Find Bin List header button (contains the heading)
     const binListButton = page.locator('button').filter({
@@ -89,11 +93,9 @@ test.describe('Print List', () => {
 
     // Toggle collapse
     await binListButton.click();
-    await page.waitForTimeout(200);
 
     // State should have changed
-    const newState = await binListButton.getAttribute('aria-expanded');
-    expect(newState).toBe('false');
+    await expect(binListButton).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('copy TSV button works', async ({ page, context }) => {
@@ -102,7 +104,6 @@ test.describe('Print List', () => {
 
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(300);
 
     // Find copy button by aria-label
     const copyButton = page.getByRole('button', { name: /copy.*tsv/i });
@@ -110,7 +111,6 @@ test.describe('Print List', () => {
 
     // Click copy button
     await copyButton.click();
-    await page.waitForTimeout(300);
 
     // Button shows checkmark (success icon) after copy - look for the success-colored SVG
     const successIcon = copyButton.locator('svg.text-\\[var\\(--color-success\\)\\]');
@@ -120,9 +120,7 @@ test.describe('Print List', () => {
   test('different sized bins create separate rows', async ({ page }) => {
     // Create bins of different sizes
     await drawBinOnGrid(page, 50, 50, 80, 80);    // 1×1
-    await page.waitForTimeout(200);
     await drawBinOnGrid(page, 150, 50, 210, 110); // 2×2 (roughly)
-    await page.waitForTimeout(300);
 
     // Should see multiple size notations (e.g., "1×1" and "2×2")
     // Check that we have at least 2 bins total
@@ -133,18 +131,19 @@ test.describe('Print List', () => {
   test('stashed bins not included in print list', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(300);
 
     // Select the bin
     const bin = page.locator('[data-bin-id]').first();
     await bin.click();
-    await page.waitForTimeout(100);
+    await waitForBinSelected(bin);
 
     // Move to stash via inspector button
     const moveToStashButton = page.getByRole('button', { name: /stash|move to stash/i });
     if (await moveToStashButton.isVisible()) {
       await moveToStashButton.click();
-      await page.waitForTimeout(300);
+
+      // Wait for bin to move to stash
+      await waitForBinCount(page, 0);
 
       // Print list should be empty (stashed bins excluded)
       const emptyIndicator = page.getByText(/0 bin/i);
@@ -155,7 +154,6 @@ test.describe('Print List', () => {
   test('shows bin dimensions correctly', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(300);
 
     // Should show dimensions in format like "1×1" or "2×2"
     const dimensions = page.getByText(/\d×\d/);
@@ -165,7 +163,6 @@ test.describe('Print List', () => {
   test('shows height unit in print list', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(300);
 
     // Should show height with "u" suffix (e.g., "3u")
     const heightDisplay = page.getByText(/\du/);
@@ -175,9 +172,7 @@ test.describe('Print List', () => {
   test('print list updates when bin deleted', async ({ page }) => {
     // Create two bins
     await drawBinOnGrid(page, 50, 50, 80, 80);
-    await page.waitForTimeout(200);
     await drawBinOnGrid(page, 150, 50, 180, 80);
-    await page.waitForTimeout(300);
 
     // Verify 2 bins shown
     let binCount = page.getByText(/2 bin/i);
@@ -187,7 +182,7 @@ test.describe('Print List', () => {
     const bins = page.locator('[data-bin-id]');
     await bins.first().click();
     await page.keyboard.press('Delete');
-    await page.waitForTimeout(300);
+    await waitForBinCount(page, 1);
 
     // Should now show 1 bin
     binCount = page.getByText(/1 bin/i);
@@ -197,7 +192,6 @@ test.describe('Print List', () => {
   test('bin list shows category colors', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(300);
 
     // Bin list table should have rows with category indicators
     // The table shows size, height, qty, and filament columns
@@ -218,7 +212,7 @@ test.describe('Print List', () => {
     }
 
     // Wait for bins to be rendered
-    await expect(page.locator('[data-bin-id]')).toHaveCount(3, { timeout: 5000 });
+    await waitForBinCount(page, 3);
 
     // Should show spool estimate - format is either "X%" or "X.Y spools"
     // The "Spool" label should be visible in the print list summary
@@ -228,24 +222,21 @@ test.describe('Print List', () => {
   test('labeled bins shown separately in print list', async ({ page }) => {
     // Create first bin
     await drawBinOnGrid(page, 50, 50, 80, 80);
-    await page.waitForTimeout(200);
 
     // Select and add label
     const bin = page.locator('[data-bin-id]').first();
     await bin.click();
-    await page.waitForTimeout(100);
+    await waitForBinSelected(bin);
 
     // Find label input in inspector
     const labelInput = page.getByRole('textbox', { name: /label/i });
     if (await labelInput.isVisible()) {
       await labelInput.fill('Test Bin');
       await labelInput.blur();
-      await page.waitForTimeout(200);
     }
 
     // Create identical bin (same size but no label)
     await drawBinOnGrid(page, 150, 50, 180, 80);
-    await page.waitForTimeout(300);
 
     // With labels, bins are not grouped together
     // Should show 2 bins total

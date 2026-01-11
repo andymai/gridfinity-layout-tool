@@ -1,4 +1,11 @@
-import { test, expect, waitForAppReady, drawBinOnGrid, getSidebar } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  drawBinOnGrid,
+  getSidebar,
+  waitForBinCount,
+} from './fixtures';
 
 test.describe('Drawer Settings', () => {
   test.beforeEach(async ({ page }) => {
@@ -42,13 +49,14 @@ test.describe('Drawer Settings', () => {
 
     // Click increase button
     await increaseButton.click();
-    await page.waitForTimeout(200);
 
-    // Height should have increased
-    const newHeight = await heightDisplay.textContent();
-    const initial = parseInt(initialHeight?.replace('u', '') ?? '0');
-    const updated = parseInt(newHeight?.replace('u', '') ?? '0');
-    expect(updated).toBe(initial + 1);
+    // Wait for height to change
+    await expect(async () => {
+      const newHeight = await heightDisplay.textContent();
+      const initial = parseInt(initialHeight?.replace('u', '') ?? '0');
+      const updated = parseInt(newHeight?.replace('u', '') ?? '0');
+      expect(updated).toBe(initial + 1);
+    }).toPass({ timeout: 2000 });
   });
 
   test('can decrease max height', async ({ page }) => {
@@ -59,21 +67,28 @@ test.describe('Drawer Settings', () => {
 
     // First increase height to ensure we can decrease
     await increaseButton.click();
-    await page.waitForTimeout(100);
 
     // Get the height display (sibling of decrease button)
     const heightDisplay = decreaseButton.locator('+ span');
+
+    // Wait for increase to apply then get value
+    await expect(async () => {
+      const text = await heightDisplay.textContent();
+      expect(parseInt(text?.replace('u', '') ?? '0')).toBeGreaterThan(0);
+    }).toPass({ timeout: 2000 });
+
     const beforeDecrease = await heightDisplay.textContent();
 
     // Click decrease button
     await decreaseButton.click();
-    await page.waitForTimeout(200);
 
-    // Height should have decreased
-    const afterDecrease = await heightDisplay.textContent();
-    const before = parseInt(beforeDecrease?.replace('u', '') ?? '0');
-    const after = parseInt(afterDecrease?.replace('u', '') ?? '0');
-    expect(after).toBe(before - 1);
+    // Wait for height to change
+    await expect(async () => {
+      const afterDecrease = await heightDisplay.textContent();
+      const before = parseInt(beforeDecrease?.replace('u', '') ?? '0');
+      const after = parseInt(afterDecrease?.replace('u', '') ?? '0');
+      expect(after).toBe(before - 1);
+    }).toPass({ timeout: 2000 });
   });
 
   test('max height has minimum constraint', async ({ page }) => {
@@ -86,13 +101,14 @@ test.describe('Drawer Settings', () => {
     for (let i = 0; i < 15; i++) {
       if (await decreaseButton.isDisabled()) break;
       await decreaseButton.click();
-      await page.waitForTimeout(50);
     }
 
     // After decreasing, verify height is still a positive value
-    const finalHeightText = await heightDisplay.textContent();
-    const finalHeight = parseInt(finalHeightText?.replace('u', '') ?? '0');
-    expect(finalHeight).toBeGreaterThanOrEqual(1);
+    await expect(async () => {
+      const finalHeightText = await heightDisplay.textContent();
+      const finalHeight = parseInt(finalHeightText?.replace('u', '') ?? '0');
+      expect(finalHeight).toBeGreaterThanOrEqual(1);
+    }).toPass({ timeout: 2000 });
   });
 
   test('can change print bed size', async ({ page }) => {
@@ -105,7 +121,6 @@ test.describe('Drawer Settings', () => {
     // Clear and set new value
     await printBedInput.fill('256');
     await printBedInput.blur();
-    await page.waitForTimeout(200);
 
     // Value should be updated
     await expect(printBedInput).toHaveValue('256');
@@ -121,7 +136,6 @@ test.describe('Drawer Settings', () => {
     // Clear and set new value
     await gridUnitInput.fill('50');
     await gridUnitInput.blur();
-    await page.waitForTimeout(200);
 
     // Value should be updated
     await expect(gridUnitInput).toHaveValue('50');
@@ -137,7 +151,6 @@ test.describe('Drawer Settings', () => {
     // Clear and set new value
     await heightUnitInput.fill('10');
     await heightUnitInput.blur();
-    await page.waitForTimeout(200);
 
     // Value should be updated
     await expect(heightUnitInput).toHaveValue('10');
@@ -146,19 +159,19 @@ test.describe('Drawer Settings', () => {
   test('print bed size affects max bin dimensions', async ({ page }) => {
     // Create a large bin
     await drawBinOnGrid(page, 50, 50, 200, 200);
-    await page.waitForTimeout(200);
 
     // Select the bin
     const bin = page.locator('[data-bin-id]').first();
     await bin.click();
-    await page.waitForTimeout(100);
 
     // Now set a small print bed size
     const sidebar = getSidebar(page);
     const printBedInput = sidebar.locator('input#printBedSize');
     await printBedInput.fill('60');
     await printBedInput.blur();
-    await page.waitForTimeout(200);
+
+    // Wait for setting to apply
+    await expect(printBedInput).toHaveValue('60');
 
     // If bin is larger than print bed, it should show a split warning in the inspector
     // The warning text varies, but the bin should show some indication
@@ -179,15 +192,15 @@ test.describe('Drawer Settings', () => {
     const printBedInput = sidebar.locator('input#printBedSize');
     await printBedInput.fill('180');
     await printBedInput.blur();
-    await page.waitForTimeout(100);
+    await expect(printBedInput).toHaveValue('180');
 
     const gridUnitInput = sidebar.locator('input#gridUnit');
     await gridUnitInput.fill('45');
     await gridUnitInput.blur();
-    await page.waitForTimeout(100);
+    await expect(gridUnitInput).toHaveValue('45');
 
     // Wait for auto-save
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(1500);
 
     // Reload the page
     await page.reload();
@@ -202,11 +215,9 @@ test.describe('Drawer Settings', () => {
   test('max height change affects layout', async ({ page }) => {
     // Create a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    await page.waitForTimeout(200);
 
     // Get initial bin count
-    const initialBinCount = await page.locator('[data-bin-id]').count();
-    expect(initialBinCount).toBeGreaterThanOrEqual(1);
+    await waitForBinCount(page, 1);
 
     // Increase max height several times
     const sidebar = getSidebar(page);
@@ -214,23 +225,22 @@ test.describe('Drawer Settings', () => {
 
     for (let i = 0; i < 3; i++) {
       await increaseMaxHeight.click();
-      await page.waitForTimeout(100);
     }
 
     // Verify bin is still present (max height increase shouldn't remove bins)
-    await expect(page.locator('[data-bin-id]')).toHaveCount(initialBinCount);
+    await waitForBinCount(page, 1);
 
     // Now decrease max height
     const decreaseMaxHeight = sidebar.getByRole('button', { name: /decrease max height/i });
     for (let i = 0; i < 3; i++) {
       if (await decreaseMaxHeight.isEnabled()) {
         await decreaseMaxHeight.click();
-        await page.waitForTimeout(100);
       }
     }
 
     // Bin should still be on grid (max height change with no bins taller than new height)
-    await expect(page.locator('[data-bin-id]').count()).resolves.toBeGreaterThanOrEqual(0);
+    const binCount = await page.locator('[data-bin-id]').count();
+    expect(binCount).toBeGreaterThanOrEqual(0);
   });
 
   test('grid settings inputs enforce min/max constraints', async ({ page }) => {
@@ -240,20 +250,22 @@ test.describe('Drawer Settings', () => {
     const printBedInput = sidebar.locator('input#printBedSize');
     await printBedInput.fill('10');
     await printBedInput.blur();
-    await page.waitForTimeout(200);
 
     // Value should be clamped to minimum
-    const printBedValue = await printBedInput.inputValue();
-    expect(parseInt(printBedValue)).toBeGreaterThanOrEqual(42);
+    await expect(async () => {
+      const printBedValue = await printBedInput.inputValue();
+      expect(parseInt(printBedValue)).toBeGreaterThanOrEqual(42);
+    }).toPass({ timeout: 2000 });
 
     // Test grid unit minimum (1mm)
     const gridUnitInput = sidebar.locator('input#gridUnit');
     await gridUnitInput.fill('0');
     await gridUnitInput.blur();
-    await page.waitForTimeout(200);
 
-    const gridUnitValue = await gridUnitInput.inputValue();
-    expect(parseInt(gridUnitValue)).toBeGreaterThanOrEqual(1);
+    await expect(async () => {
+      const gridUnitValue = await gridUnitInput.inputValue();
+      expect(parseInt(gridUnitValue)).toBeGreaterThanOrEqual(1);
+    }).toPass({ timeout: 2000 });
   });
 
   test('collapsing sidebar hides grid settings', async ({ page }) => {
@@ -264,14 +276,12 @@ test.describe('Drawer Settings', () => {
 
     // Collapse the sidebar
     await sidebar.getByRole('button', { name: /collapse left panel/i }).click();
-    await page.waitForTimeout(300);
 
     // Grid settings should not be visible
     await expect(sidebar.getByText('Grid Settings')).not.toBeVisible();
 
     // Expand again
     await page.getByRole('button', { name: /expand left panel/i }).click();
-    await page.waitForTimeout(300);
 
     // Grid settings should be visible again
     await expect(sidebar.getByText('Grid Settings')).toBeVisible();

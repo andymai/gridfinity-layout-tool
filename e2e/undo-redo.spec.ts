@@ -1,4 +1,17 @@
-import { test, expect, waitForAppReady, drawBinOnGrid, selectBinAt, getSidebar, selectBinSize } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  drawBinOnGrid,
+  selectBinAt,
+  getSidebar,
+  selectBinSize,
+  waitForBinCount,
+  waitForToast,
+  waitForUndoEnabled,
+  waitForRedoEnabled,
+  waitForRedoDisabled,
+} from './fixtures';
 
 test.describe('Undo/Redo Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -26,23 +39,21 @@ test.describe('Undo/Redo Flow', () => {
     await fillButton.click();
 
     // Wait for bins to be added
-    await expect(page.getByText(/added.*bins/i)).toBeVisible({ timeout: 5000 });
+    await waitForToast(page, /added.*bins/i);
 
     // Verify bins were added
     const binCount = await page.locator('[data-bin-id]').count();
     expect(binCount).toBeGreaterThan(0);
 
     // Undo button should now be enabled
-    const undoButton = page.getByRole('button', { name: /undo/i });
-    await expect(undoButton).toBeEnabled();
+    await waitForUndoEnabled(page);
 
     // Click undo
+    const undoButton = page.getByRole('button', { name: /undo/i });
     await undoButton.click();
-    await page.waitForTimeout(200);
 
     // Bins should be removed
-    const binCountAfter = await page.locator('[data-bin-id]').count();
-    expect(binCountAfter).toBe(0);
+    await waitForBinCount(page, 0);
   });
 
   test('can redo after undoing', async ({ page }) => {
@@ -51,20 +62,19 @@ test.describe('Undo/Redo Flow', () => {
     const sidebar = getSidebar(page);
     const fillButton = sidebar.getByRole('button', { name: /fill.*2.*2/i });
     await fillButton.click();
-    await expect(page.getByText(/added.*bins/i)).toBeVisible({ timeout: 5000 });
+    await waitForToast(page, /added.*bins/i);
 
     // Undo
     const undoButton = page.getByRole('button', { name: /undo/i });
     await undoButton.click();
-    await page.waitForTimeout(200);
+    await waitForBinCount(page, 0);
 
     // Redo should be enabled now
-    const redoButton = page.getByRole('button', { name: /redo/i });
-    await expect(redoButton).toBeEnabled();
+    await waitForRedoEnabled(page);
 
     // Click redo
+    const redoButton = page.getByRole('button', { name: /redo/i });
     await redoButton.click();
-    await page.waitForTimeout(200);
 
     // Bins should be back
     const binCount = await page.locator('[data-bin-id]').count();
@@ -76,16 +86,13 @@ test.describe('Undo/Redo Flow', () => {
     await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Verify bin was created
-    const binCount = await page.locator('[data-bin-id]').count();
-    expect(binCount).toBe(1);
+    await waitForBinCount(page, 1);
 
     // Press Ctrl+Z
     await page.keyboard.press('Control+z');
-    await page.waitForTimeout(200);
 
     // Bin should be removed
-    const binCountAfter = await page.locator('[data-bin-id]').count();
-    expect(binCountAfter).toBe(0);
+    await waitForBinCount(page, 0);
   });
 
   test('can redo with Ctrl+Y keyboard shortcut', async ({ page }) => {
@@ -93,40 +100,36 @@ test.describe('Undo/Redo Flow', () => {
     await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Verify bin was created
-    expect(await page.locator('[data-bin-id]').count()).toBe(1);
+    await waitForBinCount(page, 1);
 
     // Undo with Ctrl+Z
     await page.keyboard.press('Control+z');
-    await page.waitForTimeout(200);
-    expect(await page.locator('[data-bin-id]').count()).toBe(0);
+    await waitForBinCount(page, 0);
 
     // Redo with Ctrl+Y
     await page.keyboard.press('Control+y');
-    await page.waitForTimeout(200);
 
     // Bin should be back
-    expect(await page.locator('[data-bin-id]').count()).toBe(1);
+    await waitForBinCount(page, 1);
   });
 
   test('undo works for bin deletion', async ({ page }) => {
     // Draw a bin
     await drawBinOnGrid(page, 50, 50, 100, 100);
-    expect(await page.locator('[data-bin-id]').count()).toBe(1);
+    await waitForBinCount(page, 1);
 
     // Select and delete the bin
     await selectBinAt(page, 70, 70);
     await page.keyboard.press('Delete');
-    await page.waitForTimeout(200);
 
     // Bin should be deleted
-    expect(await page.locator('[data-bin-id]').count()).toBe(0);
+    await waitForBinCount(page, 0);
 
     // Undo the deletion
     await page.keyboard.press('Control+z');
-    await page.waitForTimeout(200);
 
     // Bin should be back
-    expect(await page.locator('[data-bin-id]').count()).toBe(1);
+    await waitForBinCount(page, 1);
   });
 
   test('undo works for bin movement', async ({ page }) => {
@@ -138,15 +141,13 @@ test.describe('Undo/Redo Flow', () => {
 
     // Move right
     await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(100);
+    await waitForUndoEnabled(page);
 
     // Undo the movement
     await page.keyboard.press('Control+z');
-    await page.waitForTimeout(200);
 
     // Verify undo worked by checking redo is enabled
-    const redoButton = page.getByRole('button', { name: /redo/i });
-    await expect(redoButton).toBeEnabled();
+    await waitForRedoEnabled(page);
   });
 
   test('redo is disabled after new action', async ({ page }) => {
@@ -155,16 +156,15 @@ test.describe('Undo/Redo Flow', () => {
 
     // Undo
     await page.keyboard.press('Control+z');
-    await page.waitForTimeout(200);
+    await waitForBinCount(page, 0);
 
     // Redo should be enabled
-    const redoButton = page.getByRole('button', { name: /redo/i });
-    await expect(redoButton).toBeEnabled();
+    await waitForRedoEnabled(page);
 
     // Draw another bin (new action)
     await drawBinOnGrid(page, 150, 50, 200, 100);
 
     // Redo should now be disabled (new action clears redo stack)
-    await expect(redoButton).toBeDisabled();
+    await waitForRedoDisabled(page);
   });
 });

@@ -1,4 +1,18 @@
-import { test, expect, waitForAppReady, getGridBounds, drawBinOnGrid, selectBinAt, getInspector, selectBinSize, getSidebar } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  getGridBounds,
+  drawBinOnGrid,
+  selectBinAt,
+  getInspector,
+  selectBinSize,
+  getSidebar,
+  waitForBinCount,
+  waitForToast,
+  waitForPaintModeExited,
+  waitForBinSelected,
+} from './fixtures';
 
 test.describe('Add Bins Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -16,7 +30,9 @@ test.describe('Add Bins Flow', () => {
     // Click on the grid to add a bin
     const bounds = await getGridBounds(page);
     await page.mouse.click(bounds.x + 50, bounds.y + 50);
-    await page.waitForTimeout(100);
+
+    // Wait for bin to appear
+    await waitForBinCount(page, 1);
   });
 
   test('can select a bin size from palette', async ({ page }) => {
@@ -41,7 +57,7 @@ test.describe('Add Bins Flow', () => {
     await fillButton.click();
 
     // Should see a toast notification about bins added
-    await expect(page.getByText(/added.*bins/i)).toBeVisible({ timeout: 5000 });
+    await waitForToast(page, /added.*bins/i);
   });
 
   test('shows bin inspector when bin is selected', async ({ page }) => {
@@ -52,11 +68,11 @@ test.describe('Add Bins Flow', () => {
     await fillButton.click();
 
     // Wait for bins to be added
-    await expect(page.getByText(/added.*bins/i)).toBeVisible({ timeout: 5000 });
+    await waitForToast(page, /added.*bins/i);
 
     // Exit paint mode with Escape
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(100);
+    await waitForPaintModeExited(page);
 
     // Click on the grid where a bin should be
     await selectBinAt(page, 50, 50);
@@ -69,15 +85,18 @@ test.describe('Add Bins Flow', () => {
   test('can draw a bin by dragging on grid', async ({ page }) => {
     // Make sure we're not in paint mode
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(100);
+    await waitForPaintModeExited(page);
 
     // Draw a bin
-    await drawBinOnGrid(page, 20, 20, 100, 100);
+    const bin = await drawBinOnGrid(page, 20, 20, 100, 100);
 
     // Should see a bin created - the inspector should show selection
     const inspector = getInspector(page);
     // Look for size notation like "3×3 Bin" in the inspector header
     await expect(inspector.getByRole('heading', { name: /\d×\d Bin/i })).toBeVisible({ timeout: 3000 });
+
+    // Verify the bin is selected
+    await waitForBinSelected(bin);
   });
 
   test('bin list shows placed bins', async ({ page }) => {
@@ -88,7 +107,7 @@ test.describe('Add Bins Flow', () => {
     await fillButton.click();
 
     // Wait for bins to be added
-    await expect(page.getByText(/added.*bins/i)).toBeVisible({ timeout: 5000 });
+    await waitForToast(page, /added.*bins/i);
 
     // Check the bin list section in the right panel
     const inspector = getInspector(page);
@@ -109,6 +128,6 @@ test.describe('Add Bins Flow', () => {
     await page.keyboard.press('Escape');
 
     // Paint mode indicator should be hidden
-    await expect(page.getByText(/paint.*3×3/i)).not.toBeVisible();
+    await waitForPaintModeExited(page);
   });
 });

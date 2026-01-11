@@ -1,4 +1,14 @@
-import { test, expect, waitForAppReady, selectBinSize, selectBinAt, getInspector, getSidebar } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  selectBinSize,
+  selectBinAt,
+  getInspector,
+  getSidebar,
+  waitForToast,
+  waitForPaintModeExited,
+} from './fixtures';
 
 test.describe('Layers Management Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -21,7 +31,6 @@ test.describe('Layers Management Flow', () => {
 
     if (await addLayerButton.isVisible()) {
       await addLayerButton.click();
-      await page.waitForTimeout(200);
 
       // Should see Layer 2
       await expect(sidebar.getByText('Layer 2')).toBeVisible();
@@ -35,15 +44,14 @@ test.describe('Layers Management Flow', () => {
 
     if (await addLayerButton.isVisible()) {
       await addLayerButton.click();
-      await page.waitForTimeout(200);
+      await expect(sidebar.getByText('Layer 2')).toBeVisible();
 
       // Click on Layer 1 to switch
       const layer1 = sidebar.getByRole('button', { name: /layer 1/i }).first();
       await layer1.click();
-      await page.waitForTimeout(100);
 
-      // Layer 1 should be active
-      // We can verify by checking that the active layer is shown in toolbar (for multi-layer setups)
+      // Layer 1 should be active - verify it's still visible
+      await expect(layer1).toBeVisible();
     }
   });
 
@@ -54,9 +62,9 @@ test.describe('Layers Management Flow', () => {
     const fillButton = sidebar.getByRole('button', { name: /fill.*2.*2/i });
     await fillButton.click();
 
-    await expect(page.getByText(/added.*bins/i)).toBeVisible({ timeout: 5000 });
+    await waitForToast(page, /added.*bins/i);
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(100);
+    await waitForPaintModeExited(page);
 
     // Select a bin and check its height in inspector
     await selectBinAt(page, 50, 50);
@@ -75,7 +83,6 @@ test.describe('Layers Management Flow', () => {
 
     if (await addLayerButton.isVisible()) {
       await addLayerButton.click();
-      await page.waitForTimeout(200);
 
       // The layer indicator should appear in the toolbar (shows active layer)
       // When multiple layers exist, we should see Layer 2 somewhere (in sidebar or toolbar)
@@ -90,7 +97,7 @@ test.describe('Layers Management Flow', () => {
 
     if (await addLayerButton.isVisible()) {
       await addLayerButton.click();
-      await page.waitForTimeout(200);
+      await expect(sidebar.getByText('Layer 2')).toBeVisible();
 
       // The "Show layers below" checkbox should be visible
       const showBelowCheckbox = page.getByRole('checkbox', { name: /show layers below/i });
@@ -98,7 +105,6 @@ test.describe('Layers Management Flow', () => {
 
       // Click to toggle
       await showBelowCheckbox.click();
-      await page.waitForTimeout(100);
 
       // Toggle back
       await showBelowCheckbox.click();
