@@ -208,7 +208,7 @@ export function LayoutList({
         role="listbox"
         aria-label="Available layouts"
         aria-activedescendant={sortedEntries[focusedIndex]?.id}
-        className="overflow-y-auto space-y-2 px-1 -mx-1 max-h-[calc(80vh-280px)]"
+        className="overflow-y-auto space-y-2 px-2 -mx-2 max-h-[calc(80vh-320px)]"
         onKeyDown={handleListKeyDown}
       >
         {sortedEntries.length === 0 && searchQuery && (
