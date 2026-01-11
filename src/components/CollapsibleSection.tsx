@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useId, type ReactNode } from 'react';
 
 interface CollapsibleSectionProps {
   /** Section title */
@@ -28,6 +28,7 @@ export function CollapsibleSection({
   variant = 'default',
 }: CollapsibleSectionProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const contentId = useId();
 
   const headerClass = variant === 'small'
     ? 'text-xs font-semibold text-content-tertiary uppercase tracking-wider'
@@ -41,6 +42,7 @@ export function CollapsibleSection({
           className="flex items-center gap-2 bg-transparent hover:opacity-80 transition-opacity"
           onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
+          aria-controls={contentId}
         >
           <svg
             className={`w-3.5 h-3.5 transition-transform duration-200 text-content-tertiary ${expanded ? 'rotate-0' : '-rotate-90'}`}
@@ -56,8 +58,9 @@ export function CollapsibleSection({
         {actions}
       </div>
       <div
+        id={contentId}
         className={`transition-all duration-200 overflow-hidden ${
-          expanded ? 'opacity-100 mt-3' : 'opacity-0 max-h-0'
+          expanded ? 'opacity-100 max-h-[2000px] mt-3' : 'opacity-0 max-h-0'
         }`}
       >
         {children}
