@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
+import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../store';
 import { useResponsive } from '../../hooks/useResponsive';
 import { STAGING_ID } from '../../constants';
+import { canPlaceBin } from '../../utils/validation';
 import type { Bin } from '../../types';
 
 interface BinContextMenuProps {
@@ -16,13 +17,16 @@ interface BinContextMenuProps {
 export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const layout = useLayoutStore(state => state.layout);
   const deleteBin = useLayoutStore(state => state.deleteBin);
   const moveBinToStaging = useLayoutStore(state => state.moveBinToStaging);
   const duplicateBin = useLayoutStore(state => state.duplicateBin);
+  const updateBin = useLayoutStore(state => state.updateBin);
   const setSelectedBins = useUIStore(state => state.setSelectedBins);
   const toggleMobilePanel = useUIStore(state => state.toggleMobilePanel);
   const rightPanelCollapsed = useUIStore(state => state.rightPanelCollapsed);
   const toggleRightPanel = useUIStore(state => state.toggleRightPanel);
+  const addToast = useToastStore(state => state.addToast);
 
   const { execute } = useUndoableAction();
   const { isDesktop } = useResponsive();
@@ -93,6 +97,47 @@ export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) 
     onClose();
   };
 
+  const handleRotate = () => {
+    // Check if rotated bin would fit (swap width and depth)
+    const rotatedRect = {
+      x: bin.x,
+      y: bin.y,
+      width: bin.depth,  // Swapped
+      depth: bin.width,  // Swapped
+      height: bin.height,
+      clearanceHeight: bin.clearanceHeight,
+    };
+
+    const validation = canPlaceBin(rotatedRect, bin.layerId, layout, bin.id);
+
+    if (!validation.valid) {
+      // Show appropriate error message based on reason
+      let message = 'Cannot rotate bin';
+      switch (validation.reason) {
+        case 'exceeds_width':
+        case 'exceeds_depth':
+        case 'out_of_bounds':
+          message = 'Cannot rotate: bin would exceed drawer bounds';
+          break;
+        case 'collision':
+          message = 'Cannot rotate: would collide with another bin';
+          break;
+        case 'blocked_zone':
+          message = 'Cannot rotate: space is blocked by a bin below';
+          break;
+      }
+      addToast(message, 'error');
+      onClose();
+      return;
+    }
+
+    // Rotation is valid, perform it
+    execute(() => {
+      updateBin(bin.id, { width: bin.depth, depth: bin.width });
+    });
+    onClose();
+  };
+
   // On desktop, only show Edit Properties when right panel is collapsed
   const showEditOption = !isDesktop || rightPanelCollapsed;
 
@@ -153,6 +198,18 @@ export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) 
             </svg>
             Duplicate
           </button>
+
+          {isOnGrid && (
+            <button
+              onClick={handleRotate}
+              className="w-full px-4 py-3 flex items-center gap-3 transition-colors text-content hover:bg-surface-hover"
+            >
+              <svg className="w-5 h-5 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Rotate
+            </button>
+          )}
 
           {isOnGrid && (
             <button

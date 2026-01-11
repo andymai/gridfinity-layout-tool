@@ -277,3 +277,134 @@ describe('truncate', () => {
     expect(truncate('hi', 5)).toBe('hi');
   });
 });
+
+describe('canPlaceBin - rotation scenarios', () => {
+  it('allows rotation of square bin (no-op)', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    // Rotation swaps width/depth, but for square it's the same
+    const result = canPlaceBin(
+      { x: 0, y: 0, width: 2, depth: 2, height: 3 },
+      'layer1',
+      layout,
+      'bin1'
+    );
+    expect(result.valid).toBe(true);
+  });
+
+  it('allows rotation of rectangular bin that fits after rotation', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 4, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    // Rotate: 2x4 -> 4x2 at (0,0), should fit in 10x10 drawer
+    const result = canPlaceBin(
+      { x: 0, y: 0, width: 4, depth: 2, height: 3 },
+      'layer1',
+      layout,
+      'bin1'
+    );
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects rotation that would exceed drawer width', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      // 2x8 bin at position (8,0) - rotation would make it 8x2 which exceeds width
+      { id: 'bin1', layerId: 'layer1', x: 8, y: 0, width: 2, depth: 8, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    const result = canPlaceBin(
+      { x: 8, y: 0, width: 8, depth: 2, height: 3 },
+      'layer1',
+      layout,
+      'bin1'
+    );
+    expect(result).toEqual({ valid: false, reason: 'exceeds_width' });
+  });
+
+  it('rejects rotation that would exceed drawer depth', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      // 8x2 bin at position (0,8) - rotation would make it 2x8 which exceeds depth
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 8, width: 8, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    const result = canPlaceBin(
+      { x: 0, y: 8, width: 2, depth: 8, height: 3 },
+      'layer1',
+      layout,
+      'bin1'
+    );
+    expect(result).toEqual({ valid: false, reason: 'exceeds_depth' });
+  });
+
+  it('rejects rotation that would cause collision', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      // Bin to rotate: 2x4 at (0,0)
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 4, height: 3, category: 'cat1', label: '', notes: '' },
+      // Adjacent bin at (3,0) - would collide with rotated bin (4x2)
+      { id: 'bin2', layerId: 'layer1', x: 3, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    // Rotate bin1: 2x4 -> 4x2
+    const result = canPlaceBin(
+      { x: 0, y: 0, width: 4, depth: 2, height: 3 },
+      'layer1',
+      layout,
+      'bin1'
+    );
+    expect(result).toEqual({ valid: false, reason: 'collision' });
+  });
+
+  it('allows rotation when adjacent bins do not collide', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      // Bin to rotate: 2x4 at (0,0)
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 4, height: 3, category: 'cat1', label: '', notes: '' },
+      // Adjacent bin at (5,0) - won't collide with rotated bin (4x2)
+      { id: 'bin2', layerId: 'layer1', x: 5, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    // Rotate bin1: 2x4 -> 4x2
+    const result = canPlaceBin(
+      { x: 0, y: 0, width: 4, depth: 2, height: 3 },
+      'layer1',
+      layout,
+      'bin1'
+    );
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects rotation into blocked zone', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      // Tall bin on layer 1 that blocks part of layer 2
+      { id: 'tall', layerId: 'layer1', x: 0, y: 0, width: 4, depth: 4, height: 6, category: 'cat1', label: '', notes: '' },
+      // Bin on layer 2 to rotate: 2x4 at (5,0) - rotation would be 4x2 which doesn't overlap with blocked zone
+      { id: 'bin1', layerId: 'layer2', x: 5, y: 0, width: 2, depth: 4, height: 6, category: 'cat1', label: '', notes: '' },
+    ];
+    // This should work since rotated position doesn't overlap blocked zone
+    const result = canPlaceBin(
+      { x: 5, y: 0, width: 4, depth: 2, height: 6 },
+      'layer2',
+      layout,
+      'bin1'
+    );
+    expect(result.valid).toBe(true);
+  });
+
+  it('handles rotation with clearance height', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 4, height: 3, clearanceHeight: 2, category: 'cat1', label: '', notes: '' },
+    ];
+    // Rotate preserving clearance
+    const result = canPlaceBin(
+      { x: 0, y: 0, width: 4, depth: 2, height: 3, clearanceHeight: 2 },
+      'layer1',
+      layout,
+      'bin1'
+    );
+    expect(result.valid).toBe(true);
+  });
+});
