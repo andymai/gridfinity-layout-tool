@@ -39,7 +39,6 @@ interface LayoutState {
 
   // I/O
   importLayout: (layout: Layout, layoutId?: string) => void;
-  reset: () => void;
 
   // Layout library integration
   setActiveLayoutId: (id: string | null) => void;
@@ -374,10 +373,6 @@ export const useLayoutStore = create<LayoutState>()(
 
     importLayout: (layout, layoutId) => {
       set({ layout, activeLayoutId: layoutId ?? null });
-    },
-
-    reset: () => {
-      set({ layout: createDefaultLayout(), activeLayoutId: null });
     },
 
     setActiveLayoutId: (id) => {

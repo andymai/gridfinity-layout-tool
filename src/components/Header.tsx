@@ -3,7 +3,6 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '../store';
 import { useResponsive } from '../hooks';
 import { CONSTRAINTS } from '../constants';
-import { ConfirmDialog } from './modals/ConfirmDialog';
 import { LayoutManagerModal } from './modals/LayoutManagerModal';
 
 interface HeaderProps {
@@ -13,11 +12,10 @@ interface HeaderProps {
 export function Header({ onHelpClick }: HeaderProps) {
   const { isTablet } = useResponsive();
 
-  const { layout, setName, reset } = useLayoutStore(
+  const { layout, setName } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
       setName: state.setName,
-      reset: state.reset,
     }))
   );
 
@@ -48,7 +46,6 @@ export function Header({ onHelpClick }: HeaderProps) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(layout.name);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Focus input when editing starts
@@ -188,17 +185,6 @@ export function Header({ onHelpClick }: HeaderProps) {
         </div>
 
         <button
-          onClick={() => setShowResetConfirm(true)}
-          className="btn btn-ghost btn-icon"
-          title="Reset to defaults"
-          aria-label="Reset layout to defaults"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16m4-8h12m-12 0l4-4m-4 4l4 4" />
-          </svg>
-        </button>
-
-        <button
           onClick={onHelpClick}
           className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary"
           title="Show keyboard shortcuts"
@@ -207,16 +193,6 @@ export function Header({ onHelpClick }: HeaderProps) {
           Press <kbd className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>?</kbd> for help
         </button>
       </div>
-
-      <ConfirmDialog
-        isOpen={showResetConfirm}
-        title="Reset to Defaults"
-        message="This will clear your current layout and restore all default settings. This action cannot be undone."
-        confirmText="Reset"
-        destructive
-        onConfirm={reset}
-        onCancel={() => setShowResetConfirm(false)}
-      />
 
       <LayoutManagerModal
         isOpen={showLayoutManager}
