@@ -92,25 +92,25 @@ test.describe('Mobile Layout', () => {
   test('bin panel shows selected bin details', async ({ page }) => {
     const bottomNav = getBottomNav(page);
 
-    // First create a bin
+    // First create a bin by clicking on grid
     const bounds = await getGridBounds(page);
     await page.mouse.click(bounds.x + 50, bounds.y + 50);
-    await page.waitForTimeout(200);
+
+    // Wait for bin to appear
+    const bin = page.locator('[data-bin-id]').first();
+    await expect(bin).toBeVisible({ timeout: 5000 });
 
     // Click on the bin to select it
-    const bin = page.locator('[data-bin-id]').first();
     await bin.click();
-    await page.waitForTimeout(100);
 
     // Open Bin panel via bottom nav
     await bottomNav.getByRole('button', { name: /bin panel/i }).click();
-    await page.waitForTimeout(300);
 
     // Inspector should open in bottom sheet showing bin details
     // The bin size is in an h3 tag with format "1×1 Bin"
     const sheet = page.locator('[role="dialog"]');
-    await expect(sheet).toBeVisible({ timeout: 3000 });
-    await expect(sheet.locator('h3').filter({ hasText: /^\d×\d Bin$/ })).toBeVisible();
+    await expect(sheet).toBeVisible({ timeout: 5000 });
+    await expect(sheet.locator('h3').filter({ hasText: /^\d×\d Bin$/ })).toBeVisible({ timeout: 5000 });
   });
 
   test('switching panels via escape and reopen', async ({ page }) => {

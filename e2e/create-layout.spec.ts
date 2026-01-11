@@ -59,23 +59,20 @@ test.describe('Create Layout Flow', () => {
   });
 
   test('shows help modal with keyboard shortcut', async ({ page }) => {
-    // Press ? key to open help
-    await page.keyboard.press('Shift+?');
-    await page.waitForTimeout(200);
+    // Press ? key to open help (Shift+/ on US keyboard)
+    await page.keyboard.press('?');
 
-    // Should show keyboard shortcuts modal - look for the dialog container
-    const modal = page.locator('[role="dialog"]');
-    await expect(modal).toBeVisible({ timeout: 3000 });
-
-    // Should show the modal title
-    await expect(page.getByText('Keyboard Shortcuts').first()).toBeVisible();
+    // Wait for keyboard shortcuts modal with title
+    const modal = page.locator('[role="dialog"]').filter({
+      has: page.getByRole('heading', { name: /keyboard shortcuts/i })
+    });
+    await expect(modal).toBeVisible({ timeout: 5000 });
 
     // Close modal by pressing Escape
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(100);
 
     // Modal should be hidden
-    await expect(modal).not.toBeVisible();
+    await expect(modal).not.toBeVisible({ timeout: 3000 });
   });
 
   test('persists layout to localStorage', async ({ page }) => {

@@ -215,12 +215,14 @@ test.describe('Print List', () => {
     // Create several bins to have significant filament usage
     for (let i = 0; i < 3; i++) {
       await drawBinOnGrid(page, 50 + i * 100, 50, 80 + i * 100, 80);
-      await page.waitForTimeout(200);
     }
+
+    // Wait for bins to be rendered
+    await expect(page.locator('[data-bin-id]')).toHaveCount(3, { timeout: 5000 });
 
     // Should show spool estimate (e.g., "~0.1× 1kg" or similar)
     const spoolEstimate = page.getByText(/\d+\.?\d*×.*kg/i);
-    await expect(spoolEstimate.first()).toBeVisible();
+    await expect(spoolEstimate.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('labeled bins shown separately in print list', async ({ page }) => {
