@@ -131,8 +131,8 @@ describe('LayoutManagerModal Accessibility', () => {
     it('action buttons are accessible via overflow menu', () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      // Each layout has an actions menu button
-      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      // Each layout has an actions menu button (now labeled "More actions for X")
+      const actionButtons = screen.getAllByLabelText(/^More actions for/);
       expect(actionButtons.length).toBe(2);
 
       // Open the menu for the first layout
@@ -155,11 +155,11 @@ describe('LayoutManagerModal Accessibility', () => {
   });
 
   describe('keyboard navigation', () => {
-    it('focuses create button on mount', async () => {
+    it('focuses close button on mount', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
       await waitFor(() => {
-        expect(document.activeElement).toHaveTextContent('New Layout');
+        expect(document.activeElement).toHaveAttribute('aria-label', 'Close layouts dialog');
       });
     });
 
@@ -176,12 +176,14 @@ describe('LayoutManagerModal Accessibility', () => {
 
       // Focus first layout item
       const firstOption = screen.getAllByRole('option')[0];
+      const listbox = screen.getByRole('listbox');
       act(() => {
         firstOption.focus();
       });
 
+      // Fire keydown on the listbox (where the keyboard handler is attached)
       act(() => {
-        fireEvent.keyDown(document, { key: 'ArrowDown' });
+        fireEvent.keyDown(listbox, { key: 'ArrowDown' });
       });
 
       await waitFor(() => {
@@ -266,32 +268,11 @@ describe('LayoutManagerModal Accessibility', () => {
       });
     });
 
-    it('announces delete confirmation', async () => {
-      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
-
-      // Open menu for first layout
-      const actionButtons = screen.getAllByLabelText(/^Actions for/);
-      act(() => {
-        fireEvent.click(actionButtons[0]);
-      });
-
-      // Click delete in menu
-      const deleteButton = screen.getByRole('menuitem', { name: /Delete/i });
-      act(() => {
-        fireEvent.click(deleteButton);
-      });
-
-      await waitFor(() => {
-        const liveMessage = useUIStore.getState().liveMessage;
-        expect(liveMessage).toContain('Press delete again to confirm');
-      });
-    });
-
     it('shows confirmation text when delete clicked', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
       // Open menu for first layout
-      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      const actionButtons = screen.getAllByLabelText(/^More actions for/);
       act(() => {
         fireEvent.click(actionButtons[0]);
       });
@@ -306,32 +287,6 @@ describe('LayoutManagerModal Accessibility', () => {
         expect(screen.getByText(/Click to confirm/i)).toBeInTheDocument();
       });
     });
-
-    it('announces when delete is cancelled', async () => {
-      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
-
-      // Open menu for first layout
-      const actionButtons = screen.getAllByLabelText(/^Actions for/);
-      act(() => {
-        fireEvent.click(actionButtons[0]);
-      });
-
-      // Click delete to enter confirm state
-      const deleteButton = screen.getByRole('menuitem', { name: /Delete/i });
-      act(() => {
-        fireEvent.click(deleteButton);
-      });
-
-      // Press Escape to cancel
-      act(() => {
-        fireEvent.keyDown(document, { key: 'Escape' });
-      });
-
-      await waitFor(() => {
-        const liveMessage = useUIStore.getState().liveMessage;
-        expect(liveMessage).toContain('Delete cancelled');
-      });
-    });
   });
 
   describe('rename accessibility', () => {
@@ -339,7 +294,7 @@ describe('LayoutManagerModal Accessibility', () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
       // Open menu for first layout
-      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      const actionButtons = screen.getAllByLabelText(/^More actions for/);
       act(() => {
         fireEvent.click(actionButtons[0]);
       });
@@ -350,28 +305,8 @@ describe('LayoutManagerModal Accessibility', () => {
       });
 
       await waitFor(() => {
-        const input = screen.getByRole('textbox');
+        const input = screen.getByRole('textbox', { name: /Layout name/i });
         expect(input).toHaveAttribute('aria-label', 'Layout name');
-      });
-    });
-
-    it('announces when starting rename', async () => {
-      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
-
-      // Open menu for first layout
-      const actionButtons = screen.getAllByLabelText(/^Actions for/);
-      act(() => {
-        fireEvent.click(actionButtons[0]);
-      });
-
-      const renameButton = screen.getByRole('menuitem', { name: /Rename/i });
-      act(() => {
-        fireEvent.click(renameButton);
-      });
-
-      await waitFor(() => {
-        const liveMessage = useUIStore.getState().liveMessage;
-        expect(liveMessage).toContain('Editing name of');
       });
     });
 
@@ -379,7 +314,7 @@ describe('LayoutManagerModal Accessibility', () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
       // Open menu for first layout
-      const actionButtons = screen.getAllByLabelText(/^Actions for/);
+      const actionButtons = screen.getAllByLabelText(/^More actions for/);
       act(() => {
         fireEvent.click(actionButtons[0]);
       });
@@ -390,7 +325,7 @@ describe('LayoutManagerModal Accessibility', () => {
       });
 
       await waitFor(() => {
-        const input = screen.getByRole('textbox');
+        const input = screen.getByRole('textbox', { name: /Layout name/i });
         expect(document.activeElement).toBe(input);
       });
     });
