@@ -157,7 +157,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         className={`
           relative border-2 border-dashed rounded-lg p-8 mb-4 text-center transition-colors
           ${isDragging
-            ? 'border-blue-500 bg-blue-500/10'
+            ? 'border-accent bg-accent/10'
             : 'border-stroke hover:border-stroke-subtle'
           }
         `}
@@ -174,7 +174,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         />
 
         <svg
-          className={`w-12 h-12 mx-auto mb-3 transition-colors ${isDragging ? 'text-blue-500' : 'text-content-tertiary'}`}
+          className={`w-12 h-12 mx-auto mb-3 transition-colors ${isDragging ? 'text-accent' : 'text-content-tertiary'}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -202,15 +202,15 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
       {/* Divider */}
       <div className="flex items-center gap-4 mb-4">
         <div className="flex-1 border-t border-stroke" />
-        <span className="text-content-tertiary text-sm">or paste JSON / share link</span>
+        <span className="text-content-tertiary text-sm">or paste JSON</span>
         <div className="flex-1 border-t border-stroke" />
       </div>
 
       {/* Textarea */}
-      <div className="flex-1 flex flex-col min-h-0 mb-4">
+      <div className="flex-1 flex flex-col min-h-0 mb-4 p-0.5">
         <div className="flex items-center justify-between mb-2">
           <label htmlFor="import-json-input" className="text-sm text-content-secondary">
-            Layout JSON or share URL
+            Layout JSON
           </label>
           {jsonText && (
             <button
@@ -226,8 +226,8 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
           ref={textareaRef}
           value={jsonText}
           onChange={handleTextChange}
-          placeholder='{"version": "1.0", "name": "My Layout", ...} or https://...#share=...'
-          className="flex-1 bg-surface text-content p-3 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border border-stroke min-h-[120px]"
+          placeholder='{"version": "1.0", "name": "My Layout", ...}'
+          className="flex-1 bg-surface text-content p-3 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent border border-stroke min-h-[120px]"
         />
       </div>
 
@@ -275,7 +275,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         <button
           onClick={handleImport}
           disabled={!validLayout}
-          className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
+          className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:bg-surface-secondary disabled:cursor-not-allowed disabled:text-content-tertiary text-white rounded-lg transition-colors text-sm font-medium"
         >
           Import Layout
         </button>
