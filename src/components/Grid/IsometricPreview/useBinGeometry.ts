@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 
 // Wall thickness for open-top bins
@@ -343,10 +343,20 @@ export function createBinGeometry({ width, depth, height, baseColor }: BinGeomet
 /**
  * React hook wrapper for createBinGeometry with memoization.
  * Use this in React components for automatic caching.
+ * Properly disposes of geometry when dependencies change or on unmount.
  */
 export function useBinGeometry({ width, depth, height, baseColor }: BinGeometryProps): THREE.BufferGeometry {
-  return useMemo(
+  const geometry = useMemo(
     () => createBinGeometry({ width, depth, height, baseColor }),
     [width, depth, height, baseColor]
   );
+
+  // Cleanup geometry on dependency change or unmount
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
+
+  return geometry;
 }
