@@ -33,7 +33,6 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
   const [editingName, setEditingName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
-  const [shareMenuId, setShareMenuId] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
   const currentLayout = useLayoutStore((state) => state.layout);
@@ -183,10 +182,6 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
     }
   }, [confirmDeleteId, deleteLayout, library.entries, announceToScreenReader]);
 
-  const handleShareClick = useCallback((id: string) => {
-    setShareMenuId(shareMenuId === id ? null : id);
-  }, [shareMenuId]);
-
   const handleDownload = useCallback((id: string) => {
     const entry = library.entries.find(e => e.id === id);
     // For active layout, use current state; otherwise load from storage
@@ -195,7 +190,6 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
       downloadLayoutAsFile(layout, `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`);
       announceToScreenReader('Layout downloaded');
     }
-    setShareMenuId(null);
   }, [activeLayoutId, currentLayout, library.entries, announceToScreenReader]);
 
   const handleCopyLink = useCallback(async (id: string) => {
@@ -211,7 +205,6 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         setTimeout(() => setCopiedLink(false), 2000);
       }
     }
-    setShareMenuId(null);
   }, [activeLayoutId, currentLayout, library.entries, announceToScreenReader]);
 
   const formatDate = (timestamp: number) => {
@@ -380,57 +373,35 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
                     role="group"
                     aria-label={`Actions for ${entry.name}`}
                   >
-                    {/* Share Button with Dropdown */}
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleShareClick(entry.id);
-                        }}
-                        className="p-2 text-content-secondary hover:text-content hover:bg-surface rounded transition-colors"
-                        title="Share"
-                        aria-label={`Share ${entry.name}`}
-                        aria-expanded={shareMenuId === entry.id}
-                        aria-haspopup="menu"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                        </svg>
-                      </button>
-                      {shareMenuId === entry.id && (
-                        <div
-                          className="absolute right-0 bottom-full mb-1 w-48 bg-surface-elevated border border-stroke rounded-lg shadow-lg py-1 z-10"
-                          role="menu"
-                        >
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCopyLink(entry.id);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
-                            role="menuitem"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
-                            {copiedLink ? 'Copied!' : 'Copy Link'}
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDownload(entry.id);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
-                            role="menuitem"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Download JSON
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    {/* Copy Link Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyLink(entry.id);
+                      }}
+                      className="p-2 text-content-secondary hover:text-content hover:bg-surface rounded transition-colors"
+                      title={copiedLink ? 'Copied!' : 'Copy share link'}
+                      aria-label={`Copy share link for ${entry.name}`}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    </button>
+
+                    {/* Download Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownload(entry.id);
+                      }}
+                      className="p-2 text-content-secondary hover:text-content hover:bg-surface rounded transition-colors"
+                      title="Download JSON"
+                      aria-label={`Download ${entry.name} as JSON`}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                    </button>
 
                     {/* Rename Button */}
                     <button
