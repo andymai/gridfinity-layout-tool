@@ -769,6 +769,10 @@ export function Grid() {
           // Don't deselect if clicking on buttons, inputs, or bin elements
           if (!target.closest('button') && !target.closest('input') && !target.closest('[data-bin-id]')) {
             clearSelection();
+            // Exit paint mode when clicking off the grid
+            if (paintSize) {
+              setPaintSize(null);
+            }
           }
         }}
       >

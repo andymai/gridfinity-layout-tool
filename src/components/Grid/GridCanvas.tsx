@@ -79,8 +79,14 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
     // Ignore non-primary pointer (second finger) - allow two-finger pan
     if (!e.isPrimary) return;
 
-    // In paint mode, intercept all clicks to start paint interaction
+    // In paint mode, intercept clicks on empty space to start paint interaction
+    // But allow clicks on bins to fall through (to select the bin and exit paint mode)
     if (paintSize) {
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-bin-id]')) {
+        // Click is on a bin - don't intercept, let it select the bin
+        return;
+      }
       const coords = getGridCoords(e.clientX, e.clientY);
       if (coords) {
         e.preventDefault();
