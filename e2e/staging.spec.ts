@@ -281,4 +281,98 @@ test.describe('Staging Area (Stash)', () => {
     await expect(page.locator('[data-bin-id]')).toHaveCount(1);
     await expect(getStashContainer(page)).not.toBeVisible();
   });
+
+  test('can rotate stashed bin with rotate button', async ({ page }) => {
+    // Create a 2x3 bin (non-square)
+    await drawBinOnGrid(page, 50, 50, 114, 146);
+    await page.waitForTimeout(200);
+
+    // Move to stash
+    const gridBin = page.locator('[data-bin-id]').first();
+    await gridBin.click();
+    await page.waitForTimeout(100);
+
+    const inspector = page.locator('aside').last();
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Hover over the stashed bin to reveal rotate button
+    const stagingBin = page.locator('[data-staging-bin-id]').first();
+    await stagingBin.hover();
+    await page.waitForTimeout(100);
+
+    // Get dimensions before rotation
+    const textBefore = await stagingBin.textContent();
+    expect(textBefore).toContain('2×3');
+
+    // Click the rotate button
+    const rotateButton = stagingBin.getByRole('button', { name: /rotate/i });
+    await expect(rotateButton).toBeVisible();
+    await rotateButton.click();
+    await page.waitForTimeout(200);
+
+    // Dimensions should now be swapped
+    const textAfter = await stagingBin.textContent();
+    expect(textAfter).toContain('3×2');
+  });
+
+  test('rotate button is hidden for square bins', async ({ page }) => {
+    // Create a 2x2 square bin
+    await drawBinOnGrid(page, 50, 50, 114, 114);
+    await page.waitForTimeout(200);
+
+    // Move to stash
+    const gridBin = page.locator('[data-bin-id]').first();
+    await gridBin.click();
+    await page.waitForTimeout(100);
+
+    const inspector = page.locator('aside').last();
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Hover over the stashed bin
+    const stagingBin = page.locator('[data-staging-bin-id]').first();
+    await stagingBin.hover();
+    await page.waitForTimeout(100);
+
+    // Rotate button should NOT be visible for square bins
+    const rotateButton = stagingBin.getByRole('button', { name: /rotate/i });
+    await expect(rotateButton).not.toBeVisible();
+  });
+
+  test('undo reverts rotation', async ({ page }) => {
+    // Create a 2x3 bin
+    await drawBinOnGrid(page, 50, 50, 114, 146);
+    await page.waitForTimeout(200);
+
+    // Move to stash
+    const gridBin = page.locator('[data-bin-id]').first();
+    await gridBin.click();
+    await page.waitForTimeout(100);
+
+    const inspector = page.locator('aside').last();
+    await inspector.getByRole('button', { name: /to stash/i }).click();
+    await page.waitForTimeout(300);
+
+    // Hover and click rotate button
+    const stagingBin = page.locator('[data-staging-bin-id]').first();
+    await stagingBin.hover();
+    await page.waitForTimeout(100);
+
+    const rotateButton = stagingBin.getByRole('button', { name: /rotate/i });
+    await rotateButton.click();
+    await page.waitForTimeout(200);
+
+    // Verify rotation happened
+    const textAfter = await stagingBin.textContent();
+    expect(textAfter).toContain('3×2');
+
+    // Undo
+    await page.keyboard.press('Control+z');
+    await page.waitForTimeout(200);
+
+    // Should be back to original dimensions
+    const textUndo = await stagingBin.textContent();
+    expect(textUndo).toContain('2×3');
+  });
 });

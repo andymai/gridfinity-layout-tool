@@ -14,6 +14,7 @@ interface LayoutState {
   updateBin: (id: string, updates: Partial<Bin>) => void;
   deleteBin: (id: string) => void;
   duplicateBin: (id: string) => string | null;
+  rotateBin: (id: string) => boolean;
   moveBinToStaging: (id: string) => void;
   moveBinFromStaging: (id: string, layerId: string, x: number, y: number) => boolean;
 
@@ -154,6 +155,49 @@ export const useLayoutStore = create<LayoutState>()(
         label: bin.label,
         notes: bin.notes,
       });
+    },
+
+    rotateBin: (id) => {
+      const { layout } = get();
+      const bin = layout.bins.find(b => b.id === id);
+      if (!bin) return false;
+
+      // For staging bins, always allow rotation
+      if (bin.layerId === STAGING_ID) {
+        set(state => {
+          const b = state.layout.bins.find(b => b.id === id);
+          if (b) {
+            const temp = b.width;
+            b.width = b.depth;
+            b.depth = temp;
+          }
+        });
+        return true;
+      }
+
+      // For grid bins, check if rotated dimensions fit
+      const rotatedWidth = bin.depth;
+      const rotatedDepth = bin.width;
+
+      const result = canPlaceBin(
+        { x: bin.x, y: bin.y, width: rotatedWidth, depth: rotatedDepth, height: bin.height },
+        bin.layerId,
+        layout,
+        id // Exclude self from collision check
+      );
+
+      if (!result.valid) return false;
+
+      set(state => {
+        const b = state.layout.bins.find(b => b.id === id);
+        if (b) {
+          const temp = b.width;
+          b.width = b.depth;
+          b.depth = temp;
+        }
+      });
+
+      return true;
     },
 
     moveBinToStaging: (id) => {

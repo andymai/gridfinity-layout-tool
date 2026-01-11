@@ -6,6 +6,15 @@ import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '../constants
 import { getBinTextColors } from '../utils/color';
 import { ConfirmDialog } from './modals/ConfirmDialog';
 
+/** Rotation icon SVG for bin rotation button */
+function RotateIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+  );
+}
+
 interface PackedBin {
   id: string;
   x: number; // Position in staging grid
@@ -70,6 +79,7 @@ function packBins(bins: PackedBin[], gridWidth: number): PackedBin[] {
 export function Staging() {
   const layout = useLayoutStore(state => state.layout);
   const deleteBin = useLayoutStore(state => state.deleteBin);
+  const rotateBin = useLayoutStore(state => state.rotateBin);
   const { zoom, interaction, setInteraction, dropTarget, setDropTarget } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
@@ -128,6 +138,14 @@ export function Staging() {
       binId,
       currentCoord: null,
       valid: false,
+    });
+  };
+
+  const handleRotateBin = (binId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    execute(() => {
+      rotateBin(binId);
     });
   };
 
@@ -307,12 +325,13 @@ export function Staging() {
             const hasLabel = !!bin.label;
             const primaryText = hasLabel ? bin.label : `${bin.width}×${bin.depth}`;
             const secondaryText = hasLabel ? `${bin.width}×${bin.depth}` : null;
+            const isSquare = bin.width === bin.depth;
 
             return (
               <div
                 key={bin.id}
                 data-staging-bin-id={bin.id}
-                className={`relative flex flex-col items-center justify-center transition-all duration-150 cursor-move rounded-sm z-10 touch-none ${
+                className={`group relative flex flex-col items-center justify-center transition-all duration-150 cursor-move rounded-sm z-10 touch-none ${
                   isDragging
                     ? 'bg-transparent border-2 border-dashed border-accent pointer-events-none'
                     : 'border border-[var(--border-on-color)] shadow-sm'
@@ -325,6 +344,19 @@ export function Staging() {
                 onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
                 title={`${bin.label || 'Unlabeled'} — ${bin.width}×${bin.depth}×${bin.height}u\nDrag to place on grid`}
               >
+                {/* Rotate button - only show for non-square bins */}
+                {/* Always visible on touch devices (no hover), hidden until hover on desktop */}
+                {!isDragging && !isSquare && (
+                  <button
+                    className="absolute -top-1.5 -right-1.5 w-6 h-6 flex items-center justify-center rounded-full bg-surface-elevated border border-stroke shadow-sm transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100 hover:scale-110 hover:shadow-md focus:scale-110 focus:shadow-md"
+                    onClick={(e) => handleRotateBin(bin.id, e)}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    title="Rotate 90°"
+                    aria-label="Rotate bin 90 degrees"
+                  >
+                    <RotateIcon className="w-3.5 h-3.5 text-content-secondary" />
+                  </button>
+                )}
                 {/* Adaptive label: primary (label or dimensions) + optional secondary */}
                 {!isDragging && (
                   <div className="text-center pointer-events-none select-none overflow-hidden max-w-[95%]">

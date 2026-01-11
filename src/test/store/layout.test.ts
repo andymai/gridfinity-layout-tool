@@ -255,6 +255,195 @@ describe('layout store', () => {
     });
   });
 
+  describe('rotateBin', () => {
+    it('rotates a staging bin by swapping width and depth', () => {
+      const { addBin, rotateBin, layout } = useLayoutStore.getState();
+      const categoryId = layout.categories[0].id;
+
+      const binId = addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const result = rotateBin(binId!);
+      expect(result).toBe(true);
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.width).toBe(2);
+      expect(bin.depth).toBe(3);
+    });
+
+    it('rotates a staging bin twice to return to original dimensions', () => {
+      const { addBin, rotateBin, layout } = useLayoutStore.getState();
+      const categoryId = layout.categories[0].id;
+
+      const binId = addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 4,
+        depth: 1,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      rotateBin(binId!);
+      rotateBin(binId!);
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.width).toBe(4);
+      expect(bin.depth).toBe(1);
+    });
+
+    it('rotates a grid bin when there is space', () => {
+      const { addBin, rotateBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Add a 3x2 bin at origin (plenty of space to rotate to 2x3)
+      const binId = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const result = rotateBin(binId!);
+      expect(result).toBe(true);
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.width).toBe(2);
+      expect(bin.depth).toBe(3);
+    });
+
+    it('returns false when rotating grid bin would exceed bounds', () => {
+      const { addBin, rotateBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Add a 2x3 bin at y=5 on an 8-deep drawer (this one can rotate fine)
+      addBin({
+        layerId,
+        x: 0,
+        y: 5,
+        width: 2,
+        depth: 3,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      // Add a bin that would go out of bounds when rotated
+      const binId2 = addBin({
+        layerId,
+        x: 2,
+        y: 7,
+        width: 2,
+        depth: 1,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      // Rotating 2x1 at y=7 to 1x2 would need y+2=9, which exceeds depth 8
+      const result = rotateBin(binId2!);
+      expect(result).toBe(false);
+
+      // Original dimensions should be preserved
+      const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId2);
+      expect(bin!.width).toBe(2);
+      expect(bin!.depth).toBe(1);
+    });
+
+    it('returns false when rotating grid bin would cause collision', () => {
+      const { addBin, rotateBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Add a 3x1 bin at origin
+      const binId1 = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 1,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      // Add another bin at (0, 2) that would block rotation
+      addBin({
+        layerId,
+        x: 0,
+        y: 2,
+        width: 1,
+        depth: 1,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      // Rotating first bin from 3x1 to 1x3 would collide with bin at (0, 2)
+      const result = rotateBin(binId1!);
+      expect(result).toBe(false);
+
+      // Original dimensions should be preserved
+      const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId1);
+      expect(bin!.width).toBe(3);
+      expect(bin!.depth).toBe(1);
+    });
+
+    it('returns false for non-existent bin', () => {
+      const { rotateBin } = useLayoutStore.getState();
+
+      const result = rotateBin('nonexistent-id');
+      expect(result).toBe(false);
+    });
+
+    it('preserves bin position when rotating', () => {
+      const { addBin, rotateBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId = addBin({
+        layerId,
+        x: 2,
+        y: 3,
+        width: 2,
+        depth: 1,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      rotateBin(binId!);
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.x).toBe(2);
+      expect(bin.y).toBe(3);
+    });
+  });
+
   describe('fillLayer', () => {
     it('fills empty layer with bins of specified size', () => {
       const { fillLayer, layout } = useLayoutStore.getState();
