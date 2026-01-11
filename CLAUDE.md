@@ -66,8 +66,9 @@ if (value === null) { ... }  // not ==
 
 ### State Management (Zustand + Immer)
 
-Four stores in `src/store/`:
+Five stores in `src/store/`:
 - **layout.ts** - Layout data (bins, layers, categories, drawer settings). Uses Immer for immutable updates. Operations return `OperationResult<T>` for error handling.
+- **library.ts** - Multi-layout library management (layout entries, metadata, previews). Tracks `activeLayoutId` and provides CRUD for layout entries. Uses `computePreview()` to generate thumbnail data.
 - **ui.ts** - UI state (selection, zoom, panel visibility, interaction mode, paint mode, context menu, isometric preview state, keyboard navigation)
 - **history.ts** - Undo/redo stack (max 50 states). Use `useUndoableAction()` hook to wrap mutations.
 - **toast.ts** - Toast notification state (success/error/info, max 3 toasts)
@@ -97,6 +98,13 @@ Category → id, name, color (hex)
 ```
 
 **Coordinate System**: Grid origin (0,0) is bottom-left. `layers[0]` is bottom layer. UI displays layers reversed via `getDisplayLayers()` in `collision.ts`.
+
+**Multi-Layout Library**: The app supports multiple layouts via `LayoutLibrary`:
+```
+LayoutLibrary → activeLayoutId, settings, LayoutEntry[]
+LayoutEntry → id, name, timestamps, preview (cached metadata for thumbnails)
+```
+Each layout is stored separately in localStorage by UUID. The library index tracks metadata without loading full layout data.
 
 **Staging Area**: Bins with `layerId === STAGING_ID` (`'__staging__'`) are in the stash, not on the grid. Bins auto-move here when displaced by drawer resize or when duplication can't find adjacent space.
 
@@ -135,6 +143,7 @@ type OperationResult<T = void> =
 - `MobileLayout.tsx` - Complete mobile layout (lazy loaded)
 
 **Modals:**
+- `modals/LayoutManagerModal.tsx` - Multi-layout management (create, switch, rename, delete, duplicate)
 - `modals/HelpModal.tsx` - Keyboard shortcuts help
 - `modals/ImportModal.tsx` - Layout import dialog
 - `modals/ConfirmDialog.tsx` - Generic confirmation dialog
@@ -151,7 +160,9 @@ type OperationResult<T = void> =
 - `useInteraction.ts` - Handles all grid interactions (draw, drag, resize, paint, stagingDrag)
 - `useGridCoords.ts` - Mouse/touch → grid coordinate conversion
 - `useResponsive.ts` - Breakpoint detection (isMobile, isTablet, layoutMode)
-- `useAutoSave.ts` - Debounced localStorage persistence
+- `useAutoSave.ts` - Debounced localStorage persistence for active layout
+- `useLayoutSwitcher.ts` - Switch between layouts (save current, load new, update library)
+- `useCrossTabSync.ts` - Synchronize library state across browser tabs
 - `useKeyboard.ts` - Global keyboard shortcuts (delete, undo/redo, zoom, etc.)
 - `useKeyboardDrag.ts` - Keyboard-based bin dragging
 - `useKeyboardResize.ts` - Keyboard-based bin resizing
@@ -175,7 +186,10 @@ Five interaction modes tracked via `Interaction` union type:
 - `collision.ts` - Collision detection, blocked zones calculation, layer Z calculations, `getDisplayLayers()`
 - `fill.ts` - Bulk operations (`fillAllWithSize`, `fillGaps`)
 - `split.ts` - Print optimization: `splitBinSize()` recursively splits oversized bins, `generatePrintList()` creates print manifest with filament estimates
-- `storage.ts` - LocalStorage persistence (key: `gridfinity-layout-v1`), import with ID regeneration
+- `storage.ts` - LocalStorage persistence with multi-layout support:
+  - Library index: `gridfinity-library-v1`
+  - Per-layout data: `gridfinity-layout-{uuid}`
+  - Functions: `saveLayoutById()`, `loadLayoutById()`, `deleteLayoutById()`, `initializeLayoutLibrary()`
 - `selection.ts` - Multi-selection utilities (box select, shift-click range)
 - `entity.ts` - Entity ID utilities
 - `navigation.ts` - Keyboard navigation helpers
