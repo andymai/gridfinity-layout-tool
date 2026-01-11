@@ -1,6 +1,9 @@
 {
   "title": "Keyboard Shortcuts",
   "subtitle": "Quick reference for keyboard controls",
+  "showShortcuts": "Show keyboard shortcuts",
+  "pressForHelp": "Press",
+  "forHelp": "for help",
   "search": "Search shortcuts...",
   "noResults": "No shortcuts found",
   "categories": {

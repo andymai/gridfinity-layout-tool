@@ -62,9 +62,12 @@
   },
   "library": {
     "title": "My Layouts",
+    "layouts": "Layouts",
     "newLayout": "New Layout",
     "createLayout": "Create Layout",
     "untitled": "Untitled layout",
+    "clickToEdit": "Click to edit layout name",
+    "openManager": "Open layout manager ({{shortcut}})",
     "lastModified": "Last modified {{date}}",
     "switchTo": "Switch to {{name}}",
     "deleteConfirm": "Delete \"{{name}}\"?",

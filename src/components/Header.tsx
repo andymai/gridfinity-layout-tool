@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { useTranslation } from 'react-i18next';
 import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '../store';
 import { useResponsive } from '../hooks';
 import { CONSTRAINTS } from '../constants';
@@ -10,6 +11,7 @@ interface HeaderProps {
 }
 
 export function Header({ onHelpClick }: HeaderProps) {
+  const { t } = useTranslation(['layout', 'aria', 'help']);
   const { isTablet } = useResponsive();
 
   const { layout, setName } = useLayoutStore(
@@ -62,7 +64,7 @@ export function Header({ onHelpClick }: HeaderProps) {
   };
 
   const handleNameSubmit = () => {
-    setName(editValue.trim() || 'Untitled layout');
+    setName(editValue.trim() || t('layout:library.untitled'));
     setIsEditing(false);
   };
 
@@ -109,7 +111,7 @@ export function Header({ onHelpClick }: HeaderProps) {
           <button
             onClick={handleNameClick}
             className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content"
-            title="Click to edit layout name"
+            title={t('layout:library.clickToEdit')}
           >
             {layout.name}
           </button>
@@ -119,13 +121,13 @@ export function Header({ onHelpClick }: HeaderProps) {
         <button
           onClick={() => setShowLayoutManager(true)}
           className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
-          title={`Open layout manager (${modKey}+O)`}
-          aria-label="Open layout manager"
+          title={t('layout:library.openManager', { shortcut: `${modKey}+O` })}
+          aria-label={t('aria:actions.openLayoutManager')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
-          <span className="hidden sm:inline">Layouts</span>
+          <span className="hidden sm:inline">{t('layout:library.layouts')}</span>
         </button>
       </div>
 
@@ -136,8 +138,8 @@ export function Header({ onHelpClick }: HeaderProps) {
             <button
               onClick={toggleLeftPanel}
               className={`btn btn-ghost btn-icon ${!leftPanelCollapsed ? 'bg-surface-hover' : ''}`}
-              title="Toggle sidebar panel"
-              aria-label="Toggle sidebar panel"
+              title={t('aria:actions.togglePanel', { panel: t('aria:panels.sidebar') })}
+              aria-label={t('aria:actions.togglePanel', { panel: t('aria:panels.sidebar') })}
               aria-pressed={!leftPanelCollapsed}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -147,8 +149,8 @@ export function Header({ onHelpClick }: HeaderProps) {
             <button
               onClick={toggleRightPanel}
               className={`btn btn-ghost btn-icon ${!rightPanelCollapsed ? 'bg-surface-hover' : ''}`}
-              title="Toggle inspector panel"
-              aria-label="Toggle inspector panel"
+              title={t('aria:actions.togglePanel', { panel: t('aria:panels.inspector') })}
+              aria-label={t('aria:actions.togglePanel', { panel: t('aria:panels.inspector') })}
               aria-pressed={!rightPanelCollapsed}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -164,8 +166,8 @@ export function Header({ onHelpClick }: HeaderProps) {
             onClick={undo}
             disabled={!canUndo}
             className="btn btn-ghost btn-icon"
-            title={`Undo last action (${modKey}+Z)`}
-            aria-label={`Undo (${modKey}+Z)`}
+            title={t('help:shortcuts.undo') + ` (${modKey}+Z)`}
+            aria-label={t('aria:buttons.undo') + ` (${modKey}+Z)`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
@@ -175,8 +177,8 @@ export function Header({ onHelpClick }: HeaderProps) {
             onClick={redo}
             disabled={!canRedo}
             className="btn btn-ghost btn-icon"
-            title={`Redo last undone action (${modKey}+Y or ${modKey}+Shift+Z)`}
-            aria-label={`Redo (${modKey}+Y)`}
+            title={t('help:shortcuts.redo') + ` (${modKey}+Y)`}
+            aria-label={t('aria:buttons.redo') + ` (${modKey}+Y)`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
@@ -187,10 +189,10 @@ export function Header({ onHelpClick }: HeaderProps) {
         <button
           onClick={onHelpClick}
           className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary"
-          title="Show keyboard shortcuts"
-          aria-label="Show help and keyboard shortcuts"
+          title={t('help:showShortcuts')}
+          aria-label={t('aria:modals.help')}
         >
-          Press <kbd className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>?</kbd> for help
+          {t('help:pressForHelp')} <kbd className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>?</kbd>
         </button>
       </div>
 

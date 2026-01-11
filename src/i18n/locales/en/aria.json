@@ -47,12 +47,14 @@
     "settings": "Settings panel",
     "inspector": "Inspector panel",
     "printList": "Print list panel",
-    "library": "Layout library panel"
+    "library": "Layout library panel",
+    "sidebar": "Sidebar"
   },
   "actions": {
-    "togglePanel": "Toggle {{panel}} panel",
+    "togglePanel": "Toggle {{panel}}",
     "openPanel": "Open {{panel}} panel",
     "closePanel": "Close {{panel}} panel",
+    "openLayoutManager": "Open layout manager",
     "expandSection": "Expand {{section}}",
     "collapseSection": "Collapse {{section}}",
     "closeModal": "Close modal",
