@@ -8,9 +8,11 @@ import { CategoriesPanel } from './CategoriesPanel';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { CollapsibleSection } from '../CollapsibleSection';
+import { useResponsive } from '../../hooks/useResponsive';
 
 export function Sidebar() {
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
+  const { isDesktop } = useResponsive();
 
   const { collapsed, toggle, halfBinMode, toggleHalfBinMode } = useUIStore(
     useShallow((state) => ({
@@ -232,7 +234,7 @@ export function Sidebar() {
 
             {/* Physical Units */}
             <div className="px-4 py-4 border-t border-stroke-subtle">
-              <CollapsibleSection title="Physical Units" variant="default" defaultExpanded={false}>
+              <CollapsibleSection title="Physical Units" variant="default" defaultExpanded={isDesktop}>
                 <div className="text-xs text-content-secondary space-y-2">
                   <div className="flex items-center justify-between">
                     <label
