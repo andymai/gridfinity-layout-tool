@@ -16,6 +16,7 @@ import { BinContextMenu } from './components/mobile';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter } from './components/SharedLayoutImporter';
+import { SharedLayoutBanner } from './components/SharedLayoutBanner';
 import { SHORTCUTS } from './constants';
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
@@ -143,6 +144,9 @@ export default function App() {
   if (isTablet) {
     return (
       <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
+        {/* Shared layout banner (shown when viewing unsaved shared layout) */}
+        <SharedLayoutBanner />
+
         {/* Header */}
         <Header onHelpClick={() => setIsHelpOpen(true)} />
 
@@ -218,6 +222,9 @@ export default function App() {
   // Desktop layout
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
+      {/* Shared layout banner (shown when viewing unsaved shared layout) */}
+      <SharedLayoutBanner />
+
       {/* Header */}
       <Header onHelpClick={() => setIsHelpOpen(true)} />
 

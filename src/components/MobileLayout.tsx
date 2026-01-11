@@ -8,6 +8,7 @@ import { DragPreview } from './DragPreview';
 import { ToastContainer } from './Toast';
 import { PanelErrorBoundary } from './PanelErrorBoundary';
 import { SharedLayoutImporter } from './SharedLayoutImporter';
+import { SharedLayoutBanner } from './SharedLayoutBanner';
 import {
   MobileHeader,
   BottomNavBar,
@@ -40,6 +41,9 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLa
 
   return (
     <div className="h-screen-safe flex flex-col overflow-hidden bg-surface text-content">
+      {/* Shared layout banner (shown when viewing unsaved shared layout) */}
+      <SharedLayoutBanner />
+
       {/* Mobile Header */}
       <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} onHelpClick={() => setIsMobileHelpOpen(true)} />
 
