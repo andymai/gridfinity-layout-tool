@@ -9,6 +9,7 @@ import { useCloudShare } from '../../hooks/useCloudShare';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { LayoutThumbnail } from '../LayoutThumbnail';
 import { loadLayoutById, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../utils/storage';
+import { EXPIRATION_OPTIONS, formatShareDate, calculateDaysRemaining } from '../../utils/cloudShare';
 import type { LayoutEntry, ShareExpiration } from '../../types';
 
 /**
@@ -583,27 +584,22 @@ function MobileCloudSharePanel({
     if (success) setUrlCopied(true);
   };
 
-  // Format expiration date
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   // Calculate days remaining using stable reference time to avoid render issues
   const [mountTime] = useState(() => Date.now());
   const daysRemaining = existingShare
-    ? Math.max(0, Math.ceil((existingShare.expiresAt - mountTime) / (1000 * 60 * 60 * 24)))
+    ? calculateDaysRemaining(existingShare.expiresAt, mountTime)
     : 0;
 
-  const EXPIRATION_OPTIONS: { value: ShareExpiration; label: string }[] = [
-    { value: 30, label: '30 days' },
-    { value: 60, label: '60 days' },
-    { value: 90, label: '90 days' },
-    { value: 365, label: '1 year' },
-  ];
+  // Handle Escape key to close panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   return (
     <div
@@ -611,6 +607,9 @@ function MobileCloudSharePanel({
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mobile-cloud-share-title"
         className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up max-h-[80vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
@@ -623,14 +622,14 @@ function MobileCloudSharePanel({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-content">Cloud Share</h3>
+          <h3 id="mobile-cloud-share-title" className="text-lg font-semibold text-content">Cloud Share</h3>
         </div>
 
         {/* Loading states */}
         {(status === 'sharing' || status === 'updating' || status === 'deleting') && (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
             <div className="flex items-center gap-3 text-content-secondary">
-              <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+              <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
@@ -725,10 +724,10 @@ function MobileCloudSharePanel({
           <div className="space-y-4">
             <div className="bg-surface rounded-lg p-3">
               <p className="text-sm text-content-secondary">
-                Shared on {formatDate(existingShare.sharedAt)}
+                Shared on {formatShareDate(existingShare.sharedAt)}
               </p>
               <p className="text-sm text-content">
-                Expires: {formatDate(existingShare.expiresAt)}{' '}
+                Expires: {formatShareDate(existingShare.expiresAt)}{' '}
                 <span className="text-content-tertiary">({daysRemaining} days)</span>
               </p>
             </div>
