@@ -14,6 +14,7 @@ import { STAGING_ID, DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensio
 
 let posthogInstance: PostHog | null = null;
 let initPromise: Promise<void> | null = null;
+let eventQueue: Array<{ name: string; properties: Record<string, unknown> }> = [];
 
 export function initAnalytics(): void {
   if (initPromise) return;
@@ -38,10 +39,29 @@ export function initAnalytics(): void {
         autocapture: false, // We'll track manually
       });
       posthogInstance = posthog;
+
+      // Flush queued events
+      for (const event of eventQueue) {
+        posthog.capture(event.name, event.properties);
+      }
+      eventQueue = [];
     })
     .catch(() => {
       // Fail silently
     });
+}
+
+/**
+ * Internal capture function that queues events if posthog isn't ready yet.
+ */
+function capture(name: string, properties: Record<string, unknown>): void {
+  if (posthogInstance) {
+    posthogInstance.capture(name, properties);
+  } else if (initPromise) {
+    // Queue event to be sent when posthog loads
+    eventQueue.push({ name, properties });
+  }
+  // If no initPromise, analytics is disabled (dev mode or missing env vars)
 }
 
 // ============================================
@@ -264,8 +284,6 @@ export function trackLayoutSnapshot(
   trigger: AnalyticsTrigger,
   sessionContext?: { duration_seconds: number }
 ): void {
-  if (!posthogInstance) return;
-
   try {
     const metrics = computeLayoutMetrics(layout);
 
@@ -274,7 +292,7 @@ export function trackLayoutSnapshot(
       return;
     }
 
-    posthogInstance.capture('layout_snapshot', {
+    capture('layout_snapshot', {
       trigger,
       device_type: getDeviceType(),
       ...metrics,
@@ -292,10 +310,8 @@ export function trackEvent(
   name: string,
   properties?: Record<string, string | number | boolean>
 ): void {
-  if (!posthogInstance) return;
-
   try {
-    posthogInstance.capture(name, {
+    capture(name, {
       device_type: getDeviceType(),
       ...properties,
     });
