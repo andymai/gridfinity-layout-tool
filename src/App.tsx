@@ -15,6 +15,7 @@ import { PanelErrorBoundary } from './components/PanelErrorBoundary';
 import { BinContextMenu } from './components/mobile';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { LiveRegion } from './components/LiveRegion';
+import { SharedLayoutImporter } from './components/SharedLayoutImporter';
 import { SHORTCUTS } from './constants';
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
@@ -207,6 +208,9 @@ export default function App() {
 
         {/* Toast notifications */}
         <ToastContainer />
+
+        {/* Shared layout URL importer */}
+        <SharedLayoutImporter />
       </div>
     );
   }
@@ -263,6 +267,9 @@ export default function App() {
 
       {/* ARIA live region for screen reader announcements */}
       <LiveRegion />
+
+      {/* Shared layout URL importer */}
+      <SharedLayoutImporter />
     </div>
   );
 }
