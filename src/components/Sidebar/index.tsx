@@ -198,6 +198,10 @@ export function Sidebar() {
                     </button>
                   </div>
                 </div>
+                {/* Real-world drawer dimensions */}
+                <div className="pt-1 text-content-disabled text-right">
+                  = {drawerWidth * gridUnitMm} × {drawerDepth * gridUnitMm} × {drawerHeight * heightUnitMm} mm
+                </div>
                 <div className="flex items-center justify-between">
                   <label
                     htmlFor="printBedSize"
