@@ -102,11 +102,15 @@ export function SharedLayoutImporter() {
     if (!initialCloudShareId) return;
 
     hasProcessed.current = true;
+    let isMounted = true;
 
     const loadCloudShare = async () => {
       setIsLoading(true);
 
       const result = await fetchShare(initialCloudShareId);
+
+      // Prevent state updates if component unmounted during fetch
+      if (!isMounted) return;
 
       setIsLoading(false);
 
@@ -122,6 +126,10 @@ export function SharedLayoutImporter() {
     };
 
     loadCloudShare();
+
+    return () => {
+      isMounted = false;
+    };
   }, [loadLayoutPreview, addToast]);
 
   // Show loading state for cloud shares
