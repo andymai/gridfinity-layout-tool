@@ -9,6 +9,7 @@ import {
   saveLibrary,
   computeLayoutPreview,
 } from '../utils/storage';
+import { setLayoutHash } from '../utils/url';
 import { validateLayoutIntegrity } from '../utils/validation';
 import { generateUUID } from '../utils/uuid';
 import { createLayoutWithSettings } from '../constants';
@@ -142,6 +143,9 @@ export function useLayoutSwitcher() {
       // 10. Save library index
       saveLibrary(useLibraryStore.getState().library);
 
+      // 11. Update URL hash (add to browser history for back/forward navigation)
+      setLayoutHash(targetId, true);
+
       return { success: true };
     } catch (error) {
       addToast('Failed to switch layout', 'error');
@@ -202,6 +206,9 @@ export function useLayoutSwitcher() {
 
       // Save library
       saveLibrary(useLibraryStore.getState().library);
+
+      // Update URL hash (add to browser history)
+      setLayoutHash(layoutId, true);
 
       addToast('New layout created', 'success');
       return { success: true, data: layoutId };

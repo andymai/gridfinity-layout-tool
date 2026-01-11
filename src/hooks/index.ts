@@ -8,3 +8,4 @@ export { usePrintList } from './usePrintList';
 export type { UsePrintListReturn } from './usePrintList';
 export { useLayoutSwitcher } from './useLayoutSwitcher';
 export { useCrossTabSync } from './useCrossTabSync';
+export { useLayoutRouting } from './useLayoutRouting';
