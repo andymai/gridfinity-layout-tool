@@ -105,7 +105,7 @@ export function LayoutListItem({
       tabIndex={isFocused ? 0 : -1}
       className={`
         w-full text-left p-3 rounded-lg border transition-colors cursor-pointer
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-elevated
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-inset
         ${isActive
           ? 'bg-blue-900/30 border-blue-500'
           : 'bg-surface-secondary border-transparent hover:border-stroke-subtle hover:bg-surface'
