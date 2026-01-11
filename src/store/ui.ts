@@ -92,6 +92,7 @@ interface UIState {
   // Shared layout preview (viewing but not saved)
   sharedLayoutPreview: Layout | null;
   sharedLayoutOriginalName: string | null; // For forkedFrom metadata
+  sharedLayoutAuthorName: string | null;  // Author of cloud-shared layout
 
   // Actions
   setActiveLayer: (id: string) => void;
@@ -153,7 +154,7 @@ interface UIState {
   setHalfBinMode: (enabled: boolean) => void;
 
   // Shared layout preview actions
-  setSharedLayoutPreview: (layout: Layout | null, originalName?: string) => void;
+  setSharedLayoutPreview: (layout: Layout | null, originalName?: string, authorName?: string) => void;
   clearSharedLayoutPreview: () => void;
 }
 
@@ -184,6 +185,7 @@ export const useUIStore = create<UIState>((set) => ({
   halfBinMode: loadHalfBinMode(),
   sharedLayoutPreview: null,
   sharedLayoutOriginalName: null,
+  sharedLayoutAuthorName: null,
 
   setActiveLayer: (id) => set({
     activeLayerId: id,
@@ -329,12 +331,14 @@ export const useUIStore = create<UIState>((set) => ({
   },
 
   // Shared layout preview actions
-  setSharedLayoutPreview: (layout, originalName) => set({
+  setSharedLayoutPreview: (layout, originalName, authorName) => set({
     sharedLayoutPreview: layout,
     sharedLayoutOriginalName: originalName ?? layout?.name ?? null,
+    sharedLayoutAuthorName: authorName ?? null,
   }),
   clearSharedLayoutPreview: () => set({
     sharedLayoutPreview: null,
     sharedLayoutOriginalName: null,
+    sharedLayoutAuthorName: null,
   }),
 }));

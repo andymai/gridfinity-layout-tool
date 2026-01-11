@@ -466,6 +466,41 @@ export function clearSharedLayoutFromURL(): void {
 }
 
 /**
+ * Check if the current URL is a cloud share URL.
+ * Returns the share ID if found, null otherwise.
+ * Cloud share URLs have the format: /s/{12-char-alphanumeric}
+ */
+export function getCloudShareIdFromURL(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  // Check pathname for /s/{id} format
+  const pathMatch = window.location.pathname.match(/^\/s\/([a-zA-Z0-9]{12})$/);
+  if (pathMatch) {
+    return pathMatch[1];
+  }
+
+  // Also check hash for backwards compatibility (in case someone uses #/s/{id})
+  const hashMatch = window.location.hash.match(/^#\/s\/([a-zA-Z0-9]{12})$/);
+  if (hashMatch) {
+    return hashMatch[1];
+  }
+
+  return null;
+}
+
+/**
+ * Clear the cloud share ID from URL.
+ */
+export function clearCloudShareFromURL(): void {
+  if (typeof window === 'undefined') return;
+
+  // Navigate to root without page reload
+  if (window.location.pathname.startsWith('/s/')) {
+    window.history.replaceState(null, '', '/');
+  }
+}
+
+/**
  * Download a layout as a JSON file.
  */
 export function downloadLayoutAsFile(layout: Layout, filename?: string): void {

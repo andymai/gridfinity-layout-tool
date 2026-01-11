@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, OperationResult, ThumbnailBin } from '../types';
+import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, OperationResult, ThumbnailBin, CloudShareInfo, ShareExpiration } from '../types';
 import { CONSTRAINTS, STAGING_ID } from '../constants';
 import { generateUUID } from '../utils/uuid';
 
@@ -86,6 +86,11 @@ interface LibraryState {
 
   // Settings
   setAuthorName: (name: string) => void;
+  setLastShareExpiration: (days: ShareExpiration) => void;
+
+  // Cloud sharing
+  setCloudShare: (layoutId: string, share: CloudShareInfo) => void;
+  clearCloudShare: (layoutId: string) => void;
 
   // UI state
   setShowLayoutManager: (show: boolean) => void;
@@ -205,6 +210,30 @@ export const useLibraryStore = create<LibraryState>()(
     setAuthorName: (name) => {
       set(state => {
         state.library.settings.authorName = name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
+      });
+    },
+
+    setLastShareExpiration: (days) => {
+      set(state => {
+        state.library.settings.lastShareExpiration = days;
+      });
+    },
+
+    setCloudShare: (layoutId, share) => {
+      set(state => {
+        const entry = state.library.entries.find(e => e.id === layoutId);
+        if (entry) {
+          entry.cloudShare = share;
+        }
+      });
+    },
+
+    clearCloudShare: (layoutId) => {
+      set(state => {
+        const entry = state.library.entries.find(e => e.id === layoutId);
+        if (entry) {
+          entry.cloudShare = undefined;
+        }
       });
     },
 
