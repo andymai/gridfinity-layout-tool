@@ -1,20 +1,22 @@
 /**
  * Analytics utilities for tracking layout metrics via Posthog.
  * Derives all metrics from the existing Layout type - no parallel tracking needed.
+ * Posthog is lazy-loaded to avoid impacting initial bundle size.
  */
 
-import posthog from 'posthog-js';
+import type { PostHog } from 'posthog-js';
 import type { Layout } from '../types';
 import { STAGING_ID, DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensions, BREAKPOINTS } from '../constants';
 
 // ============================================
-// INITIALIZATION
+// INITIALIZATION (LAZY LOADED)
 // ============================================
 
-let isInitialized = false;
+let posthogInstance: PostHog | null = null;
+let initPromise: Promise<void> | null = null;
 
 export function initAnalytics(): void {
-  if (isInitialized) return;
+  if (initPromise) return;
   if (typeof window === 'undefined') return;
   if (import.meta.env.DEV) return; // Skip in development
 
@@ -26,17 +28,20 @@ export function initAnalytics(): void {
     return;
   }
 
-  try {
-    posthog.init(key, {
-      api_host: host,
-      capture_pageview: false, // Vercel Analytics handles this
-      persistence: 'localStorage',
-      autocapture: false, // We'll track manually
+  // Lazy load posthog-js
+  initPromise = import('posthog-js')
+    .then(({ default: posthog }) => {
+      posthog.init(key, {
+        api_host: host,
+        capture_pageview: false, // Vercel Analytics handles this
+        persistence: 'localStorage',
+        autocapture: false, // We'll track manually
+      });
+      posthogInstance = posthog;
+    })
+    .catch(() => {
+      // Fail silently
     });
-    isInitialized = true;
-  } catch {
-    // Fail silently
-  }
 }
 
 // ============================================
@@ -259,7 +264,7 @@ export function trackLayoutSnapshot(
   trigger: AnalyticsTrigger,
   sessionContext?: { duration_seconds: number }
 ): void {
-  if (!isInitialized) return;
+  if (!posthogInstance) return;
 
   try {
     const metrics = computeLayoutMetrics(layout);
@@ -269,7 +274,7 @@ export function trackLayoutSnapshot(
       return;
     }
 
-    posthog.capture('layout_snapshot', {
+    posthogInstance.capture('layout_snapshot', {
       trigger,
       device_type: getDeviceType(),
       ...metrics,
@@ -287,10 +292,10 @@ export function trackEvent(
   name: string,
   properties?: Record<string, string | number | boolean>
 ): void {
-  if (!isInitialized) return;
+  if (!posthogInstance) return;
 
   try {
-    posthog.capture(name, {
+    posthogInstance.capture(name, {
       device_type: getDeviceType(),
       ...properties,
     });
