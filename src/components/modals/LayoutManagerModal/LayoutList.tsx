@@ -153,7 +153,7 @@ export function LayoutList({
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Create Button */}
       <div className="mb-4">
         <button
