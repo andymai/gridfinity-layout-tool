@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useToastStore } from '../store';
+import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useToastStore, useSettingsStore } from '../store';
 import type { Layout, OperationResult, LayoutPreview } from '../types';
 import {
   saveLayoutById,
@@ -11,7 +11,7 @@ import {
 } from '../utils/storage';
 import { validateLayoutIntegrity } from '../utils/validation';
 import { generateUUID } from '../utils/uuid';
-import { createDefaultLayout } from '../constants';
+import { createLayoutWithSettings } from '../constants';
 
 /**
  * Orchestration hook for layout switching and management.
@@ -157,6 +157,9 @@ export function useLayoutSwitcher() {
     addToast,
   ]);
 
+  // Settings store
+  const settings = useSettingsStore((state) => state.settings);
+
   /**
    * Create a new layout and switch to it.
    */
@@ -164,9 +167,9 @@ export function useLayoutSwitcher() {
     // Save current layout first
     saveCurrentLayout();
 
-    // Create new layout
+    // Create new layout using user preferences
     const layoutId = generateUUID();
-    const newLayout = createDefaultLayout();
+    const newLayout = createLayoutWithSettings(settings);
     newLayout.name = name || 'Untitled layout';
 
     try {
@@ -211,6 +214,7 @@ export function useLayoutSwitcher() {
     setActiveCategory,
     clearHistory,
     addToast,
+    settings,
   ]);
 
   /**

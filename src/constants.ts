@@ -122,6 +122,37 @@ export const createDefaultLayout = (): Layout => ({
   bins: [],
 });
 
+/**
+ * Create a new layout using user preferences.
+ * Call this when creating new layouts from the UI.
+ */
+export interface LayoutSettings {
+  defaultDrawerWidth: number;
+  defaultDrawerDepth: number;
+  defaultDrawerHeight: number;
+  defaultPrintBedSize: number;
+  defaultGridUnitMm: number;
+  defaultHeightUnitMm: number;
+}
+
+export const createLayoutWithSettings = (settings: LayoutSettings): Layout => ({
+  version: '1.0',
+  name: 'Untitled layout',
+  drawer: {
+    width: settings.defaultDrawerWidth,
+    depth: settings.defaultDrawerDepth,
+    height: settings.defaultDrawerHeight,
+  },
+  printBedSize: settings.defaultPrintBedSize,
+  gridUnitMm: settings.defaultGridUnitMm,
+  heightUnitMm: settings.defaultHeightUnitMm,
+  categories: [...DEFAULT_CATEGORIES],
+  layers: [
+    { id: generateId(), name: 'Layer 1', height: 3 },
+  ],
+  bins: [],
+});
+
 // === Grid Sizing ===
 
 export const BASE_CELL_SIZE = 32; // px at 100% zoom (default/desktop)

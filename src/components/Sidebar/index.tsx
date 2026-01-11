@@ -1,12 +1,16 @@
+import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '../../store';
+import { useUIStore, useLayoutStore, useSettingsStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
 import { ActiveLayerPanel } from './ActiveLayerPanel';
 import { LayerPanel } from './LayerPanel';
 import { CategoriesPanel } from './CategoriesPanel';
 import { DeferredNumberInput } from '../DeferredNumberInput';
+import { ConfirmDialog } from '../modals/ConfirmDialog';
 
 export function Sidebar() {
+  const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
+
   const { collapsed, toggle, halfBinMode, toggleHalfBinMode } = useUIStore(
     useShallow((state) => ({
       collapsed: state.leftPanelCollapsed,
@@ -41,6 +45,19 @@ export function Sidebar() {
       updateDrawer: state.updateDrawer,
     }))
   );
+
+  const settings = useSettingsStore((state) => state.settings);
+  const saveCurrentAsDefaults = useSettingsStore((state) => state.saveCurrentAsDefaults);
+
+  const handleSaveDefaults = () => {
+    saveCurrentAsDefaults(
+      { width: drawerWidth, depth: drawerDepth, height: drawerHeight },
+      printBedSize,
+      gridUnitMm,
+      heightUnitMm
+    );
+    setShowSaveDefaultsConfirm(false);
+  };
 
   const handleDrawerHeightChange = (delta: number) => {
     const newHeight = Math.max(1, drawerHeight + delta);
@@ -265,6 +282,28 @@ export function Sidebar() {
               </div>
             </div>
 
+            {/* Default Preferences */}
+            <div className="px-4 py-4 border-t border-stroke-subtle">
+              <h2 className="text-sm font-semibold text-content-secondary tracking-wide mb-3">
+                Default Preferences
+              </h2>
+              <div className="text-xs text-content-tertiary mb-2">
+                New layouts will use:
+              </div>
+              <div className="text-xs text-content-secondary space-y-1 mb-3">
+                <div>Drawer: {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×{settings.defaultDrawerHeight}u</div>
+                <div>Print bed: {settings.defaultPrintBedSize}mm</div>
+                <div>Grid unit: {settings.defaultGridUnitMm}mm</div>
+              </div>
+              <button
+                onClick={() => setShowSaveDefaultsConfirm(true)}
+                className="w-full text-xs py-1.5 px-2 rounded bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle transition-colors"
+                title="Save current layout settings as defaults for new layouts"
+              >
+                Save Current as Defaults
+              </button>
+            </div>
+
             {/* Attribution */}
             <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
               Gridfinity by{' '}
@@ -302,6 +341,15 @@ export function Sidebar() {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        isOpen={showSaveDefaultsConfirm}
+        title="Save as Defaults"
+        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawerWidth}×${drawerDepth}×${drawerHeight}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
+        confirmText="Save"
+        onConfirm={handleSaveDefaults}
+        onCancel={() => setShowSaveDefaultsConfirm(false)}
+      />
     </aside>
   );
 }
