@@ -226,7 +226,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         {/* Tab Content */}
         <div className="flex-1 min-h-0 overflow-hidden">
           {activeTab === 'layouts' && (
-            <div id="layouts-panel" role="tabpanel" aria-labelledby="layouts-tab" className="h-full">
+            <div id="layouts-panel" role="tabpanel" aria-labelledby="layouts-tab" className="h-full overflow-hidden">
               <LayoutList
                 entries={library.entries}
                 activeLayoutId={activeLayoutId}
@@ -240,7 +240,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
           )}
 
           {activeTab === 'import' && (
-            <div id="import-panel" role="tabpanel" aria-labelledby="import-tab" className="h-full">
+            <div id="import-panel" role="tabpanel" aria-labelledby="import-tab" className="h-full overflow-hidden">
               <ImportView onImport={handleImport} onCancel={handleImportCancel} />
             </div>
           )}
