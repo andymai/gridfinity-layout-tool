@@ -69,6 +69,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
     const pendingFitZoomRef = useRef(false);
     const prevExpandedRef = useRef<boolean | undefined>(undefined);
     const prevSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
+    const animationFrameRef = useRef<number | null>(null);
     const { camera, size } = useThree();
 
     const setIsometricRotation = useUIStore((state) => state.setIsometricRotation);
@@ -219,6 +220,11 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         const duration = 500; // ms - slightly longer for smoother feel
         const startTime = Date.now();
 
+        // Cancel any existing animation
+        if (animationFrameRef.current !== null) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+
         const animate = () => {
           const elapsed = Date.now() - startTime;
           const progress = Math.min(elapsed / duration, 1);
@@ -239,8 +245,9 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           camera.lookAt(target); // Keep camera oriented toward target during animation
 
           if (progress < 1) {
-            requestAnimationFrame(animate);
+            animationFrameRef.current = requestAnimationFrame(animate);
           } else {
+            animationFrameRef.current = null;
             // Sync controls with final camera state
             controlsRef.current?.update();
             const angle = controlsRef.current?.getAzimuthalAngle() ?? 0;
@@ -252,6 +259,15 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         animate();
       },
     }), [defaultCameraPosition, cameraPresets, camera, centerX, centerY, centerZ, setIsometricRotation]);
+
+    // Cleanup animation frame on unmount
+    useEffect(() => {
+      return () => {
+        if (animationFrameRef.current !== null) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+      };
+    }, []);
 
   return (
     <>

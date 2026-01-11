@@ -2,7 +2,7 @@
  * Hook for managing cloud share state and operations.
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLibraryStore } from '../store/library';
 import { useLayoutStore } from '../store/layout';
@@ -64,6 +64,15 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   const [status, setStatus] = useState<CloudShareStatus>('idle');
   const [result, setResult] = useState<CloudShareResult | null>(null);
   const [error, setError] = useState<CloudShareError | null>(null);
+
+  // Track mount state to prevent state updates after unmount
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Get library state
   const {
@@ -185,6 +194,9 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       const layoutToShare = getLayoutToShare();
       const response = await createShare(layoutToShare, expiresInDays, authorName);
 
+      // Prevent state updates if component unmounted during async operation
+      if (!mountedRef.current) return false;
+
       if (response.success) {
         setLastShareExpiration(expiresInDays);
         handleSuccess(response.data, false);
@@ -227,6 +239,9 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         layoutToShare,
         expiresInDays
       );
+
+      // Prevent state updates if component unmounted during async operation
+      if (!mountedRef.current) return false;
 
       if (response.success) {
         setLastShareExpiration(expiresInDays);
@@ -291,6 +306,9 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     setError(null);
 
     const response = await deleteShareApi(existingShare.id, existingShare.deleteToken);
+
+    // Prevent state updates if component unmounted during async operation
+    if (!mountedRef.current) return false;
 
     if (response.success) {
       clearCloudShare(targetLayoutId);
