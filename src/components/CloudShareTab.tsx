@@ -9,6 +9,75 @@ import { useLibraryStore } from '../store/library';
 import { useCloudShare } from '../hooks/useCloudShare';
 import type { ShareExpiration } from '../types';
 
+/**
+ * Expandable section for the delete token (hidden by default).
+ */
+function DeleteTokenSection({
+  token,
+  tokenCopied,
+  onCopy,
+}: {
+  token: string;
+  tokenCopied: boolean;
+  onCopy: () => void;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div className="border border-stroke-subtle rounded-lg overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-3 text-sm text-content-secondary hover:bg-surface-hover transition-colors"
+        aria-expanded={isExpanded}
+      >
+        <span className="flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+          <span>Advanced: Delete Token</span>
+        </span>
+        <svg
+          className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isExpanded && (
+        <div className="p-3 pt-0 space-y-2 border-t border-stroke-subtle">
+          <p className="text-xs text-content-tertiary">
+            Save this token if you need to delete your share from a different device.
+            Anyone with this token can delete your share.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={token}
+              readOnly
+              className="flex-1 bg-surface text-content p-2 rounded font-mono text-xs focus:outline-none"
+            />
+            <button
+              onClick={onCopy}
+              className="btn btn-secondary px-3 text-sm"
+            >
+              {tokenCopied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Calculate days remaining from a timestamp - stable reference time to avoid render issues
 function useDaysRemaining(expiresAt: number | undefined): number {
   const [now] = useState(() => Date.now());
@@ -296,36 +365,11 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           Expires: {result.expiresAt.toLocaleDateString()} ({expiresInDays} days)
         </div>
 
-        <div className="bg-warning-muted border border-warning/30 rounded-lg p-3 space-y-2">
-          <div className="flex items-center gap-2 text-warning font-medium text-sm">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-            <span>Delete Token (save this!)</span>
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={result.deleteToken}
-              readOnly
-              className="flex-1 bg-surface text-content p-2 rounded font-mono text-xs focus:outline-none"
-            />
-            <button
-              onClick={handleCopyToken}
-              className="btn btn-secondary px-3 text-sm"
-            >
-              {tokenCopied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-          <p className="text-xs text-content-tertiary">
-            Keep this private. Anyone with it can delete your share.
-          </p>
-        </div>
+        <DeleteTokenSection
+          token={result.deleteToken}
+          tokenCopied={tokenCopied}
+          onCopy={handleCopyToken}
+        />
 
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="btn btn-primary">
