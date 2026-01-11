@@ -4,6 +4,7 @@ import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { STAGING_ID } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { CollapsibleSection } from '../CollapsibleSection';
 
 // Square sizes
 const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];
@@ -141,81 +142,79 @@ export function ActiveLayerPanel() {
 
   return (
     <div>
-      {/* Bin Palette header */}
-      <div className="mb-3">
-        <h2 className="text-sm font-semibold text-content-secondary tracking-wide mb-1">Bin Palette</h2>
-        <p className="text-xs text-content-tertiary">
+      <CollapsibleSection title="Bin Palette" variant="default">
+        <p className="text-xs text-content-tertiary mb-3">
           Select a size, then click or drag on grid
         </p>
-      </div>
 
-      {/* Squares section */}
-      <div className="text-xs text-content-tertiary mb-1.5">Squares</div>
-      <div className="grid grid-cols-6 gap-1.5">
-        {SQUARE_SIZES.map(size => (
-          <SizeButton key={`${size}×${size}`} w={size} d={size} className="w-full" />
-        ))}
-      </div>
+        {/* Squares section */}
+        <div className="text-xs text-content-tertiary mb-1.5">Squares</div>
+        <div className="grid grid-cols-6 gap-1.5">
+          {SQUARE_SIZES.map(size => (
+            <SizeButton key={`${size}×${size}`} w={size} d={size} className="w-full" />
+          ))}
+        </div>
 
-      {/* Rectangles section */}
-      <div className="flex items-center justify-between mt-3 mb-1.5">
-        <span className="text-xs text-content-tertiary">Rectangles</span>
+        {/* Rectangles section */}
+        <div className="flex items-center justify-between mt-3 mb-1.5">
+          <span className="text-xs text-content-tertiary">Rectangles</span>
+          <button
+            onClick={() => setRotated(!rotated)}
+            className="text-xs text-content-tertiary hover:text-content flex items-center gap-1 transition-colors"
+            title={rotated ? 'Showing tall bins (click for wide)' : 'Showing wide bins (click for tall)'}
+            aria-label={rotated ? 'Switch to wide rectangles' : 'Switch to tall rectangles'}
+          >
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {rotated ? 'Tall' : 'Wide'}
+          </button>
+        </div>
+        <div className="grid grid-cols-5 gap-1.5">
+          {RECTANGLE_SIZES.map(({ w, d }) => {
+            const dims = getRectDims(w, d);
+            return <SizeButton key={`${w}×${d}`} w={dims.w} d={dims.d} className="w-full" />;
+          })}
+        </div>
+
+        {/* Fill button when size selected */}
+        {paintSize && (
+          <button
+            onClick={() => handleFill(paintSize.width, paintSize.depth)}
+            className="btn btn-primary w-full justify-center mt-3 text-sm"
+            title={`Fill empty space with ${paintSize.width}×${paintSize.depth} bins`}
+            aria-label={`Fill layer with ${paintSize.width} by ${paintSize.depth} bins`}
+          >
+            Fill with {paintSize.width}×{paintSize.depth}
+          </button>
+        )}
+
+        {/* Fill gaps button */}
         <button
-          onClick={() => setRotated(!rotated)}
-          className="text-xs text-content-tertiary hover:text-content flex items-center gap-1 transition-colors"
-          title={rotated ? 'Showing tall bins (click for wide)' : 'Showing wide bins (click for tall)'}
-          aria-label={rotated ? 'Switch to wide rectangles' : 'Switch to tall rectangles'}
+          onClick={handleFillGaps}
+          disabled={emptyCells === 0}
+          className="btn btn-secondary w-full justify-center mt-2 text-sm"
+          title={emptyCells > 0 ? `Fill ${emptyCells} empty cells with optimally-sized bins` : 'No gaps to fill'}
         >
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
           </svg>
-          {rotated ? 'Tall' : 'Wide'}
+          {emptyCells > 0 ? `Fill ${emptyCells} gaps` : 'No gaps'}
         </button>
-      </div>
-      <div className="grid grid-cols-5 gap-1.5">
-        {RECTANGLE_SIZES.map(({ w, d }) => {
-          const dims = getRectDims(w, d);
-          return <SizeButton key={`${w}×${d}`} w={dims.w} d={dims.d} className="w-full" />;
-        })}
-      </div>
 
-      {/* Fill button when size selected */}
-      {paintSize && (
+        {/* Clear layer button */}
         <button
-          onClick={() => handleFill(paintSize.width, paintSize.depth)}
-          className="btn btn-primary w-full justify-center mt-3 text-sm"
-          title={`Fill empty space with ${paintSize.width}×${paintSize.depth} bins`}
-          aria-label={`Fill layer with ${paintSize.width} by ${paintSize.depth} bins`}
+          onClick={() => setShowClearConfirm(true)}
+          disabled={layerBins.length === 0}
+          className="btn btn-ghost w-full justify-center mt-2 text-sm text-error hover:bg-error/10"
+          title={layerBins.length > 0 ? `Remove all ${layerBins.length} bins from this layer` : 'No bins to clear'}
         >
-          Fill with {paintSize.width}×{paintSize.depth}
+          <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          {layerBins.length > 0 ? `Clear ${layerBins.length} bins` : 'No bins'}
         </button>
-      )}
-
-      {/* Fill gaps button */}
-      <button
-        onClick={handleFillGaps}
-        disabled={emptyCells === 0}
-        className="btn btn-secondary w-full justify-center mt-2 text-sm"
-        title={emptyCells > 0 ? `Fill ${emptyCells} empty cells with optimally-sized bins` : 'No gaps to fill'}
-      >
-        <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-        </svg>
-        {emptyCells > 0 ? `Fill ${emptyCells} gaps` : 'No gaps'}
-      </button>
-
-      {/* Clear layer button */}
-      <button
-        onClick={() => setShowClearConfirm(true)}
-        disabled={layerBins.length === 0}
-        className="btn btn-ghost w-full justify-center mt-2 text-sm text-error hover:bg-error/10"
-        title={layerBins.length > 0 ? `Remove all ${layerBins.length} bins from this layer` : 'No bins to clear'}
-      >
-        <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-        {layerBins.length > 0 ? `Clear ${layerBins.length} bins` : 'No bins'}
-      </button>
+      </CollapsibleSection>
 
       {/* Clear confirmation dialog */}
       <ConfirmDialog

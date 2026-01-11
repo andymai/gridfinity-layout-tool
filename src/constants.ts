@@ -201,6 +201,7 @@ export const SHORTCUTS = {
   REDO: 'y',        // with Ctrl/Cmd
   REDO_ALT: 'Z',    // Shift+Ctrl/Cmd+Z
   DUPLICATE: 'd',   // with Ctrl/Cmd
+  ROTATE: 'r',      // Rotate bin (swap width/depth)
   ZOOM_IN: ['+', '='],
   ZOOM_OUT: ['-'],
   HELP: '?',
