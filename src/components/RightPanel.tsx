@@ -7,6 +7,7 @@ import { trackLayoutSnapshot } from '../utils/analytics';
 import { ConfirmDialog } from './modals/ConfirmDialog';
 import { usePrintList } from '../hooks/usePrintList';
 import { SplitPreview, PrintListSummary, PrintListEmpty } from './PrintList';
+import { CollapsibleSection } from './CollapsibleSection';
 import {
   useBinInspector,
   SingleBinInspector,
@@ -89,23 +90,28 @@ export function RightPanel() {
         </h2>
       </div>
 
-      {/* Selection Panel */}
-      <div className="p-4 border-b border-stroke-subtle">
-        {isMultiSelect ? (
-          <MultiBinInspector
-            inspector={inspector}
-            variant="desktop"
-            onClose={clearSelection}
-          />
-        ) : bin ? (
-          <SingleBinInspector
-            inspector={inspector}
-            variant="desktop"
-            onClose={clearSelection}
-          />
-        ) : (
-          <EmptyState variant="desktop" />
-        )}
+      {/* Selection Panel - Collapsible */}
+      <div className="px-4 py-3 border-b border-stroke-subtle">
+        <CollapsibleSection
+          title={isMultiSelect ? "Multi-Selection" : bin ? "Bin Properties" : "Selection"}
+          variant="default"
+        >
+          {isMultiSelect ? (
+            <MultiBinInspector
+              inspector={inspector}
+              variant="desktop"
+              onClose={clearSelection}
+            />
+          ) : bin ? (
+            <SingleBinInspector
+              inspector={inspector}
+              variant="desktop"
+              onClose={clearSelection}
+            />
+          ) : (
+            <EmptyState variant="desktop" />
+          )}
+        </CollapsibleSection>
       </div>
 
       {/* Print List - Collapsible */}

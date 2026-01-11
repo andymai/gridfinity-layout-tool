@@ -70,6 +70,8 @@ export default defineConfig({
     }),
   ],
   build: {
+    // Three.js is ~720KB minified, which is expected for a 3D library
+    chunkSizeWarningLimit: 750,
     rollupOptions: {
       output: {
         manualChunks: {

@@ -4,6 +4,7 @@ import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { useToastStore } from '../../store/toast';
+import { CollapsibleSection } from '../CollapsibleSection';
 
 // Curated color palette optimized for dark UI backgrounds
 // Colors chosen for: visual distinction, balanced saturation, good contrast
@@ -139,24 +140,24 @@ export function CategoriesPanel() {
 
   const canAddCategory = categories.length < CONSTRAINTS.CATEGORIES_MAX;
 
+  const addCategoryButton = (
+    <button
+      onClick={handleAddCategory}
+      disabled={!canAddCategory}
+      className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+      title="Add a new category"
+      aria-label="Add new category"
+    >
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+      </svg>
+    </button>
+  );
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-sm font-semibold text-content-secondary tracking-wide" title="Color-code your bins by category. New bins use the selected category.">Categories</h2>
-        <button
-          onClick={handleAddCategory}
-          disabled={!canAddCategory}
-          className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-          title="Add a new category"
-          aria-label="Add new category"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="space-y-1">
+      <CollapsibleSection title="Categories" variant="default" actions={addCategoryButton}>
+        <div className="space-y-1">
         {categories.map((category) => {
           const isActive = category.id === activeCategoryId;
           const isEditing = editingId === category.id;
@@ -280,7 +281,8 @@ export function CategoriesPanel() {
             </div>
           );
         })}
-      </div>
+        </div>
+      </CollapsibleSection>
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}

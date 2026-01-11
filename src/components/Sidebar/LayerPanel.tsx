@@ -4,6 +4,7 @@ import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { CONSTRAINTS, STAGING_ID } from '../../constants';
 import { getDisplayLayers } from '../../utils/collision';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { CollapsibleSection } from '../CollapsibleSection';
 
 export function LayerPanel() {
   const [deleteLayerId, setDeleteLayerId] = useState<string | null>(null);
@@ -152,27 +153,27 @@ export function LayerPanel() {
 
   if (!activeLayer) return null;
 
+  const addLayerButton = (
+    <button
+      onClick={handleAddLayer}
+      disabled={!canAddLayer}
+      className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+      title={!canAddLayer
+        ? (heightFull ? `Max height full (${totalLayerHeight}/${drawerHeight}u)` : `Maximum ${CONSTRAINTS.LAYERS_MAX} layers`)
+        : "Add a new layer"}
+      aria-label="Add new layer"
+    >
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+      </svg>
+    </button>
+  );
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-sm font-semibold text-content-secondary tracking-wide" title="Layers stack vertically in your drawer. Tall bins on lower layers block placement above.">Layers</h2>
-        <button
-          onClick={handleAddLayer}
-          disabled={!canAddLayer}
-          className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-          title={!canAddLayer
-            ? (heightFull ? `Max height full (${totalLayerHeight}/${drawerHeight}u)` : `Maximum ${CONSTRAINTS.LAYERS_MAX} layers`)
-            : "Add a new layer"}
-          aria-label="Add new layer"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Height capacity indicator - only show for multiple layers */}
-      {hasMultipleLayers && (
+      <CollapsibleSection title="Layers" variant="default" actions={addLayerButton}>
+        {/* Height capacity indicator - only show for multiple layers */}
+        {hasMultipleLayers && (
         <div className="flex items-center gap-2 mb-3">
           <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-surface-elevated">
             <div
@@ -340,16 +341,17 @@ export function LayerPanel() {
         }
       </div>
 
-      {/* Coverage bar */}
-      <div className="h-1.5 rounded-full overflow-hidden bg-surface-elevated">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{
-            width: `${hasMultipleLayers ? totalCoverage : coverage}%`,
-            backgroundColor: (hasMultipleLayers ? totalCoverage : coverage) === 100 ? 'var(--color-success)' : 'var(--text-tertiary)',
-          }}
-        />
-      </div>
+        {/* Coverage bar */}
+        <div className="h-1.5 rounded-full overflow-hidden bg-surface-elevated">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${hasMultipleLayers ? totalCoverage : coverage}%`,
+              backgroundColor: (hasMultipleLayers ? totalCoverage : coverage) === 100 ? 'var(--color-success)' : 'var(--text-tertiary)',
+            }}
+          />
+        </div>
+      </CollapsibleSection>
 
       {/* Delete layer confirmation */}
       <ConfirmDialog
