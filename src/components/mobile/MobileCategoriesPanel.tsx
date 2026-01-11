@@ -27,21 +27,23 @@ export function MobileCategoriesPanel() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
-  const { categories, bins, addCategory, updateCategory, deleteCategory } = useLayoutStore(
+  const { categories, bins, addCategory, updateCategory, deleteCategory, updateBin } = useLayoutStore(
     useShallow((state) => ({
       categories: state.layout.categories,
       bins: state.layout.bins,
       addCategory: state.addCategory,
       updateCategory: state.updateCategory,
       deleteCategory: state.deleteCategory,
+      updateBin: state.updateBin,
     }))
   );
 
-  const { activeCategoryId, setActiveCategory, closeMobilePanel } = useUIStore(
+  const { activeCategoryId, setActiveCategory, closeMobilePanel, selectedBinIds } = useUIStore(
     useShallow((state) => ({
       activeCategoryId: state.activeCategoryId,
       setActiveCategory: state.setActiveCategory,
       closeMobilePanel: state.closeMobilePanel,
+      selectedBinIds: state.selectedBinIds,
     }))
   );
 
@@ -57,8 +59,24 @@ export function MobileCategoriesPanel() {
     return counts;
   }, [bins]);
 
-  const handleSelectCategory = (id: string) => {
+  const handleSelectCategory = (id: string, name: string) => {
+    // Always set active category for new bins
     setActiveCategory(id);
+
+    // If bins are selected, update their categories
+    if (selectedBinIds.length > 0) {
+      execute(() => {
+        for (const binId of selectedBinIds) {
+          updateBin(binId, { category: id });
+        }
+      });
+      const binCount = selectedBinIds.length;
+      addToast(
+        `Changed ${binCount} bin${binCount > 1 ? 's' : ''} to "${name}"`,
+        'success'
+      );
+    }
+
     closeMobilePanel();
   };
 
@@ -123,7 +141,9 @@ export function MobileCategoriesPanel() {
       <p
         className="text-sm mb-4 text-content-tertiary"
       >
-        Select a category to use when drawing bins.
+        {selectedBinIds.length > 0
+          ? `Tap a category to apply it to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}.`
+          : 'Select a category to use when drawing bins.'}
       </p>
 
       <div className="space-y-2">
@@ -188,7 +208,12 @@ export function MobileCategoriesPanel() {
               ) : (
                 <button
                   className="w-full p-4 flex items-center gap-3"
-                  onClick={() => handleSelectCategory(category.id)}
+                  onClick={() => handleSelectCategory(category.id, category.name)}
+                  aria-label={
+                    selectedBinIds.length > 0
+                      ? `Apply ${category.name} to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}`
+                      : `Select ${category.name} for new bins`
+                  }
                 >
                   <div
                     className="w-10 h-10 rounded-lg flex-shrink-0"
