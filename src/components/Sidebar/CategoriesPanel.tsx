@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
@@ -25,6 +26,7 @@ const COLOR_PALETTE = [
 ];
 
 export function CategoriesPanel() {
+  const { t } = useTranslation(['layout', 'common', 'aria']);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
@@ -86,13 +88,13 @@ export function CategoriesPanel() {
 
     // Show helpful message if category is in use
     if (binCount > 0) {
-      addToast(`${binCount} bin${binCount > 1 ? 's' : ''} use "${name}". Reassign them first.`, 'error');
+      addToast(t('layout:category.binsNeedReassign', { count: binCount, name }), 'error');
       return;
     }
 
     // Show message if it's the last category
     if (categories.length <= CONSTRAINTS.CATEGORIES_MIN) {
-      addToast('Cannot delete the last category', 'error');
+      addToast(t('layout:category.cannotDeleteLast'), 'error');
       return;
     }
 
@@ -120,13 +122,13 @@ export function CategoriesPanel() {
   return (
     <div>
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-sm font-semibold text-content-secondary tracking-wide" title="Color-code your bins by category. New bins use the selected category.">Categories</h2>
+        <h2 className="text-sm font-semibold text-content-secondary tracking-wide" title={t('layout:category.titleHint')}>{t('layout:category.title')}</h2>
         <button
           onClick={handleAddCategory}
           disabled={!canAddCategory}
           className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-          title="Add a new category"
-          aria-label="Add new category"
+          title={t('layout:category.addHint')}
+          aria-label={t('aria:buttons.addNewCategory')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -179,7 +181,7 @@ export function CategoriesPanel() {
                           boxShadow: category.color === color ? '0 0 0 2px var(--color-primary)' : 'var(--shadow-sm)',
                         }}
                         title={name}
-                        aria-label={`Set color to ${name}`}
+                        aria-label={t('layout:category.setColorTo', { name })}
                       />
                     ))}
                   </div>
@@ -188,17 +190,17 @@ export function CategoriesPanel() {
                     <button
                       onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
                       className={`btn btn-sm flex-1 justify-center ${canDelete ? 'btn-danger' : 'btn-secondary opacity-50 cursor-not-allowed'}`}
-                      aria-label={canDelete ? `Delete ${category.name} category` : `Cannot delete: ${binCount} bins use this category`}
-                      title={canDelete ? 'Delete category' : `${binCount} bins use this category`}
+                      aria-label={canDelete ? t('layout:category.deleteCategoryNamed', { name: category.name }) : t('layout:category.cannotDeleteInUse', { count: binCount })}
+                      title={canDelete ? t('layout:category.deleteHint') : t('layout:category.binCountHint', { count: binCount })}
                     >
-                      Delete
+                      {t('common:buttons.delete')}
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
                       className="btn btn-secondary btn-sm flex-1 justify-center"
-                      aria-label="Finish editing category"
+                      aria-label={t('layout:category.finishEditing')}
                     >
-                      Done
+                      {t('common:buttons.done')}
                     </button>
                   </div>
                 </div>
@@ -209,7 +211,7 @@ export function CategoriesPanel() {
                     className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm cursor-pointer transition-transform hover:scale-110"
                     style={{ backgroundColor: category.color }}
                     onClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
-                    title="Click to edit color"
+                    title={t('layout:category.clickToEditColor')}
                     aria-hidden="true"
                   >
                     {isActive && (
@@ -231,8 +233,8 @@ export function CategoriesPanel() {
                     onClick={(e) => { e.stopPropagation(); setActiveCategory(category.id); }}
                     onDoubleClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
                     aria-pressed={isActive}
-                    aria-label={isActive ? `${category.name} (selected for new bins)` : `Select ${category.name} for new bins`}
-                    title="Double-click to edit"
+                    aria-label={isActive ? t('layout:category.categorySelected', { name: category.name }) : t('layout:category.selectCategoryNamed', { name: category.name })}
+                    title={t('layout:category.doubleClickToEdit')}
                   >
                     <span className="text-sm truncate text-content block">
                       {category.name}
@@ -243,7 +245,7 @@ export function CategoriesPanel() {
                     className={`text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${
                       isHovered && binCount > 0 ? 'bg-accent/20 text-accent' : 'text-content-tertiary'
                     }`}
-                    title={binCount > 0 ? `${binCount} bin${binCount > 1 ? 's' : ''} use this category` : 'No bins use this category'}
+                    title={binCount > 0 ? t('layout:category.binCountHint', { count: binCount }) : t('layout:category.noBinsUseThis')}
                   >
                     {binCount > 0 ? binCount : ''}
                   </span>
@@ -256,9 +258,9 @@ export function CategoriesPanel() {
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}
-        title="Delete Category"
-        message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
-        confirmText="Delete"
+        title={t('layout:category.deleteConfirmTitle')}
+        message={t('layout:category.deleteConfirmMessage', { name: deleteConfirm?.name })}
+        confirmText={t('common:buttons.delete')}
         destructive
         onConfirm={confirmDeleteCategory}
         onCancel={() => setDeleteConfirm(null)}

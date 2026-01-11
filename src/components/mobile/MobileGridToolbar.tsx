@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
 import { CONSTRAINTS } from '../../constants';
@@ -11,6 +12,7 @@ interface MobileGridToolbarProps {
  * Shows layer indicator, paint mode, 3D preview toggle, and basic zoom.
  */
 export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
+  const { t } = useTranslation(['layout', 'aria']);
   const {
     zoom,
     zoomIn,
@@ -56,7 +58,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
         <span
           className="font-medium truncate max-w-[80px] text-sm text-content"
         >
-          {activeLayer?.name || 'Layer'}
+          {activeLayer?.name || t('layout:mobile.toolbar.layer')}
         </span>
         <svg className="w-3 h-3 flex-shrink-0 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -82,7 +84,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
           <button
             onClick={() => setPaintSize(null)}
             className="p-1 rounded text-accent"
-            aria-label="Exit paint mode"
+            aria-label={t('layout:mobile.toolbar.exitPaintMode')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -97,8 +99,8 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
         <button
           onClick={toggleIsometricPreview}
           className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-secondary'} w-10 h-10 p-0`}
-          aria-label={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
-          title={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
+          aria-label={showIsometricPreview ? t('layout:mobile.toolbar.hidePreview') : t('layout:mobile.toolbar.showPreview')}
+          title={showIsometricPreview ? t('layout:mobile.toolbar.hidePreview') : t('layout:mobile.toolbar.showPreview')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -108,7 +110,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
           onClick={zoomOut}
           disabled={!canZoomOut}
           className="btn btn-secondary w-10 h-10 p-0"
-          aria-label="Zoom out"
+          aria-label={t('aria:buttons.zoomOut')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -117,7 +119,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
         <button
           onClick={onFitToScreen}
           className="btn btn-secondary px-3 h-10"
-          aria-label="Fit to screen"
+          aria-label={t('layout:mobile.toolbar.fitToScreen')}
         >
           <span className="text-sm font-medium">{Math.round(zoom * 100)}%</span>
         </button>
@@ -125,7 +127,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
           onClick={zoomIn}
           disabled={!canZoomIn}
           className="btn btn-secondary w-10 h-10 p-0"
-          aria-label="Zoom in"
+          aria-label={t('aria:buttons.zoomIn')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../store';
 import { DEFAULT_CATEGORY_COLOR } from '../constants';
@@ -15,6 +16,7 @@ import {
 } from './inspector';
 
 export function RightPanel() {
+  const { t } = useTranslation(['common', 'layout', 'print', 'aria']);
   const [printListExpanded, setPrintListExpanded] = useState(true);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [expandedSplitRow, setExpandedSplitRow] = useState<number | null>(null);
@@ -51,8 +53,8 @@ export function RightPanel() {
           <button
             onClick={toggle}
             className="p-1 rounded transition-colors text-content-secondary hover:bg-surface-hover hover:text-content"
-            title="Expand panel"
-            aria-label="Expand right panel"
+            title={t('layout:sidebar.expandPanel')}
+            aria-label={t('aria:actions.expandRightPanel')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
@@ -67,8 +69,8 @@ export function RightPanel() {
     <button
       onClick={toggle}
       className="flex-shrink-0 p-1 rounded transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
-      title="Collapse panel"
-      aria-label="Collapse right panel"
+      title={t('layout:sidebar.collapsePanel')}
+      aria-label={t('aria:actions.collapseRightPanel')}
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
@@ -85,7 +87,7 @@ export function RightPanel() {
       <div className="flex items-center gap-3 px-4 py-3 border-b border-stroke-subtle">
         {collapseButton}
         <h2 className="text-xs font-semibold text-content-tertiary uppercase tracking-wider">
-          Inspector
+          {t('common:labels.inspector')}
         </h2>
       </div>
 
@@ -124,7 +126,7 @@ export function RightPanel() {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
-            <h2 className="section-header m-0">Bin List</h2>
+            <h2 className="section-header m-0">{t('common:labels.binList')}</h2>
             {printList.rows.length > 0 && (
               <span className="badge badge-info">{printList.totalBins}</span>
             )}
@@ -140,8 +142,8 @@ export function RightPanel() {
                 setTimeout(() => setCopyFeedback(false), 2000);
               }}
               className="btn btn-ghost p-1.5 min-w-0 min-h-0"
-              title="Copy as TSV for spreadsheets"
-              aria-label="Copy bin list as TSV"
+              title={t('print:export.copyTsvHint')}
+              aria-label={t('aria:actions.copyBinListTsv')}
             >
               {copyFeedback ? (
                 <svg className="w-4 h-4 text-[var(--color-success)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,21 +169,21 @@ export function RightPanel() {
                 <thead className="bg-surface-elevated">
                   <tr>
                     <th className="pl-4 pr-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated">
-                      Size
+                      {t('print:columns.size')}
                     </th>
-                    <th className="px-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated" title="Height">
-                      H
+                    <th className="px-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated" title={t('print:columns.heightFull')}>
+                      {t('print:columns.height')}
                     </th>
-                    <th className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated" title="Quantity">
-                      Qty
+                    <th className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated" title={t('print:columns.quantity')}>
+                      {t('print:columns.quantity')}
                     </th>
                     {printList.hasAnySplits && (
-                      <th className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated" title="Pieces after split">
-                        Pcs
+                      <th className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated" title={t('print:columns.piecesFull')}>
+                        {t('print:columns.pieces')}
                       </th>
                     )}
-                    <th className="pl-2 pr-4 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated" title="Estimated filament (meters)">
-                      ~m
+                    <th className="pl-2 pr-4 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated" title={t('print:columns.filamentMetersFull')}>
+                      {t('print:columns.filamentMeters')}
                     </th>
                   </tr>
                 </thead>
@@ -206,7 +208,7 @@ export function RightPanel() {
                               <span className="inline-flex items-center gap-1.5">
                                 <span
                                   className="inline-flex gap-0.5"
-                                  title={row.categoryIds.map(catId => layout.categories.find(c => c.id === catId)?.name || 'Unknown').join(', ')}
+                                  title={row.categoryIds.map(catId => layout.categories.find(c => c.id === catId)?.name || t('layout:bin.unknown')).join(', ')}
                                 >
                                   {row.categoryIds.slice(0, 3).map((catId) => {
                                     const cat = layout.categories.find(c => c.id === catId);
@@ -216,7 +218,7 @@ export function RightPanel() {
                                         role="img"
                                         className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                         style={{ backgroundColor: cat?.color || DEFAULT_CATEGORY_COLOR }}
-                                        aria-label={cat?.name || 'Unknown category'}
+                                        aria-label={cat?.name || t('layout:bin.unknown')}
                                       />
                                     );
                                   })}
@@ -231,7 +233,7 @@ export function RightPanel() {
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                    aria-label="Click to see split preview"
+                                    aria-label={t('print:split.clickToSeeSplit')}
                                   >
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                   </svg>
@@ -288,7 +290,7 @@ export function RightPanel() {
                                 <SplitPreview width={w} depth={d} pieces={row.pieces} />
                                 <div className="text-xs text-content-secondary">
                                   <div className="font-medium mb-1">
-                                    Split into {row.totalPieces} pieces:
+                                    {t('print:split.splitInto', { count: row.totalPieces })}
                                   </div>
                                   {row.pieces.map((piece) => (
                                     <div key={`${piece.width}x${piece.depth}`} className="text-content-tertiary">
@@ -327,7 +329,7 @@ export function RightPanel() {
         isOpen={deleteConfirmState !== null}
         title={deleteConfirmState?.title || ''}
         message={deleteConfirmState?.message || ''}
-        confirmText="Delete"
+        confirmText={t('common:buttons.delete')}
         destructive
         onConfirm={confirmDelete}
         onCancel={cancelDelete}

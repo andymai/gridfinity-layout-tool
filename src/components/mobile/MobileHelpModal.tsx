@@ -1,4 +1,5 @@
 import { useEffect, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {
@@ -50,6 +51,8 @@ interface MobileHelpModalProps {
  * Mobile-specific help modal showing touch gestures instead of keyboard shortcuts.
  */
 export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
+  const { t } = useTranslation(['help']);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -91,12 +94,12 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
         <div className="flex justify-between items-center mb-5">
           <h2 id="mobile-help-title" style={STYLES.title}>
-            Touch Gestures
+            {t('help:mobileGestures.title')}
           </h2>
           <button
             onClick={onClose}
             className="btn btn-ghost w-10 h-10 p-0"
-            aria-label="Close help"
+            aria-label={t('help:mobileGestures.closeHelp')}
           >
             <svg
               className="w-5 h-5"
@@ -113,28 +116,28 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           {/* Drawing & Selection */}
           <section>
             <h3 className="mb-3" style={STYLES.sectionHeader}>
-              Drawing & Selection
+              {t('help:mobileGestures.sections.drawingSelection')}
             </h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<TapIcon />}
-                gesture="Tap bin"
-                description="Select bin"
+                gesture={t('help:mobileGestures.gestures.tapBin')}
+                description={t('help:mobileGestures.gestures.selectBin')}
               />
               <GestureRow
                 icon={<DragIcon />}
-                gesture="Drag on empty grid"
-                description="Draw new bin"
+                gesture={t('help:mobileGestures.gestures.dragOnEmpty')}
+                description={t('help:mobileGestures.gestures.drawNewBin')}
               />
               <GestureRow
                 icon={<DragIcon />}
-                gesture="Drag selected bin"
-                description="Move bin"
+                gesture={t('help:mobileGestures.gestures.dragSelected')}
+                description={t('help:mobileGestures.gestures.moveBin')}
               />
               <GestureRow
                 icon={<LongPressIcon />}
-                gesture="Long-press bin"
-                description="Open context menu"
+                gesture={t('help:mobileGestures.gestures.longPress')}
+                description={t('help:mobileGestures.gestures.openContextMenu')}
               />
             </div>
           </section>
@@ -142,23 +145,23 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           {/* Editing */}
           <section>
             <h3 className="mb-3" style={STYLES.sectionHeader}>
-              Editing
+              {t('help:mobileGestures.sections.editing')}
             </h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<DragEdgeIcon />}
-                gesture="Drag bin edge"
-                description="Resize bin"
+                gesture={t('help:mobileGestures.gestures.dragEdge')}
+                description={t('help:mobileGestures.gestures.resizeBin')}
               />
               <GestureRow
                 icon={<DragCornerIcon />}
-                gesture="Drag corner handle"
-                description="Resize width & depth"
+                gesture={t('help:mobileGestures.gestures.dragCorner')}
+                description={t('help:mobileGestures.gestures.resizeWidthDepth')}
               />
               <GestureRow
                 icon={<DragIcon />}
-                gesture="Drag bin to stash"
-                description="Move to staging area"
+                gesture={t('help:mobileGestures.gestures.dragToStash')}
+                description={t('help:mobileGestures.gestures.moveToStaging')}
               />
             </div>
           </section>
@@ -166,23 +169,23 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           {/* Paint Mode */}
           <section>
             <h3 className="mb-3" style={STYLES.sectionHeader}>
-              Paint Mode
+              {t('help:mobileGestures.sections.paintMode')}
             </h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<TapIcon />}
-                gesture="Tap size in palette"
-                description="Enter paint mode"
+                gesture={t('help:mobileGestures.gestures.tapSize')}
+                description={t('help:mobileGestures.gestures.enterPaintMode')}
               />
               <GestureRow
                 icon={<DragIcon />}
-                gesture="Drag on grid"
-                description="Fill area with bins"
+                gesture={t('help:mobileGestures.gestures.dragOnGrid')}
+                description={t('help:mobileGestures.gestures.fillArea')}
               />
               <GestureRow
                 icon={<TapIcon />}
-                gesture="Tap × button"
-                description="Exit paint mode"
+                gesture={t('help:mobileGestures.gestures.tapXButton')}
+                description={t('help:mobileGestures.gestures.exitPaintMode')}
               />
             </div>
           </section>
@@ -190,23 +193,23 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           {/* Navigation */}
           <section>
             <h3 className="mb-3" style={STYLES.sectionHeader}>
-              Navigation
+              {t('help:mobileGestures.sections.navigation')}
             </h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<SwipeDownIcon />}
-                gesture="Swipe down on panel"
-                description="Close bottom sheet"
+                gesture={t('help:mobileGestures.gestures.swipeDown')}
+                description={t('help:mobileGestures.gestures.closeSheet')}
               />
               <GestureRow
                 icon={<TapIcon />}
-                gesture="Tap layer button"
-                description="Switch layers"
+                gesture={t('help:mobileGestures.gestures.tapLayerButton')}
+                description={t('help:mobileGestures.gestures.switchLayers')}
               />
               <GestureRow
                 icon={<TapIcon />}
-                gesture="Tap striped zone"
-                description="Jump to blocking bin"
+                gesture={t('help:mobileGestures.gestures.tapStripedZone')}
+                description={t('help:mobileGestures.gestures.jumpToBlocking')}
               />
             </div>
           </section>
@@ -214,28 +217,28 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           {/* Tips */}
           <section>
             <h3 className="mb-3" style={STYLES.sectionHeader}>
-              Tips
+              {t('help:mobileGestures.sections.tips')}
             </h3>
             <ul className="space-y-2 p-3 rounded-lg" style={STYLES.tipsList}>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>Long-press a bin to duplicate, delete, or move to stash</span>
+                <span>{t('help:mobileGestures.tips.longPressActions')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>Tap the 3D cube icon to see your layout in isometric view</span>
+                <span>{t('help:mobileGestures.tips.tap3dIcon')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>With keyboard: M to move bins, R to resize, V for 3D preview, arrows to navigate, 1-4 for camera views</span>
+                <span>{t('help:mobileGestures.tips.keyboardShortcuts')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>Oversized bins are automatically split for printing</span>
+                <span>{t('help:mobileGestures.tips.oversizedSplit')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>Your layout auto-saves to your browser</span>
+                <span>{t('help:mobileGestures.tips.autoSave')}</span>
               </li>
             </ul>
           </section>

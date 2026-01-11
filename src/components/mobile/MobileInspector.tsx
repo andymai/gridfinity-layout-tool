@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import {
   useBinInspector,
@@ -11,6 +12,7 @@ import {
  * Uses shared inspector components with mobile variant.
  */
 export function MobileInspector() {
+  const { t } = useTranslation(['layout', 'common']);
   const inspector = useBinInspector();
   const {
     selectedBins,
@@ -37,9 +39,9 @@ export function MobileInspector() {
 
         <ConfirmDialog
           isOpen={deleteConfirmState !== null}
-          title={deleteConfirmState?.title || 'Delete Bins'}
-          message={deleteConfirmState?.message || `Delete ${selectedBins.length} selected bins?`}
-          confirmText="Delete"
+          title={deleteConfirmState?.title || t('bin.deleteMultiple')}
+          message={deleteConfirmState?.message || t('bin.deleteMultipleConfirm', { count: selectedBins.length })}
+          confirmText={t('common:buttons.delete')}
           destructive
           onConfirm={confirmDelete}
           onCancel={cancelDelete}
@@ -60,9 +62,9 @@ export function MobileInspector() {
 
       <ConfirmDialog
         isOpen={deleteConfirmState !== null}
-        title={deleteConfirmState?.title || 'Delete Bin'}
-        message={deleteConfirmState?.message || `Delete this ${bin.width}×${bin.depth} bin?`}
-        confirmText="Delete"
+        title={deleteConfirmState?.title || t('bin.deleteSingle')}
+        message={deleteConfirmState?.message || t('bin.deleteSingleConfirm', { width: bin.width, depth: bin.depth })}
+        confirmText={t('common:buttons.delete')}
         destructive
         onConfirm={confirmDelete}
         onCancel={cancelDelete}

@@ -1,5 +1,6 @@
 import type { RefObject, PointerEvent, JSX } from 'react';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
 import { useGridCoords } from '../../hooks';
@@ -22,6 +23,7 @@ interface GridCanvasProps {
  * Uses CSS Grid to render cells and bins.
  */
 export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, onStartResize }: GridCanvasProps) {
+  const { t } = useTranslation(['layout', 'aria']);
   const { drawer, bins, layers, categories } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
@@ -231,9 +233,9 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
                 zIndex: 8,
               }}
               onClick={() => sourceBin && handleBlockedZoneClick(sourceBin.id, sourceBin.layerId)}
-              title={sourceLayer ? `Blocked by bin from ${sourceLayer.name} extending upward. Click to switch to ${sourceLayer.name}.` : undefined}
+              title={sourceLayer ? t('layout:blockedZone.title', { layer: sourceLayer.name }) : undefined}
               role="button"
-              aria-label={sourceLayer ? `Blocked by bin from ${sourceLayer.name}. Click to switch layer.` : 'Blocked zone'}
+              aria-label={sourceLayer ? t('layout:blockedZone.ariaLabel', { layer: sourceLayer.name }) : t('layout:blockedZone.ariaLabelDefault')}
             >
               {/* Diagonal hatching pattern */}
               <svg

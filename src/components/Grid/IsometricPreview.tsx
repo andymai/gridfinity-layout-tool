@@ -1,4 +1,5 @@
 import { useMemo, useCallback, useRef, useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { Canvas } from "@react-three/fiber"
 import { useShallow } from "zustand/shallow"
 import { useLayoutStore, useUIStore } from "../../store"
@@ -27,6 +28,7 @@ interface IsometricPreviewProps {
  * Shows all layers stacked with bins colored by category.
  */
 export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
+  const { t } = useTranslation(['layout'])
   const sceneRef = useRef<SceneHandle>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { isMobile, isTablet } = useResponsive()
@@ -418,14 +420,14 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               }`}
               style={{ color: "rgba(255, 255, 255, 0.9)" }}
             >
-              No Bins Yet
+              {t('layout:preview3d.noBins')}
             </h3>
             {/* Message */}
             <p
               className={isPreviewExpanded ? "text-sm" : "text-xs"}
               style={{ color: "rgba(255, 255, 255, 0.7)" }}
             >
-              Place bins on the grid to see your 3D layout
+              {t('layout:preview3d.placeBinsHint')}
             </p>
           </div>
         </div>
@@ -445,7 +447,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           className={`btn btn-ghost ${
             isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
           }`}
-          title="Isometric view"
+          title={t('layout:preview3d.isometricView')}
         >
           <svg
             className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
@@ -461,7 +463,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             />
           </svg>
           {isPreviewExpanded && !isMobile && (
-            <span className="text-xs font-medium">3D</span>
+            <span className="text-xs font-medium">{t('layout:preview3d.isometric')}</span>
           )}
         </button>
         {/* Front view - rectangle wider than tall */}
@@ -473,7 +475,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           className={`btn btn-ghost ${
             isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
           }`}
-          title="Front view"
+          title={t('layout:preview3d.frontView')}
         >
           <svg
             className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
@@ -486,7 +488,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <line x1="3" y1="13" x2="21" y2="13" strokeWidth={1.5} />
           </svg>
           {isPreviewExpanded && !isMobile && (
-            <span className="text-xs font-medium">Front</span>
+            <span className="text-xs font-medium">{t('layout:preview3d.front')}</span>
           )}
         </button>
         {/* Side view - rectangle taller than wide */}
@@ -498,7 +500,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           className={`btn btn-ghost ${
             isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
           }`}
-          title="Side view"
+          title={t('layout:preview3d.sideView')}
         >
           <svg
             className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
@@ -511,7 +513,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <line x1="7" y1="12" x2="17" y2="12" strokeWidth={1.5} />
           </svg>
           {isPreviewExpanded && !isMobile && (
-            <span className="text-xs font-medium">Side</span>
+            <span className="text-xs font-medium">{t('layout:preview3d.side')}</span>
           )}
         </button>
       </div>
@@ -535,7 +537,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                 ? `btn ${layerViewMode === 'focus' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
                 : `w-7 h-7 ${layerViewMode === 'focus' ? 'bg-accent text-white' : 'hover:bg-surface-elevated'}`
             }`}
-            title="Focus: Show only active layer"
+            title={t('layout:preview3d.layerViewMode.focusHint')}
           >
             <svg
               className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-3.5 h-3.5"}
@@ -550,7 +552,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
             </svg>
             {isPreviewExpanded && !isMobile && (
-              <span className="text-xs">Focus</span>
+              <span className="text-xs">{t('layout:preview3d.layerViewMode.focus')}</span>
             )}
           </button>
           {/* Stack - show active layer and below */}
@@ -564,7 +566,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                 ? `btn ${layerViewMode === 'stack' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
                 : `w-7 h-7 ${layerViewMode === 'stack' ? 'bg-accent text-white' : 'hover:bg-surface-elevated'}`
             }`}
-            title="Stack: Show active layer and below"
+            title={t('layout:preview3d.layerViewMode.stackHint')}
           >
             <svg
               className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-3.5 h-3.5"}
@@ -580,7 +582,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               <path d="M2 12l10 5 10-5" />
             </svg>
             {isPreviewExpanded && !isMobile && (
-              <span className="text-xs">Stack</span>
+              <span className="text-xs">{t('layout:preview3d.layerViewMode.stack')}</span>
             )}
           </button>
           {/* All - show all layers */}
@@ -594,7 +596,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                 ? `btn ${layerViewMode === 'all' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
                 : `w-7 h-7 ${layerViewMode === 'all' ? 'bg-accent text-white' : 'hover:bg-surface-elevated'}`
             }`}
-            title="All: Show all layers"
+            title={t('layout:preview3d.layerViewMode.allHint')}
           >
             <svg
               className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-3.5 h-3.5"}
@@ -611,7 +613,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               <path d="M2 12l10 5 10-5" />
             </svg>
             {isPreviewExpanded && !isMobile && (
-              <span className="text-xs">All</span>
+              <span className="text-xs">{t('layout:preview3d.layerViewMode.all')}</span>
             )}
           </button>
         </div>
@@ -631,7 +633,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           className={`btn btn-ghost ${
             isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
           }`}
-          title={isPreviewExpanded ? "Collapse preview" : "Expand preview"}
+          title={isPreviewExpanded ? t('layout:preview3d.collapsePreview') : t('layout:preview3d.expandPreview')}
         >
           {isPreviewExpanded ? (
             <>
@@ -648,7 +650,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                   d="M9 9L4 4m0 0v4m0-4h4m6 6l5 5m0 0v-4m0 4h-4M9 15l-5 5m0 0v-4m0 4h4m6-6l5-5m0 0v4m0-4h-4"
                 />
               </svg>
-              {!isMobile && <span className="text-xs font-medium">Collapse</span>}
+              {!isMobile && <span className="text-xs font-medium">{t('layout:preview3d.collapse')}</span>}
             </>
           ) : (
             <svg
@@ -679,7 +681,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           className={`btn btn-ghost ${
             isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
           }`}
-          title={isPreviewExpanded ? "Collapse preview" : "Close preview"}
+          title={isPreviewExpanded ? t('layout:preview3d.collapsePreview') : t('layout:preview3d.closePreview')}
         >
           <svg
             className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
@@ -695,7 +697,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             />
           </svg>
           {isPreviewExpanded && !isMobile && (
-            <span className="text-xs font-medium">Close</span>
+            <span className="text-xs font-medium">{t('layout:preview3d.close')}</span>
           )}
         </button>
       </div>
@@ -711,10 +713,10 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           }}
         >
           <div className="flex items-center gap-4 text-content-secondary">
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">V</kbd> Toggle</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">Space</kbd> Expand</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">R</kbd> Reset</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">Esc</kbd> Close</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">V</kbd> {t('layout:preview3d.shortcuts.toggle')}</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">Space</kbd> {t('layout:preview3d.shortcuts.expand')}</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">R</kbd> {t('layout:preview3d.shortcuts.reset')}</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">Esc</kbd> {t('layout:preview3d.shortcuts.close')}</span>
           </div>
         </div>
       )}

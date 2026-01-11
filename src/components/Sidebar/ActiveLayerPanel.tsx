@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
@@ -18,6 +19,7 @@ const RECTANGLE_SIZES = [
 ];
 
 export function ActiveLayerPanel() {
+  const { t } = useTranslation(['layout', 'common', 'aria']);
   const [rotated, setRotated] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
@@ -74,7 +76,7 @@ export function ActiveLayerPanel() {
       const afterCount = useLayoutStore.getState().layout.bins.filter(b => b.layerId === activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
-        addToast(`Added ${added} bins to fill gaps`, 'success');
+        addToast(t('layout:fillGaps.addedBins', { count: added }), 'success');
       }
     }, 0);
   };
@@ -86,7 +88,7 @@ export function ActiveLayerPanel() {
       clearLayer(activeLayerId);
       setSelectedBins([]);
     });
-    addToast(`Cleared ${count} bins from layer`, 'success');
+    addToast(t('layout:clearLayer.removeAllHint', { count }), 'success');
     setShowClearConfirm(false);
   };
 
@@ -102,7 +104,7 @@ export function ActiveLayerPanel() {
       const afterCount = useLayoutStore.getState().layout.bins.filter(b => b.layerId === activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
-        addToast(`Added ${added} ${width}×${depth} bins`, 'success');
+        addToast(t('layout:fill.fillWithSize', { width, depth, count: added }), 'success');
       }
     }, 0);
   };
@@ -120,8 +122,10 @@ export function ActiveLayerPanel() {
       <button
         onClick={() => togglePaintSize({ width: w, depth: d })}
         className={`flex flex-col items-center justify-end gap-1 h-[60px] p-1.5 rounded transition-colors ${isActive ? 'bg-accent/20' : 'hover:bg-surface-hover'} ${className}`}
-        aria-label={`${isActive ? 'Deselect' : 'Select'} ${w}×${d} for painting`}
-        title={`Click to paint ${w}×${d} bins`}
+        aria-label={isActive
+          ? t('layout:binPalette.deselectForPainting', { width: w, depth: d })
+          : t('layout:binPalette.selectForPainting', { width: w, depth: d })}
+        title={t('layout:binPalette.clickToPaint', { width: w, depth: d })}
       >
         <div
           className="rounded-[1px]"
@@ -143,14 +147,14 @@ export function ActiveLayerPanel() {
     <div>
       {/* Bin Palette header */}
       <div className="mb-3">
-        <h2 className="text-sm font-semibold text-content-secondary tracking-wide mb-1">Bin Palette</h2>
+        <h2 className="text-sm font-semibold text-content-secondary tracking-wide mb-1">{t('layout:binPalette.title')}</h2>
         <p className="text-xs text-content-tertiary">
-          Select a size, then click or drag on grid
+          {t('layout:binPalette.instructions')}
         </p>
       </div>
 
       {/* Squares section */}
-      <div className="text-xs text-content-tertiary mb-1.5">Squares</div>
+      <div className="text-xs text-content-tertiary mb-1.5">{t('layout:binPalette.squares')}</div>
       <div className="grid grid-cols-6 gap-1.5">
         {SQUARE_SIZES.map(size => (
           <SizeButton key={`${size}×${size}`} w={size} d={size} className="w-full" />
@@ -159,17 +163,17 @@ export function ActiveLayerPanel() {
 
       {/* Rectangles section */}
       <div className="flex items-center justify-between mt-3 mb-1.5">
-        <span className="text-xs text-content-tertiary">Rectangles</span>
+        <span className="text-xs text-content-tertiary">{t('layout:binPalette.rectangles')}</span>
         <button
           onClick={() => setRotated(!rotated)}
           className="text-xs text-content-tertiary hover:text-content flex items-center gap-1 transition-colors"
-          title={rotated ? 'Showing tall bins (click for wide)' : 'Showing wide bins (click for tall)'}
-          aria-label={rotated ? 'Switch to wide rectangles' : 'Switch to tall rectangles'}
+          title={rotated ? t('layout:binPalette.showingTall') : t('layout:binPalette.showingWide')}
+          aria-label={rotated ? t('layout:binPalette.switchToWide') : t('layout:binPalette.switchToTall')}
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          {rotated ? 'Tall' : 'Wide'}
+          {rotated ? t('layout:binPalette.tall') : t('layout:binPalette.wide')}
         </button>
       </div>
       <div className="grid grid-cols-5 gap-1.5">
@@ -184,10 +188,10 @@ export function ActiveLayerPanel() {
         <button
           onClick={() => handleFill(paintSize.width, paintSize.depth)}
           className="btn btn-primary w-full justify-center mt-3 text-sm"
-          title={`Fill empty space with ${paintSize.width}×${paintSize.depth} bins`}
-          aria-label={`Fill layer with ${paintSize.width} by ${paintSize.depth} bins`}
+          title={t('layout:binPalette.fillEmptySpace', { width: paintSize.width, depth: paintSize.depth })}
+          aria-label={t('layout:binPalette.fillLayerWith', { width: paintSize.width, depth: paintSize.depth })}
         >
-          Fill with {paintSize.width}×{paintSize.depth}
+          {t('layout:binPalette.fillWith', { width: paintSize.width, depth: paintSize.depth })}
         </button>
       )}
 
@@ -196,12 +200,12 @@ export function ActiveLayerPanel() {
         onClick={handleFillGaps}
         disabled={emptyCells === 0}
         className="btn btn-secondary w-full justify-center mt-2 text-sm"
-        title={emptyCells > 0 ? `Fill ${emptyCells} empty cells with optimally-sized bins` : 'No gaps to fill'}
+        title={emptyCells > 0 ? t('layout:fillGaps.fillGapsHint', { count: emptyCells }) : t('layout:fillGaps.noGapsHint')}
       >
         <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
         </svg>
-        {emptyCells > 0 ? `Fill ${emptyCells} gaps` : 'No gaps'}
+        {emptyCells > 0 ? t('layout:fillGaps.fillGapsCount', { count: emptyCells }) : t('layout:fillGaps.noGaps')}
       </button>
 
       {/* Clear layer button */}
@@ -209,20 +213,20 @@ export function ActiveLayerPanel() {
         onClick={() => setShowClearConfirm(true)}
         disabled={layerBins.length === 0}
         className="btn btn-ghost w-full justify-center mt-2 text-sm text-error hover:bg-error/10"
-        title={layerBins.length > 0 ? `Remove all ${layerBins.length} bins from this layer` : 'No bins to clear'}
+        title={layerBins.length > 0 ? t('layout:clearLayer.removeAllHint', { count: layerBins.length }) : t('layout:clearLayer.noBinsToRemove')}
       >
         <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
         </svg>
-        {layerBins.length > 0 ? `Clear ${layerBins.length} bins` : 'No bins'}
+        {layerBins.length > 0 ? t('layout:clearLayer.clearBins', { count: layerBins.length }) : t('layout:clearLayer.noBins')}
       </button>
 
       {/* Clear confirmation dialog */}
       <ConfirmDialog
         isOpen={showClearConfirm}
-        title="Clear Layer"
-        message={`Remove all ${layerBins.length} bin${layerBins.length !== 1 ? 's' : ''} from "${activeLayer.name}"? This can be undone.`}
-        confirmText="Clear"
+        title={t('layout:clearLayer.title')}
+        message={t('layout:clearLayer.removeAllBins', { count: layerBins.length, layerName: activeLayer.name })}
+        confirmText={t('common:buttons.clear')}
         destructive
         onConfirm={handleClearLayer}
         onCancel={() => setShowClearConfirm(false)}

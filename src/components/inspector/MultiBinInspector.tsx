@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import type { UseBinInspectorReturn } from './useBinInspector';
 
@@ -18,6 +19,7 @@ export function MultiBinInspector({
   variant,
   onClose,
 }: MultiBinInspectorProps) {
+  const { t } = useTranslation(['common', 'layout', 'aria']);
   const {
     selectedBins,
     categories,
@@ -55,7 +57,7 @@ export function MultiBinInspector({
     const parts: string[] = [];
     counts.forEach((count, catId) => {
       const cat = categories.find((c) => c.id === catId);
-      parts.push(`${count} ${cat?.name || 'Unknown'}`);
+      parts.push(`${count} ${cat?.name || t('layout:bin.unknown')}`);
     });
     return parts.slice(0, 3).join(', ') + (parts.length > 3 ? '...' : '');
   };
@@ -92,14 +94,14 @@ export function MultiBinInspector({
           <span className="text-[10px] font-bold text-black">{selectedBins.length}</span>
         </div>
         <h2 className="flex-1 text-lg font-semibold text-content">
-          Bins Selected
+          {t('layout:bin.binsSelected')}
         </h2>
         {onClose && (
           <button
             type="button"
             onClick={onClose || clearSelection}
             className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-            aria-label="Deselect all bins"
+            aria-label={t('aria:actions.deselectAllBins')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -109,14 +111,14 @@ export function MultiBinInspector({
       </div>
 
       <p className={`${isMobile ? 'text-base' : 'text-sm'} text-content-secondary mb-4`}>
-        Drag to move together, or use arrow keys to nudge.
+        {t('layout:bin.dragToMove')}
       </p>
 
       <div className="space-y-3">
         {/* Category */}
         <div>
           <label className={`block ${labelSize} text-content-tertiary`}>
-            Category
+            {t('common:labels.category')}
           </label>
           <div className="relative">
             {categoryColor ? (
@@ -131,7 +133,7 @@ export function MultiBinInspector({
               value={commonCategory || ''}
               onChange={(e) => updateMultiCategory(e.target.value)}
               className={`input w-full pl-8 pr-8 appearance-none ${inputHeight}`}
-              aria-label="Category for selected bins"
+              aria-label={t('aria:inputs.categoryForBins')}
             >
               {!commonCategory && (
                 <option value="" disabled>
@@ -156,14 +158,14 @@ export function MultiBinInspector({
         {/* Height control */}
         <div>
           <label className={`block ${labelSize} text-content-tertiary`}>
-            Height
+            {t('common:labels.height')}
           </label>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => updateMultiHeight(-1)}
               className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-              aria-label="Decrease height for all bins"
+              aria-label={t('aria:actions.decreaseHeightAll')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -176,7 +178,7 @@ export function MultiBinInspector({
               type="button"
               onClick={() => updateMultiHeight(1)}
               className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-              aria-label="Increase height for all bins"
+              aria-label={t('aria:actions.increaseHeightAll')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -190,9 +192,9 @@ export function MultiBinInspector({
           <div>
             <label
               className={`block ${labelSize} text-content-tertiary`}
-              title="Extra blocked space above bins for tall contents"
+              title={t('layout:bin.clearanceTipMulti')}
             >
-              Clearance
+              {t('layout:bin.clearance')}
             </label>
             <div className="flex items-center gap-2">
               <button
@@ -200,7 +202,7 @@ export function MultiBinInspector({
                 onClick={() => updateMultiClearance(-1)}
                 disabled={maxClearance <= 0}
                 className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-                aria-label="Decrease clearance for all bins"
+                aria-label={t('aria:actions.decreaseClearanceAll')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -213,7 +215,7 @@ export function MultiBinInspector({
                 type="button"
                 onClick={() => updateMultiClearance(1)}
                 className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-                aria-label="Increase clearance for all bins"
+                aria-label={t('aria:actions.increaseClearanceAll')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -231,7 +233,7 @@ export function MultiBinInspector({
               onClick={moveToStaging}
               className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
             >
-              To Stash
+              {t('layout:actions.toStash')}
             </button>
           )}
           <button
@@ -239,7 +241,7 @@ export function MultiBinInspector({
             onClick={requestDelete}
             className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
           >
-            Delete All
+            {t('layout:actions.deleteAll')}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
@@ -24,6 +25,7 @@ const COLOR_PALETTE = [
  * Mobile-optimized categories panel with large touch targets.
  */
 export function MobileCategoriesPanel() {
+  const { t } = useTranslation(['layout', 'common', 'toast']);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
@@ -87,13 +89,13 @@ export function MobileCategoriesPanel() {
 
     // Show helpful message if category is in use
     if (binCount > 0) {
-      addToast(`${binCount} bin${binCount > 1 ? 's' : ''} use "${name}". Reassign them first.`, 'error');
+      addToast(t('toast:category.inUse', { count: binCount, name }), 'error');
       return;
     }
 
     // Show message if it's the last category
     if (categories.length <= CONSTRAINTS.CATEGORIES_MIN) {
-      addToast('Cannot delete the last category', 'error');
+      addToast(t('toast:category.cannotDeleteLast'), 'error');
       return;
     }
 
@@ -123,7 +125,7 @@ export function MobileCategoriesPanel() {
       <p
         className="text-sm mb-4 text-content-tertiary"
       >
-        Select a category to use when drawing bins.
+        {t('layout:category.titleHint')}
       </p>
 
       <div className="space-y-2">
@@ -175,13 +177,13 @@ export function MobileCategoriesPanel() {
                       onClick={() => handleDelete(category.id, category.name)}
                       className={`btn flex-1 ${canDelete ? 'btn-danger' : 'btn-secondary opacity-50'}`}
                     >
-                      Delete{binCount > 0 ? ` (${binCount} bins)` : ''}
+                      {t('common:buttons.delete')}{binCount > 0 ? ` (${binCount} ${t('layout:mobile.layoutsPanel.bins')})` : ''}
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
                       className="btn btn-secondary flex-1"
                     >
-                      Done
+                      {t('common:buttons.done')}
                     </button>
                   </div>
                 </div>
@@ -210,13 +212,13 @@ export function MobileCategoriesPanel() {
                     <span
                       className="px-2 py-1 rounded text-xs font-medium bg-accent text-black"
                     >
-                      Active
+                      {t('layout:library.active')}
                     </span>
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
                     className="btn btn-ghost w-10 h-10 p-0"
-                    aria-label="Edit category"
+                    aria-label={t('layout:category.rename')}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -238,14 +240,14 @@ export function MobileCategoriesPanel() {
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        Add Category
+        {t('layout:category.add')}
       </button>
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}
-        title="Delete Category"
-        message={`Delete "${deleteConfirm?.name}"? This cannot be undone.`}
-        confirmText="Delete"
+        title={t('layout:category.deleteConfirmTitle')}
+        message={t('layout:category.deleteConfirmMessage', { name: deleteConfirm?.name })}
+        confirmText={t('common:buttons.delete')}
         destructive
         onConfirm={confirmDelete}
         onCancel={() => setDeleteConfirm(null)}

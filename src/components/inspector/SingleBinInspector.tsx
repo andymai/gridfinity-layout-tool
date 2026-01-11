@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { STAGING_ID, CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { useUIStore } from '../../store';
 import type { UseBinInspectorReturn } from './useBinInspector';
@@ -20,6 +21,7 @@ export function SingleBinInspector({
   variant,
   onClose,
 }: SingleBinInspectorProps) {
+  const { t } = useTranslation(['common', 'layout', 'aria']);
   const {
     bin,
     category,
@@ -61,14 +63,14 @@ export function SingleBinInspector({
           aria-hidden="true"
         />
         <h2 className="flex-1 text-lg font-semibold text-content">
-          {formatDim(bin.width)}×{formatDim(bin.depth)} Bin
+          {t('layout:bin.titleWithSize', { width: formatDim(bin.width), depth: formatDim(bin.depth) })}
         </h2>
         {onClose && (
           <button
             type="button"
             onClick={onClose || clearSelection}
             className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-            aria-label="Deselect bin"
+            aria-label={t('aria:actions.deselectBin')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -82,7 +84,7 @@ export function SingleBinInspector({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={`block ${labelSize} text-content-tertiary`}>
-              Width
+              {t('common:labels.width')}
             </label>
             <input
               type="number"
@@ -91,12 +93,12 @@ export function SingleBinInspector({
               className={`input w-full ${inputHeight}`}
               min={minSize}
               step={stepSize}
-              aria-label="Bin width"
+              aria-label={t('aria:inputs.binWidth')}
             />
           </div>
           <div>
             <label className={`block ${labelSize} text-content-tertiary`}>
-              Depth
+              {t('common:labels.depth')}
             </label>
             <input
               type="number"
@@ -105,7 +107,7 @@ export function SingleBinInspector({
               className={`input w-full ${inputHeight}`}
               min={minSize}
               step={stepSize}
-              aria-label="Bin depth"
+              aria-label={t('aria:inputs.binDepth')}
             />
           </div>
         </div>
@@ -113,7 +115,7 @@ export function SingleBinInspector({
         {/* Height control with +/- buttons */}
         <div>
           <label className={`block ${labelSize} text-content-tertiary`}>
-            Height
+            {t('common:labels.height')}
           </label>
           <div className="flex items-center gap-2">
             <button
@@ -121,7 +123,7 @@ export function SingleBinInspector({
               onClick={() => updateField('height', bin.height - 1)}
               disabled={bin.height <= constraints.minHeight}
               className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-              aria-label="Decrease height"
+              aria-label={t('aria:actions.decreaseHeight')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -135,7 +137,7 @@ export function SingleBinInspector({
               onClick={() => updateField('height', bin.height + 1)}
               disabled={bin.height >= constraints.maxHeight}
               className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-              aria-label="Increase height"
+              aria-label={t('aria:actions.increaseHeight')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -143,7 +145,7 @@ export function SingleBinInspector({
             </button>
           </div>
           <div className="text-center mt-1 text-xs text-content-disabled">
-            Range: {constraints.heightRange}
+            {t('common:labels.range', { range: constraints.heightRange })}
           </div>
         </div>
 
@@ -152,9 +154,9 @@ export function SingleBinInspector({
           <div>
             <label
               className={`block ${labelSize} text-content-tertiary`}
-              title="Extra blocked space above this bin for tall contents (e.g., scissors, tools)"
+              title={t('layout:bin.clearanceTip')}
             >
-              Clearance
+              {t('layout:bin.clearance')}
             </label>
             <div className="flex items-center gap-2">
               <button
@@ -162,7 +164,7 @@ export function SingleBinInspector({
                 onClick={() => updateField('clearanceHeight', (bin.clearanceHeight || 0) - 1)}
                 disabled={(bin.clearanceHeight || 0) <= 0}
                 className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-                aria-label="Decrease clearance"
+                aria-label={t('aria:actions.decreaseClearance')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -176,7 +178,7 @@ export function SingleBinInspector({
                 onClick={() => updateField('clearanceHeight', (bin.clearanceHeight || 0) + 1)}
                 disabled={(bin.clearanceHeight || 0) >= constraints.maxClearance}
                 className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-                aria-label="Increase clearance"
+                aria-label={t('aria:actions.increaseClearance')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -184,7 +186,7 @@ export function SingleBinInspector({
               </button>
             </div>
             <div className="text-center mt-1 text-xs text-content-disabled">
-              Blocks {bin.clearanceHeight || 0}u above bin
+              {t('layout:bin.blocksAbove', { count: bin.clearanceHeight || 0 })}
             </div>
           </div>
         )}
@@ -202,7 +204,7 @@ export function SingleBinInspector({
         {/* Category */}
         <div>
           <label className={`block ${labelSize} text-content-tertiary`}>
-            Category
+            {t('common:labels.category')}
           </label>
           <div className="relative">
             <div
@@ -213,7 +215,7 @@ export function SingleBinInspector({
               value={bin.category}
               onChange={(e) => updateField('category', e.target.value)}
               className={`input w-full pl-8 pr-8 appearance-none ${inputHeight}`}
-              aria-label="Bin category"
+              aria-label={t('aria:inputs.binCategory')}
             >
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
@@ -233,29 +235,29 @@ export function SingleBinInspector({
         {/* Label */}
         <div>
           <label className={`block ${labelSize} text-content-tertiary`}>
-            Label
+            {t('common:labels.label')}
           </label>
           <input
             type="text"
             value={bin.label}
             onChange={(e) => updateField('label', e.target.value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH))}
             className={`input w-full ${inputHeight}`}
-            placeholder="Optional label"
-            aria-label="Bin label"
+            placeholder={t('layout:bin.labelPlaceholder')}
+            aria-label={t('aria:inputs.binLabel')}
           />
         </div>
 
         {/* Notes */}
         <div>
           <label className={`block ${labelSize} text-content-tertiary`}>
-            Notes
+            {t('common:labels.notes')}
           </label>
           <textarea
             value={bin.notes}
             onChange={(e) => updateField('notes', e.target.value.slice(0, CONSTRAINTS.NOTES_MAX_LENGTH))}
             className="input w-full"
-            placeholder="e.g., 2 dividers, STL link, contents"
-            aria-label="Bin notes"
+            placeholder={t('layout:bin.notesPlaceholder')}
+            aria-label={t('aria:inputs.binNotes')}
             rows={3}
             style={{ resize: 'vertical', minHeight: '60px' }}
           />
@@ -272,7 +274,7 @@ export function SingleBinInspector({
               onClick={moveToStaging}
               className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
             >
-              To Stash
+              {t('layout:actions.toStash')}
             </button>
           )}
           <button
@@ -280,7 +282,7 @@ export function SingleBinInspector({
             onClick={requestDelete}
             className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
           >
-            Delete
+            {t('common:buttons.delete')}
           </button>
         </div>
       </div>

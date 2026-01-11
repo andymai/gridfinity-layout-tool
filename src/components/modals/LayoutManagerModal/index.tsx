@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLayoutSwitcher } from '../../../hooks/useLayoutSwitcher';
 import { useUIStore } from '../../../store/ui';
 import { LayoutList } from './LayoutList';
@@ -23,6 +24,7 @@ export function LayoutManagerModal({ isOpen, onClose }: LayoutManagerModalProps)
 }
 
 function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation(['layout', 'common', 'aria']);
   const [activeTab, setActiveTab] = useState<Tab>('layouts');
   const [shareModalLayoutId, setShareModalLayoutId] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -43,8 +45,8 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
 
   // Announce modal opened
   useEffect(() => {
-    announceToScreenReader(`Layouts dialog opened. ${library.entries.length} layouts available.`);
-  }, [announceToScreenReader, library.entries.length]);
+    announceToScreenReader(t('layout:library.dialogOpened', { count: library.entries.length }));
+  }, [announceToScreenReader, library.entries.length, t]);
 
   // Handle escape key and focus trap
   useEffect(() => {
@@ -86,20 +88,20 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
       const entry = library.entries.find((e) => e.id === id);
       const result = switchLayout(id);
       if (result.success) {
-        announceToScreenReader(`Switched to ${entry?.name || 'layout'}`);
+        announceToScreenReader(t('aria:announcements.layoutSwitched', { name: entry?.name || t('layout:library.untitled') }));
         onClose();
       }
     },
-    [library.entries, switchLayout, announceToScreenReader, onClose]
+    [library.entries, switchLayout, announceToScreenReader, onClose, t]
   );
 
   const handleCreate = useCallback(() => {
     const result = createNewLayout();
     if (result.success) {
-      announceToScreenReader('New layout created');
+      announceToScreenReader(t('layout:library.newLayoutCreated'));
       onClose();
     }
-  }, [createNewLayout, announceToScreenReader, onClose]);
+  }, [createNewLayout, announceToScreenReader, onClose, t]);
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -126,17 +128,17 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
     (layout: Layout) => {
       const result = importLayoutFromJSON({
         ...layout,
-        name: `${layout.name} (imported)`,
+        name: t('layout:library.importedName', { name: layout.name }),
       });
 
       if (result.success && result.data) {
         // Switch to the imported layout
         switchLayout(result.data);
-        announceToScreenReader(`Imported ${layout.name}`);
+        announceToScreenReader(t('layout:library.imported', { name: layout.name }));
         onClose();
       }
     },
-    [importLayoutFromJSON, switchLayout, announceToScreenReader, onClose]
+    [importLayoutFromJSON, switchLayout, announceToScreenReader, onClose, t]
   );
 
   const handleImportCancel = useCallback(() => {
@@ -164,13 +166,13 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 id="layout-manager-title" className="text-2xl font-bold text-content">
-            Layouts
+            {t('layout:library.layouts')}
           </h2>
           <button
             ref={closeButtonRef}
             onClick={onClose}
             className="p-1 text-content-secondary hover:text-content transition-colors rounded hover:bg-surface"
-            aria-label="Close layouts dialog"
+            aria-label={t('aria:actions.closeDialog')}
           >
             <svg
               className="w-6 h-6"
@@ -206,7 +208,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            My Layouts
+            {t('layout:library.title')}
           </button>
           <button
             id="import-tab"
@@ -225,7 +227,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
-            Import
+            {t('common:buttons.import')}
           </button>
         </div>
 

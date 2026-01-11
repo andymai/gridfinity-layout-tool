@@ -54,7 +54,7 @@ describe('ImportModal', () => {
       const { getByLabelText } = renderModal();
 
       act(() => {
-        fireEvent.click(getByLabelText('Close'));
+        fireEvent.click(getByLabelText('Close modal'));
       });
 
       expect(mockOnClose).toHaveBeenCalled();
@@ -107,7 +107,7 @@ describe('ImportModal', () => {
 
       await waitFor(() => {
         // Error message is prefixed with a bullet point in a list
-        expect(container.textContent).toContain('Invalid JSON format');
+        expect(container.textContent).toContain('Invalid data format');
       });
     });
 
@@ -165,7 +165,7 @@ describe('ImportModal', () => {
       });
 
       await waitFor(() => {
-        expect(container.textContent).toContain('Invalid JSON format');
+        expect(container.textContent).toContain('Invalid data format');
       });
 
       // Then clear it
@@ -175,7 +175,7 @@ describe('ImportModal', () => {
 
       // Wait for state to update
       await waitFor(() => {
-        expect(container.textContent).not.toContain('Invalid JSON format');
+        expect(container.textContent).not.toContain('Invalid data format');
       });
     });
   });

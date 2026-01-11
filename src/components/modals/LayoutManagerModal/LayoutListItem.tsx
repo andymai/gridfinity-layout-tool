@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { LayoutEntry } from '../../../types';
 import { LayoutThumbnail } from '../../LayoutThumbnail';
 import { LayoutActions } from './LayoutActions';
@@ -36,6 +37,7 @@ export function LayoutListItem({
   onFocus,
   itemRef,
 }: LayoutListItemProps) {
+  const { t } = useTranslation(['layout', 'common', 'aria']);
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(entry.name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -86,11 +88,11 @@ export function LayoutListItem({
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
-      return 'Today';
+      return t('layout:library.today');
     } else if (diffDays === 1) {
-      return 'Yesterday';
+      return t('layout:library.yesterday');
     } else if (diffDays < 7) {
-      return `${diffDays} days ago`;
+      return t('layout:library.daysAgo', { count: diffDays });
     } else {
       return date.toLocaleDateString();
     }
@@ -134,7 +136,7 @@ export function LayoutListItem({
               onClick={(e) => e.stopPropagation()}
               className="w-full bg-surface px-2 py-1 rounded border border-stroke focus:border-blue-500 focus:outline-none text-content text-sm"
               maxLength={64}
-              aria-label="Layout name"
+              aria-label={t('aria:inputs.nameInput')}
             />
           ) : (
             <div className="flex items-center gap-2">
@@ -142,8 +144,8 @@ export function LayoutListItem({
                 {entry.name}
               </span>
               {isActive && (
-                <span className="text-xs px-1.5 py-0.5 bg-blue-600 text-white rounded flex-shrink-0" aria-label="Currently active layout">
-                  Active
+                <span className="text-xs px-1.5 py-0.5 bg-blue-600 text-white rounded flex-shrink-0" aria-label={t('layout:library.currentlyActive')}>
+                  {t('layout:library.active')}
                 </span>
               )}
             </div>
@@ -154,7 +156,7 @@ export function LayoutListItem({
             <span>
               {entry.preview.drawerWidth}×{entry.preview.drawerDepth}×{entry.preview.drawerHeight}
             </span>
-            <span>{entry.preview.binCount} bins</span>
+            <span>{t('layout:library.binCount', { count: entry.preview.binCount })}</span>
             <span className="text-content-tertiary">
               {formatDate(entry.modifiedAt)}
             </span>
@@ -163,8 +165,8 @@ export function LayoutListItem({
           {/* Forked From */}
           {entry.forkedFrom && (
             <div className="mt-0.5 text-xs text-content-tertiary">
-              Forked from {entry.forkedFrom.name}
-              {entry.forkedFrom.author && ` by ${entry.forkedFrom.author}`}
+              {t('layout:library.forkedFrom', { name: entry.forkedFrom.name })}
+              {entry.forkedFrom.author && ` ${t('layout:library.by')} ${entry.forkedFrom.author}`}
             </div>
           )}
         </div>

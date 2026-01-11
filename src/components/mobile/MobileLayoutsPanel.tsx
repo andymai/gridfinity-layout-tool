@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
@@ -13,6 +14,7 @@ import type { LayoutEntry } from '../../types';
  * Displays in BottomSheet for mobile users.
  */
 export function MobileLayoutsPanel() {
+  const { t } = useTranslation(['layout', 'common']);
   const [deleteLayoutId, setDeleteLayoutId] = useState<string | null>(null);
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeX, setSwipeX] = useState(0);
@@ -52,28 +54,28 @@ export function MobileLayoutsPanel() {
     const entry = library.entries.find(e => e.id === layoutId);
     const result = switchLayout(layoutId);
     if (result.success) {
-      announceToScreenReader(`Switched to ${entry?.name || 'layout'}`);
+      announceToScreenReader(t('mobile.layoutsPanel.switchedTo', { name: entry?.name || 'layout' }));
       closeMobilePanel();
     }
-  }, [activeLayoutId, switchLayout, library.entries, announceToScreenReader, closeMobilePanel]);
+  }, [activeLayoutId, switchLayout, library.entries, announceToScreenReader, closeMobilePanel, t]);
 
   const handleCreateNew = useCallback(() => {
     const result = createNewLayout();
     if (result.success) {
-      announceToScreenReader('New layout created');
+      announceToScreenReader(t('mobile.layoutsPanel.newLayoutCreated'));
       closeMobilePanel();
     }
-  }, [createNewLayout, announceToScreenReader, closeMobilePanel]);
+  }, [createNewLayout, announceToScreenReader, closeMobilePanel, t]);
 
   const handleDuplicate = useCallback((layoutId: string) => {
     const entry = library.entries.find(e => e.id === layoutId);
     const result = duplicateLayout(layoutId);
     if (result.success) {
-      announceToScreenReader(`Duplicated ${entry?.name || 'layout'}`);
+      announceToScreenReader(t('mobile.layoutsPanel.duplicated', { name: entry?.name || 'layout' }));
     }
     setSwipingId(null);
     setSwipeX(0);
-  }, [duplicateLayout, library.entries, announceToScreenReader]);
+  }, [duplicateLayout, library.entries, announceToScreenReader, t]);
 
   const handleShare = useCallback((layoutId: string) => {
     setShareMenuId(layoutId);
@@ -94,11 +96,11 @@ export function MobileLayoutsPanel() {
     const trimmed = renameValue.trim();
     if (trimmed) {
       renameLayout(renameLayoutId, trimmed);
-      announceToScreenReader(`Renamed to ${trimmed}`);
+      announceToScreenReader(t('mobile.layoutsPanel.renamedTo', { name: trimmed }));
     }
     setRenameLayoutId(null);
     setRenameValue('');
-  }, [renameLayoutId, renameValue, renameLayout, announceToScreenReader]);
+  }, [renameLayoutId, renameValue, renameLayout, announceToScreenReader, t]);
 
   const handleCopyLink = useCallback(async (layoutId: string) => {
     const entry = library.entries.find(e => e.id === layoutId);
@@ -107,39 +109,39 @@ export function MobileLayoutsPanel() {
       const url = generateShareableURL(layout);
       const success = await copyToClipboard(url);
       if (success) {
-        announceToScreenReader(`Link copied for ${entry?.name || 'layout'}`);
+        announceToScreenReader(t('mobile.layoutsPanel.linkCopied', { name: entry?.name || 'layout' }));
       }
     }
     setShareMenuId(null);
-  }, [activeLayoutId, currentLayout, library.entries, announceToScreenReader]);
+  }, [activeLayoutId, currentLayout, library.entries, announceToScreenReader, t]);
 
   const handleDownload = useCallback((layoutId: string) => {
     const entry = library.entries.find(e => e.id === layoutId);
     const layout = layoutId === activeLayoutId ? currentLayout : loadLayoutById(layoutId);
     if (layout && entry) {
       downloadLayoutAsFile(layout, `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`);
-      announceToScreenReader('Layout downloaded');
+      announceToScreenReader(t('mobile.layoutsPanel.layoutDownloaded'));
     }
     setShareMenuId(null);
-  }, [activeLayoutId, currentLayout, library.entries, announceToScreenReader]);
+  }, [activeLayoutId, currentLayout, library.entries, announceToScreenReader, t]);
 
   const handleDeleteRequest = useCallback((layoutId: string) => {
     if (library.entries.length <= 1) {
-      announceToScreenReader('Cannot delete the only layout');
+      announceToScreenReader(t('mobile.layoutsPanel.cannotDeleteOnly'));
       return;
     }
     setDeleteLayoutId(layoutId);
     setSwipingId(null);
     setSwipeX(0);
-  }, [library.entries.length, announceToScreenReader]);
+  }, [library.entries.length, announceToScreenReader, t]);
 
   const confirmDelete = useCallback(() => {
     if (!deleteLayoutId) return;
     const entry = library.entries.find(e => e.id === deleteLayoutId);
     deleteLayout(deleteLayoutId);
-    announceToScreenReader(`${entry?.name || 'Layout'} deleted`);
+    announceToScreenReader(t('mobile.layoutsPanel.deleted', { name: entry?.name || 'Layout' }));
     setDeleteLayoutId(null);
-  }, [deleteLayoutId, deleteLayout, library.entries, announceToScreenReader]);
+  }, [deleteLayoutId, deleteLayout, library.entries, announceToScreenReader, t]);
 
   // Swipe gesture handling
   const handleTouchStart = useCallback((_e: React.TouchEvent, layoutId: string) => {
@@ -175,9 +177,9 @@ export function MobileLayoutsPanel() {
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffDays === 0) return t('mobile.layoutsPanel.today');
+    if (diffDays === 1) return t('mobile.layoutsPanel.yesterday');
+    if (diffDays < 7) return t('mobile.layoutsPanel.daysAgo', { count: diffDays });
     return date.toLocaleDateString();
   };
 
@@ -187,7 +189,7 @@ export function MobileLayoutsPanel() {
     <div className="pb-4">
       {/* Layout count */}
       <div className="text-sm text-content-tertiary mb-3">
-        {library.entries.length} layout{library.entries.length !== 1 ? 's' : ''}
+        {t('mobile.layoutsPanel.layoutCount', { count: library.entries.length })}
       </div>
 
       {/* Layout list */}
@@ -206,7 +208,7 @@ export function MobileLayoutsPanel() {
                 <button
                   onClick={() => handleRenameRequest(entry.id)}
                   className="w-15 flex items-center justify-center bg-amber-600 text-white"
-                  aria-label={`Rename ${entry.name}`}
+                  aria-label={t('library.rename') + ' ' + entry.name}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -215,7 +217,7 @@ export function MobileLayoutsPanel() {
                 <button
                   onClick={() => handleShare(entry.id)}
                   className="w-15 flex items-center justify-center bg-green-600 text-white"
-                  aria-label={`Share ${entry.name}`}
+                  aria-label={t('library.share') + ' ' + entry.name}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -224,7 +226,7 @@ export function MobileLayoutsPanel() {
                 <button
                   onClick={() => handleDuplicate(entry.id)}
                   className="w-15 flex items-center justify-center bg-blue-600 text-white"
-                  aria-label={`Duplicate ${entry.name}`}
+                  aria-label={t('common:buttons.duplicate') + ' ' + entry.name}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -233,7 +235,7 @@ export function MobileLayoutsPanel() {
                 <button
                   onClick={() => handleDeleteRequest(entry.id)}
                   className="w-15 flex items-center justify-center bg-red-600 text-white"
-                  aria-label={`Delete ${entry.name}`}
+                  aria-label={t('common:buttons.delete') + ' ' + entry.name}
                   disabled={library.entries.length <= 1}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -273,7 +275,7 @@ export function MobileLayoutsPanel() {
                         </span>
                         {isActive && (
                           <span className="text-xs px-2 py-0.5 bg-accent text-white rounded flex-shrink-0">
-                            Active
+                            {t('library.active')}
                           </span>
                         )}
                       </div>
@@ -289,7 +291,7 @@ export function MobileLayoutsPanel() {
                       {/* Forked from info */}
                       {entry.forkedFrom && (
                         <div className="text-xs text-content-disabled">
-                          Forked from {entry.forkedFrom.name}
+                          {t('mobile.layoutsPanel.forkedFrom', { name: entry.forkedFrom.name })}
                         </div>
                       )}
                     </div>
@@ -306,7 +308,7 @@ export function MobileLayoutsPanel() {
                       <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                      Rename
+                      {t('library.rename')}
                     </button>
                     <button
                       onClick={() => handleShare(entry.id)}
@@ -315,7 +317,7 @@ export function MobileLayoutsPanel() {
                       <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                       </svg>
-                      Share
+                      {t('library.share')}
                     </button>
                     <button
                       onClick={() => handleDuplicate(entry.id)}
@@ -324,7 +326,7 @@ export function MobileLayoutsPanel() {
                       <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                      Duplicate
+                      {t('common:buttons.duplicate')}
                     </button>
                   </div>
                 )}
@@ -351,15 +353,15 @@ export function MobileLayoutsPanel() {
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        New Layout
+        {t('library.newLayout')}
       </button>
 
       {/* Delete confirmation dialog */}
       <ConfirmDialog
         isOpen={deleteLayoutId !== null}
-        title="Delete Layout"
-        message={`Delete "${layoutToDelete?.name}"? This cannot be undone.`}
-        confirmText="Delete"
+        title={t('library.deleteLayout')}
+        message={t('library.deleteConfirm', { name: layoutToDelete?.name })}
+        confirmText={t('common:buttons.delete')}
         destructive
         onConfirm={confirmDelete}
         onCancel={() => setDeleteLayoutId(null)}
@@ -376,7 +378,7 @@ export function MobileLayoutsPanel() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-content mb-4">Share Layout</h3>
+            <h3 className="text-lg font-semibold text-content mb-4">{t('mobile.layoutsPanel.shareLayout')}</h3>
             <div className="space-y-2">
               <button
                 onClick={() => handleCopyLink(shareMenuId)}
@@ -388,8 +390,8 @@ export function MobileLayoutsPanel() {
                   </svg>
                 </div>
                 <div className="text-left">
-                  <div className="font-medium text-content">Copy Link</div>
-                  <div className="text-sm text-content-secondary">Share via URL</div>
+                  <div className="font-medium text-content">{t('mobile.layoutsPanel.copyLink')}</div>
+                  <div className="text-sm text-content-secondary">{t('mobile.layoutsPanel.shareViaUrl')}</div>
                 </div>
               </button>
               <button
@@ -402,8 +404,8 @@ export function MobileLayoutsPanel() {
                   </svg>
                 </div>
                 <div className="text-left">
-                  <div className="font-medium text-content">Download JSON</div>
-                  <div className="text-sm text-content-secondary">Save as file</div>
+                  <div className="font-medium text-content">{t('mobile.layoutsPanel.downloadJson')}</div>
+                  <div className="text-sm text-content-secondary">{t('mobile.layoutsPanel.saveAsFile')}</div>
                 </div>
               </button>
             </div>
@@ -411,7 +413,7 @@ export function MobileLayoutsPanel() {
               onClick={() => setShareMenuId(null)}
               className="w-full mt-4 py-3 text-content-secondary font-medium"
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </button>
           </div>
         </div>
@@ -431,7 +433,7 @@ export function MobileLayoutsPanel() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-content mb-4">Rename Layout</h3>
+            <h3 className="text-lg font-semibold text-content mb-4">{t('mobile.layoutsPanel.renameLayout')}</h3>
             <input
               type="text"
               value={renameValue}
@@ -445,7 +447,7 @@ export function MobileLayoutsPanel() {
                 }
               }}
               className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
-              placeholder="Layout name"
+              placeholder={t('mobile.layoutsPanel.layoutName')}
               maxLength={64}
               autoFocus
             />
@@ -457,14 +459,14 @@ export function MobileLayoutsPanel() {
                 }}
                 className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
               >
-                Cancel
+                {t('common:buttons.cancel')}
               </button>
               <button
                 onClick={handleRenameConfirm}
                 disabled={!renameValue.trim()}
                 className="flex-1 py-3 text-white font-medium bg-accent rounded-lg disabled:opacity-50"
               >
-                Rename
+                {t('library.rename')}
               </button>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
@@ -10,6 +11,7 @@ import { ConfirmDialog } from '../modals/ConfirmDialog';
  * Mobile-optimized layers panel with larger touch targets.
  */
 export function MobileLayersPanel() {
+  const { t } = useTranslation(['layout', 'common', 'aria', 'toast']);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteLayerId, setDeleteLayerId] = useState<string | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
@@ -135,19 +137,18 @@ export function MobileLayersPanel() {
       const afterCount = useLayoutStore.getState().layout.bins.filter(b => b.layerId === activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
-        addToast(`Added ${added} bin${added !== 1 ? 's' : ''} to fill gaps`, 'success');
+        addToast(t('layout:fillGaps.addedBins', { count: added }), 'success');
       }
     }, 0);
   };
 
   const handleClear = () => {
     if (!activeLayerId || activeLayerBins.length === 0) return;
-    const count = activeLayerBins.length;
     execute(() => {
       clearLayer(activeLayerId);
       setSelectedBins([]);
     });
-    addToast(`Cleared ${count} bins from layer`, 'success');
+    addToast(t('toast:layer.deleted'), 'success');
     setShowClearConfirm(false);
   };
 
@@ -240,7 +241,7 @@ export function MobileLayersPanel() {
                     <span
                       className="text-sm mt-1 block text-content-tertiary"
                     >
-                      {binCount} bin{binCount !== 1 ? 's' : ''} · {layer.height}u{hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
+                      {t('layout:library.binCount', { count: binCount })} · {layer.height}u{hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
                     </span>
                   </div>
                 </div>
@@ -256,7 +257,7 @@ export function MobileLayersPanel() {
                     onClick={() => handleHeightChange(layer.id, -1)}
                     disabled={layer.height <= 1}
                     className="btn btn-ghost w-11 h-11 p-0"
-                    aria-label="Decrease height"
+                    aria-label={t('layout:layer.decreaseLayerHeight')}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -270,7 +271,7 @@ export function MobileLayersPanel() {
                   <button
                     onClick={() => handleHeightChange(layer.id, 1)}
                     className="btn btn-ghost w-11 h-11 p-0"
-                    aria-label="Increase height"
+                    aria-label={t('layout:layer.increaseLayerHeight')}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -287,7 +288,7 @@ export function MobileLayersPanel() {
                       onClick={() => handleMoveLayer(displayIndex, 'up')}
                       disabled={displayIndex === 0}
                       className="btn btn-ghost w-11 h-11 p-0"
-                      aria-label="Move layer up"
+                      aria-label={t('layout:layer.moveUp')}
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -297,7 +298,7 @@ export function MobileLayersPanel() {
                       onClick={() => handleMoveLayer(displayIndex, 'down')}
                       disabled={displayIndex === layers.length - 1}
                       className="btn btn-ghost w-11 h-11 p-0"
-                      aria-label="Move layer down"
+                      aria-label={t('layout:layer.moveDown')}
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -311,7 +312,7 @@ export function MobileLayersPanel() {
                   <button
                     onClick={() => handleDeleteLayer(layer.id)}
                     className="btn btn-ghost w-11 h-11 p-0 text-error"
-                    aria-label="Delete layer"
+                    aria-label={t('layout:layer.delete')}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -331,7 +332,7 @@ export function MobileLayersPanel() {
                     <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                     </svg>
-                    {emptyCells > 0 ? `Fill ${emptyCells}` : 'Filled'}
+                    {emptyCells > 0 ? t('layout:fillGaps.fillGapsCount', { count: emptyCells }) : t('layout:fillGaps.noGaps')}
                   </button>
                   <button
                     onClick={() => setShowClearConfirm(true)}
@@ -341,7 +342,7 @@ export function MobileLayersPanel() {
                     <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    Clear
+                    {t('common:buttons.clear')}
                   </button>
                 </div>
               )}
@@ -353,8 +354,8 @@ export function MobileLayersPanel() {
       {/* Stats line */}
       <div className="text-sm text-content-tertiary mb-2 mt-4">
         {hasMultipleLayers
-          ? `${totalCoverage}% filled · ${totalBinCount} bin${totalBinCount !== 1 ? 's' : ''} total`
-          : `${activeCoverage}% filled · ${activeLayerBins.length} bin${activeLayerBins.length !== 1 ? 's' : ''}`
+          ? t('layout:layer.statsMultiple', { coverage: totalCoverage, count: totalBinCount })
+          : t('layout:layer.statsSingle', { coverage: activeCoverage, count: activeLayerBins.length })
         }
       </div>
 
@@ -380,14 +381,17 @@ export function MobileLayersPanel() {
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        Add Layer
+        {t('layout:layer.add')}
       </button>
 
       <ConfirmDialog
         isOpen={deleteLayerId !== null}
-        title="Delete Layer"
-        message={`Delete "${layerToDelete?.name}"${binsInLayer > 0 ? ` and its ${binsInLayer} bin${binsInLayer > 1 ? 's' : ''}` : ''}?`}
-        confirmText="Delete"
+        title={t('layout:layer.deleteConfirmTitle')}
+        message={binsInLayer > 0
+          ? t('layout:layer.deleteConfirmMessageWithBins', { name: layerToDelete?.name, count: binsInLayer })
+          : t('layout:layer.deleteConfirmMessage', { name: layerToDelete?.name })
+        }
+        confirmText={t('common:buttons.delete')}
         destructive
         onConfirm={confirmDeleteLayer}
         onCancel={cancelDeleteLayer}
@@ -395,9 +399,9 @@ export function MobileLayersPanel() {
 
       <ConfirmDialog
         isOpen={showClearConfirm}
-        title="Clear Layer"
-        message={`Remove all ${activeLayerBins.length} bin${activeLayerBins.length !== 1 ? 's' : ''} from "${activeLayer?.name}"? This can be undone.`}
-        confirmText="Clear"
+        title={t('layout:clearLayer.title')}
+        message={t('layout:clearLayer.removeAllBins', { count: activeLayerBins.length, layerName: activeLayer?.name })}
+        confirmText={t('common:buttons.clear')}
         destructive
         onConfirm={handleClear}
         onCancel={() => setShowClearConfirm(false)}

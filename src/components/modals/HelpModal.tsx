@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SHORTCUTS } from '../../constants';
 
 // Style constants to avoid recreating objects on each render
@@ -84,77 +85,83 @@ const formatKey = (key: string | readonly string[]): string => {
   return key as string;
 };
 
-// Define shortcut categories
-const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
+// Define shortcut categories with translation keys
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getShortcutCategories = (t: (key: string) => any): ShortcutCategory[] => [
   {
     id: 'general',
-    name: 'General',
+    name: t('help:categories.general'),
     icon: <CommandIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.UNDO), description: 'Undo', modifier: true },
-      { keys: formatKey(SHORTCUTS.REDO), description: 'Redo', modifier: true },
-      { keys: formatKey(SHORTCUTS.HELP), description: 'Show this help' },
-      { keys: formatKey(SHORTCUTS.ESCAPE), description: 'Cancel / Deselect' },
+      { keys: formatKey(SHORTCUTS.UNDO), description: t('help:shortcuts.undo'), modifier: true },
+      { keys: formatKey(SHORTCUTS.REDO), description: t('help:shortcuts.redo'), modifier: true },
+      { keys: formatKey(SHORTCUTS.HELP), description: t('help:shortcuts.showHelp') },
+      { keys: formatKey(SHORTCUTS.ESCAPE), description: t('help:shortcuts.escape') },
     ],
   },
   {
     id: 'editing',
-    name: 'Editing',
+    name: t('help:categories.editing'),
     icon: <EditIcon />,
     shortcuts: [
-      { keys: 'D', description: 'Duplicate selected bins', modifier: true },
-      { keys: formatKey(SHORTCUTS.DELETE), description: 'Delete selected bins' },
-      { keys: formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase(), description: 'Quick label edit' },
-      { keys: 'Arrow keys', description: 'Nudge selected bins' },
+      { keys: 'D', description: t('help:shortcuts.duplicate'), modifier: true },
+      { keys: formatKey(SHORTCUTS.DELETE), description: t('help:shortcuts.delete') },
+      { keys: formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase(), description: t('help:shortcuts.quickLabel') },
+      { keys: t('help:keys.arrowKeys'), description: t('help:shortcuts.nudge') },
     ],
   },
   {
     id: 'navigation',
-    name: 'Navigation',
+    name: t('help:categories.navigation'),
     icon: <NavigationIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.LAYER_UP).toUpperCase(), description: 'Layer above' },
-      { keys: formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase(), description: 'Layer below' },
-      { keys: formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase(), description: 'Previous bin' },
-      { keys: formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase(), description: 'Next bin' },
-      { keys: `${formatKey(SHORTCUTS.CATEGORY_PREV)} / ${formatKey(SHORTCUTS.CATEGORY_NEXT)}`, description: 'Cycle category' },
+      { keys: formatKey(SHORTCUTS.LAYER_UP).toUpperCase(), description: t('help:shortcuts.layerUp') },
+      { keys: formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase(), description: t('help:shortcuts.layerDown') },
+      { keys: formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase(), description: t('help:shortcuts.prevBin') },
+      { keys: formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase(), description: t('help:shortcuts.nextBin') },
+      { keys: `${formatKey(SHORTCUTS.CATEGORY_PREV)} / ${formatKey(SHORTCUTS.CATEGORY_NEXT)}`, description: t('help:shortcuts.cycleCategory') },
     ],
   },
   {
     id: 'view',
-    name: 'View',
+    name: t('help:categories.view'),
     icon: <ViewIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.ZOOM_IN), description: 'Zoom in' },
-      { keys: formatKey(SHORTCUTS.ZOOM_OUT), description: 'Zoom out' },
-      { keys: 'O', description: 'Open layout manager', modifier: true },
+      { keys: formatKey(SHORTCUTS.ZOOM_IN), description: t('help:shortcuts.zoomIn') },
+      { keys: formatKey(SHORTCUTS.ZOOM_OUT), description: t('help:shortcuts.zoomOut') },
+      { keys: 'O', description: t('help:shortcuts.openLayoutManager'), modifier: true },
     ],
   },
   {
     id: '3d-preview',
-    name: '3D Preview',
+    name: t('help:categories.preview'),
     icon: <CubeIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.PREVIEW_TOGGLE).toUpperCase(), description: 'Toggle 3D preview' },
-      { keys: 'Space', description: 'Expand preview' },
-      { keys: '1', description: 'Isometric view' },
-      { keys: '2', description: 'Front view' },
-      { keys: '3', description: 'Side view' },
+      { keys: formatKey(SHORTCUTS.PREVIEW_TOGGLE).toUpperCase(), description: t('help:shortcuts.togglePreview') },
+      { keys: t('help:keys.space'), description: t('help:shortcuts.expandPreview') },
+      { keys: '1', description: t('help:shortcuts.cameraIsometric') },
+      { keys: '2', description: t('help:shortcuts.cameraFront') },
+      { keys: '3', description: t('help:shortcuts.cameraSide') },
     ],
   },
   {
     id: 'advanced',
-    name: 'Advanced',
+    name: t('help:categories.advanced'),
     icon: <SettingsIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.HALF_BIN_TOGGLE).toUpperCase(), description: 'Toggle half-bin mode' },
+      { keys: formatKey(SHORTCUTS.HALF_BIN_TOGGLE).toUpperCase(), description: t('help:shortcuts.toggleHalfBinMode') },
     ],
   },
 ];
 
 export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps) {
+  const { t } = useTranslation(['help', 'common', 'aria']);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'shortcuts' | 'tips'>('shortcuts');
+
+  // Generate shortcut categories with translations
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const shortcutCategories = useMemo(() => getShortcutCategories(t as any), [t]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -176,10 +183,10 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
 
   // Filter shortcuts based on search query
   const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return SHORTCUT_CATEGORIES;
+    if (!searchQuery.trim()) return shortcutCategories;
 
     const query = searchQuery.toLowerCase();
-    return SHORTCUT_CATEGORIES.map(category => ({
+    return shortcutCategories.map(category => ({
       ...category,
       shortcuts: category.shortcuts.filter(
         shortcut =>
@@ -188,7 +195,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
           (Array.isArray(shortcut.keys) && shortcut.keys.some(k => k.toLowerCase().includes(query)))
       ),
     })).filter(category => category.shortcuts.length > 0);
-  }, [searchQuery]);
+  }, [searchQuery, shortcutCategories]);
 
   if (!isOpen) return null;
 
@@ -211,13 +218,13 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
         {/* Header */}
         <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle">
           <h2 id="help-title" style={STYLES.title}>
-            Help & Shortcuts
+            {t('help:title')}
           </h2>
           <button
             onClick={onClose}
             className="btn btn-ghost btn-icon"
             style={STYLES.buttonCompact}
-            aria-label="Close help"
+            aria-label={t('aria:actions.closeModal')}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -236,7 +243,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
             >
-              Shortcuts
+              {t('help:tabs.shortcuts')}
             </button>
             <button
               onClick={() => setActiveTab('tips')}
@@ -246,7 +253,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
             >
-              Tips & Info
+              {t('help:tabs.tipsAndInfo')}
             </button>
           </div>
 
@@ -265,7 +272,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search shortcuts..."
+                  placeholder={t('common:placeholders.searchShortcuts')}
                   className="w-full pl-9 pr-3 py-1.5 text-sm rounded-md bg-surface border border-stroke-subtle focus:outline-none focus:ring-2 focus:ring-accent/50 text-content placeholder:text-content-tertiary"
                 />
                 {searchQuery && (
@@ -289,7 +296,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
             <div className="space-y-6">
               {filteredCategories.length === 0 ? (
                 <div className="text-center py-8 text-content-tertiary">
-                  No shortcuts found for "{searchQuery}"
+                  {t('help:noResultsFor', { query: searchQuery })}
                 </div>
               ) : (
                 filteredCategories.map((category) => (
@@ -396,20 +403,21 @@ function ShortcutRow({
 
 // Mouse interactions section
 function MouseInteractionsSection() {
+  const { t } = useTranslation(['help']);
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-accent"><MouseIcon /></span>
-        <h3 style={STYLES.sectionHeader}>Mouse</h3>
+        <h3 style={STYLES.sectionHeader}>{t('help:mouse.title')}</h3>
       </div>
       <div className="grid gap-2">
-        <InteractionRow action="Click + drag on empty" description="Draw new bin" />
-        <InteractionRow action="Click bin" description="Select bin" />
-        <InteractionRow action="Shift + click" description="Add to selection" />
-        <InteractionRow action="Drag selected" description="Move bins" />
-        <InteractionRow action="Drag edges/corners" description="Resize bin" />
-        <InteractionRow action="Double-click bin" description="Quick label edit" />
-        <InteractionRow action="Right-click bin" description="Context menu" />
+        <InteractionRow action={t('help:mouse.clickDragEmpty')} description={t('help:mouse.drawNewBin')} />
+        <InteractionRow action={t('help:mouse.clickBin')} description={t('help:mouse.selectBin')} />
+        <InteractionRow action={t('help:mouse.shiftClick')} description={t('help:mouse.addToSelection')} />
+        <InteractionRow action={t('help:mouse.dragSelected')} description={t('help:mouse.moveBins')} />
+        <InteractionRow action={t('help:mouse.dragEdges')} description={t('help:mouse.resizeBin')} />
+        <InteractionRow action={t('help:mouse.doubleClick')} description={t('help:mouse.quickLabelEdit')} />
+        <InteractionRow action={t('help:mouse.rightClick')} description={t('help:mouse.contextMenu')} />
       </div>
     </section>
   );
@@ -417,18 +425,19 @@ function MouseInteractionsSection() {
 
 // Touch gestures section
 function TouchGesturesSection() {
+  const { t } = useTranslation(['help']);
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-accent"><TouchIcon /></span>
-        <h3 style={STYLES.sectionHeader}>Touch Gestures</h3>
+        <h3 style={STYLES.sectionHeader}>{t('help:touch.title')}</h3>
       </div>
       <div className="grid gap-2">
-        <InteractionRow action="Tap bin" description="Select" />
-        <InteractionRow action="Drag on empty" description="Draw new bin" />
-        <InteractionRow action="Drag selected" description="Move bin" />
-        <InteractionRow action="Long-press bin" description="Context menu" />
-        <InteractionRow action="Drag edge" description="Resize" />
+        <InteractionRow action={t('help:touch.tapBin')} description={t('help:touch.select')} />
+        <InteractionRow action={t('help:touch.dragEmpty')} description={t('help:touch.drawNewBin')} />
+        <InteractionRow action={t('help:touch.dragSelected')} description={t('help:touch.moveBin')} />
+        <InteractionRow action={t('help:touch.longPress')} description={t('help:touch.contextMenu')} />
+        <InteractionRow action={t('help:touch.dragEdge')} description={t('help:touch.resize')} />
       </div>
     </section>
   );
@@ -445,28 +454,42 @@ function InteractionRow({ action, description }: { action: string; description: 
 
 // Tips section
 function TipsSection() {
-  const tips = [
-    'Use the Bin Palette to select a size, then click or drag to paint bins',
-    'Bins that exceed the max print size will be automatically split',
-    'Drag layers in the sidebar to reorder them vertically',
-    'Double-click layer names to rename them',
-    'Your layout is automatically saved to your browser',
-    'Use Ctrl/⌘+O to quickly open the layout manager',
-    'Press H to toggle half-bin mode for 0.5 unit precision',
-  ];
+  const { t } = useTranslation(['help']);
 
   return (
     <section>
       <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        Tips
+        {t('help:tips.title')}
       </h3>
       <ul className="space-y-2 p-4 rounded-lg" style={STYLES.tipsList}>
-        {tips.map((tip, index) => (
-          <li key={index} className="flex items-start gap-2">
-            <span style={STYLES.colorPrimary}>•</span>
-            <span>{tip}</span>
-          </li>
-        ))}
+        <li className="flex items-start gap-2">
+          <span style={STYLES.colorPrimary}>•</span>
+          <span>{t('help:tips.binPalette')}</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span style={STYLES.colorPrimary}>•</span>
+          <span>{t('help:tips.autoSplit')}</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span style={STYLES.colorPrimary}>•</span>
+          <span>{t('help:tips.dragLayers')}</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span style={STYLES.colorPrimary}>•</span>
+          <span>{t('help:tips.doubleClickRename')}</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span style={STYLES.colorPrimary}>•</span>
+          <span>{t('help:tips.autoSave')}</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span style={STYLES.colorPrimary}>•</span>
+          <span>{t('help:tips.layoutManagerShortcut')}</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span style={STYLES.colorPrimary}>•</span>
+          <span>{t('help:tips.halfBinMode')}</span>
+        </li>
       </ul>
     </section>
   );
@@ -474,22 +497,21 @@ function TipsSection() {
 
 // Blocked zones section
 function BlockedZonesSection() {
+  const { t } = useTranslation(['help']);
   return (
     <section>
       <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        Blocked Zones
+        {t('help:blockedZones.title')}
       </h3>
       <div className="p-4 rounded-lg" style={STYLES.blockedZonesContent}>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>What are blocked zones?</strong>
+          <strong style={STYLES.textPrimary}>{t('help:blockedZones.whatAre')}</strong>
         </p>
         <p className="mb-3">
-          When a bin is taller than its layer height, it extends into layers above.
-          These areas appear as striped cells and cannot have new bins placed on them.
+          {t('help:blockedZones.explanation')}
         </p>
         <p>
-          <strong style={STYLES.textPrimary}>Example:</strong> A 5u tall bin on Layer 1 (3u) extends 2u into Layer 2.
-          Those cells on Layer 2 are blocked because the physical bin occupies that space.
+          <strong style={STYLES.textPrimary}>{t('help:blockedZones.exampleLabel')}</strong> {t('help:blockedZones.example')}
         </p>
       </div>
     </section>
@@ -498,27 +520,24 @@ function BlockedZonesSection() {
 
 // Bin clearance section
 function BinClearanceSection() {
+  const { t } = useTranslation(['help']);
   return (
     <section>
       <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        Bin Clearance
+        {t('help:clearance.title')}
       </h3>
       <div className="p-4 rounded-lg" style={STYLES.blockedZonesContent}>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>What is clearance?</strong>
+          <strong style={STYLES.textPrimary}>{t('help:clearance.whatIs')}</strong>
         </p>
         <p className="mb-3">
-          Clearance reserves empty space above a bin for tall contents that stick out,
-          like scissors handles or tool grips. This space blocks bins on layers above
-          without adding physical bin height.
+          {t('help:clearance.explanation')}
         </p>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>Example:</strong> A 2u tall bin with 1u clearance
-          will block 3u total of vertical space, but only prints as a 2u bin.
+          <strong style={STYLES.textPrimary}>{t('help:clearance.exampleLabel')}</strong> {t('help:clearance.example')}
         </p>
         <p>
-          Set clearance in the bin inspector (right panel) when you have multiple layers.
-          The 3D preview shows clearance as a translucent red zone above the bin.
+          {t('help:clearance.howToSet')}
         </p>
       </div>
     </section>

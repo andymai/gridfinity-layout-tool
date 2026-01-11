@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { LayoutEntry, Layout } from '../../../types';
 import { LayoutListItem } from './LayoutListItem';
 import { useLayoutStore } from '../../../store/layout';
@@ -32,6 +33,7 @@ export function LayoutList({
   onCreate,
   onShare,
 }: LayoutListProps) {
+  const { t } = useTranslation(['layout', 'common', 'aria']);
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -99,10 +101,10 @@ export function LayoutList({
       const layout = getLayoutData(entry.id);
       if (layout) {
         downloadLayoutAsFile(layout, `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`);
-        announceToScreenReader('Layout downloaded');
+        announceToScreenReader(t('layout:library.layoutDownloaded'));
       }
     },
-    [getLayoutData, announceToScreenReader]
+    [getLayoutData, announceToScreenReader, t]
   );
 
   const handleSwitch = useCallback(
@@ -117,27 +119,27 @@ export function LayoutList({
   const handleRename = useCallback(
     (id: string, newName: string) => {
       onRename(id, newName);
-      announceToScreenReader(`Layout renamed to ${newName}`);
+      announceToScreenReader(t('layout:library.layoutRenamed', { name: newName }));
     },
-    [onRename, announceToScreenReader]
+    [onRename, announceToScreenReader, t]
   );
 
   const handleDuplicate = useCallback(
     (id: string) => {
       const entry = entries.find((e) => e.id === id);
       onDuplicate(id);
-      announceToScreenReader(`Duplicated ${entry?.name || 'layout'}`);
+      announceToScreenReader(t('layout:library.layoutDuplicated', { name: entry?.name || t('layout:library.untitled') }));
     },
-    [entries, onDuplicate, announceToScreenReader]
+    [entries, onDuplicate, announceToScreenReader, t]
   );
 
   const handleDelete = useCallback(
     (id: string) => {
       const entry = entries.find((e) => e.id === id);
       onDelete(id);
-      announceToScreenReader(`${entry?.name || 'Layout'} deleted`);
+      announceToScreenReader(t('layout:library.layoutDeleted', { name: entry?.name || t('layout:library.untitled') }));
     },
-    [entries, onDelete, announceToScreenReader]
+    [entries, onDelete, announceToScreenReader, t]
   );
 
   return (
@@ -151,7 +153,7 @@ export function LayoutList({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          New Layout
+          {t('layout:library.newLayout')}
         </button>
 
         {/* Search (appears with 6+ layouts) */}
@@ -171,15 +173,15 @@ export function LayoutList({
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search layouts..."
+              placeholder={t('layout:library.searchPlaceholder')}
               className="w-full pl-9 pr-8 py-2 bg-surface border border-stroke rounded-lg text-sm text-content placeholder:text-content-tertiary focus:outline-none focus:border-blue-500"
-              aria-label="Search layouts"
+              aria-label={t('aria:inputs.searchInput')}
             />
             {searchQuery && (
               <button
                 onClick={() => handleSearchChange('')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-content"
-                aria-label="Clear search"
+                aria-label={t('layout:library.clearSearch')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -194,7 +196,7 @@ export function LayoutList({
       <div
         ref={listRef}
         role="listbox"
-        aria-label="Available layouts"
+        aria-label={t('layout:library.availableLayouts')}
         aria-activedescendant={sortedEntries[focusedIndex]?.id}
         className="overflow-y-auto space-y-2 min-h-0 [scrollbar-gutter:stable]"
         onKeyDown={handleListKeyDown}
@@ -204,7 +206,7 @@ export function LayoutList({
             <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <p>No layouts match "{searchQuery}"</p>
+            <p>{t('layout:library.noMatchFor', { query: searchQuery })}</p>
           </div>
         )}
 
@@ -213,8 +215,8 @@ export function LayoutList({
             <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <p>No layouts yet</p>
-            <p className="text-sm mt-1">Create your first layout to get started</p>
+            <p>{t('layout:library.noLayoutsYet')}</p>
+            <p className="text-sm mt-1">{t('layout:library.createFirst')}</p>
           </div>
         )}
 
@@ -242,7 +244,7 @@ export function LayoutList({
 
       {/* Footer */}
       <div className="mt-4 pt-4 border-t border-stroke text-sm text-content-tertiary">
-        {entries.length} layout{entries.length === 1 ? '' : 's'}
+        {t('layout:library.layoutCount', { count: entries.length })}
       </div>
     </div>
   );

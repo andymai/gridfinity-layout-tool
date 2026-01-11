@@ -1,4 +1,5 @@
 import { memo, useRef, useState, type PointerEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import type { Bin as BinType, Category, Layer, ResizeHandle } from '../../types';
 import { useUIStore, useLayoutStore } from '../../store';
@@ -34,6 +35,7 @@ interface BinProps {
  * Features improved selection states with glow effect and refined handles.
  */
 function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBinMode: _halfBinMode = false, isGhost, isSelected, onStartDrag, onStartResize }: BinProps) {
+  const { t } = useTranslation(['layout', 'aria']);
   const { isTouchDevice } = useResponsive();
 
   // Consolidate UI state selectors with shallow comparison
@@ -244,7 +246,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
           // Show first-time hint about resize handles
           const hintShown = localStorage.getItem('gridfinity-resize-hint-shown');
           if (!hintShown) {
-            addToast('Tip: Drag the handles to resize', 'info');
+            addToast(t('layout:hints.resizeTip'), 'info');
             localStorage.setItem('gridfinity-resize-hint-shown', 'true');
           }
         }
@@ -415,7 +417,10 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
       onFocus={() => !isGhost && setFocusedBin(bin.id)}
       onBlur={() => isFocused && setFocusedBin(null)}
       role="button"
-      aria-label={`Bin ${bin.width} by ${bin.depth}${bin.label ? `, labeled ${bin.label}` : ''}${category ? `, category ${category.name}` : ''}`}
+      aria-label={bin.label
+        ? t('aria:bin.descriptionWithLabel', { width: bin.width, depth: bin.depth, label: bin.label }) + (category ? `, ${t('aria:bin.inCategory', { category: category.name })}` : '')
+        : t('aria:bin.description', { width: bin.width, depth: bin.depth }) + (category ? `, ${t('aria:bin.inCategory', { category: category.name })}` : '')
+      }
       aria-pressed={isSelected}
       tabIndex={isGhost ? -1 : 0}
       title={isGhost ? undefined : (bin.label ? `${dimensionsText} - ${bin.label}` : undefined)}
@@ -428,7 +433,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             color: 'var(--color-warning)',
             boxShadow: 'var(--shadow-sm)'
           }}
-          title={`Spans multiple layers (${bin.height}u)`}
+          title={t('layout:hints.spansMultipleLayers', { height: bin.height })}
         >
           <span>{bin.height}u</span>
           <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
@@ -462,7 +467,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             {!showLabel && needsSplit && !isGhost && (
               <span
                 className="ml-0.5 rounded-sm"
-                title="Exceeds print size, will be split"
+                title={t('layout:hints.exceedsPrintSize')}
                 style={{
                   fontSize: `${Math.round(secondaryFontSize * 0.9)}px`,
                   padding: '0px 3px',
@@ -471,7 +476,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
                   fontWeight: 500,
                 }}
               >
-                Split
+                {t('layout:hints.split')}
               </span>
             )}
           </div>
@@ -491,7 +496,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
               {needsSplit && !isGhost && (
                 <span
                   className="ml-1"
-                  title="Exceeds print size, will be split"
+                  title={t('layout:hints.exceedsPrintSize')}
                   style={{ color: 'var(--color-warning)' }}
                 >
                   ⚠
@@ -520,7 +525,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 'w')}
             role="slider"
-            aria-label="Resize left edge"
+            aria-label={t('aria:bin.resize.left')}
             aria-orientation="horizontal"
           >
             <div
@@ -547,7 +552,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 'e')}
             role="slider"
-            aria-label="Resize right edge"
+            aria-label={t('aria:bin.resize.right')}
             aria-orientation="horizontal"
           >
             <div
@@ -574,7 +579,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 'n')}
             role="slider"
-            aria-label="Resize top edge"
+            aria-label={t('aria:bin.resize.top')}
             aria-orientation="vertical"
           >
             <div
@@ -601,7 +606,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 's')}
             role="slider"
-            aria-label="Resize bottom edge"
+            aria-label={t('aria:bin.resize.bottom')}
             aria-orientation="vertical"
           >
             <div
@@ -627,7 +632,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 'nw')}
             role="slider"
-            aria-label="Resize top-left corner"
+            aria-label={t('aria:bin.resize.topLeft')}
           >
             <div
               style={{
@@ -651,7 +656,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 'ne')}
             role="slider"
-            aria-label="Resize top-right corner"
+            aria-label={t('aria:bin.resize.topRight')}
           >
             <div
               style={{
@@ -675,7 +680,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 'sw')}
             role="slider"
-            aria-label="Resize bottom-left corner"
+            aria-label={t('aria:bin.resize.bottomLeft')}
           >
             <div
               style={{
@@ -699,7 +704,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             }}
             onPointerDown={(e) => handleResizePointerDown(e, 'se')}
             role="slider"
-            aria-label="Resize bottom-right corner"
+            aria-label={t('aria:bin.resize.bottomRight')}
           >
             <div
               style={{

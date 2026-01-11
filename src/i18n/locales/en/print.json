@@ -5,33 +5,66 @@
     "noBins": "No bins to print",
     "noBinsPlaced": "No bins placed yet",
     "hint": "Draw bins on the grid to see them here",
+    "hintAlt": "Draw or click to place bins on the grid",
     "allInStash": "All bins are in the stash"
   },
   "columns": {
     "size": "Size",
     "dimensions": "W×D×H",
     "quantity": "Qty",
+    "height": "H",
+    "heightFull": "Height",
+    "pieces": "Pcs",
+    "piecesFull": "Pieces after split",
     "filament": "Filament",
+    "filamentMeters": "~m",
+    "filamentMetersFull": "Estimated filament (meters)",
     "category": "Category",
     "layer": "Layer"
   },
   "summary": {
+    "total": "Total",
     "totalBins": "{{count}} bin total",
     "totalBins_other": "{{count}} bins total",
+    "totalBinsShort": "{{count}} bins",
+    "totalBinsWithPieces": "{{bins}} bins, {{pieces}} pcs",
+    "totalBinsWithPiecesFull": "{{bins}} bins, {{pieces}} pieces",
+    "binsCount": "{{count}} bin",
+    "binsCount_other": "{{count}} bins",
+    "piecesCount": "{{count}} pc",
+    "piecesCount_other": "{{count}} pcs",
     "uniqueSizes": "{{count}} unique size",
     "uniqueSizes_other": "{{count}} unique sizes",
     "totalFilament": "~{{grams}}g filament",
+    "filament": "Filament",
+    "filamentValue": "{{meters}}m",
+    "filamentHint": "Estimated 1.75mm PLA usage based on bin dimensions",
+    "cost": "Cost",
+    "estCost": "Est. Cost",
+    "costHint": "Based on $15/kg filament cost",
+    "printTime": "Print Time",
+    "time": "Time",
+    "printTimeHint": "Based on 0.4mm nozzle, 0.2mm layer height, 15% infill",
+    "spool": "Spool",
+    "spoolHint": "Based on 1kg spool (~330m of 1.75mm PLA)",
+    "spoolPercentage": "{{percentage}}%",
+    "spoolCount": "{{count}} spools",
     "estimatedCost": "~{{cost}} estimated"
   },
   "split": {
     "title": "Split for Print Bed",
     "fits": "Fits print bed",
+    "fitsDetail": "Fits print bed ({{binSize}} ≤ {{maxSize}})",
     "willSplit": "Will be split into {{count}} piece for printing",
     "willSplit_other": "Will be split into {{count}} pieces for printing",
     "exceeds": "Exceeds print bed",
     "exceedsHint": "This bin is too large for your print bed",
+    "splitInto": "Split into {{count}} pieces:",
+    "splitIntoDetail": "Will be split into {{count}} pieces (max {{maxSize}} per piece)",
     "splitPreview": "Split Preview",
-    "showSplitLines": "Show split lines"
+    "showSplitLines": "Show split lines",
+    "printBedInfo": "Print bed: {{size}}×{{size}}mm, Max bin: {{maxUnits}}×{{maxUnits}} units",
+    "clickToSeeSplit": "Click to see split preview"
   },
   "export": {
     "title": "Export Print List",
@@ -72,5 +105,8 @@
     "oversized_other": "{{count}} bins exceed print bed size",
     "splitRequired": "Splitting required for {{count}} bin",
     "splitRequired_other": "Splitting required for {{count}} bins"
+  },
+  "row": {
+    "split": "Will be split"
   }
 }

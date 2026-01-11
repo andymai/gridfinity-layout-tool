@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Line, Text } from '@react-three/drei';
 
 interface ScaleIndicatorProps {
@@ -16,6 +17,8 @@ const TICK_HEIGHT = 0.12;
  * Positioned at the back-right corner of the drawer floor.
  */
 export function ScaleIndicator({ gridUnitMm, drawerDepth }: ScaleIndicatorProps) {
+  const { t } = useTranslation(['layout']);
+
   // Position at back-right, offset from edge
   const y = drawerDepth + 0.5;
   const x = 0;
@@ -68,7 +71,7 @@ export function ScaleIndicator({ gridUnitMm, drawerDepth }: ScaleIndicatorProps)
         anchorX="center"
         anchorY="bottom"
       >
-        {`1 unit = ${gridUnitMm}mm`}
+        {t('layout:preview3d.scaleIndicator', { mm: gridUnitMm })}
       </Text>
     </group>
   );

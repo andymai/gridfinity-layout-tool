@@ -150,7 +150,7 @@ describe('LayoutManagerModal Accessibility', () => {
     it('close button has accessible label', () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      expect(screen.getByLabelText('Close layouts dialog')).toBeInTheDocument();
+      expect(screen.getByLabelText('Close dialog')).toBeInTheDocument();
     });
   });
 
@@ -159,7 +159,7 @@ describe('LayoutManagerModal Accessibility', () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
       await waitFor(() => {
-        expect(document.activeElement).toHaveAttribute('aria-label', 'Close layouts dialog');
+        expect(document.activeElement).toHaveAttribute('aria-label', 'Close dialog');
       });
     });
 
@@ -305,8 +305,8 @@ describe('LayoutManagerModal Accessibility', () => {
       });
 
       await waitFor(() => {
-        const input = screen.getByRole('textbox', { name: /Layout name/i });
-        expect(input).toHaveAttribute('aria-label', 'Layout name');
+        const input = screen.getByRole('textbox', { name: /Name input/i });
+        expect(input).toHaveAttribute('aria-label', 'Name input');
       });
     });
 
@@ -325,7 +325,7 @@ describe('LayoutManagerModal Accessibility', () => {
       });
 
       await waitFor(() => {
-        const input = screen.getByRole('textbox', { name: /Layout name/i });
+        const input = screen.getByRole('textbox', { name: /Name input/i });
         expect(document.activeElement).toBe(input);
       });
     });

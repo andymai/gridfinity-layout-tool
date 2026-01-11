@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -15,12 +16,15 @@ export function ConfirmDialog({
   isOpen,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   destructive = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation(['common']);
+  const resolvedConfirmText = confirmText ?? t('common:buttons.confirm');
+  const resolvedCancelText = cancelText ?? t('common:buttons.cancel');
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -107,7 +111,7 @@ export function ConfirmDialog({
             onClick={onCancel}
             className="btn btn-secondary"
           >
-            {cancelText}
+            {resolvedCancelText}
           </button>
           <button
             onClick={() => {
@@ -116,7 +120,7 @@ export function ConfirmDialog({
             }}
             className={`btn ${destructive ? 'btn-danger' : 'btn-primary'}`}
           >
-            {confirmText}
+            {resolvedConfirmText}
           </button>
         </div>
       </div>

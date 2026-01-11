@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
 import { CONSTRAINTS } from '../../constants';
 
@@ -16,6 +17,7 @@ export function QuickLabelPopover() {
 }
 
 function QuickLabelPopoverInner({ binId }: { binId: string }) {
+  const { t } = useTranslation(['layout', 'common']);
   const hideQuickLabel = useUIStore(state => state.hideQuickLabel);
   const bins = useLayoutStore(state => state.layout.bins);
   const updateBin = useLayoutStore(state => state.updateBin);
@@ -119,7 +121,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
         {/* Header */}
         <div className="px-3 py-2 border-b border-stroke-subtle bg-surface-secondary">
           <div className="text-xs font-medium text-content-secondary">
-            Label for {bin.width}×{bin.depth} bin
+            {t('layout:quickLabel.title', { width: bin.width, depth: bin.depth })}
           </div>
         </div>
 
@@ -133,7 +135,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
               maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
-              placeholder="Enter label..."
+              placeholder={t('layout:quickLabel.placeholder')}
               className="input w-full px-3 py-2 pr-8 text-sm"
               style={{ minWidth: '200px' }}
             />
@@ -142,7 +144,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
                 type="button"
                 onClick={handleClear}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
-                aria-label="Clear"
+                aria-label={t('layout:quickLabel.clear')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -155,11 +157,11 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
           <div className="flex items-center justify-center gap-3 mt-2 text-xs text-content-tertiary">
             <span>
               <kbd className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle leading-none" style={{ fontSize: '10px' }}>Enter</kbd>
-              <span className="ml-1">save</span>
+              <span className="ml-1">{t('layout:quickLabel.save')}</span>
             </span>
             <span>
               <kbd className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle leading-none" style={{ fontSize: '10px' }}>Esc</kbd>
-              <span className="ml-1">cancel</span>
+              <span className="ml-1">{t('layout:quickLabel.cancel')}</span>
             </span>
           </div>
         </div>

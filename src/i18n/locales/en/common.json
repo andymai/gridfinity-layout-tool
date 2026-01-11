@@ -37,7 +37,10 @@
     "size": "Size",
     "quantity": "Quantity",
     "total": "Total",
-    "settings": "Settings"
+    "settings": "Settings",
+    "inspector": "Inspector",
+    "binList": "Bin List",
+    "range": "Range: {{range}}"
   },
   "placeholders": {
     "search": "Search...",
@@ -61,7 +64,8 @@
     "error": "Error",
     "success": "Success",
     "empty": "Empty",
-    "none": "None"
+    "none": "None",
+    "copied": "Copied!"
   },
   "confirmations": {
     "areYouSure": "Are you sure?",

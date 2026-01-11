@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUIStore, useLayoutStore } from '../store';
 import { lazyWithRetry, namedExport } from '../utils/lazyWithRetry';
 import { Grid } from './Grid';
@@ -34,6 +35,7 @@ interface MobileLayoutProps {
 }
 
 export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLayoutProps) {
+  const { t } = useTranslation(['layout']);
   const activeMobilePanel = useUIStore(state => state.activeMobilePanel);
   const setActiveMobilePanel = useUIStore(state => state.setActiveMobilePanel);
   const contextMenu = useUIStore(state => state.contextMenu);
@@ -58,7 +60,7 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLa
 
       {/* Bottom Sheet for panels */}
       {activeMobilePanel && (
-        <BottomSheet title={getPanelTitle(activeMobilePanel)}>
+        <BottomSheet title={getPanelTitle(activeMobilePanel, t as (key: string) => string)}>
           <MobilePanelContent panel={activeMobilePanel} />
         </BottomSheet>
       )}

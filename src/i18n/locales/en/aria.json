@@ -4,6 +4,7 @@
     "descriptionFull": "Bin {{width}} by {{depth}} by {{height}}",
     "descriptionWithLabel": "Bin {{width}} by {{depth}}, labeled {{label}}",
     "descriptionFullWithLabel": "Bin {{width}} by {{depth}} by {{height}}, labeled {{label}}",
+    "descriptionWithCategory": "Bin {{width}} by {{depth}}{{label}}, category {{category}}",
     "selected": "Selected",
     "unselected": "Not selected",
     "onLayer": "on {{layer}}",
@@ -20,7 +21,8 @@
       "topRight": "Resize top-right corner",
       "bottomLeft": "Resize bottom-left corner",
       "bottomRight": "Resize bottom-right corner"
-    }
+    },
+    "dimensions": "{{width}}×{{depth}} - {{label}}"
   },
   "grid": {
     "main": "Main grid area",
@@ -62,7 +64,25 @@
     "dismiss": "Dismiss",
     "more": "More options",
     "menu": "Menu",
-    "contextMenu": "Context menu"
+    "contextMenu": "Context menu",
+    "expandLeftPanel": "Expand left panel",
+    "collapseLeftPanel": "Collapse left panel",
+    "expandRightPanel": "Expand right panel",
+    "collapseRightPanel": "Collapse right panel",
+    "decreaseMaxHeight": "Decrease max height",
+    "increaseMaxHeight": "Increase max height",
+    "toggleHalfBinMode": "Toggle half-bin mode",
+    "deselectBin": "Deselect bin",
+    "deselectAllBins": "Deselect all bins",
+    "decreaseHeight": "Decrease height",
+    "increaseHeight": "Increase height",
+    "decreaseHeightAll": "Decrease height for all bins",
+    "increaseHeightAll": "Increase height for all bins",
+    "decreaseClearance": "Decrease clearance",
+    "increaseClearance": "Increase clearance",
+    "decreaseClearanceAll": "Decrease clearance for all bins",
+    "increaseClearanceAll": "Increase clearance for all bins",
+    "copyBinListTsv": "Copy bin list as TSV"
   },
   "buttons": {
     "delete": "Delete",
@@ -77,7 +97,9 @@
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "undo": "Undo",
-    "redo": "Redo"
+    "redo": "Redo",
+    "addNewLayer": "Add new layer",
+    "addNewCategory": "Add new category"
   },
   "inputs": {
     "nameInput": "Name input",
@@ -85,7 +107,13 @@
     "notesInput": "Notes input",
     "searchInput": "Search input",
     "numberInput": "Number input for {{field}}",
-    "colorPicker": "Color picker for {{field}}"
+    "colorPicker": "Color picker for {{field}}",
+    "binWidth": "Bin width",
+    "binDepth": "Bin depth",
+    "binLabel": "Bin label",
+    "binNotes": "Bin notes",
+    "binCategory": "Bin category",
+    "categoryForBins": "Category for selected bins"
   },
   "modals": {
     "help": "Keyboard shortcuts help",
@@ -121,5 +149,11 @@
   "live": {
     "polite": "Status update",
     "assertive": "Important update"
+  },
+  "tablet": {
+    "openLayersPanel": "Open layers panel",
+    "layersAndCategories": "Layers & Categories",
+    "openInspectorPanel": "Open inspector panel",
+    "selectionAndActions": "Selection & Actions"
   }
 }

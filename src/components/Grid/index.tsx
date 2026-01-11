@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
@@ -25,6 +26,7 @@ type ResizeDirection = 'width' | 'depth' | 'both' | null;
  * Displays the drawer grid with bins, handles user interactions.
  */
 export function Grid() {
+  const { t } = useTranslation(['layout', 'aria']);
   const { isMobile, viewportWidth } = useResponsive();
   const gridRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -154,7 +156,7 @@ export function Grid() {
     if (paintSize) {
       const hintShown = localStorage.getItem('gridfinity-paint-mode-hint-shown');
       if (!hintShown) {
-        addToast('Paint Mode: Drag to fill area, press Esc or click × to exit', 'info');
+        addToast(t('layout:paintMode.hint'), 'info');
         localStorage.setItem('gridfinity-paint-mode-hint-shown', 'true');
         // Defer state update to avoid cascading renders
         setTimeout(() => {
@@ -167,7 +169,7 @@ export function Grid() {
       // Defer state update to avoid cascading renders
       setTimeout(() => setShouldPulsePaintHint(false), 0);
     }
-  }, [paintSize, addToast]);
+  }, [paintSize, addToast, t]);
 
   // Pulse grid resize handles on first load
   useEffect(() => {
@@ -500,7 +502,7 @@ export function Grid() {
             <PanelErrorBoundary panelName="3D Preview">
               <Suspense fallback={
                 <div className="w-full h-full flex items-center justify-center">
-                  <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
+                  <div className="animate-pulse text-content-tertiary text-sm">{t('layout:preview3d.loading')}</div>
                 </div>
               }>
                 <IsometricPreview inline />
@@ -522,7 +524,7 @@ export function Grid() {
               <button
                 onClick={() => leftPanelCollapsed && toggleLeftPanel()}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-surface-elevated border border-stroke-subtle transition-colors hover:bg-surface-hover"
-                title={leftPanelCollapsed ? "Show layers panel" : activeLayer.name}
+                title={leftPanelCollapsed ? t('layout:toolbar.showLayersPanel') : activeLayer.name}
               >
                 <div className="w-2 h-2 rounded-full bg-accent" />
                 <span className="text-sm font-medium">
@@ -543,14 +545,14 @@ export function Grid() {
               <button
                 onClick={() => setPaintSize(null)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary-muted border border-accent hover:bg-accent/20 transition-colors cursor-pointer ${shouldPulsePaintHint ? 'animate-pulse' : ''}`}
-                aria-label="Exit paint mode"
-                title="Click to exit paint mode"
+                aria-label={t('layout:paintMode.exitPaintMode')}
+                title={t('layout:paintMode.clickToExit')}
               >
                 <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
                 <span className="text-sm text-accent font-medium leading-none">
-                  Paint {paintSize.width}×{paintSize.depth}
+                  {t('layout:paintMode.paintSize', { width: paintSize.width, depth: paintSize.depth })}
                 </span>
                 <svg className="w-4 h-4 text-accent/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -569,18 +571,18 @@ export function Grid() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                 </svg>
                 <span className="text-sm text-blue-500 font-medium">
-                  Move Mode
+                  {t('layout:moveMode.title')}
                 </span>
                 <div className="flex items-center gap-1 ml-1">
-                  <span className="text-xs text-blue-500/80">↑↓←→</span>
-                  <span className="text-xs text-blue-500/60">to move</span>
+                  <span className="text-xs text-blue-500/80">{t('layout:moveMode.arrows')}</span>
+                  <span className="text-xs text-blue-500/60">{t('layout:moveMode.toMove')}</span>
                   <kbd className="px-1.5 py-0.5 text-xs rounded bg-blue-500/20 border border-blue-500/30 text-blue-500/70 leading-none">Enter</kbd>
-                  <span className="text-xs text-blue-500/60">to place</span>
+                  <span className="text-xs text-blue-500/60">{t('layout:moveMode.toPlace')}</span>
                   <button
                     onClick={() => setKeyboardDragMode(false)}
                     className="text-blue-500 hover:text-blue-500/70 transition-colors p-0.5 ml-1"
-                    aria-label="Exit move mode"
-                    title="Exit move mode (Esc)"
+                    aria-label={t('layout:moveMode.exitMoveMode')}
+                    title={t('layout:moveMode.exitMoveModeShortcut')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -601,18 +603,18 @@ export function Grid() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                 </svg>
                 <span className="text-sm text-purple-500 font-medium">
-                  Resize Mode
+                  {t('layout:resizeMode.title')}
                 </span>
                 <div className="flex items-center gap-1 ml-1">
-                  <span className="text-xs text-purple-500/80">↑↓←→</span>
-                  <span className="text-xs text-purple-500/60">to resize</span>
+                  <span className="text-xs text-purple-500/80">{t('layout:moveMode.arrows')}</span>
+                  <span className="text-xs text-purple-500/60">{t('layout:resizeMode.toResize')}</span>
                   <kbd className="px-1.5 py-0.5 text-xs rounded bg-purple-500/20 border border-purple-500/30 text-purple-500/70 leading-none">Enter</kbd>
-                  <span className="text-xs text-purple-500/60">to apply</span>
+                  <span className="text-xs text-purple-500/60">{t('layout:resizeMode.toApply')}</span>
                   <button
                     onClick={() => setKeyboardResizeMode(false)}
                     className="text-purple-500 hover:text-purple-500/70 transition-colors p-0.5 ml-1"
-                    aria-label="Exit resize mode"
-                    title="Exit resize mode (Esc)"
+                    aria-label={t('layout:resizeMode.exitResizeMode')}
+                    title={t('layout:resizeMode.exitResizeModeShortcut')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -634,7 +636,7 @@ export function Grid() {
                   onChange={toggleShowLabels}
                   className="w-4 h-4 rounded accent-accent"
                 />
-                Labels
+                {t('layout:toolbar.labels')}
               </label>
             )}
             {!isNarrowToolbar && layers.length > 1 && (
@@ -645,18 +647,18 @@ export function Grid() {
                   onChange={toggleShowOtherLayers}
                   className="w-4 h-4 rounded accent-accent"
                 />
-                Show layers below
+                {t('layout:toolbar.showLayersBelow')}
               </label>
             )}
 
             {/* Zoom controls */}
-            <div className="flex items-center gap-1" role="group" aria-label="Zoom controls">
+            <div className="flex items-center gap-1" role="group" aria-label={t('layout:toolbar.zoomControls')}>
               <button
                 onClick={zoomOut}
                 disabled={!canZoomOut}
                 className="btn btn-ghost p-1.5"
-                aria-label="Zoom out"
-                title="Zoom out (−)"
+                aria-label={t('layout:grid.zoomOut')}
+                title={t('layout:grid.zoomOutShortcut')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -669,8 +671,8 @@ export function Grid() {
                 onClick={zoomIn}
                 disabled={!canZoomIn}
                 className="btn btn-ghost p-1.5"
-                aria-label="Zoom in"
-                title="Zoom in (+)"
+                aria-label={t('layout:grid.zoomIn')}
+                title={t('layout:grid.zoomInShortcut')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -679,10 +681,10 @@ export function Grid() {
               <button
                 onClick={fitToScreen}
                 className="btn btn-ghost px-2.5 py-1.5 text-sm"
-                aria-label="Fit grid to screen"
-                title="Fit to screen"
+                aria-label={t('layout:grid.fitGridToScreen')}
+                title={t('layout:grid.fitToScreen')}
               >
-                Fit
+                {t('layout:grid.fit')}
               </button>
             </div>
 
@@ -695,15 +697,15 @@ export function Grid() {
                 toggleIsometricPreview();
               }}
               className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-ghost'} px-2.5 py-1.5 flex items-center gap-1.5`}
-              aria-label={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
-              title={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
+              aria-label={showIsometricPreview ? t('layout:preview3d.hide') : t('layout:preview3d.show')}
+              title={showIsometricPreview ? t('layout:preview3d.hide') : t('layout:preview3d.show')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
                 <path d="m3.3 7 8.7 5 8.7-5"/>
                 <path d="M12 22V12"/>
               </svg>
-              {!isNarrowToolbar && <span className="text-sm">3D View</span>}
+              {!isNarrowToolbar && <span className="text-sm">{t('layout:preview3d.view')}</span>}
             </button>
 
             {/* Overflow menu button - only when narrow */}
@@ -712,10 +714,10 @@ export function Grid() {
                 <button
                   onClick={() => setOverflowMenuOpen(!overflowMenuOpen)}
                   className={`btn ${overflowMenuOpen ? 'btn-primary' : 'btn-ghost'} p-1.5`}
-                  aria-label="More options"
+                  aria-label={t('layout:toolbar.moreOptions')}
                   aria-expanded={overflowMenuOpen}
                   aria-haspopup="menu"
-                  title="More options"
+                  title={t('layout:toolbar.moreOptions')}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
@@ -736,7 +738,7 @@ export function Grid() {
                           onChange={toggleShowLabels}
                           className="w-4 h-4 rounded accent-accent"
                         />
-                        Labels
+                        {t('layout:toolbar.labels')}
                       </label>
                     )}
                     {layers.length > 1 && (
@@ -747,7 +749,7 @@ export function Grid() {
                           onChange={toggleShowOtherLayers}
                           className="w-4 h-4 rounded accent-accent"
                         />
-                        Show layers below
+                        {t('layout:toolbar.showLayersBelow')}
                       </label>
                     )}
                   </div>
@@ -817,8 +819,8 @@ export function Grid() {
                     padding: 0,
                   }}
                   onClick={(e) => handleRowClick(num, e)}
-                  title={`Click to select row ${num}. Shift-click for range. Ctrl-click to add/remove.`}
-                  aria-label={`Select bins in row ${num}`}
+                  title={t('layout:grid.selectRow', { num })}
+                  aria-label={t('layout:grid.selectRowAria', { num })}
                 >
                   {labelFontSize > 0 && num}
                 </button>
@@ -840,7 +842,7 @@ export function Grid() {
                   boxShadow: 'var(--shadow-lg)',
                 }}
                 role="application"
-                aria-label={`Gridfinity drawer grid, ${drawer.width} columns by ${drawer.depth} rows`}
+                aria-label={t('layout:grid.drawerGrid', { width: drawer.width, depth: drawer.depth })}
               >
               <GridCanvas
                 gridRef={gridRef}
@@ -877,12 +879,12 @@ export function Grid() {
                     <p
                       className="font-medium mb-1 text-sm text-content-secondary"
                     >
-                      {isMobile ? 'Tap and drag to draw a bin' : 'Click and drag to draw a bin'}
+                      {isMobile ? t('layout:grid.emptyState.drawBinMobile') : t('layout:grid.emptyState.drawBinDesktop')}
                     </p>
                     <p className="text-xs text-content-disabled">
                       {isFirstLayer
-                        ? (isMobile ? 'Or use Layers tab to select a size' : 'Or select a size from the Bin Palette on the left')
-                        : 'Striped areas are blocked by bins below'
+                        ? (isMobile ? t('layout:grid.emptyState.layersTabHint') : t('layout:grid.emptyState.binPaletteHint'))
+                        : t('layout:grid.emptyState.blockedAreasHint')
                       }
                     </p>
                   </div>
@@ -903,7 +905,7 @@ export function Grid() {
                       cursor: 'ew-resize',
                     }}
                     onMouseDown={(e) => handleResizeStart('width', e)}
-                    title="Drag to add/remove columns"
+                    title={t('layout:grid.resize.dragColumns')}
                   >
                     <div
                       className={`h-16 w-1 rounded-full transition-all group-hover:h-24 group-hover:w-[3px] group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
@@ -925,7 +927,7 @@ export function Grid() {
                       cursor: 'ns-resize',
                     }}
                     onMouseDown={(e) => handleResizeStart('depth', e)}
-                    title="Drag to add/remove rows"
+                    title={t('layout:grid.resize.dragRows')}
                   >
                     <div
                       className={`w-16 h-1 rounded-full transition-all group-hover:w-24 group-hover:h-[3px] group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
@@ -948,7 +950,7 @@ export function Grid() {
                       cursor: 'nwse-resize',
                     }}
                     onMouseDown={(e) => handleResizeStart('both', e)}
-                    title="Drag to add/remove rows and columns"
+                    title={t('layout:grid.resize.dragBoth')}
                   >
                     <div
                       className={`w-3 h-3 rounded-sm transition-all group-hover:w-5 group-hover:h-5 group-hover:scale-[1.3] group-hover:drop-shadow-lg ${shouldPulseResizeHandles ? 'animate-pulse' : ''}`}
@@ -993,8 +995,8 @@ export function Grid() {
                         padding: 0,
                       }}
                       onClick={(e) => handleColumnClick(num, e)}
-                      title={`Click to select column ${num}. Shift-click for range. Ctrl-click to add/remove.`}
-                      aria-label={`Select bins in column ${num}`}
+                      title={t('layout:grid.selectColumn', { num })}
+                      aria-label={t('layout:grid.selectColumnAria', { num })}
                     >
                       {labelFontSize > 0 && num}
                     </button>
@@ -1008,12 +1010,12 @@ export function Grid() {
         {/* Resize confirmation dialog */}
         <ConfirmDialog
           isOpen={pendingResize !== null}
-          title="Resize Grid"
+          title={t('layout:grid.resize.title')}
           message={pendingResize
-            ? `${pendingResize.clippedBinIds.length} bin${pendingResize.clippedBinIds.length > 1 ? 's' : ''} will be moved to stash. Continue?`
+            ? t('layout:grid.resize.confirmMessage', { count: pendingResize.clippedBinIds.length })
             : ''
           }
-          confirmText="Move to Stash"
+          confirmText={t('layout:grid.resize.moveToStash')}
           onConfirm={confirmResize}
           onCancel={cancelResize}
         />
@@ -1029,7 +1031,7 @@ export function Grid() {
           <PanelErrorBoundary panelName="3D Preview">
             <Suspense fallback={
               <div className="w-full h-full flex items-center justify-center">
-                <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
+                <div className="animate-pulse text-content-tertiary text-sm">{t('layout:preview3d.loading')}</div>
               </div>
             }>
               <IsometricPreview inline />

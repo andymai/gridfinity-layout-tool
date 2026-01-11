@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
@@ -8,6 +9,7 @@ import { DeferredNumberInput } from '../DeferredNumberInput';
  * Mobile settings panel with grid configuration and app actions.
  */
 export function MobileSettingsPanel() {
+  const { t } = useTranslation(['layout', 'common', 'aria']);
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
 
   const layout = useLayoutStore(state => state.layout);
@@ -41,21 +43,21 @@ export function MobileSettingsPanel() {
       {/* Drawer Dimensions */}
       <section>
         <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
-          Drawer Dimensions
+          {t('layout:drawer.title')}
         </h3>
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           {/* Width */}
           <div>
             <label className="block text-sm mb-1 text-content-tertiary">
-              Width
+              {t('common:labels.width')}
             </label>
             <div className="flex items-center">
               <button
                 onClick={() => handleDrawerChange('width', -1)}
                 disabled={layout.drawer.width <= 1}
                 className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
-                aria-label="Decrease width"
+                aria-label={t('aria:actions.decreaseMaxHeight')}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -68,7 +70,7 @@ export function MobileSettingsPanel() {
                 onClick={() => handleDrawerChange('width', 1)}
                 disabled={layout.drawer.width >= CONSTRAINTS.GRID_MAX}
                 className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
-                aria-label="Increase width"
+                aria-label={t('aria:actions.increaseMaxHeight')}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -80,14 +82,14 @@ export function MobileSettingsPanel() {
           {/* Depth */}
           <div>
             <label className="block text-sm mb-1 text-content-tertiary">
-              Depth
+              {t('common:labels.depth')}
             </label>
             <div className="flex items-center">
               <button
                 onClick={() => handleDrawerChange('depth', -1)}
                 disabled={layout.drawer.depth <= 1}
                 className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
-                aria-label="Decrease depth"
+                aria-label={t('aria:actions.decreaseMaxHeight')}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -100,7 +102,7 @@ export function MobileSettingsPanel() {
                 onClick={() => handleDrawerChange('depth', 1)}
                 disabled={layout.drawer.depth >= CONSTRAINTS.GRID_MAX}
                 className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
-                aria-label="Increase depth"
+                aria-label={t('aria:actions.increaseMaxHeight')}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -113,14 +115,14 @@ export function MobileSettingsPanel() {
         {/* Height */}
         <div>
           <label className="block text-sm mb-1 text-content-tertiary">
-            Height
+            {t('common:labels.height')}
           </label>
           <div className="flex items-center">
             <button
               onClick={() => handleDrawerChange('height', -1)}
               disabled={layout.drawer.height <= 1}
               className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
-              aria-label="Decrease height"
+              aria-label={t('aria:actions.decreaseMaxHeight')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -133,7 +135,7 @@ export function MobileSettingsPanel() {
               onClick={() => handleDrawerChange('height', 1)}
               disabled={layout.drawer.height >= CONSTRAINTS.GRID_MAX}
               className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
-              aria-label="Increase height"
+              aria-label={t('aria:actions.increaseMaxHeight')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -146,13 +148,13 @@ export function MobileSettingsPanel() {
       {/* Grid Settings */}
       <section>
         <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
-          Grid Settings
+          {t('layout:gridSettings.title')}
         </h3>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-sm text-content-secondary">
-              1 grid unit
+              {t('layout:gridSettings.oneGridUnit')}
             </label>
             <div className="flex items-center gap-2">
               <DeferredNumberInput
@@ -168,7 +170,7 @@ export function MobileSettingsPanel() {
 
           <div className="flex items-center justify-between">
             <label className="text-sm text-content-secondary">
-              1u height
+              {t('layout:gridSettings.oneUnitHeight')}
             </label>
             <div className="flex items-center gap-2">
               <DeferredNumberInput
@@ -184,7 +186,7 @@ export function MobileSettingsPanel() {
 
           <div className="flex items-center justify-between">
             <label className="text-sm text-content-secondary">
-              Print bed size
+              {t('layout:gridSettings.printBed')}
             </label>
             <div className="flex items-center gap-2">
               <DeferredNumberInput
@@ -207,17 +209,17 @@ export function MobileSettingsPanel() {
           <label className="flex items-center justify-between pt-3 border-t border-stroke-subtle cursor-pointer">
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-sm text-content-secondary">Half-bin mode</span>
-                <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
+                <span className="text-sm text-content-secondary">{t('layout:gridSettings.halfBinMode')}</span>
+                <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">{t('layout:gridSettings.experimental')}</span>
               </div>
-              <p className="text-xs text-content-tertiary">Allow 0.5 unit precision</p>
+              <p className="text-xs text-content-tertiary">{t('layout:gridSettings.halfBinModeHint')}</p>
             </div>
             <input
               type="checkbox"
               checked={halfBinMode}
               onChange={toggleHalfBinMode}
               className="w-5 h-5 rounded accent-accent"
-              aria-label="Toggle half-bin mode"
+              aria-label={t('aria:actions.toggleHalfBinMode')}
             />
           </label>
         </div>
@@ -226,21 +228,21 @@ export function MobileSettingsPanel() {
       {/* Preferences */}
       <section>
         <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
-          Default Preferences
+          {t('layout:defaults.title')}
         </h3>
 
         <div className="bg-surface-elevated rounded-lg p-3 space-y-2">
           <div className="text-xs text-content-tertiary">
-            New layouts will use these defaults:
+            {t('layout:defaults.newLayoutsWillUse')}
           </div>
           <div className="text-sm text-content-secondary">
-            Drawer: {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×{settings.defaultDrawerHeight}u
+            {t('layout:defaults.drawer', { width: settings.defaultDrawerWidth, depth: settings.defaultDrawerDepth, height: settings.defaultDrawerHeight })}
           </div>
           <div className="text-sm text-content-secondary">
-            Print bed: {settings.defaultPrintBedSize}mm
+            {t('layout:defaults.printBed', { size: settings.defaultPrintBedSize })}
           </div>
           <div className="text-sm text-content-secondary">
-            Grid unit: {settings.defaultGridUnitMm}mm
+            {t('layout:defaults.gridUnit', { size: settings.defaultGridUnitMm })}
           </div>
           <button
             onClick={() => setShowSaveDefaultsConfirm(true)}
@@ -249,7 +251,7 @@ export function MobileSettingsPanel() {
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
             </svg>
-            Save Current as Defaults
+            {t('layout:defaults.saveAsDefaults')}
           </button>
         </div>
       </section>
@@ -265,9 +267,9 @@ export function MobileSettingsPanel() {
           >
             Gridfinity
           </a>
-          {' '}by Zack Freedman
+          {' '}{t('layout:attribution.gridfinityBy').replace('Gridfinity by', 'by')} Zack Freedman
           <br />
-          Tool by{' '}
+          {t('layout:attribution.toolBy')}{' '}
           <a
             href="https://www.linkedin.com/in/andyhmai/"
             target="_blank"
@@ -281,9 +283,9 @@ export function MobileSettingsPanel() {
 
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}
-        title="Save as Defaults"
-        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${layout.drawer.width}×${layout.drawer.depth}×${layout.drawer.height}u\nPrint bed: ${layout.printBedSize}mm\nGrid unit: ${layout.gridUnitMm}mm`}
-        confirmText="Save"
+        title={t('layout:defaults.saveAsDefaultsTitle')}
+        message={t('layout:defaults.saveAsDefaultsMessage', { width: layout.drawer.width, depth: layout.drawer.depth, height: layout.drawer.height, printBed: layout.printBedSize, gridUnit: layout.gridUnitMm })}
+        confirmText={t('common:buttons.save')}
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />

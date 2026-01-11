@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { exportPrintListTSV } from '../../utils/storage';
 import { usePrintList } from '../../hooks/usePrintList';
@@ -10,6 +11,7 @@ import { SplitPreview, PrintListSummary, PrintListEmpty } from '../PrintList';
  * click to select bins, sort/filter controls.
  */
 export function MobilePrintList() {
+  const { t } = useTranslation(['print', 'common']);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
 
@@ -31,7 +33,7 @@ export function MobilePrintList() {
       {/* Header with copy button */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm text-content-tertiary">
-          {printList.totalBins} bins{printList.hasAnySplits ? `, ${printList.totalPieces} pcs` : ''}
+          {t('summary.binsCount', { count: printList.totalBins })}{printList.hasAnySplits ? `, ${t('summary.piecesCount', { count: printList.totalPieces })}` : ''}
         </span>
         <button
           onClick={handleCopy}
@@ -42,14 +44,14 @@ export function MobilePrintList() {
               <svg className="w-4 h-4 text-[var(--color-success)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Copied
+              {t('common:status.copied')}
             </>
           ) : (
             <>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
-              Copy
+              {t('common:buttons.copy')}
             </>
           )}
         </button>
@@ -105,7 +107,7 @@ export function MobilePrintList() {
                       </span>
                       {row.needsSplit && (
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-[var(--color-warning-muted)] text-[var(--color-warning)]">
-                          Split
+                          {t('row.split')}
                           <svg
                             className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                             fill="none"
@@ -164,7 +166,7 @@ export function MobilePrintList() {
                       <SplitPreview width={w} depth={d} pieces={row.pieces} cellSize={14} />
                       <div className="text-xs text-content-secondary flex-1">
                         <div className="font-medium mb-1">
-                          Split into {row.totalPieces} pieces:
+                          {t('split.splitInto', { count: row.totalPieces })}
                         </div>
                         {row.pieces.map((piece) => (
                           <div key={`${piece.width}x${piece.depth}`} className="text-content-tertiary">
