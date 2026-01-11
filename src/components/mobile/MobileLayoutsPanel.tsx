@@ -17,6 +17,8 @@ export function MobileLayoutsPanel() {
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeX, setSwipeX] = useState(0);
   const [shareMenuId, setShareMenuId] = useState<string | null>(null);
+  const [renameLayoutId, setRenameLayoutId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const {
     activeLayoutId,
@@ -25,6 +27,7 @@ export function MobileLayoutsPanel() {
     createNewLayout,
     deleteLayout,
     duplicateLayout,
+    renameLayout,
   } = useLayoutSwitcher();
 
   const currentLayout = useLayoutStore((state) => state.layout);
@@ -77,6 +80,25 @@ export function MobileLayoutsPanel() {
     setSwipingId(null);
     setSwipeX(0);
   }, []);
+
+  const handleRenameRequest = useCallback((layoutId: string) => {
+    const entry = library.entries.find(e => e.id === layoutId);
+    setRenameValue(entry?.name || '');
+    setRenameLayoutId(layoutId);
+    setSwipingId(null);
+    setSwipeX(0);
+  }, [library.entries]);
+
+  const handleRenameConfirm = useCallback(() => {
+    if (!renameLayoutId) return;
+    const trimmed = renameValue.trim();
+    if (trimmed) {
+      renameLayout(renameLayoutId, trimmed);
+      announceToScreenReader(`Renamed to ${trimmed}`);
+    }
+    setRenameLayoutId(null);
+    setRenameValue('');
+  }, [renameLayoutId, renameValue, renameLayout, announceToScreenReader]);
 
   const handleCopyLink = useCallback(async (layoutId: string) => {
     const entry = library.entries.find(e => e.id === layoutId);
@@ -131,16 +153,16 @@ export function MobileLayoutsPanel() {
     const touch = e.touches[0];
     const startX = e.currentTarget.getBoundingClientRect().left;
     const deltaX = touch.clientX - startX - e.currentTarget.clientWidth / 2;
-    // Only allow left swipe (negative values)
-    setSwipeX(Math.min(0, Math.max(-120, deltaX)));
+    // Only allow left swipe (negative values) - 160px for 4 action buttons
+    setSwipeX(Math.min(0, Math.max(-160, deltaX)));
   }, [swipingId]);
 
   const handleTouchEnd = useCallback(() => {
     if (!swipingId) return;
     // If swiped far enough, show actions
-    if (swipeX < -60) {
+    if (swipeX < -80) {
       // Keep the swipe state to show buttons
-      setSwipeX(-120);
+      setSwipeX(-160);
     } else {
       setSwipingId(null);
       setSwipeX(0);
@@ -181,6 +203,15 @@ export function MobileLayoutsPanel() {
             >
               {/* Swipe action buttons (revealed on swipe) */}
               <div className="absolute right-0 top-0 bottom-0 flex items-stretch">
+                <button
+                  onClick={() => handleRenameRequest(entry.id)}
+                  className="w-15 flex items-center justify-center bg-amber-600 text-white"
+                  aria-label={`Rename ${entry.name}`}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
                 <button
                   onClick={() => handleShare(entry.id)}
                   className="w-15 flex items-center justify-center bg-green-600 text-white"
@@ -268,6 +299,15 @@ export function MobileLayoutsPanel() {
                 {/* Action buttons for active layout */}
                 {isActive && (
                   <div className="flex items-center gap-2 px-4 pb-4">
+                    <button
+                      onClick={() => handleRenameRequest(entry.id)}
+                      className="btn btn-secondary flex-1 h-11"
+                    >
+                      <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Rename
+                    </button>
                     <button
                       onClick={() => handleShare(entry.id)}
                       className="btn btn-secondary flex-1 h-11"
@@ -373,6 +413,60 @@ export function MobileLayoutsPanel() {
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Rename action sheet */}
+      {renameLayoutId && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-end"
+          onClick={() => {
+            setRenameLayoutId(null);
+            setRenameValue('');
+          }}
+        >
+          <div
+            className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-content mb-4">Rename Layout</h3>
+            <input
+              type="text"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleRenameConfirm();
+                } else if (e.key === 'Escape') {
+                  setRenameLayoutId(null);
+                  setRenameValue('');
+                }
+              }}
+              className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
+              placeholder="Layout name"
+              maxLength={64}
+              autoFocus
+            />
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => {
+                  setRenameLayoutId(null);
+                  setRenameValue('');
+                }}
+                className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRenameConfirm}
+                disabled={!renameValue.trim()}
+                className="flex-1 py-3 text-white font-medium bg-accent rounded-lg disabled:opacity-50"
+              >
+                Rename
+              </button>
+            </div>
           </div>
         </div>
       )}
