@@ -1,4 +1,14 @@
-import { test, expect, waitForAppReady, drawBinOnGrid, selectBinAt, getInspector, getSidebar, selectBinSize } from './fixtures';
+import {
+  test,
+  expect,
+  waitForAppReady,
+  drawBinOnGrid,
+  selectBinAt,
+  getInspector,
+  getSidebar,
+  selectBinSize,
+  waitForToast,
+} from './fixtures';
 
 test.describe('Categories Management Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -23,7 +33,8 @@ test.describe('Categories Management Flow', () => {
 
     if (await skyCategory.isVisible()) {
       await skyCategory.click();
-      await page.waitForTimeout(100);
+      // Category selection is instant, verify button is still visible
+      await expect(skyCategory).toBeVisible();
     }
   });
 
@@ -33,7 +44,6 @@ test.describe('Categories Management Flow', () => {
     const skyCategory = sidebar.getByRole('button', { name: /sky/i }).first();
     if (await skyCategory.isVisible()) {
       await skyCategory.click();
-      await page.waitForTimeout(100);
     }
 
     // Draw a bin
@@ -54,7 +64,7 @@ test.describe('Categories Management Flow', () => {
     const fillButton = sidebar.getByRole('button', { name: /fill.*2.*2/i });
     await fillButton.click();
 
-    await expect(page.getByText(/added.*bins/i)).toBeVisible({ timeout: 5000 });
+    await waitForToast(page, /added.*bins/i);
 
     // Bins on the grid should exist and have colors
     const binCount = await page.locator('[data-bin-id]').count();
@@ -68,7 +78,7 @@ test.describe('Categories Management Flow', () => {
     const fillButton = sidebar.getByRole('button', { name: /fill.*2.*2/i });
     await fillButton.click();
 
-    await expect(page.getByText(/added.*bins/i)).toBeVisible({ timeout: 5000 });
+    await waitForToast(page, /added.*bins/i);
 
     // Check bin list in right panel
     const inspector = getInspector(page);
@@ -85,10 +95,8 @@ test.describe('Categories Management Flow', () => {
 
     if (await addCategoryButton.isVisible()) {
       await addCategoryButton.click();
-      await page.waitForTimeout(200);
-
-      // A new category should appear
-      // The exact name may vary, but we should have more categories now
+      // A new category should appear - verify button is still visible after action
+      await expect(addCategoryButton).toBeVisible();
     }
   });
 });
