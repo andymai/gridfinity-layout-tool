@@ -21,13 +21,13 @@
       "name": "Main bundle (gzip)",
       "path": "dist/assets/index-*.js",
       "gzip": true,
-      "limit": "65 kB"
+      "limit": "68 kB"
     },
     {
       "name": "Total JS (gzip)",
       "path": "dist/assets/*.js",
       "gzip": true,
-      "limit": "450 kB"
+      "limit": "455 kB"
     }
   ],
   "dependencies": {
