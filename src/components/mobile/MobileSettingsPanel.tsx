@@ -8,7 +8,6 @@ import { DeferredNumberInput } from '../DeferredNumberInput';
  * Mobile settings panel with grid configuration and app actions.
  */
 export function MobileSettingsPanel() {
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
 
   const layout = useLayoutStore(state => state.layout);
@@ -16,7 +15,6 @@ export function MobileSettingsPanel() {
   const setHeightUnitMm = useLayoutStore(state => state.setHeightUnitMm);
   const setPrintBedSize = useLayoutStore(state => state.setPrintBedSize);
   const updateDrawer = useLayoutStore(state => state.updateDrawer);
-  const reset = useLayoutStore(state => state.reset);
 
   const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
   const { execute } = useUndoableAction();
@@ -256,25 +254,6 @@ export function MobileSettingsPanel() {
         </div>
       </section>
 
-      {/* Actions */}
-      <section>
-        <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
-          Actions
-        </h3>
-
-        <div className="space-y-2">
-          <button
-            onClick={() => setShowResetConfirm(true)}
-            className="btn btn-danger w-full"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16m4-8h12m-12 0l4-4m-4 4l4 4" />
-            </svg>
-            Reset to Defaults
-          </button>
-        </div>
-      </section>
-
       {/* Info */}
       <section className="pt-4 text-center border-t border-stroke-subtle">
         <div className="text-xs text-content-disabled leading-relaxed">
@@ -299,16 +278,6 @@ export function MobileSettingsPanel() {
           </a>
         </div>
       </section>
-
-      <ConfirmDialog
-        isOpen={showResetConfirm}
-        title="Reset to Defaults"
-        message="This will clear your layout and restore all default settings. This cannot be undone."
-        confirmText="Reset"
-        destructive
-        onConfirm={() => { reset(); setShowResetConfirm(false); }}
-        onCancel={() => setShowResetConfirm(false)}
-      />
 
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLayoutStore } from '../../store/layout';
+import { useLibraryStore } from '../../store/library';
 import { useUIStore } from '../../store/ui';
 import {
   generateShareableURL,
@@ -8,23 +9,29 @@ import {
   exportLayoutJSON,
 } from '../../utils/storage';
 import { trackLayoutSnapshot } from '../../utils/analytics';
+import { CloudShareTab } from '../CloudShareTab';
 
 interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
+  layoutId?: string; // If provided, share this layout; otherwise use active layout
 }
 
 // Wrapper that only mounts the inner component when open
-export function ShareModal({ isOpen, onClose }: ShareModalProps) {
+export function ShareModal({ isOpen, onClose, layoutId }: ShareModalProps) {
   if (!isOpen) return null;
-  return <ShareModalContent onClose={onClose} />;
+  return <ShareModalContent onClose={onClose} layoutId={layoutId} />;
 }
 
-function ShareModalContent({ onClose }: { onClose: () => void }) {
+function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutId?: string }) {
   const layout = useLayoutStore((state) => state.layout);
+  const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
 
-  const [activeTab, setActiveTab] = useState<'url' | 'file' | 'json'>('url');
+  // Use provided layoutId or fall back to active layout
+  const targetLayoutId = layoutId ?? activeLayoutId;
+
+  const [activeTab, setActiveTab] = useState<'cloud' | 'url' | 'file' | 'json'>('cloud');
   const [copied, setCopied] = useState(false);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const jsonTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -111,6 +118,18 @@ function ShareModalContent({ onClose }: { onClose: () => void }) {
         <div className="flex gap-1 mb-4 bg-surface rounded-lg p-1" role="tablist">
           <button
             role="tab"
+            aria-selected={activeTab === 'cloud'}
+            onClick={() => setActiveTab('cloud')}
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'cloud'
+                ? 'bg-accent text-white'
+                : 'text-content-secondary hover:text-content hover:bg-surface-hover'
+            }`}
+          >
+            Cloud
+          </button>
+          <button
+            role="tab"
             aria-selected={activeTab === 'url'}
             onClick={() => setActiveTab('url')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
@@ -119,7 +138,7 @@ function ShareModalContent({ onClose }: { onClose: () => void }) {
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
-            Share Link
+            Link
           </button>
           <button
             role="tab"
@@ -131,7 +150,7 @@ function ShareModalContent({ onClose }: { onClose: () => void }) {
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
-            Download File
+            File
           </button>
           <button
             role="tab"
@@ -143,12 +162,20 @@ function ShareModalContent({ onClose }: { onClose: () => void }) {
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
-            Copy JSON
+            JSON
           </button>
         </div>
 
         {/* Tab content */}
         <div className="flex-1 flex flex-col min-h-0">
+          {activeTab === 'cloud' && (
+            <CloudShareTab
+              layoutId={targetLayoutId}
+              onClose={onClose}
+              onSwitchToUrlTab={() => setActiveTab('url')}
+            />
+          )}
+
           {activeTab === 'url' && (
             <div className="space-y-4">
               <p className="text-sm text-content-secondary">

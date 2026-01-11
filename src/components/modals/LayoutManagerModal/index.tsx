@@ -3,6 +3,7 @@ import { useLayoutSwitcher } from '../../../hooks/useLayoutSwitcher';
 import { useUIStore } from '../../../store/ui';
 import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
+import { ShareModal } from '../ShareModal';
 import type { Layout } from '../../../types';
 
 type Tab = 'layouts' | 'import';
@@ -23,6 +24,7 @@ export function LayoutManagerModal({ isOpen, onClose }: LayoutManagerModalProps)
 
 function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<Tab>('layouts');
+  const [shareModalLayoutId, setShareModalLayoutId] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -141,6 +143,10 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
     setActiveTab('layouts');
   }, []);
 
+  const handleShare = useCallback((layoutId: string) => {
+    setShareModalLayoutId(layoutId);
+  }, []);
+
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in"
@@ -235,6 +241,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
                 onDuplicate={handleDuplicate}
                 onDelete={handleDelete}
                 onCreate={handleCreate}
+                onShare={handleShare}
               />
             </div>
           )}
@@ -246,6 +253,13 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
           )}
         </div>
       </div>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={shareModalLayoutId !== null}
+        onClose={() => setShareModalLayoutId(null)}
+        layoutId={shareModalLayoutId ?? undefined}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import type { LayoutEntry, Layout } from '../../../types';
 import { LayoutListItem } from './LayoutListItem';
 import { useLayoutStore } from '../../../store/layout';
-import { loadLayoutById, downloadLayoutAsFile, generateShareableURL, copyToClipboard } from '../../../utils/storage';
+import { loadLayoutById, downloadLayoutAsFile } from '../../../utils/storage';
 import { useUIStore } from '../../../store/ui';
 
 /** Threshold for showing search bar */
@@ -16,6 +16,7 @@ interface LayoutListProps {
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
   onCreate: () => void;
+  onShare: (id: string) => void;
 }
 
 /**
@@ -29,6 +30,7 @@ export function LayoutList({
   onDuplicate,
   onDelete,
   onCreate,
+  onShare,
 }: LayoutListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -90,20 +92,6 @@ export function LayoutList({
       return id === activeLayoutId ? currentLayout : loadLayoutById(id);
     },
     [activeLayoutId, currentLayout]
-  );
-
-  const handleCopyLink = useCallback(
-    async (entry: LayoutEntry) => {
-      const layout = getLayoutData(entry.id);
-      if (layout) {
-        const url = generateShareableURL(layout);
-        const success = await copyToClipboard(url);
-        if (success) {
-          announceToScreenReader(`Link copied for ${entry.name}`);
-        }
-      }
-    },
-    [getLayoutData, announceToScreenReader]
   );
 
   const handleDownload = useCallback(
@@ -241,7 +229,7 @@ export function LayoutList({
             onRename={(newName) => handleRename(entry.id, newName)}
             onDuplicate={() => handleDuplicate(entry.id)}
             onDelete={() => handleDelete(entry.id)}
-            onCopyLink={() => handleCopyLink(entry)}
+            onCopyLink={() => onShare(entry.id)}
             onDownload={() => handleDownload(entry)}
             onFocus={() => setFocusedIndex(index)}
             itemRef={(el) => {
