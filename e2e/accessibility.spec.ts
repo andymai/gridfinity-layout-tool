@@ -26,9 +26,6 @@ function filterKnownIssues(violations: Awaited<ReturnType<AxeBuilder['analyze']>
     // Color contrast: Dark theme with carefully chosen colors. axe sometimes flags
     // colors that meet requirements in practice. Would need manual review.
     'color-contrast',
-    // ARIA prohibited attr: Category color indicator spans use aria-label without role.
-    // TODO: Fix by adding role="img" to color indicator spans in RightPanel/CategoriesPanel.
-    'aria-prohibited-attr',
   ];
 
   return violations.filter(v => {

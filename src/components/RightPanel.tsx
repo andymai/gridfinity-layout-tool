@@ -213,6 +213,7 @@ export function RightPanel() {
                                     return (
                                       <span
                                         key={catId}
+                                        role="img"
                                         className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                         style={{ backgroundColor: cat?.color || DEFAULT_CATEGORY_COLOR }}
                                         aria-label={cat?.name || 'Unknown category'}
