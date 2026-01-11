@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useHistoryStore, useUIStore } from '../store';
+import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '../store';
 import { useResponsive } from '../hooks';
 import { CONSTRAINTS } from '../constants';
 import { ConfirmDialog } from './modals/ConfirmDialog';
+import { LayoutManagerModal } from './modals/LayoutManagerModal';
 
 interface HeaderProps {
   onHelpClick: () => void;
@@ -35,6 +36,13 @@ export function Header({ onHelpClick }: HeaderProps) {
       rightPanelCollapsed: state.rightPanelCollapsed,
       toggleLeftPanel: state.toggleLeftPanel,
       toggleRightPanel: state.toggleRightPanel,
+    }))
+  );
+
+  const { showLayoutManager, setShowLayoutManager } = useLibraryStore(
+    useShallow((state) => ({
+      showLayoutManager: state.showLayoutManager,
+      setShowLayoutManager: state.setShowLayoutManager,
     }))
   );
 
@@ -109,6 +117,19 @@ export function Header({ onHelpClick }: HeaderProps) {
             {layout.name}
           </button>
         )}
+
+        {/* Layout Manager Button */}
+        <button
+          onClick={() => setShowLayoutManager(true)}
+          className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+          title={`Open layout manager (${modKey}+O)`}
+          aria-label="Open layout manager"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          <span className="hidden sm:inline">Layouts</span>
+        </button>
       </div>
 
       <div className="flex items-center gap-1">
@@ -195,6 +216,11 @@ export function Header({ onHelpClick }: HeaderProps) {
         destructive
         onConfirm={reset}
         onCancel={() => setShowResetConfirm(false)}
+      />
+
+      <LayoutManagerModal
+        isOpen={showLayoutManager}
+        onClose={() => setShowLayoutManager(false)}
       />
     </header>
   );

@@ -8,6 +8,7 @@ import { checkLayerReorderCollisions } from '../utils/collision';
 
 interface LayoutState {
   layout: Layout;
+  activeLayoutId: string | null;  // ID of the layout in the library (null for unsaved)
 
   // Bin operations
   addBin: (bin: Omit<Bin, 'id'>) => string | null;
@@ -37,8 +38,11 @@ interface LayoutState {
   clearLayer: (layerId: string) => number;
 
   // I/O
-  importLayout: (layout: Layout) => void;
+  importLayout: (layout: Layout, layoutId?: string) => void;
   reset: () => void;
+
+  // Layout library integration
+  setActiveLayoutId: (id: string | null) => void;
 
   // Name
   setName: (name: string) => void;
@@ -52,6 +56,7 @@ interface LayoutState {
 export const useLayoutStore = create<LayoutState>()(
   immer((set, get) => ({
     layout: createDefaultLayout(),
+    activeLayoutId: null,
 
     addBin: (binData) => {
       const { layout } = get();
@@ -367,12 +372,16 @@ export const useLayoutStore = create<LayoutState>()(
       return count;
     },
 
-    importLayout: (layout) => {
-      set({ layout });
+    importLayout: (layout, layoutId) => {
+      set({ layout, activeLayoutId: layoutId ?? null });
     },
 
     reset: () => {
-      set({ layout: createDefaultLayout() });
+      set({ layout: createDefaultLayout(), activeLayoutId: null });
+    },
+
+    setActiveLayoutId: (id) => {
+      set({ activeLayoutId: id });
     },
 
     setName: (name) => {

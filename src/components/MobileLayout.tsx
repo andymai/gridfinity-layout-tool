@@ -7,6 +7,8 @@ import { DropZones } from './DropZones';
 import { DragPreview } from './DragPreview';
 import { ToastContainer } from './Toast';
 import { PanelErrorBoundary } from './PanelErrorBoundary';
+import { SharedLayoutImporter } from './SharedLayoutImporter';
+import { SharedLayoutBanner } from './SharedLayoutBanner';
 import {
   MobileHeader,
   BottomNavBar,
@@ -17,6 +19,7 @@ import {
   MobileInspector,
   MobilePrintList,
   MobileSettingsPanel,
+  MobileLayoutsPanel,
   BinContextMenu,
 } from './mobile';
 
@@ -38,6 +41,9 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLa
 
   return (
     <div className="h-screen-safe flex flex-col overflow-hidden bg-surface text-content">
+      {/* Shared layout banner (shown when viewing unsaved shared layout) */}
+      <SharedLayoutBanner />
+
       {/* Mobile Header */}
       <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} onHelpClick={() => setIsMobileHelpOpen(true)} />
 
@@ -81,6 +87,9 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLa
           <MobileHelpModal isOpen={isMobileHelpOpen} onClose={() => setIsMobileHelpOpen(false)} />
         </Suspense>
       )}
+
+      {/* Shared layout URL importer */}
+      <SharedLayoutImporter />
     </div>
   );
 }
@@ -101,6 +110,8 @@ function MobilePanelContent({ panel }: { panel: string }) {
         return <MobilePrintList />;
       case 'settings':
         return <MobileSettingsPanel />;
+      case 'layouts':
+        return <MobileLayoutsPanel />;
       default:
         return null;
     }
@@ -114,6 +125,7 @@ function MobilePanelContent({ panel }: { panel: string }) {
     categories: 'Categories',
     print: 'Print List',
     settings: 'Settings',
+    layouts: 'Layouts',
   };
 
   return (

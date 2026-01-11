@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
-import { useLayoutStore, useUIStore } from './store';
-import { useKeyboard, useAutoSave, useResponsive, usePWAUpdate } from './hooks';
-import { loadLayout } from './utils/storage';
+import { useLayoutStore, useUIStore, useLibraryStore } from './store';
+import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate } from './hooks';
+import { initializeLayoutLibrary } from './utils/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
 import { Sidebar } from './components/Sidebar';
@@ -15,6 +15,8 @@ import { PanelErrorBoundary } from './components/PanelErrorBoundary';
 import { BinContextMenu } from './components/mobile';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { LiveRegion } from './components/LiveRegion';
+import { SharedLayoutImporter } from './components/SharedLayoutImporter';
+import { SharedLayoutBanner } from './components/SharedLayoutBanner';
 import { SHORTCUTS } from './constants';
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
@@ -27,13 +29,12 @@ const MobileLayout = lazyWithRetry(() =>
   import('./components/MobileLayout').then(namedExport('MobileLayout'))
 );
 
-// Load layout once at module level to avoid effect setState issues
+// Initialize layout library once at module level to avoid effect setState issues
 let initialLoadError: Error | null = null;
 try {
-  const savedLayout = loadLayout();
-  if (savedLayout) {
-    useLayoutStore.getState().importLayout(savedLayout);
-  }
+  const { library, activeLayout } = initializeLayoutLibrary();
+  useLibraryStore.getState().initLibrary(library);
+  useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId);
 } catch (e) {
   initialLoadError = e as Error;
 }
@@ -100,6 +101,12 @@ export default function App() {
   // Auto-save to localStorage
   useAutoSave();
 
+  // Cross-tab sync detection
+  useCrossTabSync();
+
+  // URL-based layout routing (bookmarkable URLs)
+  useLayoutRouting();
+
   // PWA update detection and auto-reload
   usePWAUpdate();
 
@@ -143,6 +150,9 @@ export default function App() {
   if (isTablet) {
     return (
       <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
+        {/* Shared layout banner (shown when viewing unsaved shared layout) */}
+        <SharedLayoutBanner />
+
         {/* Header */}
         <Header onHelpClick={() => setIsHelpOpen(true)} />
 
@@ -208,6 +218,9 @@ export default function App() {
 
         {/* Toast notifications */}
         <ToastContainer />
+
+        {/* Shared layout URL importer */}
+        <SharedLayoutImporter />
       </div>
     );
   }
@@ -215,6 +228,9 @@ export default function App() {
   // Desktop layout
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
+      {/* Shared layout banner (shown when viewing unsaved shared layout) */}
+      <SharedLayoutBanner />
+
       {/* Header */}
       <Header onHelpClick={() => setIsHelpOpen(true)} />
 
@@ -264,6 +280,9 @@ export default function App() {
 
       {/* ARIA live region for screen reader announcements */}
       <LiveRegion />
+
+      {/* Shared layout URL importer */}
+      <SharedLayoutImporter />
     </div>
   );
 }

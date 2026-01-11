@@ -166,9 +166,19 @@ describe('storage', () => {
   });
 
   describe('exportLayoutJSON', () => {
-    it('exports layout as formatted JSON', () => {
+    it('exports layout as formatted JSON with metadata', () => {
       const json = exportLayoutJSON(defaultLayout);
-      expect(json).toBe(JSON.stringify(defaultLayout, null, 2));
+      const parsed = JSON.parse(json);
+
+      // Layout data preserved
+      expect(parsed.name).toBe(defaultLayout.name);
+      expect(parsed.version).toBe(defaultLayout.version);
+      expect(parsed.drawer).toEqual(defaultLayout.drawer);
+
+      // Metadata added
+      expect(parsed._meta).toBeDefined();
+      expect(parsed._meta.exportedFrom).toBe('https://gridfinitylayouttool.com');
+      expect(parsed._meta.exportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/); // ISO date format
     });
 
     it('exported JSON can be parsed back', () => {
@@ -254,6 +264,87 @@ describe('storage', () => {
       const result = importLayoutJSON(JSON.stringify({ invalid: 'data' }));
       expect(result.layout).toBeNull();
       expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    it('preserves half-bin (0.5 increment) values', () => {
+      const layoutWithHalfBins = {
+        ...defaultLayout,
+        bins: [
+          {
+            id: 'half-bin-1',
+            x: 0.5,           // Half-unit offset
+            y: 1.5,           // Half-unit offset
+            width: 1.5,       // Half-unit width
+            depth: 2.5,       // Half-unit depth
+            height: 3,
+            layerId: defaultLayout.layers[0].id,
+            category: defaultLayout.categories[0].id,
+            label: 'Half bin test',
+            notes: '',
+          },
+          {
+            id: 'half-bin-2',
+            x: 3,
+            y: 0,
+            width: 0.5,       // Minimum half-unit size
+            depth: 0.5,
+            height: 3,
+            layerId: defaultLayout.layers[0].id,
+            category: defaultLayout.categories[0].id,
+            label: '',
+            notes: '',
+          },
+        ],
+      };
+
+      // Export and re-import
+      const json = exportLayoutJSON(layoutWithHalfBins);
+      const result = importLayoutJSON(json);
+
+      expect(result.layout).not.toBeNull();
+      expect(result.errors).toHaveLength(0);
+
+      // Verify fractional values are preserved
+      const bins = result.layout!.bins;
+      expect(bins).toHaveLength(2);
+
+      // First bin - check all fractional values
+      expect(bins[0].x).toBe(0.5);
+      expect(bins[0].y).toBe(1.5);
+      expect(bins[0].width).toBe(1.5);
+      expect(bins[0].depth).toBe(2.5);
+      expect(bins[0].label).toBe('Half bin test');
+
+      // Second bin - minimum half-unit size
+      expect(bins[1].width).toBe(0.5);
+      expect(bins[1].depth).toBe(0.5);
+    });
+
+    it('preserves clearanceHeight in export/import', () => {
+      const layoutWithClearance = {
+        ...defaultLayout,
+        bins: [
+          {
+            id: 'bin-with-clearance',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            clearanceHeight: 5,  // Extra blocked space above
+            layerId: defaultLayout.layers[0].id,
+            category: defaultLayout.categories[0].id,
+            label: '',
+            notes: '',
+          },
+        ],
+      };
+
+      const json = exportLayoutJSON(layoutWithClearance);
+      const result = importLayoutJSON(json);
+
+      expect(result.layout).not.toBeNull();
+      expect(result.layout!.bins[0].clearanceHeight).toBe(5);
     });
   });
 
