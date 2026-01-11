@@ -4,6 +4,10 @@ import { SpeedInsights } from '@vercel/speed-insights/react'
 import './index.css'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
+import { initAnalytics } from './utils/analytics.ts'
+
+// Initialize Posthog analytics (no-op in dev)
+initAnalytics()
 
 // Prevent pinch-to-zoom on iOS (Safari ignores viewport meta since iOS 10)
 document.addEventListener('gesturestart', (e) => e.preventDefault());
