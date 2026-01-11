@@ -399,7 +399,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
                       </button>
                       {shareMenuId === entry.id && (
                         <div
-                          className="absolute right-0 mt-1 w-48 bg-surface-elevated border border-stroke rounded-lg shadow-lg py-1 z-10"
+                          className="absolute right-0 bottom-full mb-1 w-48 bg-surface-elevated border border-stroke rounded-lg shadow-lg py-1 z-10"
                           role="menu"
                         >
                           <button
