@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
@@ -19,6 +20,18 @@ export function MobileLayoutsPanel() {
   const [shareMenuId, setShareMenuId] = useState<string | null>(null);
   const [renameLayoutId, setRenameLayoutId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  // Scroll rename input into view when keyboard appears on mobile
+  useEffect(() => {
+    if (renameLayoutId && renameInputRef.current) {
+      // Small delay to allow keyboard to appear
+      const timer = setTimeout(() => {
+        renameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [renameLayoutId]);
 
   const {
     activeLayoutId,
@@ -365,10 +378,10 @@ export function MobileLayoutsPanel() {
         onCancel={() => setDeleteLayoutId(null)}
       />
 
-      {/* Share action sheet */}
-      {shareMenuId && (
+      {/* Share action sheet - portaled to escape BottomSheet's scrollable container */}
+      {shareMenuId && createPortal(
         <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-end"
+          className="fixed inset-0 bg-black/50 z-[60] flex items-end"
           onClick={() => setShareMenuId(null)}
         >
           <div
@@ -414,13 +427,14 @@ export function MobileLayoutsPanel() {
               Cancel
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Rename action sheet */}
-      {renameLayoutId && (
+      {/* Rename action sheet - portaled to escape BottomSheet's scrollable container */}
+      {renameLayoutId && createPortal(
         <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-end"
+          className="fixed inset-0 bg-black/50 z-[60] flex items-end"
           onClick={() => {
             setRenameLayoutId(null);
             setRenameValue('');
@@ -433,6 +447,7 @@ export function MobileLayoutsPanel() {
             <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-content mb-4">Rename Layout</h3>
             <input
+              ref={renameInputRef}
               type="text"
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
@@ -468,7 +483,8 @@ export function MobileLayoutsPanel() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
