@@ -37,27 +37,6 @@ test.describe('Create Layout Flow', () => {
     await expect(page.getByRole('button', { name: 'My Drawer Layout' })).toBeVisible();
   });
 
-  test('can reset layout to defaults', async ({ page }) => {
-    // First, edit the layout name
-    const layoutNameButton = page.getByRole('button', { name: 'Untitled layout' });
-    await layoutNameButton.click();
-    const input = page.locator('header input[type="text"]');
-    await input.fill('Custom Name');
-    await input.press('Enter');
-
-    // Click reset button (specific one, not Reset View)
-    const resetButton = page.getByRole('button', { name: 'Reset layout to defaults' });
-    await resetButton.click();
-
-    // Confirm reset in dialog
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toBeVisible();
-    await dialog.getByRole('button', { name: 'Reset', exact: true }).click();
-
-    // Should be back to default name
-    await expect(page.getByRole('button', { name: 'Untitled layout' })).toBeVisible();
-  });
-
   test('shows help modal with keyboard shortcut', async ({ page }) => {
     // Press ? key to open help (Shift+/ on US keyboard)
     await page.keyboard.press('?');

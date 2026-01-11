@@ -611,28 +611,4 @@ describe('layout store', () => {
     });
   });
 
-  describe('reset', () => {
-    it('resets layout to default state', () => {
-      const { addBin, setName, reset, layout } = useLayoutStore.getState();
-      const layerId = layout.layers[0].id;
-      const categoryId = layout.categories[0].id;
-
-      // Modify state
-      setName('Modified');
-      addBin({
-        layerId,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
-      });
-
-      expect(useLayoutStore.getState().layout.name).toBe('Modified');
-      expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
-
-      reset();
-
-      const resetLayout = useLayoutStore.getState().layout;
-      expect(resetLayout.name).toBe('Untitled layout');
-      expect(resetLayout.bins).toHaveLength(0);
-    });
-  });
 });

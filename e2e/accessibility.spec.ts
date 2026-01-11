@@ -104,9 +104,13 @@ test.describe('Accessibility', () => {
   });
 
   test('confirm dialog is accessible', async ({ page }) => {
-    // Open reset dialog
-    const resetButton = page.getByRole('button', { name: 'Reset layout to defaults' });
-    await resetButton.click();
+    // Create and select a bin to trigger delete confirmation
+    await drawBinOnGrid(page, 0, 0, 2, 2);
+    await selectBinAt(page, 0, 0);
+
+    // Click delete in the inspector panel to trigger confirm dialog
+    const inspector = getInspector(page);
+    await inspector.getByRole('button', { name: /delete/i }).click();
 
     // Verify dialog is visible
     const dialog = page.getByRole('dialog');
