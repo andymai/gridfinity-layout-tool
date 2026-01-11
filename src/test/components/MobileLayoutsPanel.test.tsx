@@ -6,6 +6,7 @@ import { useLayoutStore } from '../../store/layout';
 import { useUIStore } from '../../store/ui';
 import { createDefaultLayout } from '../../constants';
 import * as storage from '../../utils/storage';
+import * as cloudShareHook from '../../hooks/useCloudShare';
 import type { LayoutLibrary, LayoutEntry } from '../../types';
 
 // Mock the storage module
@@ -335,6 +336,472 @@ describe('MobileLayoutsPanel', () => {
       await waitFor(() => {
         const liveMessage = useUIStore.getState().liveMessage;
         expect(liveMessage).toContain('created');
+      });
+    });
+  });
+
+  describe('cloud share panel', () => {
+    const mockShare = vi.fn();
+    const mockUpdate = vi.fn();
+    const mockRemove = vi.fn();
+    const mockCopyUrl = vi.fn();
+    const mockReset = vi.fn();
+
+    const mockCloudShareIdle = {
+      status: 'idle' as const,
+      result: null,
+      error: null,
+      existingShare: null,
+      hasActiveShare: false,
+      share: mockShare,
+      update: mockUpdate,
+      remove: mockRemove,
+      copyUrl: mockCopyUrl,
+      copyDeleteToken: vi.fn(),
+      reset: mockReset,
+    };
+
+    beforeEach(() => {
+      vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue(mockCloudShareIdle);
+      mockShare.mockResolvedValue(true);
+      mockUpdate.mockResolvedValue(true);
+      mockRemove.mockResolvedValue(true);
+      mockCopyUrl.mockResolvedValue(true);
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('opens cloud share panel from share menu', async () => {
+      render(<MobileLayoutsPanel />);
+
+      // Click share button to open share menu
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share Layout')).toBeInTheDocument();
+      });
+
+      // Click cloud share option
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText('Cloud Share')).toBeInTheDocument();
+      });
+    });
+
+    it('has proper accessibility attributes on dialog', async () => {
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        const dialog = screen.getByRole('dialog');
+        expect(dialog).toHaveAttribute('aria-modal', 'true');
+        expect(dialog).toHaveAttribute('aria-labelledby', 'mobile-cloud-share-title');
+        expect(screen.getByText('Cloud Share')).toHaveAttribute('id', 'mobile-cloud-share-title');
+      });
+    });
+
+    it('creates a share with default expiration', async () => {
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Click share button
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: /share to cloud/i }));
+      });
+
+      await waitFor(() => {
+        expect(mockShare).toHaveBeenCalledWith(30);
+      });
+    });
+
+    it('creates a share with selected expiration', async () => {
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Change expiration
+      const select = screen.getByLabelText(/expires after/i);
+      act(() => {
+        fireEvent.change(select, { target: { value: '90' } });
+      });
+
+      // Click share button
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: /share to cloud/i }));
+      });
+
+      await waitFor(() => {
+        expect(mockShare).toHaveBeenCalledWith(90);
+      });
+    });
+
+    it('shows existing share info when hasActiveShare', async () => {
+      const existingShareInfo = {
+        id: 'test-share-id',
+        deleteToken: 'test-token',
+        sharedAt: Date.now() - 86400000, // 1 day ago
+        expiresAt: Date.now() + 86400000 * 29, // 29 days from now
+      };
+
+      vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
+        ...mockCloudShareIdle,
+        existingShare: existingShareInfo,
+        hasActiveShare: true,
+      });
+
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/shared on/i)).toBeInTheDocument();
+        expect(screen.getByText(/expires/i)).toBeInTheDocument();
+      });
+    });
+
+    it('copies link for existing share', async () => {
+      const existingShareInfo = {
+        id: 'test-share-id',
+        deleteToken: 'test-token',
+        sharedAt: Date.now() - 86400000,
+        expiresAt: Date.now() + 86400000 * 29,
+      };
+
+      vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
+        ...mockCloudShareIdle,
+        existingShare: existingShareInfo,
+        hasActiveShare: true,
+      });
+
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Click copy link button
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: /copy link/i }));
+      });
+
+      await waitFor(() => {
+        expect(mockCopyUrl).toHaveBeenCalled();
+      });
+    });
+
+    it('updates existing share', async () => {
+      const existingShareInfo = {
+        id: 'test-share-id',
+        deleteToken: 'test-token',
+        sharedAt: Date.now() - 86400000,
+        expiresAt: Date.now() + 86400000 * 29,
+      };
+
+      vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
+        ...mockCloudShareIdle,
+        existingShare: existingShareInfo,
+        hasActiveShare: true,
+      });
+
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Click update button
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: /update/i }));
+      });
+
+      await waitFor(() => {
+        expect(mockUpdate).toHaveBeenCalled();
+      });
+    });
+
+    it('deletes existing share', async () => {
+      const existingShareInfo = {
+        id: 'test-share-id',
+        deleteToken: 'test-token',
+        sharedAt: Date.now() - 86400000,
+        expiresAt: Date.now() + 86400000 * 29,
+      };
+
+      vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
+        ...mockCloudShareIdle,
+        existingShare: existingShareInfo,
+        hasActiveShare: true,
+      });
+
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Click delete button
+      act(() => {
+        fireEvent.click(screen.getByText(/delete share/i));
+      });
+
+      await waitFor(() => {
+        expect(mockRemove).toHaveBeenCalled();
+      });
+    });
+
+    it('shows loading state during share operation', async () => {
+      vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
+        ...mockCloudShareIdle,
+        status: 'sharing',
+      });
+
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/uploading layout/i)).toBeInTheDocument();
+      });
+    });
+
+    it('shows success state after share', async () => {
+      vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
+        ...mockCloudShareIdle,
+        status: 'success',
+        result: {
+          id: 'new-share-id',
+          url: 'https://example.com/s/new-share-id',
+          deleteToken: 'new-token',
+          expiresAt: new Date(Date.now() + 86400000 * 30),
+        },
+      });
+
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/shared successfully/i)).toBeInTheDocument();
+      });
+    });
+
+    it('shows error state on failure', async () => {
+      vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
+        ...mockCloudShareIdle,
+        status: 'error',
+        error: {
+          message: 'Network error',
+          code: 'NETWORK_ERROR',
+        },
+      });
+
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText(/failed to share/i)).toBeInTheDocument();
+        expect(screen.getByText('Network error')).toBeInTheDocument();
+      });
+    });
+
+    it('closes panel on Escape key', async () => {
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Press Escape
+      act(() => {
+        fireEvent.keyDown(window, { key: 'Escape' });
+      });
+
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+    });
+
+    it('closes panel on backdrop click', async () => {
+      render(<MobileLayoutsPanel />);
+
+      // Open cloud share panel
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText('Share to Cloud'));
+      });
+
+      await waitFor(() => {
+        const dialog = screen.getByRole('dialog');
+        expect(dialog).toBeInTheDocument();
+
+        // Click backdrop (the fixed overlay)
+        const backdrop = dialog.parentElement;
+        if (backdrop) {
+          fireEvent.click(backdrop);
+        }
+      });
+
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       });
     });
   });
