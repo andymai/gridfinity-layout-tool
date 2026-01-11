@@ -254,15 +254,6 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3 mt-6 pt-4 border-t border-stroke-subtle">
-          <button
-            onClick={onClose}
-            className="btn btn-secondary"
-          >
-            Done
-          </button>
-        </div>
       </div>
     </div>
   );
