@@ -86,6 +86,41 @@ describe('library store', () => {
       expect(entry.modifiedAt).toBeGreaterThan(0);
     });
 
+    it('handles empty name', () => {
+      const entry = useLibraryStore.getState().createEntry(
+        '',
+        'empty-name-id',
+        { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 }
+      );
+
+      expect(entry.name).toBe('');
+      expect(entry.id).toBe('empty-name-id');
+    });
+
+    it('handles name with only whitespace', () => {
+      const entry = useLibraryStore.getState().createEntry(
+        '   ',
+        'whitespace-id',
+        { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 }
+      );
+
+      // Should preserve whitespace (truncated to max length)
+      expect(entry.name).toBe('   ');
+    });
+
+    it('handles undefined author (uses settings author)', () => {
+      useLibraryStore.getState().setAuthorName('Settings Author');
+
+      const entry = useLibraryStore.getState().createEntry(
+        'Layout',
+        'id',
+        { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
+        undefined
+      );
+
+      expect(entry.author).toBe('Settings Author');
+    });
+
     it('adds entry to the library', () => {
       const initialCount = useLibraryStore.getState().library.entries.length;
 
@@ -287,6 +322,31 @@ describe('library store', () => {
 
       expect(duplicate.name.length).toBeLessThanOrEqual(CONSTRAINTS.NAME_MAX_LENGTH);
     });
+
+    it('creates independent preview copy (not shared reference)', () => {
+      const source = useLibraryStore.getState().getEntry('layout-0')!;
+
+      const duplicate = useLibraryStore.getState().duplicateEntry(source, 'copy-id');
+
+      // The duplicate preview should be a copy, not the same reference
+      expect(duplicate.preview).not.toBe(source.preview);
+      expect(duplicate.preview).toEqual(source.preview);
+
+      // Verify preview data is correctly copied
+      expect(duplicate.preview.binCount).toBe(source.preview.binCount);
+      expect(duplicate.preview.drawerWidth).toBe(source.preview.drawerWidth);
+    });
+
+    it('does not copy forkedFrom from source', () => {
+      useLibraryStore.getState().updateEntry('layout-0', {
+        forkedFrom: { name: 'Original', author: 'Someone' },
+      });
+
+      const source = useLibraryStore.getState().getEntry('layout-0')!;
+      const duplicate = useLibraryStore.getState().duplicateEntry(source, 'copy-id');
+
+      expect(duplicate.forkedFrom).toBeUndefined();
+    });
   });
 
   describe('getEntry', () => {
@@ -338,6 +398,24 @@ describe('library store', () => {
       const recent = useLibraryStore.getState().getRecentEntries(10);
 
       expect(recent).toHaveLength(5);
+    });
+
+    it('returns empty array when count is 0', () => {
+      const recent = useLibraryStore.getState().getRecentEntries(0);
+
+      expect(recent).toHaveLength(0);
+    });
+
+    it('returns empty array when no entries exist', () => {
+      useLibraryStore.setState({
+        library: { ...createTestLibrary(0), entries: [] },
+        isLoaded: true,
+        showLayoutManager: false,
+      });
+
+      const recent = useLibraryStore.getState().getRecentEntries(5);
+
+      expect(recent).toHaveLength(0);
     });
   });
 

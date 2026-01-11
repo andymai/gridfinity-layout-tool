@@ -462,4 +462,132 @@ describe('storage-library', () => {
       expect(loaded2).not.toBeNull();
     });
   });
+
+  describe('edge cases', () => {
+    it('handles special characters in layout ID', () => {
+      const layout = createTestLayout('Special');
+      const specialId = 'id-with-special_chars.and-dots';
+
+      saveLayoutById(specialId, layout);
+      const loaded = loadLayoutById(specialId);
+
+      expect(loaded).not.toBeNull();
+      expect(loaded!.name).toBe('Special');
+    });
+
+    it('handles very long layout ID', () => {
+      const layout = createTestLayout('Long ID');
+      const longId = 'a'.repeat(200);
+
+      saveLayoutById(longId, layout);
+      const loaded = loadLayoutById(longId);
+
+      expect(loaded).not.toBeNull();
+      expect(loaded!.name).toBe('Long ID');
+    });
+
+    it('handles empty string layout ID', () => {
+      const layout = createTestLayout('Empty ID');
+
+      saveLayoutById('', layout);
+      const loaded = loadLayoutById('');
+
+      expect(loaded).not.toBeNull();
+      expect(loaded!.name).toBe('Empty ID');
+    });
+
+    it('handles layout with many bins', () => {
+      const layout = createTestLayout('Many Bins');
+      // Use actual layer and category IDs from the layout
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Expand drawer to fit 100 bins (10x10 grid)
+      layout.drawer = { width: 10, depth: 10, height: 12 };
+
+      layout.bins = [];
+      for (let i = 0; i < 100; i++) {
+        layout.bins.push({
+          id: `bin-${i}`,
+          x: i % 10,
+          y: Math.floor(i / 10),
+          width: 1,
+          depth: 1,
+          height: 3,
+          layerId,
+          category: categoryId,
+          label: `Bin ${i}`,
+          notes: '',
+        });
+      }
+
+      saveLayoutById('many-bins', layout);
+      const loaded = loadLayoutById('many-bins');
+
+      expect(loaded).not.toBeNull();
+      expect(loaded!.bins).toHaveLength(100);
+    });
+
+    it('preserves library settings through save/load cycle', () => {
+      const library = createTestLibrary(2);
+      library.settings = { authorName: 'Test Author' };
+      library.entries.forEach(entry => {
+        saveLayoutById(entry.id, createTestLayout(entry.name));
+      });
+      saveLibrary(library);
+
+      const loaded = loadLibrary();
+
+      expect(loaded).not.toBeNull();
+      expect(loaded!.settings.authorName).toBe('Test Author');
+    });
+
+    it('handles library with single entry correctly', () => {
+      const library = createTestLibrary(1);
+      saveLayoutById('layout-0', createTestLayout('Only Layout'));
+      saveLibrary(library);
+
+      const loaded = loadLibrary();
+
+      expect(loaded).not.toBeNull();
+      expect(loaded!.entries).toHaveLength(1);
+      expect(loaded!.activeLayoutId).toBe('layout-0');
+    });
+
+    it('handles layout with unicode characters in name', () => {
+      const layout = createTestLayout('レイアウト 🎨 émoji');
+
+      saveLayoutById('unicode', layout);
+      const loaded = loadLayoutById('unicode');
+
+      expect(loaded).not.toBeNull();
+      expect(loaded!.name).toBe('レイアウト 🎨 émoji');
+    });
+
+    it('handles layout with clearanceHeight on bins', () => {
+      const layout = createTestLayout('Clearance');
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      layout.bins = [{
+        id: 'bin-1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        layerId,
+        category: categoryId,
+        label: '',
+        notes: '',
+        clearanceHeight: 5,
+      }];
+
+      saveLayoutById('clearance', layout);
+      const loaded = loadLayoutById('clearance');
+
+      expect(loaded).not.toBeNull();
+      expect(loaded!.bins[0].clearanceHeight).toBe(5);
+    });
+  });
 });
