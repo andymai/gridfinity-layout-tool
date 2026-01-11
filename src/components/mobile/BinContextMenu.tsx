@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../store';
 import { useResponsive } from '../../hooks/useResponsive';
 import { STAGING_ID } from '../../constants';
-import { canPlaceBin } from '../../utils/validation';
+import { validateRotation } from '../../utils/rotation';
 import type { Bin } from '../../types';
 
 interface BinContextMenuProps {
@@ -98,35 +98,9 @@ export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) 
   };
 
   const handleRotate = () => {
-    // Check if rotated bin would fit (swap width and depth)
-    const rotatedRect = {
-      x: bin.x,
-      y: bin.y,
-      width: bin.depth,  // Swapped
-      depth: bin.width,  // Swapped
-      height: bin.height,
-      clearanceHeight: bin.clearanceHeight,
-    };
-
-    const validation = canPlaceBin(rotatedRect, bin.layerId, layout, bin.id);
-
-    if (!validation.valid) {
-      // Show appropriate error message based on reason
-      let message = 'Cannot rotate bin';
-      switch (validation.reason) {
-        case 'exceeds_width':
-        case 'exceeds_depth':
-        case 'out_of_bounds':
-          message = 'Cannot rotate: bin would exceed drawer bounds';
-          break;
-        case 'collision':
-          message = 'Cannot rotate: would collide with another bin';
-          break;
-        case 'blocked_zone':
-          message = 'Cannot rotate: space is blocked by a bin below';
-          break;
-      }
-      addToast(message, 'error');
+    const result = validateRotation(bin, layout);
+    if (!result.valid) {
+      addToast(result.message, 'error');
       onClose();
       return;
     }

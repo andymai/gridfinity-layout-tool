@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction, useToastStore } from '../store';
 import { canPlaceBin } from '../utils/validation';
+import { validateRotation } from '../utils/rotation';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '../constants';
 import { useGridNavigation } from './useGridNavigation';
 
@@ -150,41 +151,15 @@ export function useKeyboard() {
       return;
     }
 
-    // Rotate selected bin (R) - swap width and depth
+    // Rotate selected bin (R) - swap width and depth (standalone key, no Ctrl/Cmd)
     if (key.toLowerCase() === SHORTCUTS.ROTATE && !ctrlOrMeta && selectedBinIds.length === 1) {
       e.preventDefault();
       const bin = layout.bins.find(b => b.id === selectedBinIds[0]);
       if (!bin || bin.layerId === STAGING_ID) return;
 
-      // Check if rotated bin would fit (swap width and depth)
-      const rotatedRect = {
-        x: bin.x,
-        y: bin.y,
-        width: bin.depth,  // Swapped
-        depth: bin.width,  // Swapped
-        height: bin.height,
-        clearanceHeight: bin.clearanceHeight,
-      };
-
-      const validation = canPlaceBin(rotatedRect, bin.layerId, layout, bin.id);
-
-      if (!validation.valid) {
-        // Show appropriate error message based on reason
-        let message = 'Cannot rotate bin';
-        switch (validation.reason) {
-          case 'exceeds_width':
-          case 'exceeds_depth':
-          case 'out_of_bounds':
-            message = 'Cannot rotate: bin would exceed drawer bounds';
-            break;
-          case 'collision':
-            message = 'Cannot rotate: would collide with another bin';
-            break;
-          case 'blocked_zone':
-            message = 'Cannot rotate: space is blocked by a bin below';
-            break;
-        }
-        addToast(message, 'error');
+      const result = validateRotation(bin, layout);
+      if (!result.valid) {
+        addToast(result.message, 'error');
         return;
       }
 

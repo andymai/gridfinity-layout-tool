@@ -23,13 +23,13 @@ test.describe('Rotate Bins', () => {
     const bin = await drawBinOnGrid(page, 50, 50, 130, 210);
     await waitForBinSelected(bin);
 
-    // Get the inspector to verify dimensions before rotation
     const inspector = getInspector(page);
 
-    // Verify initial dimensions - header shows "WxD Bin"
+    // Verify initial dimensions before rotation - header shows "WxD Bin"
+    // This assertion confirms the bin was created with expected dimensions
     await expect(inspector.getByText(/2×4 Bin/i)).toBeVisible();
 
-    // Press R to rotate
+    // Press R to rotate (standalone key, not Ctrl+R)
     await page.keyboard.press('r');
 
     // Verify dimensions swapped - should now be 4x2
