@@ -14,6 +14,7 @@ Gridfinity Layout Tool is a React + TypeScript web application for designing sto
 - Three.js + @react-three/fiber (3D preview)
 - Vitest (unit tests) + Playwright (e2e tests)
 - PWA support (vite-plugin-pwa)
+- Deployed via Vercel (auto-deploy on push to `main`)
 
 ## Commands
 

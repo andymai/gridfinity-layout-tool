@@ -276,32 +276,29 @@ test.describe('Keyboard Navigation', () => {
   test('? key opens help modal', async ({ page }) => {
     // Press ? to open help
     await page.keyboard.press('?');
-    await page.waitForTimeout(300);
 
-    // Help modal should be visible (use the dialog/modal container)
-    const helpModal = page.locator('[role="dialog"], [aria-modal="true"]').filter({
-      has: page.getByText(/keyboard shortcuts/i)
+    // Help modal should be visible with heading
+    const helpModal = page.locator('[role="dialog"]').filter({
+      has: page.getByRole('heading', { name: /keyboard shortcuts/i })
     });
-    await expect(helpModal).toBeVisible();
+    await expect(helpModal).toBeVisible({ timeout: 5000 });
   });
 
   test('escape closes help modal', async ({ page }) => {
     // Open help modal
     await page.keyboard.press('?');
-    await page.waitForTimeout(300);
 
-    // Verify modal is open
-    const helpModal = page.locator('[role="dialog"], [aria-modal="true"]').filter({
-      has: page.getByText(/keyboard shortcuts/i)
+    // Wait for modal to open
+    const helpModal = page.locator('[role="dialog"]').filter({
+      has: page.getByRole('heading', { name: /keyboard shortcuts/i })
     });
-    await expect(helpModal).toBeVisible();
+    await expect(helpModal).toBeVisible({ timeout: 5000 });
 
     // Close with Escape
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
 
     // Modal should be closed
-    await expect(helpModal).not.toBeVisible();
+    await expect(helpModal).not.toBeVisible({ timeout: 3000 });
   });
 
   test('[ and ] cycle through categories for selected bin', async ({ page }) => {

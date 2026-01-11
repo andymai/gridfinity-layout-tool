@@ -14,6 +14,10 @@ npm run test     # Unit tests (watch mode)
 npm run test:e2e # Playwright e2e tests
 ```
 
+## Deployment
+
+Deployed via **Vercel** with automatic deployments on push to `main`. Preview deployments are created for pull requests.
+
 ## Project Structure
 
 ```
