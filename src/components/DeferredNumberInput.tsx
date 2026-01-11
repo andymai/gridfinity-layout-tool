@@ -12,6 +12,14 @@ interface DeferredNumberInputProps {
 }
 
 /**
+ * Format a number for display (show decimal only if fractional).
+ * Defined outside component to avoid recreation on every render.
+ */
+function formatValue(val: number): string {
+  return val % 1 === 0 ? String(val) : val.toFixed(1);
+}
+
+/**
  * Number input that defers updates until blur or Enter.
  * Allows users to fully clear and retype values without immediate validation snapping.
  */
@@ -27,13 +35,11 @@ export function DeferredNumberInput({
 }: DeferredNumberInputProps) {
   const [localValue, setLocalValue] = useState(String(value));
 
-  // Format a number for display (show decimal only if fractional)
-  const formatValue = (val: number) => val % 1 === 0 ? String(val) : val.toFixed(1);
-
-  // Sync local state when external value changes (e.g., from undo/redo)
-  // This is intentional: we need to reset local input state when the controlled value changes
+  // Sync local state when external value changes from outside (e.g., undo/redo, keyboard nudge).
+  // We intentionally call setState in useEffect here to keep the input synchronized with
+  // the controlled value when it changes externally, not from user typing.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Legitimate sync with controlled prop
+     
     setLocalValue(formatValue(value));
   }, [value]);
 

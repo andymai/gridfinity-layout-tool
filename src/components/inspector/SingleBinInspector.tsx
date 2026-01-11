@@ -48,6 +48,7 @@ export function SingleBinInspector({
 
   // Sizing for mobile vs desktop
   const inputHeight = isMobile ? 'h-12' : '';
+  const stepperHeight = isMobile ? 'h-12' : 'h-8';
   const labelSize = isMobile ? 'text-sm mb-2' : 'text-xs mb-1';
 
   return (
@@ -140,7 +141,7 @@ export function SingleBinInspector({
             <label className={`block ${labelSize} text-content-tertiary`}>
               Height
             </label>
-            <div className="flex items-center h-8">
+            <div className={`flex items-center ${stepperHeight}`}>
               <button
                 type="button"
                 onClick={() => updateField('height', bin.height - 1)}
@@ -181,7 +182,7 @@ export function SingleBinInspector({
               >
                 Clearance
               </label>
-              <div className="flex items-center h-8">
+              <div className={`flex items-center ${stepperHeight}`}>
                 <button
                   type="button"
                   onClick={() => updateField('clearanceHeight', (bin.clearanceHeight || 0) - 1)}
