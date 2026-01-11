@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://gridfinitylayouttool.com/</loc>
+    <lastmod>2026-01-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://gridfinitylayouttool.com/og-image.png</image:loc>
+      <image:title>Gridfinity Layout Tool - Design Drawer Layouts for 3D Printing</image:title>
+      <image:caption>Free online tool to design Gridfinity drawer organizer layouts with drag-and-drop bin placement</image:caption>
+    </image:image>
   </url>
 </urlset>
