@@ -6,6 +6,7 @@ import { useInteraction, useResponsive } from '../../hooks';
 import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS, getBaseCellSize, HALF_BIN_SCALE } from '../../constants';
 import { clamp } from '../../utils/validation';
 import { lazyWithRetry, namedExport } from '../../utils/lazyWithRetry';
+import { track3DPreview } from '../../utils/analytics';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
@@ -687,7 +688,12 @@ export function Grid() {
 
             {/* 3D Preview toggle */}
             <button
-              onClick={toggleIsometricPreview}
+              onClick={() => {
+                if (!showIsometricPreview) {
+                  track3DPreview('opened');
+                }
+                toggleIsometricPreview();
+              }}
               className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-ghost'} px-2.5 py-1.5 flex items-center gap-1.5`}
               aria-label={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
               title={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}

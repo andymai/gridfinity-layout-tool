@@ -10,3 +10,4 @@ export { useLayoutSwitcher } from './useLayoutSwitcher';
 export { useCrossTabSync } from './useCrossTabSync';
 export { useLayoutRouting } from './useLayoutRouting';
 export { usePWAUpdate } from './usePWAUpdate';
+export { useAnalytics } from './useAnalytics';
