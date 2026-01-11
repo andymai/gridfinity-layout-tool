@@ -70,8 +70,8 @@ src/
     "enterName": "Enter name"
   },
   "units": {
-    "gridUnits": "{{count}} unit",
-    "gridUnits_other": "{{count}} units",
+    "gridUnit": "{{count}} unit",
+    "gridUnit_other": "{{count}} units",
     "mm": "{{value}}mm"
   }
 }
@@ -342,15 +342,22 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-// Import all English translations
-import en from './locales/en';
+// Import all English translations directly
+import common from './locales/en/common.json';
+import layout from './locales/en/layout.json';
+import validation from './locales/en/validation.json';
+import toast from './locales/en/toast.json';
+import share from './locales/en/share.json';
+import print from './locales/en/print.json';
+import help from './locales/en/help.json';
+import aria from './locales/en/aria.json';
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      en,
+      en: { common, layout, validation, toast, share, print, help, aria },
     },
     fallbackLng: 'en',
     defaultNS: 'common',
@@ -362,6 +369,9 @@ i18n
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
     },
+  })
+  .catch((error) => {
+    console.error('Failed to initialize i18n:', error);
   });
 
 export default i18n;

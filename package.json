@@ -53,7 +53,7 @@
       "eslint --fix --max-warnings=0"
     ],
     "src/i18n/locales/**/*.json": [
-      "npm run i18n:validate"
+      "npm run i18n:validate -- --syntax-only"
     ]
   },
   "devDependencies": {

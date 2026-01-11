@@ -55,6 +55,9 @@ i18n
       caches: ['localStorage'],
       lookupLocalStorage: 'gridfinity-language',
     },
+  })
+  .catch((error) => {
+    console.error('Failed to initialize i18n:', error);
   });
 
 export default i18n;

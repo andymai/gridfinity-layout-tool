@@ -197,11 +197,12 @@ describe('i18n', () => {
 
   describe('namespace isolation', () => {
     it('keys are scoped to namespaces', () => {
-      // Same key name in different namespaces should return different values
+      // Keys in different namespaces are independently resolved
+      // (they may have the same or different values)
       expect(i18n.t('common:buttons.delete')).toBe('Delete');
       expect(i18n.t('aria:buttons.delete')).toBe('Delete');
 
-      // Different structure in different namespaces
+      // Keys with same path but different namespaces have different values
       expect(i18n.t('layout:bin.label')).toBe('Label');
       expect(i18n.t('aria:bin.description')).toContain('{{width}}');
     });

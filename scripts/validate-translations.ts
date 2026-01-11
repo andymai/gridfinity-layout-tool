@@ -7,11 +7,15 @@
  * 3. No empty translation values
  * 4. ICU message format validity (basic check)
  *
- * Usage: npx tsx scripts/validate-translations.ts
+ * Usage:
+ *   npx tsx scripts/validate-translations.ts           # Full validation
+ *   npx tsx scripts/validate-translations.ts --syntax-only  # JSON syntax only (for local dev)
  */
 
 import fs from 'fs';
 import path from 'path';
+
+const syntaxOnly = process.argv.includes('--syntax-only');
 
 const LOCALES_DIR = path.join(process.cwd(), 'src/i18n/locales');
 const NAMESPACES = [
@@ -218,7 +222,42 @@ function compareLocaleKeys(
 }
 
 /**
- * Main validation function
+ * Validate JSON syntax only (for local development)
+ */
+function validateSyntaxOnly(): boolean {
+  console.log('🔍 Validating JSON syntax...\n');
+
+  const locales = fs
+    .readdirSync(LOCALES_DIR, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
+
+  let hasErrors = false;
+
+  for (const locale of locales) {
+    for (const namespace of NAMESPACES) {
+      const filePath = path.join(LOCALES_DIR, locale, `${namespace}.json`);
+      if (fs.existsSync(filePath)) {
+        try {
+          const content = fs.readFileSync(filePath, 'utf-8');
+          JSON.parse(content);
+        } catch (e) {
+          console.error(`❌ ${locale}/${namespace}.json: ${e instanceof Error ? e.message : 'Invalid JSON'}`);
+          hasErrors = true;
+        }
+      }
+    }
+  }
+
+  if (!hasErrors) {
+    console.log('✅ All JSON files have valid syntax!\n');
+  }
+
+  return !hasErrors;
+}
+
+/**
+ * Main validation function (full validation)
  */
 function validate(): boolean {
   console.log('🔍 Validating translations...\n');
@@ -317,5 +356,5 @@ function validate(): boolean {
 }
 
 // Run validation
-const isValid = validate();
+const isValid = syntaxOnly ? validateSyntaxOnly() : validate();
 process.exit(isValid ? 0 : 1);
