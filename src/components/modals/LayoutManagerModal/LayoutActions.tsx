@@ -26,7 +26,7 @@ export function LayoutActions({
 }: LayoutActionsProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [menuPosition, setMenuPosition] = useState<'below' | 'above'>('below');
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -57,12 +57,20 @@ export function LayoutActions({
       setIsMenuOpen(false);
       setIsConfirmingDelete(false);
     } else {
-      // Determine if menu should open above or below
+      // Calculate fixed position based on button location
       const button = menuButtonRef.current;
       if (button) {
         const rect = button.getBoundingClientRect();
         const spaceBelow = window.innerHeight - rect.bottom;
-        setMenuPosition(spaceBelow < 200 ? 'above' : 'below');
+        const openAbove = spaceBelow < 200;
+
+        setMenuStyle({
+          position: 'fixed',
+          right: window.innerWidth - rect.right,
+          ...(openAbove
+            ? { bottom: window.innerHeight - rect.top + 4 }
+            : { top: rect.bottom + 4 }),
+        });
       }
       setIsMenuOpen(true);
     }
@@ -136,10 +144,8 @@ export function LayoutActions({
           <div
             ref={menuRef}
             role="menu"
-            className={`
-              absolute right-0 w-40 bg-surface-elevated border border-stroke rounded-lg shadow-lg py-1 z-50
-              ${menuPosition === 'above' ? 'bottom-full mb-1' : 'top-full mt-1'}
-            `}
+            style={menuStyle}
+            className="w-40 bg-surface-elevated border border-stroke rounded-lg shadow-lg py-1 z-50"
           >
             <button
               role="menuitem"
