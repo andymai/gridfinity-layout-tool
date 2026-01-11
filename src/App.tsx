@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useLayoutStore, useUIStore, useLibraryStore } from './store';
-import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate } from './hooks';
+import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics } from './hooks';
 import { initializeLayoutLibrary } from './utils/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
@@ -109,6 +109,9 @@ export default function App() {
 
   // PWA update detection and auto-reload
   usePWAUpdate();
+
+  // Analytics session tracking
+  useAnalytics();
 
   // Help modal keyboard shortcut
   const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {

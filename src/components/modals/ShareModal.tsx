@@ -7,6 +7,7 @@ import {
   copyToClipboard,
   exportLayoutJSON,
 } from '../../utils/storage';
+import { trackLayoutSnapshot } from '../../utils/analytics';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -47,6 +48,7 @@ function ShareModalContent({ onClose }: { onClose: () => void }) {
     if (success) {
       setCopied(true);
       announceToScreenReader('Link copied to clipboard');
+      trackLayoutSnapshot(layout, 'export_url');
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -57,6 +59,7 @@ function ShareModalContent({ onClose }: { onClose: () => void }) {
     if (success) {
       setCopied(true);
       announceToScreenReader('JSON copied to clipboard');
+      trackLayoutSnapshot(layout, 'export_json');
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -64,6 +67,7 @@ function ShareModalContent({ onClose }: { onClose: () => void }) {
   const handleDownload = () => {
     downloadLayoutAsFile(layout);
     announceToScreenReader('Layout downloaded');
+    trackLayoutSnapshot(layout, 'export_json');
   };
 
   const jsonText = exportLayoutJSON(layout);
