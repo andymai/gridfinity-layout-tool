@@ -26,7 +26,7 @@ function saveHalfBinMode(enabled: boolean): void {
 
 export type DropTarget = 'trash' | 'staging' | null;
 
-export type MobilePanel = 'layers' | 'inspector' | 'categories' | 'print' | 'settings' | null;
+export type MobilePanel = 'layers' | 'inspector' | 'categories' | 'print' | 'settings' | 'layouts' | null;
 
 export type LayerViewMode = 'focus' | 'stack' | 'all';
 

@@ -17,6 +17,7 @@ import {
   MobileInspector,
   MobilePrintList,
   MobileSettingsPanel,
+  MobileLayoutsPanel,
   BinContextMenu,
 } from './mobile';
 
@@ -101,6 +102,8 @@ function MobilePanelContent({ panel }: { panel: string }) {
         return <MobilePrintList />;
       case 'settings':
         return <MobileSettingsPanel />;
+      case 'layouts':
+        return <MobileLayoutsPanel />;
       default:
         return null;
     }
@@ -114,6 +117,7 @@ function MobilePanelContent({ panel }: { panel: string }) {
     categories: 'Categories',
     print: 'Print List',
     settings: 'Settings',
+    layouts: 'Layouts',
   };
 
   return (
