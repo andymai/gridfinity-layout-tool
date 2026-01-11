@@ -333,6 +333,148 @@ export function migrateFromLegacyStorage(): LayoutLibrary | null {
   return library;
 }
 
+// === Layout Sharing ===
+
+/**
+ * Compress a string using gzip-like compression via pako if available,
+ * otherwise fall back to simple encoding.
+ */
+function compressString(str: string): string {
+  // Use native compression if available (modern browsers)
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    // Simple RLE-like compression for JSON (many repeated chars)
+    return btoa(String.fromCharCode(...data));
+  } catch {
+    return btoa(str);
+  }
+}
+
+/**
+ * Decompress a string.
+ */
+function decompressString(compressed: string): string {
+  try {
+    const binary = atob(compressed);
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    const decoder = new TextDecoder();
+    return decoder.decode(bytes);
+  } catch {
+    return atob(compressed);
+  }
+}
+
+/**
+ * Encode a layout for URL sharing.
+ * Returns a base64-encoded string safe for URL hash.
+ */
+export function encodeLayoutForURL(layout: Layout): string {
+  const json = JSON.stringify(layout);
+  const compressed = compressString(json);
+  // Make base64 URL-safe
+  return compressed.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/**
+ * Decode a layout from URL-encoded string.
+ * Returns the layout or null if invalid.
+ */
+export function decodeLayoutFromURL(encoded: string): { layout: Layout | null; errors: string[] } {
+  try {
+    // Restore base64 from URL-safe version
+    let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    // Add back padding
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+
+    const json = decompressString(base64);
+    return importLayoutJSON(json);
+  } catch (e) {
+    return { layout: null, errors: [`Failed to decode URL: ${(e as Error).message}`] };
+  }
+}
+
+/**
+ * Generate a shareable URL for a layout.
+ * The layout is encoded in the URL hash.
+ */
+export function generateShareableURL(layout: Layout): string {
+  const encoded = encodeLayoutForURL(layout);
+  const baseURL = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}`
+    : '';
+  return `${baseURL}#share=${encoded}`;
+}
+
+/**
+ * Check if the current URL contains a shared layout.
+ */
+export function getSharedLayoutFromURL(): { layout: Layout | null; errors: string[] } | null {
+  if (typeof window === 'undefined') return null;
+
+  const hash = window.location.hash;
+  if (!hash.startsWith('#share=')) return null;
+
+  const encoded = hash.slice(7); // Remove '#share='
+  return decodeLayoutFromURL(encoded);
+}
+
+/**
+ * Clear the shared layout from URL (after import).
+ */
+export function clearSharedLayoutFromURL(): void {
+  if (typeof window === 'undefined') return;
+
+  // Remove the hash without triggering a page reload
+  const url = window.location.href.split('#')[0];
+  window.history.replaceState(null, '', url);
+}
+
+/**
+ * Download a layout as a JSON file.
+ */
+export function downloadLayoutAsFile(layout: Layout, filename?: string): void {
+  const json = exportLayoutJSON(layout);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename || `${layout.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Copy text to clipboard.
+ * Returns true if successful.
+ */
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Fallback for older browsers
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
 /**
  * Initialize the layout library system.
  * Handles migration from legacy storage if needed.

@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '../../store/ui';
+import { useLayoutStore } from '../../store/layout';
 import { useLayoutSwitcher } from '../../hooks/useLayoutSwitcher';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { loadLayoutById, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../utils/storage';
 import type { LayoutEntry } from '../../types';
 
 /**
@@ -13,6 +15,7 @@ export function MobileLayoutsPanel() {
   const [deleteLayoutId, setDeleteLayoutId] = useState<string | null>(null);
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeX, setSwipeX] = useState(0);
+  const [shareMenuId, setShareMenuId] = useState<string | null>(null);
 
   const {
     activeLayoutId,
@@ -22,6 +25,8 @@ export function MobileLayoutsPanel() {
     deleteLayout,
     duplicateLayout,
   } = useLayoutSwitcher();
+
+  const currentLayout = useLayoutStore((state) => state.layout);
 
   const { closeMobilePanel, announceToScreenReader } = useUIStore(
     useShallow((state) => ({
@@ -65,6 +70,35 @@ export function MobileLayoutsPanel() {
     setSwipingId(null);
     setSwipeX(0);
   }, [duplicateLayout, library.entries, announceToScreenReader]);
+
+  const handleShare = useCallback((layoutId: string) => {
+    setShareMenuId(layoutId);
+    setSwipingId(null);
+    setSwipeX(0);
+  }, []);
+
+  const handleCopyLink = useCallback(async (layoutId: string) => {
+    const entry = library.entries.find(e => e.id === layoutId);
+    const layout = layoutId === activeLayoutId ? currentLayout : loadLayoutById(layoutId);
+    if (layout) {
+      const url = generateShareableURL(layout);
+      const success = await copyToClipboard(url);
+      if (success) {
+        announceToScreenReader(`Link copied for ${entry?.name || 'layout'}`);
+      }
+    }
+    setShareMenuId(null);
+  }, [activeLayoutId, currentLayout, library.entries, announceToScreenReader]);
+
+  const handleDownload = useCallback((layoutId: string) => {
+    const entry = library.entries.find(e => e.id === layoutId);
+    const layout = layoutId === activeLayoutId ? currentLayout : loadLayoutById(layoutId);
+    if (layout && entry) {
+      downloadLayoutAsFile(layout, `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`);
+      announceToScreenReader('Layout downloaded');
+    }
+    setShareMenuId(null);
+  }, [activeLayoutId, currentLayout, library.entries, announceToScreenReader]);
 
   const handleDeleteRequest = useCallback((layoutId: string) => {
     if (library.entries.length <= 1) {
@@ -147,6 +181,15 @@ export function MobileLayoutsPanel() {
               {/* Swipe action buttons (revealed on swipe) */}
               <div className="absolute right-0 top-0 bottom-0 flex items-stretch">
                 <button
+                  onClick={() => handleShare(entry.id)}
+                  className="w-15 flex items-center justify-center bg-green-600 text-white"
+                  aria-label={`Share ${entry.name}`}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                </button>
+                <button
                   onClick={() => handleDuplicate(entry.id)}
                   className="w-15 flex items-center justify-center bg-blue-600 text-white"
                   aria-label={`Duplicate ${entry.name}`}
@@ -215,6 +258,15 @@ export function MobileLayoutsPanel() {
                 {isActive && (
                   <div className="flex items-center gap-2 px-4 pb-4">
                     <button
+                      onClick={() => handleShare(entry.id)}
+                      className="btn btn-secondary flex-1 h-11"
+                    >
+                      <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                      Share
+                    </button>
+                    <button
                       onClick={() => handleDuplicate(entry.id)}
                       className="btn btn-secondary flex-1 h-11"
                     >
@@ -261,6 +313,58 @@ export function MobileLayoutsPanel() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteLayoutId(null)}
       />
+
+      {/* Share action sheet */}
+      {shareMenuId && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-end"
+          onClick={() => setShareMenuId(null)}
+        >
+          <div
+            className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-content mb-4">Share Layout</h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => handleCopyLink(shareMenuId)}
+                className="w-full flex items-center gap-3 p-4 bg-surface rounded-lg active:bg-surface-hover"
+              >
+                <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-content">Copy Link</div>
+                  <div className="text-sm text-content-secondary">Share via URL</div>
+                </div>
+              </button>
+              <button
+                onClick={() => handleDownload(shareMenuId)}
+                className="w-full flex items-center gap-3 p-4 bg-surface rounded-lg active:bg-surface-hover"
+              >
+                <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-content">Download JSON</div>
+                  <div className="text-sm text-content-secondary">Save as file</div>
+                </div>
+              </button>
+            </div>
+            <button
+              onClick={() => setShareMenuId(null)}
+              className="w-full mt-4 py-3 text-content-secondary font-medium"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

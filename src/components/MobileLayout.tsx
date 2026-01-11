@@ -7,6 +7,7 @@ import { DropZones } from './DropZones';
 import { DragPreview } from './DragPreview';
 import { ToastContainer } from './Toast';
 import { PanelErrorBoundary } from './PanelErrorBoundary';
+import { SharedLayoutImporter } from './SharedLayoutImporter';
 import {
   MobileHeader,
   BottomNavBar,
@@ -82,6 +83,9 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLa
           <MobileHelpModal isOpen={isMobileHelpOpen} onClose={() => setIsMobileHelpOpen(false)} />
         </Suspense>
       )}
+
+      {/* Shared layout URL importer */}
+      <SharedLayoutImporter />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import { validateImport } from '../../utils/validation';
+import { decodeLayoutFromURL } from '../../utils/storage';
 import type { Layout } from '../../types';
 
 interface ImportModalProps {
@@ -46,6 +47,23 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
 
     if (!text.trim()) return;
 
+    // Check if it's a share URL
+    const shareMatch = text.match(/#share=([A-Za-z0-9_-]+)/);
+    if (shareMatch) {
+      const encoded = shareMatch[1];
+      const result = decodeLayoutFromURL(encoded);
+      if (result.layout) {
+        setPreview({
+          drawerSize: `${result.layout.drawer.width}×${result.layout.drawer.depth}×${result.layout.drawer.height}`,
+          layerCount: result.layout.layers.length,
+          binCount: result.layout.bins.length,
+        });
+      } else {
+        setErrors(result.errors);
+      }
+      return;
+    }
+
     try {
       const data = JSON.parse(text);
       const validation = validateImport(data);
@@ -83,6 +101,20 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
   const handleImport = () => {
     if (!jsonText.trim()) {
       setErrors(['No JSON provided']);
+      return;
+    }
+
+    // Check if it's a share URL
+    const shareMatch = jsonText.match(/#share=([A-Za-z0-9_-]+)/);
+    if (shareMatch) {
+      const encoded = shareMatch[1];
+      const result = decodeLayoutFromURL(encoded);
+      if (result.layout) {
+        onImport(result.layout);
+        onClose();
+      } else {
+        setErrors(result.errors);
+      }
       return;
     }
 
@@ -152,14 +184,14 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
           {/* Textarea */}
           <div className="flex-1 flex flex-col min-h-0">
             <label htmlFor="json-input" className="text-sm text-zinc-300 mb-2">
-              Or paste JSON:
+              Or paste JSON or share link:
             </label>
             <textarea
               id="json-input"
               ref={textareaRef}
               value={jsonText}
               onChange={handleTextChange}
-              placeholder='{"version": "1.0", "name": "My Layout", ...}'
+              placeholder='{"version": "1.0", "name": "My Layout", ...} or https://...#share=...'
               className="flex-1 bg-zinc-900 text-white p-3 rounded font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
