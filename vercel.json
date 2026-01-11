@@ -2,7 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ] && [ -z \"$VERCEL_GIT_PULL_REQUEST_ID\" ]",
   "rewrites": [
-    { "source": "/s/:id", "destination": "/" },
-    { "source": "/api/:path*", "destination": "/api/:path*" }
+    { "source": "/s/:id", "destination": "/" }
   ]
 }

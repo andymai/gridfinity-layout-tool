@@ -341,7 +341,12 @@ function sanitizeColor(color: string): string {
   // Ensure valid hex color format
   const match = color.match(/^#?([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/);
   if (match) {
-    return '#' + match[1].toLowerCase();
+    let hex = match[1].toLowerCase();
+    // Expand 3-char to 6-char (#abc -> #aabbcc)
+    if (hex.length === 3) {
+      hex = hex.split('').map((c) => c + c).join('');
+    }
+    return '#' + hex;
   }
   return '#888888'; // Default gray for invalid colors
 }
