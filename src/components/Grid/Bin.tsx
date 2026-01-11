@@ -63,6 +63,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   const setFocusedBin = useUIStore((state) => state.setFocusedBin);
   const setActiveMobilePanel = useUIStore((state) => state.setActiveMobilePanel);
   const showQuickLabel = useUIStore((state) => state.showQuickLabel);
+  const paintSize = useUIStore((state) => state.paintSize);
+  const setPaintSize = useUIStore((state) => state.setPaintSize);
 
   // Consolidate layout state selectors with shallow comparison
   const { printBedSize, gridUnitMm } = useLayoutStore(
@@ -221,6 +223,11 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     if (e.button === 0) {
       const isMultiSelectKey = e.ctrlKey || e.metaKey;
       const isRangeSelectKey = e.shiftKey;
+
+      // Exit paint mode when selecting a bin
+      if (paintSize) {
+        setPaintSize(null);
+      }
 
       if (isMultiSelectKey) {
         // Ctrl/Cmd+click: toggle this bin in selection
