@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLayoutStore, useUndoableAction, useUIStore } from '../../store';
+import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { DeferredNumberInput } from '../DeferredNumberInput';
@@ -9,6 +9,7 @@ import { DeferredNumberInput } from '../DeferredNumberInput';
  */
 export function MobileSettingsPanel() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
 
   const layout = useLayoutStore(state => state.layout);
   const setGridUnitMm = useLayoutStore(state => state.setGridUnitMm);
@@ -22,6 +23,14 @@ export function MobileSettingsPanel() {
 
   const halfBinMode = useUIStore(state => state.halfBinMode);
   const toggleHalfBinMode = useUIStore(state => state.toggleHalfBinMode);
+
+  const settings = useSettingsStore(state => state.settings);
+  const saveCurrentAsDefaults = useSettingsStore(state => state.saveCurrentAsDefaults);
+
+  const handleSaveDefaults = () => {
+    saveCurrentAsDefaults(layout.drawer, layout.printBedSize, layout.gridUnitMm, layout.heightUnitMm);
+    setShowSaveDefaultsConfirm(false);
+  };
 
   const handleDrawerChange = (field: 'width' | 'depth' | 'height', delta: number) => {
     const current = layout.drawer[field];
@@ -216,6 +225,37 @@ export function MobileSettingsPanel() {
         </div>
       </section>
 
+      {/* Preferences */}
+      <section>
+        <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
+          Default Preferences
+        </h3>
+
+        <div className="bg-surface-elevated rounded-lg p-3 space-y-2">
+          <div className="text-xs text-content-tertiary">
+            New layouts will use these defaults:
+          </div>
+          <div className="text-sm text-content-secondary">
+            Drawer: {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×{settings.defaultDrawerHeight}u
+          </div>
+          <div className="text-sm text-content-secondary">
+            Print bed: {settings.defaultPrintBedSize}mm
+          </div>
+          <div className="text-sm text-content-secondary">
+            Grid unit: {settings.defaultGridUnitMm}mm
+          </div>
+          <button
+            onClick={() => setShowSaveDefaultsConfirm(true)}
+            className="btn btn-secondary w-full mt-3"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
+            Save Current as Defaults
+          </button>
+        </div>
+      </section>
+
       {/* Actions */}
       <section>
         <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
@@ -268,6 +308,15 @@ export function MobileSettingsPanel() {
         destructive
         onConfirm={() => { reset(); setShowResetConfirm(false); }}
         onCancel={() => setShowResetConfirm(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={showSaveDefaultsConfirm}
+        title="Save as Defaults"
+        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${layout.drawer.width}×${layout.drawer.depth}×${layout.drawer.height}u\nPrint bed: ${layout.printBedSize}mm\nGrid unit: ${layout.gridUnitMm}mm`}
+        confirmText="Save"
+        onConfirm={handleSaveDefaults}
+        onCancel={() => setShowSaveDefaultsConfirm(false)}
       />
     </div>
   );

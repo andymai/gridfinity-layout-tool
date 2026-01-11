@@ -2,8 +2,8 @@
 active: true
 iteration: 1
 max_iterations: 15
-completion_promise: "SHARE_COMPLETE"
-started_at: "2026-01-11T02:37:07Z"
+completion_promise: "SETTINGS_COMPLETE"
+started_at: "2026-01-11T02:49:51Z"
 ---
 
-Add layout sharing/export functionality. Users should be able to: (1) Export a layout as a JSON file with metadata, (2) Generate a shareable URL with the layout encoded in the URL hash, (3) Import layouts from pasted JSON or URL. Integrate with both desktop LayoutManagerModal (export button) and MobileLayoutsPanel (share action). Check src/components/modals/ImportModal.tsx for existing import patterns. Run tests after each change. Output SHARE_COMPLETE in a promise tag when sharing works and tests pass.
+Add user preferences/settings persistence. Create a settings store (src/store/settings.ts) to save: (1) Default drawer size for new layouts, (2) Default print bed size, (3) UI preferences like default zoom level and panel collapse states. Persist settings to localStorage (key: gridfinity-settings-v1). Add a Settings section to the existing SettingsPanel (desktop: src/components/Sidebar/SettingsPanel.tsx, mobile: src/components/mobile/MobileSettingsPanel.tsx) for editing these preferences. Run tests after each change. Output SETTINGS_COMPLETE in a promise tag when settings persistence works and tests pass.
