@@ -32,6 +32,9 @@ jobs:
       - name: Typecheck
         run: npx tsc -b
 
+      - name: Validate translations
+        run: npm run i18n:validate
+
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
