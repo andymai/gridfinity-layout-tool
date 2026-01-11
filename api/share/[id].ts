@@ -22,7 +22,10 @@ interface ShareData {
  * Hash a delete token using SHA-256 with server salt.
  */
 async function hashToken(token: string): Promise<string> {
-  const salt = process.env.TOKEN_SALT || 'gridfinity-share-salt';
+  const salt = process.env.TOKEN_SALT;
+  if (!salt) {
+    throw new Error('TOKEN_SALT environment variable must be configured');
+  }
   const data = new TextEncoder().encode(salt + token);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
