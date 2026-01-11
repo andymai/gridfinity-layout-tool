@@ -141,6 +141,14 @@ export function MobileSettingsPanel() {
             </button>
           </div>
         </div>
+
+        {/* Real-world drawer dimensions */}
+        <div className="mt-2 px-3 py-2 bg-surface-elevated rounded-lg">
+          <div className="text-xs text-content-tertiary">Real dimensions</div>
+          <div className="text-sm text-content-secondary">
+            {layout.drawer.width * layout.gridUnitMm} × {layout.drawer.depth * layout.gridUnitMm} × {layout.drawer.height * layout.heightUnitMm} mm
+          </div>
+        </div>
       </section>
 
       {/* Grid Settings */}
