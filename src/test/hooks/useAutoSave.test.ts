@@ -253,6 +253,20 @@ describe('useAutoSave', () => {
       // Should not have called save
       expect(storage.saveLayoutById).not.toHaveBeenCalled();
     });
+
+    it('does not save when activeLayoutId is __shared_preview__', () => {
+      // Set activeLayoutId to shared preview (temporary layout)
+      useLayoutStore.setState({ activeLayoutId: '__shared_preview__' });
+
+      renderHook(() => useAutoSave());
+
+      act(() => {
+        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+      });
+
+      // Should not have called save for temporary shared preview
+      expect(storage.saveLayoutById).not.toHaveBeenCalled();
+    });
   });
 
   describe('error handling', () => {

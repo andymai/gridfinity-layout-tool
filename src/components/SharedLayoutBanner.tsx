@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '../store/layout';
 import { useLibraryStore, computePreview } from '../store/library';
@@ -10,12 +11,15 @@ import {
   initializeLayoutLibrary,
 } from '../utils/storage';
 import { generateUUID } from '../utils/uuid';
+import { ConfirmDialog } from './modals/ConfirmDialog';
 
 /**
  * Banner shown when viewing a shared layout that hasn't been saved.
  * Provides options to save to library or discard and return to previous layout.
  */
 export function SharedLayoutBanner() {
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+
   const { sharedLayoutPreview, sharedLayoutOriginalName, clearSharedLayoutPreview, setActiveLayer, setActiveCategory, clearSelection } = useUIStore(
     useShallow((state) => ({
       sharedLayoutPreview: state.sharedLayoutPreview,
@@ -34,9 +38,8 @@ export function SharedLayoutBanner() {
     }))
   );
 
-  const { library, createEntry, setActiveLayoutId, updateEntry } = useLibraryStore(
+  const { createEntry, setActiveLayoutId, updateEntry } = useLibraryStore(
     useShallow((state) => ({
-      library: state.library,
       createEntry: state.createEntry,
       setActiveLayoutId: state.setActiveLayoutId,
       updateEntry: state.updateEntry,
@@ -64,7 +67,7 @@ export function SharedLayoutBanner() {
     saveLayoutById(layoutId, savedLayout);
 
     // Create entry in library store
-    const newEntry = createEntry(
+    createEntry(
       savedLayout.name,
       layoutId,
       computePreview(savedLayout)
@@ -75,17 +78,12 @@ export function SharedLayoutBanner() {
       forkedFrom: { name: sharedLayoutOriginalName || layout.name },
     });
 
-    // Update the library in storage
-    const updatedLibrary = {
-      ...library,
-      activeLayoutId: layoutId,
-      entries: library.entries.map(e => e.id === layoutId ? newEntry : e),
-    };
-    saveLibrary(updatedLibrary);
-
     // Update the layout store with the proper ID (not __shared_preview__)
     importLayout(savedLayout, layoutId);
     setActiveLayoutId(layoutId);
+
+    // Save the library to storage (get fresh state after store updates)
+    saveLibrary(useLibraryStore.getState().library);
 
     // Clear the shared preview state
     clearSharedLayoutPreview();
@@ -146,12 +144,23 @@ export function SharedLayoutBanner() {
           Save to My Layouts
         </button>
         <button
-          onClick={handleDiscard}
+          onClick={() => setShowDiscardConfirm(true)}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white/15 hover:bg-white/25 transition-colors"
         >
           Discard
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={showDiscardConfirm}
+        title="Discard shared layout?"
+        message="Any changes you made will be lost. You'll return to your previous layout."
+        confirmText="Discard"
+        cancelText="Keep viewing"
+        destructive
+        onConfirm={handleDiscard}
+        onCancel={() => setShowDiscardConfirm(false)}
+      />
     </div>
   );
 }

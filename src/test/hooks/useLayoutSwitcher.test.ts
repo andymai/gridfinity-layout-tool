@@ -217,6 +217,47 @@ describe('useLayoutSwitcher', () => {
       expect(useUIStore.getState().activeLayerId).toBe('new-layer');
       expect(useUIStore.getState().activeCategoryId).toBe('new-cat');
     });
+
+    it('clears sharedLayoutPreview state when switching', () => {
+      // Set up shared layout preview state
+      const mockLayout = createTestLayout('Shared');
+      useUIStore.setState({
+        sharedLayoutPreview: mockLayout,
+        sharedLayoutOriginalName: 'Shared Layout',
+      });
+
+      const targetLayout = createTestLayout('Second');
+      vi.mocked(storage.loadLayoutById).mockReturnValue(targetLayout);
+
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      act(() => {
+        result.current.switchLayout(SECOND_LAYOUT_ID);
+      });
+
+      expect(useUIStore.getState().sharedLayoutPreview).toBeNull();
+      expect(useUIStore.getState().sharedLayoutOriginalName).toBeNull();
+    });
+
+    it('skips saving when current layout is __shared_preview__', () => {
+      // Set current layout ID to shared preview
+      useLayoutStore.setState({ activeLayoutId: '__shared_preview__' });
+
+      const targetLayout = createTestLayout('Second');
+      vi.mocked(storage.loadLayoutById).mockReturnValue(targetLayout);
+
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      act(() => {
+        result.current.switchLayout(SECOND_LAYOUT_ID);
+      });
+
+      // Should NOT have saved the __shared_preview__ layout
+      expect(storage.saveLayoutById).not.toHaveBeenCalledWith(
+        '__shared_preview__',
+        expect.any(Object)
+      );
+    });
   });
 
   describe('createNewLayout', () => {
