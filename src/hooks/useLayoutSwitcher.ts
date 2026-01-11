@@ -54,11 +54,12 @@ export function useLayoutSwitcher() {
   const clearHistory = useHistoryStore(state => state.clear);
 
   // UI store
-  const { clearSelection, setActiveLayer, setActiveCategory } = useUIStore(
+  const { clearSelection, setActiveLayer, setActiveCategory, clearSharedLayoutPreview } = useUIStore(
     useShallow(state => ({
       clearSelection: state.clearSelection,
       setActiveLayer: state.setActiveLayer,
       setActiveCategory: state.setActiveCategory,
+      clearSharedLayoutPreview: state.clearSharedLayoutPreview,
     }))
   );
 
@@ -101,8 +102,11 @@ export function useLayoutSwitcher() {
     }
 
     try {
-      // 3. Save current layout immediately
-      if (activeLayoutId) {
+      // 3. Clear any shared layout preview state (user is explicitly switching)
+      clearSharedLayoutPreview();
+
+      // 4. Save current layout immediately (skip if it was a shared preview)
+      if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
         saveLayoutById(activeLayoutId, layout);
         updateEntry(activeLayoutId, {
           modifiedAt: Date.now(),
@@ -111,31 +115,31 @@ export function useLayoutSwitcher() {
         });
       }
 
-      // 4. Load target layout
+      // 5. Load target layout
       const targetLayout = loadLayoutById(targetId);
       if (!targetLayout) {
         return { success: false, error: 'Failed to load layout data' };
       }
 
-      // 5. Validate layout integrity
+      // 6. Validate layout integrity
       const validation = validateLayoutIntegrity(targetLayout);
       if (!validation.valid) {
         return { success: false, error: validation.error || 'Layout data is corrupted' };
       }
 
-      // 6. Update stores (atomic sequence)
+      // 7. Update stores (atomic sequence)
       importLayout(targetLayout, targetId);
       setLibraryActiveId(targetId);
 
-      // 7. Reset UI state
+      // 8. Reset UI state
       clearSelection();
       setActiveLayer(targetLayout.layers[0]?.id ?? '');
       setActiveCategory(targetLayout.categories[0]?.id ?? '');
 
-      // 8. Clear undo history
+      // 9. Clear undo history
       clearHistory();
 
-      // 9. Save library index
+      // 10. Save library index
       saveLibrary(useLibraryStore.getState().library);
 
       return { success: true };
@@ -154,6 +158,7 @@ export function useLayoutSwitcher() {
     setActiveLayer,
     setActiveCategory,
     clearHistory,
+    clearSharedLayoutPreview,
     addToast,
   ]);
 

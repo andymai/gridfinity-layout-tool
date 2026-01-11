@@ -23,6 +23,8 @@ describe('ui store', () => {
       isometricRotation: 0,
       layerViewMode: 'focus',
       isPreviewExpanded: false,
+      sharedLayoutPreview: null,
+      sharedLayoutOriginalName: null,
     });
   });
 
@@ -403,6 +405,89 @@ describe('ui store', () => {
 
       setActiveCategory('tools');
       expect(useUIStore.getState().activeCategoryId).toBe('tools');
+    });
+  });
+
+  describe('sharedLayoutPreview', () => {
+    const mockLayout = {
+      version: '1.0',
+      name: 'Test Layout',
+      drawer: { width: 10, depth: 8, height: 12 },
+      printBedSize: 256,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+      categories: [{ id: 'cat1', name: 'Category', color: '#ff0000' }],
+      layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+      bins: [],
+    };
+
+    it('initial state is null', () => {
+      const state = useUIStore.getState();
+      expect(state.sharedLayoutPreview).toBeNull();
+      expect(state.sharedLayoutOriginalName).toBeNull();
+    });
+
+    it('setSharedLayoutPreview sets layout and derives name from layout', () => {
+      const { setSharedLayoutPreview } = useUIStore.getState();
+
+      setSharedLayoutPreview(mockLayout);
+
+      const state = useUIStore.getState();
+      expect(state.sharedLayoutPreview).toEqual(mockLayout);
+      expect(state.sharedLayoutOriginalName).toBe('Test Layout');
+    });
+
+    it('setSharedLayoutPreview uses explicit name when provided', () => {
+      const { setSharedLayoutPreview } = useUIStore.getState();
+
+      setSharedLayoutPreview(mockLayout, 'Custom Name');
+
+      const state = useUIStore.getState();
+      expect(state.sharedLayoutPreview).toEqual(mockLayout);
+      expect(state.sharedLayoutOriginalName).toBe('Custom Name');
+    });
+
+    it('setSharedLayoutPreview with null clears both fields', () => {
+      const { setSharedLayoutPreview } = useUIStore.getState();
+
+      // Set first
+      setSharedLayoutPreview(mockLayout, 'Original');
+      expect(useUIStore.getState().sharedLayoutPreview).not.toBeNull();
+
+      // Clear
+      setSharedLayoutPreview(null);
+
+      const state = useUIStore.getState();
+      expect(state.sharedLayoutPreview).toBeNull();
+      expect(state.sharedLayoutOriginalName).toBeNull();
+    });
+
+    it('clearSharedLayoutPreview clears both fields', () => {
+      const { setSharedLayoutPreview, clearSharedLayoutPreview } = useUIStore.getState();
+
+      // Set first
+      setSharedLayoutPreview(mockLayout, 'Test');
+      expect(useUIStore.getState().sharedLayoutPreview).not.toBeNull();
+
+      // Clear
+      clearSharedLayoutPreview();
+
+      const state = useUIStore.getState();
+      expect(state.sharedLayoutPreview).toBeNull();
+      expect(state.sharedLayoutOriginalName).toBeNull();
+    });
+
+    it('preserves original name when layout name changes', () => {
+      const { setSharedLayoutPreview } = useUIStore.getState();
+
+      setSharedLayoutPreview(mockLayout, 'Original Name');
+
+      // Simulate layout name change (user editing)
+      const modifiedLayout = { ...mockLayout, name: 'Modified Name' };
+      useUIStore.setState({ sharedLayoutPreview: modifiedLayout });
+
+      // Original name should still be preserved
+      expect(useUIStore.getState().sharedLayoutOriginalName).toBe('Original Name');
     });
   });
 });

@@ -33,6 +33,9 @@ export function useAutoSave() {
     // Don't save if no active layout ID (shouldn't happen, but safety check)
     if (!activeLayoutId) return;
 
+    // Don't save temporary shared preview layouts
+    if (activeLayoutId === '__shared_preview__') return;
+
     // Schedule save
     timeoutRef.current = window.setTimeout(() => {
       try {

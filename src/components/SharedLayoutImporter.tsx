@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useLayoutStore } from '../store/layout';
 import { useUIStore } from '../store/ui';
 import { useHistoryStore } from '../store/history';
+import { useToastStore } from '../store/toast';
 import {
   getSharedLayoutFromURL,
   clearSharedLayoutFromURL,
@@ -25,6 +26,7 @@ export function SharedLayoutImporter() {
   const clearSelection = useUIStore((state) => state.clearSelection);
   const clearHistory = useHistoryStore((state) => state.clear);
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
+  const addToast = useToastStore((state) => state.addToast);
 
   useEffect(() => {
     // Only process once
@@ -38,8 +40,9 @@ export function SharedLayoutImporter() {
     if (errors.length > 0 || !layout) {
       // Clear the URL on error
       clearSharedLayoutFromURL();
-      // Could show a toast here, but for now just log
-      console.warn('Failed to load shared layout:', errors);
+      // Show error feedback to user
+      const errorMessage = errors.length > 0 ? errors[0] : 'Invalid share link';
+      addToast(`Failed to load shared layout: ${errorMessage}`, 'error');
       return;
     }
 
@@ -75,6 +78,7 @@ export function SharedLayoutImporter() {
     clearSelection,
     clearHistory,
     announceToScreenReader,
+    addToast,
   ]);
 
   // This component doesn't render anything - the banner is in Header
