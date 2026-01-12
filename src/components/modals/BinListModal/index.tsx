@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useBinList } from '../../../hooks/useBinList';
 import { useUIStore } from '../../../store/ui';
 import { useResponsive } from '../../../hooks';
@@ -6,6 +7,7 @@ import { BinListTable } from './BinListTable';
 import { BinListFilters } from './BinListFilters';
 import { BinListDashboard } from './BinListDashboard';
 import { BulkActions } from './BulkActions';
+import { MobileBinList } from './MobileBinList';
 
 interface BinListModalProps {
   isOpen: boolean;
@@ -14,10 +16,19 @@ interface BinListModalProps {
 
 /**
  * Full-screen modal for the expanded bin list.
- * Shows statistics dashboard, filters, and sortable table with bulk actions.
+ * On mobile: Uses MobileBinList with card layout and bottom action bar.
+ * On desktop: Shows statistics dashboard, filters, and sortable table with bulk actions.
  */
 export function BinListModal({ isOpen, onClose }: BinListModalProps) {
+  const { isMobile } = useResponsive();
+
   if (!isOpen) return null;
+
+  // Use dedicated mobile component for better UX on small screens
+  if (isMobile) {
+    return <MobileBinList isOpen={isOpen} onClose={onClose} />;
+  }
+
   return <BinListModalContent onClose={onClose} />;
 }
 
@@ -165,7 +176,8 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
     setShowDashboard((s) => !s);
   }, []);
 
-  return (
+  // Use portal to escape any parent containing blocks (like BottomSheet with transform)
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       role="dialog"
@@ -308,7 +320,8 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
           </div>
         </footer>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
