@@ -393,6 +393,69 @@ describe('ui store', () => {
     });
   });
 
+  describe('row/column label highlighting', () => {
+    it('initial state has null highlighted row and column', () => {
+      const state = useUIStore.getState();
+      expect(state.highlightedRowLabel).toBeNull();
+      expect(state.highlightedColLabel).toBeNull();
+    });
+
+    it('setHighlightedRowLabel sets highlighted row', () => {
+      const { setHighlightedRowLabel } = useUIStore.getState();
+
+      setHighlightedRowLabel(3);
+      expect(useUIStore.getState().highlightedRowLabel).toBe(3);
+
+      setHighlightedRowLabel(5);
+      expect(useUIStore.getState().highlightedRowLabel).toBe(5);
+    });
+
+    it('setHighlightedRowLabel with null clears highlight', () => {
+      const { setHighlightedRowLabel } = useUIStore.getState();
+
+      setHighlightedRowLabel(3);
+      expect(useUIStore.getState().highlightedRowLabel).toBe(3);
+
+      setHighlightedRowLabel(null);
+      expect(useUIStore.getState().highlightedRowLabel).toBeNull();
+    });
+
+    it('setHighlightedColLabel sets highlighted column', () => {
+      const { setHighlightedColLabel } = useUIStore.getState();
+
+      setHighlightedColLabel(2);
+      expect(useUIStore.getState().highlightedColLabel).toBe(2);
+
+      setHighlightedColLabel(7);
+      expect(useUIStore.getState().highlightedColLabel).toBe(7);
+    });
+
+    it('setHighlightedColLabel with null clears highlight', () => {
+      const { setHighlightedColLabel } = useUIStore.getState();
+
+      setHighlightedColLabel(2);
+      expect(useUIStore.getState().highlightedColLabel).toBe(2);
+
+      setHighlightedColLabel(null);
+      expect(useUIStore.getState().highlightedColLabel).toBeNull();
+    });
+
+    it('row and column highlights are independent', () => {
+      const { setHighlightedRowLabel, setHighlightedColLabel } = useUIStore.getState();
+
+      setHighlightedRowLabel(3);
+      setHighlightedColLabel(5);
+
+      const state = useUIStore.getState();
+      expect(state.highlightedRowLabel).toBe(3);
+      expect(state.highlightedColLabel).toBe(5);
+
+      setHighlightedRowLabel(null);
+      expect(useUIStore.getState().highlightedRowLabel).toBeNull();
+      expect(useUIStore.getState().highlightedColLabel).toBe(5);
+    });
+  });
+
   describe('sharedLayoutPreview', () => {
     const mockLayout = {
       version: '1.0',
