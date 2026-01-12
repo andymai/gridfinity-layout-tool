@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom'
+import { afterEach } from 'vitest'
+import { cleanup } from '@testing-library/react'
 
 // Mock pointer capture methods not implemented in jsdom
 Element.prototype.setPointerCapture = () => {}
@@ -18,4 +20,10 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: () => {},
     dispatchEvent: () => false,
   }),
+})
+
+// Global cleanup for React components
+// This catches component cleanup that individual tests might miss
+afterEach(() => {
+  cleanup()
 })
