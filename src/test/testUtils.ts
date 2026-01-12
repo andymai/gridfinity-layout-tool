@@ -53,6 +53,8 @@ export function resetAllStores(): void {
     liveMessage: null,
     quickLabelBinId: null,
     highlightedCategoryId: null,
+    highlightedRowLabel: null,
+    highlightedColLabel: null,
     halfBinMode: false,
     sharedLayoutPreview: null,
     sharedLayoutOriginalName: null,

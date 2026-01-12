@@ -57,6 +57,32 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     (state) => state.highlightedCategoryId !== null
   );
 
+  // Performance: Use derived selector for row/column label highlighting.
+  // Check if this bin overlaps with the highlighted row or column (1-indexed).
+  const isRowColHighlighted = useUIStore((state) => {
+    const { highlightedRowLabel, highlightedColLabel } = state;
+    if (highlightedRowLabel === null && highlightedColLabel === null) return false;
+
+    // Check row overlap: row N (1-indexed) corresponds to grid y = N-1
+    // Bin occupies rows where bin.y <= rowY < bin.y + bin.depth
+    if (highlightedRowLabel !== null) {
+      const rowY = highlightedRowLabel - 1; // Convert 1-indexed to 0-indexed
+      if (rowY >= bin.y && rowY < bin.y + bin.depth) return true;
+    }
+
+    // Check column overlap: column N (1-indexed) corresponds to grid x = N-1
+    // Bin occupies columns where bin.x <= colX < bin.x + bin.width
+    if (highlightedColLabel !== null) {
+      const colX = highlightedColLabel - 1; // Convert 1-indexed to 0-indexed
+      if (colX >= bin.x && colX < bin.x + bin.width) return true;
+    }
+
+    return false;
+  });
+  const isAnyRowColHighlighted = useUIStore(
+    (state) => state.highlightedRowLabel !== null || state.highlightedColLabel !== null
+  );
+
   // Actions are stable, select individually
   const setSelectedBin = useUIStore((state) => state.setSelectedBin);
   const toggleSelection = useUIStore((state) => state.toggleSelection);
@@ -526,6 +552,10 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     if (isCategoryHighlighted) {
       return '0 0 0 2px var(--color-accent), 0 0 12px rgba(34, 197, 94, 0.4)';
     }
+    // Row/column label highlight (when hovering row/column label)
+    if (isRowColHighlighted) {
+      return '0 0 0 2px var(--selection-ring), 0 0 12px var(--selection-glow)';
+    }
     return 'var(--shadow-sm)';
   };
 
@@ -562,10 +592,14 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         WebkitUserSelect: 'none',
         userSelect: 'none',
         pointerEvents: isGhost || isBeingDragged ? 'none' : 'auto',
-        opacity: isGhost ? 0.3 : isBeingDragged ? 0.5 : (isAnyCategoryHighlighted && !isCategoryHighlighted) ? 0.4 : 1,
+        opacity: isGhost ? 0.3
+          : isBeingDragged ? 0.5
+          : (isAnyCategoryHighlighted && !isCategoryHighlighted) ? 0.4
+          : (isAnyRowColHighlighted && !isRowColHighlighted) ? 0.6
+          : 1,
         // Selected bins need higher z-index (40) to ensure resize handles appear above axis labels (30)
         // Hovered bins (30) need to be above regular bins (10) so resize handles aren't clipped by neighbors
-        zIndex: isGhost ? 5 : isSelected ? 40 : isHovered ? 30 : isCategoryHighlighted ? 15 : 10,
+        zIndex: isGhost ? 5 : isSelected ? 40 : isHovered ? 30 : (isCategoryHighlighted || isRowColHighlighted) ? 15 : 10,
         boxShadow: getBoxShadow(),
         transform: getTransform(),
         // Allow resize handles to extend outside bin (text constrained by whitespace-nowrap and sizing)
