@@ -1,15 +1,19 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useLibraryStore, useToastStore } from '../store';
 import { saveLayoutById, saveLibrary, computeLayoutPreview } from '../utils/storage';
 
 const SAVE_DEBOUNCE_MS = 1000;
+const SAVED_DISPLAY_MS = 2500;
+
+export type SaveStatus = 'idle' | 'saving' | 'saved';
 
 /**
  * Auto-save hook for the multi-layout system.
  * Saves the active layout to its individual storage key and updates the library entry.
+ * Returns the current save status for UI display.
  */
-export function useAutoSave() {
+export function useAutoSave(): SaveStatus {
   const { layout, activeLayoutId } = useLayoutStore(
     useShallow(state => ({
       layout: state.layout,
@@ -20,7 +24,10 @@ export function useAutoSave() {
   const updateEntry = useLibraryStore(state => state.updateEntry);
   const addToast = useToastStore(state => state.addToast);
 
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+
   const timeoutRef = useRef<number | undefined>(undefined);
+  const savedTimeoutRef = useRef<number | undefined>(undefined);
   const hasShownErrorRef = useRef(false);
   const failureCountRef = useRef(0);
 
@@ -28,6 +35,12 @@ export function useAutoSave() {
     // Clear any pending save
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+    }
+
+    // Clear any pending "saved" timeout when new changes come in
+    if (savedTimeoutRef.current) {
+      clearTimeout(savedTimeoutRef.current);
+      savedTimeoutRef.current = undefined;
     }
 
     // Don't save if no active layout ID (shouldn't happen, but safety check)
@@ -38,6 +51,9 @@ export function useAutoSave() {
 
     // Schedule save
     timeoutRef.current = window.setTimeout(() => {
+      // Reset to idle first (in case we were showing "saved"), then show "saving"
+      setSaveStatus('saving');
+
       try {
         // Save layout to its individual key
         saveLayoutById(activeLayoutId, layout);
@@ -55,8 +71,17 @@ export function useAutoSave() {
         // Reset error flags on successful save
         hasShownErrorRef.current = false;
         failureCountRef.current = 0;
+
+        // Show "saved" status
+        setSaveStatus('saved');
+
+        // Clear "saved" status after delay
+        savedTimeoutRef.current = window.setTimeout(() => {
+          setSaveStatus('idle');
+        }, SAVED_DISPLAY_MS);
       } catch (error) {
         failureCountRef.current++;
+        setSaveStatus('idle');
 
         // Show warning after multiple failures
         if (failureCountRef.current >= 3 && !hasShownErrorRef.current) {
@@ -77,4 +102,15 @@ export function useAutoSave() {
       }
     };
   }, [layout, activeLayoutId, updateEntry, addToast]);
+
+  // Cleanup saved timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (savedTimeoutRef.current) {
+        clearTimeout(savedTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  return saveStatus;
 }

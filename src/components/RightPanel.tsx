@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../store';
 import { DEFAULT_CATEGORY_COLOR } from '../constants';
@@ -21,6 +21,14 @@ export function RightPanel() {
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [expandedSplitRow, setExpandedSplitRow] = useState<number | null>(null);
   const [binListModalOpen, setBinListModalOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = useCallback(() => {
+    if (scrollRef.current) {
+      setIsScrolled(scrollRef.current.scrollTop > 0);
+    }
+  }, []);
 
   const { collapsed, toggle } = useUIStore(
     useShallow((state) => ({
@@ -85,15 +93,23 @@ export function RightPanel() {
       style={{ width: '288px' }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-stroke-subtle">
+      <div className={`flex items-center gap-3 px-4 py-3 border-b border-stroke-subtle transition-shadow duration-200 ${
+        isScrolled ? 'shadow-[0_2px_8px_rgba(0,0,0,0.5)]' : ''
+      }`}>
         {collapseButton}
         <h2 className="text-xs font-semibold text-content-tertiary uppercase tracking-wider">
           Inspector
         </h2>
       </div>
 
-      {/* Selection Panel - Collapsible */}
-      <div className="px-4 py-3 border-b border-stroke-subtle">
+      {/* Scrollable content area */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto scrollbar-thin flex flex-col min-h-0"
+      >
+        {/* Selection Panel - Collapsible */}
+        <div className="px-4 py-3 border-b border-stroke-subtle">
         <CollapsibleSection
           title={isMultiSelect ? "Multi-Selection" : bin ? "Bin Properties" : "Selection"}
           variant="default"
@@ -117,7 +133,7 @@ export function RightPanel() {
       </div>
 
       {/* Print List - Collapsible */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex flex-col">
         <div className={`flex items-center justify-between px-4 py-3 ${printListExpanded ? 'border-b border-stroke-subtle' : ''}`}>
           <button
             className="flex items-center gap-2 transition-colors bg-transparent"
@@ -182,9 +198,9 @@ export function RightPanel() {
         </div>
 
         <div
-          className={`flex-1 flex flex-col min-h-0 transition-all duration-200 ${printListExpanded ? 'opacity-100' : 'opacity-0 max-h-0 overflow-hidden'}`}
+          className={`flex flex-col transition-all duration-200 ${printListExpanded ? 'opacity-100' : 'opacity-0 max-h-0 overflow-hidden'}`}
         >
-          <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0">
+          <div>
             {printList.rows.length === 0 ? (
               <PrintListEmpty />
             ) : (
@@ -345,6 +361,7 @@ export function RightPanel() {
             />
           )}
         </div>
+      </div>
       </div>
 
       {/* Confirm Dialog */}
