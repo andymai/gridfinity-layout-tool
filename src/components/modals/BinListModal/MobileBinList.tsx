@@ -143,12 +143,12 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
                 key={category.id}
                 onClick={() => toggleCategoryVisibility(category.id)}
                 className={`
-                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium flex-shrink-0 transition-all
-                  ${isHidden ? 'bg-surface text-content-disabled opacity-60' : 'bg-surface-elevated text-content'}
+                  flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium flex-shrink-0 transition-all
+                  ${isHidden ? 'bg-surface text-content-disabled opacity-60 border border-stroke' : 'bg-surface-elevated text-content'}
                 `}
               >
                 <span
-                  className="w-2.5 h-2.5 rounded-full"
+                  className="w-2.5 h-2.5 rounded"
                   style={{ backgroundColor: category.color }}
                 />
                 {category.name}
@@ -158,7 +158,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
           <button
             onClick={toggleGroupByCategory}
             className={`
-              flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium flex-shrink-0 transition-all
+              flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium flex-shrink-0 transition-all
               ${filters.groupByCategory ? 'bg-accent text-white' : 'bg-surface-elevated text-content'}
             `}
           >
@@ -182,7 +182,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
             {selectionCount > 0 && (
               <button
                 onClick={() => isAllSelected ? clearSelection() : selectAllRows()}
-                className="w-full p-3 rounded-lg bg-accent/10 text-accent text-sm font-medium text-center"
+                className="w-full p-3 rounded bg-accent/10 text-accent text-sm font-medium text-center border border-accent/30"
               >
                 {isAllSelected ? 'Deselect All' : `Select All (${rows.length})`}
               </button>
@@ -208,7 +208,10 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
 
       {/* Bottom action bar when selection active */}
       {selectionCount > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 px-4 py-3 bg-surface-elevated border-t border-stroke safe-area-bottom">
+        <div
+          className="fixed bottom-0 left-0 right-0 px-4 pt-3 bg-surface-elevated border-t border-stroke"
+          style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-content">{selectionCount} selected</span>
             <button
@@ -221,25 +224,25 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
           <div className="flex gap-2">
             <button
               onClick={() => setEditingField('category')}
-              className="flex-1 py-2.5 rounded-lg bg-surface text-sm font-medium text-content"
+              className="flex-1 py-2.5 rounded bg-surface text-sm font-medium text-content border border-stroke"
             >
               Category
             </button>
             <button
               onClick={() => setEditingField('label')}
-              className="flex-1 py-2.5 rounded-lg bg-surface text-sm font-medium text-content"
+              className="flex-1 py-2.5 rounded bg-surface text-sm font-medium text-content border border-stroke"
             >
               Label
             </button>
             <button
               onClick={() => setEditingField('notes')}
-              className="flex-1 py-2.5 rounded-lg bg-surface text-sm font-medium text-content"
+              className="flex-1 py-2.5 rounded bg-surface text-sm font-medium text-content border border-stroke"
             >
               Notes
             </button>
             <button
               onClick={deleteBulkSelection}
-              className="px-4 py-2.5 rounded-lg bg-error/10 text-sm font-medium text-error"
+              className="px-4 py-2.5 rounded bg-error/10 text-sm font-medium text-error border border-error/20"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -384,12 +387,12 @@ function BinCard({
               onToggleSelect();
             }}
             className={`
-              w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5
-              ${isSelected ? 'bg-accent border-accent' : 'border-stroke'}
+              w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5
+              ${isSelected ? 'bg-accent border-accent' : 'border-stroke bg-surface'}
             `}
           >
             {isSelected && (
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             )}
@@ -486,7 +489,10 @@ function BottomSheet({ title, children, onClose }: BottomSheetProps) {
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       {/* Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 bg-surface-secondary rounded-t-2xl safe-area-bottom">
+      <div
+        className="absolute bottom-0 left-0 right-0 bg-surface-secondary rounded-t-xl"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         <div className="flex items-center justify-between px-4 py-3 border-b border-stroke">
           <h3 className="font-medium text-content">{title}</h3>
           <button onClick={onClose} className="p-2 -mr-2 text-content-secondary">
