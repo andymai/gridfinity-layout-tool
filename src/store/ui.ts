@@ -30,6 +30,8 @@ export type DropTarget = 'trash' | 'staging' | null;
 
 export type MobilePanel = 'layers' | 'inspector' | 'categories' | 'print' | 'settings' | 'layouts' | null;
 
+export type MobileLayersTab = 'layers' | 'tools';
+
 export type LayerViewMode = 'focus' | 'stack' | 'all';
 
 export interface PaintSize {
@@ -67,6 +69,7 @@ interface UIState {
 
   // Mobile
   activeMobilePanel: MobilePanel;
+  mobileLayersTab: MobileLayersTab;
 
   // Context menu (for long-press on mobile)
   contextMenu: ContextMenuState | null;
@@ -130,6 +133,7 @@ interface UIState {
   setActiveMobilePanel: (panel: MobilePanel) => void;
   closeMobilePanel: () => void;
   toggleMobilePanel: (panel: MobilePanel) => void;
+  setMobileLayersTab: (tab: MobileLayersTab) => void;
 
   // Context menu actions (supports both old single binId and new binIds array for backwards compatibility)
   showContextMenu: (binIdsOrId: string | string[], position: { x: number; y: number }, source?: 'grid' | 'staging') => void;
@@ -182,6 +186,7 @@ export const useUIStore = create<UIState>((set) => ({
   dropTarget: null,
   paintSize: null,
   activeMobilePanel: null,
+  mobileLayersTab: 'layers',
   contextMenu: null,
   showIsometricPreview: false,
   isometricRotation: 0,
@@ -282,6 +287,8 @@ export const useUIStore = create<UIState>((set) => ({
   toggleMobilePanel: (panel) => set(state => ({
     activeMobilePanel: state.activeMobilePanel === panel ? null : panel
   })),
+
+  setMobileLayersTab: (tab) => set({ mobileLayersTab: tab }),
 
   // Context menu actions (backwards compatible with old single binId signature)
   showContextMenu: (binIdsOrId, position, source = 'grid') => {
