@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction, useToastStore } from '../store';
 import { canPlaceBin } from '../utils/validation';
-import { validateRotation } from '../utils/rotation';
+import { validateBinRotation } from '../utils/binLocation';
 import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '../constants';
 import { useGridNavigation } from './useGridNavigation';
@@ -156,9 +156,9 @@ export function useKeyboard() {
     if (key.toLowerCase() === SHORTCUTS.ROTATE && !ctrlOrMeta && selectedBinIds.length === 1) {
       e.preventDefault();
       const bin = layout.bins.find(b => b.id === selectedBinIds[0]);
-      if (!bin || bin.layerId === STAGING_ID) return;
+      if (!bin) return;
 
-      const result = validateRotation(bin, layout);
+      const result = validateBinRotation(bin, layout);
       if (!result.valid) {
         addToast(result.message, 'error');
         return;

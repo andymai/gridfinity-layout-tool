@@ -70,13 +70,16 @@ function packBins(bins: PackedBin[], gridWidth: number): PackedBin[] {
 export function Staging() {
   const layout = useLayoutStore(state => state.layout);
   const deleteBin = useLayoutStore(state => state.deleteBin);
-  const { zoom, interaction, setInteraction, dropTarget, setDropTarget } = useUIStore(
+  const { zoom, interaction, setInteraction, dropTarget, setDropTarget, selectedBinIds, setSelectedBin, toggleSelection } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
       interaction: state.interaction,
       setInteraction: state.setInteraction,
       dropTarget: state.dropTarget,
       setDropTarget: state.setDropTarget,
+      selectedBinIds: state.selectedBinIds,
+      setSelectedBin: state.setSelectedBin,
+      toggleSelection: state.toggleSelection,
     }))
   );
   const { execute } = useUndoableAction();
@@ -118,10 +121,30 @@ export function Staging() {
   const getCategory = (categoryId: string) =>
     layout.categories.find(c => c.id === categoryId);
 
+  const handleBinClick = (binId: string, e: React.MouseEvent) => {
+    // Don't select if we're in the middle of a drag
+    if (interaction?.type === 'stagingDrag') return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const isMultiSelectKey = e.ctrlKey || e.metaKey;
+    if (isMultiSelectKey) {
+      toggleSelection(binId);
+    } else {
+      setSelectedBin(binId);
+    }
+  };
+
   const handleBinPointerDown = (binId: string, e: React.PointerEvent) => {
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
+
+    // Ensure bin is selected before dragging (consistency with grid drag behavior)
+    if (!selectedBinIds.includes(binId)) {
+      setSelectedBin(binId);
+    }
 
     setInteraction({
       type: 'stagingDrag',
@@ -304,6 +327,7 @@ export function Staging() {
             const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
             const textColors = getBinTextColors(bgColor);
             const isDragging = bin.id === draggingBinId;
+            const isSelected = selectedBinIds.includes(bin.id);
             const hasLabel = !!bin.label;
             const primaryText = hasLabel ? bin.label : `${bin.width}×${bin.depth}`;
             const secondaryText = hasLabel ? `${bin.width}×${bin.depth}` : null;
@@ -315,15 +339,18 @@ export function Staging() {
                 className={`relative flex flex-col items-center justify-center transition-all duration-150 cursor-move rounded-sm z-10 touch-none ${
                   isDragging
                     ? 'bg-transparent border-2 border-dashed border-accent pointer-events-none'
-                    : 'border border-[var(--border-on-color)] shadow-sm'
+                    : isSelected
+                      ? 'border border-[var(--border-on-color)] shadow-sm ring-2 ring-selection-ring'
+                      : 'border border-[var(--border-on-color)] shadow-sm'
                 }`}
                 style={{
                   gridColumn: `${bin.x + 1} / span ${bin.width}`,
                   gridRow: `${gridHeight - bin.y - bin.depth + 1} / span ${bin.depth}`,
                   ...(!isDragging && { backgroundColor: bgColor }),
                 }}
+                onClick={(e) => handleBinClick(bin.id, e)}
                 onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
-                title={`${bin.label || 'Unlabeled'} — ${bin.width}×${bin.depth}×${bin.height}u\nDrag to place on grid`}
+                title={`${bin.label || 'Unlabeled'} — ${bin.width}×${bin.depth}×${bin.height}u\nClick to select • Drag to place on grid`}
               >
                 {/* Adaptive label: primary (label or dimensions) + optional secondary */}
                 {!isDragging && (
