@@ -476,24 +476,35 @@ export function Grid() {
 
   // Generate column numbers (1-indexed, displayed at bottom)
   // Include fractional edge label when drawer has fractional width
+  // Position depends on fractionalEdgeX setting ('start' = left, 'end' = right)
   const integerWidth = Math.floor(drawer.width);
   const hasFractionalWidth = drawer.width % 1 !== 0;
+  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
+  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
   const columnLabels: (number | string)[] = Array.from({ length: integerWidth }, (_, i) => i + 1);
   if (hasFractionalWidth) {
-    columnLabels.push('+.5'); // Compact label for fractional edge
+    if (fractionalEdgeX === 'start') {
+      columnLabels.unshift('+.5'); // Fractional at left
+    } else {
+      columnLabels.push('+.5'); // Fractional at right (default)
+    }
   }
 
   // Generate row numbers (1-indexed, displayed on left)
   // Visual row at top = highest Y coordinate (drawer.depth)
   // Bottom row = Y coordinate 1
   // Include fractional edge label when drawer has fractional depth
+  // Position depends on fractionalEdgeY setting ('start' = bottom, 'end' = top)
   const integerDepth = Math.floor(drawer.depth);
   const hasFractionalDepth = drawer.depth % 1 !== 0;
   // For depth 9.5: integer labels are 9,8,7,6,5,4,3,2,1 (rows 1-9 from bottom)
   const rowLabels: (number | string)[] = Array.from({ length: integerDepth }, (_, i) => integerDepth - i);
   if (hasFractionalDepth) {
-    // Insert fractional label at the top (highest Y coordinate)
-    rowLabels.unshift('+.5'); // Compact label for fractional edge
+    if (fractionalEdgeY === 'end') {
+      rowLabels.unshift('+.5'); // Fractional at top (CSS row 1)
+    } else {
+      rowLabels.push('+.5'); // Fractional at bottom
+    }
   }
 
   return (
@@ -805,9 +816,12 @@ export function Grid() {
             const fractionalDepthPart = drawer.depth - integerDepth; // e.g., 0.5
             // Match GridCanvas fractional cell sizing: fractionalPart * (cellSize + gap) - gap
             const fractionalRowSize = fractionalDepthPart * (cellSize + gap) - gap;
-            // Build grid template: fractional row first (at top), then full-size rows
+            // Build grid template based on fractionalEdgeY setting
+            // 'end' = fractional at top (CSS row 1), 'start' = fractional at bottom (CSS row last)
             const rowTemplate = hasFractionalDepth
-              ? `${fractionalRowSize}px repeat(${integerDepth}, ${fullRowSize}px)`
+              ? fractionalEdgeY === 'end'
+                ? `${fractionalRowSize}px repeat(${integerDepth}, ${fullRowSize}px)` // Fractional at top
+                : `repeat(${integerDepth}, ${fullRowSize}px) ${fractionalRowSize}px` // Fractional at bottom
               : `repeat(${integerDepth}, ${fullRowSize}px)`;
 
             return (
@@ -826,8 +840,11 @@ export function Grid() {
                 }}
               >
                 {rowLabels.map((num, idx) => {
-                  // First row is fractional if hasFractionalDepth
-                  const isFractionalRow = hasFractionalDepth && idx === 0;
+                  // Fractional row position depends on fractionalEdgeY setting
+                  const isFractionalRow = hasFractionalDepth && (
+                    (fractionalEdgeY === 'end' && idx === 0) ||  // Top
+                    (fractionalEdgeY === 'start' && idx === rowLabels.length - 1)  // Bottom
+                  );
                   const rowHeight = isFractionalRow ? fractionalRowSize : fullRowSize;
                   // Format label: show decimal for fractional, integer otherwise
                   const label = typeof num === 'number' && num % 1 !== 0 ? num.toFixed(1) : num;
@@ -836,7 +853,9 @@ export function Grid() {
                     <button
                       key={`row-${num}`}
                       type="button"
-                      className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
+                      className={`group flex items-center justify-center select-none transition-colors font-medium tabular-nums bg-transparent border-0 cursor-pointer ${
+                        isFractionalRow ? 'text-accent/70 hover:text-accent' : 'text-content-tertiary hover:text-content'
+                      }`}
                       style={{
                         width: labelWidth,
                         height: rowHeight,
@@ -845,9 +864,24 @@ export function Grid() {
                         minWidth: 0,
                         padding: 0,
                       }}
-                      onClick={(e) => typeof num === 'number' && handleRowClick(Math.floor(num), e)}
-                      title={isFractionalRow ? `Fractional edge at ${label}` : `Click to select row ${num}. Shift-click for range. Ctrl-click to add/remove.`}
-                      aria-label={isFractionalRow ? `Fractional edge at row ${label}` : `Select bins in row ${num}`}
+                      onClick={(e) => {
+                        if (isFractionalRow) {
+                          // Toggle fractional edge position
+                          execute(() => updateDrawer({
+                            fractionalEdgeY: fractionalEdgeY === 'end' ? 'start' : 'end'
+                          }));
+                        } else if (typeof num === 'number') {
+                          handleRowClick(Math.floor(num), e);
+                        }
+                      }}
+                      title={isFractionalRow
+                        ? `Click to move fractional edge to ${fractionalEdgeY === 'end' ? 'bottom' : 'top'}`
+                        : `Click to select row ${num}. Shift-click for range. Ctrl-click to add/remove.`
+                      }
+                      aria-label={isFractionalRow
+                        ? `Fractional edge at ${fractionalEdgeY === 'end' ? 'top' : 'bottom'}. Click to toggle.`
+                        : `Select bins in row ${num}`
+                      }
                     >
                       {labelFontSize > 0 && label}
                     </button>
@@ -999,9 +1033,12 @@ export function Grid() {
                 const fractionalWidthPart = drawer.width - integerWidth; // e.g., 0.5
                 // Match GridCanvas fractional cell sizing: fractionalPart * (cellSize + gap) - gap
                 const fractionalColSize = fractionalWidthPart * (cellSize + gap) - gap;
-                // Build grid template: full-size columns first, then fractional column at end
+                // Build grid template based on fractionalEdgeX setting
+                // 'start' = fractional at left (CSS col 1), 'end' = fractional at right (CSS col last)
                 const colTemplate = hasFractionalWidth
-                  ? `repeat(${integerWidth}, ${fullColSize}px) ${fractionalColSize}px`
+                  ? fractionalEdgeX === 'start'
+                    ? `${fractionalColSize}px repeat(${integerWidth}, ${fullColSize}px)` // Fractional at left
+                    : `repeat(${integerWidth}, ${fullColSize}px) ${fractionalColSize}px` // Fractional at right
                   : `repeat(${integerWidth}, ${fullColSize}px)`;
 
                 return (
@@ -1019,8 +1056,11 @@ export function Grid() {
                     }}
                   >
                     {columnLabels.map((num, idx) => {
-                      // Last column is fractional if hasFractionalWidth
-                      const isFractionalCol = hasFractionalWidth && idx === columnLabels.length - 1;
+                      // Fractional column position depends on fractionalEdgeX setting
+                      const isFractionalCol = hasFractionalWidth && (
+                        (fractionalEdgeX === 'start' && idx === 0) ||  // Left
+                        (fractionalEdgeX === 'end' && idx === columnLabels.length - 1)  // Right
+                      );
                       const colWidth = isFractionalCol ? fractionalColSize : fullColSize;
                       // Format label: show decimal for fractional, integer otherwise
                       const label = typeof num === 'number' && num % 1 !== 0 ? num.toFixed(1) : num;
@@ -1029,7 +1069,9 @@ export function Grid() {
                         <button
                           key={`col-${num}`}
                           type="button"
-                          className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
+                          className={`group flex items-center justify-center select-none transition-colors font-medium tabular-nums bg-transparent border-0 cursor-pointer ${
+                            isFractionalCol ? 'text-accent/70 hover:text-accent' : 'text-content-tertiary hover:text-content'
+                          }`}
                           style={{
                             width: colWidth,
                             height: columnLabelHeight,
@@ -1038,9 +1080,24 @@ export function Grid() {
                             minWidth: 0,
                             padding: 0,
                           }}
-                          onClick={(e) => typeof num === 'number' && handleColumnClick(Math.floor(num), e)}
-                          title={isFractionalCol ? `Fractional edge at ${label}` : `Click to select column ${num}. Shift-click for range. Ctrl-click to add/remove.`}
-                          aria-label={isFractionalCol ? `Fractional edge at column ${label}` : `Select bins in column ${num}`}
+                          onClick={(e) => {
+                            if (isFractionalCol) {
+                              // Toggle fractional edge position
+                              execute(() => updateDrawer({
+                                fractionalEdgeX: fractionalEdgeX === 'end' ? 'start' : 'end'
+                              }));
+                            } else if (typeof num === 'number') {
+                              handleColumnClick(Math.floor(num), e);
+                            }
+                          }}
+                          title={isFractionalCol
+                            ? `Click to move fractional edge to ${fractionalEdgeX === 'end' ? 'left' : 'right'}`
+                            : `Click to select column ${num}. Shift-click for range. Ctrl-click to add/remove.`
+                          }
+                          aria-label={isFractionalCol
+                            ? `Fractional edge at ${fractionalEdgeX === 'end' ? 'right' : 'left'}. Click to toggle.`
+                            : `Select bins in column ${num}`
+                          }
                         >
                           {labelFontSize > 0 && label}
                         </button>
