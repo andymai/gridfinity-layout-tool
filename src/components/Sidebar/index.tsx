@@ -168,6 +168,7 @@ export function Sidebar() {
 
   return (
     <aside
+      data-sidebar
       className="flex-shrink-0 flex flex-col transition-all duration-200 ease-in-out bg-surface-secondary border-r border-stroke-subtle"
       style={{ width: collapsed ? '40px' : '288px' }}
     >
@@ -212,18 +213,18 @@ export function Sidebar() {
             onScroll={handleScroll}
             className="flex-1 overflow-y-auto scrollbar-thin flex flex-col"
           >
-            <div className="px-4 py-4 border-b border-stroke-subtle">
+            <div data-active-layer-panel className="px-4 py-4 border-b border-stroke-subtle">
               <ActiveLayerPanel />
             </div>
-            <div className="px-4 py-4 border-b border-stroke-subtle">
+            <div data-layers-panel className="px-4 py-4 border-b border-stroke-subtle">
               <LayerPanel />
             </div>
-            <div className="px-4 py-4 border-b border-stroke-subtle">
+            <div data-categories-panel className="px-4 py-4 border-b border-stroke-subtle">
               <CategoriesPanel />
             </div>
 
             {/* Grid Size */}
-            <div className="mt-auto px-4 py-4">
+            <div data-grid-size-panel className="mt-auto px-4 py-4">
               <CollapsibleSection title="Grid Size" variant="default">
                 <div className="text-xs text-content-secondary space-y-2">
                   {/* Width / Depth / Height in compact grid */}
@@ -430,7 +431,7 @@ export function Sidebar() {
             </div>
 
             {/* Physical Units */}
-            <div className="px-4 py-4 border-t border-stroke-subtle">
+            <div data-units-panel className="px-4 py-4 border-t border-stroke-subtle">
               <CollapsibleSection title="Physical Units" variant="default" defaultExpanded={isDesktop}>
                 <div className="text-xs text-content-secondary space-y-2">
                   <div className="flex items-center justify-between">

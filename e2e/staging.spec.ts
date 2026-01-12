@@ -12,22 +12,16 @@ import {
   waitForBinSelected,
   clearAllStorage,
   resetViewport,
+  getInspector,
+  getStash,
 } from './fixtures';
-
-/**
- * Helper to get the stash container (has border-dashed styling and staging bins)
- */
-function getStashContainer(page: Page) {
-  // The stash container has a specific class pattern with border-dashed
-  return page.locator('div.border-dashed').filter({ has: page.locator('[data-staging-bin-id]') });
-}
 
 /**
  * Helper to check stash bin count badge
  */
 function getStashBinCount(page: Page) {
   // The bin count badge is a span with "N bins" text inside the stash header area
-  return page.locator('div.border-dashed').locator('span.text-xs').filter({ hasText: /^\d+ bins?$/ });
+  return getStash(page).locator('span.text-xs').filter({ hasText: /^\d+ bins?$/ });
 }
 
 test.describe('Staging Area (Stash)', () => {
@@ -53,7 +47,7 @@ test.describe('Staging Area (Stash)', () => {
   test('stash is hidden when empty', async ({ page }) => {
     // Stash should not be visible when no bins are stashed
     // Look for the stash container specifically
-    const stashContainer = getStashContainer(page);
+    const stashContainer = getStash(page);
     await expect(stashContainer).not.toBeVisible();
   });
 
@@ -67,7 +61,7 @@ test.describe('Staging Area (Stash)', () => {
     await waitForBinSelected(bin);
 
     // Inspector should show with "To Stash" button
-    const inspector = page.locator('aside').last();
+    const inspector = getInspector(page);
     const toStashButton = inspector.getByRole('button', { name: /to stash/i });
     await expect(toStashButton).toBeVisible();
 
@@ -89,7 +83,7 @@ test.describe('Staging Area (Stash)', () => {
     await bins.first().click();
     await waitForBinSelected(bins.first());
 
-    const inspector = page.locator('aside').last();
+    const inspector = getInspector(page);
     await inspector.getByRole('button', { name: /to stash/i }).click();
     await waitForStagingBinCount(page, 1);
 
@@ -115,7 +109,7 @@ test.describe('Staging Area (Stash)', () => {
     await bin.click();
     await waitForBinSelected(bin);
 
-    const inspector = page.locator('aside').last();
+    const inspector = getInspector(page);
     await inspector.getByRole('button', { name: /to stash/i }).click();
     await waitForStashVisible(page);
 
@@ -134,12 +128,12 @@ test.describe('Staging Area (Stash)', () => {
     await bin.click();
     await waitForBinSelected(bin);
 
-    const inspector = page.locator('aside').last();
+    const inspector = getInspector(page);
     await inspector.getByRole('button', { name: /to stash/i }).click();
     await waitForStashVisible(page);
 
     // Click Clear All button in the stash container
-    const stashContainer = getStashContainer(page);
+    const stashContainer = getStash(page);
     const clearButton = stashContainer.getByRole('button', { name: /clear all/i });
     await expect(clearButton).toBeVisible();
     await clearButton.click();
@@ -164,12 +158,12 @@ test.describe('Staging Area (Stash)', () => {
     await bin.click();
     await waitForBinSelected(bin);
 
-    const inspector = page.locator('aside').last();
+    const inspector = getInspector(page);
     await inspector.getByRole('button', { name: /to stash/i }).click();
     await waitForStashVisible(page);
 
     // Click Clear All button in the stash container
-    const stashContainer = getStashContainer(page);
+    const stashContainer = getStash(page);
     await stashContainer.getByRole('button', { name: /clear all/i }).click();
 
     // Cancel the dialog
@@ -189,7 +183,7 @@ test.describe('Staging Area (Stash)', () => {
     await bin.click();
     await waitForBinSelected(bin);
 
-    const inspector = page.locator('aside').last();
+    const inspector = getInspector(page);
     await inspector.getByRole('button', { name: /to stash/i }).click();
     await waitForStashVisible(page);
 
@@ -217,7 +211,7 @@ test.describe('Staging Area (Stash)', () => {
     await gridBin.click();
     await waitForBinSelected(gridBin);
 
-    const inspector = page.locator('aside').last();
+    const inspector = getInspector(page);
     await inspector.getByRole('button', { name: /to stash/i }).click();
     await waitForStashVisible(page);
 
@@ -273,7 +267,7 @@ test.describe('Staging Area (Stash)', () => {
     await bin.click();
     await waitForBinSelected(bin);
 
-    const inspector = page.locator('aside').last();
+    const inspector = getInspector(page);
     await inspector.getByRole('button', { name: /to stash/i }).click();
     await waitForStashVisible(page);
 

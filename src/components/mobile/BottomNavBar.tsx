@@ -55,6 +55,7 @@ export function BottomNavBar() {
 
   return (
     <nav
+      data-bottom-nav
       className="bottom-nav flex items-stretch flex-shrink-0"
       style={{
         height: 'var(--bottom-nav-height)',

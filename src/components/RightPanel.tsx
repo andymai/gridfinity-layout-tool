@@ -55,6 +55,7 @@ export function RightPanel() {
   if (collapsed) {
     return (
       <aside
+        data-inspector
         className="flex-shrink-0 flex flex-col transition-all duration-200 ease-in-out bg-surface-secondary border-l border-stroke-subtle"
         style={{ width: '40px' }}
       >
@@ -89,6 +90,7 @@ export function RightPanel() {
 
   return (
     <aside
+      data-inspector
       className="flex-shrink-0 flex flex-col h-full overflow-hidden transition-all duration-200 ease-in-out bg-surface-secondary border-l border-stroke-subtle"
       style={{ width: '288px' }}
     >
@@ -133,7 +135,7 @@ export function RightPanel() {
       </div>
 
       {/* Print List - Collapsible */}
-      <div className="flex flex-col">
+      <div data-print-list className="flex flex-col">
         <div className={`flex items-center justify-between px-4 py-3 ${printListExpanded ? 'border-b border-stroke-subtle' : ''}`}>
           <button
             className="flex items-center gap-2 transition-colors bg-transparent"
