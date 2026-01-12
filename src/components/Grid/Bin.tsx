@@ -1,7 +1,7 @@
 import type { PointerEvent } from 'react';
 import { memo, useRef, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import type { Bin as BinType, Category, Layer, ResizeHandle } from '../../types';
+import type { Bin as BinType, Category, Layer, Drawer, ResizeHandle } from '../../types';
 import { useUIStore, useLayoutStore } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { useResponsive } from '../../hooks';
@@ -21,7 +21,7 @@ interface BinProps {
   bin: BinType;
   category?: Category;
   layer?: Layer;
-  drawer: { width: number; depth: number };
+  drawer: Drawer;
   cellSize: number;
   gap?: number;
   halfBinMode?: boolean;
@@ -117,17 +117,30 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   const hasFractionalDepth = bin.depth % 1 !== 0;
   const hasFractionalDims = hasFractionalX || hasFractionalY || hasFractionalWidth || hasFractionalDepth;
 
-  // CSS Grid positioning: row 1 is top, row drawer.depth is bottom
-  // Grid coordinates: y=0 is bottom, y=drawer.depth-1 is top
-  // Use ceiling of drawer dimensions for grid row/col count since CSS Grid uses integers
-  // When drawer has fractional depth, row 1 is the fractional row, so integer rows start at 2
+  // CSS Grid positioning with configurable fractional edge placement
+  // fractionalEdgeX: 'start' = left, 'end' = right (default)
+  // fractionalEdgeY: 'start' = bottom, 'end' = top (default)
   const integerDepth = Math.floor(drawer.depth);
+  const hasFractionalDrawerWidth = drawer.width % 1 !== 0;
   const hasFractionalDrawerDepth = drawer.depth % 1 !== 0;
-  const gridCol = Math.floor(bin.x) + 1;
+  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
+  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
+
+  // Calculate CSS column for bin x position
+  // When fractionalEdgeX='start', fractional column is at CSS column 1, integers start at 2
+  const gridCol = hasFractionalDrawerWidth && fractionalEdgeX === 'start'
+    ? Math.floor(bin.x) + 2  // +1 for 1-based, +1 to skip fractional column
+    : Math.floor(bin.x) + 1;
   const gridColSpan = Math.ceil(bin.x + bin.width) - Math.floor(bin.x);
-  // Calculate row position: for depth 8.5, integer rows are 2-9, so add 1 offset
+
+  // Calculate CSS row for bin y position
+  // CSS row 1 is at top, grid y=0 is at bottom
+  // When fractionalEdgeY='end' (top), fractional row is CSS row 1, integers start at 2
+  // When fractionalEdgeY='start' (bottom), fractional row is CSS row last, integers start at 1
   const gridRowStart = hasFractionalDrawerDepth
-    ? integerDepth - Math.ceil(bin.y + bin.depth) + 2  // +2: +1 for 1-based, +1 to skip fractional row
+    ? fractionalEdgeY === 'end'
+      ? integerDepth - Math.ceil(bin.y + bin.depth) + 2  // +2: +1 for 1-based, +1 to skip fractional row at top
+      : integerDepth - Math.ceil(bin.y + bin.depth) + 1  // Fractional at bottom, integers from 1
     : integerDepth - Math.ceil(bin.y + bin.depth) + 1;
   const gridRowSpan = Math.ceil(bin.y + bin.depth) - Math.floor(bin.y);
 
@@ -575,9 +588,11 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
     return false;
   }
 
-  // Re-render if drawer dimensions change
+  // Re-render if drawer dimensions or edge configuration changes
   if (prevProps.drawer.width !== nextProps.drawer.width ||
-      prevProps.drawer.depth !== nextProps.drawer.depth) {
+      prevProps.drawer.depth !== nextProps.drawer.depth ||
+      prevProps.drawer.fractionalEdgeX !== nextProps.drawer.fractionalEdgeX ||
+      prevProps.drawer.fractionalEdgeY !== nextProps.drawer.fractionalEdgeY) {
     return false;
   }
 

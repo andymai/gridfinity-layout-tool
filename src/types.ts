@@ -12,10 +12,15 @@ export interface Layout {
   bins: Bin[];
 }
 
+/** Position of fractional edge when drawer has half-unit dimensions */
+export type FractionalEdge = 'start' | 'end';
+
 export interface Drawer {
   width: number;             // 1-50
   depth: number;             // 1-50
   height: number;            // >= sum of layer heights
+  fractionalEdgeX?: FractionalEdge; // 'start' = left, 'end' = right (default)
+  fractionalEdgeY?: FractionalEdge; // 'start' = bottom, 'end' = top (default)
 }
 
 export interface Category {
