@@ -10,4 +10,5 @@ export { MobileSettingsPanel } from './MobileSettingsPanel';
 export { MobileLayoutsPanel } from './MobileLayoutsPanel';
 export { MobileGridToolbar } from './MobileGridToolbar';
 export { BinContextMenu } from './BinContextMenu';
+export { MultiBinContextMenu } from './MultiBinContextMenu';
 export { MobileHelpModal } from './MobileHelpModal';
