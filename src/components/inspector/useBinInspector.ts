@@ -1,10 +1,10 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '../../store';
-import { calcMaxGridUnits, STAGING_ID } from '../../constants';
+import { calcMaxGridUnits } from '../../constants';
 import { getLayerZStart } from '../../utils/collision';
 import { clamp } from '../../utils/validation';
-import { validateRotation } from '../../utils/rotation';
+import { validateBinRotation } from '../../utils/binLocation';
 import type { Bin, Category, Layer, Layout } from '../../types';
 
 export type BinField = 'width' | 'depth' | 'height' | 'clearanceHeight' | 'category' | 'label' | 'notes';
@@ -271,9 +271,9 @@ export function useBinInspector(): UseBinInspectorReturn {
   // Rotate bin (swap width and depth)
   // Returns true if rotation succeeded, false if blocked by collision
   const rotateBin = useCallback(() => {
-    if (!bin || bin.layerId === STAGING_ID) return false;
+    if (!bin) return false;
 
-    const result = validateRotation(bin, layout);
+    const result = validateBinRotation(bin, layout);
     if (!result.valid) {
       addToast(result.message, 'error');
       return false;

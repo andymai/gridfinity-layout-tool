@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../store';
 import { useResponsive } from '../../hooks/useResponsive';
-import { STAGING_ID } from '../../constants';
-import { validateRotation } from '../../utils/rotation';
+import { validateBinRotation, getBinLocationContext } from '../../utils/binLocation';
 import type { Bin } from '../../types';
 
 interface BinContextMenuProps {
@@ -98,7 +97,7 @@ export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) 
   };
 
   const handleRotate = () => {
-    const result = validateRotation(bin, layout);
+    const result = validateBinRotation(bin, layout);
     if (!result.valid) {
       addToast(result.message, 'error');
       onClose();
@@ -115,7 +114,9 @@ export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) 
   // On desktop, only show Edit Properties when right panel is collapsed
   const showEditOption = !isDesktop || rightPanelCollapsed;
 
-  const isOnGrid = bin.layerId !== STAGING_ID;
+  const locationContext = getBinLocationContext(bin);
+  const canRotate = locationContext.canRotate;
+  const canMoveToStash = locationContext.canMoveToStash;
 
   return (
     <>
@@ -173,7 +174,7 @@ export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) 
             Duplicate
           </button>
 
-          {isOnGrid && (
+          {canRotate && (
             <button
               onClick={handleRotate}
               className="w-full px-4 py-3 flex items-center gap-3 transition-colors text-content hover:bg-surface-hover"
@@ -185,7 +186,7 @@ export function BinContextMenu({ bin, position, onClose }: BinContextMenuProps) 
             </button>
           )}
 
-          {isOnGrid && (
+          {canMoveToStash && (
             <button
               onClick={handleToStaging}
               className="w-full px-4 py-3 flex items-center gap-3 transition-colors text-content hover:bg-surface-hover"
