@@ -242,7 +242,9 @@ describe('useResponsive', () => {
   });
 
   describe('resize handling', () => {
-    it('updates on window resize', () => {
+    it('updates on window resize (debounced)', () => {
+      vi.useFakeTimers();
+
       Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
       Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
       Object.defineProperty(window, 'matchMedia', {
@@ -277,8 +279,16 @@ describe('useResponsive', () => {
         window.dispatchEvent(new Event('resize'));
       });
 
+      // Resize events are debounced by 100ms for INP improvement
+      // Advance timers to trigger the debounced update
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+
       expect(result.current.viewportWidth).toBe(600);
       expect(result.current.isMobile).toBe(true);
+
+      vi.useRealTimers();
     });
   });
 
