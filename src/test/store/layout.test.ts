@@ -559,8 +559,8 @@ describe('layout store', () => {
       updateDrawer({ width: 100, depth: -5 });
 
       const drawer = useLayoutStore.getState().layout.drawer;
-      expect(drawer.width).toBe(50); // GRID_MAX
-      expect(drawer.depth).toBe(1);  // GRID_MIN
+      expect(drawer.width).toBe(50);   // GRID_MAX
+      expect(drawer.depth).toBe(0.5);  // GRID_MIN (now supports half-units)
     });
 
     it('updateDrawer moves out-of-bounds bins to staging', () => {

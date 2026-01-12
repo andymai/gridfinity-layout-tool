@@ -305,6 +305,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           heightUnitMm={heightUnitMm}
           layoutName={layoutName}
           isExpanded={isPreviewExpanded}
+          fractionalEdgeX={drawer.fractionalEdgeX}
+          fractionalEdgeY={drawer.fractionalEdgeY}
         >
           {/* Non-selected bins: merged geometry for performance */}
           <MergedBinMeshes bins={nonSelectedBins} />

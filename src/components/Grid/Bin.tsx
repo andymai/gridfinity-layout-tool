@@ -1,11 +1,13 @@
-import { memo, useRef, useState, type PointerEvent } from 'react';
+import type { PointerEvent } from 'react';
+import { memo, useRef, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import type { Bin as BinType, Category, Layer, ResizeHandle } from '../../types';
+import type { Bin as BinType, Category, Layer, Drawer, ResizeHandle } from '../../types';
 import { useUIStore, useLayoutStore } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { useResponsive } from '../../hooks';
 import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { getBinTextColors } from '../../utils/color';
+import { ResizeHandles } from './ResizeHandles';
 
 /** Clamp a value between min and max */
 function clamp(value: number, min: number, max: number): number {
@@ -19,7 +21,7 @@ interface BinProps {
   bin: BinType;
   category?: Category;
   layer?: Layer;
-  drawer: { width: number; depth: number };
+  drawer: Drawer;
   cellSize: number;
   gap?: number;
   halfBinMode?: boolean;
@@ -115,27 +117,193 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   const hasFractionalDepth = bin.depth % 1 !== 0;
   const hasFractionalDims = hasFractionalX || hasFractionalY || hasFractionalWidth || hasFractionalDepth;
 
-  // CSS Grid positioning: row 1 is top, row drawer.depth is bottom
-  // Grid coordinates: y=0 is bottom, y=drawer.depth-1 is top
-  const gridCol = Math.floor(bin.x) + 1;
-  const gridColSpan = Math.ceil(bin.x + bin.width) - Math.floor(bin.x);
-  const gridRowStart = drawer.depth - Math.ceil(bin.y + bin.depth) + 1;
-  const gridRowSpan = Math.ceil(bin.y + bin.depth) - Math.floor(bin.y);
+  // CSS Grid positioning with configurable fractional edge placement
+  // fractionalEdgeX: 'start' = left, 'end' = right (default)
+  // fractionalEdgeY: 'start' = bottom, 'end' = top (default)
+  const integerWidth = Math.floor(drawer.width);
+  const integerDepth = Math.floor(drawer.depth);
+  const hasFractionalDrawerWidth = drawer.width % 1 !== 0;
+  const hasFractionalDrawerDepth = drawer.depth % 1 !== 0;
+  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
+  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
+  const fractionalWidthPart = drawer.width - integerWidth;
+  const fractionalDepthPart = drawer.depth - integerDepth;
+  const gridRows = Math.ceil(drawer.depth);
+
+  // Helper: Get CSS column for a grid x coordinate
+  // When fractionalEdgeX='start', fractional column is at CSS col 1, integer columns start at 2
+  const getCssColForX = (x: number): number => {
+    if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
+      if (x < fractionalWidthPart) return 1;
+      return Math.floor(x - fractionalWidthPart) + 2;
+    }
+    return Math.floor(x) + 1;
+  };
+
+  // Helper: Get CSS row for a grid y coordinate (y=0 at bottom, CSS row 1 at top)
+  const getCssRowForY = (y: number): number => {
+    if (hasFractionalDrawerDepth) {
+      if (fractionalEdgeY === 'start') {
+        // Fractional row at bottom (CSS row = gridRows)
+        if (y < fractionalDepthPart) return gridRows;
+        return integerDepth - Math.floor(y - fractionalDepthPart);
+      } else {
+        // Fractional row at top (CSS row 1)
+        if (y >= integerDepth) return 1;
+        return integerDepth - Math.floor(y) + 1;
+      }
+    }
+    return integerDepth - Math.floor(y);
+  };
+
+  // Calculate CSS column placement
+  const binEndX = bin.x + bin.width;
+  const startCol = getCssColForX(bin.x);
+  const endCol = getCssColForX(binEndX > 0 ? binEndX - 0.001 : binEndX);
+  const gridCol = startCol;
+  const gridColSpan = Math.max(1, endCol - startCol + 1);
+
+  // Calculate CSS row placement
+  // For rows, higher y = lower CSS row number (top of bin has higher y)
+  const binEndY = bin.y + bin.depth;
+  const topRow = getCssRowForY(binEndY > 0 ? binEndY - 0.001 : binEndY);
+  const bottomRow = getCssRowForY(bin.y);
+  const gridRowStart = topRow;
+  const gridRowSpan = Math.max(1, bottomRow - topRow + 1);
 
   // Calculate actual pixel dimensions of bin
-  const toPixels = (units: number) => units * cellSize + Math.max(0, units - 1) * gap;
+  // When drawer has fractional dimensions, we need to account for different-sized rows/columns
+  const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
+  const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
 
-  // Always use true pixel dimensions for fractional bins
-  const binPixelWidth = hasFractionalDims ? toPixels(bin.width) : gridColSpan * cellSize;
-  const binPixelHeight = hasFractionalDims ? toPixels(bin.depth) : gridRowSpan * cellSize;
+  // Calculate pixel width accounting for fractional edge
+  const calcBinPixelWidth = (): number => {
+    if (!hasFractionalDrawerWidth) {
+      return bin.width * cellSize + Math.max(0, bin.width - 1) * gap;
+    }
+
+    const binEndX = bin.x + bin.width;
+
+    if (fractionalEdgeX === 'start') {
+      // Fractional column at left [0, fractionalWidthPart)
+      const inFractional = Math.max(0, Math.min(binEndX, fractionalWidthPart) - Math.max(bin.x, 0));
+      const inInteger = bin.width - inFractional;
+
+      let width = 0;
+      if (inFractional > 0) {
+        width += (inFractional / fractionalWidthPart) * fractionalCellWidth;
+      }
+      if (inInteger > 0) {
+        if (inFractional > 0) width += gap;
+        width += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+      }
+      return width;
+    } else {
+      // Fractional column at right [integerWidth, drawer.width)
+      const inInteger = Math.max(0, Math.min(binEndX, integerWidth) - bin.x);
+      const inFractional = bin.width - inInteger;
+
+      let width = 0;
+      if (inInteger > 0) {
+        width += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+      }
+      if (inFractional > 0) {
+        if (inInteger > 0) width += gap;
+        width += (inFractional / fractionalWidthPart) * fractionalCellWidth;
+      }
+      return width;
+    }
+  };
+
+  // Calculate pixel height accounting for fractional edge
+  const calcBinPixelHeight = (): number => {
+    if (!hasFractionalDrawerDepth) {
+      return bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap;
+    }
+
+    const binEndY = bin.y + bin.depth;
+
+    if (fractionalEdgeY === 'start') {
+      // Fractional row at bottom [0, fractionalDepthPart)
+      const inFractional = Math.max(0, Math.min(binEndY, fractionalDepthPart) - Math.max(bin.y, 0));
+      const inInteger = bin.depth - inFractional;
+
+      let height = 0;
+      if (inFractional > 0) {
+        height += (inFractional / fractionalDepthPart) * fractionalCellHeight;
+      }
+      if (inInteger > 0) {
+        if (inFractional > 0) height += gap;
+        height += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+      }
+      return height;
+    } else {
+      // Fractional row at top [integerDepth, drawer.depth)
+      const inInteger = Math.max(0, Math.min(binEndY, integerDepth) - bin.y);
+      const inFractional = bin.depth - inInteger;
+
+      let height = 0;
+      if (inInteger > 0) {
+        height += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+      }
+      if (inFractional > 0) {
+        if (inInteger > 0) height += gap;
+        height += (inFractional / fractionalDepthPart) * fractionalCellHeight;
+      }
+      return height;
+    }
+  };
+
+  const binPixelWidth = calcBinPixelWidth();
+  const binPixelHeight = calcBinPixelHeight();
+
+  // Need custom sizing when drawer has fractional dimensions or bin has fractional coords
+  const needsCustomSizing = hasFractionalDims || hasFractionalDrawerWidth || hasFractionalDrawerDepth;
 
   // Calculate pixel offset for fractional positions within the cell
-  // X offset: fractional part of x * (cellSize + gap)
+  // X offset: position within fractional column or first integer column
   // Y offset: for Y, we need to offset from the TOP of the cell span
-  const fractionalX = bin.x - Math.floor(bin.x);
-  const fractionalYFromTop = Math.ceil(bin.y + bin.depth) - (bin.y + bin.depth);
-  const offsetX = hasFractionalDims ? fractionalX * (cellSize + gap) : 0;
-  const offsetY = hasFractionalDims ? fractionalYFromTop * (cellSize + gap) : 0;
+  const calcOffsetX = (): number => {
+    if (!needsCustomSizing) return 0;
+    if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
+      if (bin.x < fractionalWidthPart) {
+        // Bin starts in fractional column - offset within it
+        return (bin.x / fractionalWidthPart) * fractionalCellWidth;
+      } else {
+        // Bin starts in integer column - offset within that column
+        const integerX = bin.x - fractionalWidthPart;
+        return (integerX - Math.floor(integerX)) * (cellSize + gap);
+      }
+    }
+    return (bin.x - Math.floor(bin.x)) * (cellSize + gap);
+  };
+
+  const calcOffsetY = (): number => {
+    if (!needsCustomSizing) return 0;
+    // Y offset is from the TOP of the cell span (CSS grid row 1 is at top)
+    const binEndY = bin.y + bin.depth;
+    if (hasFractionalDrawerDepth && fractionalEdgeY === 'start') {
+      // Fractional row at bottom - check if bin top is in fractional or integer region
+      if (binEndY <= fractionalDepthPart) {
+        // Bin entirely in fractional row - offset from top of fractional row
+        return (fractionalDepthPart - binEndY) / fractionalDepthPart * fractionalCellHeight;
+      } else {
+        // Bin extends into integer rows - offset within top integer row
+        const integerY = binEndY - fractionalDepthPart;
+        return (Math.ceil(integerY) - integerY) * (cellSize + gap);
+      }
+    } else if (hasFractionalDrawerDepth && fractionalEdgeY === 'end') {
+      if (binEndY > integerDepth) {
+        // Bin extends into fractional row at top
+        const fractionalY = binEndY - integerDepth;
+        return (fractionalDepthPart - fractionalY) / fractionalDepthPart * fractionalCellHeight;
+      }
+    }
+    return (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
+  };
+
+  const offsetX = calcOffsetX();
+  const offsetY = calcOffsetY();
   const binPixelMin = Math.min(binPixelWidth, binPixelHeight);
 
   // Font size constraints
@@ -318,7 +486,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     showContextMenu(bin.id, { x: e.clientX, y: e.clientY });
   };
 
-  const handleResizePointerDown = (e: PointerEvent<HTMLDivElement>, handle: ResizeHandle) => {
+  const handleResizePointerDown = useCallback((e: PointerEvent<HTMLDivElement>, handle: ResizeHandle) => {
     // Ignore secondary touches (allow two-finger pan)
     if (!e.isPrimary) return;
     e.preventDefault();
@@ -326,7 +494,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     if (e.button === 0) {
       onStartResize(bin.id, handle, e.pointerId);
     }
-  };
+  }, [onStartResize, bin.id]);
 
   const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
   const textColors = getBinTextColors(bgColor);
@@ -370,8 +538,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         gridRow: `${gridRowStart} / span ${gridRowSpan}`,
         // Only transition visual properties, not positioning (causes bounce on grid line crossing)
         transition: 'opacity 150ms, box-shadow 150ms, transform 150ms',
-        // Override size and position for fractional bins (CSS Grid spans only support integers)
-        ...(hasFractionalDims ? {
+        // Override size and position when drawer has fractional dimensions (different row/column sizes)
+        ...(needsCustomSizing ? {
           width: binPixelWidth,
           height: binPixelHeight,
           marginLeft: offsetX,
@@ -387,11 +555,12 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         userSelect: 'none',
         pointerEvents: isGhost || isBeingDragged ? 'none' : 'auto',
         opacity: isGhost ? 0.3 : isBeingDragged ? 0.5 : (isAnyCategoryHighlighted && !isCategoryHighlighted) ? 0.4 : 1,
-        zIndex: isGhost ? 5 : isSelected ? 20 : isCategoryHighlighted ? 15 : 10,
+        // Selected bins need higher z-index (40) to ensure resize handles appear above axis labels (30)
+        zIndex: isGhost ? 5 : isSelected ? 40 : isCategoryHighlighted ? 15 : 10,
         boxShadow: getBoxShadow(),
         transform: getTransform(),
-        // Prevent text content from expanding bin beyond grid cell
-        overflow: 'hidden',
+        // Allow resize handles to extend outside bin (text constrained by whitespace-nowrap and sizing)
+        overflow: 'visible',
         minWidth: 0,
         minHeight: 0,
       }}
@@ -504,405 +673,25 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
 
       {/* Resize handles - only for single selected bin, not during multi-select */}
       {/* Touch targets are 44px (Apple HIG minimum) with smaller visual indicators */}
-      {/* Disable pointer events during any interaction to avoid blocking draw operations */}
+      {/* Handles automatically position externally for bins with width≤1 OR depth≤1 */}
       {isSelected && !isGhost && !isMultiSelect && !interaction && (
-        <>
-          {/* Left edge handle (w) */}
-          <div
-            className="absolute transition-transform hover:scale-110 flex items-center justify-center"
-            style={{
-              left: -22,
-              top: '25%',
-              width: 44,
-              height: '50%',
-              minHeight: 44,
-              cursor: 'ew-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'w')}
-            role="slider"
-            aria-label="Resize left edge"
-            aria-orientation="horizontal"
-          >
-            <div
-              style={{
-                width: 10,
-                height: '45%',
-                minHeight: 20,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-sm)',
-              }}
-            />
-          </div>
-          {/* Right edge handle (e) */}
-          <div
-            className="absolute transition-transform hover:scale-110 flex items-center justify-center"
-            style={{
-              right: -22,
-              top: '25%',
-              width: 44,
-              height: '50%',
-              minHeight: 44,
-              cursor: 'ew-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'e')}
-            role="slider"
-            aria-label="Resize right edge"
-            aria-orientation="horizontal"
-          >
-            <div
-              style={{
-                width: 10,
-                height: '45%',
-                minHeight: 20,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-sm)',
-              }}
-            />
-          </div>
-          {/* Top edge handle (n) - visually at top, increases Y */}
-          <div
-            className="absolute transition-transform hover:scale-110 flex items-center justify-center"
-            style={{
-              top: -22,
-              left: '25%',
-              width: '50%',
-              minWidth: 44,
-              height: 44,
-              cursor: 'ns-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'n')}
-            role="slider"
-            aria-label="Resize top edge"
-            aria-orientation="vertical"
-          >
-            <div
-              style={{
-                width: '45%',
-                minWidth: 20,
-                height: 10,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-sm)',
-              }}
-            />
-          </div>
-          {/* Bottom edge handle (s) - visually at bottom, decreases Y */}
-          <div
-            className="absolute transition-transform hover:scale-110 flex items-center justify-center"
-            style={{
-              bottom: -22,
-              left: '25%',
-              width: '50%',
-              minWidth: 44,
-              height: 44,
-              cursor: 'ns-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 's')}
-            role="slider"
-            aria-label="Resize bottom edge"
-            aria-orientation="vertical"
-          >
-            <div
-              style={{
-                width: '45%',
-                minWidth: 20,
-                height: 10,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-sm)',
-              }}
-            />
-          </div>
-          {/* NW corner handle (top-left) */}
-          <div
-            className="absolute transition-transform hover:scale-125 flex items-center justify-center"
-            style={{
-              left: -22,
-              top: -22,
-              width: 44,
-              height: 44,
-              cursor: 'nwse-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'nw')}
-            role="slider"
-            aria-label="Resize top-left corner"
-          >
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-md)',
-              }}
-            />
-          </div>
-          {/* NE corner handle (top-right) */}
-          <div
-            className="absolute transition-transform hover:scale-125 flex items-center justify-center"
-            style={{
-              right: -22,
-              top: -22,
-              width: 44,
-              height: 44,
-              cursor: 'nesw-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'ne')}
-            role="slider"
-            aria-label="Resize top-right corner"
-          >
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-md)',
-              }}
-            />
-          </div>
-          {/* SW corner handle (bottom-left) */}
-          <div
-            className="absolute transition-transform hover:scale-125 flex items-center justify-center"
-            style={{
-              left: -22,
-              bottom: -22,
-              width: 44,
-              height: 44,
-              cursor: 'nesw-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'sw')}
-            role="slider"
-            aria-label="Resize bottom-left corner"
-          >
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-md)',
-              }}
-            />
-          </div>
-          {/* SE corner handle (bottom-right) */}
-          <div
-            className="absolute transition-transform hover:scale-125 flex items-center justify-center"
-            style={{
-              right: -22,
-              bottom: -22,
-              width: 44,
-              height: 44,
-              cursor: 'nwse-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'se')}
-            role="slider"
-            aria-label="Resize bottom-right corner"
-          >
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                boxShadow: 'var(--shadow-md)',
-              }}
-            />
-          </div>
-        </>
+        <ResizeHandles
+          binWidth={bin.width}
+          binDepth={bin.depth}
+          variant="primary"
+          onResizePointerDown={handleResizePointerDown}
+        />
       )}
 
-      {/* Functional resize handles - show on hover for non-selected bins (desktop only) */}
+      {/* Ghost resize handles - show on hover for non-selected bins (desktop only) */}
       {/* These are semi-transparent but fully functional, allowing resize without selection */}
       {!isSelected && !isGhost && isHovered && !isTouchDevice && !interaction && (
-        <>
-          {/* Left edge handle (w) */}
-          <div
-            className="absolute flex items-center justify-center transition-transform hover:scale-110"
-            style={{
-              left: -22,
-              top: '25%',
-              width: 44,
-              height: '50%',
-              minHeight: 44,
-              cursor: 'ew-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'w')}
-          >
-            <div
-              style={{
-                width: 10,
-                height: '45%',
-                minHeight: 20,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                opacity: 0.5,
-              }}
-            />
-          </div>
-          {/* Right edge handle (e) */}
-          <div
-            className="absolute flex items-center justify-center transition-transform hover:scale-110"
-            style={{
-              right: -22,
-              top: '25%',
-              width: 44,
-              height: '50%',
-              minHeight: 44,
-              cursor: 'ew-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'e')}
-          >
-            <div
-              style={{
-                width: 10,
-                height: '45%',
-                minHeight: 20,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                opacity: 0.5,
-              }}
-            />
-          </div>
-          {/* Top edge handle (n) */}
-          <div
-            className="absolute flex items-center justify-center transition-transform hover:scale-110"
-            style={{
-              top: -22,
-              left: '25%',
-              width: '50%',
-              minWidth: 44,
-              height: 44,
-              cursor: 'ns-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'n')}
-          >
-            <div
-              style={{
-                width: '45%',
-                minWidth: 20,
-                height: 10,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                opacity: 0.5,
-              }}
-            />
-          </div>
-          {/* Bottom edge handle (s) */}
-          <div
-            className="absolute flex items-center justify-center transition-transform hover:scale-110"
-            style={{
-              bottom: -22,
-              left: '25%',
-              width: '50%',
-              minWidth: 44,
-              height: 44,
-              cursor: 'ns-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 's')}
-          >
-            <div
-              style={{
-                width: '45%',
-                minWidth: 20,
-                height: 10,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                opacity: 0.5,
-              }}
-            />
-          </div>
-          {/* NW corner handle (top-left) */}
-          <div
-            className="absolute flex items-center justify-center transition-transform hover:scale-125"
-            style={{
-              left: -22,
-              top: -22,
-              width: 44,
-              height: 44,
-              cursor: 'nwse-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'nw')}
-          >
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                opacity: 0.5,
-              }}
-            />
-          </div>
-          {/* NE corner handle (top-right) */}
-          <div
-            className="absolute flex items-center justify-center transition-transform hover:scale-125"
-            style={{
-              right: -22,
-              top: -22,
-              width: 44,
-              height: 44,
-              cursor: 'nesw-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'ne')}
-          >
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                opacity: 0.5,
-              }}
-            />
-          </div>
-          {/* SW corner handle (bottom-left) */}
-          <div
-            className="absolute flex items-center justify-center transition-transform hover:scale-125"
-            style={{
-              left: -22,
-              bottom: -22,
-              width: 44,
-              height: 44,
-              cursor: 'nesw-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'sw')}
-          >
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                opacity: 0.5,
-              }}
-            />
-          </div>
-          {/* SE corner handle (bottom-right) */}
-          <div
-            className="absolute flex items-center justify-center transition-transform hover:scale-125"
-            style={{
-              right: -22,
-              bottom: -22,
-              width: 44,
-              height: 44,
-              cursor: 'nwse-resize',
-            }}
-            onPointerDown={(e) => handleResizePointerDown(e, 'se')}
-          >
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                background: 'var(--selection-ring)',
-                borderRadius: 'var(--radius-sm)',
-                opacity: 0.5,
-              }}
-            />
-          </div>
-        </>
+        <ResizeHandles
+          binWidth={bin.width}
+          binDepth={bin.depth}
+          variant="ghost"
+          onResizePointerDown={handleResizePointerDown}
+        />
       )}
     </div>
   );
@@ -945,9 +734,11 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
     return false;
   }
 
-  // Re-render if drawer dimensions change
+  // Re-render if drawer dimensions or edge configuration changes
   if (prevProps.drawer.width !== nextProps.drawer.width ||
-      prevProps.drawer.depth !== nextProps.drawer.depth) {
+      prevProps.drawer.depth !== nextProps.drawer.depth ||
+      prevProps.drawer.fractionalEdgeX !== nextProps.drawer.fractionalEdgeX ||
+      prevProps.drawer.fractionalEdgeY !== nextProps.drawer.fractionalEdgeY) {
     return false;
   }
 

@@ -1,5 +1,6 @@
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import type { UseBinInspectorReturn } from './useBinInspector';
+import type { Layer } from '../../types';
 
 interface MultiBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -25,6 +26,7 @@ export function MultiBinInspector({
     updateMultiCategory,
     updateMultiHeight,
     updateMultiClearance,
+    updateMultiLayer,
     requestDelete,
     moveToStaging,
     clearSelection,
@@ -75,6 +77,26 @@ export function MultiBinInspector({
 
   // Check if any bins can be moved to staging
   const canMoveToStaging = selectedBins.some((b) => b.layerId !== STAGING_ID);
+
+  // Check if all bins are on the same layer
+  const gridBins = selectedBins.filter((b) => b.layerId !== STAGING_ID);
+  const commonLayer: Layer | null = gridBins.length > 0 && gridBins.every((b) => b.layerId === gridBins[0]?.layerId)
+    ? layout.layers.find((l) => l.id === gridBins[0]?.layerId) ?? null
+    : null;
+
+  // Get layer breakdown for mixed label
+  const getMixedLayerLabel = () => {
+    const counts = new Map<string, number>();
+    for (const b of gridBins) {
+      counts.set(b.layerId, (counts.get(b.layerId) || 0) + 1);
+    }
+    const parts: string[] = [];
+    counts.forEach((count, layerId) => {
+      const layer = layout.layers.find((l) => l.id === layerId);
+      parts.push(`${count} on ${layer?.name || 'Unknown'}`);
+    });
+    return parts.slice(0, 2).join(', ') + (parts.length > 2 ? '...' : '');
+  };
 
   // Get category color for swatch
   const categoryColor = commonCategory
@@ -152,6 +174,42 @@ export function MultiBinInspector({
             </svg>
           </div>
         </div>
+
+        {/* Layer - only show when there are bins on grid and multiple layers */}
+        {gridBins.length > 0 && layout.layers.length > 1 && (
+          <div>
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              Layer
+            </label>
+            <div className="relative">
+              <select
+                value={commonLayer?.id || ''}
+                onChange={(e) => updateMultiLayer(e.target.value)}
+                className={`input w-full pr-8 appearance-none ${inputHeight}`}
+                aria-label="Layer for selected bins"
+              >
+                {!commonLayer && (
+                  <option value="" disabled>
+                    {getMixedLayerLabel()}
+                  </option>
+                )}
+                {layout.layers.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}{l.id === commonLayer?.id ? ' (current)' : ''}
+                  </option>
+                ))}
+              </select>
+              <svg
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-content-tertiary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        )}
 
         {/* Height control */}
         <div>

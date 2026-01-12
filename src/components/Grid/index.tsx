@@ -475,12 +475,37 @@ export function Grid() {
   }, [bins, activeLayerId, setSelectedBins, lastClickedCol, selectedBinIds, getBinsInColRange]);
 
   // Generate column numbers (1-indexed, displayed at bottom)
-  const columnLabels = Array.from({ length: drawer.width }, (_, i) => i + 1);
+  // Include fractional edge label when drawer has fractional width
+  // Position depends on fractionalEdgeX setting ('start' = left, 'end' = right)
+  const integerWidth = Math.floor(drawer.width);
+  const hasFractionalWidth = drawer.width % 1 !== 0;
+  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
+  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
+  const columnLabels: (number | string)[] = Array.from({ length: integerWidth }, (_, i) => i + 1);
+  if (hasFractionalWidth) {
+    if (fractionalEdgeX === 'start') {
+      columnLabels.unshift('+.5'); // Fractional at left
+    } else {
+      columnLabels.push('+.5'); // Fractional at right (default)
+    }
+  }
 
   // Generate row numbers (1-indexed, displayed on left)
   // Visual row at top = highest Y coordinate (drawer.depth)
   // Bottom row = Y coordinate 1
-  const rowLabels = Array.from({ length: drawer.depth }, (_, i) => drawer.depth - i);
+  // Include fractional edge label when drawer has fractional depth
+  // Position depends on fractionalEdgeY setting ('start' = bottom, 'end' = top)
+  const integerDepth = Math.floor(drawer.depth);
+  const hasFractionalDepth = drawer.depth % 1 !== 0;
+  // For depth 9.5: integer labels are 9,8,7,6,5,4,3,2,1 (rows 1-9 from bottom)
+  const rowLabels: (number | string)[] = Array.from({ length: integerDepth }, (_, i) => integerDepth - i);
+  if (hasFractionalDepth) {
+    if (fractionalEdgeY === 'end') {
+      rowLabels.unshift('+.5'); // Fractional at top (CSS row 1)
+    } else {
+      rowLabels.push('+.5'); // Fractional at bottom
+    }
+  }
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-surface relative">
@@ -786,45 +811,68 @@ export function Grid() {
           }}
         >
           {/* Row labels column - sticky to left edge */}
-          {axisLabelsVisible && (
-            <div
-              className="bg-surface"
-              style={{
-                display: 'grid',
-                // In half-bin mode, each label spans 2 visual cells (one whole unit)
-                gridTemplateRows: `repeat(${drawer.depth}, ${scale * visualCellSize + (scale - 1) * gap}px)`,
-                gap: gap,
-                paddingTop: gap,
-                paddingBottom: gap,
-                position: 'sticky',
-                left: 0,
-                zIndex: 30, // Above bins (z-index 10-20)
-                alignSelf: 'start',
-              }}
-            >
-              {rowLabels.map((num) => (
-                <button
-                  key={`row-${num}`}
-                  type="button"
-                  className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
-                  style={{
-                    width: labelWidth,
-                    // Each label covers one whole grid unit (2 visual cells in half-bin mode)
-                    height: scale * visualCellSize + (scale - 1) * gap,
-                    fontSize: labelFontSize,
-                    minHeight: 0,
-                    minWidth: 0,
-                    padding: 0,
-                  }}
-                  onClick={(e) => handleRowClick(num, e)}
-                  title={`Click to select row ${num}. Shift-click for range. Ctrl-click to add/remove.`}
-                  aria-label={`Select bins in row ${num}`}
-                >
-                  {labelFontSize > 0 && num}
-                </button>
-              ))}
-            </div>
-          )}
+          {axisLabelsVisible && (() => {
+            const fullRowSize = scale * visualCellSize + (scale - 1) * gap;
+            const fractionalDepthPart = drawer.depth - integerDepth; // e.g., 0.5
+            // Match GridCanvas fractional cell sizing: fractionalPart * (cellSize + gap) - gap
+            const fractionalRowSize = fractionalDepthPart * (cellSize + gap) - gap;
+            // Build grid template based on fractionalEdgeY setting
+            // 'end' = fractional at top (CSS row 1), 'start' = fractional at bottom (CSS row last)
+            const rowTemplate = hasFractionalDepth
+              ? fractionalEdgeY === 'end'
+                ? `${fractionalRowSize}px repeat(${integerDepth}, ${fullRowSize}px)` // Fractional at top
+                : `repeat(${integerDepth}, ${fullRowSize}px) ${fractionalRowSize}px` // Fractional at bottom
+              : `repeat(${integerDepth}, ${fullRowSize}px)`;
+
+            return (
+              <div
+                className="bg-surface"
+                style={{
+                  display: 'grid',
+                  gridTemplateRows: rowTemplate,
+                  gap: gap,
+                  paddingTop: gap,
+                  paddingBottom: gap,
+                  position: 'sticky',
+                  left: 0,
+                  zIndex: 30,
+                  alignSelf: 'start',
+                }}
+              >
+                {rowLabels.map((num, idx) => {
+                  // Fractional row position depends on fractionalEdgeY setting
+                  const isFractionalRow = hasFractionalDepth && (
+                    (fractionalEdgeY === 'end' && idx === 0) ||  // Top
+                    (fractionalEdgeY === 'start' && idx === rowLabels.length - 1)  // Bottom
+                  );
+                  const rowHeight = isFractionalRow ? fractionalRowSize : fullRowSize;
+                  // Format label: show decimal for fractional, integer otherwise
+                  const label = typeof num === 'number' && num % 1 !== 0 ? num.toFixed(1) : num;
+
+                  return (
+                    <button
+                      key={`row-${num}`}
+                      type="button"
+                      className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
+                      style={{
+                        width: labelWidth,
+                        height: rowHeight,
+                        fontSize: isFractionalRow ? Math.max(6, labelFontSize - 2) : labelFontSize,
+                        minHeight: 0,
+                        minWidth: 0,
+                        padding: 0,
+                      }}
+                      onClick={(e) => typeof num === 'number' && handleRowClick(Math.floor(num), e)}
+                      title={`Click to select row ${label}. Shift-click for range. Ctrl-click to add/remove.`}
+                      aria-label={`Select bins in row ${label}`}
+                    >
+                      {labelFontSize > 0 && label}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           {/* Grid with resize handles */}
           <div className="relative">
@@ -963,44 +1011,67 @@ export function Grid() {
               )}
 
               {/* Column labels row (at bottom, 1-indexed from left) - uses same grid template as main grid */}
-              {axisLabelsVisible && (
-                <div
-                  className="absolute left-0 bg-surface"
-                  style={{
-                    display: 'grid',
-                    // In half-bin mode, each label spans 2 visual cells (one whole unit)
-                    gridTemplateColumns: `repeat(${drawer.width}, ${scale * visualCellSize + (scale - 1) * gap}px)`,
-                    gap: gap,
-                    padding: gap,
-                    paddingTop: 0,
-                    top: drawer.depth * scale * (visualCellSize + gap) + gap,
-                    height: columnLabelHeight,
-                    zIndex: 30, // Above bins (z-index 10-20)
-                  }}
-                >
-                  {columnLabels.map((num) => (
-                    <button
-                      key={`col-${num}`}
-                      type="button"
-                      className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
-                      style={{
-                        // Each label covers one whole grid unit (2 visual cells in half-bin mode)
-                        width: scale * visualCellSize + (scale - 1) * gap,
-                        height: columnLabelHeight,
-                        fontSize: labelFontSize,
-                        minHeight: 0,
-                        minWidth: 0,
-                        padding: 0,
-                      }}
-                      onClick={(e) => handleColumnClick(num, e)}
-                      title={`Click to select column ${num}. Shift-click for range. Ctrl-click to add/remove.`}
-                      aria-label={`Select bins in column ${num}`}
-                    >
-                      {labelFontSize > 0 && num}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {axisLabelsVisible && (() => {
+                const fullColSize = scale * visualCellSize + (scale - 1) * gap;
+                const fractionalWidthPart = drawer.width - integerWidth; // e.g., 0.5
+                // Match GridCanvas fractional cell sizing: fractionalPart * (cellSize + gap) - gap
+                const fractionalColSize = fractionalWidthPart * (cellSize + gap) - gap;
+                // Build grid template based on fractionalEdgeX setting
+                // 'start' = fractional at left (CSS col 1), 'end' = fractional at right (CSS col last)
+                const colTemplate = hasFractionalWidth
+                  ? fractionalEdgeX === 'start'
+                    ? `${fractionalColSize}px repeat(${integerWidth}, ${fullColSize}px)` // Fractional at left
+                    : `repeat(${integerWidth}, ${fullColSize}px) ${fractionalColSize}px` // Fractional at right
+                  : `repeat(${integerWidth}, ${fullColSize}px)`;
+
+                return (
+                  <div
+                    className="absolute left-0 bg-surface"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: colTemplate,
+                      gap: gap,
+                      padding: gap,
+                      paddingTop: 0,
+                      top: drawer.depth * scale * (visualCellSize + gap) + gap,
+                      height: columnLabelHeight,
+                      zIndex: 30,
+                    }}
+                  >
+                    {columnLabels.map((num, idx) => {
+                      // Fractional column position depends on fractionalEdgeX setting
+                      const isFractionalCol = hasFractionalWidth && (
+                        (fractionalEdgeX === 'start' && idx === 0) ||  // Left
+                        (fractionalEdgeX === 'end' && idx === columnLabels.length - 1)  // Right
+                      );
+                      const colWidth = isFractionalCol ? fractionalColSize : fullColSize;
+                      // Format label: show decimal for fractional, integer otherwise
+                      const label = typeof num === 'number' && num % 1 !== 0 ? num.toFixed(1) : num;
+
+                      return (
+                        <button
+                          key={`col-${num}`}
+                          type="button"
+                          className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
+                          style={{
+                            width: colWidth,
+                            height: columnLabelHeight,
+                            fontSize: isFractionalCol ? Math.max(6, labelFontSize - 2) : labelFontSize,
+                            minHeight: 0,
+                            minWidth: 0,
+                            padding: 0,
+                          }}
+                          onClick={(e) => typeof num === 'number' && handleColumnClick(Math.floor(num), e)}
+                          title={`Click to select column ${label}. Shift-click for range. Ctrl-click to add/remove.`}
+                          aria-label={`Select bins in column ${label}`}
+                        >
+                          {labelFontSize > 0 && label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
         </div>
       </div>
