@@ -384,7 +384,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
           navigator.vibrate(50);
         }
         // Show context menu
-        showContextMenu(bin.id, { x: e.clientX, y: e.clientY });
+        showContextMenu([bin.id], { x: e.clientX, y: e.clientY }, 'grid');
       }, LONG_PRESS_DURATION);
     }
 
@@ -483,7 +483,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     if (!isSelected) {
       setSelectedBin(bin.id);
     }
-    showContextMenu(bin.id, { x: e.clientX, y: e.clientY });
+    showContextMenu([bin.id], { x: e.clientX, y: e.clientY }, 'grid');
   };
 
   const handleResizePointerDown = useCallback((e: PointerEvent<HTMLDivElement>, handle: ResizeHandle) => {

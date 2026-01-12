@@ -21,8 +21,15 @@ import {
   MobileSettingsPanel,
   MobileLayoutsPanel,
   BinContextMenu,
+  MultiBinContextMenu,
 } from './mobile';
 import type { SaveStatus } from '../hooks/useAutoSave';
+
+// Legacy context menu state for backwards compatibility
+interface LegacyContextMenuState {
+  binId?: string;
+  position: { x: number; y: number };
+}
 
 // Lazy load mobile help modal (with retry for chunk load failures)
 const MobileHelpModal = lazyWithRetry(() =>
@@ -74,9 +81,11 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen, saveStatus
       {/* Context menu (long-press on bin) */}
       {contextMenu && (
         <BinContextMenuWrapper
-          binId={contextMenu.binId}
+          // Backwards compatibility: support both old (binId) and new (binIds) formats
+          binIds={contextMenu.binIds || ((contextMenu as unknown as LegacyContextMenuState).binId ? [(contextMenu as unknown as LegacyContextMenuState).binId] : [])}
           position={contextMenu.position}
           onClose={hideContextMenu}
+          source={contextMenu.source}
         />
       )}
 
@@ -138,21 +147,36 @@ function MobilePanelContent({ panel }: { panel: string }) {
 }
 
 /**
- * Context menu wrapper that looks up the bin from the store.
+ * Context menu wrapper that routes to single or multi-bin menu.
  */
 function BinContextMenuWrapper({
-  binId,
+  binIds,
   position,
   onClose,
+  source,
 }: {
-  binId: string;
+  binIds: string[];
   position: { x: number; y: number };
   onClose: () => void;
+  source?: 'grid' | 'staging';
 }) {
   const bins = useLayoutStore(state => state.layout.bins);
-  const bin = bins.find(b => b.id === binId);
+  const selectedBinIds = useUIStore(state => state.selectedBinIds);
 
+  // Guard: ensure binIds is valid
+  if (!binIds || binIds.length === 0) return null;
+
+  // Multi-select detection: if first bin is selected AND multiple bins selected
+  const isMultiSelect = selectedBinIds.includes(binIds[0]) && selectedBinIds.length > 1;
+
+  if (isMultiSelect) {
+    const selectedBins = bins.filter(b => selectedBinIds.includes(b.id));
+    return <MultiBinContextMenu binIds={selectedBins.map(b => b.id)} position={position} onClose={onClose} source={source} />;
+  }
+
+  // Single bin context menu
+  const bin = bins.find(b => b.id === binIds[0]);
   if (!bin) return null;
 
-  return <BinContextMenu bin={bin} position={position} onClose={onClose} />;
+  return <BinContextMenu bin={bin} position={position} onClose={onClose} source={source} />;
 }
