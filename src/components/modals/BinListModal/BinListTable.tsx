@@ -181,7 +181,7 @@ export function BinListTable({
                 type="checkbox"
                 checked={isAllSelected}
                 onChange={onSelectAll}
-                className="rounded border-stroke focus:ring-accent"
+                className="compact-checkbox rounded border-stroke focus:ring-accent"
                 aria-label="Select all rows"
               />
             </th>
@@ -227,7 +227,7 @@ export function BinListTable({
                     checked={isSelected}
                     readOnly
                     onClick={(e) => handleCheckboxClick(index, e)}
-                    className="rounded border-stroke focus:ring-accent cursor-pointer"
+                    className="compact-checkbox rounded border-stroke focus:ring-accent cursor-pointer"
                     aria-label={`Select ${row.size} bin`}
                   />
                 </td>

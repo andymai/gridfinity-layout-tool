@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useBinList } from '../../../hooks/useBinList';
 import { useUIStore } from '../../../store/ui';
 import { useResponsive } from '../../../hooks';
@@ -165,7 +166,10 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
     setShowDashboard((s) => !s);
   }, []);
 
-  return (
+  // Use portal to render directly to document.body, escaping any parent
+  // containing blocks (like BottomSheet with transform) that would constrain
+  // the fixed positioning
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       role="dialog"
@@ -308,7 +312,8 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
           </div>
         </footer>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

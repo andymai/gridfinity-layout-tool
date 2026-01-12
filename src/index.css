@@ -278,6 +278,13 @@
     min-width: var(--touch-target);
   }
 
+  /* Exception for compact checkboxes in dense contexts (tables, lists) */
+  input[type="checkbox"].compact-checkbox,
+  input[type="radio"].compact-checkbox {
+    min-height: auto;
+    min-width: auto;
+  }
+
   /* Stack form elements */
   .mobile-stack {
     flex-direction: column;
