@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
 
@@ -10,8 +11,10 @@ interface OverlayProps {
  * Draw/drag/resize preview overlay.
  * Shows amber dashed border for draw, green/red for drag/resize.
  * Supports multi-bin drag and resize previews.
+ * 
+ * Memoized to prevent unnecessary re-renders during interactions.
  */
-export function Overlay({ cellSize, gap }: OverlayProps) {
+export const Overlay = memo(function Overlay({ cellSize, gap }: OverlayProps) {
   const { interaction, halfBinMode } = useUIStore(
     useShallow((state) => ({
       interaction: state.interaction,
@@ -24,6 +27,11 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       bins: state.layout.bins,
     }))
   );
+
+  // Skip rendering if no active interaction
+  if (!interaction) {
+    return null;
+  }
 
   // Always use standard cell size (grid renders at normal dimensions)
   // Half-bin mode only affects snapping, not visual grid size
@@ -538,4 +546,4 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
   }
 
   return <>{previews}</>;
-}
+});

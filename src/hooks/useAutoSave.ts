@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useLibraryStore, useToastStore } from '../store';
+import { useLayoutStore, useLibraryStore, useToastStore, useUIStore } from '../store';
 import { saveLayoutById, saveLibrary, computeLayoutPreview } from '../utils/storage';
 
 const SAVE_DEBOUNCE_MS = 1000;
@@ -12,6 +12,8 @@ export type SaveStatus = 'idle' | 'saving' | 'saved';
  * Auto-save hook for the multi-layout system.
  * Saves the active layout to its individual storage key and updates the library entry.
  * Returns the current save status for UI display.
+ * 
+ * Optimized to defer saves during active interactions (drag/resize) to avoid blocking main thread.
  */
 export function useAutoSave(): SaveStatus {
   const { layout, activeLayoutId } = useLayoutStore(
@@ -20,6 +22,9 @@ export function useAutoSave(): SaveStatus {
       activeLayoutId: state.activeLayoutId,
     }))
   );
+
+  // Check if there's an active interaction (drag/resize/draw)
+  const interaction = useUIStore(state => state.interaction);
 
   const updateEntry = useLibraryStore(state => state.updateEntry);
   const addToast = useToastStore(state => state.addToast);
@@ -30,6 +35,7 @@ export function useAutoSave(): SaveStatus {
   const savedTimeoutRef = useRef<number | undefined>(undefined);
   const hasShownErrorRef = useRef(false);
   const failureCountRef = useRef(0);
+  const pendingSaveRef = useRef(false);
 
   useEffect(() => {
     // Clear any pending save
@@ -49,8 +55,23 @@ export function useAutoSave(): SaveStatus {
     // Don't save temporary shared preview layouts
     if (activeLayoutId === '__shared_preview__') return;
 
-    // Schedule save
+    // Mark that we have a pending save
+    pendingSaveRef.current = true;
+
+    // Defer save during active interactions for better INP
+    if (interaction) {
+      // Wait for interaction to complete before saving
+      return;
+    }
+
+    // Schedule save (only if no active interaction)
     timeoutRef.current = window.setTimeout(() => {
+      // Check again if there's an interaction just before saving
+      if (useUIStore.getState().interaction) {
+        pendingSaveRef.current = true;
+        return;
+      }
+
       // Reset to idle first (in case we were showing "saved"), then show "saving"
       setSaveStatus('saving');
 
@@ -71,6 +92,7 @@ export function useAutoSave(): SaveStatus {
         // Reset error flags on successful save
         hasShownErrorRef.current = false;
         failureCountRef.current = 0;
+        pendingSaveRef.current = false;
 
         // Show "saved" status
         setSaveStatus('saved');
@@ -101,7 +123,16 @@ export function useAutoSave(): SaveStatus {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [layout, activeLayoutId, updateEntry, addToast]);
+  }, [layout, activeLayoutId, interaction, updateEntry, addToast]);
+
+  // Effect to trigger save when interaction ends and there's a pending save
+  useEffect(() => {
+    if (!interaction && pendingSaveRef.current) {
+      // Trigger save by updating a dependency (we can't call the save directly)
+      // The main effect will handle the actual save
+      pendingSaveRef.current = false;
+    }
+  }, [interaction]);
 
   // Cleanup saved timeout on unmount
   useEffect(() => {
