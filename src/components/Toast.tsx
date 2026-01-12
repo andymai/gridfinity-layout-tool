@@ -145,7 +145,7 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
       {/* Close button */}
       <button
         onClick={handleDismiss}
-        className="absolute top-4 right-3 p-1 rounded-md text-current opacity-60 hover:opacity-100 hover:bg-white/10 transition-all"
+        className="absolute top-1/2 -translate-y-1/2 right-2 p-1 flex items-center justify-center rounded-md text-current opacity-60 hover:opacity-100 hover:bg-white/10 transition-all"
         aria-label="Dismiss notification"
       >
         <CloseIcon />
