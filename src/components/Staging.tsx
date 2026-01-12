@@ -1,7 +1,8 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../store';
 import { useToastStore } from '../store/toast';
+import { useResponsive } from '../hooks/useResponsive';
 import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '../constants';
 import { getBinTextColors } from '../utils/color';
 import { ConfirmDialog } from './modals/ConfirmDialog';
@@ -68,8 +69,13 @@ function packBins(bins: PackedBin[], gridWidth: number): PackedBin[] {
  * Bins are displayed at actual scale, matching the main grid.
  */
 export function Staging() {
-  const layout = useLayoutStore(state => state.layout);
-  const deleteBin = useLayoutStore(state => state.deleteBin);
+  const { layout, deleteBin, updateBin } = useLayoutStore(
+    useShallow((state) => ({
+      layout: state.layout,
+      deleteBin: state.deleteBin,
+      updateBin: state.updateBin,
+    }))
+  );
   const { zoom, interaction, setInteraction, dropTarget, setDropTarget, selectedBinIds, setSelectedBin, toggleSelection } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
@@ -86,6 +92,8 @@ export function Staging() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const addToast = useToastStore(state => state.addToast);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [hoveredBinId, setHoveredBinId] = useState<string | null>(null);
+  const isTouchDevice = useResponsive().isTouchDevice;
 
   const stagingBins = useMemo(() =>
     layout.bins.filter(bin => bin.layerId === STAGING_ID),
@@ -153,6 +161,17 @@ export function Staging() {
       valid: false,
     });
   };
+
+  const handleRotate = useCallback((binId: string) => {
+    const bin = stagingBins.find(b => b.id === binId);
+    if (!bin) return;
+
+    execute(() => {
+      updateBin(binId, { width: bin.depth, depth: bin.width });
+    });
+
+    addToast('Bin rotated', 'success');
+  }, [stagingBins, execute, updateBin, addToast]);
 
   const handleClearStaging = () => {
     const count = stagingBins.length;
@@ -350,6 +369,8 @@ export function Staging() {
                 }}
                 onClick={(e) => handleBinClick(bin.id, e)}
                 onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
+                onPointerEnter={() => setHoveredBinId(bin.id)}
+                onPointerLeave={() => setHoveredBinId(null)}
                 title={`${bin.label || 'Unlabeled'} — ${bin.width}×${bin.depth}×${bin.height}u\nClick to select • Drag to place on grid`}
               >
                 {/* Adaptive label: primary (label or dimensions) + optional secondary */}
@@ -376,6 +397,47 @@ export function Staging() {
                         {secondaryText}
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Rotate button - desktop only, visible on hover or selection */}
+                {!isTouchDevice && !isDragging && (hoveredBinId === bin.id || isSelected) && (
+                  <div
+                    className="absolute transition-opacity duration-150"
+                    style={{
+                      right: -22,
+                      top: -22,
+                      width: 44,
+                      height: 44,
+                      zIndex: 30,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      pointerEvents: 'auto',
+                    }}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleRotate(bin.id);
+                    }}
+                    title="Rotate bin (R)"
+                  >
+                    <div
+                      className="flex items-center justify-center transition-transform hover:scale-110"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        background: 'var(--selection-ring)',
+                        borderRadius: 'var(--radius-sm)',
+                        boxShadow: 'var(--shadow-md)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </div>
                   </div>
                 )}
               </div>
