@@ -4,6 +4,7 @@ import {
   waitForAppReady,
   drawBinOnGrid,
   getSidebar,
+  getInspector,
   waitForBinCount,
   clearAllStorage,
   resetViewport,
@@ -188,7 +189,7 @@ test.describe('Drawer Settings', () => {
 
     // If bin is larger than print bed, it should show a split warning in the inspector
     // The warning text varies, but the bin should show some indication
-    const inspector = page.locator('aside').last();
+    const inspector = getInspector(page);
     // Check for split warning (text mentions "split" or "printing")
     const splitWarning = inspector.getByText(/split|printing/i);
     // The split warning may or may not appear depending on actual bin size created

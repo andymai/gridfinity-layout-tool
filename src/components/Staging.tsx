@@ -403,6 +403,7 @@ export function Staging() {
   if (!hasBins && showAsDropTarget) {
     return (
       <div
+        data-stash
         ref={containerRef}
         className={`px-4 py-3 flex-shrink-0 border-t-2 border-dashed transition-colors ${
           isDropTarget
@@ -422,6 +423,7 @@ export function Staging() {
 
   return (
     <div
+      data-stash
       ref={containerRef}
       className={`px-4 py-3 flex-shrink-0 overflow-x-auto border-t-2 border-dashed transition-colors ${
         isDropTarget

@@ -4,6 +4,7 @@ import {
   waitForAppReady,
   drawBinOnGrid,
   getSidebar,
+  getInspector,
   waitForBinCount,
   waitForBinSelected,
   clearAllStorage,
@@ -151,8 +152,9 @@ test.describe('Print List', () => {
     await bin.click();
     await waitForBinSelected(bin);
 
-    // Move to stash via inspector button
-    const moveToStashButton = page.getByRole('button', { name: /stash|move to stash/i });
+    // Move to stash via inspector button (scope to inspector to avoid matching bin palette)
+    const inspector = getInspector(page);
+    const moveToStashButton = inspector.getByRole('button', { name: /to stash/i });
     if (await moveToStashButton.isVisible()) {
       await moveToStashButton.click();
 
