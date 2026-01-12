@@ -293,6 +293,12 @@ export const useLayoutStore = create<LayoutState>()(
           const totalLayerHeight = state.layout.layers.reduce((sum, l) => sum + l.height, 0);
           drawer.height = Math.max(totalLayerHeight, updates.height);
         }
+        if (updates.fractionalEdgeX !== undefined) {
+          drawer.fractionalEdgeX = updates.fractionalEdgeX;
+        }
+        if (updates.fractionalEdgeY !== undefined) {
+          drawer.fractionalEdgeY = updates.fractionalEdgeY;
+        }
 
         // Move out-of-bounds bins to staging
         state.layout.bins = state.layout.bins.map(bin => {
