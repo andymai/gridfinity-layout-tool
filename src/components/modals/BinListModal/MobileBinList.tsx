@@ -129,7 +129,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
         <div className="flex items-center gap-1">
           {/* Stats toggle */}
           <button
-            onClick={() => setOpenDropdown(openDropdown === 'stats' ? null : 'stats')}
+            onClick={(e) => { e.stopPropagation(); setOpenDropdown(openDropdown === 'stats' ? null : 'stats'); }}
             className={`w-10 h-10 flex items-center justify-center ${openDropdown === 'stats' ? 'text-accent' : 'text-content-secondary hover:text-content'}`}
             aria-label="Toggle stats"
             aria-pressed={openDropdown === 'stats'}
@@ -140,7 +140,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
           </button>
           {/* Export dropdown trigger */}
           <button
-            onClick={() => setOpenDropdown(openDropdown === 'export' ? null : 'export')}
+            onClick={(e) => { e.stopPropagation(); setOpenDropdown(openDropdown === 'export' ? null : 'export'); }}
             className={`w-10 h-10 flex items-center justify-center ${openDropdown === 'export' ? 'text-accent' : 'text-content-secondary hover:text-content'}`}
             aria-label="Export"
             aria-expanded={openDropdown === 'export'}
@@ -154,7 +154,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
 
       {/* Stats panel (collapsible) */}
       {openDropdown === 'stats' && (
-        <div className="px-4 py-3 border-b border-stroke bg-surface">
+        <div className="px-4 py-3 border-b border-stroke bg-surface" onClick={(e) => e.stopPropagation()}>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <div className="text-content-tertiary text-xs">Bin Types</div>
@@ -214,7 +214,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
 
       {/* Export dropdown */}
       {openDropdown === 'export' && (
-        <div className="px-4 py-3 border-b border-stroke bg-surface">
+        <div className="px-4 py-3 border-b border-stroke bg-surface" onClick={(e) => e.stopPropagation()}>
           <div className="text-xs text-content-tertiary mb-2">Download</div>
           <div className="flex gap-2 mb-3">
             <button
@@ -276,7 +276,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
         <div className="flex items-center gap-2 mb-2">
           {/* Sort dropdown */}
           <button
-            onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
+            onClick={(e) => { e.stopPropagation(); setOpenDropdown(openDropdown === 'sort' ? null : 'sort'); }}
             className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-surface-elevated border border-stroke rounded"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -321,7 +321,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
 
         {/* Sort dropdown content */}
         {openDropdown === 'sort' && (
-          <div className="mb-2 p-2 bg-surface border border-stroke rounded">
+          <div className="mb-2 p-2 bg-surface border border-stroke rounded" onClick={(e) => e.stopPropagation()}>
             {SORT_OPTIONS.map((option) => (
               <button
                 key={option.key}
