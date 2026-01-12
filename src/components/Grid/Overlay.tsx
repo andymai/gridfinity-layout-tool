@@ -188,7 +188,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
               boxShadow: '0 0 0 1px var(--overlay-light)',
               pointerEvents: 'none',
               borderRadius: '2px',
-              zIndex: 30,
+              zIndex: 50,
             }}
           />
         );
@@ -207,7 +207,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
             border: `2px solid ${color}`,
             pointerEvents: 'none',
             backgroundColor: `${color}20`,
-            zIndex: 31,
+            zIndex: 51,
           }}
         />
       );

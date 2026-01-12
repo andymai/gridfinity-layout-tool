@@ -1,9 +1,9 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '../../store';
-import { calcMaxGridUnits } from '../../constants';
+import { calcMaxGridUnits, STAGING_ID } from '../../constants';
 import { getLayerZStart } from '../../utils/collision';
-import { clamp } from '../../utils/validation';
+import { clamp, canPlaceBin } from '../../utils/validation';
 import { validateBinRotation } from '../../utils/binLocation';
 import type { Bin, Category, Layer, Layout } from '../../types';
 
@@ -39,6 +39,10 @@ export interface UseBinInspectorReturn {
   updateMultiCategory: (categoryId: string) => void;
   updateMultiHeight: (delta: number) => void;
   updateMultiClearance: (delta: number) => void;
+
+  // Layer movement
+  moveToLayer: (targetLayerId: string) => void;
+  updateMultiLayer: (targetLayerId: string) => void;
 
   // Actions
   requestDelete: () => void;
@@ -214,6 +218,107 @@ export function useBinInspector(): UseBinInspectorReturn {
     [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
   );
 
+  // Get toast store for notifications (moved up for use in layer movement)
+  const addToast = useToastStore((state) => state.addToast);
+
+  // Move single bin to a different layer
+  const moveToLayer = useCallback(
+    (targetLayerId: string) => {
+      if (!bin || bin.layerId === targetLayerId) return;
+      if (bin.layerId === STAGING_ID) {
+        addToast('Drag bin from stash to place it on a layer', 'info');
+        return;
+      }
+
+      const targetLayer = layout.layers.find(l => l.id === targetLayerId);
+      if (!targetLayer) return;
+
+      // Validate placement on target layer
+      const result = canPlaceBin(
+        { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: targetLayer.height },
+        targetLayerId,
+        layout,
+        bin.id
+      );
+
+      if (!result.valid) {
+        const reasons: Record<string, string> = {
+          collision: 'Another bin occupies this position',
+          blocked_zone: 'Blocked by a taller bin below',
+          exceeds_height: 'Bin would exceed drawer height',
+        };
+        addToast(reasons[result.reason ?? ''] || 'Cannot move bin here', 'error');
+        return;
+      }
+
+      execute(() => {
+        updateBin(bin.id, {
+          layerId: targetLayerId,
+          height: Math.max(bin.height, targetLayer.height),
+        });
+      });
+
+      addToast(`Moved to ${targetLayer.name}`, 'success');
+    },
+    [bin, layout, execute, updateBin, addToast]
+  );
+
+  // Move multiple bins to a different layer
+  const updateMultiLayer = useCallback(
+    (targetLayerId: string) => {
+      if (selectedBins.length === 0) return;
+
+      const targetLayer = layout.layers.find(l => l.id === targetLayerId);
+      if (!targetLayer) return;
+
+      // Filter out staging bins and bins already on target layer
+      const binsToMove = selectedBins.filter(
+        b => b.layerId !== STAGING_ID && b.layerId !== targetLayerId
+      );
+
+      if (binsToMove.length === 0) return;
+
+      // Check which bins can be moved (validate each)
+      const movable: Bin[] = [];
+      const blocked: Bin[] = [];
+
+      for (const b of binsToMove) {
+        const result = canPlaceBin(
+          { x: b.x, y: b.y, width: b.width, depth: b.depth, height: targetLayer.height },
+          targetLayerId,
+          layout,
+          b.id
+        );
+        if (result.valid) {
+          movable.push(b);
+        } else {
+          blocked.push(b);
+        }
+      }
+
+      if (movable.length === 0) {
+        addToast('No bins can be moved to this layer (collisions)', 'error');
+        return;
+      }
+
+      execute(() => {
+        for (const b of movable) {
+          updateBin(b.id, {
+            layerId: targetLayerId,
+            height: Math.max(b.height, targetLayer.height),
+          });
+        }
+      });
+
+      if (blocked.length > 0) {
+        addToast(`Moved ${movable.length} of ${binsToMove.length} bins (${blocked.length} blocked)`, 'info');
+      } else {
+        addToast(`Moved ${movable.length} bins to ${targetLayer.name}`, 'success');
+      }
+    },
+    [selectedBins, layout, execute, updateBin, addToast]
+  );
+
   // Request delete (shows confirmation)
   const requestDelete = useCallback(() => {
     if (selectedBins.length === 0) return;
@@ -265,9 +370,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     setSelectedBins([]);
   }, [setSelectedBins]);
 
-  // Get toast store for error messages
-  const addToast = useToastStore((state) => state.addToast);
-
   // Rotate bin (swap width and depth)
   // Returns true if rotation succeeded, false if blocked by collision
   const rotateBin = useCallback(() => {
@@ -302,6 +404,10 @@ export function useBinInspector(): UseBinInspectorReturn {
     updateMultiCategory,
     updateMultiHeight,
     updateMultiClearance,
+
+    // Layer movement
+    moveToLayer,
+    updateMultiLayer,
 
     // Actions
     requestDelete,

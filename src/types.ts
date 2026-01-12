@@ -67,6 +67,34 @@ export interface Rect3D extends Rect {
 
 export type ResizeHandle = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
+/** Handle placement mode for resize handles */
+export type HandlePlacement = 'internal' | 'external';
+
+/** Handle variant for styling (primary vs ghost) */
+export type HandleVariant = 'primary' | 'ghost';
+
+/** Position configuration for a single handle */
+export interface HandlePositionConfig {
+  left?: number | string;
+  right?: number | string;
+  top?: number | string;
+  bottom?: number | string;
+  width: number | string;
+  height: number | string;
+  minWidth?: number;
+  minHeight?: number;
+  cursor: string;
+  transform?: string;
+}
+
+/** Visual indicator configuration */
+export interface HandleVisualConfig {
+  width: number | string;
+  height: number | string;
+  minWidth?: number;
+  minHeight?: number;
+}
+
 export type Interaction =
   | { type: 'draw'; start: Coord; current: Coord }
   | { type: 'drag'; binIds: string[]; startCoord: Coord; currentCoord: Coord; valid: boolean; isOverGrid: boolean; clickOffset?: { x: number; y: number } }
