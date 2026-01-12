@@ -1,12 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, cleanup } from '@testing-library/react';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import { useLayoutStore } from '../../store/layout';
 import { useLibraryStore } from '../../store/library';
 import { useToastStore } from '../../store/toast';
-import { createDefaultLayout } from '../../constants';
+import { resetAllStores, setupFakeTimers } from '../testUtils';
 import * as storage from '../../utils/storage';
-import type { LayoutLibrary } from '../../types';
 
 // Mock the storage module
 vi.mock('../../utils/storage', () => ({
@@ -30,48 +29,32 @@ vi.mock('../../utils/storage', () => ({
 const SAVE_DEBOUNCE_MS = 1000;
 const TEST_LAYOUT_ID = 'test-layout-id';
 
-function createTestLibrary(): LayoutLibrary {
-  return {
-    version: '1.0',
-    activeLayoutId: TEST_LAYOUT_ID,
-    settings: {},
-    entries: [{
-      id: TEST_LAYOUT_ID,
-      name: 'Test Layout',
-      createdAt: Date.now(),
-      modifiedAt: Date.now(),
-      preview: {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
-        binCount: 0,
-        layerCount: 1,
-      },
-    }],
-  };
-}
-
 describe('useAutoSave', () => {
+  let timerUtils: ReturnType<typeof setupFakeTimers>;
+
   beforeEach(() => {
-    vi.useFakeTimers();
+    // Setup fake timers with Date.now() coordination
+    timerUtils = setupFakeTimers();
     vi.clearAllMocks();
 
-    // Reset stores
-    const defaultLayout = createDefaultLayout();
-    useLayoutStore.setState({ layout: defaultLayout, activeLayoutId: TEST_LAYOUT_ID });
+    // Reset all stores for isolation
+    resetAllStores();
+
+    // Set active layout ID for auto-save tests
+    useLayoutStore.setState({ activeLayoutId: TEST_LAYOUT_ID });
     useLibraryStore.setState({
-      library: createTestLibrary(),
       isLoaded: true,
       showLayoutManager: false,
     });
-    useToastStore.setState({ toasts: [] });
 
     // Clear localStorage
     localStorage.clear();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    cleanup(); // Unmount all renderHook instances
+    timerUtils.cleanup(); // Restore real timers
+    vi.restoreAllMocks();
   });
 
   describe('debounced save', () => {
@@ -83,7 +66,7 @@ describe('useAutoSave', () => {
 
       // Advance time past debounce
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       // Now save should have been called
@@ -99,7 +82,7 @@ describe('useAutoSave', () => {
 
       // Advance time to just before debounce
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS - 100);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS - 100);
       });
 
       expect(storage.saveLayoutById).not.toHaveBeenCalled();
@@ -110,7 +93,7 @@ describe('useAutoSave', () => {
 
       // Advance halfway
       act(() => {
-        vi.advanceTimersByTime(500);
+        timerUtils.advanceTime(500);
       });
 
       // Change layout
@@ -120,7 +103,7 @@ describe('useAutoSave', () => {
 
       // Advance another 500ms (would be 1000ms total from original)
       act(() => {
-        vi.advanceTimersByTime(500);
+        timerUtils.advanceTime(500);
       });
 
       // Save should NOT have been called (timer was reset)
@@ -128,7 +111,7 @@ describe('useAutoSave', () => {
 
       // Advance to complete the new debounce
       act(() => {
-        vi.advanceTimersByTime(500);
+        timerUtils.advanceTime(500);
       });
 
       // Now save should be called
@@ -143,17 +126,17 @@ describe('useAutoSave', () => {
         useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
       });
       act(() => {
-        vi.advanceTimersByTime(200);
+        timerUtils.advanceTime(200);
         useLayoutStore.getState().updateDrawer({ width: 14, depth: 12 });
       });
       act(() => {
-        vi.advanceTimersByTime(200);
+        timerUtils.advanceTime(200);
         useLayoutStore.getState().updateDrawer({ width: 16, depth: 14 });
       });
 
       // Advance past debounce from last change
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       // Should only save once with final values
@@ -170,7 +153,7 @@ describe('useAutoSave', () => {
 
       // Advance halfway
       act(() => {
-        vi.advanceTimersByTime(500);
+        timerUtils.advanceTime(500);
       });
 
       // Unmount before save
@@ -178,7 +161,7 @@ describe('useAutoSave', () => {
 
       // Advance past debounce
       act(() => {
-        vi.advanceTimersByTime(1000);
+        timerUtils.advanceTime(1000);
       });
 
       // Save should not have been called
@@ -190,7 +173,7 @@ describe('useAutoSave', () => {
 
       // Let save complete
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       expect(storage.saveLayoutById).toHaveBeenCalledTimes(1);
@@ -206,7 +189,7 @@ describe('useAutoSave', () => {
       renderHook(() => useAutoSave());
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       expect(storage.saveLayoutById).toHaveBeenCalledWith(TEST_LAYOUT_ID, layout);
@@ -232,7 +215,7 @@ describe('useAutoSave', () => {
       });
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       const savedLayout = (storage.saveLayoutById as ReturnType<typeof vi.fn>).mock.calls[0][1];
@@ -247,7 +230,7 @@ describe('useAutoSave', () => {
       renderHook(() => useAutoSave());
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       // Should not have called save
@@ -261,7 +244,7 @@ describe('useAutoSave', () => {
       renderHook(() => useAutoSave());
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       // Should not have called save for temporary shared preview
@@ -278,7 +261,7 @@ describe('useAutoSave', () => {
       renderHook(() => useAutoSave());
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       const toasts = useToastStore.getState().toasts;
@@ -295,7 +278,7 @@ describe('useAutoSave', () => {
       renderHook(() => useAutoSave());
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       const toasts = useToastStore.getState().toasts;
@@ -312,7 +295,7 @@ describe('useAutoSave', () => {
 
       // First save attempt
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       expect(useToastStore.getState().toasts).toHaveLength(1);
@@ -323,7 +306,7 @@ describe('useAutoSave', () => {
       });
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       // Should still only have one toast (not spamming)
@@ -342,7 +325,7 @@ describe('useAutoSave', () => {
 
       // First save fails
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       expect(useToastStore.getState().toasts).toHaveLength(1);
@@ -358,7 +341,7 @@ describe('useAutoSave', () => {
       });
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       // No new error toast
@@ -374,7 +357,7 @@ describe('useAutoSave', () => {
       });
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       // Should show error toast again (flag was reset)
@@ -389,7 +372,7 @@ describe('useAutoSave', () => {
       const { unmount: unmount2 } = renderHook(() => useAutoSave());
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       // Both instances should trigger save
@@ -414,7 +397,7 @@ describe('useAutoSave', () => {
       });
 
       act(() => {
-        vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
       });
 
       // Check that modifiedAt was updated

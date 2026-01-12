@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, cleanup } from '@testing-library/react';
 import { useCrossTabSync } from '../../hooks/useCrossTabSync';
 import { useLayoutStore } from '../../store/layout';
 import { useLibraryStore } from '../../store/library';
 import { useHistoryStore } from '../../store/history';
 import { useUIStore } from '../../store/ui';
+import { resetAllStores } from '../testUtils';
 import * as storage from '../../utils/storage';
 import * as validation from '../../utils/validation';
 
@@ -21,29 +22,16 @@ describe('useCrossTabSync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Reset stores to initial state
-    useLayoutStore.setState({
-      activeLayoutId: 'test-layout-id',
-      layout: {
-        name: 'Test',
-        drawer: { width: 10, depth: 8, height: 12 },
-        bins: [],
-        layers: [{ id: 'layer-1', name: 'Base', height: 1 }],
-        categories: [{ id: 'cat-1', name: 'Default', color: '#3B82F6' }],
-        printBedSize: 256,
-        gridUnitMm: 42,
-        heightUnitMm: 7,
-      },
-    });
+    // Reset all stores for isolation
+    resetAllStores();
 
-    useUIStore.setState({
-      activeLayerId: 'layer-1',
-      activeCategoryId: 'cat-1',
-      selectedBinIds: [],
-    });
+    // Set up test-specific state
+    useLayoutStore.setState({ activeLayoutId: 'test-layout-id' });
+    useUIStore.setState({ activeLayerId: 'layer-1' });
   });
 
   afterEach(() => {
+    cleanup(); // Unmount all renderHook instances
     vi.restoreAllMocks();
   });
 
