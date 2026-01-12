@@ -11,6 +11,7 @@ export interface UserSettings {
   defaultDrawerWidth: number;
   defaultDrawerDepth: number;
   defaultDrawerHeight: number;
+  defaultLayerHeight: number; // Default height for new layers (in height units)
   defaultPrintBedSize: number;
   defaultGridUnitMm: number;
   defaultHeightUnitMm: number;
@@ -30,6 +31,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   defaultDrawerWidth: 10,
   defaultDrawerDepth: 8,
   defaultDrawerHeight: 12,
+  defaultLayerHeight: 3, // Default to 3 (current hardcoded behavior)
   defaultPrintBedSize: 256,
   defaultGridUnitMm: 42,
   defaultHeightUnitMm: 7,
@@ -82,7 +84,7 @@ interface SettingsState {
   resetSettings: () => void;
 
   // Save current layout defaults from the current layout
-  saveCurrentAsDefaults: (drawer: { width: number; depth: number; height: number }, printBedSize: number, gridUnitMm: number, heightUnitMm: number) => void;
+  saveCurrentAsDefaults: (drawer: { width: number; depth: number; height: number }, printBedSize: number, gridUnitMm: number, heightUnitMm: number, layerHeight: number) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()((set) => ({
@@ -110,13 +112,14 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
     set({ settings: newSettings });
   },
 
-  saveCurrentAsDefaults: (drawer, printBedSize, gridUnitMm, heightUnitMm) => {
+  saveCurrentAsDefaults: (drawer, printBedSize, gridUnitMm, heightUnitMm, layerHeight) => {
     set((state) => {
       const newSettings = {
         ...state.settings,
         defaultDrawerWidth: drawer.width,
         defaultDrawerDepth: drawer.depth,
         defaultDrawerHeight: drawer.height,
+        defaultLayerHeight: layerHeight,
         defaultPrintBedSize: printBedSize,
         defaultGridUnitMm: gridUnitMm,
         defaultHeightUnitMm: heightUnitMm,

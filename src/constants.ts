@@ -130,6 +130,7 @@ export interface LayoutSettings {
   defaultDrawerWidth: number;
   defaultDrawerDepth: number;
   defaultDrawerHeight: number;
+  defaultLayerHeight: number;
   defaultPrintBedSize: number;
   defaultGridUnitMm: number;
   defaultHeightUnitMm: number;
@@ -148,7 +149,7 @@ export const createLayoutWithSettings = (settings: LayoutSettings): Layout => ({
   heightUnitMm: settings.defaultHeightUnitMm,
   categories: [...DEFAULT_CATEGORIES],
   layers: [
-    { id: generateId(), name: 'Layer 1', height: 3 },
+    { id: generateId(), name: 'Layer 1', height: Math.min(settings.defaultDrawerHeight, settings.defaultLayerHeight) },
   ],
   bins: [],
 });

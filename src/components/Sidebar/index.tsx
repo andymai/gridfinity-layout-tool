@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useSettingsStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
@@ -52,12 +52,22 @@ export function Sidebar() {
   const settings = useSettingsStore((state) => state.settings);
   const saveCurrentAsDefaults = useSettingsStore((state) => state.saveCurrentAsDefaults);
 
+  // Get active layer's height to save as default
+  const activeLayerId = useUIStore((state) => state.activeLayerId);
+  const layers = useLayoutStore((state) => state.layout.layers);
+  const activeLayer = useMemo(
+    () => layers.find((l) => l.id === activeLayerId),
+    [layers, activeLayerId]
+  );
+
   const handleSaveDefaults = () => {
+    const layerHeight = activeLayer?.height ?? 3;
     saveCurrentAsDefaults(
       { width: drawerWidth, depth: drawerDepth, height: drawerHeight },
       printBedSize,
       gridUnitMm,
-      heightUnitMm
+      heightUnitMm,
+      layerHeight
     );
     setShowSaveDefaultsConfirm(false);
   };
@@ -323,12 +333,13 @@ export function Sidebar() {
 
             {/* Default Preferences */}
             <div className="px-4 py-4 border-t border-stroke-subtle">
-              <CollapsibleSection title="Default Preferences" variant="default" defaultExpanded={false}>
+              <CollapsibleSection title="Default Preferences" variant="default" defaultExpanded={true}>
                 <div className="text-xs text-content-tertiary mb-2">
                   New layouts will use:
                 </div>
                 <div className="text-xs text-content-secondary space-y-1 mb-3">
                   <div>Drawer: {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×{settings.defaultDrawerHeight}u</div>
+                  <div>Layer height: {settings.defaultLayerHeight}u</div>
                   <div>Print bed: {settings.defaultPrintBedSize}mm</div>
                   <div>Grid unit: {settings.defaultGridUnitMm}mm</div>
                 </div>
@@ -383,7 +394,7 @@ export function Sidebar() {
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}
         title="Save as Defaults"
-        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawerWidth}×${drawerDepth}×${drawerHeight}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
+        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawerWidth}×${drawerDepth}×${drawerHeight}u\nLayer height: ${activeLayer?.height ?? 3}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
         confirmText="Save"
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}

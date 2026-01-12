@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
@@ -25,8 +25,17 @@ export function MobileSettingsPanel() {
   const settings = useSettingsStore(state => state.settings);
   const saveCurrentAsDefaults = useSettingsStore(state => state.saveCurrentAsDefaults);
 
+  // Get active layer's height to save as default
+  const activeLayerId = useUIStore((state) => state.activeLayerId);
+  const layers = useLayoutStore((state) => state.layout.layers);
+  const activeLayer = useMemo(
+    () => layers.find((l) => l.id === activeLayerId),
+    [layers, activeLayerId]
+  );
+
   const handleSaveDefaults = () => {
-    saveCurrentAsDefaults(layout.drawer, layout.printBedSize, layout.gridUnitMm, layout.heightUnitMm);
+    const layerHeight = activeLayer?.height ?? 3;
+    saveCurrentAsDefaults(layout.drawer, layout.printBedSize, layout.gridUnitMm, layout.heightUnitMm, layerHeight);
     setShowSaveDefaultsConfirm(false);
   };
 
@@ -247,6 +256,9 @@ export function MobileSettingsPanel() {
             Drawer: {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×{settings.defaultDrawerHeight}u
           </div>
           <div className="text-sm text-content-secondary">
+            Layer height: {settings.defaultLayerHeight}u
+          </div>
+          <div className="text-sm text-content-secondary">
             Print bed: {settings.defaultPrintBedSize}mm
           </div>
           <div className="text-sm text-content-secondary">
@@ -292,7 +304,7 @@ export function MobileSettingsPanel() {
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}
         title="Save as Defaults"
-        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${layout.drawer.width}×${layout.drawer.depth}×${layout.drawer.height}u\nPrint bed: ${layout.printBedSize}mm\nGrid unit: ${layout.gridUnitMm}mm`}
+        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${layout.drawer.width}×${layout.drawer.depth}×${layout.drawer.height}u\nLayer height: ${activeLayer?.height ?? 3}u\nPrint bed: ${layout.printBedSize}mm\nGrid unit: ${layout.gridUnitMm}mm`}
         confirmText="Save"
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
