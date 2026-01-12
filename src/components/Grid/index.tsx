@@ -524,6 +524,7 @@ export function Grid() {
         {/* Keep mounted once shown to avoid WebGL context issues with StrictMode */}
         {isMobile && hasEverShownPreview && (
           <div
+            data-3d-preview
             className={`w-full flex-1 min-h-0 bg-surface-secondary border-b border-stroke-subtle overflow-hidden ${!showIsometricPreview ? 'hidden' : ''}`}
           >
             <PanelErrorBoundary panelName="3D Preview">
@@ -543,6 +544,7 @@ export function Grid() {
           {/* Desktop toolbar */}
           {!isMobile && (
         <div
+          data-grid-toolbar
           ref={toolbarRef}
           className="flex items-center justify-between px-4 py-[7.5px] bg-surface-secondary border-b border-stroke-subtle"
         >
@@ -1104,6 +1106,7 @@ export function Grid() {
       {/* Keep mounted once shown to avoid WebGL context issues with StrictMode */}
       {!isMobile && hasEverShownPreview && (
         <div
+          data-3d-preview
           className={`w-1/2 h-full bg-surface-secondary overflow-hidden ${!showIsometricPreview ? 'hidden' : ''}`}
         >
           <PanelErrorBoundary panelName="3D Preview">

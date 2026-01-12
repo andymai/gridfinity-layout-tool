@@ -7,6 +7,7 @@ import {
   waitForCanvasHidden,
   clearAllStorage,
   resetViewport,
+  get3DExpanded,
 } from './fixtures';
 
 test.describe('3D Preview', () => {
@@ -77,10 +78,8 @@ test.describe('3D Preview', () => {
     // Press Space to expand (should open modal/fullscreen view)
     await page.keyboard.press('Space');
 
-    // Look for expanded view indicators (modal overlay or larger container)
-    const expandedView = page.locator('.fixed.inset-0').filter({
-      has: page.locator('canvas')
-    });
+    // Look for expanded view (uses data-3d-expanded attribute)
+    const expandedView = get3DExpanded(page);
 
     // Either the expanded view is visible, or canvas got larger
     const hasExpandedView = await expandedView.isVisible().catch(() => false);
@@ -106,8 +105,8 @@ test.describe('3D Preview', () => {
     // Expand with Space
     await page.keyboard.press('Space');
 
-    // Wait for expanded view to appear
-    const expandedView = page.locator('.fixed.inset-0').filter({ has: page.locator('canvas') });
+    // Wait for expanded view to appear (uses data-3d-expanded attribute)
+    const expandedView = get3DExpanded(page);
     await expandedView.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {});
 
     // Press Escape to close expanded view

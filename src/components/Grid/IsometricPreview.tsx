@@ -736,6 +736,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       )}
       {/* Preview wrapper - changes positioning based on expanded state */}
       <div
+        data-3d-expanded={isPreviewExpanded || undefined}
         className={isPreviewExpanded
           ? "fixed inset-0 z-50 flex items-center justify-center"
           : "contents"

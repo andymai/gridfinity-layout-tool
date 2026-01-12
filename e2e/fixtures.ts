@@ -244,7 +244,7 @@ export async function fillLayerWithSize(page: Page, width: number, depth: number
   await selectBinSize(page, width, depth);
 
   // Fill button is in the sidebar
-  const sidebar = page.locator('aside').first();
+  const sidebar = getSidebar(page);
   const fillButton = sidebar.getByRole('button', { name: new RegExp(`fill with ${width}×${depth}`, 'i') });
   await fillButton.click();
 
@@ -254,18 +254,58 @@ export async function fillLayerWithSize(page: Page, width: number, depth: number
 
 /**
  * Get the right panel (inspector).
- * More explicit than .last() - explicitly selects the second aside element.
+ * Uses data-inspector attribute for robust selection.
  */
 export function getInspector(page: Page): Locator {
-  return page.locator('aside').nth(1);
+  return page.locator('[data-inspector]');
 }
 
 /**
  * Get the left sidebar.
- * More explicit than .first() - explicitly selects the first aside element.
+ * Uses data-sidebar attribute for robust selection.
  */
 export function getSidebar(page: Page): Locator {
-  return page.locator('aside').nth(0);
+  return page.locator('[data-sidebar]');
+}
+
+/**
+ * Get the stash container.
+ * Uses data-stash attribute for robust selection.
+ */
+export function getStash(page: Page): Locator {
+  return page.locator('[data-stash]');
+}
+
+/**
+ * Get the grid toolbar.
+ * Uses data-grid-toolbar attribute for robust selection.
+ */
+export function getGridToolbar(page: Page): Locator {
+  return page.locator('[data-grid-toolbar]');
+}
+
+/**
+ * Get the 3D preview container.
+ * Uses data-3d-preview attribute for robust selection.
+ */
+export function get3DPreview(page: Page): Locator {
+  return page.locator('[data-3d-preview]');
+}
+
+/**
+ * Get the expanded 3D preview.
+ * Uses data-3d-expanded attribute for robust selection.
+ */
+export function get3DExpanded(page: Page): Locator {
+  return page.locator('[data-3d-expanded]');
+}
+
+/**
+ * Get the print list section.
+ * Uses data-print-list attribute for robust selection.
+ */
+export function getPrintList(page: Page): Locator {
+  return page.locator('[data-print-list]');
 }
 
 // Mobile viewport configurations
@@ -276,17 +316,18 @@ export const TABLET_VIEWPORT = { width: 768, height: 1024 };
  * Wait for mobile layout to be ready (bottom nav visible).
  */
 export async function waitForMobileAppReady(page: Page) {
-  // Wait for the bottom nav bar that's unique to mobile (has .bottom-nav class)
-  await page.waitForSelector('nav.bottom-nav', { timeout: 10000 });
+  // Wait for the bottom nav bar that's unique to mobile
+  await page.waitForSelector('[data-bottom-nav]', { timeout: 10000 });
   // Wait for grid to be rendered
   await page.waitForSelector('[role="application"]', { timeout: 10000 });
 }
 
 /**
  * Get the mobile bottom navigation bar.
+ * Uses data-bottom-nav attribute for robust selection.
  */
 export function getBottomNav(page: Page): Locator {
-  return page.locator('nav.bottom-nav');
+  return page.locator('[data-bottom-nav]');
 }
 
 /**
