@@ -49,8 +49,17 @@ export function MobileSettingsPanel() {
 
   const handleDrawerChange = (field: 'width' | 'depth' | 'height', delta: number) => {
     const current = layout.drawer[field];
-    const newValue = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, current + delta));
+    const minVal = field === 'height' ? 1 : 0.5;
+    const newValue = Math.max(minVal, Math.min(CONSTRAINTS.GRID_MAX, current + delta));
     execute(() => updateDrawer({ [field]: newValue }));
+  };
+
+  const handleDrawerWidthChange = (width: number) => {
+    execute(() => updateDrawer({ width: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width)) }));
+  };
+
+  const handleDrawerDepthChange = (depth: number) => {
+    execute(() => updateDrawer({ depth: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth)) }));
   };
 
   // Half-bin mode toggle with validation
@@ -103,31 +112,15 @@ export function MobileSettingsPanel() {
             <label className="block text-sm mb-1 text-content-tertiary">
               Width
             </label>
-            <div className="flex items-center">
-              <button
-                onClick={() => handleDrawerChange('width', -1)}
-                disabled={layout.drawer.width <= 1}
-                className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
-                aria-label="Decrease width"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                </svg>
-              </button>
-              <span className="flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content">
-                {layout.drawer.width}
-              </span>
-              <button
-                onClick={() => handleDrawerChange('width', 1)}
-                disabled={layout.drawer.width >= CONSTRAINTS.GRID_MAX}
-                className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
-                aria-label="Increase width"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
-            </div>
+            <DeferredNumberInput
+              value={layout.drawer.width}
+              onChange={handleDrawerWidthChange}
+              min={0.5}
+              max={CONSTRAINTS.GRID_MAX}
+              step={0.5}
+              className="input w-full h-12 text-center font-semibold tabular-nums"
+              aria-label="Drawer width in grid units"
+            />
           </div>
 
           {/* Depth */}
@@ -135,31 +128,15 @@ export function MobileSettingsPanel() {
             <label className="block text-sm mb-1 text-content-tertiary">
               Depth
             </label>
-            <div className="flex items-center">
-              <button
-                onClick={() => handleDrawerChange('depth', -1)}
-                disabled={layout.drawer.depth <= 1}
-                className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
-                aria-label="Decrease depth"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                </svg>
-              </button>
-              <span className="flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content">
-                {layout.drawer.depth}
-              </span>
-              <button
-                onClick={() => handleDrawerChange('depth', 1)}
-                disabled={layout.drawer.depth >= CONSTRAINTS.GRID_MAX}
-                className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
-                aria-label="Increase depth"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
-            </div>
+            <DeferredNumberInput
+              value={layout.drawer.depth}
+              onChange={handleDrawerDepthChange}
+              min={0.5}
+              max={CONSTRAINTS.GRID_MAX}
+              step={0.5}
+              className="input w-full h-12 text-center font-semibold tabular-nums"
+              aria-label="Drawer depth in grid units"
+            />
           </div>
         </div>
 

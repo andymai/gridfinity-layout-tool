@@ -91,11 +91,11 @@ export function Sidebar() {
   };
 
   const handleDrawerWidthChange = (width: number) => {
-    updateDrawer({ width: Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, width)) });
+    updateDrawer({ width: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width)) });
   };
 
   const handleDrawerDepthChange = (depth: number) => {
-    updateDrawer({ depth: Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, depth)) });
+    updateDrawer({ depth: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth)) });
   };
 
   // Half-bin mode toggle with validation
@@ -186,67 +186,35 @@ export function Sidebar() {
             <div className="mt-auto px-4 py-4">
               <CollapsibleSection title="Grid Size" variant="default">
                 <div className="text-xs text-content-secondary space-y-2">
-                  {/* Width / Depth / Height in compact grid with minimal steppers */}
+                  {/* Width / Depth / Height in compact grid */}
                   <div className="grid grid-cols-3 gap-1.5">
                     <div>
-                      <label className="block text-content-tertiary mb-1" title="Number of grid units wide">
+                      <label className="block text-content-tertiary mb-1" title="Number of grid units wide (supports 0.5 increments)">
                         Width
                       </label>
-                      <div className="flex items-center h-6">
-                        <button
-                          onClick={() => handleDrawerWidthChange(drawerWidth - 1)}
-                          disabled={drawerWidth <= 1}
-                          className="h-full px-1 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
-                          aria-label="Decrease width"
-                        >
-                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" d="M20 12H4" />
-                          </svg>
-                        </button>
-                        <span className="flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs">
-                          {drawerWidth}
-                        </span>
-                        <button
-                          onClick={() => handleDrawerWidthChange(drawerWidth + 1)}
-                          disabled={drawerWidth >= CONSTRAINTS.GRID_MAX}
-                          className="h-full px-1 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
-                          aria-label="Increase width"
-                        >
-                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" d="M12 4v16m8-8H4" />
-                          </svg>
-                        </button>
-                      </div>
+                      <DeferredNumberInput
+                        value={drawerWidth}
+                        onChange={handleDrawerWidthChange}
+                        min={0.5}
+                        max={CONSTRAINTS.GRID_MAX}
+                        step={0.5}
+                        className="input w-full h-6 text-xs text-center tabular-nums"
+                        aria-label="Drawer width in grid units"
+                      />
                     </div>
                     <div>
-                      <label className="block text-content-tertiary mb-1" title="Number of grid units deep">
+                      <label className="block text-content-tertiary mb-1" title="Number of grid units deep (supports 0.5 increments)">
                         Depth
                       </label>
-                      <div className="flex items-center h-6">
-                        <button
-                          onClick={() => handleDrawerDepthChange(drawerDepth - 1)}
-                          disabled={drawerDepth <= 1}
-                          className="h-full px-1 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
-                          aria-label="Decrease depth"
-                        >
-                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" d="M20 12H4" />
-                          </svg>
-                        </button>
-                        <span className="flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs">
-                          {drawerDepth}
-                        </span>
-                        <button
-                          onClick={() => handleDrawerDepthChange(drawerDepth + 1)}
-                          disabled={drawerDepth >= CONSTRAINTS.GRID_MAX}
-                          className="h-full px-1 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
-                          aria-label="Increase depth"
-                        >
-                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" d="M12 4v16m8-8H4" />
-                          </svg>
-                        </button>
-                      </div>
+                      <DeferredNumberInput
+                        value={drawerDepth}
+                        onChange={handleDrawerDepthChange}
+                        min={0.5}
+                        max={CONSTRAINTS.GRID_MAX}
+                        step={0.5}
+                        className="input w-full h-6 text-xs text-center tabular-nums"
+                        aria-label="Drawer depth in grid units"
+                      />
                     </div>
                     <div>
                       <label className="block text-content-tertiary mb-1" title="Maximum height in units">

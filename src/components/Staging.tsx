@@ -103,6 +103,7 @@ export function Staging() {
   const cellSize = Math.round(BASE_CELL_SIZE * zoom);
   const gap = 1;
   const gridWidth = layout.drawer.width; // Match main drawer width
+  const hasFractionalWidth = layout.drawer.width % 1 !== 0;
 
   // Pack bins and calculate required height
   const packedBins = useMemo(() => {
@@ -444,6 +445,25 @@ export function Staging() {
             );
           })}
         </div>
+
+        {/* Fractional width edge line for drawer boundary */}
+        {hasFractionalWidth && (() => {
+          const fractionalWidthPart = gridWidth - Math.floor(gridWidth); // e.g., 0.5
+          const integerCellsWidth = Math.floor(gridWidth) * (cellSize + gap);
+          const xPos = gap + integerCellsWidth + (fractionalWidthPart * (cellSize + gap)) / 2;
+          return (
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                left: xPos,
+                top: gap,
+                width: 1,
+                height: gridHeight * (cellSize + gap) - gap,
+                backgroundColor: 'var(--grid-line-half)',
+              }}
+            />
+          );
+        })()}
       </div>
 
       {/* Clear confirmation dialog */}

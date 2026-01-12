@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
@@ -22,12 +22,13 @@ export function ActiveLayerPanel() {
   const [rotated, setRotated] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const { layout, fillLayer, fillLayerGaps, clearLayer } = useLayoutStore(
+  const { layout, fillLayer, fillLayerGaps, clearLayer, addBin } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
       fillLayer: state.fillLayer,
       fillLayerGaps: state.fillLayerGaps,
       clearLayer: state.clearLayer,
+      addBin: state.addBin,
     }))
   );
 
@@ -108,6 +109,28 @@ export function ActiveLayerPanel() {
     }, 0);
   };
 
+  // Add bin directly to stash (Shift+click on size button)
+  const handleAddToStash = useCallback((w: number, d: number) => {
+    const layer = layout.layers.find(l => l.id === activeLayerId);
+    if (!layer) return;
+
+    execute(() => {
+      addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: w,
+        depth: d,
+        height: layer.height,
+        category: activeCategoryId,
+        label: '',
+        notes: '',
+      });
+    });
+
+    addToast(`Added ${w}×${d} to stash`, 'success');
+  }, [activeLayerId, activeCategoryId, layout.layers, execute, addBin, addToast]);
+
   if (!activeLayer) return null;
 
   // Helper to render a size button with proportional preview
@@ -119,10 +142,16 @@ export function ActiveLayerPanel() {
     const previewHeight = d * 4;
     return (
       <button
-        onClick={() => togglePaintSize({ width: w, depth: d })}
+        onClick={(e) => {
+          if (e.shiftKey) {
+            handleAddToStash(w, d);
+          } else {
+            togglePaintSize({ width: w, depth: d });
+          }
+        }}
         className={`flex flex-col items-center justify-end gap-1 h-[60px] p-1.5 rounded transition-colors ${isActive ? 'bg-accent/20' : 'hover:bg-surface-hover'} ${className}`}
-        aria-label={`${isActive ? 'Deselect' : 'Select'} ${w}×${d} for painting`}
-        title={`Click to paint ${w}×${d} bins`}
+        aria-label={`${isActive ? 'Deselect' : 'Select'} ${w}×${d} for painting. Shift+click to add to stash.`}
+        title={`Click to paint ${w}×${d} bins. Shift+click to add to stash.`}
       >
         <div
           className="rounded-[1px]"
@@ -144,7 +173,7 @@ export function ActiveLayerPanel() {
     <div>
       <CollapsibleSection title="Bin Palette" variant="default">
         <p className="text-xs text-content-tertiary mb-3">
-          Select a size, then click or drag on grid
+          Select a size, then click or drag on grid. <span className="text-content-disabled">Shift+click to add to stash.</span>
         </p>
 
         {/* Squares section */}
