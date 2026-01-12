@@ -88,6 +88,7 @@ describe('createLayoutWithSettings', () => {
       defaultDrawerWidth: 20,
       defaultDrawerDepth: 15,
       defaultDrawerHeight: 10,
+      defaultLayerHeight: 5,
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
@@ -108,6 +109,7 @@ describe('createLayoutWithSettings', () => {
       defaultDrawerWidth: 20,
       defaultDrawerDepth: 15,
       defaultDrawerHeight: 10,
+      defaultLayerHeight: 5,
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
@@ -124,6 +126,7 @@ describe('createLayoutWithSettings', () => {
       defaultDrawerWidth: 20,
       defaultDrawerDepth: 15,
       defaultDrawerHeight: 10,
+      defaultLayerHeight: 5,
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
@@ -135,11 +138,46 @@ describe('createLayoutWithSettings', () => {
     expect(layout.layers[0].name).toBe('Layer 1');
   });
 
+  it('uses defaultLayerHeight for initial layer', () => {
+    const settings = {
+      defaultDrawerWidth: 20,
+      defaultDrawerDepth: 15,
+      defaultDrawerHeight: 20,
+      defaultLayerHeight: 5,
+      defaultPrintBedSize: 300,
+      defaultGridUnitMm: 50,
+      defaultHeightUnitMm: 10,
+    };
+
+    const layout = createLayoutWithSettings(settings);
+
+    expect(layout.layers).toHaveLength(1);
+    expect(layout.layers[0].height).toBe(5);
+  });
+
+  it('clamps initial layer height to drawer height', () => {
+    const settings = {
+      defaultDrawerWidth: 20,
+      defaultDrawerDepth: 15,
+      defaultDrawerHeight: 4,  // Drawer height is 4
+      defaultLayerHeight: 10,  // But default is 10
+      defaultPrintBedSize: 300,
+      defaultGridUnitMm: 50,
+      defaultHeightUnitMm: 10,
+    };
+
+    const layout = createLayoutWithSettings(settings);
+
+    // Should be clamped to drawer height
+    expect(layout.layers[0].height).toBe(4);
+  });
+
   it('starts with no bins', () => {
     const settings = {
       defaultDrawerWidth: 20,
       defaultDrawerDepth: 15,
       defaultDrawerHeight: 10,
+      defaultLayerHeight: 5,
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
