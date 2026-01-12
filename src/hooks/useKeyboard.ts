@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction, useToastStore } from '../store';
 import { canPlaceBin } from '../utils/validation';
 import { validateRotation } from '../utils/rotation';
+import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '../constants';
 import { useGridNavigation } from './useGridNavigation';
 
@@ -307,10 +308,23 @@ export function useKeyboard() {
       return;
     }
 
-    // H key - toggle half-bin mode
+    // H key - toggle half-bin mode (with validation)
     if (key.toLowerCase() === SHORTCUTS.HALF_BIN_TOGGLE && !ctrlOrMeta) {
       e.preventDefault();
-      toggleHalfBinMode();
+
+      const result = toggleHalfBinMode();
+
+      if (!result.success) {
+        // Validation failed - show toast notification
+        const validationResult = validateHalfBinModeToggle(layout, false);
+        if (validationResult.violation) {
+          addToast(
+            `Cannot disable half-bin mode: ${validationResult.violation.count} bin${validationResult.violation.count !== 1 ? 's have' : ' has'} fractional dimensions. Move them to staging first.`,
+            'error'
+          );
+        }
+      }
+
       return;
     }
 

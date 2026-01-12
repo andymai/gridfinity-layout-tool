@@ -28,6 +28,8 @@ export function Header({ onHelpClick }: HeaderProps) {
     }))
   );
 
+  const halfBinMode = useUIStore((state) => state.halfBinMode);
+
   const { leftPanelCollapsed, rightPanelCollapsed, toggleLeftPanel, toggleRightPanel } = useUIStore(
     useShallow((state) => ({
       leftPanelCollapsed: state.leftPanelCollapsed,
@@ -113,6 +115,20 @@ export function Header({ onHelpClick }: HeaderProps) {
           >
             {layout.name}
           </button>
+        )}
+
+        {/* Half-bin mode indicator badge */}
+        {halfBinMode && (
+          <div
+            className="px-2 py-1 text-xs font-medium rounded-md bg-accent/10 text-accent border border-accent/20 flex items-center gap-1.5"
+            title="Half-bin mode is active: 0.5 unit precision enabled (press H to toggle)"
+          >
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5z" />
+            </svg>
+            <span className="hidden sm:inline">Half-Bin Mode</span>
+            <span className="sm:hidden">½-bin</span>
+          </div>
         )}
 
         {/* Layout Manager Button */}

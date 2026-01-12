@@ -1,7 +1,10 @@
 import { useState, useMemo } from 'react';
-import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore } from '../../store';
-import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
+import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore, useToastStore } from '../../store';
+import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../../constants';
+import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
+import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 
 /**
@@ -9,18 +12,23 @@ import { DeferredNumberInput } from '../DeferredNumberInput';
  */
 export function MobileSettingsPanel() {
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
+  const [showHalfBinBlockedModal, setShowHalfBinBlockedModal] = useState(false);
+  const [halfBinViolation, setHalfBinViolation] = useState<HalfBinConstraintViolation | null>(null);
 
   const layout = useLayoutStore(state => state.layout);
   const setGridUnitMm = useLayoutStore(state => state.setGridUnitMm);
   const setHeightUnitMm = useLayoutStore(state => state.setHeightUnitMm);
   const setPrintBedSize = useLayoutStore(state => state.setPrintBedSize);
   const updateDrawer = useLayoutStore(state => state.updateDrawer);
+  const updateBin = useLayoutStore(state => state.updateBin);
 
   const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
   const { execute } = useUndoableAction();
 
   const halfBinMode = useUIStore(state => state.halfBinMode);
   const toggleHalfBinMode = useUIStore(state => state.toggleHalfBinMode);
+  const setHalfBinMode = useUIStore(state => state.setHalfBinMode);
+  const addToast = useToastStore(state => state.addToast);
 
   const settings = useSettingsStore(state => state.settings);
   const saveCurrentAsDefaults = useSettingsStore(state => state.saveCurrentAsDefaults);
@@ -43,6 +51,42 @@ export function MobileSettingsPanel() {
     const current = layout.drawer[field];
     const newValue = Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, current + delta));
     execute(() => updateDrawer({ [field]: newValue }));
+  };
+
+  // Half-bin mode toggle with validation
+  const handleHalfBinToggle = () => {
+    const result = toggleHalfBinMode();
+
+    if (!result.success) {
+      // Validation failed - show blocking modal
+      const validationResult = validateHalfBinModeToggle(layout, false);
+      if (validationResult.violation) {
+        setHalfBinViolation(validationResult.violation);
+        setShowHalfBinBlockedModal(true);
+      }
+    }
+  };
+
+  // Remediate fractional bins by moving them to staging
+  const handleRemediate = async () => {
+    if (!halfBinViolation) return;
+
+    await execute(() => {
+      // Move all fractional bins to staging
+      halfBinViolation.binIds.forEach(binId => {
+        updateBin(binId, { layerId: STAGING_ID });
+      });
+    });
+
+    // Now disable half-bin mode (forced, bypassing validation)
+    setHalfBinMode(false);
+
+    // Close modal and show success message
+    setShowHalfBinBlockedModal(false);
+    addToast(
+      `Moved ${halfBinViolation.count} bin${halfBinViolation.count !== 1 ? 's' : ''} to staging`,
+      'success'
+    );
   };
 
   return (
@@ -234,7 +278,7 @@ export function MobileSettingsPanel() {
             <input
               type="checkbox"
               checked={halfBinMode}
-              onChange={toggleHalfBinMode}
+              onChange={handleHalfBinToggle}
               className="w-5 h-5 rounded accent-accent"
               aria-label="Toggle half-bin mode"
             />
@@ -309,6 +353,15 @@ export function MobileSettingsPanel() {
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />
+
+      {halfBinViolation && (
+        <HalfBinModeBlockedModal
+          isOpen={showHalfBinBlockedModal}
+          violation={halfBinViolation}
+          onClose={() => setShowHalfBinBlockedModal(false)}
+          onRemediate={handleRemediate}
+        />
+      )}
     </div>
   );
 }
