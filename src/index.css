@@ -281,8 +281,10 @@
   /* Exception for compact checkboxes in dense contexts (tables, lists) */
   input[type="checkbox"].compact-checkbox,
   input[type="radio"].compact-checkbox {
-    min-height: auto;
-    min-width: auto;
+    min-height: 1rem !important;
+    min-width: 1rem !important;
+    height: 1rem;
+    width: 1rem;
   }
 
   /* Stack form elements */

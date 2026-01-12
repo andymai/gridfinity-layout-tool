@@ -183,7 +183,7 @@ export function BinListFilters({
             type="checkbox"
             checked={filters.groupByCategory}
             onChange={onToggleGroupByCategory}
-            className="rounded border-stroke focus:ring-accent"
+            className="compact-checkbox rounded border-stroke focus:ring-accent"
           />
           <span className="text-sm text-content-secondary">Group by category</span>
         </label>
