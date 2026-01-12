@@ -28,6 +28,8 @@ export function CollapsibleSection({
   variant = 'default',
 }: CollapsibleSectionProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  // Track if user has toggled - only animate after first interaction to prevent CLS
+  const [hasToggled, setHasToggled] = useState(false);
   const contentId = useId();
 
   const headerClass = variant === 'small'
@@ -40,7 +42,10 @@ export function CollapsibleSection({
         <button
           type="button"
           className="flex items-center gap-2 bg-transparent hover:opacity-80 transition-opacity"
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => {
+            setHasToggled(true);
+            setExpanded(!expanded);
+          }}
           aria-expanded={expanded}
           aria-controls={contentId}
         >
@@ -59,7 +64,9 @@ export function CollapsibleSection({
       </div>
       <div
         id={contentId}
-        className={`transition-all duration-200 overflow-hidden ${
+        className={`overflow-hidden ${
+          hasToggled ? 'transition-all duration-200' : ''
+        } ${
           expanded ? 'opacity-100 max-h-[2000px] mt-3' : 'opacity-0 max-h-0'
         }`}
       >
