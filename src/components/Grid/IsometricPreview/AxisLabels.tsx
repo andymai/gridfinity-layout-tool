@@ -1,10 +1,13 @@
 import { useMemo, useEffect } from 'react';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
+import type { FractionalEdge } from '../../../types';
 
 interface AxisLabelsProps {
   width: number;
   depth: number;
+  fractionalEdgeX?: FractionalEdge;
+  fractionalEdgeY?: FractionalEdge;
 }
 
 const LABEL_COLOR = '#ffffff';
@@ -20,55 +23,82 @@ const TICK_OPACITY = 0.3;
  * X-axis (columns) along the front edge, Y-axis (rows) along the left edge.
  * Technical drawing style with small tick marks.
  * Includes fractional edge labels when drawer has fractional dimensions.
+ * Respects fractionalEdgeX/Y settings for label positioning.
  */
-export function AxisLabels({ width, depth }: AxisLabelsProps) {
+export function AxisLabels({ width, depth, fractionalEdgeX = 'end', fractionalEdgeY = 'end' }: AxisLabelsProps) {
   const integerWidth = Math.floor(width);
   const integerDepth = Math.floor(depth);
   const hasFractionalWidth = width % 1 !== 0;
   const hasFractionalDepth = depth % 1 !== 0;
+  const fractionalWidthPart = width - integerWidth; // e.g., 0.5
+  const fractionalDepthPart = depth - integerDepth; // e.g., 0.5
 
-  // X-axis labels (1 to width) along the front edge, plus fractional edge if present
-  const xLabels: number[] = Array.from({ length: integerWidth }, (_, i) => i + 1);
-  if (hasFractionalWidth) {
-    xLabels.push(width); // e.g., 5.5
+  // X-axis labels - integer labels plus fractional edge
+  // When fractionalEdgeX='start', fractional is first; when 'end', it's last
+  const xLabels: { value: number; isFractional: boolean }[] = [];
+  if (hasFractionalWidth && fractionalEdgeX === 'start') {
+    xLabels.push({ value: fractionalWidthPart, isFractional: true });
+  }
+  for (let i = 1; i <= integerWidth; i++) {
+    xLabels.push({ value: i, isFractional: false });
+  }
+  if (hasFractionalWidth && fractionalEdgeX === 'end') {
+    xLabels.push({ value: width, isFractional: true });
   }
 
-  // Y-axis labels (1 to depth) along the left edge, plus fractional edge if present
-  const yLabels: number[] = Array.from({ length: integerDepth }, (_, i) => i + 1);
-  if (hasFractionalDepth) {
-    yLabels.push(depth); // e.g., 8.5
+  // Y-axis labels - integer labels plus fractional edge
+  const yLabels: { value: number; isFractional: boolean }[] = [];
+  if (hasFractionalDepth && fractionalEdgeY === 'start') {
+    yLabels.push({ value: fractionalDepthPart, isFractional: true });
   }
+  for (let i = 1; i <= integerDepth; i++) {
+    yLabels.push({ value: i, isFractional: false });
+  }
+  if (hasFractionalDepth && fractionalEdgeY === 'end') {
+    yLabels.push({ value: depth, isFractional: true });
+  }
+
+  // Calculate X offset for integer labels when fractional is at start
+  const xOffset = hasFractionalWidth && fractionalEdgeX === 'start' ? fractionalWidthPart : 0;
+  // Calculate Y offset for integer labels when fractional is at start
+  const yOffset = hasFractionalDepth && fractionalEdgeY === 'start' ? fractionalDepthPart : 0;
 
   // Create tick mark geometry
   const tickGeometry = useMemo(() => {
     const positions: number[] = [];
 
-    // X-axis ticks (along front edge) - at integer positions
+    // X-axis ticks (along front edge)
+    // Integer ticks
     for (let i = 0; i <= integerWidth; i++) {
-      positions.push(i, 0, 0.01);
-      positions.push(i, -TICK_SIZE, 0.01);
+      const x = xOffset + i;
+      positions.push(x, 0, 0.01);
+      positions.push(x, -TICK_SIZE, 0.01);
     }
-    // Add tick at fractional width edge
+    // Fractional tick
     if (hasFractionalWidth) {
-      positions.push(width, 0, 0.01);
-      positions.push(width, -TICK_SIZE, 0.01);
+      const x = fractionalEdgeX === 'start' ? fractionalWidthPart : width;
+      positions.push(x, 0, 0.01);
+      positions.push(x, -TICK_SIZE, 0.01);
     }
 
-    // Y-axis ticks (along left edge) - at integer positions
+    // Y-axis ticks (along left edge)
+    // Integer ticks
     for (let i = 0; i <= integerDepth; i++) {
-      positions.push(0, i, 0.01);
-      positions.push(-TICK_SIZE, i, 0.01);
+      const y = yOffset + i;
+      positions.push(0, y, 0.01);
+      positions.push(-TICK_SIZE, y, 0.01);
     }
-    // Add tick at fractional depth edge
+    // Fractional tick
     if (hasFractionalDepth) {
-      positions.push(0, depth, 0.01);
-      positions.push(-TICK_SIZE, depth, 0.01);
+      const y = fractionalEdgeY === 'start' ? fractionalDepthPart : depth;
+      positions.push(0, y, 0.01);
+      positions.push(-TICK_SIZE, y, 0.01);
     }
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     return geo;
-  }, [width, depth, integerWidth, integerDepth, hasFractionalWidth, hasFractionalDepth]);
+  }, [width, depth, integerWidth, integerDepth, hasFractionalWidth, hasFractionalDepth, fractionalWidthPart, fractionalDepthPart, xOffset, yOffset, fractionalEdgeX, fractionalEdgeY]);
 
   // Cleanup geometry on unmount or when dependencies change
   useEffect(() => {
@@ -85,15 +115,21 @@ export function AxisLabels({ width, depth }: AxisLabelsProps) {
       </lineSegments>
 
       {/* X-axis labels along front edge */}
-      {xLabels.map((num) => {
-        const isFractional = num % 1 !== 0;
-        // Center label between grid lines: integer labels at num-0.5, fractional at (integerWidth + width) / 2
-        const xPos = isFractional ? (integerWidth + width) / 2 : num - 0.5;
-        const label = isFractional ? '+.5' : num.toString();
+      {xLabels.map(({ value, isFractional }, idx) => {
+        // Calculate X position: center label in its cell
+        let xPos: number;
+        if (isFractional) {
+          // Fractional label centered in fractional cell
+          xPos = fractionalEdgeX === 'start' ? fractionalWidthPart / 2 : (integerWidth + width) / 2;
+        } else {
+          // Integer label centered in its cell (offset by xOffset when fractional is at start)
+          xPos = xOffset + value - 0.5;
+        }
+        const label = isFractional ? '+.5' : value.toString();
 
         return (
           <Text
-            key={`x-${num}`}
+            key={`x-${idx}`}
             position={[xPos, -0.28, 0.01]}
             fontSize={isFractional ? FRACTIONAL_FONT_SIZE : FONT_SIZE}
             color={LABEL_COLOR}
@@ -107,15 +143,21 @@ export function AxisLabels({ width, depth }: AxisLabelsProps) {
       })}
 
       {/* Y-axis labels along left edge */}
-      {yLabels.map((num) => {
-        const isFractional = num % 1 !== 0;
-        // Center label between grid lines: integer labels at num-0.5, fractional at (integerDepth + depth) / 2
-        const yPos = isFractional ? (integerDepth + depth) / 2 : num - 0.5;
-        const label = isFractional ? '+.5' : num.toString();
+      {yLabels.map(({ value, isFractional }, idx) => {
+        // Calculate Y position: center label in its cell
+        let yPos: number;
+        if (isFractional) {
+          // Fractional label centered in fractional cell
+          yPos = fractionalEdgeY === 'start' ? fractionalDepthPart / 2 : (integerDepth + depth) / 2;
+        } else {
+          // Integer label centered in its cell (offset by yOffset when fractional is at start)
+          yPos = yOffset + value - 0.5;
+        }
+        const label = isFractional ? '+.5' : value.toString();
 
         return (
           <Text
-            key={`y-${num}`}
+            key={`y-${idx}`}
             position={[-0.28, yPos, 0.01]}
             fontSize={isFractional ? FRACTIONAL_FONT_SIZE : FONT_SIZE}
             color={LABEL_COLOR}

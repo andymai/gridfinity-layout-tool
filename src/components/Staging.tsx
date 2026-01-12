@@ -103,9 +103,14 @@ export function Staging() {
   const cellSize = Math.round(BASE_CELL_SIZE * zoom);
   const gap = 1;
   const gridWidth = layout.drawer.width; // Match main drawer width
-  const hasFractionalWidth = layout.drawer.width % 1 !== 0;
+  const integerWidth = Math.floor(gridWidth);
+  const hasFractionalWidth = gridWidth % 1 !== 0;
+  const fractionalWidthPart = gridWidth - integerWidth;
+  const fractionalCellWidth = hasFractionalWidth ? fractionalWidthPart * (cellSize + gap) - gap : 0;
+  const gridCols = Math.ceil(gridWidth);
 
   // Pack bins and calculate required height
+  // Use ceiling of fractional dimensions for packing slots
   const packedBins = useMemo(() => {
     const bins = stagingBins.map(b => ({
       id: b.id,
@@ -117,8 +122,9 @@ export function Staging() {
       category: b.category,
       label: b.label,
     }));
-    return packBins(bins, gridWidth);
-  }, [stagingBins, gridWidth]);
+    // Pack using integer grid width (ceiling) to ensure all bins fit
+    return packBins(bins, gridCols);
+  }, [stagingBins, gridCols]);
 
   // Calculate required grid height (minimum 2 rows when bins present, 1 when empty)
   const gridHeight = useMemo(() => {
@@ -231,10 +237,10 @@ export function Staging() {
     return () => document.removeEventListener('pointermove', handlePointerMove);
   }, [isDraggingFromGrid, dropTarget, setDropTarget]);
 
-  // Generate grid cells for visual reference
+  // Generate grid cells for visual reference (integer cells only)
   const cells: React.JSX.Element[] = [];
   for (let y = gridHeight - 1; y >= 0; y--) {
-    for (let x = 0; x < gridWidth; x++) {
+    for (let x = 0; x < integerWidth; x++) {
       cells.push(
         <div
           key={`staging-${x}-${y}`}
@@ -250,6 +256,44 @@ export function Staging() {
       );
     }
   }
+
+  // Add fractional column cells if drawer has fractional width
+  if (hasFractionalWidth) {
+    for (let y = gridHeight - 1; y >= 0; y--) {
+      cells.push(
+        <div
+          key={`staging-frac-${y}`}
+          style={{
+            gridColumn: gridCols,
+            gridRow: gridHeight - y,
+            width: fractionalCellWidth,
+            height: cellSize,
+            backgroundColor: 'var(--staging-cell)',
+            borderRadius: '2px',
+          }}
+        />
+      );
+    }
+  }
+
+  // Helper to calculate pixel width for bins accounting for fractional column
+  const calcBinPixelWidth = (x: number, width: number): number => {
+    if (!hasFractionalWidth) {
+      return width * cellSize + Math.max(0, width - 1) * gap;
+    }
+    const binEndX = x + width;
+    const inInteger = Math.max(0, Math.min(binEndX, integerWidth) - x);
+    const inFractional = width - inInteger;
+    let pixelWidth = 0;
+    if (inInteger > 0) {
+      pixelWidth += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+    }
+    if (inFractional > 0) {
+      if (inInteger > 0) pixelWidth += gap;
+      pixelWidth += (inFractional / fractionalWidthPart) * fractionalCellWidth;
+    }
+    return pixelWidth;
+  };
 
   // Show when bins are stashed OR when dragging from grid (as drop target)
   const hasBins = stagingBins.length > 0;
@@ -321,7 +365,8 @@ export function Staging() {
       <div
         className="relative inline-block rounded-lg"
         style={{
-          width: gridWidth * (cellSize + gap) + gap,
+          // Width: integer columns + optional fractional column + gaps + padding
+          width: integerWidth * (cellSize + gap) + (hasFractionalWidth ? fractionalCellWidth + gap : 0) + gap,
           height: gridHeight * (cellSize + gap) + gap,
           backgroundColor: 'var(--staging-bg)',
           boxShadow: 'var(--shadow-sm)',
@@ -332,7 +377,9 @@ export function Staging() {
           className="absolute inset-0"
           style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${gridWidth}, ${cellSize}px)`,
+            gridTemplateColumns: hasFractionalWidth
+              ? `repeat(${integerWidth}, ${cellSize}px) ${fractionalCellWidth}px`
+              : `repeat(${integerWidth}, ${cellSize}px)`,
             gridTemplateRows: `repeat(${gridHeight}, ${cellSize}px)`,
             gap: `${gap}px`,
             padding: `${gap}px`,
@@ -352,6 +399,15 @@ export function Staging() {
             const primaryText = hasLabel ? bin.label : `${bin.width}×${bin.depth}`;
             const secondaryText = hasLabel ? `${bin.width}×${bin.depth}` : null;
 
+            // Check if bin has fractional dimensions
+            const hasFractionalBin = bin.width % 1 !== 0 || bin.depth % 1 !== 0;
+            // Calculate CSS grid span (use ceiling for fractional bins)
+            const gridColSpan = Math.ceil(bin.x + bin.width) - Math.floor(bin.x);
+            const gridRowSpan = Math.ceil(bin.y + bin.depth) - Math.floor(bin.y);
+            // Calculate pixel size for fractional bins
+            const binPixelWidth = hasFractionalBin || hasFractionalWidth ? calcBinPixelWidth(bin.x, bin.width) : undefined;
+            const binPixelHeight = hasFractionalBin ? bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap : undefined;
+
             return (
               <div
                 key={bin.id}
@@ -364,9 +420,12 @@ export function Staging() {
                       : 'border border-[var(--border-on-color)] shadow-sm'
                 }`}
                 style={{
-                  gridColumn: `${bin.x + 1} / span ${bin.width}`,
-                  gridRow: `${gridHeight - bin.y - bin.depth + 1} / span ${bin.depth}`,
+                  gridColumn: `${bin.x + 1} / span ${gridColSpan}`,
+                  gridRow: `${gridHeight - bin.y - bin.depth + 1} / span ${gridRowSpan}`,
                   ...(!isDragging && { backgroundColor: bgColor }),
+                  // Override size for fractional bins
+                  ...(binPixelWidth !== undefined && { width: binPixelWidth }),
+                  ...(binPixelHeight !== undefined && { height: binPixelHeight }),
                 }}
                 onClick={(e) => handleBinClick(bin.id, e)}
                 onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
@@ -446,24 +505,6 @@ export function Staging() {
           })}
         </div>
 
-        {/* Fractional width edge line for drawer boundary */}
-        {hasFractionalWidth && (() => {
-          const fractionalWidthPart = gridWidth - Math.floor(gridWidth); // e.g., 0.5
-          const integerCellsWidth = Math.floor(gridWidth) * (cellSize + gap);
-          const xPos = gap + integerCellsWidth + (fractionalWidthPart * (cellSize + gap)) / 2;
-          return (
-            <div
-              className="absolute pointer-events-none"
-              style={{
-                left: xPos,
-                top: gap,
-                width: 1,
-                height: gridHeight * (cellSize + gap) - gap,
-                backgroundColor: 'var(--grid-line-half)',
-              }}
-            />
-          );
-        })()}
       </div>
 
       {/* Clear confirmation dialog */}
