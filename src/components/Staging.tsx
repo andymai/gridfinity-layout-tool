@@ -86,7 +86,7 @@ export function Staging() {
       updateBin: state.updateBin,
     }))
   );
-  const { zoom, interaction, setInteraction, dropTarget, setDropTarget, selectedBinIds, setSelectedBin, toggleSelection, showLabels } = useUIStore(
+  const { zoom, interaction, setInteraction, dropTarget, setDropTarget, selectedBinIds, setSelectedBin, toggleSelection, showLabels, showContextMenu } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
       interaction: state.interaction,
@@ -97,6 +97,7 @@ export function Staging() {
       setSelectedBin: state.setSelectedBin,
       toggleSelection: state.toggleSelection,
       showLabels: state.showLabels,
+      showContextMenu: state.showContextMenu,
     }))
   );
   const { execute } = useUndoableAction();
@@ -105,6 +106,20 @@ export function Staging() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredBinId, setHoveredBinId] = useState<string | null>(null);
   const isTouchDevice = useResponsive().isTouchDevice;
+
+  // Long-press detection state for context menu
+  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTriggeredRef = useRef(false);
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const LONG_PRESS_DURATION = 500; // ms
+  const MOVEMENT_THRESHOLD = 10; // px
+
+  const clearLongPress = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
 
   const stagingBins = useMemo(() =>
     layout.bins.filter(bin => bin.layerId === STAGING_ID),
@@ -167,17 +182,70 @@ export function Staging() {
     e.preventDefault();
     e.stopPropagation();
 
+    // Reset long-press state
+    longPressTriggeredRef.current = false;
+    pointerStartRef.current = { x: e.clientX, y: e.clientY };
+
+    // Start long-press timer on touch devices
+    if (isTouchDevice) {
+      clearLongPress();
+      longPressTimerRef.current = window.setTimeout(() => {
+        longPressTriggeredRef.current = true;
+        // Vibrate if supported (haptic feedback)
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+        // Show context menu
+        showContextMenu([binId], { x: e.clientX, y: e.clientY }, 'staging');
+      }, LONG_PRESS_DURATION);
+    }
+
     // Ensure bin is selected before dragging (consistency with grid drag behavior)
     if (!selectedBinIds.includes(binId)) {
       setSelectedBin(binId);
     }
 
-    setInteraction({
-      type: 'stagingDrag',
-      binId,
-      currentCoord: null,
-      valid: false,
-    });
+    // Don't start drag if long-press menu triggered
+    if (!longPressTriggeredRef.current) {
+      setInteraction({
+        type: 'stagingDrag',
+        binId,
+        currentCoord: null,
+        valid: false,
+      });
+    }
+  };
+
+  const handleBinPointerMove = (e: React.PointerEvent) => {
+    // Cancel long-press if pointer moved too far
+    if (pointerStartRef.current) {
+      const dx = e.clientX - pointerStartRef.current.x;
+      const dy = e.clientY - pointerStartRef.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance > MOVEMENT_THRESHOLD) {
+        clearLongPress();
+      }
+    }
+  };
+
+  const handleBinPointerUp = () => {
+    clearLongPress();
+    pointerStartRef.current = null;
+  };
+
+  const handleBinPointerCancel = () => {
+    clearLongPress();
+    pointerStartRef.current = null;
+  };
+
+  const handleBinContextMenu = (binId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Select the bin if not already selected
+    if (!selectedBinIds.includes(binId)) {
+      setSelectedBin(binId);
+    }
+    showContextMenu([binId], { x: e.clientX, y: e.clientY }, 'staging');
   };
 
   const handleRotate = useCallback((binId: string) => {
@@ -519,9 +587,13 @@ export function Staging() {
                 }}
                 onClick={(e) => handleBinClick(bin.id, e)}
                 onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
+                onPointerMove={handleBinPointerMove}
+                onPointerUp={handleBinPointerUp}
+                onPointerCancel={handleBinPointerCancel}
+                onContextMenu={(e) => handleBinContextMenu(bin.id, e)}
                 onPointerEnter={() => setHoveredBinId(bin.id)}
                 onPointerLeave={() => setHoveredBinId(null)}
-                title={`${bin.label || 'Unlabeled'} — ${bin.width}×${bin.depth}×${bin.height}u\nClick to select • Drag to place on grid`}
+                title={`${bin.label || 'Unlabeled'} — ${bin.width}×${bin.depth}×${bin.height}u\nClick to select • Drag to place on grid • Right-click for menu`}
               >
                 {/* Adaptive label: primary (label or dimensions) + optional secondary */}
                 {!isDragging && showAnyText && (

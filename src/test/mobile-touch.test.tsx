@@ -127,7 +127,7 @@ describe('Mobile Touch Interactions', () => {
       // Context menu should now be shown
       const contextMenu = useUIStore.getState().contextMenu;
       expect(contextMenu).not.toBeNull();
-      expect(contextMenu?.binId).toBe(testBin.id);
+      expect(contextMenu?.binIds).toEqual([testBin.id]);
     });
 
     it('triggers haptic feedback on long press', () => {

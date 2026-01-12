@@ -38,8 +38,9 @@ export interface PaintSize {
 }
 
 export interface ContextMenuState {
-  binId: string;
+  binIds: string[]; // Changed from single binId to support multi-select
   position: { x: number; y: number };
+  source: 'grid' | 'staging'; // Context for menu variant
 }
 
 interface UIState {
@@ -126,8 +127,8 @@ interface UIState {
   closeMobilePanel: () => void;
   toggleMobilePanel: (panel: MobilePanel) => void;
 
-  // Context menu actions
-  showContextMenu: (binId: string, position: { x: number; y: number }) => void;
+  // Context menu actions (supports both old single binId and new binIds array for backwards compatibility)
+  showContextMenu: (binIdsOrId: string | string[], position: { x: number; y: number }, source?: 'grid' | 'staging') => void;
   hideContextMenu: () => void;
 
   // Isometric preview actions
@@ -272,8 +273,17 @@ export const useUIStore = create<UIState>((set) => ({
     activeMobilePanel: state.activeMobilePanel === panel ? null : panel
   })),
 
-  // Context menu actions
-  showContextMenu: (binId, position) => set({ contextMenu: { binId, position } }),
+  // Context menu actions (backwards compatible with old single binId signature)
+  showContextMenu: (binIdsOrId, position, source = 'grid') => {
+    const binIds = Array.isArray(binIdsOrId) ? binIdsOrId : [binIdsOrId];
+    set({
+      contextMenu: {
+        binIds,
+        position,
+        source
+      }
+    });
+  },
   hideContextMenu: () => set({ contextMenu: null }),
 
   // Isometric preview actions
