@@ -49,7 +49,36 @@
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!--
+      Using display=optional prevents CLS (Cumulative Layout Shift):
+      - If fonts load quickly (<100ms), they're used immediately
+      - If fonts don't load in time, system fonts are used (no swap/reflow)
+      - On subsequent visits, cached fonts load instantly
+    -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=optional" rel="stylesheet">
+
+    <!-- Inline critical font-face fallback metrics to minimize visual shift -->
+    <style>
+      /* Fallback font stacks with size-adjust to match IBM Plex metrics */
+      @supports (size-adjust: 100%) {
+        @font-face {
+          font-family: 'IBM Plex Sans Fallback';
+          src: local('Arial'), local('Helvetica Neue'), local('Helvetica'), local('sans-serif');
+          size-adjust: 98%;
+          ascent-override: 99%;
+          descent-override: 24%;
+          line-gap-override: normal;
+        }
+        @font-face {
+          font-family: 'IBM Plex Mono Fallback';
+          src: local('Consolas'), local('Monaco'), local('Courier New'), local('monospace');
+          size-adjust: 101%;
+          ascent-override: 86%;
+          descent-override: 22%;
+          line-gap-override: normal;
+        }
+      }
+    </style>
 
     <!-- Structured Data: SoftwareApplication -->
     <script type="application/ld+json">

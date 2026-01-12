@@ -524,7 +524,8 @@ export function Grid() {
           >
             <PanelErrorBoundary panelName="3D Preview">
               <Suspense fallback={
-                <div className="w-full h-full flex items-center justify-center">
+                // Reserve minimum height to prevent CLS while loading
+                <div className="w-full h-full min-h-[200px] flex items-center justify-center bg-surface-secondary">
                   <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
                 </div>
               }>
@@ -1099,7 +1100,8 @@ export function Grid() {
         >
           <PanelErrorBoundary panelName="3D Preview">
             <Suspense fallback={
-              <div className="w-full h-full flex items-center justify-center">
+              // Reserve full space to prevent CLS while loading
+              <div className="w-full h-full min-h-[300px] flex items-center justify-center bg-surface-secondary">
                 <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
               </div>
             }>
