@@ -12,12 +12,18 @@ import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
 import { ToastContainer } from './components/Toast';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
-import { BinContextMenu } from './components/mobile';
+import { BinContextMenu, MultiBinContextMenu } from './components/mobile';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter } from './components/SharedLayoutImporter';
 import { SharedLayoutBanner } from './components/SharedLayoutBanner';
 import { SHORTCUTS } from './constants';
+
+// Legacy context menu state for backwards compatibility
+interface LegacyContextMenuState {
+  binId?: string;
+  position: { x: number; y: number };
+}
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
 const HelpModal = lazyWithRetry(() =>
@@ -211,13 +217,21 @@ export default function App() {
         )}
 
         {/* Context menu (long-press on bin) */}
-        {contextMenu && (
-          <BinContextMenuWrapper
-            binId={contextMenu.binId}
-            position={contextMenu.position}
-            onClose={hideContextMenu}
-          />
-        )}
+        {(() => {
+          if (contextMenu) {
+            const legacy = contextMenu as unknown as LegacyContextMenuState;
+            const binIds = contextMenu.binIds || (legacy.binId ? [legacy.binId] : []);
+            return (
+              <BinContextMenuWrapper
+                binIds={binIds}
+                position={contextMenu.position}
+                onClose={hideContextMenu}
+                source={contextMenu.source}
+              />
+            );
+          }
+          return null;
+        })()}
 
         {/* Toast notifications */}
         <ToastContainer />
@@ -270,13 +284,21 @@ export default function App() {
       )}
 
       {/* Context menu (right-click on bin) */}
-      {contextMenu && (
-        <BinContextMenuWrapper
-          binId={contextMenu.binId}
-          position={contextMenu.position}
-          onClose={hideContextMenu}
-        />
-      )}
+      {(() => {
+        if (contextMenu) {
+          const legacy = contextMenu as unknown as LegacyContextMenuState;
+          const binIds = contextMenu.binIds || (legacy.binId ? [legacy.binId] : []);
+          return (
+            <BinContextMenuWrapper
+              binIds={binIds}
+              position={contextMenu.position}
+              onClose={hideContextMenu}
+              source={contextMenu.source}
+            />
+          );
+        }
+        return null;
+      })()}
 
       {/* Toast notifications */}
       <ToastContainer />
@@ -291,21 +313,36 @@ export default function App() {
 }
 
 /**
- * Context menu wrapper that looks up the bin from the store.
+ * Context menu wrapper that routes to single or multi-bin menu.
  */
 function BinContextMenuWrapper({
-  binId,
+  binIds,
   position,
   onClose,
+  source,
 }: {
-  binId: string;
+  binIds: string[];
   position: { x: number; y: number };
   onClose: () => void;
+  source?: 'grid' | 'staging';
 }) {
   const bins = useLayoutStore(state => state.layout.bins);
-  const bin = bins.find(b => b.id === binId);
+  const selectedBinIds = useUIStore(state => state.selectedBinIds);
 
+  // Guard: ensure binIds is valid
+  if (!binIds || binIds.length === 0) return null;
+
+  // Multi-select detection: if first bin is selected AND multiple bins selected
+  const isMultiSelect = selectedBinIds.includes(binIds[0]) && selectedBinIds.length > 1;
+
+  if (isMultiSelect) {
+    const selectedBins = bins.filter(b => selectedBinIds.includes(b.id));
+    return <MultiBinContextMenu binIds={selectedBins.map(b => b.id)} position={position} onClose={onClose} source={source} />;
+  }
+
+  // Single bin context menu
+  const bin = bins.find(b => b.id === binIds[0]);
   if (!bin) return null;
 
-  return <BinContextMenu bin={bin} position={position} onClose={onClose} />;
+  return <BinContextMenu bin={bin} position={position} onClose={onClose} source={source} />;
 }

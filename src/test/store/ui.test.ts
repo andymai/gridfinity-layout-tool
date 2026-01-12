@@ -262,7 +262,7 @@ describe('ui store', () => {
       showContextMenu('bin1', { x: 100, y: 200 });
 
       const menu = useUIStore.getState().contextMenu;
-      expect(menu?.binId).toBe('bin1');
+      expect(menu?.binIds).toEqual(['bin1']);
       expect(menu?.position).toEqual({ x: 100, y: 200 });
     });
 
