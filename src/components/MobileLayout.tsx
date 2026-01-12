@@ -22,6 +22,7 @@ import {
   MobileLayoutsPanel,
   BinContextMenu,
 } from './mobile';
+import type { SaveStatus } from '../hooks/useAutoSave';
 
 // Lazy load mobile help modal (with retry for chunk load failures)
 const MobileHelpModal = lazyWithRetry(() =>
@@ -31,9 +32,10 @@ const MobileHelpModal = lazyWithRetry(() =>
 interface MobileLayoutProps {
   isMobileHelpOpen: boolean;
   setIsMobileHelpOpen: (open: boolean) => void;
+  saveStatus: SaveStatus;
 }
 
-export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLayoutProps) {
+export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen, saveStatus }: MobileLayoutProps) {
   const activeMobilePanel = useUIStore(state => state.activeMobilePanel);
   const setActiveMobilePanel = useUIStore(state => state.setActiveMobilePanel);
   const contextMenu = useUIStore(state => state.contextMenu);
@@ -45,7 +47,7 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen }: MobileLa
       <SharedLayoutBanner />
 
       {/* Mobile Header */}
-      <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} onHelpClick={() => setIsMobileHelpOpen(true)} />
+      <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} onHelpClick={() => setIsMobileHelpOpen(true)} saveStatus={saveStatus} />
 
       {/* Main content area - Grid takes full width */}
       <main className="flex-1 flex flex-col overflow-hidden bg-surface">

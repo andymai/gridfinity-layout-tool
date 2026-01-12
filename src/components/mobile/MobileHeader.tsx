@@ -2,17 +2,19 @@ import { useState, useRef, useEffect } from 'react';
 import { useLayoutStore, useHistoryStore, useUIStore } from '../../store';
 import { CONSTRAINTS } from '../../constants';
 import type { MobilePanel } from '../../store/ui';
+import type { SaveStatus } from '../../hooks/useAutoSave';
 
 interface MobileHeaderProps {
   onMenuClick: () => void;
   onHelpClick: () => void;
+  saveStatus: SaveStatus;
 }
 
 /**
  * Compact header for mobile layout.
  * Shows app title, tip link, layout name (editable) and essential actions.
  */
-export function MobileHeader({ onMenuClick, onHelpClick }: MobileHeaderProps) {
+export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHeaderProps) {
   const layout = useLayoutStore(state => state.layout);
   const setName = useLayoutStore(state => state.setName);
 
@@ -175,8 +177,25 @@ export function MobileHeader({ onMenuClick, onHelpClick }: MobileHeaderProps) {
         )}
       </div>
 
-      {/* Right: Undo/Redo + Help */}
+      {/* Right: Save status + Undo/Redo + Help */}
       <div className="flex items-center gap-1">
+        {/* Save status indicator (icon only on mobile) */}
+        {saveStatus !== 'idle' && (
+          <div
+            className="flex items-center justify-center w-7 h-7"
+            aria-live="polite"
+            aria-label="Saved"
+          >
+            <svg
+              className="w-3.5 h-3.5 text-success"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        )}
         <button
           onClick={undo}
           disabled={!canUndo}

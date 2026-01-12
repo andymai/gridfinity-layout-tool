@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useSettingsStore, useToastStore } from '../../store';
 import { useUndoableAction } from '../../store/history';
@@ -18,7 +18,15 @@ export function Sidebar() {
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
   const [showHalfBinBlockedModal, setShowHalfBinBlockedModal] = useState(false);
   const [halfBinViolation, setHalfBinViolation] = useState<HalfBinConstraintViolation | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const { isDesktop } = useResponsive();
+
+  const handleScroll = useCallback(() => {
+    if (scrollRef.current) {
+      setIsScrolled(scrollRef.current.scrollTop > 0);
+    }
+  }, []);
 
   const { collapsed, toggle, halfBinMode, toggleHalfBinMode, setHalfBinMode } = useUIStore(
     useShallow((state) => ({
@@ -180,7 +188,11 @@ export function Sidebar() {
       ) : (
         // Expanded state
         <>
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-stroke-subtle">
+          <div
+            className={`flex items-center gap-3 px-4 py-3 border-b border-stroke-subtle transition-shadow duration-200 ${
+              isScrolled ? 'shadow-[0_2px_8px_rgba(0,0,0,0.5)]' : ''
+            }`}
+          >
             <h2 className="flex-1 text-xs font-semibold text-content-tertiary uppercase tracking-wider">
               Tools
             </h2>
@@ -195,7 +207,11 @@ export function Sidebar() {
               </svg>
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto scrollbar-thin flex flex-col">
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto scrollbar-thin flex flex-col"
+          >
             <div className="px-4 py-4 border-b border-stroke-subtle">
               <ActiveLayerPanel />
             </div>
