@@ -40,13 +40,36 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Prefix all cache names to prevent conflicts
+        cacheId: 'gridfinity-v1',
+        // Prevent accidentally precaching huge assets
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB per file
         // Force the new service worker to activate immediately
         skipWaiting: true,
         // Take control of pages that were controlled by an old SW
         clientsClaim: true,
         // Clean up old caches from previous versions
         cleanupOutdatedCaches: true,
+        // SPA navigation fallback - serve index.html for all navigation requests
+        navigateFallback: '/index.html',
+        // Don't intercept API calls with navigation fallback
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
+          {
+            // Cache shared layout API responses for offline viewing
+            urlPattern: /\/api\/share\/[a-zA-Z0-9]+$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'shared-layouts',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+              cacheableResponse: {
+                statuses: [200],
+              },
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'StaleWhileRevalidate',
