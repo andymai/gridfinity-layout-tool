@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useId } from 'react';
 import { StatCard, BinIcon, FilamentIcon, CostIcon, TimeIcon, SpoolIcon } from '../../BinList';
 import { CategoryBreakdownChart, CategoryStackedBar, CategoryLegend } from '../../BinList';
 import type { CategoryBreakdown } from '../../../utils/binListOperations';
@@ -49,6 +49,7 @@ export function BinListDashboard({
   defaultCollapsed = false,
 }: BinListDashboardProps) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  const contentId = useId();
 
   const toggleCollapsed = useCallback(() => {
     setIsCollapsed((c) => !c);
@@ -79,6 +80,7 @@ export function BinListDashboard({
           onClick={toggleCollapsed}
           className="p-1 text-content-tertiary hover:text-content rounded transition-colors"
           aria-expanded={!isCollapsed}
+          aria-controls={contentId}
           aria-label={isCollapsed ? 'Expand statistics' : 'Collapse statistics'}
         >
           <svg
@@ -111,7 +113,7 @@ export function BinListDashboard({
       {collapsible && <div className="px-1">{header}</div>}
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div id={contentId} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatCard
           icon={<BinIcon />}
           label="Bin Types"

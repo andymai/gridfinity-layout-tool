@@ -84,8 +84,26 @@ test.describe('Create Layout Flow', () => {
     // Wait for the UI to update with the new name
     await expect(page.getByRole('button', { name: 'Persisted Layout' })).toBeVisible();
 
-    // Wait for auto-save to complete (observes actual localStorage state)
-    await waitForAutoSave(page);
+    // Wait for auto-save debounce (1000ms) to complete
+    await waitForAutoSave(page, 3000);
+
+    // Extra wait to ensure the debounce has fired and saved
+    await page.waitForTimeout(1500);
+
+    // Verify the layout name is saved in localStorage before reloading
+    await page.waitForFunction(
+      () => {
+        const library = localStorage.getItem('gridfinity-library-v1');
+        if (!library) return false;
+        const parsed = JSON.parse(library);
+        const activeId = parsed.activeLayoutId;
+        const layoutData = localStorage.getItem(`gridfinity-layout-${activeId}`);
+        if (!layoutData) return false;
+        const layout = JSON.parse(layoutData);
+        return layout.name === 'Persisted Layout';
+      },
+      { timeout: 5000 }
+    );
 
     // Reload page (DON'T clear localStorage this time since we want to test persistence)
     await page.reload();

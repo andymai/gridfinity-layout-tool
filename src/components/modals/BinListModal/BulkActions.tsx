@@ -234,9 +234,15 @@ export function BulkActions({
                     value={notesValue}
                     onChange={(e) => setNotesValue(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Escape') setOpenDropdown(null);
+                      if (e.key === 'Escape') {
+                        setOpenDropdown(null);
+                      } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                        // Ctrl/Cmd+Enter to submit for textarea
+                        e.preventDefault();
+                        handleNotesSubmit();
+                      }
                     }}
-                    placeholder="Enter notes..."
+                    placeholder="Enter notes... (⌘+Enter to apply)"
                     className="w-full px-2 py-1.5 text-sm bg-surface border border-stroke rounded focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                     rows={2}
                     maxLength={256}
