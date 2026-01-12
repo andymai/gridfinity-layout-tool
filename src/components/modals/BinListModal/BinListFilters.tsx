@@ -43,12 +43,13 @@ export function BinListFilters({
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus search input on mount
+  // Delay ensures modal open animation/transition completes before focusing
+  const FOCUS_DELAY_MS = 100;
   useEffect(() => {
     if (autoFocus && searchInputRef.current) {
-      // Delay to ensure modal animation completes
       const timer = setTimeout(() => {
         searchInputRef.current?.focus();
-      }, 100);
+      }, FOCUS_DELAY_MS);
       return () => clearTimeout(timer);
     }
   }, [autoFocus]);
