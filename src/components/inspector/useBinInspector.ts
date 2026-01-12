@@ -233,9 +233,12 @@ export function useBinInspector(): UseBinInspectorReturn {
       const targetLayer = layout.layers.find(l => l.id === targetLayerId);
       if (!targetLayer) return;
 
-      // Validate placement on target layer
+      // Calculate final height: bin keeps its height or uses layer minimum, whichever is greater
+      const finalHeight = Math.max(bin.height, targetLayer.height);
+
+      // Validate placement on target layer using the actual height that will be assigned
       const result = canPlaceBin(
-        { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: targetLayer.height },
+        { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: finalHeight },
         targetLayerId,
         layout,
         bin.id
@@ -254,7 +257,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       execute(() => {
         updateBin(bin.id, {
           layerId: targetLayerId,
-          height: Math.max(bin.height, targetLayer.height),
+          height: finalHeight,
         });
       });
 
@@ -278,19 +281,21 @@ export function useBinInspector(): UseBinInspectorReturn {
 
       if (binsToMove.length === 0) return;
 
-      // Check which bins can be moved (validate each)
-      const movable: Bin[] = [];
+      // Check which bins can be moved (validate each using final height)
+      const movable: { bin: Bin; finalHeight: number }[] = [];
       const blocked: Bin[] = [];
 
       for (const b of binsToMove) {
+        // Calculate final height for this bin
+        const binFinalHeight = Math.max(b.height, targetLayer.height);
         const result = canPlaceBin(
-          { x: b.x, y: b.y, width: b.width, depth: b.depth, height: targetLayer.height },
+          { x: b.x, y: b.y, width: b.width, depth: b.depth, height: binFinalHeight },
           targetLayerId,
           layout,
           b.id
         );
         if (result.valid) {
-          movable.push(b);
+          movable.push({ bin: b, finalHeight: binFinalHeight });
         } else {
           blocked.push(b);
         }
@@ -302,10 +307,10 @@ export function useBinInspector(): UseBinInspectorReturn {
       }
 
       execute(() => {
-        for (const b of movable) {
+        for (const { bin: b, finalHeight: height } of movable) {
           updateBin(b.id, {
             layerId: targetLayerId,
-            height: Math.max(b.height, targetLayer.height),
+            height,
           });
         }
       });
