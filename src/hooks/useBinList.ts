@@ -41,11 +41,15 @@ export interface UseBinListReturn extends Omit<UsePrintListReturn, 'rows'> {
   isAllSelected: boolean;
   selectionCount: number;
 
-  // Bulk actions
+  // Bulk actions (operate on selected bins)
   deleteBulkSelection: () => void;
   changeBulkCategory: (categoryId: string) => void;
   updateBulkLabel: (label: string) => void;
   updateBulkNotes: (notes: string) => void;
+
+  // Inline editing (operate on specific bin IDs)
+  updateBinLabel: (binIds: string[], label: string) => void;
+  updateBinNotes: (binIds: string[], notes: string) => void;
 
   // Export
   exportToTSV: () => string;
@@ -192,6 +196,33 @@ export function useBinList(): UseBinListReturn {
     addToast(`Updated notes for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
   }, [selectedBinIds, execute, updateBin, addToast]);
 
+  // Inline editing handlers (for specific bin IDs, not selection-based)
+  const updateBinLabel = useCallback((binIds: string[], label: string) => {
+    if (binIds.length === 0) return;
+
+    const count = binIds.length;
+    execute(() => {
+      for (const binId of binIds) {
+        updateBin(binId, { label });
+      }
+    });
+
+    addToast(`Updated label for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
+  }, [execute, updateBin, addToast]);
+
+  const updateBinNotes = useCallback((binIds: string[], notes: string) => {
+    if (binIds.length === 0) return;
+
+    const count = binIds.length;
+    execute(() => {
+      for (const binId of binIds) {
+        updateBin(binId, { notes });
+      }
+    });
+
+    addToast(`Updated notes for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
+  }, [execute, updateBin, addToast]);
+
   // Export handlers
   const exportToTSV = useCallback(() => {
     return exportPrintListTSV(filteredRows);
@@ -282,11 +313,15 @@ export function useBinList(): UseBinListReturn {
     isAllSelected,
     selectionCount,
 
-    // Bulk actions
+    // Bulk actions (operate on selected bins)
     deleteBulkSelection,
     changeBulkCategory,
     updateBulkLabel,
     updateBulkNotes,
+
+    // Inline editing (operate on specific bin IDs)
+    updateBinLabel,
+    updateBinNotes,
 
     // Export
     exportToTSV,

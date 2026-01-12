@@ -31,29 +31,29 @@ test.describe('Drawer Settings', () => {
   test('grid settings section is visible in sidebar', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    // Grid Settings is at the bottom of the sidebar - scroll it into view
-    const gridSettingsHeading = sidebar.getByText('Grid Settings');
-    await gridSettingsHeading.scrollIntoViewIfNeeded();
-    await expect(gridSettingsHeading).toBeVisible({ timeout: 10000 });
+    // Grid Size section contains drawer dimensions
+    const gridSizeButton = sidebar.getByRole('button', { name: /Grid Size/i });
+    await gridSizeButton.scrollIntoViewIfNeeded();
+    await expect(gridSizeButton).toBeVisible({ timeout: 10000 });
 
-    // Scroll to the bottom label to ensure all settings are visible
-    const heightLabel = sidebar.getByText('1u height');
-    await heightLabel.scrollIntoViewIfNeeded();
+    // Physical Units section contains unit settings
+    const physicalUnitsButton = sidebar.getByRole('button', { name: /Physical Units/i });
+    await physicalUnitsButton.scrollIntoViewIfNeeded();
+    await expect(physicalUnitsButton).toBeVisible({ timeout: 5000 });
 
-    // Now verify all setting labels are present (use exact match to avoid "Print bed: 256mm" in preferences)
-    await expect(sidebar.getByText('Max height')).toBeVisible({ timeout: 5000 });
-    await expect(sidebar.getByText('Print bed', { exact: true })).toBeVisible({ timeout: 5000 });
-    await expect(sidebar.getByText('1 grid unit')).toBeVisible({ timeout: 5000 });
-    await expect(heightLabel).toBeVisible({ timeout: 5000 });
+    // Verify setting labels are present (use exact match to avoid partial matches)
+    await expect(sidebar.getByText('Width', { exact: true })).toBeVisible({ timeout: 5000 });
+    await expect(sidebar.getByText('Depth', { exact: true })).toBeVisible({ timeout: 5000 });
+    await expect(sidebar.getByText('Height', { exact: true })).toBeVisible({ timeout: 5000 });
   });
 
-  test('can increase max height', async ({ page }) => {
+  test('can increase height', async ({ page }) => {
     const sidebar = getSidebar(page);
 
     // The max height is displayed between the +/- buttons with min-w-[28px]
     // It's the only span with that width class showing "Nu" format in the Grid Settings section
-    const increaseButton = sidebar.getByRole('button', { name: /increase max height/i });
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease max height/i });
+    const increaseButton = sidebar.getByRole('button', { name: /increase height/i });
+    const decreaseButton = sidebar.getByRole('button', { name: /decrease height/i });
 
     // Get parent container of the buttons to find the height display
     // The height display is between decrease and increase buttons
@@ -72,11 +72,11 @@ test.describe('Drawer Settings', () => {
     }).toPass({ timeout: 2000 });
   });
 
-  test('can decrease max height', async ({ page }) => {
+  test('can decrease height', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    const increaseButton = sidebar.getByRole('button', { name: /increase max height/i });
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease max height/i });
+    const increaseButton = sidebar.getByRole('button', { name: /increase height/i });
+    const decreaseButton = sidebar.getByRole('button', { name: /decrease height/i });
 
     // First increase height to ensure we can decrease
     await increaseButton.click();
@@ -107,7 +107,7 @@ test.describe('Drawer Settings', () => {
   test('max height has minimum constraint', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease max height/i });
+    const decreaseButton = sidebar.getByRole('button', { name: /decrease height/i });
     const heightDisplay = decreaseButton.locator('+ span');
 
     // Decrease 15 times to approach minimum
@@ -212,8 +212,26 @@ test.describe('Drawer Settings', () => {
     await gridUnitInput.blur();
     await expect(gridUnitInput).toHaveValue('45');
 
-    // Wait for auto-save to complete (observes actual localStorage state)
-    await waitForAutoSave(page);
+    // Wait for auto-save debounce (1000ms) to complete
+    await waitForAutoSave(page, 3000);
+
+    // Extra wait to ensure the debounce has fired and saved
+    await page.waitForTimeout(1500);
+
+    // Verify settings are saved in localStorage before reloading
+    await page.waitForFunction(
+      () => {
+        const library = localStorage.getItem('gridfinity-library-v1');
+        if (!library) return false;
+        const parsed = JSON.parse(library);
+        const activeId = parsed.activeLayoutId;
+        const layoutData = localStorage.getItem(`gridfinity-layout-${activeId}`);
+        if (!layoutData) return false;
+        const layout = JSON.parse(layoutData);
+        return layout.printBedSize === 180 && layout.gridUnitMm === 45;
+      },
+      { timeout: 5000 }
+    );
 
     // Reload the page
     await page.reload();
@@ -234,7 +252,7 @@ test.describe('Drawer Settings', () => {
 
     // Increase max height several times
     const sidebar = getSidebar(page);
-    const increaseMaxHeight = sidebar.getByRole('button', { name: /increase max height/i });
+    const increaseMaxHeight = sidebar.getByRole('button', { name: /increase height/i });
 
     for (let i = 0; i < 3; i++) {
       await increaseMaxHeight.click();
@@ -243,8 +261,8 @@ test.describe('Drawer Settings', () => {
     // Verify bin is still present (max height increase shouldn't remove bins)
     await waitForBinCount(page, 1);
 
-    // Now decrease max height
-    const decreaseMaxHeight = sidebar.getByRole('button', { name: /decrease max height/i });
+    // Now decrease height
+    const decreaseMaxHeight = sidebar.getByRole('button', { name: /decrease height/i });
     for (let i = 0; i < 3; i++) {
       if (await decreaseMaxHeight.isEnabled()) {
         await decreaseMaxHeight.click();
@@ -284,19 +302,20 @@ test.describe('Drawer Settings', () => {
   test('collapsing sidebar hides grid settings', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    // Verify grid settings are visible
-    await expect(sidebar.getByText('Grid Settings')).toBeVisible();
+    // Verify grid settings sections are visible
+    const gridSizeButton = sidebar.getByRole('button', { name: /Grid Size/i });
+    await expect(gridSizeButton).toBeVisible();
 
     // Collapse the sidebar
     await sidebar.getByRole('button', { name: /collapse left panel/i }).click();
 
     // Grid settings should not be visible
-    await expect(sidebar.getByText('Grid Settings')).not.toBeVisible();
+    await expect(gridSizeButton).not.toBeVisible();
 
     // Expand again
     await page.getByRole('button', { name: /expand left panel/i }).click();
 
     // Grid settings should be visible again
-    await expect(sidebar.getByText('Grid Settings')).toBeVisible();
+    await expect(gridSizeButton).toBeVisible();
   });
 });

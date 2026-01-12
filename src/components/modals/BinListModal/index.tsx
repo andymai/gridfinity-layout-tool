@@ -66,6 +66,10 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
     updateBulkLabel,
     updateBulkNotes,
 
+    // Inline editing
+    updateBinLabel,
+    updateBinNotes,
+
     // Export
     downloadExport,
     copyToClipboard,
@@ -114,10 +118,14 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
         }
       }
 
-      // Select all with Ctrl+A
+      // Select all with Ctrl+A (but not when inside text inputs)
       if ((e.metaKey || e.ctrlKey) && e.key === 'a' && rows.length > 0) {
-        e.preventDefault();
-        selectAllRows();
+        const target = e.target as HTMLElement;
+        const isInTextInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+        if (!isInTextInput) {
+          e.preventDefault();
+          selectAllRows();
+        }
       }
     };
 
@@ -130,26 +138,20 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
     closeButtonRef.current?.focus();
   }, []);
 
-  // Handler for inline label editing
+  // Handler for inline label editing (updates specific bins in the row)
   const handleEditLabel = useCallback(
     (binIds: string[], label: string) => {
-      // Update all bins in the row with the new label
-      // This uses the same pattern as updateBulkLabel but for a specific row
-      if (binIds.length > 0) {
-        updateBulkLabel(label);
-      }
+      updateBinLabel(binIds, label);
     },
-    [updateBulkLabel]
+    [updateBinLabel]
   );
 
-  // Handler for inline notes editing
+  // Handler for inline notes editing (updates specific bins in the row)
   const handleEditNotes = useCallback(
     (binIds: string[], notes: string) => {
-      if (binIds.length > 0) {
-        updateBulkNotes(notes);
-      }
+      updateBinNotes(binIds, notes);
     },
-    [updateBulkNotes]
+    [updateBinNotes]
   );
 
   // Clear filters including search
@@ -223,8 +225,8 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
           </div>
         </header>
 
-        {/* Dashboard - collapsible on mobile, always visible on desktop when showDashboard is true */}
-        {(isMobile || showDashboard) && (
+        {/* Dashboard - collapsible on mobile, toggleable via showDashboard */}
+        {showDashboard && (
           <div className="px-4 md:px-6 py-3 md:py-4 border-b border-stroke">
             <BinListDashboard
               totalBinTypes={rows.length}

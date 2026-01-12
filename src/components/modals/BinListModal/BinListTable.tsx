@@ -220,14 +220,14 @@ export function BinListTable({
                 `}
                 onClick={(e) => handleRowClick(row, index, e)}
               >
-                {/* Checkbox */}
+                {/* Checkbox - onClick handles shift-click, readOnly keeps it controlled without onChange warning */}
                 <td className="px-3 py-2">
                   <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={() => {}}
+                    readOnly
                     onClick={(e) => handleCheckboxClick(index, e)}
-                    className="rounded border-stroke focus:ring-accent"
+                    className="rounded border-stroke focus:ring-accent cursor-pointer"
                     aria-label={`Select ${row.size} bin`}
                   />
                 </td>
