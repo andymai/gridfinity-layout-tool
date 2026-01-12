@@ -564,7 +564,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         pointerEvents: isGhost || isBeingDragged ? 'none' : 'auto',
         opacity: isGhost ? 0.3 : isBeingDragged ? 0.5 : (isAnyCategoryHighlighted && !isCategoryHighlighted) ? 0.4 : 1,
         // Selected bins need higher z-index (40) to ensure resize handles appear above axis labels (30)
-        zIndex: isGhost ? 5 : isSelected ? 40 : isCategoryHighlighted ? 15 : 10,
+        // Hovered bins (30) need to be above regular bins (10) so resize handles aren't clipped by neighbors
+        zIndex: isGhost ? 5 : isSelected ? 40 : isHovered ? 30 : isCategoryHighlighted ? 15 : 10,
         boxShadow: getBoxShadow(),
         transform: getTransform(),
         // Allow resize handles to extend outside bin (text constrained by whitespace-nowrap and sizing)
