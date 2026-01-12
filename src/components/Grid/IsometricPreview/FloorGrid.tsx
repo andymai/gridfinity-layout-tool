@@ -1,41 +1,55 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
+import type { FractionalEdge } from '../../../types';
 
 interface FloorGridProps {
   width: number;
   depth: number;
+  fractionalEdgeX?: FractionalEdge;
+  fractionalEdgeY?: FractionalEdge;
 }
 
 /**
  * Drawer floor plane with flat gridlines at 1-unit intervals.
  * Constrained to drawer bounds with subtle edge highlights.
  * Includes fractional edge lines when drawer has fractional dimensions.
+ * Respects fractionalEdgeX/Y settings for line positioning.
  */
-export function FloorGrid({ width, depth }: FloorGridProps) {
+export function FloorGrid({ width, depth, fractionalEdgeX = 'end', fractionalEdgeY = 'end' }: FloorGridProps) {
   // Check for fractional dimensions
   const hasFractionalWidth = width % 1 !== 0;
   const hasFractionalDepth = depth % 1 !== 0;
+  const integerWidth = Math.floor(width);
+  const integerDepth = Math.floor(depth);
+  const fractionalWidthPart = width - integerWidth; // e.g., 0.5
+  const fractionalDepthPart = depth - integerDepth; // e.g., 0.5
 
   // Create gridline geometry for integer positions
   const gridGeometry = useMemo(() => {
     const geometry = new THREE.BufferGeometry();
     const positions: number[] = [];
 
-    // Lines parallel to X-axis (along depth) - at integer positions only
-    for (let x = 0; x <= Math.floor(width); x++) {
+    // Lines parallel to Y-axis (vertical in 3D view)
+    // When fractionalEdgeX='start', integer lines start at fractionalWidthPart
+    const xOffset = hasFractionalWidth && fractionalEdgeX === 'start' ? fractionalWidthPart : 0;
+    for (let i = 0; i <= integerWidth; i++) {
+      const x = xOffset + i;
       positions.push(x, 0, 0);
       positions.push(x, depth, 0);
     }
 
-    // Lines parallel to Y-axis (along width) - at integer positions only
-    for (let y = 0; y <= Math.floor(depth); y++) {
+    // Lines parallel to X-axis (horizontal in 3D view)
+    // When fractionalEdgeY='start', integer lines start at fractionalDepthPart
+    const yOffset = hasFractionalDepth && fractionalEdgeY === 'start' ? fractionalDepthPart : 0;
+    for (let i = 0; i <= integerDepth; i++) {
+      const y = yOffset + i;
       positions.push(0, y, 0);
       positions.push(width, y, 0);
     }
 
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     return geometry;
-  }, [width, depth]);
+  }, [width, depth, integerWidth, integerDepth, hasFractionalWidth, hasFractionalDepth, fractionalWidthPart, fractionalDepthPart, fractionalEdgeX, fractionalEdgeY]);
 
   // Create separate geometry for fractional edge lines (drawer boundaries)
   const fractionalEdgeGeometry = useMemo(() => {
@@ -45,20 +59,22 @@ export function FloorGrid({ width, depth }: FloorGridProps) {
     const positions: number[] = [];
 
     if (hasFractionalWidth) {
-      // Vertical line at fractional width edge
-      positions.push(width, 0, 0);
-      positions.push(width, depth, 0);
+      // Vertical line at fractional edge position
+      const x = fractionalEdgeX === 'start' ? fractionalWidthPart : width;
+      positions.push(x, 0, 0);
+      positions.push(x, depth, 0);
     }
 
     if (hasFractionalDepth) {
-      // Horizontal line at fractional depth edge
-      positions.push(0, depth, 0);
-      positions.push(width, depth, 0);
+      // Horizontal line at fractional edge position
+      const y = fractionalEdgeY === 'start' ? fractionalDepthPart : depth;
+      positions.push(0, y, 0);
+      positions.push(width, y, 0);
     }
 
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     return geometry;
-  }, [width, depth, hasFractionalWidth, hasFractionalDepth]);
+  }, [width, depth, hasFractionalWidth, hasFractionalDepth, fractionalWidthPart, fractionalDepthPart, fractionalEdgeX, fractionalEdgeY]);
 
   return (
     <group>

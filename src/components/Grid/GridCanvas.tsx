@@ -316,11 +316,15 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
           const sourceLayer = sourceBin ? layers.find(l => l.id === sourceBin.layerId) : undefined;
 
           // Calculate grid position (always use standard grid, no scaling)
-          // When drawer has fractional depth, row 1 is the fractional row, so integer rows start at 2
-          const gridCol = Math.floor(zone.x) + 1;
+          // Apply same fractional edge positioning as bins
+          const gridCol = hasFractionalWidth && fractionalEdgeX === 'start'
+            ? Math.floor(zone.x) + 2  // +1 for 1-based, +1 to skip fractional column
+            : Math.floor(zone.x) + 1;
           const gridColSpan = Math.ceil(zone.x + zone.width) - Math.floor(zone.x);
           const zoneGridRowStart = hasFractionalDepth
-            ? integerDepth - Math.ceil(zone.y + zone.depth) + 2  // +2: +1 for 1-based, +1 to skip fractional row
+            ? fractionalEdgeY === 'end'
+              ? integerDepth - Math.ceil(zone.y + zone.depth) + 2  // +2: +1 for 1-based, +1 to skip fractional row at top
+              : integerDepth - Math.ceil(zone.y + zone.depth) + 1  // Fractional at bottom, integers from 1
             : integerDepth - Math.ceil(zone.y + zone.depth) + 1;
           const gridRowSpan = Math.ceil(zone.y + zone.depth) - Math.floor(zone.y);
 

@@ -10,6 +10,8 @@ import { AxisLabels } from './AxisLabels';
 import { DrawerDimensions } from './DrawerDimensions';
 import { ScaleIndicator } from './ScaleIndicator';
 
+import type { FractionalEdge } from '../../../types';
+
 interface SceneProps {
   children: React.ReactNode;
   drawerWidth: number;
@@ -19,6 +21,8 @@ interface SceneProps {
   heightUnitMm: number;
   layoutName: string;
   isExpanded?: boolean;
+  fractionalEdgeX?: FractionalEdge;
+  fractionalEdgeY?: FractionalEdge;
 }
 
 export type CameraPreset = 'isometric' | 'front' | 'side';
@@ -63,7 +67,7 @@ function calculateFitZoom(
  * Handles rotation sync with UI store and renders floor grid.
  */
 export const Scene = forwardRef<SceneHandle, SceneProps>(
-  ({ children, drawerWidth, drawerDepth, drawerHeight, gridUnitMm, heightUnitMm, layoutName, isExpanded }, ref) => {
+  ({ children, drawerWidth, drawerDepth, drawerHeight, gridUnitMm, heightUnitMm, layoutName, isExpanded, fractionalEdgeX = 'end', fractionalEdgeY = 'end' }, ref) => {
     const controlsRef = useRef<OrbitControlsType>(null);
     const hasInitializedRef = useRef(false);
     const pendingFitZoomRef = useRef(false);
@@ -316,8 +320,8 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       />
 
       {/* Floor grid, axis labels, and front label */}
-      <FloorGrid width={drawerWidth} depth={drawerDepth} />
-      <AxisLabels width={drawerWidth} depth={drawerDepth} />
+      <FloorGrid width={drawerWidth} depth={drawerDepth} fractionalEdgeX={fractionalEdgeX} fractionalEdgeY={fractionalEdgeY} />
+      <AxisLabels width={drawerWidth} depth={drawerDepth} fractionalEdgeX={fractionalEdgeX} fractionalEdgeY={fractionalEdgeY} />
       <FrontLabel drawerWidth={drawerWidth} label={layoutName} />
 
       {/* Architectural dimension lines and scale indicator */}
