@@ -2,7 +2,7 @@ export { MobileHeader } from './MobileHeader';
 export { BottomNavBar } from './BottomNavBar';
 export { BottomSheet } from './BottomSheet';
 export { getPanelTitle } from './panelUtils';
-export { MobileLayersPanel } from './MobileLayersPanel';
+export { MobileLayersPanel } from './MobileLayersPanel/index';
 export { MobileCategoriesPanel } from './MobileCategoriesPanel';
 export { MobileInspector } from './MobileInspector';
 export { MobilePrintList } from './MobilePrintList';

@@ -1,0 +1,330 @@
+import { useState } from 'react';
+import { useShallow } from 'zustand/shallow';
+import { useLayoutStore, useUIStore, useUndoableAction } from '../../../store';
+import { CONSTRAINTS, STAGING_ID } from '../../../constants';
+import { getDisplayLayers } from '../../../utils/collision';
+import { ConfirmDialog } from '../../modals/ConfirmDialog';
+
+/**
+ * Layers tab content - layer list with selection, height controls, reordering, and deletion.
+ * Mobile-optimized with 44px touch targets.
+ */
+export function LayersTab() {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteLayerId, setDeleteLayerId] = useState<string | null>(null);
+  const [reorderError, setReorderError] = useState<string | null>(null);
+
+  const { layout, addLayer, updateLayer, deleteLayer, reorderLayers } = useLayoutStore(
+    useShallow((state) => ({
+      layout: state.layout,
+      addLayer: state.addLayer,
+      updateLayer: state.updateLayer,
+      deleteLayer: state.deleteLayer,
+      reorderLayers: state.reorderLayers,
+    }))
+  );
+  const layers = layout.layers;
+  const bins = layout.bins;
+  const drawer = layout.drawer;
+
+  const { activeLayerId, setActiveLayer } = useUIStore(
+    useShallow((state) => ({
+      activeLayerId: state.activeLayerId,
+      setActiveLayer: state.setActiveLayer,
+    }))
+  );
+
+  const { execute } = useUndoableAction();
+
+  const totalLayerHeight = layers.reduce((sum, l) => sum + l.height, 0);
+  const displayLayers = getDisplayLayers(layers);
+  const hasMultipleLayers = layers.length > 1;
+
+  // Coverage calculations
+  const totalCells = drawer.width * drawer.depth;
+
+  // Multi-layer stats
+  const allPlacedBins = bins.filter(b => b.layerId !== STAGING_ID);
+  const totalBinCount = allPlacedBins.length;
+  const totalCoveredCells = allPlacedBins.reduce((sum, b) => sum + b.width * b.depth, 0);
+  const totalAvailableCells = totalCells * layers.length;
+  const totalCoverage = totalAvailableCells > 0
+    ? Math.round((totalCoveredCells / totalAvailableCells) * 100)
+    : 0;
+
+  // Single layer stats
+  const activeLayerBins = bins.filter(b => b.layerId === activeLayerId);
+  const activeCoverage = totalCells > 0
+    ? Math.round((activeLayerBins.reduce((sum, b) => sum + b.width * b.depth, 0) / totalCells) * 100)
+    : 0;
+
+  // Display is reversed: index 0 in display = last in array (top layer)
+  const displayToArrayIndex = (displayIndex: number) => layers.length - 1 - displayIndex;
+
+  const handleAddLayer = () => {
+    execute(() => {
+      const id = addLayer();
+      if (id) {
+        setActiveLayer(id);
+      }
+    });
+  };
+
+  // Selection behavior: select only, don't close panel
+  const handleSelectLayer = (layerId: string) => {
+    setActiveLayer(layerId);
+  };
+
+  const handleDeleteLayer = (id: string) => {
+    if (layers.length <= CONSTRAINTS.LAYERS_MIN) return;
+    setDeleteLayerId(id);
+  };
+
+  const confirmDeleteLayer = () => {
+    if (!deleteLayerId) return;
+    execute(() => {
+      const deleted = deleteLayer(deleteLayerId);
+      if (deleted && activeLayerId === deleteLayerId && layers.length > 0) {
+        const remaining = layers.filter(l => l.id !== deleteLayerId);
+        if (remaining.length > 0) {
+          setActiveLayer(remaining[0].id);
+        }
+      }
+    });
+    setDeleteLayerId(null);
+  };
+
+  const handleHeightChange = (id: string, delta: number) => {
+    const layer = layers.find(l => l.id === id);
+    if (!layer) return;
+    const newHeight = Math.max(1, layer.height + delta);
+    execute(() => {
+      updateLayer(id, { height: newHeight });
+    });
+  };
+
+  const handleMoveLayer = (displayIndex: number, direction: 'up' | 'down') => {
+    const targetDisplayIndex = direction === 'up' ? displayIndex - 1 : displayIndex + 1;
+    if (targetDisplayIndex < 0 || targetDisplayIndex >= layers.length) return;
+
+    const fromArrayIndex = displayToArrayIndex(displayIndex);
+    const toArrayIndex = displayToArrayIndex(targetDisplayIndex);
+
+    execute(() => {
+      const result = reorderLayers(fromArrayIndex, toArrayIndex);
+      if (!result.success && result.error) {
+        setReorderError(result.error);
+        setTimeout(() => setReorderError(null), 3000);
+      }
+    });
+  };
+
+  const layerToDelete = deleteLayerId ? layers.find(l => l.id === deleteLayerId) : null;
+  const binsInLayer = deleteLayerId ? bins.filter(b => b.layerId === deleteLayerId).length : 0;
+  const canAddLayer = totalLayerHeight < drawer.height;
+
+  const cancelDeleteLayer = () => {
+    setDeleteLayerId(null);
+  };
+
+  return (
+    <div className="pb-4">
+      {/* Layer usage indicator - only show for multiple layers */}
+      {hasMultipleLayers && (
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <div className="flex-1 h-2 rounded-full overflow-hidden bg-surface-elevated">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min(100, (totalLayerHeight / drawer.height) * 100)}%`,
+                backgroundColor: totalLayerHeight >= drawer.height ? 'var(--color-warning)' : 'var(--color-info)',
+              }}
+            />
+          </div>
+          <span
+            className={`text-xs ${totalLayerHeight >= drawer.height ? 'text-warning' : 'text-content-tertiary'}`}
+          >
+            {totalLayerHeight}/{drawer.height}u
+          </span>
+        </div>
+      )}
+
+      {/* Reorder error message */}
+      {reorderError && (
+        <div className="mb-3 p-3 rounded-lg flex items-center gap-2 bg-error-muted border border-error text-error text-sm">
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          {reorderError}
+        </div>
+      )}
+
+      {/* Layer list */}
+      <div className="space-y-1.5">
+        {displayLayers.map((layer, displayIndex) => {
+          const isActive = layer.id === activeLayerId;
+          const isEditing = editingId === layer.id;
+          const layerBins = bins.filter(b => b.layerId === layer.id);
+          const binCount = layerBins.length;
+          const layerCoveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
+          const layerCoverage = totalCells > 0 ? Math.round((layerCoveredCells / totalCells) * 100) : 0;
+
+          return (
+            <div
+              key={layer.id}
+              className={`flex items-center gap-2 px-3 py-2 border-l-2 ${
+                isActive
+                  ? 'bg-surface-hover border-l-accent'
+                  : 'bg-surface-elevated border-l-transparent'
+              }`}
+            >
+              {/* Layer info - tappable to select */}
+              <button
+                className="flex-1 min-w-0 text-left py-1"
+                onClick={() => !isEditing && handleSelectLayer(layer.id)}
+              >
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={layer.name}
+                    onChange={(e) => execute(() => updateLayer(layer.id, { name: e.target.value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) }))}
+                    onBlur={() => setEditingId(null)}
+                    onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
+                    className="input w-full text-sm"
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <>
+                    <span
+                      className={`truncate block text-sm ${isActive ? 'text-content font-semibold' : 'text-content font-medium'}`}
+                      onClick={(e) => {
+                        if (isActive) {
+                          e.stopPropagation();
+                          setEditingId(layer.id);
+                        }
+                      }}
+                    >
+                      {layer.name}
+                    </span>
+                    <span className="text-xs text-content-tertiary">
+                      {binCount} bin{binCount !== 1 ? 's' : ''}{hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
+                    </span>
+                  </>
+                )}
+              </button>
+
+              {/* Height control - compact */}
+              <div className="flex items-center">
+                <button
+                  onClick={() => handleHeightChange(layer.id, -1)}
+                  disabled={layer.height <= 1}
+                  className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
+                  aria-label="Decrease height"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                  </svg>
+                </button>
+                <span className="w-7 text-center text-xs font-medium text-content-secondary tabular-nums">
+                  {layer.height}u
+                </span>
+                <button
+                  onClick={() => handleHeightChange(layer.id, 1)}
+                  className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content transition-colors"
+                  aria-label="Increase height"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Reorder buttons - only for active layer when multiple layers */}
+              {isActive && hasMultipleLayers && (
+                <div className="flex items-center">
+                  <button
+                    onClick={() => handleMoveLayer(displayIndex, 'up')}
+                    disabled={displayIndex === 0}
+                    className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
+                    aria-label="Move layer up"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleMoveLayer(displayIndex, 'down')}
+                    disabled={displayIndex === layers.length - 1}
+                    className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
+                    aria-label="Move layer down"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+
+              {/* Delete */}
+              {layers.length > 1 && (
+                <button
+                  onClick={() => handleDeleteLayer(layer.id)}
+                  className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-error transition-colors"
+                  aria-label="Delete layer"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Stats line */}
+      <div className="text-sm text-content-tertiary mb-2 mt-4">
+        {hasMultipleLayers
+          ? `${totalCoverage}% filled · ${totalBinCount} bin${totalBinCount !== 1 ? 's' : ''} total`
+          : `${activeCoverage}% filled · ${activeLayerBins.length} bin${activeLayerBins.length !== 1 ? 's' : ''}`
+        }
+      </div>
+
+      {/* Coverage bar */}
+      <div className="h-2 rounded-full overflow-hidden mb-4 bg-surface-elevated">
+        <div
+          className="h-full rounded-full transition-all"
+          style={{
+            width: `${hasMultipleLayers ? totalCoverage : activeCoverage}%`,
+            backgroundColor: (hasMultipleLayers ? totalCoverage : activeCoverage) === 100
+              ? 'var(--color-success)'
+              : 'var(--text-tertiary)',
+          }}
+        />
+      </div>
+
+      {/* Add layer button */}
+      <button
+        onClick={handleAddLayer}
+        disabled={!canAddLayer}
+        className="btn btn-primary w-full"
+      >
+        <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        Add Layer
+      </button>
+
+      <ConfirmDialog
+        isOpen={deleteLayerId !== null}
+        title="Delete Layer"
+        message={`Delete "${layerToDelete?.name}"${binsInLayer > 0 ? ` and its ${binsInLayer} bin${binsInLayer > 1 ? 's' : ''}` : ''}?`}
+        confirmText="Delete"
+        destructive
+        onConfirm={confirmDeleteLayer}
+        onCancel={cancelDeleteLayer}
+      />
+    </div>
+  );
+}
