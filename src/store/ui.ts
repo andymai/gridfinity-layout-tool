@@ -89,6 +89,10 @@ interface UIState {
   // Category highlighting (for hover preview)
   highlightedCategoryId: string | null;
 
+  // Row/column label highlighting (for hover preview)
+  highlightedRowLabel: number | null;  // 1-indexed row number
+  highlightedColLabel: number | null;  // 1-indexed column number
+
   // Half-bin mode (power user feature for 0.5 unit increments)
   halfBinMode: boolean;
 
@@ -152,6 +156,10 @@ interface UIState {
   // Category highlighting actions
   setHighlightedCategoryId: (categoryId: string | null) => void;
 
+  // Row/column label highlighting actions
+  setHighlightedRowLabel: (row: number | null) => void;
+  setHighlightedColLabel: (col: number | null) => void;
+
   // Half-bin mode actions
   toggleHalfBinMode: () => OperationResult<void>;
   setHalfBinMode: (enabled: boolean) => void;
@@ -185,6 +193,8 @@ export const useUIStore = create<UIState>((set) => ({
   liveMessage: null,
   quickLabelBinId: null,
   highlightedCategoryId: null,
+  highlightedRowLabel: null,
+  highlightedColLabel: null,
   halfBinMode: loadHalfBinMode(),
   sharedLayoutPreview: null,
   sharedLayoutOriginalName: null,
@@ -330,6 +340,10 @@ export const useUIStore = create<UIState>((set) => ({
 
   // Category highlighting actions
   setHighlightedCategoryId: (categoryId) => set({ highlightedCategoryId: categoryId }),
+
+  // Row/column label highlighting actions
+  setHighlightedRowLabel: (row) => set({ highlightedRowLabel: row }),
+  setHighlightedColLabel: (col) => set({ highlightedColLabel: col }),
 
   // Half-bin mode actions
   toggleHalfBinMode: () => {
