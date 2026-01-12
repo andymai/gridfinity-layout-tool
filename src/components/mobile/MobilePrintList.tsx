@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { exportPrintListTSV } from '../../utils/storage';
 import { usePrintList } from '../../hooks/usePrintList';
+import { useUIStore } from '../../store/ui';
 import { SplitPreview, PrintListSummary, PrintListEmpty } from '../PrintList';
 import { BinListModal } from '../modals/BinListModal';
 
@@ -16,6 +17,13 @@ export function MobilePrintList() {
   const [isExpandedModalOpen, setIsExpandedModalOpen] = useState(false);
 
   const printList = usePrintList();
+  const closeMobilePanel = useUIStore((state) => state.closeMobilePanel);
+
+  // Close bottom sheet when expanding to full screen modal
+  const handleExpand = useCallback(() => {
+    closeMobilePanel();
+    setIsExpandedModalOpen(true);
+  }, [closeMobilePanel]);
 
   const handleCopy = () => {
     const tsv = exportPrintListTSV(printList.rows);
@@ -38,7 +46,7 @@ export function MobilePrintList() {
         <div className="flex items-center gap-2">
           {/* Expand button */}
           <button
-            onClick={() => setIsExpandedModalOpen(true)}
+            onClick={handleExpand}
             className="btn btn-ghost btn-sm gap-1.5"
             aria-label="Expand bin list"
           >
