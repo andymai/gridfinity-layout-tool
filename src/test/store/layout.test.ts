@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useLayoutStore } from '../../store/layout';
+import { useSettingsStore } from '../../store/settings';
 import { createDefaultLayout, STAGING_ID } from '../../constants';
 import { resetAllStores } from '../testUtils';
 import type { Layout } from '../../types';
@@ -457,6 +458,46 @@ describe('layout store', () => {
 
       const result = addLayer();
       expect(result).toBeNull();
+    });
+
+    it('addLayer uses default layer height setting', () => {
+      // Set custom default layer height
+      useSettingsStore.setState({
+        settings: {
+          ...useSettingsStore.getState().settings,
+          defaultLayerHeight: 5,
+        },
+      });
+
+      const { addLayer } = useLayoutStore.getState();
+
+      const layerId = addLayer();
+      expect(layerId).not.toBeNull();
+
+      const layers = useLayoutStore.getState().layout.layers;
+      expect(layers).toHaveLength(2);
+      expect(layers[1].height).toBe(5);
+    });
+
+    it('addLayer respects remaining height over default setting', () => {
+      // Set default to 5, but only 2 units remaining
+      useSettingsStore.setState({
+        settings: {
+          ...useSettingsStore.getState().settings,
+          defaultLayerHeight: 5,
+        },
+      });
+
+      // Set drawer height to 5, first layer already uses 3 (leaving 2 remaining)
+      const { updateDrawer, addLayer } = useLayoutStore.getState();
+      updateDrawer({ height: 5 });
+
+      const layerId = addLayer();
+      expect(layerId).not.toBeNull();
+
+      const layers = useLayoutStore.getState().layout.layers;
+      // New layer should be 2 (remaining) not 5 (default)
+      expect(layers[1].height).toBe(2);
     });
 
     it('deleteLayer removes layer and its bins', () => {
