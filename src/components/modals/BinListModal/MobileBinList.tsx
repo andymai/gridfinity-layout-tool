@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { DEFAULT_CATEGORY_COLOR } from '../../../constants';
 import { useBinList } from '../../../hooks/useBinList';
@@ -81,7 +81,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
         setExpandedRow(expandedRow === index ? null : index);
       }
     }
-  }, [selectionCount, toggleRowSelection, selectBinsByRow, expandedRow]);
+  }, [selectionCount, toggleRowSelection, selectBinsByRow, expandedRow, setExpandedRow]);
 
   const handleRowLongPress = useCallback((index: number) => {
     // Start selection mode
@@ -89,26 +89,34 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
   }, [toggleRowSelection]);
 
   const handleEditSubmit = useCallback(() => {
-    if (!editValue.trim()) {
+    const trimmedValue = editValue.trim();
+    if (!trimmedValue) {
       setEditingField(null);
       return;
     }
     if (editingField === 'label') {
-      updateBulkLabel(editValue.trim());
+      updateBulkLabel(trimmedValue);
     } else if (editingField === 'notes') {
-      updateBulkNotes(editValue.trim());
+      updateBulkNotes(trimmedValue);
     }
+    clearSelection();
     setEditValue('');
     setEditingField(null);
-  }, [editingField, editValue, updateBulkLabel, updateBulkNotes]);
+  }, [editingField, editValue, updateBulkLabel, updateBulkNotes, clearSelection]);
 
   const handleCategorySelect = useCallback((categoryId: string) => {
     changeBulkCategory(categoryId);
+    clearSelection();
     setEditingField(null);
-  }, [changeBulkCategory]);
+  }, [changeBulkCategory, clearSelection]);
 
   const content = (
-    <div className="fixed inset-0 z-50 flex flex-col bg-surface-secondary">
+    <div
+      className="fixed inset-0 z-50 flex flex-col bg-surface-secondary"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="mobile-bin-list-title"
+    >
       {/* Header */}
       <header className="flex items-center justify-between px-4 h-14 border-b border-stroke bg-surface-elevated safe-area-top">
         <div className="flex items-center gap-2">
@@ -122,7 +130,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
             </svg>
           </button>
           <div className="flex flex-col justify-center">
-            <h2 className="text-base font-semibold text-content leading-tight">Bin List</h2>
+            <h2 id="mobile-bin-list-title" className="text-base font-semibold text-content leading-tight">Bin List</h2>
             <p className="text-xs text-content-tertiary leading-tight">{totalBins} bins · {totalFilament}m</p>
           </div>
         </div>
@@ -550,19 +558,46 @@ function BinCard({
   onLongPress,
   onToggleSelect,
 }: BinCardProps) {
-  const [longPressTimer, setLongPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchTriggeredRef = useRef(false);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleTouchStart = () => {
-    const timer = setTimeout(() => {
+    touchTriggeredRef.current = true;
+    longPressTimerRef.current = setTimeout(() => {
       onLongPress();
+      longPressTimerRef.current = null;
     }, 500);
-    setLongPressTimer(timer);
   };
 
   const handleTouchEnd = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleClick = () => {
+    // Prevent click from firing after touch events
+    if (touchTriggeredRef.current) {
+      touchTriggeredRef.current = false;
+      return;
+    }
+    onTap();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onTap();
     }
   };
 
@@ -571,10 +606,14 @@ function BinCard({
   return (
     <div
       className={`
-        p-3 rounded-lg transition-colors
+        p-3 rounded-lg transition-colors cursor-pointer
         ${isSelected ? 'bg-accent/20 ring-2 ring-accent' : 'bg-surface-elevated active:bg-surface-hover'}
+        focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-secondary
       `}
-      onClick={onTap}
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
@@ -685,8 +724,26 @@ interface BottomSheetProps {
 }
 
 function BottomSheet({ title, children, onClose }: BottomSheetProps) {
+  const sheetId = useId();
+
+  // Handle Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-[60]">
+    <div
+      className="fixed inset-0 z-[60]"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={sheetId}
+    >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       {/* Sheet */}
@@ -695,8 +752,8 @@ function BottomSheet({ title, children, onClose }: BottomSheetProps) {
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-stroke">
-          <h3 className="font-medium text-content">{title}</h3>
-          <button onClick={onClose} className="p-2 -mr-2 text-content-secondary">
+          <h3 id={sheetId} className="font-medium text-content">{title}</h3>
+          <button onClick={onClose} className="p-2 -mr-2 text-content-secondary" aria-label="Close">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
