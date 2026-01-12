@@ -26,6 +26,17 @@ vi.mock('../../utils/storage', () => ({
   importLayout: vi.fn(),
 }));
 
+// Mock the idle utility to execute callbacks immediately (synchronously)
+// This simplifies testing since we only need to test debounce behavior
+vi.mock('../../utils/idle', () => ({
+  scheduleIdleCallback: vi.fn((callback) => {
+    // Execute immediately for testing purposes
+    callback({ didTimeout: false, timeRemaining: () => 50 });
+    return 0;
+  }),
+  cancelIdleCallback: vi.fn(),
+}));
+
 const SAVE_DEBOUNCE_MS = 1000;
 const TEST_LAYOUT_ID = 'test-layout-id';
 
