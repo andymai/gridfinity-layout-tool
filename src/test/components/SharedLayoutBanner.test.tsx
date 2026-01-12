@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { SharedLayoutBanner } from '../../components/SharedLayoutBanner';
 import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
@@ -95,6 +95,11 @@ describe('SharedLayoutBanner', () => {
     useToastStore.setState({
       toasts: [],
     });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
   });
 
   describe('visibility', () => {
