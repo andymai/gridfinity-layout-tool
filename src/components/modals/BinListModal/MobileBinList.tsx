@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { DEFAULT_CATEGORY_COLOR } from '../../../constants';
 import { useBinList } from '../../../hooks/useBinList';
 import { SplitPreview } from '../../PrintList';
-import type { EnhancedPrintRow, Category } from '../../../types';
+import type { EnhancedPrintRow, Category, PrintListSortKey } from '../../../types';
 
 interface MobileBinListProps {
   isOpen: boolean;
@@ -19,21 +19,41 @@ export function MobileBinList({ isOpen, onClose }: MobileBinListProps) {
   return <MobileBinListContent onClose={onClose} />;
 }
 
+type DropdownOpen = 'sort' | 'export' | 'stats' | null;
+
+const SORT_OPTIONS: { key: PrintListSortKey; label: string }[] = [
+  { key: 'default', label: 'Default Order' },
+  { key: 'area', label: 'Size (Area)' },
+  { key: 'height', label: 'Height' },
+  { key: 'filament', label: 'Filament' },
+];
+
 function MobileBinListContent({ onClose }: { onClose: () => void }) {
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const [editingField, setEditingField] = useState<'label' | 'notes' | 'category' | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [openDropdown, setOpenDropdown] = useState<DropdownOpen>(null);
 
   const {
     rows,
+    unfilteredRows,
     categories,
     totalBins,
+    totalPieces,
     totalFilament,
+    totalCost,
+    totalPrintTimeHours,
+    spoolEstimate,
+    spoolPercentage,
+    hasAnySplits,
+    categoryBreakdown,
     searchQuery,
     setSearchQuery,
     filters,
+    setSort,
     toggleCategoryVisibility,
     toggleGroupByCategory,
+    resetFilters,
     selectedIndices,
     toggleRowSelection,
     selectAllRows,
@@ -46,6 +66,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
     updateBulkNotes,
     selectBinsByRow,
     downloadExport,
+    copyToClipboard,
   } = useBinList();
 
   const handleRowTap = useCallback((row: EnhancedPrintRow, index: number) => {
@@ -89,32 +110,149 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
   const content = (
     <div className="fixed inset-0 z-50 flex flex-col bg-surface-secondary">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-stroke bg-surface-elevated safe-area-top">
-        <div className="flex items-center gap-3">
+      <header className="flex items-center justify-between px-4 h-14 border-b border-stroke bg-surface-elevated safe-area-top">
+        <div className="flex items-center gap-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 text-content-secondary hover:text-content"
+            className="w-10 h-10 flex items-center justify-center -ml-2 text-content-secondary hover:text-content"
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <div>
-            <h2 className="text-base font-semibold text-content">Bin List</h2>
-            <p className="text-xs text-content-tertiary">{totalBins} bins · {totalFilament}m</p>
+          <div className="flex flex-col justify-center">
+            <h2 className="text-base font-semibold text-content leading-tight">Bin List</h2>
+            <p className="text-xs text-content-tertiary leading-tight">{totalBins} bins · {totalFilament}m</p>
           </div>
         </div>
-        <button
-          onClick={() => downloadExport('tsv')}
-          className="p-2 text-content-secondary hover:text-content"
-          aria-label="Export"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-1">
+          {/* Stats toggle */}
+          <button
+            onClick={() => setOpenDropdown(openDropdown === 'stats' ? null : 'stats')}
+            className={`w-10 h-10 flex items-center justify-center ${openDropdown === 'stats' ? 'text-accent' : 'text-content-secondary hover:text-content'}`}
+            aria-label="Toggle stats"
+            aria-pressed={openDropdown === 'stats'}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </button>
+          {/* Export dropdown trigger */}
+          <button
+            onClick={() => setOpenDropdown(openDropdown === 'export' ? null : 'export')}
+            className={`w-10 h-10 flex items-center justify-center ${openDropdown === 'export' ? 'text-accent' : 'text-content-secondary hover:text-content'}`}
+            aria-label="Export"
+            aria-expanded={openDropdown === 'export'}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </button>
+        </div>
       </header>
+
+      {/* Stats panel (collapsible) */}
+      {openDropdown === 'stats' && (
+        <div className="px-4 py-3 border-b border-stroke bg-surface">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <div className="text-content-tertiary text-xs">Bin Types</div>
+              <div className="font-semibold text-content">{rows.length}</div>
+            </div>
+            <div>
+              <div className="text-content-tertiary text-xs">Total Bins</div>
+              <div className="font-semibold text-content">{totalBins}</div>
+            </div>
+            {hasAnySplits && (
+              <div>
+                <div className="text-content-tertiary text-xs">Print Pieces</div>
+                <div className="font-semibold text-content">{totalPieces}</div>
+              </div>
+            )}
+            <div>
+              <div className="text-content-tertiary text-xs">Filament</div>
+              <div className="font-semibold text-content">{totalFilament}m</div>
+            </div>
+            <div>
+              <div className="text-content-tertiary text-xs">Est. Cost</div>
+              <div className="font-semibold text-content">${totalCost.toFixed(2)}</div>
+            </div>
+            <div>
+              <div className="text-content-tertiary text-xs">Print Time</div>
+              <div className="font-semibold text-content">{totalPrintTimeHours.toFixed(1)}h</div>
+            </div>
+            <div className="col-span-2">
+              <div className="text-content-tertiary text-xs mb-1">Spool Usage</div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-2 bg-surface-secondary rounded overflow-hidden">
+                  <div
+                    className="h-full bg-accent rounded"
+                    style={{ width: `${Math.min(spoolPercentage, 100)}%` }}
+                  />
+                </div>
+                <span className="text-xs font-medium text-content">{spoolEstimate.toFixed(1)} spools ({spoolPercentage.toFixed(0)}%)</span>
+              </div>
+            </div>
+            {categoryBreakdown.length > 1 && (
+              <div className="col-span-2 pt-2 border-t border-stroke-subtle">
+                <div className="text-content-tertiary text-xs mb-2">By Category</div>
+                <div className="space-y-1.5">
+                  {categoryBreakdown.map(({ categoryId, categoryName, categoryColor, binCount, percentage }) => (
+                    <div key={categoryId} className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded" style={{ backgroundColor: categoryColor }} />
+                      <span className="flex-1 text-xs text-content truncate">{categoryName}</span>
+                      <span className="text-xs text-content-tertiary">{binCount} ({percentage.toFixed(0)}%)</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Export dropdown */}
+      {openDropdown === 'export' && (
+        <div className="px-4 py-3 border-b border-stroke bg-surface">
+          <div className="text-xs text-content-tertiary mb-2">Download</div>
+          <div className="flex gap-2 mb-3">
+            <button
+              onClick={() => { downloadExport('tsv'); setOpenDropdown(null); }}
+              className="flex-1 py-2 text-sm bg-surface-elevated border border-stroke rounded text-center"
+            >
+              TSV
+            </button>
+            <button
+              onClick={() => { downloadExport('csv'); setOpenDropdown(null); }}
+              className="flex-1 py-2 text-sm bg-surface-elevated border border-stroke rounded text-center"
+            >
+              CSV
+            </button>
+            <button
+              onClick={() => { downloadExport('json'); setOpenDropdown(null); }}
+              className="flex-1 py-2 text-sm bg-surface-elevated border border-stroke rounded text-center"
+            >
+              JSON
+            </button>
+          </div>
+          <div className="text-xs text-content-tertiary mb-2">Copy to clipboard</div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { copyToClipboard('tsv'); setOpenDropdown(null); }}
+              className="flex-1 py-2 text-sm bg-surface-elevated border border-stroke rounded text-center"
+            >
+              Copy TSV
+            </button>
+            <button
+              onClick={() => { copyToClipboard('csv'); setOpenDropdown(null); }}
+              className="flex-1 py-2 text-sm bg-surface-elevated border border-stroke rounded text-center"
+            >
+              Copy CSV
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Search */}
       <div className="px-4 py-3 border-b border-stroke">
@@ -132,38 +270,101 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      {/* Category filters - horizontal scroll */}
-      <div className="px-4 py-2 border-b border-stroke overflow-x-auto">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-content-tertiary flex-shrink-0">Filter:</span>
-          {categories.map((category) => {
-            const isHidden = filters.hiddenCategoryIds.has(category.id);
-            return (
-              <button
-                key={category.id}
-                onClick={() => toggleCategoryVisibility(category.id)}
-                className={`
-                  flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium flex-shrink-0 transition-all
-                  ${isHidden ? 'bg-surface text-content-disabled opacity-60 border border-stroke' : 'bg-surface-elevated text-content'}
-                `}
-              >
-                <span
-                  className="w-2.5 h-2.5 rounded"
-                  style={{ backgroundColor: category.color }}
-                />
-                {category.name}
-              </button>
-            );
-          })}
+      {/* Filters bar */}
+      <div className="px-4 py-2 border-b border-stroke">
+        {/* Sort and filter controls */}
+        <div className="flex items-center gap-2 mb-2">
+          {/* Sort dropdown */}
+          <button
+            onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-surface-elevated border border-stroke rounded"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+            </svg>
+            {SORT_OPTIONS.find(o => o.key === filters.sortKey)?.label || 'Sort'}
+            {filters.sortOrder === 'asc' && <span className="text-content-tertiary">↑</span>}
+            {filters.sortOrder === 'desc' && filters.sortKey !== 'default' && <span className="text-content-tertiary">↓</span>}
+          </button>
+
+          {/* Group toggle */}
           <button
             onClick={toggleGroupByCategory}
             className={`
-              flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium flex-shrink-0 transition-all
-              ${filters.groupByCategory ? 'bg-accent text-white' : 'bg-surface-elevated text-content'}
+              flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-all
+              ${filters.groupByCategory ? 'bg-accent text-white' : 'bg-surface-elevated text-content border border-stroke'}
             `}
           >
             Group
           </button>
+
+          {/* Reset filters (only show if filters are active) */}
+          {(filters.hiddenCategoryIds.size > 0 || filters.sortKey !== 'default' || searchQuery || filters.groupByCategory) && (
+            <button
+              onClick={() => { resetFilters(); setSearchQuery(''); }}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-content-secondary hover:text-content"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Reset
+            </button>
+          )}
+
+          {/* Filter count */}
+          {unfilteredRows.length !== rows.length && (
+            <span className="text-xs text-content-tertiary ml-auto">
+              {rows.length}/{unfilteredRows.length}
+            </span>
+          )}
+        </div>
+
+        {/* Sort dropdown content */}
+        {openDropdown === 'sort' && (
+          <div className="mb-2 p-2 bg-surface border border-stroke rounded">
+            {SORT_OPTIONS.map((option) => (
+              <button
+                key={option.key}
+                onClick={() => { setSort(option.key); setOpenDropdown(null); }}
+                className={`
+                  flex items-center justify-between w-full px-3 py-2 text-sm rounded
+                  ${filters.sortKey === option.key ? 'bg-accent/10 text-accent' : 'text-content hover:bg-surface-hover'}
+                `}
+              >
+                {option.label}
+                {filters.sortKey === option.key && (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Category filters - horizontal scroll */}
+        <div className="overflow-x-auto -mx-4 px-4">
+          <div className="flex items-center gap-2">
+            {categories.map((category) => {
+              const isHidden = filters.hiddenCategoryIds.has(category.id);
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => toggleCategoryVisibility(category.id)}
+                  className={`
+                    flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium flex-shrink-0 transition-all
+                    ${isHidden ? 'bg-surface text-content-disabled opacity-60 border border-stroke' : 'bg-surface-elevated text-content'}
+                  `}
+                >
+                  <span
+                    className="w-2.5 h-2.5 rounded"
+                    style={{ backgroundColor: category.color }}
+                  />
+                  {category.name}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
