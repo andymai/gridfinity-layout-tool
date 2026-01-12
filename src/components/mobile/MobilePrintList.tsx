@@ -3,6 +3,7 @@ import { DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { exportPrintListTSV } from '../../utils/storage';
 import { usePrintList } from '../../hooks/usePrintList';
 import { SplitPreview, PrintListSummary, PrintListEmpty } from '../PrintList';
+import { BinListModal } from '../modals/BinListModal';
 
 /**
  * Mobile-optimized print list matching desktop functionality.
@@ -12,6 +13,7 @@ import { SplitPreview, PrintListSummary, PrintListEmpty } from '../PrintList';
 export function MobilePrintList() {
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
+  const [isExpandedModalOpen, setIsExpandedModalOpen] = useState(false);
 
   const printList = usePrintList();
 
@@ -28,31 +30,45 @@ export function MobilePrintList() {
 
   return (
     <div className="pb-4">
-      {/* Header with copy button */}
+      {/* Header with action buttons */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm text-content-tertiary">
           {printList.totalBins} bins{printList.hasAnySplits ? `, ${printList.totalPieces} pcs` : ''}
         </span>
-        <button
-          onClick={handleCopy}
-          className="btn btn-ghost btn-sm gap-1.5"
-        >
-          {copyFeedback ? (
-            <>
-              <svg className="w-4 h-4 text-[var(--color-success)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Copied
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              Copy
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Expand button */}
+          <button
+            onClick={() => setIsExpandedModalOpen(true)}
+            className="btn btn-ghost btn-sm gap-1.5"
+            aria-label="Expand bin list"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            </svg>
+            Expand
+          </button>
+          {/* Copy button */}
+          <button
+            onClick={handleCopy}
+            className="btn btn-ghost btn-sm gap-1.5"
+          >
+            {copyFeedback ? (
+              <>
+                <svg className="w-4 h-4 text-[var(--color-success)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Copied
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Copy
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Print list items */}
@@ -194,6 +210,12 @@ export function MobilePrintList() {
           compact
         />
       </div>
+
+      {/* Expanded bin list modal */}
+      <BinListModal
+        isOpen={isExpandedModalOpen}
+        onClose={() => setIsExpandedModalOpen(false)}
+      />
     </div>
   );
 }
