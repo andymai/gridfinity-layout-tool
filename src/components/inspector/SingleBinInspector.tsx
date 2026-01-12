@@ -1,5 +1,6 @@
-import { STAGING_ID, CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
+import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { useUIStore } from '../../store';
+import { getBinLocationContext } from '../../utils/binLocation';
 import type { UseBinInspectorReturn } from './useBinInspector';
 import { SplitWarning } from './SplitWarning';
 import { DeferredNumberInput } from '../DeferredNumberInput';
@@ -39,7 +40,8 @@ export function SingleBinInspector({
   if (!bin) return null;
 
   const isMobile = variant === 'mobile';
-  const canMoveToStaging = bin.layerId !== STAGING_ID;
+  const locationContext = getBinLocationContext(bin);
+  const canMoveToStaging = locationContext.canMoveToStash;
 
   // Format dimensions - show decimal if fractional (half-bin mode)
   const formatDim = (val: number) => val % 1 === 0 ? val.toString() : val.toFixed(1);
@@ -113,7 +115,6 @@ export function SingleBinInspector({
           <button
             type="button"
             onClick={rotateBin}
-            disabled={bin.layerId === STAGING_ID}
             className={`btn btn-ghost p-0 text-content-tertiary hover:text-content ${isMobile ? 'w-12 h-12' : 'w-[38px] h-[38px]'}`}
             title="Rotate 90° (R)"
             aria-label="Rotate bin"
