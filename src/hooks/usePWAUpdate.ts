@@ -1,57 +1,138 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useToastStore } from '../store/toast';
+import { useUIStore } from '../store/ui';
+import { STAGING_ID } from '../constants';
+import { useLayoutStore } from '../store/layout';
 
-// Match the default toast duration for consistent UX
-const RELOAD_DELAY_MS = 5000;
+// Toast duration for update notification
+const UPDATE_TOAST_MS = 5000;
 
-// Background polling interval (every 5 minutes when tab is active)
-const UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000;
+// Background polling interval (every 15 minutes when tab is active)
+const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
 
-// Minimum time between update checks to avoid hammering the server
-const UPDATE_THROTTLE_MS = 30 * 1000; // 30 seconds
+// Minimum time between update checks (1 minute)
+const UPDATE_THROTTLE_MS = 60 * 1000;
+
+// How often to check if safe to reload while waiting (1 second)
+const IDLE_CHECK_INTERVAL_MS = 1000;
+
+// Max time to wait for idle before forcing reload (2 minutes)
+const MAX_IDLE_WAIT_MS = 2 * 60 * 1000;
+
+// Session storage key to prevent reload loops
+const RELOAD_FLAG_KEY = 'pwa-update-pending-reload';
 
 /**
- * Hook that handles PWA service worker updates following vite-plugin-pwa best practices.
+ * Check if the app is in a state where it's safe to reload.
+ * Avoids reloading during active user interactions or when they have unsaved work.
+ */
+function isSafeToReload(): boolean {
+  const ui = useUIStore.getState();
+  const layout = useLayoutStore.getState();
+
+  // Don't reload during active interaction (drag, resize, draw, paint)
+  if (ui.interaction !== null) {
+    return false;
+  }
+
+  // Don't reload with bins in staging (user might lose track of them)
+  const stagedBins = layout.layout.bins.filter(b => b.layerId === STAGING_ID);
+  if (stagedBins.length > 0) {
+    return false;
+  }
+
+  // Don't reload during 3D preview (camera state would be lost)
+  if (ui.isPreviewExpanded) {
+    return false;
+  }
+
+  // Don't reload with context menu open
+  if (ui.contextMenu !== null) {
+    return false;
+  }
+
+  // Don't reload with quick label popover open
+  if (ui.quickLabelBinId !== null) {
+    return false;
+  }
+
+  // Don't reload during keyboard drag/resize mode
+  if (ui.keyboardDragMode || ui.keyboardResizeMode) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Wait until the app is in a safe state to reload, with timeout.
+ * Returns true if safe, false if timed out.
+ */
+function waitForSafeReload(timeoutMs: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+
+    const check = () => {
+      if (isSafeToReload()) {
+        resolve(true);
+        return;
+      }
+
+      if (Date.now() - startTime > timeoutMs) {
+        // Timed out waiting for idle - reload anyway
+        resolve(false);
+        return;
+      }
+
+      setTimeout(check, IDLE_CHECK_INTERVAL_MS);
+    };
+
+    check();
+  });
+}
+
+/**
+ * Hook that handles PWA service worker updates.
  *
  * Checks for updates on:
  * - Initial page load (via onRegisteredSW callback)
  * - Tab visibility change (returning to tab)
- * - Window focus
- * - Every 5 minutes while active
+ * - Every 15 minutes while active
  *
  * Update checks are throttled and skip when:
  * - Offline (navigator.onLine is false)
  * - SW is currently installing
- * - Checked within last 30 seconds
+ * - Checked within last minute
  *
- * When a new version is available, shows a toast and auto-reloads.
+ * When a new version is available:
+ * - Waits until user is idle (no active interaction, no staging bins)
+ * - Shows a toast notification
+ * - Auto-reloads after a short delay
  */
 export function usePWAUpdate(): void {
   const addToast = useToastStore(state => state.addToast);
   const hasTriggeredReload = useRef(false);
   const intervalRef = useRef<number | undefined>(undefined);
-  const timeoutRef = useRef<number | undefined>(undefined);
   const lastCheckRef = useRef<number>(0);
   const registrationRef = useRef<ServiceWorkerRegistration | undefined>(undefined);
-  const swUrlRef = useRef<string | undefined>(undefined);
+  const wasOfflineRef = useRef(!navigator.onLine);
 
   /**
-   * Check for SW updates following the advanced pattern from vite-plugin-pwa docs.
-   * Fetches SW file with cache-busting headers before calling update().
+   * Check for SW updates.
+   * Uses registration.update() which already fetches SW with cache bypass per spec.
    */
-  const checkForUpdate = async () => {
+  const checkForUpdate = useCallback(async () => {
     const registration = registrationRef.current;
-    const swUrl = swUrlRef.current;
 
     // Skip if not registered yet
-    if (!registration || !swUrl) return;
+    if (!registration) return;
 
     // Skip if SW is currently installing
     if (registration.installing) return;
 
     // Skip if offline
-    if ('connection' in navigator && !navigator.onLine) return;
+    if (!navigator.onLine) return;
 
     // Throttle checks
     const now = Date.now();
@@ -59,47 +140,75 @@ export function usePWAUpdate(): void {
     lastCheckRef.current = now;
 
     try {
-      // Fetch SW with cache-busting headers to ensure fresh check
-      const resp = await fetch(swUrl, {
-        cache: 'no-store',
-        headers: {
-          'cache': 'no-store',
-          'cache-control': 'no-cache',
-        },
-      });
-
-      if (resp?.status === 200) {
-        await registration.update();
-      }
+      await registration.update();
     } catch (error) {
       // Silently handle network errors during update check
       console.warn('SW update check failed:', error);
     }
-  };
+  }, []);
 
   const {
     needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegisteredSW(swUrl, registration) {
-      // Store references for update checks
-      swUrlRef.current = swUrl;
+    onRegisteredSW(_swUrl, registration) {
+      // Store reference for update checks
       registrationRef.current = registration;
+
+      // Clear reload flag on successful registration (update completed)
+      try {
+        sessionStorage.removeItem(RELOAD_FLAG_KEY);
+      } catch {
+        // Ignore storage errors
+      }
 
       // Check immediately on registration (page load)
       checkForUpdate();
 
-      // Set up periodic checks
+      // Set up periodic checks (less aggressive - every 15 minutes)
       intervalRef.current = window.setInterval(() => {
         checkForUpdate();
       }, UPDATE_CHECK_INTERVAL_MS);
     },
     onRegisterError(error) {
-      console.error('SW registration error:', error);
+      console.error('SW registration failed:', error);
+
+      // App still works without SW, but offline features won't be available
+      // Only warn if it seems like a persistent issue
+      if (error?.message?.includes('SecurityError')) {
+        console.warn('SW blocked - may be in private browsing or SW disabled');
+      }
     },
   });
 
-  // Set up visibility and focus listeners for update checks
+  // Listen for online/offline transitions
+  useEffect(() => {
+    const handleOnline = () => {
+      if (wasOfflineRef.current) {
+        wasOfflineRef.current = false;
+        addToast('Back online', 'success');
+        // Check for updates when coming back online
+        checkForUpdate();
+      }
+    };
+
+    const handleOffline = () => {
+      if (!wasOfflineRef.current) {
+        wasOfflineRef.current = true;
+        addToast('You\'re offline. Changes save locally.', 'info');
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [addToast, checkForUpdate]);
+
+  // Set up visibility listener for update checks (not focus - fires too often)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -107,40 +216,57 @@ export function usePWAUpdate(): void {
       }
     };
 
-    const handleFocus = () => {
-      checkForUpdate();
-    };
-
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleFocus);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleFocus);
       if (intervalRef.current !== undefined) {
         clearInterval(intervalRef.current);
       }
     };
-  }, []);
+  }, [checkForUpdate]);
 
-  // Handle update notification and auto-reload
+  // Handle update notification and auto-reload when idle
   useEffect(() => {
-    if (needRefresh && !hasTriggeredReload.current) {
-      hasTriggeredReload.current = true;
+    if (!needRefresh || hasTriggeredReload.current) return;
 
-      // Show toast notification
-      addToast('Updating to latest version...', 'info', RELOAD_DELAY_MS);
-
-      // Reload after toast duration
-      timeoutRef.current = window.setTimeout(() => {
-        updateServiceWorker(true);
-      }, RELOAD_DELAY_MS);
+    // Check if we already tried to reload (prevent loops)
+    try {
+      if (sessionStorage.getItem(RELOAD_FLAG_KEY)) {
+        console.warn('Reload loop detected, skipping auto-reload');
+        return;
+      }
+    } catch {
+      // Ignore storage errors
     }
 
-    return () => {
-      if (timeoutRef.current !== undefined) {
-        clearTimeout(timeoutRef.current);
+    hasTriggeredReload.current = true;
+
+    // Set flag before attempting reload
+    try {
+      sessionStorage.setItem(RELOAD_FLAG_KEY, Date.now().toString());
+    } catch {
+      // Ignore storage errors
+    }
+
+    // Wait for safe state before reloading
+    const performUpdate = async () => {
+      const wasSafe = await waitForSafeReload(MAX_IDLE_WAIT_MS);
+
+      if (!wasSafe) {
+        console.warn('Timed out waiting for idle, proceeding with update');
       }
+
+      // Show toast notification
+      addToast('Updating to latest version...', 'info', UPDATE_TOAST_MS);
+
+      // Brief delay to let user see the toast
+      await new Promise(r => setTimeout(r, UPDATE_TOAST_MS));
+
+      // Trigger the update (reloads the page)
+      updateServiceWorker(true);
     };
+
+    performUpdate();
   }, [needRefresh, addToast, updateServiceWorker]);
 }
