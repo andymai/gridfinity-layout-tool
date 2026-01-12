@@ -40,6 +40,12 @@ export function initAnalytics(): void {
       });
       posthogInstance = posthog;
 
+      // Track app load for DAU metrics
+      posthog.capture('app_loaded', {
+        device_type: getDeviceType(),
+        is_returning: Boolean(localStorage.getItem('gridfinity-library-v1')),
+      });
+
       // Flush queued events
       for (const event of eventQueue) {
         posthog.capture(event.name, event.properties);
