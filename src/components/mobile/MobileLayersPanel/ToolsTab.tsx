@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../../store';
 import { useToastStore } from '../../../store/toast';
-import { STAGING_ID } from '../../../constants';
 import { ConfirmDialog } from '../../modals/ConfirmDialog';
 
 // Square sizes (matching desktop ActiveLayerPanel)
@@ -60,7 +59,7 @@ export function ToolsTab() {
   const { execute } = useUndoableAction();
 
   const activeLayer = layout.layers.find(l => l.id === activeLayerId);
-  const layerBins = layout.bins.filter(b => b.layerId === activeLayerId && b.layerId !== STAGING_ID);
+  const layerBins = layout.bins.filter(b => b.layerId === activeLayerId);
 
   // Calculate empty cells for Fill Gaps button
   const totalCells = layout.drawer.width * layout.drawer.depth;
