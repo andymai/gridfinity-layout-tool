@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import { createRef } from 'react';
 import { GridCanvas } from '../../components/Grid/GridCanvas';
 import { useLayoutStore } from '../../store/layout';
 import { useUIStore } from '../../store/ui';
 import { createDefaultLayout } from '../../constants';
+import { resetAllStores } from '../testUtils';
 import type { Bin } from '../../types';
 
 // Mock useResponsive to avoid matchMedia issues
@@ -35,28 +36,22 @@ describe('GridCanvas', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    defaultLayout = createDefaultLayout();
 
+    // Reset all stores for isolation
+    resetAllStores();
+
+    // Set test-specific state
+    defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
     useUIStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
-      selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
-      contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
     });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
   });
 
   const renderGridCanvas = () => {

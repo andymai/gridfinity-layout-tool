@@ -10,6 +10,8 @@ import {
   waitForStashHidden,
   waitForStagingBinCount,
   waitForBinSelected,
+  clearAllStorage,
+  resetViewport,
 } from './fixtures';
 
 /**
@@ -31,9 +33,21 @@ function getStashBinCount(page: Page) {
 test.describe('Staging Area (Stash)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
+    await clearAllStorage(page);
     await page.reload();
     await waitForAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = page.locator('[role="dialog"]');
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
   });
 
   test('stash is hidden when empty', async ({ page }) => {

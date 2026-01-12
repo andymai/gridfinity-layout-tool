@@ -12,14 +12,26 @@ import {
   waitForToast,
   waitForPaintModeExited,
   waitForBinSelected,
+  clearAllStorage,
+  resetViewport,
 } from './fixtures';
 
 test.describe('Add Bins Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
     await waitForAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = page.locator('[role="dialog"]');
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
   });
 
   test('can add a bin by clicking on the grid', async ({ page }) => {

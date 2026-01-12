@@ -7,6 +7,8 @@ import {
   getInspector,
   getSidebar,
   waitForDialog,
+  clearAllStorage,
+  resetViewport,
 } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -39,9 +41,19 @@ function filterKnownIssues(violations: Awaited<ReturnType<AxeBuilder['analyze']>
 test.describe('Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
     await waitForAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = page.locator('[role="dialog"]');
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
   });
 
   test('main page has no critical accessibility violations', async ({ page }) => {

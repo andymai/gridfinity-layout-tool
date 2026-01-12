@@ -8,14 +8,28 @@ import {
   getSidebar,
   waitForToast,
   waitForPaintModeExited,
+  clearAllStorage,
+  resetViewport,
 } from './fixtures';
 
 test.describe('Layers Management Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
+    await clearAllStorage(page);
     await page.reload();
     await waitForAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = page.locator('[role="dialog"]');
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
   });
 
   test('shows default layer on load', async ({ page }) => {

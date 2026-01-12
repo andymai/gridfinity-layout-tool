@@ -5,14 +5,27 @@ import {
   drawBinOnGrid,
   getSidebar,
   waitForBinCount,
+  clearAllStorage,
+  resetViewport,
+  waitForAutoSave,
 } from './fixtures';
 
 test.describe('Drawer Settings', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
     await waitForAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = page.locator('[role="dialog"]');
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
   });
 
   test('grid settings section is visible in sidebar', async ({ page }) => {
@@ -199,8 +212,8 @@ test.describe('Drawer Settings', () => {
     await gridUnitInput.blur();
     await expect(gridUnitInput).toHaveValue('45');
 
-    // Wait for auto-save
-    await page.waitForTimeout(1500);
+    // Wait for auto-save to complete (observes actual localStorage state)
+    await waitForAutoSave(page);
 
     // Reload the page
     await page.reload();

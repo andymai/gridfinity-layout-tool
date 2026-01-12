@@ -6,6 +6,8 @@ import {
   drawBinOnGrid,
   getInspector,
   waitForBinSelected,
+  clearAllStorage,
+  resetViewport,
 } from './fixtures';
 
 // Helper to get zoom display within zoom controls group
@@ -31,9 +33,21 @@ async function waitForZoomChange(page: Page, previousZoom: number, direction: 'i
 test.describe('Zoom Controls Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
+    await clearAllStorage(page);
     await page.reload();
     await waitForAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = page.locator('[role="dialog"]');
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
   });
 
   test('zoom controls are visible', async ({ page }) => {

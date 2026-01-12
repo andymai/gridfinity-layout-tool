@@ -1,10 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useToastStore } from '../../store/toast';
+import { resetAllStores } from '../testUtils';
 
 describe('toast store', () => {
   beforeEach(() => {
-    // Reset store
-    useToastStore.setState({ toasts: [] });
+    resetAllStores();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('addToast', () => {

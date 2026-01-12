@@ -1,31 +1,16 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useUIStore } from '../../store/ui';
 import { CONSTRAINTS } from '../../constants';
+import { resetAllStores } from '../testUtils';
 
 describe('ui store', () => {
   beforeEach(() => {
-    // Reset store to initial state
-    useUIStore.setState({
-      activeLayerId: '',
-      selectedBinIds: [],
-      activeCategoryId: 'coral',
-      zoom: 1,
-      showOtherLayers: true,
-      showLabels: true,
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
-      contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
-      sharedLayoutPreview: null,
-      sharedLayoutOriginalName: null,
-    });
+    resetAllStores();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('selection', () => {
