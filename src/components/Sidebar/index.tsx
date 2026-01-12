@@ -1,29 +1,37 @@
 import { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore, useSettingsStore } from '../../store';
-import { calcMaxGridUnits, CONSTRAINTS } from '../../constants';
+import { useUIStore, useLayoutStore, useSettingsStore, useToastStore } from '../../store';
+import { useUndoableAction } from '../../store/history';
+import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../../constants';
+import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
+import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
 import { ActiveLayerPanel } from './ActiveLayerPanel';
 import { LayerPanel } from './LayerPanel';
 import { CategoriesPanel } from './CategoriesPanel';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { CollapsibleSection } from '../CollapsibleSection';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export function Sidebar() {
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
+  const [showHalfBinBlockedModal, setShowHalfBinBlockedModal] = useState(false);
+  const [halfBinViolation, setHalfBinViolation] = useState<HalfBinConstraintViolation | null>(null);
   const { isDesktop } = useResponsive();
 
-  const { collapsed, toggle, halfBinMode, toggleHalfBinMode } = useUIStore(
+  const { collapsed, toggle, halfBinMode, toggleHalfBinMode, setHalfBinMode } = useUIStore(
     useShallow((state) => ({
       collapsed: state.leftPanelCollapsed,
       toggle: state.toggleLeftPanel,
       halfBinMode: state.halfBinMode,
       toggleHalfBinMode: state.toggleHalfBinMode,
+      setHalfBinMode: state.setHalfBinMode,
     }))
   );
 
   const {
+    layout,
     gridUnitMm,
     heightUnitMm,
     printBedSize,
@@ -34,8 +42,10 @@ export function Sidebar() {
     setHeightUnitMm,
     setPrintBedSize,
     updateDrawer,
+    updateBin,
   } = useLayoutStore(
     useShallow((state) => ({
+      layout: state.layout,
       gridUnitMm: state.layout.gridUnitMm,
       heightUnitMm: state.layout.heightUnitMm,
       printBedSize: state.layout.printBedSize,
@@ -46,11 +56,14 @@ export function Sidebar() {
       setHeightUnitMm: state.setHeightUnitMm,
       setPrintBedSize: state.setPrintBedSize,
       updateDrawer: state.updateDrawer,
+      updateBin: state.updateBin,
     }))
   );
 
   const settings = useSettingsStore((state) => state.settings);
   const saveCurrentAsDefaults = useSettingsStore((state) => state.saveCurrentAsDefaults);
+  const addToast = useToastStore((state) => state.addToast);
+  const { execute } = useUndoableAction();
 
   // Get active layer's height to save as default
   const activeLayerId = useUIStore((state) => state.activeLayerId);
@@ -83,6 +96,42 @@ export function Sidebar() {
 
   const handleDrawerDepthChange = (depth: number) => {
     updateDrawer({ depth: Math.max(1, Math.min(CONSTRAINTS.GRID_MAX, depth)) });
+  };
+
+  // Half-bin mode toggle with validation
+  const handleHalfBinToggle = () => {
+    const result = toggleHalfBinMode();
+
+    if (!result.success) {
+      // Validation failed - show blocking modal
+      const validationResult = validateHalfBinModeToggle(layout, false);
+      if (validationResult.violation) {
+        setHalfBinViolation(validationResult.violation);
+        setShowHalfBinBlockedModal(true);
+      }
+    }
+  };
+
+  // Remediate fractional bins by moving them to staging
+  const handleRemediate = async () => {
+    if (!halfBinViolation) return;
+
+    await execute(() => {
+      // Move all fractional bins to staging
+      halfBinViolation.binIds.forEach(binId => {
+        updateBin(binId, { layerId: STAGING_ID });
+      });
+    });
+
+    // Now disable half-bin mode (forced, bypassing validation)
+    setHalfBinMode(false);
+
+    // Close modal and show success message
+    setShowHalfBinBlockedModal(false);
+    addToast(
+      `Moved ${halfBinViolation.count} bin${halfBinViolation.count !== 1 ? 's' : ''} to staging`,
+      'success'
+    );
   };
 
   return (
@@ -322,7 +371,7 @@ export function Sidebar() {
                     <input
                       type="checkbox"
                       checked={halfBinMode}
-                      onChange={toggleHalfBinMode}
+                      onChange={handleHalfBinToggle}
                       className="w-4 h-4 rounded accent-accent"
                       aria-label="Toggle half-bin mode"
                     />
@@ -399,6 +448,15 @@ export function Sidebar() {
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />
+
+      {halfBinViolation && (
+        <HalfBinModeBlockedModal
+          isOpen={showHalfBinBlockedModal}
+          violation={halfBinViolation}
+          onClose={() => setShowHalfBinBlockedModal(false)}
+          onRemediate={handleRemediate}
+        />
+      )}
     </aside>
   );
 }
