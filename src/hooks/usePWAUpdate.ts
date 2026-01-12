@@ -68,27 +68,52 @@ function isSafeToReload(): boolean {
 /**
  * Wait until the app is in a safe state to reload, with timeout.
  * Returns true if safe, false if timed out.
+ * Supports cancellation via AbortSignal for proper cleanup on unmount.
  */
-function waitForSafeReload(timeoutMs: number): Promise<boolean> {
+function waitForSafeReload(
+  timeoutMs: number,
+  signal?: AbortSignal
+): Promise<boolean> {
   return new Promise((resolve) => {
+    // Check immediately - if already safe, resolve without starting interval
+    if (isSafeToReload()) {
+      resolve(true);
+      return;
+    }
+
+    // Check for already-aborted signal
+    if (signal?.aborted) {
+      resolve(false);
+      return;
+    }
+
     const startTime = Date.now();
 
-    const check = () => {
+    const intervalId = setInterval(() => {
+      if (signal?.aborted) {
+        clearInterval(intervalId);
+        resolve(false);
+        return;
+      }
+
       if (isSafeToReload()) {
+        clearInterval(intervalId);
         resolve(true);
         return;
       }
 
       if (Date.now() - startTime > timeoutMs) {
         // Timed out waiting for idle - reload anyway
+        clearInterval(intervalId);
         resolve(false);
-        return;
       }
+    }, IDLE_CHECK_INTERVAL_MS);
 
-      setTimeout(check, IDLE_CHECK_INTERVAL_MS);
-    };
-
-    check();
+    // Clean up interval if signal is aborted
+    signal?.addEventListener('abort', () => {
+      clearInterval(intervalId);
+      resolve(false);
+    });
   });
 }
 
@@ -249,9 +274,16 @@ export function usePWAUpdate(): void {
       // Ignore storage errors
     }
 
+    // Use AbortController for cleanup on unmount
+    const abortController = new AbortController();
+    let toastTimeoutId: number | undefined;
+
     // Wait for safe state before reloading
     const performUpdate = async () => {
-      const wasSafe = await waitForSafeReload(MAX_IDLE_WAIT_MS);
+      const wasSafe = await waitForSafeReload(MAX_IDLE_WAIT_MS, abortController.signal);
+
+      // Don't proceed if aborted during wait
+      if (abortController.signal.aborted) return;
 
       if (!wasSafe) {
         console.warn('Timed out waiting for idle, proceeding with update');
@@ -260,13 +292,33 @@ export function usePWAUpdate(): void {
       // Show toast notification
       addToast('Updating to latest version...', 'info', UPDATE_TOAST_MS);
 
-      // Brief delay to let user see the toast
-      await new Promise(r => setTimeout(r, UPDATE_TOAST_MS));
+      // Brief delay to let user see the toast (cancellable)
+      await new Promise<void>((resolve) => {
+        if (abortController.signal.aborted) {
+          resolve();
+          return;
+        }
+        toastTimeoutId = window.setTimeout(resolve, UPDATE_TOAST_MS);
+        abortController.signal.addEventListener('abort', () => {
+          clearTimeout(toastTimeoutId);
+          resolve();
+        });
+      });
+
+      // Don't trigger reload if aborted
+      if (abortController.signal.aborted) return;
 
       // Trigger the update (reloads the page)
       updateServiceWorker(true);
     };
 
     performUpdate();
+
+    return () => {
+      abortController.abort();
+      if (toastTimeoutId !== undefined) {
+        clearTimeout(toastTimeoutId);
+      }
+    };
   }, [needRefresh, addToast, updateServiceWorker]);
 }
