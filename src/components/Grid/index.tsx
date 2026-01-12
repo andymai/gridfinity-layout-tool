@@ -56,6 +56,8 @@ export function Grid() {
     setKeyboardResizeMode,
     halfBinMode,
     selectedBinIds,
+    setHighlightedRowLabel,
+    setHighlightedColLabel,
   } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
@@ -81,6 +83,8 @@ export function Grid() {
       setKeyboardDragMode: state.setKeyboardDragMode,
       setKeyboardResizeMode: state.setKeyboardResizeMode,
       halfBinMode: state.halfBinMode,
+      setHighlightedRowLabel: state.setHighlightedRowLabel,
+      setHighlightedColLabel: state.setHighlightedColLabel,
     }))
   );
 
@@ -864,6 +868,8 @@ export function Grid() {
                         padding: 0,
                       }}
                       onClick={(e) => typeof num === 'number' && handleRowClick(Math.floor(num), e)}
+                      onMouseEnter={() => typeof num === 'number' && setHighlightedRowLabel(Math.floor(num))}
+                      onMouseLeave={() => setHighlightedRowLabel(null)}
                       title={`Click to select row ${label}. Shift-click for range. Ctrl-click to add/remove.`}
                       aria-label={`Select bins in row ${label}`}
                     >
@@ -1063,6 +1069,8 @@ export function Grid() {
                             padding: 0,
                           }}
                           onClick={(e) => typeof num === 'number' && handleColumnClick(Math.floor(num), e)}
+                          onMouseEnter={() => typeof num === 'number' && setHighlightedColLabel(Math.floor(num))}
+                          onMouseLeave={() => setHighlightedColLabel(null)}
                           title={`Click to select column ${label}. Shift-click for range. Ctrl-click to add/remove.`}
                           aria-label={`Select bins in column ${label}`}
                         >
