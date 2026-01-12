@@ -3,7 +3,7 @@ import type { Layout, Category } from './types';
 // === Constraints (from PRD) ===
 
 export const CONSTRAINTS = {
-  GRID_MIN: 1,
+  GRID_MIN: 0.5,  // Minimum drawer dimension (supports half-unit increments)
   GRID_MAX: 50,
   LAYERS_MIN: 1,
   LAYERS_MAX: 10,

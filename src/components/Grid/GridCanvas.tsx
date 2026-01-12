@@ -116,19 +116,65 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   };
 
   // Grid always renders at standard dimensions (half-bin mode only affects snapping)
-  const gridCols = drawer.width;
-  const gridRows = drawer.depth;
+  // Use ceiling values for CSS Grid which requires integer row/column counts
+  const integerWidth = Math.floor(drawer.width);
+  const integerDepth = Math.floor(drawer.depth);
+  const gridCols = Math.ceil(drawer.width);
+  const gridRows = Math.ceil(drawer.depth);
+
+  // Check for fractional drawer dimensions
+  const hasFractionalWidth = drawer.width % 1 !== 0;
+  const hasFractionalDepth = drawer.depth % 1 !== 0;
+
+  // Get fractional edge positions (defaults: X=end/right, Y=end/top)
+  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
+  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
+
+  // Fractional cell dimensions
+  const fractionalWidthPart = drawer.width - integerWidth; // e.g., 0.5
+  const fractionalDepthPart = drawer.depth - integerDepth; // e.g., 0.5
+  const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
+  const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
+
+  // Helper: Calculate CSS column for a grid x coordinate
+  // When fractionalEdgeX='start', fractional column is at CSS column 1, integers start at 2
+  // When fractionalEdgeX='end', integers start at 1, fractional at last
+  const getCssCol = (x: number) => {
+    if (hasFractionalWidth && fractionalEdgeX === 'start') {
+      return x + 2; // +1 for 1-based, +1 to skip fractional column
+    }
+    return x + 1;
+  };
+
+  // Helper: Calculate CSS row for a grid y coordinate
+  // CSS Grid row 1 is at top, higher rows are lower on screen
+  // Grid y=0 is at bottom, higher y is higher on screen
+  // When fractionalEdgeY='end' (top), fractional row is CSS row 1
+  // When fractionalEdgeY='start' (bottom), fractional row is CSS row last
+  const getCssRow = (y: number) => {
+    if (hasFractionalDepth) {
+      if (fractionalEdgeY === 'end') {
+        // Fractional at top (CSS row 1), integers are rows 2 to gridRows
+        return integerDepth - y + 1;
+      } else {
+        // Fractional at bottom (CSS row gridRows), integers are rows 1 to integerDepth
+        return integerDepth - y;
+      }
+    }
+    return integerDepth - y;
+  };
 
   // Generate grid cells for visual reference
+  // Only render full integer cells - fractional portions are handled separately
   const cells: JSX.Element[] = [];
-  for (let y = 0; y < gridRows; y++) {
-    for (let x = 0; x < gridCols; x++) {
+  for (let y = 0; y < integerDepth; y++) {
+    for (let x = 0; x < integerWidth; x++) {
       cells.push(
         <div
           key={`${x}-${y}`}
           style={{
-            gridColumn: x + 1,
-            gridRow: gridRows - y,
+            gridColumn: getCssCol(x),
+            gridRow: getCssRow(y),
             width: cellSize,
             height: cellSize,
             backgroundColor: 'var(--grid-cell)',
@@ -137,6 +183,68 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
         />
       );
     }
+  }
+
+  // Fractional cells - render actual grid cells for fractional row/column
+  const fractionalCells: JSX.Element[] = [];
+
+  // Fractional column cells - one for each integer row
+  if (hasFractionalWidth) {
+    const fracColCss = fractionalEdgeX === 'start' ? 1 : gridCols;
+    for (let y = 0; y < integerDepth; y++) {
+      fractionalCells.push(
+        <div
+          key={`frac-col-${y}`}
+          style={{
+            gridColumn: fracColCss,
+            gridRow: getCssRow(y),
+            width: fractionalCellWidth,
+            height: cellSize,
+            backgroundColor: 'var(--grid-cell)',
+            borderRadius: '2px',
+          }}
+        />
+      );
+    }
+  }
+
+  // Fractional row cells - one for each integer column
+  if (hasFractionalDepth) {
+    const fracRowCss = fractionalEdgeY === 'end' ? 1 : gridRows;
+    for (let x = 0; x < integerWidth; x++) {
+      fractionalCells.push(
+        <div
+          key={`frac-row-${x}`}
+          style={{
+            gridColumn: getCssCol(x),
+            gridRow: fracRowCss,
+            width: cellSize,
+            height: fractionalCellHeight,
+            backgroundColor: 'var(--grid-cell)',
+            borderRadius: '2px',
+          }}
+        />
+      );
+    }
+  }
+
+  // Corner cell (if both width and depth are fractional)
+  if (hasFractionalWidth && hasFractionalDepth) {
+    const fracColCss = fractionalEdgeX === 'start' ? 1 : gridCols;
+    const fracRowCss = fractionalEdgeY === 'end' ? 1 : gridRows;
+    fractionalCells.push(
+      <div
+        key="frac-corner"
+        style={{
+          gridColumn: fracColCss,
+          gridRow: fracRowCss,
+          width: fractionalCellWidth,
+          height: fractionalCellHeight,
+          backgroundColor: 'var(--grid-cell)',
+          borderRadius: '2px',
+        }}
+      />
+    );
   }
 
   return (
@@ -155,14 +263,27 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
         className="absolute inset-0"
         style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${gridCols}, ${cellSize}px)`,
-          gridTemplateRows: `repeat(${gridRows}, ${cellSize}px)`,
+          // For fractional drawer dimensions, add a partial column/row
+          // Position depends on fractionalEdgeX/Y settings
+          gridTemplateColumns: hasFractionalWidth
+            ? fractionalEdgeX === 'start'
+              ? `${fractionalCellWidth}px repeat(${integerWidth}, ${cellSize}px)`  // Fractional at left
+              : `repeat(${integerWidth}, ${cellSize}px) ${fractionalCellWidth}px`  // Fractional at right
+            : `repeat(${gridCols}, ${cellSize}px)`,
+          gridTemplateRows: hasFractionalDepth
+            ? fractionalEdgeY === 'end'
+              ? `${fractionalCellHeight}px repeat(${integerDepth}, ${cellSize}px)` // Fractional at top (CSS row 1)
+              : `repeat(${integerDepth}, ${cellSize}px) ${fractionalCellHeight}px` // Fractional at bottom (CSS row last)
+            : `repeat(${gridRows}, ${cellSize}px)`,
           gap: `${gap}px`,
           padding: `${gap}px`,
         }}
       >
         {/* Grid cells */}
         {cells}
+
+        {/* Fractional cells (for half-unit drawer dimensions) */}
+        {fractionalCells}
 
         {/* Ghost bins (other layers) */}
         {ghostBins.map((bin) => {
@@ -195,9 +316,16 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
           const sourceLayer = sourceBin ? layers.find(l => l.id === sourceBin.layerId) : undefined;
 
           // Calculate grid position (always use standard grid, no scaling)
-          const gridCol = Math.floor(zone.x) + 1;
+          // Apply same fractional edge positioning as bins
+          const gridCol = hasFractionalWidth && fractionalEdgeX === 'start'
+            ? Math.floor(zone.x) + 2  // +1 for 1-based, +1 to skip fractional column
+            : Math.floor(zone.x) + 1;
           const gridColSpan = Math.ceil(zone.x + zone.width) - Math.floor(zone.x);
-          const gridRowStart = drawer.depth - Math.ceil(zone.y + zone.depth) + 1;
+          const zoneGridRowStart = hasFractionalDepth
+            ? fractionalEdgeY === 'end'
+              ? integerDepth - Math.ceil(zone.y + zone.depth) + 2  // +2: +1 for 1-based, +1 to skip fractional row at top
+              : integerDepth - Math.ceil(zone.y + zone.depth) + 1  // Fractional at bottom, integers from 1
+            : integerDepth - Math.ceil(zone.y + zone.depth) + 1;
           const gridRowSpan = Math.ceil(zone.y + zone.depth) - Math.floor(zone.y);
 
           // Check if zone has fractional dimensions (from half-bin mode bins)
@@ -218,7 +346,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
               className="relative cursor-pointer transition-all duration-150 hover:opacity-50 hover:ring-2 hover:ring-white/60"
               style={{
                 gridColumn: `${gridCol} / span ${gridColSpan}`,
-                gridRow: `${gridRowStart} / span ${gridRowSpan}`,
+                gridRow: `${zoneGridRowStart} / span ${gridRowSpan}`,
                 // Override size and position for fractional zones
                 ...(hasFractionalDims ? {
                   width: zonePixelWidth,

@@ -83,35 +83,118 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
     const relX = clientX - rect.left;
     const relY = clientY - rect.top;
 
-    // Calculate which standard cell the mouse is in
-    const cellX = Math.floor(relX / (cellSize + gap));
-    const cellY = Math.floor(relY / (cellSize + gap));
+    // Account for fractional edge settings
+    // When fractionalEdge='start', the first column/row is narrower (fractional width)
+    // We need to offset the pixel position before dividing by cell size
+    const hasFractionalWidth = drawer.width % 1 !== 0;
+    const hasFractionalDepth = drawer.depth % 1 !== 0;
+    const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
+    const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
+
+    // Calculate fractional cell sizes (same formula as GridCanvas)
+    const fractionalWidthPart = drawer.width - Math.floor(drawer.width);
+    const fractionalDepthPart = drawer.depth - Math.floor(drawer.depth);
+    const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
+    const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
+
+    // Adjust X coordinate for fractional edge at start
+    let cellX: number;
+    let inCellX: number;
+    if (hasFractionalWidth && fractionalEdgeX === 'start') {
+      // First column is fractional (narrower)
+      if (relX < fractionalCellWidth + gap) {
+        // Inside the fractional column
+        cellX = -1; // Special marker for fractional column
+        inCellX = relX - gap; // Position within fractional cell
+      } else {
+        // Offset by fractional column width to get integer cell position
+        const adjustedX = relX - (fractionalCellWidth + gap);
+        cellX = Math.floor(adjustedX / (cellSize + gap));
+        inCellX = adjustedX - cellX * (cellSize + gap);
+      }
+    } else {
+      cellX = Math.floor(relX / (cellSize + gap));
+      inCellX = relX - cellX * (cellSize + gap);
+    }
+
+    // Adjust Y coordinate for fractional edge at end (top in CSS, which is first row)
+    let cellY: number;
+    let inCellY: number;
+    if (hasFractionalDepth && fractionalEdgeY === 'end') {
+      // First row (top) is fractional
+      if (relY < fractionalCellHeight + gap) {
+        // Inside the fractional row
+        cellY = -1; // Special marker for fractional row
+        inCellY = relY - gap;
+      } else {
+        const adjustedY = relY - (fractionalCellHeight + gap);
+        cellY = Math.floor(adjustedY / (cellSize + gap));
+        inCellY = adjustedY - cellY * (cellSize + gap);
+      }
+    } else {
+      cellY = Math.floor(relY / (cellSize + gap));
+      inCellY = relY - cellY * (cellSize + gap);
+    }
+
+    // Convert to grid coordinates
+    const integerDepth = Math.floor(drawer.depth);
 
     if (halfBinMode) {
       // In half-bin mode, detect which half of the cell for 0.5 snapping
-      const inCellX = relX - cellX * (cellSize + gap);
-      const inCellY = relY - cellY * (cellSize + gap);
+      const isLeftHalf = inCellX < (cellX === -1 ? fractionalCellWidth / 2 : cellSize / 2);
+      const isTopHalf = inCellY < (cellY === -1 ? fractionalCellHeight / 2 : cellSize / 2);
 
-      // Determine which half of the cell
-      const isLeftHalf = inCellX < cellSize / 2;
-      const isTopHalf = inCellY < cellSize / 2;
+      let x: number;
+      if (cellX === -1) {
+        // In fractional column - x is 0 to fractionalWidthPart
+        x = isLeftHalf ? 0 : fractionalWidthPart / 2;
+      } else {
+        // In integer column - offset by fractional width if edge is at start
+        const baseX = hasFractionalWidth && fractionalEdgeX === 'start'
+          ? fractionalWidthPart + cellX
+          : cellX;
+        x = isLeftHalf ? baseX : baseX + 0.5;
+      }
 
-      const x = isLeftHalf ? cellX : cellX + 0.5;
-      // Y is inverted: top half of screen cell = higher grid Y
-      const y = isTopHalf
-        ? drawer.depth - cellY - 0.5
-        : drawer.depth - cellY - 1;
+      let y: number;
+      if (cellY === -1) {
+        // In fractional row (at top when edge='end')
+        const fractionalY = integerDepth + (isTopHalf ? fractionalDepthPart / 2 : 0);
+        y = fractionalY;
+      } else {
+        // In integer row
+        const baseY = hasFractionalDepth && fractionalEdgeY === 'end'
+          ? integerDepth - cellY - 1
+          : drawer.depth - cellY - 1;
+        y = isTopHalf ? baseY + 0.5 : baseY;
+      }
 
       return { x: snapToHalf(x), y: snapToHalf(y) };
     } else {
       // Standard mode - whole cell coordinates
-      const x = cellX;
-      // Y is inverted (0 at bottom in our coordinate system)
-      const y = drawer.depth - 1 - cellY;
+      let x: number;
+      if (cellX === -1) {
+        // In fractional column - treat as x=0
+        x = 0;
+      } else {
+        x = hasFractionalWidth && fractionalEdgeX === 'start'
+          ? cellX // Integer cells start at x=0 when fractional is on left
+          : cellX;
+      }
+
+      let y: number;
+      if (cellY === -1) {
+        // In fractional row - treat as top row
+        y = integerDepth;
+      } else {
+        y = hasFractionalDepth && fractionalEdgeY === 'end'
+          ? integerDepth - cellY - 1
+          : drawer.depth - 1 - cellY;
+      }
 
       return { x, y };
     }
-  }, [gridRef, cellSize, gap, drawer.depth, halfBinMode]);
+  }, [gridRef, cellSize, gap, drawer.width, drawer.depth, drawer.fractionalEdgeX, drawer.fractionalEdgeY, halfBinMode]);
 
   const clampCoords = useCallback((coord: Coord): Coord => {
     if (halfBinMode) {

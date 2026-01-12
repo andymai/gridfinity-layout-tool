@@ -1,4 +1,4 @@
-import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
+import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '../../constants';
 import { useUIStore } from '../../store';
 import { getBinLocationContext } from '../../utils/binLocation';
 import type { UseBinInspectorReturn } from './useBinInspector';
@@ -25,10 +25,12 @@ export function SingleBinInspector({
   const {
     bin,
     category,
+    layer,
     constraints,
     layout,
     categories,
     updateField,
+    moveToLayer,
     requestDelete,
     moveToStaging,
     clearSelection,
@@ -257,6 +259,37 @@ export function SingleBinInspector({
             </svg>
           </div>
         </div>
+
+        {/* Layer - only show for bins on grid (not in staging) */}
+        {bin.layerId !== STAGING_ID && layout.layers.length > 1 && (
+          <div>
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              Layer
+            </label>
+            <div className="relative">
+              <select
+                value={bin.layerId}
+                onChange={(e) => moveToLayer(e.target.value)}
+                className={`input w-full pr-8 appearance-none ${inputHeight}`}
+                aria-label="Bin layer"
+              >
+                {layout.layers.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}{l.id === layer?.id ? ' (current)' : ''}
+                  </option>
+                ))}
+              </select>
+              <svg
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-content-tertiary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        )}
 
         {/* Label */}
         <div>

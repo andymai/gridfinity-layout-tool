@@ -12,10 +12,15 @@ export interface Layout {
   bins: Bin[];
 }
 
+/** Position of fractional edge when drawer has half-unit dimensions */
+export type FractionalEdge = 'start' | 'end';
+
 export interface Drawer {
   width: number;             // 1-50
   depth: number;             // 1-50
   height: number;            // >= sum of layer heights
+  fractionalEdgeX?: FractionalEdge; // 'start' = left, 'end' = right (default)
+  fractionalEdgeY?: FractionalEdge; // 'start' = bottom, 'end' = top (default)
 }
 
 export interface Category {
@@ -66,6 +71,34 @@ export interface Rect3D extends Rect {
 // === Interaction State ===
 
 export type ResizeHandle = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+
+/** Handle placement mode for resize handles */
+export type HandlePlacement = 'internal' | 'external';
+
+/** Handle variant for styling (primary vs ghost) */
+export type HandleVariant = 'primary' | 'ghost';
+
+/** Position configuration for a single handle */
+export interface HandlePositionConfig {
+  left?: number | string;
+  right?: number | string;
+  top?: number | string;
+  bottom?: number | string;
+  width: number | string;
+  height: number | string;
+  minWidth?: number;
+  minHeight?: number;
+  cursor: string;
+  transform?: string;
+}
+
+/** Visual indicator configuration */
+export interface HandleVisualConfig {
+  width: number | string;
+  height: number | string;
+  minWidth?: number;
+  minHeight?: number;
+}
 
 export type Interaction =
   | { type: 'draw'; start: Coord; current: Coord }
