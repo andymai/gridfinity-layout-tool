@@ -315,30 +315,39 @@ export function Sidebar() {
                     </div>
                   </div>
 
+                  {/* Real-world drawer dimensions */}
+                  <div className="flex items-center justify-center gap-1 pt-2 text-content-tertiary">
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2" />
+                    </svg>
+                    <span className="tabular-nums">
+                      {(drawerWidth * gridUnitMm).toFixed(0)} × {(drawerDepth * gridUnitMm).toFixed(0)} × {(drawerHeight * heightUnitMm).toFixed(0)} mm
+                    </span>
+                  </div>
+
                   {/* Half-bin mode toggle */}
-                  <label className="flex items-center justify-between pt-2 mt-2 border-t border-stroke-subtle cursor-pointer">
+                  <label className="flex items-center justify-between pt-2 cursor-pointer">
                     <div className="flex items-center gap-1.5">
                       <span
-                        className="text-content-tertiary"
+                        className="text-content-tertiary leading-none"
                         title="Enable 0.5 grid unit precision for half-size bins (H)"
                       >
                         Half-bin mode
                       </span>
-                      <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
-                      <kbd className="text-[9px] text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">H</kbd>
+                      <span className="text-[9px] leading-none text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
+                      <kbd className="text-[9px] leading-none text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">H</kbd>
                     </div>
                     <input
                       type="checkbox"
                       checked={halfBinMode}
                       onChange={handleHalfBinToggle}
-                      className="w-4 h-4 rounded accent-accent"
                       aria-label="Toggle half-bin mode"
                     />
                   </label>
 
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
                   {(hasFractionalWidth || hasFractionalDepth) && (
-                    <div className="pt-2 mt-2 border-t border-stroke-subtle space-y-1.5">
+                    <div className="pt-2 space-y-1.5">
                       <div className="text-content-tertiary text-[10px] mb-1">Half-unit edge position</div>
                       {hasFractionalWidth && (
                         <div className="flex items-center justify-between">
@@ -400,16 +409,6 @@ export function Sidebar() {
                       )}
                     </div>
                   )}
-
-                  {/* Real-world drawer dimensions */}
-                  <div className="flex items-center justify-center gap-1 pt-1 text-content-tertiary">
-                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2" />
-                    </svg>
-                    <span className="tabular-nums">
-                      {(drawerWidth * gridUnitMm).toFixed(0)} × {(drawerDepth * gridUnitMm).toFixed(0)} × {(drawerHeight * heightUnitMm).toFixed(0)} mm
-                    </span>
-                  </div>
                 </div>
               </CollapsibleSection>
             </div>
