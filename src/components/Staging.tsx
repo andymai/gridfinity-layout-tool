@@ -32,19 +32,24 @@ function packBins(bins: PackedBin[], gridWidth: number): PackedBin[] {
   const packed: PackedBin[] = [];
   const occupied = new Set<string>();
 
+  // Use ceiling for fractional dimensions so bins occupy at least 1 cell
   const isOccupied = (x: number, y: number, w: number, d: number): boolean => {
-    for (let dx = 0; dx < w; dx++) {
-      for (let dy = 0; dy < d; dy++) {
-        if (occupied.has(`${x + dx},${y + dy}`)) return true;
+    const ceilW = Math.ceil(w) || 1;
+    const ceilD = Math.ceil(d) || 1;
+    for (let dx = 0; dx < ceilW; dx++) {
+      for (let dy = 0; dy < ceilD; dy++) {
+        if (occupied.has(`${Math.floor(x) + dx},${Math.floor(y) + dy}`)) return true;
       }
     }
     return false;
   };
 
   const occupy = (x: number, y: number, w: number, d: number) => {
-    for (let dx = 0; dx < w; dx++) {
-      for (let dy = 0; dy < d; dy++) {
-        occupied.add(`${x + dx},${y + dy}`);
+    const ceilW = Math.ceil(w) || 1;
+    const ceilD = Math.ceil(d) || 1;
+    for (let dx = 0; dx < ceilW; dx++) {
+      for (let dy = 0; dy < ceilD; dy++) {
+        occupied.add(`${Math.floor(x) + dx},${Math.floor(y) + dy}`);
       }
     }
   };
@@ -301,6 +306,25 @@ export function Staging() {
     return pixelWidth;
   };
 
+  // Helper to calculate pixel height for bins with fractional depth
+  const calcBinPixelHeight = (depth: number): number => {
+    // For fractional depth, calculate proportional height
+    // A 0.5 depth bin = 0.5 * cellSize (no gaps since it doesn't span multiple cells)
+    // A 1.5 depth bin = 1 * cellSize + gap + 0.5 * cellSize
+    const integerPart = Math.floor(depth);
+    const fractionalPart = depth - integerPart;
+
+    let height = 0;
+    if (integerPart > 0) {
+      height += integerPart * cellSize + (integerPart - 1) * gap;
+    }
+    if (fractionalPart > 0) {
+      if (integerPart > 0) height += gap;
+      height += fractionalPart * cellSize;
+    }
+    return height;
+  };
+
   // Show when bins are stashed OR when dragging from grid (as drop target)
   const hasBins = stagingBins.length > 0;
   if (!hasBins && !showAsDropTarget) {
@@ -413,12 +437,15 @@ export function Staging() {
               ? calcBinPixelWidth(bin.x, bin.width)
               : bin.width * cellSize + Math.max(0, bin.width - 1) * gap;
             const actualBinPixelHeight = hasFractionalBin
-              ? bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap
+              ? calcBinPixelHeight(bin.depth)
               : bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap;
 
             // Only override CSS grid sizing for fractional bins
             const cssWidthOverride = hasFractionalBin || hasFractionalWidth ? actualBinPixelWidth : undefined;
             const cssHeightOverride = hasFractionalBin ? actualBinPixelHeight : undefined;
+
+            // Calculate grid row start (must be integer for valid CSS Grid)
+            const gridRowStart = gridHeight - Math.ceil(bin.y + bin.depth) + 1;
 
             // ========== ADAPTIVE LABEL SYSTEM (matches Grid/Bin.tsx) ==========
             // Format dimensions - show decimal if fractional
@@ -482,7 +509,9 @@ export function Staging() {
                 }`}
                 style={{
                   gridColumn: `${bin.x + 1} / span ${gridColSpan}`,
-                  gridRow: `${gridHeight - bin.y - bin.depth + 1} / span ${gridRowSpan}`,
+                  gridRow: `${gridRowStart} / span ${gridRowSpan}`,
+                  // Align fractional-depth bins to bottom of their grid cell
+                  alignSelf: hasFractionalBin && bin.depth < 1 ? 'end' : undefined,
                   ...(!isDragging && { backgroundColor: bgColor }),
                   // Override size for fractional bins
                   ...(cssWidthOverride !== undefined && { width: cssWidthOverride }),
