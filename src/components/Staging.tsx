@@ -7,6 +7,11 @@ import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '../constants
 import { getBinTextColors } from '../utils/color';
 import { ConfirmDialog } from './modals/ConfirmDialog';
 
+/** Clamp a value between min and max */
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
 interface PackedBin {
   id: string;
   x: number; // Position in staging grid
@@ -76,7 +81,7 @@ export function Staging() {
       updateBin: state.updateBin,
     }))
   );
-  const { zoom, interaction, setInteraction, dropTarget, setDropTarget, selectedBinIds, setSelectedBin, toggleSelection } = useUIStore(
+  const { zoom, interaction, setInteraction, dropTarget, setDropTarget, selectedBinIds, setSelectedBin, toggleSelection, showLabels } = useUIStore(
     useShallow((state) => ({
       zoom: state.zoom,
       interaction: state.interaction,
@@ -86,6 +91,7 @@ export function Staging() {
       selectedBinIds: state.selectedBinIds,
       setSelectedBin: state.setSelectedBin,
       toggleSelection: state.toggleSelection,
+      showLabels: state.showLabels,
     }))
   );
   const { execute } = useUndoableAction();
@@ -395,18 +401,73 @@ export function Staging() {
             const textColors = getBinTextColors(bgColor);
             const isDragging = bin.id === draggingBinId;
             const isSelected = selectedBinIds.includes(bin.id);
-            const hasLabel = !!bin.label;
-            const primaryText = hasLabel ? bin.label : `${bin.width}×${bin.depth}`;
-            const secondaryText = hasLabel ? `${bin.width}×${bin.depth}` : null;
 
             // Check if bin has fractional dimensions
             const hasFractionalBin = bin.width % 1 !== 0 || bin.depth % 1 !== 0;
             // Calculate CSS grid span (use ceiling for fractional bins)
             const gridColSpan = Math.ceil(bin.x + bin.width) - Math.floor(bin.x);
             const gridRowSpan = Math.ceil(bin.y + bin.depth) - Math.floor(bin.y);
-            // Calculate pixel size for fractional bins
-            const binPixelWidth = hasFractionalBin || hasFractionalWidth ? calcBinPixelWidth(bin.x, bin.width) : undefined;
-            const binPixelHeight = hasFractionalBin ? bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap : undefined;
+
+            // Always calculate pixel dimensions for adaptive label sizing
+            const actualBinPixelWidth = hasFractionalBin || hasFractionalWidth
+              ? calcBinPixelWidth(bin.x, bin.width)
+              : bin.width * cellSize + Math.max(0, bin.width - 1) * gap;
+            const actualBinPixelHeight = hasFractionalBin
+              ? bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap
+              : bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap;
+
+            // Only override CSS grid sizing for fractional bins
+            const cssWidthOverride = hasFractionalBin || hasFractionalWidth ? actualBinPixelWidth : undefined;
+            const cssHeightOverride = hasFractionalBin ? actualBinPixelHeight : undefined;
+
+            // ========== ADAPTIVE LABEL SYSTEM (matches Grid/Bin.tsx) ==========
+            // Format dimensions - show decimal if fractional
+            const formatDim = (val: number) => val % 1 === 0 ? val.toString() : val.toFixed(1);
+            const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
+            const hasLabel = showLabels && bin.label;
+
+            // Smart rotation: use taller dimension for text if significantly taller
+            const shouldRotate = bin.depth > bin.width * 1.5;
+
+            // Font size constraints based on bin pixel size
+            const binPixelMin = Math.min(actualBinPixelWidth, actualBinPixelHeight);
+            const maxFontSize = clamp(Math.round(binPixelMin * 0.28), 9, 20);
+            const minFontSize = 9;
+
+            // Available width for text (75% of bin width to account for padding)
+            const rawAvailableWidth = shouldRotate ? actualBinPixelHeight : actualBinPixelWidth;
+            const effectiveAvailableWidth = rawAvailableWidth * 0.75;
+
+            // Calculate if label fits and at what font size
+            let labelFits = false;
+            let labelFontSize = maxFontSize;
+
+            if (hasLabel && bin.label) {
+              const labelLength = bin.label.length;
+              // textWidth = labelLength * fontSize * 0.6 (monospace assumption)
+              const neededFontSize = effectiveAvailableWidth / (labelLength * 0.6);
+              if (neededFontSize >= minFontSize) {
+                labelFits = true;
+                labelFontSize = clamp(Math.floor(neededFontSize), minFontSize, maxFontSize);
+              }
+            }
+
+            // Calculate font sizes
+            const primaryFontSize = labelFits ? labelFontSize : maxFontSize;
+            const secondaryFontSize = clamp(Math.round(primaryFontSize * 0.75), 8, 14);
+
+            // Visibility thresholds
+            const showAnyText = binPixelMin >= 24;
+            const rawAvailableHeight = shouldRotate ? actualBinPixelWidth : actualBinPixelHeight;
+            const hasSpaceForSecondary = rawAvailableHeight * 0.75 >= primaryFontSize * 2.5;
+
+            // Show label if it fits, otherwise show dimensions
+            const showLabel = hasLabel && labelFits;
+            const primaryText = showLabel && bin.label ? bin.label : dimensionsText;
+            const secondaryText = showLabel && hasSpaceForSecondary ? dimensionsText : null;
+
+            // Letter-spacing for small text
+            const letterSpacing = primaryFontSize < 11 ? '0.02em' : 'normal';
 
             return (
               <div
@@ -424,8 +485,8 @@ export function Staging() {
                   gridRow: `${gridHeight - bin.y - bin.depth + 1} / span ${gridRowSpan}`,
                   ...(!isDragging && { backgroundColor: bgColor }),
                   // Override size for fractional bins
-                  ...(binPixelWidth !== undefined && { width: binPixelWidth }),
-                  ...(binPixelHeight !== undefined && { height: binPixelHeight }),
+                  ...(cssWidthOverride !== undefined && { width: cssWidthOverride }),
+                  ...(cssHeightOverride !== undefined && { height: cssHeightOverride }),
                 }}
                 onClick={(e) => handleBinClick(bin.id, e)}
                 onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
@@ -434,24 +495,37 @@ export function Staging() {
                 title={`${bin.label || 'Unlabeled'} — ${bin.width}×${bin.depth}×${bin.height}u\nClick to select • Drag to place on grid`}
               >
                 {/* Adaptive label: primary (label or dimensions) + optional secondary */}
-                {!isDragging && (
-                  <div className="text-center pointer-events-none select-none overflow-hidden max-w-[95%]">
+                {!isDragging && showAnyText && (
+                  <div
+                    className="text-center pointer-events-none select-none flex flex-col items-center justify-center px-1"
+                    style={{
+                      transform: shouldRotate ? 'rotate(-90deg)' : 'none',
+                      width: shouldRotate ? `${(bin.depth / bin.width) * 90}%` : 'auto',
+                    }}
+                  >
+                    {/* Primary text (label if set, otherwise dimensions) */}
                     <div
-                      className="text-sm truncate"
+                      className="flex items-center justify-center gap-0.5 leading-tight whitespace-nowrap font-mono"
                       style={{
                         color: textColors.primary,
-                        fontWeight: hasLabel ? 500 : 600,
+                        fontSize: `${primaryFontSize}px`,
+                        fontWeight: showLabel ? 500 : 600,
                         textShadow: `0 1px 2px ${textColors.shadow}`,
+                        letterSpacing,
                       }}
                     >
                       {primaryText}
                     </div>
+                    {/* Secondary text (dimensions when label is primary) */}
                     {secondaryText && (
                       <div
-                        className="text-xs"
+                        className="leading-tight font-mono"
                         style={{
                           color: textColors.secondary,
+                          fontSize: `${secondaryFontSize}px`,
+                          fontWeight: 'normal',
                           textShadow: `0 1px 1px ${textColors.shadow}`,
+                          marginTop: 1,
                         }}
                       >
                         {secondaryText}
