@@ -1,13 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '../../store/layout';
-import { useSettingsStore } from '../../store/settings';
+import { useSettingsStore, DEFAULT_SETTINGS } from '../../store/settings';
 import { createDefaultLayout, STAGING_ID } from '../../constants';
 import type { Layout } from '../../types';
 
 describe('layout store', () => {
   beforeEach(() => {
-    // Reset store to default state before each test
+    // Reset both stores to default state before each test
     useLayoutStore.setState({ layout: createDefaultLayout() });
+    useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS } });
   });
 
   describe('addBin', () => {
