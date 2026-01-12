@@ -205,7 +205,7 @@ export const SHORTCUTS = {
   ROTATE: 'r',      // Rotate bin (swap width/depth) - standalone key, no Ctrl/Cmd
   ZOOM_IN: ['+', '='],
   ZOOM_OUT: ['-'],
-  HELP: '?',
+  HELP: ['?', '/'],
   // Navigation
   LAYER_UP: 'w',
   LAYER_DOWN: 's',

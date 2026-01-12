@@ -253,7 +253,7 @@ Dark theme by default. Use Tailwind classes, not inline styles.
 - Space: Expand 3D preview
 - 1-4: Camera presets (isometric, top, front, side)
 - Escape: Clear selection, exit paint mode
-- ?: Toggle help modal
+- ? or /: Toggle help modal
 
 ## Testing
 

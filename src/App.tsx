@@ -99,7 +99,7 @@ export default function App() {
   useKeyboard();
 
   // Auto-save to localStorage
-  useAutoSave();
+  const saveStatus = useAutoSave();
 
   // Cross-tab sync detection
   useCrossTabSync();
@@ -118,7 +118,7 @@ export default function App() {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
       return;
     }
-    if (e.key === SHORTCUTS.HELP) {
+    if ((SHORTCUTS.HELP as readonly string[]).includes(e.key)) {
       e.preventDefault();
       setIsHelpOpen(prev => !prev);
     }
@@ -144,7 +144,7 @@ export default function App() {
   if (isMobile) {
     return (
       <Suspense fallback={<div className="h-screen bg-surface" />}>
-        <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} />
+        <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} saveStatus={saveStatus} />
       </Suspense>
     );
   }
@@ -157,7 +157,7 @@ export default function App() {
         <SharedLayoutBanner />
 
         {/* Header */}
-        <Header onHelpClick={() => setIsHelpOpen(true)} />
+        <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
 
         {/* Main content area - Grid takes full width */}
         <div className="flex-1 flex overflow-hidden">
@@ -235,7 +235,7 @@ export default function App() {
       <SharedLayoutBanner />
 
       {/* Header */}
-      <Header onHelpClick={() => setIsHelpOpen(true)} />
+      <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
 
       {/* Main content area */}
       <div className="flex-1 flex overflow-hidden">

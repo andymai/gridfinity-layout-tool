@@ -4,12 +4,14 @@ import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '..
 import { useResponsive } from '../hooks';
 import { CONSTRAINTS } from '../constants';
 import { LayoutManagerModal } from './modals/LayoutManagerModal';
+import type { SaveStatus } from '../hooks/useAutoSave';
 
 interface HeaderProps {
   onHelpClick: () => void;
+  saveStatus: SaveStatus;
 }
 
-export function Header({ onHelpClick }: HeaderProps) {
+export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   const { isTablet } = useResponsive();
 
   const { layout, setName } = useLayoutStore(
@@ -174,6 +176,24 @@ export function Header({ onHelpClick }: HeaderProps) {
           </div>
         )}
 
+        {/* Save status indicator */}
+        {saveStatus !== 'idle' && (
+          <div
+            className="flex items-center gap-1 px-2 py-1 text-[11px] mr-2 text-content-secondary"
+            aria-live="polite"
+          >
+            <svg
+              className="w-3 h-3 text-success"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Saved</span>
+          </div>
+        )}
+
         {/* Undo/Redo buttons */}
         <div className="flex items-center mr-2 border-r border-stroke-subtle pr-2">
           <button
@@ -201,7 +221,6 @@ export function Header({ onHelpClick }: HeaderProps) {
         </div>
 
         {/* Reddit feedback link */}
-        <div className="w-px h-6 bg-stroke-subtle" />
         <a
           href="https://www.reddit.com/r/gridfinity/comments/1q93nz6/i_built_a_free_layout_planner_for_gridfinity/"
           target="_blank"
@@ -222,7 +241,7 @@ export function Header({ onHelpClick }: HeaderProps) {
           title="Show keyboard shortcuts"
           aria-label="Show help and keyboard shortcuts"
         >
-          Press <kbd className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>?</kbd> for help
+          Press <kbd className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>?</kbd> or <kbd className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>/</kbd> for help
         </button>
       </div>
 
