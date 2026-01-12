@@ -538,6 +538,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         gridRow: `${gridRowStart} / span ${gridRowSpan}`,
         // Only transition visual properties, not positioning (causes bounce on grid line crossing)
         transition: 'opacity 150ms, box-shadow 150ms, transform 150ms',
+        // Hint browser about upcoming transforms for better performance during drag/resize
+        willChange: isSelected && !isGhost ? 'transform, opacity' : 'auto',
         // Override size and position when drawer has fractional dimensions (different row/column sizes)
         ...(needsCustomSizing ? {
           width: binPixelWidth,

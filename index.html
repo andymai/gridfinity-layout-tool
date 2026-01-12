@@ -44,12 +44,11 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png">
     <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
 
-    <!-- Performance: DNS prefetch and preconnect for fonts -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <!-- Performance: Optimized font loading with display=optional for instant render -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Use display=optional for best CLS - renders with fallback font if custom font not cached -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=optional" rel="stylesheet">
 
     <!-- Structured Data: SoftwareApplication -->
     <script type="application/ld+json">

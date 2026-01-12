@@ -3,6 +3,7 @@ import type { RefObject } from 'react';
 import type { Bin, Coord, Rect, ResizeHandle } from '../types';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
 import { useGridCoords } from './useGridCoords';
+import { useThrottledCallback } from './useThrottledCallback';
 import { canPlaceBin, clamp } from '../utils/validation';
 import { constrainGroupDelta } from '../utils/selection';
 import { STAGING_ID, getBaseCellSize } from '../constants';
@@ -248,6 +249,157 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   }, [setInteraction]);
 
   // Document-level pointer tracking (unified mouse/touch/pen)
+  // Extract the pointer move logic into a memoized callback so we can throttle it
+  const processPointerMove = useCallback((e: PointerEvent) => {
+    if (!interaction) return;
+    
+    // Ignore secondary touches (allow two-finger pan)
+    if (!e.isPrimary) return;
+    // Track the first pointer that moves during interaction (fallback for draw/paint mode)
+    if (activePointerIdRef.current === null) {
+      activePointerIdRef.current = e.pointerId;
+    }
+    // Ignore events from other pointers
+    if (e.pointerId !== activePointerIdRef.current) return;
+    const coords = getGridCoords(e.clientX, e.clientY);
+    if (!coords) return;
+    const clamped = clampCoords(coords);
+
+    if (interaction.type === 'draw') {
+      setInteraction({
+        ...interaction,
+        current: clamped,
+      });
+    } else if (interaction.type === 'drag') {
+      // Check if mouse is over the grid
+      const overGrid = isInBounds(coords);
+
+      // Get all bins being dragged
+      const draggedBins = interaction.binIds
+        .map(id => layout.bins.find(b => b.id === id))
+        .filter((b): b is Bin => b !== undefined);
+
+      if (draggedBins.length === 0) return;
+
+      // Calculate raw delta from start position
+      const rawDeltaX = clamped.x - interaction.startCoord.x;
+      const rawDeltaY = clamped.y - interaction.startCoord.y;
+
+      // Constrain delta to keep ENTIRE GROUP in bounds (preserves arrangement)
+      const { deltaX, deltaY } = constrainGroupDelta(
+        draggedBins,
+        rawDeltaX,
+        rawDeltaY,
+        layout.drawer
+      );
+
+      // Validate all bins at their new positions (with uniform delta applied)
+      let allValid = overGrid; // Only valid if over grid
+      const otherBinIds = new Set(interaction.binIds);
+
+      if (overGrid) {
+        for (const bin of draggedBins) {
+          // Apply uniform delta - NO individual clamping
+          const newX = bin.x + deltaX;
+          const newY = bin.y + deltaY;
+
+          // Check placement excluding all bins being dragged
+          const result = canPlaceBin(
+            { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
+            activeLayerId,
+            layout,
+            bin.id,
+            otherBinIds // Pass all dragged bins to exclude from collision check
+          );
+
+          if (!result.valid) {
+            allValid = false;
+            break;
+          }
+        }
+      }
+
+      // Store the constrained delta (not absolute position) for use in drop and overlay
+      setInteraction({
+        ...interaction,
+        currentCoord: { x: deltaX, y: deltaY },
+        valid: allValid,
+        isOverGrid: overGrid,
+      });
+    } else if (interaction.type === 'resize') {
+      // Resize all selected bins by same delta
+      const newRects = new Map<string, Rect>();
+      let allValid = true;
+      const otherBinIds = new Set(interaction.binIds);
+
+      for (const binId of interaction.binIds) {
+        const bin = layout.bins.find(b => b.id === binId);
+        const startRect = interaction.startRects.get(binId);
+        if (!bin || !startRect) continue;
+
+        // Get current minSize from halfBinMode state
+        const halfBinModeNow = useUIStore.getState().halfBinMode;
+        const minSizeNow = halfBinModeNow ? 0.5 : 1;
+        const newRect = calculateResizeRect(
+          startRect,
+          interaction.handle,
+          clamped,
+          layout.drawer,
+          minSizeNow
+        );
+        newRects.set(binId, newRect);
+
+        const result = canPlaceBin(
+          { ...newRect, height: bin.height },
+          activeLayerId,
+          layout,
+          binId,
+          otherBinIds
+        );
+
+        if (!result.valid) {
+          allValid = false;
+        }
+      }
+
+      setInteraction({
+        ...interaction,
+        currentRects: newRects,
+        valid: allValid,
+      });
+    } else if (interaction.type === 'stagingDrag') {
+      // Dragging a bin from staging to main grid
+      const bin = layout.bins.find(b => b.id === interaction.binId);
+      if (!bin) return;
+
+      // Calculate where the bin would be placed (centered on cursor)
+      const targetX = clamp(clamped.x, 0, layout.drawer.width - bin.width);
+      const targetY = clamp(clamped.y, 0, layout.drawer.depth - bin.depth);
+
+      // Validate placement
+      const result = canPlaceBin(
+        { x: targetX, y: targetY, width: bin.width, depth: bin.depth, height: bin.height },
+        activeLayerId,
+        layout,
+        bin.id
+      );
+
+      setInteraction({
+        ...interaction,
+        currentCoord: { x: targetX, y: targetY },
+        valid: result.valid,
+      });
+    } else if (interaction.type === 'paint') {
+      setInteraction({
+        ...interaction,
+        current: clamped,
+      });
+    }
+  }, [interaction, layout, activeLayerId, getGridCoords, clampCoords, isInBounds, setInteraction]);
+
+  // Throttle the pointer move handler using requestAnimationFrame for smooth 60fps updates
+  const throttledPointerMove = useThrottledCallback(processPointerMove);
+
   useEffect(() => {
     if (!interaction) {
       // Reset pointer tracking when no interaction
@@ -267,148 +419,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      // Ignore secondary touches (allow two-finger pan)
-      if (!e.isPrimary) return;
-      // Track the first pointer that moves during interaction (fallback for draw/paint mode)
-      if (activePointerIdRef.current === null) {
-        activePointerIdRef.current = e.pointerId;
-      }
-      // Ignore events from other pointers
-      if (e.pointerId !== activePointerIdRef.current) return;
-      const coords = getGridCoords(e.clientX, e.clientY);
-      if (!coords) return;
-      const clamped = clampCoords(coords);
-
-      if (interaction.type === 'draw') {
-        setInteraction({
-          ...interaction,
-          current: clamped,
-        });
-      } else if (interaction.type === 'drag') {
-        // Check if mouse is over the grid
-        const overGrid = isInBounds(coords);
-
-        // Get all bins being dragged
-        const draggedBins = interaction.binIds
-          .map(id => layout.bins.find(b => b.id === id))
-          .filter((b): b is Bin => b !== undefined);
-
-        if (draggedBins.length === 0) return;
-
-        // Calculate raw delta from start position
-        const rawDeltaX = clamped.x - interaction.startCoord.x;
-        const rawDeltaY = clamped.y - interaction.startCoord.y;
-
-        // Constrain delta to keep ENTIRE GROUP in bounds (preserves arrangement)
-        const { deltaX, deltaY } = constrainGroupDelta(
-          draggedBins,
-          rawDeltaX,
-          rawDeltaY,
-          layout.drawer
-        );
-
-        // Validate all bins at their new positions (with uniform delta applied)
-        let allValid = overGrid; // Only valid if over grid
-        const otherBinIds = new Set(interaction.binIds);
-
-        if (overGrid) {
-          for (const bin of draggedBins) {
-            // Apply uniform delta - NO individual clamping
-            const newX = bin.x + deltaX;
-            const newY = bin.y + deltaY;
-
-            // Check placement excluding all bins being dragged
-            const result = canPlaceBin(
-              { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
-              activeLayerId,
-              layout,
-              bin.id,
-              otherBinIds // Pass all dragged bins to exclude from collision check
-            );
-
-            if (!result.valid) {
-              allValid = false;
-              break;
-            }
-          }
-        }
-
-        // Store the constrained delta (not absolute position) for use in drop and overlay
-        setInteraction({
-          ...interaction,
-          currentCoord: { x: deltaX, y: deltaY },
-          valid: allValid,
-          isOverGrid: overGrid,
-        });
-      } else if (interaction.type === 'resize') {
-        // Resize all selected bins by same delta
-        const newRects = new Map<string, Rect>();
-        let allValid = true;
-        const otherBinIds = new Set(interaction.binIds);
-
-        for (const binId of interaction.binIds) {
-          const bin = layout.bins.find(b => b.id === binId);
-          const startRect = interaction.startRects.get(binId);
-          if (!bin || !startRect) continue;
-
-          // Get current minSize from halfBinMode state
-          const halfBinModeNow = useUIStore.getState().halfBinMode;
-          const minSizeNow = halfBinModeNow ? 0.5 : 1;
-          const newRect = calculateResizeRect(
-            startRect,
-            interaction.handle,
-            clamped,
-            layout.drawer,
-            minSizeNow
-          );
-          newRects.set(binId, newRect);
-
-          const result = canPlaceBin(
-            { ...newRect, height: bin.height },
-            activeLayerId,
-            layout,
-            binId,
-            otherBinIds
-          );
-
-          if (!result.valid) {
-            allValid = false;
-          }
-        }
-
-        setInteraction({
-          ...interaction,
-          currentRects: newRects,
-          valid: allValid,
-        });
-      } else if (interaction.type === 'stagingDrag') {
-        // Dragging a bin from staging to main grid
-        const bin = layout.bins.find(b => b.id === interaction.binId);
-        if (!bin) return;
-
-        // Calculate where the bin would be placed (centered on cursor)
-        const targetX = clamp(clamped.x, 0, layout.drawer.width - bin.width);
-        const targetY = clamp(clamped.y, 0, layout.drawer.depth - bin.depth);
-
-        // Validate placement
-        const result = canPlaceBin(
-          { x: targetX, y: targetY, width: bin.width, depth: bin.depth, height: bin.height },
-          activeLayerId,
-          layout,
-          bin.id
-        );
-
-        setInteraction({
-          ...interaction,
-          currentCoord: { x: targetX, y: targetY },
-          valid: result.valid,
-        });
-      } else if (interaction.type === 'paint') {
-        setInteraction({
-          ...interaction,
-          current: clamped,
-        });
-      }
+      throttledPointerMove(e);
     };
 
     const handlePointerUp = (e: PointerEvent) => {
@@ -670,7 +681,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         capturedPointerRef.current = null;
       }
     };
-  }, [interaction, layout, activeLayerId, activeCategoryId, addBin, updateBin, deleteBin, setInteraction, setDropTarget, setSelectedBin, setSelectedBins, getGridCoords, clampCoords, isInBounds, execute]);
+  }, [interaction, layout, activeLayerId, activeCategoryId, addBin, updateBin, deleteBin, setInteraction, setDropTarget, setSelectedBin, setSelectedBins, throttledPointerMove, execute]);
 
   return {
     interaction,
