@@ -4,6 +4,16 @@ import { expect } from '@playwright/test';
 // Re-export test and expect from Playwright
 export { test, expect } from '@playwright/test';
 
+// Re-export test utilities for convenience
+export {
+  clearAllStorage,
+  waitForAutoSave,
+  resetViewport,
+  getNewestBin,
+  getBinByIndex,
+  getBinCount,
+} from './test-utils';
+
 // Default timeout for wait operations (ms)
 const DEFAULT_TIMEOUT = 5000;
 
@@ -193,8 +203,9 @@ export async function drawBinOnGrid(
   // Wait for bin count to increase
   await waitForBinCount(page, countBefore + 1);
 
-  // Return the last bin (the newly created one)
-  return page.locator('[data-bin-id]').last();
+  // Return the newest bin (more explicit than .last())
+  const { getNewestBin } = await import('./test-utils');
+  return getNewestBin(page);
 }
 
 /**
@@ -243,16 +254,18 @@ export async function fillLayerWithSize(page: Page, width: number, depth: number
 
 /**
  * Get the right panel (inspector).
+ * More explicit than .last() - explicitly selects the second aside element.
  */
 export function getInspector(page: Page): Locator {
-  return page.locator('aside').last();
+  return page.locator('aside').nth(1);
 }
 
 /**
  * Get the left sidebar.
+ * More explicit than .first() - explicitly selects the first aside element.
  */
 export function getSidebar(page: Page): Locator {
-  return page.locator('aside').first();
+  return page.locator('aside').nth(0);
 }
 
 // Mobile viewport configurations

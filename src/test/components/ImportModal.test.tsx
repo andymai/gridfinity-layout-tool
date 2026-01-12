@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, fireEvent, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, fireEvent, waitFor, act, cleanup } from '@testing-library/react';
 import { ImportModal } from '../../components/modals/ImportModal';
 import { createDefaultLayout } from '../../constants';
 
@@ -9,6 +9,11 @@ describe('ImportModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
   });
 
   const renderModal = (isOpen = true) => {

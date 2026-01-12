@@ -6,14 +6,28 @@ import {
   getSidebar,
   waitForBinCount,
   waitForBinSelected,
+  clearAllStorage,
+  resetViewport,
 } from './fixtures';
 
 test.describe('Print List', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
+    await clearAllStorage(page);
     await page.reload();
     await waitForAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = page.locator('[role="dialog"]');
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
   });
 
   test('shows empty state when no bins', async ({ page }) => {

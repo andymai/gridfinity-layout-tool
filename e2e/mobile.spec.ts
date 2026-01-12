@@ -9,6 +9,8 @@ import {
   waitForDialog,
   waitForDialogClosed,
   waitForBinSelected,
+  clearAllStorage,
+  resetViewport,
 } from './fixtures';
 
 test.describe('Mobile Layout', () => {
@@ -16,9 +18,22 @@ test.describe('Mobile Layout', () => {
     // Set mobile viewport
     await page.setViewportSize(MOBILE_VIEWPORT);
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
+    await clearAllStorage(page);
     await page.reload();
     await waitForMobileAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    // CRITICAL: Reset viewport after mobile tests to prevent pollution
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = page.locator('[role="dialog"]');
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
   });
 
   test('shows mobile layout on small viewport', async ({ page }) => {

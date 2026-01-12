@@ -1,13 +1,17 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useHistoryStore } from '../../store/history';
 import { useLayoutStore } from '../../store/layout';
 import { createDefaultLayout, CONSTRAINTS } from '../../constants';
+import { resetAllStores } from '../testUtils';
 
 describe('history store', () => {
   beforeEach(() => {
-    // Reset both stores before each test
-    useHistoryStore.setState({ past: [], future: [], canUndo: false, canRedo: false });
-    useLayoutStore.setState({ layout: createDefaultLayout() });
+    resetAllStores();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('push', () => {

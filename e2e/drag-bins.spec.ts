@@ -9,17 +9,31 @@ import {
   waitForBinCount,
   waitForNoSelection,
   waitForUndoEnabled,
+  clearAllStorage,
+  resetViewport,
 } from './fixtures';
 
 test.describe('Drag Bins Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
+    await clearAllStorage(page);
     await page.reload();
     await waitForAppReady(page);
 
     // Create a bin first by drawing
     await drawBinOnGrid(page, 50, 150, 100, 100);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = page.locator('[role="dialog"]');
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
   });
 
   test('can drag a bin to a new position', async ({ page }) => {

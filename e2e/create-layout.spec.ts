@@ -3,14 +3,27 @@ import {
   expect,
   waitForAppReady,
   waitForDialog,
+  clearAllStorage,
+  resetViewport,
+  waitForAutoSave,
 } from './fixtures';
 
 test.describe('Create Layout Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
     await waitForAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = page.locator('[role="dialog"]');
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
   });
 
   test('shows default layout on first load', async ({ page }) => {
@@ -68,8 +81,11 @@ test.describe('Create Layout Flow', () => {
     await input.fill('Persisted Layout');
     await input.press('Enter');
 
-    // Wait for auto-save (debounced) - longer wait to ensure persistence
-    await page.waitForTimeout(2000);
+    // Wait for the UI to update with the new name
+    await expect(page.getByRole('button', { name: 'Persisted Layout' })).toBeVisible();
+
+    // Wait for auto-save to complete (observes actual localStorage state)
+    await waitForAutoSave(page);
 
     // Reload page (DON'T clear localStorage this time since we want to test persistence)
     await page.reload();
