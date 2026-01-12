@@ -853,9 +853,7 @@ export function Grid() {
                     <button
                       key={`row-${num}`}
                       type="button"
-                      className={`group flex items-center justify-center select-none transition-colors font-medium tabular-nums bg-transparent border-0 cursor-pointer ${
-                        isFractionalRow ? 'text-accent/70 hover:text-accent' : 'text-content-tertiary hover:text-content'
-                      }`}
+                      className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
                       style={{
                         width: labelWidth,
                         height: rowHeight,
@@ -864,24 +862,9 @@ export function Grid() {
                         minWidth: 0,
                         padding: 0,
                       }}
-                      onClick={(e) => {
-                        if (isFractionalRow) {
-                          // Toggle fractional edge position
-                          execute(() => updateDrawer({
-                            fractionalEdgeY: fractionalEdgeY === 'end' ? 'start' : 'end'
-                          }));
-                        } else if (typeof num === 'number') {
-                          handleRowClick(Math.floor(num), e);
-                        }
-                      }}
-                      title={isFractionalRow
-                        ? `Click to move fractional edge to ${fractionalEdgeY === 'end' ? 'bottom' : 'top'}`
-                        : `Click to select row ${num}. Shift-click for range. Ctrl-click to add/remove.`
-                      }
-                      aria-label={isFractionalRow
-                        ? `Fractional edge at ${fractionalEdgeY === 'end' ? 'top' : 'bottom'}. Click to toggle.`
-                        : `Select bins in row ${num}`
-                      }
+                      onClick={(e) => typeof num === 'number' && handleRowClick(Math.floor(num), e)}
+                      title={`Click to select row ${label}. Shift-click for range. Ctrl-click to add/remove.`}
+                      aria-label={`Select bins in row ${label}`}
                     >
                       {labelFontSize > 0 && label}
                     </button>
@@ -1069,9 +1052,7 @@ export function Grid() {
                         <button
                           key={`col-${num}`}
                           type="button"
-                          className={`group flex items-center justify-center select-none transition-colors font-medium tabular-nums bg-transparent border-0 cursor-pointer ${
-                            isFractionalCol ? 'text-accent/70 hover:text-accent' : 'text-content-tertiary hover:text-content'
-                          }`}
+                          className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
                           style={{
                             width: colWidth,
                             height: columnLabelHeight,
@@ -1080,24 +1061,9 @@ export function Grid() {
                             minWidth: 0,
                             padding: 0,
                           }}
-                          onClick={(e) => {
-                            if (isFractionalCol) {
-                              // Toggle fractional edge position
-                              execute(() => updateDrawer({
-                                fractionalEdgeX: fractionalEdgeX === 'end' ? 'start' : 'end'
-                              }));
-                            } else if (typeof num === 'number') {
-                              handleColumnClick(Math.floor(num), e);
-                            }
-                          }}
-                          title={isFractionalCol
-                            ? `Click to move fractional edge to ${fractionalEdgeX === 'end' ? 'left' : 'right'}`
-                            : `Click to select column ${num}. Shift-click for range. Ctrl-click to add/remove.`
-                          }
-                          aria-label={isFractionalCol
-                            ? `Fractional edge at ${fractionalEdgeX === 'end' ? 'right' : 'left'}. Click to toggle.`
-                            : `Select bins in column ${num}`
-                          }
+                          onClick={(e) => typeof num === 'number' && handleColumnClick(Math.floor(num), e)}
+                          title={`Click to select column ${label}. Shift-click for range. Ctrl-click to add/remove.`}
+                          aria-label={`Select bins in column ${label}`}
                         >
                           {labelFontSize > 0 && label}
                         </button>
