@@ -6,6 +6,7 @@ import { useGridCoords } from './useGridCoords';
 import { canPlaceBin, clamp } from '../utils/validation';
 import { constrainGroupDelta } from '../utils/selection';
 import { STAGING_ID, getBaseCellSize } from '../constants';
+import { throttleRAF, cancelThrottledRAF } from '../utils/throttle';
 
 /**
  * Hook for managing all grid interactions including bin creation, movement, and resizing.
@@ -266,38 +267,30 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       }
     };
 
-    const handlePointerMove = (e: PointerEvent) => {
-      // Ignore secondary touches (allow two-finger pan)
-      if (!e.isPrimary) return;
-      // Track the first pointer that moves during interaction (fallback for draw/paint mode)
-      if (activePointerIdRef.current === null) {
-        activePointerIdRef.current = e.pointerId;
-      }
-      // Ignore events from other pointers
-      if (e.pointerId !== activePointerIdRef.current) return;
-      const coords = getGridCoords(e.clientX, e.clientY);
-      if (!coords) return;
-      const clamped = clampCoords(coords);
+    // Core move processing logic - separated for throttling
+    // Draw and paint interactions are NOT throttled for instant visual feedback
+    // Drag, resize, and stagingDrag ARE throttled because they involve heavy validation
+    const processHeavyMove = throttleRAF((
+      coords: Coord,
+      clamped: Coord,
+      currentInteraction: typeof interaction
+    ) => {
+      if (!currentInteraction) return;
 
-      if (interaction.type === 'draw') {
-        setInteraction({
-          ...interaction,
-          current: clamped,
-        });
-      } else if (interaction.type === 'drag') {
+      if (currentInteraction.type === 'drag') {
         // Check if mouse is over the grid
         const overGrid = isInBounds(coords);
 
         // Get all bins being dragged
-        const draggedBins = interaction.binIds
+        const draggedBins = currentInteraction.binIds
           .map(id => layout.bins.find(b => b.id === id))
           .filter((b): b is Bin => b !== undefined);
 
         if (draggedBins.length === 0) return;
 
         // Calculate raw delta from start position
-        const rawDeltaX = clamped.x - interaction.startCoord.x;
-        const rawDeltaY = clamped.y - interaction.startCoord.y;
+        const rawDeltaX = clamped.x - currentInteraction.startCoord.x;
+        const rawDeltaY = clamped.y - currentInteraction.startCoord.y;
 
         // Constrain delta to keep ENTIRE GROUP in bounds (preserves arrangement)
         const { deltaX, deltaY } = constrainGroupDelta(
@@ -309,7 +302,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
         // Validate all bins at their new positions (with uniform delta applied)
         let allValid = overGrid; // Only valid if over grid
-        const otherBinIds = new Set(interaction.binIds);
+        const otherBinIds = new Set(currentInteraction.binIds);
 
         if (overGrid) {
           for (const bin of draggedBins) {
@@ -335,20 +328,20 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
         // Store the constrained delta (not absolute position) for use in drop and overlay
         setInteraction({
-          ...interaction,
+          ...currentInteraction,
           currentCoord: { x: deltaX, y: deltaY },
           valid: allValid,
           isOverGrid: overGrid,
         });
-      } else if (interaction.type === 'resize') {
+      } else if (currentInteraction.type === 'resize') {
         // Resize all selected bins by same delta
         const newRects = new Map<string, Rect>();
         let allValid = true;
-        const otherBinIds = new Set(interaction.binIds);
+        const otherBinIds = new Set(currentInteraction.binIds);
 
-        for (const binId of interaction.binIds) {
+        for (const binId of currentInteraction.binIds) {
           const bin = layout.bins.find(b => b.id === binId);
-          const startRect = interaction.startRects.get(binId);
+          const startRect = currentInteraction.startRects.get(binId);
           if (!bin || !startRect) continue;
 
           // Get current minSize from halfBinMode state
@@ -356,7 +349,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
           const minSizeNow = halfBinModeNow ? 0.5 : 1;
           const newRect = calculateResizeRect(
             startRect,
-            interaction.handle,
+            currentInteraction.handle,
             clamped,
             layout.drawer,
             minSizeNow
@@ -377,13 +370,13 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         }
 
         setInteraction({
-          ...interaction,
+          ...currentInteraction,
           currentRects: newRects,
           valid: allValid,
         });
-      } else if (interaction.type === 'stagingDrag') {
+      } else if (currentInteraction.type === 'stagingDrag') {
         // Dragging a bin from staging to main grid
-        const bin = layout.bins.find(b => b.id === interaction.binId);
+        const bin = layout.bins.find(b => b.id === currentInteraction.binId);
         if (!bin) return;
 
         // Calculate where the bin would be placed (centered on cursor)
@@ -399,15 +392,41 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         );
 
         setInteraction({
-          ...interaction,
+          ...currentInteraction,
           currentCoord: { x: targetX, y: targetY },
           valid: result.valid,
+        });
+      }
+    });
+
+    const handlePointerMove = (e: PointerEvent) => {
+      // Ignore secondary touches (allow two-finger pan)
+      if (!e.isPrimary) return;
+      // Track the first pointer that moves during interaction (fallback for draw/paint mode)
+      if (activePointerIdRef.current === null) {
+        activePointerIdRef.current = e.pointerId;
+      }
+      // Ignore events from other pointers
+      if (e.pointerId !== activePointerIdRef.current) return;
+      const coords = getGridCoords(e.clientX, e.clientY);
+      if (!coords) return;
+      const clamped = clampCoords(coords);
+
+      // Draw and paint are NOT throttled - they need instant visual feedback
+      // and don't involve heavy collision detection
+      if (interaction.type === 'draw') {
+        setInteraction({
+          ...interaction,
+          current: clamped,
         });
       } else if (interaction.type === 'paint') {
         setInteraction({
           ...interaction,
           current: clamped,
         });
+      } else {
+        // Drag, resize, stagingDrag involve heavy validation - throttle to RAF
+        processHeavyMove(coords, clamped, interaction);
       }
     };
 
@@ -660,6 +679,8 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       document.removeEventListener('pointermove', handlePointerMove);
       document.removeEventListener('pointerup', handlePointerUp);
       document.removeEventListener('pointercancel', handlePointerUp);
+      // Cancel any pending throttled move operations
+      cancelThrottledRAF(processHeavyMove);
       // Release pointer capture on cleanup
       if (capturedPointerRef.current) {
         try {

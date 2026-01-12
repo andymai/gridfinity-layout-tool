@@ -1,5 +1,5 @@
 import type { PointerEvent } from 'react';
-import { memo, useRef, useState, useCallback } from 'react';
+import { memo, useRef, useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import type { Bin as BinType, Category, Layer, Drawer, ResizeHandle } from '../../types';
 import { useUIStore, useLayoutStore } from '../../store';
@@ -100,95 +100,80 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   const needsSplit = bin.width > maxGridUnits || bin.depth > maxGridUnits;
   const isTall = layer && bin.height > layer.height;
 
-  // ========== ADAPTIVE LABEL SYSTEM ==========
-  // Simple rule: if label fits at calculated font size, show it. Otherwise show dimensions.
-  // Uses monospace font for predictable character widths.
+  // ========== MEMOIZED LAYOUT CALCULATIONS ==========
+  // All heavy grid positioning and pixel sizing calculations are memoized together
+  // to prevent recalculation when only UI state (hover, focus, etc.) changes.
+  const layoutCalcs = useMemo(() => {
+    // Format dimensions - show decimal if fractional (half-bin mode)
+    const formatDim = (val: number) => val % 1 === 0 ? val.toString() : val.toFixed(1);
+    const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
 
-  // Format dimensions - show decimal if fractional (half-bin mode)
-  const formatDim = (val: number) => val % 1 === 0 ? val.toString() : val.toFixed(1);
-  const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
-  const hasLabel = showLabels && bin.label;
+    // Calculate grid position (always use standard grid, no scaling)
+    const hasFractionalX = bin.x % 1 !== 0;
+    const hasFractionalY = bin.y % 1 !== 0;
+    const hasFractionalWidth = bin.width % 1 !== 0;
+    const hasFractionalDepth = bin.depth % 1 !== 0;
+    const hasFractionalDims = hasFractionalX || hasFractionalY || hasFractionalWidth || hasFractionalDepth;
 
-  // Calculate grid position (always use standard grid, no scaling)
-  // For fractional positions, snap to the containing whole cell(s)
-  const hasFractionalX = bin.x % 1 !== 0;
-  const hasFractionalY = bin.y % 1 !== 0;
-  const hasFractionalWidth = bin.width % 1 !== 0;
-  const hasFractionalDepth = bin.depth % 1 !== 0;
-  const hasFractionalDims = hasFractionalX || hasFractionalY || hasFractionalWidth || hasFractionalDepth;
+    // CSS Grid positioning with configurable fractional edge placement
+    const integerWidth = Math.floor(drawer.width);
+    const integerDepth = Math.floor(drawer.depth);
+    const hasFractionalDrawerWidth = drawer.width % 1 !== 0;
+    const hasFractionalDrawerDepth = drawer.depth % 1 !== 0;
+    const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
+    const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
+    const fractionalWidthPart = drawer.width - integerWidth;
+    const fractionalDepthPart = drawer.depth - integerDepth;
+    const gridRows = Math.ceil(drawer.depth);
 
-  // CSS Grid positioning with configurable fractional edge placement
-  // fractionalEdgeX: 'start' = left, 'end' = right (default)
-  // fractionalEdgeY: 'start' = bottom, 'end' = top (default)
-  const integerWidth = Math.floor(drawer.width);
-  const integerDepth = Math.floor(drawer.depth);
-  const hasFractionalDrawerWidth = drawer.width % 1 !== 0;
-  const hasFractionalDrawerDepth = drawer.depth % 1 !== 0;
-  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
-  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
-  const fractionalWidthPart = drawer.width - integerWidth;
-  const fractionalDepthPart = drawer.depth - integerDepth;
-  const gridRows = Math.ceil(drawer.depth);
-
-  // Helper: Get CSS column for a grid x coordinate
-  // When fractionalEdgeX='start', fractional column is at CSS col 1, integer columns start at 2
-  const getCssColForX = (x: number): number => {
-    if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
-      if (x < fractionalWidthPart) return 1;
-      return Math.floor(x - fractionalWidthPart) + 2;
-    }
-    return Math.floor(x) + 1;
-  };
-
-  // Helper: Get CSS row for a grid y coordinate (y=0 at bottom, CSS row 1 at top)
-  const getCssRowForY = (y: number): number => {
-    if (hasFractionalDrawerDepth) {
-      if (fractionalEdgeY === 'start') {
-        // Fractional row at bottom (CSS row = gridRows)
-        if (y < fractionalDepthPart) return gridRows;
-        return integerDepth - Math.floor(y - fractionalDepthPart);
-      } else {
-        // Fractional row at top (CSS row 1)
-        if (y >= integerDepth) return 1;
-        return integerDepth - Math.floor(y) + 1;
+    // Helper: Get CSS column for a grid x coordinate
+    const getCssColForX = (x: number): number => {
+      if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
+        if (x < fractionalWidthPart) return 1;
+        return Math.floor(x - fractionalWidthPart) + 2;
       }
-    }
-    return integerDepth - Math.floor(y);
-  };
+      return Math.floor(x) + 1;
+    };
 
-  // Calculate CSS column placement
-  const binEndX = bin.x + bin.width;
-  const startCol = getCssColForX(bin.x);
-  const endCol = getCssColForX(binEndX > 0 ? binEndX - 0.001 : binEndX);
-  const gridCol = startCol;
-  const gridColSpan = Math.max(1, endCol - startCol + 1);
+    // Helper: Get CSS row for a grid y coordinate (y=0 at bottom, CSS row 1 at top)
+    const getCssRowForY = (y: number): number => {
+      if (hasFractionalDrawerDepth) {
+        if (fractionalEdgeY === 'start') {
+          if (y < fractionalDepthPart) return gridRows;
+          return integerDepth - Math.floor(y - fractionalDepthPart);
+        } else {
+          if (y >= integerDepth) return 1;
+          return integerDepth - Math.floor(y) + 1;
+        }
+      }
+      return integerDepth - Math.floor(y);
+    };
 
-  // Calculate CSS row placement
-  // For rows, higher y = lower CSS row number (top of bin has higher y)
-  const binEndY = bin.y + bin.depth;
-  const topRow = getCssRowForY(binEndY > 0 ? binEndY - 0.001 : binEndY);
-  const bottomRow = getCssRowForY(bin.y);
-  const gridRowStart = topRow;
-  const gridRowSpan = Math.max(1, bottomRow - topRow + 1);
-
-  // Calculate actual pixel dimensions of bin
-  // When drawer has fractional dimensions, we need to account for different-sized rows/columns
-  const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
-  const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
-
-  // Calculate pixel width accounting for fractional edge
-  const calcBinPixelWidth = (): number => {
-    if (!hasFractionalDrawerWidth) {
-      return bin.width * cellSize + Math.max(0, bin.width - 1) * gap;
-    }
-
+    // Calculate CSS column placement
     const binEndX = bin.x + bin.width;
+    const startCol = getCssColForX(bin.x);
+    const endCol = getCssColForX(binEndX > 0 ? binEndX - 0.001 : binEndX);
+    const gridCol = startCol;
+    const gridColSpan = Math.max(1, endCol - startCol + 1);
 
-    if (fractionalEdgeX === 'start') {
-      // Fractional column at left [0, fractionalWidthPart)
+    // Calculate CSS row placement
+    const binEndY = bin.y + bin.depth;
+    const topRow = getCssRowForY(binEndY > 0 ? binEndY - 0.001 : binEndY);
+    const bottomRow = getCssRowForY(bin.y);
+    const gridRowStart = topRow;
+    const gridRowSpan = Math.max(1, bottomRow - topRow + 1);
+
+    // Calculate actual pixel dimensions of bin
+    const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
+    const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
+
+    // Calculate pixel width accounting for fractional edge
+    let binPixelWidth: number;
+    if (!hasFractionalDrawerWidth) {
+      binPixelWidth = bin.width * cellSize + Math.max(0, bin.width - 1) * gap;
+    } else if (fractionalEdgeX === 'start') {
       const inFractional = Math.max(0, Math.min(binEndX, fractionalWidthPart) - Math.max(bin.x, 0));
       const inInteger = bin.width - inFractional;
-
       let width = 0;
       if (inFractional > 0) {
         width += (inFractional / fractionalWidthPart) * fractionalCellWidth;
@@ -197,12 +182,10 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         if (inFractional > 0) width += gap;
         width += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
       }
-      return width;
+      binPixelWidth = width;
     } else {
-      // Fractional column at right [integerWidth, drawer.width)
       const inInteger = Math.max(0, Math.min(binEndX, integerWidth) - bin.x);
       const inFractional = bin.width - inInteger;
-
       let width = 0;
       if (inInteger > 0) {
         width += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
@@ -211,23 +194,16 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         if (inInteger > 0) width += gap;
         width += (inFractional / fractionalWidthPart) * fractionalCellWidth;
       }
-      return width;
+      binPixelWidth = width;
     }
-  };
 
-  // Calculate pixel height accounting for fractional edge
-  const calcBinPixelHeight = (): number => {
+    // Calculate pixel height accounting for fractional edge
+    let binPixelHeight: number;
     if (!hasFractionalDrawerDepth) {
-      return bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap;
-    }
-
-    const binEndY = bin.y + bin.depth;
-
-    if (fractionalEdgeY === 'start') {
-      // Fractional row at bottom [0, fractionalDepthPart)
+      binPixelHeight = bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap;
+    } else if (fractionalEdgeY === 'start') {
       const inFractional = Math.max(0, Math.min(binEndY, fractionalDepthPart) - Math.max(bin.y, 0));
       const inInteger = bin.depth - inFractional;
-
       let height = 0;
       if (inFractional > 0) {
         height += (inFractional / fractionalDepthPart) * fractionalCellHeight;
@@ -236,12 +212,10 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         if (inFractional > 0) height += gap;
         height += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
       }
-      return height;
+      binPixelHeight = height;
     } else {
-      // Fractional row at top [integerDepth, drawer.depth)
       const inInteger = Math.max(0, Math.min(binEndY, integerDepth) - bin.y);
       const inFractional = bin.depth - inInteger;
-
       let height = 0;
       if (inInteger > 0) {
         height += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
@@ -250,108 +224,142 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         if (inInteger > 0) height += gap;
         height += (inFractional / fractionalDepthPart) * fractionalCellHeight;
       }
-      return height;
+      binPixelHeight = height;
     }
-  };
 
-  const binPixelWidth = calcBinPixelWidth();
-  const binPixelHeight = calcBinPixelHeight();
+    // Need custom sizing when drawer has fractional dimensions or bin has fractional coords
+    const needsCustomSizing = hasFractionalDims || hasFractionalDrawerWidth || hasFractionalDrawerDepth;
 
-  // Need custom sizing when drawer has fractional dimensions or bin has fractional coords
-  const needsCustomSizing = hasFractionalDims || hasFractionalDrawerWidth || hasFractionalDrawerDepth;
-
-  // Calculate pixel offset for fractional positions within the cell
-  // X offset: position within fractional column or first integer column
-  // Y offset: for Y, we need to offset from the TOP of the cell span
-  const calcOffsetX = (): number => {
-    if (!needsCustomSizing) return 0;
-    if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
-      if (bin.x < fractionalWidthPart) {
-        // Bin starts in fractional column - offset within it
-        return (bin.x / fractionalWidthPart) * fractionalCellWidth;
+    // Calculate pixel offset for fractional positions
+    let offsetX = 0;
+    let offsetY = 0;
+    if (needsCustomSizing) {
+      // X offset
+      if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
+        if (bin.x < fractionalWidthPart) {
+          offsetX = (bin.x / fractionalWidthPart) * fractionalCellWidth;
+        } else {
+          const integerX = bin.x - fractionalWidthPart;
+          offsetX = (integerX - Math.floor(integerX)) * (cellSize + gap);
+        }
       } else {
-        // Bin starts in integer column - offset within that column
-        const integerX = bin.x - fractionalWidthPart;
-        return (integerX - Math.floor(integerX)) * (cellSize + gap);
+        offsetX = (bin.x - Math.floor(bin.x)) * (cellSize + gap);
       }
-    }
-    return (bin.x - Math.floor(bin.x)) * (cellSize + gap);
-  };
 
-  const calcOffsetY = (): number => {
-    if (!needsCustomSizing) return 0;
-    // Y offset is from the TOP of the cell span (CSS grid row 1 is at top)
-    const binEndY = bin.y + bin.depth;
-    if (hasFractionalDrawerDepth && fractionalEdgeY === 'start') {
-      // Fractional row at bottom - check if bin top is in fractional or integer region
-      if (binEndY <= fractionalDepthPart) {
-        // Bin entirely in fractional row - offset from top of fractional row
-        return (fractionalDepthPart - binEndY) / fractionalDepthPart * fractionalCellHeight;
+      // Y offset
+      if (hasFractionalDrawerDepth && fractionalEdgeY === 'start') {
+        if (binEndY <= fractionalDepthPart) {
+          offsetY = (fractionalDepthPart - binEndY) / fractionalDepthPart * fractionalCellHeight;
+        } else {
+          const integerY = binEndY - fractionalDepthPart;
+          offsetY = (Math.ceil(integerY) - integerY) * (cellSize + gap);
+        }
+      } else if (hasFractionalDrawerDepth && fractionalEdgeY === 'end') {
+        if (binEndY > integerDepth) {
+          const fractionalY = binEndY - integerDepth;
+          offsetY = (fractionalDepthPart - fractionalY) / fractionalDepthPart * fractionalCellHeight;
+        } else {
+          offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
+        }
       } else {
-        // Bin extends into integer rows - offset within top integer row
-        const integerY = binEndY - fractionalDepthPart;
-        return (Math.ceil(integerY) - integerY) * (cellSize + gap);
-      }
-    } else if (hasFractionalDrawerDepth && fractionalEdgeY === 'end') {
-      if (binEndY > integerDepth) {
-        // Bin extends into fractional row at top
-        const fractionalY = binEndY - integerDepth;
-        return (fractionalDepthPart - fractionalY) / fractionalDepthPart * fractionalCellHeight;
+        offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
       }
     }
-    return (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
-  };
 
-  const offsetX = calcOffsetX();
-  const offsetY = calcOffsetY();
-  const binPixelMin = Math.min(binPixelWidth, binPixelHeight);
+    return {
+      dimensionsText,
+      gridCol,
+      gridColSpan,
+      gridRowStart,
+      gridRowSpan,
+      binPixelWidth,
+      binPixelHeight,
+      binPixelMin: Math.min(binPixelWidth, binPixelHeight),
+      needsCustomSizing,
+      offsetX,
+      offsetY,
+    };
+  }, [bin.x, bin.y, bin.width, bin.depth, drawer.width, drawer.depth, drawer.fractionalEdgeX, drawer.fractionalEdgeY, cellSize, gap]);
 
-  // Font size constraints
-  const maxFontSize = clamp(Math.round(binPixelMin * 0.28), 9, 20);
-  const minFontSize = 9;
+  // Destructure memoized values for readability
+  const {
+    dimensionsText,
+    gridCol,
+    gridColSpan,
+    gridRowStart,
+    gridRowSpan,
+    binPixelWidth,
+    binPixelHeight,
+    binPixelMin,
+    needsCustomSizing,
+    offsetX,
+    offsetY,
+  } = layoutCalcs;
 
-  // Smart rotation: use taller dimension for text if significantly taller
-  const shouldRotate = bin.depth > bin.width * 1.5;
+  const hasLabel = showLabels && bin.label;
 
-  // Available width for text (very conservative: 75% of bin width to account for padding)
-  const rawAvailableWidth = shouldRotate ? binPixelHeight : binPixelWidth;
-  const effectiveAvailableWidth = rawAvailableWidth * 0.75;
+  // ========== MEMOIZED TEXT CALCULATIONS ==========
+  // Memoize font size and label visibility calculations
+  const textCalcs = useMemo(() => {
+    const minFontSize = 9;
+    const maxFontSize = clamp(Math.round(binPixelMin * 0.28), 9, 20);
 
-  // Calculate if label fits and at what font size
-  let labelFits = false;
-  let labelFontSize = maxFontSize;
+    // Smart rotation: use taller dimension for text if significantly taller
+    const shouldRotate = bin.depth > bin.width * 1.5;
 
-  if (hasLabel && bin.label) {
-    const labelLength = bin.label.length;
+    // Available width for text (very conservative: 75% of bin width to account for padding)
+    const rawAvailableWidth = shouldRotate ? binPixelHeight : binPixelWidth;
+    const effectiveAvailableWidth = rawAvailableWidth * 0.75;
 
-    // Calculate the font size needed to fit this label
-    // textWidth = labelLength * fontSize * 0.6
-    // fontSize = effectiveAvailableWidth / (labelLength * 0.6)
-    const neededFontSize = effectiveAvailableWidth / (labelLength * 0.6);
+    // Calculate if label fits and at what font size
+    let labelFits = false;
+    let labelFontSize = maxFontSize;
 
-    if (neededFontSize >= minFontSize) {
-      // Label fits at a readable size
-      labelFits = true;
-      labelFontSize = clamp(Math.floor(neededFontSize), minFontSize, maxFontSize);
+    if (hasLabel && bin.label) {
+      const labelLength = bin.label.length;
+      const neededFontSize = effectiveAvailableWidth / (labelLength * 0.6);
+
+      if (neededFontSize >= minFontSize) {
+        labelFits = true;
+        labelFontSize = clamp(Math.floor(neededFontSize), minFontSize, maxFontSize);
+      }
     }
-  }
 
-  // Calculate font sizes
-  const primaryFontSize = labelFits ? labelFontSize : maxFontSize;
-  const secondaryFontSize = clamp(Math.round(primaryFontSize * 0.75), 8, 14);
+    const primaryFontSize = labelFits ? labelFontSize : maxFontSize;
+    const secondaryFontSize = clamp(Math.round(primaryFontSize * 0.75), 8, 14);
 
-  // Visibility thresholds
+    // Visibility thresholds
+    const rawAvailableHeight = shouldRotate ? binPixelWidth : binPixelHeight;
+    const hasSpaceForSecondary = rawAvailableHeight * 0.75 >= primaryFontSize * 2.5;
+
+    // Show label if it fits, otherwise show dimensions
+    const showLabel = hasLabel && labelFits;
+    const primaryText = showLabel && bin.label ? bin.label : dimensionsText;
+    const secondaryText = showLabel && hasSpaceForSecondary ? dimensionsText : null;
+
+    return {
+      shouldRotate,
+      primaryFontSize,
+      secondaryFontSize,
+      showLabel,
+      primaryText,
+      secondaryText,
+      letterSpacing: primaryFontSize < 11 ? '0.02em' as const : 'normal' as const,
+    };
+  }, [binPixelMin, binPixelWidth, binPixelHeight, bin.depth, bin.width, bin.label, hasLabel, dimensionsText]);
+
+  const {
+    shouldRotate,
+    primaryFontSize,
+    secondaryFontSize,
+    showLabel,
+    primaryText,
+    secondaryText,
+    letterSpacing,
+  } = textCalcs;
+
+  // Visibility thresholds (depends on isGhost which changes frequently)
   const showAnyText = binPixelMin >= 24 && !isGhost;
-  const rawAvailableHeight = shouldRotate ? binPixelWidth : binPixelHeight;
-  const hasSpaceForSecondary = rawAvailableHeight * 0.75 >= primaryFontSize * 2.5;
-
-  // Show label if it fits, otherwise show dimensions
-  const showLabel = hasLabel && labelFits;
-  const primaryText = showLabel && bin.label ? bin.label : dimensionsText;
-  const secondaryText = showLabel && hasSpaceForSecondary ? dimensionsText : null;
-
-  // Letter-spacing for small text
-  const letterSpacing = primaryFontSize < 11 ? '0.02em' : 'normal';
 
   const clearLongPress = () => {
     if (longPressTimerRef.current) {

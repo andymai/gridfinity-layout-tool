@@ -2,8 +2,8 @@
 
 /* Extend Tailwind with CSS variable mappings using semantic naming */
 @theme {
-  /* Font families */
-  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  /* Font families - include fallback fonts with size-adjust for CLS prevention */
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Surface colors (backgrounds) - use as bg-surface, bg-surface-secondary, etc. */
   --color-surface: var(--bg-primary);
@@ -397,7 +397,8 @@
    BASE STYLES
    =========================================== */
 body {
-  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  /* Include fallback font with size-adjust to minimize CLS when fonts load */
+  font-family: 'IBM Plex Sans', 'IBM Plex Sans Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-size: var(--text-base);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BREAKPOINTS } from '../constants';
 
 export type LayoutMode = 'mobile' | 'tablet' | 'desktop';
@@ -22,15 +22,21 @@ export interface ResponsiveState {
   isLandscape: boolean;
 }
 
+// Debounce delay for resize events (ms)
+// This improves INP by reducing state updates during continuous resize
+const RESIZE_DEBOUNCE_MS = 100;
+
 /**
  * Hook for responsive breakpoint detection and touch capability.
- * Uses matchMedia for efficient updates without resize event spam.
+ * Uses matchMedia for efficient breakpoint updates without resize event spam.
+ * Resize events are debounced to improve INP during window resizing.
  */
 export function useResponsive(): ResponsiveState {
   const [state, setState] = useState<ResponsiveState>(() => getResponsiveState());
+  const resizeTimeoutRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    // Media queries for breakpoints
+    // Media queries for breakpoints - these fire only when crossing thresholds
     const mobileQuery = window.matchMedia(`(max-width: ${BREAKPOINTS.MD - 1}px)`);
     const tabletQuery = window.matchMedia(
       `(min-width: ${BREAKPOINTS.MD}px) and (max-width: ${BREAKPOINTS.LG - 1}px)`
@@ -39,19 +45,31 @@ export function useResponsive(): ResponsiveState {
     const touchQuery = window.matchMedia('(pointer: coarse)');
     const landscapeQuery = window.matchMedia('(orientation: landscape)');
 
+    // Immediate update for breakpoint changes (these are already efficient)
     const updateState = () => {
       setState(getResponsiveState());
     };
 
-    // Listen for changes
+    // Debounced update for resize events (only affects viewportWidth/Height)
+    // This prevents excessive re-renders during continuous resize dragging
+    const debouncedResizeHandler = () => {
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+      resizeTimeoutRef.current = window.setTimeout(() => {
+        setState(getResponsiveState());
+      }, RESIZE_DEBOUNCE_MS);
+    };
+
+    // Listen for changes - matchMedia handlers fire immediately (efficient)
     mobileQuery.addEventListener('change', updateState);
     tabletQuery.addEventListener('change', updateState);
     desktopQuery.addEventListener('change', updateState);
     touchQuery.addEventListener('change', updateState);
     landscapeQuery.addEventListener('change', updateState);
 
-    // Also listen to window resize for viewport dimensions
-    window.addEventListener('resize', updateState);
+    // Debounce resize events for viewport dimension updates
+    window.addEventListener('resize', debouncedResizeHandler);
 
     // Initial state
     updateState();
@@ -62,7 +80,10 @@ export function useResponsive(): ResponsiveState {
       desktopQuery.removeEventListener('change', updateState);
       touchQuery.removeEventListener('change', updateState);
       landscapeQuery.removeEventListener('change', updateState);
-      window.removeEventListener('resize', updateState);
+      window.removeEventListener('resize', debouncedResizeHandler);
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
     };
   }, []);
 
