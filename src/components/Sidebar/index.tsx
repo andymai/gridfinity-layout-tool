@@ -38,6 +38,8 @@ export function Sidebar() {
     drawerWidth,
     drawerDepth,
     drawerHeight,
+    fractionalEdgeX,
+    fractionalEdgeY,
     setGridUnitMm,
     setHeightUnitMm,
     setPrintBedSize,
@@ -52,6 +54,8 @@ export function Sidebar() {
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
       drawerHeight: state.layout.drawer.height,
+      fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
+      fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
       setGridUnitMm: state.setGridUnitMm,
       setHeightUnitMm: state.setHeightUnitMm,
       setPrintBedSize: state.setPrintBedSize,
@@ -85,16 +89,36 @@ export function Sidebar() {
     setShowSaveDefaultsConfirm(false);
   };
 
+  // Check if dimensions are fractional (for step size calculation)
+  const hasFractionalWidth = drawerWidth % 1 !== 0;
+  const hasFractionalDepth = drawerDepth % 1 !== 0;
+
+  // Use 0.5 step when in half-bin mode OR when dimension is already fractional
+  const widthStep = halfBinMode || hasFractionalWidth ? 0.5 : 1;
+  const depthStep = halfBinMode || hasFractionalDepth ? 0.5 : 1;
+
   const handleDrawerHeightChange = (delta: number) => {
     const newHeight = Math.max(1, drawerHeight + delta);
     updateDrawer({ height: newHeight });
   };
 
-  const handleDrawerWidthChange = (width: number) => {
+  const handleDrawerWidthChange = (delta: number) => {
+    const step = halfBinMode || hasFractionalWidth ? 0.5 : 1;
+    const newWidth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, drawerWidth + delta * step));
+    updateDrawer({ width: newWidth });
+  };
+
+  const handleDrawerDepthChange = (delta: number) => {
+    const step = halfBinMode || hasFractionalDepth ? 0.5 : 1;
+    const newDepth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, drawerDepth + delta * step));
+    updateDrawer({ depth: newDepth });
+  };
+
+  const handleDrawerWidthInput = (width: number) => {
     updateDrawer({ width: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width)) });
   };
 
-  const handleDrawerDepthChange = (depth: number) => {
+  const handleDrawerDepthInput = (depth: number) => {
     updateDrawer({ depth: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth)) });
   };
 
@@ -189,32 +213,76 @@ export function Sidebar() {
                   {/* Width / Depth / Height in compact grid */}
                   <div className="grid grid-cols-3 gap-1.5">
                     <div>
-                      <label className="block text-content-tertiary mb-1" title="Number of grid units wide (supports 0.5 increments)">
+                      <label className="block text-content-tertiary mb-1" title={`Width in grid units (step: ${widthStep})`}>
                         Width
                       </label>
-                      <DeferredNumberInput
-                        value={drawerWidth}
-                        onChange={handleDrawerWidthChange}
-                        min={0.5}
-                        max={CONSTRAINTS.GRID_MAX}
-                        step={0.5}
-                        className="input w-full h-6 text-xs text-center tabular-nums"
-                        aria-label="Drawer width in grid units"
-                      />
+                      <div className="flex items-center h-6">
+                        <button
+                          onClick={() => handleDrawerWidthChange(-1)}
+                          disabled={drawerWidth <= 0.5}
+                          className="h-full px-1 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                          aria-label="Decrease width"
+                        >
+                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" d="M20 12H4" />
+                          </svg>
+                        </button>
+                        <DeferredNumberInput
+                          value={drawerWidth}
+                          onChange={handleDrawerWidthInput}
+                          min={0.5}
+                          max={CONSTRAINTS.GRID_MAX}
+                          step={widthStep}
+                          className="flex-1 h-full border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs focus:outline-none focus:ring-1 focus:ring-accent"
+                          aria-label="Drawer width in grid units"
+                        />
+                        <button
+                          onClick={() => handleDrawerWidthChange(1)}
+                          disabled={drawerWidth >= CONSTRAINTS.GRID_MAX}
+                          className="h-full px-1 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                          aria-label="Increase width"
+                        >
+                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" d="M12 4v16m8-8H4" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-content-tertiary mb-1" title="Number of grid units deep (supports 0.5 increments)">
+                      <label className="block text-content-tertiary mb-1" title={`Depth in grid units (step: ${depthStep})`}>
                         Depth
                       </label>
-                      <DeferredNumberInput
-                        value={drawerDepth}
-                        onChange={handleDrawerDepthChange}
-                        min={0.5}
-                        max={CONSTRAINTS.GRID_MAX}
-                        step={0.5}
-                        className="input w-full h-6 text-xs text-center tabular-nums"
-                        aria-label="Drawer depth in grid units"
-                      />
+                      <div className="flex items-center h-6">
+                        <button
+                          onClick={() => handleDrawerDepthChange(-1)}
+                          disabled={drawerDepth <= 0.5}
+                          className="h-full px-1 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                          aria-label="Decrease depth"
+                        >
+                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" d="M20 12H4" />
+                          </svg>
+                        </button>
+                        <DeferredNumberInput
+                          value={drawerDepth}
+                          onChange={handleDrawerDepthInput}
+                          min={0.5}
+                          max={CONSTRAINTS.GRID_MAX}
+                          step={depthStep}
+                          className="flex-1 h-full border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs focus:outline-none focus:ring-1 focus:ring-accent"
+                          aria-label="Drawer depth in grid units"
+                        />
+                        <button
+                          onClick={() => handleDrawerDepthChange(1)}
+                          disabled={drawerDepth >= CONSTRAINTS.GRID_MAX}
+                          className="h-full px-1 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                          aria-label="Increase depth"
+                        >
+                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" d="M12 4v16m8-8H4" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     <div>
                       <label className="block text-content-tertiary mb-1" title="Maximum height in units">
@@ -246,6 +314,72 @@ export function Sidebar() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Fractional edge position toggles - only shown when dimensions are fractional */}
+                  {(hasFractionalWidth || hasFractionalDepth) && (
+                    <div className="pt-2 mt-2 border-t border-stroke-subtle space-y-1.5">
+                      <div className="text-content-tertiary text-[10px] mb-1">Half-unit edge position</div>
+                      {hasFractionalWidth && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-content-tertiary">Width (+.5)</span>
+                          <div className="flex rounded overflow-hidden border border-stroke-subtle">
+                            <button
+                              onClick={() => execute(() => updateDrawer({ fractionalEdgeX: 'start' }))}
+                              className={`px-2 py-0.5 text-[10px] transition-colors ${
+                                fractionalEdgeX === 'start'
+                                  ? 'bg-accent text-white'
+                                  : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
+                              }`}
+                              title="Place half-unit column on the left"
+                            >
+                              Left
+                            </button>
+                            <button
+                              onClick={() => execute(() => updateDrawer({ fractionalEdgeX: 'end' }))}
+                              className={`px-2 py-0.5 text-[10px] border-l border-stroke-subtle transition-colors ${
+                                fractionalEdgeX === 'end'
+                                  ? 'bg-accent text-white'
+                                  : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
+                              }`}
+                              title="Place half-unit column on the right"
+                            >
+                              Right
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {hasFractionalDepth && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-content-tertiary">Depth (+.5)</span>
+                          <div className="flex rounded overflow-hidden border border-stroke-subtle">
+                            <button
+                              onClick={() => execute(() => updateDrawer({ fractionalEdgeY: 'start' }))}
+                              className={`px-2 py-0.5 text-[10px] transition-colors ${
+                                fractionalEdgeY === 'start'
+                                  ? 'bg-accent text-white'
+                                  : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
+                              }`}
+                              title="Place half-unit row at the bottom"
+                            >
+                              Bottom
+                            </button>
+                            <button
+                              onClick={() => execute(() => updateDrawer({ fractionalEdgeY: 'end' }))}
+                              className={`px-2 py-0.5 text-[10px] border-l border-stroke-subtle transition-colors ${
+                                fractionalEdgeY === 'end'
+                                  ? 'bg-accent text-white'
+                                  : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
+                              }`}
+                              title="Place half-unit row at the top"
+                            >
+                              Top
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Real-world drawer dimensions */}
                   <div className="flex items-center justify-center gap-1 pt-1 text-content-tertiary">
                     <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
