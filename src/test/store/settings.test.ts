@@ -30,6 +30,7 @@ describe('settings store', () => {
       expect(settings.defaultDrawerWidth).toBe(10);
       expect(settings.defaultDrawerDepth).toBe(8);
       expect(settings.defaultDrawerHeight).toBe(12);
+      expect(settings.defaultLayerHeight).toBe(3);
       expect(settings.defaultPrintBedSize).toBe(256);
       expect(settings.defaultGridUnitMm).toBe(42);
       expect(settings.defaultHeightUnitMm).toBe(7);
@@ -62,6 +63,14 @@ describe('settings store', () => {
       const settings = useSettingsStore.getState().settings;
       expect(settings.defaultDrawerDepth).toBe(8);
       expect(settings.defaultPrintBedSize).toBe(256);
+    });
+
+    it('updates default layer height', () => {
+      const { updateSetting } = useSettingsStore.getState();
+      updateSetting('defaultLayerHeight', 5);
+
+      const settings = useSettingsStore.getState().settings;
+      expect(settings.defaultLayerHeight).toBe(5);
     });
   });
 
@@ -130,13 +139,15 @@ describe('settings store', () => {
         { width: 25, depth: 20, height: 15 },
         300,
         50,
-        10
+        10,
+        5
       );
 
       const settings = useSettingsStore.getState().settings;
       expect(settings.defaultDrawerWidth).toBe(25);
       expect(settings.defaultDrawerDepth).toBe(20);
       expect(settings.defaultDrawerHeight).toBe(15);
+      expect(settings.defaultLayerHeight).toBe(5);
       expect(settings.defaultPrintBedSize).toBe(300);
       expect(settings.defaultGridUnitMm).toBe(50);
       expect(settings.defaultHeightUnitMm).toBe(10);
@@ -153,7 +164,8 @@ describe('settings store', () => {
         { width: 25, depth: 20, height: 15 },
         300,
         50,
-        10
+        10,
+        5
       );
 
       const settings = useSettingsStore.getState().settings;
@@ -167,11 +179,13 @@ describe('settings store', () => {
         { width: 25, depth: 20, height: 15 },
         300,
         50,
-        10
+        10,
+        5
       );
 
       const savedData = JSON.parse(localStorageMock.mock._store['gridfinity-settings-v1']);
       expect(savedData.defaultDrawerWidth).toBe(25);
+      expect(savedData.defaultLayerHeight).toBe(5);
       expect(savedData.defaultPrintBedSize).toBe(300);
     });
   });
@@ -182,6 +196,7 @@ describe('settings store', () => {
       expect(DEFAULT_SETTINGS.defaultDrawerWidth).toBe(10);
       expect(DEFAULT_SETTINGS.defaultDrawerDepth).toBe(8);
       expect(DEFAULT_SETTINGS.defaultDrawerHeight).toBe(12);
+      expect(DEFAULT_SETTINGS.defaultLayerHeight).toBe(3);
       expect(DEFAULT_SETTINGS.defaultPrintBedSize).toBe(256);
       expect(DEFAULT_SETTINGS.defaultGridUnitMm).toBe(42);
       expect(DEFAULT_SETTINGS.defaultHeightUnitMm).toBe(7);
