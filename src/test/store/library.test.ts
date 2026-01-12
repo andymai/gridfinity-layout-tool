@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useLibraryStore, computePreview, createDefaultLibrary } from '../../store/library';
 import { createDefaultLayout, CONSTRAINTS } from '../../constants';
+import { resetAllStores } from '../testUtils';
 import type { LayoutLibrary, LayoutEntry, LayoutPreview } from '../../types';
 
-function createTestLibrary(entryCount = 1): LayoutLibrary {
+// Helper to create test library with multiple entries (uses testUtils createTestLibrary as base)
+function createTestLibraryWithEntries(entryCount: number): LayoutLibrary {
   const entries: LayoutEntry[] = [];
   for (let i = 0; i < entryCount; i++) {
     entries.push({
@@ -17,6 +19,7 @@ function createTestLibrary(entryCount = 1): LayoutLibrary {
         drawerHeight: 12,
         binCount: i,
         layerCount: 1,
+        binMap: [],
       },
     });
   }
@@ -31,17 +34,17 @@ function createTestLibrary(entryCount = 1): LayoutLibrary {
 
 describe('library store', () => {
   beforeEach(() => {
-    // Reset store to a known state
-    useLibraryStore.setState({
-      library: createTestLibrary(1),
-      isLoaded: false,
-      showLayoutManager: false,
-    });
+    resetAllStores();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('initLibrary', () => {
     it('sets the library and marks as loaded', () => {
-      const testLibrary = createTestLibrary(3);
+      const testLibrary = createTestLibraryWithEntries(3);
 
       useLibraryStore.getState().initLibrary(testLibrary);
 
@@ -51,8 +54,8 @@ describe('library store', () => {
     });
 
     it('overwrites existing library', () => {
-      const library1 = createTestLibrary(2);
-      const library2 = createTestLibrary(5);
+      const library1 = createTestLibraryWithEntries(2);
+      const library2 = createTestLibraryWithEntries(5);
 
       useLibraryStore.getState().initLibrary(library1);
       useLibraryStore.getState().initLibrary(library2);
@@ -161,7 +164,7 @@ describe('library store', () => {
   describe('deleteEntry', () => {
     beforeEach(() => {
       useLibraryStore.setState({
-        library: createTestLibrary(3),
+        library: createTestLibraryWithEntries(3),
         isLoaded: true,
         showLayoutManager: false,
       });
@@ -177,7 +180,7 @@ describe('library store', () => {
 
     it('cannot delete the last entry', () => {
       useLibraryStore.setState({
-        library: createTestLibrary(1),
+        library: createTestLibraryWithEntries(1),
         isLoaded: true,
         showLayoutManager: false,
       });
@@ -214,6 +217,14 @@ describe('library store', () => {
   });
 
   describe('updateEntry', () => {
+    beforeEach(() => {
+      useLibraryStore.setState({
+        library: createTestLibraryWithEntries(3),
+        isLoaded: true,
+        showLayoutManager: false,
+      });
+    });
+
     it('updates entry name', () => {
       useLibraryStore.getState().updateEntry('layout-0', { name: 'Updated Name' });
 
@@ -275,6 +286,14 @@ describe('library store', () => {
   });
 
   describe('duplicateEntry', () => {
+    beforeEach(() => {
+      useLibraryStore.setState({
+        library: createTestLibraryWithEntries(3),
+        isLoaded: true,
+        showLayoutManager: false,
+      });
+    });
+
     it('creates a copy with (copy) suffix', () => {
       const source = useLibraryStore.getState().getEntry('layout-0')!;
 
@@ -350,6 +369,14 @@ describe('library store', () => {
   });
 
   describe('getEntry', () => {
+    beforeEach(() => {
+      useLibraryStore.setState({
+        library: createTestLibraryWithEntries(3),
+        isLoaded: true,
+        showLayoutManager: false,
+      });
+    });
+
     it('returns entry by id', () => {
       const entry = useLibraryStore.getState().getEntry('layout-0');
 
@@ -367,7 +394,7 @@ describe('library store', () => {
   describe('getRecentEntries', () => {
     beforeEach(() => {
       // Create library with known modification times
-      const library = createTestLibrary(5);
+      const library = createTestLibraryWithEntries(5);
       library.entries[0].modifiedAt = 1000;
       library.entries[1].modifiedAt = 5000;
       library.entries[2].modifiedAt = 3000;
@@ -408,7 +435,7 @@ describe('library store', () => {
 
     it('returns empty array when no entries exist', () => {
       useLibraryStore.setState({
-        library: { ...createTestLibrary(0), entries: [] },
+        library: { ...createTestLibraryWithEntries(0), entries: [] },
         isLoaded: true,
         showLayoutManager: false,
       });
@@ -421,7 +448,7 @@ describe('library store', () => {
 
   describe('setActiveLayoutId', () => {
     it('updates the active layout id', () => {
-      useLibraryStore.setState({ library: createTestLibrary(3), isLoaded: true, showLayoutManager: false });
+      useLibraryStore.setState({ library: createTestLibraryWithEntries(3), isLoaded: true, showLayoutManager: false });
 
       useLibraryStore.getState().setActiveLayoutId('layout-2');
 

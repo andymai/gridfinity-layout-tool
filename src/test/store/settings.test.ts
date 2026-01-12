@@ -1,29 +1,26 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useSettingsStore, DEFAULT_SETTINGS } from '../../store/settings';
-
-// Mock localStorage
-const mockLocalStorage = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: vi.fn((key: string) => store[key] ?? null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
-    removeItem: vi.fn((key: string) => { store = Object.fromEntries(Object.entries(store).filter(([k]) => k !== key)); }),
-    clear: vi.fn(() => { store = {}; }),
-    get store() { return store; },
-  };
-})();
-
-Object.defineProperty(global, 'localStorage', { value: mockLocalStorage });
+import { resetAllStores, createIsolatedLocalStorageMock } from '../testUtils';
 
 describe('settings store', () => {
+  let localStorageMock: ReturnType<typeof createIsolatedLocalStorageMock>;
+
   beforeEach(() => {
-    // Reset store to defaults
-    useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS } });
-    mockLocalStorage.clear();
+    // Create isolated localStorage mock per test
+    localStorageMock = createIsolatedLocalStorageMock();
+    Object.defineProperty(global, 'localStorage', {
+      value: localStorageMock.mock,
+      writable: true,
+      configurable: true,
+    });
+
+    // Reset all stores for isolation
+    resetAllStores();
     vi.clearAllMocks();
   });
 
   afterEach(() => {
+    localStorageMock.cleanup();
     vi.restoreAllMocks();
   });
 
@@ -53,8 +50,8 @@ describe('settings store', () => {
       const { updateSetting } = useSettingsStore.getState();
       updateSetting('defaultDrawerWidth', 15);
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalled();
-      const savedData = JSON.parse(mockLocalStorage.store['gridfinity-settings-v1']);
+      expect(localStorageMock.mock.setItem).toHaveBeenCalled();
+      const savedData = JSON.parse(localStorageMock.mock._store['gridfinity-settings-v1']);
       expect(savedData.defaultDrawerWidth).toBe(15);
     });
 
@@ -90,7 +87,7 @@ describe('settings store', () => {
         defaultDrawerDepth: 15,
       });
 
-      const savedData = JSON.parse(mockLocalStorage.store['gridfinity-settings-v1']);
+      const savedData = JSON.parse(localStorageMock.mock._store['gridfinity-settings-v1']);
       expect(savedData.defaultDrawerWidth).toBe(20);
       expect(savedData.defaultDrawerDepth).toBe(15);
     });
@@ -120,7 +117,7 @@ describe('settings store', () => {
       updateSettings({ defaultDrawerWidth: 50 });
       resetSettings();
 
-      const savedData = JSON.parse(mockLocalStorage.store['gridfinity-settings-v1']);
+      const savedData = JSON.parse(localStorageMock.mock._store['gridfinity-settings-v1']);
       expect(savedData.defaultDrawerWidth).toBe(10);
     });
   });
@@ -173,7 +170,7 @@ describe('settings store', () => {
         10
       );
 
-      const savedData = JSON.parse(mockLocalStorage.store['gridfinity-settings-v1']);
+      const savedData = JSON.parse(localStorageMock.mock._store['gridfinity-settings-v1']);
       expect(savedData.defaultDrawerWidth).toBe(25);
       expect(savedData.defaultPrintBedSize).toBe(300);
     });
