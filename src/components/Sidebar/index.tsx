@@ -219,7 +219,7 @@ export function Sidebar() {
             <div data-layers-panel className="px-4 py-4 border-b border-stroke-subtle">
               <LayerPanel />
             </div>
-            <div data-categories-panel className="px-4 py-4 border-b border-stroke-subtle min-h-[220px]">
+            <div data-categories-panel className="px-4 py-4 border-b border-stroke-subtle">
               <CategoriesPanel />
             </div>
 
