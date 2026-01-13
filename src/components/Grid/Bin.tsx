@@ -654,21 +654,35 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         </div>
       )}
 
-      {/* Metadata indicator badge - shown when bin has notes or custom properties */}
+      {/* Metadata indicator badges - shown when bin has notes or custom properties */}
       {hasMetadata && showAnyText && !isGhost && (
         <div
-          className="absolute bottom-0.5 left-0.5 p-0.5 rounded-sm pointer-events-none bg-surface/80"
-          style={{ boxShadow: 'var(--shadow-sm)' }}
-          title={[
-            hasNotes ? 'Has notes' : '',
-            hasCustomProps && bin.customProperties
-              ? `${Object.keys(bin.customProperties).length} custom ${Object.keys(bin.customProperties).length === 1 ? 'property' : 'properties'}`
-              : '',
-          ].filter(Boolean).join(', ')}
+          className="absolute bottom-0.5 left-0.5 flex items-center gap-0.5 pointer-events-none"
         >
-          <svg className="w-3 h-3 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
-          </svg>
+          {/* Notes indicator - speech bubble icon (matches print list) */}
+          {hasNotes && (
+            <div
+              className="p-0.5 rounded-sm bg-surface/80"
+              style={{ boxShadow: 'var(--shadow-sm)' }}
+              title="Has notes"
+            >
+              <svg className="w-3 h-3 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+            </div>
+          )}
+          {/* Custom properties indicator - tag icon */}
+          {hasCustomProps && bin.customProperties && (
+            <div
+              className="p-0.5 rounded-sm bg-surface/80"
+              style={{ boxShadow: 'var(--shadow-sm)' }}
+              title={`${Object.keys(bin.customProperties).length} custom ${Object.keys(bin.customProperties).length === 1 ? 'property' : 'properties'}`}
+            >
+              <svg className="w-3 h-3 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+            </div>
+          )}
         </div>
       )}
 
