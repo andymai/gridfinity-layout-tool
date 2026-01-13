@@ -125,6 +125,10 @@ export function useCollectionSync() {
   // Ref to track the previous layout ID (to skip triggering when switching layouts)
   const prevLayoutIdRef = useRef<string | null>(null);
 
+  // Refs to avoid stale closures in poll callback (which shouldn't recreate on layout changes)
+  const activeLayoutIdRef = useRef(activeLayoutId);
+  const importLayoutRef = useRef(importLayout);
+
   /**
    * Poll for changes from server.
    */
@@ -215,7 +219,28 @@ export function useCollectionSync() {
         }
 
         if (!hasLocalMods && serverIsNewer) {
-          // Server has newer version, update our sync state
+          // Server has newer version - fetch and apply it if this is the active layout
+          console.warn('[CollectionSync] Server has newer version for layout:', serverLayout.id, {
+            serverModifiedAt: serverLayout.modifiedAt,
+            localModifiedAt: localSyncState.modifiedAt,
+            isActiveLayout: serverLayout.id === activeLayoutIdRef.current,
+          });
+
+          if (serverLayout.id === activeLayoutIdRef.current && activeCollection) {
+            // Fetch the updated layout from server
+            const fetchResult = await collectionApi.fetchLayout(
+              activeCollection.id,
+              serverLayout.id
+            );
+
+            if (fetchResult.success) {
+              console.warn('[CollectionSync] Importing updated layout from server');
+              // Import the updated layout - use ref to get latest importLayout
+              importLayoutRef.current(fetchResult.data.layout, serverLayout.id);
+            }
+          }
+
+          // Update sync state
           setStoreSyncState(serverLayout.id, {
             modifiedAt: serverLayout.modifiedAt,
             lastSyncAt: Date.now(),
@@ -244,6 +269,15 @@ export function useCollectionSync() {
     setStoreSyncState,
     updateActiveCollectionLayout,
   ]);
+
+  // Keep refs updated for poll callback (avoids stale closures)
+  useEffect(() => {
+    activeLayoutIdRef.current = activeLayoutId;
+  }, [activeLayoutId]);
+
+  useEffect(() => {
+    importLayoutRef.current = importLayout;
+  }, [importLayout]);
 
   /**
    * Send heartbeat to indicate active editing.
