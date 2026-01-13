@@ -4,5 +4,11 @@
 User-agent: *
 Allow: /
 
-# Sitemap (single-page app, main page only)
+# Disallow API endpoints (not useful for search engines)
+Disallow: /api/
+
+# Disallow shared layout URLs (user-generated content, dynamic)
+Disallow: /s/
+
+# Sitemap location
 Sitemap: https://gridfinitylayouttool.com/sitemap.xml
