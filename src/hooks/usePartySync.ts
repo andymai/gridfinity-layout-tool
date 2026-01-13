@@ -202,8 +202,8 @@ export function usePartySync() {
                 layoutId
               );
               if (result.success) {
-                // Import the updated layout
-                importLayout(result.data.layout, layoutId);
+                // Import the updated layout from remote
+                importLayout(result.data.layout, layoutId, 'remote');
               }
             }
           }

@@ -142,7 +142,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
       const result = await collectionApi.fetchLayout(activeCollection.id, layoutId);
 
       if (result.success) {
-        importLayout(result.data.layout as Layout, layoutId);
+        importLayout(result.data.layout as Layout, layoutId, 'init');
         // Save active layout ID for restoration on reload
         setMembershipActiveLayout(activeCollection.id, layoutId);
         announceToScreenReader(`Switched to ${layoutRef?.name || 'layout'}`);

@@ -130,7 +130,7 @@ export function useLayoutSwitcher() {
       }
 
       // 7. Update stores (atomic sequence)
-      importLayout(targetLayout, targetId);
+      importLayout(targetLayout, targetId, 'init');
       setLibraryActiveId(targetId);
 
       // 8. Reset UI state
@@ -197,7 +197,7 @@ export function useLayoutSwitcher() {
       );
 
       // Switch to the new layout
-      importLayout(newLayout, layoutId);
+      importLayout(newLayout, layoutId, 'init');
       setLibraryActiveId(layoutId);
 
       // Reset UI state

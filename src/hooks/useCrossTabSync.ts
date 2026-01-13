@@ -31,8 +31,8 @@ export function useCrossTabSync() {
             // Validate before applying
             const validation = validateLayoutIntegrity(newLayout);
             if (validation.valid) {
-              // Update layout store
-              useLayoutStore.getState().importLayout(newLayout, layoutId);
+              // Update layout store (from another tab, treat as remote)
+              useLayoutStore.getState().importLayout(newLayout, layoutId, 'remote');
 
               // Clear undo history since we're syncing external changes
               useHistoryStore.getState().clear();

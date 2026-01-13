@@ -7,9 +7,13 @@ import { fillAllWithSize, fillGaps } from '../utils/fill';
 import { checkLayerReorderCollisions } from '../utils/collision';
 import { useSettingsStore } from './settings';
 
+/** Source of the last edit to the layout - used to distinguish local edits from remote imports */
+export type EditSource = 'local' | 'remote' | 'init' | null;
+
 interface LayoutState {
   layout: Layout;
   activeLayoutId: string | null;  // ID of the layout in the library (null for unsaved)
+  lastEditSource: EditSource;  // Tracks whether last change was local, remote, or initial load
 
   // Bin operations
   addBin: (bin: Omit<Bin, 'id'>) => string | null;
@@ -39,7 +43,7 @@ interface LayoutState {
   clearLayer: (layerId: string) => number;
 
   // I/O
-  importLayout: (layout: Layout, layoutId?: string) => void;
+  importLayout: (layout: Layout, layoutId?: string, source?: EditSource) => void;
 
   // Layout library integration
   setActiveLayoutId: (id: string | null) => void;
@@ -57,6 +61,7 @@ export const useLayoutStore = create<LayoutState>()(
   immer((set, get) => ({
     layout: createDefaultLayout(),
     activeLayoutId: null,
+    lastEditSource: null,
 
     addBin: (binData) => {
       const { layout } = get();
@@ -384,8 +389,8 @@ export const useLayoutStore = create<LayoutState>()(
       return count;
     },
 
-    importLayout: (layout, layoutId) => {
-      set({ layout, activeLayoutId: layoutId ?? null });
+    importLayout: (layout, layoutId, source = 'local') => {
+      set({ layout, activeLayoutId: layoutId ?? null, lastEditSource: source });
     },
 
     setActiveLayoutId: (id) => {
