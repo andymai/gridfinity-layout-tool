@@ -56,7 +56,10 @@ export async function notifyPartyKit(
     return;
   }
 
-  const url = `http://${PARTYKIT_HOST}/parties/collection/${collectionId}`;
+  // Use HTTPS for production PartyKit servers (*.partykit.dev)
+  const protocol = PARTYKIT_HOST.includes('partykit.dev') ? 'https' : 'http';
+  const url = `${protocol}://${PARTYKIT_HOST}/parties/collection/${collectionId}`;
+  console.warn('[PartyKit] Sending notification to:', url, 'payload:', payload);
 
   try {
     const response = await fetch(url, {
