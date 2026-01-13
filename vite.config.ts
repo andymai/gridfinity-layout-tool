@@ -52,8 +52,12 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         // SPA navigation fallback - serve index.html for all navigation requests
         navigateFallback: '/index.html',
-        // Don't intercept API calls with navigation fallback
-        navigateFallbackDenylist: [/^\/api\//],
+        // Don't intercept these paths with navigation fallback
+        navigateFallbackDenylist: [
+          /^\/api\//,
+          /^\/sitemap\.xml$/,
+          /^\/robots\.txt$/,
+        ],
         runtimeCaching: [
           {
             // Cache shared layout API responses for offline viewing
