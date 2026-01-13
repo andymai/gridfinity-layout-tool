@@ -252,7 +252,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                       onChange={(v) => updatePrintSetting('showLabel', v)}
                     />
                     <CheckboxOption
-                      label="Category Colors"
+                      label="Categories"
                       checked={printViewSettings.showCategoryColor}
                       onChange={(v) => updatePrintSetting('showCategoryColor', v)}
                     />
