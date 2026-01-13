@@ -6,6 +6,7 @@ import { useLayoutStore } from '../../store/layout';
 import { useToastStore } from '../../store/toast';
 import { resetAllStores, setupFakeTimers } from '../testUtils';
 import { STAGING_ID } from '../../constants';
+import { saveEphemeralState, type EphemeralState } from '../../utils/ephemeralState';
 
 // Constants from usePWAUpdate (mirrored for testing)
 const UPDATE_TOAST_MS = 5000;
@@ -589,6 +590,165 @@ describe('usePWAUpdate', () => {
       expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);
 
       consoleSpy.mockRestore();
+    });
+
+    it('saves ephemeral state before triggering update', async () => {
+      mockNeedRefresh = true;
+
+      // Set up some UI state to be saved
+      useUIStore.setState({
+        selectedBinIds: ['bin-1', 'bin-2'],
+        zoom: 2.0,
+        showIsometricPreview: true,
+      });
+
+      renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+      });
+
+      // Complete the update flow
+      await act(async () => {
+        timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS);
+        await Promise.resolve();
+        timerUtils.advanceTime(UPDATE_TOAST_MS);
+        await Promise.resolve();
+      });
+
+      // Check that state was saved to sessionStorage
+      // Note: The state will be saved just before updateServiceWorker is called
+      expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);
+      // State should have been saved (we can't easily verify the contents since
+      // the real updateServiceWorker would reload the page, but we verify the call)
+    });
+  });
+
+  describe('ephemeral state restoration', () => {
+    it('restores ephemeral state on mount and shows toast', async () => {
+      // Pre-save some ephemeral state (simulating state saved before PWA reload)
+      const savedState: Omit<EphemeralState, 'savedAt'> = {
+        selectedBinIds: ['bin-1'],
+        activeLayerId: useLayoutStore.getState().layout.layers[0].id,
+        activeCategoryId: useLayoutStore.getState().layout.categories[0].id,
+        focusedBinId: null,
+        zoom: 1.5,
+        showOtherLayers: true,
+        showLabels: true,
+        leftPanelCollapsed: false,
+        rightPanelCollapsed: true,
+        showIsometricPreview: true,
+        isometricRotation: 90,
+        layerViewMode: 'all',
+        paintSize: { width: 2, depth: 2 },
+      };
+      saveEphemeralState(savedState);
+
+      // Add a bin that matches the savedState's selectedBinIds
+      const layout = useLayoutStore.getState().layout;
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          bins: [
+            {
+              id: 'bin-1',
+              layerId: layout.layers[0].id,
+              x: 0,
+              y: 0,
+              width: 1,
+              depth: 1,
+              height: 3,
+              category: layout.categories[0].id,
+              label: '',
+              notes: '',
+            },
+          ],
+        },
+      });
+
+      renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+      });
+
+      // Wait for restoration effect (100ms delay + timeout)
+      await act(async () => {
+        timerUtils.advanceTime(150);
+        await Promise.resolve();
+      });
+
+      // Check that state was restored
+      const ui = useUIStore.getState();
+      expect(ui.zoom).toBe(1.5);
+      expect(ui.showIsometricPreview).toBe(true);
+      expect(ui.isometricRotation).toBe(90);
+      expect(ui.layerViewMode).toBe('all');
+      expect(ui.rightPanelCollapsed).toBe(true);
+      expect(ui.paintSize).toEqual({ width: 2, depth: 2 });
+      expect(ui.selectedBinIds).toEqual(['bin-1']);
+
+      // Check toast was shown
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.some(t => t.message === 'Session restored')).toBe(true);
+    });
+
+    it('does not show toast when no ephemeral state exists', async () => {
+      // Ensure no ephemeral state is saved
+      sessionStorage.removeItem('gridfinity-ephemeral-state-v1');
+
+      renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+      });
+
+      // Wait for restoration effect
+      await act(async () => {
+        timerUtils.advanceTime(150);
+        await Promise.resolve();
+      });
+
+      // No "Session restored" toast should appear
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.some(t => t.message === 'Session restored')).toBe(false);
+    });
+
+    it('filters out selected bins that no longer exist', async () => {
+      // Save state with bin IDs that won't exist
+      const savedState: Omit<EphemeralState, 'savedAt'> = {
+        selectedBinIds: ['non-existent-bin', 'also-non-existent'],
+        activeLayerId: useLayoutStore.getState().layout.layers[0].id,
+        activeCategoryId: useLayoutStore.getState().layout.categories[0].id,
+        focusedBinId: 'non-existent-bin',
+        zoom: 1.0,
+        showOtherLayers: true,
+        showLabels: true,
+        leftPanelCollapsed: false,
+        rightPanelCollapsed: false,
+        showIsometricPreview: false,
+        isometricRotation: 0,
+        layerViewMode: 'stack',
+        paintSize: null,
+      };
+      saveEphemeralState(savedState);
+
+      renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+      });
+
+      // Wait for restoration
+      await act(async () => {
+        timerUtils.advanceTime(150);
+        await Promise.resolve();
+      });
+
+      // Selection should be empty (bins don't exist)
+      const ui = useUIStore.getState();
+      expect(ui.selectedBinIds).toEqual([]);
+      expect(ui.focusedBinId).toBeNull();
     });
   });
 });

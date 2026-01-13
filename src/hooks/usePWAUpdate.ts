@@ -4,6 +4,11 @@ import { useToastStore } from '../store/toast';
 import { useUIStore } from '../store/ui';
 import { STAGING_ID } from '../constants';
 import { useLayoutStore } from '../store/layout';
+import {
+  saveEphemeralState,
+  loadEphemeralState,
+  type EphemeralState,
+} from '../utils/ephemeralState';
 
 // Toast duration for update notification
 const UPDATE_TOAST_MS = 5000;
@@ -115,6 +120,115 @@ function waitForSafeReload(
       resolve(false);
     });
   });
+}
+
+/**
+ * Gather current UI state for preservation across PWA reload.
+ * Returns state suitable for saveEphemeralState().
+ */
+function gatherEphemeralState(): Omit<EphemeralState, 'savedAt'> {
+  const ui = useUIStore.getState();
+
+  return {
+    // Selection & navigation
+    selectedBinIds: ui.selectedBinIds,
+    activeLayerId: ui.activeLayerId,
+    activeCategoryId: ui.activeCategoryId,
+    focusedBinId: ui.focusedBinId,
+
+    // View settings
+    zoom: ui.zoom,
+    showOtherLayers: ui.showOtherLayers,
+    showLabels: ui.showLabels,
+
+    // Panel state
+    leftPanelCollapsed: ui.leftPanelCollapsed,
+    rightPanelCollapsed: ui.rightPanelCollapsed,
+
+    // 3D preview state
+    showIsometricPreview: ui.showIsometricPreview,
+    isometricRotation: ui.isometricRotation,
+    layerViewMode: ui.layerViewMode,
+
+    // Paint mode
+    paintSize: ui.paintSize,
+
+    // Note: scroll position would require ref from Grid component
+    // Could be added via a global ref or event-based approach
+  };
+}
+
+/**
+ * Restore UI state from ephemeral storage after PWA reload.
+ * Validates that bins/layers still exist before restoring selection.
+ */
+function restoreEphemeralState(): boolean {
+  const state = loadEphemeralState();
+  if (!state) return false;
+
+  const ui = useUIStore.getState();
+  const layout = useLayoutStore.getState().layout;
+
+  // Validate and restore activeLayerId
+  const layerExists = layout.layers.some((l) => l.id === state.activeLayerId);
+  if (layerExists && state.activeLayerId) {
+    ui.setActiveLayer(state.activeLayerId);
+  }
+
+  // Validate and restore selected bins (filter out any that no longer exist)
+  const existingBinIds = new Set(layout.bins.map((b) => b.id));
+  const validSelectedIds = state.selectedBinIds.filter((id) =>
+    existingBinIds.has(id)
+  );
+  if (validSelectedIds.length > 0) {
+    ui.setSelectedBins(validSelectedIds);
+  }
+
+  // Restore active category (categories might have changed, but IDs are stable)
+  const categoryExists = layout.categories.some(
+    (c) => c.id === state.activeCategoryId
+  );
+  if (categoryExists) {
+    ui.setActiveCategory(state.activeCategoryId);
+  }
+
+  // Restore focused bin if it still exists
+  if (state.focusedBinId && existingBinIds.has(state.focusedBinId)) {
+    ui.setFocusedBin(state.focusedBinId);
+  }
+
+  // Restore view settings (these don't need validation)
+  ui.setZoom(state.zoom);
+
+  // Restore toggles only if they differ from current state
+  if (state.showOtherLayers !== ui.showOtherLayers) {
+    ui.toggleShowOtherLayers();
+  }
+  if (state.showLabels !== ui.showLabels) {
+    ui.toggleShowLabels();
+  }
+
+  // Restore panel state
+  if (state.leftPanelCollapsed !== ui.leftPanelCollapsed) {
+    ui.toggleLeftPanel();
+  }
+  if (state.rightPanelCollapsed !== ui.rightPanelCollapsed) {
+    ui.toggleRightPanel();
+  }
+
+  // Restore 3D preview state
+  if (state.showIsometricPreview !== ui.showIsometricPreview) {
+    ui.toggleIsometricPreview();
+  }
+  ui.setIsometricRotation(state.isometricRotation);
+  ui.setLayerViewMode(state.layerViewMode);
+
+  // Restore paint size
+  if (state.paintSize) {
+    ui.setPaintSize(state.paintSize);
+  }
+
+  return true;
 }
 
 /**
@@ -308,6 +422,9 @@ export function usePWAUpdate(): void {
       // Don't trigger reload if aborted
       if (abortController.signal.aborted) return;
 
+      // Save current UI state before reload so we can restore it
+      saveEphemeralState(gatherEphemeralState());
+
       // Trigger the update (reloads the page)
       updateServiceWorker(true);
     };
@@ -321,4 +438,19 @@ export function usePWAUpdate(): void {
       }
     };
   }, [needRefresh, addToast, updateServiceWorker]);
+
+  // Restore ephemeral state on mount (after PWA update reload)
+  useEffect(() => {
+    // Small delay to ensure layout store is initialized
+    const timeoutId = setTimeout(() => {
+      const restored = restoreEphemeralState();
+      if (restored) {
+        addToast('Session restored', 'success', 2000);
+      }
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+    // Only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 }
