@@ -1,12 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { useLayoutSwitcher } from '../../../hooks/useLayoutSwitcher';
 import { useUIStore } from '../../../store/ui';
+import { useCollectionStore } from '../../../store/collection';
+import { useLayoutStore } from '../../../store/layout';
 import { LayoutList } from './LayoutList';
+import { CollectionLayoutList } from './CollectionLayoutList';
 import { ImportView } from './ImportView';
 import { ShareModal } from '../ShareModal';
+import { CreateCollectionModal } from '../CreateCollectionModal';
+import { JoinCollectionModal } from '../JoinCollectionModal';
+import * as collectionApi from '../../../api/collection';
 import type { Layout } from '../../../types';
 
-type Tab = 'layouts' | 'import';
+type Tab = 'layouts' | 'collection' | 'import';
 
 interface LayoutManagerModalProps {
   isOpen: boolean;
@@ -23,10 +30,25 @@ export function LayoutManagerModal({ isOpen, onClose }: LayoutManagerModalProps)
 }
 
 function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
-  const [activeTab, setActiveTab] = useState<Tab>('layouts');
   const [shareModalLayoutId, setShareModalLayoutId] = useState<string | null>(null);
+  const [showCreateCollection, setShowCreateCollection] = useState(false);
+  const [showJoinCollection, setShowJoinCollection] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  const { isInCollectionMode, activeCollection, activeCollectionLayouts, leaveCollection } = useCollectionStore(
+    useShallow((state) => ({
+      isInCollectionMode: state.isInCollectionMode(),
+      activeCollection: state.activeCollection,
+      activeCollectionLayouts: state.activeCollectionLayouts,
+      leaveCollection: state.leaveCollection,
+    }))
+  );
+
+  // Default to collection tab if in collection mode, otherwise layouts
+  const [activeTab, setActiveTab] = useState<Tab>(isInCollectionMode ? 'collection' : 'layouts');
+
+  const importLayout = useLayoutStore((state) => state.importLayout);
 
   const {
     activeLayoutId,
@@ -43,8 +65,10 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
 
   // Announce modal opened
   useEffect(() => {
-    announceToScreenReader(`Layouts dialog opened. ${library.entries.length} layouts available.`);
-  }, [announceToScreenReader, library.entries.length]);
+    const count = isInCollectionMode ? activeCollectionLayouts.length : library.entries.length;
+    const context = isInCollectionMode ? 'collection' : '';
+    announceToScreenReader(`Layouts dialog opened. ${count} ${context} layouts available.`);
+  }, [announceToScreenReader, library.entries.length, activeCollectionLayouts.length, isInCollectionMode]);
 
   // Handle escape key and focus trap
   useEffect(() => {
@@ -91,6 +115,23 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
       }
     },
     [library.entries, switchLayout, announceToScreenReader, onClose]
+  );
+
+  // Handle switching to a collection layout (fetches from server)
+  const handleCollectionSwitch = useCallback(
+    async (layoutId: string) => {
+      if (!activeCollection) return;
+
+      const layoutRef = activeCollectionLayouts.find((l) => l.id === layoutId);
+      const result = await collectionApi.fetchLayout(activeCollection.id, layoutId);
+
+      if (result.success) {
+        importLayout(result.data.layout as Layout, layoutId);
+        announceToScreenReader(`Switched to ${layoutRef?.name || 'layout'}`);
+        onClose();
+      }
+    },
+    [activeCollection, activeCollectionLayouts, importLayout, announceToScreenReader, onClose]
   );
 
   const handleCreate = useCallback(() => {
@@ -208,6 +249,34 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
             </svg>
             My Layouts
           </button>
+
+          {/* Show Collection tab when in collection mode */}
+          {isInCollectionMode && (
+            <button
+              id="collection-tab"
+              role="tab"
+              aria-selected={activeTab === 'collection'}
+              aria-controls="collection-panel"
+              onClick={() => setActiveTab('collection')}
+              className={`
+                flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 relative
+                ${activeTab === 'collection'
+                  ? 'bg-accent text-white'
+                  : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
+                }
+              `}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Collection
+              {/* Active indicator dot when not selected */}
+              {activeTab !== 'collection' && (
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true" />
+              )}
+            </button>
+          )}
+
           <button
             id="import-tab"
             role="tab"
@@ -230,19 +299,89 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Tab Content */}
-        <div className="min-h-0 overflow-hidden">
+        <div className="min-h-0 overflow-hidden flex flex-col">
+          {/* My Layouts Tab - Always shows personal/local layouts */}
           {activeTab === 'layouts' && (
-            <div id="layouts-panel" role="tabpanel" aria-labelledby="layouts-tab" className="h-full">
-              <LayoutList
-                entries={library.entries}
-                activeLayoutId={activeLayoutId}
-                onSwitch={handleSwitch}
-                onRename={handleRename}
-                onDuplicate={handleDuplicate}
-                onDelete={handleDelete}
-                onCreate={handleCreate}
-                onShare={handleShare}
-              />
+            <div id="layouts-panel" role="tabpanel" aria-labelledby="layouts-tab" className="flex-1 min-h-0 flex flex-col">
+              <div className="flex-1 min-h-0 overflow-auto">
+                <LayoutList
+                  entries={library.entries}
+                  activeLayoutId={activeLayoutId}
+                  onSwitch={handleSwitch}
+                  onRename={handleRename}
+                  onDuplicate={handleDuplicate}
+                  onDelete={handleDelete}
+                  onCreate={handleCreate}
+                  onShare={handleShare}
+                />
+              </div>
+
+              {/* Shared Collections Section */}
+              <div className="mt-4 pt-4 border-t border-stroke flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-content flex items-center gap-2">
+                      Shared Collections
+                      <span className="text-[9px] leading-none text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
+                    </h3>
+                    <p className="text-xs text-content-tertiary mt-0.5">
+                      Work on layouts together in real-time
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowJoinCollection(true)}
+                      className="px-3 py-1.5 text-sm font-medium rounded-md border border-stroke text-content hover:bg-surface transition-colors"
+                    >
+                      Join Existing
+                    </button>
+                    <button
+                      onClick={() => setShowCreateCollection(true)}
+                      className="px-3 py-1.5 text-sm font-medium rounded-md bg-accent text-white hover:bg-accent-hover transition-colors flex items-center gap-1.5"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      Create New
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Collection Tab - Only visible when in collection mode */}
+          {activeTab === 'collection' && isInCollectionMode && (
+            <div id="collection-panel" role="tabpanel" aria-labelledby="collection-tab" className="flex-1 min-h-0 flex flex-col">
+              {/* Collection Header */}
+              <div className="flex items-center justify-between mb-3 pb-3 border-b border-stroke">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <div>
+                    <div className="font-medium text-content">{activeCollection?.name}</div>
+                    <div className="text-xs text-content-tertiary">Shared collection</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    leaveCollection();
+                    setActiveTab('layouts');
+                    announceToScreenReader('Left collection, returned to My Layouts');
+                  }}
+                  className="px-3 py-1.5 text-sm font-medium rounded-md text-content-secondary hover:text-content hover:bg-surface transition-colors"
+                >
+                  Leave Collection
+                </button>
+              </div>
+
+              <div className="flex-1 min-h-0 overflow-auto">
+                <CollectionLayoutList
+                  onSwitch={handleCollectionSwitch}
+                  onClose={onClose}
+                />
+              </div>
             </div>
           )}
 
@@ -259,6 +398,16 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         isOpen={shareModalLayoutId !== null}
         onClose={() => setShareModalLayoutId(null)}
         layoutId={shareModalLayoutId ?? undefined}
+      />
+
+      {/* Collection Modals */}
+      <CreateCollectionModal
+        isOpen={showCreateCollection}
+        onClose={() => setShowCreateCollection(false)}
+      />
+      <JoinCollectionModal
+        isOpen={showJoinCollection}
+        onClose={() => setShowJoinCollection(false)}
       />
     </div>
   );

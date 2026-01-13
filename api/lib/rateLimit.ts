@@ -1,6 +1,18 @@
 import Redis from 'ioredis';
 
-export type RateLimitAction = 'create' | 'update' | 'view' | 'delete' | 'report';
+export type RateLimitAction =
+  // Single share actions
+  | 'create' | 'update' | 'view' | 'delete' | 'report'
+  // Collection actions
+  | 'collection:create'
+  | 'collection:view'
+  | 'collection:update'
+  | 'collection:delete'
+  | 'collection:addLayout'
+  | 'collection:updateLayout'
+  | 'collection:fetchLayout'
+  | 'collection:poll'
+  | 'collection:heartbeat';
 
 interface RateLimitConfig {
   limit: number;
@@ -8,11 +20,23 @@ interface RateLimitConfig {
 }
 
 const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
+  // Single share limits (existing)
   create: { limit: 10, windowSeconds: 3600 },      // 10/hour
   update: { limit: 10, windowSeconds: 3600 },      // 10/hour
   view: { limit: 100, windowSeconds: 60 },         // 100/minute
   delete: { limit: 5, windowSeconds: 3600 },       // 5/hour
   report: { limit: 10, windowSeconds: 3600 },      // 10/hour
+
+  // Collection limits (from architecture spec)
+  'collection:create': { limit: 5, windowSeconds: 3600 },        // 5/hour
+  'collection:view': { limit: 200, windowSeconds: 3600 },        // 200/hour
+  'collection:update': { limit: 60, windowSeconds: 3600 },       // 60/hour
+  'collection:delete': { limit: 5, windowSeconds: 3600 },        // 5/hour
+  'collection:addLayout': { limit: 20, windowSeconds: 3600 },    // 20/hour
+  'collection:updateLayout': { limit: 120, windowSeconds: 3600 },// 120/hour
+  'collection:fetchLayout': { limit: 200, windowSeconds: 3600 }, // 200/hour
+  'collection:poll': { limit: 2000, windowSeconds: 3600 },       // 2000/hour
+  'collection:heartbeat': { limit: 2000, windowSeconds: 3600 },  // 2000/hour
 };
 
 interface RateLimitResult {

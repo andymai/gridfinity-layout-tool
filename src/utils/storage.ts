@@ -1,4 +1,4 @@
-import type { Layout, LayoutLibrary, LayoutEntry, LayoutPreview, ThumbnailBin } from '../types';
+import type { Layout, LayoutLibrary, LayoutEntry, LayoutPreview, ThumbnailBin, CollectionMembership } from '../types';
 import { validateImport } from './validation';
 import { generateId, STAGING_ID } from '../constants';
 import { generateUUID } from './uuid';
@@ -683,4 +683,54 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
   }
 
   return { library, activeLayout };
+}
+
+// === Collection Membership Storage ===
+
+const COLLECTION_MEMBERSHIPS_KEY = 'gridfinity-collection-memberships-v1';
+
+/**
+ * Save collection memberships to localStorage.
+ */
+export function saveCollectionMemberships(memberships: CollectionMembership[]): void {
+  try {
+    localStorage.setItem(COLLECTION_MEMBERSHIPS_KEY, JSON.stringify(memberships));
+  } catch (e) {
+    console.error('Failed to save collection memberships:', e);
+  }
+}
+
+/**
+ * Load collection memberships from localStorage.
+ */
+export function loadCollectionMemberships(): CollectionMembership[] {
+  try {
+    const stored = localStorage.getItem(COLLECTION_MEMBERSHIPS_KEY);
+    if (!stored) return [];
+
+    const parsed = JSON.parse(stored);
+
+    // Validate it's an array
+    if (!Array.isArray(parsed)) return [];
+
+    // Basic validation of each membership
+    return parsed.filter((m): m is CollectionMembership =>
+      typeof m === 'object' &&
+      typeof m.collectionId === 'string' &&
+      typeof m.collectionName === 'string' &&
+      typeof m.joinedAt === 'number' &&
+      typeof m.lastSyncAt === 'number' &&
+      typeof m.lastAccessedAt === 'number'
+    );
+  } catch (e) {
+    console.error('Failed to load collection memberships:', e);
+    return [];
+  }
+}
+
+/**
+ * Clear all collection memberships from localStorage.
+ */
+export function clearCollectionMemberships(): void {
+  localStorage.removeItem(COLLECTION_MEMBERSHIPS_KEY);
 }

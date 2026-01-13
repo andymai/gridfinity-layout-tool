@@ -5,6 +5,12 @@ import {
   clearLayoutHash,
   hasShareHash,
   getLayoutIdFromHistoryState,
+  parseCollectionFromURL,
+  setCollectionURL,
+  clearCollectionURL,
+  isCollectionURL,
+  generateCollectionURL,
+  getCollectionFromHistoryState,
 } from '../../utils/url';
 
 describe('url utilities', () => {
@@ -189,5 +195,209 @@ describe('url edge cases', () => {
     // Should return null because share takes precedence
     expect(parseLayoutIdFromHash()).toBeNull();
     expect(hasShareHash()).toBe(true);
+  });
+});
+
+describe('collection URL utilities', () => {
+  const originalLocation = window.location;
+
+  beforeEach(() => {
+    Object.defineProperty(window, 'location', {
+      value: {
+        ...originalLocation,
+        pathname: '/',
+        search: '',
+        hash: '',
+        origin: 'https://example.com',
+      },
+      writable: true,
+    });
+
+    vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
+    vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+    });
+  });
+
+  describe('parseCollectionFromURL', () => {
+    it('returns null for non-collection URL', () => {
+      window.location.pathname = '/';
+      expect(parseCollectionFromURL()).toBeNull();
+    });
+
+    it('parses collection ID from /c/{id} path', () => {
+      window.location.pathname = '/c/abc123def456';
+      const result = parseCollectionFromURL();
+      expect(result).toEqual({ collectionId: 'abc123def456', viewOnly: false });
+    });
+
+    it('parses collection ID with /view suffix', () => {
+      window.location.pathname = '/c/abc123def456/view';
+      const result = parseCollectionFromURL();
+      expect(result).toEqual({ collectionId: 'abc123def456', viewOnly: true });
+    });
+
+    it('returns null for invalid collection ID length', () => {
+      window.location.pathname = '/c/short';
+      expect(parseCollectionFromURL()).toBeNull();
+    });
+
+    it('returns null for ID with invalid characters', () => {
+      window.location.pathname = '/c/abc123def45!';
+      expect(parseCollectionFromURL()).toBeNull();
+    });
+
+    it('returns null for collection URL with trailing slash', () => {
+      // The regex requires exact format without trailing slash
+      window.location.pathname = '/c/abc123def456/';
+      expect(parseCollectionFromURL()).toBeNull();
+    });
+  });
+
+  describe('isCollectionURL', () => {
+    it('returns false for non-collection URL', () => {
+      window.location.pathname = '/';
+      expect(isCollectionURL()).toBe(false);
+    });
+
+    it('returns true for collection URL', () => {
+      window.location.pathname = '/c/abc123def456';
+      expect(isCollectionURL()).toBe(true);
+    });
+
+    it('returns true for view-only collection URL', () => {
+      window.location.pathname = '/c/abc123def456/view';
+      expect(isCollectionURL()).toBe(true);
+    });
+
+    it('returns false for similar but not collection path', () => {
+      window.location.pathname = '/collection/abc123def456';
+      expect(isCollectionURL()).toBe(false);
+    });
+  });
+
+  describe('setCollectionURL', () => {
+    it('sets URL using replaceState by default', () => {
+      setCollectionURL('abc123def456');
+
+      expect(window.history.replaceState).toHaveBeenCalledWith(
+        { collectionId: 'abc123def456', viewOnly: false },
+        '',
+        '/c/abc123def456'
+      );
+      expect(window.history.pushState).not.toHaveBeenCalled();
+    });
+
+    it('uses pushState when addToHistory is true', () => {
+      setCollectionURL('abc123def456', false, true);
+
+      expect(window.history.pushState).toHaveBeenCalledWith(
+        { collectionId: 'abc123def456', viewOnly: false },
+        '',
+        '/c/abc123def456'
+      );
+      expect(window.history.replaceState).not.toHaveBeenCalled();
+    });
+
+    it('adds /view suffix for view-only mode', () => {
+      setCollectionURL('abc123def456', true, false);
+
+      expect(window.history.replaceState).toHaveBeenCalledWith(
+        { collectionId: 'abc123def456', viewOnly: true },
+        '',
+        '/c/abc123def456/view'
+      );
+    });
+  });
+
+  describe('clearCollectionURL', () => {
+    it('clears collection path from URL', () => {
+      window.location.pathname = '/c/abc123def456';
+
+      clearCollectionURL();
+
+      expect(window.history.replaceState).toHaveBeenCalledWith(
+        {},
+        '',
+        '/'
+      );
+    });
+
+    it('clears to root even with query parameters', () => {
+      // clearCollectionURL always navigates to '/', discarding query params
+      window.location.pathname = '/c/abc123def456';
+      window.location.search = '?foo=bar';
+
+      clearCollectionURL();
+
+      expect(window.history.replaceState).toHaveBeenCalledWith(
+        {},
+        '',
+        '/'
+      );
+    });
+  });
+
+  describe('generateCollectionURL', () => {
+    it('generates full URL for collection', () => {
+      const url = generateCollectionURL('abc123def456');
+      expect(url).toBe('https://example.com/c/abc123def456');
+    });
+
+    it('generates view-only URL when specified', () => {
+      const url = generateCollectionURL('abc123def456', true);
+      expect(url).toBe('https://example.com/c/abc123def456/view');
+    });
+  });
+
+  describe('getCollectionFromHistoryState', () => {
+    it('returns null for null state', () => {
+      expect(getCollectionFromHistoryState(null)).toBeNull();
+    });
+
+    it('returns null for undefined state', () => {
+      expect(getCollectionFromHistoryState(undefined)).toBeNull();
+    });
+
+    it('returns null for state without collectionId', () => {
+      expect(getCollectionFromHistoryState({ foo: 'bar' })).toBeNull();
+    });
+
+    it('returns null for non-string collectionId', () => {
+      expect(getCollectionFromHistoryState({ collectionId: 123 })).toBeNull();
+    });
+
+    it('returns null for empty string collectionId', () => {
+      expect(getCollectionFromHistoryState({ collectionId: '' })).toBeNull();
+    });
+
+    it('returns collection info from valid state', () => {
+      const result = getCollectionFromHistoryState({
+        collectionId: 'abc123def456',
+        viewOnly: false,
+      });
+      expect(result).toEqual({ collectionId: 'abc123def456', viewOnly: false });
+    });
+
+    it('defaults viewOnly to false', () => {
+      const result = getCollectionFromHistoryState({
+        collectionId: 'abc123def456',
+      });
+      expect(result).toEqual({ collectionId: 'abc123def456', viewOnly: false });
+    });
+
+    it('respects viewOnly flag when true', () => {
+      const result = getCollectionFromHistoryState({
+        collectionId: 'abc123def456',
+        viewOnly: true,
+      });
+      expect(result).toEqual({ collectionId: 'abc123def456', viewOnly: true });
+    });
   });
 });

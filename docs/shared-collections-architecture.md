@@ -1233,12 +1233,15 @@ e2e/
 - [ ] Update storage.ts to use IndexedDB
 - [ ] Write unit tests for storage layer
 
-### Phase 2: Backend API (3-4 days)
+### Phase 2: Backend API (4-5 days)
 
-- [ ] Create collection API endpoints
+- [ ] Create collection API endpoints (CRUD)
+- [ ] Add view-only access endpoint
 - [ ] Add Redis keys for collection metadata
 - [ ] Implement rate limiting
-- [ ] Add validation (max layouts, payload size)
+- [ ] Add validation (max layouts, payload size, duplicate name suffixing)
+- [ ] Create Open Graph image endpoint
+- [ ] Create QR code image endpoint
 - [ ] Write API tests
 
 ### Phase 3: Collection Store (2-3 days)
@@ -1246,17 +1249,23 @@ e2e/
 - [ ] Create collection Zustand store
 - [ ] Implement membership management
 - [ ] Add sync state tracking
+- [ ] Implement view-only mode detection
+- [ ] Add collection auto-cleanup (30 days inactive fade)
 - [ ] Connect to API client
 - [ ] Write store tests
 
-### Phase 4: Core UI (4-5 days)
+### Phase 4: Core UI (5-6 days)
 
 - [ ] Create CollectionBrowser modal
 - [ ] Add Collections tab to Layout Manager
 - [ ] Build CollectionList and CollectionDetail views
-- [ ] Implement CollectionLayoutCard
+- [ ] Implement CollectionLayoutCard with context menu
 - [ ] Add CreateCollectionModal
 - [ ] Add JoinCollectionPreview
+- [ ] Build ShareDropdown (edit link, view-only link, QR)
+- [ ] Create QRCodeModal with download
+- [ ] Add LayoutLimitWarning (45+ layouts)
+- [ ] Add LeaveCollectionDialog
 - [ ] Mobile-responsive layouts
 
 ### Phase 5: Sync Mechanism (3-4 days)
@@ -1267,6 +1276,7 @@ e2e/
 - [ ] Add offline queue
 - [ ] Implement change highlighting
 - [ ] Add CollectionBanner component
+- [ ] Add ViewOnlyBanner component
 
 ### Phase 6: Presence & Conflicts (2-3 days)
 
@@ -1276,16 +1286,23 @@ e2e/
 - [ ] Implement conflict resolution logic
 - [ ] Write conflict tests
 
-### Phase 7: Help & Onboarding (2 days)
+### Phase 7: Layout Operations (2 days)
 
-- [ ] Add all tooltips
+- [ ] Implement rename layout in collection
+- [ ] Implement duplicate layout in collection (with auto-suffix)
+- [ ] Implement save to My Layouts (copy out)
+- [ ] Add remove layout with save-first option
+
+### Phase 8: Help & Onboarding (2-3 days)
+
+- [ ] Add all tooltips (comprehensive)
 - [ ] Create empty state
-- [ ] Build QuickTipsOverlay
+- [ ] Build QuickTipsOverlay (first-time)
 - [ ] Create CollectionTutorial modal
-- [ ] Add warning dialogs
+- [ ] Add warning dialogs (delete, remove, leave, overwrite)
 - [ ] Write error messages
 
-### Phase 8: Polish & Testing (3-4 days)
+### Phase 9: Polish & Testing (3-4 days)
 
 - [ ] E2E test coverage
 - [ ] Accessibility audit
@@ -1293,7 +1310,7 @@ e2e/
 - [ ] Edge case handling
 - [ ] Documentation
 
-### Total Estimate: 22-29 days (~4-5 weeks)
+### Total Estimate: 26-35 days (~5-6 weeks)
 
 ---
 
@@ -1305,6 +1322,7 @@ e2e/
 |---------|-------------|---------|
 | `lz-string` | ~3 KB | Compression |
 | `idb` | ~1.5 KB | IndexedDB wrapper |
+| `qrcode` | ~12 KB | QR code generation (server-side) |
 
 ### Existing Dependencies Used
 
