@@ -128,6 +128,7 @@ export function usePartySync() {
     // Don't connect if no collection (represented by '__none__' sentinel)
     startClosed: stableRoomId === '__none__',
     onOpen: () => {
+      console.warn('[PartySync] Connected to room:', stableRoomId);
       setIsConnected(true);
       // Send initial presence (deferred to avoid stale closure)
     },
@@ -142,11 +143,12 @@ export function usePartySync() {
       }
     },
     onClose: () => {
+      console.warn('[PartySync] Disconnected from room:', stableRoomId);
       setIsConnected(false);
       setTotalConnections(0);
     },
     onError: (error) => {
-      console.error('[PartySync] Connection error:', error);
+      console.error('[PartySync] Connection error for room:', stableRoomId, error);
     },
   });
 
@@ -287,13 +289,23 @@ export function usePartySync() {
   }, [activeLayoutId, sendPresence]);
 
   // Reconnect when collection changes
+  // Note: We intentionally exclude `socket` from deps to avoid reconnection loops.
+  // usePartySocket handles room changes internally, but we need to explicitly
+  // close when leaving a collection and reconnect when entering one.
   useEffect(() => {
     if (collectionId) {
-      socket.reconnect();
+      // Small delay to let usePartySocket update its room first
+      const timer = setTimeout(() => {
+        if (socket.readyState !== WebSocket.OPEN) {
+          socket.reconnect();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     } else {
       socket.close();
     }
-  }, [collectionId, socket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collectionId]);
 
   // Send initial presence when connected
   useEffect(() => {
