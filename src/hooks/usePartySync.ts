@@ -123,6 +123,7 @@ export function usePartySync() {
   // PartySocket connection
   const socket = usePartySocket({
     host: PARTYKIT_HOST,
+    party: 'collection', // Must match the party name from party/collection.ts
     room: stableRoomId,
     // Don't connect if no collection (represented by '__none__' sentinel)
     startClosed: stableRoomId === '__none__',
