@@ -239,7 +239,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>Create a collection to collaborate with others in real-time</span>
+                <span>Create a collection to share and edit layouts with others</span>
               </li>
             </ul>
           </section>
@@ -251,7 +251,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
             </h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <p style={STYLES.textSecondary} className="text-sm">
-                Collections let you share and collaborate on layouts with others.
+                Collections let you share and edit layouts with others in real-time.
                 No account needed – just share a link.
               </p>
               <ul className="space-y-1.5 text-sm" style={STYLES.textSecondary}>
@@ -265,7 +265,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
                 </li>
                 <li className="flex items-start gap-2">
                   <span style={STYLES.colorPrimary}>•</span>
-                  <span>Copy the link to share with collaborators</span>
+                  <span>Copy the link to share with others</span>
                 </li>
               </ul>
             </div>

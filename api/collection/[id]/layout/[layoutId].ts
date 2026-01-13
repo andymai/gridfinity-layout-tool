@@ -10,6 +10,7 @@ import {
   COLLECTION_CONSTRAINTS,
 } from '../../../lib/validation.js';
 import { filterLayoutContent } from '../../../lib/contentFilter.js';
+import { notifyLayoutUpdated, notifyLayoutDeleted } from '../../../lib/partykit.js';
 
 /**
  * Layout CRUD operations within a collection:
@@ -319,6 +320,10 @@ async function handlePut(
       allowOverwrite: true,
     });
 
+    // Notify PartyKit for real-time sync (fire and forget)
+    // Pass modifiedBy as undefined - clients can add their deviceId if needed
+    notifyLayoutUpdated(collectionId, layoutId, now).catch(() => {});
+
     return res.status(200).json({
       modifiedAt: now,
     });
@@ -397,6 +402,9 @@ async function handleDelete(
       addRandomSuffix: false,
       allowOverwrite: true,
     });
+
+    // Notify PartyKit for real-time sync (fire and forget)
+    notifyLayoutDeleted(collectionId, layoutId).catch(() => {});
 
     return res.status(200).json({
       success: true,

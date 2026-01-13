@@ -455,7 +455,7 @@ function TipsSection() {
     'Your layout is automatically saved to your browser',
     'Use Ctrl/⌘+O to quickly open the layout manager',
     'Press H to toggle half-bin mode for 0.5 unit precision',
-    'Create a collection to collaborate with others in real-time',
+    'Create a collection to share and edit layouts with others in real-time',
   ];
 
   return (
@@ -488,7 +488,7 @@ function CollectionsSection() {
             <strong style={STYLES.textPrimary}>What are collections?</strong>
           </p>
           <p>
-            Collections let you share and collaborate on layouts with others in real-time.
+            Collections let you share and edit layouts with others in real-time.
             No account needed – just share a link and everyone can view and edit together.
           </p>
         </div>
@@ -498,7 +498,7 @@ function CollectionsSection() {
             <strong style={STYLES.textPrimary}>Creating a collection</strong>
           </p>
           <p>
-            Open the Layout Manager (Ctrl/⌘+O) and click "Create Collection" in the Collaborate section.
+            Open the Layout Manager (Ctrl/⌘+O) and click "Create Collection" in the Real-time Sharing section.
             Your current layout will be added automatically.
           </p>
         </div>

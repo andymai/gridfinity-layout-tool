@@ -134,7 +134,7 @@ function JoinCollectionModalContent({ onClose }: { onClose: () => void }) {
 
         {/* Description */}
         <p className="text-sm text-content-secondary mb-4">
-          Enter a collection URL or ID to join and collaborate on layouts with others.
+          Enter a collection URL or ID to join and work on layouts together.
         </p>
 
         {/* Form */}
@@ -204,7 +204,7 @@ function JoinCollectionModalContent({ onClose }: { onClose: () => void }) {
         {/* Help Text */}
         <div className="mt-4 pt-4 border-t border-stroke">
           <p className="text-xs text-content-tertiary">
-            Collections let you share layouts with teammates without needing accounts.
+            Collections let you share layouts without needing accounts.
             Anyone with the link can view and edit layouts in the collection.
           </p>
         </div>

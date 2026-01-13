@@ -11,6 +11,7 @@ import {
   COLLECTION_CONSTRAINTS,
 } from '../../lib/validation.js';
 import { filterLayoutContent } from '../../lib/contentFilter.js';
+import { notifyLayoutAdded } from '../../lib/partykit.js';
 
 /**
  * POST /api/collection/[id]/layout - Add a new layout to a collection
@@ -216,6 +217,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       addRandomSuffix: false,
       allowOverwrite: true,
     });
+
+    // Notify PartyKit for real-time sync (fire and forget)
+    notifyLayoutAdded(id, layoutId, layoutMetadata.name, now).catch(() => {});
 
     return res.status(201).json({
       id: layoutId,

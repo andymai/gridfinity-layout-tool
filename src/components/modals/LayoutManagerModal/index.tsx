@@ -312,13 +312,13 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
                 />
               </div>
 
-              {/* Collaborate Section */}
+              {/* Real-time Sharing Section */}
               <div className="mt-4 pt-4 border-t border-stroke flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-medium text-content">Collaborate</h3>
+                    <h3 className="text-sm font-medium text-content">Real-time Sharing</h3>
                     <p className="text-xs text-content-tertiary mt-0.5">
-                      Share layouts with your team - no account needed
+                      Share layouts with others - no account needed
                     </p>
                   </div>
                   <div className="flex gap-2">

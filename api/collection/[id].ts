@@ -7,6 +7,7 @@ import {
   isCollectionExpired,
   calculateCollectionExpiration,
 } from '../lib/validation.js';
+import { notifyCollectionUpdated } from '../lib/partykit.js';
 
 /**
  * Collection CRUD operations:
@@ -216,6 +217,9 @@ async function handlePut(
       addRandomSuffix: false,
       allowOverwrite: true,
     });
+
+    // Notify PartyKit for real-time sync (fire and forget)
+    notifyCollectionUpdated(id, updatedMetadata.name, now).catch(() => {});
 
     return res.status(200).json({
       id: updatedMetadata.id,

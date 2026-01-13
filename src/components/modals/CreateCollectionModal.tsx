@@ -146,7 +146,7 @@ function CreateCollectionModalContent({ onClose }: { onClose: () => void }) {
 
         {/* Description */}
         <p className="text-sm text-content-secondary mb-4">
-          Create a shared collection to collaborate on layouts with others.
+          Create a shared collection to work on layouts together in real-time.
           No account needed - just share the link!
         </p>
 
@@ -163,7 +163,7 @@ function CreateCollectionModalContent({ onClose }: { onClose: () => void }) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="My Team's Layouts"
+              placeholder="Workshop Drawers"
               maxLength={64}
               className="w-full px-3 py-2 rounded-md bg-surface border border-stroke text-content placeholder:text-content-tertiary focus:outline-none focus:ring-2 focus:ring-accent"
               disabled={isCreating}

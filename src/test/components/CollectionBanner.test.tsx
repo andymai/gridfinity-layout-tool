@@ -39,6 +39,16 @@ vi.mock('../../hooks/useCollectionSync', () => ({
   }),
 }));
 
+// Mock usePartySync hook
+vi.mock('../../hooks/usePartySync', () => ({
+  usePartySync: () => ({
+    isConnected: false,
+    activeEditors: {},
+    totalConnections: 0,
+    sendPresence: vi.fn(),
+  }),
+}));
+
 // Mock storage functions
 vi.mock('../../utils/storage', () => ({
   copyToClipboard: vi.fn(() => Promise.resolve(true)),
@@ -153,11 +163,11 @@ describe('CollectionBanner', () => {
       expect(screen.getByText('(1 layout)')).toBeInTheDocument();
     });
 
-    it('has Copy Link button', () => {
+    it('has Invite button', () => {
       render(<CollectionBanner />);
 
-      // Button has aria-label="Copy collection link"
-      expect(screen.getByRole('button', { name: /Copy collection link/i })).toBeInTheDocument();
+      // Button has aria-label="Invite others to collection"
+      expect(screen.getByRole('button', { name: /Invite others to collection/i })).toBeInTheDocument();
     });
 
     it('has Leave button', () => {
@@ -188,11 +198,10 @@ describe('CollectionBanner', () => {
       expect(banner).toHaveAttribute('aria-live', 'polite');
     });
 
-    it('share button has accessible label', () => {
+    it('invite button has accessible label', () => {
       render(<CollectionBanner />);
 
-      // aria-label is "Copy collection link" or "Link copied"
-      expect(screen.getByLabelText(/Copy collection link|Link copied/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Invite others to collection/i)).toBeInTheDocument();
     });
 
     it('leave button has accessible label', () => {
@@ -202,7 +211,7 @@ describe('CollectionBanner', () => {
     });
   });
 
-  describe('share link action', () => {
+  describe('invite action', () => {
     beforeEach(() => {
       useCollectionStore.setState({
         activeCollection: mockCollection,
@@ -210,25 +219,62 @@ describe('CollectionBanner', () => {
       });
     });
 
-    it('copies link to clipboard when Copy Link clicked', async () => {
+    it('opens share dialog when Invite clicked', async () => {
+      render(<CollectionBanner />);
+
+      const inviteButton = screen.getByRole('button', { name: /Invite others to collection/i });
+      await act(async () => {
+        fireEvent.click(inviteButton);
+      });
+
+      // Should show the share dialog
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByText('Invite Others')).toBeInTheDocument();
+    });
+
+    it('shows collection URL in dialog', async () => {
+      render(<CollectionBanner />);
+
+      const inviteButton = screen.getByRole('button', { name: /Invite others to collection/i });
+      await act(async () => {
+        fireEvent.click(inviteButton);
+      });
+
+      // The mocked URL should be displayed
+      expect(screen.getByDisplayValue(/example\.com/)).toBeInTheDocument();
+    });
+
+    it('copies link when Copy button clicked in dialog', async () => {
       const { copyToClipboard } = await import('../../utils/storage');
 
       render(<CollectionBanner />);
 
-      const shareButton = screen.getByRole('button', { name: /Copy collection link/i });
+      const inviteButton = screen.getByRole('button', { name: /Invite others to collection/i });
       await act(async () => {
-        fireEvent.click(shareButton);
+        fireEvent.click(inviteButton);
+      });
+
+      // Click the Copy button in the dialog
+      const copyButton = screen.getByRole('button', { name: /Copy/i });
+      await act(async () => {
+        fireEvent.click(copyButton);
       });
 
       expect(copyToClipboard).toHaveBeenCalled();
     });
 
-    it('shows success toast after copying', async () => {
+    it('shows success toast after copying from dialog', async () => {
       render(<CollectionBanner />);
 
-      const shareButton = screen.getByRole('button', { name: /Copy collection link/i });
+      const inviteButton = screen.getByRole('button', { name: /Invite others to collection/i });
       await act(async () => {
-        fireEvent.click(shareButton);
+        fireEvent.click(inviteButton);
+      });
+
+      // Click the Copy button in the dialog
+      const copyButton = screen.getByRole('button', { name: /Copy/i });
+      await act(async () => {
+        fireEvent.click(copyButton);
       });
 
       const toasts = useToastStore.getState().toasts;
@@ -236,16 +282,38 @@ describe('CollectionBanner', () => {
       expect(toasts[0].type).toBe('success');
     });
 
-    it('shows "Copied!" text after successful copy', async () => {
+    it('shows "Copied!" text in dialog after successful copy', async () => {
       render(<CollectionBanner />);
 
-      const shareButton = screen.getByRole('button', { name: /Copy collection link/i });
+      const inviteButton = screen.getByRole('button', { name: /Invite others to collection/i });
       await act(async () => {
-        fireEvent.click(shareButton);
+        fireEvent.click(inviteButton);
+      });
+
+      // Click the Copy button in the dialog
+      const copyButton = screen.getByRole('button', { name: /Copy/i });
+      await act(async () => {
+        fireEvent.click(copyButton);
       });
 
       await waitFor(() => {
         expect(screen.getByText('Copied!')).toBeInTheDocument();
+      });
+    });
+
+    it('closes dialog when Done button clicked', async () => {
+      render(<CollectionBanner />);
+
+      const inviteButton = screen.getByRole('button', { name: /Invite others to collection/i });
+      await act(async () => {
+        fireEvent.click(inviteButton);
+      });
+
+      // Click the Done button
+      fireEvent.click(screen.getByRole('button', { name: /Done/i }));
+
+      await waitFor(() => {
+        expect(screen.queryByText('Invite Others')).not.toBeInTheDocument();
       });
     });
   });

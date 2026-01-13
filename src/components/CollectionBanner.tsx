@@ -11,15 +11,17 @@ import { useToastStore } from '../store/toast';
 import { useUIStore } from '../store/ui';
 import { useCollectionRouting } from '../hooks/useCollectionRouting';
 import { useCollectionSync } from '../hooks/useCollectionSync';
+import { usePartySync } from '../hooks/usePartySync';
 import { generateCollectionURL } from '../utils/url';
 import { copyToClipboard } from '../utils/storage';
 import { ConfirmDialog } from './modals/ConfirmDialog';
 import { ConflictDialog } from './modals/ConflictDialog';
+import { CollectionShareDialog } from './modals/CollectionShareDialog';
 import type { ConflictResolution } from './modals/ConflictDialog';
 
 export function CollectionBanner() {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   const { activeCollection, getLayoutCount } = useCollectionStore(
     useShallow((state) => ({
@@ -34,24 +36,29 @@ export function CollectionBanner() {
   const { exitCollection } = useCollectionRouting();
   const { status, conflict, activeEditors, resolveConflict } = useCollectionSync();
 
+  // Connect to PartyKit for real-time notifications
+  // This provides instant updates while useCollectionSync handles push/conflict resolution
+  const { isConnected: isRealtimeConnected, totalConnections } = usePartySync();
+
   // Get active editor count for current layout
   const currentLayoutEditors = activeLayoutId ? activeEditors.get(activeLayoutId) ?? 0 : 0;
 
-  const handleCopyLink = useCallback(async () => {
-    if (!activeCollection) return;
+  const shareUrl = activeCollection ? generateCollectionURL(activeCollection.id) : '';
 
-    const url = generateCollectionURL(activeCollection.id);
-    const success = await copyToClipboard(url);
+  const handleCopyLink = useCallback(async (): Promise<boolean> => {
+    if (!activeCollection) return false;
+
+    const success = await copyToClipboard(shareUrl);
 
     if (success) {
-      setCopied(true);
       addToast('Collection link copied!', 'success');
       announceToScreenReader('Collection link copied to clipboard');
-      setTimeout(() => setCopied(false), 2000);
+      return true;
     } else {
       addToast('Failed to copy link', 'error');
+      return false;
     }
-  }, [activeCollection, addToast, announceToScreenReader]);
+  }, [activeCollection, shareUrl, addToast, announceToScreenReader]);
 
   const handleLeave = useCallback(() => {
     exitCollection();
@@ -146,6 +153,17 @@ export function CollectionBanner() {
             </span>
           )}
 
+          {/* Real-time Connection Indicator */}
+          {isRealtimeConnected && totalConnections > 1 && (
+            <span
+              className="flex items-center gap-1 text-xs bg-green-500/30 px-2 py-0.5 rounded-full"
+              title={`${totalConnections} ${totalConnections === 1 ? 'person' : 'people'} connected`}
+            >
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" aria-hidden="true" />
+              {totalConnections} online
+            </span>
+          )}
+
           {/* Presence Indicator - show if others are editing this layout */}
           {currentLayoutEditors > 0 && (
             <span
@@ -164,28 +182,16 @@ export function CollectionBanner() {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        {/* Copy Link Button */}
+        {/* Invite Button */}
         <button
-          onClick={handleCopyLink}
-          disabled={copied}
-          className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-slate-900 hover:bg-slate-100 transition-colors disabled:opacity-70 flex items-center gap-1.5"
-          aria-label={copied ? 'Link copied' : 'Copy collection link'}
+          onClick={() => setShowShareDialog(true)}
+          className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-slate-900 hover:bg-slate-100 transition-colors flex items-center gap-1.5"
+          aria-label="Invite others to collection"
         >
-          {copied ? (
-            <>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Copied!
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              </svg>
-              Share Link
-            </>
-          )}
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+          Invite
         </button>
 
         {/* Leave Button */}
@@ -223,6 +229,15 @@ export function CollectionBanner() {
           }}
         />
       )}
+
+      {/* Share Dialog */}
+      <CollectionShareDialog
+        isOpen={showShareDialog}
+        collectionName={activeCollection.name}
+        shareUrl={shareUrl}
+        onClose={() => setShowShareDialog(false)}
+        onCopy={handleCopyLink}
+      />
     </div>
   );
 }
