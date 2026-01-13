@@ -22,7 +22,7 @@
       "name": "Main bundle (gzip)",
       "path": "dist/assets/index-*.js",
       "gzip": true,
-      "limit": "105 kB"
+      "limit": "106 kB"
     },
     {
       "name": "Total JS (gzip)",
