@@ -8,6 +8,7 @@ import {
   getInspector,
   waitForBinCount,
   waitForNoSelection,
+  waitForSelectionCount,
   waitForUndoEnabled,
   clearAllStorage,
   resetViewport,
@@ -127,5 +128,112 @@ test.describe('Drag Bins Flow', () => {
 
     // Inspector should show "No bin selected"
     await expect(inspector.getByText(/no bin selected/i)).toBeVisible({ timeout: 3000 });
+  });
+
+  test('can duplicate bin with Alt+drag', async ({ page }) => {
+    const bounds = await getGridBounds(page);
+
+    // Verify we start with 1 bin
+    await waitForBinCount(page, 1);
+
+    // Select the bin we created
+    await selectBinAt(page, 70, 130);
+
+    // Alt+drag the bin to a new position (this should duplicate it)
+    await page.mouse.move(bounds.x + 70, bounds.y + 130);
+    await page.keyboard.down('Alt');
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + 200, bounds.y + 50, { steps: 10 });
+    await page.mouse.up();
+    await page.keyboard.up('Alt');
+
+    // Should now have 2 bins (original + duplicate)
+    await waitForBinCount(page, 2);
+
+    // Verify the operation created an undoable action
+    await waitForUndoEnabled(page);
+  });
+
+  test('Alt+drag keeps original bin at original position', async ({ page }) => {
+    const bounds = await getGridBounds(page);
+
+    // Verify we start with 1 bin
+    await waitForBinCount(page, 1);
+
+    // Select the bin and check its position before drag
+    await selectBinAt(page, 70, 130);
+    const inspector = getInspector(page);
+    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible();
+
+    // Alt+drag the bin to a new position
+    await page.mouse.move(bounds.x + 70, bounds.y + 130);
+    await page.keyboard.down('Alt');
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + 250, bounds.y + 50, { steps: 10 });
+    await page.mouse.up();
+    await page.keyboard.up('Alt');
+
+    // Wait for 2 bins
+    await waitForBinCount(page, 2);
+
+    // The new duplicate should be selected after the drag
+    await waitForSelectionCount(page, 1);
+  });
+
+  test('Alt+drag works with multiple selected bins', async ({ page }) => {
+    const bounds = await getGridBounds(page);
+
+    // Create a second bin
+    await drawBinOnGrid(page, 150, 150, 200, 200);
+    await waitForBinCount(page, 2);
+
+    // Select first bin
+    await selectBinAt(page, 70, 130);
+
+    // Ctrl+click to add second bin to selection
+    await page.keyboard.down('Control');
+    await page.mouse.click(bounds.x + 170, bounds.y + 170);
+    await page.keyboard.up('Control');
+
+    // Verify 2 bins are selected
+    await waitForSelectionCount(page, 2);
+
+    // Alt+drag to duplicate both bins
+    await page.mouse.move(bounds.x + 70, bounds.y + 130);
+    await page.keyboard.down('Alt');
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + 70, bounds.y + 50, { steps: 10 });
+    await page.mouse.up();
+    await page.keyboard.up('Alt');
+
+    // Should now have 4 bins (2 original + 2 duplicates)
+    await waitForBinCount(page, 4);
+  });
+
+  test('Alt+drag can be undone', async ({ page }) => {
+    const bounds = await getGridBounds(page);
+
+    // Verify we start with 1 bin
+    await waitForBinCount(page, 1);
+
+    // Select the bin
+    await selectBinAt(page, 70, 130);
+
+    // Alt+drag to duplicate
+    await page.mouse.move(bounds.x + 70, bounds.y + 130);
+    await page.keyboard.down('Alt');
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + 200, bounds.y + 50, { steps: 10 });
+    await page.mouse.up();
+    await page.keyboard.up('Alt');
+
+    // Wait for 2 bins
+    await waitForBinCount(page, 2);
+
+    // Undo should remove the duplicate
+    await page.keyboard.press('Control+z');
+
+    // Should be back to 1 bin
+    await waitForBinCount(page, 1);
   });
 });
