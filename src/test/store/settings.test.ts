@@ -202,4 +202,5 @@ describe('settings store', () => {
       expect(DEFAULT_SETTINGS.defaultHeightUnitMm).toBe(7);
     });
   });
+
 });

@@ -434,7 +434,7 @@ describe('useBinList', () => {
       expect(parsed.bins.length).toBeGreaterThan(0);
     });
 
-    it('copies to clipboard', async () => {
+    it('copies TSV to clipboard', async () => {
       const layout = createTestLayout([
         createTestBin({ label: 'Test Bin' }),
       ]);
@@ -449,6 +449,65 @@ describe('useBinList', () => {
 
       expect(success).toBe(true);
       expect(navigator.clipboard.writeText).toHaveBeenCalled();
+    });
+
+    it('copies CSV to clipboard', async () => {
+      const layout = createTestLayout([
+        createTestBin({ label: 'Test Bin' }),
+      ]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      let success: boolean = false;
+      await act(async () => {
+        success = await result.current.copyToClipboard('csv');
+      });
+
+      expect(success).toBe(true);
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining(','));
+    });
+
+    it('copies JSON to clipboard', async () => {
+      const layout = createTestLayout([
+        createTestBin({ label: 'Test Bin' }),
+      ]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      let success: boolean = false;
+      await act(async () => {
+        success = await result.current.copyToClipboard('json');
+      });
+
+      expect(success).toBe(true);
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining('"bins"'));
+    });
+
+    it('handles clipboard error gracefully', async () => {
+      const layout = createTestLayout([
+        createTestBin({ label: 'Test Bin' }),
+      ]);
+      useLayoutStore.setState({ layout });
+
+      // Mock clipboard to fail
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: vi.fn().mockRejectedValue(new Error('Clipboard access denied')),
+        },
+      });
+
+      const { result } = renderHook(() => useBinList());
+
+      let success: boolean = true;
+      await act(async () => {
+        success = await result.current.copyToClipboard('tsv');
+      });
+
+      expect(success).toBe(false);
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.some(t => t.message.includes('Failed to copy'))).toBe(true);
     });
   });
 
@@ -557,4 +616,96 @@ describe('useBinList', () => {
       expect(result.current.totalCost).toBeGreaterThan(0);
     });
   });
+
+  describe('inline editing', () => {
+    it('updates label for specific bin IDs', () => {
+      const layout = createTestLayout([
+        createTestBin({ id: 'bin1', label: 'Old label 1' }),
+        createTestBin({ id: 'bin2', label: 'Old label 2', x: 1 }),
+      ]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      act(() => {
+        result.current.updateBinLabel(['bin1', 'bin2'], 'New label');
+      });
+
+      const bins = useLayoutStore.getState().layout.bins;
+      expect(bins.find(b => b.id === 'bin1')?.label).toBe('New label');
+      expect(bins.find(b => b.id === 'bin2')?.label).toBe('New label');
+    });
+
+    it('updates notes for specific bin IDs', () => {
+      const layout = createTestLayout([
+        createTestBin({ id: 'bin1', notes: 'Old notes 1' }),
+        createTestBin({ id: 'bin2', notes: 'Old notes 2', x: 1 }),
+      ]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      act(() => {
+        result.current.updateBinNotes(['bin1', 'bin2'], 'New notes');
+      });
+
+      const bins = useLayoutStore.getState().layout.bins;
+      expect(bins.find(b => b.id === 'bin1')?.notes).toBe('New notes');
+      expect(bins.find(b => b.id === 'bin2')?.notes).toBe('New notes');
+    });
+
+    it('shows toast when updating label for single bin', () => {
+      const layout = createTestLayout([
+        createTestBin({ id: 'bin1', label: '' }),
+      ]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      act(() => {
+        result.current.updateBinLabel(['bin1'], 'New label');
+      });
+
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.some(t => t.message.includes('Updated label'))).toBe(true);
+    });
+
+    it('shows toast when updating notes for multiple bins', () => {
+      const layout = createTestLayout([
+        createTestBin({ id: 'bin1', notes: '' }),
+        createTestBin({ id: 'bin2', notes: '', x: 1 }),
+      ]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      act(() => {
+        result.current.updateBinNotes(['bin1', 'bin2'], 'New notes');
+      });
+
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.some(t => t.message.includes('2 bins'))).toBe(true);
+    });
+
+    it('does nothing when bin IDs array is empty', () => {
+      const layout = createTestLayout([
+        createTestBin({ id: 'bin1', label: 'Keep this' }),
+      ]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+      const initialToastCount = useToastStore.getState().toasts.length;
+
+      act(() => {
+        result.current.updateBinLabel([], 'Should not update');
+        result.current.updateBinNotes([], 'Should not update');
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.label).toBe('Keep this');
+      // No new toast should be added
+      expect(useToastStore.getState().toasts.length).toBe(initialToastCount);
+    });
+  });
+
 });
