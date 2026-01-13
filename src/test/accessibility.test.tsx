@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { axe } from 'vitest-axe';
 import type { AxeMatchers } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
@@ -64,7 +65,11 @@ beforeEach(() => {
 
 describe('Accessibility - Critical Issues', () => {
   it('Header has no critical accessibility violations', async () => {
-    const { container } = render(<Header onHelpClick={() => {}} />);
+    const { container } = render(
+      <MemoryRouter>
+        <Header onHelpClick={() => {}} saveStatus="idle" />
+      </MemoryRouter>
+    );
     const results = await axe(container, {
       rules: {
         // Focus on critical issues
