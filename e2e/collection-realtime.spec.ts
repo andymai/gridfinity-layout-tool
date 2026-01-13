@@ -147,15 +147,15 @@ test.describe('Collection Tab in Layout Manager', () => {
     }
   });
 
-  test('does not show Collection tab when not in collection mode', async ({ page }) => {
+  test('shows Collection tab for accessing shared collections', async ({ page }) => {
     // Open Layout Manager
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
-    // Should show My Layouts and Import tabs, but NOT Collection tab
+    // Should show My Layouts, Collection, and Import tabs
     await expect(page.getByRole('tab', { name: /my layouts/i })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /collection/i })).toBeVisible();
     await expect(page.getByRole('tab', { name: /import/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /^collection$/i })).not.toBeVisible();
   });
 
   test('has tab navigation between My Layouts and Import', async ({ page }) => {
@@ -198,13 +198,16 @@ test.describe('Invite Others Flow (UI Structure)', () => {
   // - Tips about collection expiration and security
   // - Done button
 
-  test('layout manager shows real-time sharing description', async ({ page }) => {
+  test('Collection tab shows Shared Collections section', async ({ page }) => {
     // Open Layout Manager
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
-    // Should show description for shared collections
-    await expect(page.getByText(/work on layouts together in real-time/i)).toBeVisible();
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
+
+    // Should show Shared Collections section
+    await expect(page.getByRole('heading', { name: /shared collections/i })).toBeVisible();
   });
 });
 
