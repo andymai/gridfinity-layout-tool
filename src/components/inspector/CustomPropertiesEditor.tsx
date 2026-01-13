@@ -20,7 +20,6 @@ export function CustomPropertiesEditor({
   const [isAdding, setIsAdding] = useState(false);
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
-  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const isMobile = variant === 'mobile';
@@ -72,12 +71,11 @@ export function CustomPropertiesEditor({
     setIsAdding(false);
   };
 
-  const handleUpdate = (oldKey: string, newValue: string) => {
+  const handleUpdate = (key: string, newValue: string) => {
     onChange({
       ...customProperties,
-      [oldKey]: newValue,
+      [key]: newValue,
     });
-    setEditingKey(null);
   };
 
   const handleDelete = (key: string) => {
@@ -101,11 +99,7 @@ export function CustomPropertiesEditor({
       action();
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      if (isAdding) {
-        handleCancelAdd();
-      } else {
-        setEditingKey(null);
-      }
+      handleCancelAdd();
     }
   };
 
@@ -129,69 +123,35 @@ export function CustomPropertiesEditor({
         )}
       </div>
 
-      {/* Existing properties */}
+      {/* Existing properties - always editable */}
       {hasProperties && (
         <div className="space-y-2 mb-3">
           {properties.map(([key, value]) => (
-            <div
-              key={key}
-              className="bg-surface-elevated border border-stroke-subtle rounded p-2.5"
-            >
-              {editingKey === key ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-content-secondary flex-shrink-0">
-                      {key}:
-                    </span>
-                    <input
-                      type="text"
-                      value={value}
-                      onChange={(e) => handleUpdate(key, e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH))}
-                      onBlur={() => setEditingKey(null)}
-                      onKeyDown={(e) => handleKeyDown(e, () => setEditingKey(null))}
-                      className="input flex-1 text-sm py-1"
-                      placeholder="Value"
-                      aria-label={`Edit value for ${key}`}
-                      autoFocus
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-start gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-content-secondary break-words">
-                      {key}
-                    </div>
-                    <div className="text-sm text-content break-words mt-0.5">
-                      {value || <span className="text-content-disabled italic">empty</span>}
-                    </div>
-                  </div>
-                  <div className="flex gap-1 flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setEditingKey(key)}
-                      className="p-1 text-content-tertiary hover:text-content transition-colors"
-                      title="Edit"
-                      aria-label={`Edit ${key}`}
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(key)}
-                      className="p-1 text-content-tertiary hover:text-error transition-colors"
-                      title="Delete"
-                      aria-label={`Delete ${key}`}
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div key={key}>
+              <div className="flex items-center gap-2 mb-1">
+                <label className="text-xs text-content-secondary flex-shrink-0">
+                  {key}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(key)}
+                  className="ml-auto p-1 text-content-tertiary hover:text-error transition-colors"
+                  title="Delete property"
+                  aria-label={`Delete ${key}`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <input
+                type="text"
+                value={value}
+                onChange={(e) => handleUpdate(key, e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH))}
+                className={`input w-full ${inputHeight}`}
+                placeholder="Value"
+                aria-label={`Value for ${key}`}
+              />
             </div>
           ))}
         </div>
@@ -205,7 +165,7 @@ export function CustomPropertiesEditor({
             value={newKey}
             onChange={(e) => {
               setNewKey(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH));
-              setError(null); // Clear error on input
+              setError(null);
             }}
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
             className={`input w-full ${inputHeight} ${error ? 'border-error' : ''}`}
@@ -218,7 +178,7 @@ export function CustomPropertiesEditor({
             value={newValue}
             onChange={(e) => {
               setNewValue(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH));
-              setError(null); // Clear error on input
+              setError(null);
             }}
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
             className={`input w-full ${inputHeight}`}
