@@ -1,0 +1,706 @@
+/* ===========================================
+   PRINT STYLESHEET
+   Styles for printing the layout view
+   =========================================== */
+
+/* ===========================================
+   PRINT MEDIA QUERIES
+   =========================================== */
+@media print {
+  /* Hide elements that shouldn't print */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset page defaults */
+  @page {
+    margin: 0.5in;
+    size: auto;
+  }
+
+  /* Landscape orientation hint (browser may ignore) */
+  @page landscape {
+    size: landscape;
+  }
+
+  /* Portrait orientation hint */
+  @page portrait {
+    size: portrait;
+  }
+
+  /* Force white background on everything */
+  html,
+  body,
+  #root {
+    background: white !important;
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Hide everything except print content */
+  body > *:not(.print-portal),
+  #root {
+    display: none !important;
+  }
+
+  /* Show the print portal (override .hidden class from Tailwind) */
+  .print-portal,
+  .print-portal.hidden {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide modal overlay and controls when printing */
+  .print-modal-overlay,
+  .print-modal-controls,
+  .print-modal-header,
+  .print-modal-footer {
+    display: none !important;
+  }
+
+  /* Show only the print layout content */
+  .print-layout-content {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Print header section */
+  .print-header {
+    margin-bottom: 16pt;
+    padding-bottom: 8pt;
+    border-bottom: 1pt solid #ccc;
+    page-break-after: avoid;
+  }
+
+  .print-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6pt;
+  }
+
+  .print-header h1 {
+    font-size: 18pt;
+    font-weight: 600;
+    margin: 0;
+    color: black;
+  }
+
+  .print-header-date {
+    font-size: 9pt;
+    color: #666;
+  }
+
+  .print-header-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16pt;
+  }
+
+  .print-header-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1pt;
+  }
+
+  .print-header-label {
+    font-size: 7pt;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+  }
+
+  .print-header-value {
+    font-size: 10pt;
+    color: black;
+    font-weight: 500;
+  }
+
+  /* Print grid container */
+  .print-grid-container {
+    page-break-inside: avoid;
+    margin-bottom: 16pt;
+  }
+
+  .print-grid-with-labels {
+    display: inline-block;
+  }
+
+  .print-col-labels {
+    display: flex;
+    margin-bottom: 2pt;
+  }
+
+  .print-grid-row {
+    display: flex;
+  }
+
+  .print-row-labels {
+    display: flex;
+    flex-direction: column;
+    margin-right: 2pt;
+  }
+
+  .print-axis-label {
+    font-size: 7pt;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .print-col-label {
+    width: 28px;
+    height: 14pt;
+  }
+
+  .print-row-label {
+    width: 18px;
+    height: 28px;
+  }
+
+  .print-grid {
+    display: grid;
+    gap: 1px;
+    background: #eee;
+    padding: 1px;
+    border: 1pt solid #ccc;
+  }
+
+  .print-grid-cell {
+    background: #f8f8f8;
+    min-width: 20px;
+    min-height: 20px;
+  }
+
+  /* Print bin styling */
+  .print-bin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2pt;
+    border: 0.5pt solid rgba(0, 0, 0, 0.2);
+    border-radius: 2pt;
+    overflow: hidden;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-bin-label {
+    font-size: 9pt;
+    font-weight: 500;
+    line-height: 1.2;
+    word-break: break-word;
+    overflow: hidden;
+    max-height: 2.4em;
+  }
+
+  .print-bin-size {
+    font-size: 7pt;
+    color: #444;
+    line-height: 1.2;
+  }
+
+  .print-bin-height {
+    font-size: 6pt;
+    color: #666;
+    line-height: 1.2;
+  }
+
+  .print-bin-notes {
+    font-size: 6pt;
+    color: #666;
+    line-height: 1.1;
+    overflow: hidden;
+    max-height: 1.1em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .print-bin-custom-props {
+    font-size: 5pt;
+    color: #777;
+    line-height: 1.1;
+    overflow: hidden;
+    max-height: 1.1em;
+  }
+
+  /* Layer header for multi-layer print */
+  .print-layer-header {
+    font-size: 12pt;
+    font-weight: 600;
+    margin: 12pt 0 8pt 0;
+    color: black;
+    page-break-after: avoid;
+  }
+
+  .print-layer-header:first-child {
+    margin-top: 0;
+  }
+
+  /* Category legend */
+  .print-legend {
+    margin-top: 16pt;
+    padding-top: 8pt;
+    border-top: 1pt solid #ccc;
+    page-break-inside: avoid;
+  }
+
+  .print-legend-title {
+    font-size: 10pt;
+    font-weight: 600;
+    margin: 0 0 8pt 0;
+    color: black;
+  }
+
+  .print-legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8pt 16pt;
+  }
+
+  .print-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4pt;
+    font-size: 9pt;
+    color: #333;
+  }
+
+  .print-legend-count {
+    color: #666;
+    font-size: 8pt;
+  }
+
+  .print-legend-color {
+    width: 12pt;
+    height: 12pt;
+    border: 0.5pt solid rgba(0, 0, 0, 0.2);
+    border-radius: 2pt;
+    flex-shrink: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Bin list table */
+  .print-bin-list {
+    margin-top: 16pt;
+    padding-top: 8pt;
+    border-top: 1pt solid #ccc;
+    page-break-inside: avoid;
+  }
+
+  .print-bin-list-title {
+    font-size: 10pt;
+    font-weight: 600;
+    margin: 0 0 8pt 0;
+    color: black;
+  }
+
+  .print-bin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    color: #333;
+  }
+
+  .print-bin-table th,
+  .print-bin-table td {
+    padding: 4pt 6pt;
+    text-align: left;
+    border-bottom: 0.5pt solid #ddd;
+    vertical-align: top;
+  }
+
+  .print-bin-table th {
+    font-weight: 600;
+    color: black;
+    background: #f5f5f5;
+    border-bottom: 1pt solid #ccc;
+  }
+
+  .print-bin-table-label {
+    font-weight: 500;
+  }
+
+  .print-bin-table-notes {
+    max-width: 150pt;
+    word-break: break-word;
+  }
+
+  .print-bin-table-empty {
+    color: #999;
+  }
+
+  .print-bin-table-category-dot {
+    display: inline-block;
+    width: 8pt;
+    height: 8pt;
+    border-radius: 50%;
+    margin-right: 4pt;
+    vertical-align: middle;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-bin-table-custom-props {
+    font-size: 7pt;
+    color: #444;
+  }
+
+  .print-bin-table-prop {
+    margin-bottom: 1pt;
+  }
+
+  .print-bin-table-prop:last-child {
+    margin-bottom: 0;
+  }
+
+  .print-bin-table-prop-key {
+    font-weight: 500;
+    color: #666;
+  }
+
+  /* Force background colors to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* ===========================================
+   SCREEN PREVIEW STYLES
+   Styles for the print preview in the modal
+   =========================================== */
+
+/* Preview container mimics printed page */
+.print-preview {
+  background: white;
+  color: black;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  min-height: 400px;
+  max-height: calc(100vh - 300px);
+  overflow: auto;
+}
+
+/* Print header for preview */
+.print-preview .print-header {
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.print-preview .print-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.print-preview .print-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: black;
+}
+
+.print-preview .print-header-date {
+  font-size: 11px;
+  color: #777;
+}
+
+.print-preview .print-header-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.print-preview .print-header-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.print-preview .print-header-label {
+  font-size: 9px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.print-preview .print-header-value {
+  font-size: 12px;
+  color: black;
+  font-weight: 500;
+}
+
+/* Grid in preview */
+.print-preview .print-grid-container {
+  margin-bottom: 16px;
+}
+
+.print-preview .print-grid-with-labels {
+  display: inline-block;
+}
+
+.print-preview .print-col-labels {
+  display: flex;
+  margin-bottom: 2px;
+}
+
+.print-preview .print-grid-row {
+  display: flex;
+}
+
+.print-preview .print-row-labels {
+  display: flex;
+  flex-direction: column;
+  margin-right: 2px;
+}
+
+.print-preview .print-axis-label {
+  font-size: 9px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.print-preview .print-col-label {
+  width: 28px;
+  height: 16px;
+}
+
+.print-preview .print-row-label {
+  width: 20px;
+  height: 28px;
+}
+
+.print-preview .print-grid {
+  display: grid;
+  gap: 1px;
+  background: #ddd;
+  padding: 1px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.print-preview .print-grid-cell {
+  background: #f5f5f5;
+}
+
+/* Bin in preview */
+.print-preview .print-bin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.print-preview .print-bin-label {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  word-break: break-word;
+  overflow: hidden;
+  max-height: 2.4em;
+}
+
+.print-preview .print-bin-size {
+  font-size: 9px;
+  color: #555;
+  line-height: 1.2;
+}
+
+.print-preview .print-bin-height {
+  font-size: 8px;
+  color: #777;
+  line-height: 1.2;
+}
+
+.print-preview .print-bin-notes {
+  font-size: 8px;
+  color: #777;
+  line-height: 1.1;
+  overflow: hidden;
+  max-height: 1.1em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.print-preview .print-bin-custom-props {
+  font-size: 7px;
+  color: #888;
+  line-height: 1.1;
+  overflow: hidden;
+  max-height: 1.1em;
+}
+
+/* Layer header in preview */
+.print-preview .print-layer-header {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 16px 0 8px 0;
+  color: black;
+}
+
+.print-preview .print-layer-header:first-child {
+  margin-top: 0;
+}
+
+/* Legend in preview */
+.print-preview .print-legend {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #ddd;
+}
+
+.print-preview .print-legend-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: black;
+}
+
+.print-preview .print-legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.print-preview .print-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #333;
+}
+
+.print-preview .print-legend-count {
+  color: #888;
+  font-size: 10px;
+}
+
+.print-preview .print-legend-color {
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* Bin list in preview */
+.print-preview .print-bin-list {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #ddd;
+}
+
+.print-preview .print-bin-list-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: black;
+}
+
+.print-preview .print-bin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  color: #333;
+}
+
+.print-preview .print-bin-table th,
+.print-preview .print-bin-table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+.print-preview .print-bin-table th {
+  font-weight: 600;
+  color: black;
+  background: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+}
+
+.print-preview .print-bin-table-label {
+  font-weight: 500;
+}
+
+.print-preview .print-bin-table-notes {
+  max-width: 180px;
+  word-break: break-word;
+}
+
+.print-preview .print-bin-table-empty {
+  color: #999;
+}
+
+.print-preview .print-bin-table-category-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.print-preview .print-bin-table-custom-props {
+  font-size: 9px;
+  color: #555;
+}
+
+.print-preview .print-bin-table-prop {
+  margin-bottom: 2px;
+}
+
+.print-preview .print-bin-table-prop:last-child {
+  margin-bottom: 0;
+}
+
+.print-preview .print-bin-table-prop-key {
+  font-weight: 500;
+  color: #777;
+}
+
+/* Empty state */
+.print-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  color: #666;
+}
+
+.print-empty-state-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}

@@ -1,0 +1,436 @@
+import { useMemo } from 'react';
+import type { Layout, Layer } from '../../types';
+import type { PrintViewSettings } from '../../store/settings';
+import { PrintBin } from './PrintBin';
+import {
+  getVisibleBinsForPrint,
+  getVisibleLayers,
+  getUsedCategories,
+  formatDrawerDimensions,
+  formatPrintDate,
+  sortBinsForPrint,
+} from '../../utils/printLayout';
+
+interface PrintLayoutProps {
+  layout: Layout;
+  selectedLayerIds: string[];
+  settings: PrintViewSettings;
+  cellSize?: number;
+  gap?: number;
+}
+
+/**
+ * Renders the printable layout with header, grid, and legend.
+ */
+export function PrintLayout({
+  layout,
+  selectedLayerIds,
+  settings,
+  cellSize = 28,
+  gap = 1,
+}: PrintLayoutProps) {
+  const { drawer, bins, layers, categories } = layout;
+
+  // Get visible layers and bins
+  const visibleLayers = useMemo(
+    () => getVisibleLayers(layers, selectedLayerIds),
+    [layers, selectedLayerIds]
+  );
+
+  const allVisibleBins = useMemo(
+    () => getVisibleBinsForPrint(bins, selectedLayerIds),
+    [bins, selectedLayerIds]
+  );
+
+  // Get categories used by visible bins
+  const usedCategories = useMemo(
+    () => getUsedCategories(allVisibleBins, categories),
+    [allVisibleBins, categories]
+  );
+
+  // Calculate grid dimensions
+  const gridCols = Math.ceil(drawer.width);
+  const gridRows = Math.ceil(drawer.depth);
+  const integerWidth = Math.floor(drawer.width);
+  const integerDepth = Math.floor(drawer.depth);
+  const hasFractionalWidth = drawer.width % 1 !== 0;
+  const hasFractionalDepth = drawer.depth % 1 !== 0;
+
+  // Fractional cell dimensions
+  const fractionalWidthPart = drawer.width - integerWidth;
+  const fractionalDepthPart = drawer.depth - integerDepth;
+  const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
+  const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
+
+  // Generate grid template
+  const gridTemplateColumns = hasFractionalWidth
+    ? `repeat(${integerWidth}, ${cellSize}px) ${fractionalCellWidth}px`
+    : `repeat(${gridCols}, ${cellSize}px)`;
+
+  const gridTemplateRows = hasFractionalDepth
+    ? `${fractionalCellHeight}px repeat(${integerDepth}, ${cellSize}px)`
+    : `repeat(${gridRows}, ${cellSize}px)`;
+
+  // Generate grid cells for visual reference
+  const cells = useMemo(() => {
+    const result: React.ReactNode[] = [];
+    for (let y = 0; y < integerDepth; y++) {
+      for (let x = 0; x < integerWidth; x++) {
+        const cssCol = x + 1;
+        const cssRow = hasFractionalDepth ? integerDepth - y + 1 : integerDepth - y;
+        result.push(
+          <div
+            key={`cell-${x}-${y}`}
+            className="print-grid-cell"
+            style={{
+              gridColumn: cssCol,
+              gridRow: cssRow,
+              width: cellSize,
+              height: cellSize,
+            }}
+          />
+        );
+      }
+    }
+
+    // Add fractional cells if needed
+    if (hasFractionalWidth) {
+      for (let y = 0; y < integerDepth; y++) {
+        const cssRow = hasFractionalDepth ? integerDepth - y + 1 : integerDepth - y;
+        result.push(
+          <div
+            key={`frac-col-${y}`}
+            className="print-grid-cell"
+            style={{
+              gridColumn: gridCols,
+              gridRow: cssRow,
+              width: fractionalCellWidth,
+              height: cellSize,
+            }}
+          />
+        );
+      }
+    }
+
+    if (hasFractionalDepth) {
+      for (let x = 0; x < integerWidth; x++) {
+        result.push(
+          <div
+            key={`frac-row-${x}`}
+            className="print-grid-cell"
+            style={{
+              gridColumn: x + 1,
+              gridRow: 1,
+              width: cellSize,
+              height: fractionalCellHeight,
+            }}
+          />
+        );
+      }
+    }
+
+    if (hasFractionalWidth && hasFractionalDepth) {
+      result.push(
+        <div
+          key="frac-corner"
+          className="print-grid-cell"
+          style={{
+            gridColumn: gridCols,
+            gridRow: 1,
+            width: fractionalCellWidth,
+            height: fractionalCellHeight,
+          }}
+        />
+      );
+    }
+
+    return result;
+  }, [
+    integerWidth,
+    integerDepth,
+    cellSize,
+    gridCols,
+    hasFractionalWidth,
+    hasFractionalDepth,
+    fractionalCellWidth,
+    fractionalCellHeight,
+  ]);
+
+  // Generate column labels (1, 2, 3, ...)
+  // Note: All hooks must be before any early returns to satisfy React hooks rules
+  const columnLabels = useMemo(() => {
+    const labels: React.ReactNode[] = [];
+    for (let x = 0; x < integerWidth; x++) {
+      labels.push(
+        <div key={`col-${x}`} className="print-axis-label print-col-label">
+          {x + 1}
+        </div>
+      );
+    }
+    if (hasFractionalWidth) {
+      labels.push(
+        <div key="col-frac" className="print-axis-label print-col-label" style={{ width: fractionalCellWidth }}>
+          {integerWidth + 1}
+        </div>
+      );
+    }
+    return labels;
+  }, [integerWidth, hasFractionalWidth, fractionalCellWidth]);
+
+  // Generate row labels (1, 2, 3, ... from bottom)
+  const rowLabels = useMemo(() => {
+    const labels: React.ReactNode[] = [];
+    if (hasFractionalDepth) {
+      labels.push(
+        <div key="row-frac" className="print-axis-label print-row-label" style={{ height: fractionalCellHeight }}>
+          {integerDepth + 1}
+        </div>
+      );
+    }
+    for (let y = integerDepth - 1; y >= 0; y--) {
+      labels.push(
+        <div key={`row-${y}`} className="print-axis-label print-row-label">
+          {y + 1}
+        </div>
+      );
+    }
+    return labels;
+  }, [integerDepth, hasFractionalDepth, fractionalCellHeight]);
+
+  // Group bins by category for summary
+  const binsByCategory = useMemo(() => {
+    const grouped = new Map<string, number>();
+    allVisibleBins.forEach((bin) => {
+      const count = grouped.get(bin.category) ?? 0;
+      grouped.set(bin.category, count + 1);
+    });
+    return grouped;
+  }, [allVisibleBins]);
+
+  // Sort bins based on user-configured sort order
+  const sortedBins = useMemo(
+    () => sortBinsForPrint(allVisibleBins, settings.binListSortOrder, categories, layers),
+    [allVisibleBins, settings.binListSortOrder, categories, layers]
+  );
+
+  // No bins to print - early return AFTER all hooks
+  if (allVisibleBins.length === 0) {
+    return (
+      <div className="print-empty-state">
+        <svg
+          className="print-empty-state-icon"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+          />
+        </svg>
+        <p>No bins to print in selected layer(s)</p>
+      </div>
+    );
+  }
+
+  // Render a single layer's grid
+  const renderLayerGrid = (layer: Layer) => {
+    const layerBins = allVisibleBins.filter((bin) => bin.layerId === layer.id);
+    if (layerBins.length === 0) return null;
+
+    return (
+      <div key={layer.id} className="print-grid-with-labels">
+        {/* Column labels */}
+        {settings.showGridCoordinates && (
+          <div className="print-col-labels" style={{ marginLeft: 20, gap: `${gap}px` }}>
+            {columnLabels}
+          </div>
+        )}
+        <div className="print-grid-row">
+          {/* Row labels */}
+          {settings.showGridCoordinates && (
+            <div className="print-row-labels" style={{ gap: `${gap}px` }}>
+              {rowLabels}
+            </div>
+          )}
+          {/* Grid */}
+          <div
+            className="print-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns,
+              gridTemplateRows,
+              gap: `${gap}px`,
+            }}
+          >
+            {cells}
+            {layerBins.map((bin) => {
+              const category = categories.find((c) => c.id === bin.category);
+              return (
+                <PrintBin
+                  key={bin.id}
+                  bin={bin}
+                  category={category}
+                  drawer={drawer}
+                  cellSize={cellSize}
+                  gap={gap}
+                  settings={settings}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="print-layout-content">
+      {/* Header */}
+      <div className="print-header">
+        <div className="print-header-top">
+          <h1>{layout.name}</h1>
+          {settings.showDate && (
+            <span className="print-header-date">{formatPrintDate()}</span>
+          )}
+        </div>
+        <div className="print-header-info">
+          <div className="print-header-group">
+            <span className="print-header-label">Drawer</span>
+            <span className="print-header-value">{formatDrawerDimensions(drawer, layout.gridUnitMm)}</span>
+          </div>
+          <div className="print-header-group">
+            <span className="print-header-label">Height</span>
+            <span className="print-header-value">{drawer.height}u ({drawer.height * layout.heightUnitMm}mm)</span>
+          </div>
+          <div className="print-header-group">
+            <span className="print-header-label">Bins</span>
+            <span className="print-header-value">{allVisibleBins.length}</span>
+          </div>
+          <div className="print-header-group">
+            <span className="print-header-label">Layers</span>
+            <span className="print-header-value">
+              {visibleLayers.length === layers.length
+                ? `All (${layers.length})`
+                : visibleLayers.map((l) => l.name).join(', ')}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Grid(s) - one per layer if multiple selected */}
+      {visibleLayers.length === 1 ? (
+        <div className="print-grid-container">
+          {renderLayerGrid(visibleLayers[0])}
+        </div>
+      ) : (
+        visibleLayers.map((layer) => (
+          <div key={layer.id} className="print-grid-container">
+            <div className="print-layer-header">{layer.name}</div>
+            {renderLayerGrid(layer)}
+          </div>
+        ))
+      )}
+
+      {/* Category Legend with Counts */}
+      {settings.showLegend && usedCategories.length > 0 && (
+        <div className="print-legend">
+          <div className="print-legend-title">Categories</div>
+          <div className="print-legend-items">
+            {usedCategories.map((category) => {
+              const count = binsByCategory.get(category.id) ?? 0;
+              return (
+                <div key={category.id} className="print-legend-item">
+                  <div
+                    className="print-legend-color"
+                    style={{ backgroundColor: category.color }}
+                  />
+                  <span>{category.name}</span>
+                  <span className="print-legend-count">({count})</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Bin List Table */}
+      {settings.showBinList && sortedBins.length > 0 && (() => {
+        // Check if any bins have custom properties
+        const hasAnyCustomProps = sortedBins.some(
+          (bin) => bin.customProperties && Object.keys(bin.customProperties).length > 0
+        );
+        // Check if any bins have notes
+        const hasAnyNotes = sortedBins.some((bin) => bin.notes);
+
+        return (
+          <div className="print-bin-list">
+            <div className="print-bin-list-title">Bin Details</div>
+            <table className="print-bin-table">
+              <thead>
+                <tr>
+                  <th>Label</th>
+                  <th>Size</th>
+                  <th>Height</th>
+                  <th>Category</th>
+                  {visibleLayers.length > 1 && <th>Layer</th>}
+                  <th>Position</th>
+                  {hasAnyNotes && <th>Notes</th>}
+                  {hasAnyCustomProps && <th>Custom Properties</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedBins.map((bin) => {
+                  const category = categories.find((c) => c.id === bin.category);
+                  const layer = layers.find((l) => l.id === bin.layerId);
+                  const customProps = bin.customProperties || {};
+                  const customPropEntries = Object.entries(customProps);
+                  return (
+                    <tr key={bin.id}>
+                      <td className="print-bin-table-label">
+                        {bin.label || <span className="print-bin-table-empty">—</span>}
+                      </td>
+                      <td>{bin.width}×{bin.depth}</td>
+                      <td>{bin.height}u</td>
+                      <td>
+                        {settings.showCategoryColor && category && (
+                          <span
+                            className="print-bin-table-category-dot"
+                            style={{ backgroundColor: category.color }}
+                          />
+                        )}
+                        {category?.name || '—'}
+                      </td>
+                      {visibleLayers.length > 1 && <td>{layer?.name || '—'}</td>}
+                      <td>({bin.x + 1}, {bin.y + 1})</td>
+                      {hasAnyNotes && (
+                        <td className="print-bin-table-notes">
+                          {bin.notes || <span className="print-bin-table-empty">—</span>}
+                        </td>
+                      )}
+                      {hasAnyCustomProps && (
+                        <td className="print-bin-table-custom-props">
+                          {customPropEntries.length > 0 ? (
+                            customPropEntries.map(([key, value]) => (
+                              <div key={key} className="print-bin-table-prop">
+                                <span className="print-bin-table-prop-key">{key}:</span> {value}
+                              </div>
+                            ))
+                          ) : (
+                            <span className="print-bin-table-empty">—</span>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}

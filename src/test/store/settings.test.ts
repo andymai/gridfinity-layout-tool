@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { useSettingsStore, DEFAULT_SETTINGS } from '../../store/settings';
+import { useSettingsStore, DEFAULT_SETTINGS, DEFAULT_PRINT_VIEW_SETTINGS, DEFAULT_BIN_LIST_SORT_ORDER, normalizeSortOrder } from '../../store/settings';
+import type { BinListSortOrder } from '../../store/settings';
 import { resetAllStores, createIsolatedLocalStorageMock } from '../testUtils';
 
 describe('settings store', () => {
@@ -236,6 +237,200 @@ describe('settings store', () => {
       expect(useSettingsStore.getState().settings.defaultDrawerWidth).toBe(DEFAULT_SETTINGS.defaultDrawerWidth);
       expect(warnSpy).toHaveBeenCalledWith('Failed to save settings:', expect.any(Error));
       warnSpy.mockRestore();
+    });
+  });
+
+  describe('printViewSettings', () => {
+    it('has default print view settings', () => {
+      const settings = useSettingsStore.getState().settings;
+      expect(settings.printViewSettings).toBeDefined();
+      expect(settings.printViewSettings.showLabel).toBe(true);
+      expect(settings.printViewSettings.showCategoryColor).toBe(true);
+      expect(settings.printViewSettings.showBinList).toBe(true);
+    });
+
+    it('has default bin list sort order', () => {
+      const settings = useSettingsStore.getState().settings;
+      const sortOrder = settings.printViewSettings.binListSortOrder;
+      expect(sortOrder).toBeDefined();
+      expect(sortOrder.length).toBeGreaterThan(0);
+      // Category and position should be enabled by default
+      expect(sortOrder.find(s => s.field === 'category')?.enabled).toBe(true);
+      expect(sortOrder.find(s => s.field === 'position')?.enabled).toBe(true);
+    });
+
+    it('updates print view setting', () => {
+      const { updateSetting } = useSettingsStore.getState();
+      const currentSettings = useSettingsStore.getState().settings.printViewSettings;
+
+      updateSetting('printViewSettings', {
+        ...currentSettings,
+        showLabel: false,
+      });
+
+      expect(useSettingsStore.getState().settings.printViewSettings.showLabel).toBe(false);
+    });
+
+    it('updates sort order', () => {
+      const { updateSetting } = useSettingsStore.getState();
+      const currentSettings = useSettingsStore.getState().settings.printViewSettings;
+
+      const newSortOrder = currentSettings.binListSortOrder.map(s =>
+        s.field === 'size' ? { ...s, enabled: true } : s
+      );
+
+      updateSetting('printViewSettings', {
+        ...currentSettings,
+        binListSortOrder: newSortOrder,
+      });
+
+      const sortOrder = useSettingsStore.getState().settings.printViewSettings.binListSortOrder;
+      expect(sortOrder.find(s => s.field === 'size')?.enabled).toBe(true);
+    });
+  });
+
+  describe('DEFAULT_PRINT_VIEW_SETTINGS', () => {
+    it('has all bin display options', () => {
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showLabel).toBe(true);
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showCategoryColor).toBe(true);
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showSize).toBe(true);
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showHeight).toBe(true);
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showNotes).toBe(true);
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showCustomProperties).toBe(true);
+    });
+
+    it('has all layout options', () => {
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showGridCoordinates).toBe(true);
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showLegend).toBe(true);
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showBinList).toBe(true);
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showDate).toBe(true);
+    });
+
+    it('has bin list sort order', () => {
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.binListSortOrder).toBeDefined();
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.binListSortOrder.length).toBe(6);
+    });
+  });
+
+  describe('DEFAULT_BIN_LIST_SORT_ORDER', () => {
+    it('has all sort fields', () => {
+      const fields = DEFAULT_BIN_LIST_SORT_ORDER.map(s => s.field);
+      expect(fields).toContain('category');
+      expect(fields).toContain('layer');
+      expect(fields).toContain('position');
+      expect(fields).toContain('size');
+      expect(fields).toContain('height');
+      expect(fields).toContain('label');
+    });
+
+    it('has category and position enabled by default', () => {
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'category')?.enabled).toBe(true);
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'position')?.enabled).toBe(true);
+    });
+
+    it('has other fields disabled by default', () => {
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'layer')?.enabled).toBe(false);
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'size')?.enabled).toBe(false);
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'height')?.enabled).toBe(false);
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'label')?.enabled).toBe(false);
+    });
+  });
+
+  describe('normalizeSortOrder', () => {
+    it('returns default order when stored is undefined', () => {
+      const result = normalizeSortOrder(undefined);
+      expect(result).toEqual(DEFAULT_BIN_LIST_SORT_ORDER);
+    });
+
+    it('returns default order when stored is not an array', () => {
+      // @ts-expect-error - testing invalid input
+      const result = normalizeSortOrder('not an array');
+      expect(result).toEqual(DEFAULT_BIN_LIST_SORT_ORDER);
+    });
+
+    it('returns default order when stored is null', () => {
+      // @ts-expect-error - testing null input
+      const result = normalizeSortOrder(null);
+      expect(result).toEqual(DEFAULT_BIN_LIST_SORT_ORDER);
+    });
+
+    it('preserves stored order when all fields present', () => {
+      const stored: BinListSortOrder = [
+        { field: 'label', enabled: true },
+        { field: 'category', enabled: false },
+        { field: 'position', enabled: true },
+        { field: 'size', enabled: false },
+        { field: 'height', enabled: true },
+        { field: 'layer', enabled: false },
+      ];
+      const result = normalizeSortOrder(stored);
+      expect(result).toEqual(stored);
+    });
+
+    it('adds missing fields at the end (disabled)', () => {
+      // Old stored data missing 'size' and 'height' fields
+      const stored: BinListSortOrder = [
+        { field: 'category', enabled: true },
+        { field: 'position', enabled: true },
+        { field: 'layer', enabled: false },
+        { field: 'label', enabled: false },
+      ];
+      const result = normalizeSortOrder(stored);
+
+      // Original 4 fields in order
+      expect(result[0]).toEqual({ field: 'category', enabled: true });
+      expect(result[1]).toEqual({ field: 'position', enabled: true });
+      expect(result[2]).toEqual({ field: 'layer', enabled: false });
+      expect(result[3]).toEqual({ field: 'label', enabled: false });
+
+      // Missing fields added at end, disabled
+      const addedFields = result.slice(4);
+      expect(addedFields.length).toBe(2);
+      expect(addedFields.every(f => f.enabled === false)).toBe(true);
+      expect(addedFields.map(f => f.field).sort()).toEqual(['height', 'size']);
+    });
+
+    it('removes invalid fields', () => {
+      const stored: BinListSortOrder = [
+        { field: 'category', enabled: true },
+        // @ts-expect-error - testing invalid field
+        { field: 'invalid_field', enabled: true },
+        { field: 'position', enabled: true },
+      ];
+      const result = normalizeSortOrder(stored);
+
+      // Invalid field should be removed
+      expect(result.find(s => s.field === 'invalid_field' as string)).toBeUndefined();
+
+      // Valid fields preserved
+      expect(result.find(s => s.field === 'category')?.enabled).toBe(true);
+      expect(result.find(s => s.field === 'position')?.enabled).toBe(true);
+    });
+
+    it('handles empty array', () => {
+      const result = normalizeSortOrder([]);
+      expect(result.length).toBe(6);
+      // All fields added (disabled by default from DEFAULT_BIN_LIST_SORT_ORDER)
+      expect(result.map(s => s.field).sort()).toEqual(
+        DEFAULT_BIN_LIST_SORT_ORDER.map(s => s.field).sort()
+      );
+    });
+
+    it('preserves enabled state from stored data', () => {
+      const stored: BinListSortOrder = [
+        { field: 'size', enabled: true }, // Originally disabled
+        { field: 'category', enabled: false }, // Originally enabled
+        { field: 'position', enabled: true },
+        { field: 'layer', enabled: true }, // Originally disabled
+        { field: 'height', enabled: false },
+        { field: 'label', enabled: true }, // Originally disabled
+      ];
+      const result = normalizeSortOrder(stored);
+
+      expect(result.find(s => s.field === 'size')?.enabled).toBe(true);
+      expect(result.find(s => s.field === 'category')?.enabled).toBe(false);
+      expect(result.find(s => s.field === 'layer')?.enabled).toBe(true);
+      expect(result.find(s => s.field === 'label')?.enabled).toBe(true);
     });
   });
 

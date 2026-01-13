@@ -4,6 +4,7 @@ import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '..
 import { useResponsive } from '../hooks';
 import { CONSTRAINTS } from '../constants';
 import { LayoutManagerModal } from './modals/LayoutManagerModal';
+import { PrintModal } from './modals/PrintModal';
 import type { SaveStatus } from '../hooks/useAutoSave';
 
 interface HeaderProps {
@@ -31,6 +32,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   );
 
   const halfBinMode = useUIStore((state) => state.halfBinMode);
+  const { printModalOpen, setPrintModalOpen } = useUIStore(
+    useShallow((state) => ({
+      printModalOpen: state.printModalOpen,
+      setPrintModalOpen: state.setPrintModalOpen,
+    }))
+  );
 
   const { leftPanelCollapsed, rightPanelCollapsed, toggleLeftPanel, toggleRightPanel } = useUIStore(
     useShallow((state) => ({
@@ -145,6 +152,19 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           </svg>
           <span className="hidden sm:inline">Layouts</span>
         </button>
+
+        {/* Print Button */}
+        <button
+          onClick={() => setPrintModalOpen(true)}
+          className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+          title="Print layout"
+          aria-label="Print layout"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          <span className="hidden sm:inline">Print</span>
+        </button>
       </div>
 
       <div className="flex items-center gap-1">
@@ -248,6 +268,11 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
       <LayoutManagerModal
         isOpen={showLayoutManager}
         onClose={() => setShowLayoutManager(false)}
+      />
+
+      <PrintModal
+        isOpen={printModalOpen}
+        onClose={() => setPrintModalOpen(false)}
       />
     </header>
   );
