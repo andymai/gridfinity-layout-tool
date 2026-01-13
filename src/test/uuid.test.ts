@@ -31,18 +31,25 @@ describe('generateUUID', () => {
   });
 
   describe('fallback implementation', () => {
-    let originalRandomUUID: typeof crypto.randomUUID;
+    let originalRandomUUID: typeof crypto.randomUUID | undefined;
 
     beforeEach(() => {
-      // Store original and remove randomUUID to test fallback
+      // Store original and set randomUUID to undefined to trigger fallback
       originalRandomUUID = crypto.randomUUID;
-      // @ts-expect-error - intentionally removing for test
-      delete crypto.randomUUID;
+      Object.defineProperty(crypto, 'randomUUID', {
+        value: undefined,
+        configurable: true,
+        writable: true,
+      });
     });
 
     afterEach(() => {
       // Restore randomUUID
-      crypto.randomUUID = originalRandomUUID;
+      Object.defineProperty(crypto, 'randomUUID', {
+        value: originalRandomUUID,
+        configurable: true,
+        writable: true,
+      });
     });
 
     it('uses fallback when crypto.randomUUID is unavailable', () => {

@@ -12,10 +12,14 @@ vi.mock('../../utils/analytics', () => ({
 
 describe('useAnalytics', () => {
   let visibilityChangeHandlers: Array<() => void>;
+  let originalVisibilityState: PropertyDescriptor | undefined;
 
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
+
+    // Store original visibilityState descriptor
+    originalVisibilityState = Object.getOwnPropertyDescriptor(document, 'visibilityState');
 
     // Track visibilitychange handlers
     visibilityChangeHandlers = [];
@@ -31,6 +35,10 @@ describe('useAnalytics', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    // Restore visibilityState
+    if (originalVisibilityState) {
+      Object.defineProperty(document, 'visibilityState', originalVisibilityState);
+    }
   });
 
   it('does not throw on mount', () => {
