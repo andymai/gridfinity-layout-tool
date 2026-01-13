@@ -4,6 +4,7 @@ import { getBinLocationContext } from '../../utils/binLocation';
 import type { UseBinInspectorReturn } from './useBinInspector';
 import { SplitWarning } from './SplitWarning';
 import { DeferredNumberInput } from '../DeferredNumberInput';
+import { CustomPropertiesEditor } from './CustomPropertiesEditor';
 
 interface SingleBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -30,11 +31,13 @@ export function SingleBinInspector({
     layout,
     categories,
     updateField,
+    updateCustomProperties,
     moveToLayer,
     requestDelete,
     moveToStaging,
     clearSelection,
     rotateBin,
+    existingPropertyKeys,
   } = inspector;
 
   const halfBinMode = useUIStore(state => state.halfBinMode);
@@ -324,6 +327,14 @@ export function SingleBinInspector({
             {bin.notes.length}/{CONSTRAINTS.NOTES_MAX_LENGTH}
           </div>
         </div>
+
+        {/* Custom Properties */}
+        <CustomPropertiesEditor
+          customProperties={bin.customProperties}
+          onChange={updateCustomProperties}
+          variant={variant}
+          suggestedKeys={existingPropertyKeys}
+        />
 
         {/* Actions */}
         <div className="flex gap-2">

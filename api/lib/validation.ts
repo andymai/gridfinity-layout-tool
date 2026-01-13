@@ -16,7 +16,18 @@ const SHARE_CONSTRAINTS = {
   LABEL_MAX_LENGTH: 24,
   NOTES_MAX_LENGTH: 256,
   VALID_EXPIRATIONS: [30, 60, 90, 365] as const,
+  // Custom properties constraints
+  CUSTOM_PROPERTY_MAX_COUNT: 50,
+  CUSTOM_PROPERTY_KEY_MAX_LENGTH: 32,
+  CUSTOM_PROPERTY_VALUE_MAX_LENGTH: 256,
+  CUSTOM_PROPERTY_MAX_TOTAL_SIZE: 20480, // 20KB total per bin
 };
+
+/** Reserved keys that cannot be used as custom property names */
+const RESERVED_PROPERTY_KEYS = [
+  'id', 'layerId', 'x', 'y', 'width', 'depth', 'height',
+  'clearanceHeight', 'category', 'label', 'notes', 'customProperties',
+];
 
 export type ValidExpiration = (typeof SHARE_CONSTRAINTS.VALID_EXPIRATIONS)[number];
 
@@ -43,6 +54,7 @@ interface BinShape {
   category?: string;
   label?: string;
   notes?: string;
+  customProperties?: Record<string, string>;
 }
 
 interface CategoryShape {
@@ -215,6 +227,65 @@ export function validateShareLayout(
         },
       };
     }
+
+    // Validate and sanitize custom properties if present
+    let validatedCustomProperties: Record<string, string> | undefined;
+    if (bin.customProperties && typeof bin.customProperties === 'object' && !Array.isArray(bin.customProperties)) {
+      const props = bin.customProperties as Record<string, unknown>;
+      const keys = Object.keys(props);
+
+      // Check property count
+      if (keys.length > SHARE_CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT) {
+        return {
+          valid: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: `Bin has too many custom properties (max ${SHARE_CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT})`,
+          },
+        };
+      }
+
+      // Validate and sanitize each property
+      const sanitized: Record<string, string> = {};
+      let totalSize = 0;
+
+      for (const key of keys) {
+        const value = props[key];
+
+        // Skip non-string values
+        if (typeof value !== 'string') continue;
+
+        // Sanitize key and value
+        const cleanKey = sanitizeString(String(key), SHARE_CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH);
+        const cleanValue = sanitizeString(value, SHARE_CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH);
+
+        // Skip empty keys
+        if (!cleanKey) continue;
+
+        // Skip reserved keys
+        if (RESERVED_PROPERTY_KEYS.includes(cleanKey)) continue;
+
+        totalSize += cleanKey.length + cleanValue.length;
+
+        // Check total size limit
+        if (totalSize > SHARE_CONSTRAINTS.CUSTOM_PROPERTY_MAX_TOTAL_SIZE) {
+          return {
+            valid: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: `Bin custom properties exceed size limit (max ${SHARE_CONSTRAINTS.CUSTOM_PROPERTY_MAX_TOTAL_SIZE / 1024}KB)`,
+            },
+          };
+        }
+
+        sanitized[cleanKey] = cleanValue;
+      }
+
+      if (Object.keys(sanitized).length > 0) {
+        validatedCustomProperties = sanitized;
+      }
+    }
+
     validatedBins.push({
       id: sanitizeString(bin.id, 64),
       layerId: sanitizeString(bin.layerId, 64),
@@ -226,6 +297,7 @@ export function validateShareLayout(
       category: bin.category ? sanitizeString(bin.category, 64) : undefined,
       label: bin.label ? sanitizeString(bin.label, SHARE_CONSTRAINTS.LABEL_MAX_LENGTH) : undefined,
       notes: bin.notes ? sanitizeString(bin.notes, SHARE_CONSTRAINTS.NOTES_MAX_LENGTH) : undefined,
+      customProperties: validatedCustomProperties,
     });
   }
 

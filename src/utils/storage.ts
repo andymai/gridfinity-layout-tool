@@ -160,14 +160,49 @@ export function importLayoutJSON(json: string): { layout: Layout | null; errors:
 
 /**
  * Export print list as TSV for spreadsheet paste.
+ * Dynamically adds columns for custom properties that exist in any row.
  */
-export function exportPrintListTSV(rows: Array<{ size: string; height: number; binCount: number; totalPieces: number; labels?: string[]; notes?: string }>): string {
-  const header = 'Size\tHeight\tBins\tPieces\tLabel\tNotes';
+export function exportPrintListTSV(rows: Array<{
+  size: string;
+  height: number;
+  binCount: number;
+  totalPieces: number;
+  labels?: string[];
+  notes?: string;
+  customProperties?: Record<string, string>;
+}>): string {
+  // Collect all unique custom property keys across all rows
+  const customKeys = new Set<string>();
+  for (const r of rows) {
+    if (r.customProperties) {
+      for (const key of Object.keys(r.customProperties)) {
+        customKeys.add(key);
+      }
+    }
+  }
+  const sortedKeys = Array.from(customKeys).sort();
+
+  // Build header with dynamic custom property columns
+  const baseHeader = 'Size\tHeight\tBins\tPieces\tLabel\tNotes';
+  const header = sortedKeys.length > 0
+    ? `${baseHeader}\t${sortedKeys.join('\t')}`
+    : baseHeader;
+
+  // Build data rows
   const lines = rows.map(r => {
     const label = r.labels?.[0] || '';
     const notes = r.notes || '';
-    return `${r.size}\t${r.height}u\t${r.binCount}\t${r.totalPieces}\t${label}\t${notes}`;
+    const baseLine = `${r.size}\t${r.height}u\t${r.binCount}\t${r.totalPieces}\t${label}\t${notes}`;
+
+    if (sortedKeys.length === 0) {
+      return baseLine;
+    }
+
+    // Add custom property values in order
+    const customValues = sortedKeys.map(key => r.customProperties?.[key] || '');
+    return `${baseLine}\t${customValues.join('\t')}`;
   });
+
   return [header, ...lines].join('\n');
 }
 

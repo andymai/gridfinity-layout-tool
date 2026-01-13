@@ -111,6 +111,7 @@ export const useLayoutStore = create<LayoutState>()(
           category: bin.category,
           label: bin.label,
           notes: bin.notes,
+          customProperties: bin.customProperties,
         });
       }
 
@@ -143,6 +144,7 @@ export const useLayoutStore = create<LayoutState>()(
             category: bin.category,
             label: bin.label,
             notes: bin.notes,
+            customProperties: bin.customProperties,
           });
         }
       }
@@ -158,6 +160,7 @@ export const useLayoutStore = create<LayoutState>()(
         category: bin.category,
         label: bin.label,
         notes: bin.notes,
+        customProperties: bin.customProperties,
       });
     },
 
