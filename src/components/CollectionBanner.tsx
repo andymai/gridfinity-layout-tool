@@ -153,14 +153,22 @@ export function CollectionBanner() {
             </span>
           )}
 
-          {/* Real-time Connection Indicator */}
-          {isRealtimeConnected && totalConnections > 1 && (
+          {/* Connection Mode Indicator */}
+          {isRealtimeConnected ? (
             <span
-              className="flex items-center gap-1 text-xs bg-green-500/30 px-2 py-0.5 rounded-full"
-              title={`${totalConnections} ${totalConnections === 1 ? 'person' : 'people'} connected`}
+              className="flex items-center gap-1 text-xs text-white/60"
+              title={`Real-time sync active${totalConnections > 1 ? ` • ${totalConnections} connected` : ''}`}
             >
-              <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" aria-hidden="true" />
-              {totalConnections} online
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full" aria-hidden="true" />
+              {totalConnections > 1 ? `${totalConnections} online` : 'Live'}
+            </span>
+          ) : (
+            <span
+              className="flex items-center gap-1 text-xs text-white/50"
+              title="Real-time sync unavailable, using polling (updates every 30s)"
+            >
+              <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full" aria-hidden="true" />
+              Polling
             </span>
           )}
 
