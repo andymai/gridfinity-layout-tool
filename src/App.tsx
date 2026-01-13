@@ -18,6 +18,7 @@ import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter } from './components/SharedLayoutImporter';
 import { SharedLayoutBanner } from './components/SharedLayoutBanner';
+import { CollectionBanner } from './components/CollectionBanner';
 import { SHORTCUTS } from './constants';
 
 // Legacy context menu state for backwards compatibility
@@ -174,6 +175,9 @@ export default function App() {
         {/* Shared layout banner (shown when viewing unsaved shared layout) */}
         <SharedLayoutBanner />
 
+        {/* Collection banner (shown when viewing a collection) */}
+        <CollectionBanner />
+
         {/* Header */}
         <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
 
@@ -262,6 +266,9 @@ export default function App() {
     <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
       <SharedLayoutBanner />
+
+      {/* Collection banner (shown when viewing a collection) */}
+      <CollectionBanner />
 
       {/* Header */}
       <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
