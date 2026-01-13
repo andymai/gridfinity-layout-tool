@@ -6,6 +6,7 @@ import { useToastStore } from '../../store/toast';
 import { createDefaultLayout, generateId } from '../../constants';
 import { resetAllStores } from '../testUtils';
 import type { Layout, Bin } from '../../types';
+import * as binListOperations from '../../utils/binListOperations';
 
 // Helper to create test bins
 function createTestBin(overrides: Partial<Bin> = {}): Bin {
@@ -508,6 +509,121 @@ describe('useBinList', () => {
       expect(success).toBe(false);
       const toasts = useToastStore.getState().toasts;
       expect(toasts.some(t => t.message.includes('Failed to copy'))).toBe(true);
+    });
+
+    it('downloads TSV file', () => {
+      const downloadAsFileSpy = vi.spyOn(binListOperations, 'downloadAsFile').mockImplementation(() => {});
+      const layout = createTestLayout([
+        createTestBin({ label: 'Test Bin' }),
+      ]);
+      layout.name = 'My Test Layout';
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      act(() => {
+        result.current.downloadExport('tsv');
+      });
+
+      expect(downloadAsFileSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        'my-test-layout.tsv',
+        'text/tab-separated-values'
+      );
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.some(t => t.message.includes('Downloaded TSV'))).toBe(true);
+      downloadAsFileSpy.mockRestore();
+    });
+
+    it('downloads CSV file', () => {
+      const downloadAsFileSpy = vi.spyOn(binListOperations, 'downloadAsFile').mockImplementation(() => {});
+      const layout = createTestLayout([
+        createTestBin({ label: 'Test Bin' }),
+      ]);
+      layout.name = 'Test Layout 2';
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      act(() => {
+        result.current.downloadExport('csv');
+      });
+
+      expect(downloadAsFileSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        'test-layout-2.csv',
+        'text/csv'
+      );
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.some(t => t.message.includes('Downloaded CSV'))).toBe(true);
+      downloadAsFileSpy.mockRestore();
+    });
+
+    it('downloads JSON file', () => {
+      const downloadAsFileSpy = vi.spyOn(binListOperations, 'downloadAsFile').mockImplementation(() => {});
+      const layout = createTestLayout([
+        createTestBin({ label: 'Test Bin' }),
+      ]);
+      layout.name = 'JSON Test';
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      act(() => {
+        result.current.downloadExport('json');
+      });
+
+      expect(downloadAsFileSpy).toHaveBeenCalledWith(
+        expect.stringContaining('"bins"'),
+        'json-test.json',
+        'application/json'
+      );
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.some(t => t.message.includes('Downloaded JSON'))).toBe(true);
+      downloadAsFileSpy.mockRestore();
+    });
+
+    it('uses custom filename when provided', () => {
+      const downloadAsFileSpy = vi.spyOn(binListOperations, 'downloadAsFile').mockImplementation(() => {});
+      const layout = createTestLayout([
+        createTestBin({ label: 'Test Bin' }),
+      ]);
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      act(() => {
+        result.current.downloadExport('tsv', 'custom-name');
+      });
+
+      expect(downloadAsFileSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        'custom-name.tsv',
+        'text/tab-separated-values'
+      );
+      downloadAsFileSpy.mockRestore();
+    });
+
+    it('sanitizes layout name for filename', () => {
+      const downloadAsFileSpy = vi.spyOn(binListOperations, 'downloadAsFile').mockImplementation(() => {});
+      const layout = createTestLayout([
+        createTestBin({ label: 'Test Bin' }),
+      ]);
+      layout.name = 'My Layout!@#$%^&*()';
+      useLayoutStore.setState({ layout });
+
+      const { result } = renderHook(() => useBinList());
+
+      act(() => {
+        result.current.downloadExport('csv');
+      });
+
+      expect(downloadAsFileSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        'my-layout-.csv',
+        'text/csv'
+      );
+      downloadAsFileSpy.mockRestore();
     });
   });
 

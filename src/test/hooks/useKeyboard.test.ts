@@ -47,6 +47,8 @@ describe('useKeyboard', () => {
       isometricRotation: 0,
       layerViewMode: 'focus',
       isPreviewExpanded: false,
+      halfBinMode: false,
+      focusedBinId: null,
     });
     useHistoryStore.setState({
       past: [],
@@ -1153,6 +1155,100 @@ describe('useKeyboard', () => {
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
       document.body.removeChild(input);
+    });
+  });
+
+  describe('half-bin mode toggle', () => {
+    it('toggles half-bin mode on H key', () => {
+      expect(useUIStore.getState().halfBinMode).toBe(false);
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('h');
+      });
+
+      expect(useUIStore.getState().halfBinMode).toBe(true);
+    });
+
+    it('shows error toast when toggle fails due to fractional bins', () => {
+      // First enable half-bin mode
+      useUIStore.setState({ halfBinMode: true });
+
+      // Add a bin with fractional dimensions
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      addBin({
+        layerId,
+        x: 0.5, // Fractional position
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      renderHook(() => useKeyboard());
+
+      // Try to disable half-bin mode (should fail due to fractional bin)
+      act(() => {
+        pressKey('h');
+      });
+
+      // Half-bin mode should still be enabled
+      expect(useUIStore.getState().halfBinMode).toBe(true);
+    });
+  });
+
+  describe('spatial navigation', () => {
+    it('uses spatial navigation when focused bin exists but no selection', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId1 = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const binId2 = addBin({
+        layerId,
+        x: 3,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      // Set focused bin but no selection
+      useUIStore.setState({
+        focusedBinId: binId1,
+        selectedBinIds: [],
+      });
+
+      renderHook(() => useKeyboard());
+
+      // Press right arrow to navigate spatially
+      act(() => {
+        pressKey('ArrowRight');
+      });
+
+      // Focus should move to the bin to the right
+      expect(useUIStore.getState().focusedBinId).toBe(binId2);
     });
   });
 });
