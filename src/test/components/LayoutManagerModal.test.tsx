@@ -338,4 +338,181 @@ describe('LayoutManagerModal Accessibility', () => {
       expect(container.firstChild).toBeNull();
     });
   });
+
+  describe('tab navigation', () => {
+    it('shows layouts tab by default', () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+
+      const layoutsTab = screen.getByRole('tab', { name: /My Layouts/i });
+      expect(layoutsTab).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('switches to import tab when clicked', async () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+
+      const importTab = screen.getByRole('tab', { name: /Import/i });
+      act(() => {
+        fireEvent.click(importTab);
+      });
+
+      await waitFor(() => {
+        expect(importTab).toHaveAttribute('aria-selected', 'true');
+      });
+    });
+
+    it('switches back to layouts tab', async () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+
+      // Switch to import tab
+      const importTab = screen.getByRole('tab', { name: /Import/i });
+      act(() => {
+        fireEvent.click(importTab);
+      });
+
+      // Switch back to layouts
+      const layoutsTab = screen.getByRole('tab', { name: /My Layouts/i });
+      act(() => {
+        fireEvent.click(layoutsTab);
+      });
+
+      await waitFor(() => {
+        expect(layoutsTab).toHaveAttribute('aria-selected', 'true');
+      });
+    });
+  });
+
+  describe('layout actions', () => {
+    it('switches layout when clicking a different layout', async () => {
+      vi.mocked(storage.loadLayoutById).mockReturnValue(createDefaultLayout());
+
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+
+      const options = screen.getAllByRole('option');
+      // Click the second layout (not currently active)
+      act(() => {
+        fireEvent.click(options[1]);
+      });
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalled();
+      });
+    });
+
+    it('creates new layout when clicking New Layout button', async () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+
+      const newLayoutButton = screen.getByRole('button', { name: /New Layout/i });
+      act(() => {
+        fireEvent.click(newLayoutButton);
+      });
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalled();
+      });
+    });
+
+    it('duplicates layout from menu', async () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+
+      // Open menu for first layout
+      const actionButtons = screen.getAllByLabelText(/^More actions for/);
+      act(() => {
+        fireEvent.click(actionButtons[0]);
+      });
+
+      // Click duplicate
+      const duplicateButton = screen.getByRole('menuitem', { name: /Duplicate/i });
+      act(() => {
+        fireEvent.click(duplicateButton);
+      });
+
+      // Verify library has 3 entries now
+      await waitFor(() => {
+        const library = useLibraryStore.getState().library;
+        expect(library.entries.length).toBe(3);
+      });
+    });
+
+    it('renames layout', async () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+
+      // Open menu for first layout
+      const actionButtons = screen.getAllByLabelText(/^More actions for/);
+      act(() => {
+        fireEvent.click(actionButtons[0]);
+      });
+
+      // Click rename
+      const renameButton = screen.getByRole('menuitem', { name: /Rename/i });
+      act(() => {
+        fireEvent.click(renameButton);
+      });
+
+      // Type new name
+      const input = await screen.findByRole('textbox', { name: /Layout name/i });
+      act(() => {
+        fireEvent.change(input, { target: { value: 'New Name' } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+      });
+
+      await waitFor(() => {
+        const library = useLibraryStore.getState().library;
+        expect(library.entries[0].name).toBe('New Name');
+      });
+    });
+
+    it('deletes layout after confirmation', async () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+
+      // Open menu for second layout (can't delete the only/active layout)
+      const actionButtons = screen.getAllByLabelText(/^More actions for/);
+      act(() => {
+        fireEvent.click(actionButtons[1]);
+      });
+
+      // First click on delete - enters confirmation
+      const deleteButton = screen.getByRole('menuitem', { name: /Delete/i });
+      act(() => {
+        fireEvent.click(deleteButton);
+      });
+
+      // Click again to confirm
+      await waitFor(() => {
+        expect(screen.getByText(/Click to confirm/i)).toBeInTheDocument();
+      });
+
+      act(() => {
+        fireEvent.click(screen.getByText(/Click to confirm/i));
+      });
+
+      await waitFor(() => {
+        const library = useLibraryStore.getState().library;
+        expect(library.entries.length).toBe(1);
+      });
+    });
+  });
+
+  describe('backdrop interaction', () => {
+    it('closes when clicking backdrop', () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+
+      const backdrop = screen.getByRole('presentation');
+      act(() => {
+        fireEvent.click(backdrop);
+      });
+
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+
+    it('does not close when clicking inside modal', () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+
+      const dialog = screen.getByRole('dialog');
+      act(() => {
+        fireEvent.click(dialog);
+      });
+
+      expect(mockOnClose).not.toHaveBeenCalled();
+    });
+  });
 });

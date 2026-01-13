@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canPlaceBin, validateImport, clamp, truncate } from '../utils/validation';
+import { canPlaceBin, validateImport, clamp, truncate, validateLayoutIntegrity } from '../utils/validation';
 import type { Layout } from '../types';
 
 const createTestLayout = (): Layout => ({
@@ -261,6 +261,28 @@ describe('validateImport', () => {
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
   });
+
+  it('rejects invalid bin without required properties', () => {
+    const layout = createTestLayout();
+    // Add an invalid bin missing id
+    layout.bins = [
+       
+      { layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' } as any,
+    ];
+    const result = validateImport(layout);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('Bin 0 is invalid'))).toBe(true);
+  });
+
+  it('rejects invalid category without required properties', () => {
+    const layout = createTestLayout();
+    // Replace categories with invalid ones
+     
+    layout.categories = [{ id: 'cat1', name: 'Category' } as any]; // Missing color
+    const result = validateImport(layout);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('Category 0 is invalid'))).toBe(true);
+  });
 });
 
 describe('clamp', () => {
@@ -406,5 +428,92 @@ describe('canPlaceBin - rotation scenarios', () => {
       'bin1'
     );
     expect(result.valid).toBe(true);
+  });
+});
+
+describe('validateLayoutIntegrity', () => {
+  it('returns valid for well-formed layout', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+
+    const result = validateLayoutIntegrity(layout);
+    expect(result.valid).toBe(true);
+    expect(result.error).toBeUndefined();
+  });
+
+  it('returns error when bin references missing layer', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'nonexistent', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: 'Test Bin', notes: '' },
+    ];
+
+    const result = validateLayoutIntegrity(layout);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('missing layer');
+  });
+
+  it('returns error when bin references missing category', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'nonexistent', label: 'Test Bin', notes: '' },
+    ];
+
+    const result = validateLayoutIntegrity(layout);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('missing category');
+  });
+
+  it('allows bins in staging with any layerId', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: '__staging__', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+
+    const result = validateLayoutIntegrity(layout);
+    expect(result.valid).toBe(true);
+  });
+
+  it('returns error when layout has no layers', () => {
+    const layout = createTestLayout();
+    layout.layers = [];
+    layout.bins = [];
+
+    const result = validateLayoutIntegrity(layout);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('no layers');
+  });
+
+  it('returns error when layout has no categories', () => {
+    const layout = createTestLayout();
+    layout.categories = [];
+    layout.bins = [];
+
+    const result = validateLayoutIntegrity(layout);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('no categories');
+  });
+
+  it('uses bin label in error message if present', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'nonexistent', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: 'My Special Bin', notes: '' },
+    ];
+
+    const result = validateLayoutIntegrity(layout);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('My Special Bin');
+  });
+
+  it('uses bin id in error message if no label', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin-abc-123', layerId: 'nonexistent', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+
+    const result = validateLayoutIntegrity(layout);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('bin-abc-123');
   });
 });
