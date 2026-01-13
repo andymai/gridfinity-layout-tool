@@ -80,6 +80,7 @@ interface CollectionState {
   addMembership: (membership: CollectionMembership) => void;
   removeMembership: (collectionId: string) => void;
   updateMembershipAccess: (collectionId: string) => void;
+  setMembershipActiveLayout: (collectionId: string, layoutId: string) => void;
   getRecentMemberships: (count: number) => CollectionMembership[];
   getMembership: (collectionId: string) => CollectionMembership | undefined;
 
@@ -189,6 +190,20 @@ export const useCollectionStore = create<CollectionState>()(
           (m) => m.collectionId === collectionId
         );
         if (membership) {
+          membership.lastAccessedAt = Date.now();
+        }
+      });
+      // Persist after update
+      saveCollectionMemberships(get().memberships);
+    },
+
+    setMembershipActiveLayout: (collectionId, layoutId) => {
+      set((state) => {
+        const membership = state.memberships.find(
+          (m) => m.collectionId === collectionId
+        );
+        if (membership) {
+          membership.activeLayoutId = layoutId;
           membership.lastAccessedAt = Date.now();
         }
       });
