@@ -2,6 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ] && [ -z \"$VERCEL_GIT_PULL_REQUEST_ID\" ]",
   "rewrites": [
+    {
+      "source": "/ph/static/:path(.*)",
+      "destination": "https://us-assets.i.posthog.com/static/:path"
+    },
+    {
+      "source": "/ph/:path(.*)",
+      "destination": "https://us.i.posthog.com/:path"
+    },
     { "source": "/s/:id", "destination": "/" }
   ]
 }
