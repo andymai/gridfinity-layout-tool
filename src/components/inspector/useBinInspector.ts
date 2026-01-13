@@ -36,6 +36,7 @@ export interface UseBinInspectorReturn {
 
   // Update handlers
   updateField: (field: BinField, value: string | number) => void;
+  updateCustomProperties: (properties: Record<string, string>) => void;
   updateMultiCategory: (categoryId: string) => void;
   updateMultiHeight: (delta: number) => void;
   updateMultiClearance: (delta: number) => void;
@@ -167,6 +168,18 @@ export function useBinInspector(): UseBinInspectorReturn {
       });
     },
     [bin, layer, constraints.maxHeight, constraints.maxClearance, execute, updateBin]
+  );
+
+  // Update custom properties
+  const updateCustomProperties = useCallback(
+    (properties: Record<string, string>) => {
+      if (!bin) return;
+
+      execute(() => {
+        updateBin(bin.id, { customProperties: properties });
+      });
+    },
+    [bin, execute, updateBin]
   );
 
   // Update category for multiple bins
@@ -406,6 +419,7 @@ export function useBinInspector(): UseBinInspectorReturn {
 
     // Update handlers
     updateField,
+    updateCustomProperties,
     updateMultiCategory,
     updateMultiHeight,
     updateMultiClearance,

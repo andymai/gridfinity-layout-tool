@@ -47,6 +47,7 @@ export interface Bin {
   category: string;          // references Category.id
   label: string;             // max 24 chars
   notes: string;             // max 256 chars
+  customProperties?: Record<string, string>; // custom key-value properties for user-defined metadata
 }
 
 // === Coordinate Types ===
