@@ -134,7 +134,7 @@ export function CollectionLayoutList({ onSwitch, onClose }: CollectionLayoutList
         </button>
 
         <p className="text-xs text-content-tertiary text-center">
-          Add your current layout to "{activeCollection?.name}" collection
+          Copy your current layout to "{activeCollection?.name}" (original stays in My Layouts)
         </p>
       </div>
 
