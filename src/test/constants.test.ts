@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calcMaxGridUnits, generateId, createDefaultLayout, createLayoutWithSettings, DEFAULT_CATEGORIES, STAGING_ID, DEFAULT_CATEGORY_COLOR } from '../constants';
+import { calcMaxGridUnits, generateId, createDefaultLayout, createLayoutWithSettings, DEFAULT_CATEGORIES, STAGING_ID, DEFAULT_CATEGORY_COLOR, getBaseCellSize, BREAKPOINTS } from '../constants';
 
 describe('calcMaxGridUnits', () => {
   it('calculates max units for typical print bed', () => {
@@ -201,5 +201,41 @@ describe('constants', () => {
   it('exports DEFAULT_CATEGORIES with correct colors', () => {
     expect(DEFAULT_CATEGORIES).toHaveLength(5);
     expect(DEFAULT_CATEGORIES.find(c => c.id === 'coral')?.color).toBe('#f87171');
+  });
+});
+
+describe('getBaseCellSize', () => {
+  it('returns 28 for tiny phones (< 375px)', () => {
+    expect(getBaseCellSize(320)).toBe(28);
+    expect(getBaseCellSize(374)).toBe(28);
+  });
+
+  it('returns 32 for mobile devices (375px - 767px)', () => {
+    expect(getBaseCellSize(375)).toBe(32);
+    expect(getBaseCellSize(640)).toBe(32);
+    expect(getBaseCellSize(767)).toBe(32);
+  });
+
+  it('returns 36 for tablets (768px - 899px)', () => {
+    expect(getBaseCellSize(768)).toBe(36);
+    expect(getBaseCellSize(850)).toBe(36);
+    expect(getBaseCellSize(899)).toBe(36);
+  });
+
+  it('returns 32 for desktop (>= 900px)', () => {
+    expect(getBaseCellSize(900)).toBe(32);
+    expect(getBaseCellSize(1280)).toBe(32);
+    expect(getBaseCellSize(1920)).toBe(32);
+  });
+
+  it('uses BREAKPOINTS constants correctly', () => {
+    // Just below TINY_PHONE threshold
+    expect(getBaseCellSize(BREAKPOINTS.TINY_PHONE - 1)).toBe(28);
+    // Just below MD threshold
+    expect(getBaseCellSize(BREAKPOINTS.MD - 1)).toBe(32);
+    // Just below LG threshold
+    expect(getBaseCellSize(BREAKPOINTS.LG - 1)).toBe(36);
+    // At LG threshold
+    expect(getBaseCellSize(BREAKPOINTS.LG)).toBe(32);
   });
 });
