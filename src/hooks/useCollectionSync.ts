@@ -348,10 +348,22 @@ export function useCollectionSync() {
   const isInitialMount = useRef(true);
   // Ref to track the previous layout ID (to skip triggering when switching layouts)
   const prevLayoutIdRef = useRef<string | null>(null);
+  // Ref to hold the onLayoutChange callback (so subscription doesn't depend on it)
+  const onLayoutChangeRef = useRef(onLayoutChange);
+
+  // Keep the ref updated with the latest callback
+  useEffect(() => {
+    onLayoutChangeRef.current = onLayoutChange;
+  }, [onLayoutChange]);
 
   /**
    * Subscribe to layout store changes and trigger onLayoutChange.
    * This is the critical wiring that enables collection sync.
+   *
+   * IMPORTANT: We use onLayoutChangeRef instead of onLayoutChange directly
+   * because onLayoutChange changes every time layout changes (due to pushChanges
+   * depending on layout). If we used it directly, the subscription would be
+   * recreated on every edit, resetting the change detection state.
    */
   useEffect(() => {
     // Skip if not in collection mode
@@ -388,14 +400,14 @@ export function useCollectionSync() {
         return;
       }
 
-      // This is a real edit - trigger the sync
-      onLayoutChange();
+      // This is a real edit - trigger the sync via ref
+      onLayoutChangeRef.current();
     });
 
     return () => {
       unsubscribe();
     };
-  }, [activeCollection, activeLayoutId, onLayoutChange]);
+  }, [activeCollection, activeLayoutId]);
 
   /**
    * Resolve conflict by choosing a resolution strategy.
