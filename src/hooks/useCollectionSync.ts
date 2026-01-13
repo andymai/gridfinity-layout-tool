@@ -108,6 +108,7 @@ export function useCollectionSync() {
 
   const layout = useLayoutStore((state) => state.layout);
   const activeLayoutId = useLayoutStore((state) => state.activeLayoutId);
+  const importLayout = useLayoutStore((state) => state.importLayout);
 
   // Refs for intervals
   const pollIntervalRef = useRef<number | null>(null);
@@ -343,6 +344,59 @@ export function useCollectionSync() {
     }, PUSH_DEBOUNCE_MS);
   }, [activeCollection, activeLayoutId, markLayoutModified, pushChanges]);
 
+  // Ref to track if this is the initial mount (to skip triggering on first render)
+  const isInitialMount = useRef(true);
+  // Ref to track the previous layout ID (to skip triggering when switching layouts)
+  const prevLayoutIdRef = useRef<string | null>(null);
+
+  /**
+   * Subscribe to layout store changes and trigger onLayoutChange.
+   * This is the critical wiring that enables collection sync.
+   */
+  useEffect(() => {
+    // Skip if not in collection mode
+    if (!activeCollection || !activeLayoutId) {
+      isInitialMount.current = true;
+      prevLayoutIdRef.current = null;
+      return;
+    }
+
+    // Track the previous layout for comparison
+    let prevLayout = useLayoutStore.getState().layout;
+
+    // Subscribe to all state changes
+    const unsubscribe = useLayoutStore.subscribe((state) => {
+      const currentLayout = state.layout;
+      const currentLayoutId = state.activeLayoutId;
+
+      // Skip if layout hasn't changed (reference equality check)
+      if (currentLayout === prevLayout) {
+        return;
+      }
+      prevLayout = currentLayout;
+
+      // Skip the initial mount
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        prevLayoutIdRef.current = currentLayoutId;
+        return;
+      }
+
+      // Skip if we just switched layouts (the layout ID changed)
+      if (currentLayoutId !== prevLayoutIdRef.current) {
+        prevLayoutIdRef.current = currentLayoutId;
+        return;
+      }
+
+      // This is a real edit - trigger the sync
+      onLayoutChange();
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [activeCollection, activeLayoutId, onLayoutChange]);
+
   /**
    * Resolve conflict by choosing a resolution strategy.
    */
@@ -380,8 +434,10 @@ export function useCollectionSync() {
           );
 
           if (result.success) {
-            // Update the layout store with server version
-            // This would need integration with useLayoutSwitcher or similar
+            // Import the server version into the layout store
+            importLayout(result.data.layout, layoutId);
+
+            // Update sync state
             setStoreSyncState(layoutId, {
               modifiedAt: result.data.modifiedAt,
               lastSyncAt: Date.now(),
@@ -415,6 +471,7 @@ export function useCollectionSync() {
       syncState.conflict,
       setStoreSyncState,
       clearLocalModification,
+      importLayout,
     ]
   );
 
