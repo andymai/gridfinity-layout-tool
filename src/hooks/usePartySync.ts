@@ -131,8 +131,10 @@ export function usePartySync() {
       // Send initial presence (deferred to avoid stale closure)
     },
     onMessage: (event) => {
+      console.warn('[PartySync] Received message:', event.data);
       try {
         const message = JSON.parse(event.data) as ServerMessage;
+        console.warn('[PartySync] Parsed message:', message);
         handleMessage(message);
       } catch (error) {
         console.error('[PartySync] Error parsing message:', error);
@@ -163,10 +165,19 @@ export function usePartySync() {
   // Handle incoming messages
   const handleMessage = useCallback(
     async (message: ServerMessage) => {
+      console.warn('[PartySync] handleMessage called:', message.type, message);
       switch (message.type) {
         case 'layout-updated': {
           // Someone else updated a layout
           const { layoutId, modifiedAt, modifiedBy } = message;
+          console.warn('[PartySync] layout-updated received:', {
+            layoutId,
+            modifiedAt,
+            modifiedBy,
+            isOurDevice: modifiedBy === deviceIdRef.current,
+            activeLayoutId,
+            activeCollection: !!activeCollection,
+          });
 
           // Ignore our own updates
           if (modifiedBy === deviceIdRef.current) return;
