@@ -41,6 +41,22 @@ export type CollectionResult<T> =
   | { success: true; data: T }
   | { success: false; error: CollectionErrorResponse };
 
+/**
+ * Pending collection invite - shown when user visits a collection URL directly.
+ * Lets user preview collection info before joining.
+ */
+export interface PendingCollectionInvite {
+  collectionId: string;
+  viewOnly: boolean;
+  // Fetched collection info (null while loading, undefined if failed)
+  collectionInfo?: {
+    name: string;
+    layoutCount: number;
+    expiresAt: number;
+  } | null;
+  error?: string;
+}
+
 interface CollectionState {
   // Local membership tracking
   memberships: CollectionMembership[];
@@ -51,6 +67,9 @@ interface CollectionState {
 
   // Sync state per layout
   syncStates: Record<string, LayoutSyncState>;
+
+  // Pending invite (when visiting collection URL directly)
+  pendingInvite: PendingCollectionInvite | null;
 
   // Loading/error state
   loadingState: LoadingState;
@@ -84,6 +103,11 @@ interface CollectionState {
   // ========== Loading State ==========
   setLoadingState: (state: LoadingState) => void;
   setError: (error: string | null) => void;
+
+  // ========== Pending Invite Operations ==========
+  setPendingInvite: (collectionId: string, viewOnly: boolean) => Promise<void>;
+  clearPendingInvite: () => void;
+  acceptPendingInvite: () => Promise<CollectionResult<FetchCollectionResponse>>;
 
   // ========== API Operations ==========
   joinCollection: (collectionId: string) => Promise<CollectionResult<FetchCollectionResponse>>;
@@ -120,6 +144,7 @@ export const useCollectionStore = create<CollectionState>()(
     activeCollection: null,
     activeCollectionLayouts: [],
     syncStates: {},
+    pendingInvite: null,
     loadingState: 'idle',
     error: null,
 
@@ -266,6 +291,67 @@ export const useCollectionStore = create<CollectionState>()(
 
     setError: (error) => {
       set({ error, loadingState: error ? 'error' : 'idle' });
+    },
+
+    // ========== Pending Invite Operations ==========
+
+    setPendingInvite: async (collectionId, viewOnly) => {
+      // Set pending invite with loading state
+      set({
+        pendingInvite: {
+          collectionId,
+          viewOnly,
+          collectionInfo: null, // null means loading
+        },
+      });
+
+      // Fetch collection info for preview
+      const result = await collectionApi.fetchCollection(collectionId);
+
+      if (result.success) {
+        set((state) => {
+          if (state.pendingInvite?.collectionId === collectionId) {
+            state.pendingInvite.collectionInfo = {
+              name: result.data.name,
+              layoutCount: result.data.layoutCount,
+              expiresAt: result.data.expiresAt,
+            };
+          }
+        });
+      } else {
+        set((state) => {
+          if (state.pendingInvite?.collectionId === collectionId) {
+            state.pendingInvite.collectionInfo = undefined;
+            state.pendingInvite.error = result.error.error;
+          }
+        });
+      }
+    },
+
+    clearPendingInvite: () => {
+      set({ pendingInvite: null });
+    },
+
+    acceptPendingInvite: async () => {
+      const { pendingInvite, joinCollection } = get();
+
+      if (!pendingInvite) {
+        return {
+          success: false,
+          error: {
+            error: 'No pending invite',
+            code: 'VALIDATION_ERROR' as const,
+          },
+        };
+      }
+
+      const result = await joinCollection(pendingInvite.collectionId);
+
+      if (result.success) {
+        set({ pendingInvite: null });
+      }
+
+      return result;
     },
 
     // ========== API Operations ==========

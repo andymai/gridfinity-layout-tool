@@ -8,12 +8,14 @@ interface LayoutListItemProps {
   isActive: boolean;
   isFocused: boolean;
   isOnlyLayout: boolean;
+  isInCollectionMode?: boolean;
   onSelect: () => void;
   onRename: (newName: string) => void;
   onDuplicate: () => void;
   onDelete: () => void;
   onCopyLink: () => void;
   onDownload: () => void;
+  onCopyToCollection?: () => void;
   onFocus: () => void;
   itemRef?: (el: HTMLDivElement | null) => void;
 }
@@ -27,12 +29,14 @@ export function LayoutListItem({
   isActive,
   isFocused,
   isOnlyLayout,
+  isInCollectionMode,
   onSelect,
   onRename,
   onDuplicate,
   onDelete,
   onCopyLink,
   onDownload,
+  onCopyToCollection,
   onFocus,
   itemRef,
 }: LayoutListItemProps) {
@@ -174,11 +178,13 @@ export function LayoutListItem({
           <LayoutActions
             entry={entry}
             isOnlyLayout={isOnlyLayout}
+            isInCollectionMode={isInCollectionMode}
             onCopyLink={onCopyLink}
             onDownload={onDownload}
             onRename={handleStartRename}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
+            onCopyToCollection={onCopyToCollection}
           />
         </div>
       </div>

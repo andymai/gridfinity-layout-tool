@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useLayoutStore, useUIStore, useLibraryStore } from './store';
-import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics } from './hooks';
+import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useCollectionRouting } from './hooks';
+import { useCollectionStore } from './store/collection';
 import { initializeLayoutLibrary } from './utils/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
@@ -30,6 +31,9 @@ const HelpModal = lazyWithRetry(() =>
   import('./components/modals/HelpModal').then(namedExport('HelpModal'))
 );
 
+// Collection invite modal - shown when visiting collection URL
+import { CollectionInviteModal } from './components/modals/CollectionInviteModal';
+
 // Lazy load mobile layout - only loaded on mobile devices
 const MobileLayout = lazyWithRetry(() =>
   import('./components/MobileLayout').then(namedExport('MobileLayout'))
@@ -41,6 +45,8 @@ try {
   const { library, activeLayout } = initializeLayoutLibrary();
   useLibraryStore.getState().initLibrary(library);
   useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId);
+  // Initialize collection memberships from localStorage
+  useCollectionStore.getState().initMemberships();
 } catch (e) {
   initialLoadError = e as Error;
 }
@@ -118,6 +124,12 @@ export default function App() {
 
   // Analytics session tracking
   useAnalytics();
+
+  // Collection URL routing (handles /c/{id} URLs)
+  useCollectionRouting();
+
+  // Pending collection invite (shown when visiting collection URL directly)
+  const pendingInvite = useCollectionStore((state) => state.pendingInvite);
 
   // Help modal keyboard shortcut
   const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {
@@ -238,6 +250,9 @@ export default function App() {
 
         {/* Shared layout URL importer */}
         <SharedLayoutImporter />
+
+        {/* Collection invite modal */}
+        {pendingInvite && <CollectionInviteModal invite={pendingInvite} />}
       </div>
     );
   }
@@ -308,6 +323,9 @@ export default function App() {
 
       {/* Shared layout URL importer */}
       <SharedLayoutImporter />
+
+      {/* Collection invite modal */}
+      {pendingInvite && <CollectionInviteModal invite={pendingInvite} />}
     </div>
   );
 }
