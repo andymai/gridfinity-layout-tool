@@ -3,6 +3,7 @@ import { useLayoutStore, useUIStore, useLibraryStore } from './store';
 import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useCollectionRouting } from './hooks';
 import { useCollectionStore } from './store/collection';
 import { initializeLayoutLibrary } from './utils/storage';
+import { isCollectionURL } from './utils/url';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
 import { Sidebar } from './components/Sidebar';
@@ -45,7 +46,14 @@ let initialLoadError: Error | null = null;
 try {
   const { library, activeLayout } = initializeLayoutLibrary();
   useLibraryStore.getState().initLibrary(library);
-  useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId);
+
+  // Skip loading local layout if we're on a collection URL
+  // The collection routing will handle loading the appropriate layout
+  // This prevents the visual flash of the local layout before the collection layout loads
+  if (!isCollectionURL()) {
+    useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId);
+  }
+
   // Initialize collection memberships from localStorage
   useCollectionStore.getState().initMemberships();
 } catch (e) {

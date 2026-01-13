@@ -257,24 +257,41 @@ export function useCollectionSync() {
    * Push local changes to server.
    */
   const pushChanges = useCallback(async () => {
-    if (!activeCollection || !activeLayoutId) return;
-    if (!hasLocalChanges(activeLayoutId)) return;
+    console.warn('[CollectionSync] pushChanges called', { activeCollection: !!activeCollection, activeLayoutId });
+    if (!activeCollection || !activeLayoutId) {
+      console.warn('[CollectionSync] pushChanges early return - no collection or layout');
+      return;
+    }
+    const hasChanges = hasLocalChanges(activeLayoutId);
+    console.warn('[CollectionSync] hasLocalChanges:', hasChanges);
+    if (!hasChanges) {
+      console.warn('[CollectionSync] pushChanges early return - no local changes');
+      return;
+    }
 
     // Check online status
     if (!navigator.onLine) {
+      console.warn('[CollectionSync] pushChanges - offline');
       setSyncState((prev) => ({ ...prev, status: 'offline' }));
       return;
     }
 
+    console.warn('[CollectionSync] Starting push to server...');
     setSyncState((prev) => ({ ...prev, status: 'syncing' }));
 
     const currentSyncState = syncStates[activeLayoutId];
+    console.warn('[CollectionSync] Calling updateLayout API', {
+      collectionId: activeCollection.id,
+      layoutId: activeLayoutId,
+      expectedModifiedAt: currentSyncState?.modifiedAt
+    });
     const result = await collectionApi.updateLayout(
       activeCollection.id,
       activeLayoutId,
       layout,
       { expectedModifiedAt: currentSyncState?.modifiedAt }
     );
+    console.warn('[CollectionSync] API result:', result);
 
     if (result.success) {
       // Update sync state with new server timestamp
@@ -326,9 +343,14 @@ export function useCollectionSync() {
    * Mark layout as modified and schedule debounced push.
    */
   const onLayoutChange = useCallback(() => {
-    if (!activeCollection || !activeLayoutId) return;
+    console.warn('[CollectionSync] onLayoutChange called', { activeCollection: !!activeCollection, activeLayoutId });
+    if (!activeCollection || !activeLayoutId) {
+      console.warn('[CollectionSync] onLayoutChange early return - no collection or layout');
+      return;
+    }
 
     // Mark as locally modified
+    console.warn('[CollectionSync] Marking layout as modified:', activeLayoutId);
     markLayoutModified(activeLayoutId);
     isEditingRef.current = true;
 
@@ -338,7 +360,9 @@ export function useCollectionSync() {
     }
 
     // Schedule new push
+    console.warn('[CollectionSync] Scheduling push in', PUSH_DEBOUNCE_MS, 'ms');
     pushTimeoutRef.current = window.setTimeout(() => {
+      console.warn('[CollectionSync] Push timeout fired, calling pushChanges');
       pushChanges();
       pushTimeoutRef.current = null;
     }, PUSH_DEBOUNCE_MS);
@@ -370,13 +394,16 @@ export function useCollectionSync() {
    * recreated on every edit, resetting the change detection state.
    */
   useEffect(() => {
+    console.warn('[CollectionSync] Subscription effect running', { activeCollection: !!activeCollection, activeLayoutId });
     // Skip if not in collection mode
     if (!activeCollection || !activeLayoutId) {
+      console.warn('[CollectionSync] Not in collection mode, skipping subscription');
       isInitialMount.current = true;
       prevLayoutIdRef.current = null;
       return;
     }
 
+    console.warn('[CollectionSync] Setting up layout store subscription');
     // Track the previous layout for comparison
     let prevLayout = useLayoutStore.getState().layout;
 
@@ -389,10 +416,12 @@ export function useCollectionSync() {
       if (currentLayout === prevLayout) {
         return;
       }
+      console.warn('[CollectionSync] Layout changed (reference equality check passed)');
       prevLayout = currentLayout;
 
       // Skip the initial mount
       if (isInitialMount.current) {
+        console.warn('[CollectionSync] Skipping initial mount change');
         isInitialMount.current = false;
         prevLayoutIdRef.current = currentLayoutId;
         return;
@@ -400,15 +429,18 @@ export function useCollectionSync() {
 
       // Skip if we just switched layouts (the layout ID changed)
       if (currentLayoutId !== prevLayoutIdRef.current) {
+        console.warn('[CollectionSync] Layout ID changed, skipping', { current: currentLayoutId, prev: prevLayoutIdRef.current });
         prevLayoutIdRef.current = currentLayoutId;
         return;
       }
 
       // This is a real edit - trigger the sync via ref
+      console.warn('[CollectionSync] Real edit detected, triggering onLayoutChange');
       onLayoutChangeRef.current();
     });
 
     return () => {
+      console.warn('[CollectionSync] Cleaning up subscription');
       unsubscribe();
     };
   }, [activeCollection, activeLayoutId]);
