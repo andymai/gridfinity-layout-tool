@@ -104,6 +104,9 @@ interface UIState {
   sharedLayoutOriginalName: string | null; // For forkedFrom metadata
   sharedLayoutAuthorName: string | null;  // Author of cloud-shared layout
 
+  // Print modal
+  printModalOpen: boolean;
+
   // Actions
   setActiveLayer: (id: string) => void;
   setSelectedBin: (id: string | null) => void; // Single select (clears others)
@@ -171,6 +174,9 @@ interface UIState {
   // Shared layout preview actions
   setSharedLayoutPreview: (layout: Layout | null, originalName?: string, authorName?: string) => void;
   clearSharedLayoutPreview: () => void;
+
+  // Print modal actions
+  setPrintModalOpen: (open: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -204,6 +210,7 @@ export const useUIStore = create<UIState>((set) => ({
   sharedLayoutPreview: null,
   sharedLayoutOriginalName: null,
   sharedLayoutAuthorName: null,
+  printModalOpen: false,
 
   setActiveLayer: (id) => set({
     activeLayerId: id,
@@ -395,4 +402,7 @@ export const useUIStore = create<UIState>((set) => ({
     sharedLayoutOriginalName: null,
     sharedLayoutAuthorName: null,
   }),
+
+  // Print modal actions
+  setPrintModalOpen: (open) => set({ printModalOpen: open }),
 }));

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   filterBySearch,
   calculateSelectionRange,
@@ -7,6 +7,7 @@ import {
   formatAsCSV,
   formatAsJSON,
   calculateCategoryBreakdown,
+  downloadAsFile,
 } from '../utils/binListOperations';
 import type { EnhancedPrintRow, Category, Layout } from '../types';
 
@@ -306,6 +307,65 @@ describe('binListOperations', () => {
       const csv = formatAsCSV([]);
       expect(csv).toBe('Size,Height,Bins,Pieces,Filament (m),Label,Notes');
     });
+
+    it('includes custom property columns when present', () => {
+      const rows = [
+        createTestRow({
+          labels: ['Bin 1'],
+          customProperties: {
+            'Color': 'Red',
+            'Material': 'PETG',
+          },
+        }),
+        createTestRow({
+          labels: ['Bin 2'],
+          customProperties: {
+            'Color': 'Blue',
+          },
+        }),
+      ];
+      const csv = formatAsCSV(rows);
+      const lines = csv.split('\n');
+
+      // Header should include custom property columns (sorted alphabetically)
+      expect(lines[0]).toBe('Size,Height,Bins,Pieces,Filament (m),Label,Notes,Color,Material');
+
+      // First row has both properties
+      expect(lines[1]).toContain('Red,PETG');
+
+      // Second row has only Color, Material is empty
+      expect(lines[2]).toContain('Blue,');
+    });
+
+    it('escapes custom property values', () => {
+      const rows = [
+        createTestRow({
+          customProperties: {
+            'Notes': 'Value, with comma',
+          },
+        }),
+      ];
+      const csv = formatAsCSV(rows);
+      expect(csv).toContain('"Value, with comma"');
+    });
+
+    it('handles rows with no custom properties', () => {
+      const rows = [
+        createTestRow({
+          labels: ['Bin 1'],
+          customProperties: undefined,
+        }),
+        createTestRow({
+          labels: ['Bin 2'],
+          customProperties: {},
+        }),
+      ];
+      const csv = formatAsCSV(rows);
+      const lines = csv.split('\n');
+
+      // No custom property columns
+      expect(lines[0]).toBe('Size,Height,Bins,Pieces,Filament (m),Label,Notes');
+    });
   });
 
   describe('formatAsJSON', () => {
@@ -377,6 +437,51 @@ describe('binListOperations', () => {
         createTestRow({ labels: ['Special chars: "quotes" & <tags>'] }),
       ];
       expect(() => JSON.parse(formatAsJSON(rows, testLayout))).not.toThrow();
+    });
+
+    it('includes custom properties when present', () => {
+      const rows = [
+        createTestRow({
+          labels: ['Bin with props'],
+          customProperties: {
+            'Color': 'Red',
+            'Material': 'PETG',
+          },
+        }),
+      ];
+      const json = formatAsJSON(rows, testLayout);
+      const parsed = JSON.parse(json);
+
+      expect(parsed.bins[0].customProperties).toEqual({
+        'Color': 'Red',
+        'Material': 'PETG',
+      });
+    });
+
+    it('omits customProperties when empty', () => {
+      const rows = [
+        createTestRow({
+          labels: ['Bin without props'],
+          customProperties: {},
+        }),
+      ];
+      const json = formatAsJSON(rows, testLayout);
+      const parsed = JSON.parse(json);
+
+      expect(parsed.bins[0].customProperties).toBeUndefined();
+    });
+
+    it('omits customProperties when undefined', () => {
+      const rows = [
+        createTestRow({
+          labels: ['Bin without props'],
+          customProperties: undefined,
+        }),
+      ];
+      const json = formatAsJSON(rows, testLayout);
+      const parsed = JSON.parse(json);
+
+      expect(parsed.bins[0].customProperties).toBeUndefined();
     });
   });
 
@@ -475,6 +580,86 @@ describe('binListOperations', () => {
 
       expect(breakdown[0].filament).toBe(3.3); // Rounded to 1 decimal
       expect(breakdown[0].cost).toBe(0.33); // Rounded to 2 decimals
+    });
+  });
+
+  describe('downloadAsFile', () => {
+    let mockCreateObjectURL: ReturnType<typeof vi.fn>;
+    let mockRevokeObjectURL: ReturnType<typeof vi.fn>;
+    let mockClick: ReturnType<typeof vi.fn>;
+    let mockAppendChild: ReturnType<typeof vi.fn>;
+    let mockRemoveChild: ReturnType<typeof vi.fn>;
+    let mockAnchor: Partial<HTMLAnchorElement>;
+
+    beforeEach(() => {
+      // Mock URL methods
+      mockCreateObjectURL = vi.fn().mockReturnValue('blob:test-url');
+      mockRevokeObjectURL = vi.fn();
+      global.URL.createObjectURL = mockCreateObjectURL;
+      global.URL.revokeObjectURL = mockRevokeObjectURL;
+
+      // Mock anchor element
+      mockClick = vi.fn();
+      mockAnchor = {
+        href: '',
+        download: '',
+        click: mockClick,
+      };
+
+      // Mock document methods
+      vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor as HTMLAnchorElement);
+      mockAppendChild = vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnchor as Node);
+      mockRemoveChild = vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnchor as Node);
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('creates blob with correct content and mime type', () => {
+      downloadAsFile('test content', 'test.txt', 'text/plain');
+
+      expect(mockCreateObjectURL).toHaveBeenCalledTimes(1);
+      const blob = mockCreateObjectURL.mock.calls[0][0];
+      expect(blob).toBeInstanceOf(Blob);
+      expect(blob.type).toBe('text/plain');
+    });
+
+    it('sets correct href and download attributes on anchor', () => {
+      downloadAsFile('test content', 'myfile.csv', 'text/csv');
+
+      expect(mockAnchor.href).toBe('blob:test-url');
+      expect(mockAnchor.download).toBe('myfile.csv');
+    });
+
+    it('appends anchor to body, clicks it, and removes it', () => {
+      downloadAsFile('test content', 'test.txt', 'text/plain');
+
+      expect(mockAppendChild).toHaveBeenCalledWith(mockAnchor);
+      expect(mockClick).toHaveBeenCalledTimes(1);
+      expect(mockRemoveChild).toHaveBeenCalledWith(mockAnchor);
+    });
+
+    it('revokes object URL after download', () => {
+      downloadAsFile('test content', 'test.txt', 'text/plain');
+
+      expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:test-url');
+    });
+
+    it('works with CSV content', () => {
+      const csvContent = 'Header1,Header2\nValue1,Value2';
+      downloadAsFile(csvContent, 'export.csv', 'text/csv');
+
+      expect(mockAnchor.download).toBe('export.csv');
+      expect(mockClick).toHaveBeenCalled();
+    });
+
+    it('works with JSON content', () => {
+      const jsonContent = JSON.stringify({ data: [1, 2, 3] });
+      downloadAsFile(jsonContent, 'export.json', 'application/json');
+
+      expect(mockAnchor.download).toBe('export.json');
+      expect(mockClick).toHaveBeenCalled();
     });
   });
 });

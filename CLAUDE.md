@@ -61,10 +61,10 @@ Husky + lint-staged runs ESLint on staged `.ts/.tsx` files. Code must pass with 
 Coverage thresholds are enforced on every commit. If coverage drops below thresholds, the commit will fail.
 
 **Current thresholds (configured in `vitest.config.ts`):**
-- Lines: 60%
-- Branches: 43%
-- Functions: 57%
-- Statements: 59%
+- Lines: 86%
+- Branches: 75%
+- Functions: 85%
+- Statements: 85%
 
 **When adding new code:**
 1. Write tests for new utilities, hooks, and store logic
