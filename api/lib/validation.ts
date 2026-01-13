@@ -23,6 +23,12 @@ const SHARE_CONSTRAINTS = {
   CUSTOM_PROPERTY_MAX_TOTAL_SIZE: 20480, // 20KB total per bin
 };
 
+/** Reserved keys that cannot be used as custom property names */
+const RESERVED_PROPERTY_KEYS = [
+  'id', 'layerId', 'x', 'y', 'width', 'depth', 'height',
+  'clearanceHeight', 'category', 'label', 'notes', 'customProperties',
+];
+
 export type ValidExpiration = (typeof SHARE_CONSTRAINTS.VALID_EXPIRATIONS)[number];
 
 interface DrawerShape {
@@ -224,7 +230,7 @@ export function validateShareLayout(
 
     // Validate and sanitize custom properties if present
     let validatedCustomProperties: Record<string, string> | undefined;
-    if (bin.customProperties && typeof bin.customProperties === 'object') {
+    if (bin.customProperties && typeof bin.customProperties === 'object' && !Array.isArray(bin.customProperties)) {
       const props = bin.customProperties as Record<string, unknown>;
       const keys = Object.keys(props);
 
@@ -255,6 +261,9 @@ export function validateShareLayout(
 
         // Skip empty keys
         if (!cleanKey) continue;
+
+        // Skip reserved keys
+        if (RESERVED_PROPERTY_KEYS.includes(cleanKey)) continue;
 
         totalSize += cleanKey.length + cleanValue.length;
 

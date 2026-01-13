@@ -327,8 +327,15 @@ export function validateLayoutIntegrity(layout: Layout): { valid: boolean; error
  * @returns OperationResult with success status and error message if invalid
  */
 export function validateCustomProperties(props: Record<string, string>): OperationResult {
-  if (!props || typeof props !== 'object') {
+  if (!props) {
     return { success: true }; // undefined/null is valid (no custom properties)
+  }
+
+  if (typeof props !== 'object' || Array.isArray(props)) {
+    return {
+      success: false,
+      error: 'Custom properties must be provided as a plain object',
+    };
   }
 
   const keys = Object.keys(props);

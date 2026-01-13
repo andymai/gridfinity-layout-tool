@@ -72,9 +72,11 @@ export function CustomPropertiesEditor({
   };
 
   const handleUpdate = (key: string, newValue: string) => {
+    // Trim value to remove leading/trailing whitespace
+    const trimmedValue = newValue.trim();
     onChange({
       ...customProperties,
-      [key]: newValue,
+      [key]: trimmedValue,
     });
   };
 

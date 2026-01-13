@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '../../store';
 import { calcMaxGridUnits, STAGING_ID } from '../../constants';
 import { getLayerZStart } from '../../utils/collision';
-import { clamp, canPlaceBin } from '../../utils/validation';
+import { clamp, canPlaceBin, validateCustomProperties } from '../../utils/validation';
 import { validateBinRotation } from '../../utils/binLocation';
 import type { Bin, Category, Layer, Layout } from '../../types';
 
@@ -128,6 +128,9 @@ export function useBinInspector(): UseBinInspectorReturn {
     };
   }, [bin, layer, layout.drawer.height, layout.layers, layout.printBedSize, layout.gridUnitMm]);
 
+  // Get toast store for notifications (used by custom properties and layer movement)
+  const addToast = useToastStore((state) => state.addToast);
+
   // Update single bin field
   const updateField = useCallback(
     (field: BinField, value: string | number) => {
@@ -175,11 +178,18 @@ export function useBinInspector(): UseBinInspectorReturn {
     (properties: Record<string, string>) => {
       if (!bin) return;
 
+      // Validate properties before updating
+      const validation = validateCustomProperties(properties);
+      if (!validation.success) {
+        addToast(validation.error ?? 'Invalid custom properties', 'error');
+        return;
+      }
+
       execute(() => {
         updateBin(bin.id, { customProperties: properties });
       });
     },
-    [bin, execute, updateBin]
+    [bin, execute, updateBin, addToast]
   );
 
   // Update category for multiple bins
@@ -230,9 +240,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     },
     [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
   );
-
-  // Get toast store for notifications (moved up for use in layer movement)
-  const addToast = useToastStore((state) => state.addToast);
 
   // Move single bin to a different layer
   const moveToLayer = useCallback(
