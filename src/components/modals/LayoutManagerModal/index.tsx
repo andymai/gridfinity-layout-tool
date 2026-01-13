@@ -493,6 +493,22 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
               {/* Show collection content when in collection mode */}
               {isInCollectionMode && (
                 <>
+                  {/* Back to collections list */}
+                  {memberships.length > 1 && (
+                    <button
+                      onClick={() => {
+                        leaveCollection();
+                        announceToScreenReader('Returned to collections list');
+                      }}
+                      className="flex items-center gap-1 text-sm text-content-secondary hover:text-content mb-3 -ml-1 group"
+                    >
+                      <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      All Collections
+                    </button>
+                  )}
+
                   {/* Collection Header */}
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-stroke">
                     <div className="flex items-center gap-2">
@@ -510,8 +526,9 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
                         announceToScreenReader('Left collection');
                       }}
                       className="px-3 py-1.5 text-sm font-medium rounded-md text-content-secondary hover:text-content hover:bg-surface transition-colors"
+                      title="Leave this collection"
                     >
-                      Leave Collection
+                      Leave
                     </button>
                   </div>
 
