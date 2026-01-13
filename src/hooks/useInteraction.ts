@@ -604,6 +604,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
                     category: bin.category,
                     label: bin.label,
                     notes: bin.notes,
+                    customProperties: bin.customProperties,
                   });
                   if (newBinId) {
                     newBinIds.push(newBinId);

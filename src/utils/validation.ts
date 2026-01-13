@@ -1,5 +1,5 @@
-import type { Bin, Layout, ValidationResult, Rect } from '../types';
-import { CONSTRAINTS, STAGING_ID } from '../constants';
+import type { Bin, Layout, ValidationResult, Rect, OperationResult } from '../types';
+import { CONSTRAINTS, STAGING_ID, RESERVED_PROPERTY_KEYS } from '../constants';
 import { binsCollide, getLayerZStart, getBlockedZones, isInBlockedZone } from './collision';
 
 // ============================================================================
@@ -29,6 +29,7 @@ interface BinShape {
   category?: string;
   label?: string;
   notes?: string;
+  customProperties?: Record<string, string>;
 }
 
 interface CategoryShape {
@@ -253,6 +254,14 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
         errors.push(`Bin ${i} is out of bounds`);
       }
     }
+
+    // Validate custom properties if present
+    if (bin.customProperties) {
+      const result = validateCustomProperties(bin.customProperties);
+      if (!result.success) {
+        errors.push(`Bin ${i}: ${result.error}`);
+      }
+    }
   });
 
   // Validate total layer height
@@ -308,6 +317,79 @@ export function validateLayoutIntegrity(layout: Layout): { valid: boolean; error
   }
 
   return { valid: true };
+}
+
+/**
+ * Validate custom properties for a bin.
+ * Checks property count, key/value lengths, and reserved keys.
+ *
+ * @param props - Custom properties object to validate
+ * @returns OperationResult with success status and error message if invalid
+ */
+export function validateCustomProperties(props: Record<string, string>): OperationResult {
+  if (!props) {
+    return { success: true }; // undefined/null is valid (no custom properties)
+  }
+
+  if (typeof props !== 'object' || Array.isArray(props)) {
+    return {
+      success: false,
+      error: 'Custom properties must be provided as a plain object',
+    };
+  }
+
+  const keys = Object.keys(props);
+
+  // Check property count
+  if (keys.length > CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT) {
+    return {
+      success: false,
+      error: `Maximum ${CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT} custom properties allowed per bin`,
+    };
+  }
+
+  // Validate each property
+  for (const key of keys) {
+    // Check key is not empty
+    if (!key.trim()) {
+      return { success: false, error: 'Custom property key cannot be empty' };
+    }
+
+    // Check key length
+    if (key.length > CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH) {
+      return {
+        success: false,
+        error: `Custom property key "${key}" exceeds maximum length of ${CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH} characters`,
+      };
+    }
+
+    // Check reserved keys
+    if (RESERVED_PROPERTY_KEYS.includes(key as typeof RESERVED_PROPERTY_KEYS[number])) {
+      return {
+        success: false,
+        error: `"${key}" is a reserved field name and cannot be used as a custom property`,
+      };
+    }
+
+    // Check value type
+    const value = props[key];
+    if (typeof value !== 'string') {
+      return {
+        success: false,
+        error: `Custom property value for "${key}" must be a string`,
+      };
+    }
+
+    // Check value length
+    if (value.length > CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH) {
+      return {
+        success: false,
+        error: `Custom property value for "${key}" exceeds maximum length of ${CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH} characters`,
+      };
+    }
+  }
+
+  return { success: true };
 }
 
 /**

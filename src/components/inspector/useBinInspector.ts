@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '../../store';
 import { calcMaxGridUnits, STAGING_ID } from '../../constants';
 import { getLayerZStart } from '../../utils/collision';
-import { clamp, canPlaceBin } from '../../utils/validation';
+import { clamp, canPlaceBin, validateCustomProperties } from '../../utils/validation';
 import { validateBinRotation } from '../../utils/binLocation';
 import type { Bin, Category, Layer, Layout } from '../../types';
 
@@ -36,6 +36,8 @@ export interface UseBinInspectorReturn {
 
   // Update handlers
   updateField: (field: BinField, value: string | number) => void;
+  updateCustomProperties: (properties: Record<string, string>) => void;
+  updateMultiCustomProperty: (key: string, value: string) => void;
   updateMultiCategory: (categoryId: string) => void;
   updateMultiHeight: (delta: number) => void;
   updateMultiClearance: (delta: number) => void;
@@ -58,6 +60,8 @@ export interface UseBinInspectorReturn {
   // Context
   layout: Layout;
   categories: Category[];
+  /** All unique custom property keys used across all bins in the layout */
+  existingPropertyKeys: string[];
 }
 
 /**
@@ -127,6 +131,22 @@ export function useBinInspector(): UseBinInspectorReturn {
     };
   }, [bin, layer, layout.drawer.height, layout.layers, layout.printBedSize, layout.gridUnitMm]);
 
+  // Collect all unique custom property keys from all bins in the layout (for suggestions)
+  const existingPropertyKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const b of layout.bins) {
+      if (b.customProperties) {
+        for (const key of Object.keys(b.customProperties)) {
+          keys.add(key);
+        }
+      }
+    }
+    return Array.from(keys).sort();
+  }, [layout.bins]);
+
+  // Get toast store for notifications (used by custom properties and layer movement)
+  const addToast = useToastStore((state) => state.addToast);
+
   // Update single bin field
   const updateField = useCallback(
     (field: BinField, value: string | number) => {
@@ -169,6 +189,25 @@ export function useBinInspector(): UseBinInspectorReturn {
     [bin, layer, constraints.maxHeight, constraints.maxClearance, execute, updateBin]
   );
 
+  // Update custom properties
+  const updateCustomProperties = useCallback(
+    (properties: Record<string, string>) => {
+      if (!bin) return;
+
+      // Validate properties before updating
+      const validation = validateCustomProperties(properties);
+      if (!validation.success) {
+        addToast(validation.error ?? 'Invalid custom properties', 'error');
+        return;
+      }
+
+      execute(() => {
+        updateBin(bin.id, { customProperties: properties });
+      });
+    },
+    [bin, execute, updateBin, addToast]
+  );
+
   // Update category for multiple bins
   const updateMultiCategory = useCallback(
     (categoryId: string) => {
@@ -181,6 +220,28 @@ export function useBinInspector(): UseBinInspectorReturn {
       });
     },
     [selectedBins, execute, updateBin]
+  );
+
+  // Update/add a custom property on multiple bins
+  const updateMultiCustomProperty = useCallback(
+    (key: string, value: string) => {
+      if (selectedBins.length === 0) return;
+      const trimmedKey = key.trim();
+      const trimmedValue = value.trim();
+      if (!trimmedKey) return;
+
+      execute(() => {
+        for (const b of selectedBins) {
+          const existing = b.customProperties || {};
+          updateBin(b.id, {
+            customProperties: { ...existing, [trimmedKey]: trimmedValue },
+          });
+        }
+      });
+
+      addToast(`Set "${trimmedKey}" on ${selectedBins.length} bins`, 'success');
+    },
+    [selectedBins, execute, updateBin, addToast]
   );
 
   // Update height delta for multiple bins
@@ -217,9 +278,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     },
     [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
   );
-
-  // Get toast store for notifications (moved up for use in layer movement)
-  const addToast = useToastStore((state) => state.addToast);
 
   // Move single bin to a different layer
   const moveToLayer = useCallback(
@@ -406,6 +464,8 @@ export function useBinInspector(): UseBinInspectorReturn {
 
     // Update handlers
     updateField,
+    updateCustomProperties,
+    updateMultiCustomProperty,
     updateMultiCategory,
     updateMultiHeight,
     updateMultiClearance,
@@ -428,5 +488,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     // Context
     layout,
     categories: layout.categories,
+    existingPropertyKeys,
   };
 }

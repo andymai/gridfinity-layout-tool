@@ -27,6 +27,7 @@ export interface BinListExportData {
   label: string;
   notes: string;
   categories: string[];
+  customProperties?: Record<string, string>;
 }
 
 // === Search Filtering ===
@@ -147,14 +148,43 @@ function escapeCSVValue(value: string): string {
 /**
  * Format rows as CSV with proper escaping.
  * Compatible with Excel, Google Sheets, etc.
+ * Dynamically adds columns for custom properties that exist in any row.
  */
 export function formatAsCSV(rows: EnhancedPrintRow[]): string {
-  const header = 'Size,Height,Bins,Pieces,Filament (m),Label,Notes';
+  // Collect all unique custom property keys across all rows
+  const customKeys = new Set<string>();
+  for (const row of rows) {
+    if (row.customProperties) {
+      for (const key of Object.keys(row.customProperties)) {
+        customKeys.add(key);
+      }
+    }
+  }
+  const sortedKeys = Array.from(customKeys).sort();
+
+  // Build header with dynamic custom property columns
+  const baseHeader = 'Size,Height,Bins,Pieces,Filament (m),Label,Notes';
+  const header = sortedKeys.length > 0
+    ? `${baseHeader},${sortedKeys.join(',')}`
+    : baseHeader;
+
+  // Build data rows
   const lines = rows.map(row => {
     const label = escapeCSVValue(row.labels[0] || '');
     const notes = escapeCSVValue(row.notes || '');
-    return `${row.size},${row.height}u,${row.binCount},${row.totalPieces},${row.filament},${label},${notes}`;
+    const baseLine = `${row.size},${row.height}u,${row.binCount},${row.totalPieces},${row.filament},${label},${notes}`;
+
+    if (sortedKeys.length === 0) {
+      return baseLine;
+    }
+
+    // Add custom property values in order (with CSV escaping)
+    const customValues = sortedKeys.map(key =>
+      escapeCSVValue(row.customProperties?.[key] || '')
+    );
+    return `${baseLine},${customValues.join(',')}`;
   });
+
   return [header, ...lines].join('\n');
 }
 
@@ -166,19 +196,26 @@ export function formatAsJSON(
   rows: EnhancedPrintRow[],
   layout: Layout
 ): string {
-  const data: BinListExportData[] = rows.map(row => ({
-    size: row.size,
-    height: `${row.height}u`,
-    bins: row.binCount,
-    pieces: row.totalPieces,
-    filament: row.filament,
-    label: row.labels[0] || '',
-    notes: row.notes || '',
-    categories: row.categoryIds.map(id => {
-      const cat = layout.categories.find(c => c.id === id);
-      return cat?.name || 'Unknown';
-    }),
-  }));
+  const data: BinListExportData[] = rows.map(row => {
+    const item: BinListExportData = {
+      size: row.size,
+      height: `${row.height}u`,
+      bins: row.binCount,
+      pieces: row.totalPieces,
+      filament: row.filament,
+      label: row.labels[0] || '',
+      notes: row.notes || '',
+      categories: row.categoryIds.map(id => {
+        const cat = layout.categories.find(c => c.id === id);
+        return cat?.name || 'Unknown';
+      }),
+    };
+    // Include custom properties if present
+    if (row.customProperties && Object.keys(row.customProperties).length > 0) {
+      item.customProperties = row.customProperties;
+    }
+    return item;
+  });
 
   const exportObj = {
     _meta: {

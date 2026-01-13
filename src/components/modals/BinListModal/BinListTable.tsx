@@ -190,6 +190,7 @@ export function BinListTable({
             <SortHeader label="H" sortKeyValue="height" sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} title="Sort by height" className="w-12" />
             <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">Label</th>
             <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">Notes</th>
+            <th className="w-6 px-1 py-2 sticky top-0 bg-surface-elevated" title="Custom properties" />
             <th className="px-3 py-2 text-right font-medium sticky top-0 bg-surface-elevated w-16">Qty</th>
             {hasAnySplits && (
               <th className="px-3 py-2 text-right font-medium sticky top-0 bg-surface-elevated w-16">Pcs</th>
@@ -318,6 +319,23 @@ export function BinListTable({
                   )}
                 </td>
 
+                {/* Custom properties indicator */}
+                <td className="px-1 py-2">
+                  {row.customProperties && Object.keys(row.customProperties).length > 0 && (
+                    <svg
+                      className="w-3.5 h-3.5 text-content-disabled"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-label={`${Object.keys(row.customProperties).length} custom properties`}
+                    >
+                      <title>{Object.keys(row.customProperties).length} custom {Object.keys(row.customProperties).length === 1 ? 'property' : 'properties'}</title>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                  )}
+                </td>
+
                 {/* Quantity */}
                 <td className="px-3 py-2 text-right text-content tabular-nums">{row.binCount}</td>
 
@@ -335,7 +353,7 @@ export function BinListTable({
           {/* Expanded split preview row */}
           {expandedSplitRow !== null && rows[expandedSplitRow]?.needsSplit && (
             <tr className="bg-surface-elevated border-b border-stroke-subtle">
-              <td colSpan={hasAnySplits ? 9 : 8} className="px-6 py-4">
+              <td colSpan={hasAnySplits ? 10 : 9} className="px-6 py-4">
                 <div className="flex items-start gap-4">
                   <SplitPreview
                     width={parseInt(rows[expandedSplitRow].size.split('×')[0])}

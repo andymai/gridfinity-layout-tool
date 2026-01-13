@@ -47,6 +47,7 @@ export interface Bin {
   category: string;          // references Category.id
   label: string;             // max 24 chars
   notes: string;             // max 256 chars
+  customProperties?: Record<string, string>; // custom key-value properties for user-defined metadata
 }
 
 // === Coordinate Types ===
@@ -163,6 +164,7 @@ export interface PrintRow {
   labels: string[];          // Non-empty labels from bins of this size
   notes: string;             // Notes (only for labeled/individual bins)
   binIds: string[];          // Original bin IDs for click-to-select
+  customProperties?: Record<string, string>; // Custom properties (only for individual bins)
 }
 
 // === Enhanced Print List Types ===

@@ -383,6 +383,45 @@ describe('storage', () => {
       const lines = tsv.split('\n');
       expect(lines).toHaveLength(4);
     });
+
+    it('exports rows with custom properties as additional columns', () => {
+      const rows = [
+        {
+          size: '1x1',
+          height: 3,
+          binCount: 1,
+          totalPieces: 1,
+          customProperties: { SKU: 'ABC123', Location: 'A1' },
+        },
+        {
+          size: '2x2',
+          height: 6,
+          binCount: 1,
+          totalPieces: 1,
+          customProperties: { SKU: 'XYZ789' }, // Missing Location
+        },
+      ];
+      const tsv = exportPrintListTSV(rows);
+      const lines = tsv.split('\n');
+      expect(lines).toHaveLength(3);
+      // Header should have custom property columns (sorted alphabetically)
+      expect(lines[0]).toBe('Size\tHeight\tBins\tPieces\tLabel\tNotes\tLocation\tSKU');
+      // Row with both properties
+      expect(lines[1]).toBe('1x1\t3u\t1\t1\t\t\tA1\tABC123');
+      // Row missing Location should have empty value
+      expect(lines[2]).toBe('2x2\t6u\t1\t1\t\t\t\tXYZ789');
+    });
+
+    it('does not add custom property columns when none present', () => {
+      const rows = [
+        { size: '1x1', height: 3, binCount: 5, totalPieces: 5 },
+        { size: '2x2', height: 6, binCount: 4, totalPieces: 4 },
+      ];
+      const tsv = exportPrintListTSV(rows);
+      const lines = tsv.split('\n');
+      // Header should not have extra columns
+      expect(lines[0]).toBe('Size\tHeight\tBins\tPieces\tLabel\tNotes');
+    });
   });
 
   describe('getStorageUsage', () => {

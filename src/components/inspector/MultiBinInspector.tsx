@@ -1,4 +1,5 @@
-import { STAGING_ID, DEFAULT_CATEGORY_COLOR } from '../../constants';
+import { useState } from 'react';
+import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '../../constants';
 import type { UseBinInspectorReturn } from './useBinInspector';
 import type { Layer } from '../../types';
 
@@ -24,13 +25,19 @@ export function MultiBinInspector({
     categories,
     layout,
     updateMultiCategory,
+    updateMultiCustomProperty,
     updateMultiHeight,
     updateMultiClearance,
     updateMultiLayer,
     requestDelete,
     moveToStaging,
     clearSelection,
+    existingPropertyKeys,
   } = inspector;
+
+  const [showPropertyForm, setShowPropertyForm] = useState(false);
+  const [propertyKey, setPropertyKey] = useState('');
+  const [propertyValue, setPropertyValue] = useState('');
 
   if (selectedBins.length === 0) return null;
 
@@ -280,6 +287,85 @@ export function MultiBinInspector({
             </div>
           </div>
         )}
+
+        {/* Custom Properties - Set same property on all bins */}
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              Custom Properties
+            </label>
+            {!showPropertyForm && (
+              <button
+                type="button"
+                onClick={() => setShowPropertyForm(true)}
+                className="text-xs text-accent hover:text-accent-hover transition-colors"
+              >
+                + Set Property
+              </button>
+            )}
+          </div>
+          {showPropertyForm ? (
+            <div className="bg-surface-elevated border border-stroke-subtle rounded p-2.5 space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={propertyKey}
+                  onChange={(e) => setPropertyKey(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH))}
+                  className={`input flex-1 ${inputHeight}`}
+                  placeholder="Property name"
+                  aria-label="Property name"
+                  list="property-key-suggestions"
+                  autoFocus
+                />
+                <datalist id="property-key-suggestions">
+                  {existingPropertyKeys.map((key) => (
+                    <option key={key} value={key} />
+                  ))}
+                </datalist>
+                <input
+                  type="text"
+                  value={propertyValue}
+                  onChange={(e) => setPropertyValue(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH))}
+                  className={`input flex-1 ${inputHeight}`}
+                  placeholder="Value"
+                  aria-label="Property value"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (propertyKey.trim()) {
+                      updateMultiCustomProperty(propertyKey, propertyValue);
+                      setPropertyKey('');
+                      setPropertyValue('');
+                      setShowPropertyForm(false);
+                    }
+                  }}
+                  disabled={!propertyKey.trim()}
+                  className={`btn btn-primary flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
+                >
+                  Set on All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPropertyKey('');
+                    setPropertyValue('');
+                    setShowPropertyForm(false);
+                  }}
+                  className={`btn btn-ghost flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className={`text-xs text-content-disabled ${isMobile ? '' : 'mt-1'}`}>
+              Set the same property on all selected bins
+            </p>
+          )}
+        </div>
 
         {/* Actions */}
         <div className="flex gap-2">

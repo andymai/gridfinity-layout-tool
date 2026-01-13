@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { canPlaceBin, validateImport, clamp, truncate, validateLayoutIntegrity } from '../utils/validation';
+import { canPlaceBin, validateImport, clamp, truncate, validateLayoutIntegrity, validateCustomProperties } from '../utils/validation';
+import { CONSTRAINTS } from '../constants';
 import type { Layout } from '../types';
 
 const createTestLayout = (): Layout => ({
@@ -515,5 +516,107 @@ describe('validateLayoutIntegrity', () => {
     const result = validateLayoutIntegrity(layout);
     expect(result.valid).toBe(false);
     expect(result.error).toContain('bin-abc-123');
+  });
+});
+
+describe('validateCustomProperties', () => {
+  it('returns success for undefined properties', () => {
+    const result = validateCustomProperties(undefined as unknown as Record<string, string>);
+    expect(result.success).toBe(true);
+  });
+
+  it('returns success for null properties', () => {
+    const result = validateCustomProperties(null as unknown as Record<string, string>);
+    expect(result.success).toBe(true);
+  });
+
+  it('returns success for empty object', () => {
+    const result = validateCustomProperties({});
+    expect(result.success).toBe(true);
+  });
+
+  it('returns success for valid properties', () => {
+    const result = validateCustomProperties({
+      SKU: 'ABC123',
+      Quantity: '5',
+      Location: 'Shelf A',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects arrays (arrays are objects in JavaScript)', () => {
+    const result = validateCustomProperties(['value1', 'value2'] as unknown as Record<string, string>);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('plain object');
+  });
+
+  it('rejects non-object values', () => {
+    const result = validateCustomProperties('not an object' as unknown as Record<string, string>);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('plain object');
+  });
+
+  it('rejects exceeding max property count', () => {
+    const props: Record<string, string> = {};
+    for (let i = 0; i <= CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT; i++) {
+      props[`key${i}`] = `value${i}`;
+    }
+    const result = validateCustomProperties(props);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Maximum');
+    expect(result.error).toContain('custom properties');
+  });
+
+  it('rejects empty keys', () => {
+    const result = validateCustomProperties({ '': 'value' });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('empty');
+  });
+
+  it('rejects whitespace-only keys', () => {
+    const result = validateCustomProperties({ '   ': 'value' });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('empty');
+  });
+
+  it('rejects keys exceeding max length', () => {
+    const longKey = 'a'.repeat(CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH + 1);
+    const result = validateCustomProperties({ [longKey]: 'value' });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('exceeds maximum length');
+  });
+
+  it('rejects reserved keys', () => {
+    const reservedKeys = ['id', 'layerId', 'x', 'y', 'width', 'depth', 'height', 'category', 'label', 'notes'];
+    for (const key of reservedKeys) {
+      const result = validateCustomProperties({ [key]: 'value' });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('reserved');
+    }
+  });
+
+  it('rejects non-string values', () => {
+    const result = validateCustomProperties({ key: 123 as unknown as string });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('must be a string');
+  });
+
+  it('rejects values exceeding max length', () => {
+    const longValue = 'a'.repeat(CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH + 1);
+    const result = validateCustomProperties({ key: longValue });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('exceeds maximum length');
+  });
+
+  it('accepts keys at exactly max length', () => {
+    const maxKey = 'a'.repeat(CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH);
+    const result = validateCustomProperties({ [maxKey]: 'value' });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts values at exactly max length', () => {
+    const maxValue = 'a'.repeat(CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH);
+    const result = validateCustomProperties({ key: maxValue });
+    expect(result.success).toBe(true);
   });
 });

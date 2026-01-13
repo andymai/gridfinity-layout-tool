@@ -280,7 +280,7 @@ export function RightPanel() {
                                   </svg>
                                 )}
                               </span>
-                              {(row.labels[0] || row.notes) && (
+                              {(row.labels[0] || row.notes || (row.customProperties && Object.keys(row.customProperties).length > 0)) && (
                                 <span className="flex items-center gap-1">
                                   {row.labels[0] && (
                                     <span
@@ -297,8 +297,22 @@ export function RightPanel() {
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
+                                        aria-label="Has notes"
                                       >
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                      </svg>
+                                    </span>
+                                  )}
+                                  {row.customProperties && Object.keys(row.customProperties).length > 0 && (
+                                    <span title={`${Object.keys(row.customProperties).length} custom ${Object.keys(row.customProperties).length === 1 ? 'property' : 'properties'}`}>
+                                      <svg
+                                        className="w-3 h-3 flex-shrink-0 text-content-disabled"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        aria-label="Has custom properties"
+                                      >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
                                       </svg>
                                     </span>
                                   )}
