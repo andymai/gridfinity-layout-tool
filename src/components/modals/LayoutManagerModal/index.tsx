@@ -35,10 +35,11 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
   const [shareModalLayoutId, setShareModalLayoutId] = useState<string | null>(null);
   const [showCreateCollection, setShowCreateCollection] = useState(false);
   const [showJoinCollection, setShowJoinCollection] = useState(false);
+  const [rejoiningCollectionId, setRejoiningCollectionId] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const { isInCollectionMode, activeCollection, activeCollectionLayouts, leaveCollection, addLayoutToCollection, setMembershipActiveLayout, clearActiveCollection } = useCollectionStore(
+  const { isInCollectionMode, activeCollection, activeCollectionLayouts, leaveCollection, addLayoutToCollection, setMembershipActiveLayout, clearActiveCollection, memberships, joinCollection, removeMembership } = useCollectionStore(
     useShallow((state) => ({
       isInCollectionMode: state.isInCollectionMode(),
       activeCollection: state.activeCollection,
@@ -47,6 +48,9 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
       addLayoutToCollection: state.addLayoutToCollection,
       setMembershipActiveLayout: state.setMembershipActiveLayout,
       clearActiveCollection: state.clearActiveCollection,
+      memberships: state.memberships,
+      joinCollection: state.joinCollection,
+      removeMembership: state.removeMembership,
     }))
   );
 
@@ -201,6 +205,37 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
   const handleShare = useCallback((layoutId: string) => {
     setShareModalLayoutId(layoutId);
   }, []);
+
+  // Handle rejoining a previously joined collection
+  const handleRejoinCollection = useCallback(
+    async (collectionId: string) => {
+      setRejoiningCollectionId(collectionId);
+      const result = await joinCollection(collectionId);
+
+      if (result.success) {
+        addToast(`Rejoined collection: ${result.data.name}`, 'success');
+        announceToScreenReader(`Rejoined collection: ${result.data.name}`);
+      } else {
+        addToast('Failed to rejoin collection', 'error');
+        // Remove stale membership if collection no longer exists
+        if (result.error.code === 'NOT_FOUND') {
+          removeMembership(collectionId);
+        }
+      }
+      setRejoiningCollectionId(null);
+    },
+    [joinCollection, addToast, announceToScreenReader, removeMembership]
+  );
+
+  // Handle forgetting a collection membership (without joining first)
+  const handleForgetMembership = useCallback(
+    (collectionId: string, collectionName: string) => {
+      removeMembership(collectionId);
+      addToast(`Removed "${collectionName}" from your collections`, 'success');
+      announceToScreenReader(`Removed ${collectionName} from your collections`);
+    },
+    [removeMembership, addToast, announceToScreenReader]
+  );
 
   const handleCopyToCollection = useCallback(
     async (layoutId: string) => {
@@ -357,38 +392,101 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
           {/* Collection Tab - Always visible */}
           {activeTab === 'collection' && (
             <div id="collection-panel" role="tabpanel" aria-labelledby="collection-tab" className="flex-1 min-h-0 flex flex-col">
-              {/* Show "Get Started" when not in collection mode */}
+              {/* Show collections list or "Get Started" when not in collection mode */}
               {!isInCollectionMode && (
-                <div className="flex-1 flex flex-col items-center justify-center py-8">
-                  <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-content mb-1 flex items-center gap-2">
-                    Shared Collections
-                    <span className="text-[9px] leading-none text-amber-500/80 bg-amber-500/10 px-1.5 py-0.5 rounded">experimental</span>
-                  </h3>
-                  <p className="text-sm text-content-secondary text-center max-w-xs mb-6">
-                    Work on layouts together in real-time. Changes sync automatically across all participants.
-                  </p>
-                  <div className="flex gap-3">
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  {/* Header with action buttons */}
+                  <div className="flex gap-2 mb-4">
                     <button
                       onClick={() => setShowJoinCollection(true)}
-                      className="px-4 py-2 text-sm font-medium rounded-lg border border-stroke text-content hover:bg-surface transition-colors"
+                      className="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg border border-stroke text-content hover:bg-surface transition-colors"
                     >
-                      Join Existing
+                      Join by Code
                     </button>
                     <button
                       onClick={() => setShowCreateCollection(true)}
-                      className="px-4 py-2 text-sm font-medium rounded-lg bg-accent text-white hover:bg-accent-hover transition-colors flex items-center gap-2"
+                      className="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg bg-accent text-white hover:bg-accent-hover transition-colors flex items-center justify-center gap-2"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
-                      Create Collection
+                      Create New
                     </button>
                   </div>
+
+                  {/* Previously joined collections */}
+                  {memberships.length > 0 ? (
+                    <div className="flex-1 min-h-0 overflow-auto">
+                      <div className="text-xs font-medium text-content-tertiary uppercase tracking-wide mb-2">
+                        Your Collections
+                      </div>
+                      <div className="space-y-2">
+                        {[...memberships]
+                          .sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)
+                          .map((membership) => (
+                            <div
+                              key={membership.collectionId}
+                              className="group flex items-center gap-3 p-3 rounded-lg border border-stroke hover:border-stroke-strong hover:bg-surface-secondary transition-all cursor-pointer"
+                              onClick={() => handleRejoinCollection(membership.collectionId)}
+                            >
+                              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                                <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-content truncate">
+                                  {membership.collectionName}
+                                </div>
+                                <div className="text-xs text-content-tertiary">
+                                  Last accessed {new Date(membership.lastAccessedAt).toLocaleDateString()}
+                                </div>
+                              </div>
+                              {rejoiningCollectionId === membership.collectionId ? (
+                                <svg className="w-5 h-5 animate-spin text-accent" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
+                              ) : (
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleForgetMembership(membership.collectionId, membership.collectionName);
+                                    }}
+                                    className="p-1.5 rounded hover:bg-surface text-content-tertiary hover:text-red-500 transition-colors"
+                                    title="Remove from list"
+                                    aria-label={`Remove ${membership.collectionName} from your collections`}
+                                  >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                  <svg className="w-5 h-5 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center">
+                      <div className="w-16 h-16 rounded-full bg-surface-secondary flex items-center justify-center mb-4">
+                        <svg className="w-8 h-8 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-content mb-1 flex items-center gap-2">
+                        Shared Collections
+                        <span className="text-[9px] leading-none text-amber-500/80 bg-amber-500/10 px-1.5 py-0.5 rounded">experimental</span>
+                      </h3>
+                      <p className="text-sm text-content-secondary max-w-xs">
+                        Work on layouts together in real-time. Create a collection or join one with a code.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
