@@ -43,7 +43,7 @@ export function SharedLayoutImporter() {
   const loadLayoutPreview = useCallback((layout: Layout, authorName?: string) => {
     // Load the shared layout directly into the view
     // Use a temporary ID since it's not saved yet
-    importLayout(layout, '__shared_preview__');
+    importLayout(layout, '__shared_preview__', 'init');
 
     // Set the preview state so the banner knows to show
     setSharedLayoutPreview(layout, layout.name, authorName);

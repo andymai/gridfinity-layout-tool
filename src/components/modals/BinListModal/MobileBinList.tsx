@@ -641,7 +641,7 @@ function BinCard({
 
         {/* Category colors */}
         <div className="flex gap-1 pt-1 flex-shrink-0">
-          {row.categoryIds.slice(0, 3).map((catId) => {
+          {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
             const cat = categories.find(c => c.id === catId);
             return (
               <div

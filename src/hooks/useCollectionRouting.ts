@@ -182,7 +182,7 @@ export function useCollectionRouting() {
       try {
         const result = await fetchLayout(activeCollection.id, targetLayoutId);
         if (result.success) {
-          importLayout(result.data.layout as Layout, targetLayoutId);
+          importLayout(result.data.layout as Layout, targetLayoutId, 'init');
           // Update membership with the loaded layout ID
           setMembershipActiveLayout(activeCollection.id, targetLayoutId);
           const layoutRef = activeCollectionLayouts.find((l) => l.id === targetLayoutId);

@@ -12,6 +12,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useCollectionStore } from '../store/collection';
 import { useLayoutStore } from '../store/layout';
+import { useLibraryStore } from '../store/library';
 import * as collectionApi from '../api/collection';
 import { generateUUID } from '../utils/uuid';
 
@@ -27,6 +28,9 @@ const HEARTBEAT_INTERVAL_MS = 10_000;
 
 /** Debounce delay for auto-push (2.5 seconds after last change) */
 const PUSH_DEBOUNCE_MS = 2_500;
+
+/** Debounce delay for name sync (1 second after last change) */
+const NAME_SYNC_DEBOUNCE_MS = 1_000;
 
 /** Storage key for persistent device ID */
 const DEVICE_ID_KEY = 'gridfinity-device-id';
@@ -235,8 +239,8 @@ export function useCollectionSync() {
 
             if (fetchResult.success) {
               console.warn('[CollectionSync] Importing updated layout from server');
-              // Import the updated layout - use ref to get latest importLayout
-              importLayoutRef.current(fetchResult.data.layout, serverLayout.id);
+              // Import the updated layout as 'remote' to prevent sync loop
+              importLayoutRef.current(fetchResult.data.layout, serverLayout.id, 'remote');
             }
           }
 
@@ -456,6 +460,7 @@ export function useCollectionSync() {
     const unsubscribe = useLayoutStore.subscribe((state) => {
       const currentLayout = state.layout;
       const currentLayoutId = state.activeLayoutId;
+      const editSource = state.lastEditSource;
 
       // Skip if layout hasn't changed (reference equality check)
       if (currentLayout === prevLayout) {
@@ -463,6 +468,21 @@ export function useCollectionSync() {
       }
       console.warn('[CollectionSync] Layout changed (reference equality check passed)');
       prevLayout = currentLayout;
+
+      // Skip remote imports - these are changes from other users that should NOT be pushed back
+      if (editSource === 'remote') {
+        console.warn('[CollectionSync] Skipping remote import - no push needed');
+        prevLayoutIdRef.current = currentLayoutId;
+        return;
+      }
+
+      // Skip initial loads - layout is being loaded from storage
+      if (editSource === 'init') {
+        console.warn('[CollectionSync] Skipping initial load - no push needed');
+        isInitialMount.current = false;
+        prevLayoutIdRef.current = currentLayoutId;
+        return;
+      }
 
       // Skip the initial mount
       if (isInitialMount.current) {
@@ -479,8 +499,8 @@ export function useCollectionSync() {
         return;
       }
 
-      // This is a real edit - trigger the sync via ref
-      console.warn('[CollectionSync] Real edit detected, triggering onLayoutChange');
+      // This is a local edit - trigger the sync via ref
+      console.warn('[CollectionSync] Local edit detected, triggering onLayoutChange');
       onLayoutChangeRef.current();
     });
 
@@ -489,6 +509,89 @@ export function useCollectionSync() {
       unsubscribe();
     };
   }, [activeCollection, activeLayoutId]);
+
+  // ============================================================================
+  // Name Change Sync
+  // ============================================================================
+
+  // Ref to track name sync timeout for debouncing
+  const nameSyncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Watch for layout name changes in the library store and sync to server
+  useEffect(() => {
+    if (!activeCollection || !activeLayoutId) {
+      return;
+    }
+
+    console.warn('[CollectionSync] Setting up name change subscription');
+
+    // Get initial name for comparison
+    let prevName = useLibraryStore.getState().library.entries.find(
+      e => e.id === activeLayoutId
+    )?.name;
+
+    const unsubscribe = useLibraryStore.subscribe((state) => {
+      const entry = state.library.entries.find(e => e.id === activeLayoutId);
+      const currentName = entry?.name;
+
+      // Skip if name hasn't changed
+      if (currentName === prevName || currentName === undefined) {
+        return;
+      }
+
+      console.warn('[CollectionSync] Name changed:', { prev: prevName, current: currentName });
+      prevName = currentName;
+
+      // Clear existing timeout
+      if (nameSyncTimeoutRef.current) {
+        clearTimeout(nameSyncTimeoutRef.current);
+      }
+
+      // Debounce the name sync
+      nameSyncTimeoutRef.current = setTimeout(async () => {
+        console.warn('[CollectionSync] Syncing name change to server:', currentName);
+
+        try {
+          // Update the collection layout reference name
+          const result = await collectionApi.updateLayout(
+            activeCollection.id,
+            activeLayoutId,
+            layout,
+            { name: currentName }
+          );
+
+          if (result.success) {
+            // Update the local collection layout reference
+            updateActiveCollectionLayout(activeLayoutId, {
+              name: currentName,
+              modifiedAt: result.data.modifiedAt
+            });
+
+            // Update sync state
+            setStoreSyncState(activeLayoutId, {
+              modifiedAt: result.data.modifiedAt,
+              lastSyncAt: Date.now(),
+            });
+
+            console.warn('[CollectionSync] Name sync successful');
+          } else {
+            console.error('[CollectionSync] Name sync failed:', result.error);
+          }
+        } catch (error) {
+          console.error('[CollectionSync] Name sync error:', error);
+        }
+      }, NAME_SYNC_DEBOUNCE_MS);
+    });
+
+    return () => {
+      console.warn('[CollectionSync] Cleaning up name change subscription');
+      if (nameSyncTimeoutRef.current) {
+        clearTimeout(nameSyncTimeoutRef.current);
+        nameSyncTimeoutRef.current = null;
+      }
+      unsubscribe();
+    };
+  }, [activeCollection, activeLayoutId, layout, setStoreSyncState, updateActiveCollectionLayout]);
 
   /**
    * Resolve conflict by choosing a resolution strategy.
@@ -528,7 +631,7 @@ export function useCollectionSync() {
 
           if (result.success) {
             // Import the server version into the layout store
-            importLayout(result.data.layout, layoutId);
+            importLayout(result.data.layout, layoutId, 'remote');
 
             // Update sync state
             setStoreSyncState(layoutId, {

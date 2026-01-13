@@ -101,7 +101,7 @@ export function MobilePrintList() {
                 <div className="flex items-start gap-3">
                   {/* Category colors */}
                   <div className="flex gap-1 pt-0.5">
-                    {row.categoryIds.slice(0, 3).map((catId) => {
+                    {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
                       const cat = printList.categories.find(c => c.id === catId);
                       return (
                         <div
@@ -111,9 +111,9 @@ export function MobilePrintList() {
                         />
                       );
                     })}
-                    {row.categoryIds.length > 3 && (
+                    {(row.categoryIds ?? []).length > 3 && (
                       <span className="text-xs text-content-disabled">
-                        +{row.categoryIds.length - 3}
+                        +{(row.categoryIds ?? []).length - 3}
                       </span>
                     )}
                   </div>

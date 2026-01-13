@@ -249,9 +249,9 @@ export function RightPanel() {
                               <span className="inline-flex items-center gap-1.5">
                                 <span
                                   className="inline-flex gap-0.5"
-                                  title={row.categoryIds.map(catId => layout.categories.find(c => c.id === catId)?.name || 'Unknown').join(', ')}
+                                  title={(row.categoryIds ?? []).map(catId => layout.categories.find(c => c.id === catId)?.name || 'Unknown').join(', ')}
                                 >
-                                  {row.categoryIds.slice(0, 3).map((catId) => {
+                                  {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
                                     const cat = layout.categories.find(c => c.id === catId);
                                     return (
                                       <span
@@ -263,8 +263,8 @@ export function RightPanel() {
                                       />
                                     );
                                   })}
-                                  {row.categoryIds.length > 3 && (
-                                    <span className="text-[9px] text-content-disabled">+{row.categoryIds.length - 3}</span>
+                                  {(row.categoryIds ?? []).length > 3 && (
+                                    <span className="text-[9px] text-content-disabled">+{(row.categoryIds ?? []).length - 3}</span>
                                   )}
                                 </span>
                                 {row.size}
@@ -280,14 +280,14 @@ export function RightPanel() {
                                   </svg>
                                 )}
                               </span>
-                              {(row.labels[0] || row.notes || (row.customProperties && Object.keys(row.customProperties).length > 0)) && (
+                              {((row.labels ?? [])[0] || row.notes || (row.customProperties && Object.keys(row.customProperties).length > 0)) && (
                                 <span className="flex items-center gap-1">
-                                  {row.labels[0] && (
+                                  {(row.labels ?? [])[0] && (
                                     <span
                                       className="text-xs truncate text-content-tertiary max-w-[80px]"
-                                      title={row.labels[0]}
+                                      title={(row.labels ?? [])[0]}
                                     >
-                                      {row.labels[0]}
+                                      {(row.labels ?? [])[0]}
                                     </span>
                                   )}
                                   {row.notes && (

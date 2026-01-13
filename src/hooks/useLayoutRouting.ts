@@ -79,7 +79,7 @@ export function useLayoutRouting() {
     }
 
     // Switch to the layout
-    importLayout(layout, layoutId);
+    importLayout(layout, layoutId, 'init');
     setActiveLayoutId(layoutId);
 
     // Reset UI state

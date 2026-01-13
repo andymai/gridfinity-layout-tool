@@ -79,7 +79,7 @@ export function SharedLayoutBanner() {
     });
 
     // Update the layout store with the proper ID (not __shared_preview__)
-    importLayout(savedLayout, layoutId);
+    importLayout(savedLayout, layoutId, 'init');
     setActiveLayoutId(layoutId);
 
     // Save the library to storage (get fresh state after store updates)
@@ -98,7 +98,7 @@ export function SharedLayoutBanner() {
     const { library: restoredLibrary, activeLayout } = initializeLayoutLibrary();
 
     // Import the previous active layout
-    importLayout(activeLayout, restoredLibrary.activeLayoutId);
+    importLayout(activeLayout, restoredLibrary.activeLayoutId, 'init');
     setActiveLayoutId(restoredLibrary.activeLayoutId);
 
     // Reset UI state
