@@ -37,6 +37,7 @@ export function SingleBinInspector({
     moveToStaging,
     clearSelection,
     rotateBin,
+    existingPropertyKeys,
   } = inspector;
 
   const halfBinMode = useUIStore(state => state.halfBinMode);
@@ -332,6 +333,7 @@ export function SingleBinInspector({
           customProperties={bin.customProperties}
           onChange={updateCustomProperties}
           variant={variant}
+          suggestedKeys={existingPropertyKeys}
         />
 
         {/* Actions */}

@@ -211,6 +211,46 @@ describe('generatePrintList', () => {
     // Two unlabeled bins grouped, one labeled bin separate
     expect(rows).toHaveLength(2);
   });
+
+  it('keeps bins with custom properties separate even with same dimensions', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '', customProperties: { SKU: 'A1' } },
+      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '', customProperties: { SKU: 'B2' } },
+    ];
+    const rows = generatePrintList(bins, 4);
+    // Each bin with custom properties gets its own row
+    expect(rows).toHaveLength(2);
+    expect(rows.some(r => r.customProperties?.SKU === 'A1')).toBe(true);
+    expect(rows.some(r => r.customProperties?.SKU === 'B2')).toBe(true);
+  });
+
+  it('groups bins without custom properties together', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
+      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
+      { id: '3', layerId: 'l1', x: 0, y: 2, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '', customProperties: { SKU: 'C3' } },
+    ];
+    const rows = generatePrintList(bins, 4);
+    // Two bins without props grouped, one with props separate
+    expect(rows).toHaveLength(2);
+    const groupedRow = rows.find(r => r.binCount === 2);
+    const individualRow = rows.find(r => r.binCount === 1);
+    expect(groupedRow).toBeDefined();
+    expect(groupedRow?.customProperties).toBeUndefined();
+    expect(individualRow).toBeDefined();
+    expect(individualRow?.customProperties?.SKU).toBe('C3');
+  });
+
+  it('treats empty customProperties object as no custom properties', () => {
+    const bins: Bin[] = [
+      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '', customProperties: {} },
+      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
+    ];
+    const rows = generatePrintList(bins, 4);
+    // Empty customProperties should not cause separation
+    expect(rows).toHaveLength(1);
+    expect(rows[0].binCount).toBe(2);
+  });
 });
 
 describe('getTotalPieces', () => {

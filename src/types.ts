@@ -164,6 +164,7 @@ export interface PrintRow {
   labels: string[];          // Non-empty labels from bins of this size
   notes: string;             // Notes (only for labeled/individual bins)
   binIds: string[];          // Original bin IDs for click-to-select
+  customProperties?: Record<string, string>; // Custom properties (only for individual bins)
 }
 
 // === Enhanced Print List Types ===

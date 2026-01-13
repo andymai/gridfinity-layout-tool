@@ -37,6 +37,7 @@ export interface UseBinInspectorReturn {
   // Update handlers
   updateField: (field: BinField, value: string | number) => void;
   updateCustomProperties: (properties: Record<string, string>) => void;
+  updateMultiCustomProperty: (key: string, value: string) => void;
   updateMultiCategory: (categoryId: string) => void;
   updateMultiHeight: (delta: number) => void;
   updateMultiClearance: (delta: number) => void;
@@ -59,6 +60,8 @@ export interface UseBinInspectorReturn {
   // Context
   layout: Layout;
   categories: Category[];
+  /** All unique custom property keys used across all bins in the layout */
+  existingPropertyKeys: string[];
 }
 
 /**
@@ -127,6 +130,19 @@ export function useBinInspector(): UseBinInspectorReturn {
       heightRange: `${minHeight}u – ${maxHeight}u`,
     };
   }, [bin, layer, layout.drawer.height, layout.layers, layout.printBedSize, layout.gridUnitMm]);
+
+  // Collect all unique custom property keys from all bins in the layout (for suggestions)
+  const existingPropertyKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const b of layout.bins) {
+      if (b.customProperties) {
+        for (const key of Object.keys(b.customProperties)) {
+          keys.add(key);
+        }
+      }
+    }
+    return Array.from(keys).sort();
+  }, [layout.bins]);
 
   // Get toast store for notifications (used by custom properties and layer movement)
   const addToast = useToastStore((state) => state.addToast);
@@ -204,6 +220,28 @@ export function useBinInspector(): UseBinInspectorReturn {
       });
     },
     [selectedBins, execute, updateBin]
+  );
+
+  // Update/add a custom property on multiple bins
+  const updateMultiCustomProperty = useCallback(
+    (key: string, value: string) => {
+      if (selectedBins.length === 0) return;
+      const trimmedKey = key.trim();
+      const trimmedValue = value.trim();
+      if (!trimmedKey) return;
+
+      execute(() => {
+        for (const b of selectedBins) {
+          const existing = b.customProperties || {};
+          updateBin(b.id, {
+            customProperties: { ...existing, [trimmedKey]: trimmedValue },
+          });
+        }
+      });
+
+      addToast(`Set "${trimmedKey}" on ${selectedBins.length} bins`, 'success');
+    },
+    [selectedBins, execute, updateBin, addToast]
   );
 
   // Update height delta for multiple bins
@@ -427,6 +465,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     // Update handlers
     updateField,
     updateCustomProperties,
+    updateMultiCustomProperty,
     updateMultiCategory,
     updateMultiHeight,
     updateMultiClearance,
@@ -449,5 +488,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     // Context
     layout,
     categories: layout.categories,
+    existingPropertyKeys,
   };
 }

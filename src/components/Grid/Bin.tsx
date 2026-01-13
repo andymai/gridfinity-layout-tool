@@ -323,6 +323,9 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   } = layoutCalcs;
 
   const hasLabel = showLabels && bin.label;
+  const hasNotes = bin.notes && bin.notes.trim().length > 0;
+  const hasCustomProps = bin.customProperties && Object.keys(bin.customProperties).length > 0;
+  const hasMetadata = hasNotes || hasCustomProps;
 
   // ========== MEMOIZED TEXT CALCULATIONS ==========
   // Memoize font size and label visibility calculations
@@ -651,6 +654,24 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         </div>
       )}
 
+      {/* Metadata indicator badge - shown when bin has notes or custom properties */}
+      {hasMetadata && showAnyText && !isGhost && (
+        <div
+          className="absolute bottom-0.5 left-0.5 p-0.5 rounded-sm pointer-events-none bg-surface/80"
+          style={{ boxShadow: 'var(--shadow-sm)' }}
+          title={[
+            hasNotes ? 'Has notes' : '',
+            hasCustomProps && bin.customProperties
+              ? `${Object.keys(bin.customProperties).length} custom ${Object.keys(bin.customProperties).length === 1 ? 'property' : 'properties'}`
+              : '',
+          ].filter(Boolean).join(', ')}
+        >
+          <svg className="w-3 h-3 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+        </div>
+      )}
+
       {/* Adaptive label system: primary text (label or dimensions) + optional secondary */}
       {showAnyText && (
         <div
@@ -762,9 +783,24 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
     prevBin.depth !== nextBin.depth ||
     prevBin.height !== nextBin.height ||
     prevBin.label !== nextBin.label ||
-    prevBin.category !== nextBin.category
+    prevBin.category !== nextBin.category ||
+    prevBin.notes !== nextBin.notes
   ) {
     return false;
+  }
+
+  // Re-render if customProperties change (compare by key count and values)
+  const prevCustomProps = prevBin.customProperties;
+  const nextCustomProps = nextBin.customProperties;
+  const prevHasProps = prevCustomProps && Object.keys(prevCustomProps).length > 0;
+  const nextHasProps = nextCustomProps && Object.keys(nextCustomProps).length > 0;
+  if (prevHasProps !== nextHasProps) {
+    return false;
+  }
+  if (prevHasProps && nextHasProps) {
+    const prevKeys = Object.keys(prevCustomProps);
+    const nextKeys = Object.keys(nextCustomProps);
+    if (prevKeys.length !== nextKeys.length) return false;
   }
 
   // Re-render if category changes

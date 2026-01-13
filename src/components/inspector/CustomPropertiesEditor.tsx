@@ -6,6 +6,8 @@ interface CustomPropertiesEditorProps {
   onChange: (properties: Record<string, string>) => void;
   /** Platform variant affects touch targets and sizing */
   variant: 'desktop' | 'mobile';
+  /** Property keys used by other bins in the layout (for quick add suggestions) */
+  suggestedKeys?: string[];
 }
 
 /**
@@ -16,6 +18,7 @@ export function CustomPropertiesEditor({
   customProperties = {},
   onChange,
   variant,
+  suggestedKeys = [],
 }: CustomPropertiesEditorProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newKey, setNewKey] = useState('');
@@ -26,9 +29,15 @@ export function CustomPropertiesEditor({
   const inputHeight = isMobile ? 'h-12' : '';
   const labelSize = isMobile ? 'text-sm mb-2' : 'text-xs mb-1';
 
-  const properties = Object.entries(customProperties);
+  // Sort properties alphabetically for consistent display across bins
+  const properties = Object.entries(customProperties).sort(([a], [b]) => a.localeCompare(b));
   const hasProperties = properties.length > 0;
   const atMaxProperties = properties.length >= CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT;
+
+  // Keys that exist in other bins but not this one
+  const availableSuggestions = suggestedKeys.filter(
+    (key) => !(key in customProperties)
+  );
 
   const handleAdd = () => {
     const trimmedKey = newKey.trim();
@@ -103,6 +112,14 @@ export function CustomPropertiesEditor({
       e.preventDefault();
       handleCancelAdd();
     }
+  };
+
+  // Quick-add a suggested key with empty value (user fills in value)
+  const handleQuickAdd = (key: string) => {
+    if (atMaxProperties) return;
+    setNewKey(key);
+    setNewValue('');
+    setIsAdding(true);
   };
 
   return (
@@ -215,6 +232,33 @@ export function CustomPropertiesEditor({
       {!hasProperties && !isAdding && (
         <div className="text-sm text-content-disabled italic">
           No custom properties
+        </div>
+      )}
+
+      {/* Quick add suggestions - show keys used by other bins */}
+      {!isAdding && availableSuggestions.length > 0 && !atMaxProperties && (
+        <div className="mt-2 pt-2 border-t border-stroke-subtle">
+          <div className="text-xs text-content-tertiary mb-1.5">
+            Quick add from other bins:
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {availableSuggestions.slice(0, 6).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => handleQuickAdd(key)}
+                className="text-xs px-2 py-1 rounded bg-surface-secondary hover:bg-surface-elevated text-content-secondary hover:text-content transition-colors border border-stroke-subtle"
+                title={`Add "${key}" property`}
+              >
+                + {key}
+              </button>
+            ))}
+            {availableSuggestions.length > 6 && (
+              <span className="text-xs text-content-disabled px-1 py-1">
+                +{availableSuggestions.length - 6} more
+              </span>
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -130,8 +130,16 @@ function mergePieces(pieces: PrintPiece[]): PrintPiece[] {
 }
 
 /**
+ * Check if a bin has custom properties (non-empty object).
+ */
+function hasCustomProperties(bin: Bin): boolean {
+  return bin.customProperties !== undefined && Object.keys(bin.customProperties).length > 0;
+}
+
+/**
  * Generate the print list from bins.
  * Groups bins by size×height, calculates split pieces.
+ * Bins with labels or custom properties get their own rows.
  */
 export function generatePrintList(
   bins: Bin[],
@@ -141,20 +149,41 @@ export function generatePrintList(
   // Filter out staging bins
   const placedBins = bins.filter(b => b.layerId !== STAGING_ID);
 
-  // Group by size, height, category, and label (labeled bins are not grouped together)
-  const groups = new Map<string, { width: number; depth: number; height: number; count: number; categoryId: string; label: string; notes: string; binIds: string[] }>();
+  // Group by size, height, category. Labeled bins and bins with custom properties get their own rows.
+  const groups = new Map<string, {
+    width: number;
+    depth: number;
+    height: number;
+    count: number;
+    categoryId: string;
+    label: string;
+    notes: string;
+    binIds: string[];
+    customProperties?: Record<string, string>;
+  }>();
 
   for (const bin of placedBins) {
-    // Labeled bins get their own row; unlabeled bins are grouped by size+height+category
-    const key = bin.label
-      ? `${bin.width}×${bin.depth}×${bin.height}:${bin.category}:${bin.id}` // Unique key for labeled bins
+    // Labeled bins and bins with custom properties get their own row
+    const isIndividual = bin.label || hasCustomProperties(bin);
+    const key = isIndividual
+      ? `${bin.width}×${bin.depth}×${bin.height}:${bin.category}:${bin.id}` // Unique key
       : `${bin.width}×${bin.depth}×${bin.height}:${bin.category}`;
     const existing = groups.get(key);
     if (existing) {
       existing.count++;
       existing.binIds.push(bin.id);
     } else {
-      groups.set(key, { width: bin.width, depth: bin.depth, height: bin.height, count: 1, categoryId: bin.category, label: bin.label, notes: bin.notes, binIds: [bin.id] });
+      groups.set(key, {
+        width: bin.width,
+        depth: bin.depth,
+        height: bin.height,
+        count: 1,
+        categoryId: bin.category,
+        label: bin.label,
+        notes: bin.notes,
+        binIds: [bin.id],
+        customProperties: bin.customProperties,
+      });
     }
   }
 
@@ -186,6 +215,7 @@ export function generatePrintList(
       labels: group.label ? [group.label] : [],
       notes: group.notes,
       binIds: group.binIds,
+      customProperties: group.customProperties,
     });
   }
 
