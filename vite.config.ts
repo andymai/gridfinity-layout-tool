@@ -5,6 +5,14 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    // PartyKit host for real-time collections
+    // In production/preview, use the deployed PartyKit server
+    // In development, leave undefined to use localhost
+    'import.meta.env.VITE_PARTYKIT_HOST': process.env.VERCEL
+      ? JSON.stringify('gridfinity-collections.andymai.partykit.dev')
+      : undefined,
+  },
   plugins: [
     react(),
     tailwindcss(),
