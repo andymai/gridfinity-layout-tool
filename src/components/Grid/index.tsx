@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect, Suspense } from 'react';
+import { useRef, useState, useCallback, useEffect, useLayoutEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
@@ -353,18 +353,17 @@ export function Grid() {
   }, [drawer.width, drawer.depth, gap, setZoom, isMobile]);
 
   // Fit to screen on initial mount and when drawer size changes (but not during resize drag)
-  useEffect(() => {
+  // Uses useLayoutEffect to calculate zoom synchronously before paint, preventing CLS
+  useLayoutEffect(() => {
     // Skip while user is actively resizing via handles
     if (resizeDirection) return;
-    // Delay to ensure container is fully rendered
-    const timer = setTimeout(fitToScreen, 100);
-    return () => clearTimeout(timer);
+    fitToScreen();
   }, [fitToScreen, drawer.width, drawer.depth, resizeDirection]);
 
   // Refit when 3D preview is toggled (changes available width on desktop, height on mobile)
-  useEffect(() => {
-    const timer = setTimeout(fitToScreen, 100);
-    return () => clearTimeout(timer);
+  // Uses useLayoutEffect for immediate response to user interaction
+  useLayoutEffect(() => {
+    fitToScreen();
   }, [showIsometricPreview, fitToScreen]);
 
 
