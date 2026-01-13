@@ -41,6 +41,14 @@ export function MobileSettingsPanel() {
     [layers, activeLayerId]
   );
 
+  // Check if dimensions are fractional (for step size calculation)
+  const hasFractionalWidth = layout.drawer.width % 1 !== 0;
+  const hasFractionalDepth = layout.drawer.depth % 1 !== 0;
+
+  // Use 0.5 step when in half-bin mode OR when dimension is already fractional
+  const widthStep = halfBinMode || hasFractionalWidth ? 0.5 : 1;
+  const depthStep = halfBinMode || hasFractionalDepth ? 0.5 : 1;
+
   const handleSaveDefaults = () => {
     const layerHeight = activeLayer?.height ?? 3;
     saveCurrentAsDefaults(layout.drawer, layout.printBedSize, layout.gridUnitMm, layout.heightUnitMm, layerHeight);
@@ -52,6 +60,18 @@ export function MobileSettingsPanel() {
     const minVal = field === 'height' ? 1 : 0.5;
     const newValue = Math.max(minVal, Math.min(CONSTRAINTS.GRID_MAX, current + delta));
     execute(() => updateDrawer({ [field]: newValue }));
+  };
+
+  const handleDrawerWidthStepper = (delta: number) => {
+    const step = halfBinMode || hasFractionalWidth ? 0.5 : 1;
+    const newWidth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, layout.drawer.width + delta * step));
+    execute(() => updateDrawer({ width: newWidth }));
+  };
+
+  const handleDrawerDepthStepper = (delta: number) => {
+    const step = halfBinMode || hasFractionalDepth ? 0.5 : 1;
+    const newDepth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, layout.drawer.depth + delta * step));
+    execute(() => updateDrawer({ depth: newDepth }));
   };
 
   const handleDrawerWidthChange = (width: number) => {
@@ -112,15 +132,37 @@ export function MobileSettingsPanel() {
             <label className="block text-sm mb-1 text-content-tertiary">
               Width
             </label>
-            <DeferredNumberInput
-              value={layout.drawer.width}
-              onChange={handleDrawerWidthChange}
-              min={0.5}
-              max={CONSTRAINTS.GRID_MAX}
-              step={0.5}
-              className="input w-full h-12 text-center font-semibold tabular-nums"
-              aria-label="Drawer width in grid units"
-            />
+            <div className="flex items-center">
+              <button
+                onClick={() => handleDrawerWidthStepper(-1)}
+                disabled={layout.drawer.width <= 0.5}
+                className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
+                aria-label="Decrease width"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </button>
+              <DeferredNumberInput
+                value={layout.drawer.width}
+                onChange={handleDrawerWidthChange}
+                min={0.5}
+                max={CONSTRAINTS.GRID_MAX}
+                step={widthStep}
+                className="flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none"
+                aria-label="Drawer width in grid units"
+              />
+              <button
+                onClick={() => handleDrawerWidthStepper(1)}
+                disabled={layout.drawer.width >= CONSTRAINTS.GRID_MAX}
+                className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
+                aria-label="Increase width"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Depth */}
@@ -128,15 +170,37 @@ export function MobileSettingsPanel() {
             <label className="block text-sm mb-1 text-content-tertiary">
               Depth
             </label>
-            <DeferredNumberInput
-              value={layout.drawer.depth}
-              onChange={handleDrawerDepthChange}
-              min={0.5}
-              max={CONSTRAINTS.GRID_MAX}
-              step={0.5}
-              className="input w-full h-12 text-center font-semibold tabular-nums"
-              aria-label="Drawer depth in grid units"
-            />
+            <div className="flex items-center">
+              <button
+                onClick={() => handleDrawerDepthStepper(-1)}
+                disabled={layout.drawer.depth <= 0.5}
+                className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
+                aria-label="Decrease depth"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </button>
+              <DeferredNumberInput
+                value={layout.drawer.depth}
+                onChange={handleDrawerDepthChange}
+                min={0.5}
+                max={CONSTRAINTS.GRID_MAX}
+                step={depthStep}
+                className="flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none"
+                aria-label="Drawer depth in grid units"
+              />
+              <button
+                onClick={() => handleDrawerDepthStepper(1)}
+                disabled={layout.drawer.depth >= CONSTRAINTS.GRID_MAX}
+                className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
+                aria-label="Increase depth"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
