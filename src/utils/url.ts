@@ -80,3 +80,86 @@ export function getLayoutIdFromHistoryState(state: unknown): string | null {
   }
   return null;
 }
+
+// ============================================================================
+// Collection URL Utilities
+// ============================================================================
+
+/**
+ * Collection URL format: /c/{12-char-alphanumeric}
+ * View-only format: /c/{id}/view
+ */
+const COLLECTION_PATH_REGEX = /^\/c\/([a-zA-Z0-9]{12})(\/view)?$/;
+
+/**
+ * Parse a collection ID from the current URL pathname.
+ * Returns the collection ID and whether it's view-only mode.
+ */
+export function parseCollectionFromURL(): { collectionId: string; viewOnly: boolean } | null {
+  if (typeof window === 'undefined') return null;
+
+  const match = window.location.pathname.match(COLLECTION_PATH_REGEX);
+  if (match) {
+    return {
+      collectionId: match[1],
+      viewOnly: match[2] === '/view',
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Check if the current URL is a collection URL.
+ */
+export function isCollectionURL(): boolean {
+  return parseCollectionFromURL() !== null;
+}
+
+/**
+ * Set the URL to a collection path.
+ */
+export function setCollectionURL(collectionId: string, viewOnly = false, addToHistory = false): void {
+  const path = viewOnly ? `/c/${collectionId}/view` : `/c/${collectionId}`;
+
+  if (addToHistory) {
+    window.history.pushState({ collectionId, viewOnly }, '', path);
+  } else {
+    window.history.replaceState({ collectionId, viewOnly }, '', path);
+  }
+}
+
+/**
+ * Clear the collection URL (navigate to root).
+ */
+export function clearCollectionURL(): void {
+  if (typeof window === 'undefined') return;
+
+  if (window.location.pathname.startsWith('/c/')) {
+    window.history.replaceState({}, '', '/');
+  }
+}
+
+/**
+ * Get collection info from a popstate event's state object.
+ */
+export function getCollectionFromHistoryState(state: unknown): { collectionId: string; viewOnly: boolean } | null {
+  if (state && typeof state === 'object' && 'collectionId' in state) {
+    const collectionId = (state as { collectionId: unknown }).collectionId;
+    const viewOnly = (state as { viewOnly?: unknown }).viewOnly === true;
+    if (typeof collectionId === 'string' && collectionId.length === 12) {
+      return { collectionId, viewOnly };
+    }
+  }
+  return null;
+}
+
+/**
+ * Generate a full collection URL for sharing.
+ */
+export function generateCollectionURL(collectionId: string, viewOnly = false): string {
+  if (typeof window === 'undefined') return '';
+
+  const base = `${window.location.origin}/c/${collectionId}`;
+  return viewOnly ? `${base}/view` : base;
+}

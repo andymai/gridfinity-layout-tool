@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLayoutSwitcher } from '../../../hooks/useLayoutSwitcher';
 import { useUIStore } from '../../../store/ui';
+import { useCollectionStore } from '../../../store/collection';
 import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
 import { ShareModal } from '../ShareModal';
+import { CreateCollectionModal } from '../CreateCollectionModal';
+import { JoinCollectionModal } from '../JoinCollectionModal';
 import type { Layout } from '../../../types';
 
 type Tab = 'layouts' | 'import';
@@ -25,8 +28,12 @@ export function LayoutManagerModal({ isOpen, onClose }: LayoutManagerModalProps)
 function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<Tab>('layouts');
   const [shareModalLayoutId, setShareModalLayoutId] = useState<string | null>(null);
+  const [showCreateCollection, setShowCreateCollection] = useState(false);
+  const [showJoinCollection, setShowJoinCollection] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  const isInCollectionMode = useCollectionStore((state) => state.isInCollectionMode());
 
   const {
     activeLayoutId,
@@ -230,19 +237,52 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Tab Content */}
-        <div className="min-h-0 overflow-hidden">
+        <div className="min-h-0 overflow-hidden flex flex-col">
           {activeTab === 'layouts' && (
-            <div id="layouts-panel" role="tabpanel" aria-labelledby="layouts-tab" className="h-full">
-              <LayoutList
-                entries={library.entries}
-                activeLayoutId={activeLayoutId}
-                onSwitch={handleSwitch}
-                onRename={handleRename}
-                onDuplicate={handleDuplicate}
-                onDelete={handleDelete}
-                onCreate={handleCreate}
-                onShare={handleShare}
-              />
+            <div id="layouts-panel" role="tabpanel" aria-labelledby="layouts-tab" className="flex-1 min-h-0 flex flex-col">
+              <div className="flex-1 min-h-0 overflow-auto">
+                <LayoutList
+                  entries={library.entries}
+                  activeLayoutId={activeLayoutId}
+                  onSwitch={handleSwitch}
+                  onRename={handleRename}
+                  onDuplicate={handleDuplicate}
+                  onDelete={handleDelete}
+                  onCreate={handleCreate}
+                  onShare={handleShare}
+                />
+              </div>
+
+              {/* Collaborate Section - only show when not in collection mode */}
+              {!isInCollectionMode && (
+                <div className="mt-4 pt-4 border-t border-stroke flex-shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium text-content">Collaborate</h3>
+                      <p className="text-xs text-content-tertiary mt-0.5">
+                        Share layouts with your team - no account needed
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowJoinCollection(true)}
+                        className="px-3 py-1.5 text-sm font-medium rounded-md text-content-secondary hover:text-content hover:bg-surface transition-colors"
+                      >
+                        Join
+                      </button>
+                      <button
+                        onClick={() => setShowCreateCollection(true)}
+                        className="px-3 py-1.5 text-sm font-medium rounded-md bg-accent text-white hover:bg-accent-hover transition-colors flex items-center gap-1.5"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        Create Collection
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -259,6 +299,16 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         isOpen={shareModalLayoutId !== null}
         onClose={() => setShareModalLayoutId(null)}
         layoutId={shareModalLayoutId ?? undefined}
+      />
+
+      {/* Collection Modals */}
+      <CreateCollectionModal
+        isOpen={showCreateCollection}
+        onClose={() => setShowCreateCollection(false)}
+      />
+      <JoinCollectionModal
+        isOpen={showJoinCollection}
+        onClose={() => setShowJoinCollection(false)}
       />
     </div>
   );
