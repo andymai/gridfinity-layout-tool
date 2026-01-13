@@ -581,12 +581,24 @@ export function useCollectionSync() {
         window.clearInterval(heartbeatIntervalRef.current);
         heartbeatIntervalRef.current = null;
       }
+      // NOTE: Do NOT clear pushTimeoutRef here! This effect re-runs when poll/sendHeartbeat
+      // callbacks change (which happens on layout changes), and clearing the push timeout
+      // would prevent changes from being saved. Push timeout is only cleared in onLayoutChange
+      // (when scheduling a new push) or when leaving collection mode (separate effect below).
+    };
+  }, [activeCollection, poll, sendHeartbeat]);
+
+  // Clear push timeout only when leaving collection mode (not on callback changes)
+  useEffect(() => {
+    return () => {
+      // This cleanup only runs when activeCollection changes to null/undefined
       if (pushTimeoutRef.current) {
+        console.warn('[CollectionSync] Clearing push timeout on collection exit');
         window.clearTimeout(pushTimeoutRef.current);
         pushTimeoutRef.current = null;
       }
     };
-  }, [activeCollection, poll, sendHeartbeat]);
+  }, [activeCollection]);
 
   // Reset sync state when leaving collection (outside of effect to avoid lint error)
   // We compute this as derived state based on whether we're in a collection
