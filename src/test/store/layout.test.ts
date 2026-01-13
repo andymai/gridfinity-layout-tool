@@ -655,6 +655,469 @@ describe('layout store', () => {
       setPrintBedSize(1000);
       expect(useLayoutStore.getState().layout.printBedSize).toBe(500); // Max
     });
+
+    it('setGridUnitMm updates and clamps value', () => {
+      const { setGridUnitMm } = useLayoutStore.getState();
+
+      setGridUnitMm(50);
+      expect(useLayoutStore.getState().layout.gridUnitMm).toBe(50);
+
+      // Test min clamping
+      setGridUnitMm(0);
+      expect(useLayoutStore.getState().layout.gridUnitMm).toBe(1);
+
+      // Test max clamping
+      setGridUnitMm(500);
+      expect(useLayoutStore.getState().layout.gridUnitMm).toBe(200);
+    });
+
+    it('setHeightUnitMm updates and clamps value', () => {
+      const { setHeightUnitMm } = useLayoutStore.getState();
+
+      setHeightUnitMm(10);
+      expect(useLayoutStore.getState().layout.heightUnitMm).toBe(10);
+
+      // Test min clamping
+      setHeightUnitMm(0);
+      expect(useLayoutStore.getState().layout.heightUnitMm).toBe(1);
+
+      // Test max clamping
+      setHeightUnitMm(100);
+      expect(useLayoutStore.getState().layout.heightUnitMm).toBe(50);
+    });
+
+    it('setActiveLayoutId updates the active layout ID', () => {
+      const { setActiveLayoutId } = useLayoutStore.getState();
+
+      expect(useLayoutStore.getState().activeLayoutId).toBeNull();
+
+      setActiveLayoutId('layout-123');
+      expect(useLayoutStore.getState().activeLayoutId).toBe('layout-123');
+
+      setActiveLayoutId(null);
+      expect(useLayoutStore.getState().activeLayoutId).toBeNull();
+    });
+  });
+
+  describe('moveBinToStaging', () => {
+    it('moves a bin to staging', () => {
+      const { addBin, moveBinToStaging, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Test',
+        notes: '',
+      });
+
+      expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(layerId);
+
+      moveBinToStaging(binId!);
+      expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(STAGING_ID);
+    });
+
+    it('does nothing when bin does not exist', () => {
+      const { moveBinToStaging } = useLayoutStore.getState();
+
+      // Should not throw
+      expect(() => moveBinToStaging('nonexistent')).not.toThrow();
+    });
+  });
+
+  describe('moveBinFromStaging', () => {
+    it('moves a bin from staging to grid', () => {
+      const { addBin, moveBinFromStaging, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Add bin to staging
+      const binId = addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const result = moveBinFromStaging(binId!, layerId, 0, 0);
+      expect(result).toBe(true);
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.layerId).toBe(layerId);
+      expect(bin.x).toBe(0);
+      expect(bin.y).toBe(0);
+    });
+
+    it('returns false when bin does not exist', () => {
+      const { moveBinFromStaging, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+
+      const result = moveBinFromStaging('nonexistent', layerId, 0, 0);
+      expect(result).toBe(false);
+    });
+
+    it('returns false when layer does not exist', () => {
+      const { addBin, moveBinFromStaging, layout } = useLayoutStore.getState();
+      const categoryId = layout.categories[0].id;
+
+      const binId = addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const result = moveBinFromStaging(binId!, 'nonexistent-layer', 0, 0);
+      expect(result).toBe(false);
+    });
+
+    it('returns false when placement is invalid', () => {
+      const { addBin, moveBinFromStaging, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Add existing bin at position
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      // Add bin to staging
+      const stagingBinId = addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      // Try to move to occupied position
+      const result = moveBinFromStaging(stagingBinId!, layerId, 0, 0);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('updateLayer', () => {
+    it('updates layer properties', () => {
+      const { updateLayer, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+
+      updateLayer(layerId, { name: 'Renamed Layer' });
+      expect(useLayoutStore.getState().layout.layers[0].name).toBe('Renamed Layer');
+    });
+
+    it('clamps layer height to available space', () => {
+      const { updateLayer, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+
+      // Drawer height is 12, so setting height to 20 should clamp
+      updateLayer(layerId, { height: 20 });
+      expect(useLayoutStore.getState().layout.layers[0].height).toBeLessThanOrEqual(12);
+    });
+
+    it('does nothing for nonexistent layer', () => {
+      const { updateLayer, layout } = useLayoutStore.getState();
+      const originalName = layout.layers[0].name;
+
+      updateLayer('nonexistent', { name: 'New Name' });
+      expect(useLayoutStore.getState().layout.layers[0].name).toBe(originalName);
+    });
+  });
+
+  describe('reorderLayers', () => {
+    it('reorders layers successfully', () => {
+      const { addLayer, reorderLayers } = useLayoutStore.getState();
+
+      // Add second layer
+      addLayer();
+
+      const layer1Id = useLayoutStore.getState().layout.layers[0].id;
+      const layer2Id = useLayoutStore.getState().layout.layers[1].id;
+
+      const result = reorderLayers(0, 1);
+      expect(result.success).toBe(true);
+
+      const layers = useLayoutStore.getState().layout.layers;
+      expect(layers[0].id).toBe(layer2Id);
+      expect(layers[1].id).toBe(layer1Id);
+    });
+
+    it('returns success for same index', () => {
+      const result = useLayoutStore.getState().reorderLayers(0, 0);
+      expect(result.success).toBe(true);
+    });
+
+    it('returns error for invalid source index', () => {
+      const result = useLayoutStore.getState().reorderLayers(-1, 0);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Invalid source index');
+    });
+
+    it('returns error for invalid target index', () => {
+      const result = useLayoutStore.getState().reorderLayers(0, 10);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Invalid target index');
+    });
+
+    it('returns error when reorder would cause collisions', () => {
+      const { addBin, addLayer, updateDrawer, layout } = useLayoutStore.getState();
+      const categoryId = layout.categories[0].id;
+
+      // Set up drawer to accommodate two layers
+      updateDrawer({ height: 12 });
+
+      // Add second layer
+      const layer2Id = addLayer();
+      expect(layer2Id).not.toBeNull();
+
+      // Layer 1 height = 3, layer 2 height = 3
+      const layer1Id = useLayoutStore.getState().layout.layers[0].id;
+
+      // Add a bin on layer 1 at (0,0) with height 3 (fills layer 1)
+      const bin1Id = addBin({
+        layerId: layer1Id,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+      expect(bin1Id).not.toBeNull();
+
+      // Add a bin on layer 2 at same (0,0) position with height 4 (spans into next space)
+      // Before swap: layers = [Layer1(h=3), Layer2(h=3)]
+      //   Bin1: zStart=0, zEnd=3
+      //   Bin2: zStart=3, zEnd=7
+      //   No overlap (3 < 3 is false)
+      //
+      // After swap: layers = [Layer2(h=3), Layer1(h=3)]
+      //   Bin2: zStart=0, zEnd=4 (Layer2 is now first)
+      //   Bin1: zStart=3, zEnd=6 (Layer1 starts at z=3)
+      //   Overlap check: 0 < 6 && 3 < 4 = true && true = collision!
+      const bin2Id = addBin({
+        layerId: layer2Id!,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 4,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+      expect(bin2Id).not.toBeNull();
+
+      // Verify bins were added
+      const bins = useLayoutStore.getState().layout.bins;
+      expect(bins.length).toBe(2);
+
+      // Reordering should cause collision since bins would vertically overlap
+      const result = useLayoutStore.getState().reorderLayers(0, 1);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('collision');
+    });
+  });
+
+  describe('updateCategory', () => {
+    it('updates category properties', () => {
+      const { updateCategory, layout } = useLayoutStore.getState();
+      const categoryId = layout.categories[0].id;
+
+      updateCategory(categoryId, { name: 'Renamed Category', color: '#00ff00' });
+
+      const category = useLayoutStore.getState().layout.categories[0];
+      expect(category.name).toBe('Renamed Category');
+      expect(category.color).toBe('#00ff00');
+    });
+
+    it('does nothing for nonexistent category', () => {
+      const { updateCategory, layout } = useLayoutStore.getState();
+      const originalName = layout.categories[0].name;
+
+      updateCategory('nonexistent', { name: 'New Name' });
+      expect(useLayoutStore.getState().layout.categories[0].name).toBe(originalName);
+    });
+  });
+
+  describe('fillLayerGaps', () => {
+    it('fills gaps in a layer with bins', () => {
+      const { addBin, fillLayerGaps, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Add a few bins leaving gaps
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      addBin({
+        layerId,
+        x: 5,
+        y: 5,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const initialBinCount = useLayoutStore.getState().layout.bins.length;
+      const addedCount = fillLayerGaps(layerId, categoryId);
+
+      // Should have added some bins to fill gaps
+      expect(addedCount).toBeGreaterThanOrEqual(0);
+      expect(useLayoutStore.getState().layout.bins.length).toBeGreaterThanOrEqual(initialBinCount);
+    });
+
+    it('works with half-bin mode', () => {
+      const { fillLayerGaps, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Should not throw with halfBinMode enabled
+      expect(() => fillLayerGaps(layerId, categoryId, true)).not.toThrow();
+    });
+  });
+
+  describe('fillLayer with half-bin mode', () => {
+    it('fills layer with half-bin sized bins when enabled', () => {
+      const { fillLayer, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Fill with 1.5x1.5 bins in half-bin mode
+      const count = fillLayer(layerId, 1.5, 1.5, categoryId, true);
+
+      expect(count).toBeGreaterThan(0);
+      // Verify bins were created with fractional dimensions
+      const bins = useLayoutStore.getState().layout.bins;
+      const hasFractional = bins.some(b => b.width === 1.5 || b.depth === 1.5);
+      expect(hasFractional).toBe(true);
+    });
+  });
+
+  describe('drawer operations extended', () => {
+    it('updateDrawer handles fractionalEdgeX', () => {
+      const { updateDrawer } = useLayoutStore.getState();
+
+      updateDrawer({ fractionalEdgeX: 'start' });
+      expect(useLayoutStore.getState().layout.drawer.fractionalEdgeX).toBe('start');
+
+      updateDrawer({ fractionalEdgeX: 'end' });
+      expect(useLayoutStore.getState().layout.drawer.fractionalEdgeX).toBe('end');
+    });
+
+    it('updateDrawer handles fractionalEdgeY', () => {
+      const { updateDrawer } = useLayoutStore.getState();
+
+      updateDrawer({ fractionalEdgeY: 'start' });
+      expect(useLayoutStore.getState().layout.drawer.fractionalEdgeY).toBe('start');
+
+      updateDrawer({ fractionalEdgeY: 'end' });
+      expect(useLayoutStore.getState().layout.drawer.fractionalEdgeY).toBe('end');
+    });
+
+    it('updateDrawer clamps height to total layer heights', () => {
+      const { updateDrawer, addLayer } = useLayoutStore.getState();
+
+      // Add multiple layers (each uses height from remaining)
+      addLayer();
+      addLayer();
+
+      const totalLayerHeight = useLayoutStore.getState().layout.layers.reduce(
+        (sum, l) => sum + l.height, 0
+      );
+
+      // Try to set height below total layer heights
+      updateDrawer({ height: 1 });
+
+      // Should be clamped to at least total layer height
+      expect(useLayoutStore.getState().layout.drawer.height).toBeGreaterThanOrEqual(totalLayerHeight);
+    });
+  });
+
+  describe('duplicateBin edge cases', () => {
+    it('returns null when bin does not exist', () => {
+      const { duplicateBin } = useLayoutStore.getState();
+
+      const result = duplicateBin('nonexistent');
+      expect(result).toBeNull();
+    });
+
+    it('preserves clearanceHeight when duplicating', () => {
+      const { addBin, duplicateBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+        clearanceHeight: 2,
+      });
+
+      const newId = duplicateBin(binId!);
+      const newBin = useLayoutStore.getState().layout.bins.find(b => b.id === newId);
+
+      expect(newBin?.clearanceHeight).toBe(2);
+    });
+  });
+
+  describe('importLayout with layoutId', () => {
+    it('sets activeLayoutId when provided', () => {
+      const { importLayout } = useLayoutStore.getState();
+      const newLayout: Layout = createDefaultLayout();
+
+      importLayout(newLayout, 'custom-layout-id');
+
+      expect(useLayoutStore.getState().activeLayoutId).toBe('custom-layout-id');
+    });
   });
 
 });

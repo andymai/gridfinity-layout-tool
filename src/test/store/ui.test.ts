@@ -280,6 +280,7 @@ describe('ui store', () => {
     it('toggleIsometricPreview toggles visibility', () => {
       const { toggleIsometricPreview } = useUIStore.getState();
 
+      // resetAllStores() sets this to true
       expect(useUIStore.getState().showIsometricPreview).toBe(true);
       toggleIsometricPreview();
       expect(useUIStore.getState().showIsometricPreview).toBe(false);
@@ -325,6 +326,7 @@ describe('ui store', () => {
     it('setLayerViewMode changes layer view mode', () => {
       const { setLayerViewMode } = useUIStore.getState();
 
+      // resetAllStores() sets this to 'focus'
       expect(useUIStore.getState().layerViewMode).toBe('focus');
       setLayerViewMode('stack');
       expect(useUIStore.getState().layerViewMode).toBe('stack');
@@ -536,6 +538,219 @@ describe('ui store', () => {
 
       // Original name should still be preserved
       expect(useUIStore.getState().sharedLayoutOriginalName).toBe('Original Name');
+    });
+
+    it('setSharedLayoutPreview sets author name when provided', () => {
+      const { setSharedLayoutPreview } = useUIStore.getState();
+
+      setSharedLayoutPreview(mockLayout, 'Custom Name', 'John Doe');
+
+      const state = useUIStore.getState();
+      expect(state.sharedLayoutAuthorName).toBe('John Doe');
+    });
+
+    it('clearSharedLayoutPreview also clears author name', () => {
+      const { setSharedLayoutPreview, clearSharedLayoutPreview } = useUIStore.getState();
+
+      setSharedLayoutPreview(mockLayout, 'Test', 'Author');
+      expect(useUIStore.getState().sharedLayoutAuthorName).toBe('Author');
+
+      clearSharedLayoutPreview();
+      expect(useUIStore.getState().sharedLayoutAuthorName).toBeNull();
+    });
+  });
+
+  describe('keyboard navigation', () => {
+    it('setFocusedBin sets focused bin', () => {
+      const { setFocusedBin } = useUIStore.getState();
+
+      setFocusedBin('bin1');
+      expect(useUIStore.getState().focusedBinId).toBe('bin1');
+
+      setFocusedBin(null);
+      expect(useUIStore.getState().focusedBinId).toBeNull();
+    });
+
+    it('setKeyboardDragMode enables drag mode', () => {
+      const { setKeyboardDragMode } = useUIStore.getState();
+
+      setKeyboardDragMode(true);
+      expect(useUIStore.getState().keyboardDragMode).toBe(true);
+
+      setKeyboardDragMode(false);
+      expect(useUIStore.getState().keyboardDragMode).toBe(false);
+    });
+
+    it('setKeyboardDragMode disables resize mode when entering drag mode', () => {
+      const { setKeyboardResizeMode, setKeyboardDragMode } = useUIStore.getState();
+
+      setKeyboardResizeMode(true);
+      expect(useUIStore.getState().keyboardResizeMode).toBe(true);
+
+      setKeyboardDragMode(true);
+      expect(useUIStore.getState().keyboardDragMode).toBe(true);
+      expect(useUIStore.getState().keyboardResizeMode).toBe(false);
+    });
+
+    it('setKeyboardResizeMode enables resize mode', () => {
+      const { setKeyboardResizeMode } = useUIStore.getState();
+
+      setKeyboardResizeMode(true);
+      expect(useUIStore.getState().keyboardResizeMode).toBe(true);
+    });
+
+    it('setKeyboardResizeMode disables drag mode when entering resize mode', () => {
+      const { setKeyboardDragMode, setKeyboardResizeMode } = useUIStore.getState();
+
+      setKeyboardDragMode(true);
+      expect(useUIStore.getState().keyboardDragMode).toBe(true);
+
+      setKeyboardResizeMode(true);
+      expect(useUIStore.getState().keyboardResizeMode).toBe(true);
+      expect(useUIStore.getState().keyboardDragMode).toBe(false);
+    });
+
+    it('announceToScreenReader sets and clears live message', async () => {
+      vi.useFakeTimers();
+      const { announceToScreenReader } = useUIStore.getState();
+
+      announceToScreenReader('Test announcement');
+      expect(useUIStore.getState().liveMessage).toBe('Test announcement');
+
+      // Message should clear after 1 second
+      vi.advanceTimersByTime(1000);
+      expect(useUIStore.getState().liveMessage).toBeNull();
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('quick label', () => {
+    it('showQuickLabel sets quick label bin', () => {
+      const { showQuickLabel } = useUIStore.getState();
+
+      showQuickLabel('bin1');
+      expect(useUIStore.getState().quickLabelBinId).toBe('bin1');
+    });
+
+    it('hideQuickLabel clears quick label bin', () => {
+      const { showQuickLabel, hideQuickLabel } = useUIStore.getState();
+
+      showQuickLabel('bin1');
+      hideQuickLabel();
+      expect(useUIStore.getState().quickLabelBinId).toBeNull();
+    });
+  });
+
+  describe('category highlighting', () => {
+    it('setHighlightedCategoryId sets highlighted category', () => {
+      const { setHighlightedCategoryId } = useUIStore.getState();
+
+      setHighlightedCategoryId('tools');
+      expect(useUIStore.getState().highlightedCategoryId).toBe('tools');
+
+      setHighlightedCategoryId(null);
+      expect(useUIStore.getState().highlightedCategoryId).toBeNull();
+    });
+  });
+
+  describe('half-bin mode', () => {
+    it('toggleHalfBinMode toggles state on', () => {
+      const { toggleHalfBinMode, setHalfBinMode } = useUIStore.getState();
+
+      // Ensure off first
+      setHalfBinMode(false);
+      expect(useUIStore.getState().halfBinMode).toBe(false);
+
+      const result = toggleHalfBinMode();
+      expect(result.success).toBe(true);
+      expect(useUIStore.getState().halfBinMode).toBe(true);
+    });
+
+    it('toggleHalfBinMode toggles state off when no fractional bins', () => {
+      const { toggleHalfBinMode, setHalfBinMode } = useUIStore.getState();
+
+      // Enable first
+      setHalfBinMode(true);
+      expect(useUIStore.getState().halfBinMode).toBe(true);
+
+      // Should be able to turn off since no fractional bins exist
+      const result = toggleHalfBinMode();
+      expect(result.success).toBe(true);
+      expect(useUIStore.getState().halfBinMode).toBe(false);
+    });
+
+    it('setHalfBinMode directly sets state', () => {
+      const { setHalfBinMode } = useUIStore.getState();
+
+      setHalfBinMode(true);
+      expect(useUIStore.getState().halfBinMode).toBe(true);
+
+      setHalfBinMode(false);
+      expect(useUIStore.getState().halfBinMode).toBe(false);
+    });
+  });
+
+  describe('mobile layers tab', () => {
+    it('setMobileLayersTab sets active tab', () => {
+      const { setMobileLayersTab } = useUIStore.getState();
+
+      setMobileLayersTab('tools');
+      expect(useUIStore.getState().mobileLayersTab).toBe('tools');
+
+      setMobileLayersTab('layers');
+      expect(useUIStore.getState().mobileLayersTab).toBe('layers');
+    });
+  });
+
+  describe('context menu extended', () => {
+    it('showContextMenu handles array of bin IDs', () => {
+      const { showContextMenu } = useUIStore.getState();
+
+      showContextMenu(['bin1', 'bin2', 'bin3'], { x: 50, y: 100 });
+
+      const menu = useUIStore.getState().contextMenu;
+      expect(menu?.binIds).toEqual(['bin1', 'bin2', 'bin3']);
+    });
+
+    it('showContextMenu handles source parameter', () => {
+      const { showContextMenu } = useUIStore.getState();
+
+      showContextMenu('bin1', { x: 50, y: 100 }, 'staging');
+
+      const menu = useUIStore.getState().contextMenu;
+      expect(menu?.source).toBe('staging');
+    });
+
+    it('showContextMenu defaults source to grid', () => {
+      const { showContextMenu } = useUIStore.getState();
+
+      showContextMenu('bin1', { x: 50, y: 100 });
+
+      const menu = useUIStore.getState().contextMenu;
+      expect(menu?.source).toBe('grid');
+    });
+  });
+
+  describe('isometric preview after reset', () => {
+    it('resetAllStores sets layerViewMode to focus', () => {
+      // Set to different value first
+      useUIStore.getState().setLayerViewMode('all');
+      expect(useUIStore.getState().layerViewMode).toBe('all');
+
+      // Reset should set to 'focus'
+      resetAllStores();
+      expect(useUIStore.getState().layerViewMode).toBe('focus');
+    });
+
+    it('resetAllStores sets showIsometricPreview to true', () => {
+      // Set to different value first
+      useUIStore.getState().toggleIsometricPreview(); // false now
+      expect(useUIStore.getState().showIsometricPreview).toBe(false);
+
+      // Reset should set to true
+      resetAllStores();
+      expect(useUIStore.getState().showIsometricPreview).toBe(true);
     });
   });
 });

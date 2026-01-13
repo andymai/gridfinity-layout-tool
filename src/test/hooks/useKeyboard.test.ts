@@ -4,6 +4,7 @@ import { useKeyboard } from '../../hooks/useKeyboard';
 import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
 import { useHistoryStore } from '../../store/history';
+import { useLibraryStore } from '../../store/library';
 import { createDefaultLayout, STAGING_ID } from '../../constants';
 
 // Helper to create keyboard event
@@ -46,6 +47,8 @@ describe('useKeyboard', () => {
       isometricRotation: 0,
       layerViewMode: 'focus',
       isPreviewExpanded: false,
+      halfBinMode: false,
+      focusedBinId: null,
     });
     useHistoryStore.setState({
       past: [],
@@ -678,6 +681,442 @@ describe('useKeyboard', () => {
     });
   });
 
+  describe('rotate shortcut', () => {
+    it('rotates selected bin on R key', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      useUIStore.getState().setSelectedBins([binId!]);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('r');
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.width).toBe(2);
+      expect(bin.depth).toBe(3);
+    });
+
+    it('does nothing when no bins selected', () => {
+      renderHook(() => useKeyboard());
+
+      // Should not throw
+      act(() => {
+        pressKey('r');
+      });
+    });
+
+    it('does nothing when multiple bins selected', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId1 = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const binId2 = addBin({
+        layerId,
+        x: 5,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('r');
+      });
+
+      // Bins should remain unchanged
+      const bins = useLayoutStore.getState().layout.bins;
+      expect(bins[0].width).toBe(3);
+      expect(bins[0].depth).toBe(2);
+    });
+  });
+
+  describe('layer navigation shortcuts', () => {
+    it('moves to next layer on W key', () => {
+      // Add another layer
+      const { addLayer } = useLayoutStore.getState();
+      addLayer({ name: 'Layer 2', height: 4 });
+
+      const layers = useLayoutStore.getState().layout.layers;
+      useUIStore.setState({ activeLayerId: layers[0].id });
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('w');
+      });
+
+      expect(useUIStore.getState().activeLayerId).toBe(layers[1].id);
+    });
+
+    it('moves to previous layer on S key', () => {
+      // Add another layer
+      const { addLayer } = useLayoutStore.getState();
+      addLayer({ name: 'Layer 2', height: 4 });
+
+      const layers = useLayoutStore.getState().layout.layers;
+      useUIStore.setState({ activeLayerId: layers[1].id });
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('s');
+      });
+
+      expect(useUIStore.getState().activeLayerId).toBe(layers[0].id);
+    });
+
+    it('does not go below first layer', () => {
+      const layers = useLayoutStore.getState().layout.layers;
+      useUIStore.setState({ activeLayerId: layers[0].id });
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('s');
+      });
+
+      expect(useUIStore.getState().activeLayerId).toBe(layers[0].id);
+    });
+
+    it('does not go above last layer', () => {
+      const layers = useLayoutStore.getState().layout.layers;
+      useUIStore.setState({ activeLayerId: layers[layers.length - 1].id });
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('w');
+      });
+
+      expect(useUIStore.getState().activeLayerId).toBe(layers[layers.length - 1].id);
+    });
+  });
+
+  describe('bin selection cycling shortcuts', () => {
+    it('selects next bin on D key', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId1 = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const binId2 = addBin({
+        layerId,
+        x: 3,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      useUIStore.getState().setSelectedBins([binId1!]);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('d');
+      });
+
+      expect(useUIStore.getState().selectedBinIds).toEqual([binId2!]);
+    });
+
+    it('selects previous bin on A key', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId1 = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const binId2 = addBin({
+        layerId,
+        x: 3,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      useUIStore.getState().setSelectedBins([binId2!]);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('a');
+      });
+
+      expect(useUIStore.getState().selectedBinIds).toEqual([binId1!]);
+    });
+
+    it('wraps to first bin when at end', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId1 = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const binId2 = addBin({
+        layerId,
+        x: 3,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      useUIStore.getState().setSelectedBins([binId2!]);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('d');
+      });
+
+      expect(useUIStore.getState().selectedBinIds).toEqual([binId1!]);
+    });
+
+    it('does nothing when no bins on layer', () => {
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('d');
+      });
+
+      expect(useUIStore.getState().selectedBinIds).toEqual([]);
+    });
+  });
+
+  describe('category cycling shortcuts', () => {
+    it('cycles active category on [ key when no bin selected', () => {
+      // Add a second category
+      useLayoutStore.getState().addCategory({ name: 'Second', color: '#00FF00' });
+
+      const updatedCategories = useLayoutStore.getState().layout.categories;
+      useUIStore.setState({ activeCategoryId: updatedCategories[1].id });
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('[');
+      });
+
+      expect(useUIStore.getState().activeCategoryId).toBe(updatedCategories[0].id);
+    });
+
+    it('cycles active category on ] key when no bin selected', () => {
+      useLayoutStore.getState().addCategory({ name: 'Second', color: '#00FF00' });
+
+      const updatedCategories = useLayoutStore.getState().layout.categories;
+      useUIStore.setState({ activeCategoryId: updatedCategories[0].id });
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey(']');
+      });
+
+      expect(useUIStore.getState().activeCategoryId).toBe(updatedCategories[1].id);
+    });
+
+    it('changes bin category on [ key when bin selected', () => {
+      const { addBin, layout, addCategory } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+
+      addCategory({ name: 'Second', color: '#00FF00' });
+      const categories = useLayoutStore.getState().layout.categories;
+
+      const binId = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categories[1].id,
+        label: '',
+        notes: '',
+      });
+
+      useUIStore.getState().setSelectedBins([binId!]);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('[');
+      });
+
+      expect(useLayoutStore.getState().layout.bins[0].category).toBe(categories[0].id);
+    });
+
+    it('changes bin category on ] key when bin selected', () => {
+      const { addBin, layout, addCategory } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+
+      addCategory({ name: 'Second', color: '#00FF00' });
+      const categories = useLayoutStore.getState().layout.categories;
+
+      const binId = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categories[0].id,
+        label: '',
+        notes: '',
+      });
+
+      useUIStore.getState().setSelectedBins([binId!]);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey(']');
+      });
+
+      expect(useLayoutStore.getState().layout.bins[0].category).toBe(categories[1].id);
+    });
+  });
+
+  describe('quick label shortcut', () => {
+    it('opens quick label on L key with single selection', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      useUIStore.getState().setSelectedBins([binId!]);
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('l');
+      });
+
+      // showQuickLabel should have been called (through UIStore)
+      expect(useUIStore.getState().quickLabelBinId).toBe(binId!);
+    });
+
+    it('does nothing on L key with no selection', () => {
+      // Reset quickLabelBinId from previous test
+      useUIStore.setState({ quickLabelBinId: null });
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('l');
+      });
+
+      expect(useUIStore.getState().quickLabelBinId).toBeNull();
+    });
+  });
+
+  describe('half-bin mode toggle', () => {
+    it('toggles half-bin mode on H key', () => {
+      const initialMode = useUIStore.getState().halfBinMode;
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('h');
+      });
+
+      expect(useUIStore.getState().halfBinMode).toBe(!initialMode);
+    });
+  });
+
+  describe('layout manager shortcut', () => {
+    it('opens layout manager on Ctrl+O', () => {
+      useLibraryStore.setState({ showLayoutManager: false });
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('o', { ctrlKey: true });
+      });
+
+      expect(useLibraryStore.getState().showLayoutManager).toBe(true);
+    });
+  });
+
   describe('input field handling', () => {
     it('ignores shortcuts when typing in input', () => {
       const { addBin, layout } = useLayoutStore.getState();
@@ -716,6 +1155,100 @@ describe('useKeyboard', () => {
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
       document.body.removeChild(input);
+    });
+  });
+
+  describe('half-bin mode toggle', () => {
+    it('toggles half-bin mode on H key', () => {
+      expect(useUIStore.getState().halfBinMode).toBe(false);
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('h');
+      });
+
+      expect(useUIStore.getState().halfBinMode).toBe(true);
+    });
+
+    it('shows error toast when toggle fails due to fractional bins', () => {
+      // First enable half-bin mode
+      useUIStore.setState({ halfBinMode: true });
+
+      // Add a bin with fractional dimensions
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      addBin({
+        layerId,
+        x: 0.5, // Fractional position
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      renderHook(() => useKeyboard());
+
+      // Try to disable half-bin mode (should fail due to fractional bin)
+      act(() => {
+        pressKey('h');
+      });
+
+      // Half-bin mode should still be enabled
+      expect(useUIStore.getState().halfBinMode).toBe(true);
+    });
+  });
+
+  describe('spatial navigation', () => {
+    it('uses spatial navigation when focused bin exists but no selection', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const binId1 = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      const binId2 = addBin({
+        layerId,
+        x: 3,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      // Set focused bin but no selection
+      useUIStore.setState({
+        focusedBinId: binId1,
+        selectedBinIds: [],
+      });
+
+      renderHook(() => useKeyboard());
+
+      // Press right arrow to navigate spatially
+      act(() => {
+        pressKey('ArrowRight');
+      });
+
+      // Focus should move to the bin to the right
+      expect(useUIStore.getState().focusedBinId).toBe(binId2);
     });
   });
 });

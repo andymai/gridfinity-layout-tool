@@ -202,4 +202,41 @@ describe('settings store', () => {
       expect(DEFAULT_SETTINGS.defaultHeightUnitMm).toBe(7);
     });
   });
+
+  describe('error handling', () => {
+    it('handles save errors gracefully', () => {
+      // Make setItem throw
+      localStorageMock.mock.setItem = vi.fn(() => {
+        throw new Error('QuotaExceededError');
+      });
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Try to update a setting
+      const { updateSetting } = useSettingsStore.getState();
+      expect(() => updateSetting('defaultDrawerWidth', 20)).not.toThrow();
+
+      // State should still be updated even if save failed
+      expect(useSettingsStore.getState().settings.defaultDrawerWidth).toBe(20);
+      expect(warnSpy).toHaveBeenCalledWith('Failed to save settings:', expect.any(Error));
+      warnSpy.mockRestore();
+    });
+
+    it('handles resetSettings save errors gracefully', () => {
+      // Make setItem throw
+      localStorageMock.mock.setItem = vi.fn(() => {
+        throw new Error('QuotaExceededError');
+      });
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Try to reset settings
+      const { resetSettings } = useSettingsStore.getState();
+      expect(() => resetSettings()).not.toThrow();
+
+      // State should still be reset
+      expect(useSettingsStore.getState().settings.defaultDrawerWidth).toBe(DEFAULT_SETTINGS.defaultDrawerWidth);
+      expect(warnSpy).toHaveBeenCalledWith('Failed to save settings:', expect.any(Error));
+      warnSpy.mockRestore();
+    });
+  });
+
 });

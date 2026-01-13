@@ -28,6 +28,7 @@ npm run preview      # Preview production build locally
 # Testing
 npm run test         # Run Vitest in watch mode
 npm run test:run     # Run Vitest once (CI mode)
+npm run test:coverage # Run tests with coverage (enforced in pre-commit)
 npm run test:e2e     # Run Playwright e2e tests
 npm run test:e2e:ui  # Run Playwright with UI mode
 
@@ -41,6 +42,29 @@ npm run size:check   # Verify against size limits
 ## Code Style (Pre-commit Enforced)
 
 Husky + lint-staged runs ESLint on staged `.ts/.tsx` files. Code must pass with zero warnings.
+
+**Pre-commit checks:** lint-staged → build → test:coverage
+
+## Test Coverage (Pre-commit Enforced)
+
+Coverage thresholds are enforced on every commit. If coverage drops below thresholds, the commit will fail.
+
+**Current thresholds (configured in `vitest.config.ts`):**
+- Lines: 60%
+- Branches: 43%
+- Functions: 57%
+- Statements: 59%
+
+**When adding new code:**
+1. Write tests for new utilities, hooks, and store logic
+2. Run `npm run test:coverage` before committing to verify thresholds pass
+3. If coverage drops, add tests until thresholds are met
+
+**Coverage priorities** (focus testing effort here):
+- `src/utils/` - Pure functions, high coverage expected (currently ~90%)
+- `src/store/` - State management logic (currently ~87%)
+- `src/hooks/` - Custom hooks with business logic (currently ~73%)
+- UI components - Lower priority, covered by Playwright e2e tests
 
 **Required patterns:**
 ```typescript

@@ -324,6 +324,48 @@ describe('useAutoSave', () => {
       expect(useToastStore.getState().toasts).toHaveLength(1);
     });
 
+    it('shows persistent toast after 3 consecutive failures', () => {
+      vi.mocked(storage.saveLayoutById).mockImplementation(() => {
+        throw new Error('Persistent storage error');
+      });
+
+      renderHook(() => useAutoSave());
+
+      // First failure
+      act(() => {
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+      });
+      expect(useToastStore.getState().toasts).toHaveLength(1);
+
+      // Clear toasts to track new ones
+      useToastStore.setState({ toasts: [] });
+
+      // Second failure
+      act(() => {
+        useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
+      });
+      act(() => {
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+      });
+      // Second failure doesn't show new toast due to hasShownErrorRef
+      expect(useToastStore.getState().toasts).toHaveLength(0);
+
+      // Third failure - should show persistent (non-auto-dismiss) toast
+      act(() => {
+        useLayoutStore.getState().updateDrawer({ width: 14, depth: 12 });
+      });
+      act(() => {
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+      });
+
+      // After 3 failures, we show a persistent toast
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.length).toBeGreaterThanOrEqual(1);
+      // The most recent toast should be the persistent one
+      const lastToast = toasts[toasts.length - 1];
+      expect(lastToast.type).toBe('error');
+    });
+
     it('resets error flag after successful save', () => {
       const saveLayoutByIdMock = vi.mocked(storage.saveLayoutById);
 

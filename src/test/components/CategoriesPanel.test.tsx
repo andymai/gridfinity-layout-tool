@@ -1,0 +1,332 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { CategoriesPanel } from '../../components/Sidebar/CategoriesPanel';
+import { useLayoutStore, useUIStore } from '../../store';
+import { resetAllStores } from '../testUtils';
+
+// Mock ConfirmDialog to simplify testing
+vi.mock('../../components/modals/ConfirmDialog', () => ({
+  ConfirmDialog: ({ isOpen, onConfirm, onCancel, title }: {
+    isOpen: boolean;
+    onConfirm: () => void;
+    onCancel: () => void;
+    title: string;
+  }) => isOpen ? (
+    <div data-testid="confirm-dialog">
+      <span>{title}</span>
+      <button onClick={onConfirm}>Confirm</button>
+      <button onClick={onCancel}>Cancel</button>
+    </div>
+  ) : null,
+}));
+
+// Mock CollapsibleSection to show content directly
+vi.mock('../../components/CollapsibleSection', () => ({
+  CollapsibleSection: ({ children, title, actions }: {
+    children: React.ReactNode;
+    title: string;
+    actions?: React.ReactNode;
+  }) => (
+    <div>
+      <div className="flex">
+        <span>{title}</span>
+        {actions}
+      </div>
+      {children}
+    </div>
+  ),
+}));
+
+describe('CategoriesPanel', () => {
+  beforeEach(() => {
+    resetAllStores();
+
+    // Set up initial layout state
+    useLayoutStore.setState({
+      layout: {
+        version: '1.0',
+        name: 'Test',
+        drawer: { width: 10, depth: 8, height: 12 },
+        printBedSize: 256,
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+        categories: [
+          { id: 'coral', name: 'Coral', color: '#FF6B6B' },
+          { id: 'sky', name: 'Sky', color: '#38bdf8' },
+        ],
+        layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+        bins: [],
+      },
+    });
+
+    useUIStore.setState({
+      activeCategoryId: 'coral',
+      selectedBinIds: [],
+    });
+  });
+
+  describe('rendering', () => {
+    it('displays section title', () => {
+      render(<CategoriesPanel />);
+
+      expect(screen.getByText('Categories')).toBeInTheDocument();
+    });
+
+    it('displays all categories', () => {
+      render(<CategoriesPanel />);
+
+      expect(screen.getByText('Coral')).toBeInTheDocument();
+      expect(screen.getByText('Sky')).toBeInTheDocument();
+    });
+
+    it('shows add category button', () => {
+      render(<CategoriesPanel />);
+
+      expect(screen.getByLabelText('Add new category')).toBeInTheDocument();
+    });
+
+    it('shows active indicator on selected category', () => {
+      const { container } = render(<CategoriesPanel />);
+
+      // Active category should have checkmark SVG
+      const coralRow = container.querySelector('[class*="bg-[var(--bg-active)]"]');
+      expect(coralRow).toBeInTheDocument();
+    });
+  });
+
+  describe('category selection', () => {
+    it('sets active category on click', () => {
+      render(<CategoriesPanel />);
+
+      fireEvent.click(screen.getByText('Sky'));
+
+      expect(useUIStore.getState().activeCategoryId).toBe('sky');
+    });
+
+    it('updates selected bins when bins are selected', () => {
+      // Add a bin and select it
+      const { addBin } = useLayoutStore.getState();
+      addBin({
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      });
+      const binId = useLayoutStore.getState().layout.bins[0].id;
+      useUIStore.setState({ selectedBinIds: [binId] });
+
+      render(<CategoriesPanel />);
+      fireEvent.click(screen.getByText('Sky'));
+
+      // Bin category should be updated
+      expect(useLayoutStore.getState().layout.bins[0].category).toBe('sky');
+    });
+  });
+
+  describe('add category', () => {
+    it('adds a new category when button clicked', () => {
+      render(<CategoriesPanel />);
+
+      fireEvent.click(screen.getByLabelText('Add new category'));
+
+      const categories = useLayoutStore.getState().layout.categories;
+      expect(categories).toHaveLength(3);
+      expect(categories[2].name).toBe('New Category');
+    });
+
+    it('enters edit mode for new category', () => {
+      render(<CategoriesPanel />);
+
+      fireEvent.click(screen.getByLabelText('Add new category'));
+
+      // Should show input field for editing
+      expect(screen.getByDisplayValue('New Category')).toBeInTheDocument();
+    });
+  });
+
+  describe('edit category', () => {
+    it('enters edit mode on double click', () => {
+      render(<CategoriesPanel />);
+
+      // Double-click the category name button
+      const categoryButton = screen.getByRole('button', { name: /Coral/i });
+      fireEvent.doubleClick(categoryButton);
+
+      // Should show input field
+      expect(screen.getByDisplayValue('Coral')).toBeInTheDocument();
+    });
+
+    it('updates category name', () => {
+      render(<CategoriesPanel />);
+
+      // Enter edit mode
+      const categoryButton = screen.getByRole('button', { name: /Coral/i });
+      fireEvent.doubleClick(categoryButton);
+
+      // Change name
+      const input = screen.getByDisplayValue('Coral');
+      fireEvent.change(input, { target: { value: 'New Name' } });
+
+      expect(useLayoutStore.getState().layout.categories[0].name).toBe('New Name');
+    });
+
+    it('exits edit mode on Enter key', () => {
+      render(<CategoriesPanel />);
+
+      // Enter edit mode
+      const categoryButton = screen.getByRole('button', { name: /Coral/i });
+      fireEvent.doubleClick(categoryButton);
+
+      // Press Enter
+      const input = screen.getByDisplayValue('Coral');
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      // Should exit edit mode (no input visible)
+      expect(screen.queryByDisplayValue('Coral')).not.toBeInTheDocument();
+    });
+
+    it('exits edit mode on Done button click', () => {
+      render(<CategoriesPanel />);
+
+      // Enter edit mode
+      const categoryButton = screen.getByRole('button', { name: /Coral/i });
+      fireEvent.doubleClick(categoryButton);
+
+      // Click Done
+      fireEvent.click(screen.getByText('Done'));
+
+      // Should exit edit mode
+      expect(screen.queryByRole('button', { name: 'Finish editing category' })).not.toBeInTheDocument();
+    });
+  });
+
+  describe('delete category', () => {
+    it('shows confirmation dialog when deleting category', () => {
+      // Add third category so we can delete
+      useLayoutStore.getState().addCategory({ name: 'Third', color: '#00FF00' });
+
+      render(<CategoriesPanel />);
+
+      // Enter edit mode for the third category
+      const thirdCategoryButton = screen.getByRole('button', { name: /Third/i });
+      fireEvent.doubleClick(thirdCategoryButton);
+
+      // Click delete
+      fireEvent.click(screen.getByText('Delete'));
+
+      // Confirm dialog should appear
+      expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
+    });
+
+    it('deletes category on confirm', () => {
+      // Add third category
+      useLayoutStore.getState().addCategory({ name: 'Third', color: '#00FF00' });
+
+      render(<CategoriesPanel />);
+
+      // Enter edit mode and delete
+      const thirdCategoryButton = screen.getByRole('button', { name: /Third/i });
+      fireEvent.doubleClick(thirdCategoryButton);
+      fireEvent.click(screen.getByText('Delete'));
+
+      // Confirm deletion
+      fireEvent.click(screen.getByText('Confirm'));
+
+      expect(useLayoutStore.getState().layout.categories).toHaveLength(2);
+    });
+
+    it('prevents deleting category with bins', () => {
+      // Add bin using coral category
+      useLayoutStore.getState().addBin({
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      });
+
+      render(<CategoriesPanel />);
+
+      // Enter edit mode for coral
+      const coralButton = screen.getByRole('button', { name: /Coral/i });
+      fireEvent.doubleClick(coralButton);
+
+      // Delete button should show disabled state
+      const deleteButton = screen.getByText('Delete');
+      expect(deleteButton.className).toContain('opacity-50');
+    });
+
+    it('prevents deleting last category', () => {
+      // Set to only have one category
+      useLayoutStore.setState({
+        layout: {
+          ...useLayoutStore.getState().layout,
+          categories: [{ id: 'coral', name: 'Coral', color: '#FF6B6B' }],
+        },
+      });
+
+      render(<CategoriesPanel />);
+
+      // Enter edit mode
+      const coralButton = screen.getByRole('button', { name: /Coral/i });
+      fireEvent.doubleClick(coralButton);
+
+      // Delete button should show disabled state
+      const deleteButton = screen.getByText('Delete');
+      expect(deleteButton.className).toContain('opacity-50');
+    });
+  });
+
+  describe('bin count badges', () => {
+    it('shows bin count for categories with bins', () => {
+      // Add bins
+      useLayoutStore.getState().addBin({
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      });
+      useLayoutStore.getState().addBin({
+        layerId: 'layer1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      });
+
+      render(<CategoriesPanel />);
+
+      // Should show count of 2 for coral
+      expect(screen.getByTitle('2 bins use this category')).toBeInTheDocument();
+    });
+
+    it('shows empty for categories without bins', () => {
+      render(<CategoriesPanel />);
+
+      // Both categories have no bins, badges should be empty
+      const emptyBadges = screen.getAllByTitle('No bins use this category');
+      expect(emptyBadges).toHaveLength(2);
+      emptyBadges.forEach(badge => {
+        expect(badge).toHaveTextContent('');
+      });
+    });
+  });
+});

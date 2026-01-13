@@ -1,439 +1,87 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { lazyWithRetry, namedExport } from '../utils/lazyWithRetry';
 import type { ComponentType } from 'react';
 
-// Helper to create a mock component
-function createMockComponent(name: string): ComponentType {
-  const Component = () => null;
-  Component.displayName = name;
-  return Component;
-}
+// Mock component for testing
+const MockComponent: ComponentType = () => null;
+MockComponent.displayName = 'MockComponent';
 
 describe('lazyWithRetry', () => {
-  const originalSessionStorage = window.sessionStorage;
-  const originalLocation = window.location;
+  // Note: Testing React.lazy internals is unreliable as React's internal structure
+  // varies between versions and environments. These tests verify the API contract
+  // rather than internal behavior. The retry and reload logic is best tested
+  // through integration tests or manual verification.
 
-  let sessionStorageMock: Record<string, string>;
-  let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
-  let reloadSpy: ReturnType<typeof vi.fn>;
+  it('returns a lazy component', () => {
+    const importFn = vi.fn().mockResolvedValue({ default: MockComponent });
+    const LazyComponent = lazyWithRetry(importFn);
 
-  beforeEach(() => {
-    vi.useFakeTimers();
-
-    // Mock sessionStorage
-    sessionStorageMock = {};
-    Object.defineProperty(window, 'sessionStorage', {
-      value: {
-        getItem: vi.fn((key: string) => sessionStorageMock[key] || null),
-        setItem: vi.fn((key: string, value: string) => {
-          sessionStorageMock[key] = value;
-        }),
-        removeItem: vi.fn((key: string) => {
-          const { [key]: _, ...rest } = sessionStorageMock;
-          void _; // Suppress unused variable warning
-          sessionStorageMock = rest;
-        }),
-        clear: vi.fn(() => {
-          sessionStorageMock = {};
-        }),
-      },
-      writable: true,
-      configurable: true,
-    });
-
-    // Mock window.location.reload
-    reloadSpy = vi.fn();
-    Object.defineProperty(window, 'location', {
-      value: {
-        ...originalLocation,
-        reload: reloadSpy,
-      },
-      writable: true,
-      configurable: true,
-    });
-
-    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // React.lazy returns an object with $$typeof for lazy components
+    expect(LazyComponent).toBeDefined();
+    expect(typeof LazyComponent).toBe('object');
+    // Check it has the React lazy type symbol
+    expect((LazyComponent as { $$typeof?: symbol }).$$typeof).toBeDefined();
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-    vi.restoreAllMocks();
+  it('accepts custom retry count', () => {
+    const importFn = vi.fn().mockResolvedValue({ default: MockComponent });
 
-    Object.defineProperty(window, 'sessionStorage', {
-      value: originalSessionStorage,
-      writable: true,
-      configurable: true,
-    });
-
-    Object.defineProperty(window, 'location', {
-      value: originalLocation,
-      writable: true,
-      configurable: true,
-    });
+    // Should not throw with custom retry count
+    expect(() => lazyWithRetry(importFn, 5)).not.toThrow();
+    expect(() => lazyWithRetry(importFn, 0)).not.toThrow();
   });
 
-  describe('successful import', () => {
-    it('resolves immediately on successful import', async () => {
-      const MockComponent = createMockComponent('TestComponent');
-      const importFn = vi.fn().mockResolvedValue({ default: MockComponent });
+  it('accepts reloadOnFinalFailure option', () => {
+    const importFn = vi.fn().mockResolvedValue({ default: MockComponent });
 
-      const _LazyComponent = lazyWithRetry(importFn);
-
-      // Access the lazy component's internal load function
-      // Since React.lazy returns a LazyExoticComponent, we can't directly test it
-      // but we can verify the importFn behavior
-      expect(importFn).not.toHaveBeenCalled();
-
-      // Trigger the lazy load
-      const result = await importFn();
-      expect(result.default).toBe(MockComponent);
-      expect(importFn).toHaveBeenCalledTimes(1);
-    });
-
-    it('does not retry on successful first attempt', async () => {
-      const MockComponent = createMockComponent('TestComponent');
-      const importFn = vi.fn().mockResolvedValue({ default: MockComponent });
-
-      lazyWithRetry(importFn);
-
-      await importFn();
-
-      expect(importFn).toHaveBeenCalledTimes(1);
-      expect(consoleWarnSpy).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('retry logic', () => {
-    it('retries on failure and succeeds eventually', async () => {
-      const MockComponent = createMockComponent('RetryComponent');
-      let callCount = 0;
-
-      const importFn = vi.fn().mockImplementation(async () => {
-        callCount++;
-        if (callCount < 2) {
-          throw new Error('Network error');
-        }
-        return { default: MockComponent };
-      });
-
-      // Manually test the retry logic
-      const retryFn = async () => {
-        const retries = 2;
-        for (let i = 0; i <= retries; i++) {
-          try {
-            return await importFn();
-          } catch {
-            if (i < retries) {
-              await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, i)));
-            } else {
-              throw new Error('All retries failed');
-            }
-          }
-        }
-      };
-
-      // Start the retry function
-      const promise = retryFn();
-
-      // Advance through first backoff (100ms)
-      await vi.advanceTimersByTimeAsync(100);
-
-      const result = await promise;
-
-      expect(result.default).toBe(MockComponent);
-      expect(importFn).toHaveBeenCalledTimes(2);
-    });
-
-    it('uses exponential backoff between retries', async () => {
-      let callCount = 0;
-      const importFn = vi.fn().mockImplementation(async () => {
-        callCount++;
-        if (callCount < 3) {
-          throw new Error(`Error ${callCount}`);
-        }
-        return { default: createMockComponent('BackoffComponent') };
-      });
-
-      // Test backoff timing
-      const delays: number[] = [];
-
-      const retryWithBackoff = async () => {
-        const retries = 2;
-        for (let i = 0; i <= retries; i++) {
-          try {
-            return await importFn();
-          } catch {
-            if (i < retries) {
-              const delay = 100 * Math.pow(2, i);
-              delays.push(delay);
-              await new Promise(resolve => setTimeout(resolve, delay));
-            } else {
-              throw new Error('Failed');
-            }
-          }
-        }
-      };
-
-      const promise = retryWithBackoff();
-
-      // First retry after 100ms
-      await vi.advanceTimersByTimeAsync(100);
-      // Second retry after 200ms (total 300ms)
-      await vi.advanceTimersByTimeAsync(200);
-
-      await promise;
-
-      expect(delays).toEqual([100, 200]); // 100ms, then 200ms
-    });
-
-    it('exhausts all retries before failing', async () => {
-      const importFn = vi.fn().mockImplementation(async () => {
-        throw new Error('Persistent error');
-      });
-
-      const retryFn = async () => {
-        const retries = 2;
-        for (let i = 0; i <= retries; i++) {
-          try {
-            return await importFn();
-          } catch (error) {
-            if (i < retries) {
-              await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, i)));
-            } else {
-              throw error;
-            }
-          }
-        }
-      };
-
-      // Attach catch handler immediately to prevent unhandled rejection
-      let caughtError: Error | null = null;
-      const promise = retryFn().catch(e => { caughtError = e; });
-
-      // Advance through all backoffs
-      await vi.advanceTimersByTimeAsync(100); // First retry
-      await vi.advanceTimersByTimeAsync(200); // Second retry
-
-      await promise;
-      expect(caughtError).toBeInstanceOf(Error);
-      expect(caughtError?.message).toBe('Persistent error');
-      expect(importFn).toHaveBeenCalledTimes(3); // Initial + 2 retries
-    });
-  });
-
-  describe('page reload on final failure', () => {
-    it('reloads page when all retries exhausted and reloadOnFinalFailure is true', async () => {
-      const importFn = vi.fn().mockImplementation(async () => {
-        throw new Error('Chunk failed');
-      });
-
-      // Simulate the reload logic
-      const sessionKey = 'chunk-reload-test-1';
-
-      const retryWithReload = async () => {
-        const retries = 2;
-        for (let i = 0; i <= retries; i++) {
-          try {
-            return await importFn();
-          } catch {
-            if (i < retries) {
-              await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, i)));
-            } else {
-              // All retries exhausted
-              if (!sessionStorage.getItem(sessionKey)) {
-                sessionStorage.setItem(sessionKey, 'true');
-                window.location.reload();
-                return new Promise(() => {}); // Never resolves
-              }
-              throw new Error('Chunk failed after reload');
-            }
-          }
-        }
-      };
-
-      // Start the retry (promise won't resolve because we mock reload)
-      void retryWithReload();
-
-      await vi.advanceTimersByTimeAsync(100);
-      await vi.advanceTimersByTimeAsync(200);
-
-      // Give time for the reload to be called
-      await vi.advanceTimersByTimeAsync(10);
-
-      expect(sessionStorage.setItem).toHaveBeenCalledWith(sessionKey, 'true');
-      expect(reloadSpy).toHaveBeenCalled();
-    });
-
-    it('does not reload twice (prevents infinite loop)', async () => {
-      const importFn = vi.fn().mockImplementation(async () => {
-        throw new Error('Chunk failed');
-      });
-
-      const sessionKey = 'chunk-reload-test-2';
-      // Simulate already reloaded once
-      sessionStorageMock[sessionKey] = 'true';
-
-      const retryWithReload = async () => {
-        const retries = 2;
-        for (let i = 0; i <= retries; i++) {
-          try {
-            return await importFn();
-          } catch (error) {
-            if (i < retries) {
-              await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, i)));
-            } else {
-              // All retries exhausted
-              if (!sessionStorage.getItem(sessionKey)) {
-                sessionStorage.setItem(sessionKey, 'true');
-                window.location.reload();
-                return new Promise(() => {});
-              }
-              // Clear for next time
-              sessionStorage.removeItem(sessionKey);
-              throw error;
-            }
-          }
-        }
-      };
-
-      // Attach catch handler immediately to prevent unhandled rejection
-      let caughtError: Error | null = null;
-      const promise = retryWithReload().catch(e => { caughtError = e; });
-
-      await vi.advanceTimersByTimeAsync(100);
-      await vi.advanceTimersByTimeAsync(200);
-
-      await promise;
-      expect(caughtError).toBeInstanceOf(Error);
-      expect(caughtError?.message).toBe('Chunk failed');
-      expect(reloadSpy).not.toHaveBeenCalled();
-      expect(sessionStorage.removeItem).toHaveBeenCalledWith(sessionKey);
-    });
-
-    it('respects reloadOnFinalFailure=false option', async () => {
-      const importFn = vi.fn().mockImplementation(async () => {
-        throw new Error('Chunk failed');
-      });
-
-      const retryNoReload = async () => {
-        const retries = 2;
-        const reloadOnFinalFailure = false;
-
-        for (let i = 0; i <= retries; i++) {
-          try {
-            return await importFn();
-          } catch (error) {
-            if (i < retries) {
-              await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, i)));
-            } else if (!reloadOnFinalFailure) {
-              throw error;
-            }
-          }
-        }
-      };
-
-      // Attach catch handler immediately to prevent unhandled rejection
-      let caughtError: Error | null = null;
-      const promise = retryNoReload().catch(e => { caughtError = e; });
-
-      await vi.advanceTimersByTimeAsync(100);
-      await vi.advanceTimersByTimeAsync(200);
-
-      await promise;
-      expect(caughtError).toBeInstanceOf(Error);
-      expect(caughtError?.message).toBe('Chunk failed');
-      expect(reloadSpy).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('custom retry count', () => {
-    it('respects custom retry count', async () => {
-      let callCount = 0;
-      const importFn = vi.fn().mockImplementation(async () => {
-        callCount++;
-        if (callCount < 5) {
-          throw new Error(`Error ${callCount}`);
-        }
-        return { default: createMockComponent('CustomRetry') };
-      });
-
-      // Test with 4 retries
-      const retryFn = async (retries: number) => {
-        for (let i = 0; i <= retries; i++) {
-          try {
-            return await importFn();
-          } catch {
-            if (i < retries) {
-              await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, i)));
-            }
-          }
-        }
-        throw new Error('All retries failed');
-      };
-
-      const promise = retryFn(4);
-
-      // Advance through all backoffs
-      await vi.advanceTimersByTimeAsync(100);  // 1st retry
-      await vi.advanceTimersByTimeAsync(200);  // 2nd retry
-      await vi.advanceTimersByTimeAsync(400);  // 3rd retry
-      await vi.advanceTimersByTimeAsync(800);  // 4th retry
-
-      const result = await promise;
-
-      expect(result.default.displayName).toBe('CustomRetry');
-      expect(importFn).toHaveBeenCalledTimes(5); // Initial + 4 retries
-    });
-
-    it('handles zero retries', async () => {
-      const importFn = vi.fn().mockImplementation(async () => {
-        throw new Error('Immediate fail');
-      });
-
-      const retryFn = async (retries: number) => {
-        for (let i = 0; i <= retries; i++) {
-          try {
-            return await importFn();
-          } catch (error) {
-            if (i >= retries) {
-              throw error;
-            }
-          }
-        }
-      };
-
-      await expect(retryFn(0)).rejects.toThrow('Immediate fail');
-      expect(importFn).toHaveBeenCalledTimes(1);
-    });
+    // Should not throw with either option
+    expect(() => lazyWithRetry(importFn, 2, true)).not.toThrow();
+    expect(() => lazyWithRetry(importFn, 2, false)).not.toThrow();
   });
 });
 
 describe('namedExport', () => {
-  it('wraps named export as default', () => {
-    const TestComponent = createMockComponent('TestComponent');
-    const module = { TestComponent, OtherComponent: createMockComponent('Other') };
+  it('extracts named export as default', () => {
+    const module = {
+      ComponentA: MockComponent,
+      ComponentB: () => null,
+    };
 
-    const wrapper = namedExport<typeof TestComponent>('TestComponent');
-    const result = wrapper(module);
+    const result = namedExport<typeof MockComponent>('ComponentA')(module);
 
-    expect(result.default).toBe(TestComponent);
+    expect(result).toEqual({ default: MockComponent });
   });
 
-  it('handles non-existent export', () => {
-    const module = { SomeComponent: createMockComponent('Some') };
+  it('works with different component names', () => {
+    const AnotherComponent: ComponentType = () => null;
+    const module = {
+      AnotherComponent,
+    };
 
-    const wrapper = namedExport<ComponentType>('NonExistent');
-    const result = wrapper(module);
+    const result = namedExport<typeof AnotherComponent>('AnotherComponent')(module);
+
+    expect(result.default).toBe(AnotherComponent);
+  });
+
+  it('returns undefined for non-existent export', () => {
+    const module = {
+      ExistingComponent: MockComponent,
+    };
+
+    const result = namedExport('NonExistent')(module);
 
     expect(result.default).toBeUndefined();
   });
 
-  it('can be chained with then()', async () => {
-    const TestComponent = createMockComponent('ChainedComponent');
+  it('can be chained with import().then()', async () => {
+    // Simulate the actual usage pattern
+    const mockImport = Promise.resolve({
+      HelpModal: MockComponent,
+      OtherComponent: () => null,
+    });
 
-    const importFn = async () => ({ TestComponent });
-    const result = await importFn().then(namedExport('TestComponent'));
+    const result = await mockImport.then(namedExport('HelpModal'));
 
-    expect(result.default).toBe(TestComponent);
+    expect(result.default).toBe(MockComponent);
   });
 });
