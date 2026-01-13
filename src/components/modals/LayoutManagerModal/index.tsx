@@ -38,7 +38,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const { isInCollectionMode, activeCollection, activeCollectionLayouts, leaveCollection, addLayoutToCollection, setMembershipActiveLayout } = useCollectionStore(
+  const { isInCollectionMode, activeCollection, activeCollectionLayouts, leaveCollection, addLayoutToCollection, setMembershipActiveLayout, clearActiveCollection } = useCollectionStore(
     useShallow((state) => ({
       isInCollectionMode: state.isInCollectionMode(),
       activeCollection: state.activeCollection,
@@ -46,6 +46,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
       leaveCollection: state.leaveCollection,
       addLayoutToCollection: state.addLayoutToCollection,
       setMembershipActiveLayout: state.setMembershipActiveLayout,
+      clearActiveCollection: state.clearActiveCollection,
     }))
   );
 
@@ -112,6 +113,12 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
 
   const handleSwitch = useCallback(
     (id: string) => {
+      // Exit collection mode when switching to a local layout
+      // This prevents the collection routing hook from re-loading the collection layout
+      if (isInCollectionMode) {
+        clearActiveCollection();
+      }
+
       const entry = library.entries.find((e) => e.id === id);
       const result = switchLayout(id);
       if (result.success) {
@@ -119,7 +126,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         onClose();
       }
     },
-    [library.entries, switchLayout, announceToScreenReader, onClose]
+    [library.entries, switchLayout, announceToScreenReader, onClose, isInCollectionMode, clearActiveCollection]
   );
 
   // Handle switching to a collection layout (fetches from server)
