@@ -170,16 +170,18 @@ export default function App() {
   // Mobile layout - lazy loaded
   if (isMobile) {
     return (
-      <Suspense fallback={<div className="h-screen bg-surface" />}>
-        <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} saveStatus={saveStatus} />
-      </Suspense>
+      <div className="h-screen animate-fade-in">
+        <Suspense fallback={<div className="h-screen bg-surface" />}>
+          <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} saveStatus={saveStatus} />
+        </Suspense>
+      </div>
     );
   }
 
   // Tablet layout - full width grid with overlay panels
   if (isTablet) {
     return (
-      <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
+      <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
         {/* Shared layout banner (shown when viewing unsaved shared layout) */}
         <SharedLayoutBanner />
 
@@ -271,7 +273,7 @@ export default function App() {
 
   // Desktop layout
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-surface text-content">
+    <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
       <SharedLayoutBanner />
 
