@@ -137,30 +137,30 @@ describe('CollectionLayoutList', () => {
     });
   });
 
-  describe('add layout', () => {
-    it('shows add layout button', () => {
+  describe('create layout', () => {
+    it('shows new layout button', () => {
       render(<CollectionLayoutList onSwitch={mockOnSwitch} onClose={mockOnClose} />);
 
-      expect(screen.getByText('Add Current Layout')).toBeInTheDocument();
+      expect(screen.getByText('New Layout')).toBeInTheDocument();
     });
 
-    it('calls addLayoutToCollection when clicking add button', async () => {
+    it('calls addLayoutToCollection when clicking new layout button', async () => {
       const mockAddLayout = vi.fn().mockResolvedValue({
         success: true,
-        data: { id: 'new-layout', name: 'New Layout', modifiedAt: Date.now(), preview: {} },
+        data: { id: 'new-layout', name: 'Untitled', modifiedAt: Date.now(), preview: {} },
       });
       useCollectionStore.setState({ addLayoutToCollection: mockAddLayout });
 
       render(<CollectionLayoutList onSwitch={mockOnSwitch} onClose={mockOnClose} />);
 
       await act(async () => {
-        fireEvent.click(screen.getByText('Add Current Layout'));
+        fireEvent.click(screen.getByText('New Layout'));
       });
 
       expect(mockAddLayout).toHaveBeenCalled();
     });
 
-    it('shows loading state when adding', async () => {
+    it('shows loading state when creating', async () => {
       // Mock a slow add operation
       const mockAddLayout = vi.fn().mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve({ success: true, data: {} }), 100))
@@ -170,10 +170,10 @@ describe('CollectionLayoutList', () => {
       render(<CollectionLayoutList onSwitch={mockOnSwitch} onClose={mockOnClose} />);
 
       await act(async () => {
-        fireEvent.click(screen.getByText('Add Current Layout'));
+        fireEvent.click(screen.getByText('New Layout'));
       });
 
-      expect(screen.getByText('Adding...')).toBeInTheDocument();
+      expect(screen.getByText('Creating...')).toBeInTheDocument();
     });
   });
 

@@ -14,6 +14,9 @@ import { useLayoutStore } from '../../../store/layout';
 import { useToastStore } from '../../../store/toast';
 import { useUIStore } from '../../../store/ui';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { generateCollectionURL } from '../../../utils/url';
+import { copyToClipboard } from '../../../utils/storage';
+import { createDefaultLayout } from '../../../constants';
 import type { CollectionLayoutRef } from '../../../types';
 
 interface CollectionLayoutListProps {
@@ -26,7 +29,8 @@ interface CollectionLayoutListProps {
  */
 export function CollectionLayoutList({ onSwitch, onClose }: CollectionLayoutListProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [isAdding, setIsAdding] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [urlCopied, setUrlCopied] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -45,15 +49,13 @@ export function CollectionLayoutList({ onSwitch, onClose }: CollectionLayoutList
     }))
   );
 
-  const { layout: currentLayout, activeLayoutId } = useLayoutStore(
-    useShallow((state) => ({
-      layout: state.layout,
-      activeLayoutId: state.activeLayoutId,
-    }))
-  );
+  const activeLayoutId = useLayoutStore((state) => state.activeLayoutId);
 
   const addToast = useToastStore((state) => state.addToast);
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
+
+  // Generate share URL
+  const shareUrl = activeCollection ? generateCollectionURL(activeCollection.id) : '';
 
   // Sort layouts: active first, then by modifiedAt
   const sortedLayouts = [...activeCollectionLayouts].sort((a, b) => {
@@ -62,18 +64,32 @@ export function CollectionLayoutList({ onSwitch, onClose }: CollectionLayoutList
     return b.modifiedAt - a.modifiedAt;
   });
 
-  const handleAddLayout = useCallback(async () => {
-    setIsAdding(true);
-    const result = await addLayoutToCollection(currentLayout);
+  const handleCopyUrl = useCallback(async () => {
+    const success = await copyToClipboard(shareUrl);
+    if (success) {
+      setUrlCopied(true);
+      addToast('Collection link copied!', 'success');
+      announceToScreenReader('Collection link copied to clipboard');
+      setTimeout(() => setUrlCopied(false), 2000);
+    } else {
+      addToast('Failed to copy link', 'error');
+    }
+  }, [shareUrl, addToast, announceToScreenReader]);
+
+  const handleCreateLayout = useCallback(async () => {
+    setIsCreating(true);
+    const newLayout = createDefaultLayout();
+    newLayout.name = 'Untitled';
+    const result = await addLayoutToCollection(newLayout);
 
     if (result.success) {
-      addToast(`Added "${result.data.name}" to collection`, 'success');
-      announceToScreenReader(`Layout added to collection as ${result.data.name}`);
+      addToast(`Created "${result.data.name}" in collection`, 'success');
+      announceToScreenReader(`New layout created in collection`);
     } else {
       addToast(result.error.error, 'error');
     }
-    setIsAdding(false);
-  }, [addLayoutToCollection, currentLayout, addToast, announceToScreenReader]);
+    setIsCreating(false);
+  }, [addLayoutToCollection, addToast, announceToScreenReader]);
 
   const handleDeleteLayout = useCallback(
     async (layoutId: string) => {
@@ -108,34 +124,75 @@ export function CollectionLayoutList({ onSwitch, onClose }: CollectionLayoutList
 
   return (
     <div className="h-full grid grid-rows-[auto_1fr_auto]">
-      {/* Header: Add Layout Button */}
-      <div className="space-y-4 pb-4">
+      {/* Header: Share URL + New Layout Button */}
+      <div className="space-y-3 pb-4">
+        {/* Share URL */}
+        <div className="bg-surface rounded-lg p-3 border border-stroke">
+          <label className="text-xs font-medium text-content-secondary mb-1.5 block">
+            Share this link to invite others
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              readOnly
+              value={shareUrl}
+              className="flex-1 px-3 py-1.5 bg-surface-secondary rounded text-sm text-content font-mono truncate border border-stroke"
+              onClick={(e) => (e.target as HTMLInputElement).select()}
+              aria-label="Collection share URL"
+            />
+            <button
+              onClick={handleCopyUrl}
+              className={`
+                px-3 py-1.5 rounded text-sm font-medium transition-colors flex items-center gap-1.5 flex-shrink-0
+                ${urlCopied
+                  ? 'bg-green-600 text-white'
+                  : 'bg-accent text-white hover:bg-accent-hover'
+                }
+              `}
+              aria-label="Copy collection URL"
+            >
+              {urlCopied ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Copied
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  Copy
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* New Layout Button */}
         <button
-          onClick={handleAddLayout}
-          disabled={isAdding || isLoading}
+          onClick={handleCreateLayout}
+          disabled={isCreating || isLoading}
           className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
         >
-          {isAdding ? (
+          {isCreating ? (
             <>
               <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              Adding...
+              Creating...
             </>
           ) : (
             <>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Add Current Layout
+              New Layout
             </>
           )}
         </button>
-
-        <p className="text-xs text-content-tertiary text-center">
-          Copy your current layout to "{activeCollection?.name}" (original stays in My Layouts)
-        </p>
       </div>
 
       {/* Layout List */}

@@ -33,12 +33,16 @@ export function useCollectionRouting() {
     joinCollection,
     leaveCollection,
     loadingState,
+    setPendingInvite,
+    getMembership,
   } = useCollectionStore(
     useShallow((state) => ({
       activeCollection: state.activeCollection,
       joinCollection: state.joinCollection,
       leaveCollection: state.leaveCollection,
       loadingState: state.loadingState,
+      setPendingInvite: state.setPendingInvite,
+      getMembership: state.getMembership,
     }))
   );
 
@@ -83,9 +87,17 @@ export function useCollectionRouting() {
 
     const collectionInfo = parseCollectionFromURL();
     if (collectionInfo) {
-      navigateToCollection(collectionInfo.collectionId, collectionInfo.viewOnly);
+      // Check if user has already joined this collection
+      const membership = getMembership(collectionInfo.collectionId);
+      if (membership) {
+        // User is already a member - auto-join
+        navigateToCollection(collectionInfo.collectionId, collectionInfo.viewOnly);
+      } else {
+        // New collection - show invite prompt
+        setPendingInvite(collectionInfo.collectionId, collectionInfo.viewOnly);
+      }
     }
-  }, [navigateToCollection]);
+  }, [getMembership, navigateToCollection, setPendingInvite]);
 
   // Handle browser back/forward navigation
   useEffect(() => {
