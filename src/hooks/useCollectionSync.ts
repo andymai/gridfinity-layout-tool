@@ -348,10 +348,14 @@ export function useCollectionSync() {
   const isInitialMount = useRef(true);
   // Ref to track the previous layout ID (to skip triggering when switching layouts)
   const prevLayoutIdRef = useRef<string | null>(null);
-  // Ref to hold the onLayoutChange callback (so subscription doesn't depend on it)
+  // Ref to hold the onLayoutChange callback so the subscription doesn't depend on it.
+  // This is the React "latest ref" pattern for callbacks that change frequently but
+  // shouldn't cause subscribers to re-subscribe.
   const onLayoutChangeRef = useRef(onLayoutChange);
 
-  // Keep the ref updated with the latest callback
+  // Keep the ref updated with the latest callback. This follows the "latest ref"
+  // pattern commonly used in React to avoid re-creating subscriptions when the
+  // callback changes, while still always calling the most recent implementation.
   useEffect(() => {
     onLayoutChangeRef.current = onLayoutChange;
   }, [onLayoutChange]);
