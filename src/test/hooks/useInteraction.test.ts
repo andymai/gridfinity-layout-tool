@@ -1099,6 +1099,424 @@ describe('stagingDrag interaction', () => {
   });
 });
 
+// Test Alt+drag duplicate behavior
+describe('duplicate drag (Alt+drag)', () => {
+  beforeEach(() => {
+    const defaultLayout = createDefaultLayout();
+    useLayoutStore.setState({ layout: defaultLayout });
+    useUIStore.setState({
+      activeLayerId: defaultLayout.layers[0].id,
+      selectedBinIds: [],
+      activeCategoryId: defaultLayout.categories[0].id,
+      zoom: 1,
+      showOtherLayers: true,
+      showLabels: true,
+      leftPanelCollapsed: false,
+      rightPanelCollapsed: false,
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      activeMobilePanel: null,
+      contextMenu: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      layerViewMode: 'focus',
+      isPreviewExpanded: false,
+    });
+    useHistoryStore.setState({
+      past: [],
+      future: [],
+      canUndo: false,
+      canRedo: false,
+    });
+  });
+
+  it('initializes duplicate drag interaction with duplicate flag', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 2,
+      y: 2,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: 'Original',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    // Start duplicate drag (Alt+drag)
+    act(() => {
+      result.current.startDrag(binId!, 68, 68, undefined, true);
+    });
+
+    const interaction = useUIStore.getState().interaction;
+    expect(interaction).not.toBeNull();
+    expect(interaction?.type).toBe('drag');
+    if (interaction?.type === 'drag') {
+      expect(interaction.binIds).toContain(binId);
+      expect(interaction.duplicate).toBe(true);
+    }
+  });
+
+  it('creates duplicate bins at new position on drag end', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: 'Original',
+      notes: 'Test notes',
+    });
+
+    expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    // Start duplicate drag
+    act(() => {
+      result.current.startDrag(binId!, 34, 34, undefined, true);
+    });
+
+    // Set up a valid drop position with delta movement
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'drag',
+          binIds: [binId!],
+          startCoord: { x: 0, y: 0 },
+          currentCoord: { x: 3, y: 0 }, // Delta: move 3 units right
+          valid: true,
+          isOverGrid: true,
+          duplicate: true,
+        },
+      });
+    });
+
+    // Simulate pointer up
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Should now have 2 bins
+    const bins = useLayoutStore.getState().layout.bins;
+    expect(bins).toHaveLength(2);
+
+    // Original should still be at original position
+    const original = bins.find(b => b.id === binId);
+    expect(original?.x).toBe(0);
+    expect(original?.y).toBe(0);
+
+    // New bin should be at new position with same properties
+    const duplicate = bins.find(b => b.id !== binId);
+    expect(duplicate?.x).toBe(3);
+    expect(duplicate?.y).toBe(0);
+    expect(duplicate?.width).toBe(2);
+    expect(duplicate?.depth).toBe(2);
+    expect(duplicate?.label).toBe('Original');
+    expect(duplicate?.notes).toBe('Test notes');
+    expect(duplicate?.category).toBe(categoryId);
+  });
+
+  it('duplicates multiple selected bins preserving arrangement', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId1 = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: 'Bin 1',
+      notes: '',
+    });
+
+    const binId2 = addBin({
+      layerId,
+      x: 2,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: 'Bin 2',
+      notes: '',
+    });
+
+    expect(useLayoutStore.getState().layout.bins).toHaveLength(2);
+
+    // Select both bins
+    useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    // Start duplicate drag on first bin
+    act(() => {
+      result.current.startDrag(binId1!, 34, 34, undefined, true);
+    });
+
+    // Set up valid drop with delta
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'drag',
+          binIds: [binId1!, binId2!],
+          startCoord: { x: 0, y: 0 },
+          currentCoord: { x: 0, y: 3 }, // Delta: move 3 units up
+          valid: true,
+          isOverGrid: true,
+          duplicate: true,
+        },
+      });
+    });
+
+    // Simulate pointer up
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Should now have 4 bins (2 original + 2 duplicates)
+    const bins = useLayoutStore.getState().layout.bins;
+    expect(bins).toHaveLength(4);
+
+    // Originals should still be at original positions
+    const original1 = bins.find(b => b.id === binId1);
+    const original2 = bins.find(b => b.id === binId2);
+    expect(original1?.x).toBe(0);
+    expect(original1?.y).toBe(0);
+    expect(original2?.x).toBe(2);
+    expect(original2?.y).toBe(0);
+
+    // Duplicates should be at new positions preserving relative arrangement
+    const duplicates = bins.filter(b => b.id !== binId1 && b.id !== binId2);
+    expect(duplicates).toHaveLength(2);
+
+    // Find duplicates by their labels
+    const dup1 = duplicates.find(b => b.label === 'Bin 1');
+    const dup2 = duplicates.find(b => b.label === 'Bin 2');
+    expect(dup1?.x).toBe(0);
+    expect(dup1?.y).toBe(3);
+    expect(dup2?.x).toBe(2);
+    expect(dup2?.y).toBe(3);
+  });
+
+  it('does not duplicate bins when drop position is invalid', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+
+    const gridRef = createMockGridRef();
+    renderHook(() => useInteraction(gridRef));
+
+    // Set up invalid drop (collision or out of bounds)
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'drag',
+          binIds: [binId!],
+          startCoord: { x: 0, y: 0 },
+          currentCoord: { x: 0, y: 0 },
+          valid: false, // Invalid position
+          isOverGrid: true,
+          duplicate: true,
+        },
+      });
+    });
+
+    // Simulate pointer up
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Should still have only 1 bin
+    expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+  });
+
+  it('does not duplicate bins when delta is zero (no movement)', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 2,
+      y: 2,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+
+    const gridRef = createMockGridRef();
+    renderHook(() => useInteraction(gridRef));
+
+    // Set up duplicate drag with no movement
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'drag',
+          binIds: [binId!],
+          startCoord: { x: 2, y: 2 },
+          currentCoord: { x: 0, y: 0 }, // No delta
+          valid: true,
+          isOverGrid: true,
+          duplicate: true,
+        },
+      });
+    });
+
+    // Simulate pointer up
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Should still have only 1 bin (no duplication on zero movement)
+    expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+  });
+
+  it('duplicate drag to trash deletes original bins (not duplicate)', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 2,
+      y: 2,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+
+    const gridRef = createMockGridRef();
+    renderHook(() => useInteraction(gridRef));
+
+    // Set up duplicate drag
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'drag',
+          binIds: [binId!],
+          startCoord: { x: 2, y: 2 },
+          currentCoord: { x: 3, y: 3 },
+          valid: true,
+          isOverGrid: true,
+          duplicate: true,
+        },
+        dropTarget: 'trash',
+      });
+    });
+
+    // Simulate pointer up
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Trash should still delete the bins (duplicate mode doesn't change trash behavior)
+    expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
+  });
+
+  it('selects duplicated bins after successful duplicate drag', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    renderHook(() => useInteraction(gridRef));
+
+    // Set up duplicate drag with movement
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'drag',
+          binIds: [binId!],
+          startCoord: { x: 0, y: 0 },
+          currentCoord: { x: 3, y: 0 },
+          valid: true,
+          isOverGrid: true,
+          duplicate: true,
+        },
+      });
+    });
+
+    // Simulate pointer up
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // The new duplicate should be selected
+    const selectedBinIds = useUIStore.getState().selectedBinIds;
+    expect(selectedBinIds).toHaveLength(1);
+    expect(selectedBinIds[0]).not.toBe(binId); // Should be the new bin, not the original
+  });
+});
+
 // Test stagingDrag behavior
 describe('staging drag', () => {
   beforeEach(() => {

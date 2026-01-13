@@ -407,6 +407,7 @@ function MouseInteractionsSection() {
         <InteractionRow action="Click bin" description="Select bin" />
         <InteractionRow action="Shift + click" description="Add to selection" />
         <InteractionRow action="Drag selected" description="Move bins" />
+        <InteractionRow action="Alt + drag selected" description="Duplicate bins" />
         <InteractionRow action="Drag edges/corners" description="Resize bin" />
         <InteractionRow action="Double-click bin" description="Quick label edit" />
         <InteractionRow action="Right-click bin" description="Context menu" />
