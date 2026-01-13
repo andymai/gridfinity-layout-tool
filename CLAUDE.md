@@ -18,6 +18,17 @@ Gridfinity Layout Tool is a React + TypeScript web application for designing sto
 - PostHog (analytics)
 - Deployed via Vercel (auto-deploy on push to `main`)
 
+## Git Workflow
+
+**Main branch is protected.** All changes must go through pull requests - never commit directly to `main`.
+
+1. Create a feature branch: `git checkout -b feature/description`
+2. Make changes and commit
+3. Push and create PR: `gh pr create`
+4. Merge via PR (squash preferred)
+
+Pre-commit hooks enforce lint, build, and test coverage locally before each commit.
+
 ## Commands
 
 ```bash
