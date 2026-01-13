@@ -1,4 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
+import { GuideOverview } from './GuideOverview';
+import { getLessonMeta } from './lessons';
 
 /**
  * Main guide page container.
@@ -6,66 +8,48 @@ import { Link, useParams } from 'react-router-dom';
  */
 export function GuidePage() {
   const { lessonId } = useParams<{ lessonId?: string }>();
+  const lessonMeta = lessonId ? getLessonMeta(lessonId) : null;
 
   return (
-    <div
-      className="min-h-screen bg-surface text-content"
-      data-testid="guide-page"
-    >
+    <div className="min-h-screen bg-surface text-content" data-testid="guide-page">
       {/* Header */}
       <header className="border-b border-stroke px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-bold">Gridfinity Guide</h1>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/guide"
+              className="text-xl font-bold hover:text-accent transition-colors"
+            >
+              Gridfinity Guide
+            </Link>
+            {lessonMeta && (
+              <>
+                <span className="text-content-tertiary">/</span>
+                <span className="text-content-secondary">{lessonMeta.title}</span>
+              </>
+            )}
+          </div>
           <Link
             to="/"
-            className="text-sm text-content-secondary hover:text-content transition-colors"
+            className="text-sm text-content-secondary hover:text-content transition-colors flex items-center gap-1"
           >
-            ← Back to App
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Back to App
           </Link>
         </div>
       </header>
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
-        {lessonId ? (
-          <LessonPlaceholder lessonId={lessonId} />
-        ) : (
-          <OverviewPlaceholder />
-        )}
+        {lessonId ? <LessonPlaceholder lessonId={lessonId} /> : <GuideOverview />}
       </main>
-    </div>
-  );
-}
-
-/**
- * Placeholder for the guide overview (lesson list).
- * Will be replaced with GuideOverview component.
- */
-function OverviewPlaceholder() {
-  return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Learn Gridfinity Layout Tool</h2>
-        <p className="text-content-secondary">
-          Interactive lessons to get you from zero to organized in minutes.
-        </p>
-      </div>
-
-      {/* Placeholder lesson cards */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {['basics', 'categories', 'layers', 'print'].map((id) => (
-          <Link
-            key={id}
-            to={`/guide/${id}`}
-            className="p-6 rounded-lg bg-surface-secondary border border-stroke hover:border-accent transition-colors"
-          >
-            <h3 className="font-semibold capitalize">{id}</h3>
-            <p className="text-sm text-content-secondary mt-1">
-              Coming soon...
-            </p>
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }
