@@ -1,0 +1,6 @@
+{
+  "$schema": "https://www.partykit.io/schema.json",
+  "name": "gridfinity-collections",
+  "main": "party/collection.ts",
+  "compatibilityDate": "2024-12-01"
+}

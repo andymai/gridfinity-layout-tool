@@ -237,7 +237,38 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
                 <span style={STYLES.colorPrimary}>•</span>
                 <span>Your layout auto-saves to your browser</span>
               </li>
+              <li className="flex items-start gap-2">
+                <span style={STYLES.colorPrimary}>•</span>
+                <span>Create a collection to share and edit layouts with others</span>
+              </li>
             </ul>
+          </section>
+
+          {/* Collections */}
+          <section>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>
+              Collections
+            </h3>
+            <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
+              <p style={STYLES.textSecondary} className="text-sm">
+                Collections let you share and edit layouts with others in real-time.
+                No account needed – just share a link.
+              </p>
+              <ul className="space-y-1.5 text-sm" style={STYLES.textSecondary}>
+                <li className="flex items-start gap-2">
+                  <span style={STYLES.colorPrimary}>•</span>
+                  <span>Open Layouts → Create Collection to start</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span style={STYLES.colorPrimary}>•</span>
+                  <span>Changes sync automatically in real-time</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span style={STYLES.colorPrimary}>•</span>
+                  <span>Copy the link to share with others</span>
+                </li>
+              </ul>
+            </div>
           </section>
         </div>
       </div>
