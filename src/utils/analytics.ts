@@ -34,9 +34,10 @@ export function initAnalytics(): void {
     .then(({ default: posthog }) => {
       posthog.init(key, {
         api_host: host,
-        capture_pageview: false, // Vercel Analytics handles this
+        capture_pageview: true,
+        capture_pageleave: true,
         persistence: 'localStorage',
-        autocapture: false, // We'll track manually
+        autocapture: false, // We'll track specific events manually
       });
       posthogInstance = posthog;
 
