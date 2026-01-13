@@ -111,12 +111,21 @@ export function usePartySync() {
   // Only connect when in a collection
   const collectionId = activeCollection?.id;
 
+  // Track stable room ID using React's derived state pattern. When collectionId
+  // becomes undefined, we keep the last known value to prevent partysocket from
+  // trying to connect to a new room while we're closing.
+  // See: https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const [stableRoomId, setStableRoomId] = useState(collectionId || '__none__');
+  if (collectionId && collectionId !== stableRoomId) {
+    setStableRoomId(collectionId);
+  }
+
   // PartySocket connection
   const socket = usePartySocket({
     host: PARTYKIT_HOST,
-    room: collectionId || 'disconnected',
-    // Don't connect if no collection
-    startClosed: !collectionId,
+    room: stableRoomId,
+    // Don't connect if no collection (represented by '__none__' sentinel)
+    startClosed: stableRoomId === '__none__',
     onOpen: () => {
       setIsConnected(true);
       // Send initial presence (deferred to avoid stale closure)

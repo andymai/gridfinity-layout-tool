@@ -77,15 +77,15 @@ test.describe('Collections - Layout Manager Modal', () => {
     await expect(page.getByText(/imported layouts are saved to my layouts/i)).toBeVisible();
   });
 
-  test('shows Shared Collections section at bottom of My Layouts', async ({ page }) => {
+  test('shows Collection tab with Join and Create buttons', async ({ page }) => {
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
-    // Should show Shared Collections section
-    await expect(page.getByRole('heading', { name: /shared collections/i })).toBeVisible();
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
 
-    // Should have Join Existing button
-    await expect(page.getByRole('button', { name: /join existing/i })).toBeVisible();
+    // Should have Join by Code button
+    await expect(page.getByRole('button', { name: /join by code/i })).toBeVisible();
 
     // Should have Create New button
     await expect(page.getByRole('button', { name: /create new/i })).toBeVisible();
@@ -131,6 +131,9 @@ test.describe('Collections - Create Collection Modal', () => {
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
+
     // Click Create New button
     await page.getByRole('button', { name: /create new/i }).click();
 
@@ -142,6 +145,9 @@ test.describe('Collections - Create Collection Modal', () => {
     // Open Layout Manager
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
+
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
 
     // Click Create New button
     await page.getByRole('button', { name: /create new/i }).click();
@@ -156,6 +162,9 @@ test.describe('Collections - Create Collection Modal', () => {
     // Open Layout Manager
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
+
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
 
     // Click Create New button
     await page.getByRole('button', { name: /create new/i }).click();
@@ -178,6 +187,9 @@ test.describe('Collections - Create Collection Modal', () => {
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
+
     // Click Create New button
     await page.getByRole('button', { name: /create new/i }).click();
 
@@ -190,6 +202,9 @@ test.describe('Collections - Create Collection Modal', () => {
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
+
     // Click Create New button
     await page.getByRole('button', { name: /create new/i }).click();
 
@@ -201,6 +216,9 @@ test.describe('Collections - Create Collection Modal', () => {
     // Open Layout Manager
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
+
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
 
     // Click Create New button
     await page.getByRole('button', { name: /create new/i }).click();
@@ -220,6 +238,9 @@ test.describe('Collections - Create Collection Modal', () => {
     // Open Layout Manager
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
+
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
 
     // Click Create New button
     await page.getByRole('button', { name: /create new/i }).click();
@@ -257,8 +278,11 @@ test.describe('Collections - Join Collection Modal', () => {
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
-    // Click Join Existing button
-    await page.getByRole('button', { name: /join existing/i }).click();
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
+
+    // Click Join by Code button
+    await page.getByRole('button', { name: /join by code/i }).click();
 
     // Should show Join Collection modal
     await expect(page.getByRole('heading', { name: /join collection/i })).toBeVisible();
@@ -269,8 +293,11 @@ test.describe('Collections - Join Collection Modal', () => {
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
-    // Click Join Existing button
-    await page.getByRole('button', { name: /join existing/i }).click();
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
+
+    // Click Join by Code button
+    await page.getByRole('button', { name: /join by code/i }).click();
 
     // Should show input field
     const input = page.getByLabel(/collection url or id/i);
@@ -283,8 +310,11 @@ test.describe('Collections - Join Collection Modal', () => {
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
-    // Click Join Existing button
-    await page.getByRole('button', { name: /join existing/i }).click();
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
+
+    // Click Join by Code button
+    await page.getByRole('button', { name: /join by code/i }).click();
 
     // Join button should be present but disabled when input is empty
     const joinButton = page.getByRole('button', { name: /^join collection$/i });
@@ -297,8 +327,11 @@ test.describe('Collections - Join Collection Modal', () => {
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
-    // Click Join Existing button
-    await page.getByRole('button', { name: /join existing/i }).click();
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
+
+    // Click Join by Code button
+    await page.getByRole('button', { name: /join by code/i }).click();
 
     // Enter a collection ID
     const input = page.getByLabel(/collection url or id/i);
@@ -314,8 +347,11 @@ test.describe('Collections - Join Collection Modal', () => {
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
-    // Click Join Existing button
-    await page.getByRole('button', { name: /join existing/i }).click();
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
+
+    // Click Join by Code button
+    await page.getByRole('button', { name: /join by code/i }).click();
 
     // Enter an invalid ID (too short)
     const input = page.getByLabel(/collection url or id/i);
@@ -334,8 +370,11 @@ test.describe('Collections - Join Collection Modal', () => {
     await page.keyboard.press('Control+o');
     await waitForDialog(page);
 
-    // Click Join Existing button
-    await page.getByRole('button', { name: /join existing/i }).click();
+    // Click on Collection tab
+    await page.getByRole('tab', { name: /collection/i }).click();
+
+    // Click Join by Code button
+    await page.getByRole('button', { name: /join by code/i }).click();
 
     // Click Cancel
     await page.getByRole('button', { name: /cancel/i }).click();
