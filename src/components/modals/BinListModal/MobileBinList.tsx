@@ -672,10 +672,10 @@ function BinCard({
               </span>
             )}
           </div>
-          {(row.labels[0] || row.notes || (row.customProperties && Object.keys(row.customProperties).length > 0)) && (
+          {((row.labels ?? [])[0] || row.notes || (row.customProperties && Object.keys(row.customProperties).length > 0)) && (
             <div className="flex items-center gap-1.5 mt-0.5">
-              {row.labels[0] && (
-                <span className="text-sm truncate text-content-tertiary">{row.labels[0]}</span>
+              {(row.labels ?? [])[0] && (
+                <span className="text-sm truncate text-content-tertiary">{(row.labels ?? [])[0]}</span>
               )}
               {row.notes && (
                 <svg className="w-3.5 h-3.5 flex-shrink-0 text-content-disabled" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Has notes">
