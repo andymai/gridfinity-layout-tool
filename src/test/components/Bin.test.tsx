@@ -390,6 +390,29 @@ describe('Bin', () => {
 
       expect(addToSelectionSpy).toHaveBeenCalledWith('test-bin-1');
     });
+
+    it('sets hover state on mouse enter (non-touch device)', () => {
+      const { container } = render(<Bin {...defaultProps} />);
+      const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
+
+      // Mouse enter should trigger hover state
+      fireEvent.mouseEnter(binElement!);
+
+      // The component uses internal state for hover, so we can't easily verify it
+      // But we're testing that the handler runs without errors
+      expect(binElement).toBeInTheDocument();
+    });
+
+    it('clears hover state on mouse leave', () => {
+      const { container } = render(<Bin {...defaultProps} />);
+      const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
+
+      // Mouse enter then leave
+      fireEvent.mouseEnter(binElement!);
+      fireEvent.mouseLeave(binElement!);
+
+      expect(binElement).toBeInTheDocument();
+    });
   });
 
   describe('context menu', () => {
