@@ -688,6 +688,26 @@ input[type="number"] {
 }
 
 /* ===========================================
+   GUIDE ANIMATIONS
+   =========================================== */
+
+/* Checkmark drawing animation */
+@keyframes checkDraw {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-check-draw {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: checkDraw 0.4s ease-out 0.2s forwards;
+}
+
+/* ===========================================
    REDUCED MOTION
    =========================================== */
 @media (prefers-reduced-motion: reduce) {

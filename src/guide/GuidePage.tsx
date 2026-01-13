@@ -1,6 +1,9 @@
+import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import type { Lesson } from './lessons/types';
 import { GuideOverview } from './GuideOverview';
-import { getLessonMeta } from './lessons';
+import { getLessonMeta, loadLesson } from './lessons';
+import { LessonView } from './LessonView';
 
 /**
  * Main guide page container.
@@ -48,41 +51,73 @@ export function GuidePage() {
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
-        {lessonId ? <LessonPlaceholder lessonId={lessonId} /> : <GuideOverview />}
+        {lessonId ? <LessonLoader lessonId={lessonId} /> : <GuideOverview />}
       </main>
     </div>
   );
 }
 
 /**
- * Placeholder for individual lesson view.
- * Will be replaced with LessonView component.
+ * Loads and displays a lesson with loading/error states.
  */
-function LessonPlaceholder({ lessonId }: { lessonId: string }) {
-  return (
-    <div className="space-y-6">
-      <div>
+function LessonLoader({ lessonId }: { lessonId: string }) {
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+
+      const loadedLesson = await loadLesson(lessonId);
+
+      if (cancelled) return;
+
+      if (loadedLesson) {
+        setLesson(loadedLesson);
+      } else {
+        setError(`Lesson "${lessonId}" not found`);
+      }
+      setLoading(false);
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lessonId]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="text-content-secondary">Loading lesson...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-16 space-y-4">
+        <div className="text-4xl">🤔</div>
+        <h2 className="text-xl font-semibold text-content">Lesson Not Found</h2>
+        <p className="text-content-secondary">{error}</p>
         <Link
           to="/guide"
-          className="text-sm text-content-secondary hover:text-content"
+          className="inline-block px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg transition-colors"
         >
-          ← All Lessons
+          Back to All Lessons
         </Link>
       </div>
+    );
+  }
 
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold capitalize">Lesson: {lessonId}</h2>
-        <p className="text-content-secondary">
-          Interactive sandbox coming soon...
-        </p>
-      </div>
+  if (!lesson) {
+    return null;
+  }
 
-      {/* Placeholder sandbox area */}
-      <div className="aspect-video bg-surface-secondary border border-stroke rounded-lg flex items-center justify-center">
-        <span className="text-content-tertiary">
-          Interactive Sandbox Placeholder
-        </span>
-      </div>
-    </div>
-  );
+  return <LessonView lesson={lesson} />;
 }

@@ -1,4 +1,4 @@
-import type { LessonMeta } from './types';
+import type { Lesson, LessonMeta } from './types';
 
 /**
  * Lesson metadata for the guide overview.
@@ -58,3 +58,30 @@ export function getLessonMeta(lessonId: string): LessonMeta | undefined {
  * Total number of lessons.
  */
 export const TOTAL_LESSONS = lessonMetas.length;
+
+/**
+ * Lesson definitions registry.
+ * Lessons are loaded lazily to reduce initial bundle size.
+ */
+const lessonLoaders: Record<string, () => Promise<{ default: Lesson }>> = {
+  basics: () => import('./basics'),
+  categories: () => import('./categories'),
+  layers: () => import('./layers'),
+  print: () => import('./print'),
+};
+
+/**
+ * Load a full lesson definition by ID.
+ * Returns null if lesson not found.
+ */
+export async function loadLesson(lessonId: string): Promise<Lesson | null> {
+  const loader = lessonLoaders[lessonId];
+  if (!loader) return null;
+
+  try {
+    const module = await loader();
+    return module.default;
+  } catch {
+    return null;
+  }
+}
