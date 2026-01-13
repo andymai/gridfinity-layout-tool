@@ -125,7 +125,8 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   }, [paintSize, setInteraction]);
 
   // Start dragging bins (single or multiple)
-  const startDrag = useCallback((binId: string, clientX: number, clientY: number, pointerId?: number) => {
+  // Set duplicate=true for Alt+drag to duplicate bins instead of moving them
+  const startDrag = useCallback((binId: string, clientX: number, clientY: number, pointerId?: number, duplicate?: boolean) => {
     const bin = layout.bins.find(b => b.id === binId);
     if (!bin) return;
 
@@ -192,6 +193,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       valid: true,
       isOverGrid: true,
       clickOffset,
+      duplicate,
     });
   }, [layout.bins, layout.drawer.depth, selectedBinIds, setSelectedBin, setInteraction, getGridCoords, gridRef]);
 
@@ -582,21 +584,54 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
           if (deltaX !== 0 || deltaY !== 0) {
             const layer = layout.layers.find(l => l.id === activeLayerId);
-            execute(() => {
-              // Update all dragged bins with uniform delta (preserves arrangement)
-              for (const binId of interaction.binIds) {
-                const bin = layout.bins.find(b => b.id === binId);
-                if (!bin) continue;
 
-                // Apply uniform delta - NO individual clamping
-                updateBin(binId, {
-                  x: bin.x + deltaX,
-                  y: bin.y + deltaY,
-                  layerId: activeLayerId,
-                  height: Math.max(bin.height, layer?.height ?? bin.height),
-                });
+            if (interaction.duplicate) {
+              // Duplicate mode: create copies at new position, keep originals in place
+              const newBinIds: string[] = [];
+              execute(() => {
+                for (const binId of interaction.binIds) {
+                  const bin = layout.bins.find(b => b.id === binId);
+                  if (!bin) continue;
+
+                  const newBinId = addBin({
+                    layerId: activeLayerId,
+                    x: bin.x + deltaX,
+                    y: bin.y + deltaY,
+                    width: bin.width,
+                    depth: bin.depth,
+                    height: Math.max(bin.height, layer?.height ?? bin.height),
+                    clearanceHeight: bin.clearanceHeight,
+                    category: bin.category,
+                    label: bin.label,
+                    notes: bin.notes,
+                  });
+                  if (newBinId) {
+                    newBinIds.push(newBinId);
+                  }
+                }
+              });
+              // Select the newly created duplicates
+              if (newBinIds.length > 0) {
+                setSelectedBins(newBinIds);
               }
-            });
+            } else {
+              // Normal mode: move bins to new position
+              execute(() => {
+                // Update all dragged bins with uniform delta (preserves arrangement)
+                for (const binId of interaction.binIds) {
+                  const bin = layout.bins.find(b => b.id === binId);
+                  if (!bin) continue;
+
+                  // Apply uniform delta - NO individual clamping
+                  updateBin(binId, {
+                    x: bin.x + deltaX,
+                    y: bin.y + deltaY,
+                    layerId: activeLayerId,
+                    height: Math.max(bin.height, layer?.height ?? bin.height),
+                  });
+                }
+              });
+            }
           }
         }
         // If not valid, interaction ends without changes (bins stay in original positions)

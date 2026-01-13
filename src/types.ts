@@ -102,7 +102,7 @@ export interface HandleVisualConfig {
 
 export type Interaction =
   | { type: 'draw'; start: Coord; current: Coord }
-  | { type: 'drag'; binIds: string[]; startCoord: Coord; currentCoord: Coord; valid: boolean; isOverGrid: boolean; clickOffset?: { x: number; y: number } }
+  | { type: 'drag'; binIds: string[]; startCoord: Coord; currentCoord: Coord; valid: boolean; isOverGrid: boolean; clickOffset?: { x: number; y: number }; duplicate?: boolean }
   | { type: 'resize'; binIds: string[]; handle: ResizeHandle; startRects: Map<string, Rect>; currentRects: Map<string, Rect>; valid: boolean }
   | { type: 'stagingDrag'; binId: string; currentCoord: Coord | null; valid: boolean }
   | { type: 'paint'; paintSize: { width: number; depth: number }; start: Coord; current: Coord };

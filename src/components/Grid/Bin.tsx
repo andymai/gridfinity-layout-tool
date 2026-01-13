@@ -27,7 +27,7 @@ interface BinProps {
   halfBinMode?: boolean;
   isGhost: boolean;
   isSelected: boolean;
-  onStartDrag: (binId: string, clientX: number, clientY: number, pointerId?: number) => void;
+  onStartDrag: (binId: string, clientX: number, clientY: number, pointerId?: number, duplicate?: boolean) => void;
   onStartResize: (binId: string, handle: ResizeHandle, pointerId?: number) => void;
 }
 
@@ -441,6 +441,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         clearLongPress();
       } else if (!isTouchDevice) {
         // Desktop: Normal click - single select and start drag immediately
+        // Alt+drag starts a duplicate operation
+        const isDuplicateDrag = e.altKey;
         if (!isSelected) {
           setSelectedBin(bin.id);
           // Show first-time hint about resize handles
@@ -450,7 +452,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
             localStorage.setItem('gridfinity-resize-hint-shown', 'true');
           }
         }
-        onStartDrag(bin.id, e.clientX, e.clientY, e.pointerId);
+        onStartDrag(bin.id, e.clientX, e.clientY, e.pointerId, isDuplicateDrag);
       } else {
         // Touch: Select on pointer down, drag starts on move
         if (!isSelected) {
