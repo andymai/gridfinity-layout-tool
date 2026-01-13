@@ -38,7 +38,7 @@ test.describe('Print Modal', () => {
     await expect(page.getByRole('heading', { name: 'Layers' })).toBeVisible();
     await expect(page.locator('text=Include in Print')).toBeVisible();
     await expect(page.locator('label:has-text("Labels")')).toBeVisible();
-    await expect(page.locator('label:has-text("Category Colors")')).toBeVisible();
+    await expect(page.locator('label:has-text("Categories")')).toBeVisible();
   });
 
   test('print modal has preview panel', async ({ page }) => {
