@@ -22,10 +22,9 @@ export function initAnalytics(): void {
   if (import.meta.env.DEV) return; // Skip in development
 
   const key = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
-  const host = import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
 
-  if (!key || !host) {
-    console.warn('Posthog env vars not set, analytics disabled');
+  if (!key) {
+    console.warn('Posthog API key not set, analytics disabled');
     return;
   }
 
@@ -33,7 +32,8 @@ export function initAnalytics(): void {
   initPromise = import('posthog-js')
     .then(({ default: posthog }) => {
       posthog.init(key, {
-        api_host: host,
+        api_host: '/ph',
+        ui_host: 'https://us.posthog.com',
         capture_pageview: true,
         capture_pageleave: true,
         persistence: 'localStorage',
