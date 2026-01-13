@@ -214,6 +214,7 @@ async function handlePut(
       access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
 
     return res.status(200).json({

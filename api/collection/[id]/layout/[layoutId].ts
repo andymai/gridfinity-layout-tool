@@ -288,6 +288,7 @@ async function handlePut(
         access: 'public',
         contentType: 'application/json',
         addRandomSuffix: false,
+        allowOverwrite: true,
       }
     );
 
@@ -315,6 +316,7 @@ async function handlePut(
       access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
 
     return res.status(200).json({
@@ -393,6 +395,7 @@ async function handleDelete(
       access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
 
     return res.status(200).json({
