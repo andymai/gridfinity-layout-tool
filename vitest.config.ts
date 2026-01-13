@@ -9,6 +9,27 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     exclude: ['e2e/**', 'node_modules/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'text-summary', 'html'],
+      exclude: [
+        'node_modules/**',
+        'e2e/**',
+        'src/test/**',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/types.ts',
+        'api/**', // Serverless functions tested separately
+      ],
+      thresholds: {
+        // Thresholds set slightly below current coverage to prevent regression
+        // Updated 2026-01-12: Improved from ~61% to ~65% lines
+        lines: 64,
+        branches: 47,
+        functions: 62,
+        statements: 64,
+      },
+    },
   },
   resolve: {
     alias: {
