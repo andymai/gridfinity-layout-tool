@@ -59,6 +59,7 @@ export function resetAllStores(): void {
     sharedLayoutPreview: null,
     sharedLayoutOriginalName: null,
     sharedLayoutAuthorName: null,
+    printModalOpen: false,
   });
 
   // History store
