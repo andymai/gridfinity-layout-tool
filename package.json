@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:vercel": "tsc -b && vite build && npx partykit deploy",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
