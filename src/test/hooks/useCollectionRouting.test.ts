@@ -308,7 +308,27 @@ describe('useCollectionRouting', () => {
   });
 
   describe('initial URL handling', () => {
-    it('parses collection from URL on mount', async () => {
+    it('shows invite prompt for new collection (no membership)', async () => {
+      vi.mocked(url.parseCollectionFromURL).mockReturnValue({
+        collectionId: 'abc123def456',
+        viewOnly: false,
+      });
+
+      const mockSetPendingInvite = vi.fn();
+      const mockGetMembership = vi.fn().mockReturnValue(undefined); // No membership
+      useCollectionStore.setState({
+        setPendingInvite: mockSetPendingInvite,
+        getMembership: mockGetMembership,
+      });
+
+      renderHook(() => useCollectionRouting());
+
+      await waitFor(() => {
+        expect(mockSetPendingInvite).toHaveBeenCalledWith('abc123def456', false);
+      });
+    });
+
+    it('auto-joins for existing membership', async () => {
       vi.mocked(url.parseCollectionFromURL).mockReturnValue({
         collectionId: 'abc123def456',
         viewOnly: false,
@@ -318,8 +338,16 @@ describe('useCollectionRouting', () => {
         success: true,
         data: mockCollection,
       });
+      const mockGetMembership = vi.fn().mockReturnValue({
+        collectionId: 'abc123def456',
+        collectionName: 'Test Collection',
+        joinedAt: Date.now(),
+        lastSyncAt: Date.now(),
+        lastAccessedAt: Date.now(),
+      });
       useCollectionStore.setState({
         joinCollection: mockJoinCollection,
+        getMembership: mockGetMembership,
       });
 
       renderHook(() => useCollectionRouting());
@@ -329,24 +357,23 @@ describe('useCollectionRouting', () => {
       });
     });
 
-    it('handles viewOnly URL parameter', async () => {
+    it('handles viewOnly URL parameter for new collection', async () => {
       vi.mocked(url.parseCollectionFromURL).mockReturnValue({
         collectionId: 'abc123def456',
         viewOnly: true,
       });
 
-      const mockJoinCollection = vi.fn().mockResolvedValue({
-        success: true,
-        data: mockCollection,
-      });
+      const mockSetPendingInvite = vi.fn();
+      const mockGetMembership = vi.fn().mockReturnValue(undefined);
       useCollectionStore.setState({
-        joinCollection: mockJoinCollection,
+        setPendingInvite: mockSetPendingInvite,
+        getMembership: mockGetMembership,
       });
 
       renderHook(() => useCollectionRouting());
 
       await waitFor(() => {
-        expect(mockJoinCollection).toHaveBeenCalledWith('abc123def456');
+        expect(mockSetPendingInvite).toHaveBeenCalledWith('abc123def456', true);
       });
     });
 
@@ -356,24 +383,23 @@ describe('useCollectionRouting', () => {
         viewOnly: false,
       });
 
-      const mockJoinCollection = vi.fn().mockResolvedValue({
-        success: true,
-        data: mockCollection,
-      });
+      const mockSetPendingInvite = vi.fn();
+      const mockGetMembership = vi.fn().mockReturnValue(undefined);
       useCollectionStore.setState({
-        joinCollection: mockJoinCollection,
+        setPendingInvite: mockSetPendingInvite,
+        getMembership: mockGetMembership,
       });
 
       const { rerender } = renderHook(() => useCollectionRouting());
 
       await waitFor(() => {
-        expect(mockJoinCollection).toHaveBeenCalledTimes(1);
+        expect(mockSetPendingInvite).toHaveBeenCalledTimes(1);
       });
 
-      // Rerender should not trigger another join
+      // Rerender should not trigger another invite
       rerender();
 
-      expect(mockJoinCollection).toHaveBeenCalledTimes(1);
+      expect(mockSetPendingInvite).toHaveBeenCalledTimes(1);
     });
   });
 

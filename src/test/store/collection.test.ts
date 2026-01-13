@@ -961,4 +961,107 @@ describe('Collection Store', () => {
       expect(storage.saveCollectionMemberships).toHaveBeenCalled();
     });
   });
+
+  describe('pending invite operations', () => {
+    it('should set pending invite and fetch collection info', async () => {
+      vi.mocked(collectionApi.fetchCollection).mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'abc123def456',
+          name: 'Test Collection',
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          expiresAt: Date.now() + 1000000,
+          layoutCount: 5,
+          layouts: [],
+        },
+      });
+
+      const { setPendingInvite } = useCollectionStore.getState();
+      await setPendingInvite('abc123def456', false);
+
+      const { pendingInvite } = useCollectionStore.getState();
+      expect(pendingInvite).not.toBeNull();
+      expect(pendingInvite?.collectionId).toBe('abc123def456');
+      expect(pendingInvite?.viewOnly).toBe(false);
+      expect(pendingInvite?.collectionInfo?.name).toBe('Test Collection');
+      expect(pendingInvite?.collectionInfo?.layoutCount).toBe(5);
+    });
+
+    it('should handle fetch error for pending invite', async () => {
+      vi.mocked(collectionApi.fetchCollection).mockResolvedValueOnce({
+        success: false,
+        error: { error: 'Not found', code: 'NOT_FOUND' },
+      });
+
+      const { setPendingInvite } = useCollectionStore.getState();
+      await setPendingInvite('invalid123', false);
+
+      const { pendingInvite } = useCollectionStore.getState();
+      expect(pendingInvite).not.toBeNull();
+      expect(pendingInvite?.error).toBe('Not found');
+      expect(pendingInvite?.collectionInfo).toBeUndefined();
+    });
+
+    it('should clear pending invite', async () => {
+      useCollectionStore.setState({
+        pendingInvite: {
+          collectionId: 'abc123def456',
+          viewOnly: false,
+          collectionInfo: { name: 'Test', layoutCount: 1, expiresAt: Date.now() },
+        },
+      });
+
+      const { clearPendingInvite } = useCollectionStore.getState();
+      clearPendingInvite();
+
+      const { pendingInvite } = useCollectionStore.getState();
+      expect(pendingInvite).toBeNull();
+    });
+
+    it('should accept pending invite and join collection', async () => {
+      vi.mocked(collectionApi.fetchCollection).mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'abc123def456',
+          name: 'Test Collection',
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          expiresAt: Date.now() + 1000000,
+          layoutCount: 0,
+          layouts: [],
+        },
+      });
+
+      useCollectionStore.setState({
+        pendingInvite: {
+          collectionId: 'abc123def456',
+          viewOnly: false,
+          collectionInfo: { name: 'Test', layoutCount: 0, expiresAt: Date.now() },
+        },
+      });
+
+      const { acceptPendingInvite } = useCollectionStore.getState();
+      const result = await acceptPendingInvite();
+
+      expect(result.success).toBe(true);
+
+      const { pendingInvite, activeCollection } = useCollectionStore.getState();
+      expect(pendingInvite).toBeNull();
+      expect(activeCollection).not.toBeNull();
+      expect(activeCollection?.id).toBe('abc123def456');
+    });
+
+    it('should return error when accepting without pending invite', async () => {
+      useCollectionStore.setState({ pendingInvite: null });
+
+      const { acceptPendingInvite } = useCollectionStore.getState();
+      const result = await acceptPendingInvite();
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.error).toBe('No pending invite');
+      }
+    });
+  });
 });
