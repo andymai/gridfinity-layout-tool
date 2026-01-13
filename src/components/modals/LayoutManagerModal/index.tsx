@@ -259,7 +259,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
               aria-controls="collection-panel"
               onClick={() => setActiveTab('collection')}
               className={`
-                flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2
+                flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 relative
                 ${activeTab === 'collection'
                   ? 'bg-accent text-white'
                   : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
@@ -270,6 +270,10 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               Collection
+              {/* Active indicator dot when not selected */}
+              {activeTab !== 'collection' && (
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true" />
+              )}
             </button>
           )}
 
@@ -312,30 +316,30 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
                 />
               </div>
 
-              {/* Real-time Sharing Section */}
+              {/* Shared Collections Section */}
               <div className="mt-4 pt-4 border-t border-stroke flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-medium text-content">Real-time Sharing</h3>
+                    <h3 className="text-sm font-medium text-content">Shared Collections</h3>
                     <p className="text-xs text-content-tertiary mt-0.5">
-                      Share layouts with others - no account needed
+                      Work on layouts together in real-time
                     </p>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowJoinCollection(true)}
-                      className="px-3 py-1.5 text-sm font-medium rounded-md text-content-secondary hover:text-content hover:bg-surface transition-colors"
+                      className="px-3 py-1.5 text-sm font-medium rounded-md border border-stroke text-content hover:bg-surface transition-colors"
                     >
-                      Join
+                      Join Existing
                     </button>
                     <button
                       onClick={() => setShowCreateCollection(true)}
                       className="px-3 py-1.5 text-sm font-medium rounded-md bg-accent text-white hover:bg-accent-hover transition-colors flex items-center gap-1.5"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
-                      Create Collection
+                      Create New
                     </button>
                   </div>
                 </div>
