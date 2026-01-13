@@ -120,6 +120,11 @@ export function useCollectionSync() {
   // Track if we're currently editing
   const isEditingRef = useRef(false);
 
+  // Ref to track if this is the initial mount (to skip triggering on first render)
+  const isInitialMount = useRef(true);
+  // Ref to track the previous layout ID (to skip triggering when switching layouts)
+  const prevLayoutIdRef = useRef<string | null>(null);
+
   /**
    * Poll for changes from server.
    */
@@ -339,6 +344,15 @@ export function useCollectionSync() {
     updateActiveCollectionLayout,
   ]);
 
+  // Ref to hold the pushChanges callback so the timeout always calls the latest version.
+  // This is necessary because pushChanges depends on `layout`, which changes on every edit.
+  const pushChangesRef = useRef(pushChanges);
+
+  // Keep the ref updated with the latest pushChanges.
+  useEffect(() => {
+    pushChangesRef.current = pushChanges;
+  }, [pushChanges]);
+
   /**
    * Mark layout as modified and schedule debounced push.
    */
@@ -356,22 +370,19 @@ export function useCollectionSync() {
 
     // Cancel any pending push
     if (pushTimeoutRef.current) {
+      console.warn('[CollectionSync] Clearing previous timeout:', pushTimeoutRef.current);
       window.clearTimeout(pushTimeoutRef.current);
     }
 
-    // Schedule new push
+    // Schedule new push - use pushChangesRef to always call latest version
     console.warn('[CollectionSync] Scheduling push in', PUSH_DEBOUNCE_MS, 'ms');
     pushTimeoutRef.current = window.setTimeout(() => {
       console.warn('[CollectionSync] Push timeout fired, calling pushChanges');
-      pushChanges();
+      pushChangesRef.current();
       pushTimeoutRef.current = null;
     }, PUSH_DEBOUNCE_MS);
-  }, [activeCollection, activeLayoutId, markLayoutModified, pushChanges]);
+  }, [activeCollection, activeLayoutId, markLayoutModified]);
 
-  // Ref to track if this is the initial mount (to skip triggering on first render)
-  const isInitialMount = useRef(true);
-  // Ref to track the previous layout ID (to skip triggering when switching layouts)
-  const prevLayoutIdRef = useRef<string | null>(null);
   // Ref to hold the onLayoutChange callback so the subscription doesn't depend on it.
   // This is the React "latest ref" pattern for callbacks that change frequently but
   // shouldn't cause subscribers to re-subscribe.
