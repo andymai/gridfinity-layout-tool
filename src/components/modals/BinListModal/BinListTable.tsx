@@ -235,8 +235,8 @@ export function BinListTable({
 
                 {/* Category color dots */}
                 <td className="px-2 py-2">
-                  <div className="flex gap-0.5" title={row.categoryIds.map(catId => categories.find(c => c.id === catId)?.name || 'Unknown').join(', ')}>
-                    {row.categoryIds.slice(0, 3).map((catId) => {
+                  <div className="flex gap-0.5" title={(row.categoryIds ?? []).map(catId => categories.find(c => c.id === catId)?.name || 'Unknown').join(', ')}>
+                    {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
                       const cat = categories.find((c) => c.id === catId);
                       return (
                         <span
@@ -246,8 +246,8 @@ export function BinListTable({
                         />
                       );
                     })}
-                    {row.categoryIds.length > 3 && (
-                      <span className="text-[9px] text-content-disabled">+{row.categoryIds.length - 3}</span>
+                    {(row.categoryIds ?? []).length > 3 && (
+                      <span className="text-[9px] text-content-disabled">+{(row.categoryIds ?? []).length - 3}</span>
                     )}
                   </div>
                 </td>
@@ -276,7 +276,7 @@ export function BinListTable({
                 {/* Label (editable) */}
                 <td
                   className="px-3 py-2 text-content-secondary max-w-[150px]"
-                  onDoubleClick={() => handleDoubleClick(index, 'label', row.labels[0] || '')}
+                  onDoubleClick={() => handleDoubleClick(index, 'label', (row.labels ?? [])[0] || '')}
                 >
                   {editing?.rowIndex === index && editing.field === 'label' ? (
                     <input

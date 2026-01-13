@@ -51,7 +51,7 @@ try {
   // The collection routing will handle loading the appropriate layout
   // This prevents the visual flash of the local layout before the collection layout loads
   if (!isCollectionURL()) {
-    useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId);
+    useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
   }
 
   // Initialize collection memberships from localStorage

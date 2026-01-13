@@ -89,7 +89,7 @@ describe('useCrossTabSync', () => {
 
     expect(storage.loadLayoutById).toHaveBeenCalledWith('test-layout-id');
     expect(validation.validateLayoutIntegrity).toHaveBeenCalledWith(mockLayout);
-    expect(importLayoutSpy).toHaveBeenCalledWith(mockLayout, 'test-layout-id');
+    expect(importLayoutSpy).toHaveBeenCalledWith(mockLayout, 'test-layout-id', 'remote');
     expect(clearHistorySpy).toHaveBeenCalled();
   });
 
