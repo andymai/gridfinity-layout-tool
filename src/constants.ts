@@ -24,7 +24,17 @@ export const CONSTRAINTS = {
   LAYOUTS_MAX: 100,              // Max layouts in library (localStorage limit)
   LAYOUTS_WARNING_THRESHOLD: 80, // Show warning at this count
   RECENT_LAYOUTS_COUNT: 5,       // Number of recent layouts to show
+  // Custom properties constraints
+  CUSTOM_PROPERTY_MAX_COUNT: 50,        // Max custom properties per bin
+  CUSTOM_PROPERTY_KEY_MAX_LENGTH: 32,   // Max length of property key
+  CUSTOM_PROPERTY_VALUE_MAX_LENGTH: 256, // Max length of property value
 } as const;
+
+/** Reserved keys that cannot be used as custom property names */
+export const RESERVED_PROPERTY_KEYS = [
+  'id', 'layerId', 'x', 'y', 'width', 'depth', 'height',
+  'clearanceHeight', 'category', 'label', 'notes', 'customProperties',
+] as const;
 
 /**
  * Calculate max grid units for a single bin that fits on a print bed.

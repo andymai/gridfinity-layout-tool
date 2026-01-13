@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CONSTRAINTS, RESERVED_PROPERTY_KEYS } from '../../constants';
 
 interface CustomPropertiesEditorProps {
   customProperties?: Record<string, string>;
@@ -6,9 +7,6 @@ interface CustomPropertiesEditorProps {
   /** Platform variant affects touch targets and sizing */
   variant: 'desktop' | 'mobile';
 }
-
-const MAX_KEY_LENGTH = 32;
-const MAX_VALUE_LENGTH = 128;
 
 /**
  * Editor for custom key-value properties on bins.
@@ -23,6 +21,7 @@ export function CustomPropertiesEditor({
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const isMobile = variant === 'mobile';
   const inputHeight = isMobile ? 'h-12' : '';
@@ -30,13 +29,37 @@ export function CustomPropertiesEditor({
 
   const properties = Object.entries(customProperties);
   const hasProperties = properties.length > 0;
+  const atMaxProperties = properties.length >= CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT;
 
   const handleAdd = () => {
     const trimmedKey = newKey.trim();
     const trimmedValue = newValue.trim();
 
-    if (!trimmedKey || !trimmedValue) return;
-    if (trimmedKey in customProperties) return; // Don't overwrite existing keys
+    // Validate
+    if (!trimmedKey) {
+      setError('Property name is required');
+      return;
+    }
+
+    if (!trimmedValue) {
+      setError('Property value is required');
+      return;
+    }
+
+    if (RESERVED_PROPERTY_KEYS.includes(trimmedKey as typeof RESERVED_PROPERTY_KEYS[number])) {
+      setError(`"${trimmedKey}" is a reserved field name`);
+      return;
+    }
+
+    if (trimmedKey in customProperties) {
+      setError('Property name already exists');
+      return;
+    }
+
+    if (properties.length >= CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT) {
+      setError(`Maximum ${CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT} properties allowed`);
+      return;
+    }
 
     onChange({
       ...customProperties,
@@ -45,6 +68,7 @@ export function CustomPropertiesEditor({
 
     setNewKey('');
     setNewValue('');
+    setError(null);
     setIsAdding(false);
   };
 
@@ -57,14 +81,17 @@ export function CustomPropertiesEditor({
   };
 
   const handleDelete = (key: string) => {
-    const updated = { ...customProperties };
-    delete updated[key];
+    // Use object destructuring to avoid dynamic delete (ESLint rule)
+    const updated = Object.fromEntries(
+      Object.entries(customProperties).filter(([k]) => k !== key)
+    );
     onChange(updated);
   };
 
   const handleCancelAdd = () => {
     setNewKey('');
     setNewValue('');
+    setError(null);
     setIsAdding(false);
   };
 
@@ -86,14 +113,16 @@ export function CustomPropertiesEditor({
     <div>
       <div className="flex items-center justify-between mb-2">
         <label className={`block ${labelSize} text-content-tertiary`}>
-          Custom Properties
+          Custom Properties {hasProperties && <span className="text-content-disabled">({properties.length})</span>}
         </label>
         {!isAdding && (
           <button
             type="button"
             onClick={() => setIsAdding(true)}
-            className="text-xs text-accent hover:text-accent-hover transition-colors"
+            disabled={atMaxProperties}
+            className="text-xs text-accent hover:text-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Add custom property"
+            title={atMaxProperties ? `Maximum ${CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT} properties reached` : 'Add custom property'}
           >
             + Add
           </button>
@@ -117,7 +146,7 @@ export function CustomPropertiesEditor({
                     <input
                       type="text"
                       value={value}
-                      onChange={(e) => handleUpdate(key, e.target.value.slice(0, MAX_VALUE_LENGTH))}
+                      onChange={(e) => handleUpdate(key, e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH))}
                       onBlur={() => setEditingKey(null)}
                       onKeyDown={(e) => handleKeyDown(e, () => setEditingKey(null))}
                       className="input flex-1 text-sm py-1"
@@ -174,9 +203,12 @@ export function CustomPropertiesEditor({
           <input
             type="text"
             value={newKey}
-            onChange={(e) => setNewKey(e.target.value.slice(0, MAX_KEY_LENGTH))}
+            onChange={(e) => {
+              setNewKey(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH));
+              setError(null); // Clear error on input
+            }}
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
-            className={`input w-full ${inputHeight}`}
+            className={`input w-full ${inputHeight} ${error ? 'border-error' : ''}`}
             placeholder="Property name (e.g., SKU, Quantity)"
             aria-label="New property name"
             autoFocus
@@ -184,12 +216,20 @@ export function CustomPropertiesEditor({
           <input
             type="text"
             value={newValue}
-            onChange={(e) => setNewValue(e.target.value.slice(0, MAX_VALUE_LENGTH))}
+            onChange={(e) => {
+              setNewValue(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH));
+              setError(null); // Clear error on input
+            }}
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
             className={`input w-full ${inputHeight}`}
             placeholder="Value"
             aria-label="New property value"
           />
+          {error && (
+            <div className="text-xs text-error">
+              {error}
+            </div>
+          )}
           <div className="flex gap-2">
             <button
               type="button"
