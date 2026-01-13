@@ -23,11 +23,11 @@ export default defineConfig({
       ],
       thresholds: {
         // Thresholds set slightly below current coverage to prevent regression
-        // Updated 2026-01-12: Improved from ~61% to ~65% lines
-        lines: 64,
-        branches: 47,
-        functions: 62,
-        statements: 64,
+        // Updated 2026-01-12: Improved from ~65% to ~88% lines
+        lines: 88,
+        branches: 77,
+        functions: 88,
+        statements: 87,
       },
     },
   },
