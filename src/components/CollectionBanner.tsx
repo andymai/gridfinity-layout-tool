@@ -1,17 +1,21 @@
 /**
  * Banner shown when viewing a collection.
- * Displays collection name, sync status, and provides quick actions.
+ * Displays collection name, sync status, presence indicators, and provides quick actions.
  */
 
 import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useCollectionStore } from '../store/collection';
+import { useLayoutStore } from '../store/layout';
 import { useToastStore } from '../store/toast';
 import { useUIStore } from '../store/ui';
 import { useCollectionRouting } from '../hooks/useCollectionRouting';
+import { useCollectionSync } from '../hooks/useCollectionSync';
 import { generateCollectionURL } from '../utils/url';
 import { copyToClipboard } from '../utils/storage';
 import { ConfirmDialog } from './modals/ConfirmDialog';
+import { ConflictDialog } from './modals/ConflictDialog';
+import type { ConflictResolution } from './modals/ConflictDialog';
 
 export function CollectionBanner() {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
@@ -24,9 +28,14 @@ export function CollectionBanner() {
     }))
   );
 
+  const activeLayoutId = useLayoutStore((state) => state.activeLayoutId);
   const addToast = useToastStore((state) => state.addToast);
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
-  const { exitCollection, isSyncing } = useCollectionRouting();
+  const { exitCollection } = useCollectionRouting();
+  const { status, conflict, activeEditors, resolveConflict } = useCollectionSync();
+
+  // Get active editor count for current layout
+  const currentLayoutEditors = activeLayoutId ? activeEditors.get(activeLayoutId) ?? 0 : 0;
 
   const handleCopyLink = useCallback(async () => {
     if (!activeCollection) return;
@@ -49,6 +58,21 @@ export function CollectionBanner() {
     addToast('Left collection', 'info');
     setShowLeaveConfirm(false);
   }, [exitCollection, addToast]);
+
+  const handleResolveConflict = useCallback(
+    (resolution: ConflictResolution) => {
+      resolveConflict(resolution);
+      addToast(
+        resolution === 'save-both'
+          ? 'Saved your changes as a copy'
+          : resolution === 'keep-mine'
+          ? 'Kept your changes'
+          : 'Applied their changes',
+        'success'
+      );
+    },
+    [resolveConflict, addToast]
+  );
 
   // Don't render if not in collection mode
   if (!activeCollection) return null;
@@ -88,29 +112,51 @@ export function CollectionBanner() {
           </span>
 
           {/* Sync Status Indicator */}
-          {isSyncing && (
+          {status === 'syncing' && (
             <span className="flex items-center gap-1 text-xs text-white/80">
-              <svg
-                className="w-3 h-3 animate-spin"
-                fill="none"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
+              <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
               Syncing...
+            </span>
+          )}
+          {status === 'synced' && (
+            <span className="flex items-center gap-1 text-xs text-white/70">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Saved
+            </span>
+          )}
+          {status === 'offline' && (
+            <span className="flex items-center gap-1 text-xs text-yellow-200">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" />
+              </svg>
+              Offline
+            </span>
+          )}
+          {status === 'error' && (
+            <span className="flex items-center gap-1 text-xs text-red-200">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Sync error
+            </span>
+          )}
+
+          {/* Presence Indicator - show if others are editing this layout */}
+          {currentLayoutEditors > 0 && (
+            <span
+              className="flex items-center gap-1 text-xs bg-white/20 px-2 py-0.5 rounded-full"
+              title={`${currentLayoutEditors} ${currentLayoutEditors === 1 ? 'person' : 'people'} editing`}
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              {currentLayoutEditors} editing
             </span>
           )}
         </div>
@@ -163,6 +209,20 @@ export function CollectionBanner() {
         onConfirm={handleLeave}
         onCancel={() => setShowLeaveConfirm(false)}
       />
+
+      {/* Conflict Resolution Dialog */}
+      {conflict && (
+        <ConflictDialog
+          isOpen={true}
+          layoutName={conflict.layoutName}
+          serverModifiedAt={conflict.serverModifiedAt}
+          onResolve={handleResolveConflict}
+          onCancel={() => {
+            // User cancels - keep conflict state but close dialog
+            // They'll need to resolve eventually
+          }}
+        />
+      )}
     </div>
   );
 }

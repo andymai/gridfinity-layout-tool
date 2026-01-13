@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, act, cleanup } from '@testing-library/react';
 import { CollectionBanner } from '../../components/CollectionBanner';
 import { useCollectionStore } from '../../store/collection';
+import { useLayoutStore } from '../../store/layout';
 import { useToastStore } from '../../store/toast';
 import { useUIStore } from '../../store/ui';
 import type { Collection, CollectionLayout } from '../../api/collection';
@@ -15,6 +16,26 @@ vi.mock('../../hooks/useCollectionRouting', () => ({
     navigateToCollection: mockNavigateToCollection,
     isLoading: false,
     isSyncing: false,
+  }),
+}));
+
+// Mock useCollectionSync hook
+const mockResolveConflict = vi.fn();
+let mockSyncStatus = 'idle';
+let mockConflict: { layoutId: string; layoutName: string; serverModifiedAt: number } | null = null;
+let mockActiveEditors = new Map<string, number>();
+
+vi.mock('../../hooks/useCollectionSync', () => ({
+  useCollectionSync: () => ({
+    status: mockSyncStatus,
+    conflict: mockConflict,
+    activeEditors: mockActiveEditors,
+    resolveConflict: mockResolveConflict,
+    lastSyncAt: null,
+    onLayoutChange: vi.fn(),
+    pushChanges: vi.fn(),
+    poll: vi.fn(),
+    isOnline: true,
   }),
 }));
 
@@ -46,11 +67,21 @@ describe('CollectionBanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    // Reset sync mock values
+    mockSyncStatus = 'idle';
+    mockConflict = null;
+    mockActiveEditors = new Map<string, number>();
+
     // Reset collection store
     useCollectionStore.setState({
       activeCollection: null,
       activeCollectionLayouts: [],
       loadingState: 'idle',
+    });
+
+    // Reset layout store
+    useLayoutStore.setState({
+      activeLayoutId: 'layout1',
     });
 
     // Reset toast store
@@ -284,30 +315,182 @@ describe('CollectionBanner', () => {
     });
   });
 
-  describe('syncing state', () => {
-    it('shows syncing indicator when isSyncing is true', () => {
-      // Re-mock with isSyncing true
-      vi.doMock('../../hooks/useCollectionRouting', () => ({
-        useCollectionRouting: () => ({
-          exitCollection: mockExitCollection,
-          navigateToCollection: mockNavigateToCollection,
-          isLoading: false,
-          isSyncing: true,
-        }),
-      }));
-
+  describe('sync status indicators', () => {
+    beforeEach(() => {
       useCollectionStore.setState({
         activeCollection: mockCollection,
         activeCollectionLayouts: mockLayouts,
-        loadingState: 'syncing',
       });
+    });
 
-      // Note: Due to how vi.doMock works, this test verifies the component structure
-      // but may not show the syncing state without a full module reload
+    it('shows syncing indicator when status is syncing', () => {
+      mockSyncStatus = 'syncing';
       render(<CollectionBanner />);
 
-      // The component renders when activeCollection is set
-      expect(screen.getByRole('banner')).toBeInTheDocument();
+      expect(screen.getByText('Syncing...')).toBeInTheDocument();
+    });
+
+    it('shows saved indicator when status is synced', () => {
+      mockSyncStatus = 'synced';
+      render(<CollectionBanner />);
+
+      expect(screen.getByText('Saved')).toBeInTheDocument();
+    });
+
+    it('shows offline indicator when status is offline', () => {
+      mockSyncStatus = 'offline';
+      render(<CollectionBanner />);
+
+      expect(screen.getByText('Offline')).toBeInTheDocument();
+    });
+
+    it('shows error indicator when status is error', () => {
+      mockSyncStatus = 'error';
+      render(<CollectionBanner />);
+
+      expect(screen.getByText('Sync error')).toBeInTheDocument();
+    });
+
+    it('shows no indicator when status is idle', () => {
+      mockSyncStatus = 'idle';
+      render(<CollectionBanner />);
+
+      expect(screen.queryByText('Syncing...')).not.toBeInTheDocument();
+      expect(screen.queryByText('Saved')).not.toBeInTheDocument();
+      expect(screen.queryByText('Offline')).not.toBeInTheDocument();
+      expect(screen.queryByText('Sync error')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('presence indicators', () => {
+    beforeEach(() => {
+      useCollectionStore.setState({
+        activeCollection: mockCollection,
+        activeCollectionLayouts: mockLayouts,
+      });
+      useLayoutStore.setState({
+        activeLayoutId: 'layout1',
+      });
+    });
+
+    it('shows presence indicator when others are editing current layout', () => {
+      mockActiveEditors = new Map([['layout1', 2]]);
+      render(<CollectionBanner />);
+
+      expect(screen.getByText('2 editing')).toBeInTheDocument();
+    });
+
+    it('does not show presence indicator when no one else is editing', () => {
+      mockActiveEditors = new Map();
+      render(<CollectionBanner />);
+
+      expect(screen.queryByText(/editing/)).not.toBeInTheDocument();
+    });
+
+    it('does not show presence indicator for different layout', () => {
+      mockActiveEditors = new Map([['layout2', 3]]);
+      render(<CollectionBanner />);
+
+      expect(screen.queryByText(/editing/)).not.toBeInTheDocument();
+    });
+
+    it('shows correct count for single editor', () => {
+      mockActiveEditors = new Map([['layout1', 1]]);
+      render(<CollectionBanner />);
+
+      expect(screen.getByText('1 editing')).toBeInTheDocument();
+    });
+  });
+
+  describe('conflict dialog', () => {
+    beforeEach(() => {
+      useCollectionStore.setState({
+        activeCollection: mockCollection,
+        activeCollectionLayouts: mockLayouts,
+      });
+    });
+
+    it('shows conflict dialog when conflict is present', () => {
+      mockConflict = {
+        layoutId: 'layout1',
+        layoutName: 'Test Layout',
+        serverModifiedAt: Date.now() - 60000,
+      };
+      render(<CollectionBanner />);
+
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+      expect(screen.getByText('Conflict Detected')).toBeInTheDocument();
+    });
+
+    it('does not show conflict dialog when no conflict', () => {
+      mockConflict = null;
+      render(<CollectionBanner />);
+
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    });
+
+    it('displays the conflicting layout name', () => {
+      mockConflict = {
+        layoutId: 'layout1',
+        layoutName: 'My Layout',
+        serverModifiedAt: Date.now() - 60000,
+      };
+      render(<CollectionBanner />);
+
+      expect(screen.getByText(/"My Layout"/)).toBeInTheDocument();
+    });
+
+    it('calls resolveConflict with save-both when that option is selected', async () => {
+      mockConflict = {
+        layoutId: 'layout1',
+        layoutName: 'Test Layout',
+        serverModifiedAt: Date.now() - 60000,
+      };
+      render(<CollectionBanner />);
+
+      // Click Resolve Conflict button (save-both is default)
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Resolve Conflict' }));
+      });
+
+      expect(mockResolveConflict).toHaveBeenCalledWith('save-both');
+    });
+
+    it('calls resolveConflict with keep-mine when that option is selected', async () => {
+      mockConflict = {
+        layoutId: 'layout1',
+        layoutName: 'Test Layout',
+        serverModifiedAt: Date.now() - 60000,
+      };
+      render(<CollectionBanner />);
+
+      // Select keep-mine option
+      fireEvent.click(screen.getByLabelText(/Keep my changes/));
+
+      // Click Resolve Conflict button
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Resolve Conflict' }));
+      });
+
+      expect(mockResolveConflict).toHaveBeenCalledWith('keep-mine');
+    });
+
+    it('shows success toast after resolving conflict', async () => {
+      mockConflict = {
+        layoutId: 'layout1',
+        layoutName: 'Test Layout',
+        serverModifiedAt: Date.now() - 60000,
+      };
+      render(<CollectionBanner />);
+
+      // Click Resolve Conflict button
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Resolve Conflict' }));
+      });
+
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.length).toBeGreaterThan(0);
+      expect(toasts[0].type).toBe('success');
     });
   });
 });
