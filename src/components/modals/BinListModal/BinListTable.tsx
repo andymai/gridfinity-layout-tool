@@ -290,8 +290,8 @@ export function BinListTable({
                       autoFocus
                     />
                   ) : (
-                    <span className="truncate block" title={row.labels[0]}>
-                      {row.labels[0] || <span className="text-content-disabled italic">—</span>}
+                    <span className="truncate block" title={(row.labels ?? [])[0]}>
+                      {(row.labels ?? [])[0] || <span className="text-content-disabled italic">—</span>}
                     </span>
                   )}
                 </td>
