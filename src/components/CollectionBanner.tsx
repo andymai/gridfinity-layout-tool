@@ -114,6 +114,7 @@ export function CollectionBanner() {
           <span className="text-sm font-medium">
             Collection: <strong>{activeCollection.name}</strong>
           </span>
+          <span className="text-[9px] leading-none text-amber-200/80 bg-amber-500/20 px-1 py-0.5 rounded">experimental</span>
           <span className="text-xs text-white/70">
             ({layoutCount} layout{layoutCount !== 1 ? 's' : ''})
           </span>

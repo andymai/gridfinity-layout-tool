@@ -320,7 +320,10 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
               <div className="mt-4 pt-4 border-t border-stroke flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-medium text-content">Shared Collections</h3>
+                    <h3 className="text-sm font-medium text-content flex items-center gap-2">
+                      Shared Collections
+                      <span className="text-[9px] leading-none text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
+                    </h3>
                     <p className="text-xs text-content-tertiary mt-0.5">
                       Work on layouts together in real-time
                     </p>
