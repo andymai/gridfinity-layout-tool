@@ -261,6 +261,28 @@ describe('validateImport', () => {
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
   });
+
+  it('rejects invalid bin without required properties', () => {
+    const layout = createTestLayout();
+    // Add an invalid bin missing id
+    layout.bins = [
+       
+      { layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' } as any,
+    ];
+    const result = validateImport(layout);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('Bin 0 is invalid'))).toBe(true);
+  });
+
+  it('rejects invalid category without required properties', () => {
+    const layout = createTestLayout();
+    // Replace categories with invalid ones
+     
+    layout.categories = [{ id: 'cat1', name: 'Category' } as any]; // Missing color
+    const result = validateImport(layout);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('Category 0 is invalid'))).toBe(true);
+  });
 });
 
 describe('clamp', () => {

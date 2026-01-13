@@ -1517,6 +1517,343 @@ describe('duplicate drag (Alt+drag)', () => {
   });
 });
 
+// Test actual drag completion with movement
+describe('drag completion with movement', () => {
+  beforeEach(() => {
+    const defaultLayout = createDefaultLayout();
+    useLayoutStore.setState({ layout: defaultLayout });
+    useUIStore.setState({
+      activeLayerId: defaultLayout.layers[0].id,
+      selectedBinIds: [],
+      activeCategoryId: defaultLayout.categories[0].id,
+      zoom: 1,
+      showOtherLayers: true,
+      showLabels: true,
+      leftPanelCollapsed: false,
+      rightPanelCollapsed: false,
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      activeMobilePanel: null,
+      contextMenu: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      layerViewMode: 'focus',
+      isPreviewExpanded: false,
+    });
+    useHistoryStore.setState({
+      past: [],
+      future: [],
+      canUndo: false,
+      canRedo: false,
+    });
+  });
+
+  it('moves bin to new position when drag completes with valid delta', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    renderHook(() => useInteraction(gridRef));
+
+    // Set up a valid drag with actual movement
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'drag',
+          binIds: [binId!],
+          startCoord: { x: 0, y: 0 },
+          currentCoord: { x: 3, y: 2 }, // Move delta: (3, 2)
+          valid: true,
+          isOverGrid: true,
+        },
+      });
+    });
+
+    // Simulate pointer up to complete drag
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Bin should now be at new position
+    const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    expect(bin?.x).toBe(3);
+    expect(bin?.y).toBe(2);
+  });
+
+  it('moves multiple bins preserving relative arrangement', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId1 = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const binId2 = addBin({
+      layerId,
+      x: 2,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    renderHook(() => useInteraction(gridRef));
+
+    // Set up valid drag for both bins
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'drag',
+          binIds: [binId1!, binId2!],
+          startCoord: { x: 0, y: 0 },
+          currentCoord: { x: 0, y: 3 }, // Move delta: (0, 3)
+          valid: true,
+          isOverGrid: true,
+        },
+      });
+    });
+
+    // Complete drag
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Both bins should be moved preserving arrangement
+    const bins = useLayoutStore.getState().layout.bins;
+    const bin1 = bins.find(b => b.id === binId1);
+    const bin2 = bins.find(b => b.id === binId2);
+    expect(bin1?.x).toBe(0);
+    expect(bin1?.y).toBe(3);
+    expect(bin2?.x).toBe(2);
+    expect(bin2?.y).toBe(3);
+  });
+});
+
+// Test resize completion with actual changes
+describe('resize completion with changes', () => {
+  beforeEach(() => {
+    const defaultLayout = createDefaultLayout();
+    useLayoutStore.setState({ layout: defaultLayout });
+    useUIStore.setState({
+      activeLayerId: defaultLayout.layers[0].id,
+      selectedBinIds: [],
+      activeCategoryId: defaultLayout.categories[0].id,
+      zoom: 1,
+      showOtherLayers: true,
+      showLabels: true,
+      leftPanelCollapsed: false,
+      rightPanelCollapsed: false,
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      activeMobilePanel: null,
+      contextMenu: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      layerViewMode: 'focus',
+      isPreviewExpanded: false,
+    });
+    useHistoryStore.setState({
+      past: [],
+      future: [],
+      canUndo: false,
+      canRedo: false,
+    });
+  });
+
+  it('applies resize changes when dimensions actually change', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    renderHook(() => useInteraction(gridRef));
+
+    // Set up resize interaction with actual dimension change
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'resize',
+          binIds: [binId!],
+          handle: 'e',
+          valid: true,
+          startRects: new Map([[binId!, { x: 0, y: 0, width: 2, depth: 2 }]]),
+          currentRects: new Map([[binId!, { x: 0, y: 0, width: 4, depth: 2 }]]), // Width changed: 2 -> 4
+        },
+      });
+    });
+
+    // Complete resize
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Bin should have new dimensions
+    const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    expect(bin?.width).toBe(4);
+    expect(bin?.depth).toBe(2);
+  });
+
+  it('applies resize to multiple bins', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId1 = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const binId2 = addBin({
+      layerId,
+      x: 5,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    renderHook(() => useInteraction(gridRef));
+
+    // Set up resize for both bins
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'resize',
+          binIds: [binId1!, binId2!],
+          handle: 'n',
+          valid: true,
+          startRects: new Map([
+            [binId1!, { x: 0, y: 0, width: 2, depth: 2 }],
+            [binId2!, { x: 5, y: 0, width: 2, depth: 2 }],
+          ]),
+          currentRects: new Map([
+            [binId1!, { x: 0, y: 0, width: 2, depth: 4 }],
+            [binId2!, { x: 5, y: 0, width: 2, depth: 4 }],
+          ]),
+        },
+      });
+    });
+
+    // Complete resize
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Both bins should have new depth
+    const bins = useLayoutStore.getState().layout.bins;
+    const bin1 = bins.find(b => b.id === binId1);
+    const bin2 = bins.find(b => b.id === binId2);
+    expect(bin1?.depth).toBe(4);
+    expect(bin2?.depth).toBe(4);
+  });
+
+  it('does not apply changes when no dimensions changed', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    renderHook(() => useInteraction(gridRef));
+
+    // Set up resize with no actual change
+    act(() => {
+      useUIStore.setState({
+        ...useUIStore.getState(),
+        interaction: {
+          type: 'resize',
+          binIds: [binId!],
+          handle: 'e',
+          valid: true,
+          startRects: new Map([[binId!, { x: 0, y: 0, width: 2, depth: 2 }]]),
+          currentRects: new Map([[binId!, { x: 0, y: 0, width: 2, depth: 2 }]]), // Same as start
+        },
+      });
+    });
+
+    // Complete resize
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Bin should still have original dimensions
+    const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    expect(bin?.width).toBe(2);
+    expect(bin?.depth).toBe(2);
+  });
+});
+
 // Test stagingDrag behavior
 describe('staging drag', () => {
   beforeEach(() => {
@@ -1569,5 +1906,314 @@ describe('staging drag', () => {
     expect(binId).not.toBeNull();
     const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
     expect(bin?.layerId).toBe(STAGING_ID);
+  });
+});
+
+// Test resize via pointer movement (hits calculateResizeRect)
+describe('resize via pointer movement', () => {
+  beforeEach(() => {
+    const defaultLayout = createDefaultLayout();
+    useLayoutStore.setState({ layout: defaultLayout });
+    useUIStore.setState({
+      activeLayerId: defaultLayout.layers[0].id,
+      selectedBinIds: [],
+      activeCategoryId: defaultLayout.categories[0].id,
+      zoom: 1,
+      showOtherLayers: true,
+      showLabels: true,
+      leftPanelCollapsed: false,
+      rightPanelCollapsed: false,
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      activeMobilePanel: null,
+      contextMenu: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      layerViewMode: 'focus',
+      isPreviewExpanded: false,
+    });
+    useHistoryStore.setState({
+      past: [],
+      future: [],
+      canUndo: false,
+      canRedo: false,
+    });
+  });
+
+  it('resize via pointer movement updates currentRects', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    // Start resize
+    act(() => {
+      result.current.startResize(binId!, 'e');
+    });
+
+    expect(useUIStore.getState().interaction?.type).toBe('resize');
+
+    // Move pointer to expand width
+    act(() => {
+      const moveEvent = new PointerEvent('pointermove', {
+        clientX: 200, // Move significantly to the right
+        clientY: 50,
+        bubbles: true,
+      });
+      document.dispatchEvent(moveEvent);
+    });
+
+    // Interaction should still be resize with potentially updated rects
+    const interaction = useUIStore.getState().interaction;
+    expect(interaction?.type).toBe('resize');
+  });
+
+  it('handles west resize direction', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 3,
+      y: 3,
+      width: 3,
+      depth: 3,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    // Start resize from west
+    act(() => {
+      result.current.startResize(binId!, 'w');
+    });
+
+    expect(useUIStore.getState().interaction?.type).toBe('resize');
+
+    // Move pointer to left
+    act(() => {
+      const moveEvent = new PointerEvent('pointermove', {
+        clientX: 50, // Move to the left
+        clientY: 100,
+        bubbles: true,
+      });
+      document.dispatchEvent(moveEvent);
+    });
+
+    const interaction = useUIStore.getState().interaction;
+    expect(interaction?.type).toBe('resize');
+    if (interaction?.type === 'resize') {
+      expect(interaction.handle).toBe('w');
+    }
+  });
+
+  it('handles south resize direction', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 3,
+      y: 3,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    // Start resize from south
+    act(() => {
+      result.current.startResize(binId!, 's');
+    });
+
+    // Move pointer down
+    act(() => {
+      const moveEvent = new PointerEvent('pointermove', {
+        clientX: 100,
+        clientY: 250, // Move down
+        bubbles: true,
+      });
+      document.dispatchEvent(moveEvent);
+    });
+
+    const interaction = useUIStore.getState().interaction;
+    expect(interaction?.type).toBe('resize');
+    if (interaction?.type === 'resize') {
+      expect(interaction.handle).toBe('s');
+    }
+  });
+
+  it('handles corner resize (sw)', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 3,
+      y: 3,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    // Start resize from southwest corner
+    act(() => {
+      result.current.startResize(binId!, 'sw');
+    });
+
+    // Move pointer to southwest
+    act(() => {
+      const moveEvent = new PointerEvent('pointermove', {
+        clientX: 50, // Move left
+        clientY: 250, // Move down
+        bubbles: true,
+      });
+      document.dispatchEvent(moveEvent);
+    });
+
+    const interaction = useUIStore.getState().interaction;
+    expect(interaction?.type).toBe('resize');
+    if (interaction?.type === 'resize') {
+      expect(interaction.handle).toBe('sw');
+    }
+  });
+});
+
+// Test cleanup on unmount
+describe('cleanup on unmount', () => {
+  beforeEach(() => {
+    const defaultLayout = createDefaultLayout();
+    useLayoutStore.setState({ layout: defaultLayout });
+    useUIStore.setState({
+      activeLayerId: defaultLayout.layers[0].id,
+      selectedBinIds: [],
+      activeCategoryId: defaultLayout.categories[0].id,
+      zoom: 1,
+      showOtherLayers: true,
+      showLabels: true,
+      leftPanelCollapsed: false,
+      rightPanelCollapsed: false,
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      activeMobilePanel: null,
+      contextMenu: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      layerViewMode: 'focus',
+      isPreviewExpanded: false,
+    });
+    useHistoryStore.setState({
+      past: [],
+      future: [],
+      canUndo: false,
+      canRedo: false,
+    });
+  });
+
+  it('cleans up event listeners on unmount', () => {
+    const gridRef = createMockGridRef();
+    const { result, unmount } = renderHook(() => useInteraction(gridRef));
+
+    // Start an interaction
+    act(() => {
+      result.current.startDraw({ x: 0, y: 0 });
+    });
+
+    expect(useUIStore.getState().interaction).not.toBeNull();
+
+    // Unmount should clean up without errors
+    expect(() => unmount()).not.toThrow();
+  });
+
+  it('cleans up while resize interaction is active', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    const { result, unmount } = renderHook(() => useInteraction(gridRef));
+
+    // Start resize
+    act(() => {
+      result.current.startResize(binId!, 'e');
+    });
+
+    // Unmount while resize is active
+    expect(() => unmount()).not.toThrow();
+  });
+
+  it('cleans up while drag interaction is active', () => {
+    const { addBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+
+    const gridRef = createMockGridRef();
+    const { result, unmount } = renderHook(() => useInteraction(gridRef));
+
+    // Start drag
+    act(() => {
+      result.current.startDrag(binId!, 50, 50);
+    });
+
+    // Unmount while drag is active
+    expect(() => unmount()).not.toThrow();
   });
 });

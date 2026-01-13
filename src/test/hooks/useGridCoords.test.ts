@@ -230,14 +230,14 @@ describe('useGridCoords', () => {
   describe('fractional drawer dimensions', () => {
     it('handles fractional drawer width', () => {
       const gridRef = createMockGridRef(0, 0);
-      
+
       // Set drawer with fractional width
       const layout = useLayoutStore.getState().layout;
       layout.drawer = { width: 9.5, depth: 8, height: 12, fractionalEdgeX: 'end' };
       useLayoutStore.setState({ layout });
-      
+
       const { result } = renderHook(() => useGridCoords(gridRef));
-      
+
       // Should still work with fractional drawer
       expect(result.current.isInBounds({ x: 0, y: 0 })).toBe(true);
       expect(result.current.isInBounds({ x: 9.5, y: 0 })).toBe(false); // >= width
@@ -246,16 +246,78 @@ describe('useGridCoords', () => {
 
     it('handles fractional drawer depth', () => {
       const gridRef = createMockGridRef(0, 0);
-      
+
       // Set drawer with fractional depth
       const layout = useLayoutStore.getState().layout;
       layout.drawer = { width: 10, depth: 7.5, height: 12, fractionalEdgeY: 'end' };
       useLayoutStore.setState({ layout });
-      
+
       const { result } = renderHook(() => useGridCoords(gridRef));
-      
+
       expect(result.current.isInBounds({ x: 0, y: 7 })).toBe(true);
       expect(result.current.isInBounds({ x: 0, y: 7.5 })).toBe(false); // >= depth
+    });
+
+    it('handles click in fractional column (cellX === -1) in standard mode', () => {
+      // 10.5 width drawer - fractional at start means left-most column is 0.5 units
+      // Grid size for 10.5 units: 10 integer cells + 1 half cell (at start)
+      const gridRef = createMockGridRef(0, 0, 346.5, 264); // 10.5 * 33 for width
+
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer = { width: 10.5, depth: 8, height: 12, fractionalEdgeX: 'start' };
+      useLayoutStore.setState({ layout });
+
+      useUIStore.setState({ halfBinMode: false });
+
+      const { result } = renderHook(() => useGridCoords(gridRef));
+
+      // Click in the fractional column (left edge area) should return x=0
+      // The fractional column is at the start, so clicking at x=8 (within first 16.5px)
+      const coord = result.current.getGridCoords(8, 16);
+
+      expect(coord).toBeDefined();
+      expect(coord?.x).toBe(0); // Fractional column maps to x=0 in standard mode
+    });
+
+    it('handles click in fractional row (cellY === -1) in standard mode', () => {
+      // 8.5 depth drawer - fractional at end means top row is 0.5 units
+      const gridRef = createMockGridRef(0, 0, 330, 280.5); // 8.5 * 33 for height
+
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer = { width: 10, depth: 8.5, height: 12, fractionalEdgeY: 'end' };
+      useLayoutStore.setState({ layout });
+
+      useUIStore.setState({ halfBinMode: false });
+
+      const { result } = renderHook(() => useGridCoords(gridRef));
+
+      // Click in the fractional row (top edge area) - integerDepth is 8
+      // The fractional row is at the end (top), so clicking at y=8 (within top 16.5px)
+      const coord = result.current.getGridCoords(16, 8);
+
+      expect(coord).toBeDefined();
+      // In standard mode, fractional row maps to integerDepth (8)
+      expect(coord?.y).toBe(8);
+    });
+
+    it('handles click in fractional row in half-bin mode with fractionalEdgeY', () => {
+      // 8.5 depth drawer with half-bin mode
+      const gridRef = createMockGridRef(0, 0, 330, 280.5);
+
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer = { width: 10, depth: 8.5, height: 12, fractionalEdgeY: 'end' };
+      useLayoutStore.setState({ layout });
+
+      useUIStore.setState({ halfBinMode: true });
+
+      const { result } = renderHook(() => useGridCoords(gridRef));
+
+      // Click in the fractional row at top
+      const coord = result.current.getGridCoords(16, 8);
+
+      expect(coord).toBeDefined();
+      // In half-bin mode with fractional row, should get fractional y coordinate
+      expect(coord?.y).toBeGreaterThanOrEqual(8);
     });
   });
 });
