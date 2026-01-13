@@ -432,7 +432,6 @@ describe('canPlaceBin - rotation scenarios', () => {
   });
 });
 
-<<<<<<< HEAD
 describe('validateLayoutIntegrity', () => {
   it('returns valid for well-formed layout', () => {
     const layout = createTestLayout();
@@ -517,7 +516,9 @@ describe('validateLayoutIntegrity', () => {
     const result = validateLayoutIntegrity(layout);
     expect(result.valid).toBe(false);
     expect(result.error).toContain('bin-abc-123');
-=======
+  });
+});
+
 describe('validateCustomProperties', () => {
   it('returns success for undefined properties', () => {
     const result = validateCustomProperties(undefined as unknown as Record<string, string>);
@@ -617,6 +618,5 @@ describe('validateCustomProperties', () => {
     const maxValue = 'a'.repeat(CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH);
     const result = validateCustomProperties({ key: maxValue });
     expect(result.success).toBe(true);
->>>>>>> 7eeabe6 (fix: address PR review comments for custom bin properties)
   });
 });
