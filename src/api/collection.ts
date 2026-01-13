@@ -71,6 +71,20 @@ export interface DeleteResponse {
   message: string;
 }
 
+export interface PollResponse {
+  modifiedAt: number;
+  layouts: Array<{
+    id: string;
+    modifiedAt: number;
+    activeEditors: number;
+  }>;
+}
+
+export interface HeartbeatResponse {
+  acknowledged: true;
+  activeEditors: number;
+}
+
 // ============================================================================
 // Error Types
 // ============================================================================
@@ -377,6 +391,96 @@ export async function deleteLayout(
       success: false,
       error: {
         error: 'Network error. Check your connection.',
+        code: 'NETWORK_ERROR',
+      },
+    };
+  }
+}
+
+// ============================================================================
+// Sync Operations
+// ============================================================================
+
+/**
+ * Poll for collection changes (lightweight).
+ * Returns 304 if nothing changed since lastModifiedAt.
+ */
+export async function pollCollection(
+  collectionId: string,
+  lastModifiedAt?: number
+): Promise<CollectionResult<PollResponse> | { notModified: true }> {
+  try {
+    const headers: HeadersInit = {};
+    if (lastModifiedAt !== undefined) {
+      headers['If-Modified-Since'] = lastModifiedAt.toString();
+    }
+
+    const response = await fetch(`/api/collection/${collectionId}/poll`, {
+      headers,
+    });
+
+    // 304 Not Modified
+    if (response.status === 304) {
+      return { notModified: true };
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { success: false, error: data as CollectionErrorResponse };
+    }
+
+    return { success: true, data: data as PollResponse };
+  } catch (error) {
+    console.error('Poll collection error:', error);
+    return {
+      success: false,
+      error: {
+        error: 'Network error. Check your connection.',
+        code: 'NETWORK_ERROR',
+      },
+    };
+  }
+}
+
+/**
+ * Type guard to check if poll result is "not modified".
+ */
+export function isPollNotModified(
+  result: CollectionResult<PollResponse> | { notModified: true }
+): result is { notModified: true } {
+  return 'notModified' in result && result.notModified === true;
+}
+
+/**
+ * Send heartbeat to indicate active editing.
+ */
+export async function sendHeartbeat(
+  collectionId: string,
+  layoutId: string,
+  deviceId: string
+): Promise<CollectionResult<HeartbeatResponse>> {
+  try {
+    const response = await fetch(`/api/collection/${collectionId}/heartbeat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ layoutId, deviceId }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { success: false, error: data as CollectionErrorResponse };
+    }
+
+    return { success: true, data: data as HeartbeatResponse };
+  } catch (error) {
+    console.error('Heartbeat error:', error);
+    // Heartbeats are best-effort, don't fail hard
+    return {
+      success: false,
+      error: {
+        error: 'Network error.',
         code: 'NETWORK_ERROR',
       },
     };
