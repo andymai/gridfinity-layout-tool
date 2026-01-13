@@ -1,8 +1,9 @@
 import { createRoot } from 'react-dom/client'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import './index.css'
-import App from './App.tsx'
+import { routes } from './router'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
 import { initAnalytics } from './utils/analytics.ts'
 
@@ -26,11 +27,14 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
+// Create browser router with route configuration
+const router = createBrowserRouter(routes);
+
 // Note: StrictMode disabled due to react-three-fiber WebGL context issues
 // R3F's Canvas doesn't handle StrictMode's double-mount cycle well
 createRoot(rootElement).render(
   <ErrorBoundary>
-    <App />
+    <RouterProvider router={router} />
     <Analytics />
     <SpeedInsights />
   </ErrorBoundary>,

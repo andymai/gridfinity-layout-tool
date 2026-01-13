@@ -41,6 +41,7 @@
     "posthog-js": "^1.318.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-router-dom": "^7.12.0",
     "three": "^0.182.0",
     "zustand": "^5.0.9"
   },
