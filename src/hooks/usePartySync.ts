@@ -12,9 +12,12 @@ import { useCollectionStore } from '../store/collection';
 import { useLayoutStore } from '../store/layout';
 import * as collectionApi from '../api/collection';
 
-// PartyKit host - in development uses localhost, in production uses deployed PartyKit
-const PARTYKIT_HOST =
-  import.meta.env.VITE_PARTYKIT_HOST || 'localhost:1999';
+// PartyKit host - detect production by hostname, fall back to localhost for development
+const PARTYKIT_HOST = typeof window !== 'undefined' &&
+  (window.location.hostname === 'gridfinity.xyz' ||
+   window.location.hostname.includes('vercel.app'))
+  ? 'gridfinity-collections.andymai.partykit.dev'
+  : 'localhost:1999';
 
 // Message types from server
 interface LayoutUpdatedMessage {
