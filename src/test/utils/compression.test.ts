@@ -83,6 +83,12 @@ describe('compression utilities', () => {
 
       expect(decompressed).toBe(special);
     });
+
+    it('should return empty string when decompression fails', () => {
+      // Passing invalid compressed data that will return null from lz-string
+      const result = decompressString('not-valid-compressed-data');
+      expect(result).toBe('');
+    });
   });
 
   describe('compressLayout / decompressLayout', () => {
@@ -227,6 +233,11 @@ describe('compression utilities', () => {
 
       // Larger layouts typically compress better due to more repetition
       expect(largeRatio).toBeLessThanOrEqual(smallRatio);
+    });
+
+    it('should return 1 for empty original string', () => {
+      const ratio = getCompressionRatio('', 'anything');
+      expect(ratio).toBe(1);
     });
   });
 });

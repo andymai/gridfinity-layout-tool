@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { useLayoutSwitcher } from '../../../hooks/useLayoutSwitcher';
 import { useUIStore } from '../../../store/ui';
 import { useCollectionStore } from '../../../store/collection';
+import { useLayoutStore } from '../../../store/layout';
 import { LayoutList } from './LayoutList';
+import { CollectionLayoutList } from './CollectionLayoutList';
 import { ImportView } from './ImportView';
 import { ShareModal } from '../ShareModal';
 import { CreateCollectionModal } from '../CreateCollectionModal';
 import { JoinCollectionModal } from '../JoinCollectionModal';
+import * as collectionApi from '../../../api/collection';
 import type { Layout } from '../../../types';
 
 type Tab = 'layouts' | 'import';
@@ -33,7 +37,15 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const isInCollectionMode = useCollectionStore((state) => state.isInCollectionMode());
+  const { isInCollectionMode, activeCollection, activeCollectionLayouts } = useCollectionStore(
+    useShallow((state) => ({
+      isInCollectionMode: state.isInCollectionMode(),
+      activeCollection: state.activeCollection,
+      activeCollectionLayouts: state.activeCollectionLayouts,
+    }))
+  );
+
+  const importLayout = useLayoutStore((state) => state.importLayout);
 
   const {
     activeLayoutId,
@@ -50,8 +62,10 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
 
   // Announce modal opened
   useEffect(() => {
-    announceToScreenReader(`Layouts dialog opened. ${library.entries.length} layouts available.`);
-  }, [announceToScreenReader, library.entries.length]);
+    const count = isInCollectionMode ? activeCollectionLayouts.length : library.entries.length;
+    const context = isInCollectionMode ? 'collection' : '';
+    announceToScreenReader(`Layouts dialog opened. ${count} ${context} layouts available.`);
+  }, [announceToScreenReader, library.entries.length, activeCollectionLayouts.length, isInCollectionMode]);
 
   // Handle escape key and focus trap
   useEffect(() => {
@@ -98,6 +112,23 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
       }
     },
     [library.entries, switchLayout, announceToScreenReader, onClose]
+  );
+
+  // Handle switching to a collection layout (fetches from server)
+  const handleCollectionSwitch = useCallback(
+    async (layoutId: string) => {
+      if (!activeCollection) return;
+
+      const layoutRef = activeCollectionLayouts.find((l) => l.id === layoutId);
+      const result = await collectionApi.fetchLayout(activeCollection.id, layoutId);
+
+      if (result.success) {
+        importLayout(result.data.layout as Layout, layoutId);
+        announceToScreenReader(`Switched to ${layoutRef?.name || 'layout'}`);
+        onClose();
+      }
+    },
+    [activeCollection, activeCollectionLayouts, importLayout, announceToScreenReader, onClose]
   );
 
   const handleCreate = useCallback(() => {
@@ -210,10 +241,21 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
               }
             `}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            My Layouts
+            {isInCollectionMode ? (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Collection
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                My Layouts
+              </>
+            )}
           </button>
           <button
             id="import-tab"
@@ -241,16 +283,23 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
           {activeTab === 'layouts' && (
             <div id="layouts-panel" role="tabpanel" aria-labelledby="layouts-tab" className="flex-1 min-h-0 flex flex-col">
               <div className="flex-1 min-h-0 overflow-auto">
-                <LayoutList
-                  entries={library.entries}
-                  activeLayoutId={activeLayoutId}
-                  onSwitch={handleSwitch}
-                  onRename={handleRename}
-                  onDuplicate={handleDuplicate}
-                  onDelete={handleDelete}
-                  onCreate={handleCreate}
-                  onShare={handleShare}
-                />
+                {isInCollectionMode ? (
+                  <CollectionLayoutList
+                    onSwitch={handleCollectionSwitch}
+                    onClose={onClose}
+                  />
+                ) : (
+                  <LayoutList
+                    entries={library.entries}
+                    activeLayoutId={activeLayoutId}
+                    onSwitch={handleSwitch}
+                    onRename={handleRename}
+                    onDuplicate={handleDuplicate}
+                    onDelete={handleDelete}
+                    onCreate={handleCreate}
+                    onShare={handleShare}
+                  />
+                )}
               </div>
 
               {/* Collaborate Section - only show when not in collection mode */}

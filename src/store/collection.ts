@@ -96,6 +96,12 @@ interface CollectionState {
     layout: Layout,
     options?: { name?: string }
   ) => Promise<CollectionResult<{ modifiedAt: number }>>;
+  addLayoutToCollection: (
+    layout: Layout
+  ) => Promise<CollectionResult<collectionApi.AddLayoutResponse>>;
+  deleteLayoutFromCollection: (
+    layoutId: string
+  ) => Promise<CollectionResult<collectionApi.DeleteResponse>>;
   leaveCollection: () => void;
 
   // ========== Computed Helpers ==========
@@ -419,6 +425,109 @@ export const useCollectionStore = create<CollectionState>()(
           lastSyncAt: Date.now(),
           // Clear local modification since we've synced
         };
+        state.loadingState = 'idle';
+      });
+
+      return result;
+    },
+
+    addLayoutToCollection: async (layout) => {
+      const { activeCollection } = get();
+
+      if (!activeCollection) {
+        return {
+          success: false,
+          error: {
+            error: 'No active collection',
+            code: 'VALIDATION_ERROR' as const,
+          },
+        };
+      }
+
+      set({ loadingState: 'syncing' });
+
+      const result = await collectionApi.addLayout(activeCollection.id, layout);
+
+      if (!result.success) {
+        set({ loadingState: 'idle' });
+        return result;
+      }
+
+      const now = Date.now();
+
+      // Add the new layout to local state
+      set((state) => {
+        const newLayoutRef: CollectionLayoutRef = {
+          id: result.data.id,
+          name: result.data.name,
+          modifiedAt: result.data.modifiedAt,
+          preview: result.data.preview,
+        };
+        state.activeCollectionLayouts.push(newLayoutRef);
+
+        if (state.activeCollection) {
+          state.activeCollection.layoutCount = state.activeCollectionLayouts.length;
+        }
+
+        // Initialize sync state for the new layout
+        state.syncStates[result.data.id] = {
+          modifiedAt: result.data.modifiedAt,
+          lastSyncAt: now,
+        };
+
+        state.loadingState = 'idle';
+      });
+
+      return result;
+    },
+
+    deleteLayoutFromCollection: async (layoutId) => {
+      const { activeCollection, activeCollectionLayouts } = get();
+
+      if (!activeCollection) {
+        return {
+          success: false,
+          error: {
+            error: 'No active collection',
+            code: 'VALIDATION_ERROR' as const,
+          },
+        };
+      }
+
+      // Check if this is the last layout
+      if (activeCollectionLayouts.length <= 1) {
+        return {
+          success: false,
+          error: {
+            error: 'Cannot delete the last layout in a collection',
+            code: 'VALIDATION_ERROR' as const,
+          },
+        };
+      }
+
+      set({ loadingState: 'syncing' });
+
+      const result = await collectionApi.deleteLayout(activeCollection.id, layoutId);
+
+      if (!result.success) {
+        set({ loadingState: 'idle' });
+        return result;
+      }
+
+      // Remove the layout from local state
+      set((state) => {
+        state.activeCollectionLayouts = state.activeCollectionLayouts.filter(
+          (l) => l.id !== layoutId
+        );
+
+        if (state.activeCollection) {
+          state.activeCollection.layoutCount = state.activeCollectionLayouts.length;
+        }
+
+        // Remove sync state using destructuring to avoid dynamic delete lint error
+        const { [layoutId]: _removed, ...remainingSyncStates } = state.syncStates;
+        state.syncStates = remainingSyncStates;
+
         state.loadingState = 'idle';
       });
 

@@ -291,6 +291,81 @@ describe('Collection Store', () => {
       expect(activeCollectionLayouts).toHaveLength(1);
       expect(activeCollectionLayouts[0].id).toBe('layout-uuid-1');
     });
+
+    it('should update active collection layout', () => {
+      // Set up layouts
+      useCollectionStore.setState({
+        activeCollectionLayouts: mockCollectionResponse.layouts,
+      });
+
+      const { updateActiveCollectionLayout } = useCollectionStore.getState();
+      updateActiveCollectionLayout('layout-uuid-1', { name: 'Updated Name' });
+
+      const { activeCollectionLayouts } = useCollectionStore.getState();
+      expect(activeCollectionLayouts[0].name).toBe('Updated Name');
+    });
+
+    it('should handle updating non-existent layout gracefully', () => {
+      useCollectionStore.setState({
+        activeCollectionLayouts: mockCollectionResponse.layouts,
+      });
+
+      const { updateActiveCollectionLayout } = useCollectionStore.getState();
+      // This should not throw - it silently does nothing if layout not found
+      updateActiveCollectionLayout('non-existent-id', { name: 'Updated' });
+
+      const { activeCollectionLayouts } = useCollectionStore.getState();
+      expect(activeCollectionLayouts[0].name).toBe('Test Layout');
+    });
+
+    it('should remove active collection layout', () => {
+      useCollectionStore.setState({
+        activeCollection: {
+          id: 'abc123def456',
+          name: 'Test Collection',
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          expiresAt: Date.now() + 365 * 24 * 60 * 60 * 1000,
+          layoutCount: 2,
+        },
+        activeCollectionLayouts: [
+          ...mockCollectionResponse.layouts,
+          { id: 'layout-2', name: 'Layout 2', modifiedAt: Date.now(), preview: { drawerWidth: 10, drawerDepth: 8, binCount: 5, layerCount: 1 } },
+        ],
+        syncStates: {
+          'layout-uuid-1': { modifiedAt: Date.now(), lastSyncAt: Date.now() },
+          'layout-2': { modifiedAt: Date.now(), lastSyncAt: Date.now() },
+        },
+      });
+
+      const { removeActiveCollectionLayout } = useCollectionStore.getState();
+      removeActiveCollectionLayout('layout-uuid-1');
+
+      const { activeCollectionLayouts, syncStates, activeCollection } = useCollectionStore.getState();
+      expect(activeCollectionLayouts).toHaveLength(1);
+      expect(activeCollectionLayouts[0].id).toBe('layout-2');
+      expect(syncStates['layout-uuid-1']).toBeUndefined();
+      expect(syncStates['layout-2']).toBeDefined();
+      expect(activeCollection?.layoutCount).toBe(1);
+    });
+
+    it('should handle removing layout when no active collection', () => {
+      useCollectionStore.setState({
+        activeCollection: null,
+        activeCollectionLayouts: mockCollectionResponse.layouts,
+        syncStates: {
+          'layout-uuid-1': { modifiedAt: Date.now(), lastSyncAt: Date.now() },
+        },
+      });
+
+      const { removeActiveCollectionLayout } = useCollectionStore.getState();
+      // Should not throw when no active collection
+      removeActiveCollectionLayout('layout-uuid-1');
+
+      const { activeCollectionLayouts, syncStates } = useCollectionStore.getState();
+      expect(activeCollectionLayouts).toHaveLength(0);
+      expect(syncStates['layout-uuid-1']).toBeUndefined();
+    });
   });
 
   describe('Loading State', () => {
@@ -356,6 +431,37 @@ describe('Collection Store', () => {
         const { memberships, activeCollection } = useCollectionStore.getState();
         expect(memberships).toHaveLength(0);
         expect(activeCollection).toBeNull();
+      });
+
+      it('should update existing membership when re-joining a collection', async () => {
+        // Set up existing membership
+        const oldJoinedAt = Date.now() - 86400000; // 1 day ago
+        useCollectionStore.setState({
+          memberships: [{
+            collectionId: 'abc123def456',
+            collectionName: 'Old Name',
+            joinedAt: oldJoinedAt,
+            lastSyncAt: oldJoinedAt,
+            lastAccessedAt: oldJoinedAt,
+          }],
+        });
+
+        vi.mocked(collectionApi.fetchCollection).mockResolvedValueOnce({
+          success: true,
+          data: mockCollectionResponse,
+        });
+
+        const { joinCollection } = useCollectionStore.getState();
+        const result = await joinCollection('abc123def456');
+
+        expect(result.success).toBe(true);
+
+        const { memberships } = useCollectionStore.getState();
+        // Should still have 1 membership, not 2
+        expect(memberships).toHaveLength(1);
+        expect(memberships[0].collectionId).toBe('abc123def456');
+        // The membership should be updated with new timestamps
+        expect(memberships[0].joinedAt).toBeGreaterThan(oldJoinedAt);
       });
     });
 
@@ -505,6 +611,207 @@ describe('Collection Store', () => {
           expect(result.error.serverLayout).toEqual(serverLayout);
         }
       });
+    });
+  });
+
+  describe('addLayoutToCollection', () => {
+    it('should fail if no active collection', async () => {
+      const { addLayoutToCollection } = useCollectionStore.getState();
+      const result = await addLayoutToCollection(mockLayout);
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.code).toBe('VALIDATION_ERROR');
+        expect(result.error.error).toBe('No active collection');
+      }
+    });
+
+    it('should add layout to collection', async () => {
+      const addResponse = {
+        id: 'new-layout-id',
+        name: 'Test Layout',
+        modifiedAt: Date.now(),
+        preview: {
+          drawerWidth: 10,
+          drawerDepth: 8,
+          drawerHeight: 12,
+          binCount: 0,
+          layerCount: 1,
+        },
+      };
+
+      vi.mocked(collectionApi.addLayout).mockResolvedValueOnce({
+        success: true,
+        data: addResponse,
+      });
+
+      // Set up active collection
+      useCollectionStore.setState({
+        activeCollection: {
+          id: 'abc123def456',
+          name: 'Test',
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          expiresAt: Date.now() + 1000000,
+          layoutCount: 1,
+        },
+        activeCollectionLayouts: mockCollectionResponse.layouts,
+      });
+
+      const { addLayoutToCollection } = useCollectionStore.getState();
+      const result = await addLayoutToCollection(mockLayout);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.id).toBe('new-layout-id');
+      }
+
+      const { activeCollectionLayouts, activeCollection, syncStates } =
+        useCollectionStore.getState();
+      expect(activeCollectionLayouts).toHaveLength(2);
+      expect(activeCollectionLayouts[1].id).toBe('new-layout-id');
+      expect(activeCollection?.layoutCount).toBe(2);
+      expect(syncStates['new-layout-id']).toBeDefined();
+    });
+
+    it('should handle add layout failure', async () => {
+      vi.mocked(collectionApi.addLayout).mockResolvedValueOnce({
+        success: false,
+        error: { error: 'Collection full', code: 'COLLECTION_FULL' },
+      });
+
+      useCollectionStore.setState({
+        activeCollection: {
+          id: 'abc123def456',
+          name: 'Test',
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          expiresAt: Date.now() + 1000000,
+          layoutCount: 50,
+        },
+      });
+
+      const { addLayoutToCollection } = useCollectionStore.getState();
+      const result = await addLayoutToCollection(mockLayout);
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.code).toBe('COLLECTION_FULL');
+      }
+    });
+  });
+
+  describe('deleteLayoutFromCollection', () => {
+    it('should fail if no active collection', async () => {
+      const { deleteLayoutFromCollection } = useCollectionStore.getState();
+      const result = await deleteLayoutFromCollection('layout-uuid-1');
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.code).toBe('VALIDATION_ERROR');
+        expect(result.error.error).toBe('No active collection');
+      }
+    });
+
+    it('should prevent deleting last layout', async () => {
+      useCollectionStore.setState({
+        activeCollection: {
+          id: 'abc123def456',
+          name: 'Test',
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          expiresAt: Date.now() + 1000000,
+          layoutCount: 1,
+        },
+        activeCollectionLayouts: [mockCollectionResponse.layouts[0]],
+      });
+
+      const { deleteLayoutFromCollection } = useCollectionStore.getState();
+      const result = await deleteLayoutFromCollection('layout-uuid-1');
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.error).toBe('Cannot delete the last layout in a collection');
+      }
+    });
+
+    it('should delete layout from collection', async () => {
+      vi.mocked(collectionApi.deleteLayout).mockResolvedValueOnce({
+        success: true,
+        data: { success: true, message: 'Layout deleted' },
+      });
+
+      const secondLayout = {
+        id: 'layout-uuid-2',
+        name: 'Second Layout',
+        modifiedAt: Date.now(),
+        preview: {
+          drawerWidth: 10,
+          drawerDepth: 8,
+          drawerHeight: 12,
+          binCount: 0,
+          layerCount: 1,
+        },
+      };
+
+      useCollectionStore.setState({
+        activeCollection: {
+          id: 'abc123def456',
+          name: 'Test',
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          expiresAt: Date.now() + 1000000,
+          layoutCount: 2,
+        },
+        activeCollectionLayouts: [mockCollectionResponse.layouts[0], secondLayout],
+        syncStates: {
+          'layout-uuid-1': { modifiedAt: Date.now(), lastSyncAt: Date.now() },
+          'layout-uuid-2': { modifiedAt: Date.now(), lastSyncAt: Date.now() },
+        },
+      });
+
+      const { deleteLayoutFromCollection } = useCollectionStore.getState();
+      const result = await deleteLayoutFromCollection('layout-uuid-1');
+
+      expect(result.success).toBe(true);
+
+      const { activeCollectionLayouts, activeCollection, syncStates } =
+        useCollectionStore.getState();
+      expect(activeCollectionLayouts).toHaveLength(1);
+      expect(activeCollectionLayouts[0].id).toBe('layout-uuid-2');
+      expect(activeCollection?.layoutCount).toBe(1);
+      expect(syncStates['layout-uuid-1']).toBeUndefined();
+    });
+
+    it('should handle delete layout failure', async () => {
+      vi.mocked(collectionApi.deleteLayout).mockResolvedValueOnce({
+        success: false,
+        error: { error: 'Network error', code: 'NETWORK_ERROR' },
+      });
+
+      useCollectionStore.setState({
+        activeCollection: {
+          id: 'abc123def456',
+          name: 'Test',
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          expiresAt: Date.now() + 1000000,
+          layoutCount: 2,
+        },
+        activeCollectionLayouts: [
+          mockCollectionResponse.layouts[0],
+          { ...mockCollectionResponse.layouts[0], id: 'layout-uuid-2' },
+        ],
+      });
+
+      const { deleteLayoutFromCollection } = useCollectionStore.getState();
+      const result = await deleteLayoutFromCollection('layout-uuid-1');
+
+      expect(result.success).toBe(false);
+
+      // State should remain unchanged
+      const { activeCollectionLayouts } = useCollectionStore.getState();
+      expect(activeCollectionLayouts).toHaveLength(2);
     });
   });
 
