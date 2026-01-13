@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, waitFor, act, cleanup } from '@testing-library/react';
 import { ImportModal } from '../../components/modals/ImportModal';
 import { createDefaultLayout } from '../../constants';
+import { encodeLayoutForURL } from '../../utils/storage';
 
 describe('ImportModal', () => {
   const mockOnClose = vi.fn();
@@ -420,6 +421,48 @@ describe('ImportModal', () => {
       });
 
       expect(await findByText('Bins: 1')).not.toBeNull();
+    });
+  });
+
+  describe('Share URL import', () => {
+    it('imports valid share URL', async () => {
+      const { getByLabelText, getByText } = renderModal();
+
+      const textarea = getByLabelText(/paste JSON/i);
+      const validLayout = createDefaultLayout();
+      const encoded = encodeLayoutForURL(validLayout);
+      const shareUrl = `#share=${encoded}`;
+
+      await act(async () => {
+        fireEvent.change(textarea, { target: { value: shareUrl } });
+      });
+
+      // Wait for preview to appear (indicates valid layout)
+      await waitFor(() => {
+        const importButton = getByText('Import') as HTMLButtonElement;
+        expect(importButton.disabled).toBe(false);
+      });
+
+      await act(async () => {
+        fireEvent.click(getByText('Import'));
+      });
+
+      expect(mockOnImport).toHaveBeenCalled();
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+
+    it('shows error for invalid share URL encoding', async () => {
+      const { getByLabelText, findByText } = renderModal();
+
+      const textarea = getByLabelText(/paste JSON/i);
+      // Invalid base64 encoded data
+      const invalidShareUrl = '#share=!!!invalid-base64!!!';
+
+      await act(async () => {
+        fireEvent.change(textarea, { target: { value: invalidShareUrl } });
+      });
+
+      expect(await findByText('Validation Errors:')).not.toBeNull();
     });
   });
 });

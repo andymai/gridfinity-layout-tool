@@ -890,17 +890,18 @@ describe('layout store', () => {
       const { addBin, addLayer, updateDrawer, layout } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
-      // Set drawer height to only allow 2 layers of height 3 each
-      updateDrawer({ height: 6 });
+      // Set up drawer to accommodate two layers
+      updateDrawer({ height: 12 });
 
       // Add second layer
       const layer2Id = addLayer();
+      expect(layer2Id).not.toBeNull();
 
-      // Add a tall bin on layer 1 that would collide if layers swap
       // Layer 1 height = 3, layer 2 height = 3
       const layer1Id = useLayoutStore.getState().layout.layers[0].id;
 
-      addBin({
+      // Add a bin on layer 1 at (0,0) with height 3 (fills layer 1)
+      const bin1Id = addBin({
         layerId: layer1Id,
         x: 0,
         y: 0,
@@ -911,26 +912,40 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
+      expect(bin1Id).not.toBeNull();
 
-      addBin({
+      // Add a bin on layer 2 at same (0,0) position with height 4 (spans into next space)
+      // Before swap: layers = [Layer1(h=3), Layer2(h=3)]
+      //   Bin1: zStart=0, zEnd=3
+      //   Bin2: zStart=3, zEnd=7
+      //   No overlap (3 < 3 is false)
+      //
+      // After swap: layers = [Layer2(h=3), Layer1(h=3)]
+      //   Bin2: zStart=0, zEnd=4 (Layer2 is now first)
+      //   Bin1: zStart=3, zEnd=6 (Layer1 starts at z=3)
+      //   Overlap check: 0 < 6 && 3 < 4 = true && true = collision!
+      const bin2Id = addBin({
         layerId: layer2Id!,
         x: 0,
         y: 0,
         width: 2,
         depth: 2,
-        height: 3,
+        height: 4,
         category: categoryId,
         label: '',
         notes: '',
       });
+      expect(bin2Id).not.toBeNull();
 
-      // This test depends on checkLayerReorderCollisions detecting conflicts
-      // The actual collision logic may or may not trigger based on heights
+      // Verify bins were added
+      const bins = useLayoutStore.getState().layout.bins;
+      expect(bins.length).toBe(2);
+
+      // Reordering should cause collision since bins would vertically overlap
       const result = useLayoutStore.getState().reorderLayers(0, 1);
 
-      // If no collision, it should succeed
-      // If collision detected, it should fail with error
-      expect(typeof result.success).toBe('boolean');
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('collision');
     });
   });
 
