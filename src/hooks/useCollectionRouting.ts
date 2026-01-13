@@ -9,11 +9,13 @@
  * - Detects collection URLs on mount and joins the collection
  * - Handles browser back/forward navigation
  * - Updates URL when leaving collection mode
+ * - Restores the previously active layout when rejoining a collection
  */
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useCollectionStore } from '../store/collection';
+import { useLayoutStore } from '../store/layout';
 import { useToastStore } from '../store/toast';
 import { useUIStore } from '../store/ui';
 import {
@@ -23,28 +25,37 @@ import {
   getCollectionFromHistoryState,
   isCollectionURL,
 } from '../utils/url';
-import { getCollectionErrorMessage } from '../api/collection';
+import { getCollectionErrorMessage, fetchLayout } from '../api/collection';
+import type { Layout } from '../types';
 
 export function useCollectionRouting() {
   const hasInitialized = useRef(false);
+  const isRestoringLayoutRef = useRef(false);
 
   const {
     activeCollection,
+    activeCollectionLayouts,
     joinCollection,
     leaveCollection,
     loadingState,
     setPendingInvite,
     getMembership,
+    setMembershipActiveLayout,
   } = useCollectionStore(
     useShallow((state) => ({
       activeCollection: state.activeCollection,
+      activeCollectionLayouts: state.activeCollectionLayouts,
       joinCollection: state.joinCollection,
       leaveCollection: state.leaveCollection,
       loadingState: state.loadingState,
       setPendingInvite: state.setPendingInvite,
       getMembership: state.getMembership,
+      setMembershipActiveLayout: state.setMembershipActiveLayout,
     }))
   );
+
+  const importLayout = useLayoutStore((state) => state.importLayout);
+  const activeLayoutId = useLayoutStore((state) => state.activeLayoutId);
 
   const addToast = useToastStore((state) => state.addToast);
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
@@ -134,6 +145,66 @@ export function useCollectionRouting() {
       clearCollectionURL();
     }
   }, [activeCollection]);
+
+  // Restore previously active layout when rejoining a collection
+  useEffect(() => {
+    // Skip if no active collection or layouts not yet loaded
+    if (!activeCollection || activeCollectionLayouts.length === 0) return;
+    // Prevent running multiple times during restoration
+    if (isRestoringLayoutRef.current) return;
+
+    const membership = getMembership(activeCollection.id);
+    if (!membership) return;
+
+    // Determine which layout to load
+    let layoutIdToLoad = membership.activeLayoutId;
+
+    // Verify the saved layout still exists in the collection
+    if (layoutIdToLoad) {
+      const layoutExists = activeCollectionLayouts.some((l) => l.id === layoutIdToLoad);
+      if (!layoutExists) {
+        // Saved layout was deleted, fall back to first layout
+        layoutIdToLoad = activeCollectionLayouts[0].id;
+      }
+    } else {
+      // No saved layout, use first layout in collection
+      layoutIdToLoad = activeCollectionLayouts[0].id;
+    }
+
+    // Skip if no layout to load or already loaded
+    if (!layoutIdToLoad || activeLayoutId === layoutIdToLoad) return;
+
+    // Fetch and load the layout
+    isRestoringLayoutRef.current = true;
+    const targetLayoutId = layoutIdToLoad;
+
+    const restoreLayout = async () => {
+      try {
+        const result = await fetchLayout(activeCollection.id, targetLayoutId);
+        if (result.success) {
+          importLayout(result.data.layout as Layout, targetLayoutId);
+          // Update membership with the loaded layout ID
+          setMembershipActiveLayout(activeCollection.id, targetLayoutId);
+          const layoutRef = activeCollectionLayouts.find((l) => l.id === targetLayoutId);
+          announceToScreenReader(`Loaded layout: ${layoutRef?.name || 'Untitled'}`);
+        }
+      } catch {
+        // Silently fail - user can manually select a layout
+      } finally {
+        isRestoringLayoutRef.current = false;
+      }
+    };
+
+    restoreLayout();
+  }, [
+    activeCollection,
+    activeCollectionLayouts,
+    activeLayoutId,
+    getMembership,
+    importLayout,
+    setMembershipActiveLayout,
+    announceToScreenReader,
+  ]);
 
   return {
     navigateToCollection,

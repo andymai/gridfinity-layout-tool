@@ -348,6 +348,7 @@ export interface CollectionMembership {
   joinedAt: number;
   lastSyncAt: number;
   lastAccessedAt: number;          // For sorting collections by recency
+  activeLayoutId?: string;         // Last viewed layout in this collection (for restore on reload)
 }
 
 /**

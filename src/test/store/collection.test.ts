@@ -163,6 +163,43 @@ describe('Collection Store', () => {
       const after = useCollectionStore.getState().memberships[0].lastAccessedAt;
       expect(after).toBeGreaterThan(before);
     });
+
+    it('should set active layout ID for a membership', () => {
+      const { addMembership, setMembershipActiveLayout } = useCollectionStore.getState();
+
+      addMembership(mockMembership);
+      setMembershipActiveLayout('abc123def456', 'layout-123');
+
+      const membership = useCollectionStore.getState().getMembership('abc123def456');
+      expect(membership?.activeLayoutId).toBe('layout-123');
+    });
+
+    it('should update activeLayoutId and lastAccessedAt together', () => {
+      const { addMembership, setMembershipActiveLayout } = useCollectionStore.getState();
+
+      const olderMembership = {
+        ...mockMembership,
+        lastAccessedAt: Date.now() - 10000,
+      };
+      addMembership(olderMembership);
+      const before = useCollectionStore.getState().memberships[0].lastAccessedAt;
+
+      setMembershipActiveLayout('abc123def456', 'layout-456');
+
+      const membership = useCollectionStore.getState().getMembership('abc123def456');
+      expect(membership?.activeLayoutId).toBe('layout-456');
+      expect(membership?.lastAccessedAt).toBeGreaterThan(before);
+    });
+
+    it('should do nothing when setting activeLayoutId for non-existent membership', () => {
+      const { setMembershipActiveLayout } = useCollectionStore.getState();
+
+      // Should not throw
+      setMembershipActiveLayout('nonexistent', 'layout-123');
+
+      const { memberships } = useCollectionStore.getState();
+      expect(memberships).toHaveLength(0);
+    });
   });
 
   describe('Sync State Tracking', () => {

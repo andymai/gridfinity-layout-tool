@@ -38,13 +38,14 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const { isInCollectionMode, activeCollection, activeCollectionLayouts, leaveCollection, addLayoutToCollection } = useCollectionStore(
+  const { isInCollectionMode, activeCollection, activeCollectionLayouts, leaveCollection, addLayoutToCollection, setMembershipActiveLayout } = useCollectionStore(
     useShallow((state) => ({
       isInCollectionMode: state.isInCollectionMode(),
       activeCollection: state.activeCollection,
       activeCollectionLayouts: state.activeCollectionLayouts,
       leaveCollection: state.leaveCollection,
       addLayoutToCollection: state.addLayoutToCollection,
+      setMembershipActiveLayout: state.setMembershipActiveLayout,
     }))
   );
 
@@ -131,11 +132,13 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
 
       if (result.success) {
         importLayout(result.data.layout as Layout, layoutId);
+        // Save active layout ID for restoration on reload
+        setMembershipActiveLayout(activeCollection.id, layoutId);
         announceToScreenReader(`Switched to ${layoutRef?.name || 'layout'}`);
         onClose();
       }
     },
-    [activeCollection, activeCollectionLayouts, importLayout, announceToScreenReader, onClose]
+    [activeCollection, activeCollectionLayouts, importLayout, setMembershipActiveLayout, announceToScreenReader, onClose]
   );
 
   const handleCreate = useCallback(() => {
