@@ -170,7 +170,7 @@ export function formatAsCSV(rows: EnhancedPrintRow[]): string {
 
   // Build data rows
   const lines = rows.map(row => {
-    const label = escapeCSVValue(row.labels[0] || '');
+    const label = escapeCSVValue((row.labels ?? [])[0] || '');
     const notes = escapeCSVValue(row.notes || '');
     const baseLine = `${row.size},${row.height}u,${row.binCount},${row.totalPieces},${row.filament},${label},${notes}`;
 
@@ -203,9 +203,9 @@ export function formatAsJSON(
       bins: row.binCount,
       pieces: row.totalPieces,
       filament: row.filament,
-      label: row.labels[0] || '',
+      label: (row.labels ?? [])[0] || '',
       notes: row.notes || '',
-      categories: row.categoryIds.map(id => {
+      categories: (row.categoryIds ?? []).map(id => {
         const cat = layout.categories.find(c => c.id === id);
         return cat?.name || 'Unknown';
       }),

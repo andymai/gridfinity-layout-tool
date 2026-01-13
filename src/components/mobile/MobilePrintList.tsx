@@ -142,11 +142,11 @@ export function MobilePrintList() {
                       )}
                     </div>
                     {/* Label and notes/properties indicators */}
-                    {(row.labels[0] || row.notes || (row.customProperties && Object.keys(row.customProperties).length > 0)) && (
+                    {((row.labels ?? [])[0] || row.notes || (row.customProperties && Object.keys(row.customProperties).length > 0)) && (
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        {row.labels[0] && (
+                        {(row.labels ?? [])[0] && (
                           <span className="text-sm truncate text-content-tertiary">
-                            {row.labels[0]}
+                            {(row.labels ?? [])[0]}
                           </span>
                         )}
                         {row.notes && (
