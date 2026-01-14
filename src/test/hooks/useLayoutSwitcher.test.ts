@@ -7,11 +7,11 @@ import { useUIStore } from '../../store/ui';
 import { useHistoryStore } from '../../store/history';
 import { useToastStore } from '../../store/toast';
 import { createDefaultLayout } from '../../constants';
-import * as storage from '../../utils/storage';
+import * as storage from '../../storage';
 import type { LayoutLibrary, LayoutEntry, Layout } from '../../types';
 
 // Mock the storage module
-vi.mock('../../utils/storage', () => ({
+vi.mock('../../storage', () => ({
   saveLayoutById: vi.fn(),
   saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   loadLayoutById: vi.fn(),

@@ -9,7 +9,7 @@ import {
   migrateFromLegacyStorage,
   getLayoutStorageKey,
   computeLayoutPreview,
-} from '../utils/storage';
+} from '../storage';
 import { createDefaultLayout, STAGING_ID } from '../constants';
 import type { Layout, LayoutLibrary } from '../types';
 

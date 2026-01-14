@@ -16,7 +16,7 @@ import {
   type ShareResponse,
   type ShareErrorResponse,
 } from '../api/share';
-import { copyToClipboard } from '../utils/storage';
+import { copyToClipboard } from '../storage';
 
 export type CloudShareStatus =
   | 'idle'

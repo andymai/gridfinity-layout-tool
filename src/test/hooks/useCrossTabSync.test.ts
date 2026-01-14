@@ -6,10 +6,10 @@ import { useLibraryStore } from '../../store/library';
 import { useHistoryStore } from '../../store/history';
 import { useUIStore } from '../../store/ui';
 import { resetAllStores } from '../testUtils';
-import * as storage from '../../utils/storage';
+import * as storage from '../../storage';
 import * as validation from '../../utils/validation';
 
-vi.mock('../../utils/storage', () => ({
+vi.mock('../../storage', () => ({
   loadLayoutByIdAsync: vi.fn(),
   loadLibrary: vi.fn(),
 }));

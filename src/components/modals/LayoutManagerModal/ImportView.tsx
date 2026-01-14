@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { validateImport } from '../../../utils/validation';
-import { decodeLayoutFromURL } from '../../../utils/storage';
+import { decodeLayoutFromURL } from '../../../storage';
 import type { Layout } from '../../../types';
 
 interface ImportViewProps {

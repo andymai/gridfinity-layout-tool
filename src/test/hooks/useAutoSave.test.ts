@@ -5,10 +5,10 @@ import { useLayoutStore } from '../../store/layout';
 import { useLibraryStore } from '../../store/library';
 import { useToastStore } from '../../store/toast';
 import { resetAllStores, setupFakeTimers } from '../testUtils';
-import * as storage from '../../utils/storage';
+import * as storage from '../../storage';
 
 // Mock the storage module
-vi.mock('../../utils/storage', () => ({
+vi.mock('../../storage', () => ({
   saveLayoutById: vi.fn(),
   saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   saveLibrary: vi.fn(),

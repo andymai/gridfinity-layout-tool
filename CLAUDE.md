@@ -271,12 +271,30 @@ Five interaction modes tracked via `Interaction` union type:
 - `fill.ts` - Bulk operations (`fillAllWithSize`, `fillGaps`)
 - `split.ts` - Print optimization: `splitBinSize()` recursively splits oversized bins, `generatePrintList()` creates print manifest with filament estimates
 
-**Storage & Sharing:**
-- `storage.ts` - LocalStorage persistence with multi-layout support:
-  - Library index: `gridfinity-library-v1`
-  - Per-layout data: `gridfinity-layout-{uuid}`
-  - Functions: `saveLayoutById()`, `loadLayoutById()`, `deleteLayoutById()`, `initializeLayoutLibrary()`, `copyToClipboard()`
-- `cloudShare.ts` - Cloud sharing utilities
+**Storage Layer** (`src/storage/`):
+Unified storage module with service-layer architecture:
+- `index.ts` - Public API facade (import from here)
+- `LayoutService.ts` - Layout and library CRUD operations
+- `ShareService.ts` - Import/export/URL sharing
+- `migration.ts` - IndexedDB migration logic
+- `utils.ts` - Clipboard and download helpers
+- `backend.ts` - Dual-write backend (IndexedDB + localStorage)
+- `backends/localStorage.ts` - localStorage operations
+- `backends/indexedDB.ts` - IndexedDB wrapper
+
+Key functions (all from `src/storage`):
+- Async (runtime): `saveLayoutAsync()`, `loadLayoutAsync()`, `deleteLayoutAsync()`
+- Sync (init only): `saveLayoutSync()`, `loadLayoutSync()`, `deleteLayoutSync()`
+- Library: `saveLibrary()`, `loadLibrary()`, `initializeLayoutLibrary()`
+- Share: `exportLayoutJSON()`, `importLayoutJSON()`, `encodeLayoutForURL()`
+- Migration: `isMigrationNeeded()`, `migrateAllLayoutsToIndexedDB()`
+
+Storage keys:
+- Library index: `gridfinity-library-v1`
+- Per-layout data: `gridfinity-layout-{uuid}`
+
+**Cloud Share Utilities:**
+- `cloudShare.ts` - Cloud sharing helpers
 - `uuid.ts` - UUID generation
 
 **Selection & Navigation:**

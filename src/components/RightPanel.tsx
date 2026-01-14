@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../store';
 import { DEFAULT_CATEGORY_COLOR } from '../constants';
-import { exportPrintListTSV } from '../utils/storage';
+import { exportPrintListTSV } from '../storage';
 import { trackLayoutSnapshot } from '../utils/analytics';
 import { ConfirmDialog } from './modals/ConfirmDialog';
 import { BinListModal } from './modals/BinListModal';

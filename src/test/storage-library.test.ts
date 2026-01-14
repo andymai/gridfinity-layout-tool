@@ -10,7 +10,7 @@ import {
   migrateFromLegacyStorage,
   initializeLayoutLibrary,
   getLayoutStorageKey,
-} from '../utils/storage';
+} from '../storage';
 import { createDefaultLayout } from '../constants';
 import type { Layout, LayoutLibrary, LayoutEntry } from '../types';
 

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { DEFAULT_CATEGORY_COLOR } from '../../constants';
-import { exportPrintListTSV } from '../../utils/storage';
+import { exportPrintListTSV } from '../../storage';
 import { usePrintList } from '../../hooks/usePrintList';
 import { useUIStore } from '../../store/ui';
 import { SplitPreview, PrintListSummary, PrintListEmpty } from '../PrintList';

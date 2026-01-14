@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import type { LayoutEntry, Layout } from '../../../types';
 import { LayoutListItem } from './LayoutListItem';
 import { useLayoutStore } from '../../../store/layout';
-import { loadLayoutByIdAsync, downloadLayoutAsFile } from '../../../utils/storage';
+import { loadLayoutByIdAsync, downloadLayoutAsFile } from '../../../storage';
 import { useUIStore } from '../../../store/ui';
 
 /** Threshold for showing search bar */

@@ -5,12 +5,12 @@ import { useLibraryStore } from '../../store/library';
 import { useLayoutStore } from '../../store/layout';
 import { useUIStore } from '../../store/ui';
 import { createDefaultLayout } from '../../constants';
-import * as storage from '../../utils/storage';
+import * as storage from '../../storage';
 import * as cloudShareHook from '../../hooks/useCloudShare';
 import type { LayoutLibrary, LayoutEntry } from '../../types';
 
 // Mock the storage module
-vi.mock('../../utils/storage', () => ({
+vi.mock('../../storage', () => ({
   saveLayoutById: vi.fn(),
   saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   loadLayoutById: vi.fn(),

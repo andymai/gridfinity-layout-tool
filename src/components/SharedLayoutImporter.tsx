@@ -8,7 +8,7 @@ import {
   clearSharedLayoutFromURL,
   getCloudShareIdFromURL,
   clearCloudShareFromURL,
-} from '../utils/storage';
+} from '../storage';
 import { fetchShare, getErrorMessage } from '../api/share';
 import type { Layout } from '../types';
 

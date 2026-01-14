@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, waitFor, act, cleanup } from '@testing-library/react';
 import { ImportModal } from '../../components/modals/ImportModal';
 import { createDefaultLayout } from '../../constants';
-import { encodeLayoutForURL } from '../../utils/storage';
+import { encodeLayoutForURL } from '../../storage';
 
 describe('ImportModal', () => {
   const mockOnClose = vi.fn();

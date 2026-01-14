@@ -12,11 +12,9 @@
  * - A flag tracks completion to avoid re-running
  */
 
-import {
-  saveLayout as saveToIndexedDB,
-  getAllLayoutIds as getIndexedDBLayoutIds,
-  isIndexedDBAvailable,
-} from './indexedDB';
+import * as backend from './backend';
+import * as localStorage from './backends/localStorage';
+import * as indexedDB from './backends/indexedDB';
 import type { Layout } from '../types';
 
 // Storage keys
@@ -46,18 +44,7 @@ interface MigrationStatus {
  * Get all layout IDs from localStorage.
  */
 function getLocalStorageLayoutIds(): string[] {
-  const ids: string[] = [];
-
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith(LAYOUT_KEY_PREFIX)) {
-      // Extract ID from key
-      const id = key.slice(LAYOUT_KEY_PREFIX.length);
-      ids.push(id);
-    }
-  }
-
-  return ids;
+  return localStorage.getAllLayoutIds(LAYOUT_KEY_PREFIX);
 }
 
 /**
@@ -65,17 +52,7 @@ function getLocalStorageLayoutIds(): string[] {
  */
 function loadLayoutFromLocalStorage(layoutId: string): Layout | null {
   const key = `${LAYOUT_KEY_PREFIX}${layoutId}`;
-  const stored = localStorage.getItem(key);
-
-  if (!stored) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(stored) as Layout;
-  } catch {
-    return null;
-  }
+  return localStorage.loadLayout(key);
 }
 
 /**
@@ -83,12 +60,12 @@ function loadLayoutFromLocalStorage(layoutId: string): Layout | null {
  */
 export async function isMigrationNeeded(): Promise<boolean> {
   // Check if migration has already been completed
-  if (localStorage.getItem(MIGRATION_FLAG_KEY) === 'true') {
+  if (window.localStorage.getItem(MIGRATION_FLAG_KEY) === 'true') {
     return false;
   }
 
   // Check if IndexedDB is available
-  if (!(await isIndexedDBAvailable())) {
+  if (!(await backend.isIndexedDBAvailable())) {
     return false;
   }
 
@@ -113,7 +90,7 @@ export async function migrateLayoutToIndexedDB(layoutId: string): Promise<Migrat
     }
 
     // Save to IndexedDB
-    await saveToIndexedDB(layoutId, layout);
+    await indexedDB.saveLayout(layoutId, layout);
 
     return { success: true };
   } catch (error) {
@@ -137,7 +114,7 @@ export async function migrateAllLayoutsToIndexedDB(): Promise<BulkMigrationResul
   };
 
   // Check if IndexedDB is available
-  if (!(await isIndexedDBAvailable())) {
+  if (!(await backend.isIndexedDBAvailable())) {
     return {
       ...result,
       success: false,
@@ -150,12 +127,12 @@ export async function migrateAllLayoutsToIndexedDB(): Promise<BulkMigrationResul
 
   if (localStorageIds.length === 0) {
     // Nothing to migrate, but set flag to skip future checks
-    localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+    window.localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
     return result;
   }
 
   // Get existing IndexedDB layout IDs to avoid overwriting
-  const indexedDBIds = new Set(await getIndexedDBLayoutIds());
+  const indexedDBIds = new Set(await backend.getIndexedDBLayoutIds());
 
   // Migrate each layout
   for (const layoutId of localStorageIds) {
@@ -175,7 +152,7 @@ export async function migrateAllLayoutsToIndexedDB(): Promise<BulkMigrationResul
   }
 
   // Set migration flag
-  localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+  window.localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
 
   return result;
 }
@@ -188,7 +165,7 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
 
   let indexedDBIds: string[] = [];
   try {
-    indexedDBIds = await getIndexedDBLayoutIds();
+    indexedDBIds = await backend.getIndexedDBLayoutIds();
   } catch {
     // IndexedDB not available
   }
@@ -196,7 +173,7 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
   return {
     localStorageCount: localStorageIds.length,
     indexedDBCount: indexedDBIds.length,
-    migrationComplete: localStorage.getItem(MIGRATION_FLAG_KEY) === 'true',
+    migrationComplete: window.localStorage.getItem(MIGRATION_FLAG_KEY) === 'true',
   };
 }
 
@@ -204,5 +181,5 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
  * Clear the migration flag (for testing or re-migration).
  */
 export function clearMigrationFlag(): void {
-  localStorage.removeItem(MIGRATION_FLAG_KEY);
+  window.localStorage.removeItem(MIGRATION_FLAG_KEY);
 }
