@@ -18,6 +18,10 @@ if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
   # Check if any SPA-related files changed compared to previous commit
   # If git diff --quiet exits 0, no changes were found (skip build)
   # If git diff --quiet exits 1, changes were found (proceed with build)
+  #
+  # Note: vercel.json is intentionally excluded. It controls deployment
+  # config (headers, rewrites) but doesn't change the SPA bundle.
+  # Config-only changes can be deployed manually if needed.
   if git diff --quiet HEAD^ HEAD -- \
     src/ \
     public/ \
@@ -28,8 +32,8 @@ if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
     tsconfig.json \
     tsconfig.app.json \
     tsconfig.node.json \
-    vercel.json \
-    api/; then
+    api/
+  then
     echo "No SPA changes detected. Skipping build."
     exit 0
   else
