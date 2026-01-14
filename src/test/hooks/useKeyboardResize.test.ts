@@ -123,7 +123,7 @@ describe('useKeyboardResize', () => {
         category: categoryId, label: '', notes: '',
       }));
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -580,7 +580,7 @@ describe('useKeyboardDrag', () => {
         category: categoryId, label: '', notes: '',
       }));
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -721,7 +721,7 @@ describe('useKeyboardDrag', () => {
         category: categoryId, label: '', notes: '',
       }));
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {

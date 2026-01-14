@@ -158,7 +158,7 @@ describe('useKeyboard', () => {
         notes: '',
       }));
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -414,7 +414,7 @@ describe('useKeyboard', () => {
         notes: '',
       }));
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -675,7 +675,7 @@ describe('useKeyboard', () => {
         notes: '',
       }));
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -756,7 +756,7 @@ describe('useKeyboard', () => {
         notes: '',
       }));
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -862,14 +862,14 @@ describe('useKeyboard', () => {
         notes: '',
       }));
 
-      useUIStore.getState().setSelectedBins([binId1!]);
+      useUIStore.getState().setSelectedBins([binId1]);
       renderHook(() => useKeyboard());
 
       act(() => {
         pressKey('d');
       });
 
-      expect(useUIStore.getState().selectedBinIds).toEqual([binId2!]);
+      expect(useUIStore.getState().selectedBinIds).toEqual([binId2]);
     });
 
     it('selects previous bin on A key', () => {
@@ -901,14 +901,14 @@ describe('useKeyboard', () => {
         notes: '',
       }));
 
-      useUIStore.getState().setSelectedBins([binId2!]);
+      useUIStore.getState().setSelectedBins([binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
         pressKey('a');
       });
 
-      expect(useUIStore.getState().selectedBinIds).toEqual([binId1!]);
+      expect(useUIStore.getState().selectedBinIds).toEqual([binId1]);
     });
 
     it('wraps to first bin when at end', () => {
@@ -940,14 +940,14 @@ describe('useKeyboard', () => {
         notes: '',
       }));
 
-      useUIStore.getState().setSelectedBins([binId2!]);
+      useUIStore.getState().setSelectedBins([binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
         pressKey('d');
       });
 
-      expect(useUIStore.getState().selectedBinIds).toEqual([binId1!]);
+      expect(useUIStore.getState().selectedBinIds).toEqual([binId1]);
     });
 
     it('does nothing when no bins on layer', () => {
