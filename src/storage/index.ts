@@ -42,12 +42,14 @@ export {
   saveLibrary,
   saveLibraryResult,
   loadLibrary,
+  loadLibraryResult,
   initializeLayoutLibrary,
   computeLayoutPreview,
   getLayoutStorageKey,
   getStorageUsage,
   hasLegacyLayout,
   migrateFromLegacyStorage,
+  migrateFromLegacyStorageResult,
 } from './LayoutService';
 
 // === Import/Export ===
@@ -86,6 +88,14 @@ export {
   getMigrationStatus,
   clearMigrationFlag,
 } from './migration';
+
+// === Migration (Result-Based) ===
+export {
+  migrateLayoutToIndexedDBResult,
+  migrateAllLayoutsToIndexedDBResult,
+  getMigrationStatusResult,
+} from './migration';
+export type { MigrationStats } from './migration';
 
 // === Backend (Internal - for useStorageMigration hook) ===
 export {
