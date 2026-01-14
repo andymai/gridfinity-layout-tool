@@ -3,6 +3,8 @@ import { immer } from 'zustand/middleware/immer';
 import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, OperationResult, ThumbnailBin, CloudShareInfo, ShareExpiration } from '../types';
 import { CONSTRAINTS, STAGING_ID } from '../constants';
 import { generateUUID } from '../utils/uuid';
+import type { Result, Unit, LayoutError } from '../result';
+import { err, layoutLastEntity, OK } from '../result';
 
 /**
  * Compute preview data from a layout for display in the library.
@@ -70,6 +72,7 @@ interface LibraryState {
 
   createEntry: (name: string, layoutId: string, preview: LayoutPreview, author?: string) => LayoutEntry;
   deleteEntry: (id: string) => OperationResult;
+  deleteEntryResult: (id: string) => Result<Unit, LayoutError>;
   updateEntry: (id: string, updates: Partial<Omit<LayoutEntry, 'id'>>) => void;
   duplicateEntry: (sourceEntry: LayoutEntry, newLayoutId: string) => LayoutEntry;
 
@@ -139,6 +142,26 @@ export const useLibraryStore = create<LibraryState>()(
       });
 
       return { success: true };
+    },
+
+    deleteEntryResult: (id) => {
+      const { library } = get();
+
+      // Can't delete last layout
+      if (library.entries.length <= 1) {
+        return err(layoutLastEntity('layout'));
+      }
+
+      set(state => {
+        state.library.entries = state.library.entries.filter(e => e.id !== id);
+
+        // If deleting active layout, switch to first remaining
+        if (state.library.activeLayoutId === id) {
+          state.library.activeLayoutId = state.library.entries[0].id;
+        }
+      });
+
+      return OK;
     },
 
     updateEntry: (id, updates) => {
