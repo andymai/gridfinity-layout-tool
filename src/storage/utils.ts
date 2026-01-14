@@ -3,10 +3,14 @@
  *
  * These are general-purpose utilities used by various parts of the app
  * for interacting with browser APIs (clipboard, file download).
+ *
+ * Result-returning variants (*Result suffix) provide structured error handling.
  */
 
 import { exportLayoutJSON } from './ShareService';
 import type { Layout } from '../types';
+import type { Result, UnknownError } from '../result';
+import { ok, err, unknownError } from '../result';
 
 /**
  * Copy text to clipboard.
@@ -33,6 +37,27 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       return false;
     }
   }
+}
+
+/**
+ * Copy text to clipboard with Result-based error handling.
+ * Returns Ok on success, or Err with UnknownError on failure.
+ *
+ * @example
+ * ```ts
+ * const result = await copyToClipboardResult(text);
+ * match(result, {
+ *   ok: () => showToast('Copied!', 'success'),
+ *   err: (e) => showToast(getUserMessage(e), 'error')
+ * });
+ * ```
+ */
+export async function copyToClipboardResult(text: string): Promise<Result<void, UnknownError>> {
+  const success = await copyToClipboard(text);
+  if (success) {
+    return ok(undefined);
+  }
+  return err(unknownError(new Error('Failed to copy to clipboard')));
 }
 
 /**

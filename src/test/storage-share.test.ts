@@ -5,8 +5,10 @@ import {
   decodeLayoutResult,
   generateShareableURL,
   getSharedLayoutFromURL,
+  getSharedLayoutResult,
   clearSharedLayoutFromURL,
   copyToClipboard,
+  copyToClipboardResult,
   downloadLayoutAsFile,
   importLayoutResult,
   exportLayoutJSON,
@@ -537,6 +539,138 @@ describe('storage-share', () => {
         expect(result.value.drawer).toEqual(layout.drawer);
         expect(result.value.bins.length).toBe(layout.bins.length);
       }
+    });
+  });
+
+  describe('getSharedLayoutResult', () => {
+    afterEach(() => {
+      Object.defineProperty(global, 'window', {
+        value: originalWindow,
+        writable: true,
+      });
+    });
+
+    it('returns null when no share hash in URL', () => {
+      Object.defineProperty(global, 'window', {
+        value: {
+          location: {
+            hash: '',
+          },
+        },
+        writable: true,
+      });
+
+      const result = getSharedLayoutResult();
+      expect(result).toBeNull();
+    });
+
+    it('returns null for non-share hash', () => {
+      Object.defineProperty(global, 'window', {
+        value: {
+          location: {
+            hash: '#other=value',
+          },
+        },
+        writable: true,
+      });
+
+      const result = getSharedLayoutResult();
+      expect(result).toBeNull();
+    });
+
+    it('returns Ok with layout when valid share hash present', () => {
+      const layout = createTestLayout();
+      const encoded = encodeLayoutForURL(layout);
+
+      Object.defineProperty(global, 'window', {
+        value: {
+          location: {
+            hash: `#share=${encoded}`,
+          },
+        },
+        writable: true,
+      });
+
+      const result = getSharedLayoutResult();
+      expect(result).not.toBeNull();
+      expect(isOk(result!)).toBe(true);
+      if (isOk(result!)) {
+        expect(result!.value.name).toBe(layout.name);
+      }
+    });
+
+    it('returns Err for invalid share hash', () => {
+      Object.defineProperty(global, 'window', {
+        value: {
+          location: {
+            hash: '#share=invalid!!!',
+          },
+        },
+        writable: true,
+      });
+
+      const result = getSharedLayoutResult();
+      expect(result).not.toBeNull();
+      expect(isErr(result!)).toBe(true);
+      if (isErr(result!)) {
+        expect(result!.error.code).toBe('VALIDATION_IMPORT_FAILED');
+        expect(result!.error.errors.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  describe('copyToClipboardResult', () => {
+    beforeEach(() => {
+      Object.defineProperty(global, 'navigator', {
+        value: {
+          clipboard: mockClipboard,
+        },
+        writable: true,
+      });
+      mockClipboard.writeText.mockReset();
+    });
+
+    afterEach(() => {
+      Object.defineProperty(global, 'navigator', {
+        value: originalNavigator,
+        writable: true,
+      });
+    });
+
+    it('returns Ok when clipboard succeeds', async () => {
+      mockClipboard.writeText.mockResolvedValue(undefined);
+
+      const result = await copyToClipboardResult('test text');
+
+      expect(isOk(result)).toBe(true);
+      expect(mockClipboard.writeText).toHaveBeenCalledWith('test text');
+    });
+
+    it('returns Err when clipboard fails', async () => {
+      mockClipboard.writeText.mockRejectedValue(new Error('Failed'));
+
+      // Mock document.createElement to fail as well
+      Object.defineProperty(global, 'document', {
+        value: {
+          createElement: vi.fn().mockImplementation(() => {
+            throw new Error('Failed');
+          }),
+        },
+        writable: true,
+      });
+
+      const result = await copyToClipboardResult('test text');
+
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('UNKNOWN_ERROR');
+        expect(result.error.kind).toBe('UnknownError');
+      }
+
+      Object.defineProperty(global, 'document', {
+        value: originalDocument,
+        writable: true,
+      });
     });
   });
 });
