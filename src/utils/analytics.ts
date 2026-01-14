@@ -7,6 +7,8 @@
 import type { PostHog } from 'posthog-js';
 import type { Layout } from '../types';
 import { STAGING_ID, DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensions, BREAKPOINTS } from '../constants';
+import { useLabsStore } from '../store/labs';
+import { getFeature } from '../labs/features';
 
 // ============================================
 // INITIALIZATION (LAZY LOADED)
@@ -69,6 +71,35 @@ function capture(name: string, properties: Record<string, unknown>): void {
     eventQueue.push({ name, properties });
   }
   // If no initPromise, analytics is disabled (dev mode or missing env vars)
+}
+
+// ============================================
+// LABS METRICS
+// ============================================
+
+export interface LabsMetrics {
+  labs_enabled_features: string[];
+  labs_enabled_count: number;
+}
+
+/**
+ * Compute Labs-related metrics for analytics snapshot.
+ */
+export function computeLabsMetrics(): LabsMetrics {
+  const prefs = useLabsStore.getState().preferences;
+  const enabledFeatures = Object.entries(prefs.enabledFeatures)
+    .filter(([id, enabled]) => {
+      if (!enabled) return false;
+      const feature = getFeature(id);
+      // Only include non-graduated features (graduated are always on)
+      return feature?.status === 'experimental' || feature?.status === 'preview';
+    })
+    .map(([id]) => id);
+
+  return {
+    labs_enabled_features: enabledFeatures,
+    labs_enabled_count: enabledFeatures.length,
+  };
 }
 
 // ============================================
@@ -293,6 +324,7 @@ export function trackLayoutSnapshot(
 ): void {
   try {
     const metrics = computeLayoutMetrics(layout);
+    const labsMetrics = computeLabsMetrics();
 
     // Skip non-engaged users on session end (noise filter)
     if (!metrics.is_engaged && trigger === 'session_engaged') {
@@ -303,6 +335,7 @@ export function trackLayoutSnapshot(
       trigger,
       device_type: getDeviceType(),
       ...metrics,
+      ...labsMetrics,
       ...(sessionContext || {}),
     });
   } catch {
