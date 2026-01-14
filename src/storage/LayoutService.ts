@@ -5,10 +5,12 @@
  * - Async operations (saveLayoutAsync, loadLayoutAsync): Runtime use
  * - Sync operations (saveLayoutSync, loadLayoutSync): Initialization only
  * - Library management (saveLibrary, loadLibrary, initializeLayoutLibrary)
+ * - Result-based operations (*Result suffix): Type-safe error handling
  *
  * Naming convention:
  * - *Async suffix: Uses IndexedDB + localStorage dual-write, returns Promise
  * - *Sync suffix: Uses localStorage only, synchronous
+ * - *Result suffix: Returns Result<T, StorageError> for explicit error handling
  */
 
 import * as backend from './backend';
@@ -22,6 +24,17 @@ import type {
   LayoutPreview,
   ThumbnailBin,
 } from '../types';
+import type { Result } from '../result';
+import type { StorageError } from '../result';
+import {
+  ok,
+  err,
+  tryCatchAsync,
+  storageQuotaExceeded,
+  storageNotFound,
+  storageCorrupted,
+  storageUnavailable,
+} from '../result';
 
 // Storage keys
 const LEGACY_STORAGE_KEY = 'gridfinity-layout-v1';
@@ -111,6 +124,128 @@ export async function deleteLayoutAsync(layoutId: string): Promise<void> {
   await backend.deleteAsync(key);
 }
 
+// === Result-Based Async Operations ===
+// These functions return Result<T, StorageError> for explicit error handling.
+// Use these when you need detailed error information for user feedback.
+
+/**
+ * Save a layout asynchronously with Result-based error handling.
+ * Returns Ok on success, or Err with specific StorageError on failure.
+ *
+ * @example
+ * ```ts
+ * const result = await saveLayoutResult(id, layout);
+ * if (isErr(result)) {
+ *   addToast(getUserMessage(result.error), 'error');
+ * }
+ * ```
+ */
+export async function saveLayoutResult(
+  layoutId: string,
+  layout: Layout
+): Promise<Result<void, StorageError>> {
+  const key = getLayoutStorageKey(layoutId);
+
+  return tryCatchAsync(
+    () => backend.saveAsync(key, layout),
+    (error): StorageError => {
+      const message = error instanceof Error ? error.message : String(error);
+
+      // Detect quota exceeded errors
+      if (
+        message.includes('quota') ||
+        message.includes('QuotaExceeded') ||
+        message.includes('Storage full')
+      ) {
+        return storageQuotaExceeded(undefined, undefined, error);
+      }
+
+      // Detect storage unavailable errors
+      if (
+        message.includes('unavailable') ||
+        message.includes('SecurityError') ||
+        message.includes('access')
+      ) {
+        return storageUnavailable('indexedDB', error);
+      }
+
+      // Default to unavailable for unknown errors
+      return storageUnavailable('indexedDB', error);
+    }
+  );
+}
+
+/**
+ * Load a layout asynchronously with Result-based error handling.
+ * Returns Ok with the layout, or Err with specific StorageError.
+ *
+ * Unlike loadLayoutAsync which returns null for both "not found" and "corrupted",
+ * this function distinguishes between these cases for better error handling.
+ *
+ * @example
+ * ```ts
+ * const result = await loadLayoutResult(id);
+ * match(result, {
+ *   ok: (layout) => setLayout(layout),
+ *   err: (error) => {
+ *     if (error.code === 'STORAGE_NOT_FOUND') {
+ *       // Handle missing layout
+ *     } else if (error.code === 'STORAGE_CORRUPTED') {
+ *       // Offer recovery options
+ *     }
+ *   }
+ * });
+ * ```
+ */
+export async function loadLayoutResult(
+  layoutId: string
+): Promise<Result<Layout, StorageError>> {
+  const key = getLayoutStorageKey(layoutId);
+
+  let data: Layout | null;
+  try {
+    data = await backend.loadAsync(key);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    if (message.includes('unavailable') || message.includes('SecurityError')) {
+      return err(storageUnavailable('indexedDB', error));
+    }
+
+    return err(storageUnavailable('indexedDB', error));
+  }
+
+  if (!data) {
+    return err(storageNotFound(key));
+  }
+
+  const migrated = migrateLayout(data as unknown as Record<string, unknown>);
+  const validation = validateImport(migrated);
+
+  if (!validation.valid) {
+    return err(storageCorrupted(key, validation.errors));
+  }
+
+  return ok(migrated as unknown as Layout);
+}
+
+/**
+ * Delete a layout asynchronously with Result-based error handling.
+ * Returns Ok on success (including when layout doesn't exist).
+ */
+export async function deleteLayoutResult(
+  layoutId: string
+): Promise<Result<void, StorageError>> {
+  const key = getLayoutStorageKey(layoutId);
+
+  return tryCatchAsync(
+    () => backend.deleteAsync(key),
+    (error): StorageError => {
+      return storageUnavailable('indexedDB', error);
+    }
+  );
+}
+
 // === Sync Layout Operations (Initialization Only) ===
 
 /**
@@ -168,6 +303,31 @@ export function saveLibrary(library: LayoutLibrary): void {
     backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, library);
   } catch {
     throw new Error('Storage full. Export your layouts to save them.');
+  }
+}
+
+/**
+ * Save the layout library index with Result-based error handling.
+ * Returns Ok on success, or Err with StorageError on failure.
+ */
+export function saveLibraryResult(
+  library: LayoutLibrary
+): Result<void, StorageError> {
+  try {
+    backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, library);
+    return ok(undefined);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    if (
+      message.includes('quota') ||
+      message.includes('QuotaExceeded') ||
+      message.includes('Storage full')
+    ) {
+      return err(storageQuotaExceeded(undefined, undefined, error));
+    }
+
+    return err(storageUnavailable('localStorage', error));
   }
 }
 
