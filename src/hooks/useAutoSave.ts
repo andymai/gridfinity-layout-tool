@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useLibraryStore, useToastStore } from '../store';
-import { saveLayoutById, saveLibrary, computeLayoutPreview } from '../utils/storage';
+import { saveLayoutByIdAsync, saveLibrary, computeLayoutPreview } from '../utils/storage';
 import { scheduleIdleCallback, cancelIdleCallback } from '../utils/idle';
 
 const SAVE_DEBOUNCE_MS = 1000;
@@ -67,10 +67,10 @@ export function useAutoSave(): SaveStatus {
       // Schedule the actual storage operations during browser idle time
       // This improves INP by not blocking the main thread during user interactions
       idleCallbackRef.current = scheduleIdleCallback(
-        () => {
+        async () => {
           try {
-            // Save layout to its individual key
-            saveLayoutById(activeLayoutId, layout);
+            // Save layout to IndexedDB (async, with localStorage fallback)
+            await saveLayoutByIdAsync(activeLayoutId, layout);
 
             // Update library entry with new preview and timestamp
             updateEntry(activeLayoutId, {
@@ -79,7 +79,7 @@ export function useAutoSave(): SaveStatus {
               name: layout.name, // Keep library name in sync with layout name
             });
 
-            // Save library index
+            // Save library index (stays in localStorage for cross-tab sync)
             saveLibrary(useLibraryStore.getState().library);
 
             // Reset error flags on successful save

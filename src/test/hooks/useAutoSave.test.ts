@@ -10,6 +10,7 @@ import * as storage from '../../utils/storage';
 // Mock the storage module
 vi.mock('../../utils/storage', () => ({
   saveLayoutById: vi.fn(),
+  saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   saveLibrary: vi.fn(),
   computeLayoutPreview: vi.fn(() => ({
     drawerWidth: 10,
@@ -69,20 +70,21 @@ describe('useAutoSave', () => {
   });
 
   describe('debounced save', () => {
-    it('saves layout after debounce delay', () => {
+    it('saves layout after debounce delay', async () => {
       renderHook(() => useAutoSave());
 
       // Immediately after mount, save should not have been called
-      expect(storage.saveLayoutById).not.toHaveBeenCalled();
+      expect(storage.saveLayoutByIdAsync).not.toHaveBeenCalled();
 
       // Advance time past debounce
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       // Now save should have been called
-      expect(storage.saveLayoutById).toHaveBeenCalledTimes(1);
-      expect(storage.saveLayoutById).toHaveBeenCalledWith(
+      expect(storage.saveLayoutByIdAsync).toHaveBeenCalledTimes(1);
+      expect(storage.saveLayoutByIdAsync).toHaveBeenCalledWith(
         TEST_LAYOUT_ID,
         useLayoutStore.getState().layout
       );
@@ -96,10 +98,10 @@ describe('useAutoSave', () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS - 100);
       });
 
-      expect(storage.saveLayoutById).not.toHaveBeenCalled();
+      expect(storage.saveLayoutByIdAsync).not.toHaveBeenCalled();
     });
 
-    it('resets debounce timer on layout change', () => {
+    it('resets debounce timer on layout change', async () => {
       renderHook(() => useAutoSave());
 
       // Advance halfway
@@ -118,18 +120,19 @@ describe('useAutoSave', () => {
       });
 
       // Save should NOT have been called (timer was reset)
-      expect(storage.saveLayoutById).not.toHaveBeenCalled();
+      expect(storage.saveLayoutByIdAsync).not.toHaveBeenCalled();
 
       // Advance to complete the new debounce
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(500);
+        await Promise.resolve();
       });
 
       // Now save should be called
-      expect(storage.saveLayoutById).toHaveBeenCalledTimes(1);
+      expect(storage.saveLayoutByIdAsync).toHaveBeenCalledTimes(1);
     });
 
-    it('saves with latest layout data after multiple rapid changes', () => {
+    it('saves with latest layout data after multiple rapid changes', async () => {
       renderHook(() => useAutoSave());
 
       // Make multiple rapid changes
@@ -146,20 +149,21 @@ describe('useAutoSave', () => {
       });
 
       // Advance past debounce from last change
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       // Should only save once with final values
-      expect(storage.saveLayoutById).toHaveBeenCalledTimes(1);
-      const savedLayout = (storage.saveLayoutById as ReturnType<typeof vi.fn>).mock.calls[0][1];
+      expect(storage.saveLayoutByIdAsync).toHaveBeenCalledTimes(1);
+      const savedLayout = (storage.saveLayoutByIdAsync as ReturnType<typeof vi.fn>).mock.calls[0][1];
       expect(savedLayout.drawer.width).toBe(16);
       expect(savedLayout.drawer.depth).toBe(14);
     });
   });
 
   describe('save cancels on unmount', () => {
-    it('cancels pending save when unmounted', () => {
+    it('cancels pending save when unmounted', async () => {
       const { unmount } = renderHook(() => useAutoSave());
 
       // Advance halfway
@@ -171,23 +175,25 @@ describe('useAutoSave', () => {
       unmount();
 
       // Advance past debounce
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(1000);
+        await Promise.resolve();
       });
 
       // Save should not have been called
-      expect(storage.saveLayoutById).not.toHaveBeenCalled();
+      expect(storage.saveLayoutByIdAsync).not.toHaveBeenCalled();
     });
 
-    it('does not throw when unmounted after save completed', () => {
+    it('does not throw when unmounted after save completed', async () => {
       const { unmount } = renderHook(() => useAutoSave());
 
       // Let save complete
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
-      expect(storage.saveLayoutById).toHaveBeenCalledTimes(1);
+      expect(storage.saveLayoutByIdAsync).toHaveBeenCalledTimes(1);
 
       // Unmount should not throw
       expect(() => unmount()).not.toThrow();
@@ -195,18 +201,19 @@ describe('useAutoSave', () => {
   });
 
   describe('localStorage integration', () => {
-    it('calls saveLayoutById with current layout', () => {
+    it('calls saveLayoutByIdAsync with current layout', async () => {
       const layout = useLayoutStore.getState().layout;
       renderHook(() => useAutoSave());
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
-      expect(storage.saveLayoutById).toHaveBeenCalledWith(TEST_LAYOUT_ID, layout);
+      expect(storage.saveLayoutByIdAsync).toHaveBeenCalledWith(TEST_LAYOUT_ID, layout);
     });
 
-    it('saves updated layout after modification', () => {
+    it('saves updated layout after modification', async () => {
       renderHook(() => useAutoSave());
 
       // Modify layout
@@ -225,54 +232,59 @@ describe('useAutoSave', () => {
         });
       });
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
-      const savedLayout = (storage.saveLayoutById as ReturnType<typeof vi.fn>).mock.calls[0][1];
+      const savedLayout = (storage.saveLayoutByIdAsync as ReturnType<typeof vi.fn>).mock.calls[0][1];
       expect(savedLayout.bins.length).toBeGreaterThan(0);
       expect(savedLayout.bins[0].label).toBe('Test');
     });
 
-    it('does not save when activeLayoutId is null', () => {
+    it('does not save when activeLayoutId is null', async () => {
       // Set activeLayoutId to null
       useLayoutStore.setState({ activeLayoutId: null });
 
       renderHook(() => useAutoSave());
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       // Should not have called save
-      expect(storage.saveLayoutById).not.toHaveBeenCalled();
+      expect(storage.saveLayoutByIdAsync).not.toHaveBeenCalled();
     });
 
-    it('does not save when activeLayoutId is __shared_preview__', () => {
+    it('does not save when activeLayoutId is __shared_preview__', async () => {
       // Set activeLayoutId to shared preview (temporary layout)
       useLayoutStore.setState({ activeLayoutId: '__shared_preview__' });
 
       renderHook(() => useAutoSave());
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       // Should not have called save for temporary shared preview
-      expect(storage.saveLayoutById).not.toHaveBeenCalled();
+      expect(storage.saveLayoutByIdAsync).not.toHaveBeenCalled();
     });
   });
 
   describe('error handling', () => {
-    it('shows error toast when save fails', () => {
-      vi.mocked(storage.saveLayoutById).mockImplementation(() => {
-        throw new Error('Storage full. Export your layout to save it.');
-      });
+    it('shows error toast when save fails', async () => {
+      vi.mocked(storage.saveLayoutByIdAsync).mockRejectedValue(
+        new Error('Storage full. Export your layout to save it.')
+      );
 
       renderHook(() => useAutoSave());
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        // Allow async rejection to propagate
+        await Promise.resolve();
       });
 
       const toasts = useToastStore.getState().toasts;
@@ -281,15 +293,14 @@ describe('useAutoSave', () => {
       expect(toasts[0].message).toBe('Storage full. Export your layout to save it.');
     });
 
-    it('shows generic error message for non-Error exceptions', () => {
-      vi.mocked(storage.saveLayoutById).mockImplementation(() => {
-        throw 'string error';
-      });
+    it('shows generic error message for non-Error exceptions', async () => {
+      vi.mocked(storage.saveLayoutByIdAsync).mockRejectedValue('string error');
 
       renderHook(() => useAutoSave());
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       const toasts = useToastStore.getState().toasts;
@@ -297,16 +308,17 @@ describe('useAutoSave', () => {
       expect(toasts[0].message).toBe('Failed to save layout');
     });
 
-    it('only shows error toast once per failure session', () => {
-      vi.mocked(storage.saveLayoutById).mockImplementation(() => {
-        throw new Error('Storage full');
-      });
+    it('only shows error toast once per failure session', async () => {
+      vi.mocked(storage.saveLayoutByIdAsync).mockRejectedValue(
+        new Error('Storage full')
+      );
 
       renderHook(() => useAutoSave());
 
       // First save attempt
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       expect(useToastStore.getState().toasts).toHaveLength(1);
@@ -316,24 +328,26 @@ describe('useAutoSave', () => {
         useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
       });
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       // Should still only have one toast (not spamming)
       expect(useToastStore.getState().toasts).toHaveLength(1);
     });
 
-    it('shows persistent toast after 3 consecutive failures', () => {
-      vi.mocked(storage.saveLayoutById).mockImplementation(() => {
-        throw new Error('Persistent storage error');
-      });
+    it('shows persistent toast after 3 consecutive failures', async () => {
+      vi.mocked(storage.saveLayoutByIdAsync).mockRejectedValue(
+        new Error('Persistent storage error')
+      );
 
       renderHook(() => useAutoSave());
 
       // First failure
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
       expect(useToastStore.getState().toasts).toHaveLength(1);
 
@@ -344,8 +358,9 @@ describe('useAutoSave', () => {
       act(() => {
         useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
       });
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
       // Second failure doesn't show new toast due to hasShownErrorRef
       expect(useToastStore.getState().toasts).toHaveLength(0);
@@ -354,8 +369,9 @@ describe('useAutoSave', () => {
       act(() => {
         useLayoutStore.getState().updateDrawer({ width: 14, depth: 12 });
       });
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       // After 3 failures, we show a persistent toast
@@ -366,19 +382,18 @@ describe('useAutoSave', () => {
       expect(lastToast.type).toBe('error');
     });
 
-    it('resets error flag after successful save', () => {
-      const saveLayoutByIdMock = vi.mocked(storage.saveLayoutById);
+    it('resets error flag after successful save', async () => {
+      const saveLayoutByIdAsyncMock = vi.mocked(storage.saveLayoutByIdAsync);
 
       // First call fails
-      saveLayoutByIdMock.mockImplementationOnce(() => {
-        throw new Error('Storage full');
-      });
+      saveLayoutByIdAsyncMock.mockRejectedValueOnce(new Error('Storage full'));
 
       renderHook(() => useAutoSave());
 
       // First save fails
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       expect(useToastStore.getState().toasts).toHaveLength(1);
@@ -387,30 +402,30 @@ describe('useAutoSave', () => {
       useToastStore.setState({ toasts: [] });
 
       // Next save succeeds (default mock)
-      saveLayoutByIdMock.mockImplementation(() => {});
+      saveLayoutByIdAsyncMock.mockResolvedValue(undefined);
 
       act(() => {
         useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
       });
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       // No new error toast
       expect(useToastStore.getState().toasts).toHaveLength(0);
 
       // Make it fail again
-      saveLayoutByIdMock.mockImplementation(() => {
-        throw new Error('Storage full again');
-      });
+      saveLayoutByIdAsyncMock.mockRejectedValue(new Error('Storage full again'));
 
       act(() => {
         useLayoutStore.getState().updateDrawer({ width: 14, depth: 12 });
       });
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       // Should show error toast again (flag was reset)
@@ -420,16 +435,17 @@ describe('useAutoSave', () => {
   });
 
   describe('multiple hook instances', () => {
-    it('each instance manages its own debounce', () => {
+    it('each instance manages its own debounce', async () => {
       const { unmount: unmount1 } = renderHook(() => useAutoSave());
       const { unmount: unmount2 } = renderHook(() => useAutoSave());
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       // Both instances should trigger save
-      expect(storage.saveLayoutById).toHaveBeenCalledTimes(2);
+      expect(storage.saveLayoutByIdAsync).toHaveBeenCalledTimes(2);
 
       unmount1();
       unmount2();
@@ -437,7 +453,7 @@ describe('useAutoSave', () => {
   });
 
   describe('library entry updates', () => {
-    it('updates library entry modifiedAt on save', () => {
+    it('updates library entry modifiedAt on save', async () => {
       // Get initial modifiedAt
       const initialEntry = useLibraryStore.getState().library.entries[0];
       const initialModifiedAt = initialEntry.modifiedAt;
@@ -449,8 +465,9 @@ describe('useAutoSave', () => {
         useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
       });
 
-      act(() => {
+      await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
       });
 
       // Check that modifiedAt was updated

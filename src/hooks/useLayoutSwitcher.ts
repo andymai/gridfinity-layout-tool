@@ -3,9 +3,9 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useToastStore, useSettingsStore } from '../store';
 import type { Layout, OperationResult, LayoutPreview } from '../types';
 import {
-  saveLayoutById,
+  saveLayoutByIdAsync,
   loadLayoutById,
-  deleteLayoutById,
+  deleteLayoutByIdAsync,
   saveLibrary,
   computeLayoutPreview,
 } from '../utils/storage';
@@ -70,12 +70,13 @@ export function useLayoutSwitcher() {
 
   /**
    * Save the current layout to storage and update library entry.
+   * Uses async IndexedDB storage for better performance with large layouts.
    */
-  const saveCurrentLayout = useCallback(() => {
+  const saveCurrentLayout = useCallback(async () => {
     if (!activeLayoutId) return;
 
     try {
-      saveLayoutById(activeLayoutId, layout);
+      await saveLayoutByIdAsync(activeLayoutId, layout);
       updateEntry(activeLayoutId, {
         modifiedAt: Date.now(),
         preview: computeLayoutPreview(layout),
@@ -90,7 +91,7 @@ export function useLayoutSwitcher() {
   /**
    * Switch to a different layout.
    */
-  const switchLayout = useCallback((targetId: string): OperationResult => {
+  const switchLayout = useCallback(async (targetId: string): Promise<OperationResult> => {
     // 1. Validate target exists
     const targetEntry = getEntry(targetId);
     if (!targetEntry) {
@@ -108,8 +109,9 @@ export function useLayoutSwitcher() {
       clearSharedLayoutPreview();
 
       // 4. Save current layout immediately (skip if it was a shared preview)
+      // Use async save to IndexedDB with localStorage backup
       if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
-        saveLayoutById(activeLayoutId, layout);
+        await saveLayoutByIdAsync(activeLayoutId, layout);
         updateEntry(activeLayoutId, {
           modifiedAt: Date.now(),
           preview: computeLayoutPreview(layout),
@@ -117,7 +119,7 @@ export function useLayoutSwitcher() {
         });
       }
 
-      // 5. Load target layout
+      // 5. Load target layout (sync from localStorage for fast switching)
       const targetLayout = loadLayoutById(targetId);
       if (!targetLayout) {
         return { success: false, error: 'Failed to load layout data' };
@@ -176,9 +178,9 @@ export function useLayoutSwitcher() {
   /**
    * Create a new layout and switch to it.
    */
-  const createNewLayout = useCallback((name?: string): OperationResult<string> => {
+  const createNewLayout = useCallback(async (name?: string): Promise<OperationResult<string>> => {
     // Save current layout first
-    saveCurrentLayout();
+    await saveCurrentLayout();
 
     // Create new layout using user preferences
     const layoutId = generateUUID();
@@ -186,8 +188,8 @@ export function useLayoutSwitcher() {
     newLayout.name = name || 'Untitled layout';
 
     try {
-      // Save the new layout
-      saveLayoutById(layoutId, newLayout);
+      // Save the new layout to IndexedDB + localStorage
+      await saveLayoutByIdAsync(layoutId, newLayout);
 
       // Create library entry
       createEntry(
@@ -239,7 +241,7 @@ export function useLayoutSwitcher() {
   /**
    * Delete a layout.
    */
-  const deleteLayout = useCallback((id: string): OperationResult => {
+  const deleteLayout = useCallback(async (id: string): Promise<OperationResult> => {
     const { entries } = library;
 
     // Can't delete last layout
@@ -248,8 +250,8 @@ export function useLayoutSwitcher() {
     }
 
     try {
-      // Remove from storage
-      deleteLayoutById(id);
+      // Remove from storage (both IndexedDB and localStorage)
+      await deleteLayoutByIdAsync(id);
 
       // Remove from library
       const result = deleteEntry(id);
@@ -261,7 +263,7 @@ export function useLayoutSwitcher() {
       if (activeLayoutId === id) {
         const remaining = entries.filter(e => e.id !== id);
         const fallbackId = remaining[0].id;
-        const switchResult = switchLayout(fallbackId);
+        const switchResult = await switchLayout(fallbackId);
         if (!switchResult.success) {
           return switchResult;
         }
@@ -284,7 +286,7 @@ export function useLayoutSwitcher() {
   /**
    * Duplicate a layout.
    */
-  const duplicateLayout = useCallback((id: string): OperationResult<string> => {
+  const duplicateLayout = useCallback(async (id: string): Promise<OperationResult<string>> => {
     const sourceEntry = getEntry(id);
     if (!sourceEntry) {
       return { success: false, error: 'Layout not found' };
@@ -306,8 +308,8 @@ export function useLayoutSwitcher() {
         name: `${sourceLayout.name} (copy)`,
       };
 
-      // Save the new layout
-      saveLayoutById(newLayoutId, newLayout);
+      // Save the new layout to IndexedDB + localStorage
+      await saveLayoutByIdAsync(newLayoutId, newLayout);
 
       // Create library entry
       duplicateEntry(sourceEntry, newLayoutId);
@@ -346,15 +348,15 @@ export function useLayoutSwitcher() {
   /**
    * Import a layout from JSON and add to library.
    */
-  const importLayoutFromJSON = useCallback((
+  const importLayoutFromJSON = useCallback(async (
     importedLayout: Layout,
     forkedFrom?: { name: string; author?: string }
-  ): OperationResult<string> => {
+  ): Promise<OperationResult<string>> => {
     try {
       const layoutId = generateUUID();
 
-      // Save the layout
-      saveLayoutById(layoutId, importedLayout);
+      // Save the layout to IndexedDB + localStorage
+      await saveLayoutByIdAsync(layoutId, importedLayout);
 
       // Create library entry
       const preview: LayoutPreview = computeLayoutPreview(importedLayout);

@@ -312,7 +312,6 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
           ) : (
             <div className="space-y-6">
               <TipsSection />
-              <CollectionsSection />
               <BlockedZonesSection />
               <BinClearanceSection />
             </div>
@@ -455,7 +454,6 @@ function TipsSection() {
     'Your layout is automatically saved to your browser',
     'Use Ctrl/⌘+O to quickly open the layout manager',
     'Press H to toggle half-bin mode for 0.5 unit precision',
-    'Create a collection to share and edit layouts with others in real-time',
   ];
 
   return (
@@ -471,75 +469,6 @@ function TipsSection() {
           </li>
         ))}
       </ul>
-    </section>
-  );
-}
-
-// Collections section
-function CollectionsSection() {
-  return (
-    <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        Collections
-      </h3>
-      <div className="p-4 rounded-lg space-y-4" style={STYLES.blockedZonesContent}>
-        <div>
-          <p className="mb-2">
-            <strong style={STYLES.textPrimary}>What are collections?</strong>
-          </p>
-          <p>
-            Collections let you share and edit layouts with others in real-time.
-            No account needed – just share a link and everyone can view and edit together.
-          </p>
-        </div>
-
-        <div>
-          <p className="mb-2">
-            <strong style={STYLES.textPrimary}>Creating a collection</strong>
-          </p>
-          <p>
-            Open the Layout Manager (Ctrl/⌘+O) and click "Create Collection" in the Real-time Sharing section.
-            Your current layout will be added automatically.
-          </p>
-        </div>
-
-        <div>
-          <p className="mb-2">
-            <strong style={STYLES.textPrimary}>Joining a collection</strong>
-          </p>
-          <p>
-            Click "Join" and paste a collection link, or simply open a shared collection URL directly.
-            You'll see all layouts in the collection and can switch between them.
-          </p>
-        </div>
-
-        <div>
-          <p className="mb-2">
-            <strong style={STYLES.textPrimary}>Real-time sync</strong>
-          </p>
-          <p>
-            Changes sync automatically every few seconds. The banner shows sync status:
-            "Syncing..." when saving, "Saved" when complete. If others are editing, you'll see
-            how many people are active.
-          </p>
-        </div>
-
-        <div>
-          <p className="mb-2">
-            <strong style={STYLES.textPrimary}>Handling conflicts</strong>
-          </p>
-          <p>
-            If someone else saves while you're editing, you'll see a conflict dialog.
-            Choose to keep your changes, use theirs, or save both versions.
-          </p>
-        </div>
-
-        <div className="pt-2 border-t border-stroke-subtle">
-          <p className="text-xs" style={STYLES.textSecondary}>
-            Collections expire after 30 days of inactivity. Copy the share link to rejoin anytime.
-          </p>
-        </div>
-      </div>
     </section>
   );
 }
