@@ -65,6 +65,7 @@ export {
   decodeLayoutResult,
   generateShareableURL,
   getSharedLayoutFromURL,
+  getSharedLayoutResult,
   clearSharedLayoutFromURL,
   getCloudShareIdFromURL,
   clearCloudShareFromURL,
@@ -73,6 +74,7 @@ export {
 // === Utilities ===
 export {
   copyToClipboard,
+  copyToClipboardResult,
   downloadLayoutAsFile,
 } from './utils';
 
