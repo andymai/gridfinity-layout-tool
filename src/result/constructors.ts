@@ -44,6 +44,10 @@ import type {
   ApiNetworkError,
   ApiValidationError,
   ApiContentBlockedError,
+  ApiSizeLimitError,
+  ApiBinLimitError,
+  ApiExpiredError,
+  ApiInvalidExpirationError,
   UnknownError,
   ValidationFailureReason,
 } from './errors';
@@ -485,6 +489,78 @@ export function apiContentBlocked(
     message: getErrorInfo('API_CONTENT_BLOCKED').defaultMessage,
     timestamp: Date.now(),
     blockedFields,
+  };
+}
+
+/**
+ * Create an API size limit error.
+ *
+ * @param sizeBytes - Current size in bytes
+ * @param maxBytes - Maximum allowed size in bytes
+ */
+export function apiSizeLimit(
+  sizeBytes?: number,
+  maxBytes?: number
+): ApiSizeLimitError {
+  return {
+    kind: 'ApiError',
+    code: 'API_SIZE_LIMIT',
+    message: getErrorInfo('API_SIZE_LIMIT').defaultMessage,
+    timestamp: Date.now(),
+    sizeBytes,
+    maxBytes,
+  };
+}
+
+/**
+ * Create an API bin limit error.
+ *
+ * @param binCount - Current bin count
+ * @param maxBins - Maximum allowed bins
+ */
+export function apiBinLimit(
+  binCount?: number,
+  maxBins?: number
+): ApiBinLimitError {
+  return {
+    kind: 'ApiError',
+    code: 'API_BIN_LIMIT',
+    message: getErrorInfo('API_BIN_LIMIT').defaultMessage,
+    timestamp: Date.now(),
+    binCount,
+    maxBins,
+  };
+}
+
+/**
+ * Create an API expired error.
+ *
+ * @param shareId - ID of the expired share
+ */
+export function apiExpired(shareId?: string): ApiExpiredError {
+  return {
+    kind: 'ApiError',
+    code: 'API_EXPIRED',
+    message: getErrorInfo('API_EXPIRED').defaultMessage,
+    timestamp: Date.now(),
+    shareId,
+  };
+}
+
+/**
+ * Create an API invalid expiration error.
+ *
+ * @param providedValue - The invalid value that was provided
+ */
+export function apiInvalidExpiration(
+  providedValue?: number
+): ApiInvalidExpirationError {
+  return {
+    kind: 'ApiError',
+    code: 'API_INVALID_EXPIRATION',
+    message: getErrorInfo('API_INVALID_EXPIRATION').defaultMessage,
+    timestamp: Date.now(),
+    providedValue,
   };
 }
 

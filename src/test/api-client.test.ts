@@ -10,7 +10,13 @@ import {
   deleteShare,
   reportShare,
   getErrorMessage,
+  createShareResult,
+  updateShareResult,
+  fetchShareResult,
+  deleteShareResult,
+  reportShareResult,
 } from '../api/share';
+import { isOk, isErr, getUserMessage } from '../result';
 import type { Layout } from '../types';
 
 // Mock layout for testing
@@ -366,5 +372,424 @@ describe('getErrorMessage', () => {
     });
 
     expect(message).toBe('Something went wrong');
+  });
+});
+
+// =============================================================================
+// Result-Based API Tests
+// =============================================================================
+
+describe('createShareResult', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('returns Ok with share data on success', async () => {
+    const mockResponse = {
+      id: 'abc123xyz789',
+      url: 'https://example.com/s/abc123xyz789',
+      deleteToken: 'token123',
+      expiresAt: '2024-02-01T00:00:00.000Z',
+    };
+
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    } as Response);
+
+    const result = await createShareResult(mockLayout, 30);
+
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.id).toBe('abc123xyz789');
+      expect(result.value.deleteToken).toBe('token123');
+    }
+  });
+
+  it('returns Err with ApiRateLimitedError on rate limit', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Too many requests',
+        code: 'RATE_LIMITED',
+        retryAfter: 3600,
+      }),
+    } as Response);
+
+    const result = await createShareResult(mockLayout, 30);
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_RATE_LIMITED');
+      expect(result.error.kind).toBe('ApiError');
+      if ('retryAfter' in result.error) {
+        expect(result.error.retryAfter).toBe(3600);
+      }
+    }
+  });
+
+  it('returns Err with ApiNetworkError on fetch failure', async () => {
+    vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
+
+    const result = await createShareResult(mockLayout, 30);
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_NETWORK_ERROR');
+      expect(result.error.kind).toBe('ApiError');
+    }
+  });
+
+  it('returns Err with ApiSizeLimitError on size limit', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Layout too large',
+        code: 'SIZE_LIMIT',
+      }),
+    } as Response);
+
+    const result = await createShareResult(mockLayout, 30);
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_SIZE_LIMIT');
+    }
+  });
+
+  it('returns Err with ApiBinLimitError on bin limit', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Too many bins',
+        code: 'BIN_LIMIT',
+      }),
+    } as Response);
+
+    const result = await createShareResult(mockLayout, 30);
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_BIN_LIMIT');
+    }
+  });
+
+  it('provides user-friendly message via getUserMessage', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Layout too large',
+        code: 'SIZE_LIMIT',
+      }),
+    } as Response);
+
+    const result = await createShareResult(mockLayout, 30);
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      const message = getUserMessage(result.error);
+      expect(message).toBeTruthy();
+      expect(message).toContain('500KB');
+    }
+  });
+});
+
+describe('updateShareResult', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('returns Ok on success', async () => {
+    const mockResponse = {
+      id: 'abc123xyz789',
+      url: 'https://example.com/s/abc123xyz789',
+      expiresAt: '2024-02-01T00:00:00.000Z',
+    };
+
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    } as Response);
+
+    const result = await updateShareResult('abc123xyz789', 'token123', mockLayout, 60);
+
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.id).toBe('abc123xyz789');
+    }
+  });
+
+  it('returns Err with ApiUnauthorizedError on unauthorized', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Invalid token',
+        code: 'UNAUTHORIZED',
+      }),
+    } as Response);
+
+    const result = await updateShareResult('abc123xyz789', 'wrong-token', mockLayout, 60);
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_UNAUTHORIZED');
+    }
+  });
+
+  it('returns Err with ApiNotFoundError on not found', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Share not found',
+        code: 'NOT_FOUND',
+      }),
+    } as Response);
+
+    const result = await updateShareResult('nonexistent', 'token', mockLayout, 60);
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_NOT_FOUND');
+    }
+  });
+});
+
+describe('fetchShareResult', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('returns Ok with layout and metadata on success', async () => {
+    const mockResponse = {
+      layout: mockLayout,
+      metadata: {
+        expiresAt: '2024-02-01T00:00:00.000Z',
+        expiresInDays: 30,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        authorName: 'Test Author',
+      },
+    };
+
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    } as Response);
+
+    const result = await fetchShareResult('abc123xyz789');
+
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.layout.name).toBe('Test Layout');
+      expect(result.value.metadata.authorName).toBe('Test Author');
+    }
+  });
+
+  it('returns Err with ApiNotFoundError on 404', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Share not found',
+        code: 'NOT_FOUND',
+      }),
+    } as Response);
+
+    const result = await fetchShareResult('nonexistent');
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_NOT_FOUND');
+    }
+  });
+
+  it('returns Err with ApiExpiredError on expired share', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Share expired',
+        code: 'EXPIRED',
+      }),
+    } as Response);
+
+    const result = await fetchShareResult('expired123');
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_EXPIRED');
+    }
+  });
+});
+
+describe('deleteShareResult', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('returns Ok on successful delete', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ success: true, message: 'Deleted' }),
+    } as Response);
+
+    const result = await deleteShareResult('abc123xyz789', 'token123');
+
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.success).toBe(true);
+    }
+  });
+
+  it('returns Err with ApiUnauthorizedError on invalid token', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Invalid token',
+        code: 'UNAUTHORIZED',
+      }),
+    } as Response);
+
+    const result = await deleteShareResult('abc123xyz789', 'wrong-token');
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_UNAUTHORIZED');
+    }
+  });
+});
+
+describe('reportShareResult', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('returns Ok on successful report', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ success: true, message: 'Report submitted' }),
+    } as Response);
+
+    const result = await reportShareResult('abc123xyz789', 'Offensive content');
+
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.success).toBe(true);
+    }
+  });
+
+  it('returns Err with ApiNotFoundError when share not found', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Share not found',
+        code: 'NOT_FOUND',
+      }),
+    } as Response);
+
+    const result = await reportShareResult('nonexistent');
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_NOT_FOUND');
+    }
+  });
+});
+
+describe('API error mapping', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('maps CONTENT_BLOCKED to ApiContentBlockedError', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Content blocked',
+        code: 'CONTENT_BLOCKED',
+      }),
+    } as Response);
+
+    const result = await createShareResult(mockLayout, 30);
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_CONTENT_BLOCKED');
+    }
+  });
+
+  it('maps INVALID_EXPIRATION to ApiInvalidExpirationError', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Invalid expiration',
+        code: 'INVALID_EXPIRATION',
+      }),
+    } as Response);
+
+    const result = await createShareResult(mockLayout, 45 as unknown as 30);
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_INVALID_EXPIRATION');
+    }
+  });
+
+  it('maps VALIDATION_ERROR to ApiValidationError', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Invalid layout structure',
+        code: 'VALIDATION_ERROR',
+      }),
+    } as Response);
+
+    const result = await createShareResult(mockLayout, 30);
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('API_VALIDATION_ERROR');
+    }
+  });
+
+  it('errors have timestamp for debugging', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({
+        error: 'Too many requests',
+        code: 'RATE_LIMITED',
+      }),
+    } as Response);
+
+    const beforeTime = Date.now();
+    const result = await createShareResult(mockLayout, 30);
+    const afterTime = Date.now();
+
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.timestamp).toBeGreaterThanOrEqual(beforeTime);
+      expect(result.error.timestamp).toBeLessThanOrEqual(afterTime);
+    }
   });
 });

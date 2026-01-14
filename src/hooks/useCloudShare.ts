@@ -9,13 +9,13 @@ import { useLayoutStore } from '../store/layout';
 import { useUIStore } from '../store/ui';
 import type { ShareExpiration, CloudShareInfo, Layout } from '../types';
 import {
-  createShare,
-  updateShare,
-  deleteShare as deleteShareApi,
-  getErrorMessage,
+  createShareResult,
+  updateShareResult,
+  deleteShareResult,
   type ShareResponse,
-  type ShareErrorResponse,
 } from '../api/share';
+import { isOk, getUserMessage } from '../result';
+import type { ApiError } from '../result';
 import { copyToClipboard } from '../storage';
 
 export type CloudShareStatus =
@@ -153,12 +153,12 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   );
 
   const handleError = useCallback(
-    (err: ShareErrorResponse) => {
-      const message = getErrorMessage(err);
+    (err: ApiError) => {
+      const message = getUserMessage(err);
       setError({
         message,
         code: err.code,
-        retryAfter: err.retryAfter,
+        retryAfter: 'retryAfter' in err ? err.retryAfter : undefined,
       });
       setStatus('error');
       announceToScreenReader(`Share failed: ${message}`);
@@ -181,17 +181,17 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       setError(null);
 
       const layoutToShare = getLayoutToShare();
-      const response = await createShare(layoutToShare, expiresInDays, authorName);
+      const result = await createShareResult(layoutToShare, expiresInDays, authorName);
 
       // Prevent state updates if component unmounted during async operation
       if (!mountedRef.current) return false;
 
-      if (response.success) {
+      if (isOk(result)) {
         setLastShareExpiration(expiresInDays);
-        handleSuccess(response.data, false);
+        handleSuccess(result.value, false);
         return true;
       } else {
-        handleError(response.error);
+        handleError(result.error);
         return false;
       }
     },
@@ -222,7 +222,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       setError(null);
 
       const layoutToShare = getLayoutToShare();
-      const response = await updateShare(
+      const result = await updateShareResult(
         existingShare.id,
         existingShare.deleteToken,
         layoutToShare,
@@ -232,11 +232,11 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       // Prevent state updates if component unmounted during async operation
       if (!mountedRef.current) return false;
 
-      if (response.success) {
+      if (isOk(result)) {
         setLastShareExpiration(expiresInDays);
         handleSuccess(
           {
-            ...response.data,
+            ...result.value,
             deleteToken: existingShare.deleteToken,
           },
           true
@@ -244,22 +244,22 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         return true;
       } else {
         // Handle specific errors
-        if (response.error.code === 'NOT_FOUND') {
+        if (result.error.code === 'API_NOT_FOUND' || result.error.code === 'API_EXPIRED') {
           // Share was deleted on server, clear local state
           clearCloudShare(targetLayoutId);
           setError({
             message: 'Previous share was deleted. Create a new share instead.',
-            code: 'NOT_FOUND',
+            code: result.error.code,
           });
-        } else if (response.error.code === 'UNAUTHORIZED') {
+        } else if (result.error.code === 'API_UNAUTHORIZED') {
           // Token mismatch (shouldn't happen normally)
           clearCloudShare(targetLayoutId);
           setError({
             message: 'Unable to update share. Create a new share instead.',
-            code: 'UNAUTHORIZED',
+            code: result.error.code,
           });
         } else {
-          handleError(response.error);
+          handleError(result.error);
         }
         setStatus('error');
         return false;
@@ -293,12 +293,12 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     setStatus('deleting');
     setError(null);
 
-    const response = await deleteShareApi(existingShare.id, existingShare.deleteToken);
+    const result = await deleteShareResult(existingShare.id, existingShare.deleteToken);
 
     // Prevent state updates if component unmounted during async operation
     if (!mountedRef.current) return false;
 
-    if (response.success) {
+    if (isOk(result)) {
       clearCloudShare(targetLayoutId);
       setStatus('idle');
       setResult(null);
@@ -306,13 +306,13 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       return true;
     } else {
       // If not found, it's already deleted - clear local state
-      if (response.error.code === 'NOT_FOUND') {
+      if (result.error.code === 'API_NOT_FOUND' || result.error.code === 'API_EXPIRED') {
         clearCloudShare(targetLayoutId);
         setStatus('idle');
         setResult(null);
         return true;
       }
-      handleError(response.error);
+      handleError(result.error);
       return false;
     }
   }, [existingShare, targetLayoutId, clearCloudShare, handleError, announceToScreenReader]);
