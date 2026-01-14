@@ -23,6 +23,7 @@ import {
   BinContextMenu,
   MultiBinContextMenu,
 } from './mobile';
+import { LabsDrawer } from './labs';
 import type { SaveStatus } from '../hooks/useAutoSave';
 
 // Legacy context menu state for backwards compatibility
@@ -101,6 +102,9 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen, saveStatus
 
       {/* Shared layout URL importer */}
       <SharedLayoutImporter />
+
+      {/* Labs drawer */}
+      <LabsDrawer />
     </div>
   );
 }

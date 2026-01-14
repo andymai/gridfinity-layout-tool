@@ -17,6 +17,7 @@ import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter } from './components/SharedLayoutImporter';
 import { SharedLayoutBanner } from './components/SharedLayoutBanner';
+import { LabsDrawer } from './components/labs';
 import { SHORTCUTS } from './constants';
 
 // Legacy context menu state for backwards compatibility
@@ -243,6 +244,9 @@ export default function App() {
 
         {/* Shared layout URL importer */}
         <SharedLayoutImporter />
+
+        {/* Labs drawer */}
+        <LabsDrawer />
       </div>
     );
   }
@@ -313,6 +317,9 @@ export default function App() {
 
       {/* Shared layout URL importer */}
       <SharedLayoutImporter />
+
+      {/* Labs drawer */}
+      <LabsDrawer />
     </div>
   );
 }

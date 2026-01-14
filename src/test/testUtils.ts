@@ -8,6 +8,8 @@ import { useHistoryStore } from '../store/history';
 import { useToastStore } from '../store/toast';
 import { useSettingsStore, DEFAULT_SETTINGS } from '../store/settings';
 import { useLibraryStore } from '../store/library';
+import { useLabsStore } from '../store/labs';
+import { createDefaultLabsPreferences } from '../labs/types';
 
 /**
  * Reset all Zustand stores to their initial state.
@@ -81,6 +83,12 @@ export function resetAllStores(): void {
     library: createTestLibrary(),
     isLoaded: false,
     showLayoutManager: false,
+  });
+
+  // Labs store
+  useLabsStore.setState({
+    preferences: createDefaultLabsPreferences(),
+    isDrawerOpen: false,
   });
 }
 

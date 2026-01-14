@@ -13,6 +13,7 @@ import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { CollapsibleSection } from '../CollapsibleSection';
 import { useResponsive } from '../../hooks/useResponsive';
+import { LabsButton } from '../labs';
 
 export function Sidebar() {
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
@@ -519,6 +520,11 @@ export function Sidebar() {
                   Save Current as Defaults
                 </button>
               </CollapsibleSection>
+            </div>
+
+            {/* Labs */}
+            <div className="px-4 py-4 border-t border-stroke-subtle">
+              <LabsButton />
             </div>
 
             {/* Attribution */}
