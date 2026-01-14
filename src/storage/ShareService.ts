@@ -6,11 +6,14 @@
  * - TSV export (spreadsheet format)
  * - URL encoding (shareable links)
  * - Cloud share URL parsing
+ * - Result-based imports (*Result suffix)
  */
 
 import { validateImport } from '../utils/validation';
 import { generateId, STAGING_ID } from '../constants';
 import type { Layout } from '../types';
+import type { Result, ValidationError } from '../result';
+import { ok, err, validationImportFailed } from '../result';
 
 // === JSON Import/Export ===
 
@@ -78,6 +81,29 @@ export function importLayoutJSON(json: string): { layout: Layout | null; errors:
   } catch (e) {
     return { layout: null, errors: [`Parse error: ${(e as Error).message}`] };
   }
+}
+
+/**
+ * Import layout from JSON string with Result-based error handling.
+ * Returns Ok with layout on success, or Err with ValidationImportError.
+ *
+ * @example
+ * ```ts
+ * const result = importLayoutResult(json);
+ * match(result, {
+ *   ok: (layout) => applyLayout(layout),
+ *   err: (error) => showErrors(error.errors)
+ * });
+ * ```
+ */
+export function importLayoutResult(json: string): Result<Layout, ValidationError> {
+  const { layout, errors } = importLayoutJSON(json);
+
+  if (layout === null) {
+    return err(validationImportFailed(errors));
+  }
+
+  return ok(layout);
 }
 
 // === TSV Export ===
@@ -188,6 +214,20 @@ export function decodeLayoutFromURL(encoded: string): { layout: Layout | null; e
   } catch (e) {
     return { layout: null, errors: [`Failed to decode URL: ${(e as Error).message}`] };
   }
+}
+
+/**
+ * Decode a layout from URL-encoded string with Result-based error handling.
+ * Returns Ok with layout on success, or Err with ValidationImportError.
+ */
+export function decodeLayoutResult(encoded: string): Result<Layout, ValidationError> {
+  const { layout, errors } = decodeLayoutFromURL(encoded);
+
+  if (layout === null) {
+    return err(validationImportFailed(errors));
+  }
+
+  return ok(layout);
 }
 
 /**
