@@ -1,9 +1,3 @@
-/**
- * Feature Status Badge
- *
- * Displays the status of a Labs feature (Experimental, Preview, Graduated).
- */
-
 import type { FeatureStatus } from '../../labs/types';
 
 interface FeatureStatusBadgeProps {

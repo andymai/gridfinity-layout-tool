@@ -1,10 +1,3 @@
-/**
- * Labs Drawer
- *
- * Side drawer that slides in from the right, displaying available Labs features.
- * Supports keyboard navigation, focus trapping, and accessibility.
- */
-
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLabsStore } from '../../store/labs';
@@ -26,7 +19,6 @@ export function LabsDrawer() {
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Handle Escape key
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -36,17 +28,11 @@ export function LabsDrawer() {
     [closeDrawer]
   );
 
-  // Focus trap and keyboard handling
   useEffect(() => {
     if (!isOpen) return;
 
-    // Focus the close button when drawer opens
     closeButtonRef.current?.focus();
-
-    // Prevent body scroll
     document.body.style.overflow = 'hidden';
-
-    // Add keyboard listener
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
@@ -55,7 +41,6 @@ export function LabsDrawer() {
     };
   }, [isOpen, handleKeyDown]);
 
-  // Click outside to close
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       closeDrawer();

@@ -1,28 +1,16 @@
-/**
- * Labs Store
- *
- * Zustand store for managing Labs experimental features state.
- * Handles feature toggle state, persistence, and cross-tab sync.
- */
-
 import { create } from 'zustand';
 import type { LabsPreferences } from '../labs/types';
 import { createDefaultLabsPreferences } from '../labs/types';
 import { getFeature, type FeatureId } from '../labs/features';
 import { trackEvent } from '../utils/analytics';
 
-/** Storage key for Labs preferences */
 export const LABS_STORAGE_KEY = 'gridfinity-labs-v1';
 
-/**
- * Load preferences from localStorage with migration support.
- */
 function loadPreferences(): LabsPreferences {
   try {
     const stored = localStorage.getItem(LABS_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // Migration: handle version upgrades here if needed
       return { ...createDefaultLabsPreferences(), ...parsed };
     }
   } catch (e) {
@@ -31,9 +19,6 @@ function loadPreferences(): LabsPreferences {
   return createDefaultLabsPreferences();
 }
 
-/**
- * Save preferences to localStorage.
- */
 function savePreferences(prefs: LabsPreferences): void {
   try {
     const toSave: LabsPreferences = {
@@ -47,37 +32,16 @@ function savePreferences(prefs: LabsPreferences): void {
 }
 
 interface LabsState {
-  /** User's preferences */
   preferences: LabsPreferences;
-
-  /** Whether Labs drawer is open */
   isDrawerOpen: boolean;
-
-  /** Open the Labs drawer */
   openDrawer: () => void;
-
-  /** Close the Labs drawer */
   closeDrawer: () => void;
-
-  /** Toggle the Labs drawer open/closed */
   toggleDrawer: () => void;
-
-  /** Toggle a feature on/off */
   toggleFeature: (featureId: FeatureId) => void;
-
-  /** Enable a specific feature */
   enableFeature: (featureId: FeatureId) => void;
-
-  /** Disable a specific feature */
   disableFeature: (featureId: FeatureId) => void;
-
-  /** Check if a feature is enabled */
   isFeatureEnabled: (featureId: FeatureId) => boolean;
-
-  /** Get count of enabled experimental features */
   getEnabledCount: () => number;
-
-  /** Sync preferences from another tab (via storage event) */
   syncFromStorage: (prefs: LabsPreferences) => void;
 }
 
@@ -121,7 +85,6 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     savePreferences(newPrefs);
     set({ preferences: newPrefs });
 
-    // Track analytics
     trackEvent('labs_feature_toggle', {
       feature_id: featureId,
       enabled: newEnabled,
@@ -192,10 +155,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
       ([id, enabled]) => {
         if (!enabled) return false;
         const feature = getFeature(id);
-        // Only count experimental/preview features (not graduated)
-        return (
-          feature?.status === 'experimental' || feature?.status === 'preview'
-        );
+        return feature?.status === 'experimental' || feature?.status === 'preview';
       }
     ).length;
   },

@@ -1,9 +1,3 @@
-/**
- * Graduated Section
- *
- * Collapsible section showing features that have graduated to general availability.
- */
-
 import { useState } from 'react';
 import type { FeatureFlag } from '../../labs/types';
 

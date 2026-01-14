@@ -1,16 +1,5 @@
-/**
- * Labs Feature Registry
- *
- * This module contains the registry of all experimental features.
- * Add new features here to make them available in the Labs UI.
- */
-
 import type { FeatureFlag } from "./types"
 
-/**
- * Registry of all experimental features.
- * Add new features here to make them available in Labs.
- */
 export const FEATURE_FLAGS = [
   {
     id: "collaborative_editing",
@@ -36,43 +25,25 @@ export const FEATURE_FLAGS = [
   },
 ] as const satisfies readonly FeatureFlag[]
 
-/**
- * Type-safe feature IDs derived from the registry.
- */
 export type FeatureId = (typeof FEATURE_FLAGS)[number]["id"]
 
-/**
- * Get a feature by ID with type safety.
- */
 export function getFeature(id: string): FeatureFlag | undefined {
   return FEATURE_FLAGS.find((f) => f.id === id)
 }
 
-/**
- * Get all active (non-deprecated) features.
- */
 export function getActiveFeatures(): FeatureFlag[] {
-  // Cast to FeatureFlag[] to allow comparison with all status types
   return (FEATURE_FLAGS as readonly FeatureFlag[]).filter(
     (f) => f.status !== "deprecated"
   )
 }
 
-/**
- * Get graduated features (for "What's New" display).
- */
 export function getGraduatedFeatures(): FeatureFlag[] {
-  // Cast to FeatureFlag[] to allow comparison with all status types
   return (FEATURE_FLAGS as readonly FeatureFlag[]).filter(
     (f) => f.status === "graduated"
   )
 }
 
-/**
- * Get experimental and preview features (toggleable).
- */
 export function getToggleableFeatures(): FeatureFlag[] {
-  // Cast to FeatureFlag[] to allow comparison with all status types
   return (FEATURE_FLAGS as readonly FeatureFlag[]).filter(
     (f) => f.status === "experimental" || f.status === "preview"
   )

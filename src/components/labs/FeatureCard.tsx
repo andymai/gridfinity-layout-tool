@@ -1,9 +1,3 @@
-/**
- * Feature Card
- *
- * Displays an individual Labs feature with toggle, description, and status.
- */
-
 import type { FeatureFlag } from '../../labs/types';
 import { FeatureStatusBadge } from './FeatureStatusBadge';
 
