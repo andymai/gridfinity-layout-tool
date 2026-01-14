@@ -10,7 +10,8 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/*.svg', 'icons/*.png'],
+      // Note: icons are included via workbox.globPatterns ('**/*.{png,svg}')
+      // Don't use includeAssets here as it causes duplicate precache entries
       manifest: {
         name: 'Gridfinity Layout Tool',
         short_name: 'Gridfinity',
@@ -40,6 +41,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Exclude manifest icons from glob - they're auto-added via manifest.icons
+        // This prevents duplicate precache entries
+        globIgnores: ['icons/icon-192.png', 'icons/icon-512.png'],
         // Prefix all cache names to prevent conflicts
         cacheId: 'gridfinity-v1',
         // Prevent accidentally precaching huge assets
