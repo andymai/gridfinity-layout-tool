@@ -380,6 +380,64 @@ export function loadLibrary(): LayoutLibrary | null {
 }
 
 /**
+ * Load the layout library index with Result-based error handling.
+ * Distinguishes between "not found" (no library saved yet) and "corrupted" (invalid data).
+ *
+ * @example
+ * ```ts
+ * const result = loadLibraryResult();
+ * match(result, {
+ *   ok: (library) => initializeStore(library),
+ *   err: (error) => {
+ *     if (error.code === 'STORAGE_NOT_FOUND') {
+ *       // First time user, create fresh library
+ *     } else if (error.code === 'STORAGE_CORRUPTED') {
+ *       // Offer recovery options
+ *     }
+ *   }
+ * });
+ * ```
+ */
+export function loadLibraryResult(): Result<LayoutLibrary, StorageError> {
+  try {
+    const parsed = backend.loadSyncGeneric<LayoutLibrary>(LIBRARY_STORAGE_KEY);
+
+    if (!parsed) {
+      return err(storageNotFound(LIBRARY_STORAGE_KEY));
+    }
+
+    // Basic validation
+    if (!parsed.version || !parsed.activeLayoutId || !Array.isArray(parsed.entries)) {
+      return err(storageCorrupted(LIBRARY_STORAGE_KEY, ['Invalid library format: missing required fields']));
+    }
+
+    // Validate each entry exists in storage (clean up orphaned entries)
+    const validEntries = parsed.entries.filter((entry: LayoutEntry) => {
+      const key = getLayoutStorageKey(entry.id);
+      try {
+        return backend.loadSync(key) !== null;
+      } catch {
+        return false;
+      }
+    });
+
+    // If we lost some entries, update the library
+    if (validEntries.length < parsed.entries.length) {
+      parsed.entries = validEntries;
+
+      // If active layout was removed, switch to first available
+      if (!validEntries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
+        parsed.activeLayoutId = validEntries[0]?.id || '';
+      }
+    }
+
+    return ok(parsed);
+  } catch (error) {
+    return err(storageUnavailable('localStorage', error));
+  }
+}
+
+/**
  * Compute preview data from a layout.
  * Includes binMap for thumbnail rendering (top-down view of all bins).
  */
@@ -453,6 +511,78 @@ export function migrateFromLegacyStorage(): LayoutLibrary | null {
   backend.deleteSync(LEGACY_STORAGE_KEY);
 
   return library;
+}
+
+/**
+ * Migrate from legacy single-layout storage with Result-based error handling.
+ * Returns Ok with the migrated library, or Err if migration fails.
+ * Returns Ok(undefined) if no legacy layout exists (nothing to migrate).
+ *
+ * @example
+ * ```ts
+ * const result = migrateFromLegacyStorageResult();
+ * match(result, {
+ *   ok: (library) => library ? initializeWithLibrary(library) : createFresh(),
+ *   err: (error) => {
+ *     if (error.code === 'STORAGE_CORRUPTED') {
+ *       console.warn('Legacy layout corrupted, starting fresh');
+ *     } else {
+ *       console.error('Migration failed:', getUserMessage(error));
+ *     }
+ *   }
+ * });
+ * ```
+ */
+export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, StorageError> {
+  // Try to load legacy layout
+  let legacyData: Layout | null;
+  try {
+    const data = backend.loadSync(LEGACY_STORAGE_KEY);
+    if (!data) return ok(null); // No legacy layout exists
+
+    const migrated = migrateLayout(data as unknown as Record<string, unknown>);
+    const validation = validateImport(migrated);
+
+    if (!validation.valid) {
+      return err(storageCorrupted(LEGACY_STORAGE_KEY, validation.errors));
+    }
+
+    legacyData = migrated as unknown as Layout;
+  } catch (error) {
+    return err(storageUnavailable('localStorage', error));
+  }
+
+  // Create new library from legacy layout
+  const layoutId = generateUUID();
+  const now = Date.now();
+
+  const library: LayoutLibrary = {
+    version: '1.0',
+    activeLayoutId: layoutId,
+    settings: {},
+    entries: [{
+      id: layoutId,
+      name: legacyData.name || 'Untitled layout',
+      createdAt: now,
+      modifiedAt: now,
+      preview: computeLayoutPreview(legacyData),
+    }],
+  };
+
+  // Save layout and library
+  try {
+    saveLayoutSync(layoutId, legacyData);
+    saveLibrary(library);
+    backend.deleteSync(LEGACY_STORAGE_KEY);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('quota') || message.includes('QuotaExceeded')) {
+      return err(storageQuotaExceeded(undefined, undefined, error));
+    }
+    return err(storageUnavailable('localStorage', error));
+  }
+
+  return ok(library);
 }
 
 /**
