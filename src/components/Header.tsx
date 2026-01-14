@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '../store';
-import { useResponsive } from '../hooks';
+import { useResponsive, useFeatureFlag } from '../hooks';
 import { CONSTRAINTS } from '../constants';
 import { LayoutManagerModal } from './modals/LayoutManagerModal';
 import { PrintModal } from './modals/PrintModal';
@@ -14,6 +14,7 @@ interface HeaderProps {
 
 export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   const { isTablet } = useResponsive();
+  const isCollaborationEnabled = useFeatureFlag('collaborative_editing');
 
   const { layout, setName } = useLayoutStore(
     useShallow((state) => ({
@@ -137,6 +138,20 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             </svg>
             <span className="hidden sm:inline">Half-Bin Mode</span>
             <span className="sm:hidden">½-bin</span>
+          </div>
+        )}
+
+        {/* Collaboration mode indicator badge */}
+        {isCollaborationEnabled && (
+          <div
+            className="px-2 py-1 text-xs font-medium rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center gap-1.5"
+            title="Collaborative editing is enabled (experimental)"
+          >
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span className="hidden sm:inline">Collaboration</span>
+            <span className="sm:hidden">Collab</span>
           </div>
         )}
 

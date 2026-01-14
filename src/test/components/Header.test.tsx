@@ -11,9 +11,10 @@ vi.mock('../../components/modals/LayoutManagerModal', () => ({
   ),
 }));
 
-// Mock useResponsive
+// Mock hooks
 vi.mock('../../hooks', () => ({
   useResponsive: () => ({ isTablet: false, isMobile: false }),
+  useFeatureFlag: () => false,
 }));
 
 describe('Header', () => {

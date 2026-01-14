@@ -109,9 +109,10 @@ describe('Labs Feature Registry', () => {
     });
 
     it('marks coming soon features correctly', () => {
-      // Both current features should be coming soon
+      // Only layout_to_print is coming soon, collaborative_editing is now active
       const comingSoon = FEATURE_FLAGS.filter((f) => f.comingSoon);
-      expect(comingSoon.length).toBe(2);
+      expect(comingSoon.length).toBe(1);
+      expect(comingSoon[0].id).toBe('layout_to_print');
     });
   });
 });
