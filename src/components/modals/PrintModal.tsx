@@ -168,14 +168,13 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
   const noLayersSelected = selectedLayerIds.length === 0;
 
   // Always render the print portal so Cmd+P works even when modal is closed
-  // Use same width as preview so they match exactly
+  // Don't pass availableWidth - let PrintLayout use full page width based on orientation
   const printPortal = createPortal(
     <div className="print-portal hidden">
       <PrintLayout
         layout={layout}
         selectedLayerIds={selectedLayerIds}
         settings={printViewSettings}
-        availableWidth={previewWidth}
       />
     </div>,
     document.body
