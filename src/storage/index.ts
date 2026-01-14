@@ -54,6 +54,7 @@ export {
 export {
   exportLayoutJSON,
   importLayoutJSON,
+  importLayoutResult,
   exportPrintListTSV,
 } from './ShareService';
 
@@ -61,6 +62,7 @@ export {
 export {
   encodeLayoutForURL,
   decodeLayoutFromURL,
+  decodeLayoutResult,
   generateShareableURL,
   getSharedLayoutFromURL,
   clearSharedLayoutFromURL,
