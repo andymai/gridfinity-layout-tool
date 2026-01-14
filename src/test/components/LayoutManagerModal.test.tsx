@@ -13,6 +13,7 @@ vi.mock('../../utils/storage', () => ({
   saveLayoutById: vi.fn(),
   saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   loadLayoutById: vi.fn(),
+  loadLayoutByIdAsync: vi.fn(),
   deleteLayoutById: vi.fn(),
   deleteLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   saveLibrary: vi.fn(),
@@ -24,6 +25,7 @@ vi.mock('../../utils/storage', () => ({
     layerCount: 1,
   })),
   getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
+  downloadLayoutAsFile: vi.fn(),
 }));
 
 // Mock validation
@@ -195,7 +197,7 @@ describe('LayoutManagerModal Accessibility', () => {
     });
 
     it('Enter key activates focused layout', async () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(createDefaultLayout());
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(createDefaultLayout());
 
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
@@ -387,7 +389,7 @@ describe('LayoutManagerModal Accessibility', () => {
 
   describe('layout actions', () => {
     it('switches layout when clicking a different layout', async () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(createDefaultLayout());
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(createDefaultLayout());
 
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 

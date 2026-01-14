@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import type { LayoutEntry, Layout } from '../../../types';
 import { LayoutListItem } from './LayoutListItem';
 import { useLayoutStore } from '../../../store/layout';
-import { loadLayoutById, downloadLayoutAsFile } from '../../../utils/storage';
+import { loadLayoutByIdAsync, downloadLayoutAsFile } from '../../../utils/storage';
 import { useUIStore } from '../../../store/ui';
 
 /** Threshold for showing search bar */
@@ -87,16 +87,16 @@ export function LayoutList({
   );
 
   const getLayoutData = useCallback(
-    (id: string): Layout | null => {
-      // For active layout, use current state; otherwise load from storage
-      return id === activeLayoutId ? currentLayout : loadLayoutById(id);
+    async (id: string): Promise<Layout | null> => {
+      // For active layout, use current state; otherwise load from IndexedDB
+      return id === activeLayoutId ? currentLayout : loadLayoutByIdAsync(id);
     },
     [activeLayoutId, currentLayout]
   );
 
   const handleDownload = useCallback(
-    (entry: LayoutEntry) => {
-      const layout = getLayoutData(entry.id);
+    async (entry: LayoutEntry) => {
+      const layout = await getLayoutData(entry.id);
       if (layout) {
         downloadLayoutAsFile(layout, `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`);
         announceToScreenReader('Layout downloaded');

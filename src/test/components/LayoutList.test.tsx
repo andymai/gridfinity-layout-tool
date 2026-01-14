@@ -7,7 +7,7 @@ import type { LayoutEntry } from '../../types';
 
 // Mock storage
 vi.mock('../../utils/storage', () => ({
-  loadLayoutById: vi.fn(() => ({
+  loadLayoutByIdAsync: vi.fn(() => Promise.resolve({
     id: 'test-layout',
     name: 'Test Layout',
     drawer: { width: 10, depth: 8, height: 12 },
@@ -412,7 +412,10 @@ describe('LayoutList', () => {
       const downloadButtons = screen.getAllByTestId('download-btn');
       fireEvent.click(downloadButtons[0]);
 
-      expect(downloadLayoutAsFile).toHaveBeenCalled();
+      // Wait for async handleDownload to complete
+      await vi.waitFor(() => {
+        expect(downloadLayoutAsFile).toHaveBeenCalled();
+      });
       expect(announceToScreenReader).toHaveBeenCalledWith('Layout downloaded');
     });
   });

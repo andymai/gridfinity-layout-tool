@@ -14,6 +14,7 @@ vi.mock('../../utils/storage', () => ({
   saveLayoutById: vi.fn(),
   saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   loadLayoutById: vi.fn(),
+  loadLayoutByIdAsync: vi.fn(),
   deleteLayoutById: vi.fn(),
   deleteLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   saveLibrary: vi.fn(),
@@ -25,6 +26,9 @@ vi.mock('../../utils/storage', () => ({
     layerCount: 1,
   })),
   getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
+  generateShareableURL: vi.fn(() => 'https://example.com/share'),
+  copyToClipboard: vi.fn().mockResolvedValue(true),
+  downloadLayoutAsFile: vi.fn(),
 }));
 
 // Mock validation
@@ -126,7 +130,7 @@ describe('MobileLayoutsPanel', () => {
 
   describe('layout selection', () => {
     it('switches to selected layout', async () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(createDefaultLayout());
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(createDefaultLayout());
 
       render(<MobileLayoutsPanel />);
 
@@ -141,7 +145,7 @@ describe('MobileLayoutsPanel', () => {
     });
 
     it('closes panel after switching', async () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(createDefaultLayout());
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(createDefaultLayout());
 
       render(<MobileLayoutsPanel />);
 
@@ -205,7 +209,7 @@ describe('MobileLayoutsPanel', () => {
     });
 
     it('duplicates layout when clicking visible duplicate button', async () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(createDefaultLayout());
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(createDefaultLayout());
       const entriesBefore = useLibraryStore.getState().library.entries.length;
 
       render(<MobileLayoutsPanel />);

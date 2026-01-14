@@ -4,7 +4,7 @@ import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useToastS
 import type { Layout, OperationResult, LayoutPreview } from '../types';
 import {
   saveLayoutByIdAsync,
-  loadLayoutById,
+  loadLayoutByIdAsync,
   deleteLayoutByIdAsync,
   saveLibrary,
   computeLayoutPreview,
@@ -119,8 +119,8 @@ export function useLayoutSwitcher() {
         });
       }
 
-      // 5. Load target layout (sync from localStorage for fast switching)
-      const targetLayout = loadLayoutById(targetId);
+      // 5. Load target layout from IndexedDB (with localStorage fallback)
+      const targetLayout = await loadLayoutByIdAsync(targetId);
       if (!targetLayout) {
         return { success: false, error: 'Failed to load layout data' };
       }
@@ -292,8 +292,8 @@ export function useLayoutSwitcher() {
       return { success: false, error: 'Layout not found' };
     }
 
-    // Load the source layout
-    const sourceLayout = loadLayoutById(id);
+    // Load the source layout from IndexedDB (with localStorage fallback)
+    const sourceLayout = await loadLayoutByIdAsync(id);
     if (!sourceLayout) {
       return { success: false, error: 'Failed to load layout data' };
     }
