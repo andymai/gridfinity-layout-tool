@@ -9,7 +9,8 @@ import {
   getCloudShareIdFromURL,
   clearCloudShareFromURL,
 } from '../storage';
-import { fetchShare, getErrorMessage } from '../api/share';
+import { fetchShareResult } from '../api/share';
+import { isOk, getUserMessage } from '../result';
 import type { Layout } from '../types';
 
 // Check for shared layout once at module load time (URL-encoded shares)
@@ -107,21 +108,21 @@ export function SharedLayoutImporter() {
     const loadCloudShare = async () => {
       setIsLoading(true);
 
-      const result = await fetchShare(initialCloudShareId);
+      const result = await fetchShareResult(initialCloudShareId);
 
       // Prevent state updates if component unmounted during fetch
       if (!isMounted) return;
 
       setIsLoading(false);
 
-      if (!result.success) {
+      if (!isOk(result)) {
         clearCloudShareFromURL();
-        const message = getErrorMessage(result.error);
+        const message = getUserMessage(result.error);
         addToast(`Failed to load shared layout: ${message}`, 'error');
         return;
       }
 
-      loadLayoutPreview(result.data.layout, result.data.metadata.authorName);
+      loadLayoutPreview(result.value.layout, result.value.metadata.authorName);
       clearCloudShareFromURL();
     };
 

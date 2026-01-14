@@ -8,6 +8,7 @@ import { createDefaultLayout } from '../../constants';
 import * as shareApi from '../../api/share';
 import * as storage from '../../storage';
 import type { LayoutLibrary, CloudShareInfo } from '../../types';
+import { ok, err, apiRateLimited, apiNotFound } from '../../result';
 
 // Mock the share API module
 vi.mock('../../api/share', () => ({
@@ -15,6 +16,12 @@ vi.mock('../../api/share', () => ({
   updateShare: vi.fn(),
   deleteShare: vi.fn(),
   getErrorMessage: vi.fn((error) => error.error || 'Unknown error'),
+  // Result-based API functions
+  createShareResult: vi.fn(),
+  updateShareResult: vi.fn(),
+  deleteShareResult: vi.fn(),
+  fetchShareResult: vi.fn(),
+  reportShareResult: vi.fn(),
 }));
 
 // Mock clipboard
@@ -132,17 +139,14 @@ describe('useCloudShare', () => {
 
   describe('share', () => {
     it('creates share successfully', async () => {
-      const mockResponse = {
-        success: true as const,
-        data: {
-          id: 'new-share-id',
-          url: 'https://example.com/s/new-share-id',
-          deleteToken: 'new-delete-token',
-          expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
-        },
+      const mockData = {
+        id: 'new-share-id',
+        url: 'https://example.com/s/new-share-id',
+        deleteToken: 'new-delete-token',
+        expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
       };
 
-      vi.mocked(shareApi.createShare).mockResolvedValue(mockResponse);
+      vi.mocked(shareApi.createShareResult).mockResolvedValue(ok(mockData));
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -165,17 +169,9 @@ describe('useCloudShare', () => {
     });
 
     it('handles share failure', async () => {
-      const mockError = {
-        success: false as const,
-        error: {
-          error: 'Rate limited',
-          code: 'RATE_LIMITED' as const,
-          retryAfter: 60,
-        },
-      };
-
-      vi.mocked(shareApi.createShare).mockResolvedValue(mockError);
-      vi.mocked(shareApi.getErrorMessage).mockReturnValue('Too many requests. Try again in 1 minute.');
+      vi.mocked(shareApi.createShareResult).mockResolvedValue(
+        err(apiRateLimited(60))
+      );
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -187,7 +183,7 @@ describe('useCloudShare', () => {
       expect(success).toBe(false);
       expect(result.current.status).toBe('error');
       expect(result.current.error).not.toBeNull();
-      expect(result.current.error?.code).toBe('RATE_LIMITED');
+      expect(result.current.error?.code).toBe('API_RATE_LIMITED');
       expect(mockAnnounce).toHaveBeenCalledWith(
         expect.stringContaining('failed')
       );
@@ -215,7 +211,7 @@ describe('useCloudShare', () => {
         resolvePromise = resolve;
       });
 
-      vi.mocked(shareApi.createShare).mockReturnValue(pendingPromise as Promise<typeof shareApi.ShareResult<typeof shareApi.ShareResponse>>);
+      vi.mocked(shareApi.createShareResult).mockReturnValue(pendingPromise as ReturnType<typeof shareApi.createShareResult>);
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -226,15 +222,12 @@ describe('useCloudShare', () => {
       expect(result.current.status).toBe('sharing');
 
       // Resolve to prevent hanging
-      resolvePromise!({
-        success: true,
-        data: {
-          id: 'id',
-          url: 'url',
-          deleteToken: 'token',
-          expiresAt: new Date().toISOString(),
-        },
-      });
+      resolvePromise!(ok({
+        id: 'id',
+        url: 'url',
+        deleteToken: 'token',
+        expiresAt: new Date().toISOString(),
+      }));
 
       await waitFor(() => {
         expect(result.current.status).toBe('success');
@@ -255,16 +248,13 @@ describe('useCloudShare', () => {
         library: createTestLibrary(existingShare),
       });
 
-      const mockResponse = {
-        success: true as const,
-        data: {
-          id: 'existing-id',
-          url: 'https://example.com/s/existing-id',
-          expiresAt: new Date(Date.now() + 60 * 86400000).toISOString(),
-        },
+      const mockData = {
+        id: 'existing-id',
+        url: 'https://example.com/s/existing-id',
+        expiresAt: new Date(Date.now() + 60 * 86400000).toISOString(),
       };
 
-      vi.mocked(shareApi.updateShare).mockResolvedValue(mockResponse);
+      vi.mocked(shareApi.updateShareResult).mockResolvedValue(ok(mockData));
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -275,7 +265,7 @@ describe('useCloudShare', () => {
 
       expect(success).toBe(true);
       expect(result.current.status).toBe('success');
-      expect(shareApi.updateShare).toHaveBeenCalledWith(
+      expect(shareApi.updateShareResult).toHaveBeenCalledWith(
         'existing-id',
         'existing-token',
         expect.anything(),
@@ -307,10 +297,9 @@ describe('useCloudShare', () => {
         library: createTestLibrary(existingShare),
       });
 
-      vi.mocked(shareApi.updateShare).mockResolvedValue({
-        success: false,
-        error: { error: 'Not found', code: 'NOT_FOUND' },
-      });
+      vi.mocked(shareApi.updateShareResult).mockResolvedValue(
+        err(apiNotFound('deleted-on-server'))
+      );
 
       const clearCloudShareSpy = vi.fn();
       useLibraryStore.setState({ clearCloudShare: clearCloudShareSpy });
@@ -338,10 +327,9 @@ describe('useCloudShare', () => {
         library: createTestLibrary(existingShare),
       });
 
-      vi.mocked(shareApi.deleteShare).mockResolvedValue({
-        success: true,
-        data: { success: true, message: 'Deleted' },
-      });
+      vi.mocked(shareApi.deleteShareResult).mockResolvedValue(
+        ok({ success: true as const, message: 'Deleted' })
+      );
 
       const clearCloudShareSpy = vi.fn();
       useLibraryStore.setState({ clearCloudShare: clearCloudShareSpy });
@@ -384,10 +372,9 @@ describe('useCloudShare', () => {
         library: createTestLibrary(existingShare),
       });
 
-      vi.mocked(shareApi.deleteShare).mockResolvedValue({
-        success: false,
-        error: { error: 'Not found', code: 'NOT_FOUND' },
-      });
+      vi.mocked(shareApi.deleteShareResult).mockResolvedValue(
+        err(apiNotFound('already-deleted'))
+      );
 
       const clearCloudShareSpy = vi.fn();
       useLibraryStore.setState({ clearCloudShare: clearCloudShareSpy });
@@ -407,17 +394,14 @@ describe('useCloudShare', () => {
 
   describe('copyUrl', () => {
     it('copies URL from result', async () => {
-      const mockResponse = {
-        success: true as const,
-        data: {
-          id: 'share-id',
-          url: 'https://example.com/s/share-id',
-          deleteToken: 'token',
-          expiresAt: new Date().toISOString(),
-        },
+      const mockData = {
+        id: 'share-id',
+        url: 'https://example.com/s/share-id',
+        deleteToken: 'token',
+        expiresAt: new Date().toISOString(),
       };
 
-      vi.mocked(shareApi.createShare).mockResolvedValue(mockResponse);
+      vi.mocked(shareApi.createShareResult).mockResolvedValue(ok(mockData));
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -520,10 +504,10 @@ describe('useCloudShare', () => {
 
   describe('reset', () => {
     it('resets state to idle', async () => {
-      vi.mocked(shareApi.createShare).mockResolvedValue({
-        success: false,
-        error: { error: 'Failed', code: 'NETWORK_ERROR' },
-      });
+      const { apiNetworkError } = await import('../../result');
+      vi.mocked(shareApi.createShareResult).mockResolvedValue(
+        err(apiNetworkError())
+      );
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -550,7 +534,7 @@ describe('useCloudShare', () => {
         resolvePromise = resolve;
       });
 
-      vi.mocked(shareApi.createShare).mockReturnValue(pendingPromise as Promise<typeof shareApi.ShareResult<typeof shareApi.ShareResponse>>);
+      vi.mocked(shareApi.createShareResult).mockReturnValue(pendingPromise as ReturnType<typeof shareApi.createShareResult>);
 
       const { result, unmount } = renderHook(() => useCloudShare());
 
@@ -562,15 +546,12 @@ describe('useCloudShare', () => {
       unmount();
 
       // Resolve after unmount
-      resolvePromise!({
-        success: true,
-        data: {
-          id: 'id',
-          url: 'url',
-          deleteToken: 'token',
-          expiresAt: new Date().toISOString(),
-        },
-      });
+      resolvePromise!(ok({
+        id: 'id',
+        url: 'url',
+        deleteToken: 'token',
+        expiresAt: new Date().toISOString(),
+      }));
 
       // Should not throw or cause issues
       await new Promise(resolve => setTimeout(resolve, 50));

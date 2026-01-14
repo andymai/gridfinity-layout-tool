@@ -263,6 +263,42 @@ export const ERROR_CATALOG: Record<string, ErrorCatalogEntry> = {
     severity: 'error',
   },
 
+  API_SIZE_LIMIT: {
+    code: 'API_SIZE_LIMIT',
+    defaultMessage: 'Layout size exceeds limit',
+    userMessage: 'Layout is too large (max 500KB). Try removing some bins.',
+    recoveryHint: 'Remove bins or simplify layout to reduce size',
+    retryable: false,
+    severity: 'error',
+  },
+
+  API_BIN_LIMIT: {
+    code: 'API_BIN_LIMIT',
+    defaultMessage: 'Bin count exceeds limit',
+    userMessage: 'Too many bins (max 2500). Remove some bins before sharing.',
+    recoveryHint: 'Delete unused bins to reduce count',
+    retryable: false,
+    severity: 'error',
+  },
+
+  API_EXPIRED: {
+    code: 'API_EXPIRED',
+    defaultMessage: 'Share has expired',
+    userMessage: 'Share not found or has expired',
+    recoveryHint: 'Request a new share link from the author',
+    retryable: false,
+    severity: 'error',
+  },
+
+  API_INVALID_EXPIRATION: {
+    code: 'API_INVALID_EXPIRATION',
+    defaultMessage: 'Invalid expiration period',
+    userMessage: 'Invalid expiration. Choose 30, 60, 90, or 365 days.',
+    recoveryHint: 'Select a valid expiration period',
+    retryable: false,
+    severity: 'error',
+  },
+
   // ===========================================================================
   // Unknown/Generic Errors
   // ===========================================================================
