@@ -131,13 +131,9 @@ export function useLayoutRouting() {
     navigateToLayout(hashLayoutId, false)
       .then((success) => {
         if (!success) {
-          // Layout not found - show friendly error
-          addToast(
-            'Layout not found. Use the Share button to share layouts with others.',
-            'info',
-            8000
-          );
-          // Update URL to current layout
+          // Layout not found - silently redirect to current layout.
+          // No toast needed: this commonly happens when users bookmark a layout
+          // and later delete it. The URL redirect is sufficient feedback.
           if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
             setLayoutHash(activeLayoutId, false);
           } else {
@@ -152,7 +148,6 @@ export function useLayoutRouting() {
     isLoaded,
     activeLayoutId,
     navigateToLayout,
-    addToast,
   ]);
 
   // Handle browser back/forward navigation

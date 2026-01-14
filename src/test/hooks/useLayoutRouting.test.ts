@@ -235,21 +235,22 @@ describe('useLayoutRouting', () => {
       expect(storage.loadLayoutByIdAsync).toHaveBeenCalledWith('layout-123');
     });
 
-    it('shows toast when URL layout not found', async () => {
+    it('silently redirects when URL layout not found', async () => {
       vi.mocked(url.parseLayoutIdFromHash).mockReturnValue('nonexistent');
       const addToastSpy = vi.fn();
       useToastStore.setState({ addToast: addToastSpy });
 
       renderHook(() => useLayoutRouting());
 
-      // navigateToLayout is async, so wait for the toast to be called
+      // navigateToLayout is async, so wait for URL redirect to happen
       await vi.waitFor(() => {
-        expect(addToastSpy).toHaveBeenCalledWith(
-          expect.stringContaining('not found'),
-          'info',
-          expect.any(Number)
-        );
+        // Should redirect to current active layout without showing a toast
+        // (bookmarked layouts that were deleted shouldn't show noisy notifications)
+        expect(url.setLayoutHash).toHaveBeenCalledWith('layout-123', false);
       });
+
+      // No toast should be shown for initial load of missing layout
+      expect(addToastSpy).not.toHaveBeenCalled();
     });
   });
 
