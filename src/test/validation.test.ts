@@ -1,7 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { canPlaceBin, validateImport, clamp, truncate, validateLayoutIntegrity, validateCustomProperties } from '../utils/validation';
+import {
+  canPlaceBin,
+  canPlaceBinResult,
+  validateImport,
+  validateImportResult,
+  clamp,
+  truncate,
+  validateLayoutIntegrity,
+  validateLayoutIntegrityResult,
+  validateCustomProperties,
+  validateCustomPropertiesResult,
+} from '../utils/validation';
 import { CONSTRAINTS } from '../constants';
 import type { Layout } from '../types';
+import { isOk, isErr } from '../result';
 
 const createTestLayout = (): Layout => ({
   version: '1.0',
@@ -618,5 +630,311 @@ describe('validateCustomProperties', () => {
     const maxValue = 'a'.repeat(CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH);
     const result = validateCustomProperties({ key: maxValue });
     expect(result.success).toBe(true);
+  });
+});
+
+// =============================================================================
+// Result-returning validation functions
+// =============================================================================
+
+describe('canPlaceBinResult', () => {
+  it('returns Ok for valid placement', () => {
+    const layout = createTestLayout();
+    const result = canPlaceBinResult(
+      { x: 0, y: 0, width: 2, depth: 2, height: 3 },
+      'layer1',
+      layout
+    );
+    expect(isOk(result)).toBe(true);
+  });
+
+  it('returns Err with VALIDATION_OUT_OF_BOUNDS for negative coordinates', () => {
+    const layout = createTestLayout();
+    const result = canPlaceBinResult(
+      { x: -1, y: 0, width: 2, depth: 2, height: 3 },
+      'layer1',
+      layout
+    );
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_OUT_OF_BOUNDS');
+      expect(result.error.kind).toBe('ValidationError');
+      if ('reason' in result.error) {
+        expect(result.error.reason).toBe('out_of_bounds');
+      }
+    }
+  });
+
+  it('returns Err with VALIDATION_OUT_OF_BOUNDS for exceeds_width', () => {
+    const layout = createTestLayout();
+    const result = canPlaceBinResult(
+      { x: 9, y: 0, width: 2, depth: 2, height: 3 },
+      'layer1',
+      layout
+    );
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_OUT_OF_BOUNDS');
+      if ('reason' in result.error) {
+        expect(result.error.reason).toBe('exceeds_width');
+      }
+    }
+  });
+
+  it('returns Err with VALIDATION_OUT_OF_BOUNDS for exceeds_depth', () => {
+    const layout = createTestLayout();
+    const result = canPlaceBinResult(
+      { x: 0, y: 9, width: 2, depth: 2, height: 3 },
+      'layer1',
+      layout
+    );
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_OUT_OF_BOUNDS');
+      if ('reason' in result.error) {
+        expect(result.error.reason).toBe('exceeds_depth');
+      }
+    }
+  });
+
+  it('returns Err with VALIDATION_INVALID_LAYER for nonexistent layer', () => {
+    const layout = createTestLayout();
+    const result = canPlaceBinResult(
+      { x: 0, y: 0, width: 2, depth: 2, height: 3 },
+      'nonexistent-layer',
+      layout
+    );
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_INVALID_LAYER');
+      if ('layerId' in result.error) {
+        expect(result.error.layerId).toBe('nonexistent-layer');
+      }
+    }
+  });
+
+  it('returns Err with VALIDATION_HEIGHT_EXCEEDED for height exceeding drawer', () => {
+    const layout = createTestLayout();
+    const result = canPlaceBinResult(
+      { x: 0, y: 0, width: 2, depth: 2, height: 20 },
+      'layer1',
+      layout
+    );
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_HEIGHT_EXCEEDED');
+    }
+  });
+
+  it('returns Err with VALIDATION_COLLISION with colliding bin IDs', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'existing-bin', layerId: 'layer1', x: 0, y: 0, width: 3, depth: 3, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    const result = canPlaceBinResult(
+      { x: 1, y: 1, width: 2, depth: 2, height: 3 },
+      'layer1',
+      layout
+    );
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_COLLISION');
+      if ('collidingBinIds' in result.error) {
+        expect(result.error.collidingBinIds).toContain('existing-bin');
+      }
+    }
+  });
+
+  it('returns Err with VALIDATION_BLOCKED_ZONE for blocked area', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      // Tall bin on layer 1 that protrudes into layer 2
+      { id: 'tall', layerId: 'layer1', x: 0, y: 0, width: 3, depth: 3, height: 6, category: 'cat1', label: '', notes: '' },
+    ];
+    const result = canPlaceBinResult(
+      { x: 1, y: 1, width: 2, depth: 2, height: 6 },
+      'layer2',
+      layout
+    );
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_BLOCKED_ZONE');
+    }
+  });
+
+  it('excludes specified bin from collision check', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'moving', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    const result = canPlaceBinResult(
+      { x: 1, y: 1, width: 2, depth: 2, height: 3 },
+      'layer1',
+      layout,
+      'moving'
+    );
+    expect(isOk(result)).toBe(true);
+  });
+
+  it('excludes set of bin IDs from collision check', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+      { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    const result = canPlaceBinResult(
+      { x: 1, y: 0, width: 2, depth: 2, height: 3 },
+      'layer1',
+      layout,
+      undefined,
+      new Set(['bin1', 'bin2'])
+    );
+    expect(isOk(result)).toBe(true);
+  });
+});
+
+describe('validateImportResult', () => {
+  it('returns Ok for valid layout data', () => {
+    const validLayout = {
+      version: '1.0',
+      name: 'Test Layout',
+      drawer: { width: 10, depth: 10, height: 12 },
+      layers: [{ id: 'l1', name: 'Layer 1', height: 3 }],
+      bins: [],
+      categories: [{ id: 'c1', name: 'Category 1', color: '#ff0000' }],
+    };
+    const result = validateImportResult(validLayout);
+    expect(isOk(result)).toBe(true);
+  });
+
+  it('returns Err with VALIDATION_IMPORT_FAILED for invalid data', () => {
+    const result = validateImportResult(null);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+      expect(result.error.kind).toBe('ValidationError');
+      if ('errors' in result.error) {
+        expect(result.error.errors.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('returns Err with detailed errors for multiple issues', () => {
+    const invalidLayout = {
+      version: '1.0',
+      // missing name
+      drawer: { width: 100, depth: -5, height: 12 }, // invalid dimensions
+      layers: [], // empty layers (violates min constraint)
+      bins: [],
+      categories: [],
+    };
+    const result = validateImportResult(invalidLayout);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result) && 'errors' in result.error) {
+      // Should have at least 1 error (missing name is caught first)
+      expect(result.error.errors.length).toBeGreaterThanOrEqual(1);
+    }
+  });
+});
+
+describe('validateLayoutIntegrityResult', () => {
+  it('returns Ok for valid layout', () => {
+    const layout = createTestLayout();
+    const result = validateLayoutIntegrityResult(layout);
+    expect(isOk(result)).toBe(true);
+  });
+
+  it('returns Err with VALIDATION_IMPORT_FAILED for missing layer reference', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'nonexistent', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+    ];
+    const result = validateLayoutIntegrityResult(layout);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+    }
+  });
+
+  it('returns Err with VALIDATION_IMPORT_FAILED for missing category reference', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'nonexistent', label: '', notes: '' },
+    ];
+    const result = validateLayoutIntegrityResult(layout);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+    }
+  });
+
+  it('returns Err with VALIDATION_IMPORT_FAILED for empty layers', () => {
+    const layout = createTestLayout();
+    layout.layers = [];
+    const result = validateLayoutIntegrityResult(layout);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+      if ('errors' in result.error) {
+        expect(result.error.errors.some(e => e.includes('no layers'))).toBe(true);
+      }
+    }
+  });
+
+  it('returns Err with VALIDATION_IMPORT_FAILED for empty categories', () => {
+    const layout = createTestLayout();
+    layout.categories = [];
+    const result = validateLayoutIntegrityResult(layout);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+      if ('errors' in result.error) {
+        expect(result.error.errors.some(e => e.includes('no categories'))).toBe(true);
+      }
+    }
+  });
+});
+
+describe('validateCustomPropertiesResult', () => {
+  it('returns Ok for valid custom properties', () => {
+    const result = validateCustomPropertiesResult({ key: 'value', another: 'prop' });
+    expect(isOk(result)).toBe(true);
+  });
+
+  it('returns Ok for empty properties', () => {
+    const result = validateCustomPropertiesResult({});
+    expect(isOk(result)).toBe(true);
+  });
+
+  it('returns Err with VALIDATION_IMPORT_FAILED for too many properties', () => {
+    const props: Record<string, string> = {};
+    for (let i = 0; i <= CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT; i++) {
+      props[`key${i}`] = 'value';
+    }
+    const result = validateCustomPropertiesResult(props);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+    }
+  });
+
+  it('returns Err with VALIDATION_IMPORT_FAILED for key exceeding max length', () => {
+    const longKey = 'a'.repeat(CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH + 1);
+    const result = validateCustomPropertiesResult({ [longKey]: 'value' });
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+    }
+  });
+
+  it('returns Err with VALIDATION_IMPORT_FAILED for reserved keys', () => {
+    const result = validateCustomPropertiesResult({ id: 'value' });
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+      if ('errors' in result.error) {
+        expect(result.error.errors[0]).toContain('reserved');
+      }
+    }
   });
 });

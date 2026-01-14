@@ -1,6 +1,17 @@
 import type { Bin, Layout, ValidationResult, Rect, OperationResult } from '../types';
 import { CONSTRAINTS, STAGING_ID, RESERVED_PROPERTY_KEYS } from '../constants';
 import { binsCollide, getLayerZStart, getBlockedZones, isInBlockedZone } from './collision';
+import type { Result, ValidationError } from '../result';
+import {
+  ok,
+  err,
+  validationOutOfBounds,
+  validationCollision,
+  validationInvalidLayer,
+  validationHeightExceeded,
+  validationBlockedZone,
+  validationImportFailed,
+} from '../result';
 
 // ============================================================================
 // Type Guards for Import Validation
@@ -181,6 +192,97 @@ export function canPlaceBin(
 }
 
 /**
+ * Validate if a bin can be placed at the given position.
+ * Returns a Result type with rich error information.
+ *
+ * @param rect - The rectangle to place (x, y, width, depth, height)
+ * @param layerId - The layer to place the bin on
+ * @param layout - The current layout state
+ * @param excludeBinId - Single bin ID to exclude from collision checks
+ * @param excludeBinIds - Set of bin IDs to exclude (for multi-select operations)
+ * @returns Result<void, ValidationError> with specific error type on failure
+ */
+export function canPlaceBinResult(
+  rect: Rect & { height: number; clearanceHeight?: number },
+  layerId: string,
+  layout: Layout,
+  excludeBinId?: string,
+  excludeBinIds?: Set<string>
+): Result<void, ValidationError> {
+  const { drawer, layers, bins } = layout;
+  const binData = { x: rect.x, y: rect.y, width: rect.width, depth: rect.depth };
+
+  // Bounds check
+  if (rect.x < 0 || rect.y < 0) {
+    return err(validationOutOfBounds('out_of_bounds', binData));
+  }
+  if (rect.x + rect.width > drawer.width) {
+    return err(validationOutOfBounds('exceeds_width', binData));
+  }
+  if (rect.y + rect.depth > drawer.depth) {
+    return err(validationOutOfBounds('exceeds_depth', binData));
+  }
+
+  const layer = layers.find(l => l.id === layerId);
+  if (!layer) {
+    return err(validationInvalidLayer(layerId));
+  }
+
+  // Height check
+  const zStart = getLayerZStart(layerId, layers);
+  const maxHeight = drawer.height - zStart;
+  if (rect.height > maxHeight) {
+    return err(validationHeightExceeded(rect.height, maxHeight));
+  }
+  if (rect.height < layer.height) {
+    // Bin must be at least as tall as its base layer
+    return err(validationHeightExceeded(rect.height, layer.height));
+  }
+
+  // Blocked zone check
+  const blockedZones = getBlockedZones(layerId, bins, layers);
+  for (let x = rect.x; x < rect.x + rect.width; x++) {
+    for (let y = rect.y; y < rect.y + rect.depth; y++) {
+      if (isInBlockedZone(x, y, blockedZones)) {
+        return err(validationBlockedZone());
+      }
+    }
+  }
+
+  // Collision check with other bins
+  const testBin: Bin = {
+    id: excludeBinId || '__test__',
+    layerId,
+    x: rect.x,
+    y: rect.y,
+    width: rect.width,
+    depth: rect.depth,
+    height: rect.height,
+    clearanceHeight: rect.clearanceHeight,
+    category: '',
+    label: '',
+    notes: '',
+  };
+
+  const collidingBinIds: string[] = [];
+  for (const other of bins) {
+    // Skip excluded bins (single ID or set of IDs)
+    if (other.id === excludeBinId) continue;
+    if (excludeBinIds?.has(other.id)) continue;
+    if (other.layerId === STAGING_ID) continue;
+    if (binsCollide(testBin, other, layers)) {
+      collidingBinIds.push(other.id);
+    }
+  }
+
+  if (collidingBinIds.length > 0) {
+    return err(validationCollision(collidingBinIds));
+  }
+
+  return ok(undefined);
+}
+
+/**
  * Validate an imported layout against the schema and constraints.
  */
 export function validateImport(data: unknown): { valid: boolean; errors: string[] } {
@@ -289,6 +391,21 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
 }
 
 /**
+ * Validate an imported layout against the schema and constraints.
+ * Returns a Result type with structured error information.
+ *
+ * @param data - Unknown data to validate as a layout
+ * @returns Result<void, ValidationError> with VALIDATION_IMPORT_FAILED on failure
+ */
+export function validateImportResult(data: unknown): Result<void, ValidationError> {
+  const result = validateImport(data);
+  if (result.valid) {
+    return ok(undefined);
+  }
+  return err(validationImportFailed(result.errors));
+}
+
+/**
  * Validate layout integrity for switching.
  * Checks that all bins reference valid layers and categories.
  * This is a lighter check than full import validation, used before switching layouts.
@@ -317,6 +434,21 @@ export function validateLayoutIntegrity(layout: Layout): { valid: boolean; error
   }
 
   return { valid: true };
+}
+
+/**
+ * Validate layout integrity for switching.
+ * Returns a Result type with structured error information.
+ *
+ * @param layout - Layout to validate
+ * @returns Result<void, ValidationError> with VALIDATION_IMPORT_FAILED on failure
+ */
+export function validateLayoutIntegrityResult(layout: Layout): Result<void, ValidationError> {
+  const result = validateLayoutIntegrity(layout);
+  if (result.valid) {
+    return ok(undefined);
+  }
+  return err(validationImportFailed([result.error || 'Unknown validation error']));
 }
 
 /**
@@ -390,6 +522,21 @@ export function validateCustomProperties(props: Record<string, string>): Operati
   }
 
   return { success: true };
+}
+
+/**
+ * Validate custom properties for a bin.
+ * Returns a Result type with structured error information.
+ *
+ * @param props - Custom properties object to validate
+ * @returns Result<void, ValidationError> with VALIDATION_IMPORT_FAILED on failure
+ */
+export function validateCustomPropertiesResult(props: Record<string, string>): Result<void, ValidationError> {
+  const result = validateCustomProperties(props);
+  if (result.success) {
+    return ok(undefined);
+  }
+  return err(validationImportFailed([result.error ?? 'Invalid custom properties']));
 }
 
 /**
