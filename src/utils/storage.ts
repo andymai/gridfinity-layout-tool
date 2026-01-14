@@ -638,6 +638,10 @@ export async function copyToClipboard(text: string): Promise<boolean> {
  * Initialize the layout library system.
  * Handles migration from legacy storage if needed.
  * Returns the library and the active layout.
+ *
+ * Note: This function is synchronous for fast startup. It reads/writes to
+ * localStorage for immediate availability. New layouts are also saved to
+ * IndexedDB asynchronously for future-proofing.
  */
 export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayout: Layout } {
   // Try to load existing library
@@ -684,8 +688,14 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
       }],
     };
 
+    // Save to localStorage (sync for immediate availability)
     saveLayoutById(layoutId, defaultLayout);
     saveLibrary(library);
+
+    // Also save to IndexedDB (async, fire-and-forget)
+    saveLayoutByIdAsync(layoutId, defaultLayout).catch(() => {
+      // Ignore errors - localStorage save is sufficient for now
+    });
   }
 
   // Load the active layout
@@ -733,8 +743,14 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
         preview: computeLayoutPreview(activeLayout),
       }];
 
+      // Save to localStorage (sync)
       saveLayoutById(layoutId, activeLayout);
       saveLibrary(library);
+
+      // Also save to IndexedDB (async, fire-and-forget)
+      saveLayoutByIdAsync(layoutId, activeLayout).catch(() => {
+        // Ignore errors - localStorage save is sufficient for now
+      });
     }
   }
 
