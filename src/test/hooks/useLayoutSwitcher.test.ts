@@ -268,14 +268,15 @@ describe('useLayoutSwitcher', () => {
     it('creates new layout and switches to it', async () => {
       const { result } = renderHook(() => useLayoutSwitcher());
 
-      let createResult: Awaited<ReturnType<typeof result.current.createNewLayout>>;
+      let createResult: Awaited<ReturnType<typeof result.current.createNewLayout>> | undefined;
       await act(async () => {
         createResult = await result.current.createNewLayout('My New Layout');
       });
 
-      expect(isOk(createResult!)).toBe(true);
-      if (isOk(createResult!)) {
-        expect(createResult!.value).toBeDefined();
+      expect(createResult).toBeDefined();
+      expect(isOk(createResult)).toBe(true);
+      if (createResult && isOk(createResult)) {
+        expect(createResult.value).toBeDefined();
       }
       expect(useLayoutStore.getState().layout.name).toBe('My New Layout');
     });

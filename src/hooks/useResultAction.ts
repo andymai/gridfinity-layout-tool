@@ -73,9 +73,17 @@ export function useResultAction() {
       } else {
         if (!options?.silent) {
           const message = getUserMessage(result.error);
-          // Map catalog severity to toast type (ToastType only supports success/error/info)
+          // Map catalog severity to toast type
+          // Severity: 'info' | 'warning' | 'error' | 'critical'
+          // ToastType: 'success' | 'error' | 'info'
           const severity = getSeverity(result.error.code);
-          const toastType: ToastType = severity === 'warning' ? 'error' : severity;
+          const severityToToast: Record<string, ToastType> = {
+            info: 'info',
+            warning: 'error',
+            error: 'error',
+            critical: 'error',
+          };
+          const toastType = severityToToast[severity] ?? 'error';
           addToast(message, toastType);
         }
         options?.onError?.(result.error);

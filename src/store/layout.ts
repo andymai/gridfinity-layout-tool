@@ -32,7 +32,7 @@ interface LayoutState {
   addBin: (bin: Omit<Bin, 'id'>) => Result<string, ValidationError>;
   updateBin: (id: string, updates: Partial<Bin>) => Result<void, LayoutError>;
   deleteBin: (id: string) => Result<void, LayoutError>;
-  duplicateBin: (id: string) => Result<string, ValidationError>;
+  duplicateBin: (id: string) => Result<string, ValidationError | LayoutError>;
   moveBinToStaging: (id: string) => Result<void, LayoutError>;
   moveBinFromStaging: (id: string, layerId: string, x: number, y: number) => Result<void, ValidationError>;
 
@@ -151,7 +151,7 @@ export const useLayoutStore = create<LayoutState>()(
       const { layout, addBin } = get();
       const bin = layout.bins.find(b => b.id === id);
       if (!bin) {
-        return err(validationOutOfBounds('out_of_bounds', { x: 0, y: 0, width: 0, depth: 0 }));
+        return err(layoutInvalidOperation('duplicateBin', `Bin ${id} not found`));
       }
 
       if (bin.layerId === STAGING_ID) {
