@@ -11,8 +11,8 @@
 
 | Document | Purpose | Link |
 |----------|---------|------|
-| **Product Requirements (PRD)** | User stories, acceptance criteria, success metrics | [DRAWER_TO_PRINT_PRD.md](./DRAWER_TO_PRINT_PRD.md) |
-| **System Architecture** | Technical implementation, data models, APIs | [DRAWER_TO_PRINT_ARCHITECTURE.md](./DRAWER_TO_PRINT_ARCHITECTURE.md) |
+| **Product Requirements (PRD)** | User stories, acceptance criteria, success metrics | [PRD.md](./PRD.md) |
+| **System Architecture** | Technical implementation, data models, APIs | [ARCHITECTURE.md](./ARCHITECTURE.md) |
 | **Design Requirements (DRD)** | This document - UI/UX specifications | — |
 
 ### Document Purpose
@@ -152,15 +152,15 @@ Additional tokens needed for generation features:
 
 | Component | Purpose | PRD Reference | Architecture Reference |
 |-----------|---------|---------------|----------------------|
-| BinStylePicker | Select bin generation style | [US-1.2](./DRAWER_TO_PRINT_PRD.md#epic-1-basic-stl-generation) | [BinParams.style](./DRAWER_TO_PRINT_ARCHITECTURE.md#1-generation-engine) |
-| BinParameterPanel | Configure dividers, scoops, labels | [US-3.1 - US-3.4](./DRAWER_TO_PRINT_PRD.md#epic-3-bin-customization) | [BinParams](./DRAWER_TO_PRINT_ARCHITECTURE.md#1-generation-engine) |
-| ModelLibraryPanel | Browse templates and custom models | [US-6.1](./DRAWER_TO_PRINT_PRD.md#epic-6-model-library) | [ModelLibraryState](./DRAWER_TO_PRINT_ARCHITECTURE.md#2-model-library-store) |
-| CustomModelUploader | Drag-drop STL upload | [US-4.1](./DRAWER_TO_PRINT_PRD.md#epic-4-custom-model-import) | [CustomModelService](./DRAWER_TO_PRINT_ARCHITECTURE.md#3-custom-model-service) |
-| GridCompatibilityCard | Show upload validation results | [US-4.2](./DRAWER_TO_PRINT_PRD.md#epic-4-custom-model-import) | [GridCompatibilityResult](./DRAWER_TO_PRINT_ARCHITECTURE.md#3-custom-model-service) |
-| ExportModal | Configure and execute export | [US-5.1 - US-5.5](./DRAWER_TO_PRINT_PRD.md#epic-5-full-export-package) | [ExportOptions](./DRAWER_TO_PRINT_ARCHITECTURE.md#4-export-pipeline) |
-| GenerationProgress | Show STL generation progress | [US-1.3, US-5.5](./DRAWER_TO_PRINT_PRD.md#epic-5-full-export-package) | [GenerationJob](./DRAWER_TO_PRINT_ARCHITECTURE.md#1-generation-engine) |
-| BOMPreview | Bill of materials preview | [US-5.2](./DRAWER_TO_PRINT_PRD.md#epic-5-full-export-package) | [BillOfMaterials](./DRAWER_TO_PRINT_ARCHITECTURE.md#bom-generation) |
-| BaseplateConfigurator | Baseplate style options | [US-2.1 - US-2.3](./DRAWER_TO_PRINT_PRD.md#epic-2-baseplate-generation) | [BaseplateConfig](./DRAWER_TO_PRINT_ARCHITECTURE.md#extended-layout-type) |
+| BinStylePicker | Select bin generation style | [US-1.2](./PRD.md#epic-1-basic-stl-generation) | [BinParams.style](./ARCHITECTURE.md#1-generation-engine) |
+| BinParameterPanel | Configure dividers, scoops, labels | [US-3.1 - US-3.4](./PRD.md#epic-3-bin-customization) | [BinParams](./ARCHITECTURE.md#1-generation-engine) |
+| ModelLibraryPanel | Browse templates and custom models | [US-6.1](./PRD.md#epic-6-model-library) | [ModelLibraryState](./ARCHITECTURE.md#2-model-library-store) |
+| CustomModelUploader | Drag-drop STL upload | [US-4.1](./PRD.md#epic-4-custom-model-import) | [CustomModelService](./ARCHITECTURE.md#3-custom-model-service) |
+| GridCompatibilityCard | Show upload validation results | [US-4.2](./PRD.md#epic-4-custom-model-import) | [GridCompatibilityResult](./ARCHITECTURE.md#3-custom-model-service) |
+| ExportModal | Configure and execute export | [US-5.1 - US-5.5](./PRD.md#epic-5-full-export-package) | [ExportOptions](./ARCHITECTURE.md#4-export-pipeline) |
+| GenerationProgress | Show STL generation progress | [US-1.3, US-5.5](./PRD.md#epic-5-full-export-package) | [GenerationJob](./ARCHITECTURE.md#1-generation-engine) |
+| BOMPreview | Bill of materials preview | [US-5.2](./PRD.md#epic-5-full-export-package) | [BillOfMaterials](./ARCHITECTURE.md#bom-generation) |
+| BaseplateConfigurator | Baseplate style options | [US-2.1 - US-2.3](./PRD.md#epic-2-baseplate-generation) | [BaseplateConfig](./ARCHITECTURE.md#extended-layout-type) |
 
 ### Component Hierarchy
 
@@ -822,7 +822,7 @@ Additional tokens needed for generation features:
 
 ## Component Specifications
 
-> **Data Types:** TypeScript interfaces referenced here (e.g., `BinParams`, `GenerationJob`) are defined in the [Architecture Document](./DRAWER_TO_PRINT_ARCHITECTURE.md#core-components). User stories are documented in the [PRD](./DRAWER_TO_PRINT_PRD.md#user-stories).
+> **Data Types:** TypeScript interfaces referenced here (e.g., `BinParams`, `GenerationJob`) are defined in the [Architecture Document](./ARCHITECTURE.md#core-components). User stories are documented in the [PRD](./PRD.md#user-stories).
 
 ### BinStylePicker
 
