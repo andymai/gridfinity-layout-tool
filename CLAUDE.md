@@ -62,7 +62,7 @@ Coverage thresholds are enforced on every commit. If coverage drops below thresh
 
 **Current thresholds (configured in `vitest.config.ts`):**
 - Lines: 86%
-- Branches: 75%
+- Branches: 74%
 - Functions: 85%
 - Statements: 85%
 
@@ -135,7 +135,7 @@ const { drawer, bins } = useLayoutStore(useShallow((state) => ({
 ```
 Layout → Drawer, Categories[], Layers[], Bins[], printBedSize, gridUnitMm, heightUnitMm
 Drawer → width, depth, height (all in grid units), fractionalEdgeX?, fractionalEdgeY?
-Bin → position (x,y), size (width,depth,height), layerId, category, label, notes, clearanceHeight?
+Bin → position (x,y), size (width,depth,height), layerId, category, label, notes, clearanceHeight?, customProperties?
 Layer → id, name, height (minimum bin height for this layer)
 Category → id, name, color (hex)
 ```
@@ -159,12 +159,53 @@ Each layout is stored separately in localStorage by UUID. The library index trac
 - `hasFractionalDimensions(rect)` - Check if any dimension is fractional
 Validation in `halfBinConstraints.ts` prevents disabling half-bin mode when fractional bins exist.
 
-**Operation Results**: Use `OperationResult<T>` type for operations that can fail:
+**Operation Results**: Use `OperationResult<T>` type for store operations that can fail:
 ```typescript
 type OperationResult<T = void> =
   | { success: true; data?: T }
   | { success: false; error: string };
 ```
+
+**Result Type System** (`src/result/`): For more complex error handling (especially in storage/API layers), use the `Result<T, E>` type inspired by Rust:
+```typescript
+import { Result, ok, err, isOk, isErr } from './result';
+
+// Success: return ok(value)
+// Failure: return err(error)
+function loadData(): Result<Layout, StorageError> {
+  try {
+    const data = localStorage.getItem('key');
+    if (!data) return err(storageError('NOT_FOUND', 'Data not found'));
+    return ok(JSON.parse(data));
+  } catch {
+    return err(storageError('PARSE_ERROR', 'Invalid JSON'));
+  }
+}
+
+// Usage with type guards
+const result = loadData();
+if (isOk(result)) {
+  console.log(result.value); // Layout
+} else {
+  console.error(result.error); // StorageError
+}
+```
+
+Key files:
+- `types.ts` - Core `Result<T, E>`, `Ok<T>`, `Err<E>` types
+- `constructors.ts` - `ok()`, `err()`, `OK` (unit success)
+- `utils.ts` - `isOk()`, `isErr()` type guards
+- `errors.ts` - Common error types (`StorageError`, `ValidationError`, `ApiError`)
+- `catalog.ts` - Error catalog with typed error constructors
+
+**Custom Properties**: Bins support arbitrary key-value metadata via `customProperties`:
+```typescript
+bin.customProperties = {
+  'Part Number': 'ABC-123',
+  'Vendor': 'Acme Corp',
+};
+```
+Constraints: max 50 properties, keys max 32 chars, values max 256 chars. Reserved keys (id, layerId, etc.) cannot be used.
 
 ### Component Structure (`src/components/`)
 
@@ -238,6 +279,7 @@ type OperationResult<T = void> =
 - `useLayoutSwitcher.ts` - Switch between layouts (save current, load new, update library)
 - `useCrossTabSync.ts` - Synchronize library state across browser tabs
 - `useLayoutRouting.ts` - URL-based layout routing (handles `/s/{shareId}` URLs)
+- `useStorageMigration.ts` - IndexedDB migration progress and status tracking
 
 **Cloud Sharing:**
 - `useCloudShare.ts` - Cloud share state and operations (share, update, delete, copyUrl)
@@ -285,9 +327,10 @@ Unified storage module with service-layer architecture:
 Key functions (all from `src/storage`):
 - Async (runtime): `saveLayoutAsync()`, `loadLayoutAsync()`, `deleteLayoutAsync()`
 - Sync (init only): `saveLayoutSync()`, `loadLayoutSync()`, `deleteLayoutSync()`
-- Library: `saveLibrary()`, `loadLibrary()`, `initializeLayoutLibrary()`
-- Share: `exportLayoutJSON()`, `importLayoutJSON()`, `encodeLayoutForURL()`
-- Migration: `isMigrationNeeded()`, `migrateAllLayoutsToIndexedDB()`
+- Result-based: `saveLayoutResult()`, `loadLayoutResult()`, `deleteLayoutResult()` - Use these when explicit error handling is needed
+- Library: `saveLibrary()`, `loadLibrary()`, `initializeLayoutLibrary()`, `saveLibraryResult()`, `loadLibraryResult()`
+- Share: `exportLayoutJSON()`, `importLayoutJSON()`, `importLayoutResult()`, `encodeLayoutForURL()`, `decodeLayoutResult()`
+- Migration: `isMigrationNeeded()`, `migrateAllLayoutsToIndexedDB()`, `migrateAllLayoutsToIndexedDBResult()`
 
 Storage keys:
 - Library index: `gridfinity-library-v1`
@@ -311,6 +354,10 @@ Storage keys:
 - `throttle.ts` - Throttling utility
 - `idle.ts` - Idle detection for deferred operations
 - `url.ts` - URL manipulation
+- `compression.ts` - LZ-string compression for URL sharing
+- `ephemeralState.ts` - Temporary state management for UI operations
+- `indexedDB.ts` - Low-level IndexedDB helpers
+- `printLayout.ts` - Print layout formatting utilities
 
 **Print & Analytics:**
 - `printEstimates.ts` - Filament cost/spool calculations
@@ -358,6 +405,7 @@ Dark theme by default. Use Tailwind classes, not inline styles.
 - Zoom: 0.25-4.0 range
 - Quick fill max: 2500 bins (confirmation at 100+)
 - Print gap: 10mm between bins on print bed
+- Custom properties: max 50 per bin, key max 32 chars, value max 256 chars
 
 **Defaults:**
 - Grid cell size: 32px (BASE_CELL_SIZE)
@@ -413,7 +461,10 @@ Test files cover:
 - `collision.test.ts` - Collision detection
 - `fill.test.ts` - Fill algorithms
 - `split.test.ts` - Print optimization splitting
-- `storage.test.ts` - Import/export
+- `rotation.test.ts` - Bin rotation logic
+- `storage.test.ts`, `storage-backend.test.ts`, `storage-library.test.ts`, `storage-share.test.ts`, `storage-result.test.ts`, `storage-errors.test.ts` - Storage layer tests
+- `result.test.ts` - Result type system tests
+- `api-client.test.ts`, `api-validation.test.ts` - API layer tests
 - `store/*.test.ts` - Zustand store operations
 - `hooks/*.test.ts` - Hook behavior
 - `components/*.test.tsx` - Component rendering
@@ -432,7 +483,7 @@ E2E test files:
 - `multi-select.spec.ts` - Multi-selection behavior
 - `keyboard-navigation.spec.ts` - Accessibility/keyboard
 - `undo-redo.spec.ts` - History operations
-- `print-list.spec.ts` - Print list features
+- `print-list.spec.ts`, `print-modal.spec.ts` - Print features
 - `3d-preview.spec.ts` - 3D preview
 - `mobile.spec.ts` - Mobile-specific flows
 - `accessibility.spec.ts` - ARIA/a11y compliance
@@ -460,7 +511,7 @@ E2E test files:
   - `state` - Zustand + Immer
 
 **Bundle Size Limits** (via size-limit):
-- Main bundle (gzip): 105 kB
+- Main bundle (gzip): 106 kB
 - Total JS (gzip): 690 kB
 
 **TypeScript** (project references):
