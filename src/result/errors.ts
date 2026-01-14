@@ -344,6 +344,50 @@ export interface ApiContentBlockedError extends AppError {
 }
 
 /**
+ * Error when layout size exceeds upload limit.
+ */
+export interface ApiSizeLimitError extends AppError {
+  readonly kind: 'ApiError';
+  readonly code: 'API_SIZE_LIMIT';
+  /** Current size in bytes */
+  readonly sizeBytes?: number;
+  /** Maximum allowed size in bytes */
+  readonly maxBytes?: number;
+}
+
+/**
+ * Error when bin count exceeds upload limit.
+ */
+export interface ApiBinLimitError extends AppError {
+  readonly kind: 'ApiError';
+  readonly code: 'API_BIN_LIMIT';
+  /** Current bin count */
+  readonly binCount?: number;
+  /** Maximum allowed bins */
+  readonly maxBins?: number;
+}
+
+/**
+ * Error when share has expired.
+ */
+export interface ApiExpiredError extends AppError {
+  readonly kind: 'ApiError';
+  readonly code: 'API_EXPIRED';
+  /** ID of the expired share */
+  readonly shareId?: string;
+}
+
+/**
+ * Error when invalid expiration period is specified.
+ */
+export interface ApiInvalidExpirationError extends AppError {
+  readonly kind: 'ApiError';
+  readonly code: 'API_INVALID_EXPIRATION';
+  /** The invalid value that was provided */
+  readonly providedValue?: number;
+}
+
+/**
  * Union of all API-related errors.
  */
 export type ApiError =
@@ -353,7 +397,11 @@ export type ApiError =
   | ApiServerError
   | ApiNetworkError
   | ApiValidationError
-  | ApiContentBlockedError;
+  | ApiContentBlockedError
+  | ApiSizeLimitError
+  | ApiBinLimitError
+  | ApiExpiredError
+  | ApiInvalidExpirationError;
 
 // =============================================================================
 // Generic Errors

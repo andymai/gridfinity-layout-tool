@@ -111,6 +111,10 @@ export type {
   ApiNetworkError,
   ApiValidationError,
   ApiContentBlockedError,
+  ApiSizeLimitError,
+  ApiBinLimitError,
+  ApiExpiredError,
+  ApiInvalidExpirationError,
 
   // Generic
   UnknownError,
@@ -152,6 +156,10 @@ export {
   apiNetworkError,
   apiValidationError,
   apiContentBlocked,
+  apiSizeLimit,
+  apiBinLimit,
+  apiExpired,
+  apiInvalidExpiration,
 
   // Generic
   unknownError,
