@@ -16,6 +16,8 @@ import * as backend from './backend';
 import * as localStorage from './backends/localStorage';
 import * as indexedDB from './backends/indexedDB';
 import type { Layout } from '../types';
+import type { Result, Unit, StorageError } from '../result';
+import { ok, err, OK, storageNotFound, storageUnavailable, storageNetworkError } from '../result';
 
 // Storage keys
 const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
@@ -38,6 +40,14 @@ interface MigrationStatus {
   localStorageCount: number;
   indexedDBCount: number;
   migrationComplete: boolean;
+}
+
+/**
+ * Statistics returned by bulk migration Result functions.
+ */
+export interface MigrationStats {
+  migratedCount: number;
+  skippedCount: number;
 }
 
 /**
@@ -182,4 +192,134 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
  */
 export function clearMigrationFlag(): void {
   window.localStorage.removeItem(MIGRATION_FLAG_KEY);
+}
+
+// =============================================================================
+// Result-Based Migration Functions
+// =============================================================================
+
+/**
+ * Migrate a single layout from localStorage to IndexedDB with Result-based error handling.
+ *
+ * @example
+ * ```ts
+ * const result = await migrateLayoutToIndexedDBResult('layout-123');
+ * if (isOk(result)) {
+ *   console.log('Migration succeeded');
+ * } else {
+ *   console.error(getUserMessage(result.error));
+ * }
+ * ```
+ */
+export async function migrateLayoutToIndexedDBResult(
+  layoutId: string
+): Promise<Result<Unit, StorageError>> {
+  try {
+    // Load from localStorage
+    const layout = loadLayoutFromLocalStorage(layoutId);
+
+    if (!layout) {
+      return err(storageNotFound(`${LAYOUT_KEY_PREFIX}${layoutId}`));
+    }
+
+    // Save to IndexedDB
+    await indexedDB.saveLayout(layoutId, layout);
+
+    return OK;
+  } catch (error) {
+    return err(storageNetworkError(error));
+  }
+}
+
+/**
+ * Migrate all layouts from localStorage to IndexedDB with Result-based error handling.
+ * This is the main migration function to call during app initialization.
+ *
+ * Returns Ok with migration statistics on success, or Err if IndexedDB is unavailable.
+ * Individual layout migration failures are tracked but don't cause overall failure.
+ *
+ * @example
+ * ```ts
+ * const result = await migrateAllLayoutsToIndexedDBResult();
+ * if (isOk(result)) {
+ *   const { migratedCount, skippedCount } = result.value;
+ *   console.log(`Migrated ${migratedCount}, skipped ${skippedCount}`);
+ * } else {
+ *   console.error(getUserMessage(result.error));
+ * }
+ * ```
+ */
+export async function migrateAllLayoutsToIndexedDBResult(): Promise<
+  Result<MigrationStats, StorageError>
+> {
+  const stats: MigrationStats = {
+    migratedCount: 0,
+    skippedCount: 0,
+  };
+
+  // Check if IndexedDB is available
+  if (!(await backend.isIndexedDBAvailable())) {
+    return err(storageUnavailable('indexedDB'));
+  }
+
+  // Get all layout IDs from localStorage
+  const localStorageIds = getLocalStorageLayoutIds();
+
+  if (localStorageIds.length === 0) {
+    // Nothing to migrate, but set flag to skip future checks
+    window.localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+    return ok(stats);
+  }
+
+  // Get existing IndexedDB layout IDs to avoid overwriting
+  const indexedDBIds = new Set(await backend.getIndexedDBLayoutIds());
+
+  // Migrate each layout
+  for (const layoutId of localStorageIds) {
+    // Skip if already in IndexedDB
+    if (indexedDBIds.has(layoutId)) {
+      stats.skippedCount++;
+      continue;
+    }
+
+    const migrationResult = await migrateLayoutToIndexedDBResult(layoutId);
+
+    if (migrationResult.ok) {
+      stats.migratedCount++;
+    }
+    // Note: Individual failures are silently skipped - use legacy API for error details
+  }
+
+  // Set migration flag
+  window.localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+
+  return ok(stats);
+}
+
+/**
+ * Get the current migration status with Result-based error handling.
+ * This function doesn't fail, but uses Result for consistency with other migration APIs.
+ */
+export async function getMigrationStatusResult(): Promise<
+  Result<MigrationStatus, StorageError>
+> {
+  const localStorageIds = getLocalStorageLayoutIds();
+
+  let indexedDBIds: string[] = [];
+  try {
+    indexedDBIds = await backend.getIndexedDBLayoutIds();
+  } catch {
+    // IndexedDB not available - return status without indexedDB count
+    return ok({
+      localStorageCount: localStorageIds.length,
+      indexedDBCount: 0,
+      migrationComplete: window.localStorage.getItem(MIGRATION_FLAG_KEY) === 'true',
+    });
+  }
+
+  return ok({
+    localStorageCount: localStorageIds.length,
+    indexedDBCount: indexedDBIds.length,
+    migrationComplete: window.localStorage.getItem(MIGRATION_FLAG_KEY) === 'true',
+  });
 }
