@@ -5,11 +5,22 @@
  * indicating the number of enabled experimental features.
  */
 
+import { useMemo } from 'react';
 import { useLabsStore } from '../../store/labs';
+import { getFeature } from '../../labs/features';
 
 export function LabsButton() {
   const openDrawer = useLabsStore((state) => state.openDrawer);
-  const enabledCount = useLabsStore((state) => state.getEnabledCount());
+  const enabledFeatures = useLabsStore((state) => state.preferences.enabledFeatures);
+
+  // Compute enabled count from raw state (only experimental/preview features)
+  const enabledCount = useMemo(() => {
+    return Object.entries(enabledFeatures).filter(([id, enabled]) => {
+      if (!enabled) return false;
+      const feature = getFeature(id);
+      return feature?.status === 'experimental' || feature?.status === 'preview';
+    }).length;
+  }, [enabledFeatures]);
 
   return (
     <button

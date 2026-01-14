@@ -75,10 +75,13 @@ export interface LabsPreferences {
 }
 
 /**
- * Default preferences for new users.
+ * Create default preferences for new users.
+ * Uses a factory function to ensure fresh timestamp on each call.
  */
-export const DEFAULT_LABS_PREFERENCES: LabsPreferences = {
-  enabledFeatures: {},
-  lastModified: new Date().toISOString(),
-  version: 1,
-};
+export function createDefaultLabsPreferences(): LabsPreferences {
+  return {
+    enabledFeatures: {},
+    lastModified: new Date().toISOString(),
+    version: 1,
+  };
+}

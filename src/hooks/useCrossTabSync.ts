@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useLabsStore, LABS_STORAGE_KEY } from '../store';
 import { loadLayoutByIdAsync, loadLibrary } from '../storage';
 import { validateLayoutIntegrity } from '../utils/validation';
-import { DEFAULT_LABS_PREFERENCES } from '../labs/types';
+import { createDefaultLabsPreferences } from '../labs/types';
 
 /**
  * Hook to automatically sync layout data when modified in another browser tab.
@@ -16,9 +16,9 @@ export function useCrossTabSync() {
         try {
           const newPrefs = e.newValue
             ? JSON.parse(e.newValue)
-            : DEFAULT_LABS_PREFERENCES;
+            : createDefaultLabsPreferences();
           useLabsStore.getState().syncFromStorage({
-            ...DEFAULT_LABS_PREFERENCES,
+            ...createDefaultLabsPreferences(),
             ...newPrefs,
           });
         } catch {

@@ -14,7 +14,7 @@ import {
   getToggleableFeatures,
   type FeatureId,
 } from '../labs/features';
-import { DEFAULT_LABS_PREFERENCES } from '../labs/types';
+import { createDefaultLabsPreferences } from '../labs/types';
 
 // Mock trackEvent to avoid analytics calls in tests
 vi.mock('../utils/analytics', () => ({
@@ -102,7 +102,7 @@ describe('Labs Store', () => {
     // Reset store state
     localStorage.clear();
     useLabsStore.setState({
-      preferences: { ...DEFAULT_LABS_PREFERENCES },
+      preferences: createDefaultLabsPreferences(),
       isDrawerOpen: false,
     });
   });
@@ -202,9 +202,10 @@ describe('Labs Store', () => {
       store.enableFeature('collaborative_editing');
 
       const stored = localStorage.getItem(LABS_STORAGE_KEY);
-      expect(stored).toBeDefined();
+      expect(stored).not.toBeNull();
+      if (!stored) return; // Type guard for TypeScript
 
-      const parsed = JSON.parse(stored!);
+      const parsed = JSON.parse(stored);
       expect(parsed.enabledFeatures.collaborative_editing).toBe(true);
     });
 

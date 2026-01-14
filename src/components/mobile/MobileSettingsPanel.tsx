@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore, useToastStore, useLabsStore } from '../../store';
+import { getFeature } from '../../labs/features';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../../constants';
 import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
@@ -34,7 +35,16 @@ export function MobileSettingsPanel() {
   const saveCurrentAsDefaults = useSettingsStore(state => state.saveCurrentAsDefaults);
 
   const openLabsDrawer = useLabsStore(state => state.openDrawer);
-  const labsEnabledCount = useLabsStore(state => state.getEnabledCount());
+  const enabledFeatures = useLabsStore(state => state.preferences.enabledFeatures);
+
+  // Compute enabled count from raw state (only experimental/preview features)
+  const labsEnabledCount = useMemo(() => {
+    return Object.entries(enabledFeatures).filter(([id, enabled]) => {
+      if (!enabled) return false;
+      const feature = getFeature(id);
+      return feature?.status === 'experimental' || feature?.status === 'preview';
+    }).length;
+  }, [enabledFeatures]);
 
   // Get active layer's height to save as default
   const activeLayerId = useUIStore((state) => state.activeLayerId);

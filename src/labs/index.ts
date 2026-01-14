@@ -5,7 +5,7 @@
  */
 
 export type { FeatureFlag, FeatureStatus, RiskLevel, LabsPreferences } from './types';
-export { DEFAULT_LABS_PREFERENCES } from './types';
+export { createDefaultLabsPreferences } from './types';
 
 export type { FeatureId } from './features';
 export {

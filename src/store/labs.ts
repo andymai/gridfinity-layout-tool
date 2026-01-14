@@ -7,7 +7,7 @@
 
 import { create } from 'zustand';
 import type { LabsPreferences } from '../labs/types';
-import { DEFAULT_LABS_PREFERENCES } from '../labs/types';
+import { createDefaultLabsPreferences } from '../labs/types';
 import { getFeature, type FeatureId } from '../labs/features';
 import { trackEvent } from '../utils/analytics';
 
@@ -23,12 +23,12 @@ function loadPreferences(): LabsPreferences {
     if (stored) {
       const parsed = JSON.parse(stored);
       // Migration: handle version upgrades here if needed
-      return { ...DEFAULT_LABS_PREFERENCES, ...parsed };
+      return { ...createDefaultLabsPreferences(), ...parsed };
     }
   } catch (e) {
     console.warn('Failed to load Labs preferences:', e);
   }
-  return { ...DEFAULT_LABS_PREFERENCES };
+  return createDefaultLabsPreferences();
 }
 
 /**
