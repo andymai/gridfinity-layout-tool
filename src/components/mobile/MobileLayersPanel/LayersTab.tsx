@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../../store';
 import { CONSTRAINTS, STAGING_ID } from '../../../constants';
@@ -10,9 +11,22 @@ import { ConfirmDialog } from '../../modals/ConfirmDialog';
  * Mobile-optimized with 44px touch targets.
  */
 export function LayersTab() {
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteLayerId, setDeleteLayerId] = useState<string | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
+  const [renameLayerId, setRenameLayerId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  // Scroll rename input into view when keyboard appears on mobile
+  useEffect(() => {
+    if (renameLayerId && renameInputRef.current) {
+      // Small delay to allow keyboard to appear
+      const timer = setTimeout(() => {
+        renameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [renameLayerId]);
 
   const { layout, addLayer, updateLayer, deleteLayer, reorderLayers } = useLayoutStore(
     useShallow((state) => ({
@@ -27,14 +41,34 @@ export function LayersTab() {
   const bins = layout.bins;
   const drawer = layout.drawer;
 
-  const { activeLayerId, setActiveLayer } = useUIStore(
+  const { activeLayerId, setActiveLayer, announceToScreenReader } = useUIStore(
     useShallow((state) => ({
       activeLayerId: state.activeLayerId,
       setActiveLayer: state.setActiveLayer,
+      announceToScreenReader: state.announceToScreenReader,
     }))
   );
 
   const { execute } = useUndoableAction();
+
+  const handleRenameRequest = (layerId: string) => {
+    const layer = layers.find(l => l.id === layerId);
+    setRenameValue(layer?.name || '');
+    setRenameLayerId(layerId);
+  };
+
+  const handleRenameConfirm = () => {
+    if (!renameLayerId) return;
+    const trimmed = renameValue.trim();
+    if (trimmed) {
+      execute(() => {
+        updateLayer(renameLayerId, { name: trimmed.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) });
+      });
+      announceToScreenReader(`Renamed to ${trimmed}`);
+    }
+    setRenameLayerId(null);
+    setRenameValue('');
+  };
 
   const totalLayerHeight = layers.reduce((sum, l) => sum + l.height, 0);
   const displayLayers = getDisplayLayers(layers);
@@ -163,7 +197,6 @@ export function LayersTab() {
       <div className="space-y-1.5">
         {displayLayers.map((layer, displayIndex) => {
           const isActive = layer.id === activeLayerId;
-          const isEditing = editingId === layer.id;
           const layerBins = bins.filter(b => b.layerId === layer.id);
           const binCount = layerBins.length;
           const layerCoveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
@@ -181,37 +214,22 @@ export function LayersTab() {
               {/* Layer info - tappable to select */}
               <button
                 className="flex-1 min-w-0 text-left py-1"
-                onClick={() => !isEditing && handleSelectLayer(layer.id)}
+                onClick={() => handleSelectLayer(layer.id)}
               >
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={layer.name}
-                    onChange={(e) => execute(() => updateLayer(layer.id, { name: e.target.value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) }))}
-                    onBlur={() => setEditingId(null)}
-                    onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
-                    className="input w-full text-sm"
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <>
-                    <span
-                      className={`truncate block text-sm ${isActive ? 'text-content font-semibold' : 'text-content font-medium'}`}
-                      onClick={(e) => {
-                        if (isActive) {
-                          e.stopPropagation();
-                          setEditingId(layer.id);
-                        }
-                      }}
-                    >
-                      {layer.name}
-                    </span>
-                    <span className="text-xs text-content-tertiary">
-                      {binCount} bin{binCount !== 1 ? 's' : ''}{hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
-                    </span>
-                  </>
-                )}
+                <span
+                  className={`truncate block text-sm ${isActive ? 'text-content font-semibold' : 'text-content font-medium'}`}
+                  onClick={(e) => {
+                    if (isActive) {
+                      e.stopPropagation();
+                      handleRenameRequest(layer.id);
+                    }
+                  }}
+                >
+                  {layer.name}
+                </span>
+                <span className="text-xs text-content-tertiary">
+                  {binCount} bin{binCount !== 1 ? 's' : ''}{hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
+                </span>
               </button>
 
               {/* Height control - compact */}
@@ -325,6 +343,62 @@ export function LayersTab() {
         onConfirm={confirmDeleteLayer}
         onCancel={cancelDeleteLayer}
       />
+
+      {/* Rename action sheet - portaled to escape BottomSheet's scrollable container */}
+      {renameLayerId && createPortal(
+        <div
+          className="fixed inset-0 bg-black/50 z-[60] flex items-end"
+          onClick={() => {
+            setRenameLayerId(null);
+            setRenameValue('');
+          }}
+        >
+          <div
+            className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-content mb-4">Rename Layer</h3>
+            <input
+              ref={renameInputRef}
+              type="text"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleRenameConfirm();
+                } else if (e.key === 'Escape') {
+                  setRenameLayerId(null);
+                  setRenameValue('');
+                }
+              }}
+              className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
+              placeholder="Layer name"
+              maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
+              autoFocus
+            />
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => {
+                  setRenameLayerId(null);
+                  setRenameValue('');
+                }}
+                className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRenameConfirm}
+                disabled={!renameValue.trim()}
+                className="flex-1 py-3 text-white font-medium bg-accent rounded-lg disabled:opacity-50"
+              >
+                Rename
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
