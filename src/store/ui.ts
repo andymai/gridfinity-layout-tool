@@ -4,6 +4,8 @@ import { CONSTRAINTS } from '../constants';
 import { clamp } from '../utils/validation';
 import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
 import { useLayoutStore } from './layout';
+import type { Result, Unit, LayoutError } from '../result';
+import { err, layoutInvalidOperation, OK } from '../result';
 
 // Storage key for half-bin mode preference
 const HALF_BIN_MODE_KEY = 'gridfinity-half-bin-mode';
@@ -169,6 +171,7 @@ interface UIState {
 
   // Half-bin mode actions
   toggleHalfBinMode: () => OperationResult<void>;
+  toggleHalfBinModeResult: () => Result<Unit, LayoutError>;
   setHalfBinMode: (enabled: boolean) => void;
 
   // Shared layout preview actions
@@ -373,6 +376,32 @@ export const useUIStore = create<UIState>((set) => ({
     saveHalfBinMode(false);
     set({ halfBinMode: false });
     return { success: true };
+  },
+  toggleHalfBinModeResult: () => {
+    const state = useUIStore.getState();
+    const targetState = !state.halfBinMode;
+
+    // Turning ON: no validation needed
+    if (targetState === true) {
+      saveHalfBinMode(true);
+      set({ halfBinMode: true });
+      return OK;
+    }
+
+    // Turning OFF: validate layout for fractional bins
+    const layout = useLayoutStore.getState().layout;
+    const result = validateHalfBinModeToggle(layout, false);
+
+    if (!result.canDisable) {
+      return err(layoutInvalidOperation(
+        'toggleHalfBinMode',
+        `Cannot disable: ${result.violation?.count ?? 0} bins have fractional dimensions`
+      ));
+    }
+
+    saveHalfBinMode(false);
+    set({ halfBinMode: false });
+    return OK;
   },
   setHalfBinMode: (enabled) => {
     saveHalfBinMode(enabled);

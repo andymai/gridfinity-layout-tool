@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useUIStore } from '../../store/ui';
+import { useLayoutStore } from '../../store/layout';
 import { CONSTRAINTS } from '../../constants';
 import { resetAllStores } from '../testUtils';
+import { isOk, isErr } from '../../result';
 
 describe('ui store', () => {
   beforeEach(() => {
@@ -688,6 +690,64 @@ describe('ui store', () => {
 
       setHalfBinMode(false);
       expect(useUIStore.getState().halfBinMode).toBe(false);
+    });
+  });
+
+  describe('toggleHalfBinModeResult', () => {
+    it('returns Ok when enabling half-bin mode', () => {
+      const { toggleHalfBinModeResult, setHalfBinMode } = useUIStore.getState();
+
+      // Ensure off first
+      setHalfBinMode(false);
+      expect(useUIStore.getState().halfBinMode).toBe(false);
+
+      const result = toggleHalfBinModeResult();
+
+      expect(isOk(result)).toBe(true);
+      expect(useUIStore.getState().halfBinMode).toBe(true);
+    });
+
+    it('returns Ok when disabling half-bin mode with no fractional bins', () => {
+      const { toggleHalfBinModeResult, setHalfBinMode } = useUIStore.getState();
+
+      // Enable first
+      setHalfBinMode(true);
+      expect(useUIStore.getState().halfBinMode).toBe(true);
+
+      const result = toggleHalfBinModeResult();
+
+      expect(isOk(result)).toBe(true);
+      expect(useUIStore.getState().halfBinMode).toBe(false);
+    });
+
+    it('returns Err with LAYOUT_INVALID_OPERATION when fractional bins exist', () => {
+      const { toggleHalfBinModeResult, setHalfBinMode } = useUIStore.getState();
+
+      // Enable half-bin mode
+      setHalfBinMode(true);
+
+      // Add a fractional bin
+      const layerId = useLayoutStore.getState().layout.layers[0].id;
+      useLayoutStore.getState().addBin({
+        x: 0.5, // Fractional position
+        y: 0,
+        width: 1,
+        depth: 1,
+        height: 3,
+        layerId,
+        category: useLayoutStore.getState().layout.categories[0].id,
+      });
+
+      const result = toggleHalfBinModeResult();
+
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
+        expect(result.error.kind).toBe('LayoutError');
+        expect(result.error.operation).toBe('toggleHalfBinMode');
+        expect(result.error.reason).toContain('fractional dimensions');
+      }
+      expect(useUIStore.getState().halfBinMode).toBe(true); // Should remain enabled
     });
   });
 
