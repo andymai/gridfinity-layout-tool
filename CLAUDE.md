@@ -109,8 +109,8 @@ if (value === null) { ... }  // not ==
 ### State Management (Zustand + Immer)
 
 Six stores in `src/store/`:
-- **layout.ts** - Layout data (bins, layers, categories, drawer settings). Uses Immer for immutable updates. Operations return `OperationResult<T>` for error handling.
-- **library.ts** - Multi-layout library management (layout entries, metadata, previews, cloud share info). Tracks `activeLayoutId` and provides CRUD for layout entries. Uses `computePreview()` to generate thumbnail data.
+- **layout.ts** - Layout data (bins, layers, categories, drawer settings). Uses Immer for immutable updates. Operations return `Result<T, LayoutError>` for type-safe error handling.
+- **library.ts** - Multi-layout library management (layout entries, metadata, previews, cloud share info). Tracks `activeLayoutId` and provides CRUD for layout entries. Uses `computePreview()` to generate thumbnail data. Operations return `Result<T, LayoutError>`.
 - **ui.ts** - UI state (selection, zoom, panel visibility, interaction mode, paint mode, context menu, isometric preview state, keyboard navigation, half-bin mode)
 - **history.ts** - Undo/redo stack (max 50 states). Use `useUndoableAction()` hook to wrap mutations.
 - **toast.ts** - Toast notification state (success/error/info, max 3 toasts)
@@ -159,12 +159,19 @@ Each layout is stored separately in localStorage by UUID. The library index trac
 - `hasFractionalDimensions(rect)` - Check if any dimension is fractional
 Validation in `halfBinConstraints.ts` prevents disabling half-bin mode when fractional bins exist.
 
-**Operation Results**: Use `OperationResult<T>` type for store operations that can fail:
+**Result Type**: Use `Result<T, E>` from `src/result/` for operations that can fail:
 ```typescript
-type OperationResult<T = void> =
-  | { success: true; data?: T }
-  | { success: false; error: string };
+import { isOk, isErr, getUserMessage } from '../result';
+import type { Result, LayoutError } from '../result';
+
+const result = addBin({ ... });
+if (isOk(result)) {
+  console.log('Bin ID:', result.value);
+} else {
+  console.error(getUserMessage(result.error));
+}
 ```
+Error types include `LayoutError`, `ValidationError`, `StorageError`, `ApiError` with structured codes and user-friendly messages.
 
 **Result Type System** (`src/result/`): For more complex error handling (especially in storage/API layers), use the `Result<T, E>` type inspired by Rust:
 ```typescript

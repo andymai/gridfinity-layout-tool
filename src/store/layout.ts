@@ -10,6 +10,7 @@ import type { Result, LayoutError, ValidationError } from '../result';
 import {
   ok,
   err,
+  OK,
   layoutLayerLimit,
   layoutLastEntity,
   layoutInvalidOperation,
@@ -27,34 +28,27 @@ interface LayoutState {
   activeLayoutId: string | null;  // ID of the layout in the library (null for unsaved)
   lastEditSource: EditSource;  // Tracks whether last change was local, remote, or initial load
 
-  // Bin operations
-  addBin: (bin: Omit<Bin, 'id'>) => string | null;
-  addBinResult: (bin: Omit<Bin, 'id'>) => Result<string, ValidationError>;
-  updateBin: (id: string, updates: Partial<Bin>) => void;
-  deleteBin: (id: string) => void;
-  duplicateBin: (id: string) => string | null;
-  moveBinToStaging: (id: string) => void;
-  moveBinFromStaging: (id: string, layerId: string, x: number, y: number) => boolean;
-  moveBinFromStagingResult: (id: string, layerId: string, x: number, y: number) => Result<void, ValidationError>;
+  // Bin operations - all return Result for consistent error handling
+  addBin: (bin: Omit<Bin, 'id'>) => Result<string, ValidationError>;
+  updateBin: (id: string, updates: Partial<Bin>) => Result<void, LayoutError>;
+  deleteBin: (id: string) => Result<void, LayoutError>;
+  duplicateBin: (id: string) => Result<string, ValidationError | LayoutError>;
+  moveBinToStaging: (id: string) => Result<void, LayoutError>;
+  moveBinFromStaging: (id: string, layerId: string, x: number, y: number) => Result<void, ValidationError | LayoutError>;
 
   // Layer operations
-  addLayer: () => string | null;
-  addLayerResult: () => Result<string, LayoutError>;
-  updateLayer: (id: string, updates: Partial<Layer>) => void;
-  deleteLayer: (id: string) => boolean;
-  deleteLayerResult: (id: string) => Result<void, LayoutError>;
-  reorderLayers: (fromIndex: number, toIndex: number) => { success: boolean; error?: string };
-  reorderLayersResult: (fromIndex: number, toIndex: number) => Result<void, LayoutError>;
+  addLayer: () => Result<string, LayoutError>;
+  updateLayer: (id: string, updates: Partial<Layer>) => Result<void, LayoutError>;
+  deleteLayer: (id: string) => Result<void, LayoutError>;
+  reorderLayers: (fromIndex: number, toIndex: number) => Result<void, LayoutError>;
 
   // Drawer operations
   updateDrawer: (updates: Partial<Drawer>) => void;
 
   // Category operations
-  addCategory: (category: Omit<Category, 'id'>) => string;
-  addCategoryResult: (category: Omit<Category, 'id'>) => Result<string, LayoutError>;
-  updateCategory: (id: string, updates: Partial<Category>) => void;
-  deleteCategory: (id: string) => boolean;
-  deleteCategoryResult: (id: string) => Result<void, LayoutError>;
+  addCategory: (category: Omit<Category, 'id'>) => Result<string, LayoutError>;
+  updateCategory: (id: string, updates: Partial<Category>) => Result<void, LayoutError>;
+  deleteCategory: (id: string) => Result<void, LayoutError>;
 
   // Bulk operations
   fillLayer: (layerId: string, width: number, depth: number, categoryId: string, halfBinMode?: boolean) => number;
@@ -83,28 +77,6 @@ export const useLayoutStore = create<LayoutState>()(
     lastEditSource: null,
 
     addBin: (binData) => {
-      const { layout } = get();
-      const id = generateId();
-      const bin: Bin = { ...binData, id };
-
-      if (bin.layerId !== STAGING_ID) {
-        const result = canPlaceBin(
-          { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: bin.height },
-          bin.layerId,
-          layout
-        );
-        if (!result.valid) return null;
-      }
-
-      set(state => {
-        state.layout.bins.push(bin);
-        state.lastEditSource = 'local';
-      });
-
-      return id;
-    },
-
-    addBinResult: (binData) => {
       const { layout } = get();
       const id = generateId();
       const bin: Bin = { ...binData, id };
@@ -143,26 +115,44 @@ export const useLayoutStore = create<LayoutState>()(
     },
 
     updateBin: (id, updates) => {
+      const { layout } = get();
+      const bin = layout.bins.find(b => b.id === id);
+      if (!bin) {
+        return err(layoutInvalidOperation('updateBin', `Bin ${id} not found`));
+      }
+
       set(state => {
-        const bin = state.layout.bins.find(b => b.id === id);
-        if (bin) {
-          Object.assign(bin, updates);
+        const b = state.layout.bins.find(b => b.id === id);
+        if (b) {
+          Object.assign(b, updates);
           state.lastEditSource = 'local';
         }
       });
+
+      return OK;
     },
 
     deleteBin: (id) => {
+      const { layout } = get();
+      const bin = layout.bins.find(b => b.id === id);
+      if (!bin) {
+        return err(layoutInvalidOperation('deleteBin', `Bin ${id} not found`));
+      }
+
       set(state => {
         state.layout.bins = state.layout.bins.filter(b => b.id !== id);
         state.lastEditSource = 'local';
       });
+
+      return OK;
     },
 
     duplicateBin: (id) => {
       const { layout, addBin } = get();
       const bin = layout.bins.find(b => b.id === id);
-      if (!bin) return null;
+      if (!bin) {
+        return err(layoutInvalidOperation('duplicateBin', `Bin ${id} not found`));
+      }
 
       if (bin.layerId === STAGING_ID) {
         return addBin({
@@ -214,6 +204,7 @@ export const useLayoutStore = create<LayoutState>()(
         }
       }
 
+      // Fallback to staging if no adjacent space available
       return addBin({
         layerId: STAGING_ID,
         x: 0,
@@ -230,51 +221,28 @@ export const useLayoutStore = create<LayoutState>()(
     },
 
     moveBinToStaging: (id) => {
+      const { layout } = get();
+      const bin = layout.bins.find(b => b.id === id);
+      if (!bin) {
+        return err(layoutInvalidOperation('moveBinToStaging', `Bin ${id} not found`));
+      }
+
       set(state => {
-        const bin = state.layout.bins.find(b => b.id === id);
-        if (bin) {
-          bin.layerId = STAGING_ID;
+        const b = state.layout.bins.find(b => b.id === id);
+        if (b) {
+          b.layerId = STAGING_ID;
           state.lastEditSource = 'local';
         }
       });
+
+      return OK;
     },
 
     moveBinFromStaging: (id, layerId, x, y) => {
       const { layout } = get();
       const bin = layout.bins.find(b => b.id === id);
-      if (!bin) return false;
-
-      const layer = layout.layers.find(l => l.id === layerId);
-      if (!layer) return false;
-
-      const result = canPlaceBin(
-        { x, y, width: bin.width, depth: bin.depth, height: layer.height },
-        layerId,
-        layout,
-        id
-      );
-
-      if (!result.valid) return false;
-
-      set(state => {
-        const b = state.layout.bins.find(b => b.id === id);
-        if (b) {
-          b.layerId = layerId;
-          b.x = x;
-          b.y = y;
-          b.height = layer.height;
-          state.lastEditSource = 'local';
-        }
-      });
-
-      return true;
-    },
-
-    moveBinFromStagingResult: (id, layerId, x, y) => {
-      const { layout } = get();
-      const bin = layout.bins.find(b => b.id === id);
       if (!bin) {
-        return err(validationOutOfBounds('out_of_bounds', { x, y, width: 0, depth: 0 }));
+        return err(layoutInvalidOperation('moveBinFromStaging', `Bin ${id} not found`));
       }
 
       const layer = layout.layers.find(l => l.id === layerId);
@@ -313,36 +281,10 @@ export const useLayoutStore = create<LayoutState>()(
         }
       });
 
-      return ok(undefined);
+      return OK;
     },
 
     addLayer: () => {
-      const { layout } = get();
-      if (layout.layers.length >= CONSTRAINTS.LAYERS_MAX) return null;
-
-      const totalHeight = layout.layers.reduce((sum, l) => sum + l.height, 0);
-      const remaining = layout.drawer.height - totalHeight;
-      if (remaining < 1) return null;
-
-      // Get default layer height from settings
-      const defaultLayerHeight = useSettingsStore.getState().settings.defaultLayerHeight;
-
-      const id = generateId();
-      const newLayer: Layer = {
-        id,
-        name: `Layer ${layout.layers.length + 1}`,
-        height: Math.min(remaining, defaultLayerHeight),
-      };
-
-      set(state => {
-        state.layout.layers.push(newLayer);
-        state.lastEditSource = 'local';
-      });
-
-      return id;
-    },
-
-    addLayerResult: () => {
       const { layout } = get();
       if (layout.layers.length >= CONSTRAINTS.LAYERS_MAX) {
         return err(layoutLayerLimit(layout.layers.length, CONSTRAINTS.LAYERS_MAX));
@@ -373,36 +315,31 @@ export const useLayoutStore = create<LayoutState>()(
     },
 
     updateLayer: (id, updates) => {
+      const { layout } = get();
+      const layer = layout.layers.find(l => l.id === id);
+      if (!layer) {
+        return err(layoutInvalidOperation('updateLayer', `Layer ${id} not found`));
+      }
+
       set(state => {
-        const layer = state.layout.layers.find(l => l.id === id);
-        if (layer) {
+        const l = state.layout.layers.find(l => l.id === id);
+        if (l) {
           if (updates.height !== undefined) {
             const othersHeight = state.layout.layers
-              .filter(l => l.id !== id)
-              .reduce((sum, l) => sum + l.height, 0);
+              .filter(layer => layer.id !== id)
+              .reduce((sum, layer) => sum + layer.height, 0);
             const maxHeight = state.layout.drawer.height - othersHeight;
             updates.height = clamp(updates.height, 1, maxHeight);
           }
-          Object.assign(layer, updates);
+          Object.assign(l, updates);
           state.lastEditSource = 'local';
         }
       });
+
+      return OK;
     },
 
     deleteLayer: (id) => {
-      const { layout } = get();
-      if (layout.layers.length <= CONSTRAINTS.LAYERS_MIN) return false;
-
-      set(state => {
-        state.layout.layers = state.layout.layers.filter(l => l.id !== id);
-        state.layout.bins = state.layout.bins.filter(b => b.layerId !== id);
-        state.lastEditSource = 'local';
-      });
-
-      return true;
-    },
-
-    deleteLayerResult: (id) => {
       const { layout } = get();
       if (layout.layers.length <= CONSTRAINTS.LAYERS_MIN) {
         return err(layoutLastEntity('layer'));
@@ -419,40 +356,13 @@ export const useLayoutStore = create<LayoutState>()(
         state.lastEditSource = 'local';
       });
 
-      return ok(undefined);
+      return OK;
     },
 
     reorderLayers: (fromIndex, toIndex) => {
       const { layout } = get();
 
-      if (fromIndex === toIndex) return { success: true };
-      if (fromIndex < 0 || fromIndex >= layout.layers.length) return { success: false, error: 'Invalid source index' };
-      if (toIndex < 0 || toIndex >= layout.layers.length) return { success: false, error: 'Invalid target index' };
-
-      const newLayers = [...layout.layers];
-      const [moved] = newLayers.splice(fromIndex, 1);
-      newLayers.splice(toIndex, 0, moved);
-
-      const collisions = checkLayerReorderCollisions(layout.bins, layout.layers, newLayers);
-      if (collisions.length > 0) {
-        return {
-          success: false,
-          error: `Reordering would cause ${collisions.length} bin collision${collisions.length > 1 ? 's' : ''}`,
-        };
-      }
-
-      set(state => {
-        state.layout.layers = newLayers;
-        state.lastEditSource = 'local';
-      });
-
-      return { success: true };
-    },
-
-    reorderLayersResult: (fromIndex, toIndex) => {
-      const { layout } = get();
-
-      if (fromIndex === toIndex) return ok(undefined);
+      if (fromIndex === toIndex) return OK;
       if (fromIndex < 0 || fromIndex >= layout.layers.length) {
         return err(layoutInvalidOperation('reorderLayers', 'Invalid source index'));
       }
@@ -477,7 +387,7 @@ export const useLayoutStore = create<LayoutState>()(
         state.lastEditSource = 'local';
       });
 
-      return ok(undefined);
+      return OK;
     },
 
     updateDrawer: (updates) => {
@@ -515,15 +425,6 @@ export const useLayoutStore = create<LayoutState>()(
     },
 
     addCategory: (categoryData) => {
-      const id = generateId();
-      set(state => {
-        state.layout.categories.push({ ...categoryData, id });
-        state.lastEditSource = 'local';
-      });
-      return id;
-    },
-
-    addCategoryResult: (categoryData) => {
       const { layout } = get();
       if (layout.categories.length >= CONSTRAINTS.CATEGORIES_MAX) {
         return err(layoutCategoryLimit(layout.categories.length, CONSTRAINTS.CATEGORIES_MAX));
@@ -538,30 +439,24 @@ export const useLayoutStore = create<LayoutState>()(
     },
 
     updateCategory: (id, updates) => {
+      const { layout } = get();
+      const cat = layout.categories.find(c => c.id === id);
+      if (!cat) {
+        return err(layoutInvalidOperation('updateCategory', `Category ${id} not found`));
+      }
+
       set(state => {
-        const cat = state.layout.categories.find(c => c.id === id);
-        if (cat) {
-          Object.assign(cat, updates);
+        const c = state.layout.categories.find(c => c.id === id);
+        if (c) {
+          Object.assign(c, updates);
           state.lastEditSource = 'local';
         }
       });
+
+      return OK;
     },
 
     deleteCategory: (id) => {
-      const { layout } = get();
-
-      if (layout.bins.some(b => b.category === id)) return false;
-      if (layout.categories.length <= CONSTRAINTS.CATEGORIES_MIN) return false;
-
-      set(state => {
-        state.layout.categories = state.layout.categories.filter(c => c.id !== id);
-        state.lastEditSource = 'local';
-      });
-
-      return true;
-    },
-
-    deleteCategoryResult: (id) => {
       const { layout } = get();
 
       const binsUsingCategory = layout.bins.filter(b => b.category === id);
@@ -586,7 +481,7 @@ export const useLayoutStore = create<LayoutState>()(
         state.lastEditSource = 'local';
       });
 
-      return ok(undefined);
+      return OK;
     },
 
     fillLayer: (layerId, width, depth, categoryId, halfBinMode = false) => {

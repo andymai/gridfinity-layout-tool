@@ -5,6 +5,7 @@ import { useLayoutStore, useUIStore, useUndoableAction } from '../../../store';
 import { CONSTRAINTS, STAGING_ID } from '../../../constants';
 import { getDisplayLayers } from '../../../utils/collision';
 import { ConfirmDialog } from '../../modals/ConfirmDialog';
+import { isOk, isErr, getUserMessage } from '../../../result';
 
 /**
  * Layers tab content - layer list with selection, height controls, reordering, and deletion.
@@ -97,9 +98,9 @@ export function LayersTab() {
 
   const handleAddLayer = () => {
     execute(() => {
-      const id = addLayer();
-      if (id) {
-        setActiveLayer(id);
+      const result = addLayer();
+      if (isOk(result)) {
+        setActiveLayer(result.value);
       }
     });
   };
@@ -117,8 +118,8 @@ export function LayersTab() {
   const confirmDeleteLayer = () => {
     if (!deleteLayerId) return;
     execute(() => {
-      const deleted = deleteLayer(deleteLayerId);
-      if (deleted && activeLayerId === deleteLayerId && layers.length > 0) {
+      const result = deleteLayer(deleteLayerId);
+      if (isOk(result) && activeLayerId === deleteLayerId && layers.length > 0) {
         const remaining = layers.filter(l => l.id !== deleteLayerId);
         if (remaining.length > 0) {
           setActiveLayer(remaining[0].id);
@@ -146,8 +147,8 @@ export function LayersTab() {
 
     execute(() => {
       const result = reorderLayers(fromArrayIndex, toArrayIndex);
-      if (!result.success && result.error) {
-        setReorderError(result.error);
+      if (isErr(result)) {
+        setReorderError(getUserMessage(result.error));
         setTimeout(() => setReorderError(null), 3000);
       }
     });

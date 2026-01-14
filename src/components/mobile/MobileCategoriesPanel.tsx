@@ -4,6 +4,7 @@ import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { isOk } from '../../result';
 
 const COLOR_PALETTE = [
   { color: '#f87171', name: 'Coral' },
@@ -82,9 +83,11 @@ export function MobileCategoriesPanel() {
 
   const handleAddCategory = () => {
     execute(() => {
-      const id = addCategory({ name: 'New Category', color: DEFAULT_CATEGORY_COLOR });
-      setActiveCategory(id);
-      setEditingId(id);
+      const result = addCategory({ name: 'New Category', color: DEFAULT_CATEGORY_COLOR });
+      if (isOk(result)) {
+        setActiveCategory(result.value);
+        setEditingId(result.value);
+      }
     });
   };
 

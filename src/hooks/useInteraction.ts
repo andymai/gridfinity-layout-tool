@@ -7,6 +7,7 @@ import { canPlaceBin, clamp } from '../utils/validation';
 import { constrainGroupDelta } from '../utils/selection';
 import { STAGING_ID, getBaseCellSize } from '../constants';
 import { throttleRAF, cancelThrottledRAF } from '../utils/throttle';
+import { isOk } from '../result';
 
 /**
  * Hook for managing all grid interactions including bin creation, movement, and resizing.
@@ -460,7 +461,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         const layer = layout.layers.find(l => l.id === activeLayerId);
         if (layer) {
           execute(() => {
-            const binId = addBin({
+            const result = addBin({
               layerId: activeLayerId,
               x: x1,
               y: y1,
@@ -471,8 +472,8 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
               label: '',
               notes: '',
             });
-            if (binId) {
-              setSelectedBin(binId);
+            if (isOk(result)) {
+              setSelectedBin(result.value);
             }
           });
         }
@@ -515,7 +516,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
                   );
 
                   if (result.valid) {
-                    const binId = addBin({
+                    const addResult = addBin({
                       layerId: activeLayerId,
                       x: binX,
                       y: binY,
@@ -526,8 +527,8 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
                       label: '',
                       notes: '',
                     });
-                    if (binId) {
-                      placedBinIds.push(binId);
+                    if (isOk(addResult)) {
+                      placedBinIds.push(addResult.value);
                     }
                   }
                 }
@@ -583,7 +584,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
                   const bin = layout.bins.find(b => b.id === binId);
                   if (!bin) continue;
 
-                  const newBinId = addBin({
+                  const addResult = addBin({
                     layerId: activeLayerId,
                     x: bin.x + deltaX,
                     y: bin.y + deltaY,
@@ -596,8 +597,8 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
                     notes: bin.notes,
                     customProperties: bin.customProperties,
                   });
-                  if (newBinId) {
-                    newBinIds.push(newBinId);
+                  if (isOk(addResult)) {
+                    newBinIds.push(addResult.value);
                   }
                 }
               });

@@ -9,9 +9,9 @@ import { useLayoutStore } from '../store/layout';
 import { useUIStore } from '../store/ui';
 import type { ShareExpiration, CloudShareInfo, Layout } from '../types';
 import {
-  createShareResult,
-  updateShareResult,
-  deleteShareResult,
+  createShare,
+  updateShare,
+  deleteShare,
   type ShareResponse,
 } from '../api/share';
 import { isOk, getUserMessage } from '../result';
@@ -181,7 +181,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       setError(null);
 
       const layoutToShare = getLayoutToShare();
-      const result = await createShareResult(layoutToShare, expiresInDays, authorName);
+      const result = await createShare(layoutToShare, expiresInDays, authorName);
 
       // Prevent state updates if component unmounted during async operation
       if (!mountedRef.current) return false;
@@ -222,7 +222,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       setError(null);
 
       const layoutToShare = getLayoutToShare();
-      const result = await updateShareResult(
+      const result = await updateShare(
         existingShare.id,
         existingShare.deleteToken,
         layoutToShare,
@@ -293,7 +293,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     setStatus('deleting');
     setError(null);
 
-    const result = await deleteShareResult(existingShare.id, existingShare.deleteToken);
+    const result = await deleteShare(existingShare.id, existingShare.deleteToken);
 
     // Prevent state updates if component unmounted during async operation
     if (!mountedRef.current) return false;

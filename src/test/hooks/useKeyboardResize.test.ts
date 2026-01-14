@@ -6,6 +6,7 @@ import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
 import { useHistoryStore } from '../../store/history';
 import { createDefaultLayout, STAGING_ID } from '../../constants';
+import { isOk } from '../../result';
 
 // Helper to create keyboard event
 function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {
@@ -22,6 +23,12 @@ function pressKey(key: string, options: Partial<KeyboardEventInit> = {}) {
   const event = createKeyboardEvent(key, options);
   window.dispatchEvent(event);
   return event;
+}
+
+// Helper to extract bin ID from Result
+function getBinId(result: ReturnType<typeof useLayoutStore.getState>['addBin'] extends (...args: unknown[]) => infer R ? R : never): string {
+  if (!isOk(result)) throw new Error('addBin failed');
+  return result.value;
 }
 
 describe('useKeyboardResize', () => {
@@ -69,7 +76,7 @@ describe('useKeyboardResize', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId,
         x: 2,
         y: 2,
@@ -79,9 +86,9 @@ describe('useKeyboardResize', () => {
         category: categoryId,
         label: '',
         notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -107,16 +114,16 @@ describe('useKeyboardResize', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = addBin({
+      const binId1 = getBinId(addBin({
         layerId, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
-      });
-      const binId2 = addBin({
+      }));
+      const binId2 = getBinId(addBin({
         layerId, x: 5, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -130,13 +137,13 @@ describe('useKeyboardResize', () => {
       const { addBin, layout } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: STAGING_ID,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -150,13 +157,13 @@ describe('useKeyboardResize', () => {
   describe('adjustResizeDelta', () => {
     it('increases width with right arrow', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -170,20 +177,20 @@ describe('useKeyboardResize', () => {
       const interaction = useUIStore.getState().interaction;
       expect(interaction?.type).toBe('resize');
       if (interaction?.type === 'resize') {
-        const rect = interaction.currentRects.get(binId!);
+        const rect = interaction.currentRects.get(binId);
         expect(rect?.width).toBe(3);
       }
     });
 
     it('decreases width with left arrow', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 3, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -196,20 +203,20 @@ describe('useKeyboardResize', () => {
 
       const interaction = useUIStore.getState().interaction;
       if (interaction?.type === 'resize') {
-        const rect = interaction.currentRects.get(binId!);
+        const rect = interaction.currentRects.get(binId);
         expect(rect?.width).toBe(2);
       }
     });
 
     it('increases depth with up arrow', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -222,20 +229,20 @@ describe('useKeyboardResize', () => {
 
       const interaction = useUIStore.getState().interaction;
       if (interaction?.type === 'resize') {
-        const rect = interaction.currentRects.get(binId!);
+        const rect = interaction.currentRects.get(binId);
         expect(rect?.depth).toBe(3);
       }
     });
 
     it('enforces minimum size of 1', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 1, depth: 1, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -249,7 +256,7 @@ describe('useKeyboardResize', () => {
 
       const interaction = useUIStore.getState().interaction;
       if (interaction?.type === 'resize') {
-        const rect = interaction.currentRects.get(binId!);
+        const rect = interaction.currentRects.get(binId);
         expect(rect?.width).toBe(1);
         expect(rect?.depth).toBe(1);
       }
@@ -259,13 +266,13 @@ describe('useKeyboardResize', () => {
   describe('confirmResize', () => {
     it('applies resize changes to the bin', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -288,13 +295,13 @@ describe('useKeyboardResize', () => {
 
     it('exits without changes if no resize delta', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -318,10 +325,10 @@ describe('useKeyboardResize', () => {
       const categoryId = layout.categories[0].id;
 
       // Add first bin
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
-      });
+      }));
 
       // Add blocking bin
       addBin({
@@ -329,7 +336,7 @@ describe('useKeyboardResize', () => {
         category: categoryId, label: '', notes: '',
       });
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -355,13 +362,13 @@ describe('useKeyboardResize', () => {
 
     it('creates undo history entry', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       expect(useHistoryStore.getState().past).toHaveLength(0);
@@ -386,13 +393,13 @@ describe('useKeyboardResize', () => {
   describe('exitResizeMode', () => {
     it('exits resize mode without applying changes', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -420,13 +427,13 @@ describe('useKeyboardResize', () => {
   describe('keyboard events', () => {
     it('responds to arrow keys when in resize mode', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboardResize());
 
       // Enter resize mode
@@ -445,13 +452,13 @@ describe('useKeyboardResize', () => {
 
     it('confirms on Enter key', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -473,13 +480,13 @@ describe('useKeyboardResize', () => {
 
     it('cancels on Escape key', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardResize());
 
       act(() => {
@@ -542,13 +549,13 @@ describe('useKeyboardDrag', () => {
   describe('enterDragMode', () => {
     it('enters drag mode when bins selected', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 2, y: 2, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -564,16 +571,16 @@ describe('useKeyboardDrag', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = addBin({
+      const binId1 = getBinId(addBin({
         layerId, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
-      });
-      const binId2 = addBin({
+      }));
+      const binId2 = getBinId(addBin({
         layerId, x: 5, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -595,13 +602,13 @@ describe('useKeyboardDrag', () => {
 
     it('does not enter drag mode for staging bins', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: STAGING_ID,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -615,13 +622,13 @@ describe('useKeyboardDrag', () => {
   describe('adjustDragOffset', () => {
     it('moves bin position with arrow keys', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 2, y: 2, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -642,13 +649,13 @@ describe('useKeyboardDrag', () => {
 
     it('tracks cumulative movement', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 2, y: 2, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -673,13 +680,13 @@ describe('useKeyboardDrag', () => {
   describe('confirmDrag', () => {
     it('applies movement to bins', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 2, y: 2, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -705,16 +712,16 @@ describe('useKeyboardDrag', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = addBin({
+      const binId1 = getBinId(addBin({
         layerId, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
-      });
-      const binId2 = addBin({
+      }));
+      const binId2 = getBinId(addBin({
         layerId, x: 0, y: 3, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId1!, binId2!]);
+      useUIStore.getState().setSelectedBins([binId1, binId2]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -737,13 +744,13 @@ describe('useKeyboardDrag', () => {
 
     it('constrains move to stay within bounds', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 8, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -776,16 +783,16 @@ describe('useKeyboardDrag', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
-      });
+      }));
       addBin({
         layerId, x: 3, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -807,13 +814,13 @@ describe('useKeyboardDrag', () => {
 
     it('creates undo history entry', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       expect(useHistoryStore.getState().past).toHaveLength(0);
@@ -837,13 +844,13 @@ describe('useKeyboardDrag', () => {
   describe('exitDragMode', () => {
     it('exits without applying changes', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 2, y: 2, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -868,13 +875,13 @@ describe('useKeyboardDrag', () => {
   describe('keyboard events', () => {
     it('confirms on Enter key', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 2, y: 2, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
@@ -896,13 +903,13 @@ describe('useKeyboardDrag', () => {
 
     it('cancels on Escape key', () => {
       const { addBin, layout } = useLayoutStore.getState();
-      const binId = addBin({
+      const binId = getBinId(addBin({
         layerId: layout.layers[0].id,
         x: 2, y: 2, width: 2, depth: 2, height: 3,
         category: layout.categories[0].id, label: '', notes: '',
-      });
+      }));
 
-      useUIStore.getState().setSelectedBins([binId!]);
+      useUIStore.getState().setSelectedBins([binId]);
       const { result } = renderHook(() => useKeyboardDrag());
 
       act(() => {
