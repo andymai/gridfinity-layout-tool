@@ -69,6 +69,11 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
   },
 
   toggleFeature: (featureId) => {
+    const feature = getFeature(featureId);
+
+    // Coming Soon features cannot be toggled
+    if (feature?.comingSoon) return;
+
     const { preferences } = get();
     const currentlyEnabled = preferences.enabledFeatures[featureId] ?? false;
     const newEnabled = !currentlyEnabled;
@@ -93,6 +98,11 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
   },
 
   enableFeature: (featureId) => {
+    const feature = getFeature(featureId);
+
+    // Coming Soon features cannot be enabled
+    if (feature?.comingSoon) return;
+
     const { preferences } = get();
     if (preferences.enabledFeatures[featureId]) return;
 
@@ -145,6 +155,9 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
 
     // Deprecated features are always disabled
     if (feature?.status === 'deprecated') return false;
+
+    // Coming Soon features are always disabled
+    if (feature?.comingSoon) return false;
 
     return preferences.enabledFeatures[featureId] ?? false;
   },

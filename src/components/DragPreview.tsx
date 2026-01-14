@@ -79,7 +79,7 @@ export function DragPreview() {
 
   return (
     <div
-      className="fixed pointer-events-none z-[100]"
+      className="fixed pointer-events-none z-[101]"
       style={{
         left: mousePos.x - previewOffsetX,
         top: mousePos.y - previewOffsetY,

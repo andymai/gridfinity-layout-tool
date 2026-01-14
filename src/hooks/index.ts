@@ -12,3 +12,4 @@ export { useLayoutRouting } from './useLayoutRouting';
 export { usePWAUpdate } from './usePWAUpdate';
 export { useAnalytics } from './useAnalytics';
 export { useStorageMigration } from './useStorageMigration';
+export { useFeatureFlag, isFeatureEnabled } from './useFeatureFlag';
