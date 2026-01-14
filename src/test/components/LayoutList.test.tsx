@@ -6,7 +6,7 @@ import { resetAllStores } from '../testUtils';
 import type { LayoutEntry } from '../../types';
 
 // Mock storage
-vi.mock('../../utils/storage', () => ({
+vi.mock('../../storage', () => ({
   loadLayoutByIdAsync: vi.fn(() => Promise.resolve({
     id: 'test-layout',
     name: 'Test Layout',
@@ -388,7 +388,7 @@ describe('LayoutList', () => {
 
   describe('download functionality', () => {
     it('calls download with layout data', async () => {
-      const { downloadLayoutAsFile } = await import('../../utils/storage');
+      const { downloadLayoutAsFile } = await import('../../storage');
       const announceToScreenReader = vi.fn();
       useUIStore.setState({ announceToScreenReader });
 

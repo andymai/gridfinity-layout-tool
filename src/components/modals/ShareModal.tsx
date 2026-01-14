@@ -7,7 +7,7 @@ import {
   downloadLayoutAsFile,
   copyToClipboard,
   exportLayoutJSON,
-} from '../../utils/storage';
+} from '../../storage';
 import { trackLayoutSnapshot } from '../../utils/analytics';
 import { CloudShareTab } from '../CloudShareTab';
 

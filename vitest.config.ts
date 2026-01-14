@@ -19,6 +19,7 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         '**/types.ts',
+        '**/index.ts', // Barrel files (re-exports only)
         'api/**', // Serverless functions tested separately
       ],
       thresholds: {

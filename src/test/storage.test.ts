@@ -7,7 +7,7 @@ import {
   importLayoutJSON,
   exportPrintListTSV,
   getStorageUsage,
-} from '../utils/storage';
+} from '../storage';
 import type { Layout } from '../types';
 import { createDefaultLayout, STAGING_ID } from '../constants';
 

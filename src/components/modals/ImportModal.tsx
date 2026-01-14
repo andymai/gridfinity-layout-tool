@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import { validateImport } from '../../utils/validation';
-import { decodeLayoutFromURL } from '../../utils/storage';
+import { decodeLayoutFromURL } from '../../storage';
 import type { Layout } from '../../types';
 
 interface ImportModalProps {

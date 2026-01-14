@@ -3,12 +3,12 @@ import { renderHook, act } from '@testing-library/react';
 import { useLayoutRouting } from '../../hooks/useLayoutRouting';
 import { useLayoutStore, useLibraryStore, useUIStore, useToastStore } from '../../store';
 import { resetAllStores } from '../testUtils';
-import * as storage from '../../utils/storage';
+import * as storage from '../../storage';
 import * as url from '../../utils/url';
 import * as validation from '../../utils/validation';
 
 // Mock storage module
-vi.mock('../../utils/storage', () => ({
+vi.mock('../../storage', () => ({
   loadLayoutByIdAsync: vi.fn(),
 }));
 

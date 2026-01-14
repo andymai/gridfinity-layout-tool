@@ -8,7 +8,7 @@ import { useLayoutSwitcher } from '../../hooks/useLayoutSwitcher';
 import { useCloudShare } from '../../hooks/useCloudShare';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { LayoutThumbnail } from '../LayoutThumbnail';
-import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../utils/storage';
+import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../storage';
 import { EXPIRATION_OPTIONS, formatShareDate, calculateDaysRemaining } from '../../utils/cloudShare';
 import type { LayoutEntry, ShareExpiration } from '../../types';
 

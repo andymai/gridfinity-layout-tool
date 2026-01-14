@@ -76,7 +76,7 @@ vi.mock('../../components/modals/BinListModal', () => ({
 
 // Mock storage utilities
 const mockExportPrintListTSV = vi.fn(() => 'Size\tHeight\tQty\n2×2\t3\t1');
-vi.mock('../../utils/storage', () => ({
+vi.mock('../../storage', () => ({
   exportPrintListTSV: () => mockExportPrintListTSV(),
 }));
 

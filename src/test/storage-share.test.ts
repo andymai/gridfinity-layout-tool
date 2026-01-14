@@ -7,7 +7,7 @@ import {
   clearSharedLayoutFromURL,
   copyToClipboard,
   downloadLayoutAsFile,
-} from '../utils/storage';
+} from '../storage';
 import type { Layout } from '../types';
 
 // Mock clipboard API

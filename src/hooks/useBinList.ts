@@ -18,7 +18,7 @@ import {
   calculateCategoryBreakdown,
   type CategoryBreakdown,
 } from '../utils/binListOperations';
-import { exportPrintListTSV } from '../utils/storage';
+import { exportPrintListTSV } from '../storage';
 import type { EnhancedPrintRow } from '../types';
 
 export interface UseBinListReturn extends Omit<UsePrintListReturn, 'rows'> {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useLibraryStore, useToastStore } from '../store';
-import { saveLayoutByIdAsync, saveLibrary, computeLayoutPreview } from '../utils/storage';
+import { saveLayoutByIdAsync, saveLibrary, computeLayoutPreview } from '../storage';
 import { scheduleIdleCallback, cancelIdleCallback } from '../utils/idle';
 
 const SAVE_DEBOUNCE_MS = 1000;

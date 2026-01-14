@@ -6,7 +6,7 @@ import { useLayoutStore } from '../../store/layout';
 import { useUIStore } from '../../store/ui';
 import { createDefaultLayout } from '../../constants';
 import * as shareApi from '../../api/share';
-import * as storage from '../../utils/storage';
+import * as storage from '../../storage';
 import type { LayoutLibrary, CloudShareInfo } from '../../types';
 
 // Mock the share API module
@@ -18,8 +18,8 @@ vi.mock('../../api/share', () => ({
 }));
 
 // Mock clipboard
-vi.mock('../../utils/storage', async () => {
-  const actual = await vi.importActual('../../utils/storage');
+vi.mock('../../storage', async () => {
+  const actual = await vi.importActual('../../storage');
   return {
     ...actual,
     copyToClipboard: vi.fn().mockResolvedValue(true),
