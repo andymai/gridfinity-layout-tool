@@ -10,8 +10,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      // Note: icons are included via workbox.globPatterns ('**/*.{png,svg}')
-      // Don't use includeAssets here as it causes duplicate precache entries
+      // Note: Don't use includeAssets here - icons are precached via globPatterns,
+      // except manifest icons (icon-192, icon-512) which are excluded via globIgnores
+      // since they're auto-added by vite-plugin-pwa from manifest.icons below.
       manifest: {
         name: 'Gridfinity Layout Tool',
         short_name: 'Gridfinity',
