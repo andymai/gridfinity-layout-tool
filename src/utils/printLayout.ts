@@ -3,14 +3,6 @@ import type { BinListSortOrder, BinSortField } from '../store/settings';
 import { STAGING_ID } from '../constants';
 
 /**
- * Get the suggested page orientation based on drawer dimensions.
- * Landscape if drawer is wider than deep, portrait otherwise.
- */
-export function getOrientationForDrawer(drawer: Drawer): 'portrait' | 'landscape' {
-  return drawer.width > drawer.depth ? 'landscape' : 'portrait';
-}
-
-/**
  * Filter bins to only include those on the specified layers.
  * Excludes staging bins.
  */
@@ -60,31 +52,6 @@ export function formatPrintDate(): string {
 }
 
 /**
- * Calculate scale factor to fit drawer in available width.
- * Returns a scale between 0.1 and 1.0.
- */
-export function calculatePrintScale(
-  drawerWidth: number,
-  drawerDepth: number,
-  availableWidth: number,
-  availableHeight: number,
-  cellSize: number,
-  gap: number
-): number {
-  const gridWidth = drawerWidth * (cellSize + gap) + gap;
-  const gridHeight = drawerDepth * (cellSize + gap) + gap;
-
-  const scaleX = availableWidth / gridWidth;
-  const scaleY = availableHeight / gridHeight;
-
-  // Use the smaller scale to fit both dimensions
-  const scale = Math.min(scaleX, scaleY, 1.0);
-
-  // Clamp to reasonable range
-  return Math.max(0.1, Math.min(1.0, scale));
-}
-
-/**
  * Get bin count per layer for display.
  */
 export function getBinCountByLayer(
@@ -107,13 +74,6 @@ export function getBinCountByLayer(
   }
 
   return counts;
-}
-
-/**
- * Get total bin count excluding staging.
- */
-export function getTotalBinCount(bins: Bin[]): number {
-  return bins.filter((bin) => bin.layerId !== STAGING_ID).length;
 }
 
 /**
