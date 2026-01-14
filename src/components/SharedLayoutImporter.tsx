@@ -9,7 +9,7 @@ import {
   getCloudShareIdFromURL,
   clearCloudShareFromURL,
 } from '../storage';
-import { fetchShareResult } from '../api/share';
+import { fetchShare } from '../api/share';
 import { isOk, getUserMessage } from '../result';
 import type { Layout } from '../types';
 
@@ -108,7 +108,7 @@ export function SharedLayoutImporter() {
     const loadCloudShare = async () => {
       setIsLoading(true);
 
-      const result = await fetchShareResult(initialCloudShareId);
+      const result = await fetchShare(initialCloudShareId);
 
       // Prevent state updates if component unmounted during fetch
       if (!isMounted) return;

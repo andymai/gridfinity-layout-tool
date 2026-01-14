@@ -22,7 +22,7 @@ describe('layout store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const result = addBin({
         layerId,
         x: 0,
         y: 0,
@@ -34,18 +34,18 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(binId).not.toBeNull();
+      expect(isOk(result)).toBe(true);
       const updatedLayout = useLayoutStore.getState().layout;
       expect(updatedLayout.bins).toHaveLength(1);
       expect(updatedLayout.bins[0].label).toBe('Test bin');
     });
 
-    it('returns null when bin placement is invalid (out of bounds)', () => {
+    it('returns error when bin placement is invalid (out of bounds)', () => {
       const { addBin, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const result = addBin({
         layerId,
         x: 100, // Way out of bounds
         y: 0,
@@ -57,11 +57,11 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(binId).toBeNull();
+      expect(isErr(result)).toBe(true);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
     });
 
-    it('returns null when bin overlaps existing bin', () => {
+    it('returns error when bin overlaps existing bin', () => {
       const { addBin, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
@@ -80,7 +80,7 @@ describe('layout store', () => {
       });
 
       // Try to add overlapping bin
-      const binId = addBin({
+      const result = addBin({
         layerId,
         x: 1, // Overlaps with first bin
         y: 1,
@@ -92,7 +92,7 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(binId).toBeNull();
+      expect(isErr(result)).toBe(true);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
     });
 
@@ -100,7 +100,7 @@ describe('layout store', () => {
       const { addBin, layout } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const result = addBin({
         layerId: STAGING_ID,
         x: 0,
         y: 0,
@@ -112,7 +112,7 @@ describe('layout store', () => {
         notes: '',
       });
 
-      expect(binId).not.toBeNull();
+      expect(isOk(result)).toBe(true);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
     });
   });
@@ -123,7 +123,7 @@ describe('layout store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const result = addBin({
         layerId,
         x: 0,
         y: 0,
@@ -136,8 +136,10 @@ describe('layout store', () => {
       });
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
 
-      deleteBin(binId!);
+      deleteBin(result.value);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
     });
 
@@ -169,7 +171,7 @@ describe('layout store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const result = addBin({
         layerId,
         x: 0,
         y: 0,
@@ -180,8 +182,10 @@ describe('layout store', () => {
         label: 'Original',
         notes: '',
       });
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
 
-      updateBin(binId!, { label: 'Updated', notes: 'New notes' });
+      updateBin(result.value, { label: 'Updated', notes: 'New notes' });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.label).toBe('Updated');
@@ -195,7 +199,7 @@ describe('layout store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const addResult = addBin({
         layerId,
         x: 0,
         y: 0,
@@ -206,9 +210,11 @@ describe('layout store', () => {
         label: 'Original',
         notes: '',
       });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      const newId = duplicateBin(binId!);
-      expect(newId).not.toBeNull();
+      const dupResult = duplicateBin(addResult.value);
+      expect(isOk(dupResult)).toBe(true);
 
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins).toHaveLength(2);
@@ -229,11 +235,12 @@ describe('layout store', () => {
       const bins = useLayoutStore.getState().layout.bins;
       const binToClone = bins.find(b => b.layerId !== STAGING_ID);
 
-      const newId = duplicateBin(binToClone!.id);
-      expect(newId).not.toBeNull();
+      const dupResult = duplicateBin(binToClone!.id);
+      expect(isOk(dupResult)).toBe(true);
+      if (!isOk(dupResult)) return;
 
       const updatedBins = useLayoutStore.getState().layout.bins;
-      const newBin = updatedBins.find(b => b.id === newId);
+      const newBin = updatedBins.find(b => b.id === dupResult.value);
       expect(newBin?.layerId).toBe(STAGING_ID);
     });
 
@@ -241,7 +248,7 @@ describe('layout store', () => {
       const { addBin, duplicateBin, layout } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const addResult = addBin({
         layerId: STAGING_ID,
         x: 0,
         y: 0,
@@ -252,9 +259,11 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      const newId = duplicateBin(binId!);
-      expect(newId).not.toBeNull();
+      const dupResult = duplicateBin(addResult.value);
+      expect(isOk(dupResult)).toBe(true);
 
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins).toHaveLength(2);
@@ -343,9 +352,12 @@ describe('layout store', () => {
       });
 
       // Add layer 2 and add bin to it
-      const layer2Id = addLayer();
+      const layer2Result = addLayer();
+      expect(isOk(layer2Result)).toBe(true);
+      if (!isOk(layer2Result)) return;
+
       addBin({
-        layerId: layer2Id!,
+        layerId: layer2Result.value,
         x: 0,
         y: 0,
         width: 2,
@@ -361,7 +373,7 @@ describe('layout store', () => {
       clearLayer(layer1Id);
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins).toHaveLength(1);
-      expect(bins[0].layerId).toBe(layer2Id);
+      expect(bins[0].layerId).toBe(layer2Result.value);
     });
   });
 
@@ -441,15 +453,15 @@ describe('layout store', () => {
     it('addLayer creates new layer', () => {
       const { addLayer } = useLayoutStore.getState();
 
-      const layerId = addLayer();
-      expect(layerId).not.toBeNull();
+      const result = addLayer();
+      expect(isOk(result)).toBe(true);
 
       const layers = useLayoutStore.getState().layout.layers;
       expect(layers).toHaveLength(2);
       expect(layers[1].name).toBe('Layer 2');
     });
 
-    it('addLayer returns null when at max layers', () => {
+    it('addLayer returns error when at max layers', () => {
       const { addLayer } = useLayoutStore.getState();
 
       // Add layers until max
@@ -458,7 +470,7 @@ describe('layout store', () => {
       }
 
       const result = addLayer();
-      expect(result).toBeNull();
+      expect(isErr(result)).toBe(true);
     });
 
     it('addLayer uses default layer height setting', () => {
@@ -472,8 +484,8 @@ describe('layout store', () => {
 
       const { addLayer } = useLayoutStore.getState();
 
-      const layerId = addLayer();
-      expect(layerId).not.toBeNull();
+      const result = addLayer();
+      expect(isOk(result)).toBe(true);
 
       const layers = useLayoutStore.getState().layout.layers;
       expect(layers).toHaveLength(2);
@@ -493,8 +505,8 @@ describe('layout store', () => {
       const { updateDrawer, addLayer } = useLayoutStore.getState();
       updateDrawer({ height: 5 });
 
-      const layerId = addLayer();
-      expect(layerId).not.toBeNull();
+      const result = addLayer();
+      expect(isOk(result)).toBe(true);
 
       const layers = useLayoutStore.getState().layout.layers;
       // New layer should be 2 (remaining) not 5 (default)
@@ -507,7 +519,10 @@ describe('layout store', () => {
       const categoryId = layout.categories[0].id;
 
       // Add second layer
-      const layer2Id = addLayer()!;
+      const layer2Result = addLayer();
+      expect(isOk(layer2Result)).toBe(true);
+      if (!isOk(layer2Result)) return;
+      const layer2Id = layer2Result.value;
 
       // Add bin to each layer
       addBin({
@@ -524,7 +539,7 @@ describe('layout store', () => {
       expect(useLayoutStore.getState().layout.bins).toHaveLength(2);
 
       const result = deleteLayer(layer1Id);
-      expect(result).toBe(true);
+      expect(isOk(result)).toBe(true);
 
       const state = useLayoutStore.getState().layout;
       expect(state.layers).toHaveLength(1);
@@ -533,12 +548,12 @@ describe('layout store', () => {
       expect(state.bins[0].layerId).toBe(layer2Id);
     });
 
-    it('deleteLayer returns false when only one layer exists', () => {
+    it('deleteLayer returns error when only one layer exists', () => {
       const { deleteLayer, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
 
       const result = deleteLayer(layerId);
-      expect(result).toBe(false);
+      expect(isErr(result)).toBe(true);
       expect(useLayoutStore.getState().layout.layers).toHaveLength(1);
     });
   });
@@ -594,11 +609,12 @@ describe('layout store', () => {
     it('addCategory creates new category', () => {
       const { addCategory } = useLayoutStore.getState();
 
-      const catId = addCategory({ name: 'New Cat', color: '#00ff00' });
-      expect(catId).toBeDefined();
+      const result = addCategory({ name: 'New Cat', color: '#00ff00' });
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
 
       const cats = useLayoutStore.getState().layout.categories;
-      const newCat = cats.find(c => c.id === catId);
+      const newCat = cats.find(c => c.id === result.value);
       expect(newCat?.name).toBe('New Cat');
       expect(newCat?.color).toBe('#00ff00');
     });
@@ -606,14 +622,16 @@ describe('layout store', () => {
     it('deleteCategory removes unused category', () => {
       const { addCategory, deleteCategory } = useLayoutStore.getState();
 
-      const catId = addCategory({ name: 'To Delete', color: '#ff0000' });
-      const result = deleteCategory(catId);
+      const addResult = addCategory({ name: 'To Delete', color: '#ff0000' });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      expect(result).toBe(true);
-      expect(useLayoutStore.getState().layout.categories.find(c => c.id === catId)).toBeUndefined();
+      const result = deleteCategory(addResult.value);
+      expect(isOk(result)).toBe(true);
+      expect(useLayoutStore.getState().layout.categories.find(c => c.id === addResult.value)).toBeUndefined();
     });
 
-    it('deleteCategory returns false when category is in use', () => {
+    it('deleteCategory returns Err when category is in use', () => {
       const { addBin, deleteCategory, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
@@ -625,7 +643,7 @@ describe('layout store', () => {
       });
 
       const result = deleteCategory(categoryId);
-      expect(result).toBe(false);
+      expect(isErr(result)).toBe(true);
     });
   });
 
@@ -706,7 +724,7 @@ describe('layout store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const addResult = addBin({
         layerId,
         x: 0,
         y: 0,
@@ -717,18 +735,21 @@ describe('layout store', () => {
         label: 'Test',
         notes: '',
       });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
       expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(layerId);
 
-      moveBinToStaging(binId!);
+      const result = moveBinToStaging(addResult.value);
+      expect(isOk(result)).toBe(true);
       expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(STAGING_ID);
     });
 
-    it('does nothing when bin does not exist', () => {
+    it('returns Err when bin does not exist', () => {
       const { moveBinToStaging } = useLayoutStore.getState();
 
-      // Should not throw
-      expect(() => moveBinToStaging('nonexistent')).not.toThrow();
+      const result = moveBinToStaging('nonexistent');
+      expect(isErr(result)).toBe(true);
     });
   });
 
@@ -739,7 +760,7 @@ describe('layout store', () => {
       const categoryId = layout.categories[0].id;
 
       // Add bin to staging
-      const binId = addBin({
+      const addResult = addBin({
         layerId: STAGING_ID,
         x: 0,
         y: 0,
@@ -750,9 +771,11 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      const result = moveBinFromStaging(binId!, layerId, 0, 0);
-      expect(result).toBe(true);
+      const result = moveBinFromStaging(addResult.value, layerId, 0, 0);
+      expect(isOk(result)).toBe(true);
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.layerId).toBe(layerId);
@@ -760,19 +783,19 @@ describe('layout store', () => {
       expect(bin.y).toBe(0);
     });
 
-    it('returns false when bin does not exist', () => {
+    it('returns Err when bin does not exist', () => {
       const { moveBinFromStaging, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
 
       const result = moveBinFromStaging('nonexistent', layerId, 0, 0);
-      expect(result).toBe(false);
+      expect(isErr(result)).toBe(true);
     });
 
-    it('returns false when layer does not exist', () => {
+    it('returns Err when layer does not exist', () => {
       const { addBin, moveBinFromStaging, layout } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const addResult = addBin({
         layerId: STAGING_ID,
         x: 0,
         y: 0,
@@ -783,12 +806,14 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      const result = moveBinFromStaging(binId!, 'nonexistent-layer', 0, 0);
-      expect(result).toBe(false);
+      const result = moveBinFromStaging(addResult.value, 'nonexistent-layer', 0, 0);
+      expect(isErr(result)).toBe(true);
     });
 
-    it('returns false when placement is invalid', () => {
+    it('returns Err when placement is invalid', () => {
       const { addBin, moveBinFromStaging, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
@@ -807,7 +832,7 @@ describe('layout store', () => {
       });
 
       // Add bin to staging
-      const stagingBinId = addBin({
+      const addResult = addBin({
         layerId: STAGING_ID,
         x: 0,
         y: 0,
@@ -818,10 +843,12 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
       // Try to move to occupied position
-      const result = moveBinFromStaging(stagingBinId!, layerId, 0, 0);
-      expect(result).toBe(false);
+      const result = moveBinFromStaging(addResult.value, layerId, 0, 0);
+      expect(isErr(result)).toBe(true);
     });
   });
 
@@ -863,31 +890,35 @@ describe('layout store', () => {
       const layer2Id = useLayoutStore.getState().layout.layers[1].id;
 
       const result = reorderLayers(0, 1);
-      expect(result.success).toBe(true);
+      expect(isOk(result)).toBe(true);
 
       const layers = useLayoutStore.getState().layout.layers;
       expect(layers[0].id).toBe(layer2Id);
       expect(layers[1].id).toBe(layer1Id);
     });
 
-    it('returns success for same index', () => {
+    it('returns Ok for same index', () => {
       const result = useLayoutStore.getState().reorderLayers(0, 0);
-      expect(result.success).toBe(true);
+      expect(isOk(result)).toBe(true);
     });
 
-    it('returns error for invalid source index', () => {
+    it('returns Err for invalid source index', () => {
       const result = useLayoutStore.getState().reorderLayers(-1, 0);
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Invalid source index');
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
+      }
     });
 
-    it('returns error for invalid target index', () => {
+    it('returns Err for invalid target index', () => {
       const result = useLayoutStore.getState().reorderLayers(0, 10);
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Invalid target index');
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
+      }
     });
 
-    it('returns error when reorder would cause collisions', () => {
+    it('returns Err when reorder would cause collisions', () => {
       const { addBin, addLayer, updateDrawer, layout } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
@@ -895,14 +926,16 @@ describe('layout store', () => {
       updateDrawer({ height: 12 });
 
       // Add second layer
-      const layer2Id = addLayer();
-      expect(layer2Id).not.toBeNull();
+      const layer2Result = addLayer();
+      expect(isOk(layer2Result)).toBe(true);
+      if (!isOk(layer2Result)) return;
+      const layer2Id = layer2Result.value;
 
       // Layer 1 height = 3, layer 2 height = 3
       const layer1Id = useLayoutStore.getState().layout.layers[0].id;
 
       // Add a bin on layer 1 at (0,0) with height 3 (fills layer 1)
-      const bin1Id = addBin({
+      const bin1Result = addBin({
         layerId: layer1Id,
         x: 0,
         y: 0,
@@ -913,7 +946,7 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(bin1Id).not.toBeNull();
+      expect(isOk(bin1Result)).toBe(true);
 
       // Add a bin on layer 2 at same (0,0) position with height 4 (spans into next space)
       // Before swap: layers = [Layer1(h=3), Layer2(h=3)]
@@ -925,8 +958,8 @@ describe('layout store', () => {
       //   Bin2: zStart=0, zEnd=4 (Layer2 is now first)
       //   Bin1: zStart=3, zEnd=6 (Layer1 starts at z=3)
       //   Overlap check: 0 < 6 && 3 < 4 = true && true = collision!
-      const bin2Id = addBin({
-        layerId: layer2Id!,
+      const bin2Result = addBin({
+        layerId: layer2Id,
         x: 0,
         y: 0,
         width: 2,
@@ -936,7 +969,7 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
-      expect(bin2Id).not.toBeNull();
+      expect(isOk(bin2Result)).toBe(true);
 
       // Verify bins were added
       const bins = useLayoutStore.getState().layout.bins;
@@ -945,8 +978,10 @@ describe('layout store', () => {
       // Reordering should cause collision since bins would vertically overlap
       const result = useLayoutStore.getState().reorderLayers(0, 1);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('collision');
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
+      }
     });
   });
 
@@ -1078,11 +1113,11 @@ describe('layout store', () => {
   });
 
   describe('duplicateBin edge cases', () => {
-    it('returns null when bin does not exist', () => {
+    it('returns Err when bin does not exist', () => {
       const { duplicateBin } = useLayoutStore.getState();
 
       const result = duplicateBin('nonexistent');
-      expect(result).toBeNull();
+      expect(isErr(result)).toBe(true);
     });
 
     it('preserves clearanceHeight when duplicating', () => {
@@ -1090,7 +1125,7 @@ describe('layout store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const addResult = addBin({
         layerId,
         x: 0,
         y: 0,
@@ -1102,10 +1137,14 @@ describe('layout store', () => {
         notes: '',
         clearanceHeight: 2,
       });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      const newId = duplicateBin(binId!);
-      const newBin = useLayoutStore.getState().layout.bins.find(b => b.id === newId);
+      const dupResult = duplicateBin(addResult.value);
+      expect(isOk(dupResult)).toBe(true);
+      if (!isOk(dupResult)) return;
 
+      const newBin = useLayoutStore.getState().layout.bins.find(b => b.id === dupResult.value);
       expect(newBin?.clearanceHeight).toBe(2);
     });
   });
@@ -1125,13 +1164,13 @@ describe('layout store', () => {
   // Result-returning operations
   // =========================================================================
 
-  describe('addBinResult', () => {
+  describe('addBin', () => {
     it('returns Ok with bin id on success', () => {
-      const { addBinResult, layout } = useLayoutStore.getState();
+      const { addBin, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const result = addBinResult({
+      const result = addBin({
         layerId,
         x: 0,
         y: 0,
@@ -1151,11 +1190,11 @@ describe('layout store', () => {
     });
 
     it('returns Err with VALIDATION_OUT_OF_BOUNDS when out of bounds', () => {
-      const { addBinResult, layout } = useLayoutStore.getState();
+      const { addBin, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const result = addBinResult({
+      const result = addBin({
         layerId,
         x: 100,
         y: 0,
@@ -1175,12 +1214,12 @@ describe('layout store', () => {
     });
 
     it('returns Err with VALIDATION_COLLISION when bin overlaps', () => {
-      const { addBinResult, layout } = useLayoutStore.getState();
+      const { addBin, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
       // Add first bin successfully
-      addBinResult({
+      addBin({
         layerId,
         x: 0,
         y: 0,
@@ -1193,7 +1232,7 @@ describe('layout store', () => {
       });
 
       // Try to add overlapping bin
-      const result = addBinResult({
+      const result = addBin({
         layerId,
         x: 1,
         y: 1,
@@ -1212,10 +1251,10 @@ describe('layout store', () => {
     });
 
     it('returns Err with VALIDATION_INVALID_LAYER for nonexistent layer', () => {
-      const { addBinResult, layout } = useLayoutStore.getState();
+      const { addBin, layout } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
-      const result = addBinResult({
+      const result = addBin({
         layerId: 'nonexistent-layer',
         x: 0,
         y: 0,
@@ -1234,10 +1273,10 @@ describe('layout store', () => {
     });
 
     it('allows adding to staging without validation', () => {
-      const { addBinResult, layout } = useLayoutStore.getState();
+      const { addBin, layout } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
-      const result = addBinResult({
+      const result = addBin({
         layerId: STAGING_ID,
         x: 0,
         y: 0,
@@ -1253,13 +1292,13 @@ describe('layout store', () => {
     });
   });
 
-  describe('moveBinFromStagingResult', () => {
+  describe('moveBinFromStaging', () => {
     it('returns Ok on successful move', () => {
-      const { addBin, moveBinFromStagingResult, layout } = useLayoutStore.getState();
+      const { addBin, moveBinFromStaging, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const addResult = addBin({
         layerId: STAGING_ID,
         x: 0,
         y: 0,
@@ -1270,8 +1309,10 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      const result = moveBinFromStagingResult(binId!, layerId, 0, 0);
+      const result = moveBinFromStaging(addResult.value, layerId, 0, 0);
       expect(isOk(result)).toBe(true);
 
       const bin = useLayoutStore.getState().layout.bins[0];
@@ -1279,10 +1320,10 @@ describe('layout store', () => {
     });
 
     it('returns Err with VALIDATION_INVALID_LAYER for nonexistent layer', () => {
-      const { addBin, moveBinFromStagingResult, layout } = useLayoutStore.getState();
+      const { addBin, moveBinFromStaging, layout } = useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const addResult = addBin({
         layerId: STAGING_ID,
         x: 0,
         y: 0,
@@ -1293,8 +1334,10 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      const result = moveBinFromStagingResult(binId!, 'nonexistent-layer', 0, 0);
+      const result = moveBinFromStaging(addResult.value, 'nonexistent-layer', 0, 0);
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1303,7 +1346,7 @@ describe('layout store', () => {
     });
 
     it('returns Err with VALIDATION_COLLISION when position is occupied', () => {
-      const { addBin, moveBinFromStagingResult, layout } = useLayoutStore.getState();
+      const { addBin, moveBinFromStaging, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
@@ -1321,7 +1364,7 @@ describe('layout store', () => {
       });
 
       // Add bin to staging
-      const stagingBinId = addBin({
+      const stagingResult = addBin({
         layerId: STAGING_ID,
         x: 0,
         y: 0,
@@ -1332,8 +1375,10 @@ describe('layout store', () => {
         label: '',
         notes: '',
       });
+      expect(isOk(stagingResult)).toBe(true);
+      if (!isOk(stagingResult)) return;
 
-      const result = moveBinFromStagingResult(stagingBinId!, layerId, 0, 0);
+      const result = moveBinFromStaging(stagingResult.value, layerId, 0, 0);
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1342,11 +1387,11 @@ describe('layout store', () => {
     });
   });
 
-  describe('addLayerResult', () => {
+  describe('addLayer', () => {
     it('returns Ok with layer id on success', () => {
-      const { addLayerResult } = useLayoutStore.getState();
+      const { addLayer } = useLayoutStore.getState();
 
-      const result = addLayerResult();
+      const result = addLayer();
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -1356,7 +1401,7 @@ describe('layout store', () => {
     });
 
     it('returns Err with LAYOUT_LAYER_LIMIT when at max layers', () => {
-      const { addLayerResult, addLayer, updateDrawer } = useLayoutStore.getState();
+      const { addLayer, updateDrawer } = useLayoutStore.getState();
 
       // Increase drawer height to ensure we don't run out of height before layers
       updateDrawer({ height: 50 });
@@ -1366,7 +1411,7 @@ describe('layout store', () => {
         addLayer();
       }
 
-      const result = addLayerResult();
+      const result = addLayer();
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1380,14 +1425,14 @@ describe('layout store', () => {
     });
 
     it('returns Err with LAYOUT_INVALID_OPERATION when no height remaining', () => {
-      const { addLayerResult, updateDrawer, updateLayer, layout } = useLayoutStore.getState();
+      const { addLayer, updateDrawer, updateLayer, layout } = useLayoutStore.getState();
 
       // Set drawer height to match first layer height (no room for more)
       updateLayer(layout.layers[0].id, { height: 12 });
       updateDrawer({ height: 12 });
 
       // First layer now takes all height
-      const result = addLayerResult();
+      const result = addLayer();
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1396,24 +1441,26 @@ describe('layout store', () => {
     });
   });
 
-  describe('deleteLayerResult', () => {
+  describe('deleteLayer', () => {
     it('returns Ok on successful deletion', () => {
-      const { addLayer, deleteLayerResult } = useLayoutStore.getState();
+      const { addLayer, deleteLayer } = useLayoutStore.getState();
 
       // Add second layer first
-      const layer2Id = addLayer()!;
+      const addResult = addLayer();
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      const result = deleteLayerResult(layer2Id);
+      const result = deleteLayer(addResult.value);
 
       expect(isOk(result)).toBe(true);
       expect(useLayoutStore.getState().layout.layers).toHaveLength(1);
     });
 
     it('returns Err with LAYOUT_LAST_ENTITY when deleting last layer', () => {
-      const { deleteLayerResult, layout } = useLayoutStore.getState();
+      const { deleteLayer, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
 
-      const result = deleteLayerResult(layerId);
+      const result = deleteLayer(layerId);
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1426,12 +1473,12 @@ describe('layout store', () => {
     });
 
     it('returns Err with LAYOUT_INVALID_OPERATION for nonexistent layer', () => {
-      const { addLayer, deleteLayerResult } = useLayoutStore.getState();
+      const { addLayer, deleteLayer } = useLayoutStore.getState();
 
       // Add second layer so we're not hitting last entity error
       addLayer();
 
-      const result = deleteLayerResult('nonexistent-layer');
+      const result = deleteLayer('nonexistent-layer');
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1440,16 +1487,16 @@ describe('layout store', () => {
     });
   });
 
-  describe('reorderLayersResult', () => {
+  describe('reorderLayers', () => {
     it('returns Ok on successful reorder', () => {
-      const { addLayer, reorderLayersResult } = useLayoutStore.getState();
+      const { addLayer, reorderLayers } = useLayoutStore.getState();
 
       addLayer();
 
       const layer1Id = useLayoutStore.getState().layout.layers[0].id;
       const layer2Id = useLayoutStore.getState().layout.layers[1].id;
 
-      const result = reorderLayersResult(0, 1);
+      const result = reorderLayers(0, 1);
 
       expect(isOk(result)).toBe(true);
       const layers = useLayoutStore.getState().layout.layers;
@@ -1458,12 +1505,12 @@ describe('layout store', () => {
     });
 
     it('returns Ok for same index', () => {
-      const result = useLayoutStore.getState().reorderLayersResult(0, 0);
+      const result = useLayoutStore.getState().reorderLayers(0, 0);
       expect(isOk(result)).toBe(true);
     });
 
     it('returns Err with LAYOUT_INVALID_OPERATION for invalid source index', () => {
-      const result = useLayoutStore.getState().reorderLayersResult(-1, 0);
+      const result = useLayoutStore.getState().reorderLayers(-1, 0);
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1475,7 +1522,7 @@ describe('layout store', () => {
     });
 
     it('returns Err with LAYOUT_INVALID_OPERATION for invalid target index', () => {
-      const result = useLayoutStore.getState().reorderLayersResult(0, 10);
+      const result = useLayoutStore.getState().reorderLayers(0, 10);
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1487,11 +1534,11 @@ describe('layout store', () => {
     });
   });
 
-  describe('addCategoryResult', () => {
+  describe('addCategory', () => {
     it('returns Ok with category id on success', () => {
-      const { addCategoryResult } = useLayoutStore.getState();
+      const { addCategory } = useLayoutStore.getState();
 
-      const result = addCategoryResult({ name: 'New Cat', color: '#00ff00' });
+      const result = addCategory({ name: 'New Cat', color: '#00ff00' });
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -1502,14 +1549,14 @@ describe('layout store', () => {
     });
 
     it('returns Err with LAYOUT_CATEGORY_LIMIT when at max categories', () => {
-      const { addCategoryResult, addCategory } = useLayoutStore.getState();
+      const { addCategory } = useLayoutStore.getState();
 
       // Add categories until max (minus 1 for existing)
       for (let i = 0; i < CONSTRAINTS.CATEGORIES_MAX - 1; i++) {
         addCategory({ name: `Cat ${i}`, color: '#000000' });
       }
 
-      const result = addCategoryResult({ name: 'One Too Many', color: '#ff0000' });
+      const result = addCategory({ name: 'One Too Many', color: '#ff0000' });
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1519,19 +1566,22 @@ describe('layout store', () => {
     });
   });
 
-  describe('deleteCategoryResult', () => {
+  describe('deleteCategory', () => {
     it('returns Ok on successful deletion', () => {
-      const { addCategory, deleteCategoryResult } = useLayoutStore.getState();
+      const { addCategory, deleteCategory } = useLayoutStore.getState();
 
-      const catId = addCategory({ name: 'To Delete', color: '#ff0000' });
-      const result = deleteCategoryResult(catId);
+      const addResult = addCategory({ name: 'To Delete', color: '#ff0000' });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
+
+      const result = deleteCategory(addResult.value);
 
       expect(isOk(result)).toBe(true);
-      expect(useLayoutStore.getState().layout.categories.find(c => c.id === catId)).toBeUndefined();
+      expect(useLayoutStore.getState().layout.categories.find(c => c.id === addResult.value)).toBeUndefined();
     });
 
     it('returns Err with LAYOUT_INVALID_OPERATION when category is in use', () => {
-      const { addBin, deleteCategoryResult, layout } = useLayoutStore.getState();
+      const { addBin, deleteCategory, layout } = useLayoutStore.getState();
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
@@ -1547,7 +1597,7 @@ describe('layout store', () => {
         notes: '',
       });
 
-      const result = deleteCategoryResult(categoryId);
+      const result = deleteCategory(categoryId);
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1559,7 +1609,7 @@ describe('layout store', () => {
     });
 
     it('returns Err with LAYOUT_LAST_ENTITY when deleting last category', () => {
-      const { deleteCategoryResult, deleteCategory, layout } = useLayoutStore.getState();
+      const { deleteCategory, layout } = useLayoutStore.getState();
 
       // Default layout has 5 categories, delete 4 to get to 1
       const categories = layout.categories;
@@ -1569,7 +1619,7 @@ describe('layout store', () => {
 
       // Now try to delete the last one
       const lastCategoryId = useLayoutStore.getState().layout.categories[0].id;
-      const result = deleteCategoryResult(lastCategoryId);
+      const result = deleteCategory(lastCategoryId);
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -1581,12 +1631,12 @@ describe('layout store', () => {
     });
 
     it('returns Err with LAYOUT_INVALID_OPERATION for nonexistent category', () => {
-      const { addCategory, deleteCategoryResult } = useLayoutStore.getState();
+      const { addCategory, deleteCategory } = useLayoutStore.getState();
 
       // Add second category so we're not hitting last entity error
       addCategory({ name: 'Extra', color: '#000000' });
 
-      const result = deleteCategoryResult('nonexistent-category');
+      const result = deleteCategory('nonexistent-category');
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {

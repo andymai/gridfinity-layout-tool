@@ -15,13 +15,8 @@ vi.mock('../../api/share', () => ({
   createShare: vi.fn(),
   updateShare: vi.fn(),
   deleteShare: vi.fn(),
-  getErrorMessage: vi.fn((error) => error.error || 'Unknown error'),
-  // Result-based API functions
-  createShareResult: vi.fn(),
-  updateShareResult: vi.fn(),
-  deleteShareResult: vi.fn(),
-  fetchShareResult: vi.fn(),
-  reportShareResult: vi.fn(),
+  fetchShare: vi.fn(),
+  reportShare: vi.fn(),
 }));
 
 // Mock clipboard
@@ -146,7 +141,7 @@ describe('useCloudShare', () => {
         expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
       };
 
-      vi.mocked(shareApi.createShareResult).mockResolvedValue(ok(mockData));
+      vi.mocked(shareApi.createShare).mockResolvedValue(ok(mockData));
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -169,7 +164,7 @@ describe('useCloudShare', () => {
     });
 
     it('handles share failure', async () => {
-      vi.mocked(shareApi.createShareResult).mockResolvedValue(
+      vi.mocked(shareApi.createShare).mockResolvedValue(
         err(apiRateLimited(60))
       );
 
@@ -211,7 +206,7 @@ describe('useCloudShare', () => {
         resolvePromise = resolve;
       });
 
-      vi.mocked(shareApi.createShareResult).mockReturnValue(pendingPromise as ReturnType<typeof shareApi.createShareResult>);
+      vi.mocked(shareApi.createShare).mockReturnValue(pendingPromise as ReturnType<typeof shareApi.createShare>);
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -254,7 +249,7 @@ describe('useCloudShare', () => {
         expiresAt: new Date(Date.now() + 60 * 86400000).toISOString(),
       };
 
-      vi.mocked(shareApi.updateShareResult).mockResolvedValue(ok(mockData));
+      vi.mocked(shareApi.updateShare).mockResolvedValue(ok(mockData));
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -265,7 +260,7 @@ describe('useCloudShare', () => {
 
       expect(success).toBe(true);
       expect(result.current.status).toBe('success');
-      expect(shareApi.updateShareResult).toHaveBeenCalledWith(
+      expect(shareApi.updateShare).toHaveBeenCalledWith(
         'existing-id',
         'existing-token',
         expect.anything(),
@@ -297,7 +292,7 @@ describe('useCloudShare', () => {
         library: createTestLibrary(existingShare),
       });
 
-      vi.mocked(shareApi.updateShareResult).mockResolvedValue(
+      vi.mocked(shareApi.updateShare).mockResolvedValue(
         err(apiNotFound('deleted-on-server'))
       );
 
@@ -327,7 +322,7 @@ describe('useCloudShare', () => {
         library: createTestLibrary(existingShare),
       });
 
-      vi.mocked(shareApi.deleteShareResult).mockResolvedValue(
+      vi.mocked(shareApi.deleteShare).mockResolvedValue(
         ok({ success: true as const, message: 'Deleted' })
       );
 
@@ -372,7 +367,7 @@ describe('useCloudShare', () => {
         library: createTestLibrary(existingShare),
       });
 
-      vi.mocked(shareApi.deleteShareResult).mockResolvedValue(
+      vi.mocked(shareApi.deleteShare).mockResolvedValue(
         err(apiNotFound('already-deleted'))
       );
 
@@ -401,7 +396,7 @@ describe('useCloudShare', () => {
         expiresAt: new Date().toISOString(),
       };
 
-      vi.mocked(shareApi.createShareResult).mockResolvedValue(ok(mockData));
+      vi.mocked(shareApi.createShare).mockResolvedValue(ok(mockData));
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -505,7 +500,7 @@ describe('useCloudShare', () => {
   describe('reset', () => {
     it('resets state to idle', async () => {
       const { apiNetworkError } = await import('../../result');
-      vi.mocked(shareApi.createShareResult).mockResolvedValue(
+      vi.mocked(shareApi.createShare).mockResolvedValue(
         err(apiNetworkError())
       );
 
@@ -534,7 +529,7 @@ describe('useCloudShare', () => {
         resolvePromise = resolve;
       });
 
-      vi.mocked(shareApi.createShareResult).mockReturnValue(pendingPromise as ReturnType<typeof shareApi.createShareResult>);
+      vi.mocked(shareApi.createShare).mockReturnValue(pendingPromise as ReturnType<typeof shareApi.createShare>);
 
       const { result, unmount } = renderHook(() => useCloudShare());
 

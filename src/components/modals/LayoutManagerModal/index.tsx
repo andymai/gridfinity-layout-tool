@@ -5,6 +5,7 @@ import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
 import { ShareModal } from '../ShareModal';
 import type { Layout } from '../../../types';
+import { isOk } from '../../../result';
 
 type Tab = 'layouts' | 'import';
 
@@ -86,7 +87,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
     async (id: string) => {
       const entry = library.entries.find((e) => e.id === id);
       const result = await switchLayout(id);
-      if (result.success) {
+      if (isOk(result)) {
         announceToScreenReader(`Switched to ${entry?.name || 'layout'}`);
         onClose();
       }
@@ -96,7 +97,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
 
   const handleCreate = useCallback(async () => {
     const result = await createNewLayout();
-    if (result.success) {
+    if (isOk(result)) {
       announceToScreenReader('New layout created');
       onClose();
     }
@@ -130,9 +131,9 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         name: `${layout.name} (imported)`,
       });
 
-      if (result.success && result.data) {
+      if (isOk(result)) {
         // Switch to the imported layout
-        await switchLayout(result.data);
+        await switchLayout(result.value);
         announceToScreenReader(`Imported ${layout.name}`);
         onClose();
       }

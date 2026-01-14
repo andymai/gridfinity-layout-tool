@@ -124,7 +124,7 @@ describe('useLayoutSwitcher', () => {
         switchResult = await result.current.switchLayout(SECOND_LAYOUT_ID);
       });
 
-      expect(switchResult!.success).toBe(true);
+      expect(isOk(switchResult!)).toBe(true);
       expect(useLayoutStore.getState().activeLayoutId).toBe(SECOND_LAYOUT_ID);
     });
 
@@ -136,9 +136,9 @@ describe('useLayoutSwitcher', () => {
         switchResult = await result.current.switchLayout('non-existent-id');
       });
 
-      expect(switchResult!.success).toBe(false);
-      if (!switchResult!.success) {
-        expect(switchResult!.error).toBe('Layout not found');
+      expect(isErr(switchResult!)).toBe(true);
+      if (isErr(switchResult!)) {
+        expect(switchResult!.error.code).toBe('LAYOUT_INVALID_OPERATION');
       }
     });
 
@@ -152,9 +152,9 @@ describe('useLayoutSwitcher', () => {
         switchResult = await result.current.switchLayout(SECOND_LAYOUT_ID);
       });
 
-      expect(switchResult!.success).toBe(false);
-      if (!switchResult!.success) {
-        expect(switchResult!.error).toBe('Failed to load layout data');
+      expect(isErr(switchResult!)).toBe(true);
+      if (isErr(switchResult!)) {
+        expect(switchResult!.error.code).toBe('STORAGE_NOT_FOUND');
       }
     });
 
@@ -268,14 +268,15 @@ describe('useLayoutSwitcher', () => {
     it('creates new layout and switches to it', async () => {
       const { result } = renderHook(() => useLayoutSwitcher());
 
-      let createResult: Awaited<ReturnType<typeof result.current.createNewLayout>>;
+      let createResult: Awaited<ReturnType<typeof result.current.createNewLayout>> | undefined;
       await act(async () => {
         createResult = await result.current.createNewLayout('My New Layout');
       });
 
-      expect(createResult!.success).toBe(true);
-      if (createResult!.success) {
-        expect(createResult!.data).toBeDefined();
+      expect(createResult).toBeDefined();
+      expect(isOk(createResult)).toBe(true);
+      if (createResult && isOk(createResult)) {
+        expect(createResult.value).toBeDefined();
       }
       expect(useLayoutStore.getState().layout.name).toBe('My New Layout');
     });
@@ -337,7 +338,7 @@ describe('useLayoutSwitcher', () => {
         deleteResult = await result.current.deleteLayout(SECOND_LAYOUT_ID);
       });
 
-      expect(deleteResult!.success).toBe(true);
+      expect(isOk(deleteResult!)).toBe(true);
       expect(storage.deleteLayoutByIdAsync).toHaveBeenCalledWith(SECOND_LAYOUT_ID);
     });
 
@@ -355,9 +356,9 @@ describe('useLayoutSwitcher', () => {
         deleteResult = await result.current.deleteLayout(TEST_LAYOUT_ID);
       });
 
-      expect(deleteResult!.success).toBe(false);
-      if (!deleteResult!.success) {
-        expect(deleteResult!.error).toBe('Cannot delete the only layout');
+      expect(isErr(deleteResult!)).toBe(true);
+      if (isErr(deleteResult!)) {
+        expect(deleteResult!.error.code).toBe('LAYOUT_LAST_ENTITY');
       }
     });
 
@@ -397,9 +398,9 @@ describe('useLayoutSwitcher', () => {
         dupResult = await result.current.duplicateLayout(TEST_LAYOUT_ID);
       });
 
-      expect(dupResult!.success).toBe(true);
-      if (dupResult!.success) {
-        expect(dupResult!.data).toBeDefined();
+      expect(isOk(dupResult!)).toBe(true);
+      if (isOk(dupResult!)) {
+        expect(dupResult!.value).toBeDefined();
       }
     });
 
@@ -411,9 +412,9 @@ describe('useLayoutSwitcher', () => {
         dupResult = await result.current.duplicateLayout('non-existent');
       });
 
-      expect(dupResult!.success).toBe(false);
-      if (!dupResult!.success) {
-        expect(dupResult!.error).toBe('Layout not found');
+      expect(isErr(dupResult!)).toBe(true);
+      if (isErr(dupResult!)) {
+        expect(dupResult!.error.code).toBe('LAYOUT_INVALID_OPERATION');
       }
     });
 
@@ -427,9 +428,9 @@ describe('useLayoutSwitcher', () => {
         dupResult = await result.current.duplicateLayout(TEST_LAYOUT_ID);
       });
 
-      expect(dupResult!.success).toBe(false);
-      if (!dupResult!.success) {
-        expect(dupResult!.error).toBe('Failed to load layout data');
+      expect(isErr(dupResult!)).toBe(true);
+      if (isErr(dupResult!)) {
+        expect(dupResult!.error.code).toBe('STORAGE_NOT_FOUND');
       }
     });
 
@@ -536,7 +537,7 @@ describe('useLayoutSwitcher', () => {
         importResult = await result.current.importLayoutFromJSON(importedLayout);
       });
 
-      expect(importResult!.success).toBe(true);
+      expect(isOk(importResult!)).toBe(true);
       expect(useLibraryStore.getState().library.entries.length).toBe(entriesBefore + 1);
     });
 
@@ -568,9 +569,9 @@ describe('useLayoutSwitcher', () => {
         });
       });
 
-      expect(importResult!.success).toBe(true);
-      if (importResult!.success && importResult!.data) {
-        const entry = useLibraryStore.getState().getEntry(importResult!.data);
+      expect(isOk(importResult!)).toBe(true);
+      if (isOk(importResult!) && importResult!.value) {
+        const entry = useLibraryStore.getState().getEntry(importResult!.value);
         expect(entry?.forkedFrom).toEqual({
           name: 'Original Layout',
           author: 'Original Author',
@@ -589,213 +590,6 @@ describe('useLayoutSwitcher', () => {
 
       const toasts = useToastStore.getState().toasts;
       expect(toasts.some(t => t.message.includes('Imported'))).toBe(true);
-    });
-  });
-
-  // === Result-Based Functions ===
-
-  describe('switchLayoutResult', () => {
-    it('returns Ok when switching successfully', async () => {
-      const targetLayout = createTestLayout('Second Layout');
-      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(targetLayout);
-
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let switchResult: Awaited<ReturnType<typeof result.current.switchLayoutResult>>;
-      await act(async () => {
-        switchResult = await result.current.switchLayoutResult(SECOND_LAYOUT_ID);
-      });
-
-      expect(isOk(switchResult!)).toBe(true);
-      expect(useLayoutStore.getState().activeLayoutId).toBe(SECOND_LAYOUT_ID);
-    });
-
-    it('returns Err with LAYOUT_INVALID_OPERATION for non-existent layout', async () => {
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let switchResult: Awaited<ReturnType<typeof result.current.switchLayoutResult>>;
-      await act(async () => {
-        switchResult = await result.current.switchLayoutResult('non-existent-id');
-      });
-
-      expect(isErr(switchResult!)).toBe(true);
-      if (isErr(switchResult!)) {
-        expect(switchResult!.error.code).toBe('LAYOUT_INVALID_OPERATION');
-        expect(switchResult!.error.kind).toBe('LayoutError');
-      }
-    });
-
-    it('returns Err with STORAGE_NOT_FOUND when layout fails to load', async () => {
-      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(null);
-
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let switchResult: Awaited<ReturnType<typeof result.current.switchLayoutResult>>;
-      await act(async () => {
-        switchResult = await result.current.switchLayoutResult(SECOND_LAYOUT_ID);
-      });
-
-      expect(isErr(switchResult!)).toBe(true);
-      if (isErr(switchResult!)) {
-        expect(switchResult!.error.code).toBe('STORAGE_NOT_FOUND');
-        expect(switchResult!.error.kind).toBe('StorageError');
-      }
-    });
-  });
-
-  describe('createNewLayoutResult', () => {
-    it('returns Ok with layout ID on success', async () => {
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let createResult: Awaited<ReturnType<typeof result.current.createNewLayoutResult>>;
-      await act(async () => {
-        createResult = await result.current.createNewLayoutResult('My New Layout');
-      });
-
-      expect(isOk(createResult!)).toBe(true);
-      if (isOk(createResult!)) {
-        expect(createResult!.value).toBeDefined();
-        expect(typeof createResult!.value).toBe('string');
-      }
-      expect(useLayoutStore.getState().layout.name).toBe('My New Layout');
-    });
-
-    it('uses default name if none provided', async () => {
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      await act(async () => {
-        await result.current.createNewLayoutResult();
-      });
-
-      expect(useLayoutStore.getState().layout.name).toBe('Untitled layout');
-    });
-  });
-
-  describe('deleteLayoutResult', () => {
-    it('returns Ok when deleting successfully', async () => {
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let deleteResult: Awaited<ReturnType<typeof result.current.deleteLayoutResult>>;
-      await act(async () => {
-        deleteResult = await result.current.deleteLayoutResult(SECOND_LAYOUT_ID);
-      });
-
-      expect(isOk(deleteResult!)).toBe(true);
-      expect(storage.deleteLayoutByIdAsync).toHaveBeenCalledWith(SECOND_LAYOUT_ID);
-    });
-
-    it('returns Err with LAYOUT_LAST_ENTITY when deleting only layout', async () => {
-      useLibraryStore.setState({
-        library: createTestLibrary([createTestEntry(TEST_LAYOUT_ID, 'Only Layout')]),
-        isLoaded: true,
-        showLayoutManager: false,
-      });
-
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let deleteResult: Awaited<ReturnType<typeof result.current.deleteLayoutResult>>;
-      await act(async () => {
-        deleteResult = await result.current.deleteLayoutResult(TEST_LAYOUT_ID);
-      });
-
-      expect(isErr(deleteResult!)).toBe(true);
-      if (isErr(deleteResult!)) {
-        expect(deleteResult!.error.code).toBe('LAYOUT_LAST_ENTITY');
-        expect(deleteResult!.error.kind).toBe('LayoutError');
-        expect(deleteResult!.error.entityType).toBe('layout');
-      }
-    });
-  });
-
-  describe('duplicateLayoutResult', () => {
-    it('returns Ok with new layout ID on success', async () => {
-      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(createTestLayout('Original'));
-
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let dupResult: Awaited<ReturnType<typeof result.current.duplicateLayoutResult>>;
-      await act(async () => {
-        dupResult = await result.current.duplicateLayoutResult(TEST_LAYOUT_ID);
-      });
-
-      expect(isOk(dupResult!)).toBe(true);
-      if (isOk(dupResult!)) {
-        expect(dupResult!.value).toBeDefined();
-        expect(typeof dupResult!.value).toBe('string');
-      }
-    });
-
-    it('returns Err with LAYOUT_INVALID_OPERATION for non-existent layout', async () => {
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let dupResult: Awaited<ReturnType<typeof result.current.duplicateLayoutResult>>;
-      await act(async () => {
-        dupResult = await result.current.duplicateLayoutResult('non-existent');
-      });
-
-      expect(isErr(dupResult!)).toBe(true);
-      if (isErr(dupResult!)) {
-        expect(dupResult!.error.code).toBe('LAYOUT_INVALID_OPERATION');
-      }
-    });
-
-    it('returns Err with STORAGE_NOT_FOUND when source fails to load', async () => {
-      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(null);
-
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let dupResult: Awaited<ReturnType<typeof result.current.duplicateLayoutResult>>;
-      await act(async () => {
-        dupResult = await result.current.duplicateLayoutResult(TEST_LAYOUT_ID);
-      });
-
-      expect(isErr(dupResult!)).toBe(true);
-      if (isErr(dupResult!)) {
-        expect(dupResult!.error.code).toBe('STORAGE_NOT_FOUND');
-        expect(dupResult!.error.kind).toBe('StorageError');
-      }
-    });
-  });
-
-  describe('importLayoutFromJSONResult', () => {
-    it('returns Ok with layout ID on success', async () => {
-      const importedLayout = createTestLayout('Imported Layout');
-
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let importResult: Awaited<ReturnType<typeof result.current.importLayoutFromJSONResult>>;
-      await act(async () => {
-        importResult = await result.current.importLayoutFromJSONResult(importedLayout);
-      });
-
-      expect(isOk(importResult!)).toBe(true);
-      if (isOk(importResult!)) {
-        expect(importResult!.value).toBeDefined();
-        expect(typeof importResult!.value).toBe('string');
-      }
-    });
-
-    it('adds forkedFrom metadata when provided', async () => {
-      const importedLayout = createTestLayout('Forked');
-
-      const { result } = renderHook(() => useLayoutSwitcher());
-
-      let importResult: Awaited<ReturnType<typeof result.current.importLayoutFromJSONResult>>;
-      await act(async () => {
-        importResult = await result.current.importLayoutFromJSONResult(importedLayout, {
-          name: 'Original Layout',
-          author: 'Original Author',
-        });
-      });
-
-      expect(isOk(importResult!)).toBe(true);
-      if (isOk(importResult!) && importResult!.value) {
-        const entry = useLibraryStore.getState().getEntry(importResult!.value);
-        expect(entry?.forkedFrom).toEqual({
-          name: 'Original Layout',
-          author: 'Original Author',
-        });
-      }
     });
   });
 });
