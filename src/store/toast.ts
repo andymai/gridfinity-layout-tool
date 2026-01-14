@@ -33,10 +33,8 @@ export const useToastStore = create<ToastState>((set) => ({
     };
 
     set((state) => {
-      // Add new toast
       let updated = [...state.toasts, newToast];
 
-      // If over limit, remove oldest (they'll animate out)
       if (updated.length > MAX_TOASTS) {
         updated = updated.slice(-MAX_TOASTS);
       }

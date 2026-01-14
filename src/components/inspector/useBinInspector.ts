@@ -144,10 +144,8 @@ export function useBinInspector(): UseBinInspectorReturn {
     return Array.from(keys).sort();
   }, [layout.bins]);
 
-  // Get toast store for notifications (used by custom properties and layer movement)
   const addToast = useToastStore((state) => state.addToast);
 
-  // Update single bin field
   const updateField = useCallback(
     (field: BinField, value: string | number) => {
       if (!bin) return;
@@ -189,7 +187,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     [bin, layer, constraints.maxHeight, constraints.maxClearance, execute, updateBin]
   );
 
-  // Update custom properties
   const updateCustomProperties = useCallback(
     (properties: Record<string, string>) => {
       if (!bin) return;
@@ -208,7 +205,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     [bin, execute, updateBin, addToast]
   );
 
-  // Update category for multiple bins
   const updateMultiCategory = useCallback(
     (categoryId: string) => {
       if (selectedBins.length === 0) return;
@@ -244,7 +240,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     [selectedBins, execute, updateBin, addToast]
   );
 
-  // Update height delta for multiple bins
   const updateMultiHeight = useCallback(
     (delta: number) => {
       if (selectedBins.length === 0) return;
@@ -262,7 +257,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     [selectedBins, layout.drawer.height, layout.layers, execute, updateBin]
   );
 
-  // Update clearance delta for multiple bins
   const updateMultiClearance = useCallback(
     (delta: number) => {
       if (selectedBins.length === 0) return;
@@ -415,7 +409,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     setDeleteConfirmState(null);
   }, []);
 
-  // Move to staging
   const moveToStaging = useCallback(() => {
     if (selectedBins.length === 0) return;
 
@@ -428,7 +421,6 @@ export function useBinInspector(): UseBinInspectorReturn {
     closeMobilePanel();
   }, [selectedBins, execute, moveBinToStaging, closeMobilePanel]);
 
-  // Clear selection
   const clearSelection = useCallback(() => {
     setSelectedBins([]);
   }, [setSelectedBins]);

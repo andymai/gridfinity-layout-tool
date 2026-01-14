@@ -74,7 +74,6 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     };
   }, []);
 
-  // Get library state
   const {
     activeLayoutId,
     entries,
@@ -93,23 +92,17 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     }))
   );
 
-  // Get layout data
   const layout = useLayoutStore((state) => state.layout);
-
-  // Get announcer
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
 
-  // Determine target layout ID
   const targetLayoutId = layoutId ?? activeLayoutId;
 
-  // Get existing share info from library entry
   const existingShare = useMemo(() => {
     const entry = entries.find((e) => e.id === targetLayoutId);
     return entry?.cloudShare ?? null;
   }, [entries, targetLayoutId]);
 
-  // Check if share is still active (not expired)
-  // Note: This uses a stable reference time from mount to avoid re-render issues
+  // Use stable reference time from mount to avoid re-render issues
   const [mountTime] = useState(() => Date.now());
   const hasActiveShare = useMemo(() => {
     if (!existingShare) return false;
@@ -123,10 +116,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     }
   }, [existingShare, targetLayoutId, clearCloudShare]);
 
-  // Get the layout to share (might be from storage if not active)
   const getLayoutToShare = useCallback((): Layout => {
-    // For now, always use the active layout
-    // In future, could load from storage if different layout
     return layout;
   }, [layout]);
 
@@ -142,7 +132,6 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       // Save to library
       setCloudShare(targetLayoutId, shareInfo);
 
-      // Set result state
       setResult({
         id: response.id,
         url: response.url,
@@ -245,7 +234,6 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
 
       if (response.success) {
         setLastShareExpiration(expiresInDays);
-        // Update uses same URL, keep existing deleteToken
         handleSuccess(
           {
             ...response.data,

@@ -146,7 +146,6 @@ export function generatePrintList(
   maxPrintSize: number,
   heightUnitMm: number = DEFAULT_HEIGHT_UNIT_MM
 ): PrintRow[] {
-  // Filter out staging bins
   const placedBins = bins.filter(b => b.layerId !== STAGING_ID);
 
   // Group by size, height, category. Labeled bins and bins with custom properties get their own rows.

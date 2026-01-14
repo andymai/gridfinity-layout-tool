@@ -15,7 +15,6 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  // Toggle a field's enabled state
   const toggleField = useCallback(
     (field: BinSortField) => {
       const newOrder = sortOrder.map((item) =>
@@ -26,7 +25,6 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
     [sortOrder, onChange]
   );
 
-  // Move a field up in the list
   const moveUp = useCallback(
     (index: number) => {
       if (index <= 0) return;
@@ -37,7 +35,6 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
     [sortOrder, onChange]
   );
 
-  // Move a field down in the list
   const moveDown = useCallback(
     (index: number) => {
       if (index >= sortOrder.length - 1) return;
@@ -48,7 +45,6 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
     [sortOrder, onChange]
   );
 
-  // Drag handlers
   const handleDragStart = useCallback((index: number) => {
     setDraggedIndex(index);
   }, []);
@@ -73,7 +69,6 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
     setDragOverIndex(null);
   }, []);
 
-  // Get active sort fields for display
   const activeSortFields = sortOrder.filter((s) => s.enabled);
 
   return (

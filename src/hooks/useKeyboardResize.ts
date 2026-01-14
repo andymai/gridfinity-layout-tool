@@ -132,7 +132,6 @@ export function useKeyboardResize() {
       return;
     }
 
-    // Validate new size fits
     const result = canPlaceBin(
       { x: bin.x, y: bin.y, width: newWidth, depth: newDepth, height: bin.height },
       bin.layerId,
@@ -145,14 +144,12 @@ export function useKeyboardResize() {
       return;
     }
 
-    // Apply the resize
     execute(() => {
       updateBin(bin.id, { width: newWidth, depth: newDepth });
     });
 
     announceToScreenReader(`Resized to ${newWidth} by ${newDepth}.`);
 
-    // Exit resize mode
     setKeyboardResizeMode(false);
     setInteraction(null);
     setResizeDelta({ dw: 0, dd: 0 });
@@ -206,14 +203,12 @@ export function useKeyboardResize() {
       return;
     }
 
-    // Enter - confirm
     if (e.key === 'Enter') {
       e.preventDefault();
       confirmResize();
       return;
     }
 
-    // Escape - cancel
     if (e.key === 'Escape') {
       e.preventDefault();
       exitResizeMode();
