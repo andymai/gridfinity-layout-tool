@@ -1,11 +1,11 @@
-import { useEffect, useState, useMemo, useCallback, type CSSProperties } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '../../store';
 import { useSettingsStore, type PrintViewSettings, type BinListSortOrder } from '../../store/settings';
 import { PrintLayout } from '../print/PrintLayout';
 import { SortOrderConfig } from '../print/SortOrderConfig';
-import { getOrientationForDrawer, getBinCountByLayer } from '../../utils/printLayout';
+import { getBinCountByLayer } from '../../utils/printLayout';
 import '../../styles/print.css';
 
 // Style constants
@@ -76,11 +76,35 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
     [layout.bins, layout.layers]
   );
 
-  // Calculate suggested orientation
-  const suggestedOrientation = useMemo(
-    () => getOrientationForDrawer(layout.drawer),
-    [layout.drawer]
-  );
+  // Measure preview container for scaling
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [previewWidth, setPreviewWidth] = useState<number>(600);
+
+  useEffect(() => {
+    if (!isOpen || !previewRef.current) return;
+
+    // Track last width to prevent oscillation from scrollbar appearing/disappearing
+    let lastWidth = 0;
+    const SCROLLBAR_THRESHOLD = 20; // Ignore changes smaller than scrollbar width
+
+    const measureWidth = () => {
+      if (previewRef.current) {
+        // Subtract outer container padding (p-4 = 16px each side = 32px)
+        // and inner .print-preview padding (24px each side = 48px)
+        const width = previewRef.current.clientWidth - 80;
+        // Only update if width changed significantly (prevents scrollbar oscillation)
+        if (width > 0 && Math.abs(width - lastWidth) > SCROLLBAR_THRESHOLD) {
+          lastWidth = width;
+          setPreviewWidth(width);
+        }
+      }
+    };
+
+    measureWidth();
+    const resizeObserver = new ResizeObserver(measureWidth);
+    resizeObserver.observe(previewRef.current);
+    return () => resizeObserver.disconnect();
+  }, [isOpen]);
 
   // Handle escape key and body scroll lock
   useEffect(() => {
@@ -144,13 +168,14 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
   const noLayersSelected = selectedLayerIds.length === 0;
 
   // Always render the print portal so Cmd+P works even when modal is closed
-  // The portal content uses selected layers (defaults to all when modal closed)
+  // Use same width as preview so they match exactly
   const printPortal = createPortal(
     <div className="print-portal hidden">
       <PrintLayout
         layout={layout}
         selectedLayerIds={selectedLayerIds}
         settings={printViewSettings}
+        availableWidth={previewWidth}
       />
     </div>,
     document.body
@@ -279,6 +304,37 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                   </div>
                 </div>
 
+                {/* Header Options */}
+                <div className="mb-4">
+                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">Header</div>
+                  <div className="space-y-2">
+                    <CheckboxOption
+                      label="Show Header"
+                      checked={printViewSettings.showHeader}
+                      onChange={(v) => updatePrintSetting('showHeader', v)}
+                    />
+                    {printViewSettings.showHeader && (
+                      <div className="ml-4 space-y-2 border-l border-stroke-subtle pl-3">
+                        <CheckboxOption
+                          label="Layout Name"
+                          checked={printViewSettings.showLayoutName}
+                          onChange={(v) => updatePrintSetting('showLayoutName', v)}
+                        />
+                        <CheckboxOption
+                          label="Drawer Info"
+                          checked={printViewSettings.showDrawerInfo}
+                          onChange={(v) => updatePrintSetting('showDrawerInfo', v)}
+                        />
+                        <CheckboxOption
+                          label="Date"
+                          checked={printViewSettings.showDate}
+                          onChange={(v) => updatePrintSetting('showDate', v)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Layout Options */}
                 <div>
                   <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">Layout</div>
@@ -298,11 +354,6 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                       checked={printViewSettings.showBinList}
                       onChange={(v) => updatePrintSetting('showBinList', v)}
                     />
-                    <CheckboxOption
-                      label="Print Date"
-                      checked={printViewSettings.showDate}
-                      onChange={(v) => updatePrintSetting('showDate', v)}
-                    />
                   </div>
                 </div>
               </div>
@@ -320,24 +371,16 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                 </div>
               )}
 
-              {/* Orientation hint */}
-              <div className="text-xs text-content-tertiary">
-                <p className="mb-1">
-                  Suggested orientation: <strong>{suggestedOrientation}</strong>
-                </p>
-                <p>
-                  Set page orientation in your browser's print dialog.
-                </p>
-              </div>
             </div>
 
-            {/* Preview panel */}
-            <div className="flex-1 p-4 overflow-y-auto scrollbar-thin bg-surface">
+            {/* Preview panel - grid fills available width */}
+            <div ref={previewRef} className="flex-1 p-4 overflow-y-auto overflow-x-hidden bg-surface">
               <div className="print-preview">
                 <PrintLayout
                   layout={layout}
                   selectedLayerIds={selectedLayerIds}
                   settings={printViewSettings}
+                  availableWidth={previewWidth}
                 />
               </div>
             </div>

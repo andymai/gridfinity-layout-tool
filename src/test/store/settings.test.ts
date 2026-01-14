@@ -246,7 +246,7 @@ describe('settings store', () => {
       expect(settings.printViewSettings).toBeDefined();
       expect(settings.printViewSettings.showLabel).toBe(true);
       expect(settings.printViewSettings.showCategoryColor).toBe(true);
-      expect(settings.printViewSettings.showBinList).toBe(true);
+      expect(settings.printViewSettings.showBinList).toBe(false);
     });
 
     it('has default bin list sort order', () => {
@@ -301,8 +301,8 @@ describe('settings store', () => {
 
     it('has all layout options', () => {
       expect(DEFAULT_PRINT_VIEW_SETTINGS.showGridCoordinates).toBe(true);
-      expect(DEFAULT_PRINT_VIEW_SETTINGS.showLegend).toBe(true);
-      expect(DEFAULT_PRINT_VIEW_SETTINGS.showBinList).toBe(true);
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showLegend).toBe(false);
+      expect(DEFAULT_PRINT_VIEW_SETTINGS.showBinList).toBe(false);
       expect(DEFAULT_PRINT_VIEW_SETTINGS.showDate).toBe(true);
     });
 

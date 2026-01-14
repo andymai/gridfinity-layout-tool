@@ -11,12 +11,20 @@ import {
   sortBinsForPrint,
 } from '../../utils/printLayout';
 
+// Page widths for print (in pixels at 96 DPI, accounting for 0.5" margins)
+const PORTRAIT_WIDTH_PX = 670;  // 8.5" - 1" margins = 7" ≈ 670px
+const LANDSCAPE_WIDTH_PX = 950; // 11" - 1" margins = 10" ≈ 950px
+const ROW_LABELS_WIDTH = 22;    // Width reserved for row labels
+const MIN_CELL_SIZE = 20;
+const MAX_CELL_SIZE = 120;
+const DEFAULT_GAP = 1;
+
 interface PrintLayoutProps {
   layout: Layout;
   selectedLayerIds: string[];
   settings: PrintViewSettings;
-  cellSize?: number;
-  gap?: number;
+  /** Available width in pixels. If not provided, uses default print width. */
+  availableWidth?: number;
 }
 
 /**
@@ -26,10 +34,26 @@ export function PrintLayout({
   layout,
   selectedLayerIds,
   settings,
-  cellSize = 28,
-  gap = 1,
+  availableWidth,
 }: PrintLayoutProps) {
   const { drawer, bins, layers, categories } = layout;
+  const gap = DEFAULT_GAP;
+
+  // Calculate grid dimensions
+  const gridCols = Math.ceil(drawer.width);
+
+  // Determine target width: use measured width if available, otherwise use orientation setting
+  const defaultWidth = settings.orientation === 'landscape' ? LANDSCAPE_WIDTH_PX : PORTRAIT_WIDTH_PX;
+  const targetWidth = availableWidth ?? defaultWidth;
+
+  // Calculate optimal cell size to fill available width
+  // Account for row labels if grid coordinates are shown
+  const labelsWidth = settings.showGridCoordinates ? ROW_LABELS_WIDTH : 0;
+  const gridAreaWidth = targetWidth - labelsWidth;
+  // Formula: gridWidth = gridCols * cellSize + (gridCols - 1) * gap
+  // Solving for cellSize: cellSize = (gridWidth - (gridCols - 1) * gap) / gridCols
+  const calculatedCellSize = (gridAreaWidth - (gridCols - 1) * gap) / gridCols;
+  const cellSize = Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, Math.floor(calculatedCellSize)));
 
   // Get visible layers and bins
   const visibleLayers = useMemo(
@@ -48,8 +72,7 @@ export function PrintLayout({
     [allVisibleBins, categories]
   );
 
-  // Calculate grid dimensions
-  const gridCols = Math.ceil(drawer.width);
+  // Calculate remaining grid dimensions
   const gridRows = Math.ceil(drawer.depth);
   const integerWidth = Math.floor(drawer.width);
   const integerDepth = Math.floor(drawer.depth);
@@ -162,7 +185,7 @@ export function PrintLayout({
     const labels: React.ReactNode[] = [];
     for (let x = 0; x < integerWidth; x++) {
       labels.push(
-        <div key={`col-${x}`} className="print-axis-label print-col-label">
+        <div key={`col-${x}`} className="print-axis-label print-col-label" style={{ width: cellSize }}>
           {x + 1}
         </div>
       );
@@ -175,7 +198,7 @@ export function PrintLayout({
       );
     }
     return labels;
-  }, [integerWidth, hasFractionalWidth, fractionalCellWidth]);
+  }, [integerWidth, hasFractionalWidth, fractionalCellWidth, cellSize]);
 
   // Generate row labels (1, 2, 3, ... from bottom)
   const rowLabels = useMemo(() => {
@@ -189,13 +212,13 @@ export function PrintLayout({
     }
     for (let y = integerDepth - 1; y >= 0; y--) {
       labels.push(
-        <div key={`row-${y}`} className="print-axis-label print-row-label">
+        <div key={`row-${y}`} className="print-axis-label print-row-label" style={{ height: cellSize }}>
           {y + 1}
         </div>
       );
     }
     return labels;
-  }, [integerDepth, hasFractionalDepth, fractionalCellHeight]);
+  }, [integerDepth, hasFractionalDepth, fractionalCellHeight, cellSize]);
 
   // Group bins by category for summary
   const binsByCategory = useMemo(() => {
@@ -242,12 +265,6 @@ export function PrintLayout({
 
     return (
       <div key={layer.id} className="print-grid-with-labels">
-        {/* Column labels */}
-        {settings.showGridCoordinates && (
-          <div className="print-col-labels" style={{ marginLeft: 20, gap: `${gap}px` }}>
-            {columnLabels}
-          </div>
-        )}
         <div className="print-grid-row">
           {/* Row labels */}
           {settings.showGridCoordinates && (
@@ -282,6 +299,12 @@ export function PrintLayout({
             })}
           </div>
         </div>
+        {/* Column labels - at bottom like 2D grid */}
+        {settings.showGridCoordinates && (
+          <div className="print-col-labels" style={{ marginLeft: ROW_LABELS_WIDTH, gap: `${gap}px` }}>
+            {columnLabels}
+          </div>
+        )}
       </div>
     );
   };
@@ -289,36 +312,40 @@ export function PrintLayout({
   return (
     <div className="print-layout-content">
       {/* Header */}
-      <div className="print-header">
-        <div className="print-header-top">
-          <h1>{layout.name}</h1>
-          {settings.showDate && (
-            <span className="print-header-date">{formatPrintDate()}</span>
+      {settings.showHeader && (
+        <div className="print-header">
+          <div className="print-header-top">
+            {settings.showLayoutName && <h1>{layout.name}</h1>}
+            {settings.showDate && (
+              <span className="print-header-date">{formatPrintDate()}</span>
+            )}
+          </div>
+          {settings.showDrawerInfo && (
+            <div className="print-header-info">
+              <div className="print-header-group">
+                <span className="print-header-label">Drawer</span>
+                <span className="print-header-value">{formatDrawerDimensions(drawer, layout.gridUnitMm)}</span>
+              </div>
+              <div className="print-header-group">
+                <span className="print-header-label">Height</span>
+                <span className="print-header-value">{drawer.height}u ({drawer.height * layout.heightUnitMm}mm)</span>
+              </div>
+              <div className="print-header-group">
+                <span className="print-header-label">Bins</span>
+                <span className="print-header-value">{allVisibleBins.length}</span>
+              </div>
+              <div className="print-header-group">
+                <span className="print-header-label">Layers</span>
+                <span className="print-header-value">
+                  {visibleLayers.length === layers.length
+                    ? `All (${layers.length})`
+                    : visibleLayers.map((l) => l.name).join(', ')}
+                </span>
+              </div>
+            </div>
           )}
         </div>
-        <div className="print-header-info">
-          <div className="print-header-group">
-            <span className="print-header-label">Drawer</span>
-            <span className="print-header-value">{formatDrawerDimensions(drawer, layout.gridUnitMm)}</span>
-          </div>
-          <div className="print-header-group">
-            <span className="print-header-label">Height</span>
-            <span className="print-header-value">{drawer.height}u ({drawer.height * layout.heightUnitMm}mm)</span>
-          </div>
-          <div className="print-header-group">
-            <span className="print-header-label">Bins</span>
-            <span className="print-header-value">{allVisibleBins.length}</span>
-          </div>
-          <div className="print-header-group">
-            <span className="print-header-label">Layers</span>
-            <span className="print-header-value">
-              {visibleLayers.length === layers.length
-                ? `All (${layers.length})`
-                : visibleLayers.map((l) => l.name).join(', ')}
-            </span>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Grid(s) - one per layer if multiple selected */}
       {visibleLayers.length === 1 ? (

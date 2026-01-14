@@ -46,6 +46,11 @@ export const DEFAULT_BIN_LIST_SORT_ORDER: BinListSortOrder = [
 ];
 
 /**
+ * Page orientation for print.
+ */
+export type PrintOrientation = 'portrait' | 'landscape';
+
+/**
  * Print view settings for configuring what to display when printing.
  */
 export interface PrintViewSettings {
@@ -56,11 +61,17 @@ export interface PrintViewSettings {
   showHeight: boolean;
   showNotes: boolean;
   showCustomProperties: boolean;
+  // Header options (what shows in the header section)
+  showHeader: boolean;
+  showLayoutName: boolean;
+  showDrawerInfo: boolean;
+  showDate: boolean;
   // Layout options (what shows around/below the grid)
   showGridCoordinates: boolean;
   showLegend: boolean;
   showBinList: boolean;
-  showDate: boolean;
+  // Page orientation (affects grid sizing for print)
+  orientation: PrintOrientation;
   // Bin list sorting
   binListSortOrder: BinListSortOrder;
 }
@@ -76,11 +87,17 @@ export const DEFAULT_PRINT_VIEW_SETTINGS: PrintViewSettings = {
   showHeight: true,
   showNotes: true,
   showCustomProperties: true,
-  // Layout - all on by default
-  showGridCoordinates: true,
-  showLegend: true,
-  showBinList: true,
+  // Header - all on by default
+  showHeader: true,
+  showLayoutName: true,
+  showDrawerInfo: true,
   showDate: true,
+  // Layout options
+  showGridCoordinates: true,
+  showLegend: false,
+  showBinList: false,
+  // Page orientation for print sizing
+  orientation: 'landscape',
   // Bin list sorting - category then position by default
   binListSortOrder: [...DEFAULT_BIN_LIST_SORT_ORDER],
 };
