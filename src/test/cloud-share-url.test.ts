@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   getCloudShareIdFromURL,
   clearCloudShareFromURL,
-} from '../utils/storage';
+} from '../storage';
 
 describe('getCloudShareIdFromURL', () => {
   const originalLocation = window.location;

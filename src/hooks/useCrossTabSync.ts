@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore } from '../store';
-import { loadLayoutByIdAsync, loadLibrary } from '../utils/storage';
+import { loadLayoutByIdAsync, loadLibrary } from '../storage';
 import { validateLayoutIntegrity } from '../utils/validation';
 
 /**

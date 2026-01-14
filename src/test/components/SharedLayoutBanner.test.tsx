@@ -8,7 +8,7 @@ import { useToastStore } from '../../store/toast';
 import type { Layout } from '../../types';
 
 // Mock storage functions
-vi.mock('../../utils/storage', () => ({
+vi.mock('../../storage', () => ({
   saveLayoutById: vi.fn(),
   saveLibrary: vi.fn(),
   initializeLayoutLibrary: vi.fn(() => ({

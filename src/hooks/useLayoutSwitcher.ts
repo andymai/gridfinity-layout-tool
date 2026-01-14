@@ -8,7 +8,7 @@ import {
   deleteLayoutByIdAsync,
   saveLibrary,
   computeLayoutPreview,
-} from '../utils/storage';
+} from '../storage';
 import { setLayoutHash } from '../utils/url';
 import { validateLayoutIntegrity } from '../utils/validation';
 import { generateUUID } from '../utils/uuid';

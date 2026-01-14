@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useLayoutStore, useUIStore, useLibraryStore } from './store';
 import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useStorageMigration } from './hooks';
-import { initializeLayoutLibrary } from './utils/storage';
+import { initializeLayoutLibrary } from './storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
 import { Sidebar } from './components/Sidebar';

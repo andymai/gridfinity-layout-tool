@@ -9,7 +9,7 @@ import {
   saveLayoutById,
   saveLibrary,
   initializeLayoutLibrary,
-} from '../utils/storage';
+} from '../storage';
 import { generateUUID } from '../utils/uuid';
 import { ConfirmDialog } from './modals/ConfirmDialog';
 
