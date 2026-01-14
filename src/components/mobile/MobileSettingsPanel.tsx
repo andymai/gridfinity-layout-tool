@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore, useToastStore } from '../../store';
+import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore, useToastStore, useLabsStore } from '../../store';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../../constants';
 import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
@@ -32,6 +32,9 @@ export function MobileSettingsPanel() {
 
   const settings = useSettingsStore(state => state.settings);
   const saveCurrentAsDefaults = useSettingsStore(state => state.saveCurrentAsDefaults);
+
+  const openLabsDrawer = useLabsStore(state => state.openDrawer);
+  const labsEnabledCount = useLabsStore(state => state.getEnabledCount());
 
   // Get active layer's height to save as default
   const activeLayerId = useUIStore((state) => state.activeLayerId);
@@ -361,6 +364,33 @@ export function MobileSettingsPanel() {
         </div>
       </section>
 
+      {/* Labs */}
+      <section>
+        <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
+          Experimental
+        </h3>
+        <button
+          onClick={openLabsDrawer}
+          className="w-full flex items-center justify-between px-4 py-3 bg-surface-elevated rounded-lg hover:bg-surface-hover transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <SparklesIcon className="w-5 h-5 text-accent" />
+            <div className="text-left">
+              <div className="text-sm font-medium text-content">Labs</div>
+              <div className="text-xs text-content-tertiary">Try experimental features</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {labsEnabledCount > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[11px] font-semibold text-white bg-accent rounded-full">
+                {labsEnabledCount > 9 ? '9+' : labsEnabledCount}
+              </span>
+            )}
+            <ChevronRightIcon className="w-5 h-5 text-content-tertiary" />
+          </div>
+        </button>
+      </section>
+
       {/* Info */}
       <section className="pt-4 text-center border-t border-stroke-subtle">
         <div className="text-xs text-content-disabled leading-relaxed">
@@ -404,5 +434,31 @@ export function MobileSettingsPanel() {
         />
       )}
     </div>
+  );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
+      />
+    </svg>
+  );
+}
+
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
   );
 }
