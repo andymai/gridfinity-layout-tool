@@ -6,6 +6,18 @@ import { canPlaceBin, clamp } from '../utils/validation';
 import { fillAllWithSize, fillGaps } from '../utils/fill';
 import { checkLayerReorderCollisions } from '../utils/collision';
 import { useSettingsStore } from './settings';
+import type { Result, LayoutError, ValidationError } from '../result';
+import {
+  ok,
+  err,
+  layoutLayerLimit,
+  layoutLastEntity,
+  layoutInvalidOperation,
+  layoutCategoryLimit,
+  validationOutOfBounds,
+  validationCollision,
+  validationInvalidLayer,
+} from '../result';
 
 /** Source of the last edit to the layout - used to distinguish local edits from remote imports */
 export type EditSource = 'local' | 'remote' | 'init' | null;
@@ -17,25 +29,32 @@ interface LayoutState {
 
   // Bin operations
   addBin: (bin: Omit<Bin, 'id'>) => string | null;
+  addBinResult: (bin: Omit<Bin, 'id'>) => Result<string, ValidationError>;
   updateBin: (id: string, updates: Partial<Bin>) => void;
   deleteBin: (id: string) => void;
   duplicateBin: (id: string) => string | null;
   moveBinToStaging: (id: string) => void;
   moveBinFromStaging: (id: string, layerId: string, x: number, y: number) => boolean;
+  moveBinFromStagingResult: (id: string, layerId: string, x: number, y: number) => Result<void, ValidationError>;
 
   // Layer operations
   addLayer: () => string | null;
+  addLayerResult: () => Result<string, LayoutError>;
   updateLayer: (id: string, updates: Partial<Layer>) => void;
   deleteLayer: (id: string) => boolean;
+  deleteLayerResult: (id: string) => Result<void, LayoutError>;
   reorderLayers: (fromIndex: number, toIndex: number) => { success: boolean; error?: string };
+  reorderLayersResult: (fromIndex: number, toIndex: number) => Result<void, LayoutError>;
 
   // Drawer operations
   updateDrawer: (updates: Partial<Drawer>) => void;
 
   // Category operations
   addCategory: (category: Omit<Category, 'id'>) => string;
+  addCategoryResult: (category: Omit<Category, 'id'>) => Result<string, LayoutError>;
   updateCategory: (id: string, updates: Partial<Category>) => void;
   deleteCategory: (id: string) => boolean;
+  deleteCategoryResult: (id: string) => Result<void, LayoutError>;
 
   // Bulk operations
   fillLayer: (layerId: string, width: number, depth: number, categoryId: string, halfBinMode?: boolean) => number;
@@ -83,6 +102,44 @@ export const useLayoutStore = create<LayoutState>()(
       });
 
       return id;
+    },
+
+    addBinResult: (binData) => {
+      const { layout } = get();
+      const id = generateId();
+      const bin: Bin = { ...binData, id };
+
+      if (bin.layerId !== STAGING_ID) {
+        const layer = layout.layers.find(l => l.id === bin.layerId);
+        if (!layer) {
+          return err(validationInvalidLayer(bin.layerId));
+        }
+
+        const validationResult = canPlaceBin(
+          { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: bin.height },
+          bin.layerId,
+          layout
+        );
+        if (!validationResult.valid) {
+          const reason = validationResult.reason ?? 'out_of_bounds';
+          if (reason === 'collision') {
+            return err(validationCollision());
+          }
+          return err(validationOutOfBounds(reason, {
+            x: bin.x,
+            y: bin.y,
+            width: bin.width,
+            depth: bin.depth,
+          }));
+        }
+      }
+
+      set(state => {
+        state.layout.bins.push(bin);
+        state.lastEditSource = 'local';
+      });
+
+      return ok(id);
     },
 
     updateBin: (id, updates) => {
@@ -213,6 +270,52 @@ export const useLayoutStore = create<LayoutState>()(
       return true;
     },
 
+    moveBinFromStagingResult: (id, layerId, x, y) => {
+      const { layout } = get();
+      const bin = layout.bins.find(b => b.id === id);
+      if (!bin) {
+        return err(validationOutOfBounds('out_of_bounds', { x, y, width: 0, depth: 0 }));
+      }
+
+      const layer = layout.layers.find(l => l.id === layerId);
+      if (!layer) {
+        return err(validationInvalidLayer(layerId));
+      }
+
+      const validationResult = canPlaceBin(
+        { x, y, width: bin.width, depth: bin.depth, height: layer.height },
+        layerId,
+        layout,
+        id
+      );
+
+      if (!validationResult.valid) {
+        const reason = validationResult.reason ?? 'out_of_bounds';
+        if (reason === 'collision') {
+          return err(validationCollision());
+        }
+        return err(validationOutOfBounds(reason, {
+          x,
+          y,
+          width: bin.width,
+          depth: bin.depth,
+        }));
+      }
+
+      set(state => {
+        const b = state.layout.bins.find(b => b.id === id);
+        if (b) {
+          b.layerId = layerId;
+          b.x = x;
+          b.y = y;
+          b.height = layer.height;
+          state.lastEditSource = 'local';
+        }
+      });
+
+      return ok(undefined);
+    },
+
     addLayer: () => {
       const { layout } = get();
       if (layout.layers.length >= CONSTRAINTS.LAYERS_MAX) return null;
@@ -237,6 +340,36 @@ export const useLayoutStore = create<LayoutState>()(
       });
 
       return id;
+    },
+
+    addLayerResult: () => {
+      const { layout } = get();
+      if (layout.layers.length >= CONSTRAINTS.LAYERS_MAX) {
+        return err(layoutLayerLimit(layout.layers.length, CONSTRAINTS.LAYERS_MAX));
+      }
+
+      const totalHeight = layout.layers.reduce((sum, l) => sum + l.height, 0);
+      const remaining = layout.drawer.height - totalHeight;
+      if (remaining < 1) {
+        return err(layoutInvalidOperation('addLayer', 'No remaining height in drawer'));
+      }
+
+      // Get default layer height from settings
+      const defaultLayerHeight = useSettingsStore.getState().settings.defaultLayerHeight;
+
+      const id = generateId();
+      const newLayer: Layer = {
+        id,
+        name: `Layer ${layout.layers.length + 1}`,
+        height: Math.min(remaining, defaultLayerHeight),
+      };
+
+      set(state => {
+        state.layout.layers.push(newLayer);
+        state.lastEditSource = 'local';
+      });
+
+      return ok(id);
     },
 
     updateLayer: (id, updates) => {
@@ -269,6 +402,26 @@ export const useLayoutStore = create<LayoutState>()(
       return true;
     },
 
+    deleteLayerResult: (id) => {
+      const { layout } = get();
+      if (layout.layers.length <= CONSTRAINTS.LAYERS_MIN) {
+        return err(layoutLastEntity('layer'));
+      }
+
+      const layer = layout.layers.find(l => l.id === id);
+      if (!layer) {
+        return err(layoutInvalidOperation('deleteLayer', `Layer ${id} not found`));
+      }
+
+      set(state => {
+        state.layout.layers = state.layout.layers.filter(l => l.id !== id);
+        state.layout.bins = state.layout.bins.filter(b => b.layerId !== id);
+        state.lastEditSource = 'local';
+      });
+
+      return ok(undefined);
+    },
+
     reorderLayers: (fromIndex, toIndex) => {
       const { layout } = get();
 
@@ -294,6 +447,37 @@ export const useLayoutStore = create<LayoutState>()(
       });
 
       return { success: true };
+    },
+
+    reorderLayersResult: (fromIndex, toIndex) => {
+      const { layout } = get();
+
+      if (fromIndex === toIndex) return ok(undefined);
+      if (fromIndex < 0 || fromIndex >= layout.layers.length) {
+        return err(layoutInvalidOperation('reorderLayers', 'Invalid source index'));
+      }
+      if (toIndex < 0 || toIndex >= layout.layers.length) {
+        return err(layoutInvalidOperation('reorderLayers', 'Invalid target index'));
+      }
+
+      const newLayers = [...layout.layers];
+      const [moved] = newLayers.splice(fromIndex, 1);
+      newLayers.splice(toIndex, 0, moved);
+
+      const collisions = checkLayerReorderCollisions(layout.bins, layout.layers, newLayers);
+      if (collisions.length > 0) {
+        return err(layoutInvalidOperation(
+          'reorderLayers',
+          `Reordering would cause ${collisions.length} bin collision${collisions.length > 1 ? 's' : ''}`
+        ));
+      }
+
+      set(state => {
+        state.layout.layers = newLayers;
+        state.lastEditSource = 'local';
+      });
+
+      return ok(undefined);
     },
 
     updateDrawer: (updates) => {
@@ -339,6 +523,20 @@ export const useLayoutStore = create<LayoutState>()(
       return id;
     },
 
+    addCategoryResult: (categoryData) => {
+      const { layout } = get();
+      if (layout.categories.length >= CONSTRAINTS.CATEGORIES_MAX) {
+        return err(layoutCategoryLimit(layout.categories.length, CONSTRAINTS.CATEGORIES_MAX));
+      }
+
+      const id = generateId();
+      set(state => {
+        state.layout.categories.push({ ...categoryData, id });
+        state.lastEditSource = 'local';
+      });
+      return ok(id);
+    },
+
     updateCategory: (id, updates) => {
       set(state => {
         const cat = state.layout.categories.find(c => c.id === id);
@@ -361,6 +559,34 @@ export const useLayoutStore = create<LayoutState>()(
       });
 
       return true;
+    },
+
+    deleteCategoryResult: (id) => {
+      const { layout } = get();
+
+      const binsUsingCategory = layout.bins.filter(b => b.category === id);
+      if (binsUsingCategory.length > 0) {
+        return err(layoutInvalidOperation(
+          'deleteCategory',
+          `Category is in use by ${binsUsingCategory.length} bin${binsUsingCategory.length > 1 ? 's' : ''}`
+        ));
+      }
+
+      if (layout.categories.length <= CONSTRAINTS.CATEGORIES_MIN) {
+        return err(layoutLastEntity('category'));
+      }
+
+      const category = layout.categories.find(c => c.id === id);
+      if (!category) {
+        return err(layoutInvalidOperation('deleteCategory', `Category ${id} not found`));
+      }
+
+      set(state => {
+        state.layout.categories = state.layout.categories.filter(c => c.id !== id);
+        state.lastEditSource = 'local';
+      });
+
+      return ok(undefined);
     },
 
     fillLayer: (layerId, width, depth, categoryId, halfBinMode = false) => {
