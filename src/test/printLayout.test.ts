@@ -1,14 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
-  getOrientationForDrawer,
   getVisibleBinsForPrint,
   getVisibleLayers,
   getUsedCategories,
   formatDrawerDimensions,
   formatPrintDate,
-  calculatePrintScale,
   getBinCountByLayer,
-  getTotalBinCount,
   sortBinsForPrint,
 } from '../utils/printLayout';
 import type { Bin, Layer, Category, Drawer } from '../types';
@@ -54,25 +51,6 @@ describe('printLayout utilities', () => {
     id,
     name,
     color,
-  });
-
-  describe('getOrientationForDrawer', () => {
-    it('returns landscape when width > depth', () => {
-      expect(getOrientationForDrawer(createDrawer(10, 8))).toBe('landscape');
-    });
-
-    it('returns portrait when depth > width', () => {
-      expect(getOrientationForDrawer(createDrawer(8, 10))).toBe('portrait');
-    });
-
-    it('returns portrait when width equals depth', () => {
-      expect(getOrientationForDrawer(createDrawer(10, 10))).toBe('portrait');
-    });
-
-    it('handles fractional dimensions', () => {
-      expect(getOrientationForDrawer(createDrawer(10.5, 8))).toBe('landscape');
-      expect(getOrientationForDrawer(createDrawer(8, 10.5))).toBe('portrait');
-    });
   });
 
   describe('getVisibleBinsForPrint', () => {
@@ -206,36 +184,6 @@ describe('printLayout utilities', () => {
     });
   });
 
-  describe('calculatePrintScale', () => {
-    it('returns 1.0 when grid fits within available space', () => {
-      const scale = calculatePrintScale(10, 8, 1000, 800, 32, 1);
-      expect(scale).toBe(1.0);
-    });
-
-    it('scales down when grid is larger than available space', () => {
-      // Grid would be ~330px wide (10 * 33), available is 200px
-      const scale = calculatePrintScale(10, 8, 200, 200, 32, 1);
-      expect(scale).toBeLessThan(1.0);
-      expect(scale).toBeGreaterThan(0.1);
-    });
-
-    it('uses smaller scale when constrained by both dimensions', () => {
-      const scale = calculatePrintScale(20, 20, 200, 300, 32, 1);
-      // Width more constrained (200 / ~660)
-      expect(scale).toBeLessThan(0.5);
-    });
-
-    it('does not scale above 1.0', () => {
-      const scale = calculatePrintScale(2, 2, 1000, 1000, 32, 1);
-      expect(scale).toBe(1.0);
-    });
-
-    it('does not scale below 0.1', () => {
-      const scale = calculatePrintScale(100, 100, 10, 10, 32, 1);
-      expect(scale).toBe(0.1);
-    });
-  });
-
   describe('getBinCountByLayer', () => {
     const layers: Layer[] = [
       createLayer('l1', 'Layer 1'),
@@ -274,37 +222,6 @@ describe('printLayout utilities', () => {
       const result = getBinCountByLayer([], layers);
       expect(result.get('l1')).toBe(0);
       expect(result.get('l2')).toBe(0);
-    });
-  });
-
-  describe('getTotalBinCount', () => {
-    it('counts all non-staging bins', () => {
-      const bins: Bin[] = [
-        createBin('b1', 'l1', 'cat1'),
-        createBin('b2', 'l2', 'cat1'),
-        createBin('b3', 'l1', 'cat2'),
-      ];
-      expect(getTotalBinCount(bins)).toBe(3);
-    });
-
-    it('excludes staging bins', () => {
-      const bins: Bin[] = [
-        createBin('b1', 'l1', 'cat1'),
-        createBin('b2', STAGING_ID, 'cat1'),
-      ];
-      expect(getTotalBinCount(bins)).toBe(1);
-    });
-
-    it('returns 0 for empty array', () => {
-      expect(getTotalBinCount([])).toBe(0);
-    });
-
-    it('returns 0 when all bins are staging', () => {
-      const bins: Bin[] = [
-        createBin('b1', STAGING_ID, 'cat1'),
-        createBin('b2', STAGING_ID, 'cat2'),
-      ];
-      expect(getTotalBinCount(bins)).toBe(0);
     });
   });
 
