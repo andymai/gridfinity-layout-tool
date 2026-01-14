@@ -256,6 +256,21 @@ export function getSharedLayoutFromURL(): { layout: Layout | null; errors: strin
 }
 
 /**
+ * Check if the current URL contains a shared layout with Result-based error handling.
+ * Returns null if no shared layout in URL (not an error).
+ * Returns Ok with layout if found and valid, Err with ValidationError if found but invalid.
+ */
+export function getSharedLayoutResult(): Result<Layout, ValidationError> | null {
+  if (typeof window === 'undefined') return null;
+
+  const hash = window.location.hash;
+  if (!hash.startsWith('#share=')) return null;
+
+  const encoded = hash.slice(7); // Remove '#share='
+  return decodeLayoutResult(encoded);
+}
+
+/**
  * Clear the shared layout from URL (after import).
  */
 export function clearSharedLayoutFromURL(): void {
