@@ -8,7 +8,7 @@ import { useLayoutSwitcher } from '../../hooks/useLayoutSwitcher';
 import { useCloudShare } from '../../hooks/useCloudShare';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { LayoutThumbnail } from '../LayoutThumbnail';
-import { loadLayoutById, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../utils/storage';
+import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../utils/storage';
 import { EXPIRATION_OPTIONS, formatShareDate, calculateDaysRemaining } from '../../utils/cloudShare';
 import type { LayoutEntry, ShareExpiration } from '../../types';
 
@@ -119,7 +119,8 @@ export function MobileLayoutsPanel() {
 
   const handleCopyLink = useCallback(async (layoutId: string) => {
     const entry = library.entries.find(e => e.id === layoutId);
-    const layout = layoutId === activeLayoutId ? currentLayout : loadLayoutById(layoutId);
+    // For active layout use current state; otherwise load from IndexedDB
+    const layout = layoutId === activeLayoutId ? currentLayout : await loadLayoutByIdAsync(layoutId);
     if (layout) {
       const url = generateShareableURL(layout);
       const success = await copyToClipboard(url);
@@ -130,9 +131,10 @@ export function MobileLayoutsPanel() {
     setShareMenuId(null);
   }, [activeLayoutId, currentLayout, library.entries, announceToScreenReader]);
 
-  const handleDownload = useCallback((layoutId: string) => {
+  const handleDownload = useCallback(async (layoutId: string) => {
     const entry = library.entries.find(e => e.id === layoutId);
-    const layout = layoutId === activeLayoutId ? currentLayout : loadLayoutById(layoutId);
+    // For active layout use current state; otherwise load from IndexedDB
+    const layout = layoutId === activeLayoutId ? currentLayout : await loadLayoutByIdAsync(layoutId);
     if (layout && entry) {
       downloadLayoutAsFile(layout, `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`);
       announceToScreenReader('Layout downloaded');

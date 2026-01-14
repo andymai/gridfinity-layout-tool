@@ -16,7 +16,6 @@ import { useEffect, useRef } from 'react';
 import {
   migrateAllLayoutsToIndexedDB,
   isMigrationNeeded,
-  // cleanupLocalStorage - uncomment when ready to remove localStorage fallback
 } from '../utils/migration';
 import { getStorageBackend } from '../utils/asyncStorage';
 
@@ -59,15 +58,19 @@ export function useStorageMigration(): void {
             `[Storage] Migration complete: ${result.migratedCount} layouts migrated, ${result.skippedCount} skipped`
           );
 
-          // Note: We intentionally keep localStorage copies for now as a fallback.
-          // This ensures backwards compatibility while sync load operations
-          // still read from localStorage. The cleanup will happen in a future
-          // version once we're confident all load operations use IndexedDB.
-          // TODO: Enable cleanup once loadLayoutById is fully async
-          // if (result.migratedCount > 0) {
-          //   const cleaned = cleanupLocalStorage();
-          //   console.info(`[Storage] Cleaned ${cleaned} layouts from localStorage`);
-          // }
+          // Note: We intentionally keep localStorage copies as a cache for fast startup.
+          // initializeLayoutLibrary() runs synchronously at module load time and reads
+          // from localStorage for immediate availability. All subsequent load/save
+          // operations use IndexedDB via async functions.
+          //
+          // The architecture is:
+          // - Initial load: localStorage (sync, fast startup)
+          // - Runtime operations: IndexedDB (async, larger capacity)
+          // - Both backends stay in sync via dual writes during saves
+          //
+          // Enabling cleanup would break the sync initial load. A future version
+          // could add async initialization with a loading state to fully remove
+          // the localStorage dependency.
         } else {
           console.error('[Storage] Migration failed:', result.errors);
         }

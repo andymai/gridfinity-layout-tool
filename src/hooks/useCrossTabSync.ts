@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore } from '../store';
-import { loadLayoutById, loadLibrary } from '../utils/storage';
+import { loadLayoutByIdAsync, loadLibrary } from '../utils/storage';
 import { validateLayoutIntegrity } from '../utils/validation';
 
 /**
@@ -20,39 +20,47 @@ export function useCrossTabSync() {
       }
 
       // A specific layout changed - check if it's the active one
+      // Note: With IndexedDB migration, localStorage events only fire for legacy writes.
+      // IndexedDB doesn't have cross-tab events, so this is backwards compatibility.
       if (e.key?.startsWith('gridfinity-layout-')) {
         const layoutId = e.key.replace('gridfinity-layout-', '');
         const activeLayoutId = useLayoutStore.getState().activeLayoutId;
 
         // Only reload if it's the currently active layout
         if (layoutId === activeLayoutId) {
-          const newLayout = loadLayoutById(layoutId);
-          if (newLayout) {
-            // Validate before applying
-            const validation = validateLayoutIntegrity(newLayout);
-            if (validation.valid) {
-              // Update layout store (from another tab, treat as remote)
-              useLayoutStore.getState().importLayout(newLayout, layoutId, 'remote');
+          // Load asynchronously from IndexedDB (with localStorage fallback)
+          loadLayoutByIdAsync(layoutId)
+            .then((newLayout) => {
+              if (newLayout) {
+                // Validate before applying
+                const validation = validateLayoutIntegrity(newLayout);
+                if (validation.valid) {
+                  // Update layout store (from another tab, treat as remote)
+                  useLayoutStore.getState().importLayout(newLayout, layoutId, 'remote');
 
-              // Clear undo history since we're syncing external changes
-              useHistoryStore.getState().clear();
+                  // Clear undo history since we're syncing external changes
+                  useHistoryStore.getState().clear();
 
-              // Update active layer/category if they no longer exist
-              const uiState = useUIStore.getState();
-              const activeLayer = uiState.activeLayerId;
-              const activeCategory = uiState.activeCategoryId;
+                  // Update active layer/category if they no longer exist
+                  const uiState = useUIStore.getState();
+                  const activeLayer = uiState.activeLayerId;
+                  const activeCategory = uiState.activeCategoryId;
 
-              if (activeLayer && !newLayout.layers.find(l => l.id === activeLayer)) {
-                uiState.setActiveLayer(newLayout.layers[0]?.id ?? '');
+                  if (activeLayer && !newLayout.layers.find(l => l.id === activeLayer)) {
+                    uiState.setActiveLayer(newLayout.layers[0]?.id ?? '');
+                  }
+                  if (activeCategory && !newLayout.categories.find(c => c.id === activeCategory)) {
+                    uiState.setActiveCategory(newLayout.categories[0]?.id ?? '');
+                  }
+
+                  // Clear selection since bins may have changed
+                  uiState.clearSelection();
+                }
               }
-              if (activeCategory && !newLayout.categories.find(c => c.id === activeCategory)) {
-                uiState.setActiveCategory(newLayout.categories[0]?.id ?? '');
-              }
-
-              // Clear selection since bins may have changed
-              uiState.clearSelection();
-            }
-          }
+            })
+            .catch((error) => {
+              console.error(`[CrossTabSync] Failed to load layout ${layoutId}:`, error);
+            });
         }
       }
     };

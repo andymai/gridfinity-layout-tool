@@ -9,7 +9,7 @@ import * as validation from '../../utils/validation';
 
 // Mock storage module
 vi.mock('../../utils/storage', () => ({
-  loadLayoutById: vi.fn(),
+  loadLayoutByIdAsync: vi.fn(),
 }));
 
 // Mock url module
@@ -54,7 +54,7 @@ describe('useLayoutRouting', () => {
     // Set up default mocks
     vi.mocked(url.parseLayoutIdFromHash).mockReturnValue(null);
     vi.mocked(url.hasShareHash).mockReturnValue(false);
-    vi.mocked(storage.loadLayoutById).mockReturnValue(mockLayout);
+    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
     // Set up library with an entry (need to set library.entries, not entries)
@@ -92,25 +92,25 @@ describe('useLayoutRouting', () => {
       expect(typeof result.current.navigateToLayout).toBe('function');
     });
 
-    it('returns false when layout not in library', () => {
+    it('returns false when layout not in library', async () => {
       const { result } = renderHook(() => useLayoutRouting());
 
-      const success = result.current.navigateToLayout('nonexistent-id');
+      const success = await result.current.navigateToLayout('nonexistent-id');
 
       expect(success).toBe(false);
     });
 
-    it('returns false when layout data cannot be loaded', () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(null);
+    it('returns false when layout data cannot be loaded', async () => {
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(null);
 
       const { result } = renderHook(() => useLayoutRouting());
 
-      const success = result.current.navigateToLayout('layout-123');
+      const success = await result.current.navigateToLayout('layout-123');
 
       expect(success).toBe(false);
     });
 
-    it('returns false when layout validation fails', () => {
+    it('returns false when layout validation fails', async () => {
       vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({
         valid: false,
         errors: ['Missing layers'],
@@ -118,63 +118,63 @@ describe('useLayoutRouting', () => {
 
       const { result } = renderHook(() => useLayoutRouting());
 
-      const success = result.current.navigateToLayout('layout-123');
+      const success = await result.current.navigateToLayout('layout-123');
 
       expect(success).toBe(false);
     });
 
-    it('returns true and updates stores on success', () => {
+    it('returns true and updates stores on success', async () => {
       const { result } = renderHook(() => useLayoutRouting());
 
-      const success = result.current.navigateToLayout('layout-123');
+      const success = await result.current.navigateToLayout('layout-123');
 
       expect(success).toBe(true);
       // Active layout ID is stored in library.activeLayoutId
       expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-123');
     });
 
-    it('clears selection when navigating', () => {
+    it('clears selection when navigating', async () => {
       useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
       const { result } = renderHook(() => useLayoutRouting());
-      result.current.navigateToLayout('layout-123');
+      await result.current.navigateToLayout('layout-123');
 
       expect(useUIStore.getState().selectedBinIds).toEqual([]);
     });
 
-    it('sets active layer to first layer', () => {
+    it('sets active layer to first layer', async () => {
       const { result } = renderHook(() => useLayoutRouting());
-      result.current.navigateToLayout('layout-123');
+      await result.current.navigateToLayout('layout-123');
 
       expect(useUIStore.getState().activeLayerId).toBe('layer1');
     });
 
-    it('sets active category to first category', () => {
+    it('sets active category to first category', async () => {
       const { result } = renderHook(() => useLayoutRouting());
-      result.current.navigateToLayout('layout-123');
+      await result.current.navigateToLayout('layout-123');
 
       expect(useUIStore.getState().activeCategoryId).toBe('coral');
     });
 
-    it('clears undo history', () => {
+    it('clears undo history', async () => {
       // The clear function is called within navigateToLayout
       // We verify navigation succeeds, which implies history was cleared
       const { result } = renderHook(() => useLayoutRouting());
-      const success = result.current.navigateToLayout('layout-123');
+      const success = await result.current.navigateToLayout('layout-123');
 
       expect(success).toBe(true);
     });
 
-    it('updates URL hash', () => {
+    it('updates URL hash', async () => {
       const { result } = renderHook(() => useLayoutRouting());
-      result.current.navigateToLayout('layout-123');
+      await result.current.navigateToLayout('layout-123');
 
       expect(url.setLayoutHash).toHaveBeenCalledWith('layout-123', false);
     });
 
-    it('adds to history when requested', () => {
+    it('adds to history when requested', async () => {
       const { result } = renderHook(() => useLayoutRouting());
-      result.current.navigateToLayout('layout-123', true);
+      await result.current.navigateToLayout('layout-123', true);
 
       expect(url.setLayoutHash).toHaveBeenCalledWith('layout-123', true);
     });
@@ -232,21 +232,24 @@ describe('useLayoutRouting', () => {
       renderHook(() => useLayoutRouting());
 
       // Should have attempted to navigate to the URL layout
-      expect(storage.loadLayoutById).toHaveBeenCalledWith('layout-123');
+      expect(storage.loadLayoutByIdAsync).toHaveBeenCalledWith('layout-123');
     });
 
-    it('shows toast when URL layout not found', () => {
+    it('shows toast when URL layout not found', async () => {
       vi.mocked(url.parseLayoutIdFromHash).mockReturnValue('nonexistent');
       const addToastSpy = vi.fn();
       useToastStore.setState({ addToast: addToastSpy });
 
       renderHook(() => useLayoutRouting());
 
-      expect(addToastSpy).toHaveBeenCalledWith(
-        expect.stringContaining('not found'),
-        'info',
-        expect.any(Number)
-      );
+      // navigateToLayout is async, so wait for the toast to be called
+      await vi.waitFor(() => {
+        expect(addToastSpy).toHaveBeenCalledWith(
+          expect.stringContaining('not found'),
+          'info',
+          expect.any(Number)
+        );
+      });
     });
   });
 
@@ -278,7 +281,7 @@ describe('useLayoutRouting', () => {
       });
 
       // Should not navigate during shared preview
-      expect(storage.loadLayoutById).not.toHaveBeenCalled();
+      expect(storage.loadLayoutByIdAsync).not.toHaveBeenCalled();
     });
 
     it('falls back to parsing hash when no state', () => {

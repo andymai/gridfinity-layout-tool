@@ -15,6 +15,7 @@ vi.mock('../../utils/storage', () => ({
   saveLayoutById: vi.fn(),
   saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   loadLayoutById: vi.fn(),
+  loadLayoutByIdAsync: vi.fn(),
   deleteLayoutById: vi.fn(),
   deleteLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   saveLibrary: vi.fn(),
@@ -113,7 +114,7 @@ describe('useLayoutSwitcher', () => {
   describe('switchLayout', () => {
     it('switches to target layout successfully', async () => {
       const targetLayout = createTestLayout('Second Layout');
-      vi.mocked(storage.loadLayoutById).mockReturnValue(targetLayout);
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(targetLayout);
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -141,7 +142,7 @@ describe('useLayoutSwitcher', () => {
     });
 
     it('returns error when layout fails to load', async () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(null);
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(null);
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -158,7 +159,7 @@ describe('useLayoutSwitcher', () => {
 
     it('saves current layout before switching', async () => {
       const targetLayout = createTestLayout('Second');
-      vi.mocked(storage.loadLayoutById).mockReturnValue(targetLayout);
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(targetLayout);
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -175,7 +176,7 @@ describe('useLayoutSwitcher', () => {
     it('clears selection on switch', async () => {
       useUIStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
       const targetLayout = createTestLayout('Second');
-      vi.mocked(storage.loadLayoutById).mockReturnValue(targetLayout);
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(targetLayout);
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -192,7 +193,7 @@ describe('useLayoutSwitcher', () => {
         future: [createDefaultLayout()],
       });
       const targetLayout = createTestLayout('Second');
-      vi.mocked(storage.loadLayoutById).mockReturnValue(targetLayout);
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(targetLayout);
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -208,7 +209,7 @@ describe('useLayoutSwitcher', () => {
       const targetLayout = createTestLayout('Second');
       targetLayout.layers = [{ id: 'new-layer', name: 'New Layer', height: 5 }];
       targetLayout.categories = [{ id: 'new-cat', name: 'New Cat', color: '#fff' }];
-      vi.mocked(storage.loadLayoutById).mockReturnValue(targetLayout);
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(targetLayout);
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -229,7 +230,7 @@ describe('useLayoutSwitcher', () => {
       });
 
       const targetLayout = createTestLayout('Second');
-      vi.mocked(storage.loadLayoutById).mockReturnValue(targetLayout);
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(targetLayout);
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -246,7 +247,7 @@ describe('useLayoutSwitcher', () => {
       useLayoutStore.setState({ activeLayoutId: '__shared_preview__' });
 
       const targetLayout = createTestLayout('Second');
-      vi.mocked(storage.loadLayoutById).mockReturnValue(targetLayout);
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(targetLayout);
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -360,7 +361,7 @@ describe('useLayoutSwitcher', () => {
     });
 
     it('switches to another layout when deleting active', async () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(createTestLayout('Second'));
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(createTestLayout('Second'));
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -386,7 +387,7 @@ describe('useLayoutSwitcher', () => {
 
   describe('duplicateLayout', () => {
     it('duplicates layout successfully', async () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(createTestLayout('Original'));
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(createTestLayout('Original'));
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -416,7 +417,7 @@ describe('useLayoutSwitcher', () => {
     });
 
     it('returns error when source layout fails to load', async () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(null);
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(null);
 
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -432,7 +433,7 @@ describe('useLayoutSwitcher', () => {
     });
 
     it('saves duplicated layout with (copy) suffix', async () => {
-      vi.mocked(storage.loadLayoutById).mockReturnValue(createTestLayout('Original'));
+      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(createTestLayout('Original'));
 
       const { result } = renderHook(() => useLayoutSwitcher());
 

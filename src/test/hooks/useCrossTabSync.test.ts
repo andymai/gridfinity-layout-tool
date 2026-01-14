@@ -10,7 +10,7 @@ import * as storage from '../../utils/storage';
 import * as validation from '../../utils/validation';
 
 vi.mock('../../utils/storage', () => ({
-  loadLayoutById: vi.fn(),
+  loadLayoutByIdAsync: vi.fn(),
   loadLibrary: vi.fn(),
 }));
 
@@ -60,7 +60,7 @@ describe('useCrossTabSync', () => {
     expect(setLibrarySpy).toHaveBeenCalledWith(mockLibrary);
   });
 
-  it('syncs active layout when its storage key changes', () => {
+  it('syncs active layout when its storage key changes', async () => {
     const mockLayout = {
       name: 'Updated Layout',
       drawer: { width: 12, depth: 10, height: 14 },
@@ -71,7 +71,7 @@ describe('useCrossTabSync', () => {
       gridUnitMm: 42,
       heightUnitMm: 7,
     };
-    vi.mocked(storage.loadLayoutById).mockReturnValue(mockLayout);
+    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
     const importLayoutSpy = vi.spyOn(useLayoutStore.getState(), 'importLayout');
@@ -87,15 +87,18 @@ describe('useCrossTabSync', () => {
       }));
     });
 
-    expect(storage.loadLayoutById).toHaveBeenCalledWith('test-layout-id');
-    expect(validation.validateLayoutIntegrity).toHaveBeenCalledWith(mockLayout);
-    expect(importLayoutSpy).toHaveBeenCalledWith(mockLayout, 'test-layout-id', 'remote');
-    expect(clearHistorySpy).toHaveBeenCalled();
+    // loadLayoutByIdAsync is called with .then(), so wait for async to complete
+    await vi.waitFor(() => {
+      expect(storage.loadLayoutByIdAsync).toHaveBeenCalledWith('test-layout-id');
+      expect(validation.validateLayoutIntegrity).toHaveBeenCalledWith(mockLayout);
+      expect(importLayoutSpy).toHaveBeenCalledWith(mockLayout, 'test-layout-id', 'remote');
+      expect(clearHistorySpy).toHaveBeenCalled();
+    });
   });
 
   it('does not sync when non-active layout changes', () => {
     const mockLayout = { name: 'Other Layout' };
-    vi.mocked(storage.loadLayoutById).mockReturnValue(mockLayout);
+    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
 
     const importLayoutSpy = vi.spyOn(useLayoutStore.getState(), 'importLayout');
 
@@ -109,13 +112,13 @@ describe('useCrossTabSync', () => {
       }));
     });
 
-    expect(storage.loadLayoutById).not.toHaveBeenCalled();
+    expect(storage.loadLayoutByIdAsync).not.toHaveBeenCalled();
     expect(importLayoutSpy).not.toHaveBeenCalled();
   });
 
   it('does not sync invalid layout data', () => {
     const mockLayout = { name: 'Invalid' };
-    vi.mocked(storage.loadLayoutById).mockReturnValue(mockLayout);
+    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: false, error: 'Invalid' });
 
     const importLayoutSpy = vi.spyOn(useLayoutStore.getState(), 'importLayout');
@@ -145,7 +148,7 @@ describe('useCrossTabSync', () => {
     });
 
     expect(storage.loadLibrary).not.toHaveBeenCalled();
-    expect(storage.loadLayoutById).not.toHaveBeenCalled();
+    expect(storage.loadLayoutByIdAsync).not.toHaveBeenCalled();
   });
 
   it('removes event listener on unmount', () => {
@@ -157,7 +160,7 @@ describe('useCrossTabSync', () => {
     expect(removeEventListenerSpy).toHaveBeenCalledWith('storage', expect.any(Function));
   });
 
-  it('clears selection when syncing layout', () => {
+  it('clears selection when syncing layout', async () => {
     const mockLayout = {
       name: 'Updated',
       drawer: { width: 10, depth: 8, height: 12 },
@@ -168,7 +171,7 @@ describe('useCrossTabSync', () => {
       gridUnitMm: 42,
       heightUnitMm: 7,
     };
-    vi.mocked(storage.loadLayoutById).mockReturnValue(mockLayout);
+    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
     useUIStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
@@ -184,10 +187,12 @@ describe('useCrossTabSync', () => {
       }));
     });
 
-    expect(clearSelectionSpy).toHaveBeenCalled();
+    await vi.waitFor(() => {
+      expect(clearSelectionSpy).toHaveBeenCalled();
+    });
   });
 
-  it('updates active layer if it no longer exists', () => {
+  it('updates active layer if it no longer exists', async () => {
     const mockLayout = {
       name: 'Updated',
       drawer: { width: 10, depth: 8, height: 12 },
@@ -198,7 +203,7 @@ describe('useCrossTabSync', () => {
       gridUnitMm: 42,
       heightUnitMm: 7,
     };
-    vi.mocked(storage.loadLayoutById).mockReturnValue(mockLayout);
+    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
     useUIStore.setState({ activeLayerId: 'old-layer' });
@@ -214,6 +219,8 @@ describe('useCrossTabSync', () => {
       }));
     });
 
-    expect(setActiveLayerSpy).toHaveBeenCalledWith('new-layer');
+    await vi.waitFor(() => {
+      expect(setActiveLayerSpy).toHaveBeenCalledWith('new-layer');
+    });
   });
 });

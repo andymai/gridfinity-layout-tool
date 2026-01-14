@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useLibraryStore, useUIStore, useToastStore, useHistoryStore } from '../store';
-import { loadLayoutById } from '../utils/storage';
+import { loadLayoutByIdAsync } from '../utils/storage';
 import { validateLayoutIntegrity } from '../utils/validation';
 import {
   parseLayoutIdFromHash,
@@ -58,15 +58,15 @@ export function useLayoutRouting() {
    * Switch to a layout by ID (used for URL navigation).
    * Returns true if successful, false if layout not found.
    */
-  const navigateToLayout = useCallback((layoutId: string, addToHistory = false): boolean => {
+  const navigateToLayout = useCallback(async (layoutId: string, addToHistory = false): Promise<boolean> => {
     // Check if layout exists in library
     const entry = getEntry(layoutId);
     if (!entry) {
       return false;
     }
 
-    // Load layout data
-    const layout = loadLayoutById(layoutId);
+    // Load layout data from IndexedDB (with localStorage fallback)
+    const layout = await loadLayoutByIdAsync(layoutId);
     if (!layout) {
       return false;
     }
@@ -127,21 +127,27 @@ export function useLayoutRouting() {
       return;
     }
 
-    const success = navigateToLayout(hashLayoutId, false);
-    if (!success) {
-      // Layout not found - show friendly error
-      addToast(
-        'Layout not found. Use the Share button to share layouts with others.',
-        'info',
-        8000
-      );
-      // Update URL to current layout
-      if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
-        setLayoutHash(activeLayoutId, false);
-      } else {
-        clearLayoutHash();
-      }
-    }
+    // Navigate asynchronously
+    navigateToLayout(hashLayoutId, false)
+      .then((success) => {
+        if (!success) {
+          // Layout not found - show friendly error
+          addToast(
+            'Layout not found. Use the Share button to share layouts with others.',
+            'info',
+            8000
+          );
+          // Update URL to current layout
+          if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
+            setLayoutHash(activeLayoutId, false);
+          } else {
+            clearLayoutHash();
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('[LayoutRouting] Navigation failed:', error);
+      });
   }, [
     isLoaded,
     activeLayoutId,
@@ -171,14 +177,20 @@ export function useLayoutRouting() {
       // Already on this layout
       if (layoutId === activeLayoutId) return;
 
-      const success = navigateToLayout(layoutId, false);
-      if (!success) {
-        addToast('Layout not found', 'error');
-        // Restore URL to current layout
-        if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
-          setLayoutHash(activeLayoutId, false);
-        }
-      }
+      // Navigate asynchronously
+      navigateToLayout(layoutId, false)
+        .then((success) => {
+          if (!success) {
+            addToast('Layout not found', 'error');
+            // Restore URL to current layout
+            if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
+              setLayoutHash(activeLayoutId, false);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error('[LayoutRouting] Popstate navigation failed:', error);
+        });
     };
 
     window.addEventListener('popstate', handlePopState);
