@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
-import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore, useToastStore } from '../../store';
+import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore, useToastStore, useLabsStore } from '../../store';
+import { getFeature } from '../../labs/features';
+import { SparklesIcon, ChevronRightIcon } from '../labs/icons';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../../constants';
 import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
@@ -32,6 +34,18 @@ export function MobileSettingsPanel() {
 
   const settings = useSettingsStore(state => state.settings);
   const saveCurrentAsDefaults = useSettingsStore(state => state.saveCurrentAsDefaults);
+
+  const openLabsDrawer = useLabsStore(state => state.openDrawer);
+  const enabledFeatures = useLabsStore(state => state.preferences.enabledFeatures);
+
+  // Compute enabled count from raw state (only experimental/preview features)
+  const labsEnabledCount = useMemo(() => {
+    return Object.entries(enabledFeatures).filter(([id, enabled]) => {
+      if (!enabled) return false;
+      const feature = getFeature(id);
+      return feature?.status === 'experimental' || feature?.status === 'preview';
+    }).length;
+  }, [enabledFeatures]);
 
   // Get active layer's height to save as default
   const activeLayerId = useUIStore((state) => state.activeLayerId);
@@ -359,6 +373,33 @@ export function MobileSettingsPanel() {
             Save Current as Defaults
           </button>
         </div>
+      </section>
+
+      {/* Labs */}
+      <section>
+        <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
+          Experimental
+        </h3>
+        <button
+          onClick={openLabsDrawer}
+          className="w-full flex items-center justify-between px-4 py-3 bg-surface-elevated rounded-lg hover:bg-surface-hover transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <SparklesIcon className="w-5 h-5 text-accent" />
+            <div className="text-left">
+              <div className="text-sm font-medium text-content">Labs</div>
+              <div className="text-xs text-content-tertiary">Try experimental features</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {labsEnabledCount > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[11px] font-semibold text-white bg-accent rounded-full">
+                {labsEnabledCount > 9 ? '9+' : labsEnabledCount}
+              </span>
+            )}
+            <ChevronRightIcon className="w-5 h-5 text-content-tertiary" />
+          </div>
+        </button>
       </section>
 
       {/* Info */}

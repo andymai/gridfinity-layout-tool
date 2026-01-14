@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore } from '../store';
+import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useLabsStore, LABS_STORAGE_KEY } from '../store';
 import { loadLayoutByIdAsync, loadLibrary } from '../storage';
 import { validateLayoutIntegrity } from '../utils/validation';
+import { createDefaultLabsPreferences } from '../labs/types';
 
 /**
  * Hook to automatically sync layout data when modified in another browser tab.
@@ -10,6 +11,22 @@ import { validateLayoutIntegrity } from '../utils/validation';
 export function useCrossTabSync() {
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
+      // Labs preferences changed - sync them
+      if (e.key === LABS_STORAGE_KEY) {
+        try {
+          const newPrefs = e.newValue
+            ? JSON.parse(e.newValue)
+            : createDefaultLabsPreferences();
+          useLabsStore.getState().syncFromStorage({
+            ...createDefaultLabsPreferences(),
+            ...newPrefs,
+          });
+        } catch {
+          // Ignore parse errors
+        }
+        return;
+      }
+
       // Library index changed - reload it
       if (e.key === 'gridfinity-library-v1') {
         const newLibrary = loadLibrary();
