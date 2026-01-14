@@ -1,9 +1,7 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useLayoutStore, useUIStore, useLibraryStore } from './store';
-import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useCollectionRouting } from './hooks';
-import { useCollectionStore } from './store/collection';
+import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useStorageMigration } from './hooks';
 import { initializeLayoutLibrary } from './utils/storage';
-import { isCollectionURL } from './utils/url';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
 import { Sidebar } from './components/Sidebar';
@@ -19,7 +17,6 @@ import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter } from './components/SharedLayoutImporter';
 import { SharedLayoutBanner } from './components/SharedLayoutBanner';
-import { CollectionBanner } from './components/CollectionBanner';
 import { SHORTCUTS } from './constants';
 
 // Legacy context menu state for backwards compatibility
@@ -33,9 +30,6 @@ const HelpModal = lazyWithRetry(() =>
   import('./components/modals/HelpModal').then(namedExport('HelpModal'))
 );
 
-// Collection invite modal - shown when visiting collection URL
-import { CollectionInviteModal } from './components/modals/CollectionInviteModal';
-
 // Lazy load mobile layout - only loaded on mobile devices
 const MobileLayout = lazyWithRetry(() =>
   import('./components/MobileLayout').then(namedExport('MobileLayout'))
@@ -46,16 +40,7 @@ let initialLoadError: Error | null = null;
 try {
   const { library, activeLayout } = initializeLayoutLibrary();
   useLibraryStore.getState().initLibrary(library);
-
-  // Skip loading local layout if we're on a collection URL
-  // The collection routing will handle loading the appropriate layout
-  // This prevents the visual flash of the local layout before the collection layout loads
-  if (!isCollectionURL()) {
-    useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
-  }
-
-  // Initialize collection memberships from localStorage
-  useCollectionStore.getState().initMemberships();
+  useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
 } catch (e) {
   initialLoadError = e as Error;
 }
@@ -134,11 +119,8 @@ export default function App() {
   // Analytics session tracking
   useAnalytics();
 
-  // Collection URL routing (handles /c/{id} URLs)
-  useCollectionRouting();
-
-  // Pending collection invite (shown when visiting collection URL directly)
-  const pendingInvite = useCollectionStore((state) => state.pendingInvite);
+  // Storage migration (localStorage → IndexedDB)
+  useStorageMigration();
 
   // Help modal keyboard shortcut
   const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {
@@ -184,9 +166,6 @@ export default function App() {
       <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
         {/* Shared layout banner (shown when viewing unsaved shared layout) */}
         <SharedLayoutBanner />
-
-        {/* Collection banner (shown when viewing a collection) */}
-        <CollectionBanner />
 
         {/* Header */}
         <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
@@ -264,9 +243,6 @@ export default function App() {
 
         {/* Shared layout URL importer */}
         <SharedLayoutImporter />
-
-        {/* Collection invite modal */}
-        {pendingInvite && <CollectionInviteModal invite={pendingInvite} />}
       </div>
     );
   }
@@ -276,9 +252,6 @@ export default function App() {
     <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
       <SharedLayoutBanner />
-
-      {/* Collection banner (shown when viewing a collection) */}
-      <CollectionBanner />
 
       {/* Header */}
       <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
@@ -340,9 +313,6 @@ export default function App() {
 
       {/* Shared layout URL importer */}
       <SharedLayoutImporter />
-
-      {/* Collection invite modal */}
-      {pendingInvite && <CollectionInviteModal invite={pendingInvite} />}
     </div>
   );
 }

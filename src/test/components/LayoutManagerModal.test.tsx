@@ -11,8 +11,10 @@ import type { LayoutLibrary, LayoutEntry } from '../../types';
 // Mock the storage module
 vi.mock('../../utils/storage', () => ({
   saveLayoutById: vi.fn(),
+  saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   loadLayoutById: vi.fn(),
   deleteLayoutById: vi.fn(),
+  deleteLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
   saveLibrary: vi.fn(),
   computeLayoutPreview: vi.fn(() => ({
     drawerWidth: 10,
@@ -203,7 +205,9 @@ describe('LayoutManagerModal Accessibility', () => {
 
       fireEvent.keyDown(secondOption, { key: 'Enter' });
 
-      expect(mockOnClose).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalled();
+      });
     });
   });
 

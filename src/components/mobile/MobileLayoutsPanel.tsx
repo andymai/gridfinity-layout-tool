@@ -63,28 +63,28 @@ export function MobileLayoutsPanel() {
     return b.modifiedAt - a.modifiedAt;
   });
 
-  const handleSelectLayout = useCallback((layoutId: string) => {
+  const handleSelectLayout = useCallback(async (layoutId: string) => {
     if (layoutId === activeLayoutId) return;
 
     const entry = library.entries.find(e => e.id === layoutId);
-    const result = switchLayout(layoutId);
+    const result = await switchLayout(layoutId);
     if (result.success) {
       announceToScreenReader(`Switched to ${entry?.name || 'layout'}`);
       closeMobilePanel();
     }
   }, [activeLayoutId, switchLayout, library.entries, announceToScreenReader, closeMobilePanel]);
 
-  const handleCreateNew = useCallback(() => {
-    const result = createNewLayout();
+  const handleCreateNew = useCallback(async () => {
+    const result = await createNewLayout();
     if (result.success) {
       announceToScreenReader('New layout created');
       closeMobilePanel();
     }
   }, [createNewLayout, announceToScreenReader, closeMobilePanel]);
 
-  const handleDuplicate = useCallback((layoutId: string) => {
+  const handleDuplicate = useCallback(async (layoutId: string) => {
     const entry = library.entries.find(e => e.id === layoutId);
-    const result = duplicateLayout(layoutId);
+    const result = await duplicateLayout(layoutId);
     if (result.success) {
       announceToScreenReader(`Duplicated ${entry?.name || 'layout'}`);
     }

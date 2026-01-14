@@ -9,9 +9,6 @@ import { ToastContainer } from './Toast';
 import { PanelErrorBoundary } from './PanelErrorBoundary';
 import { SharedLayoutImporter } from './SharedLayoutImporter';
 import { SharedLayoutBanner } from './SharedLayoutBanner';
-import { CollectionBanner } from './CollectionBanner';
-import { CollectionInviteModal } from './modals/CollectionInviteModal';
-import { useCollectionStore } from '../store/collection';
 import {
   MobileHeader,
   BottomNavBar,
@@ -50,15 +47,11 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen, saveStatus
   const setActiveMobilePanel = useUIStore(state => state.setActiveMobilePanel);
   const contextMenu = useUIStore(state => state.contextMenu);
   const hideContextMenu = useUIStore(state => state.hideContextMenu);
-  const pendingInvite = useCollectionStore(state => state.pendingInvite);
 
   return (
     <div className="h-screen-safe flex flex-col overflow-hidden bg-surface text-content">
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
       <SharedLayoutBanner />
-
-      {/* Collection banner (shown when viewing a collection) */}
-      <CollectionBanner />
 
       {/* Mobile Header */}
       <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} onHelpClick={() => setIsMobileHelpOpen(true)} saveStatus={saveStatus} />
@@ -108,9 +101,6 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen, saveStatus
 
       {/* Shared layout URL importer */}
       <SharedLayoutImporter />
-
-      {/* Collection invite modal */}
-      {pendingInvite && <CollectionInviteModal invite={pendingInvite} />}
     </div>
   );
 }

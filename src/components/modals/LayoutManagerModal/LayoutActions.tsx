@@ -5,13 +5,11 @@ import type { LayoutEntry } from '../../../types';
 interface LayoutActionsProps {
   entry: LayoutEntry;
   isOnlyLayout: boolean;
-  isInCollectionMode?: boolean;
   onCopyLink: () => void;
   onDownload: () => void;
   onRename: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
-  onCopyToCollection?: () => void;
 }
 
 /**
@@ -21,13 +19,11 @@ interface LayoutActionsProps {
 export function LayoutActions({
   entry,
   isOnlyLayout,
-  isInCollectionMode,
   onCopyLink,
   onDownload,
   onRename,
   onDuplicate,
   onDelete,
-  onCopyToCollection,
 }: LayoutActionsProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -173,18 +169,6 @@ export function LayoutActions({
                 </svg>
                 Duplicate
               </button>
-              {isInCollectionMode && onCopyToCollection && (
-                <button
-                  role="menuitem"
-                  onClick={handleAction(onCopyToCollection)}
-                  className="w-full px-3 py-2 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4 text-content-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  Copy to Collection
-                </button>
-              )}
               {!isOnlyLayout && (
                 <>
                   <div className="border-t border-stroke my-1" />

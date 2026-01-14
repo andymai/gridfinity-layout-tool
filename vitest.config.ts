@@ -23,7 +23,6 @@ export default defineConfig({
       ],
       thresholds: {
         // Thresholds set slightly below current coverage to prevent regression
-        // Updated 2026-01-13: Adjusted after adding collection invite UX
         lines: 86,
         branches: 74,
         functions: 85,

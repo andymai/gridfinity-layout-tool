@@ -9,7 +9,6 @@ import {
   clearLayoutHash,
   getLayoutIdFromHistoryState,
   hasShareHash,
-  isCollectionURL,
 } from '../utils/url';
 
 /**
@@ -112,9 +111,6 @@ export function useLayoutRouting() {
     // Share links take precedence - let SharedLayoutImporter handle them
     if (hasShareHash()) return;
 
-    // Collection URLs are handled by useCollectionRouting - don't interfere
-    if (isCollectionURL()) return;
-
     const hashLayoutId = parseLayoutIdFromHash();
     if (!hashLayoutId) {
       // No layout in URL - set URL to current active layout
@@ -158,9 +154,6 @@ export function useLayoutRouting() {
     const handlePopState = (event: PopStateEvent) => {
       // Don't handle during shared preview
       if (sharedLayoutPreview) return;
-
-      // Collection navigation is handled by useCollectionRouting
-      if (isCollectionURL()) return;
 
       // Try to get layout ID from history state first
       let layoutId = getLayoutIdFromHistoryState(event.state);
@@ -212,16 +205,6 @@ export function useLayoutRouting() {
 
     // Skip if library not loaded yet
     if (!isLoaded) return;
-
-    // Collection URLs are handled by useCollectionRouting - don't add #local/ hash
-    // Collection layouts are cloud-synced, not local-only
-    if (isCollectionURL()) {
-      // Clear any existing local hash (e.g., when switching from local to collection)
-      if (parseLayoutIdFromHash()) {
-        clearLayoutHash();
-      }
-      return;
-    }
 
     // Update URL to match current layout (without adding to history)
     // History is only added during explicit layout switches
