@@ -1,5 +1,22 @@
 # Drawer-to-Print System Architecture
 
+## Overview
+
+**Feature:** Drawer-to-Print STL Generation & Export System
+**Version:** 1.0
+**Status:** Planning
+**Last Updated:** 2025-01-14
+
+### Related Documents
+
+| Document | Purpose | Link |
+|----------|---------|------|
+| **Product Requirements (PRD)** | User stories, acceptance criteria, success metrics | [DRAWER_TO_PRINT_PRD.md](./DRAWER_TO_PRINT_PRD.md) |
+| **Design Requirements (DRD)** | UI/UX specifications, interaction patterns, accessibility | [DRAWER_TO_PRINT_DRD.md](./DRAWER_TO_PRINT_DRD.md) |
+| **System Architecture** | This document - technical implementation | — |
+
+---
+
 ## Vision
 
 Transform the Gridfinity Layout Tool from a layout planner into a complete "one-stop shop" for drawer organization: input drawer dimensions, design your layout, and download a ZIP file with all STL files ready to print.
@@ -226,6 +243,8 @@ interface LabelConfig {
 
 New Zustand store for managing bin templates and custom models.
 
+> **UI Reference:** See [DRD: Model Library Navigation](./DRAWER_TO_PRINT_DRD.md#6-model-library-navigation) for interaction patterns and visual specifications.
+
 ```typescript
 // src/store/models.ts
 
@@ -287,6 +306,9 @@ interface CachedSTL {
 
 Handles upload, validation, and storage of custom STL files.
 
+> **PRD Reference:** Implements [US-4.1 through US-4.4](./DRAWER_TO_PRINT_PRD.md#epic-4-custom-model-import) (Custom Model Import epic)
+> **UI Reference:** See [DRD: STL File Upload](./DRAWER_TO_PRINT_DRD.md#3-stl-file-upload) and [Grid Compatibility Validation](./DRAWER_TO_PRINT_DRD.md#4-grid-compatibility-validation) for interaction patterns.
+
 ```typescript
 // src/models/CustomModelService.ts
 
@@ -326,6 +348,9 @@ type CompatibilityWarning =
 ### 4. Export Pipeline
 
 Orchestrates the full export process from layout to downloadable ZIP.
+
+> **PRD Reference:** Implements [US-5.1 through US-5.5](./DRAWER_TO_PRINT_PRD.md#epic-5-full-export-package) (Full Export Package epic)
+> **UI Reference:** See [DRD: Export Flow](./DRAWER_TO_PRINT_DRD.md#5-export-flow) for the three-step modal interaction pattern.
 
 ```typescript
 // src/export/types.ts
@@ -951,6 +976,8 @@ Projected total (without OpenSCAD): ~820 KB gzip
 ---
 
 ## Migration Path
+
+> **Cross-Reference:** This migration path aligns with the [PRD Rollout Plan](./DRAWER_TO_PRINT_PRD.md#rollout-plan). Each phase corresponds to PRD epics and delivers specific user stories.
 
 ### Phase 1: Foundation (Non-breaking)
 

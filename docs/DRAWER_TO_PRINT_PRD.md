@@ -7,6 +7,16 @@
 **Status:** Planning
 **Last Updated:** 2025-01-14
 
+### Related Documents
+
+| Document | Purpose | Link |
+|----------|---------|------|
+| **Product Requirements (PRD)** | This document - user stories, acceptance criteria | — |
+| **System Architecture** | Technical implementation, data models, APIs | [DRAWER_TO_PRINT_ARCHITECTURE.md](./DRAWER_TO_PRINT_ARCHITECTURE.md) |
+| **Design Requirements (DRD)** | UI/UX specifications, interaction patterns, accessibility | [DRAWER_TO_PRINT_DRD.md](./DRAWER_TO_PRINT_DRD.md) |
+
+---
+
 ### Problem Statement
 
 Users of the Gridfinity Layout Tool can design drawer layouts, but must then manually:
@@ -36,6 +46,8 @@ Transform the Gridfinity Layout Tool into a **complete end-to-end solution**: in
 
 ### Epic 1: Basic STL Generation
 
+> **Architecture:** [Generation Engine](./DRAWER_TO_PRINT_ARCHITECTURE.md#1-generation-engine) | **Design:** [Bin Style Selection](./DRAWER_TO_PRINT_DRD.md#1-bin-style-selection)
+
 **US-1.1: Export Single Bin STL**
 > As a user, I want to export an STL file for a specific bin in my layout so that I can print it without using external tools.
 
@@ -63,6 +75,8 @@ Acceptance Criteria:
 ---
 
 ### Epic 2: Baseplate Generation
+
+> **Architecture:** [BaseplateConfig](./DRAWER_TO_PRINT_ARCHITECTURE.md#extended-layout-type) | **Design:** Component specs in DRD
 
 **US-2.1: Auto-Generate Baseplate**
 > As a user, I want the tool to automatically generate a baseplate that fits my drawer so that I don't have to find one separately.
@@ -92,6 +106,8 @@ Acceptance Criteria:
 ---
 
 ### Epic 3: Bin Customization
+
+> **Architecture:** [BinParams interface](./DRAWER_TO_PRINT_ARCHITECTURE.md#1-generation-engine) | **Design:** [Parameter Configuration](./DRAWER_TO_PRINT_DRD.md#2-parameter-configuration)
 
 **US-3.1: Add Dividers**
 > As a user, I want to add internal dividers to bins so that I can organize small items within a single bin.
@@ -128,6 +144,8 @@ Acceptance Criteria:
 ---
 
 ### Epic 4: Custom Model Import
+
+> **Architecture:** [Custom Model Service](./DRAWER_TO_PRINT_ARCHITECTURE.md#3-custom-model-service) | **Design:** [STL File Upload](./DRAWER_TO_PRINT_DRD.md#3-stl-file-upload), [Grid Compatibility](./DRAWER_TO_PRINT_DRD.md#4-grid-compatibility-validation)
 
 **US-4.1: Upload Custom STL**
 > As a user, I want to upload my own STL files so that I can use specialty bins I've found or designed.
@@ -168,6 +186,8 @@ Acceptance Criteria:
 ---
 
 ### Epic 5: Full Export Package
+
+> **Architecture:** [Export Pipeline](./DRAWER_TO_PRINT_ARCHITECTURE.md#4-export-pipeline), [ZIP Structure](./DRAWER_TO_PRINT_ARCHITECTURE.md#zip-structure) | **Design:** [Export Flow](./DRAWER_TO_PRINT_DRD.md#5-export-flow)
 
 **US-5.1: Export Complete ZIP**
 > As a user, I want to download a single ZIP file with everything I need to print so that I have a complete package.
@@ -218,6 +238,8 @@ Acceptance Criteria:
 
 ### Epic 6: Model Library
 
+> **Architecture:** [Model Library Store](./DRAWER_TO_PRINT_ARCHITECTURE.md#2-model-library-store) | **Design:** [Model Library Navigation](./DRAWER_TO_PRINT_DRD.md#6-model-library-navigation)
+
 **US-6.1: Browse Built-in Templates**
 > As a user, I want to browse a library of bin templates so that I can find bins for specific purposes.
 
@@ -248,6 +270,8 @@ Acceptance Criteria:
 ---
 
 ## Feature Requirements
+
+> **Implementation Details:** See [Architecture: Technology Recommendations](./DRAWER_TO_PRINT_ARCHITECTURE.md#technology-recommendations) for bundle sizes and library choices. Phase numbers correspond to [Architecture: Migration Path](./DRAWER_TO_PRINT_ARCHITECTURE.md#migration-path).
 
 ### Functional Requirements
 
@@ -286,6 +310,8 @@ Acceptance Criteria:
 ---
 
 ## User Interface
+
+> **Detailed Specifications:** The wireframes below show conceptual layouts. For complete interaction patterns, accessibility requirements, responsive behavior, and component specifications, see the [Design Requirements Document](./DRAWER_TO_PRINT_DRD.md).
 
 ### Export Modal Wireframe
 
@@ -480,6 +506,8 @@ The following are explicitly **not** included in this PRD:
 ---
 
 ## Rollout Plan
+
+> **Technical Implementation:** Each phase maps to the [Architecture: Migration Path](./DRAWER_TO_PRINT_ARCHITECTURE.md#migration-path) with detailed technical tasks and code organization.
 
 ### Phase 1: Foundation (Internal)
 - Infrastructure without user-visible changes
