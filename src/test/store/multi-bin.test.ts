@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '../../store/layout';
 import { createDefaultLayout, STAGING_ID } from '../../constants';
+import { isOk, isErr } from '../../result';
 
 describe('multi-bin operations', () => {
   beforeEach(() => {
@@ -14,21 +15,22 @@ describe('multi-bin operations', () => {
       const categoryId = layout.categories[0].id;
 
       // Add two bins side by side
-      const bin1Id = addBin({
+      const result1 = addBin({
         layerId, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: 'Bin 1', notes: '',
       });
-      const bin2Id = addBin({
+      const result2 = addBin({
         layerId, x: 2, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: 'Bin 2', notes: '',
       });
 
-      expect(bin1Id).not.toBeNull();
-      expect(bin2Id).not.toBeNull();
+      expect(isOk(result1)).toBe(true);
+      expect(isOk(result2)).toBe(true);
+      if (!isOk(result1) || !isOk(result2)) return;
 
       // Simulate moving both bins (update positions)
-      updateBin(bin1Id!, { x: 0, y: 4 });
-      updateBin(bin2Id!, { x: 2, y: 4 });
+      updateBin(result1.value, { x: 0, y: 4 });
+      updateBin(result2.value, { x: 2, y: 4 });
 
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].y).toBe(4);
@@ -53,13 +55,13 @@ describe('multi-bin operations', () => {
       });
 
       // Third bin - if we tried to add at (1,0), it would collide with first
-      const collidingId = addBin({
+      const collidingResult = addBin({
         layerId, x: 1, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
 
-      // Should return null because of collision
-      expect(collidingId).toBeNull();
+      // Should return error because of collision
+      expect(isErr(collidingResult)).toBe(true);
     });
   });
 
@@ -69,14 +71,21 @@ describe('multi-bin operations', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const originalId = addBin({
+      const addResult = addBin({
         layerId, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: 'Original', notes: '',
       });
 
-      const duplicateId = duplicateBin(originalId!);
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      expect(duplicateId).not.toBeNull();
+      const originalId = addResult.value;
+      const dupResult = duplicateBin(originalId);
+
+      expect(isOk(dupResult)).toBe(true);
+      if (!isOk(dupResult)) return;
+
+      const duplicateId = dupResult.value;
       expect(duplicateId).not.toBe(originalId);
 
       const bins = useLayoutStore.getState().layout.bins;
@@ -90,14 +99,22 @@ describe('multi-bin operations', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const originalId = addBin({
+      const addResult = addBin({
         layerId, x: 0, y: 0, width: 3, depth: 2, height: 3,
         category: categoryId, label: 'Test Label', notes: 'Test notes',
         clearanceHeight: 2,
       });
 
-      const duplicateId = duplicateBin(originalId!);
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
+      const originalId = addResult.value;
+      const dupResult = duplicateBin(originalId);
+
+      expect(isOk(dupResult)).toBe(true);
+      if (!isOk(dupResult)) return;
+
+      const duplicateId = dupResult.value;
       const bins = useLayoutStore.getState().layout.bins;
       const original = bins.find(b => b.id === originalId);
       const duplicate = bins.find(b => b.id === duplicateId);
@@ -116,17 +133,27 @@ describe('multi-bin operations', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const originalId = addBin({
+      const addResult = addBin({
         layerId, x: 0, y: 0, width: 1, depth: 1, height: 3,
         category: categoryId, label: '', notes: '',
       });
 
-      // Duplicate multiple times
-      const dup1 = duplicateBin(originalId!);
-      const dup2 = duplicateBin(originalId!);
-      const dup3 = duplicateBin(originalId!);
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
 
-      const ids = [originalId, dup1, dup2, dup3];
+      const originalId = addResult.value;
+
+      // Duplicate multiple times
+      const dup1 = duplicateBin(originalId);
+      const dup2 = duplicateBin(originalId);
+      const dup3 = duplicateBin(originalId);
+
+      expect(isOk(dup1)).toBe(true);
+      expect(isOk(dup2)).toBe(true);
+      expect(isOk(dup3)).toBe(true);
+      if (!isOk(dup1) || !isOk(dup2) || !isOk(dup3)) return;
+
+      const ids = [originalId, dup1.value, dup2.value, dup3.value];
       const uniqueIds = new Set(ids);
       expect(uniqueIds.size).toBe(4);
     });
@@ -138,15 +165,18 @@ describe('multi-bin operations', () => {
       const categoryId = layout.categories[0].id;
 
       // Add bin directly to staging
-      const binId = addBin({
+      const addResult = addBin({
         layerId: STAGING_ID,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
 
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
+
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
-      deleteBin(binId!);
+      deleteBin(addResult.value);
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
     });
 
@@ -189,24 +219,32 @@ describe('multi-bin operations', () => {
       const categoryId = layout.categories[0].id;
 
       // Add second layer
-      const layer2Id = addLayer()!;
+      const layerResult = addLayer();
+      expect(isOk(layerResult)).toBe(true);
+      if (!isOk(layerResult)) return;
+
+      const layer2Id = layerResult.value;
 
       // Add bin to each layer
-      addBin({
+      const bin1Result = addBin({
         layerId: layer1Id, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
-      addBin({
+      const bin2Result = addBin({
         layerId: layer2Id, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
 
       // Add to staging
-      addBin({
+      const bin3Result = addBin({
         layerId: STAGING_ID,
         x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
+
+      expect(isOk(bin1Result)).toBe(true);
+      expect(isOk(bin2Result)).toBe(true);
+      expect(isOk(bin3Result)).toBe(true);
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(3);
 
@@ -228,13 +266,16 @@ describe('multi-bin operations', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const addResult = addBin({
         layerId, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
 
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
+
       // Resize the bin
-      updateBin(binId!, { width: 4, depth: 4 });
+      updateBin(addResult.value, { width: 4, depth: 4 });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.width).toBe(4);
@@ -246,12 +287,15 @@ describe('multi-bin operations', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = addBin({
+      const addResult = addBin({
         layerId, x: 2, y: 2, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
 
-      updateBin(binId!, { width: 3, depth: 3 });
+      expect(isOk(addResult)).toBe(true);
+      if (!isOk(addResult)) return;
+
+      updateBin(addResult.value, { width: 3, depth: 3 });
 
       const bin = useLayoutStore.getState().layout.bins[0];
       expect(bin.x).toBe(2);
@@ -265,28 +309,33 @@ describe('multi-bin operations', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const bin1 = addBin({
+      const bin1Result = addBin({
         layerId, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
-      const bin2 = addBin({
+      const bin2Result = addBin({
         layerId, x: 2, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
-      const bin3 = addBin({
+      const bin3Result = addBin({
         layerId, x: 4, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
 
+      expect(isOk(bin1Result)).toBe(true);
+      expect(isOk(bin2Result)).toBe(true);
+      expect(isOk(bin3Result)).toBe(true);
+      if (!isOk(bin1Result) || !isOk(bin2Result) || !isOk(bin3Result)) return;
+
       expect(useLayoutStore.getState().layout.bins).toHaveLength(3);
 
       // Delete multiple
-      deleteBin(bin1!);
-      deleteBin(bin3!);
+      deleteBin(bin1Result.value);
+      deleteBin(bin3Result.value);
 
       const remaining = useLayoutStore.getState().layout.bins;
       expect(remaining).toHaveLength(1);
-      expect(remaining[0].id).toBe(bin2);
+      expect(remaining[0].id).toBe(bin2Result.value);
     });
 
     it('handles batch updates to multiple bins', () => {
@@ -295,18 +344,22 @@ describe('multi-bin operations', () => {
       const categoryId = layout.categories[0].id;
       const newCategoryId = layout.categories[1].id;
 
-      const bin1 = addBin({
+      const bin1Result = addBin({
         layerId, x: 0, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
-      const bin2 = addBin({
+      const bin2Result = addBin({
         layerId, x: 2, y: 0, width: 2, depth: 2, height: 3,
         category: categoryId, label: '', notes: '',
       });
 
+      expect(isOk(bin1Result)).toBe(true);
+      expect(isOk(bin2Result)).toBe(true);
+      if (!isOk(bin1Result) || !isOk(bin2Result)) return;
+
       // Update category for multiple bins
-      updateBin(bin1!, { category: newCategoryId });
-      updateBin(bin2!, { category: newCategoryId });
+      updateBin(bin1Result.value, { category: newCategoryId });
+      updateBin(bin2Result.value, { category: newCategoryId });
 
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].category).toBe(newCategoryId);

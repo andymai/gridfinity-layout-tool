@@ -11,6 +11,7 @@ import { LayoutThumbnail } from '../LayoutThumbnail';
 import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../storage';
 import { EXPIRATION_OPTIONS, formatShareDate, calculateDaysRemaining } from '../../utils/cloudShare';
 import type { LayoutEntry, ShareExpiration } from '../../types';
+import { isOk } from '../../result';
 
 /**
  * Mobile-optimized layouts panel with larger touch targets and swipe gestures.
@@ -68,7 +69,7 @@ export function MobileLayoutsPanel() {
 
     const entry = library.entries.find(e => e.id === layoutId);
     const result = await switchLayout(layoutId);
-    if (result.success) {
+    if (isOk(result)) {
       announceToScreenReader(`Switched to ${entry?.name || 'layout'}`);
       closeMobilePanel();
     }
@@ -76,7 +77,7 @@ export function MobileLayoutsPanel() {
 
   const handleCreateNew = useCallback(async () => {
     const result = await createNewLayout();
-    if (result.success) {
+    if (isOk(result)) {
       announceToScreenReader('New layout created');
       closeMobilePanel();
     }
@@ -85,7 +86,7 @@ export function MobileLayoutsPanel() {
   const handleDuplicate = useCallback(async (layoutId: string) => {
     const entry = library.entries.find(e => e.id === layoutId);
     const result = await duplicateLayout(layoutId);
-    if (result.success) {
+    if (isOk(result)) {
       announceToScreenReader(`Duplicated ${entry?.name || 'layout'}`);
     }
     setSwipingId(null);

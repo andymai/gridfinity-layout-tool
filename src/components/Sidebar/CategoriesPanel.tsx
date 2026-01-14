@@ -5,6 +5,7 @@ import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { useToastStore } from '../../store/toast';
 import { CollapsibleSection } from '../CollapsibleSection';
+import { isOk } from '../../result';
 
 // Curated color palette optimized for dark UI backgrounds
 // Colors chosen for: visual distinction, balanced saturation, good contrast
@@ -91,9 +92,11 @@ export function CategoriesPanel() {
 
   const handleAddCategory = () => {
     execute(() => {
-      const id = addCategory({ name: 'New Category', color: DEFAULT_CATEGORY_COLOR });
-      setActiveCategory(id);
-      setEditingId(id);
+      const result = addCategory({ name: 'New Category', color: DEFAULT_CATEGORY_COLOR });
+      if (isOk(result)) {
+        setActiveCategory(result.value);
+        setEditingId(result.value);
+      }
     });
   };
 

@@ -5,6 +5,7 @@ import { validateBinRotation } from '../utils/binLocation';
 import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '../constants';
 import { useGridNavigation } from './useGridNavigation';
+import { isOk } from '../result';
 
 /**
  * Check if a key matches any shortcut in a readonly array.
@@ -135,9 +136,9 @@ export function useKeyboard() {
       execute(() => {
         const newIds: string[] = [];
         for (const binId of selectedBinIds) {
-          const newId = duplicateBin(binId);
-          if (newId) {
-            newIds.push(newId);
+          const result = duplicateBin(binId);
+          if (isOk(result)) {
+            newIds.push(result.value);
           }
         }
         // Select the duplicated bins

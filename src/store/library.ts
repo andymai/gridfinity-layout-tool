@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, OperationResult, ThumbnailBin, CloudShareInfo, ShareExpiration } from '../types';
+import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, ThumbnailBin, CloudShareInfo, ShareExpiration } from '../types';
 import { CONSTRAINTS, STAGING_ID } from '../constants';
 import { generateUUID } from '../utils/uuid';
 import type { Result, Unit, LayoutError } from '../result';
@@ -71,8 +71,7 @@ interface LibraryState {
   setLibrary: (library: LayoutLibrary) => void;
 
   createEntry: (name: string, layoutId: string, preview: LayoutPreview, author?: string) => LayoutEntry;
-  deleteEntry: (id: string) => OperationResult;
-  deleteEntryResult: (id: string) => Result<Unit, LayoutError>;
+  deleteEntry: (id: string) => Result<Unit, LayoutError>;
   updateEntry: (id: string, updates: Partial<Omit<LayoutEntry, 'id'>>) => void;
   duplicateEntry: (sourceEntry: LayoutEntry, newLayoutId: string) => LayoutEntry;
 
@@ -122,29 +121,6 @@ export const useLibraryStore = create<LibraryState>()(
     },
 
     deleteEntry: (id) => {
-      const { library } = get();
-
-      // Can't delete last layout
-      if (library.entries.length <= 1) {
-        return { success: false, error: 'Cannot delete the only layout' };
-      }
-
-      // Can't delete if at limit warning threshold would be violated
-      // (This is just for soft limits, not hard enforcement)
-
-      set(state => {
-        state.library.entries = state.library.entries.filter(e => e.id !== id);
-
-        // If deleting active layout, switch to first remaining
-        if (state.library.activeLayoutId === id) {
-          state.library.activeLayoutId = state.library.entries[0].id;
-        }
-      });
-
-      return { success: true };
-    },
-
-    deleteEntryResult: (id) => {
       const { library } = get();
 
       // Can't delete last layout

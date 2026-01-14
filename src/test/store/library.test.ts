@@ -171,63 +171,8 @@ describe('library store', () => {
       });
     });
 
-    it('deletes an entry by id', () => {
-      const result = useLibraryStore.getState().deleteEntry('layout-1');
-
-      expect(result.success).toBe(true);
-      expect(useLibraryStore.getState().library.entries).toHaveLength(2);
-      expect(useLibraryStore.getState().getEntry('layout-1')).toBeUndefined();
-    });
-
-    it('cannot delete the last entry', () => {
-      useLibraryStore.setState({
-        library: createTestLibraryWithEntries(1),
-        isLoaded: true,
-        showLayoutManager: false,
-      });
-
-      const result = useLibraryStore.getState().deleteEntry('layout-0');
-
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toBe('Cannot delete the only layout');
-      }
-      expect(useLibraryStore.getState().library.entries).toHaveLength(1);
-    });
-
-    it('switches activeLayoutId if deleting active layout', () => {
-      useLibraryStore.setState(state => {
-        state.library.activeLayoutId = 'layout-1';
-      });
-
-      useLibraryStore.getState().deleteEntry('layout-1');
-
-      // Should switch to first remaining entry
-      expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-0');
-    });
-
-    it('does not change activeLayoutId if deleting inactive layout', () => {
-      useLibraryStore.setState(state => {
-        state.library.activeLayoutId = 'layout-0';
-      });
-
-      useLibraryStore.getState().deleteEntry('layout-2');
-
-      expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-0');
-    });
-  });
-
-  describe('deleteEntryResult', () => {
-    beforeEach(() => {
-      useLibraryStore.setState({
-        library: createTestLibraryWithEntries(3),
-        isLoaded: true,
-        showLayoutManager: false,
-      });
-    });
-
     it('returns Ok when deleting an entry', () => {
-      const result = useLibraryStore.getState().deleteEntryResult('layout-1');
+      const result = useLibraryStore.getState().deleteEntry('layout-1');
 
       expect(isOk(result)).toBe(true);
       expect(useLibraryStore.getState().library.entries).toHaveLength(2);
@@ -241,7 +186,7 @@ describe('library store', () => {
         showLayoutManager: false,
       });
 
-      const result = useLibraryStore.getState().deleteEntryResult('layout-0');
+      const result = useLibraryStore.getState().deleteEntry('layout-0');
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -257,7 +202,7 @@ describe('library store', () => {
         state.library.activeLayoutId = 'layout-1';
       });
 
-      const result = useLibraryStore.getState().deleteEntryResult('layout-1');
+      const result = useLibraryStore.getState().deleteEntry('layout-1');
 
       expect(isOk(result)).toBe(true);
       expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-0');
@@ -268,11 +213,12 @@ describe('library store', () => {
         state.library.activeLayoutId = 'layout-0';
       });
 
-      const result = useLibraryStore.getState().deleteEntryResult('layout-2');
+      const result = useLibraryStore.getState().deleteEntry('layout-2');
 
       expect(isOk(result)).toBe(true);
       expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-0');
     });
+
   });
 
   describe('updateEntry', () => {
