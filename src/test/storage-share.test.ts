@@ -2,13 +2,17 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import {
   encodeLayoutForURL,
   decodeLayoutFromURL,
+  decodeLayoutResult,
   generateShareableURL,
   getSharedLayoutFromURL,
   clearSharedLayoutFromURL,
   copyToClipboard,
   downloadLayoutAsFile,
+  importLayoutResult,
+  exportLayoutJSON,
 } from '../storage';
 import type { Layout } from '../types';
+import { isOk, isErr, getUserMessage } from '../result';
 
 // Mock clipboard API
 const mockClipboard = {
@@ -419,6 +423,120 @@ describe('storage-share', () => {
       expect(decodedBin!.position).toEqual(originalBin!.position);
       expect(decodedBin!.size).toEqual(originalBin!.size);
       expect(decodedBin!.notes).toBe(originalBin!.notes);
+    });
+  });
+
+  // === Result-Based Functions ===
+
+  describe('importLayoutResult', () => {
+    it('returns Ok with layout on successful import', () => {
+      const layout = createTestLayout();
+      const json = exportLayoutJSON(layout);
+
+      const result = importLayoutResult(json);
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.name).toBe(layout.name);
+        expect(result.value.drawer).toEqual(layout.drawer);
+      }
+    });
+
+    it('returns Err with ValidationImportError on invalid JSON', () => {
+      const result = importLayoutResult('not valid json{{{');
+
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+        expect(result.error.kind).toBe('ValidationError');
+        expect(result.error.errors.length).toBeGreaterThan(0);
+        expect(result.error.errors[0]).toContain('Parse error');
+      }
+    });
+
+    it('returns Err with validation errors on invalid layout structure', () => {
+      const result = importLayoutResult(JSON.stringify({ invalid: 'data' }));
+
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+        expect(result.error.errors.length).toBeGreaterThan(0);
+        // Errors should describe what's missing
+        expect(result.error.errors.some(e => e.includes('drawer') || e.includes('Missing'))).toBe(true);
+      }
+    });
+
+    it('provides user-friendly message via getUserMessage', () => {
+      const result = importLayoutResult('invalid');
+
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        const message = getUserMessage(result.error);
+        expect(message).toBeTruthy();
+        expect(typeof message).toBe('string');
+      }
+    });
+
+    it('regenerates IDs to prevent collisions', () => {
+      const layout = createTestLayout();
+      const json = exportLayoutJSON(layout);
+
+      const result = importLayoutResult(json);
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        // IDs should be different from original
+        expect(result.value.layers[0].id).not.toBe(layout.layers[0].id);
+        expect(result.value.categories[0].id).not.toBe(layout.categories[0].id);
+        expect(result.value.bins[0].id).not.toBe(layout.bins[0].id);
+      }
+    });
+  });
+
+  describe('decodeLayoutResult', () => {
+    it('returns Ok with layout on successful decode', () => {
+      const layout = createTestLayout();
+      const encoded = encodeLayoutForURL(layout);
+
+      const result = decodeLayoutResult(encoded);
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.name).toBe(layout.name);
+      }
+    });
+
+    it('returns Err on invalid encoded string', () => {
+      const result = decodeLayoutResult('invalid!!!');
+
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+        expect(result.error.errors.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('returns Err on corrupted base64', () => {
+      // Valid base64 but not valid JSON inside
+      const result = decodeLayoutResult('aGVsbG8gd29ybGQ'); // "hello world" in base64
+
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
+      }
+    });
+
+    it('round-trip works with Result API', () => {
+      const layout = createTestLayout();
+      const encoded = encodeLayoutForURL(layout);
+      const result = decodeLayoutResult(encoded);
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        // Verify the decoded layout has same structure
+        expect(result.value.drawer).toEqual(layout.drawer);
+        expect(result.value.bins.length).toBe(layout.bins.length);
+      }
     });
   });
 });
