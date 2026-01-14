@@ -1,0 +1,220 @@
+/**
+ * Result<T, E> Type System
+ *
+ * A comprehensive error handling system for type-safe operations.
+ *
+ * @example Basic usage:
+ * ```ts
+ * import { Result, ok, err, isOk, match } from './result';
+ *
+ * function divide(a: number, b: number): Result<number, string> {
+ *   if (b === 0) return err('Division by zero');
+ *   return ok(a / b);
+ * }
+ *
+ * const result = divide(10, 2);
+ *
+ * // Pattern matching
+ * const message = match(result, {
+ *   ok: (value) => `Result: ${value}`,
+ *   err: (error) => `Error: ${error}`,
+ * });
+ *
+ * // Type guards
+ * if (isOk(result)) {
+ *   console.log(result.value);
+ * }
+ * ```
+ *
+ * @example With domain errors:
+ * ```ts
+ * import { Result, err, storageNotFound, getUserMessage } from './result';
+ * import type { StorageError } from './result';
+ *
+ * async function loadLayout(id: string): Promise<Result<Layout, StorageError>> {
+ *   const data = await storage.load(id);
+ *   if (!data) return err(storageNotFound(`gridfinity-layout-${id}`));
+ *   return ok(data);
+ * }
+ *
+ * // Handle the result
+ * const result = await loadLayout('abc123');
+ * if (isErr(result)) {
+ *   addToast(getUserMessage(result.error), 'error');
+ * }
+ * ```
+ *
+ * @example Chaining operations:
+ * ```ts
+ * import { flatMap, map, tryCatchAsync } from './result';
+ *
+ * const result = await tryCatchAsync(
+ *   () => fetchData(url),
+ *   (e) => apiNetworkError(e)
+ * );
+ *
+ * const transformed = flatMap(result, (data) =>
+ *   map(validateData(data), (valid) => processData(valid))
+ * );
+ * ```
+ *
+ * @module result
+ */
+
+// =============================================================================
+// Core Types
+// =============================================================================
+
+export type { Result, Ok, Err, Unit } from './types';
+export { ok, err, isOk, isErr, OK } from './types';
+
+// =============================================================================
+// Domain Error Types
+// =============================================================================
+
+export type {
+  // Base type
+  AppError,
+  ValidationFailureReason,
+
+  // Storage errors
+  StorageError,
+  StorageQuotaExceededError,
+  StorageNotFoundError,
+  StorageCorruptedError,
+  StorageUnavailableError,
+  StorageNetworkError,
+
+  // Validation errors
+  ValidationError,
+  ValidationOutOfBoundsError,
+  ValidationCollisionError,
+  ValidationInvalidLayerError,
+  ValidationHeightExceededError,
+  ValidationBlockedZoneError,
+  ValidationImportError,
+
+  // Layout errors
+  LayoutError,
+  LayoutLayerLimitError,
+  LayoutCategoryLimitError,
+  LayoutLibraryLimitError,
+  LayoutLastEntityError,
+  LayoutInvalidOperationError,
+
+  // API errors
+  ApiError,
+  ApiRateLimitedError,
+  ApiUnauthorizedError,
+  ApiNotFoundError,
+  ApiServerError,
+  ApiNetworkError,
+  ApiValidationError,
+  ApiContentBlockedError,
+
+  // Generic
+  UnknownError,
+  DomainError,
+} from './errors';
+
+// =============================================================================
+// Error Constructors
+// =============================================================================
+
+export {
+  // Storage errors
+  storageQuotaExceeded,
+  storageNotFound,
+  storageCorrupted,
+  storageUnavailable,
+  storageNetworkError,
+
+  // Validation errors
+  validationOutOfBounds,
+  validationCollision,
+  validationInvalidLayer,
+  validationHeightExceeded,
+  validationBlockedZone,
+  validationImportFailed,
+
+  // Layout errors
+  layoutLayerLimit,
+  layoutCategoryLimit,
+  layoutLibraryLimit,
+  layoutLastEntity,
+  layoutInvalidOperation,
+
+  // API errors
+  apiRateLimited,
+  apiUnauthorized,
+  apiNotFound,
+  apiServerError,
+  apiNetworkError,
+  apiValidationError,
+  apiContentBlocked,
+
+  // Generic
+  unknownError,
+  fromUnknown,
+} from './constructors';
+
+// =============================================================================
+// Error Catalog
+// =============================================================================
+
+export type { ErrorCatalogEntry } from './catalog';
+export {
+  ERROR_CATALOG,
+  getErrorInfo,
+  formatErrorMessage,
+  getUserMessage,
+  getRecoveryHint,
+  isRetryable,
+  getSeverity,
+} from './catalog';
+
+// =============================================================================
+// Utility Functions
+// =============================================================================
+
+export {
+  // Transformations
+  map,
+  mapErr,
+  flatMap,
+  andThen,
+
+  // Extraction
+  unwrap,
+  unwrapOr,
+  unwrapOrElse,
+  unwrapErr,
+
+  // Pattern matching
+  match,
+
+  // Combining
+  combine,
+  combine3,
+  collect,
+  collectAll,
+
+  // Boolean operations
+  or,
+  and,
+
+  // Try-catch wrappers
+  tryCatch,
+  tryCatchAsync,
+
+  // Unit helpers
+  toUnit,
+  tap,
+  tapErr,
+
+  // Array utilities
+  allOk,
+  anyErr,
+  filterOk,
+  filterErr,
+} from './utils';
