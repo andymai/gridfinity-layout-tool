@@ -91,7 +91,6 @@ export function useKeyboard() {
     const key = e.key;
     const ctrlOrMeta = e.ctrlKey || e.metaKey;
 
-    // Delete all selected bins
     if (isShortcut(key, SHORTCUTS.DELETE) && selectedBinIds.length > 0) {
       e.preventDefault();
       execute(() => {
@@ -103,7 +102,6 @@ export function useKeyboard() {
       return;
     }
 
-    // Escape - clear selection and exit paint mode
     if (isShortcut(key, SHORTCUTS.ESCAPE)) {
       e.preventDefault();
       setInteraction(null);
@@ -112,14 +110,12 @@ export function useKeyboard() {
       return;
     }
 
-    // Undo
     if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.UNDO && !e.shiftKey) {
       e.preventDefault();
       if (canUndo) undo();
       return;
     }
 
-    // Redo (Ctrl+Y or Ctrl+Shift+Z)
     if (ctrlOrMeta && (key.toLowerCase() === SHORTCUTS.REDO || (key === SHORTCUTS.REDO_ALT && e.shiftKey))) {
       e.preventDefault();
       if (canRedo) redo();

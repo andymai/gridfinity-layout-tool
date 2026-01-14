@@ -206,20 +206,3 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
 export function clearMigrationFlag(): void {
   localStorage.removeItem(MIGRATION_FLAG_KEY);
 }
-
-/**
- * Remove migrated layouts from localStorage (optional cleanup).
- * Only call this after confirming migration was successful.
- */
-export function cleanupLocalStorage(): number {
-  const ids = getLocalStorageLayoutIds();
-  let cleaned = 0;
-
-  for (const id of ids) {
-    const key = `${LAYOUT_KEY_PREFIX}${id}`;
-    localStorage.removeItem(key);
-    cleaned++;
-  }
-
-  return cleaned;
-}

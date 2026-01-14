@@ -109,11 +109,11 @@ interface UIState {
 
   // Actions
   setActiveLayer: (id: string) => void;
-  setSelectedBin: (id: string | null) => void; // Single select (clears others)
-  setSelectedBins: (ids: string[]) => void; // Set multiple
-  addToSelection: (id: string) => void; // Add to existing selection
-  removeFromSelection: (id: string) => void; // Remove from selection
-  toggleSelection: (id: string) => void; // Toggle single bin in selection
+  setSelectedBin: (id: string | null) => void;
+  setSelectedBins: (ids: string[]) => void;
+  addToSelection: (id: string) => void;
+  removeFromSelection: (id: string) => void;
+  toggleSelection: (id: string) => void;
   setActiveCategory: (id: string) => void;
   setZoom: (zoom: number) => void;
   zoomIn: () => void;
@@ -217,25 +217,20 @@ export const useUIStore = create<UIState>((set) => ({
     selectedBinIds: [] // Clear selection on layer change (PRD: selection is layer-scoped)
   }),
 
-  // Single select - clears other selections
   setSelectedBin: (id) => set({ selectedBinIds: id ? [id] : [] }),
 
-  // Set multiple bins as selected
   setSelectedBins: (ids) => set({ selectedBinIds: ids }),
 
-  // Add a bin to existing selection
   addToSelection: (id) => set(state => ({
     selectedBinIds: state.selectedBinIds.includes(id)
       ? state.selectedBinIds
       : [...state.selectedBinIds, id]
   })),
 
-  // Remove a bin from selection
   removeFromSelection: (id) => set(state => ({
     selectedBinIds: state.selectedBinIds.filter(binId => binId !== id)
   })),
 
-  // Toggle a bin in selection (for Ctrl/Cmd+click)
   toggleSelection: (id) => set(state => ({
     selectedBinIds: state.selectedBinIds.includes(id)
       ? state.selectedBinIds.filter(binId => binId !== id)
@@ -286,7 +281,6 @@ export const useUIStore = create<UIState>((set) => ({
       : size
   })),
 
-  // Mobile panel actions
   setActiveMobilePanel: (panel) => set({ activeMobilePanel: panel }),
 
   closeMobilePanel: () => set({ activeMobilePanel: null }),
@@ -310,7 +304,6 @@ export const useUIStore = create<UIState>((set) => ({
   },
   hideContextMenu: () => set({ contextMenu: null }),
 
-  // Isometric preview actions
   toggleIsometricPreview: () => set(state => ({
     showIsometricPreview: !state.showIsometricPreview
   })),
@@ -328,7 +321,6 @@ export const useUIStore = create<UIState>((set) => ({
   })),
   setPreviewExpanded: (expanded) => set({ isPreviewExpanded: expanded }),
 
-  // Keyboard navigation actions
   setFocusedBin: (binId) => set({ focusedBinId: binId }),
   setKeyboardDragMode: (enabled) => set({
     keyboardDragMode: enabled,
@@ -348,18 +340,14 @@ export const useUIStore = create<UIState>((set) => ({
     }, 1000);
   },
 
-  // Quick label actions
   showQuickLabel: (binId) => set({ quickLabelBinId: binId }),
   hideQuickLabel: () => set({ quickLabelBinId: null }),
 
-  // Category highlighting actions
   setHighlightedCategoryId: (categoryId) => set({ highlightedCategoryId: categoryId }),
 
-  // Row/column label highlighting actions
   setHighlightedRowLabel: (row) => set({ highlightedRowLabel: row }),
   setHighlightedColLabel: (col) => set({ highlightedColLabel: col }),
 
-  // Half-bin mode actions
   toggleHalfBinMode: () => {
     const state = useUIStore.getState();
     const targetState = !state.halfBinMode;
@@ -391,7 +379,6 @@ export const useUIStore = create<UIState>((set) => ({
     set({ halfBinMode: enabled });
   },
 
-  // Shared layout preview actions
   setSharedLayoutPreview: (layout, originalName, authorName) => set({
     sharedLayoutPreview: layout,
     sharedLayoutOriginalName: originalName ?? layout?.name ?? null,
@@ -403,6 +390,5 @@ export const useUIStore = create<UIState>((set) => ({
     sharedLayoutAuthorName: null,
   }),
 
-  // Print modal actions
   setPrintModalOpen: (open) => set({ printModalOpen: open }),
 }));

@@ -280,21 +280,18 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       if (!currentInteraction) return;
 
       if (currentInteraction.type === 'drag') {
-        // Check if mouse is over the grid
         const overGrid = isInBounds(coords);
 
-        // Get all bins being dragged
         const draggedBins = currentInteraction.binIds
           .map(id => layout.bins.find(b => b.id === id))
           .filter((b): b is Bin => b !== undefined);
 
         if (draggedBins.length === 0) return;
 
-        // Calculate raw delta from start position
         const rawDeltaX = clamped.x - currentInteraction.startCoord.x;
         const rawDeltaY = clamped.y - currentInteraction.startCoord.y;
 
-        // Constrain delta to keep ENTIRE GROUP in bounds (preserves arrangement)
+        // Constrain delta to keep entire group in bounds (preserves arrangement)
         const { deltaX, deltaY } = constrainGroupDelta(
           draggedBins,
           rawDeltaX,
@@ -302,17 +299,14 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
           layout.drawer
         );
 
-        // Validate all bins at their new positions (with uniform delta applied)
-        let allValid = overGrid; // Only valid if over grid
+        let allValid = overGrid;
         const otherBinIds = new Set(currentInteraction.binIds);
 
         if (overGrid) {
           for (const bin of draggedBins) {
-            // Apply uniform delta - NO individual clamping
             const newX = bin.x + deltaX;
             const newY = bin.y + deltaY;
 
-            // Check placement excluding all bins being dragged
             const result = canPlaceBin(
               { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
               activeLayerId,
@@ -346,7 +340,6 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
           const startRect = currentInteraction.startRects.get(binId);
           if (!bin || !startRect) continue;
 
-          // Get current minSize from halfBinMode state
           const halfBinModeNow = useUIStore.getState().halfBinMode;
           const minSizeNow = halfBinModeNow ? 0.5 : 1;
           const newRect = calculateResizeRect(
@@ -502,7 +495,6 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
           const binsDown = Math.floor(areaDepth / ps.depth);
 
           if (binsAcross > 0 && binsDown > 0) {
-            // Get fresh layout state for validation
             const currentLayout = useLayoutStore.getState().layout;
             const placedBinIds: string[] = [];
 
@@ -549,9 +541,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
           }
         }
       } else if (interaction.type === 'drag') {
-        // Check for drop targets first
         if (currentDropTarget === 'trash') {
-          // Delete all dragged bins
           execute(() => {
             for (const binId of interaction.binIds) {
               deleteBin(binId);
@@ -616,14 +606,11 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
                 setSelectedBins(newBinIds);
               }
             } else {
-              // Normal mode: move bins to new position
               execute(() => {
-                // Update all dragged bins with uniform delta (preserves arrangement)
                 for (const binId of interaction.binIds) {
                   const bin = layout.bins.find(b => b.id === binId);
                   if (!bin) continue;
 
-                  // Apply uniform delta - NO individual clamping
                   updateBin(binId, {
                     x: bin.x + deltaX,
                     y: bin.y + deltaY,
@@ -639,7 +626,6 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       } else if (interaction.type === 'resize' && interaction.valid) {
         let hasChanges = false;
 
-        // Check if any bin changed
         for (const binId of interaction.binIds) {
           const startRect = interaction.startRects.get(binId);
           const currentRect = interaction.currentRects.get(binId);
@@ -672,7 +658,6 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
           });
         }
       } else if (interaction.type === 'stagingDrag') {
-        // Check for trash drop first
         if (currentDropTarget === 'trash') {
           execute(() => {
             deleteBin(interaction.binId);

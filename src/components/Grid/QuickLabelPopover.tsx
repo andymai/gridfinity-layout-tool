@@ -28,7 +28,6 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
   // Initialize value from bin label (fresh on each mount due to key)
   const [value, setValue] = useState(bin?.label || '');
 
-  // Save handler
   const handleSave = useCallback(() => {
     if (bin && value !== (bin.label || '')) {
       execute(() => {
@@ -38,7 +37,6 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
     hideQuickLabel();
   }, [bin, value, execute, updateBin, hideQuickLabel]);
 
-  // Focus input when popover mounts
   useEffect(() => {
     requestAnimationFrame(() => {
       inputRef.current?.focus();
@@ -46,7 +44,6 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
     });
   }, []);
 
-  // Handle click outside to close
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {

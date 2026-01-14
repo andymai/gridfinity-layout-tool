@@ -158,14 +158,11 @@ export function normalizeSortOrder(stored: BinListSortOrder | undefined): BinLis
     return [...DEFAULT_BIN_LIST_SORT_ORDER];
   }
 
-  // Get all fields from default
   const allFields = new Set(DEFAULT_BIN_LIST_SORT_ORDER.map(s => s.field));
   const storedFields = new Set(stored.map(s => s.field));
 
-  // Start with stored order
   const result: BinListSortOrder = stored.filter(s => allFields.has(s.field));
 
-  // Add any missing fields at the end (disabled)
   for (const defaultConfig of DEFAULT_BIN_LIST_SORT_ORDER) {
     if (!storedFields.has(defaultConfig.field)) {
       result.push({ field: defaultConfig.field, enabled: false });
@@ -212,13 +209,8 @@ function saveSettings(settings: UserSettings): void {
 interface SettingsState {
   settings: UserSettings;
 
-  // Update a single setting
   updateSetting: <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => void;
-
-  // Update multiple settings at once
   updateSettings: (updates: Partial<UserSettings>) => void;
-
-  // Reset to defaults
   resetSettings: () => void;
 
   // Save current layout defaults from the current layout
