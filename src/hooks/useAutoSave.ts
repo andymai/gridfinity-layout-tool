@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useLibraryStore, useToastStore } from '../store';
-import { saveLayoutByIdAsync, saveLibrary, computeLayoutPreview } from '../storage';
+import {
+  saveLayoutResult,
+  saveLibraryResult,
+  computeLayoutPreview,
+} from '../storage';
 import { scheduleIdleCallback, cancelIdleCallback } from '../utils/idle';
+import { isErr, getUserMessage, isRetryable } from '../result';
+import type { StorageError } from '../result';
 
 const SAVE_DEBOUNCE_MS = 1000;
 const SAVED_DISPLAY_MS = 2500;
@@ -61,44 +67,64 @@ export function useAutoSave(): SaveStatus {
       // Schedule storage operations during browser idle time to improve INP
       idleCallbackRef.current = scheduleIdleCallback(
         async () => {
-          try {
-            await saveLayoutByIdAsync(activeLayoutId, layout);
+          // Save layout using Result-based API for explicit error handling
+          const layoutResult = await saveLayoutResult(activeLayoutId, layout);
 
-            updateEntry(activeLayoutId, {
-              modifiedAt: Date.now(),
-              preview: computeLayoutPreview(layout),
-              name: layout.name,
-            });
-
-            saveLibrary(useLibraryStore.getState().library);
-
-            hasShownErrorRef.current = false;
-            failureCountRef.current = 0;
-
-            setSaveStatus('saved');
-
-            savedTimeoutRef.current = window.setTimeout(() => {
-              setSaveStatus('idle');
-            }, SAVED_DISPLAY_MS);
-          } catch (error) {
-            failureCountRef.current++;
-            setSaveStatus('idle');
-
-            // Show warning after multiple failures
-            if (failureCountRef.current >= 3 && !hasShownErrorRef.current) {
-              hasShownErrorRef.current = true;
-              const message = error instanceof Error ? error.message : 'Failed to save layout';
-              addToast(message, 'error', 0); // Don't auto-dismiss
-            } else if (!hasShownErrorRef.current && failureCountRef.current === 1) {
-              // Show transient error on first failure
-              const message = error instanceof Error ? error.message : 'Failed to save layout';
-              addToast(message, 'error');
-            }
+          if (isErr(layoutResult)) {
+            handleSaveError(layoutResult.error);
+            return;
           }
+
+          // Update library entry
+          updateEntry(activeLayoutId, {
+            modifiedAt: Date.now(),
+            preview: computeLayoutPreview(layout),
+            name: layout.name,
+          });
+
+          // Save library index
+          const libraryResult = saveLibraryResult(
+            useLibraryStore.getState().library
+          );
+
+          if (isErr(libraryResult)) {
+            // Library save failed but layout is saved - partial success
+            // Still show as saved since the important data is persisted
+            handleSaveError(libraryResult.error);
+            return;
+          }
+
+          // Success - reset error tracking
+          hasShownErrorRef.current = false;
+          failureCountRef.current = 0;
+
+          setSaveStatus('saved');
+
+          savedTimeoutRef.current = window.setTimeout(() => {
+            setSaveStatus('idle');
+          }, SAVED_DISPLAY_MS);
         },
         { timeout: IDLE_TIMEOUT_MS }
       );
     }, SAVE_DEBOUNCE_MS);
+
+    function handleSaveError(error: StorageError): void {
+      failureCountRef.current++;
+      setSaveStatus('idle');
+
+      const message = getUserMessage(error);
+      const canRetry = isRetryable(error.code);
+
+      // Show warning after multiple failures (persistent toast)
+      if (failureCountRef.current >= 3 && !hasShownErrorRef.current) {
+        hasShownErrorRef.current = true;
+        addToast(message, 'error', 0); // Don't auto-dismiss
+      } else if (!hasShownErrorRef.current && failureCountRef.current === 1) {
+        // Show transient error on first failure
+        // Auto-dismiss if retryable (will retry on next change)
+        addToast(message, 'error', canRetry ? undefined : 0);
+      }
+    }
 
     return () => {
       if (timeoutRef.current) {
