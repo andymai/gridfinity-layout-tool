@@ -6,7 +6,6 @@
  * - Database: 'gridfinity-db'
  * - Object stores:
  *   - 'layouts': Local layout data (key: layout id)
- *   - 'collection-cache': Cached collection layouts (key: `{collectionId}:{layoutId}`)
  */
 
 import { openDB, type IDBPDatabase } from 'idb';
@@ -18,7 +17,6 @@ const DB_VERSION = 1;
 
 // Store names
 const LAYOUTS_STORE = 'layouts';
-const COLLECTION_CACHE_STORE = 'collection-cache';
 
 // Database instance cache
 let dbInstance: IDBPDatabase | null = null;
@@ -57,11 +55,6 @@ export async function openLayoutDatabase(): Promise<IDBPDatabase> {
       // Create layouts store if it doesn't exist
       if (!db.objectStoreNames.contains(LAYOUTS_STORE)) {
         db.createObjectStore(LAYOUTS_STORE);
-      }
-
-      // Create collection cache store if it doesn't exist
-      if (!db.objectStoreNames.contains(COLLECTION_CACHE_STORE)) {
-        db.createObjectStore(COLLECTION_CACHE_STORE);
       }
     },
   });
@@ -115,58 +108,6 @@ export async function getAllLayoutIds(): Promise<string[]> {
   const db = await getDb();
   const keys = await db.getAllKeys(LAYOUTS_STORE);
   return keys as string[];
-}
-
-/**
- * Generate a cache key for collection layouts.
- */
-function getCacheKey(collectionId: string, layoutId: string): string {
-  return `${collectionId}:${layoutId}`;
-}
-
-/**
- * Save a layout to the collection cache.
- */
-export async function saveCollectionCache(
-  collectionId: string,
-  layoutId: string,
-  layout: Layout
-): Promise<void> {
-  const db = await getDb();
-  const compressed = compressLayout(layout);
-  const key = getCacheKey(collectionId, layoutId);
-  await db.put(COLLECTION_CACHE_STORE, compressed, key);
-}
-
-/**
- * Load a layout from the collection cache.
- * @returns The layout or null if not found
- */
-export async function loadCollectionCache(
-  collectionId: string,
-  layoutId: string
-): Promise<Layout | null> {
-  const db = await getDb();
-  const key = getCacheKey(collectionId, layoutId);
-  const compressed = await db.get(COLLECTION_CACHE_STORE, key);
-
-  if (!compressed) {
-    return null;
-  }
-
-  return decompressLayout(compressed);
-}
-
-/**
- * Delete a layout from the collection cache.
- */
-export async function deleteCollectionCache(
-  collectionId: string,
-  layoutId: string
-): Promise<void> {
-  const db = await getDb();
-  const key = getCacheKey(collectionId, layoutId);
-  await db.delete(COLLECTION_CACHE_STORE, key);
 }
 
 /**

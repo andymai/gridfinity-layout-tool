@@ -79,6 +79,7 @@ export const useLayoutStore = create<LayoutState>()(
 
       set(state => {
         state.layout.bins.push(bin);
+        state.lastEditSource = 'local';
       });
 
       return id;
@@ -89,6 +90,7 @@ export const useLayoutStore = create<LayoutState>()(
         const bin = state.layout.bins.find(b => b.id === id);
         if (bin) {
           Object.assign(bin, updates);
+          state.lastEditSource = 'local';
         }
       });
     },
@@ -96,6 +98,7 @@ export const useLayoutStore = create<LayoutState>()(
     deleteBin: (id) => {
       set(state => {
         state.layout.bins = state.layout.bins.filter(b => b.id !== id);
+        state.lastEditSource = 'local';
       });
     },
 
@@ -174,6 +177,7 @@ export const useLayoutStore = create<LayoutState>()(
         const bin = state.layout.bins.find(b => b.id === id);
         if (bin) {
           bin.layerId = STAGING_ID;
+          state.lastEditSource = 'local';
         }
       });
     },
@@ -202,6 +206,7 @@ export const useLayoutStore = create<LayoutState>()(
           b.x = x;
           b.y = y;
           b.height = layer.height;
+          state.lastEditSource = 'local';
         }
       });
 
@@ -228,6 +233,7 @@ export const useLayoutStore = create<LayoutState>()(
 
       set(state => {
         state.layout.layers.push(newLayer);
+        state.lastEditSource = 'local';
       });
 
       return id;
@@ -245,6 +251,7 @@ export const useLayoutStore = create<LayoutState>()(
             updates.height = clamp(updates.height, 1, maxHeight);
           }
           Object.assign(layer, updates);
+          state.lastEditSource = 'local';
         }
       });
     },
@@ -256,6 +263,7 @@ export const useLayoutStore = create<LayoutState>()(
       set(state => {
         state.layout.layers = state.layout.layers.filter(l => l.id !== id);
         state.layout.bins = state.layout.bins.filter(b => b.layerId !== id);
+        state.lastEditSource = 'local';
       });
 
       return true;
@@ -282,6 +290,7 @@ export const useLayoutStore = create<LayoutState>()(
 
       set(state => {
         state.layout.layers = newLayers;
+        state.lastEditSource = 'local';
       });
 
       return { success: true };
@@ -317,6 +326,7 @@ export const useLayoutStore = create<LayoutState>()(
           }
           return bin;
         });
+        state.lastEditSource = 'local';
       });
     },
 
@@ -324,6 +334,7 @@ export const useLayoutStore = create<LayoutState>()(
       const id = generateId();
       set(state => {
         state.layout.categories.push({ ...categoryData, id });
+        state.lastEditSource = 'local';
       });
       return id;
     },
@@ -333,6 +344,7 @@ export const useLayoutStore = create<LayoutState>()(
         const cat = state.layout.categories.find(c => c.id === id);
         if (cat) {
           Object.assign(cat, updates);
+          state.lastEditSource = 'local';
         }
       });
     },
@@ -345,6 +357,7 @@ export const useLayoutStore = create<LayoutState>()(
 
       set(state => {
         state.layout.categories = state.layout.categories.filter(c => c.id !== id);
+        state.lastEditSource = 'local';
       });
 
       return true;
@@ -357,6 +370,7 @@ export const useLayoutStore = create<LayoutState>()(
       if (result.bins.length > 0) {
         set(state => {
           state.layout.bins.push(...result.bins);
+          state.lastEditSource = 'local';
         });
       }
 
@@ -372,6 +386,7 @@ export const useLayoutStore = create<LayoutState>()(
       if (result.bins.length > 0) {
         set(state => {
           state.layout.bins.push(...result.bins);
+          state.lastEditSource = 'local';
         });
       }
 
@@ -384,40 +399,51 @@ export const useLayoutStore = create<LayoutState>()(
 
       set(state => {
         state.layout.bins = state.layout.bins.filter(b => b.layerId !== layerId);
+        state.lastEditSource = 'local';
       });
 
       return count;
     },
 
-    importLayout: (layout, layoutId, source = 'local') => {
-      set({ layout, activeLayoutId: layoutId ?? null, lastEditSource: source });
+    importLayout: (newLayout, layoutId, source = 'local') => {
+      set(state => {
+        state.layout = newLayout;
+        state.activeLayoutId = layoutId ?? null;
+        state.lastEditSource = source;
+      });
     },
 
     setActiveLayoutId: (id) => {
-      set({ activeLayoutId: id });
+      set(state => {
+        state.activeLayoutId = id;
+      });
     },
 
     setName: (name) => {
       set(state => {
         state.layout.name = name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
+        state.lastEditSource = 'local';
       });
     },
 
     setPrintBedSize: (size) => {
       set(state => {
         state.layout.printBedSize = clamp(size, 42, 500);
+        state.lastEditSource = 'local';
       });
     },
 
     setGridUnitMm: (mm) => {
       set(state => {
         state.layout.gridUnitMm = clamp(mm, 1, 200);
+        state.lastEditSource = 'local';
       });
     },
 
     setHeightUnitMm: (mm) => {
       set(state => {
         state.layout.heightUnitMm = clamp(mm, 1, 50);
+        state.lastEditSource = 'local';
       });
     },
   }))

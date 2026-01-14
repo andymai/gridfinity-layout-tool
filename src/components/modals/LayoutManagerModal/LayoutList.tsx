@@ -11,14 +11,12 @@ const SEARCH_THRESHOLD = 6;
 interface LayoutListProps {
   entries: LayoutEntry[];
   activeLayoutId: string | null;
-  isInCollectionMode?: boolean;
   onSwitch: (id: string) => void;
   onRename: (id: string, newName: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
   onCreate: () => void;
   onShare: (id: string) => void;
-  onCopyToCollection?: (id: string) => void;
 }
 
 /**
@@ -27,14 +25,12 @@ interface LayoutListProps {
 export function LayoutList({
   entries,
   activeLayoutId,
-  isInCollectionMode,
   onSwitch,
   onRename,
   onDuplicate,
   onDelete,
   onCreate,
   onShare,
-  onCopyToCollection,
 }: LayoutListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -229,14 +225,12 @@ export function LayoutList({
             isActive={entry.id === activeLayoutId}
             isFocused={index === focusedIndex}
             isOnlyLayout={entries.length <= 1}
-            isInCollectionMode={isInCollectionMode}
             onSelect={() => handleSwitch(entry.id)}
             onRename={(newName) => handleRename(entry.id, newName)}
             onDuplicate={() => handleDuplicate(entry.id)}
             onDelete={() => handleDelete(entry.id)}
             onCopyLink={() => onShare(entry.id)}
             onDownload={() => handleDownload(entry)}
-            onCopyToCollection={onCopyToCollection ? () => onCopyToCollection(entry.id) : undefined}
             onFocus={() => setFocusedIndex(index)}
             itemRef={(el) => {
               if (el) itemRefs.current.set(entry.id, el);

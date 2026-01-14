@@ -1,7 +1,12 @@
-import type { Layout, LayoutLibrary, LayoutEntry, LayoutPreview, ThumbnailBin, CollectionMembership } from '../types';
+import type { Layout, LayoutLibrary, LayoutEntry, LayoutPreview, ThumbnailBin } from '../types';
 import { validateImport } from './validation';
 import { generateId, STAGING_ID } from '../constants';
 import { generateUUID } from './uuid';
+import {
+  saveLayoutAsync,
+  loadLayoutAsync,
+  deleteLayoutAsync,
+} from './asyncStorage';
 
 // Legacy key for single-layout storage (pre-library)
 const LEGACY_STORAGE_KEY = 'gridfinity-layout-v1';
@@ -269,6 +274,57 @@ export function loadLayoutById(layoutId: string): Layout | null {
 export function deleteLayoutById(layoutId: string): void {
   const key = getLayoutStorageKey(layoutId);
   localStorage.removeItem(key);
+}
+
+// === Async Layout Storage (IndexedDB with localStorage fallback) ===
+
+/**
+ * Save a layout asynchronously using IndexedDB (with localStorage fallback).
+ * This is the preferred method for saving layouts as it supports larger data.
+ *
+ * Uses dual-write pattern: saves to both IndexedDB and localStorage.
+ * This ensures backwards compatibility while sync load operations
+ * still read from localStorage.
+ */
+export async function saveLayoutByIdAsync(layoutId: string, layout: Layout): Promise<void> {
+  // Save to IndexedDB (primary, larger capacity)
+  await saveLayoutAsync(layoutId, layout);
+
+  // Also save to localStorage (backup for sync loads)
+  // This may fail for very large layouts, which is fine - IndexedDB has it
+  try {
+    saveLayoutById(layoutId, layout);
+  } catch {
+    // Ignore localStorage errors - IndexedDB is the primary store
+    console.warn(`[Storage] localStorage backup failed for ${layoutId} - using IndexedDB only`);
+  }
+}
+
+/**
+ * Load a layout asynchronously using IndexedDB (with localStorage fallback).
+ * Falls back to sync localStorage if IndexedDB load returns null.
+ */
+export async function loadLayoutByIdAsync(layoutId: string): Promise<Layout | null> {
+  // Try IndexedDB first
+  let layout = await loadLayoutAsync(layoutId);
+
+  // Fall back to localStorage if not in IndexedDB (for backwards compatibility)
+  if (!layout) {
+    layout = loadLayoutById(layoutId);
+  }
+
+  return layout;
+}
+
+/**
+ * Delete a layout asynchronously from both IndexedDB and localStorage.
+ */
+export async function deleteLayoutByIdAsync(layoutId: string): Promise<void> {
+  // Delete from IndexedDB
+  await deleteLayoutAsync(layoutId);
+
+  // Also delete from localStorage (cleanup)
+  deleteLayoutById(layoutId);
 }
 
 /**
@@ -683,54 +739,4 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
   }
 
   return { library, activeLayout };
-}
-
-// === Collection Membership Storage ===
-
-const COLLECTION_MEMBERSHIPS_KEY = 'gridfinity-collection-memberships-v1';
-
-/**
- * Save collection memberships to localStorage.
- */
-export function saveCollectionMemberships(memberships: CollectionMembership[]): void {
-  try {
-    localStorage.setItem(COLLECTION_MEMBERSHIPS_KEY, JSON.stringify(memberships));
-  } catch (e) {
-    console.error('Failed to save collection memberships:', e);
-  }
-}
-
-/**
- * Load collection memberships from localStorage.
- */
-export function loadCollectionMemberships(): CollectionMembership[] {
-  try {
-    const stored = localStorage.getItem(COLLECTION_MEMBERSHIPS_KEY);
-    if (!stored) return [];
-
-    const parsed = JSON.parse(stored);
-
-    // Validate it's an array
-    if (!Array.isArray(parsed)) return [];
-
-    // Basic validation of each membership
-    return parsed.filter((m): m is CollectionMembership =>
-      typeof m === 'object' &&
-      typeof m.collectionId === 'string' &&
-      typeof m.collectionName === 'string' &&
-      typeof m.joinedAt === 'number' &&
-      typeof m.lastSyncAt === 'number' &&
-      typeof m.lastAccessedAt === 'number'
-    );
-  } catch (e) {
-    console.error('Failed to load collection memberships:', e);
-    return [];
-  }
-}
-
-/**
- * Clear all collection memberships from localStorage.
- */
-export function clearCollectionMemberships(): void {
-  localStorage.removeItem(COLLECTION_MEMBERSHIPS_KEY);
 }
