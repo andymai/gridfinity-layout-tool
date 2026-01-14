@@ -40,7 +40,6 @@ export function useKeyboardDrag() {
       return;
     }
 
-    // Check if any selected bins are in staging
     const hasStaging = selectedBinIds.some(id => {
       const bin = findBinById(layout, id);
       return bin?.layerId === STAGING_ID;
@@ -60,7 +59,6 @@ export function useKeyboardDrag() {
       `Use arrow keys to move, Enter to place, Escape to cancel.`
     );
 
-    // Set interaction to show ghost preview
     const firstBin = findBinById(layout, selectedBinIds[0]);
     const startCoord = firstBin ? { x: firstBin.x, y: firstBin.y } : { x: 0, y: 0 };
     setInteraction({
@@ -80,7 +78,6 @@ export function useKeyboardDrag() {
     if (!keyboardDragMode) return;
 
     setDragOffset(prev => {
-      // Get all selected bins
       const selectedBins = selectedBinIds
         .map(id => findBinById(layout, id))
         .filter((b): b is Bin => b !== undefined && b.layerId !== STAGING_ID);
@@ -124,14 +121,13 @@ export function useKeyboardDrag() {
         }
       }
 
-      // Update interaction to show preview with new offset (delta semantic)
       const firstBin = selectedBins[0];
       const startCoord = { x: firstBin.x, y: firstBin.y };
       setInteraction({
         type: 'drag',
         binIds: selectedBinIds,
         startCoord,
-        currentCoord: { x: deltaX, y: deltaY }, // Store delta, not absolute position
+        currentCoord: { x: deltaX, y: deltaY },
         valid: allValid,
         isOverGrid: true,
       });
@@ -163,7 +159,6 @@ export function useKeyboardDrag() {
       return;
     }
 
-    // Validate all bins can move to new positions
     const excludeIds = new Set(selectedBinIds);
     let allValid = true;
     const validationErrors: string[] = [];
@@ -201,7 +196,6 @@ export function useKeyboardDrag() {
       return;
     }
 
-    // Apply the movement
     execute(() => {
       for (const binId of selectedBinIds) {
         const bin = findBinById(layout, binId);
@@ -212,7 +206,6 @@ export function useKeyboardDrag() {
 
     announceToScreenReader(`Moved ${selectedBinIds.length} ${selectedBinIds.length === 1 ? 'bin' : 'bins'}.`);
 
-    // Exit drag mode
     setKeyboardDragMode(false);
     setInteraction(null);
     setDragOffset({ dx: 0, dy: 0 });
@@ -268,14 +261,12 @@ export function useKeyboardDrag() {
       return;
     }
 
-    // Enter - confirm
     if (e.key === 'Enter') {
       e.preventDefault();
       confirmDrag();
       return;
     }
 
-    // Escape - cancel
     if (e.key === 'Escape') {
       e.preventDefault();
       exitDragMode();

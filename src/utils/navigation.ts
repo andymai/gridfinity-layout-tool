@@ -25,20 +25,17 @@ export function findNearestBinInDirection(
   allBins: Bin[],
   activeLayerId: string
 ): Bin | null {
-  // Filter to bins on the active layer, excluding the current bin
   const candidates = allBins.filter(
     (bin) => bin.layerId === activeLayerId && bin.id !== currentBin.id
   );
 
   if (candidates.length === 0) return null;
 
-  // Get current bin's center position
   const currentCenter = {
     x: currentBin.x + currentBin.width / 2,
     y: currentBin.y + currentBin.depth / 2,
   };
 
-  // Filter candidates in the correct direction
   const validCandidates = candidates.filter((candidate) => {
     const candidateCenter = {
       x: candidate.x + candidate.width / 2,

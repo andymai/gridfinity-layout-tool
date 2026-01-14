@@ -179,44 +179,34 @@ export function useLayoutSwitcher() {
    * Create a new layout and switch to it.
    */
   const createNewLayout = useCallback(async (name?: string): Promise<OperationResult<string>> => {
-    // Save current layout first
     await saveCurrentLayout();
 
-    // Create new layout using user preferences
     const layoutId = generateUUID();
     const newLayout = createLayoutWithSettings(settings);
     newLayout.name = name || 'Untitled layout';
 
     try {
-      // Save the new layout to IndexedDB + localStorage
       await saveLayoutByIdAsync(layoutId, newLayout);
 
-      // Create library entry
       createEntry(
         newLayout.name,
         layoutId,
         computeLayoutPreview(newLayout)
       );
 
-      // Switch to the new layout
       importLayout(newLayout, layoutId, 'init');
       setLibraryActiveId(layoutId);
 
-      // Reset UI state
       clearSelection();
       setActiveLayer(newLayout.layers[0]?.id ?? '');
       setActiveCategory(newLayout.categories[0]?.id ?? '');
 
-      // Clear undo history
       clearHistory();
 
-      // Save library
       saveLibrary(useLibraryStore.getState().library);
 
-      // Update URL hash (add to browser history)
       setLayoutHash(layoutId, true);
 
-      // Track analytics
       trackLayoutAction('created');
 
       addToast('New layout created', 'success');
@@ -250,16 +240,13 @@ export function useLayoutSwitcher() {
     }
 
     try {
-      // Remove from storage (both IndexedDB and localStorage)
       await deleteLayoutByIdAsync(id);
 
-      // Remove from library
       const result = deleteEntry(id);
       if (!result.success) {
         return result;
       }
 
-      // If deleting active layout, switch to first remaining
       if (activeLayoutId === id) {
         const remaining = entries.filter(e => e.id !== id);
         const fallbackId = remaining[0].id;
@@ -269,10 +256,8 @@ export function useLayoutSwitcher() {
         }
       }
 
-      // Save library
       saveLibrary(useLibraryStore.getState().library);
 
-      // Track analytics
       trackLayoutAction('deleted');
 
       addToast('Layout deleted', 'success');
@@ -292,32 +277,25 @@ export function useLayoutSwitcher() {
       return { success: false, error: 'Layout not found' };
     }
 
-    // Load the source layout from IndexedDB (with localStorage fallback)
     const sourceLayout = await loadLayoutByIdAsync(id);
     if (!sourceLayout) {
       return { success: false, error: 'Failed to load layout data' };
     }
 
     try {
-      // Create new layout ID
       const newLayoutId = generateUUID();
 
-      // Clone the layout with new name
       const newLayout: Layout = {
         ...sourceLayout,
         name: `${sourceLayout.name} (copy)`,
       };
 
-      // Save the new layout to IndexedDB + localStorage
       await saveLayoutByIdAsync(newLayoutId, newLayout);
 
-      // Create library entry
       duplicateEntry(sourceEntry, newLayoutId);
 
-      // Save library
       saveLibrary(useLibraryStore.getState().library);
 
-      // Track analytics
       trackLayoutAction('duplicated');
 
       addToast('Layout duplicated', 'success');
@@ -334,14 +312,12 @@ export function useLayoutSwitcher() {
   const renameLayout = useCallback((id: string, newName: string): void => {
     updateEntry(id, { name: newName });
 
-    // If renaming active layout, also update layout store
     if (id === activeLayoutId) {
       useLayoutStore.getState().setName(newName);
     }
 
     saveLibrary(useLibraryStore.getState().library);
 
-    // Track analytics
     trackLayoutAction('renamed');
   }, [activeLayoutId, updateEntry]);
 
@@ -355,10 +331,8 @@ export function useLayoutSwitcher() {
     try {
       const layoutId = generateUUID();
 
-      // Save the layout to IndexedDB + localStorage
       await saveLayoutByIdAsync(layoutId, importedLayout);
 
-      // Create library entry
       const preview: LayoutPreview = computeLayoutPreview(importedLayout);
       createEntry(
         importedLayout.name,
@@ -367,15 +341,12 @@ export function useLayoutSwitcher() {
         library.settings.authorName
       );
 
-      // Add forkedFrom if provided
       if (forkedFrom) {
         updateEntry(layoutId, { forkedFrom });
       }
 
-      // Save library
       saveLibrary(useLibraryStore.getState().library);
 
-      // Track analytics
       trackLayoutAction('imported', forkedFrom ? 'url' : 'json');
 
       addToast(`Imported "${importedLayout.name}"`, 'success');

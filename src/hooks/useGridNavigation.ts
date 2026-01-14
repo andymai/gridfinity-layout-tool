@@ -47,12 +47,10 @@ export function useGridNavigation() {
         return;
     }
 
-    // Find next bin in direction
     const nextBin = findNearestBinInDirection(currentBin, direction, bins, activeLayerId);
     if (nextBin) {
       setFocusedBin(nextBin.id);
 
-      // Announce to screen reader
       const label = nextBin.label || `${nextBin.width}×${nextBin.depth} bin`;
       announceToScreenReader(`Moved to ${label} at column ${nextBin.x + 1}, row ${nextBin.y + 1}`);
     }

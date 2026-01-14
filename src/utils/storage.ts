@@ -39,7 +39,6 @@ export function saveLayout(layout: Layout): void {
  * Adds default values for any missing fields.
  */
 function migrateLayout(data: Record<string, unknown>): Record<string, unknown> {
-  // Add gridUnitMm and heightUnitMm if missing (added in later version)
   if (data.gridUnitMm === undefined) {
     data.gridUnitMm = 42;
   }
@@ -698,7 +697,6 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
     });
   }
 
-  // Load the active layout
   let activeLayout = loadLayoutById(library.activeLayoutId);
 
   if (!activeLayout) {

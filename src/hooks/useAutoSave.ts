@@ -36,60 +36,47 @@ export function useAutoSave(): SaveStatus {
   const failureCountRef = useRef(0);
 
   useEffect(() => {
-    // Clear any pending save
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // Clear any pending idle callback
     if (idleCallbackRef.current) {
       cancelIdleCallback(idleCallbackRef.current);
       idleCallbackRef.current = undefined;
     }
 
-    // Clear any pending "saved" timeout when new changes come in
     if (savedTimeoutRef.current) {
       clearTimeout(savedTimeoutRef.current);
       savedTimeoutRef.current = undefined;
     }
 
-    // Don't save if no active layout ID (shouldn't happen, but safety check)
     if (!activeLayoutId) return;
 
     // Don't save temporary shared preview layouts
     if (activeLayoutId === '__shared_preview__') return;
 
-    // Schedule save after debounce period
     timeoutRef.current = window.setTimeout(() => {
-      // Show "saving" status immediately to give user feedback
       setSaveStatus('saving');
 
-      // Schedule the actual storage operations during browser idle time
-      // This improves INP by not blocking the main thread during user interactions
+      // Schedule storage operations during browser idle time to improve INP
       idleCallbackRef.current = scheduleIdleCallback(
         async () => {
           try {
-            // Save layout to IndexedDB (async, with localStorage fallback)
             await saveLayoutByIdAsync(activeLayoutId, layout);
 
-            // Update library entry with new preview and timestamp
             updateEntry(activeLayoutId, {
               modifiedAt: Date.now(),
               preview: computeLayoutPreview(layout),
-              name: layout.name, // Keep library name in sync with layout name
+              name: layout.name,
             });
 
-            // Save library index (stays in localStorage for cross-tab sync)
             saveLibrary(useLibraryStore.getState().library);
 
-            // Reset error flags on successful save
             hasShownErrorRef.current = false;
             failureCountRef.current = 0;
 
-            // Show "saved" status
             setSaveStatus('saved');
 
-            // Clear "saved" status after delay
             savedTimeoutRef.current = window.setTimeout(() => {
               setSaveStatus('idle');
             }, SAVED_DISPLAY_MS);

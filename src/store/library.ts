@@ -65,34 +65,25 @@ interface LibraryState {
   isLoaded: boolean;
   showLayoutManager: boolean;
 
-  // Initialize library
   initLibrary: (library: LayoutLibrary) => void;
-
-  // Replace library (for cross-tab sync)
   setLibrary: (library: LayoutLibrary) => void;
 
-  // Entry CRUD (pure library operations, no cross-store mutations)
   createEntry: (name: string, layoutId: string, preview: LayoutPreview, author?: string) => LayoutEntry;
   deleteEntry: (id: string) => OperationResult;
   updateEntry: (id: string, updates: Partial<Omit<LayoutEntry, 'id'>>) => void;
   duplicateEntry: (sourceEntry: LayoutEntry, newLayoutId: string) => LayoutEntry;
 
-  // Query
   getEntry: (id: string) => LayoutEntry | undefined;
   getRecentEntries: (count: number) => LayoutEntry[];
 
-  // Active layout (just updates the library index, not the actual layout)
   setActiveLayoutId: (id: string) => void;
 
-  // Settings
   setAuthorName: (name: string) => void;
   setLastShareExpiration: (days: ShareExpiration) => void;
 
-  // Cloud sharing
   setCloudShare: (layoutId: string, share: CloudShareInfo) => void;
   clearCloudShare: (layoutId: string) => void;
 
-  // UI state
   setShowLayoutManager: (show: boolean) => void;
 }
 
