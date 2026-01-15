@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useUIStore } from '../../store';
+import { useInteractionStore, useHalfBinModeStore } from '../../store';
 import { canPlaceBin } from '../../utils/validation';
 import { calculateResizeRect } from '../../utils/interaction';
 import type { InteractionContext, ModeHandlers, ResizeStartArgs, Coord, Rect } from './types';
@@ -108,7 +108,7 @@ export function useResizeInteraction(
    */
   const handleMove = useCallback(
     (_coords: Coord, clamped: Coord) => {
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       if (!interaction || interaction.type !== 'resize') return;
 
       // Resize all selected bins by same delta
@@ -121,7 +121,7 @@ export function useResizeInteraction(
         const startRect = interaction.startRects.get(binId);
         if (!bin || !startRect) continue;
 
-        const halfBinModeNow = useUIStore.getState().halfBinMode;
+        const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
         const minSizeNow = halfBinModeNow ? 0.5 : 1;
         const newRect = calculateResizeRect(
           startRect,
@@ -159,7 +159,7 @@ export function useResizeInteraction(
    * Commits bin dimension changes if there were any valid changes.
    */
   const handleUp = useCallback(() => {
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     if (!interaction || interaction.type !== 'resize') return;
 
     // Only commit if the resize was valid

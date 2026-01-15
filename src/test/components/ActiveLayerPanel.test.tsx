@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ActiveLayerPanel } from '../../components/Sidebar/ActiveLayerPanel';
 import { useLayoutStore, useUIStore } from '../../store';
+import { useSelectionStore } from '../../store/selection';
+import { useInteractionStore } from '../../store/interaction';
+import { useHalfBinModeStore } from '../../store/halfBinMode';
 import { resetAllStores } from '../testUtils';
 
 // Mock ConfirmDialog
@@ -51,10 +54,14 @@ describe('ActiveLayerPanel', () => {
       },
     });
 
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: 'layer1',
       activeCategoryId: 'coral',
+    });
+    useInteractionStore.setState({
       paintSize: null,
+    });
+    useHalfBinModeStore.setState({
       halfBinMode: false,
     });
   });
@@ -102,7 +109,7 @@ describe('ActiveLayerPanel', () => {
     });
 
     it('returns null when no active layer', () => {
-      useUIStore.setState({ activeLayerId: '' });
+      useSelectionStore.setState({ activeLayerId: '' });
       const { container } = render(<ActiveLayerPanel />);
 
       expect(container.firstChild).toBeNull();
@@ -119,7 +126,7 @@ describe('ActiveLayerPanel', () => {
     });
 
     it('deselects paint size when clicking same button', () => {
-      useUIStore.setState({ paintSize: { width: 2, depth: 2 } });
+      useInteractionStore.setState({ paintSize: { width: 2, depth: 2 } });
 
       render(<ActiveLayerPanel />);
       fireEvent.click(screen.getByText('2×2'));
@@ -128,7 +135,7 @@ describe('ActiveLayerPanel', () => {
     });
 
     it('shows fill button when paint size selected', () => {
-      useUIStore.setState({ paintSize: { width: 2, depth: 2 } });
+      useInteractionStore.setState({ paintSize: { width: 2, depth: 2 } });
 
       render(<ActiveLayerPanel />);
 
@@ -144,7 +151,7 @@ describe('ActiveLayerPanel', () => {
 
   describe('fill operations', () => {
     it('fills layer with selected size', () => {
-      useUIStore.setState({ paintSize: { width: 2, depth: 2 } });
+      useInteractionStore.setState({ paintSize: { width: 2, depth: 2 } });
 
       render(<ActiveLayerPanel />);
       fireEvent.click(screen.getByText('Fill with 2×2'));
@@ -154,7 +161,7 @@ describe('ActiveLayerPanel', () => {
     });
 
     it('clears paint size after filling', () => {
-      useUIStore.setState({ paintSize: { width: 2, depth: 2 } });
+      useInteractionStore.setState({ paintSize: { width: 2, depth: 2 } });
 
       render(<ActiveLayerPanel />);
       fireEvent.click(screen.getByText('Fill with 2×2'));
