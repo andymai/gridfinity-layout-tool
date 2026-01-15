@@ -134,6 +134,35 @@ const safeStubHooks = {
   useStorage: <T,>(_selector: (root: LiveblocksStorage) => T) => null as T | null,
 };
 
+/**
+ * Create a safe wrapper around a Liveblocks hook that catches
+ * "RoomProvider missing" errors and returns a fallback value.
+ *
+ * This allows hooks to be called outside of RoomProvider without crashing,
+ * which is important during the loading phase when SharedLayoutImporter
+ * hasn't yet determined if we're in collaborative mode.
+ */
+function createSafeHook<TArgs extends unknown[], TReturn>(
+  realHook: ((...args: TArgs) => TReturn) | null | undefined,
+  stubHook: (...args: TArgs) => TReturn,
+): (...args: TArgs) => TReturn {
+  if (!realHook) return stubHook;
+
+  return (...args: TArgs): TReturn => {
+    try {
+      return realHook(...args);
+    } catch (error) {
+      // Check if this is the "RoomProvider missing" error
+      if (error instanceof Error && error.message.includes('RoomProvider')) {
+        // Return safe default instead of crashing
+        return stubHook(...args);
+      }
+      // Re-throw other errors
+      throw error;
+    }
+  };
+}
+
 // Re-export hooks with proper typing via type assertions
 // When Liveblocks is not configured, provide stubs that throw helpful errors
 export const RoomProvider = (context?.RoomProvider ?? StubRoomProvider) as React.ComponentType<{
@@ -149,24 +178,35 @@ export const useMyPresence = (context?.useMyPresence ?? createUnconfiguredHook('
 export const useUpdateMyPresence = (context?.useUpdateMyPresence ?? createUnconfiguredHook('useUpdateMyPresence')) as () => (
   patch: Partial<UserPresence>
 ) => void;
-// Safe hooks that return defaults when not configured (can be called unconditionally)
-export const useOthers = (context?.useOthers ?? safeStubHooks.useOthers) as () => readonly {
-  connectionId: number;
-  presence: UserPresence;
-}[];
+// Safe hooks that return defaults when not configured OR when called outside RoomProvider
+// These can be called unconditionally - they catch RoomProvider errors and return safe defaults
+export const useOthers = createSafeHook(
+  context?.useOthers as (() => readonly { connectionId: number; presence: UserPresence }[]) | undefined,
+  safeStubHooks.useOthers
+) as () => readonly { connectionId: number; presence: UserPresence }[];
+
 export const useOthersMapped = context?.useOthersMapped ?? createUnconfiguredHook('useOthersMapped');
 export const useOthersConnectionIds = context?.useOthersConnectionIds ?? createUnconfiguredHook('useOthersConnectionIds');
 export const useOther = context?.useOther ?? createUnconfiguredHook('useOther');
-export const useSelf = (context?.useSelf ?? safeStubHooks.useSelf) as () => {
-  connectionId: number;
-  presence: UserPresence;
-} | null;
-export const useStorage = (context?.useStorage ?? safeStubHooks.useStorage) as <T>(selector: (root: LiveblocksStorage) => T) => T | null;
+
+export const useSelf = createSafeHook(
+  context?.useSelf as (() => { connectionId: number; presence: UserPresence } | null) | undefined,
+  safeStubHooks.useSelf
+) as () => { connectionId: number; presence: UserPresence } | null;
+
+export const useStorage = createSafeHook(
+  context?.useStorage as (<T>(selector: (root: LiveblocksStorage) => T) => T | null) | undefined,
+  safeStubHooks.useStorage
+) as <T>(selector: (root: LiveblocksStorage) => T) => T | null;
 export const useMutation = context?.useMutation ?? createUnconfiguredHook('useMutation');
 export const useRoom = context?.useRoom ?? createUnconfiguredHook('useRoom');
 export const useBroadcastEvent = context?.useBroadcastEvent ?? createUnconfiguredHook('useBroadcastEvent');
 export const useEventListener = context?.useEventListener ?? createUnconfiguredHook('useEventListener');
-export const useStatus = (context?.useStatus ?? safeStubHooks.useStatus) as () => string;
+
+export const useStatus = createSafeHook(
+  context?.useStatus as (() => string) | undefined,
+  safeStubHooks.useStatus
+) as () => string;
 export const useHistory = context?.useHistory ?? createUnconfiguredHook('useHistory');
 export const useUndo = context?.useUndo ?? createUnconfiguredHook('useUndo');
 export const useRedo = context?.useRedo ?? createUnconfiguredHook('useRedo');

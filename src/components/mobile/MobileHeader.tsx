@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLayoutStore, useHistoryStore, useUIStore } from '../../store';
+import { useCollabMode } from '../../hooks/useCollabMode';
 import { CONSTRAINTS } from '../../constants';
 import { PresenceAvatars } from '../collab';
 import type { MobilePanel } from '../../store/ui';
@@ -25,6 +26,9 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
   const redo = useHistoryStore(state => state.redo);
 
   const toggleMobilePanel = useUIStore(state => state.toggleMobilePanel);
+
+  // Only show presence avatars when actually in collaborative mode (inside RoomProvider)
+  const { isCollaborative } = useCollabMode();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(layout.name);
@@ -180,8 +184,8 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
 
       {/* Right: Presence + Save status + Undo/Redo + Help */}
       <div className="flex items-center gap-1">
-        {/* Presence indicator (shown in collaborative mode) */}
-        <PresenceAvatars />
+        {/* Presence indicator (only when actually in collaborative mode, inside RoomProvider) */}
+        {isCollaborative && <PresenceAvatars />}
 
         {/* Save status indicator (icon only on mobile) */}
         {saveStatus !== 'idle' && (

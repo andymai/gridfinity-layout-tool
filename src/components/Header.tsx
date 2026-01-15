@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '../store';
-import { useResponsive, useFeatureFlag } from '../hooks';
+import { useResponsive, useFeatureFlag, useCollabMode } from '../hooks';
 import { CONSTRAINTS } from '../constants';
 import { LayoutManagerModal } from './modals/LayoutManagerModal';
 import { PrintModal } from './modals/PrintModal';
@@ -17,6 +17,7 @@ interface HeaderProps {
 export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   const { isTablet } = useResponsive();
   const isCollabEnabled = useFeatureFlag('collaborative_editing');
+  const { isCollaborative } = useCollabMode();
 
   const { layout, setName } = useLayoutStore(
     useShallow((state) => ({
@@ -246,7 +247,8 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         {/* Share button and presence avatars (only visible when collaborative_editing flag is enabled) */}
         {isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
         <ShareButton />
-        {isCollabEnabled && <PresenceAvatars className="ml-2" />}
+        {/* Only render PresenceAvatars when actually in collab mode (inside RoomProvider) */}
+        {isCollabEnabled && isCollaborative && <PresenceAvatars className="ml-2" />}
         {isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
 
         {/* Divider before external links (only when collab is disabled) */}
