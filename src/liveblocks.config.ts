@@ -58,17 +58,28 @@ export interface LiveblocksStorage {
 }
 
 /**
+ * Check if Liveblocks is configured.
+ * Collaborative features are disabled when the public key is not set.
+ */
+const LIVEBLOCKS_PUBLIC_KEY = import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY;
+export const isLiveblocksConfigured = Boolean(LIVEBLOCKS_PUBLIC_KEY);
+
+/**
  * Liveblocks client configuration.
  *
  * Uses public key for simpler setup. For production with server-side
  * permission control, switch to authEndpoint: '/api/liveblocks-auth'
  * and set LIVEBLOCKS_SECRET_KEY environment variable.
+ *
+ * Client is only created when the public key is available.
  */
-const client = createClient({
-  publicApiKey: import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY || '',
-  // Throttle presence updates to 20fps (50ms) to balance smoothness and bandwidth
-  throttle: 50,
-});
+const client = isLiveblocksConfigured
+  ? createClient({
+      publicApiKey: LIVEBLOCKS_PUBLIC_KEY,
+      // Throttle presence updates to 20fps (50ms) to balance smoothness and bandwidth
+      throttle: 50,
+    })
+  : null;
 
 /**
  * Create typed room context with our presence and storage types.
@@ -84,43 +95,68 @@ const client = createClient({
  *
  * TODO: When Liveblocks adds better TypeScript support for strict types,
  * update this to use UserPresence and LiveblocksStorage directly.
+ *
+ * Context is only created when the client is available.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const context = createRoomContext<any, any>(client);
+const context = client ? createRoomContext<any, any>(client) : null;
+
+/**
+ * Stub RoomProvider for when Liveblocks is not configured.
+ * Just renders children without any collaborative features.
+ */
+const StubRoomProvider: React.ComponentType<{
+  id: string;
+  initialPresence: UserPresence;
+  initialStorage?: LiveblocksStorage;
+  children: React.ReactNode;
+}> = ({ children }) => children as React.ReactElement;
+
+/**
+ * Helper to create a stub hook that throws when called without Liveblocks configured.
+ * This helps catch programming errors where hooks are used without checking isLiveblocksConfigured.
+ */
+const createUnconfiguredHook = (hookName: string) => () => {
+  throw new Error(
+    `${hookName} called but Liveblocks is not configured. ` +
+    `Check isLiveblocksConfigured before using collaborative features.`
+  );
+};
 
 // Re-export hooks with proper typing via type assertions
-export const RoomProvider = context.RoomProvider as React.ComponentType<{
+// When Liveblocks is not configured, provide stubs that throw helpful errors
+export const RoomProvider = (context?.RoomProvider ?? StubRoomProvider) as React.ComponentType<{
   id: string;
   initialPresence: UserPresence;
   initialStorage?: LiveblocksStorage;
   children: React.ReactNode;
 }>;
-export const useMyPresence = context.useMyPresence as () => [
+export const useMyPresence = (context?.useMyPresence ?? createUnconfiguredHook('useMyPresence')) as () => [
   UserPresence,
   (patch: Partial<UserPresence>) => void,
 ];
-export const useUpdateMyPresence = context.useUpdateMyPresence as () => (
+export const useUpdateMyPresence = (context?.useUpdateMyPresence ?? createUnconfiguredHook('useUpdateMyPresence')) as () => (
   patch: Partial<UserPresence>
 ) => void;
-export const useOthers = context.useOthers as () => readonly {
+export const useOthers = (context?.useOthers ?? createUnconfiguredHook('useOthers')) as () => readonly {
   connectionId: number;
   presence: UserPresence;
 }[];
-export const useOthersMapped = context.useOthersMapped;
-export const useOthersConnectionIds = context.useOthersConnectionIds;
-export const useOther = context.useOther;
-export const useSelf = context.useSelf as () => {
+export const useOthersMapped = context?.useOthersMapped ?? createUnconfiguredHook('useOthersMapped');
+export const useOthersConnectionIds = context?.useOthersConnectionIds ?? createUnconfiguredHook('useOthersConnectionIds');
+export const useOther = context?.useOther ?? createUnconfiguredHook('useOther');
+export const useSelf = (context?.useSelf ?? createUnconfiguredHook('useSelf')) as () => {
   connectionId: number;
   presence: UserPresence;
 } | null;
-export const useStorage = context.useStorage;
-export const useMutation = context.useMutation;
-export const useRoom = context.useRoom;
-export const useBroadcastEvent = context.useBroadcastEvent;
-export const useEventListener = context.useEventListener;
-export const useStatus = context.useStatus;
-export const useHistory = context.useHistory;
-export const useUndo = context.useUndo;
-export const useRedo = context.useRedo;
-export const useCanUndo = context.useCanUndo;
-export const useCanRedo = context.useCanRedo;
+export const useStorage = context?.useStorage ?? createUnconfiguredHook('useStorage');
+export const useMutation = context?.useMutation ?? createUnconfiguredHook('useMutation');
+export const useRoom = context?.useRoom ?? createUnconfiguredHook('useRoom');
+export const useBroadcastEvent = context?.useBroadcastEvent ?? createUnconfiguredHook('useBroadcastEvent');
+export const useEventListener = context?.useEventListener ?? createUnconfiguredHook('useEventListener');
+export const useStatus = context?.useStatus ?? createUnconfiguredHook('useStatus');
+export const useHistory = context?.useHistory ?? createUnconfiguredHook('useHistory');
+export const useUndo = context?.useUndo ?? createUnconfiguredHook('useUndo');
+export const useRedo = context?.useRedo ?? createUnconfiguredHook('useRedo');
+export const useCanUndo = context?.useCanUndo ?? createUnconfiguredHook('useCanUndo');
+export const useCanRedo = context?.useCanRedo ?? createUnconfiguredHook('useCanRedo');

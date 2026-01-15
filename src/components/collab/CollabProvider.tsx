@@ -12,6 +12,7 @@ import {
   useUpdateMyPresence,
   useMutation,
   useStorage,
+  isLiveblocksConfigured,
   type LiveblocksStorage,
   type UserPresence,
   type InteractionHint,
@@ -21,7 +22,7 @@ import { useLayoutStore } from '../../store/layout';
 import { useSettingsStore } from '../../store/settings';
 import { generateId, STAGING_ID, CONSTRAINTS } from '../../constants';
 import { PresenceContext, type CollabPresenceActions } from '../../contexts/PresenceContext';
-import { MutationsContext, type Mutations } from '../../context/MutationsContext';
+import { MutationsContext, type Mutations, LocalMutationsProvider } from '../../context/MutationsContext';
 import type { Coord, Layout, Bin, Layer, Category, Drawer } from '../../types';
 import type { Result, ValidationError, LayoutError } from '../../result';
 import {
@@ -81,6 +82,9 @@ function useUserName(): string {
  * CollabProvider wraps the app with Liveblocks RoomProvider
  * to enable real-time collaboration.
  *
+ * If Liveblocks is not configured (no API key), falls back to
+ * LocalMutationsProvider for local-only mode.
+ *
  * @example
  * ```tsx
  * <CollabProvider shareId="abc123xyz">
@@ -89,6 +93,20 @@ function useUserName(): string {
  * ```
  */
 export function CollabProvider({ shareId, children }: CollabProviderProps) {
+  // If Liveblocks is not configured, fall back to local-only mode
+  // This allows the app to function without collaborative features
+  if (!isLiveblocksConfigured) {
+    return <LocalMutationsProvider>{children}</LocalMutationsProvider>;
+  }
+
+  return <LiveblocksCollabProvider shareId={shareId}>{children}</LiveblocksCollabProvider>;
+}
+
+/**
+ * Inner component that actually uses Liveblocks.
+ * This is separated to avoid conditional hooks in the outer component.
+ */
+function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
   const roomId = `gridfinity-${shareId}`;
   const userId = useMemo(() => getUserId(), []);
   const userName = useUserName();
