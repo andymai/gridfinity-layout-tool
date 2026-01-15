@@ -3,6 +3,9 @@
  *
  * Displays a cursor icon with the user's name label.
  * Uses CSS transitions for smooth movement.
+ *
+ * Cursor positions are stored as normalized coordinates (0-1 range)
+ * and converted to actual pixels at render time for smooth movement.
  */
 
 import { useMemo } from 'react';
@@ -11,10 +14,10 @@ import type { UserPresence } from '../../liveblocks.config';
 interface CollabCursorProps {
   /** User presence data containing cursor position, name, and color */
   presence: UserPresence;
-  /** Current cell size in pixels (accounts for zoom) */
-  cellSize: number;
-  /** Gap between cells in pixels */
-  gap: number;
+  /** Total grid width in pixels (for converting normalized coords) */
+  gridWidth: number;
+  /** Total grid height in pixels (for converting normalized coords) */
+  gridHeight: number;
 }
 
 /**
@@ -23,23 +26,22 @@ interface CollabCursorProps {
  * The cursor uses CSS transform for positioning, which enables
  * smooth transitions without layout thrashing.
  */
-export function CollabCursor({ presence, cellSize, gap }: CollabCursorProps) {
+export function CollabCursor({ presence, gridWidth, gridHeight }: CollabCursorProps) {
   const { cursor, name, color } = presence;
 
-  // Convert grid coordinates to pixel position
-  // Grid origin (0,0) is bottom-left, but CSS origin is top-left
-  // The parent overlay handles the coordinate system conversion
+  // Convert normalized (0-1) coordinates to pixel position
   // useMemo must be called unconditionally (React Rules of Hooks)
   const style = useMemo(() => {
     if (!cursor) return null;
-    const x = cursor.x * (cellSize + gap) + gap;
-    const y = cursor.y * (cellSize + gap) + gap;
+    // Cursor coords are normalized 0-1, multiply by grid dimensions
+    const x = cursor.x * gridWidth;
+    const y = cursor.y * gridHeight;
 
     return {
       transform: `translate(${x}px, ${y}px)`,
       color,
     };
-  }, [cursor, cellSize, gap, color]);
+  }, [cursor, gridWidth, gridHeight, color]);
 
   // Don't render if cursor is null (user is outside the grid)
   if (!cursor || !style) {
@@ -48,7 +50,7 @@ export function CollabCursor({ presence, cellSize, gap }: CollabCursorProps) {
 
   return (
     <div
-      className="absolute transition-transform duration-75 ease-out pointer-events-none"
+      className="absolute transition-transform duration-[16ms] ease-linear pointer-events-none"
       style={style}
       aria-hidden="true"
     >

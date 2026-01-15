@@ -109,16 +109,18 @@ export function Grid() {
   // Collaborative editing hooks
   const { isCollaborative } = useCollabMode();
   const { updateCursor, clearPresence } = useCollabPresence();
-  const { getGridCoords } = useGridCoords(gridRef);
+  const { getPixelCoords } = useGridCoords(gridRef);
 
-  // Track cursor position for collaborative presence
+  // Track cursor position for collaborative presence (normalized 0-1 coords for smooth movement)
   const handlePointerMoveForCollab = useCallback(
     (e: React.PointerEvent) => {
       if (!isCollaborative) return;
-      const coords = getGridCoords(e.clientX, e.clientY);
-      updateCursor(coords);
+      const coords = getPixelCoords(e.clientX, e.clientY);
+      if (coords) {
+        updateCursor({ x: coords.nx, y: coords.ny });
+      }
     },
-    [isCollaborative, getGridCoords, updateCursor]
+    [isCollaborative, getPixelCoords, updateCursor]
   );
 
   const handlePointerLeaveForCollab = useCallback(() => {

@@ -5,9 +5,9 @@
  * for each connected user who has their cursor on the grid.
  *
  * Coordinate System:
- * - Grid uses bottom-left origin (y=0 at bottom)
- * - CSS uses top-left origin (y=0 at top)
- * - We transform coordinates when rendering
+ * - Cursor positions are stored as normalized coordinates (0-1 range)
+ * - (0,0) is top-left, (1,1) is bottom-right (matches CSS/screen coords)
+ * - Converted to actual pixels at render time for smooth movement
  */
 
 import { useOthers } from '../../liveblocks.config';
@@ -45,6 +45,9 @@ export function CollabCursors({ className }: CollabCursorsProps) {
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
 
+  // Calculate total grid dimensions for converting normalized coords to pixels
+  const gridWidth = drawer.width * (cellSize + gap) + gap;
+  const gridHeight = drawer.depth * (cellSize + gap) + gap;
 
   // Filter to users with valid cursors
   const usersWithCursors = others.filter(
@@ -60,29 +63,15 @@ export function CollabCursors({ className }: CollabCursorsProps) {
       className={`absolute inset-0 pointer-events-none z-40 overflow-hidden ${className ?? ''}`}
       aria-label={`${usersWithCursors.length} other user${usersWithCursors.length === 1 ? '' : 's'} viewing`}
     >
-      {usersWithCursors.map(({ connectionId, presence }) => {
-        // Transform y coordinate from bottom-left to top-left origin
-        // Grid y=0 is at bottom, CSS y=0 is at top
-        const transformedPresence = {
-          ...presence,
-          cursor: presence.cursor
-            ? {
-                x: presence.cursor.x,
-                // Flip y: grid bottom (y=0) should be CSS bottom (y=gridHeight)
-                y: drawer.depth - 1 - presence.cursor.y,
-              }
-            : null,
-        };
-
-        return (
-          <CollabCursor
-            key={connectionId}
-            presence={transformedPresence}
-            cellSize={cellSize}
-            gap={gap}
-          />
-        );
-      })}
+      {usersWithCursors.map(({ connectionId, presence }) => (
+        // Normalized coords are already in screen space (0,0 = top-left)
+        <CollabCursor
+          key={connectionId}
+          presence={presence}
+          gridWidth={gridWidth}
+          gridHeight={gridHeight}
+        />
+      ))}
     </div>
   );
 }

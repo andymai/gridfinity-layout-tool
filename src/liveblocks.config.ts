@@ -16,7 +16,7 @@ import type { Layout, Coord, ResizeHandle } from './types';
  * Presence is automatically cleared when a user disconnects.
  */
 export interface UserPresence {
-  /** Current cursor position in grid coordinates, null if outside grid */
+  /** Cursor position as normalized coords (0-1 range), null if outside grid */
   cursor: Coord | null;
   /** User's display name */
   name: string;
