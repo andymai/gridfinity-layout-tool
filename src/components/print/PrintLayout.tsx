@@ -78,6 +78,8 @@ export function PrintLayout({
   const integerDepth = Math.floor(drawer.depth);
   const hasFractionalWidth = drawer.width % 1 !== 0;
   const hasFractionalDepth = drawer.depth % 1 !== 0;
+  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
+  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
 
   // Fractional cell dimensions
   const fractionalWidthPart = drawer.width - integerWidth;
@@ -85,22 +87,49 @@ export function PrintLayout({
   const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
   const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
 
-  // Generate grid template
+  // Generate grid template (fractional edge position determines where fractional cell appears)
   const gridTemplateColumns = hasFractionalWidth
-    ? `repeat(${integerWidth}, ${cellSize}px) ${fractionalCellWidth}px`
+    ? fractionalEdgeX === 'start'
+      ? `${fractionalCellWidth}px repeat(${integerWidth}, ${cellSize}px)`
+      : `repeat(${integerWidth}, ${cellSize}px) ${fractionalCellWidth}px`
     : `repeat(${gridCols}, ${cellSize}px)`;
 
   const gridTemplateRows = hasFractionalDepth
-    ? `${fractionalCellHeight}px repeat(${integerDepth}, ${cellSize}px)`
+    ? fractionalEdgeY === 'start'
+      ? `repeat(${integerDepth}, ${cellSize}px) ${fractionalCellHeight}px`
+      : `${fractionalCellHeight}px repeat(${integerDepth}, ${cellSize}px)`
     : `repeat(${gridRows}, ${cellSize}px)`;
 
   // Generate grid cells for visual reference
   const cells = useMemo(() => {
     const result: React.ReactNode[] = [];
+
+    // Helper: Get CSS column for integer cell index x (0-indexed)
+    const getCssColForCell = (x: number): number => {
+      if (hasFractionalWidth && fractionalEdgeX === 'start') {
+        return x + 2; // +1 for 1-indexed, +1 to skip fractional col at start
+      }
+      return x + 1;
+    };
+
+    // Helper: Get CSS row for integer cell index y (0-indexed, y=0 is bottom)
+    const getCssRowForCell = (y: number): number => {
+      if (hasFractionalDepth) {
+        if (fractionalEdgeY === 'start') {
+          // Fractional row at bottom (CSS row = gridRows), integer rows above
+          return integerDepth - y;
+        } else {
+          // Fractional row at top (CSS row = 1), integer rows below
+          return integerDepth - y + 1;
+        }
+      }
+      return integerDepth - y;
+    };
+
     for (let y = 0; y < integerDepth; y++) {
       for (let x = 0; x < integerWidth; x++) {
-        const cssCol = x + 1;
-        const cssRow = hasFractionalDepth ? integerDepth - y + 1 : integerDepth - y;
+        const cssCol = getCssColForCell(x);
+        const cssRow = getCssRowForCell(y);
         result.push(
           <div
             key={`cell-${x}-${y}`}
@@ -116,16 +145,17 @@ export function PrintLayout({
       }
     }
 
-    // Add fractional cells if needed
+    // Add fractional column cells if needed
     if (hasFractionalWidth) {
+      const fracColCss = fractionalEdgeX === 'start' ? 1 : gridCols;
       for (let y = 0; y < integerDepth; y++) {
-        const cssRow = hasFractionalDepth ? integerDepth - y + 1 : integerDepth - y;
+        const cssRow = getCssRowForCell(y);
         result.push(
           <div
             key={`frac-col-${y}`}
             className="print-grid-cell"
             style={{
-              gridColumn: gridCols,
+              gridColumn: fracColCss,
               gridRow: cssRow,
               width: fractionalCellWidth,
               height: cellSize,
@@ -135,15 +165,18 @@ export function PrintLayout({
       }
     }
 
+    // Add fractional row cells if needed
     if (hasFractionalDepth) {
+      const fracRowCss = fractionalEdgeY === 'start' ? gridRows : 1;
       for (let x = 0; x < integerWidth; x++) {
+        const cssCol = getCssColForCell(x);
         result.push(
           <div
             key={`frac-row-${x}`}
             className="print-grid-cell"
             style={{
-              gridColumn: x + 1,
-              gridRow: 1,
+              gridColumn: cssCol,
+              gridRow: fracRowCss,
               width: cellSize,
               height: fractionalCellHeight,
             }}
@@ -152,14 +185,17 @@ export function PrintLayout({
       }
     }
 
+    // Add corner cell if both fractional width and depth
     if (hasFractionalWidth && hasFractionalDepth) {
+      const fracColCss = fractionalEdgeX === 'start' ? 1 : gridCols;
+      const fracRowCss = fractionalEdgeY === 'start' ? gridRows : 1;
       result.push(
         <div
           key="frac-corner"
           className="print-grid-cell"
           style={{
-            gridColumn: gridCols,
-            gridRow: 1,
+            gridColumn: fracColCss,
+            gridRow: fracRowCss,
             width: fractionalCellWidth,
             height: fractionalCellHeight,
           }}
@@ -173,8 +209,11 @@ export function PrintLayout({
     integerDepth,
     cellSize,
     gridCols,
+    gridRows,
     hasFractionalWidth,
     hasFractionalDepth,
+    fractionalEdgeX,
+    fractionalEdgeY,
     fractionalCellWidth,
     fractionalCellHeight,
   ]);
@@ -183,6 +222,14 @@ export function PrintLayout({
   // Note: All hooks must be before any early returns to satisfy React hooks rules
   const columnLabels = useMemo(() => {
     const labels: React.ReactNode[] = [];
+    // If fractional edge at start, add fractional column label first
+    if (hasFractionalWidth && fractionalEdgeX === 'start') {
+      labels.push(
+        <div key="col-frac" className="print-axis-label print-col-label" style={{ width: fractionalCellWidth }}>
+          .5
+        </div>
+      );
+    }
     for (let x = 0; x < integerWidth; x++) {
       labels.push(
         <div key={`col-${x}`} className="print-axis-label print-col-label" style={{ width: cellSize }}>
@@ -190,26 +237,30 @@ export function PrintLayout({
         </div>
       );
     }
-    if (hasFractionalWidth) {
+    // If fractional edge at end (default), add fractional column label last
+    if (hasFractionalWidth && fractionalEdgeX === 'end') {
       labels.push(
         <div key="col-frac" className="print-axis-label print-col-label" style={{ width: fractionalCellWidth }}>
-          {integerWidth + 1}
+          .5
         </div>
       );
     }
     return labels;
-  }, [integerWidth, hasFractionalWidth, fractionalCellWidth, cellSize]);
+  }, [integerWidth, hasFractionalWidth, fractionalEdgeX, fractionalCellWidth, cellSize]);
 
   // Generate row labels (1, 2, 3, ... from bottom)
+  // Labels are rendered top-to-bottom in CSS, so we reverse the order
   const rowLabels = useMemo(() => {
     const labels: React.ReactNode[] = [];
-    if (hasFractionalDepth) {
+    // If fractional edge at end (top), add fractional row label first (at top)
+    if (hasFractionalDepth && fractionalEdgeY === 'end') {
       labels.push(
         <div key="row-frac" className="print-axis-label print-row-label" style={{ height: fractionalCellHeight }}>
-          {integerDepth + 1}
+          .5
         </div>
       );
     }
+    // Integer rows from top to bottom (y values from high to low)
     for (let y = integerDepth - 1; y >= 0; y--) {
       labels.push(
         <div key={`row-${y}`} className="print-axis-label print-row-label" style={{ height: cellSize }}>
@@ -217,8 +268,16 @@ export function PrintLayout({
         </div>
       );
     }
+    // If fractional edge at start (bottom), add fractional row label last (at bottom)
+    if (hasFractionalDepth && fractionalEdgeY === 'start') {
+      labels.push(
+        <div key="row-frac" className="print-axis-label print-row-label" style={{ height: fractionalCellHeight }}>
+          .5
+        </div>
+      );
+    }
     return labels;
-  }, [integerDepth, hasFractionalDepth, fractionalCellHeight, cellSize]);
+  }, [integerDepth, hasFractionalDepth, fractionalEdgeY, fractionalCellHeight, cellSize]);
 
   // Group bins by category for summary
   const binsByCategory = useMemo(() => {
