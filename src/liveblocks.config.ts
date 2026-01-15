@@ -24,6 +24,8 @@ export interface UserPresence {
   color: string;
   /** Current interaction hint for showing remote operation previews */
   interaction?: InteractionHint;
+  /** Currently selected bin IDs (for Figma-style selection rings) */
+  selectedBinIds?: string[];
 }
 
 /**
