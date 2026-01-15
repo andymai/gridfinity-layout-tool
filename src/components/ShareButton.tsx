@@ -3,12 +3,20 @@
  * Opens a popover with share link and permission controls.
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLabsStore } from '../store/labs';
 import { useLayoutStore } from '../store/layout';
 import { useUIStore } from '../store/ui';
+import { useToastStore } from '../store/toast';
 import { useCloudShare } from '../hooks/useCloudShare';
+import { useCollabMode } from '../hooks/useCollabMode';
+import { copyToClipboard } from '../storage';
 import type { SharePermission } from '../types';
+
+/** Minimum distance from viewport edge for popover positioning */
+const VIEWPORT_PADDING = 16;
+/** Popover width in pixels */
+const POPOVER_WIDTH = 320;
 
 /**
  * Share button that appears in the header when collaborative_editing flag is enabled.
@@ -22,6 +30,18 @@ export function ShareButton() {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Single hook instance shared between button and popover
+  const cloudShare = useCloudShare();
+  const { hasActiveShare, status } = cloudShare;
+
+  // Check if viewing someone else's shared layout
+  const sharedLayoutCloudShareId = useUIStore((state) => state.sharedLayoutCloudShareId);
+  const isViewingSharedLayout = !!sharedLayoutCloudShareId;
+
+  // Show shared indicator if we have our own share OR viewing someone else's
+  const showSharedIndicator = hasActiveShare || isViewingSharedLayout;
+  const isLoading = status === 'sharing' || status === 'updating';
+
   // Don't render if feature flag is disabled
   if (!isFeatureEnabled) {
     return null;
@@ -32,25 +52,73 @@ export function ShareButton() {
       <button
         ref={buttonRef}
         onClick={() => setIsPopoverOpen((prev) => !prev)}
-        className="btn btn-primary px-4 py-1.5 text-sm font-medium flex items-center gap-2"
+        className={`btn px-4 py-1.5 text-sm font-medium flex items-center gap-2 ${
+          showSharedIndicator ? 'btn-secondary' : 'btn-primary'
+        }`}
         aria-haspopup="true"
         aria-expanded={isPopoverOpen}
+        title={showSharedIndicator ? 'Manage shared link' : 'Share this layout'}
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-          />
-        </svg>
-        Share
+        {/* Loading spinner */}
+        {isLoading ? (
+          <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        ) : showSharedIndicator ? (
+          /* Shared state icon - checkmark with share */
+          <div className="relative">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+              />
+            </svg>
+            {/* Green checkmark badge */}
+            <svg
+              className="w-2.5 h-2.5 absolute -top-1 -right-1 text-success"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+        ) : (
+          /* Default share icon */
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+            />
+          </svg>
+        )}
+        {showSharedIndicator ? 'Shared' : 'Share'}
       </button>
 
       {isPopoverOpen && (
         <SharePopover
           buttonRef={buttonRef}
           onClose={() => setIsPopoverOpen(false)}
+          cloudShare={cloudShare}
         />
       )}
     </>
@@ -64,27 +132,83 @@ export function ShareButton() {
 function SharePopover({
   buttonRef,
   onClose,
+  cloudShare,
 }: {
   buttonRef: React.RefObject<HTMLButtonElement | null>;
   onClose: () => void;
+  cloudShare: ReturnType<typeof useCloudShare>;
 }) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const layoutName = useLayoutStore((state) => state.layout.name);
-  const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
+  const addToast = useToastStore((state) => state.addToast);
+  const [popoverPosition, setPopoverPosition] = useState<{ top: number; right: number } | null>(null);
 
-  // Calculate position on mount
-  useEffect(() => {
-    if (buttonRef.current) {
-      setButtonRect(buttonRef.current.getBoundingClientRect());
+  // Calculate position with viewport boundary checking
+  const calculatePosition = useCallback((): { top: number; right: number } | null => {
+    if (!buttonRef.current) return null;
+
+    const rect = buttonRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let top = rect.bottom + 8;
+    let right = viewportWidth - rect.right;
+
+    // Check if popover would overflow right edge
+    if (right < VIEWPORT_PADDING) {
+      right = VIEWPORT_PADDING;
     }
+
+    // Check if popover would overflow left edge
+    const leftEdge = viewportWidth - right - POPOVER_WIDTH;
+    if (leftEdge < VIEWPORT_PADDING) {
+      right = viewportWidth - POPOVER_WIDTH - VIEWPORT_PADDING;
+    }
+
+    // Check if popover would overflow bottom (estimate height ~300px)
+    const estimatedHeight = 300;
+    if (top + estimatedHeight > viewportHeight - VIEWPORT_PADDING) {
+      // Position above the button instead
+      top = rect.top - estimatedHeight - 8;
+      if (top < VIEWPORT_PADDING) {
+        top = VIEWPORT_PADDING;
+      }
+    }
+
+    return { top, right };
   }, [buttonRef]);
+
+  // Calculate position on mount - this is an acceptable use case for setState
+  // in effect because we need the DOM ref which isn't available during render
+  useEffect(() => {
+    // Calculate initial position after mount when ref is available
+    const position = calculatePosition();
+    if (position) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPopoverPosition(position);
+    }
+
+    const handleResize = () => {
+      const newPosition = calculatePosition();
+      if (newPosition) {
+        setPopoverPosition(newPosition);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [calculatePosition]);
 
   // Get shared layout info from UI store (when viewing someone else's share)
   const sharedLayoutCloudShareId = useUIStore((state) => state.sharedLayoutCloudShareId);
   const sharedLayoutPermission = useUIStore((state) => state.sharedLayoutPermission);
   const isViewingSharedLayout = !!sharedLayoutCloudShareId;
 
+  // Check if we're in collaborative mode (will need to disconnect on delete)
+  const { isCollaborative } = useCollabMode();
+
+  // Use the cloudShare hook from parent to avoid duplicate state
   const {
     status,
     existingShare,
@@ -92,11 +216,15 @@ function SharePopover({
     share,
     updatePermission,
     copyUrl,
+    remove,
     error,
     reset,
-  } = useCloudShare();
+  } = cloudShare;
 
   const [urlCopied, setUrlCopied] = useState(false);
+  const [tokenCopied, setTokenCopied] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Determine the effective permission:
   // - If viewing a shared layout, use that permission
@@ -106,12 +234,23 @@ function SharePopover({
     ? sharedLayoutPermission ?? 'view'
     : existingShare?.permission ?? 'view';
 
-  const [localPermission, setLocalPermission] = useState<SharePermission>(effectivePermission);
+  // Track local permission override (only when user changes it before sharing)
+  // Key tracks the "version" of effective permission - when it changes, we reset
+  const effectivePermissionKey = `${isViewingSharedLayout}-${existingShare?.id ?? 'none'}-${effectivePermission}`;
+  const [localPermissionState, setLocalPermissionState] = useState<{
+    key: string;
+    override: SharePermission | null;
+  }>({ key: effectivePermissionKey, override: null });
 
-  // Sync local permission state with effective permission
-  useEffect(() => {
-    setLocalPermission(effectivePermission);
-  }, [effectivePermission]);
+  // Use local override if set and key matches, otherwise use effective permission
+  const localPermission =
+    localPermissionState.key === effectivePermissionKey && localPermissionState.override !== null
+      ? localPermissionState.override
+      : effectivePermission;
+
+  const setLocalPermission = (newPermission: SharePermission) => {
+    setLocalPermissionState({ key: effectivePermissionKey, override: newPermission });
+  };
 
   // Reset copy state after timeout
   useEffect(() => {
@@ -120,6 +259,13 @@ function SharePopover({
       return () => clearTimeout(timer);
     }
   }, [urlCopied]);
+
+  useEffect(() => {
+    if (tokenCopied) {
+      const timer = setTimeout(() => setTokenCopied(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [tokenCopied]);
 
   // Handle click outside to close popover
   useEffect(() => {
@@ -167,26 +313,83 @@ function SharePopover({
     if (success) setUrlCopied(true);
   };
 
+  const handleCopyToken = async () => {
+    const token = existingShare?.deleteToken;
+    if (!token) return;
+
+    const success = await copyToClipboard(token);
+    if (success) setTokenCopied(true);
+  };
+
   const handlePermissionChange = async (newPermission: SharePermission) => {
+    const oldPermission = localPermission;
     setLocalPermission(newPermission);
+
     if (hasActiveShare) {
-      await updatePermission(newPermission);
+      const success = await updatePermission(newPermission);
+      if (success) {
+        // Determine if this change affects Liveblocks connection
+        const wasEditable = oldPermission === 'edit';
+        const isNowEditable = newPermission === 'edit';
+        const collabStateChanged = wasEditable !== isNowEditable;
+
+        // Build appropriate message
+        let message = `Permission updated to "${newPermission === 'edit' ? 'can edit' : 'view only'}"`;
+        if (collabStateChanged) {
+          message = newPermission === 'edit'
+            ? 'Collaboration enabled. Anyone with the link can now edit.'
+            : 'Collaboration disabled. Link is now view-only.';
+        }
+
+        // Show toast with undo option
+        addToast({
+          type: 'success',
+          message,
+          action: {
+            label: 'Undo',
+            onClick: async () => {
+              setLocalPermission(oldPermission);
+              await updatePermission(oldPermission);
+            },
+          },
+        });
+      }
     }
   };
 
-  // Calculate position below the button
-  const popoverStyle: React.CSSProperties = buttonRect
+  const handleDelete = async () => {
+    // Track if we were in collaborative mode before deleting
+    // (deleting will cause us to exit collaborative mode)
+    const wasCollaborative = isCollaborative;
+
+    const success = await remove();
+    if (success) {
+      addToast({
+        type: 'success',
+        message: wasCollaborative
+          ? 'Share link deleted. Collaboration ended.'
+          : 'Share link deleted',
+      });
+      // Close popover after successful deletion
+      onClose();
+    }
+  };
+
+  // Calculate position below the button with boundary checking
+  const popoverStyle: React.CSSProperties = popoverPosition
     ? {
         position: 'fixed',
-        top: buttonRect.bottom + 8,
-        right: window.innerWidth - buttonRect.right,
+        top: popoverPosition.top,
+        right: popoverPosition.right,
         zIndex: 50,
+        width: POPOVER_WIDTH,
       }
     : {
         position: 'fixed',
         top: 60,
         right: 16,
         zIndex: 50,
+        width: POPOVER_WIDTH,
       };
 
   // Determine the share URL - prefer viewing shared layout, then own share
@@ -196,23 +399,32 @@ function SharePopover({
   // Show as "shared" when viewing a shared layout or when we have our own active share
   const showSharedState = isViewingSharedLayout || hasActiveShare;
 
-  const isLoading = status === 'sharing' || status === 'updating';
-
   return (
     <div
       ref={popoverRef}
       style={popoverStyle}
-      className="bg-surface-elevated border border-stroke rounded-lg shadow-lg w-80 p-4"
+      className="bg-surface-elevated border border-stroke rounded-lg shadow-lg p-4"
       role="dialog"
       aria-label="Share layout"
     >
-      {/* Layout name */}
-      <div className="text-sm text-content-secondary mb-3 truncate">
-        {layoutName}
+      {/* Header with layout name and close button */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-sm text-content-secondary truncate flex-1 mr-2">
+          {layoutName}
+        </div>
+        <button
+          onClick={onClose}
+          className="text-content-tertiary hover:text-content transition-colors p-1 -m-1"
+          aria-label="Close"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
-      {/* Loading state */}
-      {isLoading && (
+      {/* Loading state - not shown for 'deleting' since we have inline loading */}
+      {(status === 'sharing' || status === 'updating') && (
         <div className="flex items-center justify-center py-4">
           <div className="flex items-center gap-2 text-content-secondary">
             <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -267,7 +479,8 @@ function SharePopover({
       )}
 
       {/* Shared state - show when viewing shared layout or own share */}
-      {(status === 'idle' || status === 'success') && showSharedState && (
+      {/* Also show during 'deleting' so the delete confirmation remains visible */}
+      {(status === 'idle' || status === 'success' || status === 'deleting') && showSharedState && (
         <div className="space-y-3">
           {/* Link input and copy button */}
           <div className="flex gap-2">
@@ -281,9 +494,20 @@ function SharePopover({
             />
             <button
               onClick={handleCopyUrl}
-              className="btn btn-primary px-3 text-sm whitespace-nowrap"
+              className={`btn px-3 text-sm whitespace-nowrap ${
+                urlCopied ? 'btn-secondary text-success' : 'btn-primary'
+              }`}
             >
-              {urlCopied ? 'Copied!' : 'Copy'}
+              {urlCopied ? (
+                <span className="flex items-center gap-1">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Copied
+                </span>
+              ) : (
+                'Copy'
+              )}
             </button>
           </div>
 
@@ -302,6 +526,127 @@ function SharePopover({
               <option value="edit">Anyone with link can edit</option>
             </select>
           )}
+
+          {/* Advanced options (delete token, delete share) - only for own shares */}
+          {!isViewingSharedLayout && hasActiveShare && existingShare && (
+            <div className="border-t border-stroke-subtle pt-3 mt-3">
+              <button
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="flex items-center justify-between w-full text-sm text-content-tertiary hover:text-content-secondary transition-colors"
+                aria-expanded={showAdvanced}
+              >
+                <span>Advanced options</span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {showAdvanced && (
+                <div className="mt-3 space-y-3">
+                  {/* Delete token */}
+                  <div className="space-y-2">
+                    <div className="text-xs text-content-tertiary">
+                      Delete token (save this to delete from another device)
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={existingShare.deleteToken}
+                        readOnly
+                        className="flex-1 bg-surface text-content text-xs px-2 py-1.5 rounded border border-stroke focus:outline-none font-mono truncate"
+                      />
+                      <button
+                        onClick={handleCopyToken}
+                        className="btn btn-secondary px-2 py-1 text-xs"
+                      >
+                        {tokenCopied ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Delete share */}
+                  {!showDeleteConfirm ? (
+                    <button
+                      onClick={(e) => {
+                        // Stop propagation to prevent click-outside handler from
+                        // detecting this as an outside click (the button gets removed
+                        // from DOM when confirmation shows, so contains() would fail)
+                        e.stopPropagation();
+                        setShowDeleteConfirm(true);
+                      }}
+                      className="text-sm text-content-tertiary hover:text-error transition-colors"
+                    >
+                      Delete share link
+                    </button>
+                  ) : (
+                    <div className="bg-error/10 border border-error/30 rounded-lg p-3 space-y-2">
+                      <p className="text-sm text-content">
+                        Delete this share? The link will stop working.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete();
+                          }}
+                          disabled={status === 'deleting'}
+                          className="btn btn-secondary text-error border-error hover:bg-error hover:text-white text-sm px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {status === 'deleting' ? (
+                            <span className="flex items-center gap-2">
+                              <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                              </svg>
+                              Deleting...
+                            </span>
+                          ) : (
+                            'Delete'
+                          )}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowDeleteConfirm(false);
+                          }}
+                          disabled={status === 'deleting'}
+                          className="btn btn-secondary text-sm px-3 py-1.5 disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Done button */}
+          <div className="pt-2">
+            <button
+              onClick={onClose}
+              className="btn btn-secondary w-full text-sm"
+            >
+              Done
+            </button>
+          </div>
         </div>
       )}
     </div>

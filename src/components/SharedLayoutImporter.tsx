@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLayoutStore } from '../store/layout';
 import { useUIStore } from '../store/ui';
 import { useHistoryStore } from '../store/history';
@@ -18,8 +18,6 @@ import type { Layout, SharePermission, LayoutPreview } from '../types';
 const initialShareResult = getSharedLayoutFromURL();
 // Check for cloud share ID at module load time
 const initialCloudShareId = getCloudShareIdFromURL();
-// Track if we've already processed the share URL (module-level to persist across remounts)
-let hasProcessedShare = false;
 
 /**
  * Component that detects shared layouts in URL and loads them for preview.
@@ -133,14 +131,17 @@ export function SharedLayoutImporter() {
     announceToScreenReader,
   ]);
 
+  // Track whether we've processed the URL share (persists through Strict Mode remounts)
+  const hasProcessedUrlShare = useRef(false);
+
   // Handle URL-encoded shares (legacy format)
   useEffect(() => {
-    // Only process once, and skip if we have a cloud share to process
-    if (hasProcessedShare) return;
-    if (initialCloudShareId) return; // Cloud share takes priority
+    // Skip if we have a cloud share to process instead
+    if (initialCloudShareId) return;
     if (!initialShareResult) return;
-
-    hasProcessedShare = true;
+    // Only process once per session
+    if (hasProcessedUrlShare.current) return;
+    hasProcessedUrlShare.current = true;
 
     const { layout, errors } = initialShareResult;
 
@@ -157,9 +158,11 @@ export function SharedLayoutImporter() {
     clearSharedLayoutFromURL();
   }, [loadLayoutPreview, addToast]);
 
+  // Track whether we've started processing a cloud share (persists through Strict Mode remounts)
+  const hasStartedCloudFetch = useRef(false);
+
   // Handle cloud shares (or URLs that might be cloud shares)
   useEffect(() => {
-    if (hasProcessedShare) return;
     if (!initialCloudShareId) return;
 
     // Wait for library to load before checking if layout exists locally
@@ -167,15 +170,26 @@ export function SharedLayoutImporter() {
     if (!libraryIsLoaded) return;
 
     // Check if this layout exists locally - if so, let useLayoutRouting handle it
-    // (this happens with the new unified URL pattern where /{id}/{slug} is used for both)
-    const localEntry = libraryEntries.find(entry => entry.id === initialCloudShareId);
-    if (localEntry) {
-      // Layout exists locally - skip cloud fetch
-      hasProcessedShare = true;
+    // Check both by layout ID (for /l/{id} URLs) and by cloud share ID (owner visiting their own /s/{id})
+    const isLocalLayout = libraryEntries.some(entry =>
+      entry.id === initialCloudShareId || entry.cloudShare?.id === initialCloudShareId
+    );
+    if (isLocalLayout) {
       return;
     }
 
-    hasProcessedShare = true;
+    // Check if URL still has the share ID - if cleared, previous fetch completed
+    const currentShareId = getCloudShareIdFromURL();
+    if (!currentShareId) {
+      // URL was cleared by previous fetch - just ensure loading state is cleared
+      setIsLoading(false);
+      return;
+    }
+
+    // Prevent double-fetch in Strict Mode (first mount starts fetch, second mount should skip)
+    if (hasStartedCloudFetch.current) return;
+    hasStartedCloudFetch.current = true;
+
     let isMounted = true;
 
     const loadCloudShare = async () => {

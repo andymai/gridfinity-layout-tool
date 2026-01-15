@@ -9,10 +9,10 @@ interface RateLimitConfig {
 }
 
 const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
-  create: { limit: 10, windowSeconds: 3600 },      // 10/hour
-  update: { limit: 10, windowSeconds: 3600 },      // 10/hour
+  create: { limit: 100, windowSeconds: 60 },       // 100/minute (dev friendly)
+  update: { limit: 100, windowSeconds: 60 },       // 100/minute (dev friendly)
   view: { limit: 100, windowSeconds: 60 },         // 100/minute
-  delete: { limit: 5, windowSeconds: 3600 },       // 5/hour
+  delete: { limit: 100, windowSeconds: 60 },       // 100/minute (dev friendly)
   report: { limit: 10, windowSeconds: 3600 },      // 10/hour
 };
 

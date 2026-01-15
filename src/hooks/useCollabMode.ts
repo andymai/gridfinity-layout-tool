@@ -1,17 +1,20 @@
 /**
  * Hook to detect if the current layout is in collaborative editing mode.
  *
- * A layout is collaborative when:
+ * A layout is collaborative (requires Liveblocks connection) when:
  * 1. The collaborative_editing Labs feature flag is enabled
- * 2. EITHER:
- *    a. The active layout has a cloud share, OR
- *    b. Viewing a shared layout in preview mode (from /s/{shareId} URL)
+ * 2. The share permission is "edit" (not "view")
+ * 3. EITHER:
+ *    a. The active layout has a cloud share with edit permission, OR
+ *    b. Viewing a shared layout with edit permission (from /s/{shareId} URL)
+ *
+ * View-only shares don't need Liveblocks - they just display static data.
  *
  * @example
  * ```tsx
  * const { isCollaborative, canEdit, shareId } = useCollabMode();
  * if (isCollaborative) {
- *   // Show collaboration UI
+ *   // Show collaboration UI, connect to Liveblocks
  * }
  * ```
  */
@@ -51,6 +54,7 @@ export function useCollabMode(): CollabModeState {
 
   // Check for shared layout preview (viewing via /s/{shareId} URL)
   const sharedLayoutCloudShareId = useUIStore((state) => state.sharedLayoutCloudShareId);
+  const sharedLayoutPermission = useUIStore((state) => state.sharedLayoutPermission);
 
   // Not collaborative if feature flag is disabled
   if (!isFeatureEnabled) {
@@ -62,19 +66,25 @@ export function useCollabMode(): CollabModeState {
   }
 
   // Check for shared preview mode first (viewer opened via /s/{shareId} URL)
+  // Only connect to Liveblocks if permission is "edit"
   if (sharedLayoutCloudShareId) {
+    const canEdit = sharedLayoutPermission === 'edit';
     return {
-      isCollaborative: true,
-      canEdit: true, // TODO Phase 3: Check server-side permission for non-owners
+      // Only collaborative (Liveblocks) for edit permission
+      isCollaborative: canEdit,
+      canEdit,
       shareId: sharedLayoutCloudShareId,
     };
   }
 
   // Check for saved layout with cloud share (owner's layout)
+  // Only connect to Liveblocks if permission is "edit"
   if (cloudShare) {
+    const canEdit = cloudShare.permission === 'edit';
     return {
-      isCollaborative: true,
-      canEdit: true, // TODO Phase 3: Check server-side permission for non-owners
+      // Only collaborative (Liveblocks) for edit permission
+      isCollaborative: canEdit,
+      canEdit,
       shareId: cloudShare.id,
     };
   }
@@ -95,6 +105,7 @@ export function getCollabMode(): CollabModeState {
   const isFeatureEnabled = useLabsStore.getState().isFeatureEnabled('collaborative_editing');
   const { activeLayoutId, entries } = useLibraryStore.getState().library;
   const sharedLayoutCloudShareId = useUIStore.getState().sharedLayoutCloudShareId;
+  const sharedLayoutPermission = useUIStore.getState().sharedLayoutPermission;
 
   const activeEntry = entries.find((e) => e.id === activeLayoutId);
   const cloudShare = activeEntry?.cloudShare;
@@ -108,19 +119,23 @@ export function getCollabMode(): CollabModeState {
   }
 
   // Check for shared preview mode first
+  // Only connect to Liveblocks if permission is "edit"
   if (sharedLayoutCloudShareId) {
+    const canEdit = sharedLayoutPermission === 'edit';
     return {
-      isCollaborative: true,
-      canEdit: true,
+      isCollaborative: canEdit,
+      canEdit,
       shareId: sharedLayoutCloudShareId,
     };
   }
 
   // Check for saved layout with cloud share
+  // Only connect to Liveblocks if permission is "edit"
   if (cloudShare) {
+    const canEdit = cloudShare.permission === 'edit';
     return {
-      isCollaborative: true,
-      canEdit: true,
+      isCollaborative: canEdit,
+      canEdit,
       shareId: cloudShare.id,
     };
   }

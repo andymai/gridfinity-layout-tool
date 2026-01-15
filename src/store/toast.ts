@@ -2,17 +2,35 @@ import { create } from 'zustand';
 
 export type ToastType = 'success' | 'error' | 'info';
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void | Promise<void>;
+}
+
 export interface Toast {
   id: string;
   message: string;
   type: ToastType;
   duration: number; // in ms, 0 = no auto-dismiss
   createdAt: number;
+  action?: ToastAction;
+}
+
+interface AddToastOptions {
+  message: string;
+  type: ToastType;
+  duration?: number;
+  action?: ToastAction;
 }
 
 interface ToastState {
   toasts: Toast[];
-  addToast: (message: string, type: ToastType, duration?: number) => void;
+  /**
+   * Add a toast notification.
+   * @param options - Toast options object OR legacy (message, type, duration) args
+   */
+  addToast: ((options: AddToastOptions) => void) &
+    ((message: string, type: ToastType, duration?: number) => void);
   removeToast: (id: string) => void;
 }
 
@@ -22,14 +40,25 @@ const MAX_TOASTS = 3;
 export const useToastStore = create<ToastState>((set) => ({
   toasts: [],
 
-  addToast: (message, type, duration = DEFAULT_DURATION) => {
+  addToast: (
+    messageOrOptions: string | AddToastOptions,
+    type?: ToastType,
+    duration: number = DEFAULT_DURATION
+  ) => {
+    // Support both new object API and legacy positional args
+    const options: AddToastOptions =
+      typeof messageOrOptions === 'string'
+        ? { message: messageOrOptions, type: type ?? 'info', duration }
+        : messageOrOptions;
+
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     const newToast: Toast = {
       id,
-      message,
-      type,
-      duration,
+      message: options.message,
+      type: options.type,
+      duration: options.duration ?? DEFAULT_DURATION,
       createdAt: Date.now(),
+      action: options.action,
     };
 
     set((state) => {

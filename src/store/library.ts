@@ -6,6 +6,7 @@ import { generateUUID, generateLayoutId } from '../utils/uuid';
 import type { Result, Unit, LayoutError } from '../result';
 import { err, layoutLastEntity, OK } from '../result';
 import { saveSharedWithMe } from '../storage/SharedWithMeService';
+import { saveLibrary } from '../storage';
 
 /**
  * Compute preview data from a layout for display in the library.
@@ -232,6 +233,8 @@ export const useLibraryStore = create<LibraryState>()(
           entry.cloudShare = share;
         }
       });
+      // Persist library immediately so cloudShare survives refresh
+      saveLibrary(get().library);
     },
 
     clearCloudShare: (layoutId) => {
@@ -241,6 +244,8 @@ export const useLibraryStore = create<LibraryState>()(
           entry.cloudShare = undefined;
         }
       });
+      // Persist library immediately
+      saveLibrary(get().library);
     },
 
     setShowLayoutManager: (show) => {

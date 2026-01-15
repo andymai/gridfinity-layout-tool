@@ -226,6 +226,7 @@ async function handlePut(
         access: 'public',
         contentType: 'application/json',
         addRandomSuffix: false,
+        allowOverwrite: true,
       });
 
       const shareUrl = `${getBaseUrl(req)}/s/${id}`;
@@ -271,6 +272,7 @@ async function handlePut(
       access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
 
     const shareUrl = `${getBaseUrl(req)}/s/${id}`;

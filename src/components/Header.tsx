@@ -216,7 +216,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         )}
 
         {/* Undo/Redo buttons */}
-        <div className="flex items-center mr-2 border-r border-stroke-subtle pr-2">
+        <div className="flex items-center">
           <button
             onClick={undo}
             disabled={!canUndo}
@@ -241,8 +241,14 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           </button>
         </div>
 
+        {/* Divider before Share button */}
+        <div className="w-px h-6 bg-stroke-subtle mx-2" />
+
         {/* Share button (only visible when collaborative_editing flag is enabled) */}
         <ShareButton />
+
+        {/* Divider before external links */}
+        <div className="w-px h-6 bg-stroke-subtle mx-2" />
 
         {/* Reddit feedback link */}
         <a
