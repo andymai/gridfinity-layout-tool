@@ -8,76 +8,6 @@ import { useCloudShare } from '../hooks/useCloudShare';
 import { formatShareDate } from '../utils/cloudShare';
 import type { SharePermission } from '../types';
 
-/**
- * Expandable section for the delete token (hidden by default).
- */
-function DeleteTokenSection({
-  token,
-  tokenCopied,
-  onCopy,
-}: {
-  token: string;
-  tokenCopied: boolean;
-  onCopy: () => void;
-}) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  return (
-    <div className="border border-stroke-subtle rounded-lg overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-3 text-sm text-content-secondary hover:bg-surface-hover transition-colors"
-        aria-expanded={isExpanded}
-      >
-        <span className="flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-          <span>Advanced: Delete Token</span>
-        </span>
-        <svg
-          className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {isExpanded && (
-        <div className="p-3 pt-0 space-y-2 border-t border-stroke-subtle">
-          <p className="text-xs text-content-tertiary">
-            Save this token if you need to delete your share from a different device.
-            Anyone with this token can delete your share.
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={token}
-              readOnly
-              aria-label="Delete token"
-              className="flex-1 bg-surface text-content p-2 rounded font-mono text-xs focus:outline-none"
-            />
-            <button
-              onClick={onCopy}
-              className="btn btn-secondary px-3 text-sm"
-            >
-              {tokenCopied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 interface CloudShareTabProps {
   layoutId: string;
   onClose: () => void;
@@ -87,7 +17,6 @@ interface CloudShareTabProps {
 export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShareTabProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
-  const [tokenCopied, setTokenCopied] = useState(false);
   const urlInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -100,7 +29,6 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
     updatePermission,
     remove,
     copyUrl,
-    copyDeleteToken,
     reset,
   } = useCloudShare(layoutId);
 
@@ -119,20 +47,13 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
     }
   }, [status]);
 
-  // Reset copy states after timeout
+  // Reset copy state after timeout
   useEffect(() => {
     if (urlCopied) {
       const timer = setTimeout(() => setUrlCopied(false), 2000);
       return () => clearTimeout(timer);
     }
   }, [urlCopied]);
-
-  useEffect(() => {
-    if (tokenCopied) {
-      const timer = setTimeout(() => setTokenCopied(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [tokenCopied]);
 
   const handleShare = async () => {
     await share(permission);
@@ -155,11 +76,6 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
   const handleCopyUrl = async () => {
     const success = await copyUrl();
     if (success) setUrlCopied(true);
-  };
-
-  const handleCopyToken = async () => {
-    const success = await copyDeleteToken();
-    if (success) setTokenCopied(true);
   };
 
   // Idle state - no existing share
@@ -332,12 +248,6 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
             ? 'Anyone with the link can edit'
             : 'Anyone with the link can view'}
         </div>
-
-        <DeleteTokenSection
-          token={result.deleteToken}
-          tokenCopied={tokenCopied}
-          onCopy={handleCopyToken}
-        />
 
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="btn btn-primary">

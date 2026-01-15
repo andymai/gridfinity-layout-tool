@@ -10,7 +10,6 @@ import { useUIStore } from '../store/ui';
 import { useToastStore } from '../store/toast';
 import { useCloudShare } from '../hooks/useCloudShare';
 import { useCollabMode } from '../hooks/useCollabMode';
-import { copyToClipboard } from '../storage';
 import { slugify } from '../utils/slug';
 import type { SharePermission } from '../types';
 
@@ -223,8 +222,6 @@ function SharePopover({
   } = cloudShare;
 
   const [urlCopied, setUrlCopied] = useState(false);
-  const [tokenCopied, setTokenCopied] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Determine the effective permission:
@@ -260,13 +257,6 @@ function SharePopover({
       return () => clearTimeout(timer);
     }
   }, [urlCopied]);
-
-  useEffect(() => {
-    if (tokenCopied) {
-      const timer = setTimeout(() => setTokenCopied(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [tokenCopied]);
 
   // Handle click outside to close popover
   useEffect(() => {
@@ -312,14 +302,6 @@ function SharePopover({
   const handleCopyUrl = async () => {
     const success = await copyUrl();
     if (success) setUrlCopied(true);
-  };
-
-  const handleCopyToken = async () => {
-    const token = existingShare?.deleteToken;
-    if (!token) return;
-
-    const success = await copyToClipboard(token);
-    if (success) setTokenCopied(true);
   };
 
   const handlePermissionChange = async (newPermission: SharePermission) => {
@@ -529,112 +511,70 @@ function SharePopover({
             </select>
           )}
 
-          {/* Advanced options (delete token, delete share) - only for own shares */}
+          {/* Delete share option - only for own shares */}
           {!isViewingSharedLayout && hasActiveShare && existingShare && (
             <div className="border-t border-stroke-subtle pt-3 mt-3">
-              <button
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center justify-between w-full text-sm text-content-tertiary hover:text-content-secondary transition-colors"
-                aria-expanded={showAdvanced}
-              >
-                <span>Advanced options</span>
-                <svg
-                  className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              {!showDeleteConfirm ? (
+                <button
+                  onClick={(e) => {
+                    // Stop propagation to prevent click-outside handler from
+                    // detecting this as an outside click (the button gets removed
+                    // from DOM when confirmation shows, so contains() would fail)
+                    e.stopPropagation();
+                    setShowDeleteConfirm(true);
+                  }}
+                  className="text-sm text-content-tertiary hover:text-error transition-colors"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {showAdvanced && (
-                <div className="mt-3 space-y-3">
-                  {/* Delete token */}
-                  <div className="space-y-2">
-                    <div className="text-xs text-content-tertiary">
-                      Delete token (save this to delete from another device)
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={existingShare.deleteToken}
-                        readOnly
-                        className="flex-1 bg-surface text-content text-xs px-2 py-1.5 rounded border border-stroke focus:outline-none font-mono truncate"
-                      />
-                      <button
-                        onClick={handleCopyToken}
-                        className="btn btn-secondary px-2 py-1 text-xs"
-                      >
-                        {tokenCopied ? 'Copied!' : 'Copy'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Delete share */}
-                  {!showDeleteConfirm ? (
+                  Delete share link
+                </button>
+              ) : (
+                <div className="bg-error/10 border border-error/30 rounded-lg p-3 space-y-2">
+                  <p className="text-sm text-content">
+                    Delete this share? The link will stop working.
+                  </p>
+                  <div className="flex gap-2">
                     <button
                       onClick={(e) => {
-                        // Stop propagation to prevent click-outside handler from
-                        // detecting this as an outside click (the button gets removed
-                        // from DOM when confirmation shows, so contains() would fail)
                         e.stopPropagation();
-                        setShowDeleteConfirm(true);
+                        handleDelete();
                       }}
-                      className="text-sm text-content-tertiary hover:text-error transition-colors"
+                      disabled={status === 'deleting'}
+                      className="btn btn-secondary text-error border-error hover:bg-error hover:text-white text-sm px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Delete share link
+                      {status === 'deleting' ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          Deleting...
+                        </span>
+                      ) : (
+                        'Delete'
+                      )}
                     </button>
-                  ) : (
-                    <div className="bg-error/10 border border-error/30 rounded-lg p-3 space-y-2">
-                      <p className="text-sm text-content">
-                        Delete this share? The link will stop working.
-                      </p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete();
-                          }}
-                          disabled={status === 'deleting'}
-                          className="btn btn-secondary text-error border-error hover:bg-error hover:text-white text-sm px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {status === 'deleting' ? (
-                            <span className="flex items-center gap-2">
-                              <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                                <circle
-                                  className="opacity-25"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                />
-                                <path
-                                  className="opacity-75"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                />
-                              </svg>
-                              Deleting...
-                            </span>
-                          ) : (
-                            'Delete'
-                          )}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowDeleteConfirm(false);
-                          }}
-                          disabled={status === 'deleting'}
-                          className="btn btn-secondary text-sm px-3 py-1.5 disabled:opacity-50"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowDeleteConfirm(false);
+                      }}
+                      disabled={status === 'deleting'}
+                      className="btn btn-secondary text-sm px-3 py-1.5 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
