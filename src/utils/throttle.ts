@@ -93,3 +93,58 @@ export function cancelThrottledRAF(throttledFn: AnyFunction): void {
     rafIds.delete(throttledFn);
   }
 }
+
+/**
+ * Creates a time-based throttled version of a function.
+ *
+ * Unlike throttleRAF which uses requestAnimationFrame, this function
+ * uses a fixed time interval. This is more appropriate for network
+ * operations where we want to limit request frequency rather than
+ * align with rendering frames.
+ *
+ * @param fn The function to throttle
+ * @param delay The minimum time between calls in milliseconds
+ * @returns A throttled version of the function
+ *
+ * @example
+ * const throttledUpdate = throttle((data) => {
+ *   sendToServer(data);
+ * }, 50); // Max 20 calls per second
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function throttle<T extends (...args: any[]) => void>(
+  fn: T,
+  delay: number
+): T {
+  let lastCall = 0;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let lastArgs: Parameters<T> | null = null;
+  let lastThis: unknown = null;
+
+  const throttled = function (this: unknown, ...args: Parameters<T>) {
+    const now = Date.now();
+    const timeSinceLastCall = now - lastCall;
+
+    // Store latest args for trailing call
+    lastArgs = args;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- Required for preserving context in delayed execution
+    lastThis = this;
+
+    if (timeSinceLastCall >= delay) {
+      // Enough time has passed, execute immediately
+      lastCall = now;
+      fn.apply(this, args);
+    } else if (!timeoutId) {
+      // Schedule a trailing call
+      timeoutId = setTimeout(() => {
+        lastCall = Date.now();
+        timeoutId = null;
+        if (lastArgs) {
+          fn.apply(lastThis, lastArgs);
+        }
+      }, delay - timeSinceLastCall);
+    }
+  } as T;
+
+  return throttled;
+}

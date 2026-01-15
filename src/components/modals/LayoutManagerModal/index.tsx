@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLayoutSwitcher } from '../../../hooks/useLayoutSwitcher';
 import { useUIStore } from '../../../store/ui';
+import { useLibraryStore } from '../../../store/library';
 import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
+import { SharedWithMeList } from './SharedWithMeList';
 import { ShareModal } from '../ShareModal';
 import type { Layout } from '../../../types';
 import { isOk } from '../../../result';
 
-type Tab = 'layouts' | 'import';
+type Tab = 'layouts' | 'shared' | 'import';
 
 interface LayoutManagerModalProps {
   isOpen: boolean;
@@ -41,6 +43,7 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
   } = useLayoutSwitcher();
 
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
+  const sharedWithMeCount = useLibraryStore((state) => state.sharedWithMe.length);
 
   // Announce modal opened
   useEffect(() => {
@@ -212,6 +215,34 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
           </button>
 
           <button
+            id="shared-tab"
+            role="tab"
+            aria-selected={activeTab === 'shared'}
+            aria-controls="shared-panel"
+            onClick={() => setActiveTab('shared')}
+            className={`
+              flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2
+              ${activeTab === 'shared'
+                ? 'bg-accent text-white'
+                : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
+              }
+            `}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            Shared
+            {sharedWithMeCount > 0 && (
+              <span className={`
+                text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center
+                ${activeTab === 'shared' ? 'bg-white/20' : 'bg-surface-secondary'}
+              `}>
+                {sharedWithMeCount}
+              </span>
+            )}
+          </button>
+
+          <button
             id="import-tab"
             role="tab"
             aria-selected={activeTab === 'import'}
@@ -247,6 +278,12 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
                 onCreate={handleCreate}
                 onShare={handleShare}
               />
+            </div>
+          )}
+
+          {activeTab === 'shared' && (
+            <div id="shared-panel" role="tabpanel" aria-labelledby="shared-tab" className="flex-1 min-h-0 overflow-auto">
+              <SharedWithMeList onOpenLayout={onClose} />
             </div>
           )}
 

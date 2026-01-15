@@ -11,6 +11,7 @@ export const FEATURE_FLAGS = [
     warning: "This feature is experimental. Real-time sync may have delays or conflicts.",
     addedAt: "2026-01",
     requiresRefresh: false,
+    comingSoon: false,
   },
   {
     id: "layout_to_print",

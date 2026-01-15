@@ -5,6 +5,7 @@ import { useResponsive, useFeatureFlag } from '../hooks';
 import { CONSTRAINTS } from '../constants';
 import { LayoutManagerModal } from './modals/LayoutManagerModal';
 import { PrintModal } from './modals/PrintModal';
+import { ShareButton } from './ShareButton';
 import type { SaveStatus } from '../hooks/useAutoSave';
 
 interface HeaderProps {
@@ -254,6 +255,9 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             </svg>
           </button>
         </div>
+
+        {/* Share button (only visible when collaborative_editing flag is enabled) */}
+        <ShareButton />
 
         {/* Reddit feedback link */}
         <a

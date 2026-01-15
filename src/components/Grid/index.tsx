@@ -13,6 +13,10 @@ import { QuickLabelPopover } from './QuickLabelPopover';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { MobileGridToolbar } from '../mobile';
 import { PanelErrorBoundary } from '../PanelErrorBoundary';
+import { CollabCursors } from '../collab';
+import { useCollabMode } from '../../hooks/useCollabMode';
+import { useCollabPresence } from '../../hooks/useCollabPresence';
+import { useGridCoords } from '../../hooks/useGridCoords';
 // Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
 const IsometricPreview = lazyWithRetry(() =>
   import('./IsometricPreview').then(namedExport('IsometricPreview'))
@@ -101,6 +105,35 @@ export function Grid() {
   const clearSelection = useCallback(() => setSelectedBins([]), [setSelectedBins]);
   const { execute } = useUndoableAction();
   const addToast = useToastStore(state => state.addToast);
+
+  // Collaborative editing hooks
+  const { isCollaborative } = useCollabMode();
+  const { updateCursor, clearPresence } = useCollabPresence();
+  const { getGridCoords } = useGridCoords(gridRef);
+
+  // Track cursor position for collaborative presence
+  const handlePointerMoveForCollab = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isCollaborative) return;
+      const coords = getGridCoords(e.clientX, e.clientY);
+      updateCursor(coords);
+    },
+    [isCollaborative, getGridCoords, updateCursor]
+  );
+
+  const handlePointerLeaveForCollab = useCallback(() => {
+    if (!isCollaborative) return;
+    updateCursor(null);
+  }, [isCollaborative, updateCursor]);
+
+  // Clear presence on unmount
+  useEffect(() => {
+    return () => {
+      if (isCollaborative) {
+        clearPresence();
+      }
+    };
+  }, [isCollaborative, clearPresence]);
 
   // Track if paint mode hint should pulse (first use)
   const [shouldPulsePaintHint, setShouldPulsePaintHint] = useState(false);
@@ -897,6 +930,8 @@ export function Grid() {
                 }}
                 role="application"
                 aria-label={`Gridfinity drawer grid, ${drawer.width} columns by ${drawer.depth} rows`}
+                onPointerMove={handlePointerMoveForCollab}
+                onPointerLeave={handlePointerLeaveForCollab}
               >
               <GridCanvas
                 gridRef={gridRef}
@@ -907,6 +942,8 @@ export function Grid() {
                 onStartResize={startResize}
               />
               <Overlay cellSize={cellSize} gap={gap} />
+              {/* Collaborative cursors overlay - shows other users' cursors */}
+              {isCollaborative && <CollabCursors />}
 
               {/* Empty state overlay - hide while dragging or when grid is too small */}
               {isEmpty && !interaction && (drawer.width * cellSize > 200) && (drawer.depth * cellSize > 150) && (

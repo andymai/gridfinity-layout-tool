@@ -105,6 +105,8 @@ interface UIState {
   sharedLayoutPreview: Layout | null;
   sharedLayoutOriginalName: string | null; // For forkedFrom metadata
   sharedLayoutAuthorName: string | null;  // Author of cloud-shared layout
+  sharedLayoutCloudShareId: string | null; // Cloud share ID for collaborative editing
+  sharedLayoutPermission: 'view' | 'edit' | null; // Permission level of the shared layout
 
   // Print modal
   printModalOpen: boolean;
@@ -175,7 +177,7 @@ interface UIState {
   setHalfBinMode: (enabled: boolean) => void;
 
   // Shared layout preview actions
-  setSharedLayoutPreview: (layout: Layout | null, originalName?: string, authorName?: string) => void;
+  setSharedLayoutPreview: (layout: Layout | null, originalName?: string, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => void;
   clearSharedLayoutPreview: () => void;
 
   // Print modal actions
@@ -213,6 +215,8 @@ export const useUIStore = create<UIState>((set) => ({
   sharedLayoutPreview: null,
   sharedLayoutOriginalName: null,
   sharedLayoutAuthorName: null,
+  sharedLayoutCloudShareId: null,
+  sharedLayoutPermission: null,
   printModalOpen: false,
 
   setActiveLayer: (id) => set({
@@ -408,15 +412,19 @@ export const useUIStore = create<UIState>((set) => ({
     set({ halfBinMode: enabled });
   },
 
-  setSharedLayoutPreview: (layout, originalName, authorName) => set({
+  setSharedLayoutPreview: (layout, originalName, authorName, cloudShareId, permission) => set({
     sharedLayoutPreview: layout,
     sharedLayoutOriginalName: originalName ?? layout?.name ?? null,
     sharedLayoutAuthorName: authorName ?? null,
+    sharedLayoutCloudShareId: cloudShareId ?? null,
+    sharedLayoutPermission: permission ?? null,
   }),
   clearSharedLayoutPreview: () => set({
     sharedLayoutPreview: null,
     sharedLayoutOriginalName: null,
     sharedLayoutAuthorName: null,
+    sharedLayoutCloudShareId: null,
+    sharedLayoutPermission: null,
   }),
 
   setPrintModalOpen: (open) => set({ printModalOpen: open }),

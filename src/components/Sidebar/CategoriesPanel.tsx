@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
+import { useMutations } from '../../context/MutationsContext';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { useToastStore } from '../../store/toast';
@@ -31,16 +32,13 @@ export function CategoriesPanel() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
 
-  const { categories, bins, addCategory, updateCategory, deleteCategory, updateBin } = useLayoutStore(
+  const { categories, bins } = useLayoutStore(
     useShallow((state) => ({
       categories: state.layout.categories,
       bins: state.layout.bins,
-      addCategory: state.addCategory,
-      updateCategory: state.updateCategory,
-      deleteCategory: state.deleteCategory,
-      updateBin: state.updateBin,
     }))
   );
+  const { addCategory, updateCategory, deleteCategory, updateBin } = useMutations();
 
   const { activeCategoryId, setActiveCategory, setHighlightedCategoryId, selectedBinIds } = useUIStore(
     useShallow((state) => ({

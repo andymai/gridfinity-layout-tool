@@ -1,7 +1,7 @@
 import { put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
-import { validateShareLayout, validateExpiration } from './lib/validation.js';
+import { validateShareLayout } from './lib/validation.js';
 import { filterLayoutContent } from './lib/contentFilter.js';
 
 /**
@@ -45,9 +45,10 @@ async function hashToken(token: string): Promise<string> {
 
 interface ShareMetadata {
   deleteTokenHash: string;
-  expiresAt: string;
-  expiresInDays: number;
   createdAt: string;
+  lastUpdatedAt: string;
+  lastAccessedAt: string;
+  permission: 'view' | 'edit';
   authorName?: string;
   reportCount: number;
 }
@@ -78,7 +79,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Parse and validate request body
-    const { layout, expiresInDays, authorName } = req.body || {};
+    const { layout, permission = 'view', authorName } = req.body || {};
 
     if (!layout) {
       return res.status(400).json({
@@ -87,11 +88,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Validate expiration
-    if (!validateExpiration(expiresInDays)) {
+    // Validate permission
+    if (permission !== 'view' && permission !== 'edit') {
       return res.status(400).json({
-        error: 'Invalid expiration. Must be 30, 60, 90, or 365 days.',
-        code: 'INVALID_EXPIRATION',
+        error: 'Invalid permission. Must be "view" or "edit".',
+        code: 'VALIDATION_ERROR',
       });
     }
 
@@ -120,18 +121,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const deleteToken = generateDeleteToken();
     const deleteTokenHash = await hashToken(deleteToken);
 
-    // Calculate expiration
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + expiresInDays * 24 * 60 * 60 * 1000);
+    const nowIso = now.toISOString();
 
-    // Prepare data to store
+    // Prepare data to store (shares are permanent, no expiration)
     const shareData: ShareData = {
       layout: validationResult.layout,
       metadata: {
         deleteTokenHash,
-        expiresAt: expiresAt.toISOString(),
-        expiresInDays,
-        createdAt: now.toISOString(),
+        createdAt: nowIso,
+        lastUpdatedAt: nowIso,
+        lastAccessedAt: nowIso,
+        permission,
         authorName: authorName ? String(authorName).slice(0, 64) : undefined,
         reportCount: 0,
       },
@@ -151,7 +152,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       id: shareId,
       url: shareUrl,
       deleteToken,
-      expiresAt: expiresAt.toISOString(),
+      permission,
     });
   } catch (error) {
     console.error('Share creation error:', error);

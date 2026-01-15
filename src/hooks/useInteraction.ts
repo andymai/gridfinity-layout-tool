@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import type { RefObject } from 'react';
 import type { Bin, Coord, Rect, ResizeHandle } from '../types';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
+import { useMutations } from '../context/MutationsContext';
 import { useGridCoords } from './useGridCoords';
 import { canPlaceBin, clamp } from '../utils/validation';
 import { constrainGroupDelta } from '../utils/selection';
@@ -89,9 +90,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const activeCategoryId = useUIStore(state => state.activeCategoryId);
   const paintSize = useUIStore(state => state.paintSize);
   const layout = useLayoutStore(state => state.layout);
-  const addBin = useLayoutStore(state => state.addBin);
-  const updateBin = useLayoutStore(state => state.updateBin);
-  const deleteBin = useLayoutStore(state => state.deleteBin);
+  const { addBin, updateBin, deleteBin } = useMutations();
   const { execute } = useUndoableAction();
 
   // Start drawing a new bin (or start paint drag if paint mode active)

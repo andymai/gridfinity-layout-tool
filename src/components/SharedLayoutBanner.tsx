@@ -10,12 +10,16 @@ import {
   saveLibrary,
   initializeLayoutLibrary,
 } from '../storage';
-import { generateUUID } from '../utils/uuid';
+import { generateLayoutId } from '../utils/uuid';
 import { ConfirmDialog } from './modals/ConfirmDialog';
+import { useCollabMode } from '../hooks/useCollabMode';
 
 /**
- * Banner shown when viewing a shared layout that hasn't been saved.
+ * Banner shown when viewing a shared layout in view-only mode.
  * Provides options to save to library or discard and return to previous layout.
+ *
+ * Note: This banner is NOT shown in collaborative editing mode, since the user
+ * is an active participant rather than just a viewer.
  */
 export function SharedLayoutBanner() {
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
@@ -50,12 +54,18 @@ export function SharedLayoutBanner() {
   const addToast = useToastStore((state) => state.addToast);
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
 
+  // Check if in collaborative editing mode
+  const { isCollaborative } = useCollabMode();
+
   // Don't render if not viewing a shared layout
   if (!sharedLayoutPreview) return null;
 
+  // Don't render in collaborative mode - user is an active participant, not just a viewer
+  if (isCollaborative) return null;
+
   const handleSave = () => {
     // Create a new layout entry in the library
-    const layoutId = generateUUID();
+    const layoutId = generateLayoutId();
 
     // Add suffix to indicate it was imported
     const savedLayout = {

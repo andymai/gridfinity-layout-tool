@@ -1,5 +1,6 @@
 /**
  * Tests for cloud share URL detection utilities.
+ * Tests the unified /l/{id}/{slug} pattern.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -20,17 +21,27 @@ describe('getCloudShareIdFromURL', () => {
     window.location = originalLocation;
   });
 
-  it('returns share ID from /s/{id} path', () => {
+  it('returns share ID from /l/{id} path', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/abc123xyz789',
+      pathname: '/l/abc123xyz789',
       hash: '',
     } as Location;
 
     expect(getCloudShareIdFromURL()).toBe('abc123xyz789');
   });
 
-  it('returns null for non-share paths', () => {
+  it('returns share ID from /l/{id}/{slug} path', () => {
+    window.location = {
+      ...originalLocation,
+      pathname: '/l/abc123xyz789/my-layout-name',
+      hash: '',
+    } as Location;
+
+    expect(getCloudShareIdFromURL()).toBe('abc123xyz789');
+  });
+
+  it('returns null for root path', () => {
     window.location = {
       ...originalLocation,
       pathname: '/',
@@ -43,7 +54,7 @@ describe('getCloudShareIdFromURL', () => {
   it('returns null for invalid share ID format (too short)', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/abc123',
+      pathname: '/l/abc123',
       hash: '',
     } as Location;
 
@@ -53,7 +64,7 @@ describe('getCloudShareIdFromURL', () => {
   it('returns null for invalid share ID format (too long)', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/abc123xyz7890extra',
+      pathname: '/l/abc123xyz7890extra',
       hash: '',
     } as Location;
 
@@ -63,27 +74,17 @@ describe('getCloudShareIdFromURL', () => {
   it('returns null for invalid share ID format (non-alphanumeric)', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/abc-123_xyz!',
+      pathname: '/l/abc-123_xyz!',
       hash: '',
     } as Location;
 
     expect(getCloudShareIdFromURL()).toBeNull();
   });
 
-  it('returns share ID from hash format #/s/{id}', () => {
-    window.location = {
-      ...originalLocation,
-      pathname: '/',
-      hash: '#/s/abc123xyz789',
-    } as Location;
-
-    expect(getCloudShareIdFromURL()).toBe('abc123xyz789');
-  });
-
   it('accepts lowercase alphanumeric IDs', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/abcdefghijkl',
+      pathname: '/l/abcdefghijkl',
       hash: '',
     } as Location;
 
@@ -93,7 +94,7 @@ describe('getCloudShareIdFromURL', () => {
   it('accepts uppercase alphanumeric IDs', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/ABCDEFGHIJKL',
+      pathname: '/l/ABCDEFGHIJKL',
       hash: '',
     } as Location;
 
@@ -103,7 +104,7 @@ describe('getCloudShareIdFromURL', () => {
   it('accepts mixed case alphanumeric IDs', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/AbC123XyZ789',
+      pathname: '/l/AbC123XyZ789',
       hash: '',
     } as Location;
 
@@ -113,14 +114,14 @@ describe('getCloudShareIdFromURL', () => {
   it('accepts all-numeric IDs', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/123456789012',
+      pathname: '/l/123456789012',
       hash: '',
     } as Location;
 
     expect(getCloudShareIdFromURL()).toBe('123456789012');
   });
 
-  it('returns null for other paths starting with /s/', () => {
+  it('returns null for paths not under /l/', () => {
     window.location = {
       ...originalLocation,
       pathname: '/settings',
@@ -130,10 +131,10 @@ describe('getCloudShareIdFromURL', () => {
     expect(getCloudShareIdFromURL()).toBeNull();
   });
 
-  it('returns null for /s/ without ID', () => {
+  it('returns null for /l/ without ID', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/',
+      pathname: '/l/',
       hash: '',
     } as Location;
 
@@ -153,10 +154,10 @@ describe('clearCloudShareFromURL', () => {
     window.location = originalLocation;
   });
 
-  it('replaces URL with / when on /s/{id} path', () => {
+  it('replaces URL with / when on /l/{id} path', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/abc123xyz789',
+      pathname: '/l/abc123xyz789',
     } as Location;
 
     clearCloudShareFromURL();
@@ -164,7 +165,18 @@ describe('clearCloudShareFromURL', () => {
     expect(window.history.replaceState).toHaveBeenCalledWith(null, '', '/');
   });
 
-  it('does not change URL when not on /s/ path', () => {
+  it('replaces URL with / when on /l/{id}/{slug} path', () => {
+    window.location = {
+      ...originalLocation,
+      pathname: '/l/abc123xyz789/my-layout-name',
+    } as Location;
+
+    clearCloudShareFromURL();
+
+    expect(window.history.replaceState).toHaveBeenCalledWith(null, '', '/');
+  });
+
+  it('does not change URL when on root path', () => {
     window.location = {
       ...originalLocation,
       pathname: '/',
@@ -175,14 +187,14 @@ describe('clearCloudShareFromURL', () => {
     expect(window.history.replaceState).not.toHaveBeenCalled();
   });
 
-  it('clears URL for any /s/ prefixed path', () => {
+  it('does not change URL when not on /l/ path', () => {
     window.location = {
       ...originalLocation,
-      pathname: '/s/anything',
+      pathname: '/settings',
     } as Location;
 
     clearCloudShareFromURL();
 
-    expect(window.history.replaceState).toHaveBeenCalledWith(null, '', '/');
+    expect(window.history.replaceState).not.toHaveBeenCalled();
   });
 });

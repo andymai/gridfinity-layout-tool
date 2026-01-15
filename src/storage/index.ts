@@ -80,6 +80,13 @@ export {
   downloadLayoutAsFile,
 } from './utils';
 
+// === Shared With Me ===
+export {
+  saveSharedWithMe,
+  loadSharedWithMe,
+  clearSharedWithMe,
+} from './SharedWithMeService';
+
 // === Migration ===
 export {
   isMigrationNeeded,

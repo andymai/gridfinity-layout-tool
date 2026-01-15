@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLayoutStore } from '../../store/layout';
 import { useLibraryStore } from '../../store/library';
 import { useUIStore } from '../../store/ui';
+import { useLabsStore } from '../../store/labs';
 import {
   generateShareableURL,
   downloadLayoutAsFile,
@@ -28,10 +29,18 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
   const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
 
+  // When collaborative_editing is enabled, cloud sharing is handled by the ShareButton instead
+  const isCollabEnabled = useLabsStore((state) =>
+    state.isFeatureEnabled('collaborative_editing')
+  );
+
   // Use provided layoutId or fall back to active layout
   const targetLayoutId = layoutId ?? activeLayoutId;
 
-  const [activeTab, setActiveTab] = useState<'cloud' | 'url' | 'file' | 'json'>('cloud');
+  // Default to 'url' tab when collaborative editing is enabled (Cloud tab hidden)
+  const [activeTab, setActiveTab] = useState<'cloud' | 'url' | 'file' | 'json'>(
+    isCollabEnabled ? 'url' : 'cloud'
+  );
   const [copied, setCopied] = useState(false);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const jsonTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -116,18 +125,21 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
         {/* Tab selector */}
         <div className="flex gap-1 mb-4 bg-surface rounded-lg p-1" role="tablist">
-          <button
-            role="tab"
-            aria-selected={activeTab === 'cloud'}
-            onClick={() => setActiveTab('cloud')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'cloud'
-                ? 'bg-accent text-white'
-                : 'text-content-secondary hover:text-content hover:bg-surface-hover'
-            }`}
-          >
-            Cloud
-          </button>
+          {/* Cloud tab hidden when collaborative_editing is enabled (uses ShareButton instead) */}
+          {!isCollabEnabled && (
+            <button
+              role="tab"
+              aria-selected={activeTab === 'cloud'}
+              onClick={() => setActiveTab('cloud')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'cloud'
+                  ? 'bg-accent text-white'
+                  : 'text-content-secondary hover:text-content hover:bg-surface-hover'
+              }`}
+            >
+              Cloud
+            </button>
+          )}
           <button
             role="tab"
             aria-selected={activeTab === 'url'}
@@ -168,7 +180,8 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
         {/* Tab content */}
         <div className="flex-1 flex flex-col min-h-0">
-          {activeTab === 'cloud' && (
+          {/* Cloud tab content only shown when flag is OFF */}
+          {!isCollabEnabled && activeTab === 'cloud' && (
             <CloudShareTab
               layoutId={targetLayoutId}
               onClose={onClose}
