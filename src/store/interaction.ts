@@ -107,13 +107,13 @@ export const useInteractionStore = create<InteractionStore>((set) => ({
     set({
       keyboardDragMode: enabled,
       // Exit resize mode when entering drag mode
-      keyboardResizeMode: enabled ? false : undefined,
+      ...(enabled ? { keyboardResizeMode: false } : {}),
     }),
   setKeyboardResizeMode: (enabled) =>
     set({
       keyboardResizeMode: enabled,
       // Exit drag mode when entering resize mode
-      keyboardDragMode: enabled ? false : undefined,
+      ...(enabled ? { keyboardDragMode: false } : {}),
     }),
 
   // Accessibility actions
