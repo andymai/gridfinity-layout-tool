@@ -53,9 +53,10 @@ export function SharedLayoutImporter() {
   /**
    * Check if a share ID belongs to the current user (i.e., they are the owner).
    * Owners shouldn't see their own layouts in "Shared with me".
+   * Since share IDs equal layout UUIDs, we check entry.id directly.
    */
   const isOwnShare = useCallback((shareId: string) => {
-    return libraryEntries.some(entry => entry.cloudShare?.id === shareId);
+    return libraryEntries.some(entry => entry.id === shareId);
   }, [libraryEntries]);
 
   /**

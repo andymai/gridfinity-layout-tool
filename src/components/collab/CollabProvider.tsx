@@ -94,10 +94,11 @@ export function CollabProvider({ shareId, children }: CollabProviderProps) {
   const userName = useUserName();
   const layout = useLayoutStore((state) => state.layout);
 
-  // Check if user is owner (has cloudShare info for this share)
+  // Check if user is owner (layout exists in their library with matching ID)
+  // Since share IDs equal layout UUIDs, we check entry.id directly
   const entries = useLibraryStore((state) => state.library.entries);
   const cloudShare = useMemo(
-    () => entries.find((e) => e.cloudShare?.id === shareId)?.cloudShare ?? null,
+    () => entries.find((e) => e.id === shareId)?.cloudShare ?? null,
     [entries, shareId]
   );
 
