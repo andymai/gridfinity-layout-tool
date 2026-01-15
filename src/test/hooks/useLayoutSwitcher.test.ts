@@ -249,8 +249,8 @@ describe('useLayoutSwitcher', () => {
     });
 
     it('returns error when layout fails to load', async () => {
-      // Mock switchActiveLayout to return an error (target layout not found)
-      vi.mocked(storage.switchActiveLayout).mockResolvedValue({
+      // Mock switchActiveLayout to return an error (target layout not found) - use Once to not affect other tests
+      vi.mocked(storage.switchActiveLayout).mockResolvedValueOnce({
         ok: false,
         error: { code: 'STORAGE_NOT_FOUND', message: 'Layout not found' },
       });
@@ -305,23 +305,21 @@ describe('useLayoutSwitcher', () => {
         canRedo: true,
       });
 
-      // Spy on the clear function
-      const clearSpy = vi.spyOn(useHistoryStore.getState(), 'clear');
-
       const { result } = renderHook(() => useLayoutSwitcher());
 
-      // Capture history state before
-      const pastBefore = useHistoryStore.getState().past.length;
-      expect(pastBefore).toBe(1);
+      // Verify history state before
+      expect(useHistoryStore.getState().past.length).toBe(1);
+      expect(useHistoryStore.getState().future.length).toBe(1);
 
       await act(async () => {
         await result.current.switchLayout(SECOND_LAYOUT_ID);
       });
 
-      // clearHistory should have been called during switch
-      expect(clearSpy).toHaveBeenCalled();
-
-      clearSpy.mockRestore();
+      // Verify history was cleared after switch
+      expect(useHistoryStore.getState().past).toEqual([]);
+      expect(useHistoryStore.getState().future).toEqual([]);
+      expect(useHistoryStore.getState().canUndo).toBe(false);
+      expect(useHistoryStore.getState().canRedo).toBe(false);
     });
 
     it('sets active layer and category from new layout', async () => {
@@ -487,18 +485,33 @@ describe('useLayoutSwitcher', () => {
     });
 
     it('switches to another layout when deleting active', async () => {
+      // Ensure we start with TEST_LAYOUT_ID as active
+      expect(useLayoutStore.getState().activeLayoutId).toBe(TEST_LAYOUT_ID);
+
       const { result } = renderHook(() => useLayoutSwitcher());
 
       await act(async () => {
         await result.current.deleteLayout(TEST_LAYOUT_ID);
       });
 
-      // After deleting the active layout, a new layout should become active
-      // The deleteLayoutWithEntry mock returns SECOND_LAYOUT_ID as newActiveId
-      // switchLayout is then called which sets this as active
+      // After deleting the active layout, deleteLayoutWithEntry returns newActiveId
+      // which triggers switchLayout, which calls switchActiveLayout and importLayout
+      expect(storage.deleteLayoutWithEntry).toHaveBeenCalledWith(
+        TEST_LAYOUT_ID,
+        expect.any(Object)
+      );
+
+      // switchActiveLayout should have been called to switch to the new active layout
+      expect(storage.switchActiveLayout).toHaveBeenCalledWith(
+        TEST_LAYOUT_ID,
+        expect.any(Object),
+        SECOND_LAYOUT_ID,
+        expect.any(Object)
+      );
+
+      // importLayout should have set activeLayoutId to SECOND_LAYOUT_ID
       const currentActiveId = useLayoutStore.getState().activeLayoutId;
-      expect(currentActiveId).not.toBe(TEST_LAYOUT_ID); // Should not be the deleted one
-      expect(currentActiveId).toBeDefined();
+      expect(currentActiveId).toBe(SECOND_LAYOUT_ID);
     });
 
     it('shows success toast', async () => {
