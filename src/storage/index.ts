@@ -58,6 +58,7 @@ export {
   importLayoutJSON,
   importLayoutResult,
   exportPrintListTSV,
+  type PrintListTSVMeta,
 } from './ShareService';
 
 // === URL Sharing ===

@@ -109,8 +109,25 @@ export function importLayoutResult(json: string): Result<Layout, ValidationError
 // === TSV Export ===
 
 /**
+ * Escape a value for TSV format.
+ * Replaces tabs and newlines with spaces to prevent breaking the format.
+ */
+function escapeTSVValue(value: string): string {
+  return value.replace(/[\t\n\r]/g, ' ');
+}
+
+/**
+ * Metadata for TSV export including layout context.
+ */
+export interface PrintListTSVMeta {
+  layoutName?: string;
+  gridSize?: string;
+}
+
+/**
  * Export print list as TSV for spreadsheet paste.
  * Dynamically adds columns for custom properties that exist in any row.
+ * Optionally includes layout name and grid size columns for context.
  */
 export function exportPrintListTSV(rows: Array<{
   size: string;
@@ -120,7 +137,7 @@ export function exportPrintListTSV(rows: Array<{
   labels?: string[];
   notes?: string;
   customProperties?: Record<string, string>;
-}>): string {
+}>, meta?: PrintListTSVMeta): string {
   // Collect all unique custom property keys across all rows
   const customKeys = new Set<string>();
   for (const r of rows) {
@@ -132,24 +149,30 @@ export function exportPrintListTSV(rows: Array<{
   }
   const sortedKeys = Array.from(customKeys).sort();
 
-  // Build header with dynamic custom property columns
-  const baseHeader = 'Size\tHeight\tBins\tPieces\tLabel\tNotes';
+  // Build header with optional metadata and dynamic custom property columns
+  const metaHeader = meta ? 'Layout\tGrid Size\t' : '';
+  const baseHeader = `${metaHeader}Size\tHeight\tBins\tPieces\tLabel\tNotes`;
   const header = sortedKeys.length > 0
     ? `${baseHeader}\t${sortedKeys.join('\t')}`
     : baseHeader;
 
+  // Pre-compute metadata values if provided (with TSV escaping)
+  const layoutName = meta ? escapeTSVValue(meta.layoutName || '') : '';
+  const gridSize = meta ? escapeTSVValue(meta.gridSize || '') : '';
+
   // Build data rows
   const lines = rows.map(r => {
-    const label = r.labels?.[0] || '';
-    const notes = r.notes || '';
-    const baseLine = `${r.size}\t${r.height}u\t${r.binCount}\t${r.totalPieces}\t${label}\t${notes}`;
+    const label = escapeTSVValue(r.labels?.[0] || '');
+    const notes = escapeTSVValue(r.notes || '');
+    const metaValues = meta ? `${layoutName}\t${gridSize}\t` : '';
+    const baseLine = `${metaValues}${r.size}\t${r.height}u\t${r.binCount}\t${r.totalPieces}\t${label}\t${notes}`;
 
     if (sortedKeys.length === 0) {
       return baseLine;
     }
 
-    // Add custom property values in order
-    const customValues = sortedKeys.map(key => r.customProperties?.[key] || '');
+    // Add custom property values in order (with TSV escaping)
+    const customValues = sortedKeys.map(key => escapeTSVValue(r.customProperties?.[key] || ''));
     return `${baseLine}\t${customValues.join('\t')}`;
   });
 

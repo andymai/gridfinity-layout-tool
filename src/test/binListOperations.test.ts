@@ -366,6 +366,67 @@ describe('binListOperations', () => {
       // No custom property columns
       expect(lines[0]).toBe('Size,Height,Bins,Pieces,Filament (m),Label,Notes');
     });
+
+    it('includes layout metadata when provided', () => {
+      const rows = [
+        createTestRow({
+          size: '2×2',
+          height: 3,
+          binCount: 1,
+          totalPieces: 1,
+          filament: 4.5,
+          labels: ['Test'],
+        }),
+      ];
+      const csv = formatAsCSV(rows, {
+        layoutName: 'My Drawer',
+        gridSize: '10×8',
+      });
+      const lines = csv.split('\n');
+
+      // Header should have Layout and Grid Size columns first
+      expect(lines[0]).toBe('Layout,Grid Size,Size,Height,Bins,Pieces,Filament (m),Label,Notes');
+      // Data row should include metadata values
+      expect(lines[1]).toContain('My Drawer,10×8,');
+    });
+
+    it('includes layout metadata with custom properties', () => {
+      const rows = [
+        createTestRow({
+          labels: ['Bin 1'],
+          customProperties: { 'SKU': 'ABC123' },
+        }),
+      ];
+      const csv = formatAsCSV(rows, {
+        layoutName: 'Tool Drawer',
+        gridSize: '12×10',
+      });
+      const lines = csv.split('\n');
+
+      // Header should have metadata first, then base columns, then custom properties
+      expect(lines[0]).toBe('Layout,Grid Size,Size,Height,Bins,Pieces,Filament (m),Label,Notes,SKU');
+      expect(lines[1].startsWith('Tool Drawer,12×10,')).toBe(true);
+      expect(lines[1]).toContain('ABC123');
+    });
+
+    it('escapes layout metadata values', () => {
+      const rows = [createTestRow()];
+      const csv = formatAsCSV(rows, {
+        layoutName: 'Drawer, with comma',
+        gridSize: '10×8',
+      });
+      expect(csv).toContain('"Drawer, with comma"');
+    });
+
+    it('omits metadata columns when meta is undefined', () => {
+      const rows = [createTestRow()];
+      const csv = formatAsCSV(rows);
+      const lines = csv.split('\n');
+
+      // Should be the original format without Layout/Grid Size
+      expect(lines[0]).toBe('Size,Height,Bins,Pieces,Filament (m),Label,Notes');
+      expect(lines[1]).not.toContain('Layout');
+    });
   });
 
   describe('formatAsJSON', () => {
