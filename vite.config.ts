@@ -114,6 +114,8 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom'],
           // State management
           'state': ['zustand', 'immer'],
+          // Liveblocks - only loaded when collaborative editing is used (Labs feature)
+          'liveblocks': ['@liveblocks/client', '@liveblocks/react'],
         },
       },
     },
