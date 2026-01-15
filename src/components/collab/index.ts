@@ -8,6 +8,7 @@
 export { CollabProvider } from './CollabProvider';
 export { CollabCursors } from './CollabCursors';
 export { CollabCursor } from './CollabCursor';
+export { CollabGhosts } from './CollabGhosts';
 
 // Presence UI components
 export { PresenceAvatars } from './PresenceAvatars';
