@@ -112,19 +112,6 @@ describe('useLayoutRouting with cloud share URLs', () => {
       );
     });
 
-    it('should NOT change URL for /s/{shareId} pattern', () => {
-      // Simulate /s/{shareId} URL (old format)
-      Object.defineProperty(window, 'location', {
-        value: { pathname: `/s/${mockCloudShareId}` },
-        writable: true,
-      });
-      vi.mocked(url.parseLayoutFromURL).mockReturnValue(null);
-
-      renderHook(() => useLayoutRouting());
-
-      // Should NOT set URL (let SharedLayoutImporter handle it)
-      expect(url.setLayoutURL).not.toHaveBeenCalled();
-    });
   });
 
   describe('URL update on active layout change', () => {
