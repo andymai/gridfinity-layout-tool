@@ -1,25 +1,23 @@
 import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useToastStore, useSettingsStore } from '../store';
-import type { Layout, LayoutPreview } from '../types';
-import { isErr } from '../result';
+import type { Layout } from '../types';
+import { isErr, isOk } from '../result';
 import {
-  saveLayoutByIdAsync,
-  loadLayoutByIdAsync,
-  deleteLayoutByIdAsync,
-  saveLibrary,
-  computeLayoutPreview,
+  saveLayoutWithMetadata,
+  createLayoutEntry,
+  deleteLayoutWithEntry,
+  duplicateLayoutEntry as duplicateLayoutStorage,
+  switchActiveLayout,
+  renameLayoutEntry,
 } from '../storage';
 import { setLayoutURL } from '../utils/url';
-import { validateLayoutIntegrity } from '../utils/validation';
-import { generateLayoutId } from '../utils/uuid';
 import { createLayoutWithSettings } from '../constants';
 import { trackLayoutAction } from '../utils/analytics';
-import type { Result, Unit, LayoutError, StorageError, ValidationError, UnknownError } from '../result';
+import type { Result, Unit, LayoutError, StorageError, UnknownError } from '../result';
 import {
   ok, err, OK,
   layoutLastEntity, layoutInvalidOperation,
-  storageNotFound, storageCorrupted,
   fromUnknown,
 } from '../result';
 
@@ -43,20 +41,12 @@ export function useLayoutSwitcher() {
   const {
     library,
     getEntry,
-    updateEntry,
-    createEntry,
-    deleteEntry,
-    duplicateEntry,
-    setActiveLayoutId: setLibraryActiveId,
+    setLibrary,
   } = useLibraryStore(
     useShallow(state => ({
       library: state.library,
       getEntry: state.getEntry,
-      updateEntry: state.updateEntry,
-      createEntry: state.createEntry,
-      deleteEntry: state.deleteEntry,
-      duplicateEntry: state.duplicateEntry,
-      setActiveLayoutId: state.setActiveLayoutId,
+      setLibrary: state.setLibrary,
     }))
   );
 
@@ -78,30 +68,26 @@ export function useLayoutSwitcher() {
 
   /**
    * Save the current layout to storage and update library entry.
-   * Uses async IndexedDB storage for better performance with large layouts.
+   * Uses atomic save for data consistency.
    */
   const saveCurrentLayout = useCallback(async () => {
-    if (!activeLayoutId) return;
+    if (!activeLayoutId || activeLayoutId === '__shared_preview__') return;
 
-    try {
-      await saveLayoutByIdAsync(activeLayoutId, layout);
-      updateEntry(activeLayoutId, {
-        modifiedAt: Date.now(),
-        preview: computeLayoutPreview(layout),
-        name: layout.name, // Sync name with library
-      });
-      saveLibrary(useLibraryStore.getState().library);
-    } catch (error) {
-      console.error('Failed to save current layout:', error);
+    const result = await saveLayoutWithMetadata(activeLayoutId, layout, library);
+    if (isErr(result)) {
+      console.error('Failed to save current layout:', result.error);
+      return;
     }
-  }, [activeLayoutId, layout, updateEntry]);
+
+    setLibrary(result.value.library);
+  }, [activeLayoutId, layout, library, setLibrary]);
 
   /**
    * Switch to a different layout.
    */
   const switchLayout = useCallback(async (
     targetId: string
-  ): Promise<Result<Unit, LayoutError | StorageError | ValidationError | UnknownError>> => {
+  ): Promise<Result<Unit, LayoutError | StorageError | UnknownError>> => {
     // 1. Validate target exists
     const targetEntry = getEntry(targetId);
     if (!targetEntry) {
@@ -118,50 +104,35 @@ export function useLayoutSwitcher() {
       // 3. Clear any shared layout preview state
       clearSharedLayoutPreview();
 
-      // 4. Save current layout immediately (skip if shared preview)
-      if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
-        await saveLayoutByIdAsync(activeLayoutId, layout);
-        updateEntry(activeLayoutId, {
-          modifiedAt: Date.now(),
-          preview: computeLayoutPreview(layout),
-          name: layout.name,
-        });
+      // 4. Atomic switch: save current, load target, update library
+      const result = await switchActiveLayout(
+        activeLayoutId || '__shared_preview__',
+        layout,
+        targetId,
+        library
+      );
+
+      if (isErr(result)) {
+        addToast('Failed to switch layout', 'error');
+        return result;
       }
 
-      // 5. Load target layout from storage
-      const targetLayout = await loadLayoutByIdAsync(targetId);
-      if (!targetLayout) {
-        return err(storageNotFound(`gridfinity-layout-${targetId}`));
-      }
+      // 5. Update stores with result
+      setLibrary(result.value.library);
+      importLayout(result.value.targetLayout, targetId, 'init');
 
-      // 6. Validate layout integrity
-      const validation = validateLayoutIntegrity(targetLayout);
-      if (!validation.valid) {
-        return err(storageCorrupted(
-          `gridfinity-layout-${targetId}`,
-          validation.error ? [validation.error] : ['Layout data is corrupted']
-        ));
-      }
-
-      // 7. Update stores (atomic sequence)
-      importLayout(targetLayout, targetId, 'init');
-      setLibraryActiveId(targetId);
-
-      // 8. Reset UI state
+      // 6. Reset UI state
       clearSelection();
-      setActiveLayer(targetLayout.layers[0]?.id ?? '');
-      setActiveCategory(targetLayout.categories[0]?.id ?? '');
+      setActiveLayer(result.value.targetLayout.layers[0]?.id ?? '');
+      setActiveCategory(result.value.targetLayout.categories[0]?.id ?? '');
 
-      // 9. Clear undo history
+      // 7. Clear undo history
       clearHistory();
 
-      // 10. Save library index
-      saveLibrary(useLibraryStore.getState().library);
+      // 8. Update URL with slug
+      setLayoutURL(targetId, result.value.targetLayout.name, true);
 
-      // 11. Update URL with slug
-      setLayoutURL(targetId, targetLayout.name, true);
-
-      // 12. Track analytics
+      // 9. Track analytics
       trackLayoutAction('switched');
 
       return OK;
@@ -172,10 +143,10 @@ export function useLayoutSwitcher() {
   }, [
     activeLayoutId,
     layout,
+    library,
     getEntry,
-    updateEntry,
+    setLibrary,
     importLayout,
-    setLibraryActiveId,
     clearSelection,
     setActiveLayer,
     setActiveCategory,
@@ -193,47 +164,51 @@ export function useLayoutSwitcher() {
   const createNewLayout = useCallback(async (
     name?: string
   ): Promise<Result<string, StorageError | UnknownError>> => {
+    // Save current layout first
     await saveCurrentLayout();
 
-    const layoutId = generateLayoutId();
+    // Create new layout with user's default settings
     const newLayout = createLayoutWithSettings(settings);
     newLayout.name = name || 'Untitled layout';
 
     try {
-      await saveLayoutByIdAsync(layoutId, newLayout);
+      // Atomic create: save layout, create entry, save library
+      const result = await createLayoutEntry(newLayout, library, {
+        name: newLayout.name,
+        author: library.settings.authorName,
+      });
 
-      createEntry(
-        newLayout.name,
-        layoutId,
-        computeLayoutPreview(newLayout)
-      );
+      if (isErr(result)) {
+        addToast('Failed to create layout', 'error');
+        return result;
+      }
 
-      importLayout(newLayout, layoutId, 'init');
-      setLibraryActiveId(layoutId);
+      // Update stores
+      setLibrary(result.value.library);
+      importLayout(result.value.layout, result.value.layoutId, 'init');
 
+      // Reset UI state
       clearSelection();
-      setActiveLayer(newLayout.layers[0]?.id ?? '');
-      setActiveCategory(newLayout.categories[0]?.id ?? '');
+      setActiveLayer(result.value.layout.layers[0]?.id ?? '');
+      setActiveCategory(result.value.layout.categories[0]?.id ?? '');
 
       clearHistory();
 
-      saveLibrary(useLibraryStore.getState().library);
-
-      setLayoutURL(layoutId, newLayout.name, true);
+      setLayoutURL(result.value.layoutId, result.value.layout.name, true);
 
       trackLayoutAction('created');
 
       addToast('New layout created', 'success');
-      return ok(layoutId);
+      return ok(result.value.layoutId);
     } catch (error) {
       addToast('Failed to create layout', 'error');
       return err(fromUnknown(error));
     }
   }, [
     saveCurrentLayout,
+    library,
+    setLibrary,
     importLayout,
-    createEntry,
-    setLibraryActiveId,
     clearSelection,
     setActiveLayer,
     setActiveCategory,
@@ -247,7 +222,7 @@ export function useLayoutSwitcher() {
    */
   const deleteLayout = useCallback(async (
     id: string
-  ): Promise<Result<Unit, LayoutError | StorageError | ValidationError | UnknownError>> => {
+  ): Promise<Result<Unit, LayoutError | StorageError | UnknownError>> => {
     const { entries } = library;
 
     // Can't delete last layout
@@ -256,23 +231,24 @@ export function useLayoutSwitcher() {
     }
 
     try {
-      await deleteLayoutByIdAsync(id);
+      // Atomic delete: remove layout, update library
+      const result = await deleteLayoutWithEntry(id, library);
 
-      const result = deleteEntry(id);
       if (isErr(result)) {
+        addToast('Failed to delete layout', 'error');
         return result;
       }
 
-      if (activeLayoutId === id) {
-        const remaining = entries.filter(e => e.id !== id);
-        const fallbackId = remaining[0].id;
-        const switchResult = await switchLayout(fallbackId);
+      // Update library store
+      setLibrary(result.value.library);
+
+      // If deleted the active layout, switch to the new active
+      if (result.value.newActiveId) {
+        const switchResult = await switchLayout(result.value.newActiveId);
         if (isErr(switchResult)) {
           return switchResult;
         }
       }
-
-      saveLibrary(useLibraryStore.getState().library);
 
       trackLayoutAction('deleted');
 
@@ -282,7 +258,7 @@ export function useLayoutSwitcher() {
       addToast('Failed to delete layout', 'error');
       return err(fromUnknown(error));
     }
-  }, [library, activeLayoutId, deleteEntry, switchLayout, addToast]);
+  }, [library, setLibrary, switchLayout, addToast]);
 
   /**
    * Duplicate a layout.
@@ -295,49 +271,46 @@ export function useLayoutSwitcher() {
       return err(layoutInvalidOperation('duplicateLayout', 'Layout not found'));
     }
 
-    const sourceLayout = await loadLayoutByIdAsync(id);
-    if (!sourceLayout) {
-      return err(storageNotFound(`gridfinity-layout-${id}`));
-    }
-
     try {
-      const newLayoutId = generateLayoutId();
+      // Atomic duplicate: load source, create copy, save both layout and library
+      const result = await duplicateLayoutStorage(id, library);
 
-      const newLayout: Layout = {
-        ...sourceLayout,
-        name: `${sourceLayout.name} (copy)`,
-      };
+      if (isErr(result)) {
+        addToast('Failed to duplicate layout', 'error');
+        return result;
+      }
 
-      await saveLayoutByIdAsync(newLayoutId, newLayout);
-
-      duplicateEntry(sourceEntry, newLayoutId);
-
-      saveLibrary(useLibraryStore.getState().library);
+      // Update library store
+      setLibrary(result.value.library);
 
       trackLayoutAction('duplicated');
 
       addToast('Layout duplicated', 'success');
-      return ok(newLayoutId);
+      return ok(result.value.layoutId);
     } catch (error) {
       addToast('Failed to duplicate layout', 'error');
       return err(fromUnknown(error));
     }
-  }, [getEntry, duplicateEntry, addToast]);
+  }, [getEntry, library, setLibrary, addToast]);
 
   /**
    * Rename a layout.
    */
   const renameLayout = useCallback((id: string, newName: string): void => {
-    updateEntry(id, { name: newName });
+    // Atomic rename: update library entry and save
+    const result = renameLayoutEntry(id, newName, library);
 
-    if (id === activeLayoutId) {
-      useLayoutStore.getState().setName(newName);
+    if (isOk(result)) {
+      setLibrary(result.value);
+
+      // Also update the layout store's name if this is the active layout
+      if (id === activeLayoutId) {
+        useLayoutStore.getState().setName(newName);
+      }
+
+      trackLayoutAction('renamed');
     }
-
-    saveLibrary(useLibraryStore.getState().library);
-
-    trackLayoutAction('renamed');
-  }, [activeLayoutId, updateEntry]);
+  }, [activeLayoutId, library, setLibrary]);
 
   /**
    * Import a layout from JSON and add to library.
@@ -347,33 +320,30 @@ export function useLayoutSwitcher() {
     forkedFrom?: { name: string; author?: string }
   ): Promise<Result<string, StorageError | UnknownError>> => {
     try {
-      const layoutId = generateLayoutId();
+      // Atomic create: save layout, create entry, save library
+      const result = await createLayoutEntry(importedLayout, library, {
+        name: importedLayout.name,
+        author: library.settings.authorName,
+        forkedFrom,
+      });
 
-      await saveLayoutByIdAsync(layoutId, importedLayout);
-
-      const preview: LayoutPreview = computeLayoutPreview(importedLayout);
-      createEntry(
-        importedLayout.name,
-        layoutId,
-        preview,
-        library.settings.authorName
-      );
-
-      if (forkedFrom) {
-        updateEntry(layoutId, { forkedFrom });
+      if (isErr(result)) {
+        addToast('Failed to import layout', 'error');
+        return result;
       }
 
-      saveLibrary(useLibraryStore.getState().library);
+      // Update library store
+      setLibrary(result.value.library);
 
       trackLayoutAction('imported', forkedFrom ? 'url' : 'json');
 
       addToast(`Imported "${importedLayout.name}"`, 'success');
-      return ok(layoutId);
+      return ok(result.value.layoutId);
     } catch (error) {
       addToast('Failed to import layout', 'error');
       return err(fromUnknown(error));
     }
-  }, [library.settings.authorName, createEntry, updateEntry, addToast]);
+  }, [library, setLibrary, addToast]);
 
   return {
     // State

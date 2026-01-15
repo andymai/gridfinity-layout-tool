@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useLibraryStore, useToastStore } from '../store';
-import {
-  saveLayoutResult,
-  saveLibraryResult,
-  computeLayoutPreview,
-} from '../storage';
+import { saveLayoutWithMetadata } from '../storage';
 import { scheduleIdleCallback, cancelIdleCallback } from '../utils/idle';
 import { isErr, getUserMessage, isRetryable } from '../result';
 import type { StorageError } from '../result';
@@ -30,7 +26,12 @@ export function useAutoSave(): SaveStatus {
     }))
   );
 
-  const updateEntry = useLibraryStore(state => state.updateEntry);
+  const { library, setLibrary } = useLibraryStore(
+    useShallow(state => ({
+      library: state.library,
+      setLibrary: state.setLibrary,
+    }))
+  );
   const addToast = useToastStore(state => state.addToast);
 
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
@@ -67,32 +68,20 @@ export function useAutoSave(): SaveStatus {
       // Schedule storage operations during browser idle time to improve INP
       idleCallbackRef.current = scheduleIdleCallback(
         async () => {
-          // Save layout using Result-based API for explicit error handling
-          const layoutResult = await saveLayoutResult(activeLayoutId, layout);
-
-          if (isErr(layoutResult)) {
-            handleSaveError(layoutResult.error);
-            return;
-          }
-
-          // Update library entry
-          updateEntry(activeLayoutId, {
-            modifiedAt: Date.now(),
-            preview: computeLayoutPreview(layout),
-            name: layout.name,
-          });
-
-          // Save library index
-          const libraryResult = saveLibraryResult(
-            useLibraryStore.getState().library
+          // Atomic save: layout + library entry in one operation
+          const result = await saveLayoutWithMetadata(
+            activeLayoutId,
+            layout,
+            library
           );
 
-          if (isErr(libraryResult)) {
-            // Library save failed but layout is saved - partial success
-            // Still show as saved since the important data is persisted
-            handleSaveError(libraryResult.error);
+          if (isErr(result)) {
+            handleSaveError(result.error);
             return;
           }
+
+          // Sync library store with the persisted state
+          setLibrary(result.value.library);
 
           // Success - reset error tracking
           hasShownErrorRef.current = false;
@@ -134,7 +123,7 @@ export function useAutoSave(): SaveStatus {
         cancelIdleCallback(idleCallbackRef.current);
       }
     };
-  }, [layout, activeLayoutId, updateEntry, addToast]);
+  }, [layout, activeLayoutId, library, setLibrary, addToast]);
 
   // Cleanup timeouts and idle callback on unmount
   useEffect(() => {

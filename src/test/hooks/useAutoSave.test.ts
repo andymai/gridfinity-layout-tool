@@ -6,30 +6,66 @@ import { useLibraryStore } from '../../store/library';
 import { useToastStore } from '../../store/toast';
 import { resetAllStores, setupFakeTimers } from '../testUtils';
 import * as storage from '../../storage';
-import { ok, err, storageQuotaExceeded, storageUnavailable } from '../../result';
+import { err, storageQuotaExceeded, storageUnavailable } from '../../result';
 
-// Mock the storage module
-vi.mock('../../storage', () => ({
-  saveLayoutById: vi.fn(),
-  saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
-  saveLibrary: vi.fn(),
-  // Result-based functions used by updated useAutoSave
-  saveLayoutResult: vi.fn().mockResolvedValue({ ok: true, value: undefined }),
-  saveLibraryResult: vi.fn(() => ({ ok: true, value: undefined })),
-  computeLayoutPreview: vi.fn(() => ({
+// Mock the storage module with atomic API functions
+// Note: vi.mock is hoisted, so we must define the factory inline
+vi.mock('../../storage', () => {
+  const mockPreview = {
     drawerWidth: 10,
     drawerDepth: 8,
     drawerHeight: 12,
     binCount: 0,
     layerCount: 1,
-  })),
-  // Legacy functions that may still be imported elsewhere
-  saveLayout: vi.fn(),
-  loadLayout: vi.fn(),
-  clearStorage: vi.fn(),
-  exportLayout: vi.fn(),
-  importLayout: vi.fn(),
-}));
+    binMap: [],
+  };
+
+  return {
+    // Legacy functions
+    saveLayoutById: vi.fn(),
+    saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
+    loadLayoutById: vi.fn(),
+    loadLayoutByIdAsync: vi.fn(),
+    deleteLayoutById: vi.fn(),
+    deleteLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
+    saveLibrary: vi.fn(),
+    computeLayoutPreview: vi.fn(() => mockPreview),
+    getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
+    saveLayoutResult: vi.fn().mockResolvedValue({ ok: true, value: undefined }),
+    saveLibraryResult: vi.fn(() => ({ ok: true, value: undefined })),
+    saveLayout: vi.fn(),
+    loadLayout: vi.fn(),
+    clearStorage: vi.fn(),
+    exportLayout: vi.fn(),
+    importLayout: vi.fn(),
+    downloadLayoutAsFile: vi.fn(),
+
+    // Atomic functions used by useAutoSave
+    saveLayoutWithMetadata: vi.fn().mockImplementation(
+      (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
+        const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
+        if (!entry) {
+          return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+        }
+        return Promise.resolve({
+          ok: true,
+          value: {
+            layoutId,
+            entry: { ...entry, modifiedAt: Date.now(), preview: mockPreview },
+            library,
+          },
+        });
+      }
+    ),
+    createLayoutEntry: vi.fn().mockResolvedValue({ ok: true, value: {} }),
+    deleteLayoutWithEntry: vi.fn().mockResolvedValue({ ok: true, value: {} }),
+    duplicateLayoutEntry: vi.fn().mockResolvedValue({ ok: true, value: {} }),
+    switchActiveLayout: vi.fn().mockResolvedValue({ ok: true, value: {} }),
+    renameLayoutEntry: vi.fn(() => ({ ok: true, value: {} })),
+    updateCloudShare: vi.fn(() => ({ ok: true, value: {} })),
+    computePreview: vi.fn(() => mockPreview),
+  };
+});
 
 // Mock the idle utility to execute callbacks immediately (synchronously)
 // This simplifies testing since we only need to test debounce behavior
@@ -78,7 +114,7 @@ describe('useAutoSave', () => {
       renderHook(() => useAutoSave());
 
       // Immediately after mount, save should not have been called
-      expect(storage.saveLayoutResult).not.toHaveBeenCalled();
+      expect(storage.saveLayoutWithMetadata).not.toHaveBeenCalled();
 
       // Advance time past debounce
       await act(async () => {
@@ -87,10 +123,11 @@ describe('useAutoSave', () => {
       });
 
       // Now save should have been called
-      expect(storage.saveLayoutResult).toHaveBeenCalledTimes(1);
-      expect(storage.saveLayoutResult).toHaveBeenCalledWith(
+      expect(storage.saveLayoutWithMetadata).toHaveBeenCalledTimes(1);
+      expect(storage.saveLayoutWithMetadata).toHaveBeenCalledWith(
         TEST_LAYOUT_ID,
-        useLayoutStore.getState().layout
+        useLayoutStore.getState().layout,
+        useLibraryStore.getState().library
       );
     });
 
@@ -102,7 +139,7 @@ describe('useAutoSave', () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS - 100);
       });
 
-      expect(storage.saveLayoutResult).not.toHaveBeenCalled();
+      expect(storage.saveLayoutWithMetadata).not.toHaveBeenCalled();
     });
 
     it('resets debounce timer on layout change', async () => {
@@ -124,7 +161,7 @@ describe('useAutoSave', () => {
       });
 
       // Save should NOT have been called (timer was reset)
-      expect(storage.saveLayoutResult).not.toHaveBeenCalled();
+      expect(storage.saveLayoutWithMetadata).not.toHaveBeenCalled();
 
       // Advance to complete the new debounce
       await act(async () => {
@@ -133,7 +170,7 @@ describe('useAutoSave', () => {
       });
 
       // Now save should be called
-      expect(storage.saveLayoutResult).toHaveBeenCalledTimes(1);
+      expect(storage.saveLayoutWithMetadata).toHaveBeenCalledTimes(1);
     });
 
     it('saves with latest layout data after multiple rapid changes', async () => {
@@ -159,8 +196,8 @@ describe('useAutoSave', () => {
       });
 
       // Should only save once with final values
-      expect(storage.saveLayoutResult).toHaveBeenCalledTimes(1);
-      const savedLayout = (storage.saveLayoutResult as ReturnType<typeof vi.fn>).mock.calls[0][1];
+      expect(storage.saveLayoutWithMetadata).toHaveBeenCalledTimes(1);
+      const savedLayout = (storage.saveLayoutWithMetadata as ReturnType<typeof vi.fn>).mock.calls[0][1];
       expect(savedLayout.drawer.width).toBe(16);
       expect(savedLayout.drawer.depth).toBe(14);
     });
@@ -185,7 +222,7 @@ describe('useAutoSave', () => {
       });
 
       // Save should not have been called
-      expect(storage.saveLayoutResult).not.toHaveBeenCalled();
+      expect(storage.saveLayoutWithMetadata).not.toHaveBeenCalled();
     });
 
     it('does not throw when unmounted after save completed', async () => {
@@ -197,7 +234,7 @@ describe('useAutoSave', () => {
         await Promise.resolve();
       });
 
-      expect(storage.saveLayoutResult).toHaveBeenCalledTimes(1);
+      expect(storage.saveLayoutWithMetadata).toHaveBeenCalledTimes(1);
 
       // Unmount should not throw
       expect(() => unmount()).not.toThrow();
@@ -205,8 +242,9 @@ describe('useAutoSave', () => {
   });
 
   describe('localStorage integration', () => {
-    it('calls saveLayoutResult with current layout', async () => {
+    it('calls saveLayoutWithMetadata with current layout and library', async () => {
       const layout = useLayoutStore.getState().layout;
+      const library = useLibraryStore.getState().library;
       renderHook(() => useAutoSave());
 
       await act(async () => {
@@ -214,7 +252,7 @@ describe('useAutoSave', () => {
         await Promise.resolve();
       });
 
-      expect(storage.saveLayoutResult).toHaveBeenCalledWith(TEST_LAYOUT_ID, layout);
+      expect(storage.saveLayoutWithMetadata).toHaveBeenCalledWith(TEST_LAYOUT_ID, layout, library);
     });
 
     it('saves updated layout after modification', async () => {
@@ -241,7 +279,7 @@ describe('useAutoSave', () => {
         await Promise.resolve();
       });
 
-      const savedLayout = (storage.saveLayoutResult as ReturnType<typeof vi.fn>).mock.calls[0][1];
+      const savedLayout = (storage.saveLayoutWithMetadata as ReturnType<typeof vi.fn>).mock.calls[0][1];
       expect(savedLayout.bins.length).toBeGreaterThan(0);
       expect(savedLayout.bins[0].label).toBe('Test');
     });
@@ -258,7 +296,7 @@ describe('useAutoSave', () => {
       });
 
       // Should not have called save
-      expect(storage.saveLayoutResult).not.toHaveBeenCalled();
+      expect(storage.saveLayoutWithMetadata).not.toHaveBeenCalled();
     });
 
     it('does not save when activeLayoutId is __shared_preview__', async () => {
@@ -273,14 +311,14 @@ describe('useAutoSave', () => {
       });
 
       // Should not have called save for temporary shared preview
-      expect(storage.saveLayoutResult).not.toHaveBeenCalled();
+      expect(storage.saveLayoutWithMetadata).not.toHaveBeenCalled();
     });
   });
 
   describe('error handling', () => {
     it('shows error toast when save fails with quota exceeded', async () => {
       // Return an Err result with quota exceeded error
-      vi.mocked(storage.saveLayoutResult).mockResolvedValue(
+      vi.mocked(storage.saveLayoutWithMetadata).mockResolvedValue(
         err(storageQuotaExceeded())
       );
 
@@ -299,7 +337,7 @@ describe('useAutoSave', () => {
     });
 
     it('shows error toast when save fails with storage unavailable', async () => {
-      vi.mocked(storage.saveLayoutResult).mockResolvedValue(
+      vi.mocked(storage.saveLayoutWithMetadata).mockResolvedValue(
         err(storageUnavailable('indexedDB'))
       );
 
@@ -316,7 +354,7 @@ describe('useAutoSave', () => {
     });
 
     it('only shows error toast once per failure session', async () => {
-      vi.mocked(storage.saveLayoutResult).mockResolvedValue(
+      vi.mocked(storage.saveLayoutWithMetadata).mockResolvedValue(
         err(storageQuotaExceeded())
       );
 
@@ -345,7 +383,7 @@ describe('useAutoSave', () => {
     });
 
     it('shows persistent toast after 3 consecutive failures', async () => {
-      vi.mocked(storage.saveLayoutResult).mockResolvedValue(
+      vi.mocked(storage.saveLayoutWithMetadata).mockResolvedValue(
         err(storageQuotaExceeded())
       );
 
@@ -390,10 +428,18 @@ describe('useAutoSave', () => {
     });
 
     it('resets error flag after successful save', async () => {
-      const saveLayoutResultMock = vi.mocked(storage.saveLayoutResult);
+      const saveLayoutWithMetadataMock = vi.mocked(storage.saveLayoutWithMetadata);
+      const mockPreview = {
+        drawerWidth: 10,
+        drawerDepth: 8,
+        drawerHeight: 12,
+        binCount: 0,
+        layerCount: 1,
+        binMap: [],
+      };
 
       // First call fails
-      saveLayoutResultMock.mockResolvedValueOnce(err(storageQuotaExceeded()));
+      saveLayoutWithMetadataMock.mockResolvedValueOnce(err(storageQuotaExceeded()));
 
       renderHook(() => useAutoSave());
 
@@ -408,8 +454,20 @@ describe('useAutoSave', () => {
       // Clear toasts for clean test
       useToastStore.setState({ toasts: [] });
 
-      // Next save succeeds
-      saveLayoutResultMock.mockResolvedValue(ok(undefined));
+      // Next save succeeds - return proper structure
+      saveLayoutWithMetadataMock.mockImplementation(
+        (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
+          const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
+          return Promise.resolve({
+            ok: true as const,
+            value: {
+              layoutId,
+              entry: entry ? { ...entry, modifiedAt: Date.now(), preview: mockPreview } : null,
+              library,
+            },
+          });
+        }
+      );
 
       act(() => {
         useLayoutStore.getState().updateDrawer({ width: 12, depth: 10 });
@@ -424,7 +482,7 @@ describe('useAutoSave', () => {
       expect(useToastStore.getState().toasts).toHaveLength(0);
 
       // Make it fail again
-      saveLayoutResultMock.mockResolvedValue(err(storageQuotaExceeded()));
+      saveLayoutWithMetadataMock.mockResolvedValue(err(storageQuotaExceeded()));
 
       act(() => {
         useLayoutStore.getState().updateDrawer({ width: 14, depth: 12 });
@@ -451,7 +509,7 @@ describe('useAutoSave', () => {
       });
 
       // Both instances should trigger save
-      expect(storage.saveLayoutResult).toHaveBeenCalledTimes(2);
+      expect(storage.saveLayoutWithMetadata).toHaveBeenCalledTimes(2);
 
       unmount1();
       unmount2();

@@ -5,7 +5,8 @@
  * Import from this module instead of individual service files.
  *
  * Organization:
- * - Layout CRUD: saveLayoutAsync, loadLayoutAsync, etc.
+ * - Atomic Operations: saveLayoutWithMetadata, createLayoutEntry, etc. (PREFERRED)
+ * - Layout CRUD: saveLayoutAsync, loadLayoutAsync, etc. (legacy, use atomic ops instead)
  * - Library: saveLibrary, loadLibrary, initializeLayoutLibrary
  * - Import/Export: exportLayoutJSON, importLayoutJSON, exportPrintListTSV
  * - URL Sharing: encodeLayoutForURL, getCloudShareIdFromURL, etc.
@@ -13,8 +14,31 @@
  * - Migration: isMigrationNeeded, migrateAllLayoutsToIndexedDB
  */
 
-// === Layout CRUD (Async - Primary API) ===
-// Use these for runtime operations (auto-save, switching layouts)
+// === Atomic Operations (PREFERRED API) ===
+// These functions provide atomic layout + library saves.
+// Use these instead of separate saveLayout + updateEntry + saveLibrary calls.
+export {
+  saveLayoutWithMetadata,
+  createLayoutEntry,
+  deleteLayoutWithEntry,
+  duplicateLayoutEntry,
+  switchActiveLayout,
+  updateCloudShare,
+  renameLayoutEntry,
+  computePreview,
+} from './LayoutManager';
+export type {
+  SaveLayoutOptions,
+  SaveResult,
+  CreateLayoutOptions,
+  CreateResult,
+  SwitchResult,
+  DeleteResult,
+  DuplicateResult,
+} from './LayoutManager';
+
+// === Layout CRUD (Async - Legacy API) ===
+// Consider using atomic operations above instead for automatic library sync.
 export {
   saveLayoutAsync,
   loadLayoutAsync,
