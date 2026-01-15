@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Sidebar } from '../../components/Sidebar';
 import { useLayoutStore, useUIStore, useSettingsStore } from '../../store';
+import { useSelectionStore } from '../../store/selection';
+import { useViewStore } from '../../store/view';
+import { useHalfBinModeStore } from '../../store/halfBinMode';
 import { resetAllStores } from '../testUtils';
 
 // Mock child components to isolate Sidebar tests
@@ -71,7 +74,7 @@ describe('Sidebar', () => {
     // Set activeLayerId to match the default layer
     const defaultLayerId = useLayoutStore.getState().layout.layers[0]?.id;
     if (defaultLayerId) {
-      useUIStore.setState({ activeLayerId: defaultLayerId });
+      useSelectionStore.setState({ activeLayerId: defaultLayerId });
     }
   });
 
@@ -97,7 +100,7 @@ describe('Sidebar', () => {
     });
 
     it('shows expand button when collapsed', () => {
-      useUIStore.setState({ leftPanelCollapsed: true });
+      useViewStore.setState({ leftPanelCollapsed: true });
 
       render(<Sidebar />);
 
@@ -105,7 +108,7 @@ describe('Sidebar', () => {
     });
 
     it('expands when expand button clicked', () => {
-      useUIStore.setState({ leftPanelCollapsed: true });
+      useViewStore.setState({ leftPanelCollapsed: true });
 
       render(<Sidebar />);
 
@@ -115,7 +118,7 @@ describe('Sidebar', () => {
     });
 
     it('hides content when collapsed', () => {
-      useUIStore.setState({ leftPanelCollapsed: true });
+      useViewStore.setState({ leftPanelCollapsed: true });
 
       render(<Sidebar />);
 
@@ -274,7 +277,7 @@ describe('Sidebar', () => {
     });
 
     it('uses 0.5 step for width in half-bin mode', () => {
-      useUIStore.setState({ halfBinMode: true });
+      useHalfBinModeStore.setState({ halfBinMode: true });
 
       render(<Sidebar />);
 
@@ -285,7 +288,7 @@ describe('Sidebar', () => {
     });
 
     it('uses 0.5 step for depth in half-bin mode', () => {
-      useUIStore.setState({ halfBinMode: true });
+      useHalfBinModeStore.setState({ halfBinMode: true });
 
       render(<Sidebar />);
 

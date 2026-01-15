@@ -1,117 +1,86 @@
+/**
+ * UI Store - Legacy Facade
+ *
+ * This store was refactored into focused stores for better separation of concerns:
+ * - useSelectionStore: selection, focus, active layer/category
+ * - useViewStore: zoom, panels, context menu, highlighting
+ * - useInteractionStore: interactions, paint mode, keyboard modes, 3D preview
+ * - useMobileStore: mobile panel state
+ * - useHalfBinModeStore: half-bin mode setting
+ * - useSharedPreviewStore: shared layout preview
+ *
+ * This facade maintains backwards compatibility by delegating to the new stores.
+ * New code should import from the specific stores directly.
+ *
+ * @deprecated Import from specific stores instead:
+ * - Selection: import { useSelectionStore } from '../store/selection'
+ * - View: import { useViewStore } from '../store/view'
+ * - Interaction: import { useInteractionStore } from '../store/interaction'
+ * - Mobile: import { useMobileStore } from '../store/mobile'
+ * - HalfBinMode: import { useHalfBinModeStore } from '../store/halfBinMode'
+ * - SharedPreview: import { useSharedPreviewStore } from '../store/sharedPreview'
+ */
+
 import { create } from 'zustand';
 import type { Interaction, Layout, OperationResult } from '../types';
-import { CONSTRAINTS } from '../constants';
-import { clamp } from '../utils/validation';
-import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
-import { useLayoutStore } from './layout';
 import type { Result, Unit, LayoutError } from '../result';
-import { err, layoutInvalidOperation, OK } from '../result';
+import { useSelectionStore } from './selection';
+import { useViewStore, type ContextMenuState } from './view';
+import { useInteractionStore, type DropTarget, type PaintSize, type LayerViewMode } from './interaction';
+import { useMobileStore, type MobilePanel, type MobileLayersTab } from './mobile';
+import { useHalfBinModeStore } from './halfBinMode';
+import { useSharedPreviewStore } from './sharedPreview';
 
-// Storage key for half-bin mode preference
-const HALF_BIN_MODE_KEY = 'gridfinity-half-bin-mode';
-
-// Load half-bin mode from localStorage (default to false)
-function loadHalfBinMode(): boolean {
-  try {
-    return localStorage.getItem(HALF_BIN_MODE_KEY) === 'true';
-  } catch {
-    return false;
-  }
-}
-
-// Save half-bin mode to localStorage
-function saveHalfBinMode(enabled: boolean): void {
-  try {
-    localStorage.setItem(HALF_BIN_MODE_KEY, enabled.toString());
-  } catch {
-    // Ignore storage errors
-  }
-}
-
-export type DropTarget = 'trash' | 'staging' | null;
-
-export type MobilePanel = 'layers' | 'inspector' | 'categories' | 'print' | 'settings' | 'layouts' | 'participants' | null;
-
-export type MobileLayersTab = 'layers' | 'tools';
-
-export type LayerViewMode = 'focus' | 'stack' | 'all';
-
-export interface PaintSize {
-  width: number;
-  depth: number;
-}
-
-export interface ContextMenuState {
-  binIds: string[]; // Changed from single binId to support multi-select
-  position: { x: number; y: number };
-  source: 'grid' | 'staging'; // Context for menu variant
-}
+// Re-export types for backwards compatibility
+export type { DropTarget, MobilePanel, MobileLayersTab, LayerViewMode, PaintSize, ContextMenuState };
 
 interface UIState {
-  // Selection
+  // Selection (delegated to useSelectionStore)
   activeLayerId: string;
   selectedBinIds: string[];
   activeCategoryId: string;
+  focusedBinId: string | null;
+  quickLabelBinId: string | null;
 
-  // View
+  // View (delegated to useViewStore)
   zoom: number;
   showOtherLayers: boolean;
   showLabels: boolean;
-
-  // Panel visibility
   leftPanelCollapsed: boolean;
   rightPanelCollapsed: boolean;
+  contextMenu: ContextMenuState | null;
+  highlightedCategoryId: string | null;
+  highlightedRowLabel: number | null;
+  highlightedColLabel: number | null;
+  printModalOpen: boolean;
 
-  // Interaction
+  // Interaction (delegated to useInteractionStore)
   interaction: Interaction | null;
   dropTarget: DropTarget;
-
-  // Paint mode
   paintSize: PaintSize | null;
+  keyboardDragMode: boolean;
+  keyboardResizeMode: boolean;
+  liveMessage: string | null;
+  showIsometricPreview: boolean;
+  isometricRotation: number;
+  layerViewMode: LayerViewMode;
+  isPreviewExpanded: boolean;
 
-  // Mobile
+  // Mobile (delegated to useMobileStore)
   activeMobilePanel: MobilePanel;
   mobileLayersTab: MobileLayersTab;
 
-  // Context menu (for long-press on mobile)
-  contextMenu: ContextMenuState | null;
-
-  // Isometric preview
-  showIsometricPreview: boolean;
-  isometricRotation: number; // Horizontal rotation degrees, 0-360
-  layerViewMode: LayerViewMode; // 'focus' (active only), 'stack' (active+below), 'all'
-  isPreviewExpanded: boolean; // Expanded modal view
-
-  // Keyboard navigation
-  focusedBinId: string | null; // Bin with keyboard focus (separate from selection)
-  keyboardDragMode: boolean; // In keyboard drag mode (M key)
-  keyboardResizeMode: boolean; // In keyboard resize mode (R key)
-  liveMessage: string | null; // Message for screen reader announcements
-
-  // Quick label popover (desktop double-click or L key)
-  quickLabelBinId: string | null;
-
-  // Category highlighting (for hover preview)
-  highlightedCategoryId: string | null;
-
-  // Row/column label highlighting (for hover preview)
-  highlightedRowLabel: number | null;  // 1-indexed row number
-  highlightedColLabel: number | null;  // 1-indexed column number
-
-  // Half-bin mode (power user feature for 0.5 unit increments)
+  // Half-bin mode (delegated to useHalfBinModeStore)
   halfBinMode: boolean;
 
-  // Shared layout preview (viewing but not saved)
+  // Shared preview (delegated to useSharedPreviewStore)
   sharedLayoutPreview: Layout | null;
-  sharedLayoutOriginalName: string | null; // For forkedFrom metadata
-  sharedLayoutAuthorName: string | null;  // Author of cloud-shared layout
-  sharedLayoutCloudShareId: string | null; // Cloud share ID for collaborative editing
-  sharedLayoutPermission: 'view' | 'edit' | null; // Permission level of the shared layout
+  sharedLayoutOriginalName: string | null;
+  sharedLayoutAuthorName: string | null;
+  sharedLayoutCloudShareId: string | null;
+  sharedLayoutPermission: 'view' | 'edit' | null;
 
-  // Print modal
-  printModalOpen: boolean;
-
-  // Actions
+  // Selection actions
   setActiveLayer: (id: string) => void;
   setSelectedBin: (id: string | null) => void;
   setSelectedBins: (ids: string[]) => void;
@@ -119,6 +88,12 @@ interface UIState {
   removeFromSelection: (id: string) => void;
   toggleSelection: (id: string) => void;
   setActiveCategory: (id: string) => void;
+  clearSelection: () => void;
+  setFocusedBin: (binId: string | null) => void;
+  showQuickLabel: (binId: string) => void;
+  hideQuickLabel: () => void;
+
+  // View actions
   setZoom: (zoom: number) => void;
   zoomIn: () => void;
   zoomOut: () => void;
@@ -126,306 +101,291 @@ interface UIState {
   toggleShowLabels: () => void;
   toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
+  showContextMenu: (binIdsOrId: string | string[], position: { x: number; y: number }, source?: 'grid' | 'staging') => void;
+  hideContextMenu: () => void;
+  setHighlightedCategoryId: (categoryId: string | null) => void;
+  setHighlightedRowLabel: (row: number | null) => void;
+  setHighlightedColLabel: (col: number | null) => void;
+  setPrintModalOpen: (open: boolean) => void;
 
   // Interaction actions
   setInteraction: (interaction: Interaction | null) => void;
   setDropTarget: (target: DropTarget) => void;
-  clearSelection: () => void;
-
-  // Paint mode actions
   setPaintSize: (size: PaintSize | null) => void;
   togglePaintSize: (size: PaintSize) => void;
+  setKeyboardDragMode: (enabled: boolean) => void;
+  setKeyboardResizeMode: (enabled: boolean) => void;
+  announceToScreenReader: (message: string) => void;
+  toggleIsometricPreview: () => void;
+  setIsometricRotation: (rotation: number) => void;
+  setLayerViewMode: (mode: LayerViewMode) => void;
+  snapToIsometric: () => void;
+  togglePreviewExpanded: () => void;
+  setPreviewExpanded: (expanded: boolean) => void;
 
-  // Mobile panel actions
+  // Mobile actions
   setActiveMobilePanel: (panel: MobilePanel) => void;
   closeMobilePanel: () => void;
   toggleMobilePanel: (panel: MobilePanel) => void;
   setMobileLayersTab: (tab: MobileLayersTab) => void;
-
-  // Context menu actions (supports both old single binId and new binIds array for backwards compatibility)
-  showContextMenu: (binIdsOrId: string | string[], position: { x: number; y: number }, source?: 'grid' | 'staging') => void;
-  hideContextMenu: () => void;
-
-  // Isometric preview actions
-  toggleIsometricPreview: () => void;
-  setIsometricRotation: (rotation: number) => void;
-  setLayerViewMode: (mode: LayerViewMode) => void;
-  snapToIsometric: () => void; // Snap to nearest 90°
-  togglePreviewExpanded: () => void;
-  setPreviewExpanded: (expanded: boolean) => void;
-
-  // Keyboard navigation actions
-  setFocusedBin: (binId: string | null) => void;
-  setKeyboardDragMode: (enabled: boolean) => void;
-  setKeyboardResizeMode: (enabled: boolean) => void;
-  announceToScreenReader: (message: string) => void;
-
-  // Quick label actions
-  showQuickLabel: (binId: string) => void;
-  hideQuickLabel: () => void;
-
-  // Category highlighting actions
-  setHighlightedCategoryId: (categoryId: string | null) => void;
-
-  // Row/column label highlighting actions
-  setHighlightedRowLabel: (row: number | null) => void;
-  setHighlightedColLabel: (col: number | null) => void;
 
   // Half-bin mode actions
   toggleHalfBinMode: () => OperationResult<void>;
   toggleHalfBinModeResult: () => Result<Unit, LayoutError>;
   setHalfBinMode: (enabled: boolean) => void;
 
-  // Shared layout preview actions
+  // Shared preview actions
   setSharedLayoutPreview: (layout: Layout | null, originalName?: string, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => void;
   clearSharedLayoutPreview: () => void;
-
-  // Print modal actions
-  setPrintModalOpen: (open: boolean) => void;
 }
 
-export const useUIStore = create<UIState>((set) => ({
-  activeLayerId: '',
-  selectedBinIds: [],
-  activeCategoryId: 'coral',
-  zoom: 1,
-  showOtherLayers: true,
-  showLabels: true,
-  leftPanelCollapsed: false,
-  rightPanelCollapsed: false,
-  interaction: null,
-  dropTarget: null,
-  paintSize: null,
-  activeMobilePanel: null,
-  mobileLayersTab: 'layers',
-  contextMenu: null,
-  showIsometricPreview: false,
-  isometricRotation: 0,
-  layerViewMode: 'stack', // Default: show active layer and below
-  isPreviewExpanded: false,
-  focusedBinId: null,
-  keyboardDragMode: false,
-  keyboardResizeMode: false,
-  liveMessage: null,
-  quickLabelBinId: null,
-  highlightedCategoryId: null,
-  highlightedRowLabel: null,
-  highlightedColLabel: null,
-  halfBinMode: loadHalfBinMode(),
-  sharedLayoutPreview: null,
-  sharedLayoutOriginalName: null,
-  sharedLayoutAuthorName: null,
-  sharedLayoutCloudShareId: null,
-  sharedLayoutPermission: null,
-  printModalOpen: false,
+/**
+ * Helper to get current combined state from all stores
+ */
+function getCombinedState(): Omit<UIState,
+  'setActiveLayer' | 'setSelectedBin' | 'setSelectedBins' | 'addToSelection' |
+  'removeFromSelection' | 'toggleSelection' | 'setActiveCategory' | 'clearSelection' |
+  'setFocusedBin' | 'showQuickLabel' | 'hideQuickLabel' | 'setZoom' | 'zoomIn' | 'zoomOut' |
+  'toggleShowOtherLayers' | 'toggleShowLabels' | 'toggleLeftPanel' | 'toggleRightPanel' |
+  'showContextMenu' | 'hideContextMenu' | 'setHighlightedCategoryId' | 'setHighlightedRowLabel' |
+  'setHighlightedColLabel' | 'setPrintModalOpen' | 'setInteraction' | 'setDropTarget' |
+  'setPaintSize' | 'togglePaintSize' | 'setKeyboardDragMode' | 'setKeyboardResizeMode' |
+  'announceToScreenReader' | 'toggleIsometricPreview' | 'setIsometricRotation' | 'setLayerViewMode' |
+  'snapToIsometric' | 'togglePreviewExpanded' | 'setPreviewExpanded' | 'setActiveMobilePanel' |
+  'closeMobilePanel' | 'toggleMobilePanel' | 'setMobileLayersTab' | 'toggleHalfBinMode' |
+  'toggleHalfBinModeResult' | 'setHalfBinMode' | 'setSharedLayoutPreview' | 'clearSharedLayoutPreview'
+> {
+  const selection = useSelectionStore.getState();
+  const view = useViewStore.getState();
+  const interaction = useInteractionStore.getState();
+  const mobile = useMobileStore.getState();
+  const halfBin = useHalfBinModeStore.getState();
+  const sharedPreview = useSharedPreviewStore.getState();
 
-  setActiveLayer: (id) => set({
-    activeLayerId: id,
-    selectedBinIds: [] // Clear selection on layer change (PRD: selection is layer-scoped)
-  }),
+  return {
+    // Selection
+    activeLayerId: selection.activeLayerId,
+    selectedBinIds: selection.selectedBinIds,
+    activeCategoryId: selection.activeCategoryId,
+    focusedBinId: selection.focusedBinId,
+    quickLabelBinId: selection.quickLabelBinId,
+    // View
+    zoom: view.zoom,
+    showOtherLayers: view.showOtherLayers,
+    showLabels: view.showLabels,
+    leftPanelCollapsed: view.leftPanelCollapsed,
+    rightPanelCollapsed: view.rightPanelCollapsed,
+    contextMenu: view.contextMenu,
+    highlightedCategoryId: view.highlightedCategoryId,
+    highlightedRowLabel: view.highlightedRowLabel,
+    highlightedColLabel: view.highlightedColLabel,
+    printModalOpen: view.printModalOpen,
+    // Interaction
+    interaction: interaction.interaction,
+    dropTarget: interaction.dropTarget,
+    paintSize: interaction.paintSize,
+    keyboardDragMode: interaction.keyboardDragMode,
+    keyboardResizeMode: interaction.keyboardResizeMode,
+    liveMessage: interaction.liveMessage,
+    showIsometricPreview: interaction.showIsometricPreview,
+    isometricRotation: interaction.isometricRotation,
+    layerViewMode: interaction.layerViewMode,
+    isPreviewExpanded: interaction.isPreviewExpanded,
+    // Mobile
+    activeMobilePanel: mobile.activeMobilePanel,
+    mobileLayersTab: mobile.mobileLayersTab,
+    // Half-bin mode
+    halfBinMode: halfBin.halfBinMode,
+    // Shared preview
+    sharedLayoutPreview: sharedPreview.sharedLayoutPreview,
+    sharedLayoutOriginalName: sharedPreview.sharedLayoutOriginalName,
+    sharedLayoutAuthorName: sharedPreview.sharedLayoutAuthorName,
+    sharedLayoutCloudShareId: sharedPreview.sharedLayoutCloudShareId,
+    sharedLayoutPermission: sharedPreview.sharedLayoutPermission,
+  };
+}
 
-  setSelectedBin: (id) => set({ selectedBinIds: id ? [id] : [] }),
+/**
+ * Combined UI Store (Legacy Facade)
+ *
+ * This store reads from and writes to the new focused stores, maintaining
+ * backwards compatibility for existing consumers.
+ *
+ * @deprecated Use specific stores directly for better performance and clearer code.
+ */
+export const useUIStore = create<UIState>((_set) => ({
+  // Initial state from underlying stores
+  ...getCombinedState(),
 
-  setSelectedBins: (ids) => set({ selectedBinIds: ids }),
-
-  addToSelection: (id) => set(state => ({
-    selectedBinIds: state.selectedBinIds.includes(id)
-      ? state.selectedBinIds
-      : [...state.selectedBinIds, id]
-  })),
-
-  removeFromSelection: (id) => set(state => ({
-    selectedBinIds: state.selectedBinIds.filter(binId => binId !== id)
-  })),
-
-  toggleSelection: (id) => set(state => ({
-    selectedBinIds: state.selectedBinIds.includes(id)
-      ? state.selectedBinIds.filter(binId => binId !== id)
-      : [...state.selectedBinIds, id]
-  })),
-
-  setActiveCategory: (id) => set({ activeCategoryId: id }),
-
-  setZoom: (zoom) => set({
-    zoom: clamp(zoom, CONSTRAINTS.ZOOM_MIN, CONSTRAINTS.ZOOM_MAX)
-  }),
-
-  zoomIn: () => set(state => ({
-    zoom: Math.min(CONSTRAINTS.ZOOM_MAX, state.zoom + CONSTRAINTS.ZOOM_STEP)
-  })),
-
-  zoomOut: () => set(state => ({
-    zoom: Math.max(CONSTRAINTS.ZOOM_MIN, state.zoom - CONSTRAINTS.ZOOM_STEP)
-  })),
-
-  toggleShowOtherLayers: () => set(state => ({
-    showOtherLayers: !state.showOtherLayers
-  })),
-
-  toggleShowLabels: () => set(state => ({
-    showLabels: !state.showLabels
-  })),
-
-  toggleLeftPanel: () => set(state => ({
-    leftPanelCollapsed: !state.leftPanelCollapsed,
-  })),
-
-  toggleRightPanel: () => set(state => ({
-    rightPanelCollapsed: !state.rightPanelCollapsed,
-  })),
-
-  setInteraction: (interaction) => set({ interaction }),
-
-  setDropTarget: (target) => set({ dropTarget: target }),
-
-  clearSelection: () => set({ selectedBinIds: [], interaction: null }),
-
-  setPaintSize: (size) => set({ paintSize: size }),
-
-  togglePaintSize: (size) => set(state => ({
-    paintSize: state.paintSize?.width === size.width && state.paintSize?.depth === size.depth
-      ? null
-      : size
-  })),
-
-  setActiveMobilePanel: (panel) => set({ activeMobilePanel: panel }),
-
-  closeMobilePanel: () => set({ activeMobilePanel: null }),
-
-  toggleMobilePanel: (panel) => set(state => ({
-    activeMobilePanel: state.activeMobilePanel === panel ? null : panel
-  })),
-
-  setMobileLayersTab: (tab) => set({ mobileLayersTab: tab }),
-
-  // Context menu actions (backwards compatible with old single binId signature)
-  showContextMenu: (binIdsOrId, position, source = 'grid') => {
-    const binIds = Array.isArray(binIdsOrId) ? binIdsOrId : [binIdsOrId];
-    set({
-      contextMenu: {
-        binIds,
-        position,
-        source
-      }
-    });
+  // Selection actions (delegate to useSelectionStore)
+  setActiveLayer: (id) => {
+    useSelectionStore.getState().setActiveLayer(id);
   },
-  hideContextMenu: () => set({ contextMenu: null }),
+  setSelectedBin: (id) => {
+    useSelectionStore.getState().setSelectedBin(id);
+  },
+  setSelectedBins: (ids) => {
+    useSelectionStore.getState().setSelectedBins(ids);
+  },
+  addToSelection: (id) => {
+    useSelectionStore.getState().addToSelection(id);
+  },
+  removeFromSelection: (id) => {
+    useSelectionStore.getState().removeFromSelection(id);
+  },
+  toggleSelection: (id) => {
+    useSelectionStore.getState().toggleSelection(id);
+  },
+  setActiveCategory: (id) => {
+    useSelectionStore.getState().setActiveCategory(id);
+  },
+  clearSelection: () => {
+    useSelectionStore.getState().clearSelection();
+    useInteractionStore.getState().setInteraction(null);
+  },
+  setFocusedBin: (binId) => {
+    useSelectionStore.getState().setFocusedBin(binId);
+  },
+  showQuickLabel: (binId) => {
+    useSelectionStore.getState().showQuickLabel(binId);
+  },
+  hideQuickLabel: () => {
+    useSelectionStore.getState().hideQuickLabel();
+  },
 
-  toggleIsometricPreview: () => set(state => ({
-    showIsometricPreview: !state.showIsometricPreview
-  })),
-  setIsometricRotation: (rotation) => set({
-    isometricRotation: ((rotation % 360) + 360) % 360 // Normalize to 0-360
-  }),
-  setLayerViewMode: (mode) => set({ layerViewMode: mode }),
-  snapToIsometric: () => set(state => {
-    // Snap to nearest 90° angle
-    const snapped = Math.round(state.isometricRotation / 90) * 90;
-    return { isometricRotation: snapped % 360 };
-  }),
-  togglePreviewExpanded: () => set(state => ({
-    isPreviewExpanded: !state.isPreviewExpanded
-  })),
-  setPreviewExpanded: (expanded) => set({ isPreviewExpanded: expanded }),
+  // View actions (delegate to useViewStore)
+  setZoom: (zoom) => {
+    useViewStore.getState().setZoom(zoom);
+  },
+  zoomIn: () => {
+    useViewStore.getState().zoomIn();
+  },
+  zoomOut: () => {
+    useViewStore.getState().zoomOut();
+  },
+  toggleShowOtherLayers: () => {
+    useViewStore.getState().toggleShowOtherLayers();
+  },
+  toggleShowLabels: () => {
+    useViewStore.getState().toggleShowLabels();
+  },
+  toggleLeftPanel: () => {
+    useViewStore.getState().toggleLeftPanel();
+  },
+  toggleRightPanel: () => {
+    useViewStore.getState().toggleRightPanel();
+  },
+  showContextMenu: (binIdsOrId, position, source) => {
+    useViewStore.getState().showContextMenu(binIdsOrId, position, source);
+  },
+  hideContextMenu: () => {
+    useViewStore.getState().hideContextMenu();
+  },
+  setHighlightedCategoryId: (categoryId) => {
+    useViewStore.getState().setHighlightedCategoryId(categoryId);
+  },
+  setHighlightedRowLabel: (row) => {
+    useViewStore.getState().setHighlightedRowLabel(row);
+  },
+  setHighlightedColLabel: (col) => {
+    useViewStore.getState().setHighlightedColLabel(col);
+  },
+  setPrintModalOpen: (open) => {
+    useViewStore.getState().setPrintModalOpen(open);
+  },
 
-  setFocusedBin: (binId) => set({ focusedBinId: binId }),
-  setKeyboardDragMode: (enabled) => set({
-    keyboardDragMode: enabled,
-    // Exit resize mode when entering drag mode
-    keyboardResizeMode: enabled ? false : undefined,
-  }),
-  setKeyboardResizeMode: (enabled) => set({
-    keyboardResizeMode: enabled,
-    // Exit drag mode when entering resize mode
-    keyboardDragMode: enabled ? false : undefined,
-  }),
+  // Interaction actions (delegate to useInteractionStore)
+  setInteraction: (interaction) => {
+    useInteractionStore.getState().setInteraction(interaction);
+  },
+  setDropTarget: (target) => {
+    useInteractionStore.getState().setDropTarget(target);
+  },
+  setPaintSize: (size) => {
+    useInteractionStore.getState().setPaintSize(size);
+  },
+  togglePaintSize: (size) => {
+    useInteractionStore.getState().togglePaintSize(size);
+  },
+  setKeyboardDragMode: (enabled) => {
+    useInteractionStore.getState().setKeyboardDragMode(enabled);
+  },
+  setKeyboardResizeMode: (enabled) => {
+    useInteractionStore.getState().setKeyboardResizeMode(enabled);
+  },
   announceToScreenReader: (message) => {
-    set({ liveMessage: message });
-    // Clear after 1 second to allow repeat announcements of the same message
-    setTimeout(() => {
-      set({ liveMessage: null });
-    }, 1000);
+    useInteractionStore.getState().announceToScreenReader(message);
+  },
+  toggleIsometricPreview: () => {
+    useInteractionStore.getState().toggleIsometricPreview();
+  },
+  setIsometricRotation: (rotation) => {
+    useInteractionStore.getState().setIsometricRotation(rotation);
+  },
+  setLayerViewMode: (mode) => {
+    useInteractionStore.getState().setLayerViewMode(mode);
+  },
+  snapToIsometric: () => {
+    useInteractionStore.getState().snapToIsometric();
+  },
+  togglePreviewExpanded: () => {
+    useInteractionStore.getState().togglePreviewExpanded();
+  },
+  setPreviewExpanded: (expanded) => {
+    useInteractionStore.getState().setPreviewExpanded(expanded);
   },
 
-  showQuickLabel: (binId) => set({ quickLabelBinId: binId }),
-  hideQuickLabel: () => set({ quickLabelBinId: null }),
+  // Mobile actions (delegate to useMobileStore)
+  setActiveMobilePanel: (panel) => {
+    useMobileStore.getState().setActiveMobilePanel(panel);
+  },
+  closeMobilePanel: () => {
+    useMobileStore.getState().closeMobilePanel();
+  },
+  toggleMobilePanel: (panel) => {
+    useMobileStore.getState().toggleMobilePanel(panel);
+  },
+  setMobileLayersTab: (tab) => {
+    useMobileStore.getState().setMobileLayersTab(tab);
+  },
 
-  setHighlightedCategoryId: (categoryId) => set({ highlightedCategoryId: categoryId }),
-
-  setHighlightedRowLabel: (row) => set({ highlightedRowLabel: row }),
-  setHighlightedColLabel: (col) => set({ highlightedColLabel: col }),
-
+  // Half-bin mode actions (delegate to useHalfBinModeStore)
   toggleHalfBinMode: () => {
-    const state = useUIStore.getState();
-    const targetState = !state.halfBinMode;
-
-    // Turning ON: no validation needed
-    if (targetState === true) {
-      saveHalfBinMode(true);
-      set({ halfBinMode: true });
-      return { success: true };
-    }
-
-    // Turning OFF: validate layout for fractional bins
-    const layout = useLayoutStore.getState().layout;
-    const result = validateHalfBinModeToggle(layout, false);
-
-    if (!result.canDisable) {
-      return {
-        success: false,
-        error: 'Cannot disable half-bin mode while bins with fractional dimensions exist',
-      };
-    }
-
-    saveHalfBinMode(false);
-    set({ halfBinMode: false });
-    return { success: true };
+    return useHalfBinModeStore.getState().toggleHalfBinMode();
   },
   toggleHalfBinModeResult: () => {
-    const state = useUIStore.getState();
-    const targetState = !state.halfBinMode;
-
-    // Turning ON: no validation needed
-    if (targetState === true) {
-      saveHalfBinMode(true);
-      set({ halfBinMode: true });
-      return OK;
-    }
-
-    // Turning OFF: validate layout for fractional bins
-    const layout = useLayoutStore.getState().layout;
-    const result = validateHalfBinModeToggle(layout, false);
-
-    if (!result.canDisable) {
-      return err(layoutInvalidOperation(
-        'toggleHalfBinMode',
-        `Cannot disable: ${result.violation?.count ?? 0} bins have fractional dimensions`
-      ));
-    }
-
-    saveHalfBinMode(false);
-    set({ halfBinMode: false });
-    return OK;
+    return useHalfBinModeStore.getState().toggleHalfBinModeResult();
   },
   setHalfBinMode: (enabled) => {
-    saveHalfBinMode(enabled);
-    set({ halfBinMode: enabled });
+    useHalfBinModeStore.getState().setHalfBinMode(enabled);
   },
 
-  setSharedLayoutPreview: (layout, originalName, authorName, cloudShareId, permission) => set({
-    sharedLayoutPreview: layout,
-    sharedLayoutOriginalName: originalName ?? layout?.name ?? null,
-    sharedLayoutAuthorName: authorName ?? null,
-    sharedLayoutCloudShareId: cloudShareId ?? null,
-    sharedLayoutPermission: permission ?? null,
-  }),
-  clearSharedLayoutPreview: () => set({
-    sharedLayoutPreview: null,
-    sharedLayoutOriginalName: null,
-    sharedLayoutAuthorName: null,
-    sharedLayoutCloudShareId: null,
-    sharedLayoutPermission: null,
-  }),
-
-  setPrintModalOpen: (open) => set({ printModalOpen: open }),
+  // Shared preview actions (delegate to useSharedPreviewStore)
+  setSharedLayoutPreview: (layout, originalName, authorName, cloudShareId, permission) => {
+    useSharedPreviewStore.getState().setSharedLayoutPreview(layout, originalName, authorName, cloudShareId, permission);
+  },
+  clearSharedLayoutPreview: () => {
+    useSharedPreviewStore.getState().clearSharedLayoutPreview();
+  },
 }));
+
+// Subscribe to changes in all underlying stores and sync to useUIStore
+// This ensures components using useUIStore re-render when underlying state changes
+useSelectionStore.subscribe(() => {
+  useUIStore.setState(getCombinedState());
+});
+useViewStore.subscribe(() => {
+  useUIStore.setState(getCombinedState());
+});
+useInteractionStore.subscribe(() => {
+  useUIStore.setState(getCombinedState());
+});
+useMobileStore.subscribe(() => {
+  useUIStore.setState(getCombinedState());
+});
+useHalfBinModeStore.subscribe(() => {
+  useUIStore.setState(getCombinedState());
+});
+useSharedPreviewStore.subscribe(() => {
+  useUIStore.setState(getCombinedState());
+});

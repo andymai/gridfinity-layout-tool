@@ -5,6 +5,11 @@ import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
 import { useHistoryStore } from '../../store/history';
 import { useLibraryStore } from '../../store/library';
+import { useSelectionStore } from '../../store/selection';
+import { useInteractionStore } from '../../store/interaction';
+import { useViewStore } from '../../store/view';
+import { useMobileStore } from '../../store/mobile';
+import { useHalfBinModeStore } from '../../store/halfBinMode';
 import { createDefaultLayout, STAGING_ID } from '../../constants';
 import { isOk } from '../../result';
 
@@ -36,26 +41,43 @@ describe('useKeyboard', () => {
     // Reset all stores
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
+    });
+    useHalfBinModeStore.setState({
       halfBinMode: false,
-      focusedBinId: null,
     });
     useHistoryStore.setState({
       past: [],

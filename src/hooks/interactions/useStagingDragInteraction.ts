@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useUIStore } from '../../store';
+import { useInteractionStore } from '../../store';
 import { canPlaceBin, clamp } from '../../utils/validation';
 import type { InteractionContext, ModeHandlers, StagingDragStartArgs, Coord } from './types';
 
@@ -84,7 +84,7 @@ export function useStagingDragInteraction(
    */
   const handleMove = useCallback(
     (_coords: Coord, clamped: Coord) => {
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       if (!interaction || interaction.type !== 'stagingDrag') return;
 
       // Dragging a bin from staging to main grid
@@ -117,10 +117,10 @@ export function useStagingDragInteraction(
    * Places the bin on the grid if valid, or deletes if dropped on trash.
    */
   const handleUp = useCallback(() => {
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     if (!interaction || interaction.type !== 'stagingDrag') return;
 
-    const currentDropTarget = useUIStore.getState().dropTarget;
+    const currentDropTarget = useInteractionStore.getState().dropTarget;
 
     // Handle drop to trash
     if (currentDropTarget === 'trash') {

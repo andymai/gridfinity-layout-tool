@@ -3,6 +3,10 @@ import { render, fireEvent, act } from '@testing-library/react';
 import { Bin } from '../components/Grid/Bin';
 import { useUIStore } from '../store/ui';
 import { useLayoutStore } from '../store/layout';
+import { useSelectionStore } from '../store/selection';
+import { useViewStore } from '../store/view';
+import { useInteractionStore } from '../store/interaction';
+import { useMobileStore } from '../store/mobile';
 import { createDefaultLayout } from '../constants';
 import type { Bin as BinType, Category, Layer } from '../types';
 
@@ -41,24 +45,30 @@ describe('Mobile Touch Interactions', () => {
 
     defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
+      contextMenu: null,
+    });
+    useInteractionStore.setState({
       interaction: null,
       dropTarget: null,
       paintSize: null,
-      activeMobilePanel: null,
-      contextMenu: null,
       showIsometricPreview: true,
       isometricRotation: 0,
       layerViewMode: 'focus',
       isPreviewExpanded: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
     });
 
     testCategory = defaultLayout.categories[0];

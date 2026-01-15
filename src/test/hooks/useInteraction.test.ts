@@ -4,6 +4,10 @@ import { useInteraction } from '../../hooks/useInteraction';
 import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
 import { useHistoryStore } from '../../store/history';
+import { useSelectionStore } from '../../store/selection';
+import { useInteractionStore } from '../../store/interaction';
+import { useViewStore } from '../../store/view';
+import { useMobileStore } from '../../store/mobile';
 import { createDefaultLayout, STAGING_ID } from '../../constants';
 import { isOk } from '../../result';
 import type { RefObject } from 'react';
@@ -38,24 +42,40 @@ describe('useInteraction', () => {
     // Reset all stores
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
     });
     useHistoryStore.setState({
       past: [],
@@ -422,24 +442,40 @@ describe('resize rect calculation (integration)', () => {
   beforeEach(() => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
     });
     useHistoryStore.setState({
       past: [],
@@ -521,24 +557,40 @@ describe('pointer events', () => {
   beforeEach(() => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
     });
     useHistoryStore.setState({
       past: [],
@@ -583,8 +635,8 @@ describe('pointer events', () => {
 
     // Update current position
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'draw',
           start: { x: 0, y: 0 },
@@ -870,8 +922,8 @@ describe('pointer events', () => {
 
     // Set a 4x4 area (should fit 2x2 = 4 bins of 2x2 size)
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'paint',
           paintSize: { width: 2, depth: 2 },
@@ -898,24 +950,40 @@ describe('stagingDrag interaction', () => {
   beforeEach(() => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
     });
     useHistoryStore.setState({
       past: [],
@@ -943,8 +1011,8 @@ describe('stagingDrag interaction', () => {
     }));
 
     // Manually set up stagingDrag interaction
-    useUIStore.setState({
-      ...useUIStore.getState(),
+    useInteractionStore.setState({
+      ...useInteractionStore.getState(),
       interaction: {
         type: 'stagingDrag',
         binId: binId,
@@ -991,10 +1059,13 @@ describe('stagingDrag interaction', () => {
     // Verify bin is in staging
     expect(useLayoutStore.getState().layout.bins.find(b => b.id === binId)?.layerId).toBe(STAGING_ID);
 
-    // Set active layer
-    useUIStore.setState({
-      ...useUIStore.getState(),
+    // Set active layer and interaction
+    useSelectionStore.setState({
+      ...useSelectionStore.getState(),
       activeLayerId: layerId,
+    });
+    useInteractionStore.setState({
+      ...useInteractionStore.getState(),
       interaction: {
         type: 'stagingDrag',
         binId: binId,
@@ -1039,8 +1110,8 @@ describe('stagingDrag interaction', () => {
     expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
     // Set up stagingDrag interaction
-    useUIStore.setState({
-      ...useUIStore.getState(),
+    useInteractionStore.setState({
+      ...useInteractionStore.getState(),
       interaction: {
         type: 'stagingDrag',
         binId: binId,
@@ -1081,8 +1152,8 @@ describe('stagingDrag interaction', () => {
     }));
 
     // Set up stagingDrag interaction with invalid position
-    useUIStore.setState({
-      ...useUIStore.getState(),
+    useInteractionStore.setState({
+      ...useInteractionStore.getState(),
       interaction: {
         type: 'stagingDrag',
         binId: binId,
@@ -1111,24 +1182,40 @@ describe('duplicate drag (Alt+drag)', () => {
   beforeEach(() => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
     });
     useHistoryStore.setState({
       past: [],
@@ -1201,8 +1288,8 @@ describe('duplicate drag (Alt+drag)', () => {
 
     // Set up a valid drop position with delta movement
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'drag',
           binIds: [binId],
@@ -1285,8 +1372,8 @@ describe('duplicate drag (Alt+drag)', () => {
 
     // Set up valid drop with delta
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'drag',
           binIds: [binId1!, binId2!],
@@ -1354,8 +1441,8 @@ describe('duplicate drag (Alt+drag)', () => {
 
     // Set up invalid drop (collision or out of bounds)
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'drag',
           binIds: [binId],
@@ -1402,8 +1489,8 @@ describe('duplicate drag (Alt+drag)', () => {
 
     // Set up duplicate drag with no movement
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'drag',
           binIds: [binId],
@@ -1450,8 +1537,8 @@ describe('duplicate drag (Alt+drag)', () => {
 
     // Set up duplicate drag
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'drag',
           binIds: [binId],
@@ -1497,8 +1584,8 @@ describe('duplicate drag (Alt+drag)', () => {
 
     // Set up duplicate drag with movement
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'drag',
           binIds: [binId],
@@ -1518,7 +1605,7 @@ describe('duplicate drag (Alt+drag)', () => {
     });
 
     // The new duplicate should be selected
-    const selectedBinIds = useUIStore.getState().selectedBinIds;
+    const selectedBinIds = useSelectionStore.getState().selectedBinIds;
     expect(selectedBinIds).toHaveLength(1);
     expect(selectedBinIds[0]).not.toBe(binId); // Should be the new bin, not the original
   });
@@ -1529,24 +1616,40 @@ describe('drag completion with movement', () => {
   beforeEach(() => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
     });
     useHistoryStore.setState({
       past: [],
@@ -1578,8 +1681,8 @@ describe('drag completion with movement', () => {
 
     // Set up a valid drag with actual movement
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'drag',
           binIds: [binId],
@@ -1637,8 +1740,8 @@ describe('drag completion with movement', () => {
 
     // Set up valid drag for both bins
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'drag',
           binIds: [binId1!, binId2!],
@@ -1672,24 +1775,40 @@ describe('resize completion with changes', () => {
   beforeEach(() => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
     });
     useHistoryStore.setState({
       past: [],
@@ -1721,8 +1840,8 @@ describe('resize completion with changes', () => {
 
     // Set up resize interaction with actual dimension change
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'resize',
           binIds: [binId],
@@ -1780,8 +1899,8 @@ describe('resize completion with changes', () => {
 
     // Set up resize for both bins
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'resize',
           binIds: [binId1!, binId2!],
@@ -1835,8 +1954,8 @@ describe('resize completion with changes', () => {
 
     // Set up resize with no actual change
     act(() => {
-      useUIStore.setState({
-        ...useUIStore.getState(),
+      useInteractionStore.setState({
+        ...useInteractionStore.getState(),
         interaction: {
           type: 'resize',
           binIds: [binId],
@@ -1866,24 +1985,40 @@ describe('staging drag', () => {
   beforeEach(() => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
     });
     useHistoryStore.setState({
       past: [],
@@ -1921,24 +2056,40 @@ describe('resize via pointer movement', () => {
   beforeEach(() => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
     });
     useHistoryStore.setState({
       past: [],
@@ -2124,24 +2275,40 @@ describe('cleanup on unmount', () => {
   beforeEach(() => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({ layout: defaultLayout });
-    useUIStore.setState({
+    useSelectionStore.setState({
       activeLayerId: defaultLayout.layers[0].id,
       selectedBinIds: [],
       activeCategoryId: defaultLayout.categories[0].id,
+      focusedBinId: null,
+      quickLabelBinId: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      dropTarget: null,
+      paintSize: null,
+      showIsometricPreview: true,
+      isometricRotation: 0,
+      isPreviewExpanded: false,
+      layerViewMode: 'stack',
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+      liveMessage: null,
+    });
+    useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,
       showLabels: true,
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
-      interaction: null,
-      dropTarget: null,
-      paintSize: null,
-      activeMobilePanel: null,
       contextMenu: null,
-      showIsometricPreview: true,
-      isometricRotation: 0,
-      layerViewMode: 'focus',
-      isPreviewExpanded: false,
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
+    });
+    useMobileStore.setState({
+      activeMobilePanel: null,
+      mobileLayersTab: 'layers',
     });
     useHistoryStore.setState({
       past: [],
