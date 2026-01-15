@@ -1,6 +1,6 @@
-import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
+import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
 import { useLayoutStore, useUIStore, useLibraryStore } from './store';
-import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useStorageMigration } from './hooks';
+import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useStorageMigration, useTabletPanels } from './hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './hooks/useOwnedShareSync';
 import { initializeLayoutLibrary, loadSharedWithMe } from './storage';
@@ -72,34 +72,15 @@ export default function App() {
   // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
   useOwnedShareSync();
 
-  // Tablet panel state (use collapsed state inverted - collapsed means hidden in overlay mode)
-  const leftPanelCollapsed = useUIStore(state => state.leftPanelCollapsed);
-  const rightPanelCollapsed = useUIStore(state => state.rightPanelCollapsed);
-  const toggleLeftPanel = useUIStore(state => state.toggleLeftPanel);
-  const toggleRightPanel = useUIStore(state => state.toggleRightPanel);
-
-  // For tablet, we want panels to start collapsed (hidden as overlays)
-  // leftPanelCollapsed=true means sidebar is hidden, false means visible as overlay
-  const tabletLeftPanelOpen = isTablet && !leftPanelCollapsed;
-  const tabletRightPanelOpen = isTablet && !rightPanelCollapsed;
-
-  // Track previous tablet state to detect mode entry
-  const wasTabletRef = useRef(isTablet);
-
-  // Tablet panel management: Collapse both panels when entering tablet mode
-  // Note: Mutual exclusion (only one panel open at a time) is handled in store actions
-  useEffect(() => {
-    const justEnteredTablet = isTablet && !wasTabletRef.current;
-    wasTabletRef.current = isTablet;
-
-    if (!isTablet) return;
-
-    // When entering tablet mode, collapse both panels
-    if (justEnteredTablet) {
-      if (!leftPanelCollapsed) toggleLeftPanel();
-      if (!rightPanelCollapsed) toggleRightPanel();
-    }
-  }, [isTablet, leftPanelCollapsed, rightPanelCollapsed, toggleLeftPanel, toggleRightPanel]);
+  // Tablet panel state (auto-collapses on tablet mode entry)
+  const {
+    leftPanelOpen: tabletLeftPanelOpen,
+    rightPanelOpen: tabletRightPanelOpen,
+    openLeftPanel,
+    closeLeftPanel,
+    openRightPanel,
+    closeRightPanel,
+  } = useTabletPanels(isTablet);
 
   const layout = useLayoutStore(state => state.layout);
   const activeLayerId = useUIStore(state => state.activeLayerId);
@@ -221,7 +202,7 @@ export default function App() {
         {/* Left sidebar as overlay */}
         <TabletPanelOverlay
           isOpen={tabletLeftPanelOpen}
-          onClose={toggleLeftPanel}
+          onClose={closeLeftPanel}
           side="left"
         >
           <PanelErrorBoundary panelName="Sidebar">
@@ -232,7 +213,7 @@ export default function App() {
         {/* Right panel as overlay */}
         <TabletPanelOverlay
           isOpen={tabletRightPanelOpen}
-          onClose={toggleRightPanel}
+          onClose={closeRightPanel}
           side="right"
         >
           <PanelErrorBoundary panelName="Inspector">
@@ -250,8 +231,8 @@ export default function App() {
         <TabletPanelTriggers
           leftPanelOpen={tabletLeftPanelOpen}
           rightPanelOpen={tabletRightPanelOpen}
-          onOpenLeftPanel={toggleLeftPanel}
-          onOpenRightPanel={toggleRightPanel}
+          onOpenLeftPanel={openLeftPanel}
+          onOpenRightPanel={openRightPanel}
         />
 
         {/* Modals */}

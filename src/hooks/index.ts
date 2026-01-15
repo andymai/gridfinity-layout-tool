@@ -12,6 +12,8 @@ export { useLayoutRouting } from './useLayoutRouting';
 export { usePWAUpdate } from './usePWAUpdate';
 export { useAnalytics } from './useAnalytics';
 export { useStorageMigration } from './useStorageMigration';
+export { useTabletPanels } from './useTabletPanels';
+export type { TabletPanelsState } from './useTabletPanels';
 export { useFeatureFlag, isFeatureEnabled } from './useFeatureFlag';
 export { useSharedWithMe } from './useSharedWithMe';
 export type { SharedWithMeStatus } from './useSharedWithMe';
