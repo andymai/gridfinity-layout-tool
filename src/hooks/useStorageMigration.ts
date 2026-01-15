@@ -16,7 +16,6 @@ import { useEffect, useRef } from 'react';
 import {
   migrateAllLayoutsToIndexedDB,
   isMigrationNeeded,
-  getStorageBackend,
 } from '../storage';
 
 // Track if migration has been attempted this session
@@ -43,9 +42,6 @@ export function useStorageMigration(): void {
         const needed = await isMigrationNeeded();
 
         if (!needed) {
-          // Log which backend we're using
-          const backend = await getStorageBackend();
-          console.warn(`[Storage] Using ${backend} backend`);
           return;
         }
 
