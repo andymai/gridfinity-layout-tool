@@ -776,9 +776,9 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         />
       )}
 
-      {/* Ghost resize handles - show on hover for non-selected bins (desktop only) */}
-      {/* These are semi-transparent but fully functional, allowing resize without selection */}
-      {!isSelected && !isGhost && isHovered && !isTouchDevice && !interaction && (
+      {/* Ghost resize handles - show on hover when nothing is selected (desktop only) */}
+      {/* Hidden when any bins are selected to avoid interfering with multi-selection clicks */}
+      {!isSelected && !isGhost && isHovered && !isTouchDevice && !interaction && selectedBinIds.length === 0 && (
         <ResizeHandles
           binWidth={bin.width}
           binDepth={bin.depth}
