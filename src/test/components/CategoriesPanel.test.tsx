@@ -153,9 +153,20 @@ describe('CategoriesPanel', () => {
     it('enters edit mode on double click', () => {
       render(<CategoriesPanel />);
 
-      // Double-click the category name button
-      const categoryButton = screen.getByRole('button', { name: /Coral/i });
+      // Double-click the category name button (not the edit icon)
+      const categoryButton = screen.getByRole('button', { name: /Coral \(selected for new bins\)/i });
       fireEvent.doubleClick(categoryButton);
+
+      // Should show input field
+      expect(screen.getByDisplayValue('Coral')).toBeInTheDocument();
+    });
+
+    it('enters edit mode on edit icon click', () => {
+      render(<CategoriesPanel />);
+
+      // Click the edit icon button
+      const editButton = screen.getByRole('button', { name: /Edit Coral/i });
+      fireEvent.click(editButton);
 
       // Should show input field
       expect(screen.getByDisplayValue('Coral')).toBeInTheDocument();
@@ -164,9 +175,9 @@ describe('CategoriesPanel', () => {
     it('updates category name', () => {
       render(<CategoriesPanel />);
 
-      // Enter edit mode
-      const categoryButton = screen.getByRole('button', { name: /Coral/i });
-      fireEvent.doubleClick(categoryButton);
+      // Enter edit mode via edit icon
+      const editButton = screen.getByRole('button', { name: /Edit Coral/i });
+      fireEvent.click(editButton);
 
       // Change name
       const input = screen.getByDisplayValue('Coral');
@@ -178,9 +189,9 @@ describe('CategoriesPanel', () => {
     it('exits edit mode on Enter key', () => {
       render(<CategoriesPanel />);
 
-      // Enter edit mode
-      const categoryButton = screen.getByRole('button', { name: /Coral/i });
-      fireEvent.doubleClick(categoryButton);
+      // Enter edit mode via edit icon
+      const editButton = screen.getByRole('button', { name: /Edit Coral/i });
+      fireEvent.click(editButton);
 
       // Press Enter
       const input = screen.getByDisplayValue('Coral');
@@ -193,9 +204,9 @@ describe('CategoriesPanel', () => {
     it('exits edit mode on Done button click', () => {
       render(<CategoriesPanel />);
 
-      // Enter edit mode
-      const categoryButton = screen.getByRole('button', { name: /Coral/i });
-      fireEvent.doubleClick(categoryButton);
+      // Enter edit mode via edit icon
+      const editButton = screen.getByRole('button', { name: /Edit Coral/i });
+      fireEvent.click(editButton);
 
       // Click Done
       fireEvent.click(screen.getByText('Done'));
@@ -212,9 +223,9 @@ describe('CategoriesPanel', () => {
 
       render(<CategoriesPanel />);
 
-      // Enter edit mode for the third category
-      const thirdCategoryButton = screen.getByRole('button', { name: /Third/i });
-      fireEvent.doubleClick(thirdCategoryButton);
+      // Enter edit mode for the third category via edit icon
+      const editButton = screen.getByRole('button', { name: /Edit Third/i });
+      fireEvent.click(editButton);
 
       // Click delete
       fireEvent.click(screen.getByText('Delete'));
@@ -229,9 +240,9 @@ describe('CategoriesPanel', () => {
 
       render(<CategoriesPanel />);
 
-      // Enter edit mode and delete
-      const thirdCategoryButton = screen.getByRole('button', { name: /Third/i });
-      fireEvent.doubleClick(thirdCategoryButton);
+      // Enter edit mode and delete via edit icon
+      const editButton = screen.getByRole('button', { name: /Edit Third/i });
+      fireEvent.click(editButton);
       fireEvent.click(screen.getByText('Delete'));
 
       // Confirm deletion
@@ -256,9 +267,9 @@ describe('CategoriesPanel', () => {
 
       render(<CategoriesPanel />);
 
-      // Enter edit mode for coral
-      const coralButton = screen.getByRole('button', { name: /Coral/i });
-      fireEvent.doubleClick(coralButton);
+      // Enter edit mode for coral via edit icon
+      const editButton = screen.getByRole('button', { name: /Edit Coral/i });
+      fireEvent.click(editButton);
 
       // Delete button should show disabled state
       const deleteButton = screen.getByText('Delete');
@@ -276,9 +287,9 @@ describe('CategoriesPanel', () => {
 
       render(<CategoriesPanel />);
 
-      // Enter edit mode
-      const coralButton = screen.getByRole('button', { name: /Coral/i });
-      fireEvent.doubleClick(coralButton);
+      // Enter edit mode via edit icon
+      const editButton = screen.getByRole('button', { name: /Edit Coral/i });
+      fireEvent.click(editButton);
 
       // Delete button should show disabled state
       const deleteButton = screen.getByText('Delete');
