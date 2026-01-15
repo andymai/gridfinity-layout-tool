@@ -61,8 +61,8 @@ export function slugify(name: string): string {
  * Build a full layout URL path from ID and name.
  *
  * @example
- * buildLayoutPath("abc123xyz789", "My Layout") // "/abc123xyz789/my-layout"
+ * buildLayoutPath("abc123xyz789", "My Layout") // "/l/abc123xyz789/my-layout"
  */
 export function buildLayoutPath(layoutId: string, layoutName: string): string {
-  return `/${layoutId}/${slugify(layoutName)}`;
+  return `/l/${layoutId}/${slugify(layoutName)}`;
 }

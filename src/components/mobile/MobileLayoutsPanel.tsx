@@ -579,10 +579,9 @@ function MobileCloudSharePanel({
   };
 
   const handlePermissionChange = async (newPermission: SharePermission) => {
+    // Only update local state; setPermission already calls updatePermission
+    // when an existing share exists (see line 558-565)
     setPermission(newPermission);
-    if (hasActiveShare) {
-      await updatePermission(newPermission);
-    }
   };
 
   const handleDelete = async () => {

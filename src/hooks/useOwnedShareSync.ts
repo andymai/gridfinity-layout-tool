@@ -17,6 +17,7 @@ import { useLibraryStore } from '../store/library';
 import { updateShare } from '../api/share';
 import { isOk } from '../result';
 import { STAGING_ID } from '../constants';
+import type { CloudShareInfo } from '../types';
 
 /** Debounce delay for cloud share updates (5 seconds) */
 const CLOUD_SYNC_DEBOUNCE_MS = 5000;
@@ -31,6 +32,10 @@ export function useOwnedShareSync(): void {
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSyncedRef = useRef<string | null>(null);
   const isSyncingRef = useRef(false);
+  // Track cloud share info in a ref to avoid stale closures in cleanup
+  const cloudShareRef = useRef<CloudShareInfo | null>(null);
+  // Track sync function in a ref to always call the latest version
+  const syncToCloudRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   const { layout, activeLayoutId, lastEditSource } = useLayoutStore(
     useShallow((state) => ({
@@ -44,6 +49,9 @@ export function useOwnedShareSync(): void {
 
   // Find cloudShare info for the active layout
   const cloudShare = entries.find((e) => e.id === activeLayoutId)?.cloudShare ?? null;
+
+  // Keep ref in sync with current cloudShare value
+  cloudShareRef.current = cloudShare;
 
   const syncToCloud = useCallback(async () => {
     if (!cloudShare || isSyncingRef.current) return;
@@ -79,6 +87,9 @@ export function useOwnedShareSync(): void {
     }
   }, [cloudShare, layout]);
 
+  // Keep sync function ref updated to always call the latest version
+  syncToCloudRef.current = syncToCloud;
+
   // Debounced sync effect
   useEffect(() => {
     // Only sync if:
@@ -107,13 +118,14 @@ export function useOwnedShareSync(): void {
   }, [cloudShare, layout, lastEditSource, activeLayoutId, syncToCloud]);
 
   // Sync on unmount (navigating away, closing tab)
+  // Use refs to avoid stale closures - cloudShare might be null by cleanup time
   useEffect(() => {
     return () => {
-      if (cloudShare && debounceTimerRef.current) {
+      if (cloudShareRef.current && debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
-        // Fire-and-forget sync before unmount
-        syncToCloud();
+        // Fire-and-forget sync before unmount using the latest sync function
+        syncToCloudRef.current();
       }
     };
-  }, [cloudShare, syncToCloud]);
+  }, []); // Empty deps - refs provide current values
 }

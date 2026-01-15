@@ -98,10 +98,18 @@ export function clearLayoutURL(): void {
 
 /**
  * Check if the current slug matches the expected slug for a layout.
- * Returns the canonical URL if redirect is needed, null if URL is correct.
+ * Returns the canonical URL if redirect is needed, null if URL is correct
+ * or if not currently on a layout URL.
  */
 export function getCanonicalRedirect(layoutId: string, layoutName: string): string | null {
-  const currentSlug = parseLayoutFromURL()?.slug;
+  const parsed = parseLayoutFromURL();
+
+  // Not on a layout URL - no redirect needed
+  if (!parsed) {
+    return null;
+  }
+
+  const currentSlug = parsed.slug;
   const expectedSlug = slugify(layoutName);
 
   // Redirect if:

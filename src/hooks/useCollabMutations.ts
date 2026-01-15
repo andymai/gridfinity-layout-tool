@@ -149,11 +149,11 @@ export function useCollabMutations(): CollabMutations {
           ...currentLayout,
           bins: [...currentLayout.bins, bin],
         }));
+        return ok(id);
       } else {
-        store.addBin(binData);
+        // Local mode: return the ID from store.addBin() which generates its own ID
+        return store.addBin(binData);
       }
-
-      return ok(id);
     },
     [isCollaborative, getLayout, updateLiveblocksLayout, store]
   );

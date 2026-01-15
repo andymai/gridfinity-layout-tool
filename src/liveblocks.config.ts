@@ -54,8 +54,6 @@ export interface LiveblocksStorage {
     version: number;
     /** Delete token for cloud share updates (set by owner, used by all collaborators) */
     deleteToken?: string;
-    /** Share expiration in days (set by owner) */
-    shareExpiration?: number;
   };
 }
 
@@ -67,7 +65,7 @@ export interface LiveblocksStorage {
  * and set LIVEBLOCKS_SECRET_KEY environment variable.
  */
 const client = createClient({
-  publicApiKey: 'pk_prod_U9xwHS36eq5JjzHntty6V-InZstqDYUMrYbmTXtZ2ulmoN_20sj9210tZFUkZpTZ',
+  publicApiKey: import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY || '',
   // Throttle presence updates to 20fps (50ms) to balance smoothness and bandwidth
   throttle: 50,
 });
@@ -76,9 +74,16 @@ const client = createClient({
  * Create typed room context with our presence and storage types.
  * This provides React hooks that are automatically typed to our schema.
  *
- * Note: Type assertion is used because our interfaces are structurally
- * JSON-compatible but TypeScript requires explicit index signatures
- * for JsonObject constraint. This is a common pattern with Liveblocks.
+ * Note: Type assertion to `any` is used because Liveblocks requires types to
+ * extend JsonObject (with index signatures), but our interfaces define specific
+ * properties without index signatures for type safety. The hooks below are
+ * re-exported with proper typing via type assertions.
+ *
+ * This is a common pattern with Liveblocks - see their examples:
+ * @see https://liveblocks.io/docs/guides/how-to-create-a-collaborative-to-do-list-with-react-and-liveblocks
+ *
+ * TODO: When Liveblocks adds better TypeScript support for strict types,
+ * update this to use UserPresence and LiveblocksStorage directly.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const context = createRoomContext<any, any>(client);

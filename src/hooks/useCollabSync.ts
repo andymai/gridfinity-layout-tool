@@ -51,6 +51,7 @@ export function useCollabSync(): void {
   // Sync state machine
   const syncStateRef = useRef<SyncState>('pending');
   const lastSyncedLayoutRef = useRef<Layout | null>(null);
+  const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Get layout from Liveblocks storage
   const remoteLayout = useStorage((root) => root?.layout) as Layout | null;
@@ -89,8 +90,10 @@ export function useCollabSync(): void {
         lastSyncedLayoutRef.current = localLayout;
         updateRemoteLayout(localLayout);
         // Move to ready state after a brief delay to let the push complete
-        setTimeout(() => {
+        // Store timeout ID for cleanup on unmount
+        initTimeoutRef.current = setTimeout(() => {
           syncStateRef.current = 'ready';
+          initTimeoutRef.current = null;
         }, 500);
         return;
       }
@@ -160,4 +163,14 @@ export function useCollabSync(): void {
     lastSyncedLayoutRef.current = localLayout;
     updateRemoteLayout(localLayout);
   }, [localLayout, lastEditSource, updateRemoteLayout]);
+
+  // Cleanup effect: clear pending timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+        initTimeoutRef.current = null;
+      }
+    };
+  }, []);
 }
