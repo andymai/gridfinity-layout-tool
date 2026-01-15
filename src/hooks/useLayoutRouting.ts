@@ -14,14 +14,14 @@ import {
 /**
  * Hook that synchronizes the URL with the active layout.
  *
- * URL format: /{layoutId}/{slug}
- * Example: /abc123xyz789/my-workshop-layout
+ * URL format: /l/{layoutId}/{slug}
+ * Example: /l/abc123xyz789/my-workshop-layout
  *
  * Features:
  * - Bookmarkable URLs with human-readable slugs
  * - Slug redirects: wrong/missing slugs redirect to canonical URL
  * - Browser history: back/forward navigates between layouts
- * - Legacy support: handles old #local/{id} and /s/{shareId} URLs
+ * - Legacy support: handles old #local/{id} URLs
  *
  * Edge cases handled:
  * - Share links (#share=) take precedence over layout routing
@@ -115,11 +115,6 @@ export function useLayoutRouting() {
 
     // Skip during shared preview - keep the share URL visible
     if (sharedLayoutPreview) return;
-
-    // Check for share URL pattern /s/{id} - let SharedLayoutImporter handle it
-    if (/^\/s\/[a-zA-Z0-9]{12}$/.test(window.location.pathname)) {
-      return;
-    }
 
     const urlInfo = parseLayoutFromURL();
     if (!urlInfo) {
@@ -240,11 +235,6 @@ export function useLayoutRouting() {
   useEffect(() => {
     // Skip during shared preview - keep the share URL visible
     if (sharedLayoutPreview) {
-      return;
-    }
-
-    // Check for share URL pattern /s/{id} - let SharedLayoutImporter handle it
-    if (/^\/s\/[a-zA-Z0-9]{12}$/.test(window.location.pathname)) {
       return;
     }
 
