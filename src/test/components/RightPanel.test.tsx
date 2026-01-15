@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { RightPanel } from '../../components/RightPanel';
-import { useUIStore, useLayoutStore } from '../../store';
+import { useUIStore, useLayoutStore, useViewStore } from '../../store';
 import { resetAllStores } from '../testUtils';
 import type { UseBinInspectorReturn } from '../../components/inspector/useBinInspector';
 import type { UsePrintListReturn } from '../../hooks/usePrintList';
@@ -204,7 +204,7 @@ describe('RightPanel', () => {
 
   describe('collapsed state', () => {
     it('renders collapsed panel with expand button', () => {
-      useUIStore.setState({ rightPanelCollapsed: true });
+      useViewStore.setState({ rightPanelCollapsed: true });
       render(<RightPanel />);
 
       const expandButton = screen.getByRole('button', { name: 'Expand right panel' });
@@ -212,7 +212,7 @@ describe('RightPanel', () => {
     });
 
     it('expands panel when expand button clicked', () => {
-      useUIStore.setState({ rightPanelCollapsed: true });
+      useViewStore.setState({ rightPanelCollapsed: true });
       render(<RightPanel />);
 
       fireEvent.click(screen.getByRole('button', { name: 'Expand right panel' }));
@@ -221,7 +221,7 @@ describe('RightPanel', () => {
     });
 
     it('has narrow width when collapsed', () => {
-      useUIStore.setState({ rightPanelCollapsed: true });
+      useViewStore.setState({ rightPanelCollapsed: true });
       const { container } = render(<RightPanel />);
 
       const aside = container.querySelector('aside');
@@ -770,7 +770,7 @@ describe('RightPanel', () => {
     });
 
     it('expand button has proper aria-label when collapsed', () => {
-      useUIStore.setState({ rightPanelCollapsed: true });
+      useViewStore.setState({ rightPanelCollapsed: true });
       render(<RightPanel />);
 
       expect(screen.getByRole('button', { name: 'Expand right panel' })).toBeInTheDocument();

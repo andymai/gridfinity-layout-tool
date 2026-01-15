@@ -32,7 +32,7 @@ export interface InteractionContext {
   paintSize: PaintSize | null;
   selectedBinIds: string[];
 
-  // Store actions (from useUIStore)
+  // Store actions (from useInteractionStore and useSelectionStore)
   setInteraction: (interaction: Interaction | null) => void;
   setDropTarget: (target: 'trash' | 'staging' | null) => void;
   setSelectedBin: (id: string) => void;

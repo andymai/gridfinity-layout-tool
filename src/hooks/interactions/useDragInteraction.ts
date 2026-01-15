@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useUIStore } from '../../store';
+import { useInteractionStore, useViewStore } from '../../store';
 import { canPlaceBin } from '../../utils/validation';
 import { constrainGroupDelta } from '../../utils/selection';
 import { STAGING_ID, getBaseCellSize } from '../../constants';
@@ -88,7 +88,7 @@ export function useDragInteraction(
       let clickOffset: { x: number; y: number } | undefined;
       if (gridRef.current) {
         const rect = gridRef.current.getBoundingClientRect();
-        const zoom = useUIStore.getState().zoom;
+        const zoom = useViewStore.getState().zoom;
         const viewportWidth =
           typeof window !== 'undefined' ? window.innerWidth : 1280;
         const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
@@ -155,7 +155,7 @@ export function useDragInteraction(
    */
   const handleMove = useCallback(
     (coords: Coord, clamped: Coord) => {
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       if (!interaction || interaction.type !== 'drag') return;
 
       const overGrid = isInBounds(coords);
@@ -222,10 +222,10 @@ export function useDragInteraction(
    * Handles drop targets (trash, staging) or commits bin movement/duplication.
    */
   const handleUp = useCallback(() => {
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     if (!interaction || interaction.type !== 'drag') return;
 
-    const currentDropTarget = useUIStore.getState().dropTarget;
+    const currentDropTarget = useInteractionStore.getState().dropTarget;
 
     // Handle drop to trash
     if (currentDropTarget === 'trash') {

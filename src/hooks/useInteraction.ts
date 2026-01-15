@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useRef, useMemo } from 'react';
 import type { RefObject } from 'react';
 import type { Coord, ResizeHandle } from '../types';
-import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
+import { useLayoutStore, useUndoableAction, useSelectionStore, useInteractionStore } from '../store';
 import { useMutations } from '../context/MutationsContext';
 import { useGridCoords } from './useGridCoords';
 import { useCollabPresence } from './useCollabPresence';
@@ -84,15 +84,18 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const capturedPointerRef = useRef<{ element: HTMLElement; pointerId: number } | null>(null);
   const { getGridCoords, clampCoords, isInBounds } = useGridCoords(gridRef);
   const { updateInteraction } = useCollabPresence();
-  const interaction = useUIStore(state => state.interaction);
-  const setInteraction = useUIStore(state => state.setInteraction);
-  const setDropTarget = useUIStore(state => state.setDropTarget);
-  const selectedBinIds = useUIStore(state => state.selectedBinIds);
-  const setSelectedBin = useUIStore(state => state.setSelectedBin);
-  const setSelectedBins = useUIStore(state => state.setSelectedBins);
-  const activeLayerId = useUIStore(state => state.activeLayerId);
-  const activeCategoryId = useUIStore(state => state.activeCategoryId);
-  const paintSize = useUIStore(state => state.paintSize);
+  // Interaction state
+  const interaction = useInteractionStore(state => state.interaction);
+  const setInteraction = useInteractionStore(state => state.setInteraction);
+  const setDropTarget = useInteractionStore(state => state.setDropTarget);
+  const paintSize = useInteractionStore(state => state.paintSize);
+  // Selection state
+  const selectedBinIds = useSelectionStore(state => state.selectedBinIds);
+  const setSelectedBin = useSelectionStore(state => state.setSelectedBin);
+  const setSelectedBins = useSelectionStore(state => state.setSelectedBins);
+  const activeLayerId = useSelectionStore(state => state.activeLayerId);
+  const activeCategoryId = useSelectionStore(state => state.activeCategoryId);
+  // Layout state
   const layout = useLayoutStore(state => state.layout);
   const { addBin, updateBin, deleteBin } = useMutations();
   const { execute } = useUndoableAction();

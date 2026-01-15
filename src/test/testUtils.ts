@@ -3,13 +3,19 @@ import { cleanup } from '@testing-library/react';
 import type { Layout, LayoutLibrary } from '../types';
 import { createDefaultLayout } from '../constants';
 import { useLayoutStore } from '../store/layout';
-import { useUIStore } from '../store/ui';
 import { useHistoryStore } from '../store/history';
 import { useToastStore } from '../store/toast';
 import { useSettingsStore, DEFAULT_SETTINGS } from '../store/settings';
 import { useLibraryStore } from '../store/library';
 import { useLabsStore } from '../store/labs';
 import { createDefaultLabsPreferences } from '../labs/types';
+// New stores extracted from ui.ts
+import { useSelectionStore } from '../store/selection';
+import { useViewStore } from '../store/view';
+import { useInteractionStore } from '../store/interaction';
+import { useMobileStore } from '../store/mobile';
+import { useHalfBinModeStore } from '../store/halfBinMode';
+import { useSharedPreviewStore } from '../store/sharedPreview';
 
 /**
  * Reset all Zustand stores to their initial state.
@@ -30,38 +36,61 @@ export function resetAllStores(): void {
     activeLayoutId: null,
   });
 
-  // UI store - full reset including all UI state
-  useUIStore.setState({
-    activeLayerId: '',
+  // Selection store
+  useSelectionStore.setState({
     selectedBinIds: [],
+    activeLayerId: '',
     activeCategoryId: 'coral',
+    focusedBinId: null,
+    quickLabelBinId: null,
+  });
+
+  // View store
+  useViewStore.setState({
     zoom: 1,
     showOtherLayers: true,
     showLabels: true,
     leftPanelCollapsed: false,
     rightPanelCollapsed: false,
-    interaction: null,
-    dropTarget: null,
-    paintSize: null,
-    activeMobilePanel: null,
     contextMenu: null,
-    showIsometricPreview: true,
-    isometricRotation: 0,
-    layerViewMode: 'focus',
-    isPreviewExpanded: false,
-    focusedBinId: null,
-    keyboardDragMode: false,
-    keyboardResizeMode: false,
-    liveMessage: null,
-    quickLabelBinId: null,
     highlightedCategoryId: null,
     highlightedRowLabel: null,
     highlightedColLabel: null,
+    printModalOpen: false,
+  });
+
+  // Interaction store
+  useInteractionStore.setState({
+    interaction: null,
+    dropTarget: null,
+    paintSize: null,
+    keyboardDragMode: false,
+    keyboardResizeMode: false,
+    liveMessage: null,
+    showIsometricPreview: false, // Match InteractionStore default
+    isometricRotation: 0,
+    layerViewMode: 'stack', // Match InteractionStore default
+    isPreviewExpanded: false,
+  });
+
+  // Mobile store
+  useMobileStore.setState({
+    activeMobilePanel: null,
+    mobileLayersTab: 'layers',
+  });
+
+  // Half-bin mode store
+  useHalfBinModeStore.setState({
     halfBinMode: false,
+  });
+
+  // Shared preview store
+  useSharedPreviewStore.setState({
     sharedLayoutPreview: null,
     sharedLayoutOriginalName: null,
     sharedLayoutAuthorName: null,
-    printModalOpen: false,
+    sharedLayoutCloudShareId: null,
+    sharedLayoutPermission: null,
   });
 
   // History store

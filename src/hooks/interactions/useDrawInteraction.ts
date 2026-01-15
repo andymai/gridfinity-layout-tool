@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useUIStore, useLayoutStore } from '../../store';
+import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '../../store';
 import { canPlaceBin } from '../../utils/validation';
 import { isOk } from '../../result';
 import type { InteractionContext, ModeHandlers, DrawStartArgs, Coord } from './types';
@@ -90,7 +90,7 @@ export function useDrawInteraction(
   const handleMove = useCallback(
     (_coords: Coord, clamped: Coord) => {
       // Read current interaction state directly from store
-      const interaction = useUIStore.getState().interaction;
+      const interaction = useInteractionStore.getState().interaction;
       if (!interaction) return;
 
       if (interaction.type === 'draw') {
@@ -113,7 +113,7 @@ export function useDrawInteraction(
    * Creates bin(s) based on the selected area.
    */
   const handleUp = useCallback(() => {
-    const interaction = useUIStore.getState().interaction;
+    const interaction = useInteractionStore.getState().interaction;
     if (!interaction) return;
 
     if (interaction.type === 'draw') {
@@ -124,7 +124,7 @@ export function useDrawInteraction(
       const y2 = Math.max(start.y, current.y);
 
       // In half-bin mode, minimum size is 0.5; otherwise it's 1
-      const halfBinModeNow = useUIStore.getState().halfBinMode;
+      const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
       const minSizeNow = halfBinModeNow ? 0.5 : 1;
       const width = x2 - x1 + minSizeNow;
       const depth = y2 - y1 + minSizeNow;
@@ -156,7 +156,7 @@ export function useDrawInteraction(
       const x2 = Math.max(start.x, current.x);
       const y2 = Math.max(start.y, current.y);
 
-      const halfBinModeNow = useUIStore.getState().halfBinMode;
+      const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
       const minSizeNow = halfBinModeNow ? 0.5 : 1;
       const areaWidth = x2 - x1 + minSizeNow;
       const areaDepth = y2 - y1 + minSizeNow;
