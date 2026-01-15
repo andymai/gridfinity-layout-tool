@@ -69,9 +69,9 @@ export function CollabCursor({ presence, cellSize, gap }: CollabCursorProps) {
         />
       </svg>
 
-      {/* Name label positioned to the right of the cursor */}
+      {/* Name label floating above the cursor for better visibility */}
       <div
-        className="absolute left-4 top-3 px-2 py-0.5 text-xs font-medium text-white rounded whitespace-nowrap max-w-[120px] truncate shadow-md"
+        className="absolute left-3 -top-5 px-1.5 py-0.5 text-[10px] font-medium text-white rounded whitespace-nowrap max-w-[100px] truncate shadow-md"
         style={{ backgroundColor: color }}
       >
         {name}
