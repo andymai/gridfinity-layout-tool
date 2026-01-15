@@ -26,6 +26,7 @@ import {
 import { LabsDrawer } from './labs';
 import { PresenceAvatarList } from './collab';
 import { usePresence } from '../hooks/usePresence';
+import { useCollabMode } from '../hooks/useCollabMode';
 import type { SaveStatus } from '../hooks/useAutoSave';
 
 // Legacy context menu state for backwards compatibility
@@ -112,12 +113,30 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen, saveStatus
 }
 
 /**
+ * Participants panel content that safely calls usePresence().
+ * Only mounted when in collaborative mode (inside RoomProvider).
+ */
+function ParticipantsPanel() {
+  const { isCollaborative } = useCollabMode();
+  const { participants } = usePresence();
+
+  // Safety check - should not reach here if not collaborative,
+  // but guard just in case
+  if (!isCollaborative) {
+    return (
+      <div className="px-4 py-8 text-center text-content-secondary text-sm">
+        Collaborative editing is not active
+      </div>
+    );
+  }
+
+  return <PresenceAvatarList participants={participants} className="px-2" />;
+}
+
+/**
  * Mobile panel content based on active panel type.
  */
 function MobilePanelContent({ panel }: { panel: string }) {
-  // Get presence data for participants panel
-  const { participants } = usePresence();
-
   const content = (() => {
     switch (panel) {
       case 'layers':
@@ -133,7 +152,7 @@ function MobilePanelContent({ panel }: { panel: string }) {
       case 'layouts':
         return <MobileLayoutsPanel />;
       case 'participants':
-        return <PresenceAvatarList participants={participants} className="px-2" />;
+        return <ParticipantsPanel />;
       default:
         return null;
     }
