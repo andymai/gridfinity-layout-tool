@@ -64,27 +64,164 @@ export function PrintBin({
 
   // Calculate grid position (CSS Grid is 1-indexed)
   // Grid y=0 is bottom, but CSS row 1 is top
+  const integerWidth = Math.floor(drawer.width);
   const integerDepth = Math.floor(drawer.depth);
-  const gridCol = Math.floor(bin.x) + 1;
-  const gridRow = integerDepth - Math.floor(bin.y + bin.depth) + 1;
-  const colSpan = Math.ceil(bin.x + bin.width) - Math.floor(bin.x);
-  const rowSpan = Math.ceil(bin.y + bin.depth) - Math.floor(bin.y);
+  const hasFractionalDrawerWidth = drawer.width % 1 !== 0;
+  const hasFractionalDrawerDepth = drawer.depth % 1 !== 0;
+  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
+  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
+  const fractionalWidthPart = drawer.width - integerWidth;
+  const fractionalDepthPart = drawer.depth - integerDepth;
+  const gridRows = Math.ceil(drawer.depth);
 
-  // Calculate pixel dimensions for fractional bins
-  const hasFractional =
+  // Helper: Get CSS column for a grid x coordinate
+  const getCssColForX = (x: number): number => {
+    if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
+      if (x < fractionalWidthPart) return 1;
+      return Math.floor(x - fractionalWidthPart) + 2;
+    }
+    return Math.floor(x) + 1;
+  };
+
+  // Helper: Get CSS row for a grid y coordinate (y=0 at bottom, CSS row 1 at top)
+  const getCssRowForY = (y: number): number => {
+    if (hasFractionalDrawerDepth) {
+      if (fractionalEdgeY === 'start') {
+        if (y < fractionalDepthPart) return gridRows;
+        return integerDepth - Math.floor(y - fractionalDepthPart);
+      } else {
+        if (y >= integerDepth) return 1;
+        return integerDepth - Math.floor(y) + 1;
+      }
+    }
+    return integerDepth - Math.floor(y);
+  };
+
+  // Calculate CSS column placement
+  const binEndX = bin.x + bin.width;
+  const startCol = getCssColForX(bin.x);
+  const endCol = getCssColForX(binEndX > 0 ? binEndX - 0.001 : binEndX);
+  const gridCol = startCol;
+  const colSpan = Math.max(1, endCol - startCol + 1);
+
+  // Calculate CSS row placement
+  const binEndY = bin.y + bin.depth;
+  const topRow = getCssRowForY(binEndY > 0 ? binEndY - 0.001 : binEndY);
+  const bottomRow = getCssRowForY(bin.y);
+  const gridRow = topRow;
+  const rowSpan = Math.max(1, bottomRow - topRow + 1);
+
+  // Calculate pixel dimensions accounting for fractional drawer cells
+  const hasFractionalBin =
     bin.x % 1 !== 0 || bin.y % 1 !== 0 || bin.width % 1 !== 0 || bin.depth % 1 !== 0;
-  const toPixels = (units: number) => units * cellSize + Math.max(0, units - 1) * gap;
-  const pixelWidth = hasFractional ? toPixels(bin.width) : undefined;
-  const pixelHeight = hasFractional ? toPixels(bin.depth) : undefined;
+  const needsCustomSizing = hasFractionalBin || hasFractionalDrawerWidth || hasFractionalDrawerDepth;
 
-  // Calculate offsets for fractional positioning
-  const fractionalX = bin.x - Math.floor(bin.x);
-  const fractionalYFromTop = Math.ceil(bin.y + bin.depth) - (bin.y + bin.depth);
-  const offsetX = hasFractional ? fractionalX * (cellSize + gap) : 0;
-  const offsetY = hasFractional ? fractionalYFromTop * (cellSize + gap) : 0;
+  // Calculate fractional cell sizes in pixels
+  const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
+  const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
 
-  // Determine what text to display
-  const showLabel = settings.showLabel && bin.label;
+  // Calculate pixel width accounting for fractional edge
+  let pixelWidth: number | undefined;
+  if (!needsCustomSizing) {
+    pixelWidth = undefined;
+  } else if (!hasFractionalDrawerWidth) {
+    pixelWidth = bin.width * cellSize + Math.max(0, bin.width - 1) * gap;
+  } else if (fractionalEdgeX === 'start') {
+    const inFractional = Math.max(0, Math.min(binEndX, fractionalWidthPart) - Math.max(bin.x, 0));
+    const inInteger = bin.width - inFractional;
+    let width = 0;
+    if (inFractional > 0) {
+      width += (inFractional / fractionalWidthPart) * fractionalCellWidth;
+    }
+    if (inInteger > 0) {
+      if (inFractional > 0) width += gap;
+      width += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+    }
+    pixelWidth = width;
+  } else {
+    const inInteger = Math.max(0, Math.min(binEndX, integerWidth) - bin.x);
+    const inFractional = bin.width - inInteger;
+    let width = 0;
+    if (inInteger > 0) {
+      width += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+    }
+    if (inFractional > 0) {
+      if (inInteger > 0) width += gap;
+      width += (inFractional / fractionalWidthPart) * fractionalCellWidth;
+    }
+    pixelWidth = width;
+  }
+
+  // Calculate pixel height accounting for fractional edge
+  let pixelHeight: number | undefined;
+  if (!needsCustomSizing) {
+    pixelHeight = undefined;
+  } else if (!hasFractionalDrawerDepth) {
+    pixelHeight = bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap;
+  } else if (fractionalEdgeY === 'start') {
+    const inFractional = Math.max(0, Math.min(binEndY, fractionalDepthPart) - Math.max(bin.y, 0));
+    const inInteger = bin.depth - inFractional;
+    let height = 0;
+    if (inFractional > 0) {
+      height += (inFractional / fractionalDepthPart) * fractionalCellHeight;
+    }
+    if (inInteger > 0) {
+      if (inFractional > 0) height += gap;
+      height += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+    }
+    pixelHeight = height;
+  } else {
+    const inInteger = Math.max(0, Math.min(binEndY, integerDepth) - bin.y);
+    const inFractional = bin.depth - inInteger;
+    let height = 0;
+    if (inInteger > 0) {
+      height += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+    }
+    if (inFractional > 0) {
+      if (inInteger > 0) height += gap;
+      height += (inFractional / fractionalDepthPart) * fractionalCellHeight;
+    }
+    pixelHeight = height;
+  }
+
+  // Calculate pixel offsets for fractional positioning within the cell
+  let offsetX = 0;
+  let offsetY = 0;
+  if (needsCustomSizing) {
+    // X offset
+    if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
+      if (bin.x < fractionalWidthPart) {
+        offsetX = (bin.x / fractionalWidthPart) * fractionalCellWidth;
+      } else {
+        const integerX = bin.x - fractionalWidthPart;
+        offsetX = (integerX - Math.floor(integerX)) * (cellSize + gap);
+      }
+    } else {
+      offsetX = (bin.x - Math.floor(bin.x)) * (cellSize + gap);
+    }
+
+    // Y offset (from top of cell)
+    if (hasFractionalDrawerDepth && fractionalEdgeY === 'start') {
+      if (binEndY <= fractionalDepthPart) {
+        offsetY = (fractionalDepthPart - binEndY) / fractionalDepthPart * fractionalCellHeight;
+      } else {
+        const integerY = binEndY - fractionalDepthPart;
+        offsetY = (Math.ceil(integerY) - integerY) * (cellSize + gap);
+      }
+    } else if (hasFractionalDrawerDepth && fractionalEdgeY === 'end') {
+      if (binEndY > integerDepth) {
+        const fractionalY = binEndY - integerDepth;
+        offsetY = (fractionalDepthPart - fractionalY) / fractionalDepthPart * fractionalCellHeight;
+      } else {
+        offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
+      }
+    } else {
+      offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
+    }
+  }
+
+  // Determine what text to display based on settings
+  const wantsLabel = settings.showLabel && bin.label;
   const showSize = settings.showSize;
   const showHeight = settings.showHeight;
   const showNotes = settings.showNotes && bin.notes;
@@ -98,14 +235,50 @@ export function PrintBin({
   const binPixelHeight = pixelHeight ?? bin.depth * cellSize + (bin.depth - 1) * gap;
   const minDim = Math.min(binPixelWidth, binPixelHeight);
 
-  // Scale font based on bin size
-  const baseFontSize = Math.max(7, Math.min(14, minDim / 4));
-  const labelFontSize = baseFontSize;
-  const sizeFontSize = baseFontSize * 0.8;
-  const smallFontSize = baseFontSize * 0.65;
+  // Format dimensions - show decimal if fractional
+  const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
+  const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
+
+  // Smart rotation: use taller dimension for text if significantly taller
+  const shouldRotate = bin.depth > bin.width * 1.5;
+
+  // Available width for text (conservative: 75% of bin width to account for padding)
+  const rawAvailableWidth = shouldRotate ? binPixelHeight : binPixelWidth;
+  const effectiveAvailableWidth = rawAvailableWidth * 0.75;
+
+  // Font size calculations
+  const minFontSize = 7;
+  const maxFontSize = Math.max(7, Math.min(14, minDim * 0.28));
+
+  // Calculate if label fits and at what font size
+  let labelFits = false;
+  let labelFontSize = maxFontSize;
+
+  if (wantsLabel && bin.label) {
+    const labelLength = bin.label.length;
+    const neededFontSize = effectiveAvailableWidth / (labelLength * 0.6);
+
+    if (neededFontSize >= minFontSize) {
+      labelFits = true;
+      labelFontSize = Math.max(minFontSize, Math.min(Math.floor(neededFontSize), maxFontSize));
+    }
+  }
+
+  const primaryFontSize = labelFits ? labelFontSize : maxFontSize;
+  const secondaryFontSize = Math.max(6, Math.min(Math.round(primaryFontSize * 0.75), 12));
+  const smallFontSize = Math.max(5, Math.round(primaryFontSize * 0.65));
+
+  // Visibility thresholds
+  const rawAvailableHeight = shouldRotate ? binPixelWidth : binPixelHeight;
+  const hasSpaceForSecondary = rawAvailableHeight * 0.75 >= primaryFontSize * 2.5;
+
+  // Show label if it fits, otherwise show dimensions as primary
+  const showLabel = wantsLabel && labelFits;
+  const primaryText = showLabel && bin.label ? bin.label : (showSize ? dimensionsText : null);
+  const secondaryText = showLabel && showSize && hasSpaceForSecondary ? dimensionsText : null;
 
   // Hide text on very small bins
-  const showText = minDim > 30;
+  const showText = minDim > 24;
 
   return (
     <div
@@ -114,7 +287,7 @@ export function PrintBin({
         gridColumn: `${gridCol} / span ${colSpan}`,
         gridRow: `${gridRow} / span ${rowSpan}`,
         backgroundColor: color,
-        ...(hasFractional
+        ...(needsCustomSizing
           ? {
               width: pixelWidth,
               height: pixelHeight,
@@ -125,30 +298,60 @@ export function PrintBin({
       }}
     >
       {showText && (
-        <>
-          {/* Label */}
-          {showLabel && (
+        <div
+          className="print-bin-content"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            padding: '2px',
+            boxSizing: 'border-box',
+            transform: shouldRotate ? 'rotate(-90deg)' : 'none',
+            // When rotated, swap effective width/height for layout
+            ...(shouldRotate
+              ? {
+                  width: binPixelHeight,
+                  height: binPixelWidth,
+                }
+              : {}),
+          }}
+        >
+          {/* Primary text (label if fits, otherwise dimensions) */}
+          {primaryText && (
             <div
-              className="print-bin-label"
+              className="print-bin-primary"
               style={{
                 color: textColors.primary,
-                fontSize: `${labelFontSize}px`,
+                fontSize: `${primaryFontSize}px`,
+                fontWeight: showLabel ? 500 : 600,
+                fontFamily: 'ui-monospace, monospace',
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
               }}
             >
-              {bin.label}
+              {primaryText}
             </div>
           )}
 
-          {/* Size (width x depth) */}
-          {showSize && (
+          {/* Secondary text (dimensions when label is primary) */}
+          {secondaryText && (
             <div
-              className="print-bin-size"
+              className="print-bin-secondary"
               style={{
                 color: textColors.secondary,
-                fontSize: `${sizeFontSize}px`,
+                fontSize: `${secondaryFontSize}px`,
+                fontFamily: 'ui-monospace, monospace',
+                lineHeight: 1.2,
+                marginTop: '1px',
               }}
             >
-              {bin.width}x{bin.depth}
+              {secondaryText}
             </div>
           )}
 
@@ -159,6 +362,7 @@ export function PrintBin({
               style={{
                 color: textColors.secondary,
                 fontSize: `${smallFontSize}px`,
+                marginTop: '1px',
               }}
             >
               {bin.height}u
@@ -172,6 +376,11 @@ export function PrintBin({
               style={{
                 color: textColors.secondary,
                 fontSize: `${smallFontSize}px`,
+                marginTop: '1px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
               }}
               title={bin.notes}
             >
@@ -185,13 +394,18 @@ export function PrintBin({
               className="print-bin-custom-props"
               style={{
                 color: textColors.secondary,
-                fontSize: `${smallFontSize * 0.85}px`,
+                fontSize: `${Math.round(smallFontSize * 0.85)}px`,
+                marginTop: '1px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
               }}
             >
               {formatCustomProperties(bin.customProperties)}
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );
