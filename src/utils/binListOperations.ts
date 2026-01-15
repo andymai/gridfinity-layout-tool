@@ -146,11 +146,20 @@ function escapeCSVValue(value: string): string {
 }
 
 /**
+ * Metadata for CSV export including layout context.
+ */
+export interface CSVExportMeta {
+  layoutName?: string;
+  gridSize?: string;
+}
+
+/**
  * Format rows as CSV with proper escaping.
  * Compatible with Excel, Google Sheets, etc.
  * Dynamically adds columns for custom properties that exist in any row.
+ * Optionally includes layout name and grid size columns for context.
  */
-export function formatAsCSV(rows: EnhancedPrintRow[]): string {
+export function formatAsCSV(rows: EnhancedPrintRow[], meta?: CSVExportMeta): string {
   // Collect all unique custom property keys across all rows
   const customKeys = new Set<string>();
   for (const row of rows) {
@@ -162,17 +171,23 @@ export function formatAsCSV(rows: EnhancedPrintRow[]): string {
   }
   const sortedKeys = Array.from(customKeys).sort();
 
-  // Build header with dynamic custom property columns
-  const baseHeader = 'Size,Height,Bins,Pieces,Filament (m),Label,Notes';
+  // Build header with optional metadata and dynamic custom property columns
+  const metaHeader = meta ? 'Layout,Grid Size,' : '';
+  const baseHeader = `${metaHeader}Size,Height,Bins,Pieces,Filament (m),Label,Notes`;
   const header = sortedKeys.length > 0
     ? `${baseHeader},${sortedKeys.join(',')}`
     : baseHeader;
+
+  // Pre-compute metadata values if provided (with CSV escaping)
+  const layoutName = meta ? escapeCSVValue(meta.layoutName || '') : '';
+  const gridSize = meta ? escapeCSVValue(meta.gridSize || '') : '';
 
   // Build data rows
   const lines = rows.map(row => {
     const label = escapeCSVValue((row.labels ?? [])[0] || '');
     const notes = escapeCSVValue(row.notes || '');
-    const baseLine = `${row.size},${row.height}u,${row.binCount},${row.totalPieces},${row.filament},${label},${notes}`;
+    const metaValues = meta ? `${layoutName},${gridSize},` : '';
+    const baseLine = `${metaValues}${row.size},${row.height}u,${row.binCount},${row.totalPieces},${row.filament},${label},${notes}`;
 
     if (sortedKeys.length === 0) {
       return baseLine;
