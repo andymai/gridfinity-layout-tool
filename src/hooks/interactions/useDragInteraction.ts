@@ -260,8 +260,6 @@ export function useDragInteraction(
       const deltaY = interaction.currentCoord.y;
 
       if (deltaX !== 0 || deltaY !== 0) {
-        const layer = layout.layers.find((l) => l.id === activeLayerId);
-
         if (interaction.duplicate) {
           // Duplicate mode: create copies at new position, keep originals in place
           const newBinIds: string[] = [];
@@ -276,7 +274,7 @@ export function useDragInteraction(
                 y: bin.y + deltaY,
                 width: bin.width,
                 depth: bin.depth,
-                height: Math.max(bin.height, layer?.height ?? bin.height),
+                height: bin.height, // Keep original height - don't auto-adjust to layer minimum
                 clearanceHeight: bin.clearanceHeight,
                 category: bin.category,
                 label: bin.label,
@@ -303,7 +301,7 @@ export function useDragInteraction(
                 x: bin.x + deltaX,
                 y: bin.y + deltaY,
                 layerId: activeLayerId,
-                height: Math.max(bin.height, layer?.height ?? bin.height),
+                // Keep original height - don't auto-adjust to layer minimum
               });
             }
           });

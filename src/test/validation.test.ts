@@ -147,15 +147,15 @@ describe('canPlaceBin', () => {
     expect(result).toEqual({ valid: false, reason: 'exceeds_height' });
   });
 
-  it('rejects bin shorter than layer minimum height', () => {
+  it('allows bin shorter than layer default height (layer height is a default, not constraint)', () => {
     const layout = createTestLayout();
-    // layer2 has height 6, bin must be at least 6
+    // layer2 has height 6, but bins can be any height (layer height is just a default for new bins)
     const result = canPlaceBin(
       { x: 0, y: 0, width: 2, depth: 2, height: 3 },
       'layer2',
       layout
     );
-    expect(result).toEqual({ valid: false, reason: 'exceeds_height' });
+    expect(result).toEqual({ valid: true });
   });
 
   it('excludes multiple bins from collision check via excludeBinIds', () => {
