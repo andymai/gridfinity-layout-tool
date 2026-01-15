@@ -55,7 +55,7 @@ describe('useKeyboard', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
       liveMessage: null,
@@ -67,10 +67,10 @@ describe('useKeyboard', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,

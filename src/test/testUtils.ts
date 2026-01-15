@@ -67,9 +67,9 @@ export function resetAllStores(): void {
     keyboardDragMode: false,
     keyboardResizeMode: false,
     liveMessage: null,
-    showIsometricPreview: true,
+    showIsometricPreview: false, // Match InteractionStore default
     isometricRotation: 0,
-    layerViewMode: 'focus',
+    layerViewMode: 'stack', // Match InteractionStore default
     isPreviewExpanded: false,
   });
 

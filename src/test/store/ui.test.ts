@@ -282,10 +282,10 @@ describe('ui store', () => {
     it('toggleIsometricPreview toggles visibility', () => {
       const { toggleIsometricPreview } = useUIStore.getState();
 
-      // resetAllStores() sets this to true
-      expect(useUIStore.getState().showIsometricPreview).toBe(true);
-      toggleIsometricPreview();
+      // resetAllStores() sets this to false (InteractionStore default)
       expect(useUIStore.getState().showIsometricPreview).toBe(false);
+      toggleIsometricPreview();
+      expect(useUIStore.getState().showIsometricPreview).toBe(true);
     });
 
     it('setIsometricRotation sets rotation', () => {
@@ -328,14 +328,14 @@ describe('ui store', () => {
     it('setLayerViewMode changes layer view mode', () => {
       const { setLayerViewMode } = useUIStore.getState();
 
-      // resetAllStores() sets this to 'focus'
-      expect(useUIStore.getState().layerViewMode).toBe('focus');
-      setLayerViewMode('stack');
+      // resetAllStores() sets this to 'stack' (InteractionStore default)
       expect(useUIStore.getState().layerViewMode).toBe('stack');
-      setLayerViewMode('all');
-      expect(useUIStore.getState().layerViewMode).toBe('all');
       setLayerViewMode('focus');
       expect(useUIStore.getState().layerViewMode).toBe('focus');
+      setLayerViewMode('all');
+      expect(useUIStore.getState().layerViewMode).toBe('all');
+      setLayerViewMode('stack');
+      expect(useUIStore.getState().layerViewMode).toBe('stack');
     });
 
     it('togglePreviewExpanded toggles expanded state', () => {
@@ -793,24 +793,24 @@ describe('ui store', () => {
   });
 
   describe('isometric preview after reset', () => {
-    it('resetAllStores sets layerViewMode to focus', () => {
+    it('resetAllStores sets layerViewMode to stack (default)', () => {
       // Set to different value first
       useUIStore.getState().setLayerViewMode('all');
       expect(useUIStore.getState().layerViewMode).toBe('all');
 
-      // Reset should set to 'focus'
+      // Reset should set to 'stack' (the InteractionStore default)
       resetAllStores();
-      expect(useUIStore.getState().layerViewMode).toBe('focus');
+      expect(useUIStore.getState().layerViewMode).toBe('stack');
     });
 
-    it('resetAllStores sets showIsometricPreview to true', () => {
+    it('resetAllStores sets showIsometricPreview to false (default)', () => {
       // Set to different value first
-      useUIStore.getState().toggleIsometricPreview(); // false now
-      expect(useUIStore.getState().showIsometricPreview).toBe(false);
-
-      // Reset should set to true
-      resetAllStores();
+      useUIStore.getState().toggleIsometricPreview(); // true now
       expect(useUIStore.getState().showIsometricPreview).toBe(true);
+
+      // Reset should set to false (the InteractionStore default)
+      resetAllStores();
+      expect(useUIStore.getState().showIsometricPreview).toBe(false);
     });
   });
 });

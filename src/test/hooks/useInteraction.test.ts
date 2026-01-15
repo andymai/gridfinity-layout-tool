@@ -56,9 +56,10 @@ describe('useInteraction', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
+      liveMessage: null,
     });
     useViewStore.setState({
       zoom: 1,
@@ -67,10 +68,10 @@ describe('useInteraction', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,
@@ -455,9 +456,10 @@ describe('resize rect calculation (integration)', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
+      liveMessage: null,
     });
     useViewStore.setState({
       zoom: 1,
@@ -466,10 +468,10 @@ describe('resize rect calculation (integration)', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,
@@ -569,9 +571,10 @@ describe('pointer events', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
+      liveMessage: null,
     });
     useViewStore.setState({
       zoom: 1,
@@ -580,10 +583,10 @@ describe('pointer events', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,
@@ -961,9 +964,10 @@ describe('stagingDrag interaction', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
+      liveMessage: null,
     });
     useViewStore.setState({
       zoom: 1,
@@ -972,10 +976,10 @@ describe('stagingDrag interaction', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,
@@ -1192,9 +1196,10 @@ describe('duplicate drag (Alt+drag)', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
+      liveMessage: null,
     });
     useViewStore.setState({
       zoom: 1,
@@ -1203,10 +1208,10 @@ describe('duplicate drag (Alt+drag)', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,
@@ -1625,9 +1630,10 @@ describe('drag completion with movement', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
+      liveMessage: null,
     });
     useViewStore.setState({
       zoom: 1,
@@ -1636,10 +1642,10 @@ describe('drag completion with movement', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,
@@ -1783,9 +1789,10 @@ describe('resize completion with changes', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
+      liveMessage: null,
     });
     useViewStore.setState({
       zoom: 1,
@@ -1794,10 +1801,10 @@ describe('resize completion with changes', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,
@@ -1992,9 +1999,10 @@ describe('staging drag', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
+      liveMessage: null,
     });
     useViewStore.setState({
       zoom: 1,
@@ -2003,10 +2011,10 @@ describe('staging drag', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,
@@ -2062,9 +2070,10 @@ describe('resize via pointer movement', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
+      liveMessage: null,
     });
     useViewStore.setState({
       zoom: 1,
@@ -2073,10 +2082,10 @@ describe('resize via pointer movement', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,
@@ -2280,9 +2289,10 @@ describe('cleanup on unmount', () => {
       showIsometricPreview: true,
       isometricRotation: 0,
       isPreviewExpanded: false,
-      keyboardNavigationMode: false,
+      layerViewMode: 'stack',
       keyboardDragMode: false,
       keyboardResizeMode: false,
+      liveMessage: null,
     });
     useViewStore.setState({
       zoom: 1,
@@ -2291,10 +2301,10 @@ describe('cleanup on unmount', () => {
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
       contextMenu: null,
-      layerViewMode: 'focus',
-      highlightedArea: null,
-      printListSortBy: 'category',
-      printListSortDirection: 'asc',
+      highlightedCategoryId: null,
+      highlightedRowLabel: null,
+      highlightedColLabel: null,
+      printModalOpen: false,
     });
     useMobileStore.setState({
       activeMobilePanel: null,
