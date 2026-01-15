@@ -104,7 +104,7 @@ export function useBinInspector(): UseBinInspectorReturn {
 
   // Calculate constraints
   const constraints = useMemo<BinConstraints>(() => {
-    if (!bin || !layer) {
+    if (!bin) {
       return {
         minHeight: 1,
         maxHeight: 1,
@@ -115,11 +115,28 @@ export function useBinInspector(): UseBinInspectorReturn {
       };
     }
 
+    const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
+    const needsSplit = bin.width > maxGridUnits || bin.depth > maxGridUnits;
+
+    // For bins in staging, use full drawer height range
+    // They're not on a layer yet, so no layer-based constraints apply
+    if (bin.layerId === STAGING_ID || !layer) {
+      const minHeight = 1;
+      const maxHeight = layout.drawer.height;
+      const maxClearance = maxHeight - bin.height;
+      return {
+        minHeight,
+        maxHeight,
+        maxClearance,
+        maxGridUnits,
+        needsSplit,
+        heightRange: `${minHeight}u – ${maxHeight}u`,
+      };
+    }
+
     const minHeight = layer.height;
     const maxHeight = layout.drawer.height - getLayerZStart(bin.layerId, layout.layers);
     const maxClearance = maxHeight - bin.height;
-    const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
-    const needsSplit = bin.width > maxGridUnits || bin.depth > maxGridUnits;
 
     return {
       minHeight,
@@ -248,7 +265,10 @@ export function useBinInspector(): UseBinInspectorReturn {
         for (const b of selectedBins) {
           const binLayer = layout.layers.find((l) => l.id === b.layerId);
           const minHeight = binLayer?.height || 1;
-          const binMaxHeight = layout.drawer.height - getLayerZStart(b.layerId, layout.layers);
+          // For staging bins, use full drawer height; for placed bins, account for layer position
+          const binMaxHeight = b.layerId === STAGING_ID || !binLayer
+            ? layout.drawer.height
+            : layout.drawer.height - getLayerZStart(b.layerId, layout.layers);
           const newHeight = clamp(b.height + delta, minHeight, binMaxHeight);
           updateBin(b.id, { height: newHeight });
         }
@@ -263,7 +283,11 @@ export function useBinInspector(): UseBinInspectorReturn {
 
       execute(() => {
         for (const b of selectedBins) {
-          const binMaxHeight = layout.drawer.height - getLayerZStart(b.layerId, layout.layers);
+          const binLayer = layout.layers.find((l) => l.id === b.layerId);
+          // For staging bins, use full drawer height; for placed bins, account for layer position
+          const binMaxHeight = b.layerId === STAGING_ID || !binLayer
+            ? layout.drawer.height
+            : layout.drawer.height - getLayerZStart(b.layerId, layout.layers);
           const maxClearance = binMaxHeight - b.height;
           const newClearance = clamp((b.clearanceHeight || 0) + delta, 0, maxClearance);
           updateBin(b.id, { clearanceHeight: newClearance });
@@ -285,12 +309,9 @@ export function useBinInspector(): UseBinInspectorReturn {
       const targetLayer = layout.layers.find(l => l.id === targetLayerId);
       if (!targetLayer) return;
 
-      // Calculate final height: bin keeps its height or uses layer minimum, whichever is greater
-      const finalHeight = Math.max(bin.height, targetLayer.height);
-
-      // Validate placement on target layer using the actual height that will be assigned
+      // Validate placement on target layer using bin's actual height (no auto-adjustment)
       const result = canPlaceBin(
-        { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: finalHeight },
+        { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: bin.height },
         targetLayerId,
         layout,
         bin.id
@@ -309,7 +330,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       execute(() => {
         updateBin(bin.id, {
           layerId: targetLayerId,
-          height: finalHeight,
+          // Keep bin's original height - don't auto-adjust to layer minimum
         });
       });
 
@@ -333,21 +354,19 @@ export function useBinInspector(): UseBinInspectorReturn {
 
       if (binsToMove.length === 0) return;
 
-      // Check which bins can be moved (validate each using final height)
-      const movable: { bin: Bin; finalHeight: number }[] = [];
+      // Check which bins can be moved using their actual heights (no auto-adjustment)
+      const movable: Bin[] = [];
       const blocked: Bin[] = [];
 
       for (const b of binsToMove) {
-        // Calculate final height for this bin
-        const binFinalHeight = Math.max(b.height, targetLayer.height);
         const result = canPlaceBin(
-          { x: b.x, y: b.y, width: b.width, depth: b.depth, height: binFinalHeight },
+          { x: b.x, y: b.y, width: b.width, depth: b.depth, height: b.height },
           targetLayerId,
           layout,
           b.id
         );
         if (result.valid) {
-          movable.push({ bin: b, finalHeight: binFinalHeight });
+          movable.push(b);
         } else {
           blocked.push(b);
         }
@@ -359,10 +378,10 @@ export function useBinInspector(): UseBinInspectorReturn {
       }
 
       execute(() => {
-        for (const { bin: b, finalHeight: height } of movable) {
+        for (const b of movable) {
           updateBin(b.id, {
             layerId: targetLayerId,
-            height,
+            // Keep bin's original height - don't auto-adjust to layer minimum
           });
         }
       });

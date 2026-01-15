@@ -95,7 +95,7 @@ export function useStagingDragInteraction(
       const targetX = clamp(clamped.x, 0, layout.drawer.width - bin.width);
       const targetY = clamp(clamped.y, 0, layout.drawer.depth - bin.depth);
 
-      // Validate placement
+      // Validate placement using bin's actual height (no auto-adjustment)
       const result = canPlaceBin(
         { x: targetX, y: targetY, width: bin.width, depth: bin.depth, height: bin.height },
         activeLayerId,
@@ -136,14 +136,13 @@ export function useStagingDragInteraction(
     if (interaction.valid && interaction.currentCoord) {
       const bin = layout.bins.find((b) => b.id === interaction.binId);
       if (bin) {
-        const layer = layout.layers.find((l) => l.id === activeLayerId);
         const { x, y } = interaction.currentCoord;
         execute(() => {
           updateBin(interaction.binId, {
             x,
             y,
             layerId: activeLayerId,
-            height: Math.max(bin.height, layer?.height ?? bin.height),
+            // Keep bin's original height - don't auto-adjust to layer minimum
           });
         });
         setSelectedBin(interaction.binId);

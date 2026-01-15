@@ -74,12 +74,11 @@ export function MultiBinContextMenu({ binIds, position, onClose, source }: Multi
 
     execute(() => {
       stagingBins.forEach(b => {
-        // Move to layer and ensure height meets layer minimum
+        // Move to layer - keep original height (don't auto-adjust to layer minimum)
         updateBin(b.id, {
           layerId,
           x: 0,
           y: 0,
-          height: Math.max(b.height, layer.height),
         });
       });
     });

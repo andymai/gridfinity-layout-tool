@@ -261,7 +261,7 @@ export function LayerPanel() {
                     }
                   }}
                   aria-pressed={isActive}
-                  aria-label={`${layer.name}, ${layer.height} height units, ${layerCoverage}% coverage${isActive ? ', active - click to rename' : ''}`}
+                  aria-label={`${layer.name}, ${layer.height} height units for new bins, ${layerCoverage}% coverage${isActive ? ', active - click to rename' : ''}`}
                   title={isActive ? 'Click to rename' : `Select ${layer.name}`}
                 >
                   {layer.name}
@@ -282,19 +282,19 @@ export function LayerPanel() {
                     onClick={() => handleHeightChange(layer.id, -1)}
                     disabled={layer.height <= 1}
                     className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    aria-label="Decrease layer height"
+                    aria-label="Decrease new bin height"
                   >
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     </svg>
                   </button>
-                  <span className="text-[10px] tabular-nums min-w-[24px] text-center text-content-secondary" title="Minimum bin height for this layer">
+                  <span className="text-[10px] tabular-nums min-w-[24px] text-center text-content-secondary" title="Height for new bins placed on this layer">
                     {layer.height}u
                   </span>
                   <button
                     onClick={() => handleHeightChange(layer.id, 1)}
                     className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content transition-colors"
-                    aria-label="Increase layer height"
+                    aria-label="Increase new bin height"
                   >
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -302,7 +302,7 @@ export function LayerPanel() {
                   </button>
                 </div>
               ) : (
-                <span className="px-1.5 py-0.5 rounded text-[10px] bg-surface-hover">
+                <span className="px-1.5 py-0.5 rounded text-[10px] bg-surface-hover" title="Height for new bins placed on this layer">
                   {layer.height}u
                 </span>
               )}

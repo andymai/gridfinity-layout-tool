@@ -239,19 +239,19 @@ export function LayersTab() {
                   onClick={() => handleHeightChange(layer.id, -1)}
                   disabled={layer.height <= 1}
                   className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
-                  aria-label="Decrease height"
+                  aria-label="Decrease new bin height"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                   </svg>
                 </button>
-                <span className="w-7 text-center text-xs font-medium text-content-secondary tabular-nums">
+                <span className="text-center text-xs font-medium text-content-secondary tabular-nums whitespace-nowrap" title="Height for new bins placed on this layer">
                   {layer.height}u
                 </span>
                 <button
                   onClick={() => handleHeightChange(layer.id, 1)}
                   className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content transition-colors"
-                  aria-label="Increase height"
+                  aria-label="Increase new bin height"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
