@@ -7,13 +7,14 @@
  * Coordinate System:
  * - Cursor positions are stored as normalized coordinates (0-1 range)
  * - (0,0) is top-left, (1,1) is bottom-right (matches CSS/screen coords)
- * - Converted to actual pixels at render time for smooth movement
+ * - Positions are interpolated at 60fps for smooth movement
  */
 
 import { useOthers } from '../../liveblocks.config';
 import { useUIStore, useLayoutStore } from '../../store';
 import { getBaseCellSize } from '../../constants';
 import { useResponsive } from '../../hooks/useResponsive';
+import { useInterpolatedPresence } from '../../hooks/useInterpolatedPresence';
 import { CollabCursor } from './CollabCursor';
 
 interface CollabCursorsProps {
@@ -24,8 +25,8 @@ interface CollabCursorsProps {
 /**
  * Renders all remote users' cursors as an overlay on the grid.
  *
- * Uses Liveblocks' useOthers() hook to get presence data for
- * all other connected users.
+ * Uses smooth 60fps interpolation via useInterpolatedPresence hook
+ * while keeping network updates throttled to 20fps for bandwidth.
  *
  * @example
  * ```tsx
@@ -49,29 +50,36 @@ export function CollabCursors({ className }: CollabCursorsProps) {
   const gridWidth = drawer.width * (cellSize + gap) + gap;
   const gridHeight = drawer.depth * (cellSize + gap) + gap;
 
-  // Filter to users with valid cursors
-  const usersWithCursors = others.filter(
-    ({ presence }) => presence.cursor !== null
-  );
+  // Get interpolated cursor positions (60fps smooth)
+  const interpolatedPositions = useInterpolatedPresence(gridWidth, gridHeight);
 
-  if (usersWithCursors.length === 0) {
+  // Filter to users with visible cursors (either with position or fading out)
+  const visibleCursors = others.filter(({ connectionId }) => {
+    const pos = interpolatedPositions.get(connectionId);
+    return pos !== undefined;
+  });
+
+  if (visibleCursors.length === 0) {
     return null;
   }
 
   return (
     <div
       className={`absolute inset-0 pointer-events-none z-40 overflow-hidden ${className ?? ''}`}
-      aria-label={`${usersWithCursors.length} other user${usersWithCursors.length === 1 ? '' : 's'} viewing`}
+      aria-label={`${visibleCursors.length} other user${visibleCursors.length === 1 ? '' : 's'} viewing`}
     >
-      {usersWithCursors.map(({ connectionId, presence }) => (
-        // Normalized coords are already in screen space (0,0 = top-left)
-        <CollabCursor
-          key={connectionId}
-          presence={presence}
-          gridWidth={gridWidth}
-          gridHeight={gridHeight}
-        />
-      ))}
+      {visibleCursors.map(({ connectionId, presence }) => {
+        const position = interpolatedPositions.get(connectionId);
+        if (!position) return null;
+
+        return (
+          <CollabCursor
+            key={connectionId}
+            presence={presence}
+            position={position}
+          />
+        );
+      })}
     </div>
   );
 }
