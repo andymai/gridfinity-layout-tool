@@ -24,8 +24,8 @@ const initialCloudShareId = getCloudShareIdFromURL();
  * A banner in the header allows the user to save or discard.
  *
  * Handles two share formats:
- * - URL-encoded: /#share={base64-encoded-layout}
- * - Cloud share: /s/{12-char-id}
+ * - URL-encoded (legacy): /#share={base64-encoded-layout}
+ * - Cloud share: /l/{12-char-id} (only for layouts in "Shared with me" list)
  */
 export function SharedLayoutImporter() {
   // Loading state is only set to true when we confirm we need to cloud fetch
@@ -44,6 +44,7 @@ export function SharedLayoutImporter() {
   // Library store for auto-tracking shared layouts
   const libraryIsLoaded = useLibraryStore((state) => state.isLoaded);
   const libraryEntries = useLibraryStore((state) => state.library.entries);
+  const sharedWithMeLoaded = useLibraryStore((state) => state.sharedWithMeLoaded);
   const getSharedWithMeByShareId = useLibraryStore((state) => state.getSharedWithMeByShareId);
 
   // Check if we already loaded this share (to skip re-fetching)
@@ -174,24 +175,30 @@ export function SharedLayoutImporter() {
     };
   }, []);
 
-  // Handle cloud shares (or URLs that might be cloud shares)
+  // Handle cloud shares (only for layouts in "Shared with me" list)
   useEffect(() => {
     if (!initialCloudShareId) {
       return;
     }
 
-    // Wait for library to load before checking if layout exists locally
-    // Without this, we'd incorrectly cloud-fetch local layouts on first render
-    if (!libraryIsLoaded) {
+    // Wait for library and shared-with-me list to load before checking
+    if (!libraryIsLoaded || !sharedWithMeLoaded) {
       return;
     }
 
     // Check if this layout exists locally - if so, let useLayoutRouting handle it
-    // Check both by layout ID (for /l/{id} URLs) and by cloud share ID (owner visiting their own /s/{id})
     const isLocalLayout = libraryEntries.some(entry =>
       entry.id === initialCloudShareId || entry.cloudShare?.id === initialCloudShareId
     );
     if (isLocalLayout) {
+      return;
+    }
+
+    // Only cloud-fetch if this layout is in "Shared with me" list
+    // This prevents incorrectly trying to cloud-fetch local-only layouts
+    // that don't exist (e.g., bookmarked URL after clearing localStorage)
+    const sharedWithMeEntry = getSharedWithMeByShareId(initialCloudShareId);
+    if (!sharedWithMeEntry) {
       return;
     }
 
@@ -251,7 +258,7 @@ export function SharedLayoutImporter() {
 
     loadCloudShare();
     // No cleanup needed - isMountedRef is managed by the separate mount/unmount effect
-  }, [loadLayoutPreview, addToast, trackSharedLayout, libraryIsLoaded, libraryEntries, sharedLayoutCloudShareId]);
+  }, [loadLayoutPreview, addToast, trackSharedLayout, libraryIsLoaded, sharedWithMeLoaded, libraryEntries, sharedLayoutCloudShareId, getSharedWithMeByShareId]);
 
   // Show loading state for cloud shares
   if (isLoading) {
