@@ -85,6 +85,9 @@ export {
   saveSharedWithMe,
   loadSharedWithMe,
   clearSharedWithMe,
+  saveSharedWithMeResult,
+  loadSharedWithMeResult,
+  clearSharedWithMeResult,
 } from './SharedWithMeService';
 
 // === Migration ===

@@ -726,6 +726,13 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
     (layerId: string, width: number, depth: number, categoryId: string, halfBinMode = false): number => {
       // TODO: Implement collaborative-aware fillLayer for Phase 4
       // Current limitation: Delegates to local store and relies on sync hook.
+      // This may cause race conditions if multiple users fill simultaneously.
+      if (import.meta.env.DEV) {
+        console.warn(
+          '[CollabProvider] fillLayer is not yet collaborative-aware. ' +
+          'Concurrent fills by multiple users may cause conflicts.'
+        );
+      }
       return store.fillLayer(layerId, width, depth, categoryId, halfBinMode);
     },
     [store]

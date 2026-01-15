@@ -34,7 +34,9 @@ function createBinOnGrid(id: string, layerId = 'layer1'): Bin {
     height: 1,
     depth: 1,
     layerId,
-    categoryId: 'cat1',
+    category: 'cat1',
+    label: '',
+    notes: '',
   };
 }
 
@@ -47,7 +49,9 @@ function createBinInStaging(id: string): Bin {
     height: 1,
     depth: 1,
     layerId: STAGING_ID,
-    categoryId: 'cat1',
+    category: 'cat1',
+    label: '',
+    notes: '',
   };
 }
 
@@ -104,12 +108,9 @@ describe('useCollabSync', () => {
         return selector({ layout: remoteLayout });
       });
 
-      const importLayoutSpy = vi.spyOn(useLayoutStore.getState(), 'importLayout');
-      useLayoutStore.setState({ importLayout: importLayoutSpy });
-
       renderHook(() => useCollabSync());
 
-      // Should import remote layout
+      // Should import remote layout - verify the outcome rather than implementation
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
     });
 
@@ -255,14 +256,20 @@ describe('useCollabSync', () => {
         vi.advanceTimersByTime(600);
       });
 
-      const importLayoutSpy = vi.fn();
-      useLayoutStore.setState({ importLayout: importLayoutSpy });
+      // Spy on setState to verify no re-import occurs
+      const setStateSpy = vi.spyOn(useLayoutStore, 'setState');
 
       // Rerender with same remote layout
       rerender();
 
-      // Should not re-import
-      expect(importLayoutSpy).not.toHaveBeenCalled();
+      // Should not re-import - setState shouldn't be called for layout changes
+      // Filter out any calls that might be for other state updates
+      const layoutSetCalls = setStateSpy.mock.calls.filter(
+        (call) => call[0] && typeof call[0] === 'object' && 'layout' in call[0]
+      );
+      expect(layoutSetCalls).toHaveLength(0);
+
+      setStateSpy.mockRestore();
     });
 
     it('ignores remote updates during initializing state', () => {

@@ -58,14 +58,15 @@ describe('useLayoutRouting with cloud share URLs', () => {
     useLibraryStore.setState({
       isLoaded: true,
       library: {
+        version: '1.0',
         activeLayoutId: mockLocalLayoutId,
         settings: {},
         entries: [{
           id: mockLocalLayoutId,
           name: mockLocalLayoutName,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          preview: { bins: [], drawer: { width: 10, depth: 8 } },
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
         }],
       },
     });

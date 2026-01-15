@@ -40,7 +40,7 @@ function createCloudShare(permission: 'view' | 'edit'): CloudShareInfo {
     id: TEST_SHARE_ID,
     deleteToken: 'delete-token',
     permission,
-    sharedAt: new Date().toISOString(),
+    sharedAt: Date.now(),
   };
 }
 

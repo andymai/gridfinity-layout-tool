@@ -636,9 +636,15 @@ export function useCollabMutations(): CollabMutations {
       // Current limitation: Delegates to local store and relies on sync hook.
       // This may cause race conditions if multiple users fill simultaneously.
       // For MVP, this is acceptable as fill is typically an owner-only operation.
+      if (isCollaborative && import.meta.env.DEV) {
+        console.warn(
+          '[useCollabMutations] fillLayer is not yet collaborative-aware. ' +
+          'Concurrent fills by multiple users may cause conflicts.'
+        );
+      }
       return store.fillLayer(layerId, width, depth, categoryId, halfBinMode);
     },
-    [store]
+    [store, isCollaborative]
   );
 
   const clearLayer = useCallback(

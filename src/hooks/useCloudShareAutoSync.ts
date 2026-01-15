@@ -42,6 +42,9 @@ export function useCloudShareAutoSync(shareId: string | null, enabled: boolean):
   const syncToCloud = useCallback(async () => {
     if (!shareId || !deleteToken || isSyncingRef.current) return;
 
+    // Set syncing flag immediately to prevent race conditions
+    isSyncingRef.current = true;
+
     // Create a fingerprint of the current layout for comparison
     const layoutFingerprint = JSON.stringify({
       bins: layout.bins.filter((b) => b.layerId !== STAGING_ID),
@@ -52,9 +55,10 @@ export function useCloudShareAutoSync(shareId: string | null, enabled: boolean):
     });
 
     // Skip if nothing changed since last sync
-    if (layoutFingerprint === lastSyncedRef.current) return;
-
-    isSyncingRef.current = true;
+    if (layoutFingerprint === lastSyncedRef.current) {
+      isSyncingRef.current = false;
+      return;
+    }
 
     try {
       const result = await updateShare(

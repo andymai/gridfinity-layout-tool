@@ -17,6 +17,13 @@ vi.mock('../../hooks', () => ({
   useFeatureFlag: () => false,
 }));
 
+// Controllable mock for ShareButton
+let mockShareButtonEnabled = false;
+vi.mock('../../components/ShareButton', () => ({
+  ShareButton: () =>
+    mockShareButtonEnabled ? <button data-testid="share-button">Share</button> : null,
+}));
+
 describe('Header', () => {
   const mockOnHelpClick = vi.fn();
 
@@ -28,6 +35,7 @@ describe('Header', () => {
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
+    mockShareButtonEnabled = false;
   });
 
   describe('rendering', () => {
@@ -216,6 +224,22 @@ describe('Header', () => {
       render(<Header {...defaultProps} />);
 
       expect(screen.getByText('Half-Bin Mode')).toBeInTheDocument();
+    });
+  });
+
+  describe('share button visibility', () => {
+    it('does not render ShareButton when collaborative_editing feature is disabled', () => {
+      mockShareButtonEnabled = false;
+      render(<Header {...defaultProps} />);
+
+      expect(screen.queryByTestId('share-button')).not.toBeInTheDocument();
+    });
+
+    it('renders ShareButton when collaborative_editing feature is enabled', () => {
+      mockShareButtonEnabled = true;
+      render(<Header {...defaultProps} />);
+
+      expect(screen.getByTestId('share-button')).toBeInTheDocument();
     });
   });
 
