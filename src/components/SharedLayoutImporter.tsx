@@ -31,9 +31,9 @@ let hasProcessedShare = false;
  * - Cloud share: /s/{12-char-id}
  */
 export function SharedLayoutImporter() {
-  // Use module-level flag to prevent double-processing when component remounts
-  // (happens when switching between LocalMutationsProvider and CollabProvider)
-  const [isLoading, setIsLoading] = useState(!!initialCloudShareId && !hasProcessedShare);
+  // Loading state is only set to true when we confirm we need to cloud fetch
+  // (not when there's just a URL ID - it might be a local layout)
+  const [isLoading, setIsLoading] = useState(false);
 
   const importLayout = useLayoutStore((state) => state.importLayout);
   const setSharedLayoutPreview = useUIStore((state) => state.setSharedLayoutPreview);
@@ -45,6 +45,7 @@ export function SharedLayoutImporter() {
   const addToast = useToastStore((state) => state.addToast);
 
   // Library store for auto-tracking shared layouts
+  const libraryIsLoaded = useLibraryStore((state) => state.isLoaded);
   const libraryEntries = useLibraryStore((state) => state.library.entries);
   const getSharedWithMeByShareId = useLibraryStore((state) => state.getSharedWithMeByShareId);
   const addSharedWithMe = useLibraryStore((state) => state.addSharedWithMe);
@@ -161,6 +162,10 @@ export function SharedLayoutImporter() {
     if (hasProcessedShare) return;
     if (!initialCloudShareId) return;
 
+    // Wait for library to load before checking if layout exists locally
+    // Without this, we'd incorrectly cloud-fetch local layouts on first render
+    if (!libraryIsLoaded) return;
+
     // Check if this layout exists locally - if so, let useLayoutRouting handle it
     // (this happens with the new unified URL pattern where /{id}/{slug} is used for both)
     const localEntry = libraryEntries.find(entry => entry.id === initialCloudShareId);
@@ -213,7 +218,7 @@ export function SharedLayoutImporter() {
     return () => {
       isMounted = false;
     };
-  }, [loadLayoutPreview, addToast, trackSharedLayout, libraryEntries]);
+  }, [loadLayoutPreview, addToast, trackSharedLayout, libraryIsLoaded, libraryEntries]);
 
   // Show loading state for cloud shares
   if (isLoading) {
