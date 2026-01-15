@@ -17,6 +17,8 @@ export function getPanelTitle(panel: MobilePanel): string {
       return 'Settings';
     case 'layouts':
       return 'My Layouts';
+    case 'participants':
+      return 'Collaborators';
     default:
       return '';
   }

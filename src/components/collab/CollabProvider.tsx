@@ -21,6 +21,7 @@ import { useLibraryStore } from '../../store/library';
 import { useLayoutStore } from '../../store/layout';
 import { useSettingsStore } from '../../store/settings';
 import { generateId, STAGING_ID, CONSTRAINTS } from '../../constants';
+import { generateGuestName, generateGuestColor } from '../../utils/guestNames';
 import { PresenceContext, type CollabPresenceActions } from '../../contexts/PresenceContext';
 import { MutationsContext, type Mutations, LocalMutationsProvider } from '../../context/MutationsContext';
 import type { Coord, Layout, Bin, Layer, Category, Drawer } from '../../types';
@@ -71,11 +72,11 @@ function getUserId(): string {
 
 /**
  * Get the user's display name from library settings.
- * Falls back to 'Guest' if no author name is set.
+ * Falls back to a fun generated name if no author name is set.
  */
-function useUserName(): string {
+function useUserName(userId: string): string {
   const authorName = useLibraryStore((state) => state.library.settings.authorName);
-  return authorName || 'Guest';
+  return authorName || generateGuestName(userId);
 }
 
 /**
@@ -109,7 +110,7 @@ export function CollabProvider({ shareId, children }: CollabProviderProps) {
 function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
   const roomId = `gridfinity-${shareId}`;
   const userId = useMemo(() => getUserId(), []);
-  const userName = useUserName();
+  const userName = useUserName(userId);
   const layout = useLayoutStore((state) => state.layout);
 
   // Check if user is owner (layout exists in their library with matching ID)
@@ -121,14 +122,15 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
   );
 
   // Initial presence - cursor starts as null (outside grid)
+  // Color is deterministically generated from userId for variety
   const initialPresence: UserPresence = useMemo(
     () => ({
       cursor: null,
       name: userName,
-      color: '#3B82F6', // Will be overridden by server-assigned color
+      color: generateGuestColor(userId),
       interaction: { type: 'idle' },
     }),
-    [userName]
+    [userName, userId]
   );
 
   // Initial storage - the layout data to sync
