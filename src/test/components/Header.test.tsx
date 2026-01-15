@@ -25,6 +25,13 @@ vi.mock('../../components/ShareButton', () => ({
     mockShareButtonEnabled ? <button data-testid="share-button">Share</button> : null,
 }));
 
+// Mock PresenceAvatars to avoid Liveblocks context requirements
+vi.mock('../../components/collab', () => ({
+  PresenceAvatars: ({ className }: { className?: string }) => (
+    <div data-testid="presence-avatars" className={className}>Presence</div>
+  ),
+}));
+
 describe('Header', () => {
   const mockOnHelpClick = vi.fn();
 

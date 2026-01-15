@@ -24,6 +24,8 @@ import {
   MultiBinContextMenu,
 } from './mobile';
 import { LabsDrawer } from './labs';
+import { PresenceAvatarList } from './collab';
+import { usePresence } from '../hooks/usePresence';
 import type { SaveStatus } from '../hooks/useAutoSave';
 
 // Legacy context menu state for backwards compatibility
@@ -113,6 +115,9 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen, saveStatus
  * Mobile panel content based on active panel type.
  */
 function MobilePanelContent({ panel }: { panel: string }) {
+  // Get presence data for participants panel
+  const { participants } = usePresence();
+
   const content = (() => {
     switch (panel) {
       case 'layers':
@@ -127,6 +132,8 @@ function MobilePanelContent({ panel }: { panel: string }) {
         return <MobileSettingsPanel />;
       case 'layouts':
         return <MobileLayoutsPanel />;
+      case 'participants':
+        return <PresenceAvatarList participants={participants} className="px-2" />;
       default:
         return null;
     }
@@ -141,6 +148,7 @@ function MobilePanelContent({ panel }: { panel: string }) {
     print: 'Print List',
     settings: 'Settings',
     layouts: 'Layouts',
+    participants: 'Collaborators',
   };
 
   return (

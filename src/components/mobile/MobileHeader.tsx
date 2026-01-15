@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLayoutStore, useHistoryStore, useUIStore } from '../../store';
 import { CONSTRAINTS } from '../../constants';
+import { PresenceAvatars } from '../collab';
 import type { MobilePanel } from '../../store/ui';
 import type { SaveStatus } from '../../hooks/useAutoSave';
 
@@ -177,8 +178,11 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
         )}
       </div>
 
-      {/* Right: Save status + Undo/Redo + Help */}
+      {/* Right: Presence + Save status + Undo/Redo + Help */}
       <div className="flex items-center gap-1">
+        {/* Presence indicator (shown in collaborative mode) */}
+        <PresenceAvatars />
+
         {/* Save status indicator (icon only on mobile) */}
         {saveStatus !== 'idle' && (
           <div

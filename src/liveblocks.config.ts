@@ -123,6 +123,17 @@ const createUnconfiguredHook = (hookName: string) => () => {
   );
 };
 
+/**
+ * Safe stub hooks that return empty/default values.
+ * These can be called unconditionally without throwing.
+ */
+const safeStubHooks = {
+  useOthers: () => [] as readonly { connectionId: number; presence: UserPresence }[],
+  useSelf: () => null as { connectionId: number; presence: UserPresence } | null,
+  useStatus: () => 'initial' as string,
+  useStorage: <T,>(_selector: (root: LiveblocksStorage) => T) => null as T | null,
+};
+
 // Re-export hooks with proper typing via type assertions
 // When Liveblocks is not configured, provide stubs that throw helpful errors
 export const RoomProvider = (context?.RoomProvider ?? StubRoomProvider) as React.ComponentType<{
@@ -138,23 +149,24 @@ export const useMyPresence = (context?.useMyPresence ?? createUnconfiguredHook('
 export const useUpdateMyPresence = (context?.useUpdateMyPresence ?? createUnconfiguredHook('useUpdateMyPresence')) as () => (
   patch: Partial<UserPresence>
 ) => void;
-export const useOthers = (context?.useOthers ?? createUnconfiguredHook('useOthers')) as () => readonly {
+// Safe hooks that return defaults when not configured (can be called unconditionally)
+export const useOthers = (context?.useOthers ?? safeStubHooks.useOthers) as () => readonly {
   connectionId: number;
   presence: UserPresence;
 }[];
 export const useOthersMapped = context?.useOthersMapped ?? createUnconfiguredHook('useOthersMapped');
 export const useOthersConnectionIds = context?.useOthersConnectionIds ?? createUnconfiguredHook('useOthersConnectionIds');
 export const useOther = context?.useOther ?? createUnconfiguredHook('useOther');
-export const useSelf = (context?.useSelf ?? createUnconfiguredHook('useSelf')) as () => {
+export const useSelf = (context?.useSelf ?? safeStubHooks.useSelf) as () => {
   connectionId: number;
   presence: UserPresence;
 } | null;
-export const useStorage = context?.useStorage ?? createUnconfiguredHook('useStorage');
+export const useStorage = (context?.useStorage ?? safeStubHooks.useStorage) as <T>(selector: (root: LiveblocksStorage) => T) => T | null;
 export const useMutation = context?.useMutation ?? createUnconfiguredHook('useMutation');
 export const useRoom = context?.useRoom ?? createUnconfiguredHook('useRoom');
 export const useBroadcastEvent = context?.useBroadcastEvent ?? createUnconfiguredHook('useBroadcastEvent');
 export const useEventListener = context?.useEventListener ?? createUnconfiguredHook('useEventListener');
-export const useStatus = context?.useStatus ?? createUnconfiguredHook('useStatus');
+export const useStatus = (context?.useStatus ?? safeStubHooks.useStatus) as () => string;
 export const useHistory = context?.useHistory ?? createUnconfiguredHook('useHistory');
 export const useUndo = context?.useUndo ?? createUnconfiguredHook('useUndo');
 export const useRedo = context?.useRedo ?? createUnconfiguredHook('useRedo');

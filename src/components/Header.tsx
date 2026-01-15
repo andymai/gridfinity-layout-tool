@@ -6,6 +6,7 @@ import { CONSTRAINTS } from '../constants';
 import { LayoutManagerModal } from './modals/LayoutManagerModal';
 import { PrintModal } from './modals/PrintModal';
 import { ShareButton } from './ShareButton';
+import { PresenceAvatars } from './collab';
 import type { SaveStatus } from '../hooks/useAutoSave';
 
 interface HeaderProps {
@@ -242,9 +243,10 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           </button>
         </div>
 
-        {/* Share button with dividers (only visible when collaborative_editing flag is enabled) */}
+        {/* Share button and presence avatars (only visible when collaborative_editing flag is enabled) */}
         {isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
         <ShareButton />
+        {isCollabEnabled && <PresenceAvatars className="ml-2" />}
         {isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
 
         {/* Divider before external links (only when collab is disabled) */}
