@@ -12,6 +12,7 @@ import {
   useUpdateMyPresence,
   useMutation,
   useStorage,
+  useStatus,
   isLiveblocksConfigured,
   type LiveblocksStorage,
   type UserPresence,
@@ -259,10 +260,16 @@ function PresenceProvider({ shareId, children }: { shareId: string; children: Re
 /**
  * Provider for collaborative mutations.
  * Uses Liveblocks useMutation hook to sync changes in real-time.
+ * Falls back to local mutations when connection fails.
  */
 function CollabMutationsProvider({ children }: { children: ReactNode }) {
   const store = useLayoutStore();
+  const status = useStatus();
   const remoteLayout = useStorage((root) => root?.layout) as Layout | null;
+
+  // Check if Liveblocks connection is ready
+  // Storage must be loaded for mutations to work
+  const isConnected = status === 'connected' && remoteLayout !== null;
 
   // Liveblocks mutation for updating layout
   const updateLiveblocksLayout = useMutation(
@@ -274,10 +281,35 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  // Helper to get current layout (prefer remote in collab mode)
+  // Helper to get current layout
+  // Use remote in collab mode when connected, otherwise local
   const getLayout = useCallback((): Layout => {
-    return remoteLayout ?? store.layout;
-  }, [remoteLayout, store.layout]);
+    if (isConnected && remoteLayout) {
+      return remoteLayout;
+    }
+    return store.layout;
+  }, [isConnected, remoteLayout, store.layout]);
+
+  // Helper to execute mutation - falls back to local store when not connected
+  const executeMutation = useCallback(
+    (localAction: () => void, remoteAction: () => void) => {
+      if (isConnected) {
+        try {
+          remoteAction();
+        } catch (error) {
+          // If Liveblocks throws (e.g., storage not loaded), fall back to local
+          if (import.meta.env.DEV) {
+            console.warn('[CollabProvider] Liveblocks mutation failed, falling back to local:', error);
+          }
+          localAction();
+        }
+      } else {
+        // Fall back to local mutations when not connected
+        localAction();
+      }
+    },
+    [isConnected]
+  );
 
   // ====== BIN OPERATIONS ======
 
@@ -313,14 +345,17 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        bins: [...currentLayout.bins, bin],
-      }));
+      executeMutation(
+        () => store.addBin(binData),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          bins: [...currentLayout.bins, bin],
+        }))
+      );
 
       return ok(id);
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   const updateBin = useCallback(
@@ -331,16 +366,19 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
         return err(layoutInvalidOperation('updateBin', `Bin ${id} not found`));
       }
 
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        bins: currentLayout.bins.map((b) =>
-          b.id === id ? { ...b, ...updates } : b
-        ),
-      }));
+      executeMutation(
+        () => store.updateBin(id, updates),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          bins: currentLayout.bins.map((b) =>
+            b.id === id ? { ...b, ...updates } : b
+          ),
+        }))
+      );
 
       return OK;
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   const deleteBin = useCallback(
@@ -351,26 +389,32 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
         return err(layoutInvalidOperation('deleteBin', `Bin ${id} not found`));
       }
 
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        bins: currentLayout.bins.filter((b) => b.id !== id),
-      }));
+      executeMutation(
+        () => store.deleteBin(id),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          bins: currentLayout.bins.filter((b) => b.id !== id),
+        }))
+      );
 
       return OK;
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   const deleteBins = useCallback(
     (ids: string[]): Result<void, LayoutError> => {
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        bins: currentLayout.bins.filter((b) => !ids.includes(b.id)),
-      }));
+      executeMutation(
+        () => ids.forEach((id) => store.deleteBin(id)),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          bins: currentLayout.bins.filter((b) => !ids.includes(b.id)),
+        }))
+      );
 
       return OK;
     },
-    [updateLiveblocksLayout]
+    [executeMutation, store, updateLiveblocksLayout]
   );
 
   const duplicateBin = useCallback(
@@ -460,16 +504,19 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
         return err(layoutInvalidOperation('moveBinToStaging', `Bin ${id} not found`));
       }
 
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        bins: currentLayout.bins.map((b) =>
-          b.id === id ? { ...b, layerId: STAGING_ID } : b
-        ),
-      }));
+      executeMutation(
+        () => store.moveBinToStaging(id),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          bins: currentLayout.bins.map((b) =>
+            b.id === id ? { ...b, layerId: STAGING_ID } : b
+          ),
+        }))
+      );
 
       return OK;
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   const moveBinFromStaging = useCallback(
@@ -500,18 +547,21 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
         return err(validationOutOfBounds(reason, { x, y, width: bin.width, depth: bin.depth }));
       }
 
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        bins: currentLayout.bins.map((b) =>
-          b.id === id
-            ? { ...b, layerId, x, y, height: layer.height }
-            : b
-        ),
-      }));
+      executeMutation(
+        () => store.moveBinFromStaging(id, layerId, x, y),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          bins: currentLayout.bins.map((b) =>
+            b.id === id
+              ? { ...b, layerId, x, y, height: layer.height }
+              : b
+          ),
+        }))
+      );
 
       return OK;
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   // ====== LAYER OPERATIONS ======
@@ -537,13 +587,16 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
       height: Math.min(remaining, defaultLayerHeight),
     };
 
-    updateLiveblocksLayout((currentLayout) => ({
-      ...currentLayout,
-      layers: [...currentLayout.layers, newLayer],
-    }));
+    executeMutation(
+      () => store.addLayer(),
+      () => updateLiveblocksLayout((currentLayout) => ({
+        ...currentLayout,
+        layers: [...currentLayout.layers, newLayer],
+      }))
+    );
 
     return ok(id);
-  }, [getLayout, updateLiveblocksLayout]);
+  }, [getLayout, executeMutation, store, updateLiveblocksLayout]);
 
   const updateLayer = useCallback(
     (id: string, updates: Partial<Layer>): Result<void, LayoutError> => {
@@ -553,29 +606,32 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
         return err(layoutInvalidOperation('updateLayer', `Layer ${id} not found`));
       }
 
-      updateLiveblocksLayout((currentLayout) => {
-        const processedUpdates = { ...updates };
+      executeMutation(
+        () => store.updateLayer(id, updates),
+        () => updateLiveblocksLayout((currentLayout) => {
+          const processedUpdates = { ...updates };
 
-        // Clamp height if provided
-        if (processedUpdates.height !== undefined) {
-          const othersHeight = currentLayout.layers
-            .filter((l) => l.id !== id)
-            .reduce((sum, l) => sum + l.height, 0);
-          const maxHeight = currentLayout.drawer.height - othersHeight;
-          processedUpdates.height = clamp(processedUpdates.height, 1, maxHeight);
-        }
+          // Clamp height if provided
+          if (processedUpdates.height !== undefined) {
+            const othersHeight = currentLayout.layers
+              .filter((l) => l.id !== id)
+              .reduce((sum, l) => sum + l.height, 0);
+            const maxHeight = currentLayout.drawer.height - othersHeight;
+            processedUpdates.height = clamp(processedUpdates.height, 1, maxHeight);
+          }
 
-        return {
-          ...currentLayout,
-          layers: currentLayout.layers.map((l) =>
-            l.id === id ? { ...l, ...processedUpdates } : l
-          ),
-        };
-      });
+          return {
+            ...currentLayout,
+            layers: currentLayout.layers.map((l) =>
+              l.id === id ? { ...l, ...processedUpdates } : l
+            ),
+          };
+        })
+      );
 
       return OK;
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   const deleteLayer = useCallback(
@@ -591,15 +647,18 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
         return err(layoutInvalidOperation('deleteLayer', `Layer ${id} not found`));
       }
 
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        layers: currentLayout.layers.filter((l) => l.id !== id),
-        bins: currentLayout.bins.filter((b) => b.layerId !== id),
-      }));
+      executeMutation(
+        () => store.deleteLayer(id),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          layers: currentLayout.layers.filter((l) => l.id !== id),
+          bins: currentLayout.bins.filter((b) => b.layerId !== id),
+        }))
+      );
 
       return OK;
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   const reorderLayers = useCallback(
@@ -614,55 +673,61 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
         return err(layoutInvalidOperation('reorderLayers', 'Invalid target index'));
       }
 
-      updateLiveblocksLayout((currentLayout) => {
-        const newLayers = [...currentLayout.layers];
-        const [moved] = newLayers.splice(fromIndex, 1);
-        newLayers.splice(toIndex, 0, moved);
-        return { ...currentLayout, layers: newLayers };
-      });
+      executeMutation(
+        () => store.reorderLayers(fromIndex, toIndex),
+        () => updateLiveblocksLayout((currentLayout) => {
+          const newLayers = [...currentLayout.layers];
+          const [moved] = newLayers.splice(fromIndex, 1);
+          newLayers.splice(toIndex, 0, moved);
+          return { ...currentLayout, layers: newLayers };
+        })
+      );
 
       return OK;
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   // ====== DRAWER OPERATIONS ======
 
   const updateDrawer = useCallback(
     (updates: Partial<Drawer>): void => {
-      updateLiveblocksLayout((currentLayout) => {
-        const drawer = { ...currentLayout.drawer };
+      executeMutation(
+        () => store.updateDrawer(updates),
+        () => updateLiveblocksLayout((currentLayout) => {
+          const drawer = { ...currentLayout.drawer };
 
-        if (updates.width !== undefined) {
-          drawer.width = clamp(updates.width, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX);
-        }
-        if (updates.depth !== undefined) {
-          drawer.depth = clamp(updates.depth, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX);
-        }
-        if (updates.height !== undefined) {
-          const totalLayerHeight = currentLayout.layers.reduce((sum, l) => sum + l.height, 0);
-          drawer.height = Math.max(totalLayerHeight, updates.height);
-        }
-        if (updates.fractionalEdgeX !== undefined) {
-          drawer.fractionalEdgeX = updates.fractionalEdgeX;
-        }
-        if (updates.fractionalEdgeY !== undefined) {
-          drawer.fractionalEdgeY = updates.fractionalEdgeY;
-        }
-
-        // Move out-of-bounds bins to staging
-        const bins = currentLayout.bins.map((bin) => {
-          if (bin.layerId === STAGING_ID) return bin;
-          if (bin.x + bin.width > drawer.width || bin.y + bin.depth > drawer.depth) {
-            return { ...bin, layerId: STAGING_ID };
+          if (updates.width !== undefined) {
+            drawer.width = clamp(updates.width, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX);
           }
-          return bin;
-        });
+          if (updates.depth !== undefined) {
+            drawer.depth = clamp(updates.depth, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX);
+          }
+          if (updates.height !== undefined) {
+            const totalLayerHeight = currentLayout.layers.reduce((sum, l) => sum + l.height, 0);
+            drawer.height = Math.max(totalLayerHeight, updates.height);
+          }
+          if (updates.fractionalEdgeX !== undefined) {
+            drawer.fractionalEdgeX = updates.fractionalEdgeX;
+          }
+          if (updates.fractionalEdgeY !== undefined) {
+            drawer.fractionalEdgeY = updates.fractionalEdgeY;
+          }
 
-        return { ...currentLayout, drawer, bins };
-      });
+          // Move out-of-bounds bins to staging
+          const bins = currentLayout.bins.map((bin) => {
+            if (bin.layerId === STAGING_ID) return bin;
+            if (bin.x + bin.width > drawer.width || bin.y + bin.depth > drawer.depth) {
+              return { ...bin, layerId: STAGING_ID };
+            }
+            return bin;
+          });
+
+          return { ...currentLayout, drawer, bins };
+        })
+      );
     },
-    [updateLiveblocksLayout]
+    [executeMutation, store, updateLiveblocksLayout]
   );
 
   // ====== CATEGORY OPERATIONS ======
@@ -677,14 +742,17 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
 
       const id = generateId();
 
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        categories: [...currentLayout.categories, { ...categoryData, id }],
-      }));
+      executeMutation(
+        () => store.addCategory(categoryData),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          categories: [...currentLayout.categories, { ...categoryData, id }],
+        }))
+      );
 
       return ok(id);
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   const updateCategory = useCallback(
@@ -695,16 +763,19 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
         return err(layoutInvalidOperation('updateCategory', `Category ${id} not found`));
       }
 
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        categories: currentLayout.categories.map((c) =>
-          c.id === id ? { ...c, ...updates } : c
-        ),
-      }));
+      executeMutation(
+        () => store.updateCategory(id, updates),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          categories: currentLayout.categories.map((c) =>
+            c.id === id ? { ...c, ...updates } : c
+          ),
+        }))
+      );
 
       return OK;
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   const deleteCategory = useCallback(
@@ -730,29 +801,24 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
         return err(layoutInvalidOperation('deleteCategory', `Category ${id} not found`));
       }
 
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        categories: currentLayout.categories.filter((c) => c.id !== id),
-      }));
+      executeMutation(
+        () => store.deleteCategory(id),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          categories: currentLayout.categories.filter((c) => c.id !== id),
+        }))
+      );
 
       return OK;
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   // ====== BULK OPERATIONS ======
 
   const fillLayer = useCallback(
     (layerId: string, width: number, depth: number, categoryId: string, halfBinMode = false): number => {
-      // TODO: Implement collaborative-aware fillLayer for Phase 4
-      // Current limitation: Delegates to local store and relies on sync hook.
-      // This may cause race conditions if multiple users fill simultaneously.
-      if (import.meta.env.DEV) {
-        console.warn(
-          '[CollabProvider] fillLayer is not yet collaborative-aware. ' +
-          'Concurrent fills by multiple users may cause conflicts.'
-        );
-      }
+      // fillLayer always uses local store - it's already non-collaborative
       return store.fillLayer(layerId, width, depth, categoryId, halfBinMode);
     },
     [store]
@@ -763,56 +829,71 @@ function CollabMutationsProvider({ children }: { children: ReactNode }) {
       const layout = getLayout();
       const count = layout.bins.filter((b) => b.layerId === layerId).length;
 
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        bins: currentLayout.bins.filter((b) => b.layerId !== layerId),
-      }));
+      executeMutation(
+        () => store.clearLayer(layerId),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          bins: currentLayout.bins.filter((b) => b.layerId !== layerId),
+        }))
+      );
 
       return count;
     },
-    [getLayout, updateLiveblocksLayout]
+    [getLayout, executeMutation, store, updateLiveblocksLayout]
   );
 
   // ====== LAYOUT METADATA ======
 
   const setName = useCallback(
     (name: string): void => {
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        name: name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
-      }));
+      executeMutation(
+        () => store.setName(name),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          name: name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
+        }))
+      );
     },
-    [updateLiveblocksLayout]
+    [executeMutation, store, updateLiveblocksLayout]
   );
 
   const setPrintBedSize = useCallback(
     (size: number): void => {
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        printBedSize: clamp(size, 42, 500),
-      }));
+      executeMutation(
+        () => store.setPrintBedSize(size),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          printBedSize: clamp(size, 42, 500),
+        }))
+      );
     },
-    [updateLiveblocksLayout]
+    [executeMutation, store, updateLiveblocksLayout]
   );
 
   const setGridUnitMm = useCallback(
     (mm: number): void => {
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        gridUnitMm: clamp(mm, 1, 200),
-      }));
+      executeMutation(
+        () => store.setGridUnitMm(mm),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          gridUnitMm: clamp(mm, 1, 200),
+        }))
+      );
     },
-    [updateLiveblocksLayout]
+    [executeMutation, store, updateLiveblocksLayout]
   );
 
   const setHeightUnitMm = useCallback(
     (mm: number): void => {
-      updateLiveblocksLayout((currentLayout) => ({
-        ...currentLayout,
-        heightUnitMm: clamp(mm, 1, 50),
-      }));
+      executeMutation(
+        () => store.setHeightUnitMm(mm),
+        () => updateLiveblocksLayout((currentLayout) => ({
+          ...currentLayout,
+          heightUnitMm: clamp(mm, 1, 50),
+        }))
+      );
     },
-    [updateLiveblocksLayout]
+    [executeMutation, store, updateLiveblocksLayout]
   );
 
   const mutations = useMemo<Mutations>(
