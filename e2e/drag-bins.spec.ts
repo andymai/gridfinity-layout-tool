@@ -12,7 +12,127 @@ import {
   waitForUndoEnabled,
   clearAllStorage,
   resetViewport,
+  waitForBinSelected,
 } from './fixtures';
+
+/**
+ * Regression test for stale closure bug in interaction handlers.
+ *
+ * Bug: PR #142 introduced empty dependency arrays on interaction wrapper functions
+ * (startDrag, startDraw, startResize), causing them to capture mode handlers once
+ * and never update when layout state changed.
+ *
+ * Symptom: Newly created bins couldn't be dragged because startDrag had stale
+ * layout.bins that didn't include the new bin.
+ *
+ * Fix: PR #149 - Use refs to hold current mode handlers, updated via useLayoutEffect.
+ */
+test.describe('Interaction Handler Freshness (Regression)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await clearAllStorage(page);
+    await page.reload();
+    await waitForAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+  });
+
+  test('can drag a newly created bin immediately after drawing it', async ({ page }) => {
+    // This test catches the stale closure bug from PR #142
+    // If startDrag has a stale layout reference, the new bin won't be found
+
+    // Draw a bin
+    const bin = await drawBinOnGrid(page, 50, 50, 120, 120);
+    await waitForBinCount(page, 1);
+
+    // The bin should be auto-selected after drawing
+    await waitForBinSelected(bin);
+
+    // Get the bin's position before drag
+    const bounds = await getGridBounds(page);
+    const binBox = await bin.boundingBox();
+    if (!binBox) throw new Error('Bin not found');
+
+    // Immediately try to drag it - this is where the bug would manifest
+    // With stale closures, startDrag couldn't find the bin in layout.bins
+    await page.mouse.move(binBox.x + binBox.width / 2, binBox.y + binBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + 200, bounds.y + 200, { steps: 10 });
+    await page.mouse.up();
+
+    // Verify drag created an undoable action (proves drag succeeded)
+    await waitForUndoEnabled(page);
+
+    // Verify bin moved (new position should be different)
+    const binBoxAfter = await bin.boundingBox();
+    if (!binBoxAfter) throw new Error('Bin not found after drag');
+
+    // The bin should have moved to the right and down
+    expect(binBoxAfter.x).toBeGreaterThan(binBox.x);
+    expect(binBoxAfter.y).toBeGreaterThan(binBox.y);
+  });
+
+  test('can drag second bin after creating two bins in sequence', async ({ page }) => {
+    // Create first bin
+    await drawBinOnGrid(page, 50, 50, 100, 100);
+    await waitForBinCount(page, 1);
+
+    // Create second bin - layout state changes again
+    const secondBin = await drawBinOnGrid(page, 150, 50, 220, 120);
+    await waitForBinCount(page, 2);
+
+    // Second bin should be selected
+    await waitForBinSelected(secondBin);
+
+    const bounds = await getGridBounds(page);
+    const binBox = await secondBin.boundingBox();
+    if (!binBox) throw new Error('Second bin not found');
+
+    // Try to drag the second bin immediately
+    await page.mouse.move(binBox.x + binBox.width / 2, binBox.y + binBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + 50, bounds.y + 180, { steps: 10 });
+    await page.mouse.up();
+
+    // Verify drag succeeded
+    await waitForUndoEnabled(page);
+  });
+
+  test('can resize a newly created bin immediately', async ({ page }) => {
+    // Draw a bin
+    const bin = await drawBinOnGrid(page, 50, 50, 120, 120);
+    await waitForBinCount(page, 1);
+    await waitForBinSelected(bin);
+
+    // Get initial size from inspector
+    const inspector = getInspector(page);
+    const sizeHeading = inspector.getByRole('heading', { name: /^\d×\d Bin$/i });
+    const initialSize = await sizeHeading.textContent();
+
+    // Find the east resize handle and drag it
+    const binBox = await bin.boundingBox();
+    if (!binBox) throw new Error('Bin not found');
+
+    // Resize handles are at the edges - target the east (right) edge
+    const eastHandleX = binBox.x + binBox.width - 2;
+    const eastHandleY = binBox.y + binBox.height / 2;
+
+    await page.mouse.move(eastHandleX, eastHandleY);
+    await page.mouse.down();
+    await page.mouse.move(eastHandleX + 64, eastHandleY, { steps: 5 }); // Extend by ~2 grid units
+    await page.mouse.up();
+
+    // Verify resize created an undoable action
+    await waitForUndoEnabled(page);
+
+    // Verify size changed in inspector
+    const newSize = await sizeHeading.textContent();
+    expect(newSize).not.toBe(initialSize);
+  });
+});
 
 test.describe('Drag Bins Flow', () => {
   test.beforeEach(async ({ page }) => {
