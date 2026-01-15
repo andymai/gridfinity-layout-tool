@@ -105,7 +105,7 @@ vi.mock('../../storage', () => {
             layoutId,
             entry: newEntry,
             library: { ...library, entries: [...library.entries, newEntry] },
-            layout: { name: newEntry.name },
+            layout: { name: newEntry.name, layers: [], categories: [] },
           },
         });
       }

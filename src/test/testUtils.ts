@@ -308,12 +308,16 @@ export function setupGlobalCleanup() {
 }
 
 /**
- * Create storage mock functions with consistent behavior.
- * Use this when setting up vi.mock('../../storage', ...) in tests.
+ * Create storage mock functions with consistent behavior for tests.
+ *
+ * This helper is exported from this module and can be imported directly
+ * when setting up mocks for the storage layer in your test files.
  *
  * Returns mock implementations for both legacy and new atomic storage functions.
  *
  * @example
+ * import { createStorageMock } from '../test/testUtils';
+ *
  * vi.mock('../../storage', () => createStorageMock());
  */
 export function createStorageMock() {
