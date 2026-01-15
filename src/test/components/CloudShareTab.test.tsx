@@ -9,7 +9,6 @@ const mockShare = vi.fn();
 const mockUpdate = vi.fn();
 const mockRemove = vi.fn();
 const mockCopyUrl = vi.fn();
-const mockCopyDeleteToken = vi.fn();
 const mockReset = vi.fn();
 
 let mockCloudShareState = {
@@ -23,7 +22,6 @@ let mockCloudShareState = {
   updatePermission: vi.fn(),
   remove: mockRemove,
   copyUrl: mockCopyUrl,
-  copyDeleteToken: mockCopyDeleteToken,
   reset: mockReset,
 };
 
@@ -57,7 +55,6 @@ describe('CloudShareTab', () => {
       updatePermission: vi.fn(),
       remove: mockRemove,
       copyUrl: mockCopyUrl,
-      copyDeleteToken: mockCopyDeleteToken,
       reset: mockReset,
     };
 
@@ -345,70 +342,6 @@ describe('CloudShareTab', () => {
       fireEvent.click(screen.getByText('Use Share Link Instead'));
 
       expect(mockOnSwitchToUrlTab).toHaveBeenCalled();
-    });
-  });
-
-  describe('DeleteTokenSection', () => {
-    beforeEach(() => {
-      mockCloudShareState.status = 'success';
-      mockCloudShareState.result = {
-        url: 'https://example.com/s/abc123',
-        deleteToken: 'delete-token-xyz',
-        permission: 'view',
-      };
-    });
-
-    it('is collapsed by default', () => {
-      render(<CloudShareTab {...defaultProps} />);
-      expect(screen.queryByText(/Save this token/)).not.toBeInTheDocument();
-    });
-
-    it('expands when clicked', () => {
-      render(<CloudShareTab {...defaultProps} />);
-
-      fireEvent.click(screen.getByText(/Advanced: Delete Token/));
-
-      expect(screen.getByText(/Save this token/)).toBeInTheDocument();
-    });
-
-    it('displays delete token when expanded', () => {
-      render(<CloudShareTab {...defaultProps} />);
-
-      fireEvent.click(screen.getByText(/Advanced: Delete Token/));
-
-      expect(screen.getByDisplayValue('delete-token-xyz')).toBeInTheDocument();
-    });
-
-    it('has Copy button for token', () => {
-      render(<CloudShareTab {...defaultProps} />);
-
-      fireEvent.click(screen.getByText(/Advanced: Delete Token/));
-
-      // There should be a Copy button in the expanded section
-      const copyButtons = screen.getAllByRole('button', { name: /Copy/i });
-      expect(copyButtons.length).toBeGreaterThan(1); // URL copy and token copy
-    });
-
-    it('collapses when clicked again', () => {
-      render(<CloudShareTab {...defaultProps} />);
-
-      // Expand
-      fireEvent.click(screen.getByText(/Advanced: Delete Token/));
-      expect(screen.getByText(/Save this token/)).toBeInTheDocument();
-
-      // Collapse
-      fireEvent.click(screen.getByText(/Advanced: Delete Token/));
-      expect(screen.queryByText(/Save this token/)).not.toBeInTheDocument();
-    });
-
-    it('has correct aria-expanded attribute', () => {
-      render(<CloudShareTab {...defaultProps} />);
-
-      const toggleButton = screen.getByRole('button', { name: /Advanced: Delete Token/ });
-      expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
-
-      fireEvent.click(toggleButton);
-      expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
     });
   });
 
