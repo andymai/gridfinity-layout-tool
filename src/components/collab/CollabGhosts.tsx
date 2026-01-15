@@ -199,6 +199,7 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
     return (
       <div
         key={key}
+        className="animate-in fade-in duration-150"
         style={{
           position: 'absolute',
           left,
@@ -206,9 +207,11 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
           width: rectWidth,
           height: rectHeight,
           border: `2px dashed ${color}`,
-          borderRadius: 2,
-          backgroundColor: `${color}15`,
+          borderRadius: 4,
+          background: `linear-gradient(135deg, ${color}20, ${color}08)`,
+          boxShadow: `0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 1px ${color}30, 0 0 10px ${color}25`,
           pointerEvents: 'none',
+          willChange: 'opacity, transform',
         }}
         aria-hidden="true"
       />
@@ -240,6 +243,7 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
       ghosts.push(
         <div
           key={`${keyPrefix}-${binId}`}
+          className="animate-in fade-in duration-150"
           style={{
             position: 'absolute',
             left,
@@ -247,9 +251,12 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
             width: rectWidth,
             height: rectHeight,
             border: `2px solid ${color}`,
-            borderRadius: 2,
-            backgroundColor: `${color}20`,
+            borderRadius: 4,
+            background: `linear-gradient(135deg, ${color}28, ${color}10)`,
+            boxShadow: `0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 2px ${color}40, 0 0 14px ${color}30`,
             pointerEvents: 'none',
+            willChange: 'opacity, transform',
+            transform: 'translateZ(0)',
           }}
           aria-hidden="true"
         />
@@ -285,6 +292,7 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
       ghosts.push(
         <div
           key={`${keyPrefix}-${binId}`}
+          className="animate-in fade-in duration-150"
           style={{
             position: 'absolute',
             left,
@@ -292,21 +300,25 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
             width: rectWidth,
             height: rectHeight,
             border: `2px dashed ${color}`,
-            borderRadius: 2,
-            backgroundColor: `${color}15`,
+            borderRadius: 4,
+            background: `linear-gradient(135deg, ${color}20, ${color}08)`,
+            boxShadow: `0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 1px ${color}30, 0 0 10px ${color}25`,
             pointerEvents: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            willChange: 'opacity, transform',
           }}
           aria-hidden="true"
         >
           <span
+            className="animate-pulse"
             style={{
-              fontSize: 16,
+              fontSize: 18,
               color,
-              opacity: 0.8,
-              textShadow: '0 0 2px rgba(0,0,0,0.5)',
+              opacity: 0.9,
+              fontWeight: 'bold',
+              textShadow: `0 0 4px rgba(0,0,0,0.5), 0 0 8px ${color}`,
             }}
           >
             {handleIndicator}

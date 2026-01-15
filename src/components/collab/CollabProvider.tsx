@@ -21,6 +21,7 @@ import {
 import { useLibraryStore } from '../../store/library';
 import { useLayoutStore } from '../../store/layout';
 import { useSettingsStore } from '../../store/settings';
+import { useUIStore } from '../../store/ui';
 import { generateId, STAGING_ID, CONSTRAINTS } from '../../constants';
 import { generateGuestName, generateGuestColor } from '../../utils/guestNames';
 import { PresenceContext, type CollabPresenceActions } from '../../contexts/PresenceContext';
@@ -218,6 +219,47 @@ function PresenceProvider({ shareId, children }: { shareId: string; children: Re
     };
   }, [updateMyPresence]);
 
+  // Create throttled selection update (100ms = 10fps, less frequent than cursor)
+  const throttledUpdateSelectionRef = useRef<((binIds: string[]) => void) | null>(null);
+
+  useEffect(() => {
+    throttledUpdateSelectionRef.current = throttle((binIds: string[]) => {
+      updateMyPresence({ selectedBinIds: binIds });
+    }, 100);
+
+    return () => {
+      throttledUpdateSelectionRef.current = null;
+    };
+  }, [updateMyPresence]);
+
+  // Auto-broadcast selection changes from UI store
+  useEffect(() => {
+    // Track previous selection to detect changes
+    let prevSelection = useUIStore.getState().selectedBinIds;
+
+    // Subscribe to entire state and filter for selection changes
+    const unsubscribe = useUIStore.subscribe((state) => {
+      const currentSelection = state.selectedBinIds;
+      // Only update if selection actually changed
+      if (
+        currentSelection.length !== prevSelection.length ||
+        currentSelection.some((id, i) => id !== prevSelection[i])
+      ) {
+        prevSelection = currentSelection;
+        if (throttledUpdateSelectionRef.current) {
+          throttledUpdateSelectionRef.current(currentSelection);
+        }
+      }
+    });
+
+    // Broadcast initial selection state
+    if (throttledUpdateSelectionRef.current) {
+      throttledUpdateSelectionRef.current(prevSelection);
+    }
+
+    return unsubscribe;
+  }, []);
+
   const updateCursor = useCallback(
     (cursor: Coord | null) => {
       if (throttledUpdateCursorRef.current) {
@@ -234,10 +276,20 @@ function PresenceProvider({ shareId, children }: { shareId: string; children: Re
     [updateMyPresence]
   );
 
+  const updateSelection = useCallback(
+    (binIds: string[]) => {
+      if (throttledUpdateSelectionRef.current) {
+        throttledUpdateSelectionRef.current(binIds);
+      }
+    },
+    []
+  );
+
   const clearPresence = useCallback(() => {
     updateMyPresence({
       cursor: null,
       interaction: { type: 'idle' },
+      selectedBinIds: [],
     });
   }, [updateMyPresence]);
 
@@ -245,9 +297,10 @@ function PresenceProvider({ shareId, children }: { shareId: string; children: Re
     () => ({
       updateCursor,
       updateInteraction,
+      updateSelection,
       clearPresence,
     }),
-    [updateCursor, updateInteraction, clearPresence]
+    [updateCursor, updateInteraction, updateSelection, clearPresence]
   );
 
   return (

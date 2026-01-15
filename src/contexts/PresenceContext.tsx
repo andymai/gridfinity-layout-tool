@@ -1,8 +1,9 @@
 /**
  * Context for collaborative presence actions.
  *
- * This context provides functions for updating cursor position and
- * interaction state that are broadcast to other connected users.
+ * This context provides functions for updating cursor position,
+ * interaction state, and selection that are broadcast to other
+ * connected users.
  *
  * When outside CollabProvider, no-op functions are returned.
  */
@@ -16,6 +17,8 @@ export interface CollabPresenceActions {
   updateCursor: (cursor: Coord | null) => void;
   /** Update current interaction hint for remote previews */
   updateInteraction: (interaction: InteractionHint) => void;
+  /** Update currently selected bin IDs for selection rings */
+  updateSelection: (binIds: string[]) => void;
   /** Clear presence when leaving collaborative mode */
   clearPresence: () => void;
 }
@@ -27,6 +30,7 @@ export interface CollabPresenceActions {
 const noopActions: CollabPresenceActions = {
   updateCursor: () => {},
   updateInteraction: () => {},
+  updateSelection: () => {},
   clearPresence: () => {},
 };
 

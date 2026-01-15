@@ -1,56 +1,65 @@
 /**
  * Individual remote cursor component.
  *
- * Displays a cursor icon with the user's name label.
- * Uses CSS transitions for smooth movement.
+ * Displays a cursor icon with the user's name and activity label.
+ * Receives pre-interpolated pixel positions for smooth 60fps rendering.
  *
- * Cursor positions are stored as normalized coordinates (0-1 range)
- * and converted to actual pixels at render time for smooth movement.
+ * Features:
+ * - Smooth movement via interpolated positions
+ * - Fade in/out transitions
+ * - Activity indicator showing current operation (Drawing, Moving, etc.)
  */
 
-import { useMemo } from 'react';
-import type { UserPresence } from '../../liveblocks.config';
+import type { UserPresence, InteractionHint } from '../../liveblocks.config';
+import type { InterpolatedPosition } from '../../hooks/useInterpolatedPresence';
 
 interface CollabCursorProps {
   /** User presence data containing cursor position, name, and color */
   presence: UserPresence;
-  /** Total grid width in pixels (for converting normalized coords) */
-  gridWidth: number;
-  /** Total grid height in pixels (for converting normalized coords) */
-  gridHeight: number;
+  /** Pre-interpolated pixel position from useInterpolatedPresence */
+  position: InterpolatedPosition;
 }
 
 /**
- * Renders a single remote user's cursor with their name label.
- *
- * The cursor uses CSS transform for positioning, which enables
- * smooth transitions without layout thrashing.
+ * Maps interaction hint type to user-friendly activity text.
+ * Returns null for idle state (no label shown).
  */
-export function CollabCursor({ presence, gridWidth, gridHeight }: CollabCursorProps) {
-  const { cursor, name, color } = presence;
+function getActivityText(interaction?: InteractionHint): string | null {
+  if (!interaction || interaction.type === 'idle') return null;
 
-  // Convert normalized (0-1) coordinates to pixel position
-  // useMemo must be called unconditionally (React Rules of Hooks)
-  const style = useMemo(() => {
-    if (!cursor) return null;
-    // Cursor coords are normalized 0-1, multiply by grid dimensions
-    const x = cursor.x * gridWidth;
-    const y = cursor.y * gridHeight;
-
-    return {
-      transform: `translate(${x}px, ${y}px)`,
-      color,
-    };
-  }, [cursor, gridWidth, gridHeight, color]);
-
-  // Don't render if cursor is null (user is outside the grid)
-  if (!cursor || !style) {
-    return null;
+  switch (interaction.type) {
+    case 'drawing':
+      return 'Drawing...';
+    case 'dragging':
+      return 'Moving...';
+    case 'resizing':
+      return 'Resizing...';
+    case 'selecting':
+      return 'Selecting...';
+    default:
+      return null;
   }
+}
+
+/**
+ * Renders a single remote user's cursor with name and activity labels.
+ *
+ * The cursor uses pre-interpolated positions from useInterpolatedPresence
+ * for smooth 60fps animation while keeping network updates throttled.
+ */
+export function CollabCursor({ presence, position }: CollabCursorProps) {
+  const { name, color, interaction } = presence;
+  const activityText = getActivityText(interaction);
+
+  const style = {
+    transform: `translate(${position.x}px, ${position.y}px)`,
+    color,
+    opacity: position.opacity,
+  };
 
   return (
     <div
-      className="absolute transition-transform duration-[16ms] ease-linear pointer-events-none"
+      className="absolute pointer-events-none transition-opacity duration-200"
       style={style}
       aria-hidden="true"
     >
@@ -71,13 +80,23 @@ export function CollabCursor({ presence, gridWidth, gridHeight }: CollabCursorPr
         />
       </svg>
 
-      {/* Name label floating above the cursor for better visibility */}
+      {/* Name label floating above the cursor */}
       <div
         className="absolute left-3 -top-5 px-1.5 py-0.5 text-[10px] font-medium text-white rounded whitespace-nowrap max-w-[100px] truncate shadow-md"
         style={{ backgroundColor: color }}
       >
         {name}
       </div>
+
+      {/* Activity label below the name (only shown when not idle) */}
+      {activityText && (
+        <div
+          className="absolute left-3 top-0 px-1.5 py-0.5 text-[9px] font-medium text-white rounded whitespace-nowrap shadow-sm animate-in fade-in duration-150"
+          style={{ backgroundColor: color, opacity: 0.9 }}
+        >
+          {activityText}
+        </div>
+      )}
     </div>
   );
 }
