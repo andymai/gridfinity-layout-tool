@@ -41,6 +41,13 @@ export function useAutoSave(): SaveStatus {
   const savedTimeoutRef = useRef<number | undefined>(undefined);
   const hasShownErrorRef = useRef(false);
   const failureCountRef = useRef(0);
+  // Use ref to access current library without triggering effect re-runs
+  const libraryRef = useRef(library);
+
+  // Sync ref with latest library value (must be in effect, not render)
+  useEffect(() => {
+    libraryRef.current = library;
+  }, [library]);
 
   useEffect(() => {
     if (timeoutRef.current) {
@@ -72,7 +79,7 @@ export function useAutoSave(): SaveStatus {
           const result = await saveLayoutWithMetadata(
             activeLayoutId,
             layout,
-            library
+            libraryRef.current
           );
 
           if (isErr(result)) {
@@ -123,7 +130,7 @@ export function useAutoSave(): SaveStatus {
         cancelIdleCallback(idleCallbackRef.current);
       }
     };
-  }, [layout, activeLayoutId, library, setLibrary, addToast]);
+  }, [layout, activeLayoutId, setLibrary, addToast]);
 
   // Cleanup timeouts and idle callback on unmount
   useEffect(() => {
