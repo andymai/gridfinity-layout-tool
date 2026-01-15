@@ -1175,6 +1175,69 @@ describe('stagingDrag interaction', () => {
     const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
     expect(bin?.layerId).toBe(STAGING_ID);
   });
+
+  it('stagingDrag allows shorter bin to be placed on layer and keeps original height', () => {
+    const { addBin, updateLayer, layout } = useLayoutStore.getState();
+    const categoryId = layout.categories[0].id;
+    const tallLayerId = layout.layers[0].id;
+
+    // Update the layer to have a higher minimum height (5u)
+    // Note: Layer "minimum height" is a default for new bins, not a constraint
+    updateLayer(tallLayerId, { height: 5 });
+
+    // Add a shorter bin (3u) to staging
+    const binId = getBinId(addBin({
+      layerId: STAGING_ID,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3, // Shorter than the layer's "default" height of 5
+      category: categoryId,
+      label: '',
+      notes: '',
+    }));
+
+    // Verify bin is in staging with height 3
+    const stagedBin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    expect(stagedBin?.layerId).toBe(STAGING_ID);
+    expect(stagedBin?.height).toBe(3);
+
+    // Set active layer to the tall layer
+    useSelectionStore.setState({
+      ...useSelectionStore.getState(),
+      activeLayerId: tallLayerId,
+    });
+
+    // Set up stagingDrag interaction with valid position
+    // Validation passes - layer height is not a constraint for existing bins
+    useInteractionStore.setState({
+      ...useInteractionStore.getState(),
+      interaction: {
+        type: 'stagingDrag',
+        binId: binId,
+        currentCoord: { x: 2, y: 2 },
+        valid: true,
+      },
+    });
+
+    const gridRef = createMockGridRef();
+    renderHook(() => useInteraction(gridRef));
+
+    // Simulate pointer up
+    act(() => {
+      const upEvent = new PointerEvent('pointerup', { bubbles: true });
+      document.dispatchEvent(upEvent);
+    });
+
+    // Bin should now be on the grid with its ORIGINAL height preserved
+    // (no auto-adjustment to layer minimum - user may have specific STL dimensions)
+    const placedBin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    expect(placedBin?.layerId).toBe(tallLayerId);
+    expect(placedBin?.x).toBe(2);
+    expect(placedBin?.y).toBe(2);
+    expect(placedBin?.height).toBe(3); // Height preserved, NOT adjusted to 5
+  });
 });
 
 // Test Alt+drag duplicate behavior

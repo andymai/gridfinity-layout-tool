@@ -143,14 +143,11 @@ export function canPlaceBin(
     return { valid: false, reason: 'invalid_layer' };
   }
 
-  // Height check
+  // Height check - only validate max height (bin can't exceed drawer)
+  // Layer height is a default for new bins, not a constraint for existing bins
   const zStart = getLayerZStart(layerId, layers);
   const maxHeight = drawer.height - zStart;
   if (rect.height > maxHeight) {
-    return { valid: false, reason: 'exceeds_height' };
-  }
-  if (rect.height < layer.height) {
-    // Bin must be at least as tall as its base layer
     return { valid: false, reason: 'exceeds_height' };
   }
 
@@ -228,15 +225,12 @@ export function canPlaceBinResult(
     return err(validationInvalidLayer(layerId));
   }
 
-  // Height check
+  // Height check - only validate max height (bin can't exceed drawer)
+  // Layer height is a default for new bins, not a constraint for existing bins
   const zStart = getLayerZStart(layerId, layers);
   const maxHeight = drawer.height - zStart;
   if (rect.height > maxHeight) {
     return err(validationHeightExceeded(rect.height, maxHeight));
-  }
-  if (rect.height < layer.height) {
-    // Bin must be at least as tall as its base layer
-    return err(validationHeightExceeded(rect.height, layer.height));
   }
 
   // Blocked zone check

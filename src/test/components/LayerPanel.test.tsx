@@ -319,15 +319,15 @@ describe('LayerPanel', () => {
     it('shows height controls for active layer', () => {
       render(<LayerPanel />);
 
-      expect(screen.getByLabelText('Increase layer height')).toBeInTheDocument();
-      expect(screen.getByLabelText('Decrease layer height')).toBeInTheDocument();
+      expect(screen.getByLabelText('Increase new bin height')).toBeInTheDocument();
+      expect(screen.getByLabelText('Decrease new bin height')).toBeInTheDocument();
     });
 
     it('increases height when plus clicked', () => {
       render(<LayerPanel />);
 
       const initialHeight = useLayoutStore.getState().layout.layers[0].height;
-      fireEvent.click(screen.getByLabelText('Increase layer height'));
+      fireEvent.click(screen.getByLabelText('Increase new bin height'));
 
       expect(useLayoutStore.getState().layout.layers[0].height).toBe(initialHeight + 1);
     });
@@ -345,7 +345,7 @@ describe('LayerPanel', () => {
 
       render(<LayerPanel />);
 
-      fireEvent.click(screen.getByLabelText('Decrease layer height'));
+      fireEvent.click(screen.getByLabelText('Decrease new bin height'));
 
       expect(useLayoutStore.getState().layout.layers[0].height).toBe(4);
     });
@@ -362,7 +362,7 @@ describe('LayerPanel', () => {
 
       render(<LayerPanel />);
 
-      expect(screen.getByLabelText('Decrease layer height')).toBeDisabled();
+      expect(screen.getByLabelText('Decrease new bin height')).toBeDisabled();
     });
   });
 
@@ -548,8 +548,8 @@ describe('LayerPanel', () => {
     it('height controls have aria-labels', () => {
       render(<LayerPanel />);
 
-      expect(screen.getByLabelText('Increase layer height')).toBeInTheDocument();
-      expect(screen.getByLabelText('Decrease layer height')).toBeInTheDocument();
+      expect(screen.getByLabelText('Increase new bin height')).toBeInTheDocument();
+      expect(screen.getByLabelText('Decrease new bin height')).toBeInTheDocument();
     });
   });
 });
