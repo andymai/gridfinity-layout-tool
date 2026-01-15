@@ -202,14 +202,15 @@ export function SharedLayoutImporter() {
 
       const result = await fetchShare(initialCloudShareId);
 
-      // Always clear the URL to prevent re-processing on refresh
-      // Do this early, before any potential unmount checks
-      clearCloudShareFromURL();
-
       // Prevent state updates if component unmounted during fetch
+      // Don't clear URL either - let the next mount handle it
       if (!isMounted) {
         return;
       }
+
+      // Clear URL after confirming we can update state
+      // This prevents race conditions with React Strict Mode
+      clearCloudShareFromURL();
 
       setIsLoading(false);
 
@@ -238,6 +239,8 @@ export function SharedLayoutImporter() {
 
     return () => {
       isMounted = false;
+      // Note: Don't reset hasStartedCloudFetch - we only want one fetch attempt
+      // per page load, even if the component re-renders
     };
   }, [loadLayoutPreview, addToast, trackSharedLayout, libraryIsLoaded, libraryEntries]);
 
