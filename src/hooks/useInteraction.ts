@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import type { RefObject } from 'react';
 import type { Coord, ResizeHandle } from '../types';
 import { useLayoutStore, useUndoableAction, useSelectionStore, useInteractionStore } from '../store';
@@ -11,7 +11,7 @@ import { useDrawInteraction } from './interactions/useDrawInteraction';
 import { useDragInteraction } from './interactions/useDragInteraction';
 import { useResizeInteraction } from './interactions/useResizeInteraction';
 import { useStagingDragInteraction } from './interactions/useStagingDragInteraction';
-import type { InteractionContext } from './interactions/types';
+import type { InteractionContext, ModeHandlers, DrawStartArgs, DragStartArgs, ResizeStartArgs, StagingDragStartArgs } from './interactions/types';
 
 /**
  * Hook for managing all grid interactions including bin creation, movement, and resizing.
@@ -144,43 +144,52 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     ]
   );
 
-  // Mode hooks
+  // Mode hooks - use refs to always access current handlers while keeping
+  // wrapper functions stable (fixes stale closure bug from empty deps)
   const drawMode = useDrawInteraction(interactionContext);
   const dragMode = useDragInteraction(interactionContext);
   const resizeMode = useResizeInteraction(interactionContext);
   const stagingDragMode = useStagingDragInteraction(interactionContext);
 
+  // Refs to hold current mode handlers - allows stable callbacks while using current handlers
+  const drawModeRef = useRef<ModeHandlers<DrawStartArgs>>(drawMode);
+  const dragModeRef = useRef<ModeHandlers<DragStartArgs>>(dragMode);
+  const resizeModeRef = useRef<ModeHandlers<ResizeStartArgs>>(resizeMode);
+  const stagingDragModeRef = useRef<ModeHandlers<StagingDragStartArgs>>(stagingDragMode);
+
+  // Keep refs in sync with current mode handlers (useLayoutEffect runs before any event handlers)
+  useLayoutEffect(() => {
+    drawModeRef.current = drawMode;
+    dragModeRef.current = dragMode;
+    resizeModeRef.current = resizeMode;
+    stagingDragModeRef.current = stagingDragMode;
+  });
+
   // Start drawing a new bin (or start paint drag if paint mode active)
-  // Delegates to drawMode.start (pointer capture handled by mode hook)
-  // Note: drawMode is captured via closure, not in deps array to avoid re-renders
+  // Uses ref to always access current drawMode handlers
   const startDraw = useCallback(
     (coord: Coord, pointerId?: number) => {
-      drawMode.start(coord, pointerId);
+      drawModeRef.current.start(coord, pointerId);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
   // Start dragging bins (single or multiple)
   // Set duplicate=true for Alt+drag to duplicate bins instead of moving them
-  // Delegates to dragMode.start (pointer capture handled by mode hook)
-  // Note: dragMode is captured via closure, not in deps array to avoid re-renders
+  // Uses ref to always access current dragMode handlers
   const startDrag = useCallback(
     (binId: string, clientX: number, clientY: number, pointerId?: number, duplicate?: boolean) => {
-      dragMode.start(binId, clientX, clientY, pointerId, duplicate);
+      dragModeRef.current.start(binId, clientX, clientY, pointerId, duplicate);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
   // Start resizing bins (single or multiple)
-  // Delegates to resizeMode.start (pointer capture handled by mode hook)
-  // Note: resizeMode is captured via closure, not in deps array to avoid re-renders
+  // Uses ref to always access current resizeMode handlers
   const startResize = useCallback(
     (binId: string, handle: ResizeHandle, pointerId?: number) => {
-      resizeMode.start(binId, handle, pointerId);
+      resizeModeRef.current.start(binId, handle, pointerId);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
@@ -211,6 +220,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     // Core move processing logic - separated for throttling
     // Draw and paint interactions are NOT throttled for instant visual feedback
     // Drag, resize, and stagingDrag ARE throttled because they involve heavy validation
+    // Uses refs to always access current handlers (avoids stale closures)
     const processHeavyMove = throttleRAF((
       coords: Coord,
       clamped: Coord,
@@ -219,11 +229,11 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       if (!currentInteraction) return;
 
       if (currentInteraction.type === 'drag') {
-        dragMode.handleMove(coords, clamped);
+        dragModeRef.current.handleMove(coords, clamped);
       } else if (currentInteraction.type === 'resize') {
-        resizeMode.handleMove(coords, clamped);
+        resizeModeRef.current.handleMove(coords, clamped);
       } else if (currentInteraction.type === 'stagingDrag') {
-        stagingDragMode.handleMove(coords, clamped);
+        stagingDragModeRef.current.handleMove(coords, clamped);
       }
     });
 
@@ -243,7 +253,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       // Draw and paint are NOT throttled - they need instant visual feedback
       // and don't involve heavy collision detection
       if (interaction.type === 'draw' || interaction.type === 'paint') {
-        drawMode.handleMove(coords, clamped);
+        drawModeRef.current.handleMove(coords, clamped);
       } else {
         // Drag, resize, stagingDrag involve heavy validation - throttle to RAF
         processHeavyMove(coords, clamped, interaction);
@@ -266,15 +276,15 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         capturedPointerRef.current = null;
       }
 
-      // Delegate to mode hooks
+      // Delegate to mode hooks (using refs for current handlers)
       if (interaction.type === 'draw' || interaction.type === 'paint') {
-        drawMode.handleUp();
+        drawModeRef.current.handleUp();
       } else if (interaction.type === 'drag') {
-        dragMode.handleUp();
+        dragModeRef.current.handleUp();
       } else if (interaction.type === 'resize') {
-        resizeMode.handleUp();
+        resizeModeRef.current.handleUp();
       } else if (interaction.type === 'stagingDrag') {
-        stagingDragMode.handleUp();
+        stagingDragModeRef.current.handleUp();
       }
 
       setInteraction(null);
@@ -302,11 +312,11 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         capturedPointerRef.current = null;
       }
     };
-  // Note: Mode hooks (drawMode, dragMode, etc.) are intentionally excluded from deps
-  // to avoid constant effect re-runs. They're captured via closure and the effect
-  // re-runs when interaction state changes, which is sufficient.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [interaction, layout, activeLayerId, activeCategoryId, addBin, updateBin, deleteBin, setInteraction, setDropTarget, setSelectedBin, setSelectedBins, getGridCoords, clampCoords, isInBounds, execute]);
+  // Mode handlers are accessed via refs (drawModeRef, dragModeRef, etc.) so they're
+  // always current. The refs are updated on every render, allowing this effect to
+  // have minimal deps while still using current handler implementations.
+   
+  }, [interaction, setInteraction, getGridCoords, clampCoords]);
 
   // Broadcast interaction state to remote users for collaborative previews
   useEffect(() => {
