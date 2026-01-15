@@ -91,9 +91,14 @@ function mapShareErrorToApiError(error: ShareErrorResponse): ApiError {
 /**
  * Create a new cloud share.
  *
+ * @param layoutId - The layout's unique ID (used as the share ID for URL consistency)
+ * @param layout - The layout data to share
+ * @param permission - 'view' or 'edit'
+ * @param authorName - Optional author name to display
+ *
  * @example
  * ```ts
- * const result = await createShare(layout, 'view');
+ * const result = await createShare(layoutId, layout, 'view');
  * if (isOk(result)) {
  *   console.log('Share URL:', result.value.url);
  * } else {
@@ -102,6 +107,7 @@ function mapShareErrorToApiError(error: ShareErrorResponse): ApiError {
  * ```
  */
 export async function createShare(
+  layoutId: string,
   layout: Layout,
   permission: SharePermission = 'view',
   authorName?: string
@@ -110,7 +116,7 @@ export async function createShare(
     const response = await fetch('/api/share', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ layout, permission, authorName }),
+      body: JSON.stringify({ layoutId, layout, permission, authorName }),
     });
 
     const data = await response.json();

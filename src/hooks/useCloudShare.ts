@@ -171,7 +171,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       setError(null);
 
       const layoutToShare = getLayoutToShare();
-      const result = await createShare(layoutToShare, permission, authorName);
+      const result = await createShare(targetLayoutId, layoutToShare, permission, authorName);
 
       // Prevent state updates if component unmounted during async operation
       if (!mountedRef.current) return false;
@@ -184,7 +184,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         return false;
       }
     },
-    [getLayoutToShare, authorName, handleSuccess, handleError]
+    [targetLayoutId, getLayoutToShare, authorName, handleSuccess, handleError]
   );
 
   const update = useCallback(

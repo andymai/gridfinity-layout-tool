@@ -39,22 +39,13 @@ export function useLayoutRouting() {
     }))
   );
 
-  const { isLoaded, setActiveLayoutId, getEntry, libraryEntries } = useLibraryStore(
+  const { isLoaded, setActiveLayoutId, getEntry } = useLibraryStore(
     useShallow((state) => ({
       isLoaded: state.isLoaded,
       setActiveLayoutId: state.setActiveLayoutId,
       getEntry: state.getEntry,
-      libraryEntries: state.library.entries,
     }))
   );
-
-  /**
-   * Find a library entry by cloud share ID.
-   * Used when owner visits their own share URL (e.g., /l/{shareId}/slug).
-   */
-  const getEntryByCloudShareId = useCallback((shareId: string) => {
-    return libraryEntries.find(entry => entry.cloudShare?.id === shareId);
-  }, [libraryEntries]);
 
   const { sharedLayoutPreview, setActiveLayer, setActiveCategory, clearSelection } = useUIStore(
     useShallow((state) => ({
@@ -142,38 +133,28 @@ export function useLayoutRouting() {
     const { layoutId } = urlInfo;
 
     // URL has a layout ID - try to navigate to it
-    // First check by direct ID, then by cloud share ID (for owner visiting their share URL)
-    let localEntry = getEntry(layoutId);
-    let targetLayoutId = layoutId;
+    // Since share IDs equal layout IDs, getEntry(layoutId) finds both local and shared layouts
+    const localEntry = getEntry(layoutId);
 
-    if (!localEntry) {
-      // Check if this is the owner visiting their own share URL
-      const ownerEntry = getEntryByCloudShareId(layoutId);
-      if (ownerEntry) {
-        localEntry = ownerEntry;
-        targetLayoutId = ownerEntry.id;
-      }
-    }
-
-    if (targetLayoutId === activeLayoutId) {
+    if (layoutId === activeLayoutId) {
       // Already on this layout - check if slug needs redirect
       if (localEntry) {
-        const redirect = getCanonicalRedirect(targetLayoutId, localEntry.name);
+        const redirect = getCanonicalRedirect(layoutId, localEntry.name);
         if (redirect) {
-          window.history.replaceState({ layoutId: targetLayoutId, slug: localEntry.name }, '', redirect);
+          window.history.replaceState({ layoutId, slug: localEntry.name }, '', redirect);
         }
       }
       return;
     }
 
     if (!localEntry) {
-      // Layout not found locally - it might be a cloud share
+      // Layout not found locally - it might be a cloud share from another user
       // Let SharedLayoutImporter handle it (don't redirect)
       return;
     }
 
     // Navigate asynchronously to the requested layout
-    navigateToLayout(targetLayoutId, false)
+    navigateToLayout(layoutId, false)
       .then((success) => {
         if (!success) {
           // Layout not found - silently redirect to current layout.
@@ -197,7 +178,6 @@ export function useLayoutRouting() {
     activeLayoutId,
     navigateToLayout,
     getEntry,
-    getEntryByCloudShareId,
   ]);
 
   // Handle browser back/forward navigation
@@ -267,9 +247,9 @@ export function useLayoutRouting() {
 
     // Skip if URL has a layout ID that's not a local layout (might be a cloud share being loaded)
     const urlInfo = parseLayoutFromURL();
-    if (urlInfo && !getEntry(urlInfo.layoutId) && !getEntryByCloudShareId(urlInfo.layoutId)) {
-      // URL has a layout ID that doesn't exist locally (neither by ID nor cloud share)
-      // Let SharedLayoutImporter handle it
+    if (urlInfo && !getEntry(urlInfo.layoutId)) {
+      // URL has a layout ID that doesn't exist locally
+      // Let SharedLayoutImporter handle it (might be another user's share)
       return;
     }
 
@@ -287,7 +267,7 @@ export function useLayoutRouting() {
 
     // Update URL with layout ID and slug
     setLayoutURL(activeLayoutId, entry.name, false);
-  }, [activeLayoutId, layout.name, sharedLayoutPreview, isLoaded, getEntry, getEntryByCloudShareId]);
+  }, [activeLayoutId, layout.name, sharedLayoutPreview, isLoaded, getEntry]);
 
   // Handle layout name changes (update slug in URL)
   useEffect(() => {
@@ -297,7 +277,7 @@ export function useLayoutRouting() {
 
     // Skip if URL has a layout ID that's not a local layout (might be a cloud share being loaded)
     const urlInfo = parseLayoutFromURL();
-    if (urlInfo && !getEntry(urlInfo.layoutId) && !getEntryByCloudShareId(urlInfo.layoutId)) {
+    if (urlInfo && !getEntry(urlInfo.layoutId)) {
       return;
     }
 
@@ -309,7 +289,7 @@ export function useLayoutRouting() {
     if (redirect) {
       window.history.replaceState({ layoutId: activeLayoutId }, '', redirect);
     }
-  }, [activeLayoutId, sharedLayoutPreview, getEntry, getEntryByCloudShareId]);
+  }, [activeLayoutId, sharedLayoutPreview, getEntry]);
 
   return {
     navigateToLayout,
