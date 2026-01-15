@@ -44,6 +44,7 @@ export function SharedLayoutImporter() {
   // Library store for auto-tracking shared layouts
   const libraryIsLoaded = useLibraryStore((state) => state.isLoaded);
   const libraryEntries = useLibraryStore((state) => state.library.entries);
+  const sharedWithMeLoaded = useLibraryStore((state) => state.sharedWithMeLoaded);
   const getSharedWithMeByShareId = useLibraryStore((state) => state.getSharedWithMeByShareId);
 
   // Check if we already loaded this share (to skip re-fetching)
@@ -180,8 +181,8 @@ export function SharedLayoutImporter() {
       return;
     }
 
-    // Wait for library to load before checking
-    if (!libraryIsLoaded) {
+    // Wait for library and shared-with-me list to load before checking
+    if (!libraryIsLoaded || !sharedWithMeLoaded) {
       return;
     }
 
@@ -257,7 +258,7 @@ export function SharedLayoutImporter() {
 
     loadCloudShare();
     // No cleanup needed - isMountedRef is managed by the separate mount/unmount effect
-  }, [loadLayoutPreview, addToast, trackSharedLayout, libraryIsLoaded, libraryEntries, sharedLayoutCloudShareId, getSharedWithMeByShareId]);
+  }, [loadLayoutPreview, addToast, trackSharedLayout, libraryIsLoaded, sharedWithMeLoaded, libraryEntries, sharedLayoutCloudShareId, getSharedWithMeByShareId]);
 
   // Show loading state for cloud shares
   if (isLoading) {
