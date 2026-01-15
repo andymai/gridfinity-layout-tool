@@ -6,10 +6,9 @@
  *
  * Architecture:
  * - useInteraction: Main facade hook (public API, unchanged from before refactor)
- * - useDrawInteraction: Draw mode (new bin creation)
+ * - useDrawInteraction: Draw & paint modes (new bin creation and area fill)
  * - useDragInteraction: Drag mode (bin movement, duplication)
  * - useResizeInteraction: Resize mode (bin resizing via handles)
- * - usePaintInteraction: Paint mode (fill area with uniform bins)
  * - useStagingDragInteraction: Staging drag (moving bins from stash to grid)
  *
  * The facade pattern means consumers of useInteraction see no API changes.

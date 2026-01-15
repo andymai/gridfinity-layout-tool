@@ -149,30 +149,36 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
   // Start drawing a new bin (or start paint drag if paint mode active)
   // Delegates to drawMode.start (pointer capture handled by mode hook)
+  // Note: drawMode is captured via closure, not in deps array to avoid re-renders
   const startDraw = useCallback(
     (coord: Coord, pointerId?: number) => {
       drawMode.start(coord, pointerId);
     },
-    [drawMode]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   // Start dragging bins (single or multiple)
   // Set duplicate=true for Alt+drag to duplicate bins instead of moving them
   // Delegates to dragMode.start (pointer capture handled by mode hook)
+  // Note: dragMode is captured via closure, not in deps array to avoid re-renders
   const startDrag = useCallback(
     (binId: string, clientX: number, clientY: number, pointerId?: number, duplicate?: boolean) => {
       dragMode.start(binId, clientX, clientY, pointerId, duplicate);
     },
-    [dragMode]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   // Start resizing bins (single or multiple)
   // Delegates to resizeMode.start (pointer capture handled by mode hook)
+  // Note: resizeMode is captured via closure, not in deps array to avoid re-renders
   const startResize = useCallback(
     (binId: string, handle: ResizeHandle, pointerId?: number) => {
       resizeMode.start(binId, handle, pointerId);
     },
-    [resizeMode]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   // Cancel current interaction
@@ -293,7 +299,11 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         capturedPointerRef.current = null;
       }
     };
-  }, [interaction, layout, activeLayerId, activeCategoryId, addBin, updateBin, deleteBin, setInteraction, setDropTarget, setSelectedBin, setSelectedBins, getGridCoords, clampCoords, isInBounds, execute, drawMode, dragMode, resizeMode, stagingDragMode]);
+  // Note: Mode hooks (drawMode, dragMode, etc.) are intentionally excluded from deps
+  // to avoid constant effect re-runs. They're captured via closure and the effect
+  // re-runs when interaction state changes, which is sufficient.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interaction, layout, activeLayerId, activeCategoryId, addBin, updateBin, deleteBin, setInteraction, setDropTarget, setSelectedBin, setSelectedBins, getGridCoords, clampCoords, isInBounds, execute]);
 
   // Broadcast interaction state to remote users for collaborative previews
   useEffect(() => {
