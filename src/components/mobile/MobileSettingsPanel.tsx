@@ -160,7 +160,7 @@ export function MobileSettingsPanel() {
                 min={0.5}
                 max={CONSTRAINTS.GRID_MAX}
                 step={widthStep}
-                className="flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none"
+                className="input flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none"
                 aria-label="Drawer width in grid units"
               />
               <button
@@ -198,7 +198,7 @@ export function MobileSettingsPanel() {
                 min={0.5}
                 max={CONSTRAINTS.GRID_MAX}
                 step={depthStep}
-                className="flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none"
+                className="input flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none"
                 aria-label="Drawer depth in grid units"
               />
               <button

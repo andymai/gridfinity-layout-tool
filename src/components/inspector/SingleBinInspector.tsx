@@ -88,33 +88,83 @@ export function SingleBinInspector({
         {/* Size inputs with rotate button */}
         <div className="flex items-end gap-2">
           <div className="grid grid-cols-2 gap-3 flex-1">
+            {/* Width control */}
             <div>
               <label className={`block ${labelSize} text-content-tertiary`}>
                 Width
               </label>
-              <DeferredNumberInput
-                value={bin.width}
-                onChange={(val) => updateField('width', val)}
-                min={minSize}
-                max={layout.drawer.width}
-                step={stepSize}
-                className={`input w-full ${inputHeight}`}
-                aria-label="Bin width"
-              />
+              <div className={`flex items-center ${stepperHeight}`}>
+                <button
+                  type="button"
+                  onClick={() => updateField('width', bin.width - stepSize)}
+                  disabled={bin.width <= minSize}
+                  className="h-full px-2 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                  aria-label="Decrease width"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" d="M20 12H4" />
+                  </svg>
+                </button>
+                <DeferredNumberInput
+                  value={bin.width}
+                  onChange={(val) => updateField('width', val)}
+                  min={minSize}
+                  max={layout.drawer.width}
+                  step={stepSize}
+                  className="input flex-1 h-full text-center font-medium tabular-nums border-x-0 rounded-none text-sm"
+                  aria-label="Bin width"
+                />
+                <button
+                  type="button"
+                  onClick={() => updateField('width', bin.width + stepSize)}
+                  disabled={bin.width >= layout.drawer.width}
+                  className="h-full px-2 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                  aria-label="Increase width"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              </div>
             </div>
+            {/* Depth control */}
             <div>
               <label className={`block ${labelSize} text-content-tertiary`}>
                 Depth
               </label>
-              <DeferredNumberInput
-                value={bin.depth}
-                onChange={(val) => updateField('depth', val)}
-                min={minSize}
-                max={layout.drawer.depth}
-                step={stepSize}
-                className={`input w-full ${inputHeight}`}
-                aria-label="Bin depth"
-              />
+              <div className={`flex items-center ${stepperHeight}`}>
+                <button
+                  type="button"
+                  onClick={() => updateField('depth', bin.depth - stepSize)}
+                  disabled={bin.depth <= minSize}
+                  className="h-full px-2 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                  aria-label="Decrease depth"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" d="M20 12H4" />
+                  </svg>
+                </button>
+                <DeferredNumberInput
+                  value={bin.depth}
+                  onChange={(val) => updateField('depth', val)}
+                  min={minSize}
+                  max={layout.drawer.depth}
+                  step={stepSize}
+                  className="input flex-1 h-full text-center font-medium tabular-nums border-x-0 rounded-none text-sm"
+                  aria-label="Bin depth"
+                />
+                <button
+                  type="button"
+                  onClick={() => updateField('depth', bin.depth + stepSize)}
+                  disabled={bin.depth >= layout.drawer.depth}
+                  className="h-full px-2 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                  aria-label="Increase depth"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
           <button
