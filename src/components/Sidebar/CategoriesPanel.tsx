@@ -262,11 +262,22 @@ export function CategoriesPanel() {
                           ? `${category.name} (selected for new bins)`
                           : `Select ${category.name} for new bins`
                     }
-                    title={selectedBinIds.length > 0 ? `Apply to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}` : 'Double-click to edit'}
+                    title={selectedBinIds.length > 0 ? `Apply to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}` : undefined}
                   >
                     <span className="text-sm truncate text-content block">
                       {category.name}
                     </span>
+                  </button>
+                  {/* Edit button - appears on hover */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
+                    className="opacity-0 group-hover:opacity-100 p-1 -my-1 rounded hover:bg-surface-elevated transition-opacity flex-shrink-0"
+                    title="Edit category"
+                    aria-label={`Edit ${category.name}`}
+                  >
+                    <svg className="w-3.5 h-3.5 text-content-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
                   </button>
                   {/* Bin count badge */}
                   <span
