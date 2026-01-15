@@ -398,11 +398,11 @@ export function useCollabMutations(): CollabMutations {
         ...currentLayout,
         layers: [...currentLayout.layers, newLayer],
       }));
+      return ok(id);
     } else {
-      store.addLayer();
+      // In local mode, store generates its own ID - return that instead
+      return store.addLayer();
     }
-
-    return ok(id);
   }, [isCollaborative, getLayout, updateLiveblocksLayout, store]);
 
   const updateLayer = useCallback(
@@ -558,11 +558,11 @@ export function useCollabMutations(): CollabMutations {
           ...currentLayout,
           categories: [...currentLayout.categories, { ...categoryData, id }],
         }));
+        return ok(id);
       } else {
-        store.addCategory(categoryData);
+        // In local mode, store generates its own ID - return that instead
+        return store.addCategory(categoryData);
       }
-
-      return ok(id);
     },
     [isCollaborative, getLayout, updateLiveblocksLayout, store]
   );
