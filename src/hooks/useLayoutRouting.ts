@@ -113,6 +113,9 @@ export function useLayoutRouting() {
     if (!isLoaded || hasInitialized.current) return;
     hasInitialized.current = true;
 
+    // Skip during shared preview - keep the share URL visible
+    if (sharedLayoutPreview) return;
+
     // Check for share URL pattern /s/{id} - let SharedLayoutImporter handle it
     if (/^\/s\/[a-zA-Z0-9]{12}$/.test(window.location.pathname)) {
       return;
@@ -178,6 +181,7 @@ export function useLayoutRouting() {
     activeLayoutId,
     navigateToLayout,
     getEntry,
+    sharedLayoutPreview,
   ]);
 
   // Handle browser back/forward navigation
@@ -234,9 +238,8 @@ export function useLayoutRouting() {
 
   // Update URL when active layout changes (from UI interactions)
   useEffect(() => {
-    // Skip during shared preview
+    // Skip during shared preview - keep the share URL visible
     if (sharedLayoutPreview) {
-      clearLayoutURL();
       return;
     }
 

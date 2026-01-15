@@ -306,12 +306,15 @@ describe('useLayoutRouting', () => {
       expect(url.setLayoutURL).toHaveBeenCalledWith('layout123test', 'Test Layout', false);
     });
 
-    it('clears URL during shared preview', () => {
+    it('preserves URL during shared preview', () => {
+      // During shared preview, keep the share URL visible for better UX
       useUIStore.setState({ sharedLayoutPreview: mockLayout });
 
       renderHook(() => useLayoutRouting());
 
-      expect(url.clearLayoutURL).toHaveBeenCalled();
+      // Should NOT clear or change the URL during shared preview
+      expect(url.clearLayoutURL).not.toHaveBeenCalled();
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
     });
 
     it('skips URL update for __shared_preview__ layout', () => {

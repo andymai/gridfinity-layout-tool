@@ -155,6 +155,35 @@ function PresenceProvider({ shareId, children }: { shareId: string; children: Re
   // Auto-sync layout changes to cloud share storage (only owner has cloudShare info)
   useCloudShareAutoSync(shareId, true);
 
+  // Auto-dismiss Liveblocks badge (injected asynchronously by Liveblocks SDK)
+  useEffect(() => {
+    const dismissBadge = () => {
+      const hideButton = document.getElementById('liveblocks-badge-hide-button');
+      if (hideButton) {
+        hideButton.click();
+        return true;
+      }
+      return false;
+    };
+
+    // Try immediately, then poll briefly in case badge loads async
+    if (!dismissBadge()) {
+      const interval = setInterval(() => {
+        if (dismissBadge()) {
+          clearInterval(interval);
+        }
+      }, 100);
+
+      // Stop polling after 3 seconds
+      const timeout = setTimeout(() => clearInterval(interval), 3000);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }
+  }, []);
+
   // Create throttled cursor update (50ms = 20fps)
   const throttledUpdateCursorRef = useRef<((cursor: Coord | null) => void) | null>(null);
 

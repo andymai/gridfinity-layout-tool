@@ -207,7 +207,8 @@ describe('useLayoutRouting with cloud share URLs', () => {
   });
 
   describe('shared preview mode', () => {
-    it('should clear URL when in shared preview mode', () => {
+    it('should preserve URL when in shared preview mode', () => {
+      // During shared preview, keep the share URL visible for better UX
       useUIStore.setState({
         sharedLayoutPreview: {
           layout: {} as any,
@@ -217,7 +218,9 @@ describe('useLayoutRouting with cloud share URLs', () => {
 
       renderHook(() => useLayoutRouting());
 
-      expect(url.clearLayoutURL).toHaveBeenCalled();
+      // Should NOT clear or change the URL during shared preview
+      expect(url.clearLayoutURL).not.toHaveBeenCalled();
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
     });
   });
 

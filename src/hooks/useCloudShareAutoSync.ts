@@ -16,8 +16,8 @@ import { updateShare } from '../api/share';
 import { isOk } from '../result';
 import { STAGING_ID } from '../constants';
 
-/** Debounce delay for cloud share updates (5 seconds) */
-const CLOUD_SYNC_DEBOUNCE_MS = 5000;
+/** Debounce delay for cloud share updates (1 second) */
+const CLOUD_SYNC_DEBOUNCE_MS = 1000;
 
 /**
  * Auto-syncs layout changes to cloud share storage.

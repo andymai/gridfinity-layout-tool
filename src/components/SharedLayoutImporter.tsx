@@ -8,7 +8,6 @@ import {
   getSharedLayoutFromURL,
   clearSharedLayoutFromURL,
   getCloudShareIdFromURL,
-  clearCloudShareFromURL,
 } from '../storage';
 import { fetchShare } from '../api/share';
 import { isOk, getUserMessage } from '../result';
@@ -46,6 +45,9 @@ export function SharedLayoutImporter() {
   const libraryIsLoaded = useLibraryStore((state) => state.isLoaded);
   const libraryEntries = useLibraryStore((state) => state.library.entries);
   const getSharedWithMeByShareId = useLibraryStore((state) => state.getSharedWithMeByShareId);
+
+  // Check if we already loaded this share (to skip re-fetching)
+  const sharedLayoutCloudShareId = useUIStore((state) => state.sharedLayoutCloudShareId);
   const addSharedWithMe = useLibraryStore((state) => state.addSharedWithMe);
   const markShareAccessed = useLibraryStore((state) => state.markShareAccessed);
   const updateSharedWithMe = useLibraryStore((state) => state.updateSharedWithMe);
@@ -161,6 +163,16 @@ export function SharedLayoutImporter() {
 
   // Track whether we've started processing a cloud share (persists through Strict Mode remounts)
   const hasStartedCloudFetch = useRef(false);
+  // Track mounted state across effect re-runs (not just a local variable that resets on cleanup)
+  const isMountedRef = useRef(true);
+
+  // Set mounted ref on mount/unmount (not on effect re-runs)
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Handle cloud shares (or URLs that might be cloud shares)
   useEffect(() => {
@@ -183,10 +195,14 @@ export function SharedLayoutImporter() {
       return;
     }
 
-    // Check if URL still has the share ID - if cleared, previous fetch completed
+    // Check if we already loaded this share (prevents re-fetching on effect re-runs)
+    if (sharedLayoutCloudShareId === initialCloudShareId) {
+      return;
+    }
+
+    // Check if URL still has the share ID
     const currentShareId = getCloudShareIdFromURL();
     if (!currentShareId) {
-      // URL was cleared by previous fetch - nothing to do
       return;
     }
 
@@ -196,22 +212,19 @@ export function SharedLayoutImporter() {
     }
     hasStartedCloudFetch.current = true;
 
-    let isMounted = true;
-
     const loadCloudShare = async () => {
       setIsLoading(true);
 
       const result = await fetchShare(initialCloudShareId);
 
       // Prevent state updates if component unmounted during fetch
-      // Don't clear URL either - let the next mount handle it
-      if (!isMounted) {
+      // Use ref instead of local variable so it survives effect re-runs
+      if (!isMountedRef.current) {
         return;
       }
 
-      // Clear URL after confirming we can update state
-      // This prevents race conditions with React Strict Mode
-      clearCloudShareFromURL();
+      // Don't clear URL - keep the share URL visible for better UX
+      // The sharedLayoutCloudShareId check above prevents re-fetching
 
       setIsLoading(false);
 
@@ -237,13 +250,8 @@ export function SharedLayoutImporter() {
     };
 
     loadCloudShare();
-
-    return () => {
-      isMounted = false;
-      // Note: Don't reset hasStartedCloudFetch - we only want one fetch attempt
-      // per page load, even if the component re-renders
-    };
-  }, [loadLayoutPreview, addToast, trackSharedLayout, libraryIsLoaded, libraryEntries]);
+    // No cleanup needed - isMountedRef is managed by the separate mount/unmount effect
+  }, [loadLayoutPreview, addToast, trackSharedLayout, libraryIsLoaded, libraryEntries, sharedLayoutCloudShareId]);
 
   // Show loading state for cloud shares
   if (isLoading) {
