@@ -20,7 +20,6 @@ import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter } from './components/SharedLayoutImporter';
 import { SharedLayoutBanner } from './components/SharedLayoutBanner';
 import { LabsDrawer } from './components/labs';
-import { CollabProvider } from './components/collab';
 import { LocalMutationsProvider } from './context/MutationsContext';
 import { SHORTCUTS } from './constants';
 
@@ -38,6 +37,12 @@ const HelpModal = lazyWithRetry(() =>
 // Lazy load mobile layout - only loaded on mobile devices
 const MobileLayout = lazyWithRetry(() =>
   import('./components/MobileLayout').then(namedExport('MobileLayout'))
+);
+
+// Lazy load collaborative editing provider - only loaded when Labs feature enabled
+// AND layout has edit permission (most users never need this ~80KB chunk)
+const CollabProvider = lazyWithRetry(() =>
+  import('./components/collab/CollabProvider').then(namedExport('CollabProvider'))
 );
 
 // Initialize layout library once at module level to avoid effect setState issues
@@ -154,14 +159,16 @@ export default function App() {
   }, [handleHelpKeyboard]);
 
   // Helper to wrap content with appropriate MutationsProvider
-  // - Collaborative mode: CollabProvider provides CollabMutationsProvider
+  // - Collaborative mode: CollabProvider provides CollabMutationsProvider (lazy loaded)
   // - Local mode: LocalMutationsProvider
   const wrapWithMutations = (content: React.ReactNode) => {
     if (isCollaborative && shareId) {
       return (
-        <CollabProvider shareId={shareId}>
-          {content}
-        </CollabProvider>
+        <Suspense fallback={<div className="h-screen bg-surface" />}>
+          <CollabProvider shareId={shareId}>
+            {content}
+          </CollabProvider>
+        </Suspense>
       );
     }
     return (
