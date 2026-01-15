@@ -13,7 +13,7 @@ import { QuickLabelPopover } from './QuickLabelPopover';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { MobileGridToolbar } from '../mobile';
 import { PanelErrorBoundary } from '../PanelErrorBoundary';
-import { CollabCursors } from '../collab';
+import { CollabCursors, CollabGhosts } from '../collab';
 import { useCollabMode } from '../../hooks/useCollabMode';
 import { useCollabPresence } from '../../hooks/useCollabPresence';
 import { useGridCoords } from '../../hooks/useGridCoords';
@@ -942,6 +942,8 @@ export function Grid() {
                 onStartResize={startResize}
               />
               <Overlay cellSize={cellSize} gap={gap} />
+              {/* Collaborative ghosts overlay - shows other users' operations */}
+              {isCollaborative && <CollabGhosts />}
               {/* Collaborative cursors overlay - shows other users' cursors */}
               {isCollaborative && <CollabCursors />}
 

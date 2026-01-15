@@ -1,14 +1,16 @@
 import { useEffect, useCallback, useRef } from 'react';
 import type { RefObject } from 'react';
-import type { Bin, Coord, Rect, ResizeHandle } from '../types';
+import type { Bin, Coord, Rect, ResizeHandle, Interaction } from '../types';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
 import { useMutations } from '../context/MutationsContext';
 import { useGridCoords } from './useGridCoords';
+import { useCollabPresence } from './useCollabPresence';
 import { canPlaceBin, clamp } from '../utils/validation';
 import { constrainGroupDelta } from '../utils/selection';
 import { STAGING_ID, getBaseCellSize } from '../constants';
 import { throttleRAF, cancelThrottledRAF } from '../utils/throttle';
 import { isOk } from '../result';
+import type { InteractionHint } from '../liveblocks.config';
 
 /**
  * Hook for managing all grid interactions including bin creation, movement, and resizing.
@@ -80,6 +82,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   // Track captured pointer for reliable event delivery
   const capturedPointerRef = useRef<{ element: HTMLElement; pointerId: number } | null>(null);
   const { getGridCoords, clampCoords, isInBounds } = useGridCoords(gridRef);
+  const { updateInteraction } = useCollabPresence();
   const interaction = useUIStore(state => state.interaction);
   const setInteraction = useUIStore(state => state.setInteraction);
   const setDropTarget = useUIStore(state => state.setDropTarget);
@@ -714,6 +717,12 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     };
   }, [interaction, layout, activeLayerId, activeCategoryId, addBin, updateBin, deleteBin, setInteraction, setDropTarget, setSelectedBin, setSelectedBins, getGridCoords, clampCoords, isInBounds, execute]);
 
+  // Broadcast interaction state to remote users for collaborative previews
+  useEffect(() => {
+    const hint = mapInteractionToHint(interaction);
+    updateInteraction(hint);
+  }, [interaction, updateInteraction]);
+
   return {
     interaction,
     startDraw,
@@ -762,4 +771,31 @@ function calculateResizeRect(
   depth = Math.max(minSize, depth);
 
   return { x, y, width, depth };
+}
+
+/**
+ * Convert local interaction state to InteractionHint format for broadcasting.
+ * Maps the internal interaction types to the remote-friendly hint format.
+ */
+function mapInteractionToHint(interaction: Interaction | null): InteractionHint {
+  if (!interaction) {
+    return { type: 'idle' };
+  }
+
+  switch (interaction.type) {
+    case 'draw':
+      return { type: 'drawing', start: interaction.start, current: interaction.current };
+    case 'paint':
+      // Paint mode looks like drawing to remote users
+      return { type: 'drawing', start: interaction.start, current: interaction.current };
+    case 'drag':
+      return { type: 'dragging', binIds: interaction.binIds, delta: interaction.currentCoord };
+    case 'resize':
+      return { type: 'resizing', binIds: interaction.binIds, handle: interaction.handle };
+    case 'stagingDrag':
+      // Don't broadcast staging drags (too ephemeral/confusing)
+      return { type: 'idle' };
+    default:
+      return { type: 'idle' };
+  }
 }
