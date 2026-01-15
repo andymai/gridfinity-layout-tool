@@ -422,6 +422,88 @@ describe('storage', () => {
       // Header should not have extra columns
       expect(lines[0]).toBe('Size\tHeight\tBins\tPieces\tLabel\tNotes');
     });
+
+    it('exports with layout metadata when provided', () => {
+      const rows = [
+        { size: '1x1', height: 3, binCount: 5, totalPieces: 5 },
+      ];
+      const tsv = exportPrintListTSV(rows, {
+        layoutName: 'My Drawer',
+        gridSize: '10×8',
+      });
+      const lines = tsv.split('\n');
+      expect(lines).toHaveLength(2);
+      // Header should have Layout and Grid Size columns first
+      expect(lines[0]).toBe('Layout\tGrid Size\tSize\tHeight\tBins\tPieces\tLabel\tNotes');
+      // Data row should include metadata values
+      expect(lines[1]).toBe('My Drawer\t10×8\t1x1\t3u\t5\t5\t\t');
+    });
+
+    it('exports with layout metadata and custom properties', () => {
+      const rows = [
+        {
+          size: '2x2',
+          height: 6,
+          binCount: 1,
+          totalPieces: 1,
+          labels: ['Screws'],
+          customProperties: { SKU: 'ABC123' },
+        },
+      ];
+      const tsv = exportPrintListTSV(rows, {
+        layoutName: 'Tool Drawer',
+        gridSize: '12×10',
+      });
+      const lines = tsv.split('\n');
+      // Header should have metadata first, then base columns, then custom properties
+      expect(lines[0]).toBe('Layout\tGrid Size\tSize\tHeight\tBins\tPieces\tLabel\tNotes\tSKU');
+      expect(lines[1]).toBe('Tool Drawer\t12×10\t2x2\t6u\t1\t1\tScrews\t\tABC123');
+    });
+
+    it('exports without metadata columns when meta is undefined', () => {
+      const rows = [
+        { size: '1x1', height: 3, binCount: 1, totalPieces: 1 },
+      ];
+      const tsv = exportPrintListTSV(rows);
+      const lines = tsv.split('\n');
+      // Should be the original format without Layout/Grid Size
+      expect(lines[0]).toBe('Size\tHeight\tBins\tPieces\tLabel\tNotes');
+      expect(lines[1]).toBe('1x1\t3u\t1\t1\t\t');
+    });
+
+    it('escapes tabs and newlines in metadata values', () => {
+      const rows = [
+        { size: '1x1', height: 3, binCount: 1, totalPieces: 1 },
+      ];
+      const tsv = exportPrintListTSV(rows, {
+        layoutName: 'Drawer\twith\ttabs',
+        gridSize: '10×8',
+      });
+      const lines = tsv.split('\n');
+      // Tabs should be replaced with spaces
+      expect(lines[1]).toContain('Drawer with tabs');
+      // Should still have correct number of columns (no extra tabs)
+      expect(lines[1].split('\t')).toHaveLength(8);
+    });
+
+    it('escapes tabs and newlines in label and notes', () => {
+      const rows = [
+        {
+          size: '1x1',
+          height: 3,
+          binCount: 1,
+          totalPieces: 1,
+          labels: ['Label\twith\ttab'],
+          notes: 'Notes\nwith\nnewlines',
+        },
+      ];
+      const tsv = exportPrintListTSV(rows);
+      const lines = tsv.split('\n');
+      expect(lines[1]).toContain('Label with tab');
+      expect(lines[1]).toContain('Notes with newlines');
+      // Should still have correct number of columns
+      expect(lines[1].split('\t')).toHaveLength(6);
+    });
   });
 
   describe('getStorageUsage', () => {

@@ -225,12 +225,18 @@ export function useBinList(): UseBinListReturn {
 
   // Export handlers
   const exportToTSV = useCallback(() => {
-    return exportPrintListTSV(filteredRows);
-  }, [filteredRows]);
+    return exportPrintListTSV(filteredRows, {
+      layoutName: layout.name,
+      gridSize: `${layout.drawer.width}×${layout.drawer.depth}`,
+    });
+  }, [filteredRows, layout.name, layout.drawer.width, layout.drawer.depth]);
 
   const exportToCSV = useCallback(() => {
-    return formatAsCSV(filteredRows);
-  }, [filteredRows]);
+    return formatAsCSV(filteredRows, {
+      layoutName: layout.name,
+      gridSize: `${layout.drawer.width}×${layout.drawer.depth}`,
+    });
+  }, [filteredRows, layout.name, layout.drawer.width, layout.drawer.depth]);
 
   const exportToJSON = useCallback(() => {
     return formatAsJSON(filteredRows, layout);
