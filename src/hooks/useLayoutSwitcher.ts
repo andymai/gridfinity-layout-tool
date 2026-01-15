@@ -10,9 +10,9 @@ import {
   saveLibrary,
   computeLayoutPreview,
 } from '../storage';
-import { setLayoutHash } from '../utils/url';
+import { setLayoutURL } from '../utils/url';
 import { validateLayoutIntegrity } from '../utils/validation';
-import { generateUUID } from '../utils/uuid';
+import { generateLayoutId } from '../utils/uuid';
 import { createLayoutWithSettings } from '../constants';
 import { trackLayoutAction } from '../utils/analytics';
 import type { Result, Unit, LayoutError, StorageError, ValidationError, UnknownError } from '../result';
@@ -158,8 +158,8 @@ export function useLayoutSwitcher() {
       // 10. Save library index
       saveLibrary(useLibraryStore.getState().library);
 
-      // 11. Update URL hash
-      setLayoutHash(targetId, true);
+      // 11. Update URL with slug
+      setLayoutURL(targetId, targetLayout.name, true);
 
       // 12. Track analytics
       trackLayoutAction('switched');
@@ -195,7 +195,7 @@ export function useLayoutSwitcher() {
   ): Promise<Result<string, StorageError | UnknownError>> => {
     await saveCurrentLayout();
 
-    const layoutId = generateUUID();
+    const layoutId = generateLayoutId();
     const newLayout = createLayoutWithSettings(settings);
     newLayout.name = name || 'Untitled layout';
 
@@ -219,7 +219,7 @@ export function useLayoutSwitcher() {
 
       saveLibrary(useLibraryStore.getState().library);
 
-      setLayoutHash(layoutId, true);
+      setLayoutURL(layoutId, newLayout.name, true);
 
       trackLayoutAction('created');
 
@@ -301,7 +301,7 @@ export function useLayoutSwitcher() {
     }
 
     try {
-      const newLayoutId = generateUUID();
+      const newLayoutId = generateLayoutId();
 
       const newLayout: Layout = {
         ...sourceLayout,
@@ -347,7 +347,7 @@ export function useLayoutSwitcher() {
     forkedFrom?: { name: string; author?: string }
   ): Promise<Result<string, StorageError | UnknownError>> => {
     try {
-      const layoutId = generateUUID();
+      const layoutId = generateLayoutId();
 
       await saveLayoutByIdAsync(layoutId, importedLayout);
 

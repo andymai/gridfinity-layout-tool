@@ -1,7 +1,9 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useLayoutStore, useUIStore, useLibraryStore } from './store';
 import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useStorageMigration } from './hooks';
-import { initializeLayoutLibrary } from './storage';
+import { useCollabMode } from './hooks/useCollabMode';
+import { useOwnedShareSync } from './hooks/useOwnedShareSync';
+import { initializeLayoutLibrary, loadSharedWithMe } from './storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
 import { Sidebar } from './components/Sidebar';
@@ -18,6 +20,8 @@ import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter } from './components/SharedLayoutImporter';
 import { SharedLayoutBanner } from './components/SharedLayoutBanner';
 import { LabsDrawer } from './components/labs';
+import { CollabProvider } from './components/collab';
+import { LocalMutationsProvider } from './context/MutationsContext';
 import { SHORTCUTS } from './constants';
 
 // Legacy context menu state for backwards compatibility
@@ -42,6 +46,10 @@ try {
   const { library, activeLayout } = initializeLayoutLibrary();
   useLibraryStore.getState().initLibrary(library);
   useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
+
+  // Initialize "Shared with me" entries from localStorage
+  const sharedWithMeEntries = loadSharedWithMe();
+  useLibraryStore.getState().initSharedWithMe(sharedWithMeEntries);
 } catch (e) {
   initialLoadError = e as Error;
 }
@@ -52,6 +60,12 @@ export default function App() {
   const { isMobile, isTablet } = useResponsive();
   const contextMenu = useUIStore(state => state.contextMenu);
   const hideContextMenu = useUIStore(state => state.hideContextMenu);
+
+  // Collaborative mode detection
+  const { isCollaborative, shareId } = useCollabMode();
+
+  // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
+  useOwnedShareSync();
 
   // Tablet panel state (use collapsed state inverted - collapsed means hidden in overlay mode)
   const leftPanelCollapsed = useUIStore(state => state.leftPanelCollapsed);
@@ -139,6 +153,24 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleHelpKeyboard);
   }, [handleHelpKeyboard]);
 
+  // Helper to wrap content with appropriate MutationsProvider
+  // - Collaborative mode: CollabProvider provides CollabMutationsProvider
+  // - Local mode: LocalMutationsProvider
+  const wrapWithMutations = (content: React.ReactNode) => {
+    if (isCollaborative && shareId) {
+      return (
+        <CollabProvider shareId={shareId}>
+          {content}
+        </CollabProvider>
+      );
+    }
+    return (
+      <LocalMutationsProvider>
+        {content}
+      </LocalMutationsProvider>
+    );
+  };
+
   if (initialLoadError) {
     return (
       <div className="h-screen flex items-center justify-center bg-red-900 text-white">
@@ -152,7 +184,7 @@ export default function App() {
 
   // Mobile layout - lazy loaded
   if (isMobile) {
-    return (
+    return wrapWithMutations(
       <div className="h-screen animate-fade-in">
         <Suspense fallback={<div className="h-screen bg-surface" />}>
           <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} saveStatus={saveStatus} />
@@ -163,7 +195,7 @@ export default function App() {
 
   // Tablet layout - full width grid with overlay panels
   if (isTablet) {
-    return (
+    return wrapWithMutations(
       <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
         {/* Shared layout banner (shown when viewing unsaved shared layout) */}
         <SharedLayoutBanner />
@@ -252,7 +284,7 @@ export default function App() {
   }
 
   // Desktop layout
-  return (
+  return wrapWithMutations(
     <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
       <SharedLayoutBanner />

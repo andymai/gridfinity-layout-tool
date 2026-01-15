@@ -284,23 +284,31 @@ export function clearSharedLayoutFromURL(): void {
 // === Cloud Share URLs ===
 
 /**
- * Check if the current URL is a cloud share URL.
- * Returns the share ID if found, null otherwise.
- * Cloud share URLs have the format: /s/{12-char-alphanumeric}
+ * Check if the current URL contains a layout ID that may be a cloud share.
+ * Returns the ID if found, null otherwise.
+ *
+ * Matches:
+ * - Share URL pattern: /s/{12-char-id} (for shared layouts)
+ * - Unified pattern: /l/{12-char-id} or /l/{12-char-id}/{slug} (for local layouts that might be cloud shares)
+ *
+ * Note: For the unified /l/ pattern, the caller should check if the layout
+ * exists locally before assuming it's a cloud share.
  */
 export function getCloudShareIdFromURL(): string | null {
   if (typeof window === 'undefined') return null;
 
-  // Check pathname for /s/{id} format
-  const pathMatch = window.location.pathname.match(/^\/s\/([a-zA-Z0-9]{12})$/);
-  if (pathMatch) {
-    return pathMatch[1];
+  const pathname = window.location.pathname;
+
+  // Check share URL pattern: /s/{id}
+  const shareMatch = pathname.match(/^\/s\/([a-zA-Z0-9]{12})$/);
+  if (shareMatch) {
+    return shareMatch[1];
   }
 
-  // Also check hash for backwards compatibility (in case someone uses #/s/{id})
-  const hashMatch = window.location.hash.match(/^#\/s\/([a-zA-Z0-9]{12})$/);
-  if (hashMatch) {
-    return hashMatch[1];
+  // Check unified pattern: /l/{id} or /l/{id}/{slug}
+  const unifiedMatch = pathname.match(/^\/l\/([a-zA-Z0-9]{12})(?:\/.*)?$/);
+  if (unifiedMatch) {
+    return unifiedMatch[1];
   }
 
   return null;
@@ -308,12 +316,23 @@ export function getCloudShareIdFromURL(): string | null {
 
 /**
  * Clear the cloud share ID from URL.
+ * Note: This is only called after loading a shared layout that doesn't exist locally.
+ * For layouts that DO exist locally, the URL stays as-is.
  */
 export function clearCloudShareFromURL(): void {
   if (typeof window === 'undefined') return;
 
-  // Navigate to root without page reload
-  if (window.location.pathname.startsWith('/s/')) {
+  const pathname = window.location.pathname;
+
+  // Clear share format /s/{id}
+  if (pathname.match(/^\/s\/[a-zA-Z0-9]{12}$/)) {
+    window.history.replaceState(null, '', '/');
+    return;
+  }
+
+  // Clear unified format /l/{id} or /l/{id}/{slug} (only for non-local layouts)
+  // This is called after determining the layout needs cloud fetch
+  if (pathname.match(/^\/l\/[a-zA-Z0-9]{12}(\/.*)?$/)) {
     window.history.replaceState(null, '', '/');
   }
 }

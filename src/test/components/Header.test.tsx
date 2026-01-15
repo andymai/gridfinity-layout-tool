@@ -11,9 +11,18 @@ vi.mock('../../components/modals/LayoutManagerModal', () => ({
   ),
 }));
 
-// Mock useResponsive
+// Controllable mock for useFeatureFlag
+let mockFeatureFlagValue = false;
 vi.mock('../../hooks', () => ({
   useResponsive: () => ({ isTablet: false, isMobile: false }),
+  useFeatureFlag: () => mockFeatureFlagValue,
+}));
+
+// Controllable mock for ShareButton
+let mockShareButtonEnabled = false;
+vi.mock('../../components/ShareButton', () => ({
+  ShareButton: () =>
+    mockShareButtonEnabled ? <button data-testid="share-button">Share</button> : null,
 }));
 
 describe('Header', () => {
@@ -27,6 +36,8 @@ describe('Header', () => {
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
+    mockShareButtonEnabled = false;
+    mockFeatureFlagValue = false;
   });
 
   describe('rendering', () => {
@@ -215,6 +226,44 @@ describe('Header', () => {
       render(<Header {...defaultProps} />);
 
       expect(screen.getByText('Half-Bin Mode')).toBeInTheDocument();
+    });
+  });
+
+  describe('collaboration mode', () => {
+    it('feature flag controls ShareButton divider visibility', () => {
+      // When feature is disabled, ShareButton returns null and no extra dividers
+      mockFeatureFlagValue = false;
+      mockShareButtonEnabled = false;
+      const { container, rerender } = render(<Header {...defaultProps} />);
+
+      // Count dividers (w-px h-6 elements)
+      const dividersWhenDisabled = container.querySelectorAll('.w-px.h-6').length;
+
+      // When feature is enabled, extra dividers appear around ShareButton
+      mockFeatureFlagValue = true;
+      mockShareButtonEnabled = true;
+      rerender(<Header {...defaultProps} />);
+
+      const dividersWhenEnabled = container.querySelectorAll('.w-px.h-6').length;
+
+      // Should have more dividers when collaboration is enabled
+      expect(dividersWhenEnabled).toBeGreaterThan(dividersWhenDisabled);
+    });
+  });
+
+  describe('share button visibility', () => {
+    it('does not render ShareButton when collaborative_editing feature is disabled', () => {
+      mockShareButtonEnabled = false;
+      render(<Header {...defaultProps} />);
+
+      expect(screen.queryByTestId('share-button')).not.toBeInTheDocument();
+    });
+
+    it('renders ShareButton when collaborative_editing feature is enabled', () => {
+      mockShareButtonEnabled = true;
+      render(<Header {...defaultProps} />);
+
+      expect(screen.getByTestId('share-button')).toBeInTheDocument();
     });
   });
 

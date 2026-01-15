@@ -3,14 +3,13 @@ import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
-import { useLibraryStore } from '../../store/library';
 import { useLayoutSwitcher } from '../../hooks/useLayoutSwitcher';
 import { useCloudShare } from '../../hooks/useCloudShare';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { LayoutThumbnail } from '../LayoutThumbnail';
 import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../storage';
-import { EXPIRATION_OPTIONS, formatShareDate, calculateDaysRemaining } from '../../utils/cloudShare';
-import type { LayoutEntry, ShareExpiration } from '../../types';
+import { formatShareDate } from '../../utils/cloudShare';
+import type { LayoutEntry, SharePermission } from '../../types';
 import { isOk } from '../../result';
 
 /**
@@ -536,15 +535,9 @@ function MobileCloudSharePanel({
   layoutId: string;
   onClose: () => void;
 }) {
-  const lastExpiration = useLibraryStore(
-    useShallow((s) => s.library.settings.lastShareExpiration)
-  );
-
-  // Initialize with last used expiration or default to 30 days
-  const [expiresInDays, setExpiresInDays] = useState<ShareExpiration>(
-    () => lastExpiration ?? 30
-  );
   const [urlCopied, setUrlCopied] = useState(false);
+  // Local permission state for new shares (before any share exists)
+  const [localPermission, setLocalPermission] = useState<SharePermission>('view');
 
   const {
     status,
@@ -553,11 +546,25 @@ function MobileCloudSharePanel({
     existingShare,
     hasActiveShare,
     share,
-    update,
+    updatePermission,
     remove,
     copyUrl,
     reset,
   } = useCloudShare(layoutId);
+
+  // Use existing share permission when available, otherwise use local state
+  const permission: SharePermission = existingShare?.permission ?? localPermission;
+  const setPermission = (newPermission: SharePermission) => {
+    if (existingShare) {
+      // Update existing share's permission
+      if (newPermission !== existingShare.permission) {
+        updatePermission(newPermission);
+      }
+    } else {
+      // Store locally for when we create the share
+      setLocalPermission(newPermission);
+    }
+  };
 
   // Reset copy state after timeout
   useEffect(() => {
@@ -568,11 +575,13 @@ function MobileCloudSharePanel({
   }, [urlCopied]);
 
   const handleShare = async () => {
-    await share(expiresInDays);
+    await share(permission);
   };
 
-  const handleUpdate = async () => {
-    await update(expiresInDays);
+  const handlePermissionChange = async (newPermission: SharePermission) => {
+    // Only update local state; setPermission already calls updatePermission
+    // when an existing share exists (see line 558-565)
+    setPermission(newPermission);
   };
 
   const handleDelete = async () => {
@@ -586,12 +595,6 @@ function MobileCloudSharePanel({
     const success = await copyUrl();
     if (success) setUrlCopied(true);
   };
-
-  // Calculate days remaining using stable reference time to avoid render issues
-  const [mountTime] = useState(() => Date.now());
-  const daysRemaining = existingShare
-    ? calculateDaysRemaining(existingShare.expiresAt, mountTime)
-    : 0;
 
   // Handle Escape key to close panel
   useEffect(() => {
@@ -677,7 +680,9 @@ function MobileCloudSharePanel({
             </div>
 
             <p className="text-sm text-content-secondary">
-              Expires: {result.expiresAt.toLocaleDateString()} ({expiresInDays} days)
+              {result.permission === 'edit'
+                ? 'Anyone with the link can edit'
+                : 'Anyone with the link can view'}
             </p>
 
             <div className="flex gap-2">
@@ -699,20 +704,17 @@ function MobileCloudSharePanel({
             </p>
 
             <div className="flex items-center gap-3">
-              <label htmlFor="mobile-expiration" className="text-sm text-content-secondary whitespace-nowrap">
-                Expires after:
+              <label htmlFor="mobile-permission" className="text-sm text-content-secondary whitespace-nowrap">
+                Permission:
               </label>
               <select
-                id="mobile-expiration"
-                value={expiresInDays}
-                onChange={(e) => setExpiresInDays(Number(e.target.value) as ShareExpiration)}
+                id="mobile-permission"
+                value={permission}
+                onChange={(e) => setPermission(e.target.value as SharePermission)}
                 className="flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
               >
-                {EXPIRATION_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
+                <option value="view">Anyone can view</option>
+                <option value="edit">Anyone can edit</option>
               </select>
             </div>
 
@@ -730,8 +732,9 @@ function MobileCloudSharePanel({
                 Shared on {formatShareDate(existingShare.sharedAt)}
               </p>
               <p className="text-sm text-content">
-                Expires: {formatShareDate(existingShare.expiresAt)}{' '}
-                <span className="text-content-tertiary">({daysRemaining} days)</span>
+                {existingShare.permission === 'edit'
+                  ? 'Anyone with the link can edit'
+                  : 'Anyone with the link can view'}
               </p>
             </div>
 
@@ -741,20 +744,14 @@ function MobileCloudSharePanel({
 
             <div className="flex items-center gap-3">
               <select
-                value={expiresInDays}
-                onChange={(e) => setExpiresInDays(Number(e.target.value) as ShareExpiration)}
+                value={permission}
+                onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
                 className="flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none"
-                aria-label="Update expiration"
+                aria-label="Update permission"
               >
-                {EXPIRATION_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
+                <option value="view">Anyone can view</option>
+                <option value="edit">Anyone can edit</option>
               </select>
-              <button onClick={handleUpdate} className="py-2 px-4 bg-surface text-content font-medium rounded-lg border border-stroke">
-                Update
-              </button>
             </div>
 
             <button

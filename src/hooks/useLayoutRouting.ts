@@ -4,20 +4,24 @@ import { useLayoutStore, useLibraryStore, useUIStore, useToastStore, useHistoryS
 import { loadLayoutByIdAsync } from '../storage';
 import { validateLayoutIntegrity } from '../utils/validation';
 import {
-  parseLayoutIdFromHash,
-  setLayoutHash,
-  clearLayoutHash,
+  parseLayoutFromURL,
+  setLayoutURL,
+  clearLayoutURL,
   getLayoutIdFromHistoryState,
-  hasShareHash,
+  getCanonicalRedirect,
 } from '../utils/url';
 
 /**
- * Hook that synchronizes the URL hash with the active layout.
+ * Hook that synchronizes the URL with the active layout.
+ *
+ * URL format: /{layoutId}/{slug}
+ * Example: /abc123xyz789/my-workshop-layout
  *
  * Features:
- * - Bookmarkable URLs: #layout/{id} opens that layout
+ * - Bookmarkable URLs with human-readable slugs
+ * - Slug redirects: wrong/missing slugs redirect to canonical URL
  * - Browser history: back/forward navigates between layouts
- * - Error handling: shows toast if bookmarked layout doesn't exist
+ * - Legacy support: handles old #local/{id} and /s/{shareId} URLs
  *
  * Edge cases handled:
  * - Share links (#share=) take precedence over layout routing
@@ -27,8 +31,9 @@ import {
 export function useLayoutRouting() {
   const hasInitialized = useRef(false);
 
-  const { activeLayoutId, importLayout } = useLayoutStore(
+  const { layout, activeLayoutId, importLayout } = useLayoutStore(
     useShallow((state) => ({
+      layout: state.layout,
       activeLayoutId: state.activeLayoutId,
       importLayout: state.importLayout,
     }))
@@ -66,31 +71,31 @@ export function useLayoutRouting() {
     }
 
     // Load layout data from IndexedDB (with localStorage fallback)
-    const layout = await loadLayoutByIdAsync(layoutId);
-    if (!layout) {
+    const loadedLayout = await loadLayoutByIdAsync(layoutId);
+    if (!loadedLayout) {
       return false;
     }
 
     // Validate layout integrity
-    const validation = validateLayoutIntegrity(layout);
+    const validation = validateLayoutIntegrity(loadedLayout);
     if (!validation.valid) {
       return false;
     }
 
     // Switch to the layout
-    importLayout(layout, layoutId, 'init');
+    importLayout(loadedLayout, layoutId, 'init');
     setActiveLayoutId(layoutId);
 
     // Reset UI state
     clearSelection();
-    setActiveLayer(layout.layers[0]?.id ?? '');
-    setActiveCategory(layout.categories[0]?.id ?? '');
+    setActiveLayer(loadedLayout.layers[0]?.id ?? '');
+    setActiveCategory(loadedLayout.categories[0]?.id ?? '');
 
     // Clear undo history
     clearHistory();
 
-    // Update URL
-    setLayoutHash(layoutId, addToHistory);
+    // Update URL with layout name for slug
+    setLayoutURL(layoutId, loadedLayout.name, addToHistory);
 
     return true;
   }, [
@@ -103,41 +108,68 @@ export function useLayoutRouting() {
     clearHistory,
   ]);
 
-  // Handle initial URL hash on mount (after library is loaded)
+  // Handle initial URL on mount (after library is loaded)
   useEffect(() => {
     if (!isLoaded || hasInitialized.current) return;
     hasInitialized.current = true;
 
-    // Share links take precedence - let SharedLayoutImporter handle them
-    if (hasShareHash()) return;
+    // Skip during shared preview - keep the share URL visible
+    if (sharedLayoutPreview) return;
 
-    const hashLayoutId = parseLayoutIdFromHash();
-    if (!hashLayoutId) {
+    // Check for share URL pattern /s/{id} - let SharedLayoutImporter handle it
+    if (/^\/s\/[a-zA-Z0-9]{12}$/.test(window.location.pathname)) {
+      return;
+    }
+
+    const urlInfo = parseLayoutFromURL();
+    if (!urlInfo) {
       // No layout in URL - set URL to current active layout
       if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
-        setLayoutHash(activeLayoutId, false);
+        const entry = getEntry(activeLayoutId);
+        if (entry) {
+          setLayoutURL(activeLayoutId, entry.name, false);
+        }
       }
       return;
     }
 
+    const { layoutId } = urlInfo;
+
     // URL has a layout ID - try to navigate to it
-    if (hashLayoutId === activeLayoutId) {
-      // Already on this layout, just ensure URL is set
-      setLayoutHash(hashLayoutId, false);
+    // Since share IDs equal layout IDs, getEntry(layoutId) finds both local and shared layouts
+    const localEntry = getEntry(layoutId);
+
+    if (layoutId === activeLayoutId) {
+      // Already on this layout - check if slug needs redirect
+      if (localEntry) {
+        const redirect = getCanonicalRedirect(layoutId, localEntry.name);
+        if (redirect) {
+          window.history.replaceState({ layoutId, slug: localEntry.name }, '', redirect);
+        }
+      }
       return;
     }
 
-    // Navigate asynchronously
-    navigateToLayout(hashLayoutId, false)
+    if (!localEntry) {
+      // Layout not found locally - it might be a cloud share from another user
+      // Let SharedLayoutImporter handle it (don't redirect)
+      return;
+    }
+
+    // Navigate asynchronously to the requested layout
+    navigateToLayout(layoutId, false)
       .then((success) => {
         if (!success) {
           // Layout not found - silently redirect to current layout.
           // No toast needed: this commonly happens when users bookmark a layout
           // and later delete it. The URL redirect is sufficient feedback.
           if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
-            setLayoutHash(activeLayoutId, false);
+            const entry = getEntry(activeLayoutId);
+            if (entry) {
+              setLayoutURL(activeLayoutId, entry.name, false);
+            }
           } else {
-            clearLayoutHash();
+            clearLayoutURL();
           }
         }
       })
@@ -148,6 +180,8 @@ export function useLayoutRouting() {
     isLoaded,
     activeLayoutId,
     navigateToLayout,
+    getEntry,
+    sharedLayoutPreview,
   ]);
 
   // Handle browser back/forward navigation
@@ -159,9 +193,10 @@ export function useLayoutRouting() {
       // Try to get layout ID from history state first
       let layoutId = getLayoutIdFromHistoryState(event.state);
 
-      // Fall back to parsing current hash
+      // Fall back to parsing current URL
       if (!layoutId) {
-        layoutId = parseLayoutIdFromHash();
+        const urlInfo = parseLayoutFromURL();
+        layoutId = urlInfo?.layoutId ?? null;
       }
 
       if (!layoutId) {
@@ -179,7 +214,10 @@ export function useLayoutRouting() {
             addToast('Layout not found', 'error');
             // Restore URL to current layout
             if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
-              setLayoutHash(activeLayoutId, false);
+              const entry = getEntry(activeLayoutId);
+              if (entry) {
+                setLayoutURL(activeLayoutId, entry.name, false);
+              }
             }
           }
         })
@@ -195,13 +233,26 @@ export function useLayoutRouting() {
     sharedLayoutPreview,
     navigateToLayout,
     addToast,
+    getEntry,
   ]);
 
   // Update URL when active layout changes (from UI interactions)
   useEffect(() => {
-    // Skip during shared preview
+    // Skip during shared preview - keep the share URL visible
     if (sharedLayoutPreview) {
-      clearLayoutHash();
+      return;
+    }
+
+    // Check for share URL pattern /s/{id} - let SharedLayoutImporter handle it
+    if (/^\/s\/[a-zA-Z0-9]{12}$/.test(window.location.pathname)) {
+      return;
+    }
+
+    // Skip if URL has a layout ID that's not a local layout (might be a cloud share being loaded)
+    const urlInfo = parseLayoutFromURL();
+    if (urlInfo && !getEntry(urlInfo.layoutId)) {
+      // URL has a layout ID that doesn't exist locally
+      // Let SharedLayoutImporter handle it (might be another user's share)
       return;
     }
 
@@ -213,13 +264,35 @@ export function useLayoutRouting() {
     // Skip if library not loaded yet
     if (!isLoaded) return;
 
-    // Update URL to match current layout (without adding to history)
-    // History is only added during explicit layout switches
-    const currentHashId = parseLayoutIdFromHash();
-    if (currentHashId !== activeLayoutId) {
-      setLayoutHash(activeLayoutId, false);
+    // Get entry for current layout name
+    const entry = getEntry(activeLayoutId);
+    if (!entry) return;
+
+    // Update URL with layout ID and slug
+    setLayoutURL(activeLayoutId, entry.name, false);
+  }, [activeLayoutId, layout.name, sharedLayoutPreview, isLoaded, getEntry]);
+
+  // Handle layout name changes (update slug in URL)
+  useEffect(() => {
+    if (sharedLayoutPreview || !activeLayoutId || activeLayoutId === '__shared_preview__') {
+      return;
     }
-  }, [activeLayoutId, sharedLayoutPreview, isLoaded]);
+
+    // Skip if URL has a layout ID that's not a local layout (might be a cloud share being loaded)
+    const urlInfo = parseLayoutFromURL();
+    if (urlInfo && !getEntry(urlInfo.layoutId)) {
+      return;
+    }
+
+    const entry = getEntry(activeLayoutId);
+    if (!entry) return;
+
+    // Check if slug needs update
+    const redirect = getCanonicalRedirect(activeLayoutId, entry.name);
+    if (redirect) {
+      window.history.replaceState({ layoutId: activeLayoutId }, '', redirect);
+    }
+  }, [activeLayoutId, sharedLayoutPreview, getEntry]);
 
   return {
     navigateToLayout,

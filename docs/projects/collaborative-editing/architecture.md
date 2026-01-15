@@ -1,17 +1,20 @@
 # Collaborative Layout Editing - Systems Architecture
 
+**Document Version**: 2.1
+**Last Updated**: January 2026
+**Status**: Implemented
+
 ## Executive Summary
 
-This document describes the architecture for adding real-time collaborative editing to the Gridfinity Layout Tool. The system enables multiple users to simultaneously edit a shared layout with live cursor presence, similar to Figma or Miro.
+This document describes the architecture for adding real-time collaborative editing to the Gridfinity Layout Tool. The system extends the existing cloud sharing model with permission levels (view/edit), following the Google Docs paradigm.
 
-### Key Features
+### Key Design Decisions
 
-- **Trust-based sharing**: Owners can share layouts as read-only or editable
-- **Real-time presence**: See other users' cursors on the 2D grid
-- **Synchronized editing**: Draw, drag, resize, and edit bins collaboratively
-- **Selective sync**: Layout data syncs; user preferences (zoom, 3D preview) stay local
-- **Conflict resolution**: Last-write-wins with operational transforms for concurrent edits
-- **Offline support**: Graceful degradation with reconnection sync
+- **Google Docs model**: One URL per layout with configurable permission (view vs edit)
+- **Single URL**: `/s/{id}` for both modes—permission stored server-side
+- **Persistent collaboration**: No session expiration—collaboration persists with the layout
+- **Liveblocks**: Managed service for real-time sync, presence, and conflict resolution
+- **Cloud-first**: Editable layouts live on server; local copy becomes a linked reference
 
 ---
 
@@ -22,35 +25,33 @@ This document describes the architecture for adding real-time collaborative edit
 ```
 /                           # Home (loads active layout from library)
 /#layout/{layoutId}         # Direct link to a local layout
-/s/{shareId}               # Read-only cloud share (12-char ID)
+/s/{shareId}               # Cloud share (12-char ID)
 /#share={base64}           # Legacy URL-encoded share
 ```
 
-### New Collaborative URL Patterns
+### Updated URL Patterns
 
 ```
-/collab/{sessionId}        # Join a collaborative session
-/collab/{sessionId}?name=  # Join with display name
+/s/{shareId}               # Cloud share (view or edit based on server-side permission)
+/s/{shareId}?name=Alex     # Join with custom display name
 ```
 
-**Session ID Format**: 16-character alphanumeric (e.g., `abc123XYZ789qrst`)
+**Key insight**: The URL never changes—permission is stored server-side. This matches Google Docs exactly:
+- `/s/abc123` with `permission: 'view'` → View-only mode
+- `/s/abc123` with `permission: 'edit'` → Real-time editing mode
 
-- Longer than current 12-char share IDs to reduce collision risk
-- URL-safe characters only: `[a-zA-Z0-9]`
-- Generated server-side with cryptographic randomness
-
-### URL Transitions
+### Permission Flow
 
 ```
-Owner creates collab session:
-  /#layout/{layoutId} → /collab/{sessionId}
+Owner enables editing:
+  Server updates permission to 'edit'
+  URL stays /s/{shareId}
+  Connected users gain edit ability
 
-Participant joins:
-  /collab/{sessionId} → (loads session, no redirect)
-
-Session ends (owner leaves or closes):
-  /collab/{sessionId} → /#layout/{layoutId} (owner)
-  /collab/{sessionId} → /s/{shareId} (participants, if read-only share created)
+Owner disables editing:
+  Server updates permission to 'view'
+  URL stays /s/{shareId}
+  Connected users' edit controls disabled
 ```
 
 ---
@@ -60,39 +61,59 @@ Session ends (owner leaves or closes):
 ### Permission Levels
 
 ```typescript
-type CollabPermission = 'read' | 'edit';
+type SharePermission = 'view' | 'edit';
 
-interface CollabSession {
-  id: string;                    // 16-char session ID
-  ownerId: string;               // Connection ID of owner
+interface CloudShare {
+  id: string;                    // 12-char share ID (existing)
   layoutId: string;              // Original layout UUID
-  permission: CollabPermission;  // 'read' or 'edit'
+  permission: SharePermission;   // 'view' or 'edit'
+  ownerId: string;               // Browser fingerprint or stored ID
   createdAt: number;
-  expiresAt: number;             // Auto-expire after 24 hours
-  participants: Participant[];
+  updatedAt: number;
+  // No expiresAt - collaboration persists until owner deletes
+}
+```
+
+### Linked Layout Model
+
+When collaboration is enabled, the owner's local layout becomes a "linked" reference:
+
+```typescript
+interface LayoutEntry {
+  id: string;                    // Local layout UUID
+  name: string;
+  timestamps: { created: number; modified: number };
+  preview?: LayoutPreview;
+  cloudShare?: CloudShareInfo;   // Existing
+  linkedShare?: LinkedShareInfo; // New: indicates this is a linked layout
 }
 
-interface Participant {
-  connectionId: string;          // WebSocket connection ID
-  name: string;                  // Display name (default: "Guest N")
-  color: string;                 // Cursor/avatar color
-  joinedAt: number;
-  cursor?: CursorPosition;       // Current cursor position
-  isOwner: boolean;
+interface LinkedShareInfo {
+  shareId: string;               // The cloud share ID
+  permission: SharePermission;   // Current permission level
+  linkedAt: number;              // When linking was established
 }
 ```
 
 ### Share Flow
 
-1. **Owner initiates**: Click "Collaborate" → choose permission level
-2. **Server creates session**: Stores session metadata, generates URL
-3. **Owner shares link**: URL copied to clipboard
-4. **Participant joins**: Opens URL → connected to session
-5. **Validation**: Server validates session exists and hasn't expired
+1. **Owner clicks Share**: Opens share panel with permission selector
+2. **Owner selects "Edit"**:
+   - Layout uploaded to cloud (if not already)
+   - Liveblocks room created with layout data
+   - Local layout marked as "linked"
+   - Permission set to 'edit' on server
+3. **Owner copies link**: URL is always `/s/{shareId}`
+4. **Participant joins**: Opens `/s/{shareId}` → server returns permission → connects to Liveblocks room
+5. **Owner changes to "View"**:
+   - Permission updated on server to 'view'
+   - Liveblocks room set to read-only
+   - Connected users' edit controls disabled
+   - URL stays the same
 
 ### Permission Enforcement
 
-| Action | Read-Only | Editable |
+| Action | View-Only | Editable |
 |--------|-----------|----------|
 | View layout | ✓ | ✓ |
 | See cursors | ✓ | ✓ |
@@ -103,72 +124,120 @@ interface Participant {
 | Edit labels | ✗ | ✓ |
 | Modify categories | ✗ | ✓ |
 | Change drawer settings | ✗ | ✓ |
-| Import as copy | ✓ | ✓ |
+| Save as copy | ✓ | ✓ |
 
 ---
 
 ## 3. Technology Stack
 
-### Real-Time Communication: WebSockets
+### Real-Time Communication: Liveblocks
 
-**Choice**: WebSockets via a managed service (Vercel doesn't support persistent connections)
-
-**Recommended**: [PartyKit](https://partykit.io/) or [Cloudflare Durable Objects](https://developers.cloudflare.com/durable-objects/)
+**Choice**: [Liveblocks](https://liveblocks.io/) - managed real-time collaboration platform
 
 **Rationale**:
-- PartyKit: Purpose-built for collaborative apps, easy Vercel integration
-- Supports rooms (sessions), presence, and broadcast
-- Handles reconnection automatically
-- Scales horizontally with edge deployment
+- Purpose-built for collaborative apps (presence, storage, sync)
+- React hooks for easy integration (`@liveblocks/react`)
+- Built-in presence system with cursor support
+- Handles reconnection, conflict resolution automatically
+- Serverless-friendly (works with Vercel)
+- Scales automatically
 
-**Alternative**: [Liveblocks](https://liveblocks.io/) - Higher-level abstraction with built-in presence and storage
+**Key Liveblocks Concepts**:
+- **Room**: A collaborative space (one per shared layout)
+- **Storage**: Synced JSON data (layout state)
+- **Presence**: Ephemeral data per user (cursor position, selection)
+- **Broadcast**: One-off messages to all users
 
-### State Synchronization: Hybrid Approach
+### Storage Strategy
 
-**Choice**: Snapshot + Operations (not pure CRDT)
+**Layout Storage**: Liveblocks Storage (primary) + Vercel Blob (backup/export)
 
-**Rationale**:
-- Layout data is relatively small (<500KB)
-- Operations are discrete and atomic (add bin, move bin, etc.)
-- Full CRDT (e.g., Yjs, Automerge) adds complexity for marginal benefit
-- Last-write-wins is acceptable for this use case (collaborative, not adversarial)
+When collaboration is enabled:
+1. Layout data synced to Liveblocks Storage
+2. Periodic snapshots saved to Vercel Blob (for import/export)
+3. Local storage contains only linked reference
 
-### Message Protocol
+When collaboration is disabled:
+1. Final state exported from Liveblocks
+2. Saved to local storage
+3. Liveblocks room can be cleaned up
 
-```typescript
-// Client → Server
-type ClientMessage =
-  | { type: 'join'; sessionId: string; name?: string }
-  | { type: 'cursor'; position: CursorPosition | null }
-  | { type: 'operation'; op: LayoutOperation; version: number }
-  | { type: 'ping' }
-  | { type: 'leave' };
+### Architecture Diagram
 
-// Server → Client
-type ServerMessage =
-  | { type: 'welcome'; participant: Participant; session: SessionInfo; layout: Layout; version: number }
-  | { type: 'participant_joined'; participant: Participant }
-  | { type: 'participant_left'; connectionId: string }
-  | { type: 'cursor_update'; connectionId: string; position: CursorPosition | null }
-  | { type: 'operation'; op: LayoutOperation; connectionId: string; version: number }
-  | { type: 'sync'; layout: Layout; version: number }
-  | { type: 'error'; code: string; message: string }
-  | { type: 'pong' };
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                              CLIENT                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌─────────┐    ┌─────────┐    ┌─────────────┐    ┌─────────────┐  │
+│  │ UI Store│◄──►│ Layout  │◄──►│  Liveblocks │◄──►│  WebSocket  │  │
+│  │ (local) │    │ Store   │    │   React     │    │  Connection │  │
+│  └─────────┘    └─────────┘    └─────────────┘    └──────┬──────┘  │
+│                                                          │          │
+└──────────────────────────────────────────────────────────┼──────────┘
+                                                           │
+                                                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                          LIVEBLOCKS                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────────┐  │
+│  │    Room      │    │   Storage    │    │      Presence        │  │
+│  │  (per share) │◄──►│   (layout    │◄──►│   (cursors, users)   │  │
+│  │              │    │    data)     │    │                      │  │
+│  └──────────────┘    └──────────────┘    └──────────────────────┘  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+                                                           │
+                                                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         VERCEL                                       │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────────┐  │
+│  │  API Routes  │    │  Vercel Blob │    │     Vercel KV        │  │
+│  │  (share      │◄──►│  (snapshots, │◄──►│   (rate limiting,    │  │
+│  │   metadata)  │    │   exports)   │    │    metadata)         │  │
+│  └──────────────┘    └──────────────┘    └──────────────────────┘  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 4. Cursor Presence System
+## 4. Liveblocks Integration
 
-### Cursor Position Data
+### Room Configuration
 
 ```typescript
-interface CursorPosition {
-  // Grid coordinates (not pixels)
-  x: number;
-  y: number;
-  // Current interaction state
+// Room ID matches share ID
+const roomId = `gridfinity-${shareId}`;
+
+// Room configuration
+interface LiveblocksConfig {
+  roomId: string;
+  initialPresence: {
+    cursor: null;
+    name: string;
+    color: string;
+  };
+  initialStorage: {
+    layout: Layout;
+    version: number;
+  };
+}
+```
+
+### Presence Data
+
+```typescript
+interface UserPresence {
+  cursor: CursorPosition | null;
+  name: string;
+  color: string;
   interaction?: InteractionHint;
+}
+
+interface CursorPosition {
+  x: number;  // Grid coordinates
+  y: number;
 }
 
 type InteractionHint =
@@ -179,39 +248,60 @@ type InteractionHint =
   | { type: 'drawing'; rect: Rect };
 ```
 
-### Cursor Rendering
+### Storage Structure
 
-- Render cursors as colored pointers above the grid (z-index above bins)
-- Show participant name label next to cursor
-- Animate cursor movement (lerp for smoothness)
-- Fade out when cursor leaves grid
-- Show interaction hint (e.g., selection box, drag preview)
-
-### Throttling
-
-- Cursor updates throttled to 60fps locally (16ms)
-- Network transmission throttled to 20fps (50ms) to reduce bandwidth
-- Use requestAnimationFrame for smooth interpolation between updates
-
-### Component Structure
-
+```typescript
+// Liveblocks Storage root
+interface LiveblocksStorage {
+  layout: LiveObject<Layout>;
+  metadata: LiveObject<{
+    ownerId: string;
+    permission: SharePermission;
+    version: number;
+    // Cloud persistence credentials (set by owner, used by all)
+    deleteToken?: string;
+    shareExpiration?: number;
+  }>;
+}
 ```
-src/components/Grid/
-├── CollabCursors.tsx        # Renders all participant cursors
-├── CollabCursor.tsx         # Individual cursor with name label
-└── CollabPresenceBar.tsx    # Shows participant list/avatars
+
+**Note**: The `deleteToken` and `shareExpiration` fields enable any collaborator to persist changes to Vercel Blob (see Section 5.1).
+
+### React Integration
+
+```typescript
+// src/liveblocks.config.ts
+import { createClient } from "@liveblocks/client";
+import { createRoomContext } from "@liveblocks/react";
+
+const client = createClient({
+  authEndpoint: "/api/liveblocks-auth",
+});
+
+export const {
+  RoomProvider,
+  useMyPresence,
+  useOthers,
+  useStorage,
+  useMutation,
+  useBroadcastEvent,
+} = createRoomContext<UserPresence, LiveblocksStorage>(client);
 ```
 
 ---
 
 ## 5. State Synchronization
 
-### Synchronized State (Shared)
+### Synchronized State (Liveblocks Storage)
 
 ```typescript
 interface SyncedState {
   layout: Layout;            // Full layout data
-  version: number;           // Monotonic version counter
+  metadata: {
+    ownerId: string;
+    permission: SharePermission;
+    version: number;
+  };
 }
 
 // Layout includes:
@@ -248,465 +338,483 @@ interface LocalState {
 
 ### Sync Strategy
 
-1. **Initial sync**: On join, receive full layout snapshot + version
-2. **Incremental sync**: Operations broadcast to all participants
-3. **Resync on reconnect**: Request full snapshot if version mismatch
-4. **Conflict detection**: Version numbers prevent stale writes
+1. **Initial sync**: On room enter, Liveblocks provides full storage
+2. **Live sync**: Mutations automatically broadcast to all clients
+3. **Reconnection**: Liveblocks handles state reconciliation
+4. **Conflict resolution**: Liveblocks uses operational transformation
+
+### 5.1 Cloud Persistence (Vercel Blob Sync)
+
+While Liveblocks handles real-time sync between connected users, changes must also be persisted to Vercel Blob so that:
+- New viewers joining later see the latest layout
+- The layout survives if all collaborators disconnect
+- The share continues to work if Liveblocks room is cleaned up
+
+#### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    REAL-TIME LAYER                          │
+│                                                              │
+│   User A ◄──────► Liveblocks ◄──────► User B                │
+│     │              Storage              │                    │
+│     │                                   │                    │
+│     └──────────┬───────────────────────┘                    │
+│                │                                             │
+│                ▼                                             │
+│   ┌─────────────────────────────┐                           │
+│   │  useCloudShareAutoSync      │  (any collaborator)       │
+│   │  - Debounced (5s)           │                           │
+│   │  - On local edits only      │                           │
+│   │  - Reads deleteToken from   │                           │
+│   │    Liveblocks storage       │                           │
+│   └──────────────┬──────────────┘                           │
+│                  │                                           │
+└──────────────────┼───────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  PERSISTENCE LAYER                           │
+│                                                              │
+│   ┌──────────────────────┐                                  │
+│   │     Vercel Blob      │  ← updateShare(shareId,          │
+│   │   (layout snapshots) │      deleteToken, layout)        │
+│   └──────────────────────┘                                  │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Implementation
+
+**Token Sharing**: The owner's `deleteToken` is stored in Liveblocks metadata when they join. This allows any collaborator to call the update API.
+
+```typescript
+// CollabProvider.tsx - Owner sets credentials in initialStorage
+const initialStorage: LiveblocksStorage = useMemo(() => ({
+  layout,
+  metadata: {
+    ownerId: userId,
+    permission: 'edit',
+    version: 1,
+    // Shared so any collaborator can persist to blob
+    deleteToken: cloudShare?.deleteToken,
+    shareExpiration: cloudShare ? lastShareExpiration : undefined,
+  },
+}), []);
+```
+
+**Auto-Sync Hook**: `useCloudShareAutoSync` reads credentials from Liveblocks and debounces updates to Vercel Blob.
+
+```typescript
+// useCloudShareAutoSync.ts
+export function useCloudShareAutoSync(shareId: string | null, enabled: boolean): void {
+  // Read credentials from Liveblocks storage (shared by owner)
+  const deleteToken = useStorage((root) => root?.metadata?.deleteToken);
+  const shareExpiration = useStorage((root) => root?.metadata?.shareExpiration);
+
+  // Only sync 'local' edits (from this user's mutations)
+  // Skip 'init' and 'remote' changes to avoid loops
+  const lastEditSource = useLayoutStore((state) => state.lastEditSource);
+
+  useEffect(() => {
+    if (!enabled || !deleteToken || lastEditSource !== 'local') return;
+
+    // Debounced: sync after 5 seconds of inactivity
+    const timer = setTimeout(() => {
+      updateShare(shareId, deleteToken, layout, shareExpiration);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [layout, lastEditSource, ...]);
+}
+```
+
+#### Key Design Decisions
+
+1. **Any collaborator syncs**: Since the `deleteToken` is shared via Liveblocks, whichever user makes the last edit will trigger the blob sync. This distributes the persistence responsibility.
+
+2. **Debounced updates**: 5-second debounce prevents excessive API calls during rapid editing.
+
+3. **Local edits only**: The `lastEditSource` check prevents sync loops:
+   - `'local'` → User made an edit → Sync to blob
+   - `'remote'` → Received from Liveblocks → Don't re-sync
+   - `'init'` → Initial load → Don't sync
+
+4. **Sync on unmount**: When a collaborator leaves, any pending changes are flushed immediately.
 
 ---
 
 ## 6. Operation Types
 
-### Layout Operations
+### Layout Mutations
+
+Using Liveblocks `useMutation` for atomic operations:
 
 ```typescript
-type LayoutOperation =
+// Example mutation
+const addBin = useMutation(({ storage }, bin: Bin) => {
+  const layout = storage.get("layout");
+  const bins = layout.get("bins");
+  bins.push(bin);
+}, []);
+
+// All layout operations
+const mutations = {
   // Bin operations
-  | { type: 'bin.add'; bin: Bin }
-  | { type: 'bin.update'; binId: string; changes: Partial<Bin> }
-  | { type: 'bin.delete'; binIds: string[] }
-  | { type: 'bin.move'; binId: string; x: number; y: number; layerId?: string }
-  | { type: 'bin.resize'; binId: string; x: number; y: number; width: number; depth: number }
-  | { type: 'bin.duplicate'; sourceIds: string[]; newBins: Bin[] }
+  addBin: (bin: Bin) => void;
+  updateBin: (binId: string, changes: Partial<Bin>) => void;
+  deleteBins: (binIds: string[]) => void;
+  moveBin: (binId: string, x: number, y: number, layerId?: string) => void;
+  resizeBin: (binId: string, x: number, y: number, width: number, depth: number) => void;
 
   // Layer operations
-  | { type: 'layer.add'; layer: Layer }
-  | { type: 'layer.update'; layerId: string; changes: Partial<Layer> }
-  | { type: 'layer.delete'; layerId: string }
-  | { type: 'layer.reorder'; layerIds: string[] }
+  addLayer: (layer: Layer) => void;
+  updateLayer: (layerId: string, changes: Partial<Layer>) => void;
+  deleteLayer: (layerId: string) => void;
+  reorderLayers: (layerIds: string[]) => void;
 
   // Category operations
-  | { type: 'category.add'; category: Category }
-  | { type: 'category.update'; categoryId: string; changes: Partial<Category> }
-  | { type: 'category.delete'; categoryId: string }
+  addCategory: (category: Category) => void;
+  updateCategory: (categoryId: string, changes: Partial<Category>) => void;
+  deleteCategory: (categoryId: string) => void;
 
   // Drawer operations
-  | { type: 'drawer.update'; changes: Partial<Drawer> }
+  updateDrawer: (changes: Partial<Drawer>) => void;
 
   // Layout metadata
-  | { type: 'layout.rename'; name: string }
-  | { type: 'layout.settings'; changes: Partial<LayoutSettings> };
-
-interface LayoutSettings {
-  printBedSize: number;
-  gridUnitMm: number;
-  heightUnitMm: number;
-}
+  renameLayout: (name: string) => void;
+  updateSettings: (changes: Partial<LayoutSettings>) => void;
+};
 ```
 
-### Operation Envelope
+### Permission Checking
 
 ```typescript
-interface OperationEnvelope {
-  id: string;              // UUID for deduplication
-  op: LayoutOperation;
-  clientVersion: number;   // Version client had when creating op
-  timestamp: number;       // Client timestamp
-  connectionId: string;    // Sender (added by server)
-}
-```
+function useCanEdit(): boolean {
+  const storage = useStorage((root) => root.metadata);
+  const self = useSelf();
 
----
+  // Owner can always edit
+  if (storage.ownerId === self.id) return true;
 
-## 7. Conflict Resolution
-
-### Strategy: Last-Write-Wins (LWW) with Validation
-
-For a simple trust-based system, LWW is acceptable. More sophisticated CRDTs add complexity without significant benefit for this use case.
-
-### Conflict Scenarios
-
-| Scenario | Resolution |
-|----------|------------|
-| Two users add bins at same position | Both bins created, collision validation fails on second |
-| User A moves bin, User B deletes it | Delete wins (tombstone check) |
-| User A resizes bin, User B moves it | Last operation wins |
-| Drawer resize invalidates bins | Bins auto-moved to staging |
-| Layer deleted with bins | Bins moved to staging |
-
-### Server-Side Validation
-
-```typescript
-function applyOperation(state: SyncedState, op: OperationEnvelope): Result<SyncedState, ConflictError> {
-  // 1. Check operation references exist
-  if (op.op.type === 'bin.update') {
-    const bin = state.layout.bins.find(b => b.id === op.op.binId);
-    if (!bin) {
-      return err({ code: 'ENTITY_NOT_FOUND', entityId: op.op.binId });
-    }
-  }
-
-  // 2. Validate operation (bounds, collisions)
-  const validation = validateOperation(state.layout, op.op);
-  if (!validation.valid) {
-    return err({ code: 'VALIDATION_FAILED', reason: validation.reason });
-  }
-
-  // 3. Apply operation
-  const newLayout = applyToLayout(state.layout, op.op);
-
-  // 4. Increment version
-  return ok({ layout: newLayout, version: state.version + 1 });
-}
-```
-
-### Client-Side Optimistic Updates
-
-```typescript
-// In useCollabStore.ts
-function sendOperation(op: LayoutOperation) {
-  // 1. Apply optimistically
-  const optimisticState = applyLocally(op);
-  setLayout(optimisticState);
-
-  // 2. Send to server
-  send({ type: 'operation', op, version: currentVersion });
-
-  // 3. Track pending operation
-  pendingOps.set(op.id, op);
+  // Others depend on permission level
+  return storage.permission === 'edit';
 }
 
-function handleOperationAck(serverVersion: number, opId: string) {
-  // Remove from pending
-  pendingOps.delete(opId);
-  setVersion(serverVersion);
-}
+// Usage in components
+function AddBinButton() {
+  const canEdit = useCanEdit();
+  const addBin = useAddBinMutation();
 
-function handleOperationReject(opId: string, error: ConflictError) {
-  // Rollback optimistic update
-  const op = pendingOps.get(opId);
-  if (op) {
-    rollback(op);
-    pendingOps.delete(opId);
-  }
-
-  // Show toast error
-  addToast({ type: 'error', message: `Edit rejected: ${error.reason}` });
+  return (
+    <button disabled={!canEdit} onClick={() => addBin(...)}>
+      Add Bin
+    </button>
+  );
 }
 ```
 
 ---
 
-## 8. Server Architecture
+## 7. Cursor Presence System
 
-### Session Server (PartyKit Room)
+### Cursor Data Flow
 
 ```typescript
-// parties/session.ts (PartyKit)
-import type * as Party from "partykit/server";
+// Update own cursor position
+const [myPresence, updateMyPresence] = useMyPresence();
 
-export default class SessionRoom implements Party.Server {
-  state: SyncedState;
-  participants: Map<string, Participant>;
+function handleMouseMove(e: MouseEvent) {
+  const gridCoords = getGridCoords(e.clientX, e.clientY);
+  updateMyPresence({ cursor: gridCoords });
+}
 
-  constructor(readonly party: Party.Party) {
-    this.state = { layout: createDefaultLayout(), version: 0 };
-    this.participants = new Map();
-  }
-
-  async onConnect(conn: Party.Connection, ctx: Party.ConnectionContext) {
-    // Assign participant color and name
-    const participant = createParticipant(conn.id, this.participants.size);
-    this.participants.set(conn.id, participant);
-
-    // Send welcome with current state
-    conn.send(JSON.stringify({
-      type: 'welcome',
-      participant,
-      session: this.getSessionInfo(),
-      layout: this.state.layout,
-      version: this.state.version,
-    }));
-
-    // Broadcast join to others
-    this.broadcast({
-      type: 'participant_joined',
-      participant,
-    }, [conn.id]);
-  }
-
-  async onMessage(message: string, sender: Party.Connection) {
-    const msg = JSON.parse(message) as ClientMessage;
-
-    switch (msg.type) {
-      case 'cursor':
-        this.handleCursor(sender.id, msg.position);
-        break;
-      case 'operation':
-        this.handleOperation(sender.id, msg.op, msg.version);
-        break;
-      // ...
-    }
-  }
-
-  handleCursor(connectionId: string, position: CursorPosition | null) {
-    const participant = this.participants.get(connectionId);
-    if (participant) {
-      participant.cursor = position;
-      this.broadcast({
-        type: 'cursor_update',
-        connectionId,
-        position,
-      }, [connectionId]);
-    }
-  }
-
-  handleOperation(connectionId: string, op: LayoutOperation, clientVersion: number) {
-    // Check version for stale operations
-    if (clientVersion < this.state.version - 10) {
-      // Too far behind, request resync
-      this.sendTo(connectionId, { type: 'sync', ...this.state });
-      return;
-    }
-
-    // Apply operation
-    const result = applyOperation(this.state, { op, connectionId, clientVersion });
-
-    if (isOk(result)) {
-      this.state = result.value;
-      // Broadcast to all (including sender for confirmation)
-      this.broadcast({
-        type: 'operation',
-        op,
-        connectionId,
-        version: this.state.version,
-      });
-    } else {
-      // Reject operation
-      this.sendTo(connectionId, {
-        type: 'error',
-        code: result.error.code,
-        message: result.error.message,
-      });
-    }
-  }
-
-  async onClose(conn: Party.Connection) {
-    this.participants.delete(conn.id);
-    this.broadcast({ type: 'participant_left', connectionId: conn.id });
-
-    // If owner left, session becomes read-only or ends
-    if (conn.id === this.ownerId) {
-      this.handleOwnerDisconnect();
-    }
-  }
+function handleMouseLeave() {
+  updateMyPresence({ cursor: null });
 }
 ```
 
-### Session Management API
+### Rendering Remote Cursors
 
 ```typescript
-// api/collab/create.ts
-export async function POST(req: Request) {
-  const { layoutId, permission, layout } = await req.json();
+// src/components/collab/CollabCursors.tsx
+function CollabCursors() {
+  const others = useOthers();
 
-  // Generate session ID
-  const sessionId = generateSessionId(); // 16 chars
+  return (
+    <div className="absolute inset-0 pointer-events-none z-40">
+      {others.map(({ connectionId, presence }) => {
+        if (!presence.cursor) return null;
 
-  // Create session in PartyKit
-  const response = await fetch(`https://project.partykit.dev/parties/session/${sessionId}`, {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'init',
-      layout,
-      permission,
-      ownerId: 'pending', // Set on first connection
-    }),
-  });
-
-  return Response.json({
-    sessionId,
-    url: `${BASE_URL}/collab/${sessionId}`,
-  });
+        return (
+          <CollabCursor
+            key={connectionId}
+            position={presence.cursor}
+            name={presence.name}
+            color={presence.color}
+            interaction={presence.interaction}
+          />
+        );
+      })}
+    </div>
+  );
 }
+```
 
-// api/collab/[sessionId].ts
-export async function GET(req: Request, { params }: { params: { sessionId: string } }) {
-  // Check if session exists
-  const session = await getSessionInfo(params.sessionId);
+### Cursor Throttling
 
-  if (!session) {
-    return Response.json({ error: 'Session not found' }, { status: 404 });
-  }
+Liveblocks automatically throttles presence updates. Additional client-side throttling:
 
-  if (session.expiresAt < Date.now()) {
-    return Response.json({ error: 'Session expired' }, { status: 410 });
-  }
-
-  return Response.json({
-    sessionId: session.id,
-    permission: session.permission,
-    participantCount: session.participants.length,
-    createdAt: session.createdAt,
-  });
-}
+```typescript
+// Throttle to 20fps (50ms)
+const throttledUpdateCursor = useCallback(
+  throttle((cursor: CursorPosition) => {
+    updateMyPresence({ cursor });
+  }, 50),
+  [updateMyPresence]
+);
 ```
 
 ---
 
-## 9. Client Architecture
+## 8. Client Architecture
 
-### New Stores
+### New Components
+
+```
+src/components/
+├── collab/
+│   ├── CollabProvider.tsx       # Liveblocks RoomProvider wrapper
+│   ├── CollabBanner.tsx         # "Collaborating with..." banner
+│   ├── CollabPresenceBar.tsx    # Avatar strip showing participants
+│   ├── CollabCursors.tsx        # Container for remote cursors
+│   ├── CollabCursor.tsx         # Individual cursor with name
+│   └── CollabInteractionPreview.tsx  # Remote drag/resize previews
+├── Grid/
+│   └── (existing, modified to support collab)
+```
+
+### Implemented Hooks
 
 ```typescript
-// src/store/collab.ts
-interface CollabState {
-  // Connection state
+// src/hooks/useCollabMode.ts
+// Detects if app is in collaborative editing mode based on URL and feature flag
+export function useCollabMode(): {
+  isCollaborative: boolean;
+  shareId: string | null;
+};
+
+// src/hooks/useCollabSync.ts
+// Bidirectional sync between Liveblocks storage and Zustand store
+// Handles initial sync with state machine (pending → initializing → ready)
+export function useCollabSync(): void;
+
+// src/hooks/useCloudShareAutoSync.ts
+// Debounced persistence to Vercel Blob (see Section 5.1)
+// Reads deleteToken from Liveblocks, syncs on local edits
+export function useCloudShareAutoSync(
+  shareId: string | null,
+  enabled: boolean
+): void;
+
+// src/hooks/useCollab.ts (planned)
+export function useCollab(): {
   isConnected: boolean;
-  connectionId: string | null;
-  sessionId: string | null;
-  permission: CollabPermission | null;
+  participants: User[];
+  self: User | null;
+  canEdit: boolean;
+  participantCount: number;
+};
 
-  // Participants
-  participants: Map<string, Participant>;
-  localParticipant: Participant | null;
-
-  // Sync state
-  version: number;
-  pendingOps: Map<string, LayoutOperation>;
-
-  // Actions
-  connect: (sessionId: string, name?: string) => Promise<void>;
-  disconnect: () => void;
-  sendOperation: (op: LayoutOperation) => void;
-  updateCursor: (position: CursorPosition | null) => void;
-}
+// src/hooks/useCollabPresence.ts (planned)
+export function useCollabPresence(): {
+  updateCursor: (cursor: CursorPosition | null) => void;
+  updateInteraction: (interaction: InteractionHint) => void;
+  others: UserPresence[];
+};
 ```
 
-### Hooks
+### Store Integration
+
+The existing Zustand stores work alongside Liveblocks:
 
 ```typescript
-// src/hooks/useCollab.ts
-export function useCollab() {
-  const { connect, disconnect, isConnected, permission } = useCollabStore();
-  const layout = useLayoutStore(state => state.layout);
-  const { execute } = useUndoableAction();
+// When in collaborative mode:
+// - Layout data comes from Liveblocks storage
+// - Local state (zoom, selection) stays in Zustand
+// - Mutations go through Liveblocks
 
-  // Wrap operations for collab mode
-  const executeCollab = useCallback((op: LayoutOperation, action: () => void) => {
-    if (isConnected && permission === 'edit') {
-      // Send to server (optimistic)
-      sendOperation(op);
-    }
+function useLayoutData() {
+  const isCollaborative = useIsCollaborative();
 
-    // Always apply locally
-    execute(action);
-  }, [isConnected, permission, execute]);
+  // Collaborative mode: use Liveblocks
+  const collabLayout = useStorage((root) => root.layout);
 
-  return { isConnected, permission, executeCollab };
-}
+  // Local mode: use Zustand
+  const localLayout = useLayoutStore((state) => state.layout);
 
-// src/hooks/useCollabCursor.ts
-export function useCollabCursor(gridRef: RefObject<HTMLElement>) {
-  const { isConnected, updateCursor } = useCollabStore();
-  const { getGridCoords } = useGridCoords(gridRef);
-
-  useEffect(() => {
-    if (!isConnected) return;
-
-    const handleMouseMove = throttle((e: MouseEvent) => {
-      const coords = getGridCoords(e.clientX, e.clientY);
-      updateCursor(coords);
-    }, 50); // 20fps
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [isConnected, getGridCoords, updateCursor]);
-}
-
-// src/hooks/useCollabPresence.ts
-export function useCollabPresence() {
-  const participants = useCollabStore(state => state.participants);
-  const localId = useCollabStore(state => state.connectionId);
-
-  const others = useMemo(() =>
-    Array.from(participants.values()).filter(p => p.connectionId !== localId),
-    [participants, localId]
-  );
-
-  return { others, total: participants.size };
-}
-```
-
-### Modified Components
-
-```typescript
-// Grid/index.tsx - Add cursor layer
-export function Grid() {
-  const { isConnected } = useCollab();
-
-  return (
-    <div className="grid-container">
-      <GridCanvas />
-      <Overlay />
-      {isConnected && <CollabCursors />}  {/* New */}
-    </div>
-  );
-}
-
-// Grid/CollabCursors.tsx
-export function CollabCursors() {
-  const { others } = useCollabPresence();
-
-  return (
-    <div className="absolute inset-0 pointer-events-none z-50">
-      {others.map(participant => (
-        <CollabCursor
-          key={participant.connectionId}
-          participant={participant}
-        />
-      ))}
-    </div>
-  );
+  return isCollaborative ? collabLayout : localLayout;
 }
 ```
 
 ---
 
-## 10. Local Caching Strategy
+## 9. API Endpoints
 
-### Session Persistence
+### Share API Extensions
 
 ```typescript
-// Store in sessionStorage (not localStorage) - cleared on tab close
-interface CollabCache {
-  sessionId: string;
-  lastVersion: number;
-  lastLayout: Layout;           // For quick reconnect
-  pendingOps: OperationEnvelope[];  // Unsent operations
+// PUT /api/share/[id]
+// Update share permission
+interface UpdateShareRequest {
+  permission: 'view' | 'edit';
+}
+
+interface UpdateShareResponse {
+  id: string;
+  permission: SharePermission;
+  liveblocksRoomId: string;  // For client to connect
 }
 ```
 
-### Reconnection Flow
+### Liveblocks Auth Endpoint
 
+```typescript
+// POST /api/liveblocks-auth
+// Authenticate user for Liveblocks room access
+
+import { Liveblocks } from "@liveblocks/node";
+
+const liveblocks = new Liveblocks({
+  secret: process.env.LIVEBLOCKS_SECRET_KEY,
+});
+
+export async function POST(req: Request) {
+  const { room, userId, userName } = await req.json();
+
+  // Verify share exists and get permission
+  const share = await getShare(room.replace('gridfinity-', ''));
+  if (!share) {
+    return Response.json({ error: 'Share not found' }, { status: 404 });
+  }
+
+  // Create session with appropriate permissions
+  const session = liveblocks.prepareSession(userId, {
+    userInfo: { name: userName, color: assignColor(userId) },
+  });
+
+  // Grant access based on share permission
+  if (share.permission === 'edit') {
+    session.allow(room, session.FULL_ACCESS);
+  } else {
+    session.allow(room, session.READ_ACCESS);
+  }
+
+  const { body, status } = await session.authorize();
+  return new Response(body, { status });
+}
 ```
-1. Connection lost
-   ↓
-2. Store current state + pending ops in sessionStorage
-   ↓
-3. Show "Reconnecting..." banner
-   ↓
-4. Attempt reconnect with exponential backoff (1s, 2s, 4s, 8s, max 30s)
-   ↓
-5. On reconnect:
-   a. Send last known version
-   b. Server responds with full sync if behind, or delta if close
-   c. Replay pending ops
-   ↓
-6. Resume normal operation
-```
-
-### Offline Mode
-
-When disconnected for extended period:
-- Show persistent banner with reconnection status
-- Allow local editing (queued)
-- On reconnect, merge changes (may conflict)
-- If conflicts unresolvable, offer "Save as Copy"
 
 ---
 
-## 11. Backwards Compatibility
+## 10. Feature Flag Integration
+
+### Labs Store Extension
+
+```typescript
+// src/store/labs.ts (existing)
+interface LabsState {
+  flags: {
+    collaborativeEditing: boolean;
+    // ... other flags
+  };
+}
+
+// Feature flag check
+export function useCollaborativeEditingEnabled() {
+  return useLabsStore((state) => state.flags.collaborativeEditing);
+}
+```
+
+### Conditional Loading
+
+```typescript
+// Only load Liveblocks when feature is enabled and share has edit permission
+const CollabProvider = lazy(() =>
+  import('./components/collab/CollabProvider')
+);
+
+function App() {
+  const collabEnabled = useCollaborativeEditingEnabled();
+  const sharePermission = useSharePermission(); // from server
+
+  if (collabEnabled && sharePermission === 'edit') {
+    return (
+      <Suspense fallback={<Loading />}>
+        <CollabProvider>
+          <MainApp />
+        </CollabProvider>
+      </Suspense>
+    );
+  }
+
+  return <MainApp />;
+}
+```
+
+### Fallback Behavior
+
+When feature flag is disabled:
+- `/s/{id}` always loads in view-only mode (ignores server permission)
+- Share panel shows only "Copy link" (no permission selector)
+- No Liveblocks bundle loaded
+
+---
+
+## 11. Security Considerations
+
+### Trust Model
+
+This is a **trust-based** system:
+- Anyone with the edit link can make changes
+- No authentication required
+- Owner identified by browser fingerprint (stored in localStorage)
+
+### Token Sharing Security
+
+The `deleteToken` is shared via Liveblocks storage to enable distributed blob persistence:
+
+**Implications**:
+- Any collaborator with the share link can update the Vercel Blob
+- The token is visible to all room participants via Liveblocks storage
+- Token exposure is limited to active room participants (not publicly discoverable)
+
+**Mitigations**:
+- Token only grants update access, not delete access (rate-limited)
+- Collaborative shares are inherently trust-based (users with edit links are trusted)
+- Token is not stored permanently on client devices (only in Liveblocks)
+- Owner can revoke access by deleting the share entirely
+
+**Rationale**: This trade-off enables better UX (any collaborator can persist changes) while maintaining the existing trust model of shared links.
+
+### Safeguards
+
+1. **Owner verification**: Owner ID stored in share metadata, verified on permission changes
+2. **Rate limiting**: 100 operations/min per connection (Liveblocks + server-side)
+3. **Size limits**: Same as cloud share (500KB, 2500 bins)
+4. **Content filtering**: Same blocklist as cloud share
+5. **Audit trail**: Operations logged for abuse detection
+
+### Future Enhancements (Not in MVP)
+
+- Password-protected shares
+- Participant approval (lobby)
+- Fine-grained permissions
+- Identity via auth providers
+
+---
+
+## 12. Backwards Compatibility
 
 ### URL Handling
 
@@ -714,16 +822,12 @@ When disconnected for extended period:
 // src/hooks/useLayoutRouting.ts
 function handleRoute() {
   const path = window.location.pathname;
+  const collabEnabled = useCollaborativeEditingEnabled();
 
-  // New: Collab sessions
-  if (path.startsWith('/collab/')) {
-    const sessionId = path.split('/')[2];
-    return { type: 'collab', sessionId };
-  }
-
-  // Existing: Cloud shares
+  // Cloud share (permission determined server-side)
   if (path.startsWith('/s/')) {
     const shareId = path.split('/')[2];
+    // Permission is fetched from server, not from URL
     return { type: 'share', shareId };
   }
 
@@ -738,96 +842,37 @@ function handleRoute() {
 
   return { type: 'home' };
 }
-```
 
-### Feature Detection
+// After fetching share data from server:
+function handleShareLoad(share: CloudShare) {
+  const collabEnabled = useCollaborativeEditingEnabled();
 
-```typescript
-// Graceful degradation if collab not supported
-function canUseCollab(): boolean {
-  return (
-    typeof WebSocket !== 'undefined' &&
-    navigator.onLine
-  );
+  if (collabEnabled && share.permission === 'edit') {
+    // Enable collaboration mode
+    return { mode: 'collab', canEdit: true };
+  }
+
+  // View-only mode
+  return { mode: 'view', canEdit: false };
 }
-
-// In UI, hide "Collaborate" button if not supported
 ```
 
 ### Migration from Existing Shares
 
-Users with existing cloud shares can:
-1. Keep using `/s/{shareId}` for read-only sharing
-2. Create collab session from any layout (local or imported)
-3. No automatic migration of existing shares
+- Existing `/s/{id}` shares continue to work (default permission: 'view')
+- No automatic migration to collaborative mode
+- Owner can enable editing via share panel (creates Liveblocks room, sets permission to 'edit')
 
 ---
 
-## 12. Security Considerations
+## 13. Performance Considerations
 
-### Trust Model
+### Bundle Size
 
-This is a **trust-based** system:
-- Anyone with the link can join
-- Editable sessions allow full edit access
-- No authentication required
-
-### Safeguards
-
-1. **Session expiration**: Auto-expire after 24 hours
-2. **Rate limiting**: Operation rate per connection (100/min)
-3. **Size limits**: Same as cloud share (500KB, 2500 bins)
-4. **Content filtering**: Same blocklist as cloud share
-5. **Owner controls**: Owner can revoke session, kick participants
-6. **Audit trail**: Log operations for abuse detection (server-side)
-
-### Future Enhancements (Not MVP)
-
-- Password-protected sessions
-- Participant approval (lobby)
-- Fine-grained permissions (view layer X only)
-- Identity via Vercel/social auth
-
----
-
-## 13. UI Components
-
-### New Components
-
-```
-src/components/
-├── collab/
-│   ├── CollabProvider.tsx       # Context provider for collab state
-│   ├── CollabBanner.tsx         # "You're in a collaborative session"
-│   ├── CollabPresenceBar.tsx    # Avatar strip showing participants
-│   ├── CollabCursors.tsx        # Container for remote cursors
-│   ├── CollabCursor.tsx         # Individual cursor with name
-│   ├── CollabShareModal.tsx     # Create/join session dialog
-│   └── CollabSettingsPanel.tsx  # Session settings for owner
-├── Grid/
-│   └── CollabOverlay.tsx        # Remote user interaction previews
-```
-
-### UI State
-
-```typescript
-// Additional UI store state
-interface CollabUIState {
-  showCollabPanel: boolean;
-  showParticipantList: boolean;
-  collabTooltipDismissed: boolean;
-}
-```
-
-### Responsive Considerations
-
-- Desktop: Presence bar in header, cursors visible
-- Tablet: Presence bar collapses to avatar count
-- Mobile: Simplified presence (count only), no cursor rendering
-
----
-
-## 14. Performance Considerations
+Liveblocks adds ~30KB gzipped. Mitigated by:
+- Lazy loading when feature flag enabled
+- Only loading when share permission is 'edit'
+- Code splitting for collab components
 
 ### Bandwidth
 
@@ -835,148 +880,142 @@ interface CollabUIState {
 |-----------|-----------|---------------|
 | Cursor updates | 20/sec per user | 50 bytes |
 | Operations | Variable | 100-500 bytes |
-| Full sync | On join/reconnect | 50-500 KB |
-| Ping/pong | 1/30sec | 20 bytes |
+| Initial sync | On join | 50-500 KB |
 
 For 5 users: ~5 KB/sec cursor data
 
 ### Optimizations
 
-1. **Cursor batching**: Server batches cursor updates, sends at 10fps
-2. **Delta compression**: Operations include only changed fields
-3. **Selective broadcast**: Cursor updates skip sender
-4. **Connection pooling**: Reuse WebSocket for multiple sessions (future)
-
-### Client Performance
-
-- Cursor rendering: Pure CSS transforms, no re-renders
-- Operation application: Same as current (Immer optimized)
-- Participant list: Virtualized if >20 participants
+1. **Cursor batching**: Liveblocks batches presence updates
+2. **Storage efficiency**: Liveblocks uses structural sharing
+3. **Lazy presence**: Only send cursor when over grid
+4. **Mobile reduction**: Fewer cursor updates on mobile
 
 ---
 
-## 15. Implementation Phases
+## 14. Error Handling
 
-### Phase 1: Foundation (MVP)
+### Connection States
 
-- [ ] PartyKit integration and session server
-- [ ] Session creation/joining API
-- [ ] Basic WebSocket connection in client
-- [ ] Full state sync on join
-- [ ] Operation broadcast (no conflict resolution)
+```typescript
+type CollabStatus =
+  | 'connecting'
+  | 'connected'
+  | 'reconnecting'
+  | 'disconnected';
 
-### Phase 2: Presence
+function useCollabStatus(): CollabStatus {
+  const room = useRoom();
+  const status = room.getStatus();
 
-- [ ] Cursor position broadcasting
-- [ ] Cursor rendering component
-- [ ] Participant list/avatars
-- [ ] Interaction hints (selection, drag preview)
-
-### Phase 3: Robust Sync
-
-- [ ] Version-based conflict detection
-- [ ] Optimistic updates with rollback
-- [ ] Reconnection handling
-- [ ] Offline queue
-
-### Phase 4: Polish
-
-- [ ] Session settings (rename, permissions)
-- [ ] Owner controls (kick, end session)
-- [ ] Mobile responsive adjustments
-- [ ] Analytics integration
-
-### Phase 5: Future
-
-- [ ] Password protection
-- [ ] Participant approval
-- [ ] Comments/annotations
-- [ ] Version history (time travel)
-
----
-
-## 16. Data Flow Diagram
-
+  switch (status) {
+    case 'initial':
+    case 'connecting':
+      return 'connecting';
+    case 'connected':
+      return 'connected';
+    case 'reconnecting':
+      return 'reconnecting';
+    case 'disconnected':
+      return 'disconnected';
+  }
+}
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                           USER A (Owner)                             │
-├─────────────────────────────────────────────────────────────────────┤
-│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────────────┐  │
-│  │ UI Store│◄──►│ Layout  │◄──►│ Collab  │◄──►│   WebSocket     │  │
-│  │ (local) │    │ Store   │    │ Store   │    │   Connection    │  │
-│  └─────────┘    └─────────┘    └─────────┘    └────────┬────────┘  │
-│                                                         │           │
-└─────────────────────────────────────────────────────────┼───────────┘
-                                                          │
-                                                          ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                        PARTYKIT SERVER                               │
-├─────────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────────┐  │
-│  │   Session    │    │    State     │    │     Broadcast        │  │
-│  │   Manager    │◄──►│   (Layout +  │◄──►│     Manager          │  │
-│  │              │    │   Version)   │    │                      │  │
-│  └──────────────┘    └──────────────┘    └──────────┬───────────┘  │
-│                                                      │              │
-└──────────────────────────────────────────────────────┼──────────────┘
-                                                       │
-                                                       ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                           USER B (Participant)                       │
-├─────────────────────────────────────────────────────────────────────┤
-│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────────────┐  │
-│  │ UI Store│◄──►│ Layout  │◄──►│ Collab  │◄──►│   WebSocket     │  │
-│  │ (local) │    │ Store   │    │ Store   │    │   Connection    │  │
-│  └─────────┘    └─────────┘    └─────────┘    └─────────────────┘  │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
 
-Legend:
-  ◄──► Bidirectional sync
-  ───► Unidirectional flow
+### Error Recovery
+
+```typescript
+// Liveblocks handles most reconnection automatically
+// Custom handling for edge cases:
+
+function useCollabErrorHandler() {
+  const room = useRoom();
+
+  useEffect(() => {
+    return room.subscribe('error', (error) => {
+      if (error.code === 'ROOM_NOT_FOUND') {
+        // Share was deleted
+        toast.error('This layout no longer exists');
+        navigate('/');
+      } else if (error.code === 'FORBIDDEN') {
+        // Permission revoked
+        toast.info('You no longer have access to edit');
+        // Refresh to get view-only mode
+        window.location.reload();
+      }
+    });
+  }, [room]);
+}
 ```
 
 ---
 
-## 17. Appendix: Alternative Technologies Considered
+## 15. Testing Strategy
 
-### Real-Time Layer
+### Unit Tests
 
-| Option | Pros | Cons | Verdict |
-|--------|------|------|---------|
-| **PartyKit** | Purpose-built, easy, edge | New platform, lock-in | ✓ Recommended |
-| Cloudflare Durable Objects | Powerful, fast | Complex, Cloudflare lock-in | Good alternative |
-| Liveblocks | High-level API, presence built-in | Cost at scale, abstraction | Good for faster MVP |
-| Socket.io + Server | Familiar, flexible | Self-hosted, scaling | Not for Vercel |
-| WebRTC (peer-to-peer) | Low latency, no server | NAT issues, no authority | Not suitable |
+- Mutation logic (bin operations, layer operations)
+- Permission checking logic
+- URL routing logic
+- Feature flag behavior
 
-### Sync Strategy
+### Integration Tests
 
-| Option | Pros | Cons | Verdict |
-|--------|------|------|---------|
-| **Snapshot + Ops** | Simple, predictable | Conflicts possible | ✓ Recommended |
-| Yjs (CRDT) | Automatic merge, offline | Complex, bundle size | Over-engineered |
-| Automerge | Rich history, branching | Learning curve, size | Over-engineered |
-| OT (Operational Transform) | Industry standard | Complex implementation | Too complex |
+- Liveblocks connection flow
+- Presence synchronization
+- Storage synchronization
+- Permission enforcement
+
+### E2E Tests
+
+```typescript
+// e2e/collab.spec.ts
+test('two users can edit layout together', async ({ browser }) => {
+  // User 1: Enable collaboration
+  const page1 = await browser.newPage();
+  await page1.goto('/');
+  await enableCollaboration(page1);
+  const collabUrl = await getCollabUrl(page1);
+
+  // User 2: Join collaboration
+  const page2 = await browser.newPage();
+  await page2.goto(collabUrl);
+  await waitForConnection(page2);
+
+  // User 2: Add a bin
+  await addBin(page2, { x: 0, y: 0, width: 2, height: 2 });
+
+  // User 1: Should see the bin
+  await expect(page1.locator('[data-testid="bin"]')).toHaveCount(1);
+});
+```
 
 ---
 
-## 18. Glossary
+## 16. Glossary
 
-- **Session**: A collaborative editing instance with unique ID
-- **Owner**: The user who created the session
-- **Participant**: Any user in the session (including owner)
-- **Operation**: An atomic change to the layout
-- **Version**: Monotonic counter for state ordering
-- **Presence**: Real-time information about participants (cursor, activity)
-- **Optimistic Update**: Apply change locally before server confirmation
-- **Tombstone**: Marker for deleted entities to prevent resurrection
+- **Owner**: The user who created and controls the layout
+- **Collaborator**: Any user connected to a collaborative layout
+- **Permission level**: Whether collaborators can view or edit
+- **Linked layout**: Local layout that references a cloud-stored original
+- **Liveblocks Room**: A collaborative space for a specific layout
+- **Presence**: Ephemeral user data (cursor, interaction state)
+- **Storage**: Persistent synchronized data (layout)
 
 ---
 
-## 19. References
+## 17. References
 
-- [PartyKit Documentation](https://docs.partykit.io/)
-- [Figma Multiplayer Engineering](https://www.figma.com/blog/how-figmas-multiplayer-technology-works/)
-- [CRDTs and Collaborative Editing (Ink & Switch)](https://www.inkandswitch.com/local-first/)
-- [Liveblocks Architecture](https://liveblocks.io/docs/concepts/how-liveblocks-works)
+- [Liveblocks Documentation](https://liveblocks.io/docs)
+- [Liveblocks React API](https://liveblocks.io/docs/api-reference/liveblocks-react)
+- [Google Docs Sharing Model](https://support.google.com/docs/answer/2494822)
+
+---
+
+## 18. Revision History
+
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 1.0 | 2026-01 | Engineering Team | Initial draft with session-based model, PartyKit |
+| 2.0 | 2026-01 | Engineering Team | Revised to Google Docs model, Liveblocks |
+| 2.1 | 2026-01 | Engineering Team | Added Section 5.1 (Cloud Persistence), token sharing architecture, security considerations for distributed blob sync |

@@ -16,7 +16,7 @@
 import * as backend from './backend';
 import { validateImport } from '../utils/validation';
 import { generateId, STAGING_ID } from '../constants';
-import { generateUUID } from '../utils/uuid';
+import { generateLayoutId } from '../utils/uuid';
 import type {
   Layout,
   LayoutLibrary,
@@ -484,7 +484,7 @@ export function migrateFromLegacyStorage(): LayoutLibrary | null {
   const legacyLayout = loadLegacyLayout();
   if (!legacyLayout) return null;
 
-  const layoutId = generateUUID();
+  const layoutId = generateLayoutId();
   const now = Date.now();
 
   // Create library with single entry
@@ -553,7 +553,7 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
   }
 
   // Create new library from legacy layout
-  const layoutId = generateUUID();
+  const layoutId = generateLayoutId();
   const now = Date.now();
 
   const library: LayoutLibrary = {
@@ -605,7 +605,7 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
 
   if (!library) {
     // Fresh start: create new library with default layout
-    const layoutId = generateUUID();
+    const layoutId = generateLayoutId();
     const defaultLayout: Layout = {
       version: '1.0',
       name: 'Untitled layout',
@@ -667,7 +667,7 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
 
     // If still nothing, create a fresh default
     if (!activeLayout) {
-      const layoutId = generateUUID();
+      const layoutId = generateLayoutId();
       activeLayout = {
         version: '1.0',
         name: 'Recovered layout',

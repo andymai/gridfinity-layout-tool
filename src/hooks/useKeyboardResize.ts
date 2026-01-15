@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
+import { useMutations } from '../context/MutationsContext';
 import { canPlaceBin } from '../utils/validation';
 import { findBinById } from '../utils/entity';
 import { CONSTRAINTS, STAGING_ID, hasFractionalDimensions } from '../constants';
@@ -22,7 +23,7 @@ export function useKeyboardResize() {
   const setInteraction = useUIStore(state => state.setInteraction);
 
   const layout = useLayoutStore(state => state.layout);
-  const updateBin = useLayoutStore(state => state.updateBin);
+  const { updateBin } = useMutations();
 
   const { execute } = useUndoableAction();
 

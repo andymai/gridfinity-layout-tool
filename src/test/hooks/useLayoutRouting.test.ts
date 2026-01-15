@@ -12,13 +12,14 @@ vi.mock('../../storage', () => ({
   loadLayoutByIdAsync: vi.fn(),
 }));
 
-// Mock url module
+// Mock url module - using the new URL API
 vi.mock('../../utils/url', () => ({
-  parseLayoutIdFromHash: vi.fn(),
-  setLayoutHash: vi.fn(),
-  clearLayoutHash: vi.fn(),
+  parseLayoutFromURL: vi.fn(),
+  setLayoutURL: vi.fn(),
+  clearLayoutURL: vi.fn(),
   getLayoutIdFromHistoryState: vi.fn(),
-  hasShareHash: vi.fn(),
+  getCanonicalRedirect: vi.fn(),
+  hasLegacyShareHash: vi.fn(),
 }));
 
 // Mock validation module
@@ -40,7 +41,7 @@ describe('useLayoutRouting', () => {
   };
 
   const mockEntry = {
-    id: 'layout-123',
+    id: 'layout123test',
     name: 'Test Layout',
     createdAt: Date.now(),
     updatedAt: Date.now(),
@@ -52,17 +53,18 @@ describe('useLayoutRouting', () => {
     vi.clearAllMocks();
 
     // Set up default mocks
-    vi.mocked(url.parseLayoutIdFromHash).mockReturnValue(null);
-    vi.mocked(url.hasShareHash).mockReturnValue(false);
+    vi.mocked(url.parseLayoutFromURL).mockReturnValue(null);
+    vi.mocked(url.hasLegacyShareHash).mockReturnValue(false);
+    vi.mocked(url.getCanonicalRedirect).mockReturnValue(null);
     vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
-    // Set up library with an entry (need to set library.entries, not entries)
+    // Set up library with an entry
     useLibraryStore.setState({
       isLoaded: true,
       library: {
         version: '1.0',
-        activeLayoutId: 'layout-123',
+        activeLayoutId: 'layout123test',
         settings: {},
         entries: [mockEntry],
       },
@@ -71,7 +73,7 @@ describe('useLayoutRouting', () => {
     // Set up layout store
     useLayoutStore.setState({
       layout: mockLayout,
-      activeLayoutId: 'layout-123',
+      activeLayoutId: 'layout123test',
     });
 
     // Set up UI store
@@ -105,7 +107,7 @@ describe('useLayoutRouting', () => {
 
       const { result } = renderHook(() => useLayoutRouting());
 
-      const success = await result.current.navigateToLayout('layout-123');
+      const success = await result.current.navigateToLayout('layout123test');
 
       expect(success).toBe(false);
     });
@@ -118,7 +120,7 @@ describe('useLayoutRouting', () => {
 
       const { result } = renderHook(() => useLayoutRouting());
 
-      const success = await result.current.navigateToLayout('layout-123');
+      const success = await result.current.navigateToLayout('layout123test');
 
       expect(success).toBe(false);
     });
@@ -126,93 +128,90 @@ describe('useLayoutRouting', () => {
     it('returns true and updates stores on success', async () => {
       const { result } = renderHook(() => useLayoutRouting());
 
-      const success = await result.current.navigateToLayout('layout-123');
+      const success = await result.current.navigateToLayout('layout123test');
 
       expect(success).toBe(true);
-      // Active layout ID is stored in library.activeLayoutId
-      expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout-123');
+      expect(useLibraryStore.getState().library.activeLayoutId).toBe('layout123test');
     });
 
     it('clears selection when navigating', async () => {
       useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
       const { result } = renderHook(() => useLayoutRouting());
-      await result.current.navigateToLayout('layout-123');
+      await result.current.navigateToLayout('layout123test');
 
       expect(useUIStore.getState().selectedBinIds).toEqual([]);
     });
 
     it('sets active layer to first layer', async () => {
       const { result } = renderHook(() => useLayoutRouting());
-      await result.current.navigateToLayout('layout-123');
+      await result.current.navigateToLayout('layout123test');
 
       expect(useUIStore.getState().activeLayerId).toBe('layer1');
     });
 
     it('sets active category to first category', async () => {
       const { result } = renderHook(() => useLayoutRouting());
-      await result.current.navigateToLayout('layout-123');
+      await result.current.navigateToLayout('layout123test');
 
       expect(useUIStore.getState().activeCategoryId).toBe('coral');
     });
 
     it('clears undo history', async () => {
-      // The clear function is called within navigateToLayout
-      // We verify navigation succeeds, which implies history was cleared
       const { result } = renderHook(() => useLayoutRouting());
-      const success = await result.current.navigateToLayout('layout-123');
+      const success = await result.current.navigateToLayout('layout123test');
 
       expect(success).toBe(true);
     });
 
-    it('updates URL hash', async () => {
+    it('updates URL with layout ID and name', async () => {
       const { result } = renderHook(() => useLayoutRouting());
-      await result.current.navigateToLayout('layout-123');
+      await result.current.navigateToLayout('layout123test');
 
-      expect(url.setLayoutHash).toHaveBeenCalledWith('layout-123', false);
+      expect(url.setLayoutURL).toHaveBeenCalledWith('layout123test', 'Test Layout', false);
     });
 
     it('adds to history when requested', async () => {
       const { result } = renderHook(() => useLayoutRouting());
-      await result.current.navigateToLayout('layout-123', true);
+      await result.current.navigateToLayout('layout123test', true);
 
-      expect(url.setLayoutHash).toHaveBeenCalledWith('layout-123', true);
+      expect(url.setLayoutURL).toHaveBeenCalledWith('layout123test', 'Test Layout', true);
     });
   });
 
   describe('initial URL handling', () => {
-    it('skips initialization when library not loaded', () => {
+    it('skips URL changes when library not loaded', () => {
       useLibraryStore.setState({ isLoaded: false });
 
       renderHook(() => useLayoutRouting());
 
-      // Should not try to parse URL yet
-      expect(url.parseLayoutIdFromHash).not.toHaveBeenCalled();
+      // parseLayoutFromURL may be called to check for cloud shares,
+      // but setLayoutURL should not be called when library isn't loaded
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
     });
 
-    it('skips when share hash is present', () => {
-      vi.mocked(url.hasShareHash).mockReturnValue(true);
-      // Also set shared preview to prevent URL sync effect
-      useUIStore.setState({ sharedLayoutPreview: mockLayout });
+    it('skips URL change when layout in URL does not exist locally (potential cloud share)', () => {
+      // When URL has a layout ID that doesn't exist locally,
+      // we assume it might be a cloud share and let SharedLayoutImporter handle it
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue({ layoutId: 'cloudShare12', slug: 'shared-layout' });
 
       renderHook(() => useLayoutRouting());
 
-      // With share hash and shared preview, URL should be cleared not set
-      expect(url.setLayoutHash).not.toHaveBeenCalled();
-      expect(url.clearLayoutHash).toHaveBeenCalled();
+      // Should NOT redirect to active layout - let SharedLayoutImporter handle the cloud share
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
     });
 
-    it('sets URL to current layout when no hash present', () => {
-      vi.mocked(url.parseLayoutIdFromHash).mockReturnValue(null);
+    it('sets URL to current layout when no layout in URL', () => {
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue(null);
 
       renderHook(() => useLayoutRouting());
 
-      expect(url.setLayoutHash).toHaveBeenCalledWith('layout-123', false);
+      expect(url.setLayoutURL).toHaveBeenCalledWith('layout123test', 'Test Layout', false);
     });
 
     it('navigates to layout specified in URL', () => {
       // Set up a different active layout so navigation is needed
-      vi.mocked(url.parseLayoutIdFromHash).mockReturnValue('layout-123');
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue({ layoutId: 'layout123test', slug: 'test-layout' });
       useLayoutStore.setState({ activeLayoutId: 'other-layout' });
 
       // Add the other layout to library too
@@ -232,38 +231,35 @@ describe('useLayoutRouting', () => {
       renderHook(() => useLayoutRouting());
 
       // Should have attempted to navigate to the URL layout
-      expect(storage.loadLayoutByIdAsync).toHaveBeenCalledWith('layout-123');
+      expect(storage.loadLayoutByIdAsync).toHaveBeenCalledWith('layout123test');
     });
 
-    it('silently redirects when URL layout not found', async () => {
-      vi.mocked(url.parseLayoutIdFromHash).mockReturnValue('nonexistent');
+    it('does not redirect when URL layout not found locally (potential cloud share)', () => {
+      // Non-local layout IDs in URL should NOT trigger redirect
+      // SharedLayoutImporter handles cloud share fetching
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue({ layoutId: 'nonexistent', slug: null });
       const addToastSpy = vi.fn();
       useToastStore.setState({ addToast: addToastSpy });
 
       renderHook(() => useLayoutRouting());
 
-      // navigateToLayout is async, so wait for URL redirect to happen
-      await vi.waitFor(() => {
-        // Should redirect to current active layout without showing a toast
-        // (bookmarked layouts that were deleted shouldn't show noisy notifications)
-        expect(url.setLayoutHash).toHaveBeenCalledWith('layout-123', false);
-      });
-
-      // No toast should be shown for initial load of missing layout
+      // Should NOT redirect to active layout - the layout ID might be a cloud share
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
+      // No toast should be shown
       expect(addToastSpy).not.toHaveBeenCalled();
     });
   });
 
   describe('popstate handling', () => {
     it('handles back/forward navigation', () => {
-      vi.mocked(url.getLayoutIdFromHistoryState).mockReturnValue('layout-123');
-      vi.mocked(url.parseLayoutIdFromHash).mockReturnValue(null);
+      vi.mocked(url.getLayoutIdFromHistoryState).mockReturnValue('layout123test');
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue(null);
 
       renderHook(() => useLayoutRouting());
 
       // Simulate popstate event
       act(() => {
-        const event = new PopStateEvent('popstate', { state: { layoutId: 'layout-123' } });
+        const event = new PopStateEvent('popstate', { state: { layoutId: 'layout123test' } });
         window.dispatchEvent(event);
       });
 
@@ -277,7 +273,7 @@ describe('useLayoutRouting', () => {
       renderHook(() => useLayoutRouting());
 
       act(() => {
-        const event = new PopStateEvent('popstate', { state: { layoutId: 'layout-123' } });
+        const event = new PopStateEvent('popstate', { state: { layoutId: 'layout123test' } });
         window.dispatchEvent(event);
       });
 
@@ -285,9 +281,9 @@ describe('useLayoutRouting', () => {
       expect(storage.loadLayoutByIdAsync).not.toHaveBeenCalled();
     });
 
-    it('falls back to parsing hash when no state', () => {
+    it('falls back to parsing URL when no state', () => {
       vi.mocked(url.getLayoutIdFromHistoryState).mockReturnValue(null);
-      vi.mocked(url.parseLayoutIdFromHash).mockReturnValue('layout-123');
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue({ layoutId: 'layout123test', slug: 'test-layout' });
 
       renderHook(() => useLayoutRouting());
 
@@ -296,26 +292,29 @@ describe('useLayoutRouting', () => {
         window.dispatchEvent(event);
       });
 
-      expect(url.parseLayoutIdFromHash).toHaveBeenCalled();
+      expect(url.parseLayoutFromURL).toHaveBeenCalled();
     });
   });
 
   describe('URL sync on layout change', () => {
     it('updates URL when active layout changes', () => {
-      vi.mocked(url.parseLayoutIdFromHash).mockReturnValue(null);
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue(null);
 
       renderHook(() => useLayoutRouting());
 
       // Should sync URL to current layout
-      expect(url.setLayoutHash).toHaveBeenCalledWith('layout-123', false);
+      expect(url.setLayoutURL).toHaveBeenCalledWith('layout123test', 'Test Layout', false);
     });
 
-    it('clears hash during shared preview', () => {
+    it('preserves URL during shared preview', () => {
+      // During shared preview, keep the share URL visible for better UX
       useUIStore.setState({ sharedLayoutPreview: mockLayout });
 
       renderHook(() => useLayoutRouting());
 
-      expect(url.clearLayoutHash).toHaveBeenCalled();
+      // Should NOT clear or change the URL during shared preview
+      expect(url.clearLayoutURL).not.toHaveBeenCalled();
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
     });
 
     it('skips URL update for __shared_preview__ layout', () => {
@@ -323,8 +322,8 @@ describe('useLayoutRouting', () => {
 
       renderHook(() => useLayoutRouting());
 
-      // Should not set hash for temporary preview ID
-      expect(url.setLayoutHash).not.toHaveBeenCalled();
+      // Should not set URL for temporary preview ID
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
     });
   });
 

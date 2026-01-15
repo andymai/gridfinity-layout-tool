@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, ThumbnailBin, CloudShareInfo, ShareExpiration } from '../types';
+import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, ThumbnailBin, CloudShareInfo, SharedWithMeEntry, SharePermission } from '../types';
 import { CONSTRAINTS, STAGING_ID } from '../constants';
-import { generateUUID } from '../utils/uuid';
+import { generateUUID, generateLayoutId } from '../utils/uuid';
 import type { Result, Unit, LayoutError } from '../result';
 import { err, layoutLastEntity, OK } from '../result';
+import { saveSharedWithMe } from '../storage/SharedWithMeService';
+import { saveLibrary } from '../storage';
 
 /**
  * Compute preview data from a layout for display in the library.
@@ -67,6 +69,10 @@ interface LibraryState {
   isLoaded: boolean;
   showLayoutManager: boolean;
 
+  // Shared with me state
+  sharedWithMe: SharedWithMeEntry[];
+  sharedWithMeLoaded: boolean;
+
   initLibrary: (library: LayoutLibrary) => void;
   setLibrary: (library: LayoutLibrary) => void;
 
@@ -81,19 +87,36 @@ interface LibraryState {
   setActiveLayoutId: (id: string) => void;
 
   setAuthorName: (name: string) => void;
-  setLastShareExpiration: (days: ShareExpiration) => void;
 
   setCloudShare: (layoutId: string, share: CloudShareInfo) => void;
   clearCloudShare: (layoutId: string) => void;
 
   setShowLayoutManager: (show: boolean) => void;
+
+  // Shared with me actions
+  initSharedWithMe: (entries: SharedWithMeEntry[]) => void;
+  addSharedWithMe: (entry: {
+    sourceShareId: string;
+    name: string;
+    authorName?: string;
+    permission: SharePermission;
+    preview?: LayoutPreview;
+  }) => SharedWithMeEntry;
+  updateSharedWithMe: (id: string, updates: Partial<SharedWithMeEntry>) => void;
+  removeSharedWithMe: (id: string) => void;
+  getSharedWithMeByShareId: (shareId: string) => SharedWithMeEntry | undefined;
+  markShareAccessed: (shareId: string) => void;
 }
 
 export const useLibraryStore = create<LibraryState>()(
   immer((set, get) => ({
-    library: createDefaultLibrary(generateUUID(), 'Untitled layout'),
+    library: createDefaultLibrary(generateLayoutId(), 'Untitled layout'),
     isLoaded: false,
     showLayoutManager: false,
+
+    // Shared with me state
+    sharedWithMe: [],
+    sharedWithMeLoaded: false,
 
     initLibrary: (library) => {
       set({ library, isLoaded: true });
@@ -203,12 +226,6 @@ export const useLibraryStore = create<LibraryState>()(
       });
     },
 
-    setLastShareExpiration: (days) => {
-      set(state => {
-        state.library.settings.lastShareExpiration = days;
-      });
-    },
-
     setCloudShare: (layoutId, share) => {
       set(state => {
         const entry = state.library.entries.find(e => e.id === layoutId);
@@ -216,6 +233,8 @@ export const useLibraryStore = create<LibraryState>()(
           entry.cloudShare = share;
         }
       });
+      // Persist library immediately so cloudShare survives refresh
+      saveLibrary(get().library);
     },
 
     clearCloudShare: (layoutId) => {
@@ -225,10 +244,95 @@ export const useLibraryStore = create<LibraryState>()(
           entry.cloudShare = undefined;
         }
       });
+      // Persist library immediately
+      saveLibrary(get().library);
     },
 
     setShowLayoutManager: (show) => {
       set({ showLayoutManager: show });
+    },
+
+    // === Shared with me actions ===
+
+    initSharedWithMe: (entries) => {
+      set({ sharedWithMe: entries, sharedWithMeLoaded: true });
+    },
+
+    addSharedWithMe: (entry) => {
+      const newEntry: SharedWithMeEntry = {
+        id: generateUUID(),
+        sourceShareId: entry.sourceShareId,
+        name: entry.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
+        authorName: entry.authorName,
+        permission: entry.permission,
+        addedAt: Date.now(),
+        lastAccessedAt: Date.now(),
+        preview: entry.preview,
+        status: 'available',
+      };
+
+      set(state => {
+        state.sharedWithMe.push(newEntry);
+      });
+
+      // Persist to localStorage
+      saveSharedWithMe(get().sharedWithMe);
+
+      return newEntry;
+    },
+
+    updateSharedWithMe: (id, updates) => {
+      set(state => {
+        const entry = state.sharedWithMe.find(e => e.id === id);
+        if (entry) {
+          if (updates.name !== undefined) {
+            entry.name = updates.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
+          }
+          if (updates.authorName !== undefined) {
+            entry.authorName = updates.authorName;
+          }
+          if (updates.permission !== undefined) {
+            entry.permission = updates.permission;
+          }
+          if (updates.lastAccessedAt !== undefined) {
+            entry.lastAccessedAt = updates.lastAccessedAt;
+          }
+          if (updates.preview !== undefined) {
+            entry.preview = updates.preview;
+          }
+          if (updates.status !== undefined) {
+            entry.status = updates.status;
+          }
+        }
+      });
+
+      // Persist to localStorage
+      saveSharedWithMe(get().sharedWithMe);
+    },
+
+    removeSharedWithMe: (id) => {
+      set(state => {
+        state.sharedWithMe = state.sharedWithMe.filter(e => e.id !== id);
+      });
+
+      // Persist to localStorage
+      saveSharedWithMe(get().sharedWithMe);
+    },
+
+    getSharedWithMeByShareId: (shareId) => {
+      return get().sharedWithMe.find(e => e.sourceShareId === shareId);
+    },
+
+    markShareAccessed: (shareId) => {
+      set(state => {
+        const entry = state.sharedWithMe.find(e => e.sourceShareId === shareId);
+        if (entry) {
+          entry.lastAccessedAt = Date.now();
+        }
+      });
+
+      // Persist to localStorage
+      saveSharedWithMe(get().sharedWithMe);
     },
   }))
 );

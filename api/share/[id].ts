@@ -1,14 +1,15 @@
 import { put, del, head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from '../lib/rateLimit.js';
-import { validateShareLayout, validateExpiration } from '../lib/validation.js';
+import { validateShareLayout } from '../lib/validation.js';
 import { filterLayoutContent } from '../lib/contentFilter.js';
 
 interface ShareMetadata {
   deleteTokenHash: string;
-  expiresAt: string;
-  expiresInDays: number;
   createdAt: string;
+  lastUpdatedAt: string;
+  lastAccessedAt: string;
+  permission: 'view' | 'edit';
   authorName?: string;
   reportCount: number;
 }
@@ -90,7 +91,7 @@ async function handleGet(
     const blobInfo = await head(blobPath).catch(() => null);
     if (!blobInfo) {
       return res.status(404).json({
-        error: 'Share not found or has expired',
+        error: 'Share not found',
         code: 'NOT_FOUND',
       });
     }
@@ -99,31 +100,35 @@ async function handleGet(
     const response = await fetch(blobInfo.url);
     if (!response.ok) {
       return res.status(404).json({
-        error: 'Share not found or has expired',
+        error: 'Share not found',
         code: 'NOT_FOUND',
       });
     }
 
     const shareData: ShareData = await response.json();
 
-    // Check expiration
-    const expiresAt = new Date(shareData.metadata.expiresAt);
-    if (expiresAt < new Date()) {
-      // Expired - delete and return 404
-      await del(blobPath).catch(() => {});
-      return res.status(404).json({
-        error: 'Share has expired',
-        code: 'EXPIRED',
-      });
-    }
+    // Update lastAccessedAt timestamp (fire-and-forget, don't block response)
+    const now = new Date().toISOString();
+    const updatedData: ShareData = {
+      ...shareData,
+      metadata: {
+        ...shareData.metadata,
+        lastAccessedAt: now,
+      },
+    };
+    put(blobPath, JSON.stringify(updatedData), {
+      access: 'public',
+      contentType: 'application/json',
+      addRandomSuffix: false,
+    }).catch(() => {});
 
     // Return layout with public metadata (exclude sensitive fields)
     return res.status(200).json({
       layout: shareData.layout,
       metadata: {
-        expiresAt: shareData.metadata.expiresAt,
-        expiresInDays: shareData.metadata.expiresInDays,
         createdAt: shareData.metadata.createdAt,
+        lastUpdatedAt: shareData.metadata.lastUpdatedAt,
+        permission: shareData.metadata.permission ?? 'view', // Default for old shares
         authorName: shareData.metadata.authorName,
       },
     });
@@ -158,19 +163,12 @@ async function handlePut(
       });
     }
 
-    const { layout, expiresInDays, deleteToken } = req.body || {};
+    const { layout, permission, deleteToken } = req.body || {};
 
     if (!deleteToken) {
       return res.status(401).json({
         error: 'Delete token required for updates',
         code: 'UNAUTHORIZED',
-      });
-    }
-
-    if (!layout) {
-      return res.status(400).json({
-        error: 'Missing layout data',
-        code: 'VALIDATION_ERROR',
       });
     }
 
@@ -202,16 +200,45 @@ async function handlePut(
       });
     }
 
-    // Validate new expiration if provided
-    const newExpiration = expiresInDays ?? existingData.metadata.expiresInDays;
-    if (!validateExpiration(newExpiration)) {
+    // Validate permission if provided
+    const newPermission = permission ?? existingData.metadata.permission ?? 'view';
+    if (newPermission !== 'view' && newPermission !== 'edit') {
       return res.status(400).json({
-        error: 'Invalid expiration. Must be 30, 60, 90, or 365 days.',
-        code: 'INVALID_EXPIRATION',
+        error: 'Invalid permission. Must be "view" or "edit".',
+        code: 'VALIDATION_ERROR',
       });
     }
 
-    // Validate new layout
+    const now = new Date().toISOString();
+
+    // Permission-only update (no layout provided)
+    if (!layout) {
+      const updatedData: ShareData = {
+        ...existingData,
+        metadata: {
+          ...existingData.metadata,
+          permission: newPermission,
+          lastUpdatedAt: now,
+        },
+      };
+
+      await put(blobPath, JSON.stringify(updatedData), {
+        access: 'public',
+        contentType: 'application/json',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+      });
+
+      const shareUrl = `${getBaseUrl(req)}/l/${id}`;
+
+      return res.status(200).json({
+        id,
+        url: shareUrl,
+        permission: newPermission,
+      });
+    }
+
+    // Full update with layout
     const layoutJson = JSON.stringify(layout);
     const validationResult = validateShareLayout(layout, layoutJson.length);
 
@@ -231,33 +258,29 @@ async function handlePut(
       });
     }
 
-    // Calculate new expiration
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + newExpiration * 24 * 60 * 60 * 1000);
-
     // Update share data (preserve original deleteTokenHash and createdAt)
     const updatedData: ShareData = {
       layout: validationResult.layout,
       metadata: {
         ...existingData.metadata,
-        expiresAt: expiresAt.toISOString(),
-        expiresInDays: newExpiration,
+        permission: newPermission,
+        lastUpdatedAt: now,
       },
     };
 
-    // Delete old blob and create new one (put with same path overwrites)
     await put(blobPath, JSON.stringify(updatedData), {
       access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
 
-    const shareUrl = `${getBaseUrl(req)}/s/${id}`;
+    const shareUrl = `${getBaseUrl(req)}/l/${id}`;
 
     return res.status(200).json({
       id,
       url: shareUrl,
-      expiresAt: expiresAt.toISOString(),
+      permission: newPermission,
     });
   } catch (error) {
     console.error('Share update error:', error);

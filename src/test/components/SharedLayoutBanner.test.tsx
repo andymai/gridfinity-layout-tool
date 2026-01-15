@@ -35,6 +35,9 @@ vi.mock('../../storage', () => ({
 // Mock uuid
 vi.mock('../../utils/uuid', () => ({
   generateUUID: vi.fn(() => 'new-uuid-123'),
+  generateLayoutId: vi.fn(() => 'newid123test'),
+  isValidLayoutId: vi.fn(() => true),
+  isLegacyUUID: vi.fn(() => false),
 }));
 
 const mockLayout: Layout = {
@@ -208,7 +211,8 @@ describe('SharedLayoutBanner', () => {
       fireEvent.click(screen.getByRole('button', { name: /Save to My Layouts/i }));
 
       const entries = useLibraryStore.getState().library.entries;
-      const newEntry = entries.find(e => e.id === 'new-uuid-123');
+      // New layouts use generateLayoutId which returns 'newid123test'
+      const newEntry = entries.find(e => e.id === 'newid123test');
       expect(newEntry?.name).toBe('Original Name (imported)');
     });
 

@@ -14,12 +14,13 @@ const mockReset = vi.fn();
 
 let mockCloudShareState = {
   status: 'idle' as 'idle' | 'sharing' | 'updating' | 'deleting' | 'success' | 'error',
-  result: null as { url: string; deleteToken: string; expiresAt: Date } | null,
+  result: null as { url: string; deleteToken: string; permission: 'view' | 'edit' } | null,
   error: null as { message: string } | null,
-  existingShare: null as { id: string; sharedAt: number; expiresAt: number; deleteToken: string } | null,
+  existingShare: null as { id: string; sharedAt: number; permission: 'view' | 'edit'; deleteToken: string } | null,
   hasActiveShare: false,
   share: mockShare,
   update: mockUpdate,
+  updatePermission: vi.fn(),
   remove: mockRemove,
   copyUrl: mockCopyUrl,
   copyDeleteToken: mockCopyDeleteToken,
@@ -53,6 +54,7 @@ describe('CloudShareTab', () => {
       hasActiveShare: false,
       share: mockShare,
       update: mockUpdate,
+      updatePermission: vi.fn(),
       remove: mockRemove,
       copyUrl: mockCopyUrl,
       copyDeleteToken: mockCopyDeleteToken,
@@ -83,25 +85,24 @@ describe('CloudShareTab', () => {
       expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
     });
 
-    it('displays expiration selector', () => {
+    it('displays permission selector', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByLabelText(/Expires after/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Permission/)).toBeInTheDocument();
     });
 
-    it('calls share on button click', async () => {
+    it('calls share with view permission by default', async () => {
       render(<CloudShareTab {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Share to Cloud'));
 
-      expect(mockShare).toHaveBeenCalledWith(30); // default expiration
+      expect(mockShare).toHaveBeenCalledWith('view');
     });
 
-    it('displays all expiration options', () => {
+    it('displays permission options', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      const select = screen.getByLabelText(/Expires after/) as HTMLSelectElement;
-      // EXPIRATION_OPTIONS has multiple entries
-      expect(select.options.length).toBeGreaterThan(1);
+      const select = screen.getByLabelText(/Permission/) as HTMLSelectElement;
+      expect(select.options.length).toBe(2); // view and edit
     });
 
     it('displays note about snapshots', () => {
@@ -117,7 +118,7 @@ describe('CloudShareTab', () => {
       mockCloudShareState.existingShare = {
         id: 'share-123',
         sharedAt: Date.now() - 86400000, // 1 day ago
-        expiresAt: Date.now() + 86400000 * 29, // 29 days from now
+        permission: 'view',
         deleteToken: 'delete-token-abc',
       };
     });
@@ -125,12 +126,12 @@ describe('CloudShareTab', () => {
     it('displays share info', () => {
       render(<CloudShareTab {...defaultProps} />);
       expect(screen.getByText(/Shared on/)).toBeInTheDocument();
-      expect(screen.getByText(/Expires:/)).toBeInTheDocument();
+      expect(screen.getByText(/can view/i)).toBeInTheDocument();
     });
 
-    it('displays days remaining', () => {
+    it('displays permission info', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText(/days remaining/)).toBeInTheDocument();
+      expect(screen.getByText(/can view/i)).toBeInTheDocument();
     });
 
     it('has Copy Link button', () => {
@@ -156,17 +157,9 @@ describe('CloudShareTab', () => {
       expect(mockCopyUrl).toHaveBeenCalled();
     });
 
-    it('has Update button', () => {
+    it('has permission select dropdown', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText('Update')).toBeInTheDocument();
-    });
-
-    it('calls update when Update clicked', () => {
-      render(<CloudShareTab {...defaultProps} />);
-
-      fireEvent.click(screen.getByText('Update'));
-
-      expect(mockUpdate).toHaveBeenCalled();
+      expect(screen.getByLabelText(/Update permission/)).toBeInTheDocument();
     });
 
     it('has Delete share link', () => {
@@ -202,9 +195,9 @@ describe('CloudShareTab', () => {
       expect(screen.queryByText(/Are you sure/)).not.toBeInTheDocument();
     });
 
-    it('displays update note', () => {
+    it('displays permission change note', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText(/Updating will replace/)).toBeInTheDocument();
+      expect(screen.getByText(/Changing permission/)).toBeInTheDocument();
     });
   });
 
@@ -245,7 +238,7 @@ describe('CloudShareTab', () => {
       mockCloudShareState.result = {
         url: 'https://example.com/s/abc123',
         deleteToken: 'delete-token-xyz',
-        expiresAt: new Date(Date.now() + 86400000 * 30),
+        permission: 'view',
       };
     });
 
@@ -273,9 +266,9 @@ describe('CloudShareTab', () => {
       expect(mockCopyUrl).toHaveBeenCalled();
     });
 
-    it('displays expiration date', () => {
+    it('displays permission info', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText(/Expires:/)).toBeInTheDocument();
+      expect(screen.getByText(/can view/i)).toBeInTheDocument();
     });
 
     it('has Done button', () => {
@@ -361,7 +354,7 @@ describe('CloudShareTab', () => {
       mockCloudShareState.result = {
         url: 'https://example.com/s/abc123',
         deleteToken: 'delete-token-xyz',
-        expiresAt: new Date(Date.now() + 86400000 * 30),
+        permission: 'view',
       };
     });
 
@@ -419,28 +412,28 @@ describe('CloudShareTab', () => {
     });
   });
 
-  describe('expiration settings', () => {
-    it('has expiration select element', () => {
+  describe('permission settings', () => {
+    it('has permission select element', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      const select = screen.getByLabelText(/Expires after/) as HTMLSelectElement;
+      const select = screen.getByLabelText(/Permission/) as HTMLSelectElement;
       expect(select).toBeInTheDocument();
-      // Should have multiple options
-      expect(select.options.length).toBeGreaterThan(0);
+      // Should have view and edit options
+      expect(select.options.length).toBe(2);
     });
 
-    it('defaults to 30 days', () => {
+    it('defaults to view permission', () => {
       render(<CloudShareTab {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Share to Cloud'));
-      expect(mockShare).toHaveBeenCalledWith(30);
+      expect(mockShare).toHaveBeenCalledWith('view');
     });
   });
 
   describe('accessibility', () => {
-    it('has accessible label for expiration select', () => {
+    it('has accessible label for permission select', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByLabelText(/Expires after/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Permission/)).toBeInTheDocument();
     });
 
     it('URL input has select behavior on click', () => {
@@ -448,7 +441,7 @@ describe('CloudShareTab', () => {
       mockCloudShareState.result = {
         url: 'https://example.com/s/abc123',
         deleteToken: 'delete-token-xyz',
-        expiresAt: new Date(Date.now() + 86400000 * 30),
+        permission: 'view',
       };
 
       render(<CloudShareTab {...defaultProps} />);
@@ -465,7 +458,7 @@ describe('CloudShareTab', () => {
       mockCloudShareState.existingShare = {
         id: 'share-123',
         sharedAt: Date.now() - 86400000,
-        expiresAt: Date.now() + 86400000 * 29,
+        permission: 'view',
         deleteToken: 'delete-token-abc',
       };
     });

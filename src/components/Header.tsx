@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '../store';
-import { useResponsive } from '../hooks';
+import { useResponsive, useFeatureFlag } from '../hooks';
 import { CONSTRAINTS } from '../constants';
 import { LayoutManagerModal } from './modals/LayoutManagerModal';
 import { PrintModal } from './modals/PrintModal';
+import { ShareButton } from './ShareButton';
 import type { SaveStatus } from '../hooks/useAutoSave';
 
 interface HeaderProps {
@@ -14,6 +15,7 @@ interface HeaderProps {
 
 export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   const { isTablet } = useResponsive();
+  const isCollabEnabled = useFeatureFlag('collaborative_editing');
 
   const { layout, setName } = useLayoutStore(
     useShallow((state) => ({
@@ -215,7 +217,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         )}
 
         {/* Undo/Redo buttons */}
-        <div className="flex items-center mr-2 border-r border-stroke-subtle pr-2">
+        <div className="flex items-center">
           <button
             onClick={undo}
             disabled={!canUndo}
@@ -239,6 +241,14 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             </svg>
           </button>
         </div>
+
+        {/* Share button with dividers (only visible when collaborative_editing flag is enabled) */}
+        {isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
+        <ShareButton />
+        {isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
+
+        {/* Divider before external links (only when collab is disabled) */}
+        {!isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
 
         {/* Reddit feedback link */}
         <a

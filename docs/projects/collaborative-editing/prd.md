@@ -1,6 +1,6 @@
 # Product Requirements Document: Collaborative Layout Editing
 
-**Document Version**: 1.0
+**Document Version**: 2.0
 **Last Updated**: January 2026
 **Status**: Draft
 **Author**: Product Team
@@ -20,7 +20,7 @@
 9. [Edge Cases & Error Handling](#9-edge-cases--error-handling)
 10. [Out of Scope](#10-out-of-scope)
 11. [Dependencies & Risks](#11-dependencies--risks)
-12. [Release Plan](#12-release-plan)
+12. [Feature Flag](#12-feature-flag)
 13. [Appendix](#13-appendix)
 
 ---
@@ -29,7 +29,7 @@
 
 ### 1.1 Executive Summary
 
-Add real-time collaborative editing to the Gridfinity Layout Tool, enabling multiple users to work on the same drawer layout simultaneously. Users will see each other's cursors, edits will sync in real-time, and the experience will match the quality of established collaborative tools like Figma and Miro.
+Add real-time collaborative editing to the Gridfinity Layout Tool, enabling multiple users to work on the same drawer layout simultaneously. Users will see each other's cursors, edits will sync in real-time, and the experience will match the quality of established collaborative tools like Google Docs and Figma.
 
 ### 1.2 Background
 
@@ -41,11 +41,16 @@ These sharing methods are one-way—recipients can view and copy, but cannot col
 
 ### 1.3 Proposal
 
-Introduce a new "Collaborate" feature that creates a real-time editing session. The session owner can choose to make it:
-- **View-only**: Participants can see the layout and cursors but cannot edit
-- **Editable**: Participants can draw, move, resize, and modify bins alongside the owner
+Extend the existing cloud sharing model with **permission levels**, following Google Docs' sharing paradigm:
 
-This is a trust-based system—anyone with the link can join without authentication.
+- **View-only** (current behavior): Recipients can view and import a copy
+- **Can edit** (new): Recipients can edit the layout in real-time with the owner
+
+Key design decisions:
+- **One URL per layout**: `/s/{shareId}` for both viewing and editing—permission is server-side
+- **Persistent collaboration**: No session expiration—collaboration persists as long as the layout exists
+- **Cloud-first**: Collaborative layouts live on the server; local copy becomes a linked reference
+- **Trust-based**: Anyone with the link can make changes when editing is enabled (no authentication required)
 
 ---
 
@@ -78,7 +83,7 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 |------|-------------|----------|
 | **G1** | Enable seamless real-time co-editing of layouts | P0 |
 | **G2** | Provide visual presence awareness (cursors, activity) | P0 |
-| **G3** | Support both view-only and edit collaboration modes | P0 |
+| **G3** | Support both view-only and edit permission levels | P0 |
 | **G4** | Maintain single-user experience quality in multi-user mode | P1 |
 | **G5** | Work reliably across desktop, tablet, and mobile | P1 |
 
@@ -86,17 +91,16 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 
 | Metric | Target | Measurement Method |
 |--------|--------|-------------------|
-| **Adoption** | 10% of active users try collaboration within 3 months | Analytics: session creation events |
-| **Engagement** | Average 2+ participants per session | Analytics: participant count |
-| **Session Duration** | Average session > 5 minutes | Analytics: session lifetime |
-| **Reliability** | < 1% of sessions experience sync errors | Error tracking |
+| **Adoption** | 10% of active users enable collaboration within 3 months | Analytics: collaboration enabled events |
+| **Engagement** | Average 2+ participants per collaborative layout | Analytics: participant count |
+| **Duration** | Average collaborative session > 5 minutes | Analytics: connection duration |
+| **Reliability** | < 1% of connections experience sync errors | Error tracking |
 | **Latency** | Cursor updates visible within 100ms | Performance monitoring |
 | **Satisfaction** | > 80% positive feedback in survey | In-app feedback prompt |
 
 ### 3.3 Non-Goals
 
 - User accounts or authentication (trust-based only)
-- Persistent collaboration (sessions expire after 24 hours)
 - Commenting or annotation system
 - Version history or branching
 - Fine-grained permissions (per-layer, per-category)
@@ -110,7 +114,7 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 #### **Alex - The Household Organizer**
 - **Background**: Planning a garage workshop with their partner
 - **Goal**: Design drawer layouts together, each at their own computer
-- **Behavior**: Creates layout, shares link, makes changes while discussing
+- **Behavior**: Creates layout, shares edit link, makes changes while discussing
 - **Needs**: See partner's cursor, real-time updates, simple sharing
 - **Quote**: "We can finally plan this together instead of taking turns!"
 
@@ -133,7 +137,7 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 #### **Casey - The Remote Helper**
 - **Background**: Helping elderly parent organize craft supplies
 - **Goal**: Guide parent through layout design remotely
-- **Behavior**: Joins parent's session, makes edits while on video call
+- **Behavior**: Joins parent's layout, makes edits while on video call
 - **Needs**: Works alongside screen share, intuitive for non-tech users
 
 #### **Riley - The Workshop Instructor**
@@ -146,59 +150,59 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 
 ## 5. User Stories
 
-### 5.1 Session Creation
+### 5.1 Enabling Collaboration
 
-#### US-1.1: Create Editable Session
+#### US-1.1: Enable Editing for Others
 **As** a layout owner
-**I want to** create a collaborative session where others can edit
-**So that** we can design the layout together
+**I want to** allow others to edit my layout
+**So that** we can design together
 
 **Acceptance Criteria:**
-- [ ] "Collaborate" button visible in share menu
-- [ ] Can select "Anyone can edit" permission
-- [ ] Session URL generated and copied to clipboard
-- [ ] Session URL format: `/collab/{sessionId}`
-- [ ] Owner remains in session after creation
-- [ ] Session expires after 24 hours of inactivity
+- [ ] Share panel shows permission selector: "Anyone with the link can **view**" vs "**edit**"
+- [ ] Selecting "edit" uploads layout to cloud if not already shared
+- [ ] Local layout becomes a linked reference to cloud version
+- [ ] URL stays the same (`/s/{id}`)—permission is stored server-side
+- [ ] Owner can change permission level at any time
 
-#### US-1.2: Create View-Only Session
+#### US-1.2: Keep Layout View-Only
 **As** a layout owner
-**I want to** create a session where others can only view
-**So that** I can present or get feedback without risk of changes
+**I want to** share my layout as view-only
+**So that** others can see but not modify it
 
 **Acceptance Criteria:**
-- [ ] Can select "View only" permission
+- [ ] Default permission is "view" (current behavior)
+- [ ] Same `/s/{id}` URL for both view and edit modes
 - [ ] Viewers see layout and cursors but cannot edit
 - [ ] Edit controls disabled/hidden for viewers
 - [ ] Viewers can still pan, zoom, toggle 3D preview locally
 
-#### US-1.3: Share Session Link
-**As** a session owner
-**I want to** easily share the session link
+#### US-1.3: Share Link
+**As** a layout owner
+**I want to** easily share the collaboration link
 **So that** others can join quickly
 
 **Acceptance Criteria:**
-- [ ] Link auto-copied on session creation
-- [ ] "Copy Link" button always visible in session
-- [ ] Link is short and readable
+- [ ] "Copy link" button in share panel
+- [ ] Link auto-copied when enabling collaboration
 - [ ] Toast confirms link copied
+- [ ] Same link works whether permission is view or edit
 
-### 5.2 Joining Sessions
+### 5.2 Joining Collaboration
 
 #### US-2.1: Join via Link
-**As** a potential participant
-**I want to** join a session by clicking a link
+**As** a potential collaborator
+**I want to** join by clicking a link
 **So that** I can start collaborating immediately
 
 **Acceptance Criteria:**
-- [ ] Clicking link opens app directly in session
+- [ ] Clicking link opens app directly with layout loaded
 - [ ] No sign-up or authentication required
 - [ ] Loading state shown while connecting
-- [ ] Error shown if session doesn't exist or expired
+- [ ] Error shown if layout doesn't exist
 - [ ] Participant assigned default name ("Guest 1", "Guest 2", etc.)
 
 #### US-2.2: Join with Custom Name
-**As** a participant
+**As** a collaborator
 **I want to** set my display name when joining
 **So that** others can identify me
 
@@ -206,24 +210,24 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 - [ ] Optional name prompt on join (can skip)
 - [ ] Name appears next to cursor
 - [ ] Name shown in participant list
-- [ ] Name persisted for session duration
-- [ ] URL parameter support: `/collab/{id}?name=Alex`
+- [ ] Name persisted for browser session
+- [ ] URL parameter support: `/s/{id}?name=Alex`
 
-#### US-2.3: Handle Invalid Session
+#### US-2.3: Handle Invalid Link
 **As** a user clicking an old/invalid link
 **I want to** understand why I can't join
 **So that** I know what to do next
 
 **Acceptance Criteria:**
-- [ ] "Session not found" for invalid IDs
-- [ ] "Session expired" for expired sessions
-- [ ] Option to create new layout or go home
+- [ ] "Layout not found" for invalid IDs
+- [ ] Option to go home or create new layout
 - [ ] No cryptic error messages
+- [ ] Redirect to home with toast message
 
 ### 5.3 Presence Awareness
 
 #### US-3.1: See Other Cursors
-**As** a session participant
+**As** a collaborator
 **I want to** see where other participants' cursors are
 **So that** I know what they're looking at
 
@@ -234,9 +238,9 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 - [ ] Cursor visible when over grid area
 - [ ] Cursor fades when participant is idle (> 5 seconds)
 
-#### US-3.2: See Who's in Session
-**As** a session participant
-**I want to** see a list of all participants
+#### US-3.2: See Who's Connected
+**As** a collaborator
+**I want to** see a list of all connected participants
 **So that** I know who I'm working with
 
 **Acceptance Criteria:**
@@ -247,7 +251,7 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 - [ ] Owner indicated (crown icon or "Host" label)
 
 #### US-3.3: See Others' Actions
-**As** a session participant
+**As** a collaborator
 **I want to** see what actions others are taking
 **So that** I don't interfere with their work
 
@@ -308,7 +312,7 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 ### 5.5 Local Preferences
 
 #### US-5.1: Independent Zoom/Pan
-**As** a participant
+**As** a collaborator
 **I want to** zoom and pan independently
 **So that** I can focus on my area of interest
 
@@ -319,7 +323,7 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 - [ ] Remote cursors render at correct grid position regardless of zoom
 
 #### US-5.2: Independent Layer View
-**As** a participant
+**As** a collaborator
 **I want to** view different layers independently
 **So that** I can focus on specific layers
 
@@ -330,7 +334,7 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 - [ ] Selection is local (selecting bin doesn't select for others)
 
 #### US-5.3: Independent 3D Preview
-**As** a participant
+**As** a collaborator
 **I want to** toggle 3D preview independently
 **So that** I can use my preferred view
 
@@ -340,47 +344,48 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 - [ ] Layer view mode is local
 - [ ] Preview reflects synced layout state
 
-### 5.6 Session Management
+### 5.6 Permission Management
 
-#### US-6.1: End Session (Owner)
-**As** a session owner
-**I want to** end the session when we're done
-**So that** the link stops working
-
-**Acceptance Criteria:**
-- [ ] "End Session" button for owner only
-- [ ] Confirmation dialog before ending
-- [ ] All participants notified and disconnected
-- [ ] Layout saved to owner's library
-- [ ] Session URL becomes invalid
-
-#### US-6.2: Leave Session (Participant)
-**As** a participant
-**I want to** leave the session
-**So that** I can exit without affecting others
+#### US-6.1: Change Permission Level
+**As** a layout owner
+**I want to** change between view-only and editable
+**So that** I can control who can modify my layout
 
 **Acceptance Criteria:**
-- [ ] "Leave Session" button for non-owners
-- [ ] Other participants notified
-- [ ] Can rejoin with same link if session still active
-- [ ] Option to save copy before leaving
+- [ ] Toggle in share panel to switch permission
+- [ ] Change takes effect immediately for all connected users
+- [ ] View-only users see edit controls disabled
+- [ ] Toast notification when permission changes
+- [ ] URL stays the same—only server-side permission changes
+
+#### US-6.2: Disable Collaboration
+**As** a layout owner
+**I want to** stop sharing my layout entirely
+**So that** I can work privately again
+
+**Acceptance Criteria:**
+- [ ] "Stop sharing" option in share panel
+- [ ] All connected participants disconnected
+- [ ] Participants prompted to save a copy
+- [ ] Layout returns to local-only storage
+- [ ] Share link becomes invalid
 
 #### US-6.3: Save Copy of Layout
-**As** a participant
+**As** a collaborator
 **I want to** save a copy of the layout to my library
-**So that** I can keep the design after the session
+**So that** I can keep the design
 
 **Acceptance Criteria:**
 - [ ] "Save Copy" button available for all participants
 - [ ] Saves current state to local library
-- [ ] Saved as new layout with attribution
-- [ ] Does not affect session for others
+- [ ] Saved as new layout (not linked to original)
+- [ ] Does not affect collaboration for others
 - [ ] Works in both view-only and edit modes
 
 ### 5.7 Error Handling
 
 #### US-7.1: Handle Disconnection
-**As** a participant
+**As** a collaborator
 **I want to** gracefully handle network issues
 **So that** I don't lose my work
 
@@ -406,16 +411,16 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 
 ## 6. Functional Requirements
 
-### 6.1 Session Lifecycle
+### 6.1 Sharing Model
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| FR-1.1 | System shall create collaborative sessions with unique 16-character IDs | P0 |
-| FR-1.2 | Sessions shall support two permission modes: `read` and `edit` | P0 |
-| FR-1.3 | Sessions shall expire after 24 hours of creation | P0 |
-| FR-1.4 | Sessions shall end when owner disconnects for > 5 minutes | P1 |
-| FR-1.5 | System shall support up to 20 simultaneous participants per session | P1 |
-| FR-1.6 | Owner shall be able to manually end session at any time | P0 |
+| FR-1.1 | System shall support two permission levels: `view` and `edit` | P0 |
+| FR-1.2 | Permission level shall be changeable by owner at any time | P0 |
+| FR-1.3 | Same share URL (`/s/{id}`) shall work for both permission levels | P0 |
+| FR-1.4 | Permission shall be stored server-side, not reflected in URL | P0 |
+| FR-1.5 | Collaborative layouts shall be stored on server (cloud-only) | P0 |
+| FR-1.6 | Local layout shall become linked reference when collaboration enabled | P1 |
 
 ### 6.2 Real-Time Sync
 
@@ -423,7 +428,7 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 |----|-------------|----------|
 | FR-2.1 | Layout changes shall propagate to all participants within 200ms | P0 |
 | FR-2.2 | Cursor positions shall update at minimum 20fps (50ms intervals) | P0 |
-| FR-2.3 | System shall use version numbers to detect and resolve conflicts | P0 |
+| FR-2.3 | System shall use Liveblocks for real-time synchronization | P0 |
 | FR-2.4 | Clients shall apply optimistic updates with server confirmation | P1 |
 | FR-2.5 | System shall perform full state sync on reconnection | P0 |
 | FR-2.6 | Operations shall be validated server-side before broadcast | P0 |
@@ -453,7 +458,7 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| FR-5.1 | Layout shall be saved to owner's library on session end | P0 |
+| FR-5.1 | Layout shall persist on server until owner deletes share | P0 |
 | FR-5.2 | Server shall validate all operations against current state | P0 |
 | FR-5.3 | Invalid operations shall be rejected with error message | P0 |
 | FR-5.4 | System shall prevent operations on deleted entities | P0 |
@@ -469,24 +474,24 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 |----|-------------|--------|
 | NFR-1.1 | Cursor update latency | < 100ms (95th percentile) |
 | NFR-1.2 | Operation sync latency | < 200ms (95th percentile) |
-| NFR-1.3 | Initial session load time | < 2 seconds |
+| NFR-1.3 | Initial connection time | < 2 seconds |
 | NFR-1.4 | Memory usage per participant | < 50MB additional |
-| NFR-1.5 | CPU usage during active session | < 10% additional |
+| NFR-1.5 | CPU usage during active collaboration | < 10% additional |
 
 ### 7.2 Scalability
 
 | ID | Requirement | Target |
 |----|-------------|--------|
-| NFR-2.1 | Concurrent sessions | 10,000+ |
-| NFR-2.2 | Participants per session | 20 (soft limit), 50 (hard limit) |
-| NFR-2.3 | Operations per second per session | 100+ |
-| NFR-2.4 | Cursor updates per second per session | 400+ (20 users × 20fps) |
+| NFR-2.1 | Concurrent collaborative layouts | 10,000+ |
+| NFR-2.2 | Participants per layout | 20 (soft limit), 50 (hard limit) |
+| NFR-2.3 | Operations per second per layout | 100+ |
+| NFR-2.4 | Cursor updates per second per layout | 400+ (20 users × 20fps) |
 
 ### 7.3 Reliability
 
 | ID | Requirement | Target |
 |----|-------------|--------|
-| NFR-3.1 | Session availability | 99.9% uptime |
+| NFR-3.1 | Service availability | 99.9% uptime |
 | NFR-3.2 | Data loss rate | 0% (no operation loss) |
 | NFR-3.3 | Reconnection success rate | > 95% within 30 seconds |
 | NFR-3.4 | Graceful degradation | Offline mode preserves local state |
@@ -504,10 +509,10 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 
 | ID | Requirement | Target |
 |----|-------------|--------|
-| NFR-5.1 | Session ID entropy | Cryptographically random, 96+ bits |
+| NFR-5.1 | Share ID entropy | Cryptographically random, 96+ bits |
 | NFR-5.2 | Rate limiting | 100 operations/min per connection |
 | NFR-5.3 | Content validation | Same limits as cloud share (500KB, 2500 bins) |
-| NFR-5.4 | No sensitive data exposure | Session IDs only, no auth tokens |
+| NFR-5.4 | No sensitive data exposure | Share IDs only, no auth tokens |
 
 ---
 
@@ -515,32 +520,39 @@ Real-time collaboration is an expected feature in modern design tools. Adding it
 
 ### 8.1 Entry Points
 
-#### Starting Collaboration (Owner)
+#### Enabling Collaboration (Owner)
 
 ```
-Layout open → Click "Share" → Click "Collaborate" tab
+Layout open → Click "Share" → Share panel opens
                                     ↓
-                           ┌─────────────────────────────┐
-                           │   Start Collaboration       │
-                           ├─────────────────────────────┤
-                           │  Who can edit?              │
-                           │  ○ Anyone with link         │
-                           │  ○ View only                │
-                           │                             │
-                           │  [Start Session]            │
-                           └─────────────────────────────┘
-                                    ↓
-                           Session created, URL copied
-                           Banner: "Collaboration active"
+                           ┌─────────────────────────────────────┐
+                           │   Share this layout                 │
+                           ├─────────────────────────────────────┤
+                           │                                     │
+                           │  Anyone with the link can:          │
+                           │                                     │
+                           │  [View ▼]                           │
+                           │    ├─ View (default)                │
+                           │    └─ Edit                          │
+                           │                                     │
+                           │  ┌─────────────────────────────────┐│
+                           │  │ https://gridfinity.app/s/abc123 ││
+                           │  └─────────────────────────────────┘│
+                           │                                     │
+                           │  [Copy link]                        │
+                           │                                     │
+                           └─────────────────────────────────────┘
 ```
 
-#### Joining (Participant)
+URL stays the same regardless of permission level.
+
+#### Joining (Collaborator)
 
 ```
-Click link → /collab/{sessionId}
+Click link → /s/{shareId}
                     ↓
             ┌─────────────────────────────┐
-            │   Joining session...        │
+            │   Joining...                │
             │   [Loading spinner]         │
             └─────────────────────────────┘
                     ↓
@@ -550,25 +562,24 @@ Click link → /collab/{sessionId}
 
 ### 8.2 Collaboration UI Elements
 
-#### Header Bar (During Session)
+#### Header Bar (During Collaboration)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ 🔗 Collaborating          [👤 👤 👤 +2]  [Copy Link] [End Session ▼] │
+│ Layout Name          [● Collaborating] [👤 👤 👤 +2] [Share] [Menu]  │
 └──────────────────────────────────────────────────────────────────────┘
-     ↑                           ↑              ↑            ↑
- Session indicator        Participant      Share link    Owner menu
-                          avatars
+     ↑                        ↑                ↑
+ Layout name          Status indicator   Participant avatars
 ```
 
-#### Presence Bar Details
+#### Participant List Details
 
 ```
 Expanded participant list:
 ┌─────────────────────┐
-│ In this session (5) │
+│ Collaborators (5)   │
 ├─────────────────────┤
-│ 🟢 Alex (you) 👑    │  ← Owner
+│ 🟢 Alex (host)  👑  │  ← Owner
 │ 🔵 Jordan           │
 │ 🟣 Sam              │
 │ 🟡 Guest 4          │
@@ -594,22 +605,27 @@ Interaction preview (when dragging):
         └ ─ ─ ─ ─ ┘     preview
 ```
 
-#### Session Banner
+#### Collaboration Banner
 
 ```
-View-only mode:
+Edit mode (owner):
 ┌──────────────────────────────────────────────────────────────────────┐
-│ 👁 Viewing Alex's layout • You're in view-only mode   [Save Copy]   │
+│ ✏️ Collaborating with 3 others                           [Copy Link] │
 └──────────────────────────────────────────────────────────────────────┘
 
-Edit mode:
+Edit mode (participant):
 ┌──────────────────────────────────────────────────────────────────────┐
-│ ✏️ Collaborating on "Workshop Drawer" with 3 others   [Copy Link]   │
+│ ✏️ Editing Alex's layout with 2 others                   [Save Copy] │
+└──────────────────────────────────────────────────────────────────────┘
+
+View-only mode:
+┌──────────────────────────────────────────────────────────────────────┐
+│ 👁 Viewing Alex's layout (view-only)                     [Save Copy] │
 └──────────────────────────────────────────────────────────────────────┘
 
 Disconnected:
 ┌──────────────────────────────────────────────────────────────────────┐
-│ ⚠️ Connection lost • Reconnecting...                [Save Copy]     │
+│ ⚠️ Connection lost • Reconnecting...                     [Save Copy] │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -626,33 +642,30 @@ On mobile devices:
 
 | State | Visual Indicator |
 |-------|------------------|
-| Connected, idle | Green dot in header, no banner |
+| Connected, idle | Green dot in header |
 | Connected, collaborators active | Visible cursors on grid |
 | Reconnecting | Yellow banner, pulsing indicator |
 | Disconnected (> 30s) | Red banner with save option |
 | View-only mode | Lock icon on edit controls, banner |
-| Session ended | Modal with options (save, home) |
 
 ### 8.5 Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl/Cmd + Shift + C` | Copy collaboration link |
-| `Escape` (in session) | Leave session (with confirmation) |
+| `Ctrl/Cmd + Shift + C` | Copy share link |
 
 ---
 
 ## 9. Edge Cases & Error Handling
 
-### 9.1 Session Edge Cases
+### 9.1 Connection Edge Cases
 
 | Scenario | Behavior |
 |----------|----------|
-| Owner closes browser tab | Session persists for 5 minutes, then ends |
-| Owner's network drops | Session continues, owner can rejoin |
-| Last participant leaves | Session ends, layout saved to owner's library |
-| 21st participant tries to join | "Session full" error, suggest view-only |
-| Session expires during use | Warning at 23 hours, auto-end at 24 hours |
+| Owner closes browser tab | Collaboration continues, layout persists on server |
+| Owner's network drops | Other participants can continue, owner can rejoin |
+| Last participant leaves | Layout persists on server, owner can share again |
+| 21st participant tries to join | "Layout is busy" message, suggest trying later |
 
 ### 9.2 Editing Edge Cases
 
@@ -669,19 +682,25 @@ On mobile devices:
 | Scenario | Behavior |
 |----------|----------|
 | Participant has slow network (>500ms) | Cursor interpolation hides lag |
-| Operation arrives out of order | Server reorders by version |
+| Operation arrives out of order | Liveblocks handles ordering |
 | Client misses operations | Detects gap, requests full sync |
-| WebSocket fails to connect | Fallback to polling (degraded) |
 | Rate limit exceeded | Operations queued, warning shown |
 
-### 9.4 Error Messages
+### 9.4 Permission Edge Cases
+
+| Scenario | Behavior |
+|----------|----------|
+| Owner changes view→edit while users connected | All users gain edit ability immediately |
+| Owner changes edit→view while user dragging | Drag cancelled, controls disabled |
+| Owner stops sharing while users connected | All users disconnected, prompted to save copy |
+
+### 9.5 Error Messages
 
 | Error | User-Facing Message |
 |-------|---------------------|
-| Session not found | "This collaboration session doesn't exist. It may have ended or the link is incorrect." |
-| Session expired | "This session has expired. Sessions last 24 hours. Ask the host to start a new one." |
-| Session full | "This session is full (20 people). Try again later or ask the host to share a view-only link." |
-| Permission denied | "You don't have permission to edit. This is a view-only session." |
+| Layout not found | "This layout doesn't exist or has been deleted." |
+| Layout busy | "This layout has too many editors right now. Try again later." |
+| Permission denied | "You can only view this layout. Ask the owner for edit access." |
 | Operation rejected | "Your change couldn't be applied. Someone else may have edited the same area." |
 | Connection failed | "Unable to connect. Check your internet connection and try again." |
 
@@ -696,7 +715,7 @@ The following features are explicitly **not** included in this version:
 | Feature | Reason | Future Version |
 |---------|--------|----------------|
 | User accounts/auth | Increases complexity, trust-based MVP | v2 |
-| Session passwords | Adds friction, trust-based MVP | v2 |
+| Password-protected layouts | Adds friction, trust-based MVP | v2 |
 | Participant approval (lobby) | Owner overhead, trust-based MVP | v2 |
 | Comments/annotations | Different feature set | v2 |
 | Version history | Significant infrastructure | v2+ |
@@ -708,7 +727,6 @@ The following features are explicitly **not** included in this version:
 
 | Feature | Reason |
 |---------|--------|
-| Persistent collaboration rooms | Sessions are ephemeral by design |
 | Offline-first collaboration | Requires CRDT, significant complexity |
 | Cross-layout collaboration | Scope creep, single layout focus |
 | Real-time chat | Use external tools (Discord, etc.) |
@@ -721,82 +739,53 @@ The following features are explicitly **not** included in this version:
 
 | Dependency | Purpose | Risk Level |
 |------------|---------|------------|
-| PartyKit (or similar) | Real-time WebSocket infrastructure | Medium |
+| Liveblocks | Real-time sync, presence, storage | Medium |
 | Vercel deployment | Hosting, edge functions | Low (existing) |
-| Redis (Vercel KV) | Session metadata, rate limiting | Low (existing) |
+| Vercel Blob | Layout storage | Low (existing) |
 
 ### 11.2 Risks & Mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-| PartyKit unavailability | Low | High | Abstract WebSocket layer, have backup plan |
+| Liveblocks unavailability | Low | High | Abstract sync layer, have backup plan |
 | High latency degrades UX | Medium | Medium | Optimistic updates, cursor interpolation |
-| Abuse (spam sessions) | Medium | Low | Rate limiting, session expiration |
-| Conflicts cause data loss | Low | High | Server validation, version tracking |
+| Abuse (spam edits) | Medium | Low | Rate limiting, owner can disable editing |
+| Conflicts cause data loss | Low | High | Server validation, Liveblocks conflict resolution |
 | Mobile performance issues | Medium | Medium | Reduce cursor update frequency on mobile |
 | Bandwidth costs | Medium | Medium | Throttle cursors, compress operations |
 
 ### 11.3 Open Questions
 
-| Question | Owner | Status |
-|----------|-------|--------|
-| PartyKit vs. Cloudflare Durable Objects? | Engineering | Pending evaluation |
-| Should sessions persist if owner disconnects? | Product | Decided: 5 min grace period |
-| Default permission (edit vs. view-only)? | Product | Decided: edit (simpler) |
-| Max participants (20 vs. 50)? | Engineering | Decided: 20 soft, 50 hard |
+| Question | Status |
+|----------|--------|
+| Liveblocks pricing at scale? | Evaluate during beta |
+| Max participants (20 vs. 50)? | Start with 20, increase if needed |
 
 ---
 
-## 12. Release Plan
+## 12. Feature Flag
 
-### 12.1 Phased Rollout
+### 12.1 Labs Toggle
 
-#### Phase 1: Internal Alpha (Week 1-2)
-- Core WebSocket connection
-- Basic operation sync
-- Manual testing with team
+Collaboration is gated behind a Labs feature flag, allowing users to opt-in:
 
-#### Phase 2: Closed Beta (Week 3-4)
-- Cursor presence
-- Participant list
-- Error handling
-- Invite 50 beta testers
+**Location**: Settings > Labs > "Collaborative Editing"
 
-#### Phase 3: Public Beta (Week 5-6)
-- Polish UI/UX
-- Mobile optimization
-- Performance tuning
-- Feature flag rollout (10% → 50% → 100%)
+**Behavior when enabled**:
+- Share panel shows permission selector (view/edit)
+- `/s/{id}` URLs check permission and enable collaboration if set to "edit"
+- Presence UI components load
 
-#### Phase 4: General Availability (Week 7+)
-- Remove feature flag
-- Marketing announcement
-- Documentation update
+**Behavior when disabled**:
+- Share panel works as today (view-only links)
+- `/s/{id}` URLs always load in view-only mode
+- No presence UI
 
-### 12.2 Feature Flags
+### 12.2 Rollout Plan
 
-```typescript
-// Feature flag configuration
-{
-  "collab_enabled": {
-    "default": false,
-    "rollout": [
-      { "percentage": 10, "date": "2026-02-01" },
-      { "percentage": 50, "date": "2026-02-08" },
-      { "percentage": 100, "date": "2026-02-15" }
-    ]
-  }
-}
-```
-
-### 12.3 Success Criteria for GA
-
-- [ ] < 1% error rate in operations
-- [ ] < 200ms p95 sync latency
-- [ ] > 80% beta tester satisfaction
-- [ ] No critical bugs open
-- [ ] Documentation complete
-- [ ] Analytics instrumented
+1. **Internal testing**: Team members enable via Labs
+2. **Beta**: Announce in community, gather feedback
+3. **GA**: Enable by default, remove Labs toggle
 
 ---
 
@@ -806,25 +795,24 @@ The following features are explicitly **not** included in this version:
 
 | Term | Definition |
 |------|------------|
-| **Session** | A collaborative editing instance with a unique URL |
-| **Owner** | The user who created the session (has extra controls) |
-| **Participant** | Any user in a session, including the owner |
+| **Owner** | The user who created and controls the layout |
+| **Collaborator** | Any user connected to a collaborative layout |
+| **Participant** | Same as collaborator |
 | **Presence** | Real-time awareness of other users (cursors, activity) |
-| **Operation** | An atomic change to the layout (add bin, move bin, etc.) |
-| **Optimistic update** | Applying changes locally before server confirmation |
-| **LWW (Last-Write-Wins)** | Conflict resolution where newest change wins |
+| **Permission level** | Whether collaborators can view or edit |
+| **Linked layout** | Local layout that references a cloud-stored original |
 
 ### 13.2 Related Documents
 
-- [Systems Architecture: Collaborative Editing](../architecture/collaborative-editing.md)
-- [API Design: Collaboration Endpoints](./api-collaboration.md) (TBD)
-- [Analytics Events: Collaboration](./analytics-collaboration.md) (TBD)
+- [Systems Architecture: Collaborative Editing](./architecture.md)
+- [Design Requirements: Collaborative Editing](./design-requirements.md)
 
 ### 13.3 Revision History
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 1.0 | 2026-01 | Product Team | Initial draft |
+| 1.0 | 2026-01 | Product Team | Initial draft with session-based model |
+| 2.0 | 2026-01 | Product Team | Revised to Google Docs-style sharing model |
 
 ---
 

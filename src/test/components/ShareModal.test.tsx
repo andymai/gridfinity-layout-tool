@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ShareModal } from '../../components/modals/ShareModal';
-import { useLayoutStore, useLibraryStore, useUIStore } from '../../store';
+import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '../../store';
 import { resetAllStores } from '../testUtils';
 import * as storage from '../../storage';
 import * as analytics from '../../utils/analytics';
@@ -57,6 +57,15 @@ describe('ShareModal', () => {
         activeLayoutId: 'layout-123',
         settings: {},
         entries: [],
+      },
+    });
+
+    // Ensure collaborative_editing is disabled (Cloud tab visible in ShareModal)
+    useLabsStore.setState({
+      preferences: {
+        enabledFeatures: { collaborative_editing: false },
+        lastModified: new Date().toISOString(),
+        version: 1,
       },
     });
   });

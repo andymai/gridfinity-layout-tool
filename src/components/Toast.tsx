@@ -137,9 +137,22 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
         <Icon />
       </div>
 
-      {/* Message */}
-      <div className="flex-1 text-sm leading-relaxed whitespace-pre-wrap pr-1">
-        {toast.message}
+      {/* Message and action */}
+      <div className="flex-1 min-w-0">
+        <div className="text-sm leading-relaxed whitespace-pre-wrap pr-1">
+          {toast.message}
+        </div>
+        {toast.action && (
+          <button
+            onClick={() => {
+              toast.action?.onClick();
+              handleDismiss();
+            }}
+            className="mt-2 text-sm font-medium underline underline-offset-2 opacity-90 hover:opacity-100 transition-opacity"
+          >
+            {toast.action.label}
+          </button>
+        )}
       </div>
 
       {/* Close button */}

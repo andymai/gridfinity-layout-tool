@@ -101,7 +101,7 @@ describe('useCloudShare', () => {
         id: 'share123',
         deleteToken: 'token456',
         sharedAt: Date.now(),
-        expiresAt: Date.now() + 86400000, // Future
+        permission: 'view',
       };
 
       useLibraryStore.setState({
@@ -114,21 +114,21 @@ describe('useCloudShare', () => {
       expect(result.current.hasActiveShare).toBe(true);
     });
 
-    it('reports no active share when expired', () => {
-      const expiredShare: CloudShareInfo = {
+    it('hasActiveShare is true when existingShare exists', () => {
+      const existingShare: CloudShareInfo = {
         id: 'share123',
         deleteToken: 'token456',
         sharedAt: Date.now() - 86400000,
-        expiresAt: Date.now() - 1000, // Past
+        permission: 'edit',
       };
 
       useLibraryStore.setState({
-        library: createTestLibrary(expiredShare),
+        library: createTestLibrary(existingShare),
       });
 
       const { result } = renderHook(() => useCloudShare());
 
-      expect(result.current.hasActiveShare).toBe(false);
+      expect(result.current.hasActiveShare).toBe(true);
     });
   });
 
@@ -138,7 +138,7 @@ describe('useCloudShare', () => {
         id: 'new-share-id',
         url: 'https://example.com/s/new-share-id',
         deleteToken: 'new-delete-token',
-        expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+        permission: 'view' as const,
       };
 
       vi.mocked(shareApi.createShare).mockResolvedValue(ok(mockData));
@@ -147,7 +147,7 @@ describe('useCloudShare', () => {
 
       let success: boolean | undefined;
       await act(async () => {
-        success = await result.current.share(30);
+        success = await result.current.share('view');
       });
 
       expect(success).toBe(true);
@@ -172,7 +172,7 @@ describe('useCloudShare', () => {
 
       let success: boolean | undefined;
       await act(async () => {
-        success = await result.current.share(30);
+        success = await result.current.share('view');
       });
 
       expect(success).toBe(false);
@@ -191,7 +191,7 @@ describe('useCloudShare', () => {
 
       let success: boolean | undefined;
       await act(async () => {
-        success = await result.current.share(30);
+        success = await result.current.share('view');
       });
 
       expect(success).toBe(false);
@@ -211,7 +211,7 @@ describe('useCloudShare', () => {
       const { result } = renderHook(() => useCloudShare());
 
       act(() => {
-        result.current.share(30);
+        result.current.share('view');
       });
 
       expect(result.current.status).toBe('sharing');
@@ -221,7 +221,7 @@ describe('useCloudShare', () => {
         id: 'id',
         url: 'url',
         deleteToken: 'token',
-        expiresAt: new Date().toISOString(),
+        permission: 'view',
       }));
 
       await waitFor(() => {
@@ -236,7 +236,7 @@ describe('useCloudShare', () => {
         id: 'existing-id',
         deleteToken: 'existing-token',
         sharedAt: Date.now(),
-        expiresAt: Date.now() + 86400000,
+        permission: 'view',
       };
 
       useLibraryStore.setState({
@@ -246,7 +246,7 @@ describe('useCloudShare', () => {
       const mockData = {
         id: 'existing-id',
         url: 'https://example.com/s/existing-id',
-        expiresAt: new Date(Date.now() + 60 * 86400000).toISOString(),
+        permission: 'edit' as const,
       };
 
       vi.mocked(shareApi.updateShare).mockResolvedValue(ok(mockData));
@@ -255,7 +255,7 @@ describe('useCloudShare', () => {
 
       let success: boolean | undefined;
       await act(async () => {
-        success = await result.current.update(60);
+        success = await result.current.update('edit');
       });
 
       expect(success).toBe(true);
@@ -264,7 +264,7 @@ describe('useCloudShare', () => {
         'existing-id',
         'existing-token',
         expect.anything(),
-        60
+        'edit'
       );
     });
 
@@ -273,7 +273,7 @@ describe('useCloudShare', () => {
 
       let success: boolean | undefined;
       await act(async () => {
-        success = await result.current.update(60);
+        success = await result.current.update('edit');
       });
 
       expect(success).toBe(false);
@@ -285,7 +285,7 @@ describe('useCloudShare', () => {
         id: 'deleted-on-server',
         deleteToken: 'token',
         sharedAt: Date.now(),
-        expiresAt: Date.now() + 86400000,
+        permission: 'view',
       };
 
       useLibraryStore.setState({
@@ -302,7 +302,7 @@ describe('useCloudShare', () => {
       const { result } = renderHook(() => useCloudShare());
 
       await act(async () => {
-        await result.current.update(60);
+        await result.current.update('edit');
       });
 
       expect(clearCloudShareSpy).toHaveBeenCalledWith(TEST_LAYOUT_ID);
@@ -315,7 +315,7 @@ describe('useCloudShare', () => {
         id: 'to-delete',
         deleteToken: 'delete-token',
         sharedAt: Date.now(),
-        expiresAt: Date.now() + 86400000,
+        permission: 'view',
       };
 
       useLibraryStore.setState({
@@ -360,7 +360,7 @@ describe('useCloudShare', () => {
         id: 'already-deleted',
         deleteToken: 'token',
         sharedAt: Date.now(),
-        expiresAt: Date.now() + 86400000,
+        permission: 'view',
       };
 
       useLibraryStore.setState({
@@ -391,17 +391,23 @@ describe('useCloudShare', () => {
     it('copies URL from result', async () => {
       const mockData = {
         id: 'share-id',
-        url: 'https://example.com/s/share-id',
+        url: 'https://example.com/l/share-id',
         deleteToken: 'token',
-        expiresAt: new Date().toISOString(),
+        permission: 'view' as const,
       };
 
       vi.mocked(shareApi.createShare).mockResolvedValue(ok(mockData));
 
+      // Mock window.location.origin for copyUrl
+      Object.defineProperty(window, 'location', {
+        value: { origin: 'https://example.com' },
+        writable: true,
+      });
+
       const { result } = renderHook(() => useCloudShare());
 
       await act(async () => {
-        await result.current.share(30);
+        await result.current.share('view');
       });
 
       let success: boolean | undefined;
@@ -410,8 +416,10 @@ describe('useCloudShare', () => {
       });
 
       expect(success).toBe(true);
-      expect(storage.copyToClipboard).toHaveBeenCalledWith(
-        'https://example.com/s/share-id'
+      // copyUrl generates URLs with /l/{shareId}/{slug} format
+      // Uses layout.name from store (default 'Untitled Layout' -> 'untitled-layout')
+      expect(storage.copyToClipboard).toHaveBeenLastCalledWith(
+        'https://example.com/l/share-id/untitled-layout'
       );
     });
 
@@ -420,7 +428,7 @@ describe('useCloudShare', () => {
         id: 'existing-share',
         deleteToken: 'token',
         sharedAt: Date.now(),
-        expiresAt: Date.now() + 86400000,
+        permission: 'view',
       };
 
       useLibraryStore.setState({
@@ -441,8 +449,10 @@ describe('useCloudShare', () => {
       });
 
       expect(success).toBe(true);
+      // copyUrl now generates URLs with /l/{shareId}/{slug} format
+      // Uses layout.name from store (default 'Untitled Layout' -> 'untitled-layout')
       expect(storage.copyToClipboard).toHaveBeenCalledWith(
-        'https://example.com/s/existing-share'
+        'https://example.com/l/existing-share/untitled-layout'
       );
     });
 
@@ -464,7 +474,7 @@ describe('useCloudShare', () => {
         id: 'share-id',
         deleteToken: 'secret-token-123',
         sharedAt: Date.now(),
-        expiresAt: Date.now() + 86400000,
+        permission: 'view',
       };
 
       useLibraryStore.setState({
@@ -507,7 +517,7 @@ describe('useCloudShare', () => {
       const { result } = renderHook(() => useCloudShare());
 
       await act(async () => {
-        await result.current.share(30);
+        await result.current.share('view');
       });
 
       expect(result.current.status).toBe('error');
@@ -534,7 +544,7 @@ describe('useCloudShare', () => {
       const { result, unmount } = renderHook(() => useCloudShare());
 
       act(() => {
-        result.current.share(30);
+        result.current.share('view');
       });
 
       // Unmount before promise resolves
@@ -545,7 +555,7 @@ describe('useCloudShare', () => {
         id: 'id',
         url: 'url',
         deleteToken: 'token',
-        expiresAt: new Date().toISOString(),
+        permission: 'view',
       }));
 
       // Should not throw or cause issues

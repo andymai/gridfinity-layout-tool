@@ -239,13 +239,37 @@ export interface LayoutPreview {
 }
 
 /**
+ * Permission level for collaborative editing.
+ */
+export type SharePermission = 'view' | 'edit';
+
+/**
  * Cloud share metadata stored locally for re-sharing.
+ * Shares are permanent (no expiration) as of collaborative editing update.
  */
 export interface CloudShareInfo {
-  id: string;           // 12-char share ID
-  deleteToken: string;  // 32-char hex token (stored locally only)
-  sharedAt: number;     // Unix timestamp
-  expiresAt: number;    // Unix timestamp
+  id: string;              // 12-char share ID
+  deleteToken: string;     // 32-char hex token (stored locally only)
+  sharedAt: number;        // Unix timestamp
+  permission: SharePermission; // Permission level ('view' or 'edit')
+  lastUpdatedAt?: number;  // Unix timestamp of last server update
+  // Note: expiresAt removed - shares are now permanent
+}
+
+/**
+ * Entry for a layout shared with you by another user.
+ * Unlike LayoutEntry, this references a cloud share you don't own.
+ */
+export interface SharedWithMeEntry {
+  id: string;                    // Local UUID for this entry
+  sourceShareId: string;         // Cloud share ID (12-char)
+  name: string;                  // Layout name at time of access
+  authorName?: string;           // Author who shared it
+  permission: SharePermission;   // 'view' | 'edit'
+  addedAt: number;               // When first accessed
+  lastAccessedAt: number;        // When last accessed
+  preview?: LayoutPreview;       // Cached preview
+  status: 'available' | 'deleted' | 'unknown';
 }
 
 /**
@@ -267,11 +291,6 @@ export interface LayoutEntry {
 }
 
 /**
- * Valid expiration options for cloud shares (in days).
- */
-export type ShareExpiration = 30 | 60 | 90 | 365;
-
-/**
  * The layout library index stored in localStorage.
  * Individual layouts are stored separately by their ID.
  */
@@ -280,7 +299,6 @@ export interface LayoutLibrary {
   activeLayoutId: string;        // Currently active layout ID
   settings: {
     authorName?: string;         // Default author name for new layouts
-    lastShareExpiration?: ShareExpiration; // Remember last-used expiration
   };
   entries: LayoutEntry[];        // All layout entries (metadata only)
 }

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
+import { useMutations } from '../../context/MutationsContext';
 import { CONSTRAINTS, STAGING_ID } from '../../constants';
 import { getDisplayLayers } from '../../utils/collision';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
@@ -14,15 +15,8 @@ export function LayerPanel() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
 
-  const { layout, addLayer, updateLayer, deleteLayer, reorderLayers } = useLayoutStore(
-    useShallow((state) => ({
-      layout: state.layout,
-      addLayer: state.addLayer,
-      updateLayer: state.updateLayer,
-      deleteLayer: state.deleteLayer,
-      reorderLayers: state.reorderLayers,
-    }))
-  );
+  const layout = useLayoutStore(state => state.layout);
+  const { addLayer, updateLayer, deleteLayer, reorderLayers } = useMutations();
 
   const { activeLayerId, setActiveLayer } = useUIStore(
     useShallow((state) => ({
