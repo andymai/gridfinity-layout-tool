@@ -217,5 +217,27 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
            coord.y >= 0 && coord.y < drawer.depth;
   }, [drawer.width, drawer.depth]);
 
-  return { getGridCoords, clampCoords, isInBounds, cellSize, halfBinMode, visualCellSize };
+  /**
+   * Get normalized pixel coordinates (0-1 range) for cursor tracking.
+   * Unlike getGridCoords which snaps to grid cells, this preserves
+   * sub-pixel precision for smooth cursor movement.
+   *
+   * @returns Normalized coordinates where (0,0) is top-left and (1,1) is bottom-right
+   */
+  const getPixelCoords = useCallback((clientX: number, clientY: number): {
+    nx: number;
+    ny: number;
+    isInGrid: boolean;
+  } | null => {
+    if (!gridRef.current) return null;
+
+    const rect = gridRef.current.getBoundingClientRect();
+    const nx = (clientX - rect.left) / rect.width;
+    const ny = (clientY - rect.top) / rect.height;
+    const isInGrid = nx >= 0 && nx <= 1 && ny >= 0 && ny <= 1;
+
+    return { nx, ny, isInGrid };
+  }, [gridRef]);
+
+  return { getGridCoords, getPixelCoords, clampCoords, isInBounds, cellSize, halfBinMode, visualCellSize };
 }
