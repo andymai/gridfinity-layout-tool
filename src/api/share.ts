@@ -5,7 +5,7 @@
  * that integrates with the centralized error system.
  */
 
-import type { Layout, ShareExpiration } from '../types';
+import type { Layout, SharePermission } from '../types';
 import type { Result, ApiError } from '../result';
 import {
   ok,
@@ -20,7 +20,6 @@ import {
   apiSizeLimit,
   apiBinLimit,
   apiExpired,
-  apiInvalidExpiration,
 } from '../result';
 
 // API Response types
@@ -28,13 +27,13 @@ export interface ShareResponse {
   id: string;
   url: string;
   deleteToken: string;
-  expiresAt: string;
+  permission: SharePermission;
 }
 
 export interface ShareMetadata {
-  expiresAt: string;
-  expiresInDays: number;
   createdAt: string;
+  lastUpdatedAt?: string;
+  permission: SharePermission;
   authorName?: string;
 }
 
@@ -43,11 +42,17 @@ export interface FetchShareResponse {
   metadata: ShareMetadata;
 }
 
+export interface UpdateShareResponse {
+  id: string;
+  url: string;
+  permission: SharePermission;
+}
+
 export interface ShareErrorResponse {
   error: string;
   code: 'VALIDATION_ERROR' | 'SIZE_LIMIT' | 'BIN_LIMIT' | 'RATE_LIMITED' |
-        'CONTENT_BLOCKED' | 'NETWORK_ERROR' | 'NOT_FOUND' | 'EXPIRED' |
-        'UNAUTHORIZED' | 'INVALID_EXPIRATION';
+        'CONTENT_BLOCKED' | 'NETWORK_ERROR' | 'NOT_FOUND' | 'UNAUTHORIZED' |
+        'EXPIRED' | 'INVALID_PERMISSION';
   retryAfter?: number;
 }
 
@@ -67,15 +72,16 @@ function mapShareErrorToApiError(error: ShareErrorResponse): ApiError {
       return apiContentBlocked();
     case 'NOT_FOUND':
       return apiNotFound();
-    case 'EXPIRED':
-      return apiExpired();
     case 'UNAUTHORIZED':
       return apiUnauthorized();
-    case 'INVALID_EXPIRATION':
-      return apiInvalidExpiration();
     case 'NETWORK_ERROR':
       return apiNetworkError();
     case 'VALIDATION_ERROR':
+      return apiValidationError();
+    case 'EXPIRED':
+      return apiExpired();
+    case 'INVALID_PERMISSION':
+      // Invalid permission errors are treated as validation errors
       return apiValidationError();
     default:
       return apiServerError();
@@ -85,9 +91,14 @@ function mapShareErrorToApiError(error: ShareErrorResponse): ApiError {
 /**
  * Create a new cloud share.
  *
+ * @param layoutId - The layout's unique ID (used as the share ID for URL consistency)
+ * @param layout - The layout data to share
+ * @param permission - 'view' or 'edit'
+ * @param authorName - Optional author name to display
+ *
  * @example
  * ```ts
- * const result = await createShare(layout, 30);
+ * const result = await createShare(layoutId, layout, 'view');
  * if (isOk(result)) {
  *   console.log('Share URL:', result.value.url);
  * } else {
@@ -96,15 +107,16 @@ function mapShareErrorToApiError(error: ShareErrorResponse): ApiError {
  * ```
  */
 export async function createShare(
+  layoutId: string,
   layout: Layout,
-  expiresInDays: ShareExpiration,
+  permission: SharePermission = 'view',
   authorName?: string
 ): Promise<Result<ShareResponse, ApiError>> {
   try {
     const response = await fetch('/api/share', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ layout, expiresInDays, authorName }),
+      body: JSON.stringify({ layoutId, layout, permission, authorName }),
     });
 
     const data = await response.json();
@@ -120,19 +132,19 @@ export async function createShare(
 }
 
 /**
- * Update an existing cloud share.
+ * Update an existing cloud share with new layout data.
  */
 export async function updateShare(
   id: string,
   deleteToken: string,
   layout: Layout,
-  expiresInDays: ShareExpiration
-): Promise<Result<Omit<ShareResponse, 'deleteToken'>, ApiError>> {
+  permission?: SharePermission
+): Promise<Result<UpdateShareResponse, ApiError>> {
   try {
     const response = await fetch(`/api/share/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ layout, expiresInDays, deleteToken }),
+      body: JSON.stringify({ layout, permission, deleteToken }),
     });
 
     const data = await response.json();
@@ -141,7 +153,34 @@ export async function updateShare(
       return err(mapShareErrorToApiError(data as ShareErrorResponse));
     }
 
-    return ok(data);
+    return ok(data as UpdateShareResponse);
+  } catch (error) {
+    return err(apiNetworkError(error));
+  }
+}
+
+/**
+ * Update only the permission of an existing cloud share.
+ */
+export async function updatePermission(
+  id: string,
+  deleteToken: string,
+  permission: SharePermission
+): Promise<Result<UpdateShareResponse, ApiError>> {
+  try {
+    const response = await fetch(`/api/share/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ permission, deleteToken }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return err(mapShareErrorToApiError(data as ShareErrorResponse));
+    }
+
+    return ok(data as UpdateShareResponse);
   } catch (error) {
     return err(apiNetworkError(error));
   }

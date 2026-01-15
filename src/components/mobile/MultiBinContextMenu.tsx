@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../store';
+import { useMutations } from '../../context/MutationsContext';
 import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '../contextMenu';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { STAGING_ID } from '../../constants';
@@ -30,8 +31,7 @@ export function MultiBinContextMenu({ binIds, position, onClose, source }: Multi
 
   const { menuRef } = useContextMenu();
   const layout = useLayoutStore(state => state.layout);
-  const deleteBin = useLayoutStore(state => state.deleteBin);
-  const updateBin = useLayoutStore(state => state.updateBin);
+  const { deleteBin, updateBin } = useMutations();
   const setSelectedBins = useUIStore(state => state.setSelectedBins);
   const addToast = useToastStore(state => state.addToast);
   const { execute } = useUndoableAction();

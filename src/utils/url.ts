@@ -1,33 +1,62 @@
 /**
  * URL utilities for layout routing.
- * Handles hash-based routing for bookmarkable layout URLs.
  *
- * URL formats:
- * - #local/{id} - Direct link to a layout (only works on same device)
- * - #share={data} - Shared layout with embedded data (works anywhere)
+ * URL format: /l/{layoutId}/{slug}
+ * Example: /l/abc123xyz789/my-workshop-layout
+ *
+ * The layoutId is the canonical identifier (12-char alphanumeric).
+ * The slug is cosmetic for SEO/readability - mismatched slugs redirect
+ * to the canonical URL (like Stack Overflow).
+ *
+ * Legacy formats (backward compatible):
+ * - #local/{uuid} - Old local layout hash
+ * - #share={data} - URL-encoded shares (self-contained)
  */
 
-const LAYOUT_HASH_PREFIX = '#local/';
-const SHARE_HASH_PREFIX = '#share=';
+import { isValidLayoutId, isLegacyUUID } from './uuid';
+import { slugify } from './slug';
+
+// Legacy prefixes for backward compatibility
+const LEGACY_LOCAL_HASH_PREFIX = '#local/';
+const LEGACY_SHARE_HASH_PREFIX = '#share=';
+
+/** Layout URL prefix */
+const LAYOUT_PATH_PREFIX = '/l/';
 
 /**
- * Parse the current URL hash to extract a layout ID.
- * Returns null if no layout hash is present or if share hash takes precedence.
+ * Parse layout info from the current URL.
+ *
+ * Returns the layout ID and slug if present.
+ * Handles both new format (/l/{id}/{slug}) and legacy formats.
  */
-export function parseLayoutIdFromHash(): string | null {
+export function parseLayoutFromURL(): { layoutId: string; slug: string | null } | null {
+  const pathname = window.location.pathname;
   const hash = window.location.hash;
 
-  // Share links take precedence - they contain full layout data
-  if (hash.startsWith(SHARE_HASH_PREFIX)) {
-    return null;
+  // Check for legacy URL-encoded share (takes highest precedence)
+  if (hash.startsWith(LEGACY_SHARE_HASH_PREFIX)) {
+    return null; // Let SharedLayoutImporter handle this
   }
 
-  // Check for layout hash
-  if (hash.startsWith(LAYOUT_HASH_PREFIX)) {
-    const id = hash.slice(LAYOUT_HASH_PREFIX.length);
-    // Basic validation - must have some content
-    if (id && id.length > 0) {
-      return id;
+  // Check for new format: /l/{layoutId}/{slug} or /l/{layoutId}
+  const pathMatch = pathname.match(/^\/l\/([a-zA-Z0-9]{12})(?:\/(.*))?$/);
+  if (pathMatch) {
+    const [, layoutId, slug] = pathMatch;
+    return { layoutId, slug: slug || null };
+  }
+
+  // Check for legacy UUID format: /l/{uuid}/{slug} or /l/{uuid}
+  const uuidMatch = pathname.match(/^\/l\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})(?:\/(.*))?$/i);
+  if (uuidMatch) {
+    const [, layoutId, slug] = uuidMatch;
+    return { layoutId, slug: slug || null };
+  }
+
+  // Check for legacy local hash: #local/{id}
+  if (hash.startsWith(LEGACY_LOCAL_HASH_PREFIX)) {
+    const id = hash.slice(LEGACY_LOCAL_HASH_PREFIX.length);
+    if (id && (isValidLayoutId(id) || isLegacyUUID(id))) {
+      return { layoutId: id, slug: null };
     }
   }
 
@@ -35,37 +64,62 @@ export function parseLayoutIdFromHash(): string | null {
 }
 
 /**
- * Update the URL hash to point to a specific layout.
- * Uses replaceState to avoid polluting history on every auto-save.
+ * Update the URL to point to a specific layout.
+ *
+ * @param layoutId - The layout's canonical ID
+ * @param layoutName - The layout name (will be slugified)
+ * @param addToHistory - Whether to add to browser history (default: false)
  */
-export function setLayoutHash(layoutId: string, addToHistory = false): void {
-  const newHash = `${LAYOUT_HASH_PREFIX}${layoutId}`;
+export function setLayoutURL(layoutId: string, layoutName: string, addToHistory = false): void {
+  const slug = slugify(layoutName);
+  const newPath = `${LAYOUT_PATH_PREFIX}${layoutId}/${slug}`;
+
+  // Skip if URL is already correct
+  if (window.location.pathname === newPath) {
+    return;
+  }
 
   if (addToHistory) {
-    // Push to history - enables back/forward navigation
-    window.history.pushState({ layoutId }, '', newHash);
+    window.history.pushState({ layoutId, slug }, '', newPath);
   } else {
-    // Replace without adding to history
-    window.history.replaceState({ layoutId }, '', newHash);
+    window.history.replaceState({ layoutId, slug }, '', newPath);
   }
 }
 
 /**
- * Clear the layout hash from the URL.
- * Used when switching to a transient state like shared preview.
+ * Clear the layout URL (navigate to root).
+ * Used when entering a transient state like shared preview.
  */
-export function clearLayoutHash(): void {
-  // Remove hash entirely, keeping the rest of the URL
-  const url = window.location.pathname + window.location.search;
-  window.history.replaceState({}, '', url || '/');
+export function clearLayoutURL(): void {
+  if (window.location.pathname !== '/') {
+    window.history.replaceState({}, '', '/');
+  }
 }
 
 /**
- * Check if the current URL has a share hash.
- * Share links take precedence over layout routing.
+ * Check if the current slug matches the expected slug for a layout.
+ * Returns the canonical URL if redirect is needed, null if URL is correct
+ * or if not currently on a layout URL.
  */
-export function hasShareHash(): boolean {
-  return window.location.hash.startsWith(SHARE_HASH_PREFIX);
+export function getCanonicalRedirect(layoutId: string, layoutName: string): string | null {
+  const parsed = parseLayoutFromURL();
+
+  // Not on a layout URL - no redirect needed
+  if (!parsed) {
+    return null;
+  }
+
+  const currentSlug = parsed.slug;
+  const expectedSlug = slugify(layoutName);
+
+  // Redirect if:
+  // - No slug in URL (e.g., /l/abc123xyz789)
+  // - Wrong slug (e.g., /l/abc123xyz789/old-name)
+  if (currentSlug !== expectedSlug) {
+    return `${LAYOUT_PATH_PREFIX}${layoutId}/${expectedSlug}`;
+  }
+
+  return null;
 }
 
 /**
@@ -79,4 +133,50 @@ export function getLayoutIdFromHistoryState(state: unknown): string | null {
     }
   }
   return null;
+}
+
+/**
+ * Check if the current URL has a legacy URL-encoded share.
+ */
+export function hasLegacyShareHash(): boolean {
+  return window.location.hash.startsWith(LEGACY_SHARE_HASH_PREFIX);
+}
+
+// === Legacy API (Backward Compatibility) ===
+// These functions maintain compatibility with existing code during migration.
+
+/**
+ * @deprecated Use parseLayoutFromURL() instead.
+ */
+export function parseLayoutIdFromHash(): string | null {
+  const result = parseLayoutFromURL();
+  return result?.layoutId ?? null;
+}
+
+/**
+ * @deprecated Use setLayoutURL() instead.
+ */
+export function setLayoutHash(layoutId: string, addToHistory = false): void {
+  // During migration, this sets the new URL format
+  // Callers should update to use setLayoutURL with layout name
+  const newPath = `${LAYOUT_PATH_PREFIX}${layoutId}`;
+  if (addToHistory) {
+    window.history.pushState({ layoutId }, '', newPath);
+  } else {
+    window.history.replaceState({ layoutId }, '', newPath);
+  }
+}
+
+/**
+ * @deprecated Use clearLayoutURL() instead.
+ */
+export function clearLayoutHash(): void {
+  clearLayoutURL();
+}
+
+/**
+ * @deprecated Use hasLegacyShareHash() instead.
+ */
+export function hasShareHash(): boolean {
+  return hasLegacyShareHash();
 }

@@ -3,12 +3,10 @@
  * Handles creating, updating, and deleting cloud shares.
  */
 
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { useShallow } from 'zustand/shallow';
-import { useLibraryStore } from '../store/library';
+import { useState, useRef, useEffect } from 'react';
 import { useCloudShare } from '../hooks/useCloudShare';
-import { EXPIRATION_OPTIONS, formatShareDate, calculateDaysRemaining } from '../utils/cloudShare';
-import type { ShareExpiration } from '../types';
+import { formatShareDate } from '../utils/cloudShare';
+import type { SharePermission } from '../types';
 
 /**
  * Expandable section for the delete token (hidden by default).
@@ -80,15 +78,6 @@ function DeleteTokenSection({
   );
 }
 
-// Calculate days remaining from a timestamp - stable reference time to avoid render issues
-function useDaysRemaining(expiresAt: number | undefined): number {
-  const [now] = useState(() => Date.now());
-  return useMemo(() => {
-    if (!expiresAt) return 0;
-    return calculateDaysRemaining(expiresAt, now);
-  }, [expiresAt, now]);
-}
-
 interface CloudShareTabProps {
   layoutId: string;
   onClose: () => void;
@@ -96,10 +85,6 @@ interface CloudShareTabProps {
 }
 
 export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShareTabProps) {
-  const lastExpiration = useLibraryStore(
-    useShallow((s) => s.library.settings.lastShareExpiration)
-  );
-  const [expiresInDays, setExpiresInDays] = useState<ShareExpiration>(lastExpiration ?? 30);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
   const [tokenCopied, setTokenCopied] = useState(false);
@@ -112,12 +97,20 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
     existingShare,
     hasActiveShare,
     share,
-    update,
+    updatePermission,
     remove,
     copyUrl,
     copyDeleteToken,
     reset,
   } = useCloudShare(layoutId);
+
+  // Derive permission from existing share (controlled by parent state)
+  const permission: SharePermission = existingShare?.permission ?? 'view';
+  const setPermission = (newPermission: SharePermission) => {
+    if (existingShare && newPermission !== existingShare.permission) {
+      updatePermission(newPermission);
+    }
+  };
 
   // Auto-focus URL on success
   useEffect(() => {
@@ -142,11 +135,14 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
   }, [tokenCopied]);
 
   const handleShare = async () => {
-    await share(expiresInDays);
+    await share(permission);
   };
 
-  const handleUpdate = async () => {
-    await update(expiresInDays);
+  const handlePermissionChange = async (newPermission: SharePermission) => {
+    setPermission(newPermission);
+    if (hasActiveShare) {
+      await updatePermission(newPermission);
+    }
   };
 
   const handleDelete = async () => {
@@ -166,9 +162,6 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
     if (success) setTokenCopied(true);
   };
 
-  // Calculate days remaining using stable time reference
-  const daysRemaining = useDaysRemaining(existingShare?.expiresAt);
-
   // Idle state - no existing share
   if (status === 'idle' && !hasActiveShare) {
     return (
@@ -178,20 +171,17 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         </p>
 
         <div className="flex items-center gap-3">
-          <label htmlFor="expiration" className="text-sm text-content-secondary whitespace-nowrap">
-            Expires after:
+          <label htmlFor="permission" className="text-sm text-content-secondary whitespace-nowrap">
+            Permission:
           </label>
           <select
-            id="expiration"
-            value={expiresInDays}
-            onChange={(e) => setExpiresInDays(Number(e.target.value) as ShareExpiration)}
+            id="permission"
+            value={permission}
+            onChange={(e) => setPermission(e.target.value as SharePermission)}
             className="bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            {EXPIRATION_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
+            <option value="view">Anyone can view</option>
+            <option value="edit">Anyone can edit</option>
           </select>
         </div>
 
@@ -215,10 +205,9 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
             Shared on {formatShareDate(existingShare.sharedAt)}
           </div>
           <div className="text-sm text-content">
-            Expires: {formatShareDate(existingShare.expiresAt)}{' '}
-            <span className="text-content-tertiary">
-              ({daysRemaining} days remaining)
-            </span>
+            {existingShare.permission === 'edit'
+              ? 'Anyone with the link can edit'
+              : 'Anyone with the link can view'}
           </div>
         </div>
 
@@ -226,23 +215,15 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           <button onClick={handleCopyUrl} className="btn btn-primary flex-1">
             {urlCopied ? 'Copied!' : 'Copy Link'}
           </button>
-          <div className="relative">
-            <select
-              value={expiresInDays}
-              onChange={(e) => setExpiresInDays(Number(e.target.value) as ShareExpiration)}
-              className="btn btn-secondary appearance-none pr-8"
-              aria-label="Update expiration"
-            >
-              {EXPIRATION_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  Update ({opt.label})
-                </option>
-              ))}
-            </select>
-          </div>
-          <button onClick={handleUpdate} className="btn btn-secondary">
-            Update
-          </button>
+          <select
+            value={permission}
+            onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
+            className="btn btn-secondary"
+            aria-label="Update permission"
+          >
+            <option value="view">View only</option>
+            <option value="edit">Can edit</option>
+          </select>
         </div>
 
         <button
@@ -275,7 +256,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         )}
 
         <div className="text-xs text-content-tertiary border-t border-stroke-subtle pt-3 mt-3">
-          Updating will replace the shared version with your current layout. The URL stays the same.
+          Changing permission will update who can access your shared layout.
         </div>
       </div>
     );
@@ -347,7 +328,9 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         </div>
 
         <div className="text-sm text-content-secondary">
-          Expires: {result.expiresAt.toLocaleDateString()} ({expiresInDays} days)
+          {result.permission === 'edit'
+            ? 'Anyone with the link can edit'
+            : 'Anyone with the link can view'}
         </div>
 
         <DeleteTokenSection

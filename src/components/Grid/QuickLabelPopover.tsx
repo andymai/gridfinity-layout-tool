@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
+import { useMutations } from '../../context/MutationsContext';
 import { CONSTRAINTS } from '../../constants';
 
 /**
@@ -18,7 +19,7 @@ export function QuickLabelPopover() {
 function QuickLabelPopoverInner({ binId }: { binId: string }) {
   const hideQuickLabel = useUIStore(state => state.hideQuickLabel);
   const bins = useLayoutStore(state => state.layout.bins);
-  const updateBin = useLayoutStore(state => state.updateBin);
+  const { updateBin } = useMutations();
   const { execute } = useUndoableAction();
 
   const bin = bins.find(b => b.id === binId);

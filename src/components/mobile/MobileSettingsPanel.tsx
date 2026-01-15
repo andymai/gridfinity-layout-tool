@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore, useToastStore, useLabsStore } from '../../store';
+import { useMutations } from '../../context/MutationsContext';
 import { getFeature } from '../../labs/features';
 import { SparklesIcon, ChevronRightIcon } from '../labs/icons';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../../constants';
@@ -18,11 +19,7 @@ export function MobileSettingsPanel() {
   const [halfBinViolation, setHalfBinViolation] = useState<HalfBinConstraintViolation | null>(null);
 
   const layout = useLayoutStore(state => state.layout);
-  const setGridUnitMm = useLayoutStore(state => state.setGridUnitMm);
-  const setHeightUnitMm = useLayoutStore(state => state.setHeightUnitMm);
-  const setPrintBedSize = useLayoutStore(state => state.setPrintBedSize);
-  const updateDrawer = useLayoutStore(state => state.updateDrawer);
-  const updateBin = useLayoutStore(state => state.updateBin);
+  const { setGridUnitMm, setHeightUnitMm, setPrintBedSize, updateDrawer, updateBin } = useMutations();
 
   const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
   const { execute } = useUndoableAction();

@@ -1,6 +1,6 @@
 # Design Requirements: Collaborative Layout Editing
 
-**Document Version**: 1.0
+**Document Version**: 2.0
 **Last Updated**: January 2026
 **Status**: Draft
 **Related Docs**: [PRD](./prd.md) | [Architecture](./architecture.md)
@@ -33,7 +33,7 @@
 | **Unobtrusive** | Collaboration UI should enhance, not distract | Cursors fade when idle, minimal chrome |
 | **Immediate** | Actions feel instant, presence feels real-time | Optimistic updates, smooth cursor animation |
 | **Contextual** | Show information when and where it's needed | Cursor names on hover, contextual tooltips |
-| **Familiar** | Match conventions from Figma, Miro, Google Docs | Cursor shapes, participant avatars, banners |
+| **Familiar** | Match conventions from Google Docs, Figma | Permission selector, participant avatars |
 | **Consistent** | Collaboration elements match existing design system | Use existing color tokens, spacing scale |
 
 ### 1.2 Design Goals
@@ -107,7 +107,7 @@ Participant Color Palette:
 
 ### 3.1 Collaboration Header Bar
 
-The header bar updates to show collaboration status and participants.
+The header bar updates to show collaboration status and participants when connected.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -117,20 +117,20 @@ The header bar updates to show collaboration status and participants.
 
 #### 3.1.1 Collaboration Status Indicator
 
-**Location**: Left of participant avatars
+**Location**: Left of participant avatars (only visible when collaborating)
 **States**:
 
 | State | Icon | Text | Color |
 |-------|------|------|-------|
-| Active session | `●` (filled circle) | "Collaborating" | Green |
+| Connected (edit) | `●` (filled circle) | "Collaborating" | Green |
+| Connected (view) | `👁` (eye icon) | "Viewing" | Gray |
 | Reconnecting | `●` (pulsing) | "Reconnecting..." | Yellow |
-| View-only | `👁` (eye icon) | "Viewing" | Gray |
 
 **Specifications**:
 - Icon size: 8px diameter
 - Font: 13px, medium weight
 - Spacing: 6px gap between icon and text
-- Click action: Opens collaboration panel
+- Click action: Opens share panel
 
 #### 3.1.2 Participant Avatars
 
@@ -180,7 +180,7 @@ Mobile (<768px):
 
 ```
 ┌─────────────────────────────────┐
-│ In this session (7)            │
+│ Collaborators (7)               │
 ├─────────────────────────────────┤
 │ 🔵 ● Alex (you)          👑    │
 │ 🟣 ● Jordan                    │
@@ -190,7 +190,7 @@ Mobile (<768px):
 │ 🔴 ● Guest 6                   │
 │ 🟤 ● Guest 7                   │
 ├─────────────────────────────────┤
-│ [Copy invite link]             │
+│ [Copy link]                     │
 └─────────────────────────────────┘
 ```
 
@@ -217,13 +217,13 @@ Mobile (<768px):
 
 ### 3.2 Collaboration Banner
 
-Contextual banner shown below header during collaboration.
+Contextual banner shown below header when collaborating.
 
-#### 3.2.1 Active Session Banner (Owner)
+#### 3.2.1 Edit Mode Banner (Owner)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ ✏️  Collaborating on "Workshop Drawer" with 3 others    [Copy Link] [End ▼] │
+│ ✏️  Collaborating with 3 others                               [Copy Link]    │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -236,25 +236,32 @@ Contextual banner shown below header during collaboration.
 - Text: 14px, `--text-content`
 - Layout: Flexbox, space-between
 
-#### 3.2.2 View-Only Banner (Participant)
+#### 3.2.2 Edit Mode Banner (Participant)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ 👁  Viewing Alex's layout • View-only mode              [Save Copy]         │
+│ ✏️  Editing Alex's layout with 2 others                       [Save Copy]    │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 3.2.3 View-Only Banner
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 👁  Viewing Alex's layout (view-only)                         [Save Copy]    │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Specifications**:
-- Same dimensions as active banner
+- Same dimensions as edit banner
 - Background: `--bg-warning-muted` (subtle yellow tint)
-- Text includes dot separator (` • `)
 
-#### 3.2.3 Connection Status Banners
+#### 3.2.4 Connection Status Banners
 
 **Reconnecting**:
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ ⚠️  Connection lost • Reconnecting...                         [Save Copy]   │
+│ ⚠️  Connection lost • Reconnecting...                         [Save Copy]    │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 - Background: `--bg-warning-muted`
@@ -263,116 +270,110 @@ Contextual banner shown below header during collaboration.
 **Disconnected (>30s)**:
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ ❌  Disconnected from session • Your changes are saved locally  [Reconnect] │
+│ ❌  Disconnected • Your changes are saved locally             [Reconnect]    │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 - Background: `--bg-error-muted`
 
-### 3.3 Share Modal - Collaborate Tab
+### 3.3 Share Panel - Unified Design
 
-New tab in existing share modal.
+The share panel is a consolidated experience following Google Docs' model. Permission is controlled via a dropdown, not separate tabs.
+
+#### 3.3.1 Not Yet Shared
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         Share Layout                        [×] │
-├─────────────────────────────────────────────────────────────────┤
-│  [Link]  [Cloud]  [Collaborate]                                │
+│                    Share this layout                        [×] │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  Start a live collaboration session                             │
-│                                                                 │
-│  Anyone with the link can join and see your layout              │
-│  in real-time. Choose what they can do:                         │
+│  Anyone with the link can:                                      │
 │                                                                 │
 │  ┌───────────────────────────────────────────────────────────┐ │
-│  │  ○  Can edit                                              │ │
-│  │     Participants can add, move, and modify bins           │ │
-│  ├───────────────────────────────────────────────────────────┤ │
-│  │  ○  View only                                             │ │
-│  │     Participants can only view, not make changes          │ │
+│  │ View                                                    ▼ │ │
 │  └───────────────────────────────────────────────────────────┘ │
 │                                                                 │
-│  Sessions expire after 24 hours.                                │
-│                                                                 │
-│                              [Start Collaboration Session]      │
+│              [Share layout]                                     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**After Session Created**:
+**Permission Dropdown Options**:
+```
+┌───────────────────────────────────────────────────────────────┐
+│ View                                              (default)   │
+│ Others can see but not edit                                   │
+├───────────────────────────────────────────────────────────────┤
+│ Edit                                                          │
+│ Others can make changes in real-time                          │
+└───────────────────────────────────────────────────────────────┘
+```
+
+#### 3.3.2 Already Shared (View-Only)
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         Share Layout                        [×] │
-├─────────────────────────────────────────────────────────────────┤
-│  [Link]  [Cloud]  [Collaborate]                                │
+│                    Share this layout                        [×] │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  ✓ Collaboration session active                                 │
+│  Anyone with the link can:                                      │
 │                                                                 │
 │  ┌───────────────────────────────────────────────────────────┐ │
-│  │ https://gridfinity.app/collab/abc123XYZ789qrst           │ │
+│  │ View                                                    ▼ │ │
 │  └───────────────────────────────────────────────────────────┘ │
 │                                                                 │
-│  [Copy Link]                          Link copied! ✓           │
+│  ┌───────────────────────────────────────────────────────────┐ │
+│  │ https://gridfinity.app/s/abc123xyz789                    │ │
+│  └───────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│  [Copy link]                          Link copied! ✓           │
 │                                                                 │
 │  ─────────────────────────────────────────────────────────────  │
 │                                                                 │
-│  Session info                                                   │
-│  • Permission: Anyone can edit                                  │
-│  • Participants: 3 connected                                    │
-│  • Expires: in 23 hours                                         │
+│  [Stop sharing]                                                 │
 │                                                                 │
-│  [End Session]                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### 3.3.3 Already Shared (Edit Mode - Owner)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Share this layout                        [×] │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Anyone with the link can:                                      │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐ │
+│  │ Edit                                                    ▼ │ │
+│  └───────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐ │
+│  │ https://gridfinity.app/s/abc123xyz789                    │ │
+│  └───────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│  [Copy link]                                                   │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  Collaborators (3)                                              │
+│  🔵 Alex (you) 👑  •  🟣 Jordan  •  🟠 Guest 3                 │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  [Stop sharing]                                                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 **Specifications**:
-- Modal width: 480px
-- Tab bar: Same as existing share modal
-- Radio buttons: 16px, custom styled
+- Panel width: 400px (desktop), full-width (mobile)
+- Permission dropdown: Full-width, 44px height
 - URL input: Read-only, monospace font, select-all on focus
-- Buttons: Primary style for main CTA
+- Collaborators section: Only visible when permission is "Edit"
 
-### 3.4 Session End Modal
+### 3.4 Join Flow
 
-Shown when owner ends session or session expires.
-
-**For Owner**:
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      End Collaboration?                         │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  This will disconnect all 4 participants from the session.      │
-│  Your layout will be saved automatically.                       │
-│                                                                 │
-│  Participants will have the option to save a copy.              │
-│                                                                 │
-│                           [Cancel]  [End Session]               │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**For Participants (when session ends)**:
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Session Ended                              │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  Alex has ended the collaboration session.                      │
-│                                                                 │
-│  Would you like to save a copy of this layout                   │
-│  to your library?                                               │
-│                                                                 │
-│                      [No Thanks]  [Save Copy]                   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 3.5 Join Flow
-
-#### 3.5.1 Loading State
+#### 3.4.1 Loading State
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -390,14 +391,14 @@ Shown when owner ends session or session expires.
 - Centered spinner (32px)
 - Text: 16px, `--text-content-secondary`
 
-#### 3.5.2 Name Prompt (Optional)
+#### 3.4.2 Name Prompt (Optional)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Join Collaboration                           │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  You're joining Alex's layout session.                          │
+│  You're joining Alex's layout.                                  │
 │                                                                 │
 │  Your name (optional)                                           │
 │  ┌───────────────────────────────────────────────────────────┐ │
@@ -405,50 +406,85 @@ Shown when owner ends session or session expires.
 │  └───────────────────────────────────────────────────────────┘ │
 │  This will be shown to other participants.                      │
 │                                                                 │
-│                                      [Skip]  [Join Session]     │
+│                                      [Skip]  [Join]             │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 - Input: Auto-focused, max 24 characters
-- Pre-filled with "Guest" or stored name from previous session
+- Pre-filled with "Guest" or stored name from previous collaboration
 - Skip button: Secondary style
 - Join button: Primary style
 
-#### 3.5.3 Error States
+#### 3.4.3 Error States
 
-**Session Not Found**:
+**Layout Not Found**:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Session Not Found                            │
+│                    Layout Not Found                             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │                          [Icon: 🔍]                             │
 │                                                                 │
-│  This collaboration session doesn't exist.                      │
+│  This layout doesn't exist or has been deleted.                 │
 │                                                                 │
-│  The session may have ended or the link might be                │
-│  incorrect. Ask the host to share a new link.                   │
+│  The link might be incorrect, or the owner may                  │
+│  have stopped sharing it.                                       │
 │                                                                 │
 │                           [Go to Home]                          │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Session Full**:
+**Layout Busy**:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Session Full                               │
+│                      Layout Busy                                │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │                          [Icon: 👥]                             │
 │                                                                 │
-│  This session has reached the maximum of 20 participants.       │
+│  This layout has too many editors right now.                    │
 │                                                                 │
-│  Try again later or ask the host to share a                     │
-│  view-only link instead.                                        │
+│  Try again in a few minutes, or ask the owner                   │
+│  to share a view-only link instead.                             │
 │                                                                 │
 │                           [Go to Home]                          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 3.5 Stop Sharing Confirmation
+
+**Modal**:
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      Stop Sharing?                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  This will disconnect all 4 collaborators from your layout.     │
+│  They will be prompted to save a copy.                          │
+│                                                                 │
+│  The share link will stop working.                              │
+│                                                                 │
+│                           [Cancel]  [Stop Sharing]              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 3.6 Sharing Stopped (Participant View)
+
+**Modal**:
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      Sharing Stopped                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Alex has stopped sharing this layout.                          │
+│                                                                 │
+│  Would you like to save a copy to your library?                 │
+│                                                                 │
+│                      [No Thanks]  [Save Copy]                   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -645,20 +681,19 @@ Vertical alignment: Center
 
 | Entry Point | Location | Action |
 |-------------|----------|--------|
-| Share button → Collaborate tab | Header | Opens modal with collaborate tab active |
-| Keyboard shortcut | Global | `Ctrl/Cmd + Shift + L` opens collaborate |
-| Context menu | Right-click on layout | "Start collaboration..." option |
+| Share button | Header | Opens share panel |
+| Keyboard shortcut | Global | `Ctrl/Cmd + Shift + S` opens share panel |
 
 ### 6.2 Joining Interactions
 
 | Interaction | Behavior |
 |-------------|----------|
-| Click collab link | Opens app, shows loading, joins session |
-| Click collab link (app open) | Prompts to leave current layout, join session |
-| Paste collab URL in address bar | Same as click |
-| Deep link with name param | Skips name prompt, uses param value |
+| Click share link | Opens app, checks permission, shows loading, joins (view or edit mode) |
+| Click share link (app open) | Prompts to leave current layout, join new |
+| Paste share URL in address bar | Same as click |
+| Deep link with name param (`?name=`) | Skips name prompt, uses param value |
 
-### 6.3 In-Session Interactions
+### 6.3 In-Collaboration Interactions
 
 | Interaction | Owner | Edit Participant | View Participant |
 |-------------|-------|------------------|------------------|
@@ -672,19 +707,19 @@ Vertical alignment: Center
 | Toggle 3D preview | ✓ Local | ✓ Local | ✓ Local |
 | Copy link | ✓ | ✓ | ✓ |
 | Save copy | ✓ | ✓ | ✓ |
-| End session | ✓ | — | — |
-| Leave session | — | ✓ | ✓ |
+| Change permission | ✓ | — | — |
+| Stop sharing | ✓ | — | — |
 
 ### 6.4 Tooltips & Help
 
 | Element | Tooltip |
 |---------|---------|
 | Status indicator | "3 people collaborating" |
-| Participant avatar | "Jordan - Click to see all participants" |
-| Crown icon | "Session host" |
-| Disabled edit control | "View-only mode - You can't edit in this session" |
-| Copy link button | "Copy collaboration link" |
-| End session button | "End session for everyone" |
+| Participant avatar | "Jordan - Click to see all collaborators" |
+| Crown icon | "Layout owner" |
+| Disabled edit control | "View-only mode - You can't edit this layout" |
+| Copy link button | "Copy share link" |
+| Permission dropdown | "Change who can edit" |
 
 ---
 
@@ -695,7 +730,8 @@ Vertical alignment: Center
 | State | Header Status | Banner | Cursors | Actions |
 |-------|---------------|--------|---------|---------|
 | **Connecting** | Spinner | "Joining..." | Hidden | Disabled |
-| **Connected** | Green dot + "Collaborating" | Active session info | Visible | Enabled |
+| **Connected (edit)** | Green dot + "Collaborating" | Edit banner | Visible | Enabled |
+| **Connected (view)** | Gray eye + "Viewing" | View-only banner | Visible | Disabled |
 | **Reconnecting** | Yellow dot (pulsing) | "Reconnecting..." | Frozen | Queued |
 | **Disconnected** | Red dot | Error banner | Hidden | Local only |
 
@@ -703,10 +739,11 @@ Vertical alignment: Center
 
 | Operation | Success Feedback | Error Feedback |
 |-----------|------------------|----------------|
-| Create session | Toast: "Collaboration started", URL copied | Toast: error message |
-| Join session | Banner appears, cursors load | Error modal |
-| Send operation | Immediate (optimistic) | Toast: "Change couldn't be saved" |
-| End session | Modal closes, banner removed | Toast: error message |
+| Share layout | Toast: "Layout shared", URL copied | Toast: error message |
+| Join collaboration | Banner appears, cursors load | Error modal |
+| Change permission | Toast: "Permission updated" | Toast: error message |
+| Send edit | Immediate (optimistic) | Toast: "Change couldn't be saved" |
+| Stop sharing | Panel closes, banner removed | Toast: error message |
 
 ### 7.3 Participant Events
 
@@ -728,7 +765,7 @@ When a view-only participant tries to edit:
 - Click: Nothing happens (no error, just no response)
 - Keyboard shortcuts: Disabled for edit actions
 - UI: Edit buttons visually disabled (grayed out, 50% opacity)
-- Tooltip: "View-only mode - You can't edit in this session"
+- Tooltip: "View-only mode - You can't edit this layout"
 
 ---
 
@@ -787,7 +824,7 @@ When a view-only participant tries to edit:
 | Collaboration banner | Full text | Shortened text | Icon + count |
 | Cursor name labels | Always visible | Visible | Hidden (icon only) |
 | Participant dropdown | Click to expand | Click to expand | Bottom sheet |
-| Share modal | 480px centered | 480px centered | Full-screen |
+| Share panel | 400px floating | 400px floating | Full-screen |
 
 ### 9.2 Mobile-Specific Designs
 
@@ -819,7 +856,7 @@ When a view-only participant tries to edit:
 │ │ 🟢 Guest 5                                    ││
 │ └────────────────────────────────────────────────┘│
 │                                                    │
-│ [Copy invite link]                                │
+│ [Copy link]                                       │
 │                                                    │
 └────────────────────────────────────────────────────┘
 ```
@@ -855,7 +892,7 @@ On mobile, remote cursors are simplified:
 |---------|------|-------|
 | Participant list | `region` | "Collaboration participants" |
 | Participant avatar | `img` | "Jordan, participant" |
-| Status indicator | `status` | "Connected to collaboration session with 5 participants" |
+| Status indicator | `status` | "Connected to collaboration with 5 participants" |
 | Remote cursor | `img` | "Jordan's cursor at position 3, 5" |
 | Collaboration banner | `status` | Dynamic based on content |
 
@@ -865,20 +902,20 @@ On mobile, remote cursors are simplified:
 |-----|--------|
 | `Tab` | Navigate through collaboration UI elements |
 | `Enter/Space` | Activate focused element (buttons, links) |
-| `Escape` | Close dropdown/modal, or leave session (with confirmation) |
-| `Ctrl/Cmd + Shift + L` | Toggle collaboration panel |
-| `Ctrl/Cmd + Shift + C` | Copy collaboration link |
+| `Escape` | Close dropdown/modal |
+| `Ctrl/Cmd + Shift + S` | Open share panel |
+| `Ctrl/Cmd + Shift + C` | Copy share link |
 
 ### 10.3 Screen Reader Announcements
 
 | Event | Announcement |
 |-------|--------------|
-| Session joined | "Joined collaboration session with 3 participants" |
-| Participant joined | "Jordan joined the session" |
-| Participant left | "Jordan left the session" |
-| Operation by other | "Jordan added a bin at position 3, 4" (optional, configurable) |
+| Collaboration joined | "Joined collaboration with 3 participants" |
+| Participant joined | "Jordan joined" |
+| Participant left | "Jordan left" |
+| Permission changed | "Layout is now view-only" / "Layout is now editable" |
 | Connection lost | "Connection lost. Attempting to reconnect." |
-| Reconnected | "Reconnected to collaboration session" |
+| Reconnected | "Reconnected to collaboration" |
 
 ### 10.4 Reduced Motion
 
@@ -983,8 +1020,6 @@ Minimum contrast ratios:
 | Users | 16×16 | Participant count (mobile) | Heroicons |
 | Eye | 16×16 | View-only indicator | Heroicons |
 | Link | 16×16 | Copy link action | Heroicons |
-| X Circle | 16×16 | End session | Heroicons |
-| Exit | 16×16 | Leave session | Heroicons |
 | Refresh | 16×16 | Reconnecting | Heroicons (animated) |
 
 ### 12.2 Cursor SVG
@@ -1020,24 +1055,25 @@ Minimum contrast ratios:
 
 ### 12.4 Empty States
 
-**Session Not Found**:
+**Layout Not Found**:
 - Illustration: Magnifying glass with question mark
 - Size: 120×120px
 - Style: Line art, `--text-content-tertiary` color
 
-**Session Full**:
+**Layout Busy**:
 - Illustration: Group of people with "full" indicator
 - Size: 120×120px
 - Style: Line art, `--text-content-tertiary` color
 
 ---
 
-## Appendix A: Figma/Miro Reference
+## Appendix A: Google Docs/Figma Reference
 
 Design patterns borrowed from established collaborative tools:
 
 | Pattern | Source | Our Implementation |
 |---------|--------|-------------------|
+| Permission dropdown | Google Docs | Similar (View/Edit options) |
 | Stacked avatars | Figma | Identical |
 | Colored cursor with name | Figma, Miro | Identical |
 | Connection status banner | Google Docs | Similar |
@@ -1051,4 +1087,5 @@ Design patterns borrowed from established collaborative tools:
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 1.0 | 2026-01 | Design Team | Initial draft |
+| 1.0 | 2026-01 | Design Team | Initial draft with session-based UI |
+| 2.0 | 2026-01 | Design Team | Revised to Google Docs model, unified share panel |

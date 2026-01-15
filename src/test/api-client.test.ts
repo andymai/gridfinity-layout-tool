@@ -41,7 +41,7 @@ describe('createShare', () => {
       id: 'abc123xyz789',
       url: 'https://example.com/s/abc123xyz789',
       deleteToken: 'token123',
-      expiresAt: '2024-02-01T00:00:00.000Z',
+      permission: 'view',
     };
 
     vi.mocked(fetch).mockResolvedValueOnce({
@@ -49,7 +49,7 @@ describe('createShare', () => {
       json: () => Promise.resolve(mockResponse),
     } as Response);
 
-    const result = await createShare(mockLayout, 30);
+    const result = await createShare(mockLayout, 'view');
 
     expect(isOk(result)).toBe(true);
     if (isOk(result)) {
@@ -68,7 +68,7 @@ describe('createShare', () => {
       }),
     } as Response);
 
-    const result = await createShare(mockLayout, 30);
+    const result = await createShare(mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -83,7 +83,7 @@ describe('createShare', () => {
   it('returns Err with ApiNetworkError on fetch failure', async () => {
     vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
-    const result = await createShare(mockLayout, 30);
+    const result = await createShare(mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -101,7 +101,7 @@ describe('createShare', () => {
       }),
     } as Response);
 
-    const result = await createShare(mockLayout, 30);
+    const result = await createShare(mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -118,7 +118,7 @@ describe('createShare', () => {
       }),
     } as Response);
 
-    const result = await createShare(mockLayout, 30);
+    const result = await createShare(mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -135,7 +135,7 @@ describe('createShare', () => {
       }),
     } as Response);
 
-    const result = await createShare(mockLayout, 30);
+    const result = await createShare(mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -159,7 +159,7 @@ describe('updateShare', () => {
     const mockResponse = {
       id: 'abc123xyz789',
       url: 'https://example.com/s/abc123xyz789',
-      expiresAt: '2024-02-01T00:00:00.000Z',
+      permission: 'edit',
     };
 
     vi.mocked(fetch).mockResolvedValueOnce({
@@ -167,7 +167,7 @@ describe('updateShare', () => {
       json: () => Promise.resolve(mockResponse),
     } as Response);
 
-    const result = await updateShare('abc123xyz789', 'token123', mockLayout, 60);
+    const result = await updateShare('abc123xyz789', 'token123', mockLayout, 'edit');
 
     expect(isOk(result)).toBe(true);
     if (isOk(result)) {
@@ -184,7 +184,7 @@ describe('updateShare', () => {
       }),
     } as Response);
 
-    const result = await updateShare('abc123xyz789', 'wrong-token', mockLayout, 60);
+    const result = await updateShare('abc123xyz789', 'wrong-token', mockLayout, 'edit');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -201,7 +201,7 @@ describe('updateShare', () => {
       }),
     } as Response);
 
-    const result = await updateShare('nonexistent', 'token', mockLayout, 60);
+    const result = await updateShare('nonexistent', 'token', mockLayout, 'edit');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -223,9 +223,9 @@ describe('fetchShare', () => {
     const mockResponse = {
       layout: mockLayout,
       metadata: {
-        expiresAt: '2024-02-01T00:00:00.000Z',
-        expiresInDays: 30,
+        permission: 'view',
         createdAt: '2024-01-01T00:00:00.000Z',
+        lastUpdatedAt: '2024-01-02T00:00:00.000Z',
         authorName: 'Test Author',
       },
     };
@@ -379,7 +379,7 @@ describe('API error mapping', () => {
       }),
     } as Response);
 
-    const result = await createShare(mockLayout, 30);
+    const result = await createShare(mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -387,20 +387,21 @@ describe('API error mapping', () => {
     }
   });
 
-  it('maps INVALID_EXPIRATION to ApiInvalidExpirationError', async () => {
+  it('maps INVALID_PERMISSION to ApiValidationError', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({
-        error: 'Invalid expiration',
-        code: 'INVALID_EXPIRATION',
+        error: 'Invalid permission',
+        code: 'INVALID_PERMISSION',
       }),
     } as Response);
 
-    const result = await createShare(mockLayout, 45 as unknown as 30);
+    const result = await createShare(mockLayout, 'invalid' as 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
-      expect(result.error.code).toBe('API_INVALID_EXPIRATION');
+      // INVALID_PERMISSION is mapped to validation error
+      expect(result.error.code).toBe('API_VALIDATION_ERROR');
     }
   });
 
@@ -413,7 +414,7 @@ describe('API error mapping', () => {
       }),
     } as Response);
 
-    const result = await createShare(mockLayout, 30);
+    const result = await createShare(mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -431,7 +432,7 @@ describe('API error mapping', () => {
     } as Response);
 
     const beforeTime = Date.now();
-    const result = await createShare(mockLayout, 30);
+    const result = await createShare(mockLayout, 'view');
     const afterTime = Date.now();
 
     expect(isErr(result)).toBe(true);

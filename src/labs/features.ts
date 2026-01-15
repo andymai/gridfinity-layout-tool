@@ -8,9 +8,10 @@ export const FEATURE_FLAGS = [
       "Work on layouts together in real-time with other people. Share a link and see each other's cursors as you design.",
     status: "experimental",
     risk: "medium",
+    warning: "This feature is experimental. Real-time sync may have delays or conflicts.",
     addedAt: "2026-01",
     requiresRefresh: false,
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: "layout_to_print",

@@ -13,3 +13,15 @@ export { usePWAUpdate } from './usePWAUpdate';
 export { useAnalytics } from './useAnalytics';
 export { useStorageMigration } from './useStorageMigration';
 export { useFeatureFlag, isFeatureEnabled } from './useFeatureFlag';
+export { useSharedWithMe } from './useSharedWithMe';
+export type { SharedWithMeStatus } from './useSharedWithMe';
+
+// Collaborative editing hooks
+export { useCollabMode, getCollabMode } from './useCollabMode';
+export type { CollabModeState } from './useCollabMode';
+export { useCollabPresence } from './useCollabPresence';
+export type { CollabPresenceActions } from './useCollabPresence';
+export { useCollabSync } from './useCollabSync';
+export { useCollabLayout, useCollabLayoutSelector } from './useCollabLayout';
+export { useCollabMutations } from './useCollabMutations';
+export type { CollabMutations } from './useCollabMutations';

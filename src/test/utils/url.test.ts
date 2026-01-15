@@ -1,10 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
+  parseLayoutFromURL,
+  setLayoutURL,
+  clearLayoutURL,
+  hasLegacyShareHash,
+  getLayoutIdFromHistoryState,
+  getCanonicalRedirect,
+  // Legacy aliases
   parseLayoutIdFromHash,
   setLayoutHash,
   clearLayoutHash,
   hasShareHash,
-  getLayoutIdFromHistoryState,
 } from '../../utils/url';
 
 describe('url utilities', () => {
@@ -12,7 +18,7 @@ describe('url utilities', () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
-    // Mock window.location.hash
+    // Mock window.location
     Object.defineProperty(window, 'location', {
       value: {
         ...originalLocation,
@@ -36,109 +42,146 @@ describe('url utilities', () => {
     });
   });
 
-  describe('parseLayoutIdFromHash', () => {
-    it('returns null when no hash', () => {
-      window.location.hash = '';
-      expect(parseLayoutIdFromHash()).toBeNull();
+  describe('parseLayoutFromURL', () => {
+    it('returns null when no layout in URL', () => {
+      window.location.pathname = '/';
+      expect(parseLayoutFromURL()).toBeNull();
     });
 
-    it('returns null for non-local hash', () => {
-      window.location.hash = '#something-else';
-      expect(parseLayoutIdFromHash()).toBeNull();
-    });
-
-    it('returns null for share hash (share takes precedence)', () => {
+    it('returns null for legacy share hash (handled separately)', () => {
       window.location.hash = '#share=abc123';
-      expect(parseLayoutIdFromHash()).toBeNull();
+      expect(parseLayoutFromURL()).toBeNull();
     });
 
-    it('returns layout ID from valid hash', () => {
-      window.location.hash = '#local/abc-123-uuid';
-      expect(parseLayoutIdFromHash()).toBe('abc-123-uuid');
+    it('parses new pattern with 12-char ID', () => {
+      window.location.pathname = '/l/abc123xyz789';
+      const result = parseLayoutFromURL();
+      expect(result).toEqual({ layoutId: 'abc123xyz789', slug: null });
     });
 
-    it('returns null for empty layout ID', () => {
-      window.location.hash = '#local/';
-      expect(parseLayoutIdFromHash()).toBeNull();
+    it('parses new pattern with ID and slug', () => {
+      window.location.pathname = '/l/abc123xyz789/my-layout-name';
+      const result = parseLayoutFromURL();
+      expect(result).toEqual({ layoutId: 'abc123xyz789', slug: 'my-layout-name' });
     });
 
-    it('handles complex layout IDs', () => {
+    it('parses legacy UUID pattern', () => {
+      window.location.pathname = '/l/550e8400-e29b-41d4-a716-446655440000';
+      const result = parseLayoutFromURL();
+      expect(result).toEqual({
+        layoutId: '550e8400-e29b-41d4-a716-446655440000',
+        slug: null,
+      });
+    });
+
+    it('parses legacy UUID pattern with slug', () => {
+      window.location.pathname = '/l/550e8400-e29b-41d4-a716-446655440000/my-layout';
+      const result = parseLayoutFromURL();
+      expect(result).toEqual({
+        layoutId: '550e8400-e29b-41d4-a716-446655440000',
+        slug: 'my-layout',
+      });
+    });
+
+    it('parses legacy local hash format', () => {
       window.location.hash = '#local/550e8400-e29b-41d4-a716-446655440000';
-      expect(parseLayoutIdFromHash()).toBe('550e8400-e29b-41d4-a716-446655440000');
+      const result = parseLayoutFromURL();
+      expect(result).toEqual({
+        layoutId: '550e8400-e29b-41d4-a716-446655440000',
+        slug: null,
+      });
+    });
+
+    it('returns null for invalid ID length', () => {
+      window.location.pathname = '/l/abc123'; // Too short
+      expect(parseLayoutFromURL()).toBeNull();
     });
   });
 
-  describe('setLayoutHash', () => {
-    it('sets hash using replaceState by default', () => {
-      setLayoutHash('test-id');
+  describe('setLayoutURL', () => {
+    it('sets URL with ID and slugified name', () => {
+      setLayoutURL('abc123xyz789', 'My Layout Name');
 
       expect(window.history.replaceState).toHaveBeenCalledWith(
-        { layoutId: 'test-id' },
+        { layoutId: 'abc123xyz789', slug: 'my-layout-name' },
         '',
-        '#local/test-id'
+        '/l/abc123xyz789/my-layout-name'
       );
-      expect(window.history.pushState).not.toHaveBeenCalled();
     });
 
     it('uses pushState when addToHistory is true', () => {
-      setLayoutHash('test-id', true);
+      setLayoutURL('abc123xyz789', 'Test Layout', true);
 
       expect(window.history.pushState).toHaveBeenCalledWith(
-        { layoutId: 'test-id' },
+        { layoutId: 'abc123xyz789', slug: 'test-layout' },
         '',
-        '#local/test-id'
+        '/l/abc123xyz789/test-layout'
       );
+      expect(window.history.replaceState).not.toHaveBeenCalled();
+    });
+
+    it('skips update if URL is already correct', () => {
+      window.location.pathname = '/l/abc123xyz789/my-layout';
+
+      setLayoutURL('abc123xyz789', 'My Layout');
+
+      expect(window.history.replaceState).not.toHaveBeenCalled();
+      expect(window.history.pushState).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('clearLayoutURL', () => {
+    it('navigates to root', () => {
+      window.location.pathname = '/l/abc123xyz789/my-layout';
+
+      clearLayoutURL();
+
+      expect(window.history.replaceState).toHaveBeenCalledWith({}, '', '/');
+    });
+
+    it('skips update if already at root', () => {
+      window.location.pathname = '/';
+
+      clearLayoutURL();
+
       expect(window.history.replaceState).not.toHaveBeenCalled();
     });
   });
 
-  describe('clearLayoutHash', () => {
-    it('removes hash from URL', () => {
-      window.location.pathname = '/app';
-      window.location.search = '?foo=bar';
-
-      clearLayoutHash();
-
-      expect(window.history.replaceState).toHaveBeenCalledWith(
-        {},
-        '',
-        '/app?foo=bar'
-      );
+  describe('getCanonicalRedirect', () => {
+    it('returns redirect URL when slug is missing', () => {
+      window.location.pathname = '/l/abc123xyz789';
+      const redirect = getCanonicalRedirect('abc123xyz789', 'My Layout');
+      expect(redirect).toBe('/l/abc123xyz789/my-layout');
     });
 
-    it('uses root path when pathname is empty', () => {
-      window.location.pathname = '';
-      window.location.search = '';
+    it('returns redirect URL when slug is wrong', () => {
+      window.location.pathname = '/l/abc123xyz789/old-name';
+      const redirect = getCanonicalRedirect('abc123xyz789', 'New Name');
+      expect(redirect).toBe('/l/abc123xyz789/new-name');
+    });
 
-      clearLayoutHash();
-
-      expect(window.history.replaceState).toHaveBeenCalledWith(
-        {},
-        '',
-        '/'
-      );
+    it('returns null when slug is correct', () => {
+      window.location.pathname = '/l/abc123xyz789/my-layout';
+      const redirect = getCanonicalRedirect('abc123xyz789', 'My Layout');
+      expect(redirect).toBeNull();
     });
   });
 
-  describe('hasShareHash', () => {
+  describe('hasLegacyShareHash', () => {
     it('returns false when no hash', () => {
       window.location.hash = '';
-      expect(hasShareHash()).toBe(false);
-    });
-
-    it('returns false for local hash', () => {
-      window.location.hash = '#local/abc';
-      expect(hasShareHash()).toBe(false);
+      expect(hasLegacyShareHash()).toBe(false);
     });
 
     it('returns true for share hash', () => {
       window.location.hash = '#share=eyJuYW1lIjoiVGVzdCJ9';
-      expect(hasShareHash()).toBe(true);
+      expect(hasLegacyShareHash()).toBe(true);
     });
 
-    it('returns false for similar but not share hash', () => {
-      window.location.hash = '#shared=abc';
-      expect(hasShareHash()).toBe(false);
+    it('returns false for other hashes', () => {
+      window.location.hash = '#local/abc';
+      expect(hasLegacyShareHash()).toBe(false);
     });
   });
 
@@ -169,6 +212,55 @@ describe('url utilities', () => {
   });
 });
 
+describe('legacy API aliases', () => {
+  beforeEach(() => {
+    vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
+    vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('parseLayoutIdFromHash returns ID from path', () => {
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/l/abc123xyz789/my-layout', hash: '' },
+      writable: true,
+    });
+    expect(parseLayoutIdFromHash()).toBe('abc123xyz789');
+  });
+
+  it('setLayoutHash sets path-based URL', () => {
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/', hash: '' },
+      writable: true,
+    });
+    setLayoutHash('test123test12');
+    expect(window.history.replaceState).toHaveBeenCalledWith(
+      { layoutId: 'test123test12' },
+      '',
+      '/l/test123test12'
+    );
+  });
+
+  it('clearLayoutHash clears to root', () => {
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/l/abc123xyz789', hash: '' },
+      writable: true,
+    });
+    clearLayoutHash();
+    expect(window.history.replaceState).toHaveBeenCalledWith({}, '', '/');
+  });
+
+  it('hasShareHash checks for legacy share hash', () => {
+    Object.defineProperty(window, 'location', {
+      value: { hash: '#share=abc123' },
+      writable: true,
+    });
+    expect(hasShareHash()).toBe(true);
+  });
+});
+
 describe('url edge cases', () => {
   beforeEach(() => {
     vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
@@ -179,15 +271,17 @@ describe('url edge cases', () => {
     vi.restoreAllMocks();
   });
 
-  it('share hash takes precedence over layout hash', () => {
-    // If somehow both are present (shouldn't happen, but test the priority)
+  it('share hash takes precedence over path', () => {
     Object.defineProperty(window, 'location', {
-      value: { hash: '#share=abc123' },
+      value: {
+        pathname: '/l/abc123xyz789/my-layout',
+        hash: '#share=abc123',
+      },
       writable: true,
     });
 
     // Should return null because share takes precedence
-    expect(parseLayoutIdFromHash()).toBeNull();
-    expect(hasShareHash()).toBe(true);
+    expect(parseLayoutFromURL()).toBeNull();
+    expect(hasLegacyShareHash()).toBe(true);
   });
 });

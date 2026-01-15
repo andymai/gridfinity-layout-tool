@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
+import { useMutations } from '../context/MutationsContext';
 import { canPlaceBin } from '../utils/validation';
 import { constrainGroupDelta } from '../utils/selection';
 import { findBinById } from '../utils/entity';
@@ -24,7 +25,7 @@ export function useKeyboardDrag() {
   const setInteraction = useUIStore(state => state.setInteraction);
 
   const layout = useLayoutStore(state => state.layout);
-  const updateBin = useLayoutStore(state => state.updateBin);
+  const { updateBin } = useMutations();
 
   const { execute } = useUndoableAction();
 

@@ -1,4 +1,5 @@
 import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../store';
+import { useMutations } from '../../context/MutationsContext';
 import { useResponsive } from '../../hooks/useResponsive';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { validateBinRotation, getBinLocationContext } from '../../utils/binLocation';
@@ -31,10 +32,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const { menuRef } = useContextMenu();
 
   const layout = useLayoutStore(state => state.layout);
-  const deleteBin = useLayoutStore(state => state.deleteBin);
-  const moveBinToStaging = useLayoutStore(state => state.moveBinToStaging);
-  const duplicateBin = useLayoutStore(state => state.duplicateBin);
-  const updateBin = useLayoutStore(state => state.updateBin);
+  const { deleteBin, moveBinToStaging, duplicateBin, updateBin } = useMutations();
   const setSelectedBins = useUIStore(state => state.setSelectedBins);
   const toggleMobilePanel = useUIStore(state => state.toggleMobilePanel);
   const rightPanelCollapsed = useUIStore(state => state.rightPanelCollapsed);

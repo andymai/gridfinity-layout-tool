@@ -361,6 +361,7 @@ describe('MobileLayoutsPanel', () => {
       hasActiveShare: false,
       share: mockShare,
       update: mockUpdate,
+      updatePermission: vi.fn().mockResolvedValue(true),
       remove: mockRemove,
       copyUrl: mockCopyUrl,
       copyDeleteToken: vi.fn(),
@@ -426,7 +427,7 @@ describe('MobileLayoutsPanel', () => {
       });
     });
 
-    it('creates a share with default expiration', async () => {
+    it('creates a share with default permission', async () => {
       render(<MobileLayoutsPanel />);
 
       // Open cloud share panel
@@ -452,11 +453,11 @@ describe('MobileLayoutsPanel', () => {
       });
 
       await waitFor(() => {
-        expect(mockShare).toHaveBeenCalledWith(30);
+        expect(mockShare).toHaveBeenCalledWith('view');
       });
     });
 
-    it('creates a share with selected expiration', async () => {
+    it('creates a share with edit permission', async () => {
       render(<MobileLayoutsPanel />);
 
       // Open cloud share panel
@@ -476,10 +477,10 @@ describe('MobileLayoutsPanel', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      // Change expiration
-      const select = screen.getByLabelText(/expires after/i);
+      // Change permission to edit
+      const select = screen.getByLabelText(/permission/i);
       act(() => {
-        fireEvent.change(select, { target: { value: '90' } });
+        fireEvent.change(select, { target: { value: 'edit' } });
       });
 
       // Click share button
@@ -488,7 +489,7 @@ describe('MobileLayoutsPanel', () => {
       });
 
       await waitFor(() => {
-        expect(mockShare).toHaveBeenCalledWith(90);
+        expect(mockShare).toHaveBeenCalledWith('edit');
       });
     });
 
@@ -497,7 +498,7 @@ describe('MobileLayoutsPanel', () => {
         id: 'test-share-id',
         deleteToken: 'test-token',
         sharedAt: Date.now() - 86400000, // 1 day ago
-        expiresAt: Date.now() + 86400000 * 29, // 29 days from now
+        permission: 'view' as const,
       };
 
       vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
@@ -524,7 +525,8 @@ describe('MobileLayoutsPanel', () => {
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
         expect(screen.getByText(/shared on/i)).toBeInTheDocument();
-        expect(screen.getByText(/expires/i)).toBeInTheDocument();
+        // Look for permission display - use more specific text to avoid matching option element
+        expect(screen.getByText(/Anyone with the link can view/i)).toBeInTheDocument();
       });
     });
 
@@ -533,7 +535,7 @@ describe('MobileLayoutsPanel', () => {
         id: 'test-share-id',
         deleteToken: 'test-token',
         sharedAt: Date.now() - 86400000,
-        expiresAt: Date.now() + 86400000 * 29,
+        permission: 'view' as const,
       };
 
       vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
@@ -571,18 +573,20 @@ describe('MobileLayoutsPanel', () => {
       });
     });
 
-    it('updates existing share', async () => {
+    it('updates permission for existing share', async () => {
       const existingShareInfo = {
         id: 'test-share-id',
         deleteToken: 'test-token',
         sharedAt: Date.now() - 86400000,
-        expiresAt: Date.now() + 86400000 * 29,
+        permission: 'view' as const,
       };
 
+      const mockUpdatePermission = vi.fn().mockResolvedValue(true);
       vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
         ...mockCloudShareIdle,
         existingShare: existingShareInfo,
         hasActiveShare: true,
+        updatePermission: mockUpdatePermission,
       });
 
       render(<MobileLayoutsPanel />);
@@ -604,13 +608,14 @@ describe('MobileLayoutsPanel', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      // Click update button
+      // Change permission to edit
+      const select = screen.getByLabelText(/permission/i);
       act(() => {
-        fireEvent.click(screen.getByRole('button', { name: /update/i }));
+        fireEvent.change(select, { target: { value: 'edit' } });
       });
 
       await waitFor(() => {
-        expect(mockUpdate).toHaveBeenCalled();
+        expect(mockUpdatePermission).toHaveBeenCalledWith('edit');
       });
     });
 
@@ -619,7 +624,7 @@ describe('MobileLayoutsPanel', () => {
         id: 'test-share-id',
         deleteToken: 'test-token',
         sharedAt: Date.now() - 86400000,
-        expiresAt: Date.now() + 86400000 * 29,
+        permission: 'view' as const,
       };
 
       vi.spyOn(cloudShareHook, 'useCloudShare').mockReturnValue({
@@ -692,7 +697,7 @@ describe('MobileLayoutsPanel', () => {
           id: 'new-share-id',
           url: 'https://example.com/s/new-share-id',
           deleteToken: 'new-token',
-          expiresAt: new Date(Date.now() + 86400000 * 30),
+          permission: 'view' as const,
         },
       });
 

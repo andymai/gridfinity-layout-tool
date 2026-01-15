@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction, useToastStore } from '../store';
+import { useMutations } from '../context/MutationsContext';
 import { canPlaceBin } from '../utils/validation';
 import { validateBinRotation } from '../utils/binLocation';
 import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
@@ -72,9 +73,7 @@ export function useKeyboard() {
   const { handleNavigationKey } = useGridNavigation();
 
   const layout = useLayoutStore(state => state.layout);
-  const deleteBin = useLayoutStore(state => state.deleteBin);
-  const duplicateBin = useLayoutStore(state => state.duplicateBin);
-  const updateBin = useLayoutStore(state => state.updateBin);
+  const { deleteBin, duplicateBin, updateBin } = useMutations();
 
   const undo = useHistoryStore(state => state.undo);
   const redo = useHistoryStore(state => state.redo);

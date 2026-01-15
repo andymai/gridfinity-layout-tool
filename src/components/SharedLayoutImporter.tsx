@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLayoutStore } from '../store/layout';
 import { useUIStore } from '../store/ui';
 import { useHistoryStore } from '../store/history';
 import { useToastStore } from '../store/toast';
+import { useLibraryStore, computePreview } from '../store/library';
 import {
   getSharedLayoutFromURL,
   clearSharedLayoutFromURL,
   getCloudShareIdFromURL,
-  clearCloudShareFromURL,
 } from '../storage';
 import { fetchShare } from '../api/share';
 import { isOk, getUserMessage } from '../result';
-import type { Layout } from '../types';
+import type { Layout, SharePermission, LayoutPreview } from '../types';
 
 // Check for shared layout once at module load time (URL-encoded shares)
 const initialShareResult = getSharedLayoutFromURL();
@@ -28,8 +28,9 @@ const initialCloudShareId = getCloudShareIdFromURL();
  * - Cloud share: /s/{12-char-id}
  */
 export function SharedLayoutImporter() {
-  const hasProcessed = useRef(false);
-  const [isLoading, setIsLoading] = useState(!!initialCloudShareId);
+  // Loading state is only set to true when we confirm we need to cloud fetch
+  // (not when there's just a URL ID - it might be a local layout)
+  const [isLoading, setIsLoading] = useState(false);
 
   const importLayout = useLayoutStore((state) => state.importLayout);
   const setSharedLayoutPreview = useUIStore((state) => state.setSharedLayoutPreview);
@@ -40,14 +41,74 @@ export function SharedLayoutImporter() {
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
   const addToast = useToastStore((state) => state.addToast);
 
+  // Library store for auto-tracking shared layouts
+  const libraryIsLoaded = useLibraryStore((state) => state.isLoaded);
+  const libraryEntries = useLibraryStore((state) => state.library.entries);
+  const getSharedWithMeByShareId = useLibraryStore((state) => state.getSharedWithMeByShareId);
+
+  // Check if we already loaded this share (to skip re-fetching)
+  const sharedLayoutCloudShareId = useUIStore((state) => state.sharedLayoutCloudShareId);
+  const addSharedWithMe = useLibraryStore((state) => state.addSharedWithMe);
+  const markShareAccessed = useLibraryStore((state) => state.markShareAccessed);
+  const updateSharedWithMe = useLibraryStore((state) => state.updateSharedWithMe);
+
+  /**
+   * Check if a share ID belongs to the current user (i.e., they are the owner).
+   * Owners shouldn't see their own layouts in "Shared with me".
+   * Since share IDs equal layout UUIDs, we check entry.id directly.
+   */
+  const isOwnShare = useCallback((shareId: string) => {
+    return libraryEntries.some(entry => entry.id === shareId);
+  }, [libraryEntries]);
+
+  /**
+   * Auto-track a cloud share in the "Shared with me" list.
+   * Skips if the user is the owner of the share.
+   */
+  const trackSharedLayout = useCallback((
+    shareId: string,
+    layout: Layout,
+    authorName: string | undefined,
+    permission: SharePermission,
+    preview: LayoutPreview
+  ) => {
+    // Don't track if this is the owner's own share
+    if (isOwnShare(shareId)) return;
+
+    const existingEntry = getSharedWithMeByShareId(shareId);
+
+    if (existingEntry) {
+      // Update existing entry with latest info
+      markShareAccessed(shareId);
+      // Update permission and name if they've changed
+      if (existingEntry.permission !== permission || existingEntry.name !== layout.name) {
+        updateSharedWithMe(existingEntry.id, {
+          permission,
+          name: layout.name,
+          authorName,
+          preview,
+        });
+      }
+    } else {
+      // Add new entry
+      addSharedWithMe({
+        sourceShareId: shareId,
+        name: layout.name,
+        authorName,
+        permission,
+        preview,
+      });
+    }
+  }, [isOwnShare, getSharedWithMeByShareId, markShareAccessed, updateSharedWithMe, addSharedWithMe]);
+
   // Helper function to load a layout into preview
-  const loadLayoutPreview = useCallback((layout: Layout, authorName?: string) => {
+  const loadLayoutPreview = useCallback((layout: Layout, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => {
     // Load the shared layout directly into the view
     // Use a temporary ID since it's not saved yet
     importLayout(layout, '__shared_preview__', 'init');
 
     // Set the preview state so the banner knows to show
-    setSharedLayoutPreview(layout, layout.name, authorName);
+    setSharedLayoutPreview(layout, layout.name, authorName, cloudShareId, permission);
 
     // Reset UI state for the new layout
     clearSelection();
@@ -73,14 +134,17 @@ export function SharedLayoutImporter() {
     announceToScreenReader,
   ]);
 
+  // Track whether we've processed the URL share (persists through Strict Mode remounts)
+  const hasProcessedUrlShare = useRef(false);
+
   // Handle URL-encoded shares (legacy format)
   useEffect(() => {
-    // Only process once, and skip if we have a cloud share to process
-    if (hasProcessed.current) return;
-    if (initialCloudShareId) return; // Cloud share takes priority
+    // Skip if we have a cloud share to process instead
+    if (initialCloudShareId) return;
     if (!initialShareResult) return;
-
-    hasProcessed.current = true;
+    // Only process once per session
+    if (hasProcessedUrlShare.current) return;
+    hasProcessedUrlShare.current = true;
 
     const { layout, errors } = initialShareResult;
 
@@ -97,13 +161,56 @@ export function SharedLayoutImporter() {
     clearSharedLayoutFromURL();
   }, [loadLayoutPreview, addToast]);
 
-  // Handle cloud shares
-  useEffect(() => {
-    if (hasProcessed.current) return;
-    if (!initialCloudShareId) return;
+  // Track whether we've started processing a cloud share (persists through Strict Mode remounts)
+  const hasStartedCloudFetch = useRef(false);
+  // Track mounted state across effect re-runs (not just a local variable that resets on cleanup)
+  const isMountedRef = useRef(true);
 
-    hasProcessed.current = true;
-    let isMounted = true;
+  // Set mounted ref on mount/unmount (not on effect re-runs)
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Handle cloud shares (or URLs that might be cloud shares)
+  useEffect(() => {
+    if (!initialCloudShareId) {
+      return;
+    }
+
+    // Wait for library to load before checking if layout exists locally
+    // Without this, we'd incorrectly cloud-fetch local layouts on first render
+    if (!libraryIsLoaded) {
+      return;
+    }
+
+    // Check if this layout exists locally - if so, let useLayoutRouting handle it
+    // Check both by layout ID (for /l/{id} URLs) and by cloud share ID (owner visiting their own /s/{id})
+    const isLocalLayout = libraryEntries.some(entry =>
+      entry.id === initialCloudShareId || entry.cloudShare?.id === initialCloudShareId
+    );
+    if (isLocalLayout) {
+      return;
+    }
+
+    // Check if we already loaded this share (prevents re-fetching on effect re-runs)
+    if (sharedLayoutCloudShareId === initialCloudShareId) {
+      return;
+    }
+
+    // Check if URL still has the share ID
+    const currentShareId = getCloudShareIdFromURL();
+    if (!currentShareId) {
+      return;
+    }
+
+    // Prevent double-fetch in Strict Mode (first mount starts fetch, second mount should skip)
+    if (hasStartedCloudFetch.current) {
+      return;
+    }
+    hasStartedCloudFetch.current = true;
 
     const loadCloudShare = async () => {
       setIsLoading(true);
@@ -111,27 +218,40 @@ export function SharedLayoutImporter() {
       const result = await fetchShare(initialCloudShareId);
 
       // Prevent state updates if component unmounted during fetch
-      if (!isMounted) return;
+      // Use ref instead of local variable so it survives effect re-runs
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      // Don't clear URL - keep the share URL visible for better UX
+      // The sharedLayoutCloudShareId check above prevents re-fetching
 
       setIsLoading(false);
 
       if (!isOk(result)) {
-        clearCloudShareFromURL();
         const message = getUserMessage(result.error);
         addToast(`Failed to load shared layout: ${message}`, 'error');
         return;
       }
 
-      loadLayoutPreview(result.value.layout, result.value.metadata.authorName);
-      clearCloudShareFromURL();
+      const { layout, metadata } = result.value;
+      const permission = metadata.permission ?? 'view';
+
+      // Auto-track this share in "Shared with me" (unless it's the owner's own)
+      // Wrap in try-catch to ensure robust error handling
+      try {
+        const preview = computePreview(layout);
+        trackSharedLayout(initialCloudShareId, layout, metadata.authorName, permission, preview);
+      } catch (e) {
+        console.error('Failed to track shared layout:', e);
+      }
+
+      loadLayoutPreview(layout, metadata.authorName, initialCloudShareId, permission);
     };
 
     loadCloudShare();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [loadLayoutPreview, addToast]);
+    // No cleanup needed - isMountedRef is managed by the separate mount/unmount effect
+  }, [loadLayoutPreview, addToast, trackSharedLayout, libraryIsLoaded, libraryEntries, sharedLayoutCloudShareId]);
 
   // Show loading state for cloud shares
   if (isLoading) {

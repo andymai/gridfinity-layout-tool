@@ -7,16 +7,18 @@ import { useShallow } from 'zustand/shallow';
 import { useLibraryStore } from '../store/library';
 import { useLayoutStore } from '../store/layout';
 import { useUIStore } from '../store/ui';
-import type { ShareExpiration, CloudShareInfo, Layout } from '../types';
+import type { SharePermission, CloudShareInfo, Layout } from '../types';
 import {
   createShare,
   updateShare,
+  updatePermission as updateSharePermission,
   deleteShare,
   type ShareResponse,
 } from '../api/share';
 import { isOk, getUserMessage } from '../result';
 import type { ApiError } from '../result';
 import { copyToClipboard } from '../storage';
+import { slugify } from '../utils/slug';
 
 export type CloudShareStatus =
   | 'idle'
@@ -30,7 +32,7 @@ interface CloudShareResult {
   id: string;
   url: string;
   deleteToken: string;
-  expiresAt: Date;
+  permission: SharePermission;
 }
 
 interface CloudShareError {
@@ -48,8 +50,9 @@ interface CloudShareState {
 }
 
 interface CloudShareActions {
-  share: (expiresInDays: ShareExpiration) => Promise<boolean>;
-  update: (expiresInDays: ShareExpiration) => Promise<boolean>;
+  share: (permission?: SharePermission) => Promise<boolean>;
+  update: (permission?: SharePermission) => Promise<boolean>;
+  updatePermission: (permission: SharePermission) => Promise<boolean>;
   remove: () => Promise<boolean>;
   copyUrl: () => Promise<boolean>;
   copyDeleteToken: () => Promise<boolean>;
@@ -80,7 +83,6 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     authorName,
     setCloudShare,
     clearCloudShare,
-    setLastShareExpiration,
   } = useLibraryStore(
     useShallow((state) => ({
       activeLayoutId: state.library.activeLayoutId,
@@ -88,7 +90,6 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       authorName: state.library.settings.authorName,
       setCloudShare: state.setCloudShare,
       clearCloudShare: state.clearCloudShare,
-      setLastShareExpiration: state.setLastShareExpiration,
     }))
   );
 
@@ -102,19 +103,8 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     return entry?.cloudShare ?? null;
   }, [entries, targetLayoutId]);
 
-  // Use stable reference time from mount to avoid re-render issues
-  const [mountTime] = useState(() => Date.now());
-  const hasActiveShare = useMemo(() => {
-    if (!existingShare) return false;
-    return existingShare.expiresAt > mountTime;
-  }, [existingShare, mountTime]);
-
-  // Clear expired share on mount
-  useEffect(() => {
-    if (existingShare && existingShare.expiresAt <= Date.now()) {
-      clearCloudShare(targetLayoutId);
-    }
-  }, [existingShare, targetLayoutId, clearCloudShare]);
+  // Shares are now permanent, so active share is simply whether one exists
+  const hasActiveShare = !!existingShare;
 
   const getLayoutToShare = useCallback((): Layout => {
     return layout;
@@ -126,7 +116,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         id: response.id,
         deleteToken: response.deleteToken,
         sharedAt: Date.now(),
-        expiresAt: new Date(response.expiresAt).getTime(),
+        permission: response.permission,
       };
 
       // Save to library
@@ -136,7 +126,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         id: response.id,
         url: response.url,
         deleteToken: response.deleteToken,
-        expiresAt: new Date(response.expiresAt),
+        permission: response.permission,
       });
 
       setStatus('success');
@@ -167,7 +157,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   );
 
   const share = useCallback(
-    async (expiresInDays: ShareExpiration): Promise<boolean> => {
+    async (permission: SharePermission = 'view'): Promise<boolean> => {
       if (!navigator.onLine) {
         setError({
           message: "You're offline. Connect to the internet to share.",
@@ -181,13 +171,12 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       setError(null);
 
       const layoutToShare = getLayoutToShare();
-      const result = await createShare(layoutToShare, expiresInDays, authorName);
+      const result = await createShare(targetLayoutId, layoutToShare, permission, authorName);
 
       // Prevent state updates if component unmounted during async operation
       if (!mountedRef.current) return false;
 
       if (isOk(result)) {
-        setLastShareExpiration(expiresInDays);
         handleSuccess(result.value, false);
         return true;
       } else {
@@ -195,11 +184,11 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         return false;
       }
     },
-    [getLayoutToShare, authorName, setLastShareExpiration, handleSuccess, handleError]
+    [targetLayoutId, getLayoutToShare, authorName, handleSuccess, handleError]
   );
 
   const update = useCallback(
-    async (expiresInDays: ShareExpiration): Promise<boolean> => {
+    async (permission?: SharePermission): Promise<boolean> => {
       if (!existingShare) {
         setError({
           message: 'No existing share to update.',
@@ -226,25 +215,34 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         existingShare.id,
         existingShare.deleteToken,
         layoutToShare,
-        expiresInDays
+        permission
       );
 
       // Prevent state updates if component unmounted during async operation
       if (!mountedRef.current) return false;
 
       if (isOk(result)) {
-        setLastShareExpiration(expiresInDays);
-        handleSuccess(
-          {
-            ...result.value,
-            deleteToken: existingShare.deleteToken,
-          },
-          true
-        );
+        // Update local share info with new permission
+        const shareInfo: CloudShareInfo = {
+          ...existingShare,
+          permission: result.value.permission,
+          lastUpdatedAt: Date.now(),
+        };
+        setCloudShare(targetLayoutId, shareInfo);
+
+        setResult({
+          id: result.value.id,
+          url: result.value.url,
+          deleteToken: existingShare.deleteToken,
+          permission: result.value.permission,
+        });
+
+        setStatus('success');
+        announceToScreenReader('Share updated successfully.');
         return true;
       } else {
         // Handle specific errors
-        if (result.error.code === 'API_NOT_FOUND' || result.error.code === 'API_EXPIRED') {
+        if (result.error.code === 'API_NOT_FOUND') {
           // Share was deleted on server, clear local state
           clearCloudShare(targetLayoutId);
           setError({
@@ -269,11 +267,90 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       existingShare,
       targetLayoutId,
       getLayoutToShare,
-      setLastShareExpiration,
-      handleSuccess,
+      setCloudShare,
       handleError,
       clearCloudShare,
+      announceToScreenReader,
     ]
+  );
+
+  const updatePermissionAction = useCallback(
+    async (permission: SharePermission): Promise<boolean> => {
+      if (!existingShare) {
+        setError({
+          message: 'No existing share to update.',
+          code: 'NOT_FOUND',
+        });
+        setStatus('error');
+        return false;
+      }
+
+      if (!navigator.onLine) {
+        setError({
+          message: "You're offline. Connect to the internet to update.",
+          code: 'NETWORK_ERROR',
+        });
+        setStatus('error');
+        return false;
+      }
+
+      setStatus('updating');
+      setError(null);
+
+      const result = await updateSharePermission(
+        existingShare.id,
+        existingShare.deleteToken,
+        permission
+      );
+
+      // Prevent state updates if component unmounted during async operation
+      if (!mountedRef.current) return false;
+
+      if (isOk(result)) {
+        // Update local share info with new permission
+        const shareInfo: CloudShareInfo = {
+          ...existingShare,
+          permission: result.value.permission,
+          lastUpdatedAt: Date.now(),
+        };
+        setCloudShare(targetLayoutId, shareInfo);
+
+        setResult({
+          id: result.value.id,
+          url: result.value.url,
+          deleteToken: existingShare.deleteToken,
+          permission: result.value.permission,
+        });
+
+        setStatus('success');
+        announceToScreenReader(
+          permission === 'edit'
+            ? 'Share updated. Anyone with the link can now edit.'
+            : 'Share updated. Anyone with the link can view.'
+        );
+        return true;
+      } else {
+        // Handle specific errors
+        if (result.error.code === 'API_NOT_FOUND') {
+          clearCloudShare(targetLayoutId);
+          setError({
+            message: 'Share was deleted. Create a new share instead.',
+            code: result.error.code,
+          });
+        } else if (result.error.code === 'API_UNAUTHORIZED') {
+          clearCloudShare(targetLayoutId);
+          setError({
+            message: 'Unable to update share. Create a new share instead.',
+            code: result.error.code,
+          });
+        } else {
+          handleError(result.error);
+        }
+        setStatus('error');
+        return false;
+      }
+    },
+    [existingShare, targetLayoutId, setCloudShare, clearCloudShare, handleError, announceToScreenReader]
   );
 
   const remove = useCallback(async (): Promise<boolean> => {
@@ -306,7 +383,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       return true;
     } else {
       // If not found, it's already deleted - clear local state
-      if (result.error.code === 'API_NOT_FOUND' || result.error.code === 'API_EXPIRED') {
+      if (result.error.code === 'API_NOT_FOUND') {
         clearCloudShare(targetLayoutId);
         setStatus('idle');
         setResult(null);
@@ -318,15 +395,17 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   }, [existingShare, targetLayoutId, clearCloudShare, handleError, announceToScreenReader]);
 
   const copyUrl = useCallback(async (): Promise<boolean> => {
-    const url = result?.url || (existingShare && `${window.location.origin}/s/${existingShare.id}`);
-    if (!url) return false;
+    // Construct URL using unified /l/{shareId}/{slug} format
+    const shareId = result?.id || existingShare?.id;
+    if (!shareId) return false;
 
+    const url = `${window.location.origin}/l/${shareId}/${slugify(layout.name)}`;
     const success = await copyToClipboard(url);
     if (success) {
       announceToScreenReader('Link copied to clipboard.');
     }
     return success;
-  }, [result, existingShare, announceToScreenReader]);
+  }, [result, existingShare, layout.name, announceToScreenReader]);
 
   const copyDeleteToken = useCallback(async (): Promise<boolean> => {
     const token = result?.deleteToken || existingShare?.deleteToken;
@@ -353,6 +432,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     hasActiveShare,
     share,
     update,
+    updatePermission: updatePermissionAction,
     remove,
     copyUrl,
     copyDeleteToken,
