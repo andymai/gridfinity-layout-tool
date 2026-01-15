@@ -163,11 +163,15 @@ export function SharedLayoutImporter() {
 
   // Handle cloud shares (or URLs that might be cloud shares)
   useEffect(() => {
-    if (!initialCloudShareId) return;
+    if (!initialCloudShareId) {
+      return;
+    }
 
     // Wait for library to load before checking if layout exists locally
     // Without this, we'd incorrectly cloud-fetch local layouts on first render
-    if (!libraryIsLoaded) return;
+    if (!libraryIsLoaded) {
+      return;
+    }
 
     // Check if this layout exists locally - if so, let useLayoutRouting handle it
     // Check both by layout ID (for /l/{id} URLs) and by cloud share ID (owner visiting their own /s/{id})
@@ -181,13 +185,14 @@ export function SharedLayoutImporter() {
     // Check if URL still has the share ID - if cleared, previous fetch completed
     const currentShareId = getCloudShareIdFromURL();
     if (!currentShareId) {
-      // URL was cleared by previous fetch - just ensure loading state is cleared
-      setIsLoading(false);
+      // URL was cleared by previous fetch - nothing to do
       return;
     }
 
     // Prevent double-fetch in Strict Mode (first mount starts fetch, second mount should skip)
-    if (hasStartedCloudFetch.current) return;
+    if (hasStartedCloudFetch.current) {
+      return;
+    }
     hasStartedCloudFetch.current = true;
 
     let isMounted = true;
@@ -202,7 +207,9 @@ export function SharedLayoutImporter() {
       clearCloudShareFromURL();
 
       // Prevent state updates if component unmounted during fetch
-      if (!isMounted) return;
+      if (!isMounted) {
+        return;
+      }
 
       setIsLoading(false);
 

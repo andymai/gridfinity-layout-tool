@@ -9,7 +9,6 @@ import {
   clearLayoutURL,
   getLayoutIdFromHistoryState,
   getCanonicalRedirect,
-  hasLegacyShareHash,
 } from '../utils/url';
 
 /**
@@ -114,8 +113,10 @@ export function useLayoutRouting() {
     if (!isLoaded || hasInitialized.current) return;
     hasInitialized.current = true;
 
-    // Legacy URL-encoded shares take precedence - let SharedLayoutImporter handle them
-    if (hasLegacyShareHash()) return;
+    // Check for share URL pattern /s/{id} - let SharedLayoutImporter handle it
+    if (/^\/s\/[a-zA-Z0-9]{12}$/.test(window.location.pathname)) {
+      return;
+    }
 
     const urlInfo = parseLayoutFromURL();
     if (!urlInfo) {
@@ -141,6 +142,14 @@ export function useLayoutRouting() {
           window.history.replaceState({ layoutId, slug: entry.name }, '', redirect);
         }
       }
+      return;
+    }
+
+    // Check if this layout exists locally before trying to navigate
+    const localEntry = getEntry(layoutId);
+    if (!localEntry) {
+      // Layout not found locally - it might be a cloud share
+      // Let SharedLayoutImporter handle it (don't redirect)
       return;
     }
 
@@ -231,6 +240,18 @@ export function useLayoutRouting() {
       return;
     }
 
+    // Check for share URL pattern /s/{id} - let SharedLayoutImporter handle it
+    if (/^\/s\/[a-zA-Z0-9]{12}$/.test(window.location.pathname)) {
+      return;
+    }
+
+    // Skip if URL has a layout ID that's not a local layout (might be a cloud share being loaded)
+    const urlInfo = parseLayoutFromURL();
+    if (urlInfo && !getEntry(urlInfo.layoutId)) {
+      // URL has a layout ID that doesn't exist locally - let SharedLayoutImporter handle it
+      return;
+    }
+
     // Skip if no active layout or it's a temp ID
     if (!activeLayoutId || activeLayoutId === '__shared_preview__') {
       return;
@@ -250,6 +271,12 @@ export function useLayoutRouting() {
   // Handle layout name changes (update slug in URL)
   useEffect(() => {
     if (sharedLayoutPreview || !activeLayoutId || activeLayoutId === '__shared_preview__') {
+      return;
+    }
+
+    // Skip if URL has a layout ID that's not a local layout (might be a cloud share being loaded)
+    const urlInfo = parseLayoutFromURL();
+    if (urlInfo && !getEntry(urlInfo.layoutId)) {
       return;
     }
 

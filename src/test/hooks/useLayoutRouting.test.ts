@@ -180,26 +180,25 @@ describe('useLayoutRouting', () => {
   });
 
   describe('initial URL handling', () => {
-    it('skips initialization when library not loaded', () => {
+    it('skips URL changes when library not loaded', () => {
       useLibraryStore.setState({ isLoaded: false });
 
       renderHook(() => useLayoutRouting());
 
-      // Should not try to parse URL yet
-      expect(url.parseLayoutFromURL).not.toHaveBeenCalled();
+      // parseLayoutFromURL may be called to check for cloud shares,
+      // but setLayoutURL should not be called when library isn't loaded
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
     });
 
-    it('skips when legacy share hash is present', () => {
-      vi.mocked(url.hasLegacyShareHash).mockReturnValue(true);
-      // Also set shared preview to prevent URL sync effect
-      useUIStore.setState({ sharedLayoutPreview: mockLayout });
+    it('skips URL change when layout in URL does not exist locally (potential cloud share)', () => {
+      // When URL has a layout ID that doesn't exist locally,
+      // we assume it might be a cloud share and let SharedLayoutImporter handle it
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue({ layoutId: 'cloudShare12', slug: 'shared-layout' });
 
       renderHook(() => useLayoutRouting());
 
-      // With share hash, parseLayoutFromURL should not be called
-      // (hasLegacyShareHash returns early)
-      expect(url.parseLayoutFromURL).not.toHaveBeenCalled();
-      expect(url.clearLayoutURL).toHaveBeenCalled();
+      // Should NOT redirect to active layout - let SharedLayoutImporter handle the cloud share
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
     });
 
     it('sets URL to current layout when no layout in URL', () => {
@@ -235,20 +234,18 @@ describe('useLayoutRouting', () => {
       expect(storage.loadLayoutByIdAsync).toHaveBeenCalledWith('layout123test');
     });
 
-    it('silently redirects when URL layout not found', async () => {
+    it('does not redirect when URL layout not found locally (potential cloud share)', () => {
+      // Non-local layout IDs in URL should NOT trigger redirect
+      // SharedLayoutImporter handles cloud share fetching
       vi.mocked(url.parseLayoutFromURL).mockReturnValue({ layoutId: 'nonexistent', slug: null });
       const addToastSpy = vi.fn();
       useToastStore.setState({ addToast: addToastSpy });
 
       renderHook(() => useLayoutRouting());
 
-      // navigateToLayout is async, so wait for URL redirect to happen
-      await vi.waitFor(() => {
-        // Should redirect to current active layout without showing a toast
-        expect(url.setLayoutURL).toHaveBeenCalledWith('layout123test', 'Test Layout', false);
-      });
-
-      // No toast should be shown for initial load of missing layout
+      // Should NOT redirect to active layout - the layout ID might be a cloud share
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
+      // No toast should be shown
       expect(addToastSpy).not.toHaveBeenCalled();
     });
   });

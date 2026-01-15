@@ -229,7 +229,7 @@ async function handlePut(
         allowOverwrite: true,
       });
 
-      const shareUrl = `${getBaseUrl(req)}/s/${id}`;
+      const shareUrl = `${getBaseUrl(req)}/l/${id}`;
 
       return res.status(200).json({
         id,
@@ -275,7 +275,7 @@ async function handlePut(
       allowOverwrite: true,
     });
 
-    const shareUrl = `${getBaseUrl(req)}/s/${id}`;
+    const shareUrl = `${getBaseUrl(req)}/l/${id}`;
 
     return res.status(200).json({
       id,

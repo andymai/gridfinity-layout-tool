@@ -391,12 +391,18 @@ describe('useCloudShare', () => {
     it('copies URL from result', async () => {
       const mockData = {
         id: 'share-id',
-        url: 'https://example.com/s/share-id',
+        url: 'https://example.com/l/share-id',
         deleteToken: 'token',
         permission: 'view' as const,
       };
 
       vi.mocked(shareApi.createShare).mockResolvedValue(ok(mockData));
+
+      // Mock window.location.origin for copyUrl
+      Object.defineProperty(window, 'location', {
+        value: { origin: 'https://example.com' },
+        writable: true,
+      });
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -410,8 +416,10 @@ describe('useCloudShare', () => {
       });
 
       expect(success).toBe(true);
-      expect(storage.copyToClipboard).toHaveBeenCalledWith(
-        'https://example.com/s/share-id'
+      // copyUrl generates URLs with /l/{shareId}/{slug} format
+      // Uses layout.name from store (default 'Untitled Layout' -> 'untitled-layout')
+      expect(storage.copyToClipboard).toHaveBeenLastCalledWith(
+        'https://example.com/l/share-id/untitled-layout'
       );
     });
 
@@ -441,8 +449,10 @@ describe('useCloudShare', () => {
       });
 
       expect(success).toBe(true);
+      // copyUrl now generates URLs with /l/{shareId}/{slug} format
+      // Uses layout.name from store (default 'Untitled Layout' -> 'untitled-layout')
       expect(storage.copyToClipboard).toHaveBeenCalledWith(
-        'https://example.com/s/existing-share'
+        'https://example.com/l/existing-share/untitled-layout'
       );
     });
 

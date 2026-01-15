@@ -18,6 +18,7 @@ import {
 import { isOk, getUserMessage } from '../result';
 import type { ApiError } from '../result';
 import { copyToClipboard } from '../storage';
+import { slugify } from '../utils/slug';
 
 export type CloudShareStatus =
   | 'idle'
@@ -394,15 +395,17 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   }, [existingShare, targetLayoutId, clearCloudShare, handleError, announceToScreenReader]);
 
   const copyUrl = useCallback(async (): Promise<boolean> => {
-    const url = result?.url || (existingShare && `${window.location.origin}/s/${existingShare.id}`);
-    if (!url) return false;
+    // Construct URL using unified /l/{shareId}/{slug} format
+    const shareId = result?.id || existingShare?.id;
+    if (!shareId) return false;
 
+    const url = `${window.location.origin}/l/${shareId}/${slugify(layout.name)}`;
     const success = await copyToClipboard(url);
     if (success) {
       announceToScreenReader('Link copied to clipboard.');
     }
     return success;
-  }, [result, existingShare, announceToScreenReader]);
+  }, [result, existingShare, layout.name, announceToScreenReader]);
 
   const copyDeleteToken = useCallback(async (): Promise<boolean> => {
     const token = result?.deleteToken || existingShare?.deleteToken;

@@ -11,6 +11,7 @@ import { useToastStore } from '../store/toast';
 import { useCloudShare } from '../hooks/useCloudShare';
 import { useCollabMode } from '../hooks/useCollabMode';
 import { copyToClipboard } from '../storage';
+import { slugify } from '../utils/slug';
 import type { SharePermission } from '../types';
 
 /** Minimum distance from viewport edge for popover positioning */
@@ -393,8 +394,9 @@ function SharePopover({
       };
 
   // Determine the share URL - prefer viewing shared layout, then own share
+  // Use unified /l/{shareId}/{slug} format
   const shareId = isViewingSharedLayout ? sharedLayoutCloudShareId : existingShare?.id;
-  const shareUrl = shareId ? `${window.location.origin}/s/${shareId}` : '';
+  const shareUrl = shareId ? `${window.location.origin}/l/${shareId}/${slugify(layoutName)}` : '';
 
   // Show as "shared" when viewing a shared layout or when we have our own active share
   const showSharedState = isViewingSharedLayout || hasActiveShare;

@@ -145,8 +145,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       addRandomSuffix: false,
     });
 
-    // Return success response
-    const shareUrl = `${getBaseUrl(req)}/s/${shareId}`;
+    // Return success response - use unified /l/{id} format
+    const shareUrl = `${getBaseUrl(req)}/l/${shareId}`;
 
     return res.status(201).json({
       id: shareId,
