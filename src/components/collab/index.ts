@@ -8,3 +8,12 @@
 export { CollabProvider } from './CollabProvider';
 export { CollabCursors } from './CollabCursors';
 export { CollabCursor } from './CollabCursor';
+
+// Presence UI components
+export { PresenceAvatars } from './PresenceAvatars';
+export { PresenceAvatarBar } from './PresenceAvatarBar';
+export { PresenceAvatarList } from './PresenceAvatarList';
+export { PresenceAvatar } from './PresenceAvatar';
+export { PresenceMobileButton } from './PresenceMobileButton';
+export { PresenceDropdown } from './PresenceDropdown';
+export { ConnectionIndicator } from './ConnectionIndicator';

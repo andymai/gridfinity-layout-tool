@@ -30,7 +30,7 @@ function saveHalfBinMode(enabled: boolean): void {
 
 export type DropTarget = 'trash' | 'staging' | null;
 
-export type MobilePanel = 'layers' | 'inspector' | 'categories' | 'print' | 'settings' | 'layouts' | null;
+export type MobilePanel = 'layers' | 'inspector' | 'categories' | 'print' | 'settings' | 'layouts' | 'participants' | null;
 
 export type MobileLayersTab = 'layers' | 'tools';
 

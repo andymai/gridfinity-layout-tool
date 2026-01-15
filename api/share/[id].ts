@@ -34,10 +34,20 @@ async function hashToken(token: string): Promise<string> {
 }
 
 /**
- * Validate share ID format (12 alphanumeric chars).
+ * Validate share ID format.
+ * Supports multiple formats for backwards compatibility:
+ * - Standard UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (older layouts)
+ * - Base36 timestamp: {timestamp}-{random 7 chars}
+ * - Legacy 12-char: alphanumeric only
  */
 function isValidShareId(id: string): boolean {
-  return /^[A-Za-z0-9]{12}$/.test(id);
+  // Standard UUID format (8-4-4-4-12 hex chars)
+  if (/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)) return true;
+  // Base36 timestamp format
+  if (/^[a-z0-9]+-[a-z0-9]{7}$/.test(id)) return true;
+  // Legacy 12-char alphanumeric format
+  if (/^[a-zA-Z0-9]{12}$/.test(id)) return true;
+  return false;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
