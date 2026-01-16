@@ -246,6 +246,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                         onClick={() => toggleLayer(layer.id)}
                         role="checkbox"
                         aria-checked={isChecked}
+                        aria-label={`Select ${layer.name}`}
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === ' ' || e.key === 'Enter') {
@@ -441,6 +442,7 @@ function CheckboxOption({
       onClick={() => onChange(!checked)}
       role="checkbox"
       aria-checked={checked}
+      aria-label={label}
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === ' ' || e.key === 'Enter') {

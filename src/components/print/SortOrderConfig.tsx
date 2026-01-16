@@ -172,6 +172,7 @@ function SortFieldItem({
         onClick={onToggle}
         role="checkbox"
         aria-checked={config.enabled}
+        aria-label={`Toggle ${SORT_FIELD_LABELS[config.field]}`}
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === ' ' || e.key === 'Enter') {

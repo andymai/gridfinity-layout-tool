@@ -386,6 +386,7 @@ export function Sidebar() {
                       onClick={() => toggleSTLSite(site.id)}
                       role="checkbox"
                       aria-checked={site.enabled}
+                      aria-label={`Toggle ${site.name}`}
                       tabIndex={0}
                       onKeyDown={(e) => {
                         if (e.key === ' ' || e.key === 'Enter') {

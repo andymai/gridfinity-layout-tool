@@ -699,6 +699,7 @@ export function Grid() {
                 onClick={toggleShowLabels}
                 role="checkbox"
                 aria-checked={showLabels}
+                aria-label="Labels"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === ' ' || e.key === 'Enter') {
@@ -717,6 +718,7 @@ export function Grid() {
                 onClick={toggleShowOtherLayers}
                 role="checkbox"
                 aria-checked={showOtherLayers}
+                aria-label="Show layers below"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === ' ' || e.key === 'Enter') {
@@ -815,6 +817,7 @@ export function Grid() {
                         onClick={toggleShowLabels}
                         role="menuitemcheckbox"
                         aria-checked={showLabels}
+                        aria-label="Labels"
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === ' ' || e.key === 'Enter') {
@@ -833,6 +836,7 @@ export function Grid() {
                         onClick={toggleShowOtherLayers}
                         role="menuitemcheckbox"
                         aria-checked={showOtherLayers}
+                        aria-label="Show layers below"
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === ' ' || e.key === 'Enter') {

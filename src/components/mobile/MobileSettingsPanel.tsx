@@ -137,6 +137,7 @@ export function MobileSettingsPanel() {
           onClick={handleHalfBinToggle}
           role="checkbox"
           aria-checked={halfBinMode}
+          aria-label="Toggle half-bin mode"
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === ' ' || e.key === 'Enter') {
