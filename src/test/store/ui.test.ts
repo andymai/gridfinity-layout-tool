@@ -1,9 +1,26 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
+import {
+  useSelectionStore,
+  useViewStore,
+  useInteractionStore,
+  useMobileStore,
+  useHalfBinModeStore,
+  useSharedPreviewStore,
+} from '../../store';
 import { CONSTRAINTS } from '../../constants';
 import { resetAllStores } from '../testUtils';
 import { isOk, isErr } from '../../result';
+
+// Helper to get state from the correct focused store after facade actions
+// Since the facade no longer syncs state synchronously, we need to read from the source stores
+const getSelectionState = () => useSelectionStore.getState();
+const getViewState = () => useViewStore.getState();
+const getInteractionState = () => useInteractionStore.getState();
+const getMobileState = () => useMobileStore.getState();
+const getHalfBinModeState = () => useHalfBinModeStore.getState();
+const getSharedPreviewState = () => useSharedPreviewStore.getState();
 
 describe('ui store', () => {
   beforeEach(() => {
@@ -21,11 +38,11 @@ describe('ui store', () => {
 
       addToSelection('bin1');
       addToSelection('bin2');
-      expect(useUIStore.getState().selectedBinIds).toHaveLength(2);
+      expect(getSelectionState().selectedBinIds).toHaveLength(2);
 
       setActiveLayer('layer2');
 
-      const state = useUIStore.getState();
+      const state = getSelectionState();
       expect(state.activeLayerId).toBe('layer2');
       expect(state.selectedBinIds).toHaveLength(0);
     });
@@ -38,7 +55,7 @@ describe('ui store', () => {
 
       setSelectedBin('bin3');
 
-      expect(useUIStore.getState().selectedBinIds).toEqual(['bin3']);
+      expect(getSelectionState().selectedBinIds).toEqual(['bin3']);
     });
 
     it('setSelectedBin with null clears selection', () => {
@@ -47,7 +64,7 @@ describe('ui store', () => {
       addToSelection('bin1');
       setSelectedBin(null);
 
-      expect(useUIStore.getState().selectedBinIds).toHaveLength(0);
+      expect(getSelectionState().selectedBinIds).toHaveLength(0);
     });
 
     it('setSelectedBins sets multiple selection', () => {
@@ -55,7 +72,7 @@ describe('ui store', () => {
 
       setSelectedBins(['bin1', 'bin2', 'bin3']);
 
-      expect(useUIStore.getState().selectedBinIds).toEqual(['bin1', 'bin2', 'bin3']);
+      expect(getSelectionState().selectedBinIds).toEqual(['bin1', 'bin2', 'bin3']);
     });
 
     it('addToSelection adds without duplicates', () => {
@@ -65,7 +82,7 @@ describe('ui store', () => {
       addToSelection('bin1'); // Duplicate
       addToSelection('bin2');
 
-      expect(useUIStore.getState().selectedBinIds).toEqual(['bin1', 'bin2']);
+      expect(getSelectionState().selectedBinIds).toEqual(['bin1', 'bin2']);
     });
 
     it('removeFromSelection removes specific bin', () => {
@@ -74,7 +91,7 @@ describe('ui store', () => {
       setSelectedBins(['bin1', 'bin2', 'bin3']);
       removeFromSelection('bin2');
 
-      expect(useUIStore.getState().selectedBinIds).toEqual(['bin1', 'bin3']);
+      expect(getSelectionState().selectedBinIds).toEqual(['bin1', 'bin3']);
     });
 
     it('toggleSelection toggles bin in selection', () => {
@@ -83,10 +100,10 @@ describe('ui store', () => {
       addToSelection('bin1');
 
       toggleSelection('bin2');
-      expect(useUIStore.getState().selectedBinIds).toContain('bin2');
+      expect(getSelectionState().selectedBinIds).toContain('bin2');
 
       toggleSelection('bin1');
-      expect(useUIStore.getState().selectedBinIds).not.toContain('bin1');
+      expect(getSelectionState().selectedBinIds).not.toContain('bin1');
     });
 
     it('clearSelection clears selection and interaction', () => {
@@ -97,9 +114,8 @@ describe('ui store', () => {
 
       clearSelection();
 
-      const state = useUIStore.getState();
-      expect(state.selectedBinIds).toHaveLength(0);
-      expect(state.interaction).toBeNull();
+      expect(getSelectionState().selectedBinIds).toHaveLength(0);
+      expect(getInteractionState().interaction).toBeNull();
     });
   });
 
@@ -108,17 +124,17 @@ describe('ui store', () => {
       const { setZoom } = useUIStore.getState();
 
       setZoom(2);
-      expect(useUIStore.getState().zoom).toBe(2);
+      expect(getViewState().zoom).toBe(2);
     });
 
     it('setZoom clamps to min/max', () => {
       const { setZoom } = useUIStore.getState();
 
       setZoom(0.1); // Below min
-      expect(useUIStore.getState().zoom).toBe(CONSTRAINTS.ZOOM_MIN);
+      expect(getViewState().zoom).toBe(CONSTRAINTS.ZOOM_MIN);
 
       setZoom(10); // Above max
-      expect(useUIStore.getState().zoom).toBe(CONSTRAINTS.ZOOM_MAX);
+      expect(getViewState().zoom).toBe(CONSTRAINTS.ZOOM_MAX);
     });
 
     it('zoomIn increases zoom by step', () => {
@@ -127,7 +143,7 @@ describe('ui store', () => {
       setZoom(1);
       zoomIn();
 
-      expect(useUIStore.getState().zoom).toBe(1 + CONSTRAINTS.ZOOM_STEP);
+      expect(getViewState().zoom).toBe(1 + CONSTRAINTS.ZOOM_STEP);
     });
 
     it('zoomOut decreases zoom by step', () => {
@@ -136,7 +152,7 @@ describe('ui store', () => {
       setZoom(1);
       zoomOut();
 
-      expect(useUIStore.getState().zoom).toBe(1 - CONSTRAINTS.ZOOM_STEP);
+      expect(getViewState().zoom).toBe(1 - CONSTRAINTS.ZOOM_STEP);
     });
 
     it('zoomIn respects max limit', () => {
@@ -145,7 +161,7 @@ describe('ui store', () => {
       setZoom(CONSTRAINTS.ZOOM_MAX);
       zoomIn();
 
-      expect(useUIStore.getState().zoom).toBe(CONSTRAINTS.ZOOM_MAX);
+      expect(getViewState().zoom).toBe(CONSTRAINTS.ZOOM_MAX);
     });
 
     it('zoomOut respects min limit', () => {
@@ -154,7 +170,7 @@ describe('ui store', () => {
       setZoom(CONSTRAINTS.ZOOM_MIN);
       zoomOut();
 
-      expect(useUIStore.getState().zoom).toBe(CONSTRAINTS.ZOOM_MIN);
+      expect(getViewState().zoom).toBe(CONSTRAINTS.ZOOM_MIN);
     });
   });
 
@@ -162,35 +178,35 @@ describe('ui store', () => {
     it('toggleShowOtherLayers toggles state', () => {
       const { toggleShowOtherLayers } = useUIStore.getState();
 
-      expect(useUIStore.getState().showOtherLayers).toBe(true);
+      expect(getViewState().showOtherLayers).toBe(true);
       toggleShowOtherLayers();
-      expect(useUIStore.getState().showOtherLayers).toBe(false);
+      expect(getViewState().showOtherLayers).toBe(false);
       toggleShowOtherLayers();
-      expect(useUIStore.getState().showOtherLayers).toBe(true);
+      expect(getViewState().showOtherLayers).toBe(true);
     });
 
     it('toggleShowLabels toggles state', () => {
       const { toggleShowLabels } = useUIStore.getState();
 
-      expect(useUIStore.getState().showLabels).toBe(true);
+      expect(getViewState().showLabels).toBe(true);
       toggleShowLabels();
-      expect(useUIStore.getState().showLabels).toBe(false);
+      expect(getViewState().showLabels).toBe(false);
     });
 
     it('toggleLeftPanel toggles collapsed state', () => {
       const { toggleLeftPanel } = useUIStore.getState();
 
-      expect(useUIStore.getState().leftPanelCollapsed).toBe(false);
+      expect(getViewState().leftPanelCollapsed).toBe(false);
       toggleLeftPanel();
-      expect(useUIStore.getState().leftPanelCollapsed).toBe(true);
+      expect(getViewState().leftPanelCollapsed).toBe(true);
     });
 
     it('toggleRightPanel toggles collapsed state', () => {
       const { toggleRightPanel } = useUIStore.getState();
 
-      expect(useUIStore.getState().rightPanelCollapsed).toBe(false);
+      expect(getViewState().rightPanelCollapsed).toBe(false);
       toggleRightPanel();
-      expect(useUIStore.getState().rightPanelCollapsed).toBe(true);
+      expect(getViewState().rightPanelCollapsed).toBe(true);
     });
   });
 
@@ -200,7 +216,7 @@ describe('ui store', () => {
 
       setPaintSize({ width: 2, depth: 3 });
 
-      expect(useUIStore.getState().paintSize).toEqual({ width: 2, depth: 3 });
+      expect(getInteractionState().paintSize).toEqual({ width: 2, depth: 3 });
     });
 
     it('setPaintSize with null clears paint mode', () => {
@@ -209,20 +225,20 @@ describe('ui store', () => {
       setPaintSize({ width: 2, depth: 3 });
       setPaintSize(null);
 
-      expect(useUIStore.getState().paintSize).toBeNull();
+      expect(getInteractionState().paintSize).toBeNull();
     });
 
     it('togglePaintSize toggles between sizes', () => {
       const { togglePaintSize } = useUIStore.getState();
 
       togglePaintSize({ width: 2, depth: 2 });
-      expect(useUIStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
+      expect(getInteractionState().paintSize).toEqual({ width: 2, depth: 2 });
 
       togglePaintSize({ width: 2, depth: 2 }); // Same size - should toggle off
-      expect(useUIStore.getState().paintSize).toBeNull();
+      expect(getInteractionState().paintSize).toBeNull();
 
       togglePaintSize({ width: 3, depth: 3 }); // Different size - should toggle on
-      expect(useUIStore.getState().paintSize).toEqual({ width: 3, depth: 3 });
+      expect(getInteractionState().paintSize).toEqual({ width: 3, depth: 3 });
     });
   });
 
@@ -231,7 +247,7 @@ describe('ui store', () => {
       const { setActiveMobilePanel } = useUIStore.getState();
 
       setActiveMobilePanel('layers');
-      expect(useUIStore.getState().activeMobilePanel).toBe('layers');
+      expect(getMobileState().activeMobilePanel).toBe('layers');
     });
 
     it('closeMobilePanel closes panel', () => {
@@ -240,20 +256,20 @@ describe('ui store', () => {
       setActiveMobilePanel('layers');
       closeMobilePanel();
 
-      expect(useUIStore.getState().activeMobilePanel).toBeNull();
+      expect(getMobileState().activeMobilePanel).toBeNull();
     });
 
     it('toggleMobilePanel toggles panel', () => {
       const { toggleMobilePanel } = useUIStore.getState();
 
       toggleMobilePanel('layers');
-      expect(useUIStore.getState().activeMobilePanel).toBe('layers');
+      expect(getMobileState().activeMobilePanel).toBe('layers');
 
       toggleMobilePanel('layers'); // Same panel - should close
-      expect(useUIStore.getState().activeMobilePanel).toBeNull();
+      expect(getMobileState().activeMobilePanel).toBeNull();
 
       toggleMobilePanel('categories'); // Different panel - should open
-      expect(useUIStore.getState().activeMobilePanel).toBe('categories');
+      expect(getMobileState().activeMobilePanel).toBe('categories');
     });
   });
 
@@ -263,7 +279,7 @@ describe('ui store', () => {
 
       showContextMenu('bin1', { x: 100, y: 200 });
 
-      const menu = useUIStore.getState().contextMenu;
+      const menu = getViewState().contextMenu;
       expect(menu?.binIds).toEqual(['bin1']);
       expect(menu?.position).toEqual({ x: 100, y: 200 });
     });
@@ -274,7 +290,7 @@ describe('ui store', () => {
       showContextMenu('bin1', { x: 100, y: 200 });
       hideContextMenu();
 
-      expect(useUIStore.getState().contextMenu).toBeNull();
+      expect(getViewState().contextMenu).toBeNull();
     });
   });
 
@@ -283,26 +299,26 @@ describe('ui store', () => {
       const { toggleIsometricPreview } = useUIStore.getState();
 
       // resetAllStores() sets this to false (InteractionStore default)
-      expect(useUIStore.getState().showIsometricPreview).toBe(false);
+      expect(getInteractionState().showIsometricPreview).toBe(false);
       toggleIsometricPreview();
-      expect(useUIStore.getState().showIsometricPreview).toBe(true);
+      expect(getInteractionState().showIsometricPreview).toBe(true);
     });
 
     it('setIsometricRotation sets rotation', () => {
       const { setIsometricRotation } = useUIStore.getState();
 
       setIsometricRotation(45);
-      expect(useUIStore.getState().isometricRotation).toBe(45);
+      expect(getInteractionState().isometricRotation).toBe(45);
     });
 
     it('setIsometricRotation normalizes to 0-360', () => {
       const { setIsometricRotation } = useUIStore.getState();
 
       setIsometricRotation(-90);
-      expect(useUIStore.getState().isometricRotation).toBe(270);
+      expect(getInteractionState().isometricRotation).toBe(270);
 
       setIsometricRotation(450);
-      expect(useUIStore.getState().isometricRotation).toBe(90);
+      expect(getInteractionState().isometricRotation).toBe(90);
     });
 
     it('snapToIsometric snaps to nearest 90 degrees', () => {
@@ -310,50 +326,50 @@ describe('ui store', () => {
 
       setIsometricRotation(35);
       snapToIsometric();
-      expect(useUIStore.getState().isometricRotation).toBe(0);
+      expect(getInteractionState().isometricRotation).toBe(0);
 
       setIsometricRotation(55);
       snapToIsometric();
-      expect(useUIStore.getState().isometricRotation).toBe(90);
+      expect(getInteractionState().isometricRotation).toBe(90);
 
       setIsometricRotation(130);
       snapToIsometric();
-      expect(useUIStore.getState().isometricRotation).toBe(90);
+      expect(getInteractionState().isometricRotation).toBe(90);
 
       setIsometricRotation(320);
       snapToIsometric();
-      expect(useUIStore.getState().isometricRotation).toBe(0);
+      expect(getInteractionState().isometricRotation).toBe(0);
     });
 
     it('setLayerViewMode changes layer view mode', () => {
       const { setLayerViewMode } = useUIStore.getState();
 
       // resetAllStores() sets this to 'stack' (InteractionStore default)
-      expect(useUIStore.getState().layerViewMode).toBe('stack');
+      expect(getInteractionState().layerViewMode).toBe('stack');
       setLayerViewMode('focus');
-      expect(useUIStore.getState().layerViewMode).toBe('focus');
+      expect(getInteractionState().layerViewMode).toBe('focus');
       setLayerViewMode('all');
-      expect(useUIStore.getState().layerViewMode).toBe('all');
+      expect(getInteractionState().layerViewMode).toBe('all');
       setLayerViewMode('stack');
-      expect(useUIStore.getState().layerViewMode).toBe('stack');
+      expect(getInteractionState().layerViewMode).toBe('stack');
     });
 
     it('togglePreviewExpanded toggles expanded state', () => {
       const { togglePreviewExpanded } = useUIStore.getState();
 
-      expect(useUIStore.getState().isPreviewExpanded).toBe(false);
+      expect(getInteractionState().isPreviewExpanded).toBe(false);
       togglePreviewExpanded();
-      expect(useUIStore.getState().isPreviewExpanded).toBe(true);
+      expect(getInteractionState().isPreviewExpanded).toBe(true);
     });
 
     it('setPreviewExpanded sets expanded state', () => {
       const { setPreviewExpanded } = useUIStore.getState();
 
       setPreviewExpanded(true);
-      expect(useUIStore.getState().isPreviewExpanded).toBe(true);
+      expect(getInteractionState().isPreviewExpanded).toBe(true);
 
       setPreviewExpanded(false);
-      expect(useUIStore.getState().isPreviewExpanded).toBe(false);
+      expect(getInteractionState().isPreviewExpanded).toBe(false);
     });
   });
 
@@ -370,7 +386,7 @@ describe('ui store', () => {
         isOverGrid: true,
       });
 
-      const interaction = useUIStore.getState().interaction;
+      const interaction = getInteractionState().interaction;
       expect(interaction?.type).toBe('drag');
     });
 
@@ -378,13 +394,13 @@ describe('ui store', () => {
       const { setDropTarget } = useUIStore.getState();
 
       setDropTarget('trash');
-      expect(useUIStore.getState().dropTarget).toBe('trash');
+      expect(getInteractionState().dropTarget).toBe('trash');
 
       setDropTarget('staging');
-      expect(useUIStore.getState().dropTarget).toBe('staging');
+      expect(getInteractionState().dropTarget).toBe('staging');
 
       setDropTarget(null);
-      expect(useUIStore.getState().dropTarget).toBeNull();
+      expect(getInteractionState().dropTarget).toBeNull();
     });
   });
 
@@ -393,55 +409,54 @@ describe('ui store', () => {
       const { setActiveCategory } = useUIStore.getState();
 
       setActiveCategory('tools');
-      expect(useUIStore.getState().activeCategoryId).toBe('tools');
+      expect(getSelectionState().activeCategoryId).toBe('tools');
     });
   });
 
   describe('row/column label highlighting', () => {
     it('initial state has null highlighted row and column', () => {
-      const state = useUIStore.getState();
-      expect(state.highlightedRowLabel).toBeNull();
-      expect(state.highlightedColLabel).toBeNull();
+      expect(getViewState().highlightedRowLabel).toBeNull();
+      expect(getViewState().highlightedColLabel).toBeNull();
     });
 
     it('setHighlightedRowLabel sets highlighted row', () => {
       const { setHighlightedRowLabel } = useUIStore.getState();
 
       setHighlightedRowLabel(3);
-      expect(useUIStore.getState().highlightedRowLabel).toBe(3);
+      expect(getViewState().highlightedRowLabel).toBe(3);
 
       setHighlightedRowLabel(5);
-      expect(useUIStore.getState().highlightedRowLabel).toBe(5);
+      expect(getViewState().highlightedRowLabel).toBe(5);
     });
 
     it('setHighlightedRowLabel with null clears highlight', () => {
       const { setHighlightedRowLabel } = useUIStore.getState();
 
       setHighlightedRowLabel(3);
-      expect(useUIStore.getState().highlightedRowLabel).toBe(3);
+      expect(getViewState().highlightedRowLabel).toBe(3);
 
       setHighlightedRowLabel(null);
-      expect(useUIStore.getState().highlightedRowLabel).toBeNull();
+      expect(getViewState().highlightedRowLabel).toBeNull();
     });
 
     it('setHighlightedColLabel sets highlighted column', () => {
       const { setHighlightedColLabel } = useUIStore.getState();
 
       setHighlightedColLabel(2);
-      expect(useUIStore.getState().highlightedColLabel).toBe(2);
+      expect(getViewState().highlightedColLabel).toBe(2);
 
       setHighlightedColLabel(7);
-      expect(useUIStore.getState().highlightedColLabel).toBe(7);
+      expect(getViewState().highlightedColLabel).toBe(7);
     });
 
     it('setHighlightedColLabel with null clears highlight', () => {
       const { setHighlightedColLabel } = useUIStore.getState();
 
       setHighlightedColLabel(2);
-      expect(useUIStore.getState().highlightedColLabel).toBe(2);
+      expect(getViewState().highlightedColLabel).toBe(2);
 
       setHighlightedColLabel(null);
-      expect(useUIStore.getState().highlightedColLabel).toBeNull();
+      expect(getViewState().highlightedColLabel).toBeNull();
     });
 
     it('row and column highlights are independent', () => {
@@ -450,13 +465,12 @@ describe('ui store', () => {
       setHighlightedRowLabel(3);
       setHighlightedColLabel(5);
 
-      const state = useUIStore.getState();
-      expect(state.highlightedRowLabel).toBe(3);
-      expect(state.highlightedColLabel).toBe(5);
+      expect(getViewState().highlightedRowLabel).toBe(3);
+      expect(getViewState().highlightedColLabel).toBe(5);
 
       setHighlightedRowLabel(null);
-      expect(useUIStore.getState().highlightedRowLabel).toBeNull();
-      expect(useUIStore.getState().highlightedColLabel).toBe(5);
+      expect(getViewState().highlightedRowLabel).toBeNull();
+      expect(getViewState().highlightedColLabel).toBe(5);
     });
   });
 
@@ -474,9 +488,8 @@ describe('ui store', () => {
     };
 
     it('initial state is null', () => {
-      const state = useUIStore.getState();
-      expect(state.sharedLayoutPreview).toBeNull();
-      expect(state.sharedLayoutOriginalName).toBeNull();
+      expect(getSharedPreviewState().sharedLayoutPreview).toBeNull();
+      expect(getSharedPreviewState().sharedLayoutOriginalName).toBeNull();
     });
 
     it('setSharedLayoutPreview sets layout and derives name from layout', () => {
@@ -484,9 +497,8 @@ describe('ui store', () => {
 
       setSharedLayoutPreview(mockLayout);
 
-      const state = useUIStore.getState();
-      expect(state.sharedLayoutPreview).toEqual(mockLayout);
-      expect(state.sharedLayoutOriginalName).toBe('Test Layout');
+      expect(getSharedPreviewState().sharedLayoutPreview).toEqual(mockLayout);
+      expect(getSharedPreviewState().sharedLayoutOriginalName).toBe('Test Layout');
     });
 
     it('setSharedLayoutPreview uses explicit name when provided', () => {
@@ -494,9 +506,8 @@ describe('ui store', () => {
 
       setSharedLayoutPreview(mockLayout, 'Custom Name');
 
-      const state = useUIStore.getState();
-      expect(state.sharedLayoutPreview).toEqual(mockLayout);
-      expect(state.sharedLayoutOriginalName).toBe('Custom Name');
+      expect(getSharedPreviewState().sharedLayoutPreview).toEqual(mockLayout);
+      expect(getSharedPreviewState().sharedLayoutOriginalName).toBe('Custom Name');
     });
 
     it('setSharedLayoutPreview with null clears both fields', () => {
@@ -504,14 +515,13 @@ describe('ui store', () => {
 
       // Set first
       setSharedLayoutPreview(mockLayout, 'Original');
-      expect(useUIStore.getState().sharedLayoutPreview).not.toBeNull();
+      expect(getSharedPreviewState().sharedLayoutPreview).not.toBeNull();
 
       // Clear
       setSharedLayoutPreview(null);
 
-      const state = useUIStore.getState();
-      expect(state.sharedLayoutPreview).toBeNull();
-      expect(state.sharedLayoutOriginalName).toBeNull();
+      expect(getSharedPreviewState().sharedLayoutPreview).toBeNull();
+      expect(getSharedPreviewState().sharedLayoutOriginalName).toBeNull();
     });
 
     it('clearSharedLayoutPreview clears both fields', () => {
@@ -519,14 +529,13 @@ describe('ui store', () => {
 
       // Set first
       setSharedLayoutPreview(mockLayout, 'Test');
-      expect(useUIStore.getState().sharedLayoutPreview).not.toBeNull();
+      expect(getSharedPreviewState().sharedLayoutPreview).not.toBeNull();
 
       // Clear
       clearSharedLayoutPreview();
 
-      const state = useUIStore.getState();
-      expect(state.sharedLayoutPreview).toBeNull();
-      expect(state.sharedLayoutOriginalName).toBeNull();
+      expect(getSharedPreviewState().sharedLayoutPreview).toBeNull();
+      expect(getSharedPreviewState().sharedLayoutOriginalName).toBeNull();
     });
 
     it('preserves original name when layout name changes', () => {
@@ -539,7 +548,7 @@ describe('ui store', () => {
       useUIStore.setState({ sharedLayoutPreview: modifiedLayout });
 
       // Original name should still be preserved
-      expect(useUIStore.getState().sharedLayoutOriginalName).toBe('Original Name');
+      expect(getSharedPreviewState().sharedLayoutOriginalName).toBe('Original Name');
     });
 
     it('setSharedLayoutPreview sets author name when provided', () => {
@@ -547,18 +556,17 @@ describe('ui store', () => {
 
       setSharedLayoutPreview(mockLayout, 'Custom Name', 'John Doe');
 
-      const state = useUIStore.getState();
-      expect(state.sharedLayoutAuthorName).toBe('John Doe');
+      expect(getSharedPreviewState().sharedLayoutAuthorName).toBe('John Doe');
     });
 
     it('clearSharedLayoutPreview also clears author name', () => {
       const { setSharedLayoutPreview, clearSharedLayoutPreview } = useUIStore.getState();
 
       setSharedLayoutPreview(mockLayout, 'Test', 'Author');
-      expect(useUIStore.getState().sharedLayoutAuthorName).toBe('Author');
+      expect(getSharedPreviewState().sharedLayoutAuthorName).toBe('Author');
 
       clearSharedLayoutPreview();
-      expect(useUIStore.getState().sharedLayoutAuthorName).toBeNull();
+      expect(getSharedPreviewState().sharedLayoutAuthorName).toBeNull();
     });
   });
 
@@ -567,49 +575,49 @@ describe('ui store', () => {
       const { setFocusedBin } = useUIStore.getState();
 
       setFocusedBin('bin1');
-      expect(useUIStore.getState().focusedBinId).toBe('bin1');
+      expect(getSelectionState().focusedBinId).toBe('bin1');
 
       setFocusedBin(null);
-      expect(useUIStore.getState().focusedBinId).toBeNull();
+      expect(getSelectionState().focusedBinId).toBeNull();
     });
 
     it('setKeyboardDragMode enables drag mode', () => {
       const { setKeyboardDragMode } = useUIStore.getState();
 
       setKeyboardDragMode(true);
-      expect(useUIStore.getState().keyboardDragMode).toBe(true);
+      expect(getInteractionState().keyboardDragMode).toBe(true);
 
       setKeyboardDragMode(false);
-      expect(useUIStore.getState().keyboardDragMode).toBe(false);
+      expect(getInteractionState().keyboardDragMode).toBe(false);
     });
 
     it('setKeyboardDragMode disables resize mode when entering drag mode', () => {
       const { setKeyboardResizeMode, setKeyboardDragMode } = useUIStore.getState();
 
       setKeyboardResizeMode(true);
-      expect(useUIStore.getState().keyboardResizeMode).toBe(true);
+      expect(getInteractionState().keyboardResizeMode).toBe(true);
 
       setKeyboardDragMode(true);
-      expect(useUIStore.getState().keyboardDragMode).toBe(true);
-      expect(useUIStore.getState().keyboardResizeMode).toBe(false);
+      expect(getInteractionState().keyboardDragMode).toBe(true);
+      expect(getInteractionState().keyboardResizeMode).toBe(false);
     });
 
     it('setKeyboardResizeMode enables resize mode', () => {
       const { setKeyboardResizeMode } = useUIStore.getState();
 
       setKeyboardResizeMode(true);
-      expect(useUIStore.getState().keyboardResizeMode).toBe(true);
+      expect(getInteractionState().keyboardResizeMode).toBe(true);
     });
 
     it('setKeyboardResizeMode disables drag mode when entering resize mode', () => {
       const { setKeyboardDragMode, setKeyboardResizeMode } = useUIStore.getState();
 
       setKeyboardDragMode(true);
-      expect(useUIStore.getState().keyboardDragMode).toBe(true);
+      expect(getInteractionState().keyboardDragMode).toBe(true);
 
       setKeyboardResizeMode(true);
-      expect(useUIStore.getState().keyboardResizeMode).toBe(true);
-      expect(useUIStore.getState().keyboardDragMode).toBe(false);
+      expect(getInteractionState().keyboardResizeMode).toBe(true);
+      expect(getInteractionState().keyboardDragMode).toBe(false);
     });
 
     it('announceToScreenReader sets and clears live message', async () => {
@@ -617,11 +625,11 @@ describe('ui store', () => {
       const { announceToScreenReader } = useUIStore.getState();
 
       announceToScreenReader('Test announcement');
-      expect(useUIStore.getState().liveMessage).toBe('Test announcement');
+      expect(getInteractionState().liveMessage).toBe('Test announcement');
 
       // Message should clear after 1 second
       vi.advanceTimersByTime(1000);
-      expect(useUIStore.getState().liveMessage).toBeNull();
+      expect(getInteractionState().liveMessage).toBeNull();
 
       vi.useRealTimers();
     });
@@ -632,7 +640,7 @@ describe('ui store', () => {
       const { showQuickLabel } = useUIStore.getState();
 
       showQuickLabel('bin1');
-      expect(useUIStore.getState().quickLabelBinId).toBe('bin1');
+      expect(getSelectionState().quickLabelBinId).toBe('bin1');
     });
 
     it('hideQuickLabel clears quick label bin', () => {
@@ -640,7 +648,7 @@ describe('ui store', () => {
 
       showQuickLabel('bin1');
       hideQuickLabel();
-      expect(useUIStore.getState().quickLabelBinId).toBeNull();
+      expect(getSelectionState().quickLabelBinId).toBeNull();
     });
   });
 
@@ -649,10 +657,10 @@ describe('ui store', () => {
       const { setHighlightedCategoryId } = useUIStore.getState();
 
       setHighlightedCategoryId('tools');
-      expect(useUIStore.getState().highlightedCategoryId).toBe('tools');
+      expect(getViewState().highlightedCategoryId).toBe('tools');
 
       setHighlightedCategoryId(null);
-      expect(useUIStore.getState().highlightedCategoryId).toBeNull();
+      expect(getViewState().highlightedCategoryId).toBeNull();
     });
   });
 
@@ -662,11 +670,11 @@ describe('ui store', () => {
 
       // Ensure off first
       setHalfBinMode(false);
-      expect(useUIStore.getState().halfBinMode).toBe(false);
+      expect(getHalfBinModeState().halfBinMode).toBe(false);
 
       const result = toggleHalfBinMode();
       expect(result.success).toBe(true);
-      expect(useUIStore.getState().halfBinMode).toBe(true);
+      expect(getHalfBinModeState().halfBinMode).toBe(true);
     });
 
     it('toggleHalfBinMode toggles state off when no fractional bins', () => {
@@ -674,22 +682,22 @@ describe('ui store', () => {
 
       // Enable first
       setHalfBinMode(true);
-      expect(useUIStore.getState().halfBinMode).toBe(true);
+      expect(getHalfBinModeState().halfBinMode).toBe(true);
 
       // Should be able to turn off since no fractional bins exist
       const result = toggleHalfBinMode();
       expect(result.success).toBe(true);
-      expect(useUIStore.getState().halfBinMode).toBe(false);
+      expect(getHalfBinModeState().halfBinMode).toBe(false);
     });
 
     it('setHalfBinMode directly sets state', () => {
       const { setHalfBinMode } = useUIStore.getState();
 
       setHalfBinMode(true);
-      expect(useUIStore.getState().halfBinMode).toBe(true);
+      expect(getHalfBinModeState().halfBinMode).toBe(true);
 
       setHalfBinMode(false);
-      expect(useUIStore.getState().halfBinMode).toBe(false);
+      expect(getHalfBinModeState().halfBinMode).toBe(false);
     });
   });
 
@@ -699,12 +707,12 @@ describe('ui store', () => {
 
       // Ensure off first
       setHalfBinMode(false);
-      expect(useUIStore.getState().halfBinMode).toBe(false);
+      expect(getHalfBinModeState().halfBinMode).toBe(false);
 
       const result = toggleHalfBinModeResult();
 
       expect(isOk(result)).toBe(true);
-      expect(useUIStore.getState().halfBinMode).toBe(true);
+      expect(getHalfBinModeState().halfBinMode).toBe(true);
     });
 
     it('returns Ok when disabling half-bin mode with no fractional bins', () => {
@@ -712,12 +720,12 @@ describe('ui store', () => {
 
       // Enable first
       setHalfBinMode(true);
-      expect(useUIStore.getState().halfBinMode).toBe(true);
+      expect(getHalfBinModeState().halfBinMode).toBe(true);
 
       const result = toggleHalfBinModeResult();
 
       expect(isOk(result)).toBe(true);
-      expect(useUIStore.getState().halfBinMode).toBe(false);
+      expect(getHalfBinModeState().halfBinMode).toBe(false);
     });
 
     it('returns Err with LAYOUT_INVALID_OPERATION when fractional bins exist', () => {
@@ -747,7 +755,7 @@ describe('ui store', () => {
         expect(result.error.operation).toBe('toggleHalfBinMode');
         expect(result.error.reason).toContain('fractional dimensions');
       }
-      expect(useUIStore.getState().halfBinMode).toBe(true); // Should remain enabled
+      expect(getHalfBinModeState().halfBinMode).toBe(true); // Should remain enabled
     });
   });
 
@@ -756,10 +764,10 @@ describe('ui store', () => {
       const { setMobileLayersTab } = useUIStore.getState();
 
       setMobileLayersTab('tools');
-      expect(useUIStore.getState().mobileLayersTab).toBe('tools');
+      expect(getMobileState().mobileLayersTab).toBe('tools');
 
       setMobileLayersTab('layers');
-      expect(useUIStore.getState().mobileLayersTab).toBe('layers');
+      expect(getMobileState().mobileLayersTab).toBe('layers');
     });
   });
 
@@ -769,7 +777,7 @@ describe('ui store', () => {
 
       showContextMenu(['bin1', 'bin2', 'bin3'], { x: 50, y: 100 });
 
-      const menu = useUIStore.getState().contextMenu;
+      const menu = getViewState().contextMenu;
       expect(menu?.binIds).toEqual(['bin1', 'bin2', 'bin3']);
     });
 
@@ -778,7 +786,7 @@ describe('ui store', () => {
 
       showContextMenu('bin1', { x: 50, y: 100 }, 'staging');
 
-      const menu = useUIStore.getState().contextMenu;
+      const menu = getViewState().contextMenu;
       expect(menu?.source).toBe('staging');
     });
 
@@ -787,7 +795,7 @@ describe('ui store', () => {
 
       showContextMenu('bin1', { x: 50, y: 100 });
 
-      const menu = useUIStore.getState().contextMenu;
+      const menu = getViewState().contextMenu;
       expect(menu?.source).toBe('grid');
     });
   });
@@ -796,21 +804,21 @@ describe('ui store', () => {
     it('resetAllStores sets layerViewMode to stack (default)', () => {
       // Set to different value first
       useUIStore.getState().setLayerViewMode('all');
-      expect(useUIStore.getState().layerViewMode).toBe('all');
+      expect(getInteractionState().layerViewMode).toBe('all');
 
       // Reset should set to 'stack' (the InteractionStore default)
       resetAllStores();
-      expect(useUIStore.getState().layerViewMode).toBe('stack');
+      expect(getInteractionState().layerViewMode).toBe('stack');
     });
 
     it('resetAllStores sets showIsometricPreview to false (default)', () => {
       // Set to different value first
       useUIStore.getState().toggleIsometricPreview(); // true now
-      expect(useUIStore.getState().showIsometricPreview).toBe(true);
+      expect(getInteractionState().showIsometricPreview).toBe(true);
 
       // Reset should set to false (the InteractionStore default)
       resetAllStores();
-      expect(useUIStore.getState().showIsometricPreview).toBe(false);
+      expect(getInteractionState().showIsometricPreview).toBe(false);
     });
   });
 });

@@ -1,5 +1,5 @@
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '../../store';
+import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '../../store';
 
 interface OverlayProps {
   cellSize: number;
@@ -12,12 +12,9 @@ interface OverlayProps {
  * Supports multi-bin drag and resize previews.
  */
 export function Overlay({ cellSize, gap }: OverlayProps) {
-  const { interaction, halfBinMode } = useUIStore(
-    useShallow((state) => ({
-      interaction: state.interaction,
-      halfBinMode: state.halfBinMode,
-    }))
-  );
+  // Performance: Use focused stores directly instead of facade
+  const interaction = useInteractionStore((state) => state.interaction);
+  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
   const { drawer, bins } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
