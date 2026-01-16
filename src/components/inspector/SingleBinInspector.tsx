@@ -4,6 +4,7 @@ import { getBinLocationContext } from '../../utils/binLocation';
 import type { UseBinInspectorReturn } from './useBinInspector';
 import { SplitWarning } from './SplitWarning';
 import { StepperControl } from '../StepperControl';
+import { SelectDropdown } from '../SelectDropdown';
 import { CustomPropertiesEditor } from './CustomPropertiesEditor';
 import { STLSearchDropdown } from '../STLSearchDropdown';
 
@@ -209,30 +210,14 @@ export function SingleBinInspector({
           <label className={`block ${labelSize} text-content-tertiary`}>
             Category
           </label>
-          <div className="relative">
-            <div
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded pointer-events-none"
-              style={{ backgroundColor: category?.color || DEFAULT_CATEGORY_COLOR }}
-            />
-            <select
-              value={bin.category}
-              onChange={(e) => updateField('category', e.target.value)}
-              className={`input w-full pl-8 pr-8 appearance-none ${inputHeight}`}
-              aria-label="Bin category"
-            >
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <svg
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-content-tertiary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+          <SelectDropdown
+            value={bin.category}
+            onChange={(value) => updateField('category', value)}
+            options={categories.map((c) => ({ id: c.id, name: c.name }))}
+            colorSwatch={category?.color || DEFAULT_CATEGORY_COLOR}
+            ariaLabel="Bin category"
+            variant={variant}
+          />
         </div>
 
         {/* Layer - only show for bins on grid (not in staging) */}
@@ -241,28 +226,17 @@ export function SingleBinInspector({
             <label className={`block ${labelSize} text-content-tertiary`}>
               Layer
             </label>
-            <div className="relative">
-              <select
-                value={bin.layerId}
-                onChange={(e) => moveToLayer(e.target.value)}
-                className={`input w-full pr-8 appearance-none ${inputHeight}`}
-                aria-label="Bin layer"
-              >
-                {layout.layers.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}{l.id === layer?.id ? ' (current)' : ''}
-                  </option>
-                ))}
-              </select>
-              <svg
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-content-tertiary"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+            <SelectDropdown
+              value={bin.layerId}
+              onChange={moveToLayer}
+              options={layout.layers.map((l) => ({
+                id: l.id,
+                name: l.name,
+                suffix: l.id === layer?.id ? ' (current)' : '',
+              }))}
+              ariaLabel="Bin layer"
+              variant={variant}
+            />
           </div>
         )}
 
