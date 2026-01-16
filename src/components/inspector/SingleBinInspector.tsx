@@ -140,12 +140,15 @@ export function SingleBinInspector({
           <button
             type="button"
             onClick={rotateBin}
-            className={`btn btn-secondary p-0 flex-shrink-0 ${isMobile ? 'w-12 h-12' : 'w-8 h-8'}`}
+            className={isMobile
+              ? "btn btn-secondary w-12 h-12 p-0 flex-shrink-0"
+              : "flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+            }
             title="Swap width ↔ depth (R)"
             aria-label="Swap width and depth"
           >
-            <svg className={isMobile ? "w-5 h-5" : "w-4 h-4"} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
             </svg>
           </button>
 
