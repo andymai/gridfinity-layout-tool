@@ -14,6 +14,7 @@ import { CollapsibleSection } from '../CollapsibleSection';
 import { useResponsive } from '../../hooks/useResponsive';
 import { LabsButton } from '../labs';
 import { Checkbox } from '../Checkbox';
+import { SettingsRow } from '../SettingsRow';
 import type { STLSearchSite } from '../../store/settings';
 
 export function Sidebar() {
@@ -288,67 +289,52 @@ export function Sidebar() {
             <div data-units-panel className="px-4 py-4 border-t border-stroke-subtle">
               <CollapsibleSection title="Physical Units" variant="default" defaultExpanded={isDesktop}>
                 <div className="text-xs text-content-secondary space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label
-                      htmlFor="gridUnit"
-                      className="text-content-tertiary"
-                      title="Size of one grid unit in mm (standard Gridfinity = 42mm)"
-                    >
-                      Grid unit
-                    </label>
-                    <div className="flex items-center gap-1">
-                      <DeferredNumberInput
-                        id="gridUnit"
-                        value={gridUnitMm}
-                        onChange={setGridUnitMm}
-                        min={1}
-                        max={200}
-                        className="input w-14 py-0.5 px-1 text-xs text-right"
-                      />
-                      <span className="text-content-tertiary">mm</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label
-                      htmlFor="heightUnit"
-                      className="text-content-tertiary"
-                      title="Height of one vertical unit in mm (standard = 7mm)"
-                    >
-                      Height unit
-                    </label>
-                    <div className="flex items-center gap-1">
-                      <DeferredNumberInput
-                        id="heightUnit"
-                        value={heightUnitMm}
-                        onChange={setHeightUnitMm}
-                        min={1}
-                        max={50}
-                        className="input w-14 py-0.5 px-1 text-xs text-right"
-                      />
-                      <span className="text-content-tertiary">mm</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label
-                      htmlFor="printBedSize"
-                      className="text-content-tertiary"
-                      title={`Bins larger than ${Math.floor((printBedSize - 10) / gridUnitMm)}×${Math.floor((printBedSize - 10) / gridUnitMm)} will be split for printing`}
-                    >
-                      Print bed
-                    </label>
-                    <div className="flex items-center gap-1">
-                      <DeferredNumberInput
-                        id="printBedSize"
-                        value={printBedSize}
-                        onChange={setPrintBedSize}
-                        min={42}
-                        max={500}
-                        step={10}
-                        className="input w-14 py-0.5 px-1 text-xs text-right"
-                      />
-                      <span className="text-content-tertiary">mm</span>
-                    </div>
-                  </div>
+                  <SettingsRow
+                    label="Grid unit"
+                    htmlFor="gridUnit"
+                    tooltip="Size of one grid unit in mm (standard Gridfinity = 42mm)"
+                    unit="mm"
+                  >
+                    <DeferredNumberInput
+                      id="gridUnit"
+                      value={gridUnitMm}
+                      onChange={setGridUnitMm}
+                      min={1}
+                      max={200}
+                      className="input w-14 py-0.5 px-1 text-xs text-right"
+                    />
+                  </SettingsRow>
+                  <SettingsRow
+                    label="Height unit"
+                    htmlFor="heightUnit"
+                    tooltip="Height of one vertical unit in mm (standard = 7mm)"
+                    unit="mm"
+                  >
+                    <DeferredNumberInput
+                      id="heightUnit"
+                      value={heightUnitMm}
+                      onChange={setHeightUnitMm}
+                      min={1}
+                      max={50}
+                      className="input w-14 py-0.5 px-1 text-xs text-right"
+                    />
+                  </SettingsRow>
+                  <SettingsRow
+                    label="Print bed"
+                    htmlFor="printBedSize"
+                    tooltip={`Bins larger than ${Math.floor((printBedSize - 10) / gridUnitMm)}×${Math.floor((printBedSize - 10) / gridUnitMm)} will be split for printing`}
+                    unit="mm"
+                  >
+                    <DeferredNumberInput
+                      id="printBedSize"
+                      value={printBedSize}
+                      onChange={setPrintBedSize}
+                      min={42}
+                      max={500}
+                      step={10}
+                      className="input w-14 py-0.5 px-1 text-xs text-right"
+                    />
+                  </SettingsRow>
                 </div>
               </CollapsibleSection>
             </div>
