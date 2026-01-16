@@ -8,11 +8,14 @@ import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { CollapsibleSection } from '../CollapsibleSection';
 import { isOk, isErr, getUserMessage } from '../../result';
 
+// Drop position indicator for drag-and-drop reordering
+type DropPosition = { index: number; position: 'above' | 'below' } | null;
+
 export function LayerPanel() {
   const [deleteLayerId, setDeleteLayerId] = useState<string | null>(null);
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [dragSourceIndex, setDragSourceIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [dropPosition, setDropPosition] = useState<DropPosition>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
 
   const layout = useLayoutStore(state => state.layout);
@@ -105,21 +108,63 @@ export function LayerPanel() {
   const handleDragOver = (e: React.DragEvent, displayIndex: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    if (dragSourceIndex !== null && displayIndex !== dragSourceIndex) {
-      setDragOverIndex(displayIndex);
+
+    if (dragSourceIndex === null) return;
+
+    // Calculate whether cursor is in top or bottom half of the element
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midpoint = rect.top + rect.height / 2;
+    const position = e.clientY < midpoint ? 'above' : 'below';
+
+    // Determine the effective target index based on position
+    // If dropping below a layer, it's equivalent to dropping above the next layer
+    let effectiveIndex = displayIndex;
+    if (position === 'below') {
+      effectiveIndex = displayIndex + 1;
+    }
+
+    // Don't show indicator if it would result in no change
+    // (dropping right above or below the source position)
+    const wouldChange = effectiveIndex !== dragSourceIndex && effectiveIndex !== dragSourceIndex + 1;
+
+    if (wouldChange) {
+      setDropPosition({ index: displayIndex, position });
+    } else {
+      setDropPosition(null);
     }
   };
 
-  const handleDragLeave = () => {
-    setDragOverIndex(null);
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only clear if we're leaving the layer list entirely
+    const relatedTarget = e.relatedTarget as HTMLElement | null;
+    if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+      setDropPosition(null);
+    }
   };
 
-  const handleDrop = (e: React.DragEvent, targetDisplayIndex: number) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    setDragOverIndex(null);
 
-    if (dragSourceIndex === null || dragSourceIndex === targetDisplayIndex) {
+    if (dragSourceIndex === null || !dropPosition) {
       setDragSourceIndex(null);
+      setDropPosition(null);
+      return;
+    }
+
+    // Calculate target index based on drop position
+    let targetDisplayIndex = dropPosition.index;
+    if (dropPosition.position === 'below') {
+      targetDisplayIndex = dropPosition.index + 1;
+    }
+
+    // Adjust for the source being removed
+    if (dragSourceIndex < targetDisplayIndex) {
+      targetDisplayIndex -= 1;
+    }
+
+    if (targetDisplayIndex === dragSourceIndex) {
+      setDragSourceIndex(null);
+      setDropPosition(null);
       return;
     }
 
@@ -136,11 +181,12 @@ export function LayerPanel() {
     });
 
     setDragSourceIndex(null);
+    setDropPosition(null);
   };
 
   const handleDragEnd = () => {
     setDragSourceIndex(null);
-    setDragOverIndex(null);
+    setDropPosition(null);
   };
 
   const layerToDelete = deleteLayerId ? layers.find(l => l.id === deleteLayerId) : null;
@@ -205,36 +251,38 @@ export function LayerPanel() {
             .reduce((sum, b) => sum + b.width * b.depth, 0);
           const layerCoverage = totalCells > 0 ? Math.round((layerCoveredCells / totalCells) * 100) : 0;
           const isDragging = dragSourceIndex === displayIndex;
-          const isDragOver = dragOverIndex === displayIndex;
+          const showDropAbove = dropPosition?.index === displayIndex && dropPosition?.position === 'above';
+          const showDropBelow = dropPosition?.index === displayIndex && dropPosition?.position === 'below';
 
           return (
-            <div
-              key={layer.id}
-              draggable={hasMultipleLayers && !editingLayerId}
-              onDragStart={(e) => handleDragStart(e, displayIndex)}
-              onDragOver={(e) => handleDragOver(e, displayIndex)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, displayIndex)}
-              onDragEnd={handleDragEnd}
-              onClick={() => !isEditing && setActiveLayer(layer.id)}
-              className={`group flex items-center gap-2 px-2 py-1.5 text-xs transition-all border-l-2 ${
-                isActive
-                  ? 'bg-surface-hover border-l-accent text-content'
-                  : 'bg-surface-elevated text-content-secondary hover:bg-surface-hover cursor-pointer border-l-transparent'
-              }`}
-              style={{
-                opacity: isDragging ? 0.5 : 1,
-                outline: isDragOver ? '2px solid var(--color-primary)' : 'none',
-              }}
-            >
-              {/* Drag handle - only show for multiple layers */}
-              {hasMultipleLayers && (
-                <div className="flex-shrink-0 cursor-grab active:cursor-grabbing text-content-disabled">
-                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
-                  </svg>
-                </div>
+            <div key={layer.id} className="relative">
+              {/* Drop indicator - above (absolute so no layout shift) */}
+              {showDropAbove && (
+                <div className="absolute -top-0.5 left-0 right-0 h-1 bg-accent z-10 pointer-events-none" />
               )}
+
+              <div
+                draggable={hasMultipleLayers && !editingLayerId}
+                onDragStart={(e) => handleDragStart(e, displayIndex)}
+                onDragOver={(e) => handleDragOver(e, displayIndex)}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+                onClick={() => !isEditing && setActiveLayer(layer.id)}
+                className={`group flex items-center gap-2 px-2 py-1.5 text-xs transition-all border-l-2 ${
+                  isActive
+                    ? 'bg-accent/15 border-l-accent text-content font-medium'
+                    : 'bg-surface-elevated/50 text-content-tertiary hover:bg-surface-elevated hover:text-content-secondary cursor-pointer border-l-transparent'
+                } ${isDragging ? 'opacity-40' : ''}`}
+              >
+                {/* Drag handle - only show for multiple layers */}
+                {hasMultipleLayers && (
+                  <div className="flex-shrink-0 cursor-grab active:cursor-grabbing text-content-tertiary hover:text-content transition-colors">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
+                    </svg>
+                  </div>
+                )}
 
               {/* Layer name - editable when active and clicked */}
               {isEditing ? (
@@ -322,6 +370,12 @@ export function LayerPanel() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </button>
+              )}
+              </div>
+
+              {/* Drop indicator - below (absolute so no layout shift) */}
+              {showDropBelow && (
+                <div className="absolute -bottom-0.5 left-0 right-0 h-1 bg-accent z-10 pointer-events-none" />
               )}
             </div>
           );
