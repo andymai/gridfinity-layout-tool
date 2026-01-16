@@ -9,6 +9,7 @@ import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 import { StepperControl } from '../StepperControl';
 import { Checkbox } from '../Checkbox';
+import { SettingsRow } from '../SettingsRow';
 import type { STLSearchSite } from '../../store/settings';
 
 /**
@@ -163,54 +164,36 @@ export function MobileSettingsPanel() {
         </h3>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-content-secondary">
-              1 grid unit
-            </label>
-            <div className="flex items-center gap-2">
-              <DeferredNumberInput
-                value={gridUnitMm}
-                onChange={setGridUnitMm}
-                className="input w-20 h-10 text-center"
-                min={1}
-                max={200}
-              />
-              <span className="text-content-tertiary">mm</span>
-            </div>
-          </div>
+          <SettingsRow label="1 grid unit" unit="mm" variant="mobile">
+            <DeferredNumberInput
+              value={gridUnitMm}
+              onChange={setGridUnitMm}
+              className="input w-20 h-10 text-center"
+              min={1}
+              max={200}
+            />
+          </SettingsRow>
 
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-content-secondary">
-              1u height
-            </label>
-            <div className="flex items-center gap-2">
-              <DeferredNumberInput
-                value={heightUnitMm}
-                onChange={setHeightUnitMm}
-                className="input w-20 h-10 text-center"
-                min={1}
-                max={50}
-              />
-              <span className="text-content-tertiary">mm</span>
-            </div>
-          </div>
+          <SettingsRow label="1u height" unit="mm" variant="mobile">
+            <DeferredNumberInput
+              value={heightUnitMm}
+              onChange={setHeightUnitMm}
+              className="input w-20 h-10 text-center"
+              min={1}
+              max={50}
+            />
+          </SettingsRow>
 
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-content-secondary">
-              Print bed size
-            </label>
-            <div className="flex items-center gap-2">
-              <DeferredNumberInput
-                value={printBedSize}
-                onChange={setPrintBedSize}
-                className="input w-20 h-10 text-center"
-                min={42}
-                max={500}
-                step={10}
-              />
-              <span className="text-content-tertiary">mm</span>
-            </div>
-          </div>
+          <SettingsRow label="Print bed size" unit="mm" variant="mobile">
+            <DeferredNumberInput
+              value={printBedSize}
+              onChange={setPrintBedSize}
+              className="input w-20 h-10 text-center"
+              min={42}
+              max={500}
+              step={10}
+            />
+          </SettingsRow>
 
           <div className="text-sm text-right text-content-disabled">
             Max bin size: {maxGridUnits}×{maxGridUnits}
