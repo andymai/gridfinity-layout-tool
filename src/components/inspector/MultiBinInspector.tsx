@@ -3,6 +3,7 @@ import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '../../constants
 import type { UseBinInspectorReturn } from './useBinInspector';
 import type { Layer } from '../../types';
 import { SelectDropdown } from '../SelectDropdown';
+import { BulkIncrementControl } from '../BulkIncrementControl';
 
 interface MultiBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -44,12 +45,9 @@ export function MultiBinInspector({
 
   const isMobile = variant === 'mobile';
 
-  // Button sizing for mobile vs desktop
-  const btnSize = isMobile ? 'w-12 h-12' : 'w-10 h-10';
-  const btnMinSize = isMobile ? 'min-w-[48px] min-h-[48px]' : 'min-w-[40px] min-h-[40px]';
+  // Sizing for mobile vs desktop
   const inputHeight = isMobile ? 'h-12' : '';
   const labelSize = isMobile ? 'text-sm mb-2' : 'text-xs mb-1';
-  const valueSize = isMobile ? 'text-xl' : 'text-lg';
 
   // Check if all bins have the same category
   const commonCategory = selectedBins.every((b) => b.category === selectedBins[0]?.category)
@@ -185,31 +183,12 @@ export function MultiBinInspector({
           <label className={`block ${labelSize} text-content-tertiary`}>
             Height
           </label>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => updateMultiHeight(-1)}
-              className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-              aria-label="Decrease height for all bins"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-              </svg>
-            </button>
-            <span className={`flex-1 text-center font-semibold ${valueSize} text-content`}>
-              {sameHeight ? `${minHeight}u` : `${minHeight}–${maxHeight}u`}
-            </span>
-            <button
-              type="button"
-              onClick={() => updateMultiHeight(1)}
-              className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-              aria-label="Increase height for all bins"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
-          </div>
+          <BulkIncrementControl
+            displayValue={sameHeight ? `${minHeight}u` : `${minHeight}–${maxHeight}u`}
+            onStep={updateMultiHeight}
+            ariaLabelPrefix="height for all bins"
+            variant={variant}
+          />
         </div>
 
         {/* Clearance control - show if any bin has clearance or if user might want to add it */}
@@ -221,32 +200,13 @@ export function MultiBinInspector({
             >
               Clearance
             </label>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => updateMultiClearance(-1)}
-                disabled={maxClearance <= 0}
-                className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-                aria-label="Decrease clearance for all bins"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                </svg>
-              </button>
-              <span className={`flex-1 text-center font-semibold ${valueSize} text-content`}>
-                {sameClearance ? `${minClearance}u` : `${minClearance}–${maxClearance}u`}
-              </span>
-              <button
-                type="button"
-                onClick={() => updateMultiClearance(1)}
-                className={`btn btn-secondary ${btnSize} p-0 ${btnMinSize}`}
-                aria-label="Increase clearance for all bins"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
-            </div>
+            <BulkIncrementControl
+              displayValue={sameClearance ? `${minClearance}u` : `${minClearance}–${maxClearance}u`}
+              onStep={updateMultiClearance}
+              ariaLabelPrefix="clearance for all bins"
+              decreaseDisabled={maxClearance <= 0}
+              variant={variant}
+            />
           </div>
         )}
 
