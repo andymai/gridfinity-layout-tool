@@ -147,9 +147,9 @@ export function STLSearchDropdown({
           aria-expanded={isSingleSite ? undefined : isOpen}
           aria-haspopup={isSingleSite ? undefined : 'menu'}
         >
-          <SearchIcon className="w-4 h-4 flex-shrink-0 translate-y-px" />
-          <span className="leading-none">{isSingleSite ? `Search ${enabledSites[0].name}` : 'Find STL'}</span>
-          {!isSingleSite && <ChevronIcon className="w-3 h-3 flex-shrink-0" isOpen={isOpen} />}
+          <SearchIcon className="w-4 h-4" />
+          {isSingleSite ? `Search ${enabledSites[0].name}` : 'Find STL'}
+          {!isSingleSite && <ChevronIcon className="w-3 h-3" isOpen={isOpen} />}
         </button>
       )}
 
