@@ -1,4 +1,5 @@
 import { useCallback, useRef, useEffect } from 'react';
+import { Checkbox } from '../../Checkbox';
 import type { Category, PrintListFilters } from '../../../types';
 
 interface BinListFiltersProps {
@@ -178,15 +179,23 @@ export function BinListFilters({
         <div className="h-5 w-px bg-stroke-subtle" />
 
         {/* Group by category toggle */}
-        <label className="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={filters.groupByCategory}
-            onChange={onToggleGroupByCategory}
-            className="rounded border-stroke focus:ring-accent"
-          />
-          <span className="text-sm text-content-secondary">Group by category</span>
-        </label>
+        <div
+          className="flex items-center gap-2 cursor-pointer select-none"
+          onClick={onToggleGroupByCategory}
+          role="checkbox"
+          aria-checked={filters.groupByCategory}
+          aria-label="Group by category"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault();
+              onToggleGroupByCategory();
+            }
+          }}
+        >
+          <span className={`text-sm ${filters.groupByCategory ? 'text-content' : 'text-content-secondary'}`}>Group by category</span>
+          <Checkbox checked={filters.groupByCategory} variant="desktop" />
+        </div>
       </div>
     </div>
   );
