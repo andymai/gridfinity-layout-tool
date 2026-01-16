@@ -398,29 +398,62 @@ export interface BaseplateExportOptions {
  * @see https://gridfinity.xyz/specification/
  * @see https://github.com/gridfinity-unofficial/specification
  */
+/**
+ * Gridfinity specification constants from gridfinity-rebuilt-openscad.
+ * Source: https://github.com/kennetek/gridfinity-rebuilt-openscad
+ */
 export const GRIDFINITY_SPEC = {
+  // === Grid dimensions ===
   /** Grid unit size in mm (42mm × 42mm) */
   gridUnitMm: 42,
   /** Height unit in mm (7mm increments) */
   heightUnitMm: 7,
-  /** Bin tolerance - bins are 41.5mm to fit 42mm baseplate */
-  binToleranceMm: 0.5,
-  /** Baseplate corner fillet radius in mm */
-  baseplateCornerRadiusMm: 4.0,
-  /** Bin corner fillet radius in mm */
-  binCornerRadiusMm: 3.75,
-  /** Height used by bin base profile (mm) - leaves 2.25mm usable in first height unit */
-  binBaseHeightMm: 4.75,
-  /** Standard magnet diameter in mm */
-  magnetDiameterMm: 6,
-  /** Standard magnet height in mm */
-  magnetHeightMm: 2,
-  /** Standard screw size */
-  screwSize: 'M3' as const,
-  /** Standard M3 clearance hole diameter in mm */
-  screwHoleDiameterMm: 3.0,
-  /** M3 heat-set insert hole diameter in mm */
-  heatSetInsertHoleDiameterMm: 4.2,
+  /** Tolerance offset for fit (mm) */
+  toleranceMm: 0.5,
+
+  // === Base profile ===
+  /** Base profile height - depth of socket in baseplate (mm) */
+  baseProfileHeightMm: 4.95,
+  /** Base top dimensions - bin footprint within grid unit (mm) */
+  baseTopDimensionMm: 41.5,
+  /** Base top fillet radius (mm) */
+  baseTopRadiusMm: 3.75,
+  /** Base bottom fillet radius (mm) */
+  baseBottomRadiusMm: 1.35,
+  /** Total base height including bridge (mm) */
+  baseHeightMm: 7,
+
+  // === Magnet holes ===
+  /** Magnet hole radius - sized for 6mm magnets with clearance (mm) */
+  magnetHoleRadiusMm: 3.25,
+  /** Magnet hole depth (mm) */
+  magnetHoleDepthMm: 2.4,
+  /** Distance from magnet hole center to grid edge (mm) */
+  magnetHoleFromEdgeMm: 8,
+
+  // === Screw holes ===
+  /** Screw hole radius for M3 (mm) */
+  screwHoleRadiusMm: 1.5,
+  /** Countersink additional radius (mm) */
+  countersinkRadiusMm: 2.5,
+  /** Counterbore radius (mm) */
+  counterboreRadiusMm: 2.75,
+  /** Counterbore height (mm) */
+  counterboreHeightMm: 3,
+
+  // === Baseplate styles ===
+  /** Weighted baseplate bottom thickness (mm) */
+  weightedBottomMm: 6.4,
+  /** Weighted baseplate cutout size (mm) */
+  weightedCutoutSizeMm: 21.4,
+  /** Weighted baseplate cutout depth (mm) */
+  weightedCutoutDepthMm: 4,
+
+  // === Wall thickness ===
+  /** Minimum wall thickness (mm) */
+  wallThicknessMm: 0.95,
+  /** Divider thickness (mm) */
+  dividerThicknessMm: 1.2,
 } as const;
 
 /** Type for GRIDFINITY_SPEC for use in type contexts */
