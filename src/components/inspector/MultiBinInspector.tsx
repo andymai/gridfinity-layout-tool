@@ -228,31 +228,29 @@ export function MultiBinInspector({
           </div>
           {showPropertyForm ? (
             <div className="bg-surface-elevated border border-stroke-subtle rounded p-2.5 space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={propertyKey}
-                  onChange={(e) => setPropertyKey(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH))}
-                  className={`input flex-1 ${inputHeight}`}
-                  placeholder="Property name"
-                  aria-label="Property name"
-                  list="property-key-suggestions"
-                  autoFocus
-                />
-                <datalist id="property-key-suggestions">
-                  {existingPropertyKeys.map((key) => (
-                    <option key={key} value={key} />
-                  ))}
-                </datalist>
-                <input
-                  type="text"
-                  value={propertyValue}
-                  onChange={(e) => setPropertyValue(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH))}
-                  className={`input flex-1 ${inputHeight}`}
-                  placeholder="Value"
-                  aria-label="Property value"
-                />
-              </div>
+              <input
+                type="text"
+                value={propertyKey}
+                onChange={(e) => setPropertyKey(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH))}
+                className={`input w-full ${inputHeight}`}
+                placeholder="Property name"
+                aria-label="Property name"
+                list="property-key-suggestions"
+                autoFocus
+              />
+              <datalist id="property-key-suggestions">
+                {existingPropertyKeys.map((key) => (
+                  <option key={key} value={key} />
+                ))}
+              </datalist>
+              <input
+                type="text"
+                value={propertyValue}
+                onChange={(e) => setPropertyValue(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH))}
+                className={`input w-full ${inputHeight}`}
+                placeholder="Value"
+                aria-label="Property value"
+              />
               <div className="flex gap-2">
                 <button
                   type="button"
