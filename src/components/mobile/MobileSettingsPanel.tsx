@@ -7,6 +7,7 @@ import { CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { DeferredNumberInput } from '../DeferredNumberInput';
+import { StepperControl } from '../StepperControl';
 import type { STLSearchSite } from '../../store/settings';
 
 /**
@@ -94,37 +95,16 @@ export function MobileSettingsPanel() {
             <label className="block text-sm mb-1 text-content-tertiary">
               Width
             </label>
-            <div className="flex items-center">
-              <button
-                onClick={() => handleDrawerWidthChange(-1)}
-                disabled={drawer.width <= 0.5}
-                className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
-                aria-label="Decrease width"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                </svg>
-              </button>
-              <DeferredNumberInput
-                value={drawer.width}
-                onChange={handleDrawerWidthInput}
-                min={0.5}
-                max={CONSTRAINTS.GRID_MAX}
-                step={widthStep}
-                className="input flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none"
-                aria-label="Drawer width in grid units"
-              />
-              <button
-                onClick={() => handleDrawerWidthChange(1)}
-                disabled={drawer.width >= CONSTRAINTS.GRID_MAX}
-                className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
-                aria-label="Increase width"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
-            </div>
+            <StepperControl
+              value={drawer.width}
+              onChange={handleDrawerWidthInput}
+              onStep={handleDrawerWidthChange}
+              min={0.5}
+              max={CONSTRAINTS.GRID_MAX}
+              step={widthStep}
+              variant="mobile"
+              ariaLabel="Drawer width in grid units"
+            />
           </div>
 
           {/* Depth */}
@@ -132,37 +112,16 @@ export function MobileSettingsPanel() {
             <label className="block text-sm mb-1 text-content-tertiary">
               Depth
             </label>
-            <div className="flex items-center">
-              <button
-                onClick={() => handleDrawerDepthChange(-1)}
-                disabled={drawer.depth <= 0.5}
-                className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
-                aria-label="Decrease depth"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                </svg>
-              </button>
-              <DeferredNumberInput
-                value={drawer.depth}
-                onChange={handleDrawerDepthInput}
-                min={0.5}
-                max={CONSTRAINTS.GRID_MAX}
-                step={depthStep}
-                className="input flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none"
-                aria-label="Drawer depth in grid units"
-              />
-              <button
-                onClick={() => handleDrawerDepthChange(1)}
-                disabled={drawer.depth >= CONSTRAINTS.GRID_MAX}
-                className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
-                aria-label="Increase depth"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
-            </div>
+            <StepperControl
+              value={drawer.depth}
+              onChange={handleDrawerDepthInput}
+              onStep={handleDrawerDepthChange}
+              min={0.5}
+              max={CONSTRAINTS.GRID_MAX}
+              step={depthStep}
+              variant="mobile"
+              ariaLabel="Drawer depth in grid units"
+            />
           </div>
         </div>
 
@@ -171,31 +130,15 @@ export function MobileSettingsPanel() {
           <label className="block text-sm mb-1 text-content-tertiary">
             Height
           </label>
-          <div className="flex items-center">
-            <button
-              onClick={() => handleDrawerHeightChange(-1)}
-              disabled={drawer.height <= 1}
-              className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
-              aria-label="Decrease height"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-              </svg>
-            </button>
-            <span className="flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content">
-              {drawer.height}u
-            </span>
-            <button
-              onClick={() => handleDrawerHeightChange(1)}
-              disabled={drawer.height >= CONSTRAINTS.GRID_MAX}
-              className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
-              aria-label="Increase height"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
-          </div>
+          <StepperControl
+            value={drawer.height}
+            onStep={handleDrawerHeightChange}
+            min={1}
+            max={CONSTRAINTS.GRID_MAX}
+            variant="mobile"
+            ariaLabel="Drawer height in units"
+            displayValue={`${drawer.height}u`}
+          />
         </div>
 
         {/* Real-world drawer dimensions */}

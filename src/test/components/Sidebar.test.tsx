@@ -156,29 +156,29 @@ describe('Sidebar', () => {
     it('renders width controls', () => {
       render(<Sidebar />);
 
-      expect(screen.getByLabelText('Decrease width')).toBeInTheDocument();
-      expect(screen.getByLabelText('Increase width')).toBeInTheDocument();
+      expect(screen.getByLabelText('Decrease Drawer width in grid units')).toBeInTheDocument();
+      expect(screen.getByLabelText('Increase Drawer width in grid units')).toBeInTheDocument();
     });
 
     it('renders depth controls', () => {
       render(<Sidebar />);
 
-      expect(screen.getByLabelText('Decrease depth')).toBeInTheDocument();
-      expect(screen.getByLabelText('Increase depth')).toBeInTheDocument();
+      expect(screen.getByLabelText('Decrease Drawer depth in grid units')).toBeInTheDocument();
+      expect(screen.getByLabelText('Increase Drawer depth in grid units')).toBeInTheDocument();
     });
 
     it('renders height controls', () => {
       render(<Sidebar />);
 
-      expect(screen.getByLabelText('Decrease height')).toBeInTheDocument();
-      expect(screen.getByLabelText('Increase height')).toBeInTheDocument();
+      expect(screen.getByLabelText('Decrease Drawer height in units')).toBeInTheDocument();
+      expect(screen.getByLabelText('Increase Drawer height in units')).toBeInTheDocument();
     });
 
     it('increases width when plus clicked', () => {
       render(<Sidebar />);
 
       const initialWidth = useLayoutStore.getState().layout.drawer.width;
-      fireEvent.click(screen.getByLabelText('Increase width'));
+      fireEvent.click(screen.getByLabelText('Increase Drawer width in grid units'));
 
       expect(useLayoutStore.getState().layout.drawer.width).toBe(initialWidth + 1);
     });
@@ -187,7 +187,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const initialWidth = useLayoutStore.getState().layout.drawer.width;
-      fireEvent.click(screen.getByLabelText('Decrease width'));
+      fireEvent.click(screen.getByLabelText('Decrease Drawer width in grid units'));
 
       expect(useLayoutStore.getState().layout.drawer.width).toBe(initialWidth - 1);
     });
@@ -196,7 +196,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const initialDepth = useLayoutStore.getState().layout.drawer.depth;
-      fireEvent.click(screen.getByLabelText('Increase depth'));
+      fireEvent.click(screen.getByLabelText('Increase Drawer depth in grid units'));
 
       expect(useLayoutStore.getState().layout.drawer.depth).toBe(initialDepth + 1);
     });
@@ -205,7 +205,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const initialDepth = useLayoutStore.getState().layout.drawer.depth;
-      fireEvent.click(screen.getByLabelText('Decrease depth'));
+      fireEvent.click(screen.getByLabelText('Decrease Drawer depth in grid units'));
 
       expect(useLayoutStore.getState().layout.drawer.depth).toBe(initialDepth - 1);
     });
@@ -214,7 +214,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const initialHeight = useLayoutStore.getState().layout.drawer.height;
-      fireEvent.click(screen.getByLabelText('Increase height'));
+      fireEvent.click(screen.getByLabelText('Increase Drawer height in units'));
 
       expect(useLayoutStore.getState().layout.drawer.height).toBe(initialHeight + 1);
     });
@@ -223,7 +223,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const initialHeight = useLayoutStore.getState().layout.drawer.height;
-      fireEvent.click(screen.getByLabelText('Decrease height'));
+      fireEvent.click(screen.getByLabelText('Decrease Drawer height in units'));
 
       expect(useLayoutStore.getState().layout.drawer.height).toBe(initialHeight - 1);
     });
@@ -233,7 +233,7 @@ describe('Sidebar', () => {
 
       render(<Sidebar />);
 
-      expect(screen.getByLabelText('Decrease width')).toBeDisabled();
+      expect(screen.getByLabelText('Decrease Drawer width in grid units')).toBeDisabled();
     });
 
     it('disables decrease depth at minimum', () => {
@@ -241,7 +241,7 @@ describe('Sidebar', () => {
 
       render(<Sidebar />);
 
-      expect(screen.getByLabelText('Decrease depth')).toBeDisabled();
+      expect(screen.getByLabelText('Decrease Drawer depth in grid units')).toBeDisabled();
     });
 
     it('shows real-world dimensions in mm', () => {
@@ -282,7 +282,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const initialWidth = useLayoutStore.getState().layout.drawer.width;
-      fireEvent.click(screen.getByLabelText('Increase width'));
+      fireEvent.click(screen.getByLabelText('Increase Drawer width in grid units'));
 
       expect(useLayoutStore.getState().layout.drawer.width).toBe(initialWidth + 0.5);
     });
@@ -293,7 +293,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const initialDepth = useLayoutStore.getState().layout.drawer.depth;
-      fireEvent.click(screen.getByLabelText('Increase depth'));
+      fireEvent.click(screen.getByLabelText('Increase Drawer depth in grid units'));
 
       expect(useLayoutStore.getState().layout.drawer.depth).toBe(initialDepth + 0.5);
     });
@@ -373,7 +373,7 @@ describe('Sidebar', () => {
     it('renders grid unit input', () => {
       render(<Sidebar />);
 
-      expect(screen.getByLabelText(/Drawer width in grid units/)).toBeInTheDocument();
+      expect(screen.getByLabelText('Grid unit')).toBeInTheDocument();
     });
   });
 
