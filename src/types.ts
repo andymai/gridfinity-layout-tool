@@ -1,5 +1,46 @@
 // === Core Data Model (from PRD 05-technical-reference.md) ===
 
+import type {
+  BinModelConfig,
+  BaseplateConfig,
+  GenerationDefaults,
+} from './types/generation';
+
+// Re-export generation types for convenience
+export type {
+  BinModelConfig,
+  BaseplateConfig,
+  GenerationDefaults,
+  BinSource,
+  BinStyle,
+  LipStyle,
+  DividerStyle,
+  DividerConfig,
+  ScoopSide,
+  ScoopConfig,
+  LabelStyle,
+  LabelConfig,
+  HoleStyle,
+  HolePosition,
+  MagnetConfig,
+  ScrewConfig,
+  HeightMode,
+  BinGenerationParams,
+  BaseplateStyle,
+  MarginType,
+  EdgeSide,
+  EdgeMargins,
+  CompatibilityWarning,
+  CustomModelMetadata,
+  BaseplateJointStyle,
+  SubdivisionStrategy,
+  BaseplateExportOptions,
+  GridfinitySpec,
+} from './types/generation';
+
+// Re-export Gridfinity spec constants
+export { GRIDFINITY_SPEC } from './types/generation';
+
 export interface Layout {
   version: string;           // "1.0"
   name: string;              // max 64 chars
@@ -10,6 +51,12 @@ export interface Layout {
   categories: Category[];    // 1-20 items
   layers: Layer[];           // 1-10 items, index 0 = bottom
   bins: Bin[];
+
+  // === Drawer-to-Print Feature (optional) ===
+  /** Baseplate configuration for STL generation */
+  baseplate?: BaseplateConfig;
+  /** Default generation settings for new bins */
+  generationDefaults?: GenerationDefaults;
 }
 
 /** Position of fractional edge when drawer has half-unit dimensions */
@@ -48,6 +95,10 @@ export interface Bin {
   label: string;             // max 24 chars
   notes: string;             // max 256 chars
   customProperties?: Record<string, string>; // custom key-value properties for user-defined metadata
+
+  // === Drawer-to-Print Feature (optional) ===
+  /** STL generation/source configuration */
+  modelConfig?: BinModelConfig;
 }
 
 // === Coordinate Types ===
