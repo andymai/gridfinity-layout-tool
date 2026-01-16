@@ -207,11 +207,11 @@ describe('SingleBinInspector', () => {
       expect(inspector.updateField).toHaveBeenCalledWith('depth', 5);
     });
 
-    it('calls rotateBin when rotate button is clicked', () => {
+    it('calls rotateBin when swap button is clicked', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      fireEvent.click(screen.getByLabelText('Rotate bin'));
+      fireEvent.click(screen.getByLabelText('Swap width and depth'));
 
       expect(inspector.rotateBin).toHaveBeenCalled();
     });
