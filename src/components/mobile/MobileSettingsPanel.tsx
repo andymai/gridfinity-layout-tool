@@ -9,6 +9,7 @@ import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 import { StepperControl } from '../StepperControl';
 import { Checkbox } from '../Checkbox';
+import { SectionHeader } from '../SectionHeader';
 import type { STLSearchSite } from '../../store/settings';
 
 /**
@@ -63,9 +64,7 @@ export function MobileSettingsPanel() {
     <div className="pb-4 space-y-6">
       {/* Drawer Dimensions */}
       <section>
-        <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
-          Drawer Dimensions
-        </h3>
+        <SectionHeader title="Drawer Dimensions" />
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           {/* Width */}
@@ -159,9 +158,7 @@ export function MobileSettingsPanel() {
 
       {/* Grid Settings */}
       <section>
-        <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
-          Grid Settings
-        </h3>
+        <SectionHeader title="Grid Settings" />
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -221,9 +218,7 @@ export function MobileSettingsPanel() {
 
       {/* STL Search */}
       <section>
-        <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
-          STL Search
-        </h3>
+        <SectionHeader title="STL Search" />
         <div className="space-y-2">
           {settings.stlSearchSites.map((site: STLSearchSite) => (
             <div
@@ -252,9 +247,7 @@ export function MobileSettingsPanel() {
 
       {/* Preferences */}
       <section>
-        <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
-          Default Preferences
-        </h3>
+        <SectionHeader title="Default Preferences" />
 
         <div className="bg-surface-elevated rounded-lg p-3 space-y-2">
           <div className="text-xs text-content-tertiary">
@@ -286,9 +279,7 @@ export function MobileSettingsPanel() {
 
       {/* Labs */}
       <section>
-        <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
-          Experimental
-        </h3>
+        <SectionHeader title="Experimental" />
         <button
           onClick={openLabsDrawer}
           className="w-full flex items-center justify-between px-4 py-3 bg-surface-elevated rounded-lg hover:bg-surface-hover transition-colors"
