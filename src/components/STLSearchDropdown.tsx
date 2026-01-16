@@ -142,7 +142,7 @@ export function STLSearchDropdown({
           ref={triggerRef}
           type="button"
           onClick={handleClick}
-          className={`btn btn-ghost text-sm flex items-center justify-center gap-1.5 text-content-secondary hover:text-content ${className}`}
+          className={`btn btn-ghost gap-1.5 text-content-secondary hover:text-content ${className}`}
           aria-label={`Find STL for ${sizeLabel} bin`}
           aria-expanded={isSingleSite ? undefined : isOpen}
           aria-haspopup={isSingleSite ? undefined : 'menu'}
