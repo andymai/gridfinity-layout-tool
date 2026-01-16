@@ -1,4 +1,5 @@
 import { useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useSettingsStore } from '../store';
 import { useContextMenu } from '../hooks/useContextMenu';
 import { ContextMenuContainer, ContextMenuItem } from './contextMenu';
@@ -184,8 +185,8 @@ export function STLSearchDropdown({
         </button>
       )}
 
-      {/* Dropdown menu - only for multiple sites */}
-      {!isSingleSite && (
+      {/* Dropdown menu - portaled to escape BottomSheet transforms on mobile */}
+      {!isSingleSite && createPortal(
         <ContextMenuContainer
           isOpen={isOpen}
           position={position}
@@ -212,7 +213,8 @@ export function STLSearchDropdown({
               />
             ))}
           </div>
-        </ContextMenuContainer>
+        </ContextMenuContainer>,
+        document.body
       )}
     </>
   );
