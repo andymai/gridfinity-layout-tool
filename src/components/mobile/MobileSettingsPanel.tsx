@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore, useToastStore, useLabsStore } from '../../store';
 import { useMutations } from '../../context/MutationsContext';
 import { getFeature } from '../../labs/features';
@@ -6,9 +6,33 @@ import { SparklesIcon, ChevronRightIcon } from '../labs/icons';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../../constants';
 import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
+import type { STLSearchSite } from '../../store/settings';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { DeferredNumberInput } from '../DeferredNumberInput';
+
+/**
+ * Custom checkbox visual indicator for mobile.
+ * Parent element should handle click/keyboard events.
+ */
+function MobileCheckbox({ checked }: { checked: boolean }) {
+  return (
+    <div className="relative w-6 h-6 flex-shrink-0 pointer-events-none" aria-hidden="true">
+      <div
+        className={`w-6 h-6 rounded border-2 transition-colors ${
+          checked
+            ? 'bg-accent border-accent'
+            : 'bg-surface border-stroke'
+        }`}
+      />
+      {checked && (
+        <svg className="absolute inset-0 w-6 h-6 text-white p-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+    </div>
+  );
+}
 
 /**
  * Mobile settings panel with grid configuration and app actions.
@@ -31,6 +55,15 @@ export function MobileSettingsPanel() {
 
   const settings = useSettingsStore(state => state.settings);
   const saveCurrentAsDefaults = useSettingsStore(state => state.saveCurrentAsDefaults);
+  const updateSetting = useSettingsStore(state => state.updateSetting);
+
+  // STL search site toggle handler
+  const toggleSTLSite = useCallback((siteId: string) => {
+    const updatedSites = settings.stlSearchSites.map((site: STLSearchSite) =>
+      site.id === siteId ? { ...site, enabled: !site.enabled } : site
+    );
+    updateSetting('stlSearchSites', updatedSites);
+  }, [settings.stlSearchSites, updateSetting]);
 
   const openLabsDrawer = useLabsStore(state => state.openDrawer);
   const enabledFeatures = useLabsStore(state => state.preferences.enabledFeatures);
@@ -258,6 +291,32 @@ export function MobileSettingsPanel() {
         </div>
       </section>
 
+      {/* Half-bin mode */}
+      <section>
+        <div
+          className="flex items-center justify-between cursor-pointer"
+          onClick={handleHalfBinToggle}
+          role="checkbox"
+          aria-checked={halfBinMode}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault();
+              handleHalfBinToggle();
+            }
+          }}
+        >
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className={`text-sm ${halfBinMode ? 'text-content' : 'text-content-secondary'}`}>Half-bin mode</span>
+              <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
+            </div>
+            <p className="text-xs text-content-tertiary">Allow 0.5 unit precision</p>
+          </div>
+          <MobileCheckbox checked={halfBinMode} />
+        </div>
+      </section>
+
       {/* Grid Settings */}
       <section>
         <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
@@ -317,24 +376,37 @@ export function MobileSettingsPanel() {
           <div className="text-sm text-right text-content-disabled">
             Max bin size: {maxGridUnits}×{maxGridUnits}
           </div>
+        </div>
+      </section>
 
-          {/* Half-bin mode checkbox */}
-          <label className="flex items-center justify-between pt-3 border-t border-stroke-subtle cursor-pointer">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm text-content-secondary">Half-bin mode</span>
-                <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
-              </div>
-              <p className="text-xs text-content-tertiary">Allow 0.5 unit precision</p>
+      {/* STL Search */}
+      <section>
+        <h3 className="text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary">
+          STL Search
+        </h3>
+        <div className="space-y-2">
+          {settings.stlSearchSites.map((site: STLSearchSite) => (
+            <div
+              key={site.id}
+              className="flex items-center justify-between py-2 cursor-pointer"
+              onClick={() => toggleSTLSite(site.id)}
+              role="checkbox"
+              aria-checked={site.enabled}
+              aria-label={`Toggle ${site.name}`}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                  e.preventDefault();
+                  toggleSTLSite(site.id);
+                }
+              }}
+            >
+              <span className={`text-sm ${site.enabled ? 'text-content' : 'text-content-tertiary'}`}>
+                {site.name}
+              </span>
+              <MobileCheckbox checked={site.enabled} />
             </div>
-            <input
-              type="checkbox"
-              checked={halfBinMode}
-              onChange={handleHalfBinToggle}
-              className="w-5 h-5 rounded accent-accent"
-              aria-label="Toggle half-bin mode"
-            />
-          </label>
+          ))}
         </div>
       </section>
 

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { DEFAULT_CATEGORY_COLOR } from '../../../constants';
 import { SplitPreview } from '../../PrintList';
+import { STLSearchDropdown } from '../../STLSearchDropdown';
 import type { EnhancedPrintRow, Category, PrintListSortKey, PrintListSortOrder } from '../../../types';
 
 interface BinListTableProps {
@@ -187,6 +188,7 @@ export function BinListTable({
             </th>
             <th className="w-8 px-2 py-2 sticky top-0 bg-surface-elevated" />
             <SortHeader label="Size" sortKeyValue="area" sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} title="Sort by size (area)" />
+            <th className="w-8 px-1 py-2 sticky top-0 bg-surface-elevated" title="Find STL" />
             <SortHeader label="H" sortKeyValue="height" sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} title="Sort by height" className="w-12" />
             <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">Label</th>
             <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">Notes</th>
@@ -268,6 +270,16 @@ export function BinListTable({
                       </svg>
                     )}
                   </span>
+                </td>
+
+                {/* Find STL */}
+                <td className="px-1 py-2">
+                  <STLSearchDropdown
+                    width={parseFloat(row.size.split('×')[0])}
+                    depth={parseFloat(row.size.split('×')[1])}
+                    variant="icon"
+                    needsSplit={row.needsSplit}
+                  />
                 </td>
 
                 {/* Height */}
@@ -353,7 +365,7 @@ export function BinListTable({
           {/* Expanded split preview row */}
           {expandedSplitRow !== null && rows[expandedSplitRow]?.needsSplit && (
             <tr className="bg-surface-elevated border-b border-stroke-subtle">
-              <td colSpan={hasAnySplits ? 10 : 9} className="px-6 py-4">
+              <td colSpan={hasAnySplits ? 11 : 10} className="px-6 py-4">
                 <div className="flex items-start gap-4">
                   <SplitPreview
                     width={parseInt(rows[expandedSplitRow].size.split('×')[0])}
