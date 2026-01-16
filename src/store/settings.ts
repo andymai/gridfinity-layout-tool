@@ -246,17 +246,22 @@ function normalizeSTLSearchSites(stored: STLSearchSite[] | undefined): STLSearch
   const storedIds = new Set(stored.map(s => s.id));
 
   // Filter out removed default sites, keep custom sites (non-default)
-  const result = stored.filter(s => !s.isDefault || defaultIds.has(s.id));
+  const validStored = stored.filter(s => !s.isDefault || defaultIds.has(s.id));
+
+  // Separate defaults and custom sites
+  const defaults = validStored.filter(s => defaultIds.has(s.id));
+  const custom = validStored.filter(s => !defaultIds.has(s.id));
 
   // Add any missing default sites (disabled by default if user had customized)
   for (const defaultSite of DEFAULT_STL_SEARCH_SITES) {
     if (!storedIds.has(defaultSite.id)) {
-      result.push({ ...defaultSite, enabled: false });
+      defaults.push({ ...defaultSite, enabled: false });
     }
   }
 
-  // Enforce max sites limit
-  return result.slice(0, STL_SEARCH_CONSTRAINTS.MAX_SITES);
+  // Enforce max sites limit while preserving defaults (trim custom sites first)
+  const maxCustom = Math.max(0, STL_SEARCH_CONSTRAINTS.MAX_SITES - defaults.length);
+  return [...defaults, ...custom.slice(0, maxCustom)];
 }
 
 /**

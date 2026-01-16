@@ -36,12 +36,22 @@ export function buildSearchUrl(
   needsSplit?: boolean
 ): string {
   if (needsSplit) {
-    // Replace the dimension pattern with "split" for oversized bins
-    return site.urlTemplate
-      .replace(/\{width\}x\{depth\}/g, 'split')
-      .replace(/\{width\}%20\{depth\}/g, 'split') // URL-encoded space variant
-      .replace(/\{width\}/g, 'split')
-      .replace(/\{depth\}/g, '');
+    // Replace dimension placeholders with "split" in a single pass to avoid order issues
+    return site.urlTemplate.replace(
+      /\{width\}x\{depth\}|\{width\}%20\{depth\}|\{width\}|\{depth\}/g,
+      (match) => {
+        // Combined patterns get "split"
+        if (match === '{width}x{depth}' || match === '{width}%20{depth}') {
+          return 'split';
+        }
+        // Standalone {width} gets "split", {depth} gets empty (already handled by combined)
+        if (match === '{width}') {
+          return 'split';
+        }
+        // {depth} - remove to avoid duplicating "split" when following standalone {width}
+        return '';
+      }
+    );
   }
 
   return site.urlTemplate

@@ -125,10 +125,14 @@ export function STLSearchDropdown({
   const sizeLabel = `${formatDimension(width)}x${formatDimension(depth)}`;
   const isDisabled = enabledSites.length === 0;
 
-  // Build descriptive tooltip for icon variant
-  const iconTooltip = isSingleSite
-    ? `Search ${enabledSites[0].name} for ${sizeLabel}`
-    : `Find STL for ${sizeLabel} (${enabledSites.map(s => s.name).join(', ')})`;
+  // Build descriptive tooltip for icon variant (memoized to avoid array ops on every render)
+  const iconTooltip = useMemo(
+    () =>
+      isSingleSite
+        ? `Search ${enabledSites[0].name} for ${sizeLabel}`
+        : `Find STL for ${sizeLabel} (${enabledSites.map((s) => s.name).join(', ')})`,
+    [isSingleSite, enabledSites, sizeLabel]
+  );
 
   // Don't render anything if no sites are enabled
   if (isDisabled) {

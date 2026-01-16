@@ -12,36 +12,12 @@ import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 
 /**
- * Custom checkbox with properly sized checkmark for mobile.
+ * Custom checkbox visual indicator for mobile.
+ * Parent element should handle click/keyboard events.
  */
-function MobileCheckbox({
-  checked,
-  onChange,
-  label
-}: {
-  checked: boolean;
-  onChange: () => void;
-  label?: string;
-}) {
+function MobileCheckbox({ checked }: { checked: boolean }) {
   return (
-    <div
-      className="relative w-6 h-6 flex-shrink-0 cursor-pointer"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onChange();
-      }}
-      role="checkbox"
-      aria-checked={checked}
-      aria-label={label}
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
-          onChange();
-        }
-      }}
-    >
+    <div className="relative w-6 h-6 flex-shrink-0 pointer-events-none" aria-hidden="true">
       <div
         className={`w-6 h-6 rounded border-2 transition-colors ${
           checked
@@ -50,7 +26,7 @@ function MobileCheckbox({
         }`}
       />
       {checked && (
-        <svg className="absolute inset-0 w-6 h-6 text-white pointer-events-none p-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+        <svg className="absolute inset-0 w-6 h-6 text-white p-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       )}
@@ -320,6 +296,15 @@ export function MobileSettingsPanel() {
         <div
           className="flex items-center justify-between cursor-pointer"
           onClick={handleHalfBinToggle}
+          role="checkbox"
+          aria-checked={halfBinMode}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault();
+              handleHalfBinToggle();
+            }
+          }}
         >
           <div>
             <div className="flex items-center gap-1.5">
@@ -328,11 +313,7 @@ export function MobileSettingsPanel() {
             </div>
             <p className="text-xs text-content-tertiary">Allow 0.5 unit precision</p>
           </div>
-          <MobileCheckbox
-            checked={halfBinMode}
-            onChange={handleHalfBinToggle}
-            label="Toggle half-bin mode"
-          />
+          <MobileCheckbox checked={halfBinMode} />
         </div>
       </section>
 
@@ -409,15 +390,21 @@ export function MobileSettingsPanel() {
               key={site.id}
               className="flex items-center justify-between py-2 cursor-pointer"
               onClick={() => toggleSTLSite(site.id)}
+              role="checkbox"
+              aria-checked={site.enabled}
+              aria-label={`Toggle ${site.name}`}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                  e.preventDefault();
+                  toggleSTLSite(site.id);
+                }
+              }}
             >
               <span className={`text-sm ${site.enabled ? 'text-content' : 'text-content-tertiary'}`}>
                 {site.name}
               </span>
-              <MobileCheckbox
-                checked={site.enabled}
-                onChange={() => toggleSTLSite(site.id)}
-                label={`Toggle ${site.name}`}
-              />
+              <MobileCheckbox checked={site.enabled} />
             </div>
           ))}
         </div>
