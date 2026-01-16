@@ -123,14 +123,16 @@ export function STLSearchDropdown({
 
   const sizeLabel = `${formatDimension(width)}x${formatDimension(depth)}`;
   const isDisabled = enabledSites.length === 0;
-  const disabledTooltip = 'Enable search sites in settings';
 
   // Build descriptive tooltip for icon variant
-  const iconTooltip = isDisabled
-    ? disabledTooltip
-    : isSingleSite
-      ? `Search ${enabledSites[0].name} for ${sizeLabel}`
-      : `Find STL for ${sizeLabel} (${enabledSites.map(s => s.name).join(', ')})`;
+  const iconTooltip = isSingleSite
+    ? `Search ${enabledSites[0].name} for ${sizeLabel}`
+    : `Find STL for ${sizeLabel} (${enabledSites.map(s => s.name).join(', ')})`;
+
+  // Don't render anything if no sites are enabled
+  if (isDisabled) {
+    return null;
+  }
 
   return (
     <>
@@ -139,18 +141,15 @@ export function STLSearchDropdown({
         <button
           ref={triggerRef}
           type="button"
-          onClick={isDisabled ? undefined : handleClick}
-          disabled={isDisabled}
-          className={`btn btn-ghost text-sm flex items-center gap-1.5 text-content-secondary hover:text-content disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-          aria-label={isDisabled ? disabledTooltip : `Find STL for ${sizeLabel} bin`}
-          aria-expanded={isSingleSite || isDisabled ? undefined : isOpen}
-          aria-haspopup={isSingleSite || isDisabled ? undefined : 'menu'}
-          title={isDisabled ? disabledTooltip : undefined}
+          onClick={handleClick}
+          className={`btn btn-ghost text-sm flex items-center justify-center gap-1.5 text-content-secondary hover:text-content ${className}`}
+          aria-label={`Find STL for ${sizeLabel} bin`}
+          aria-expanded={isSingleSite ? undefined : isOpen}
+          aria-haspopup={isSingleSite ? undefined : 'menu'}
         >
-          <SearchIcon className="w-4 h-4" />
+          <SearchIcon className="w-4 h-4 flex-shrink-0" />
           <span>{isSingleSite ? `Search ${enabledSites[0].name}` : 'Find STL'}</span>
-          {isSingleSite && !isDisabled && <ExternalLinkIcon className="w-3 h-3" />}
-          {!isSingleSite && !isDisabled && <ChevronIcon className="w-3 h-3" isOpen={isOpen} />}
+          {!isSingleSite && <ChevronIcon className="w-3 h-3 flex-shrink-0" isOpen={isOpen} />}
         </button>
       )}
 
@@ -158,12 +157,11 @@ export function STLSearchDropdown({
         <button
           ref={triggerRef}
           type="button"
-          onClick={isDisabled ? undefined : handleClick}
-          disabled={isDisabled}
-          className={`btn btn-ghost p-1.5 text-content-tertiary hover:text-content disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+          onClick={handleClick}
+          className={`btn btn-ghost p-1.5 text-content-tertiary hover:text-content ${className}`}
           aria-label={iconTooltip}
-          aria-expanded={isSingleSite || isDisabled ? undefined : isOpen}
-          aria-haspopup={isSingleSite || isDisabled ? undefined : 'menu'}
+          aria-expanded={isSingleSite ? undefined : isOpen}
+          aria-haspopup={isSingleSite ? undefined : 'menu'}
           title={iconTooltip}
         >
           <SearchIcon className="w-4 h-4" />
@@ -174,22 +172,20 @@ export function STLSearchDropdown({
         <button
           ref={triggerRef}
           type="button"
-          onClick={isDisabled ? undefined : handleClick}
-          disabled={isDisabled}
-          className={`w-full px-4 py-3 flex items-center gap-3 text-content hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-          aria-label={isDisabled ? disabledTooltip : `Find STL for ${sizeLabel} bin`}
-          aria-expanded={isSingleSite || isDisabled ? undefined : isOpen}
-          aria-haspopup={isSingleSite || isDisabled ? undefined : 'menu'}
+          onClick={handleClick}
+          className={`w-full px-4 py-3 flex items-center gap-3 text-content hover:bg-surface-hover ${className}`}
+          aria-label={`Find STL for ${sizeLabel} bin`}
+          aria-expanded={isSingleSite ? undefined : isOpen}
+          aria-haspopup={isSingleSite ? undefined : 'menu'}
         >
-          <SearchIcon className="w-5 h-5 text-content-tertiary" />
+          <SearchIcon className="w-5 h-5 text-content-tertiary flex-shrink-0" />
           <span className="flex-1 text-left">{isSingleSite ? `Search ${enabledSites[0].name}` : 'Find STL'}</span>
-          {isSingleSite && !isDisabled && <ExternalLinkIcon className="w-4 h-4 text-content-tertiary" />}
-          {!isSingleSite && !isDisabled && <ChevronRightIcon className="w-4 h-4 text-content-tertiary" />}
+          {!isSingleSite && <ChevronRightIcon className="w-4 h-4 text-content-tertiary flex-shrink-0" />}
         </button>
       )}
 
       {/* Dropdown menu - only for multiple sites */}
-      {!isSingleSite && !isDisabled && (
+      {!isSingleSite && (
         <ContextMenuContainer
           isOpen={isOpen}
           position={position}
