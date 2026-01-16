@@ -9,15 +9,15 @@ import { useLayoutStore } from '../store';
 import { trackLayoutSnapshot, trackHeartbeat } from '../utils/analytics';
 import { STAGING_ID } from '../constants';
 
-// Heartbeat interval: 30 seconds while active
-const HEARTBEAT_INTERVAL_MS = 30_000;
+// Heartbeat interval: 2 minutes while active
+const HEARTBEAT_INTERVAL_MS = 120_000;
 // Idle timeout: consider user idle after 2 minutes of no activity
 const IDLE_TIMEOUT_MS = 120_000;
 
 /**
  * Hook to track engaged sessions and real-time active users.
  * - Tracks session end via visibilitychange (reliable for session metrics)
- * - Sends heartbeats every 30s while user is active (for real-time user counts)
+ * - Sends heartbeats every 2 min while user is active (for real-time user counts)
  * - Pauses heartbeats when user is idle (no interaction for 2 minutes)
  */
 export function useAnalytics(): void {
