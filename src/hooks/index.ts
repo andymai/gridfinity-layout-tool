@@ -1,5 +1,7 @@
 export { useGridCoords } from './useGridCoords';
 export { useInteraction } from './useInteraction';
+export { useDrawerSettings } from './useDrawerSettings';
+export type { UseDrawerSettingsReturn } from './useDrawerSettings';
 export { useKeyboard } from './useKeyboard';
 export { useAutoSave } from './useAutoSave';
 export { useResponsive, prefersTouch } from './useResponsive';
