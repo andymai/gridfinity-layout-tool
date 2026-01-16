@@ -109,13 +109,6 @@
           "@type": "Person",
           "name": "Andy Aragon"
         },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "5",
-          "ratingCount": "1",
-          "bestRating": "5",
-          "worstRating": "1"
-        },
         "featureList": [
           "Drag-and-drop bin placement",
           "Multi-layer drawer support",
@@ -166,6 +159,38 @@
               "@type": "Answer",
               "text": "Yes, layouts are automatically saved to your browser's local storage. You can also export layouts as shareable links or files to back them up or share with others."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I plan a Gridfinity drawer organizer?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Use this Gridfinity Layout Tool to plan your drawer organizer: 1) Measure your drawer in millimeters and divide by 42 to get grid units. 2) Set the drawer dimensions in the tool. 3) Draw bins by clicking and dragging on the grid. 4) Use the print list to see which bin STL files to download and 3D print."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use this for tool drawer organization?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, this Gridfinity layout planner is perfect for organizing tool drawers. You can create custom-sized bins for wrenches, screwdrivers, pliers, and other tools. Use the category feature to color-code different tool types, and the multi-layer support for deep tool chests."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What bin sizes are available in Gridfinity?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Gridfinity bins come in any combination of width and depth from 1x1 to larger sizes. Heights are measured in 7mm increments (1U = 7mm). This tool lets you plan any bin size configuration and shows you exactly what to print. Enable half-bin mode for 0.5 unit precision."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Where can I download Gridfinity STL files?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "After planning your layout, use the print list feature to see all required bin sizes. You can find Gridfinity STL files on Thangs, Printables, and MakerWorld. Search for 'Gridfinity' followed by the bin dimensions (e.g., 'Gridfinity 2x3' for a 2-wide by 3-deep bin)."
+            }
           }
         ]
       }
@@ -186,9 +211,111 @@
         ]
       }
     </script>
+
+    <!-- Structured Data: HowTo for rich snippets -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "How to Plan a Gridfinity Drawer Layout",
+        "description": "Learn how to design and plan a custom Gridfinity drawer organizer layout for 3D printing using this online tool.",
+        "image": "https://gridfinitylayouttool.com/og-image.png",
+        "totalTime": "PT10M",
+        "tool": [
+          {
+            "@type": "HowToTool",
+            "name": "Web browser"
+          },
+          {
+            "@type": "HowToTool",
+            "name": "3D printer (for printing the final bins)"
+          }
+        ],
+        "supply": [
+          {
+            "@type": "HowToSupply",
+            "name": "PLA or PETG filament"
+          }
+        ],
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "Set drawer dimensions",
+            "text": "Enter your drawer's width, depth, and height in Gridfinity grid units (each unit is 42mm). Measure your actual drawer and divide by 42 to get the grid size.",
+            "position": 1
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Create storage bins",
+            "text": "Click and drag on the grid to draw bins. Each bin can span multiple grid cells. Release to place the bin.",
+            "position": 2
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Resize and position bins",
+            "text": "Drag bin edges or corners to resize. Drag the center to reposition. Use the half-bin mode (press H) for 0.5 unit precision.",
+            "position": 3
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Organize with categories",
+            "text": "Assign bins to color-coded categories to visually organize different types of items in your drawer.",
+            "position": 4
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Preview in 3D",
+            "text": "Use the 3D isometric preview to visualize how your drawer organizer will look when printed and assembled.",
+            "position": 5
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Export print list",
+            "text": "Open the print modal to see a list of all bin sizes needed, with filament usage estimates. Use this to download and print the correct STL files.",
+            "position": 6
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <!-- SEO: Fallback content for crawlers and users without JavaScript -->
+    <noscript>
+      <div style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: system-ui, sans-serif; line-height: 1.6;">
+        <h1>Gridfinity Layout Tool - Plan Your 3D Printed Drawer Organizers</h1>
+        <p><strong>Design custom Gridfinity drawer layouts for 3D printing.</strong> This layout planner helps you organize drawers, toolboxes, and storage systems using the popular Gridfinity modular storage system.</p>
+        <h2>What is Gridfinity?</h2>
+        <p>Gridfinity is an open-source, modular storage system designed for 3D printing. Created by Zack Freedman, it uses standardized 42mm grid units to create customizable drawer organizers and storage bins that snap together perfectly.</p>
+        <h2>Features of This Gridfinity Planner</h2>
+        <ul>
+          <li><strong>Drag-and-drop bin placement</strong> - Click and drag to create and position bins in your drawer layout</li>
+          <li><strong>Multi-layer drawer support</strong> - Design stacked storage with multiple layers</li>
+          <li><strong>3D isometric preview</strong> - Visualize your drawer organizer before printing</li>
+          <li><strong>Print optimization</strong> - Get a list of bins to print with filament estimates</li>
+          <li><strong>Works offline</strong> - Install as a Progressive Web App (PWA)</li>
+          <li><strong>No signup required</strong> - Start designing immediately</li>
+        </ul>
+        <h2>How to Use This Gridfinity Layout Tool</h2>
+        <ol>
+          <li>Set your drawer dimensions (width, depth, and height in grid units)</li>
+          <li>Click and drag on the grid to create storage bins</li>
+          <li>Resize bins by dragging their edges or corners</li>
+          <li>Organize bins into categories with color coding</li>
+          <li>Use the 3D preview to visualize your layout</li>
+          <li>Export your print list to see which bins to 3D print</li>
+        </ol>
+        <h2>Perfect For</h2>
+        <ul>
+          <li>Tool drawer organization</li>
+          <li>Desk drawer organizers</li>
+          <li>Workshop storage planning</li>
+          <li>Parts bin layouts</li>
+          <li>Craft supply organization</li>
+        </ul>
+        <p><strong>JavaScript is required to use the interactive layout editor.</strong> Please enable JavaScript in your browser to access the full Gridfinity Layout Tool.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
