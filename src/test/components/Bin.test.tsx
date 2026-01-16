@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { Bin } from '../../components/Grid/Bin';
-import { useUIStore, useLayoutStore } from '../../store';
+import {
+  useLayoutStore,
+  useSelectionStore,
+  useViewStore,
+  useInteractionStore,
+} from '../../store';
 import { useToastStore } from '../../store/toast';
 import { resetAllStores } from '../testUtils';
 import type { Bin as BinType, Category, Layer, Drawer } from '../../types';
@@ -100,17 +105,22 @@ describe('Bin', () => {
       },
     });
 
-    // Set up default UI state
-    useUIStore.setState({
+    // Set up default UI state on focused stores (Bin.tsx uses these directly)
+    useSelectionStore.setState({
       activeLayerId: 'layer-1',
       activeCategoryId: 'cat-1',
       selectedBinIds: [],
-      showLabels: true,
       focusedBinId: null,
-      paintSize: null,
+    });
+    useViewStore.setState({
+      showLabels: true,
       highlightedCategoryId: null,
       highlightedRowLabel: null,
       highlightedColLabel: null,
+    });
+    useInteractionStore.setState({
+      interaction: null,
+      paintSize: null,
     });
   });
 
@@ -217,7 +227,7 @@ describe('Bin', () => {
     });
 
     it('hides resize handles during multi-select', () => {
-      useUIStore.setState({ selectedBinIds: ['test-bin-1', 'test-bin-2'] });
+      useSelectionStore.setState({ selectedBinIds: ['test-bin-1', 'test-bin-2'] });
       render(<Bin {...defaultProps} isSelected={true} />);
       expect(screen.queryByTestId('resize-handles-primary')).not.toBeInTheDocument();
     });
@@ -324,7 +334,7 @@ describe('Bin', () => {
 
     it('selects bin on click when not selected', () => {
       const setSelectedBinSpy = vi.fn();
-      useUIStore.setState({ setSelectedBin: setSelectedBinSpy });
+      useSelectionStore.setState({ setSelectedBin: setSelectedBinSpy });
 
       const { container } = render(<Bin {...defaultProps} isSelected={false} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -357,7 +367,7 @@ describe('Bin', () => {
 
     it('toggles selection with Ctrl+click', () => {
       const toggleSelectionSpy = vi.fn();
-      useUIStore.setState({ toggleSelection: toggleSelectionSpy });
+      useSelectionStore.setState({ toggleSelection: toggleSelectionSpy });
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -369,7 +379,7 @@ describe('Bin', () => {
 
     it('toggles selection with Cmd+click', () => {
       const toggleSelectionSpy = vi.fn();
-      useUIStore.setState({ toggleSelection: toggleSelectionSpy });
+      useSelectionStore.setState({ toggleSelection: toggleSelectionSpy });
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -381,7 +391,7 @@ describe('Bin', () => {
 
     it('adds to selection with Shift+click', () => {
       const addToSelectionSpy = vi.fn();
-      useUIStore.setState({ addToSelection: addToSelectionSpy });
+      useSelectionStore.setState({ addToSelection: addToSelectionSpy });
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -418,7 +428,7 @@ describe('Bin', () => {
   describe('context menu', () => {
     it('shows context menu on right-click', () => {
       const showContextMenuSpy = vi.fn();
-      useUIStore.setState({ showContextMenu: showContextMenuSpy });
+      useViewStore.setState({ showContextMenu: showContextMenuSpy });
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -435,10 +445,8 @@ describe('Bin', () => {
     it('selects bin before showing context menu if not selected', () => {
       const setSelectedBinSpy = vi.fn();
       const showContextMenuSpy = vi.fn();
-      useUIStore.setState({
-        setSelectedBin: setSelectedBinSpy,
-        showContextMenu: showContextMenuSpy,
-      });
+      useSelectionStore.setState({ setSelectedBin: setSelectedBinSpy });
+      useViewStore.setState({ showContextMenu: showContextMenuSpy });
 
       const { container } = render(<Bin {...defaultProps} isSelected={false} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -451,7 +459,7 @@ describe('Bin', () => {
 
     it('does not show context menu on ghost bins', () => {
       const showContextMenuSpy = vi.fn();
-      useUIStore.setState({ showContextMenu: showContextMenuSpy });
+      useViewStore.setState({ showContextMenu: showContextMenuSpy });
 
       const { container } = render(<Bin {...defaultProps} isGhost={true} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -465,7 +473,7 @@ describe('Bin', () => {
   describe('double-click', () => {
     it('shows quick label on double-click', () => {
       const showQuickLabelSpy = vi.fn();
-      useUIStore.setState({ showQuickLabel: showQuickLabelSpy });
+      useSelectionStore.setState({ showQuickLabel: showQuickLabelSpy });
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -477,7 +485,7 @@ describe('Bin', () => {
 
     it('selects bin on double-click if not selected', () => {
       const setSelectedBinSpy = vi.fn();
-      useUIStore.setState({ setSelectedBin: setSelectedBinSpy });
+      useSelectionStore.setState({ setSelectedBin: setSelectedBinSpy });
 
       const { container } = render(<Bin {...defaultProps} isSelected={false} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -489,7 +497,7 @@ describe('Bin', () => {
 
     it('does not respond to double-click on ghost bins', () => {
       const showQuickLabelSpy = vi.fn();
-      useUIStore.setState({ showQuickLabel: showQuickLabelSpy });
+      useSelectionStore.setState({ showQuickLabel: showQuickLabelSpy });
 
       const { container } = render(<Bin {...defaultProps} isGhost={true} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -511,7 +519,7 @@ describe('Bin', () => {
     });
 
     it('hides resize handles during interaction', () => {
-      useUIStore.setState({
+      useInteractionStore.setState({
         interaction: {
           type: 'drag',
           binIds: ['test-bin-1'],
@@ -529,7 +537,7 @@ describe('Bin', () => {
   describe('paint mode', () => {
     it('exits paint mode when bin is clicked', () => {
       const setPaintSizeSpy = vi.fn();
-      useUIStore.setState({
+      useInteractionStore.setState({
         paintSize: { width: 2, depth: 2 },
         setPaintSize: setPaintSizeSpy,
       });
@@ -545,7 +553,7 @@ describe('Bin', () => {
 
   describe('category highlighting', () => {
     it('applies highlight styling when category is highlighted', () => {
-      useUIStore.setState({ highlightedCategoryId: 'cat-1' });
+      useViewStore.setState({ highlightedCategoryId: 'cat-1' });
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -558,7 +566,7 @@ describe('Bin', () => {
     });
 
     it('reduces opacity when other category is highlighted', () => {
-      useUIStore.setState({ highlightedCategoryId: 'other-cat' });
+      useViewStore.setState({ highlightedCategoryId: 'other-cat' });
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -569,7 +577,7 @@ describe('Bin', () => {
 
   describe('row/column highlighting', () => {
     it('highlights bin when row label is hovered', () => {
-      useUIStore.setState({ highlightedRowLabel: 1 }); // Row 1 = y: 0
+      useViewStore.setState({ highlightedRowLabel: 1 }); // Row 1 = y: 0
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -578,7 +586,7 @@ describe('Bin', () => {
     });
 
     it('highlights bin when column label is hovered', () => {
-      useUIStore.setState({ highlightedColLabel: 1 }); // Col 1 = x: 0
+      useViewStore.setState({ highlightedColLabel: 1 }); // Col 1 = x: 0
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -587,7 +595,7 @@ describe('Bin', () => {
     });
 
     it('reduces opacity when other row is highlighted', () => {
-      useUIStore.setState({ highlightedRowLabel: 5 }); // Row 5, bin is at y: 0-2
+      useViewStore.setState({ highlightedRowLabel: 5 }); // Row 5, bin is at y: 0-2
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -599,7 +607,7 @@ describe('Bin', () => {
   describe('focus state', () => {
     it('sets focused bin on focus', () => {
       const setFocusedBinSpy = vi.fn();
-      useUIStore.setState({ setFocusedBin: setFocusedBinSpy });
+      useSelectionStore.setState({ setFocusedBin: setFocusedBinSpy });
 
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
@@ -611,7 +619,7 @@ describe('Bin', () => {
 
     it('clears focused bin on blur', () => {
       const setFocusedBinSpy = vi.fn();
-      useUIStore.setState({
+      useSelectionStore.setState({
         focusedBinId: 'test-bin-1',
         setFocusedBin: setFocusedBinSpy,
       });
@@ -744,7 +752,7 @@ describe('Bin', () => {
 
   describe('drag state', () => {
     it('reduces opacity when being dragged', () => {
-      useUIStore.setState({
+      useInteractionStore.setState({
         interaction: {
           type: 'drag',
           binIds: ['test-bin-1'],
@@ -760,7 +768,7 @@ describe('Bin', () => {
     });
 
     it('disables pointer events when being dragged', () => {
-      useUIStore.setState({
+      useInteractionStore.setState({
         interaction: {
           type: 'drag',
           binIds: ['test-bin-1'],

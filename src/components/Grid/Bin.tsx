@@ -2,7 +2,13 @@ import type { PointerEvent } from 'react';
 import { memo, useRef, useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import type { Bin as BinType, Category, Layer, Drawer, ResizeHandle } from '../../types';
-import { useUIStore, useLayoutStore } from '../../store';
+import {
+  useLayoutStore,
+  useSelectionStore,
+  useViewStore,
+  useInteractionStore,
+  useMobileStore,
+} from '../../store';
 import { useToastStore } from '../../store/toast';
 import { useResponsive } from '../../hooks';
 import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../../constants';
@@ -38,28 +44,35 @@ interface BinProps {
 function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBinMode: _halfBinMode = false, isGhost, isSelected, onStartDrag, onStartResize }: BinProps) {
   const { isTouchDevice } = useResponsive();
 
-  // Consolidate UI state selectors with shallow comparison
-  const { selectedBinIds, interaction, showLabels, focusedBinId } = useUIStore(
+  // Performance: Use focused stores directly instead of useUIStore facade.
+  // This prevents cascading re-renders when unrelated state changes.
+
+  // Selection state - from useSelectionStore
+  const { selectedBinIds, focusedBinId } = useSelectionStore(
     useShallow((state) => ({
       selectedBinIds: state.selectedBinIds,
-      interaction: state.interaction,
-      showLabels: state.showLabels,
       focusedBinId: state.focusedBinId,
     }))
   );
 
+  // View state - from useViewStore
+  const showLabels = useViewStore((state) => state.showLabels);
+
+  // Interaction state - from useInteractionStore
+  const interaction = useInteractionStore((state) => state.interaction);
+
   // Performance: Use derived selector for category highlighting.
   // This only re-renders bins whose highlight state actually changes.
-  const isCategoryHighlighted = useUIStore(
+  const isCategoryHighlighted = useViewStore(
     (state) => state.highlightedCategoryId !== null && state.highlightedCategoryId === bin.category
   );
-  const isAnyCategoryHighlighted = useUIStore(
+  const isAnyCategoryHighlighted = useViewStore(
     (state) => state.highlightedCategoryId !== null
   );
 
   // Performance: Use derived selector for row/column label highlighting.
   // Check if this bin overlaps with the highlighted row or column (1-indexed).
-  const isRowColHighlighted = useUIStore((state) => {
+  const isRowColHighlighted = useViewStore((state) => {
     const { highlightedRowLabel, highlightedColLabel } = state;
     if (highlightedRowLabel === null && highlightedColLabel === null) return false;
 
@@ -79,20 +92,26 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
 
     return false;
   });
-  const isAnyRowColHighlighted = useUIStore(
+  const isAnyRowColHighlighted = useViewStore(
     (state) => state.highlightedRowLabel !== null || state.highlightedColLabel !== null
   );
 
-  // Actions are stable, select individually
-  const setSelectedBin = useUIStore((state) => state.setSelectedBin);
-  const toggleSelection = useUIStore((state) => state.toggleSelection);
-  const addToSelection = useUIStore((state) => state.addToSelection);
-  const showContextMenu = useUIStore((state) => state.showContextMenu);
-  const setFocusedBin = useUIStore((state) => state.setFocusedBin);
-  const setActiveMobilePanel = useUIStore((state) => state.setActiveMobilePanel);
-  const showQuickLabel = useUIStore((state) => state.showQuickLabel);
-  const paintSize = useUIStore((state) => state.paintSize);
-  const setPaintSize = useUIStore((state) => state.setPaintSize);
+  // Selection actions - from useSelectionStore
+  const setSelectedBin = useSelectionStore((state) => state.setSelectedBin);
+  const toggleSelection = useSelectionStore((state) => state.toggleSelection);
+  const addToSelection = useSelectionStore((state) => state.addToSelection);
+  const setFocusedBin = useSelectionStore((state) => state.setFocusedBin);
+  const showQuickLabel = useSelectionStore((state) => state.showQuickLabel);
+
+  // View actions - from useViewStore
+  const showContextMenu = useViewStore((state) => state.showContextMenu);
+
+  // Interaction state and actions - from useInteractionStore
+  const paintSize = useInteractionStore((state) => state.paintSize);
+  const setPaintSize = useInteractionStore((state) => state.setPaintSize);
+
+  // Mobile actions - from useMobileStore
+  const setActiveMobilePanel = useMobileStore((state) => state.setActiveMobilePanel);
 
   // Consolidate layout state selectors with shallow comparison
   const { printBedSize, gridUnitMm } = useLayoutStore(
