@@ -5,6 +5,7 @@ import { useLayoutStore } from '../../store';
 import { useSettingsStore, type PrintViewSettings, type BinListSortOrder } from '../../store/settings';
 import { PrintLayout } from '../print/PrintLayout';
 import { SortOrderConfig } from '../print/SortOrderConfig';
+import { Checkbox } from '../Checkbox';
 import { getBinCountByLayer } from '../../utils/printLayout';
 import '../../styles/print.css';
 
@@ -237,24 +238,31 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                 <div className="space-y-2">
                   {layout.layers.map((layer) => {
                     const binCount = binCountByLayer.get(layer.id) ?? 0;
+                    const isChecked = selectedLayerIds.includes(layer.id);
                     return (
-                      <label
+                      <div
                         key={layer.id}
                         className="flex items-center gap-2 cursor-pointer hover:bg-surface-hover p-1.5 rounded-md -mx-1.5"
+                        onClick={() => toggleLayer(layer.id)}
+                        role="checkbox"
+                        aria-checked={isChecked}
+                        aria-label={`Select ${layer.name}`}
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === ' ' || e.key === 'Enter') {
+                            e.preventDefault();
+                            toggleLayer(layer.id);
+                          }
+                        }}
                       >
-                        <input
-                          type="checkbox"
-                          checked={selectedLayerIds.includes(layer.id)}
-                          onChange={() => toggleLayer(layer.id)}
-                          className="w-4 h-4"
-                        />
-                        <span className="text-sm text-content flex-1">
+                        <span className={`text-sm flex-1 ${isChecked ? 'text-content' : 'text-content-secondary'}`}>
                           {layer.name}
                         </span>
                         <span className="text-xs text-content-tertiary">
                           {binCount} bin{binCount !== 1 ? 's' : ''}
                         </span>
-                      </label>
+                        <Checkbox checked={isChecked} variant="desktop" />
+                      </div>
                     );
                   })}
                 </div>
@@ -429,14 +437,22 @@ function CheckboxOption({
   onChange: (value: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 cursor-pointer hover:bg-surface-hover p-1.5 rounded-md -mx-1.5">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="w-4 h-4"
-      />
-      <span className="text-sm text-content">{label}</span>
-    </label>
+    <div
+      className="flex items-center justify-between gap-2 cursor-pointer hover:bg-surface-hover p-1.5 rounded-md -mx-1.5"
+      onClick={() => onChange(!checked)}
+      role="checkbox"
+      aria-checked={checked}
+      aria-label={label}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          onChange(!checked);
+        }
+      }}
+    >
+      <span className={`text-sm ${checked ? 'text-content' : 'text-content-secondary'}`}>{label}</span>
+      <Checkbox checked={checked} variant="desktop" />
+    </div>
   );
 }

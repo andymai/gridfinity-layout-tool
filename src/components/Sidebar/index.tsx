@@ -13,6 +13,7 @@ import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { CollapsibleSection } from '../CollapsibleSection';
 import { useResponsive } from '../../hooks/useResponsive';
 import { LabsButton } from '../labs';
+import { Checkbox } from '../Checkbox';
 import type { STLSearchSite } from '../../store/settings';
 
 export function Sidebar() {
@@ -188,10 +189,23 @@ export function Sidebar() {
                   </div>
 
                   {/* Half-bin mode toggle */}
-                  <label className="flex items-center justify-between pt-2 cursor-pointer">
+                  <div
+                    className="flex items-center justify-between pt-2 cursor-pointer"
+                    onClick={handleHalfBinToggle}
+                    role="checkbox"
+                    aria-checked={halfBinMode}
+                    aria-label="Toggle half-bin mode"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault();
+                        handleHalfBinToggle();
+                      }
+                    }}
+                  >
                     <div className="flex items-center gap-1.5">
                       <span
-                        className="text-content-tertiary leading-none"
+                        className={`leading-none ${halfBinMode ? 'text-content' : 'text-content-tertiary'}`}
                         title="Enable 0.5 grid unit precision for half-size bins (H)"
                       >
                         Half-bin mode
@@ -199,13 +213,8 @@ export function Sidebar() {
                       <span className="text-[9px] leading-none text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
                       <kbd className="text-[9px] leading-none text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">H</kbd>
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={halfBinMode}
-                      onChange={handleHalfBinToggle}
-                      aria-label="Toggle half-bin mode"
-                    />
-                  </label>
+                    <Checkbox checked={halfBinMode} variant="desktop" />
+                  </div>
 
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
                   {(hasFractionalWidth || hasFractionalDepth) && (
@@ -371,20 +380,26 @@ export function Sidebar() {
               <CollapsibleSection title="STL Search" variant="default" defaultExpanded={false}>
                 <div className="space-y-2">
                   {settings.stlSearchSites.map((site: STLSearchSite) => (
-                    <label
+                    <div
                       key={site.id}
-                      className="flex items-center gap-2 text-xs cursor-pointer group"
+                      className="flex items-center justify-between text-xs cursor-pointer group"
+                      onClick={() => toggleSTLSite(site.id)}
+                      role="checkbox"
+                      aria-checked={site.enabled}
+                      aria-label={`Toggle ${site.name}`}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === ' ' || e.key === 'Enter') {
+                          e.preventDefault();
+                          toggleSTLSite(site.id);
+                        }
+                      }}
                     >
-                      <input
-                        type="checkbox"
-                        checked={site.enabled}
-                        onChange={() => toggleSTLSite(site.id)}
-                        className="rounded border-stroke-subtle text-accent focus:ring-accent focus:ring-offset-0"
-                      />
                       <span className={`${site.enabled ? 'text-content' : 'text-content-tertiary'} group-hover:text-content transition-colors`}>
                         {site.name}
                       </span>
-                    </label>
+                      <Checkbox checked={site.enabled} variant="desktop" />
+                    </div>
                   ))}
                 </div>
               </CollapsibleSection>

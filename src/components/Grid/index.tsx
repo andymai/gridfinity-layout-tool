@@ -17,6 +17,7 @@ import { CollabCursors, CollabGhosts, CollabSelectionRings } from '../collab';
 import { useCollabMode } from '../../hooks/useCollabMode';
 import { useCollabPresence } from '../../hooks/useCollabPresence';
 import { useGridCoords } from '../../hooks/useGridCoords';
+import { Checkbox } from '../Checkbox';
 // Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
 const IsometricPreview = lazyWithRetry(() =>
   import('./IsometricPreview').then(namedExport('IsometricPreview'))
@@ -693,26 +694,42 @@ export function Grid() {
           <div className="flex items-center gap-4">
             {/* View toggles - only show inline when not narrow */}
             {!isNarrowToolbar && placedBins.length > 0 && (
-              <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-content-secondary">
-                <input
-                  type="checkbox"
-                  checked={showLabels}
-                  onChange={toggleShowLabels}
-                  className="w-4 h-4 rounded accent-accent"
-                />
-                Labels
-              </label>
+              <div
+                className="flex items-center gap-2 cursor-pointer select-none text-sm"
+                onClick={toggleShowLabels}
+                role="checkbox"
+                aria-checked={showLabels}
+                aria-label="Labels"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    toggleShowLabels();
+                  }
+                }}
+              >
+                <span className={showLabels ? 'text-content' : 'text-content-secondary'}>Labels</span>
+                <Checkbox checked={showLabels} variant="desktop" />
+              </div>
             )}
             {!isNarrowToolbar && layers.length > 1 && (
-              <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-content-secondary">
-                <input
-                  type="checkbox"
-                  checked={showOtherLayers}
-                  onChange={toggleShowOtherLayers}
-                  className="w-4 h-4 rounded accent-accent"
-                />
-                Show layers below
-              </label>
+              <div
+                className="flex items-center gap-2 cursor-pointer select-none text-sm"
+                onClick={toggleShowOtherLayers}
+                role="checkbox"
+                aria-checked={showOtherLayers}
+                aria-label="Show layers below"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    toggleShowOtherLayers();
+                  }
+                }}
+              >
+                <span className={showOtherLayers ? 'text-content' : 'text-content-secondary'}>Show layers below</span>
+                <Checkbox checked={showOtherLayers} variant="desktop" />
+              </div>
             )}
 
             {/* Zoom controls */}
@@ -795,26 +812,42 @@ export function Grid() {
                     role="menu"
                   >
                     {placedBins.length > 0 && (
-                      <label className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none text-sm text-content-secondary hover:bg-surface-hover rounded-md" role="menuitemcheckbox" aria-checked={showLabels}>
-                        <input
-                          type="checkbox"
-                          checked={showLabels}
-                          onChange={toggleShowLabels}
-                          className="w-4 h-4 rounded accent-accent"
-                        />
-                        Labels
-                      </label>
+                      <div
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer select-none text-sm hover:bg-surface-hover rounded-md"
+                        onClick={toggleShowLabels}
+                        role="menuitemcheckbox"
+                        aria-checked={showLabels}
+                        aria-label="Labels"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === ' ' || e.key === 'Enter') {
+                            e.preventDefault();
+                            toggleShowLabels();
+                          }
+                        }}
+                      >
+                        <span className={showLabels ? 'text-content' : 'text-content-secondary'}>Labels</span>
+                        <Checkbox checked={showLabels} variant="desktop" />
+                      </div>
                     )}
                     {layers.length > 1 && (
-                      <label className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none text-sm text-content-secondary hover:bg-surface-hover rounded-md" role="menuitemcheckbox" aria-checked={showOtherLayers}>
-                        <input
-                          type="checkbox"
-                          checked={showOtherLayers}
-                          onChange={toggleShowOtherLayers}
-                          className="w-4 h-4 rounded accent-accent"
-                        />
-                        Show layers below
-                      </label>
+                      <div
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer select-none text-sm hover:bg-surface-hover rounded-md"
+                        onClick={toggleShowOtherLayers}
+                        role="menuitemcheckbox"
+                        aria-checked={showOtherLayers}
+                        aria-label="Show layers below"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === ' ' || e.key === 'Enter') {
+                            e.preventDefault();
+                            toggleShowOtherLayers();
+                          }
+                        }}
+                      >
+                        <span className={showOtherLayers ? 'text-content' : 'text-content-secondary'}>Show layers below</span>
+                        <Checkbox checked={showOtherLayers} variant="desktop" />
+                      </div>
                     )}
                   </div>
                 )}

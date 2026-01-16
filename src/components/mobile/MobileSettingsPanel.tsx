@@ -8,30 +8,8 @@ import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 import { StepperControl } from '../StepperControl';
+import { Checkbox } from '../Checkbox';
 import type { STLSearchSite } from '../../store/settings';
-
-/**
- * Custom checkbox visual indicator for mobile.
- * Parent element should handle click/keyboard events.
- */
-function MobileCheckbox({ checked }: { checked: boolean }) {
-  return (
-    <div className="relative w-6 h-6 flex-shrink-0 pointer-events-none" aria-hidden="true">
-      <div
-        className={`w-6 h-6 rounded border-2 transition-colors ${
-          checked
-            ? 'bg-accent border-accent'
-            : 'bg-surface border-stroke'
-        }`}
-      />
-      {checked && (
-        <svg className="absolute inset-0 w-6 h-6 text-white p-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-      )}
-    </div>
-  );
-}
 
 /**
  * Mobile settings panel with grid configuration and app actions.
@@ -159,6 +137,7 @@ export function MobileSettingsPanel() {
           onClick={handleHalfBinToggle}
           role="checkbox"
           aria-checked={halfBinMode}
+          aria-label="Toggle half-bin mode"
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === ' ' || e.key === 'Enter') {
@@ -174,7 +153,7 @@ export function MobileSettingsPanel() {
             </div>
             <p className="text-xs text-content-tertiary">Allow 0.5 unit precision</p>
           </div>
-          <MobileCheckbox checked={halfBinMode} />
+          <Checkbox checked={halfBinMode} variant="mobile" />
         </div>
       </section>
 
@@ -265,7 +244,7 @@ export function MobileSettingsPanel() {
               <span className={`text-sm ${site.enabled ? 'text-content' : 'text-content-tertiary'}`}>
                 {site.name}
               </span>
-              <MobileCheckbox checked={site.enabled} />
+              <Checkbox checked={site.enabled} variant="mobile" />
             </div>
           ))}
         </div>
