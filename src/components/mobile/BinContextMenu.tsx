@@ -3,7 +3,9 @@ import { useMutations } from '../../context/MutationsContext';
 import { useResponsive } from '../../hooks/useResponsive';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { validateBinRotation, getBinLocationContext } from '../../utils/binLocation';
+import { calcMaxGridUnits } from '../../constants';
 import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '../contextMenu';
+import { STLSearchDropdown } from '../STLSearchDropdown';
 import type { Bin } from '../../types';
 
 interface BinContextMenuProps {
@@ -96,6 +98,10 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   // Hide rotate in staging context menu since there's already a rotate affordance
   const showRotate = locationContext.canRotate && !isInStash;
 
+  // Check if bin needs splitting for STL search
+  const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
+  const needsSplit = bin.width > maxGridUnits || bin.depth > maxGridUnits;
+
   return (
     <ContextMenuContainer
       isOpen={true}
@@ -164,6 +170,14 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
             onClick={handleToStaging}
           />
         )}
+
+        <STLSearchDropdown
+          width={bin.width}
+          depth={bin.depth}
+          variant="menu-item"
+          onClose={onClose}
+          needsSplit={needsSplit}
+        />
 
         <ContextMenuDivider />
 

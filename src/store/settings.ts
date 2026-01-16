@@ -3,6 +3,61 @@ import { create } from 'zustand';
 // Storage key for settings
 const SETTINGS_STORAGE_KEY = 'gridfinity-settings-v1';
 
+// ============================================================================
+// STL Search Sites Configuration
+// ============================================================================
+
+/**
+ * Configuration for a single STL search site.
+ * URL templates support {width} and {depth} placeholders.
+ */
+export interface STLSearchSite {
+  id: string;
+  name: string;
+  /** URL template with {width} and {depth} placeholders */
+  urlTemplate: string;
+  /** Whether this site is enabled in the dropdown */
+  enabled: boolean;
+  /** Whether this is a default site (cannot be deleted, only disabled) */
+  isDefault?: boolean;
+}
+
+/**
+ * Constraints for STL search sites.
+ */
+export const STL_SEARCH_CONSTRAINTS = {
+  MAX_SITES: 5,
+  NAME_MAX_LENGTH: 24,
+  URL_TEMPLATE_MAX_LENGTH: 256,
+} as const;
+
+/**
+ * Default STL search sites shipped with the app.
+ */
+export const DEFAULT_STL_SEARCH_SITES: STLSearchSite[] = [
+  {
+    id: 'printables',
+    name: 'Printables',
+    urlTemplate: 'https://www.printables.com/search/models?q=gridfinity+{width}x{depth}',
+    enabled: true,
+    isDefault: true,
+  },
+  {
+    id: 'makerworld',
+    name: 'MakerWorld',
+    urlTemplate: 'https://makerworld.com/en/search/models?keyword=gridfinity+{width}x{depth}',
+    enabled: true,
+    isDefault: true,
+  },
+  {
+    id: 'thangs',
+    name: 'Thangs',
+    urlTemplate: 'https://thangs.com/search/gridfinity%20{width}x{depth}',
+    enabled: false,
+    isDefault: true,
+  },
+];
+
 /**
  * Available fields for sorting the bin list.
  */
@@ -123,6 +178,9 @@ export interface UserSettings {
 
   // Print view preferences
   printViewSettings: PrintViewSettings;
+
+  // STL search sites configuration
+  stlSearchSites: STLSearchSite[];
 }
 
 /**
@@ -146,6 +204,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // Print view preferences
   printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },
+
+  // STL search sites
+  stlSearchSites: [...DEFAULT_STL_SEARCH_SITES],
 };
 
 /**
@@ -173,6 +234,37 @@ export function normalizeSortOrder(stored: BinListSortOrder | undefined): BinLis
 }
 
 /**
+ * Normalize STL search sites to ensure all default sites are present.
+ * Handles migration when default sites are added or removed.
+ */
+function normalizeSTLSearchSites(stored: STLSearchSite[] | undefined): STLSearchSite[] {
+  if (!stored || !Array.isArray(stored)) {
+    return [...DEFAULT_STL_SEARCH_SITES];
+  }
+
+  const defaultIds = new Set(DEFAULT_STL_SEARCH_SITES.map(s => s.id));
+  const storedIds = new Set(stored.map(s => s.id));
+
+  // Filter out removed default sites, keep custom sites (non-default)
+  const validStored = stored.filter(s => !s.isDefault || defaultIds.has(s.id));
+
+  // Separate defaults and custom sites
+  const defaults = validStored.filter(s => defaultIds.has(s.id));
+  const custom = validStored.filter(s => !defaultIds.has(s.id));
+
+  // Add any missing default sites (disabled by default if user had customized)
+  for (const defaultSite of DEFAULT_STL_SEARCH_SITES) {
+    if (!storedIds.has(defaultSite.id)) {
+      defaults.push({ ...defaultSite, enabled: false });
+    }
+  }
+
+  // Enforce max sites limit while preserving defaults (trim custom sites first)
+  const maxCustom = Math.max(0, STL_SEARCH_CONSTRAINTS.MAX_SITES - defaults.length);
+  return [...defaults, ...custom.slice(0, maxCustom)];
+}
+
+/**
  * Load settings from localStorage.
  */
 function loadSettings(): UserSettings {
@@ -186,8 +278,10 @@ function loadSettings(): UserSettings {
         ...parsed.printViewSettings,
         binListSortOrder: normalizeSortOrder(parsed.printViewSettings?.binListSortOrder),
       };
+      // Normalize STL search sites
+      const stlSearchSites = normalizeSTLSearchSites(parsed.stlSearchSites);
       // Merge with defaults to handle any missing fields
-      return { ...DEFAULT_SETTINGS, ...parsed, printViewSettings };
+      return { ...DEFAULT_SETTINGS, ...parsed, printViewSettings, stlSearchSites };
     }
   } catch (e) {
     console.warn('Failed to load settings:', e);

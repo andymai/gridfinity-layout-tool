@@ -5,6 +5,7 @@ import type { UseBinInspectorReturn } from './useBinInspector';
 import { SplitWarning } from './SplitWarning';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 import { CustomPropertiesEditor } from './CustomPropertiesEditor';
+import { STLSearchDropdown } from '../STLSearchDropdown';
 
 interface SingleBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -358,6 +359,15 @@ export function SingleBinInspector({
             aria-label="Bin label"
           />
         </div>
+
+        {/* Find STL */}
+        <STLSearchDropdown
+          width={bin.width}
+          depth={bin.depth}
+          variant="button"
+          needsSplit={bin.width > constraints.maxGridUnits || bin.depth > constraints.maxGridUnits}
+          className="w-full justify-center py-2 rounded-lg bg-surface-elevated/50 hover:bg-surface-hover border border-stroke-subtle"
+        />
 
         {/* Notes */}
         <div>
