@@ -199,20 +199,18 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   // Stepper handlers (delta-based, respects step size)
   const handleDrawerWidthChange = useCallback(
     (delta: number) => {
-      const step = halfBinMode || hasFractionalWidth ? 0.5 : 1;
-      const newWidth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, drawerWidth + delta * step));
+      const newWidth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, drawerWidth + delta * widthStep));
       execute(() => updateDrawer({ width: newWidth }));
     },
-    [halfBinMode, hasFractionalWidth, drawerWidth, execute, updateDrawer]
+    [widthStep, drawerWidth, execute, updateDrawer]
   );
 
   const handleDrawerDepthChange = useCallback(
     (delta: number) => {
-      const step = halfBinMode || hasFractionalDepth ? 0.5 : 1;
-      const newDepth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, drawerDepth + delta * step));
+      const newDepth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, drawerDepth + delta * depthStep));
       execute(() => updateDrawer({ depth: newDepth }));
     },
-    [halfBinMode, hasFractionalDepth, drawerDepth, execute, updateDrawer]
+    [depthStep, drawerDepth, execute, updateDrawer]
   );
 
   const handleDrawerHeightChange = useCallback(
