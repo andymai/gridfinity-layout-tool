@@ -220,7 +220,7 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      fireEvent.click(screen.getByLabelText('Decrease height'));
+      fireEvent.click(screen.getByLabelText('Decrease Bin height'));
 
       expect(inspector.updateField).toHaveBeenCalledWith('height', 3);
     });
@@ -229,7 +229,7 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      fireEvent.click(screen.getByLabelText('Increase height'));
+      fireEvent.click(screen.getByLabelText('Increase Bin height'));
 
       expect(inspector.updateField).toHaveBeenCalledWith('height', 5);
     });
@@ -240,7 +240,7 @@ describe('SingleBinInspector', () => {
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.getByLabelText('Decrease height')).toBeDisabled();
+      expect(screen.getByLabelText('Decrease Bin height')).toBeDisabled();
     });
 
     it('disables height increase at max', () => {
@@ -249,14 +249,14 @@ describe('SingleBinInspector', () => {
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.getByLabelText('Increase height')).toBeDisabled();
+      expect(screen.getByLabelText('Increase Bin height')).toBeDisabled();
     });
 
     it('calls updateField when clearance changes', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      fireEvent.click(screen.getByLabelText('Increase clearance'));
+      fireEvent.click(screen.getByLabelText('Increase Bin clearance'));
 
       expect(inspector.updateField).toHaveBeenCalledWith('clearanceHeight', 2);
     });
