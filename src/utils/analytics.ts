@@ -390,3 +390,14 @@ export function trackFillOperation(type: 'fill_layer' | 'fill_gaps', binCount: n
 export function trackPaintMode(action: 'entered' | 'exited', binsCreated?: number): void {
   trackEvent('paint_mode', { action, bins_created: binsCreated || 0 });
 }
+
+/**
+ * Track heartbeat for real-time active user counting.
+ * PostHog uses recent events to determine active users.
+ */
+export function trackHeartbeat(activityCount: number): void {
+  capture('heartbeat', {
+    device_type: getDeviceType(),
+    activity_count: activityCount,
+  });
+}
