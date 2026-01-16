@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { Checkbox } from '../Checkbox';
 import type { BinListSortOrder, SortFieldConfig, BinSortField } from '../../store/settings';
 import { SORT_FIELD_LABELS } from '../../store/settings';
 
@@ -165,18 +166,26 @@ function SortFieldItem({
         </svg>
       </div>
 
-      {/* Checkbox and label */}
-      <label className="flex items-center gap-2 flex-1 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={config.enabled}
-          onChange={onToggle}
-          className="w-4 h-4"
-        />
-        <span className="text-sm text-content">
+      {/* Label and checkbox */}
+      <div
+        className="flex items-center gap-2 flex-1 cursor-pointer"
+        onClick={onToggle}
+        role="checkbox"
+        aria-checked={config.enabled}
+        aria-label={`Toggle ${SORT_FIELD_LABELS[config.field]}`}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            onToggle();
+          }
+        }}
+      >
+        <span className={`text-sm flex-1 ${config.enabled ? 'text-content' : 'text-content-secondary'}`}>
           {SORT_FIELD_LABELS[config.field]}
         </span>
-      </label>
+        <Checkbox checked={config.enabled} variant="desktop" />
+      </div>
 
       {/* Priority indicator for enabled fields */}
       {config.enabled && (

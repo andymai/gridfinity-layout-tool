@@ -264,8 +264,8 @@ describe('Sidebar', () => {
     it('half-bin checkbox reflects store state', () => {
       render(<Sidebar />);
 
-      const checkbox = screen.getByLabelText('Toggle half-bin mode') as HTMLInputElement;
-      expect(checkbox.checked).toBe(false);
+      const checkbox = screen.getByLabelText('Toggle half-bin mode');
+      expect(checkbox).toHaveAttribute('aria-checked', 'false');
     });
 
     it('toggles half-bin mode when clicked', () => {
