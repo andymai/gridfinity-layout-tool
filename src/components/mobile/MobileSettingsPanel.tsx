@@ -1,15 +1,13 @@
-import { useState, useMemo, useCallback } from 'react';
-import { useLayoutStore, useUndoableAction, useUIStore, useSettingsStore, useToastStore, useLabsStore } from '../../store';
-import { useMutations } from '../../context/MutationsContext';
+import { useMemo } from 'react';
+import { useLabsStore } from '../../store';
+import { useDrawerSettings } from '../../hooks';
 import { getFeature } from '../../labs/features';
 import { SparklesIcon, ChevronRightIcon } from '../labs/icons';
-import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../../constants';
-import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
-import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
-import type { STLSearchSite } from '../../store/settings';
+import { CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../modals/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { DeferredNumberInput } from '../DeferredNumberInput';
+import type { STLSearchSite } from '../../store/settings';
 
 /**
  * Custom checkbox visual indicator for mobile.
@@ -38,32 +36,37 @@ function MobileCheckbox({ checked }: { checked: boolean }) {
  * Mobile settings panel with grid configuration and app actions.
  */
 export function MobileSettingsPanel() {
-  const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
-  const [showHalfBinBlockedModal, setShowHalfBinBlockedModal] = useState(false);
-  const [halfBinViolation, setHalfBinViolation] = useState<HalfBinConstraintViolation | null>(null);
-
-  const layout = useLayoutStore(state => state.layout);
-  const { setGridUnitMm, setHeightUnitMm, setPrintBedSize, updateDrawer, updateBin } = useMutations();
-
-  const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
-  const { execute } = useUndoableAction();
-
-  const halfBinMode = useUIStore(state => state.halfBinMode);
-  const toggleHalfBinMode = useUIStore(state => state.toggleHalfBinMode);
-  const setHalfBinMode = useUIStore(state => state.setHalfBinMode);
-  const addToast = useToastStore(state => state.addToast);
-
-  const settings = useSettingsStore(state => state.settings);
-  const saveCurrentAsDefaults = useSettingsStore(state => state.saveCurrentAsDefaults);
-  const updateSetting = useSettingsStore(state => state.updateSetting);
-
-  // STL search site toggle handler
-  const toggleSTLSite = useCallback((siteId: string) => {
-    const updatedSites = settings.stlSearchSites.map((site: STLSearchSite) =>
-      site.id === siteId ? { ...site, enabled: !site.enabled } : site
-    );
-    updateSetting('stlSearchSites', updatedSites);
-  }, [settings.stlSearchSites, updateSetting]);
+  // Use consolidated drawer settings hook
+  const {
+    drawer,
+    widthStep,
+    depthStep,
+    realWorldDimensions,
+    maxGridUnits,
+    gridUnitMm,
+    heightUnitMm,
+    printBedSize,
+    halfBinMode,
+    settings,
+    activeLayerHeight,
+    handleDrawerWidthChange,
+    handleDrawerDepthChange,
+    handleDrawerHeightChange,
+    handleDrawerWidthInput,
+    handleDrawerDepthInput,
+    handleHalfBinToggle,
+    handleRemediate,
+    handleSaveDefaults,
+    setGridUnitMm,
+    setHeightUnitMm,
+    setPrintBedSize,
+    toggleSTLSite,
+    showSaveDefaultsConfirm,
+    setShowSaveDefaultsConfirm,
+    showHalfBinBlockedModal,
+    setShowHalfBinBlockedModal,
+    halfBinViolation,
+  } = useDrawerSettings();
 
   const openLabsDrawer = useLabsStore(state => state.openDrawer);
   const enabledFeatures = useLabsStore(state => state.preferences.enabledFeatures);
@@ -76,91 +79,6 @@ export function MobileSettingsPanel() {
       return feature?.status === 'experimental' || feature?.status === 'preview';
     }).length;
   }, [enabledFeatures]);
-
-  // Get active layer's height to save as default
-  const activeLayerId = useUIStore((state) => state.activeLayerId);
-  const layers = useLayoutStore((state) => state.layout.layers);
-  const activeLayer = useMemo(
-    () => layers.find((l) => l.id === activeLayerId),
-    [layers, activeLayerId]
-  );
-
-  // Check if dimensions are fractional (for step size calculation)
-  const hasFractionalWidth = layout.drawer.width % 1 !== 0;
-  const hasFractionalDepth = layout.drawer.depth % 1 !== 0;
-
-  // Use 0.5 step when in half-bin mode OR when dimension is already fractional
-  const widthStep = halfBinMode || hasFractionalWidth ? 0.5 : 1;
-  const depthStep = halfBinMode || hasFractionalDepth ? 0.5 : 1;
-
-  const handleSaveDefaults = () => {
-    const layerHeight = activeLayer?.height ?? 3;
-    saveCurrentAsDefaults(layout.drawer, layout.printBedSize, layout.gridUnitMm, layout.heightUnitMm, layerHeight);
-    setShowSaveDefaultsConfirm(false);
-  };
-
-  const handleDrawerChange = (field: 'width' | 'depth' | 'height', delta: number) => {
-    const current = layout.drawer[field];
-    const minVal = field === 'height' ? 1 : 0.5;
-    const newValue = Math.max(minVal, Math.min(CONSTRAINTS.GRID_MAX, current + delta));
-    execute(() => updateDrawer({ [field]: newValue }));
-  };
-
-  const handleDrawerWidthStepper = (delta: number) => {
-    const step = halfBinMode || hasFractionalWidth ? 0.5 : 1;
-    const newWidth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, layout.drawer.width + delta * step));
-    execute(() => updateDrawer({ width: newWidth }));
-  };
-
-  const handleDrawerDepthStepper = (delta: number) => {
-    const step = halfBinMode || hasFractionalDepth ? 0.5 : 1;
-    const newDepth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, layout.drawer.depth + delta * step));
-    execute(() => updateDrawer({ depth: newDepth }));
-  };
-
-  const handleDrawerWidthChange = (width: number) => {
-    execute(() => updateDrawer({ width: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width)) }));
-  };
-
-  const handleDrawerDepthChange = (depth: number) => {
-    execute(() => updateDrawer({ depth: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth)) }));
-  };
-
-  // Half-bin mode toggle with validation
-  const handleHalfBinToggle = () => {
-    const result = toggleHalfBinMode();
-
-    if (!result.success) {
-      // Validation failed - show blocking modal
-      const validationResult = validateHalfBinModeToggle(layout, false);
-      if (validationResult.violation) {
-        setHalfBinViolation(validationResult.violation);
-        setShowHalfBinBlockedModal(true);
-      }
-    }
-  };
-
-  // Remediate fractional bins by moving them to staging
-  const handleRemediate = async () => {
-    if (!halfBinViolation) return;
-
-    await execute(() => {
-      // Move all fractional bins to staging
-      halfBinViolation.binIds.forEach(binId => {
-        updateBin(binId, { layerId: STAGING_ID });
-      });
-    });
-
-    // Now disable half-bin mode (forced, bypassing validation)
-    setHalfBinMode(false);
-
-    // Close modal and show success message
-    setShowHalfBinBlockedModal(false);
-    addToast(
-      `Moved ${halfBinViolation.count} bin${halfBinViolation.count !== 1 ? 's' : ''} to staging`,
-      'success'
-    );
-  };
 
   return (
     <div className="pb-4 space-y-6">
@@ -178,8 +96,8 @@ export function MobileSettingsPanel() {
             </label>
             <div className="flex items-center">
               <button
-                onClick={() => handleDrawerWidthStepper(-1)}
-                disabled={layout.drawer.width <= 0.5}
+                onClick={() => handleDrawerWidthChange(-1)}
+                disabled={drawer.width <= 0.5}
                 className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
                 aria-label="Decrease width"
               >
@@ -188,8 +106,8 @@ export function MobileSettingsPanel() {
                 </svg>
               </button>
               <DeferredNumberInput
-                value={layout.drawer.width}
-                onChange={handleDrawerWidthChange}
+                value={drawer.width}
+                onChange={handleDrawerWidthInput}
                 min={0.5}
                 max={CONSTRAINTS.GRID_MAX}
                 step={widthStep}
@@ -197,8 +115,8 @@ export function MobileSettingsPanel() {
                 aria-label="Drawer width in grid units"
               />
               <button
-                onClick={() => handleDrawerWidthStepper(1)}
-                disabled={layout.drawer.width >= CONSTRAINTS.GRID_MAX}
+                onClick={() => handleDrawerWidthChange(1)}
+                disabled={drawer.width >= CONSTRAINTS.GRID_MAX}
                 className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
                 aria-label="Increase width"
               >
@@ -216,8 +134,8 @@ export function MobileSettingsPanel() {
             </label>
             <div className="flex items-center">
               <button
-                onClick={() => handleDrawerDepthStepper(-1)}
-                disabled={layout.drawer.depth <= 0.5}
+                onClick={() => handleDrawerDepthChange(-1)}
+                disabled={drawer.depth <= 0.5}
                 className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
                 aria-label="Decrease depth"
               >
@@ -226,8 +144,8 @@ export function MobileSettingsPanel() {
                 </svg>
               </button>
               <DeferredNumberInput
-                value={layout.drawer.depth}
-                onChange={handleDrawerDepthChange}
+                value={drawer.depth}
+                onChange={handleDrawerDepthInput}
                 min={0.5}
                 max={CONSTRAINTS.GRID_MAX}
                 step={depthStep}
@@ -235,8 +153,8 @@ export function MobileSettingsPanel() {
                 aria-label="Drawer depth in grid units"
               />
               <button
-                onClick={() => handleDrawerDepthStepper(1)}
-                disabled={layout.drawer.depth >= CONSTRAINTS.GRID_MAX}
+                onClick={() => handleDrawerDepthChange(1)}
+                disabled={drawer.depth >= CONSTRAINTS.GRID_MAX}
                 className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
                 aria-label="Increase depth"
               >
@@ -255,8 +173,8 @@ export function MobileSettingsPanel() {
           </label>
           <div className="flex items-center">
             <button
-              onClick={() => handleDrawerChange('height', -1)}
-              disabled={layout.drawer.height <= 1}
+              onClick={() => handleDrawerHeightChange(-1)}
+              disabled={drawer.height <= 1}
               className="btn btn-secondary w-12 h-12 p-0 rounded-r-none"
               aria-label="Decrease height"
             >
@@ -265,11 +183,11 @@ export function MobileSettingsPanel() {
               </svg>
             </button>
             <span className="flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content">
-              {layout.drawer.height}u
+              {drawer.height}u
             </span>
             <button
-              onClick={() => handleDrawerChange('height', 1)}
-              disabled={layout.drawer.height >= CONSTRAINTS.GRID_MAX}
+              onClick={() => handleDrawerHeightChange(1)}
+              disabled={drawer.height >= CONSTRAINTS.GRID_MAX}
               className="btn btn-secondary w-12 h-12 p-0 rounded-l-none"
               aria-label="Increase height"
             >
@@ -286,7 +204,7 @@ export function MobileSettingsPanel() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2" />
           </svg>
           <span className="tabular-nums">
-            {(layout.drawer.width * layout.gridUnitMm).toFixed(0)} × {(layout.drawer.depth * layout.gridUnitMm).toFixed(0)} × {(layout.drawer.height * layout.heightUnitMm).toFixed(0)} mm
+            {realWorldDimensions.width.toFixed(0)} × {realWorldDimensions.depth.toFixed(0)} × {realWorldDimensions.height.toFixed(0)} mm
           </span>
         </div>
       </section>
@@ -330,7 +248,7 @@ export function MobileSettingsPanel() {
             </label>
             <div className="flex items-center gap-2">
               <DeferredNumberInput
-                value={layout.gridUnitMm}
+                value={gridUnitMm}
                 onChange={setGridUnitMm}
                 className="input w-20 h-10 text-center"
                 min={1}
@@ -346,7 +264,7 @@ export function MobileSettingsPanel() {
             </label>
             <div className="flex items-center gap-2">
               <DeferredNumberInput
-                value={layout.heightUnitMm}
+                value={heightUnitMm}
                 onChange={setHeightUnitMm}
                 className="input w-20 h-10 text-center"
                 min={1}
@@ -362,7 +280,7 @@ export function MobileSettingsPanel() {
             </label>
             <div className="flex items-center gap-2">
               <DeferredNumberInput
-                value={layout.printBedSize}
+                value={printBedSize}
                 onChange={setPrintBedSize}
                 className="input w-20 h-10 text-center"
                 min={42}
@@ -499,7 +417,7 @@ export function MobileSettingsPanel() {
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}
         title="Save as Defaults"
-        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${layout.drawer.width}×${layout.drawer.depth}×${layout.drawer.height}u\nLayer height: ${activeLayer?.height ?? 3}u\nPrint bed: ${layout.printBedSize}mm\nGrid unit: ${layout.gridUnitMm}mm`}
+        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawer.width}×${drawer.depth}×${drawer.height}u\nLayer height: ${activeLayerHeight}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
         confirmText="Save"
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}

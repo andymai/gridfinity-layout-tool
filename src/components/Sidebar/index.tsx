@@ -1,11 +1,8 @@
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore, useSettingsStore, useToastStore } from '../../store';
-import { useUndoableAction } from '../../store/history';
-import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../../constants';
-import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
-import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
-import type { STLSearchSite } from '../../store/settings';
+import { useUIStore } from '../../store';
+import { useDrawerSettings } from '../../hooks';
+import { CONSTRAINTS } from '../../constants';
 import { ActiveLayerPanel } from './ActiveLayerPanel';
 import { LayerPanel } from './LayerPanel';
 import { CategoriesPanel } from './CategoriesPanel';
@@ -15,11 +12,9 @@ import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
 import { CollapsibleSection } from '../CollapsibleSection';
 import { useResponsive } from '../../hooks/useResponsive';
 import { LabsButton } from '../labs';
+import type { STLSearchSite } from '../../store/settings';
 
 export function Sidebar() {
-  const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
-  const [showHalfBinBlockedModal, setShowHalfBinBlockedModal] = useState(false);
-  const [halfBinViolation, setHalfBinViolation] = useState<HalfBinConstraintViolation | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { isDesktop } = useResponsive();
@@ -30,152 +25,47 @@ export function Sidebar() {
     }
   }, []);
 
-  const { collapsed, toggle, halfBinMode, toggleHalfBinMode, setHalfBinMode } = useUIStore(
+  const { collapsed, toggle } = useUIStore(
     useShallow((state) => ({
       collapsed: state.leftPanelCollapsed,
       toggle: state.toggleLeftPanel,
-      halfBinMode: state.halfBinMode,
-      toggleHalfBinMode: state.toggleHalfBinMode,
-      setHalfBinMode: state.setHalfBinMode,
     }))
   );
 
+  // Use consolidated drawer settings hook
   const {
-    layout,
+    drawer,
+    fractionalEdges,
+    widthStep,
+    depthStep,
+    hasFractionalWidth,
+    hasFractionalDepth,
+    realWorldDimensions,
     gridUnitMm,
     heightUnitMm,
     printBedSize,
-    drawerWidth,
-    drawerDepth,
-    drawerHeight,
-    fractionalEdgeX,
-    fractionalEdgeY,
+    halfBinMode,
+    settings,
+    activeLayerHeight,
+    handleDrawerWidthChange,
+    handleDrawerDepthChange,
+    handleDrawerHeightChange,
+    handleDrawerWidthInput,
+    handleDrawerDepthInput,
+    handleFractionalEdgeChange,
+    handleHalfBinToggle,
+    handleRemediate,
+    handleSaveDefaults,
     setGridUnitMm,
     setHeightUnitMm,
     setPrintBedSize,
-    updateDrawer,
-    updateBin,
-  } = useLayoutStore(
-    useShallow((state) => ({
-      layout: state.layout,
-      gridUnitMm: state.layout.gridUnitMm,
-      heightUnitMm: state.layout.heightUnitMm,
-      printBedSize: state.layout.printBedSize,
-      drawerWidth: state.layout.drawer.width,
-      drawerDepth: state.layout.drawer.depth,
-      drawerHeight: state.layout.drawer.height,
-      fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
-      fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
-      setGridUnitMm: state.setGridUnitMm,
-      setHeightUnitMm: state.setHeightUnitMm,
-      setPrintBedSize: state.setPrintBedSize,
-      updateDrawer: state.updateDrawer,
-      updateBin: state.updateBin,
-    }))
-  );
-
-  const settings = useSettingsStore((state) => state.settings);
-  const saveCurrentAsDefaults = useSettingsStore((state) => state.saveCurrentAsDefaults);
-  const updateSetting = useSettingsStore((state) => state.updateSetting);
-  const addToast = useToastStore((state) => state.addToast);
-  const { execute } = useUndoableAction();
-
-  // STL search site toggle handler
-  const toggleSTLSite = useCallback((siteId: string) => {
-    const updatedSites = settings.stlSearchSites.map((site: STLSearchSite) =>
-      site.id === siteId ? { ...site, enabled: !site.enabled } : site
-    );
-    updateSetting('stlSearchSites', updatedSites);
-  }, [settings.stlSearchSites, updateSetting]);
-
-  // Get active layer's height to save as default
-  const activeLayerId = useUIStore((state) => state.activeLayerId);
-  const layers = useLayoutStore((state) => state.layout.layers);
-  const activeLayer = useMemo(
-    () => layers.find((l) => l.id === activeLayerId),
-    [layers, activeLayerId]
-  );
-
-  const handleSaveDefaults = () => {
-    const layerHeight = activeLayer?.height ?? 3;
-    saveCurrentAsDefaults(
-      { width: drawerWidth, depth: drawerDepth, height: drawerHeight },
-      printBedSize,
-      gridUnitMm,
-      heightUnitMm,
-      layerHeight
-    );
-    setShowSaveDefaultsConfirm(false);
-  };
-
-  // Check if dimensions are fractional (for step size calculation)
-  const hasFractionalWidth = drawerWidth % 1 !== 0;
-  const hasFractionalDepth = drawerDepth % 1 !== 0;
-
-  // Use 0.5 step when in half-bin mode OR when dimension is already fractional
-  const widthStep = halfBinMode || hasFractionalWidth ? 0.5 : 1;
-  const depthStep = halfBinMode || hasFractionalDepth ? 0.5 : 1;
-
-  const handleDrawerHeightChange = (delta: number) => {
-    const newHeight = Math.max(1, drawerHeight + delta);
-    updateDrawer({ height: newHeight });
-  };
-
-  const handleDrawerWidthChange = (delta: number) => {
-    const step = halfBinMode || hasFractionalWidth ? 0.5 : 1;
-    const newWidth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, drawerWidth + delta * step));
-    updateDrawer({ width: newWidth });
-  };
-
-  const handleDrawerDepthChange = (delta: number) => {
-    const step = halfBinMode || hasFractionalDepth ? 0.5 : 1;
-    const newDepth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, drawerDepth + delta * step));
-    updateDrawer({ depth: newDepth });
-  };
-
-  const handleDrawerWidthInput = (width: number) => {
-    updateDrawer({ width: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width)) });
-  };
-
-  const handleDrawerDepthInput = (depth: number) => {
-    updateDrawer({ depth: Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth)) });
-  };
-
-  // Half-bin mode toggle with validation
-  const handleHalfBinToggle = () => {
-    const result = toggleHalfBinMode();
-
-    if (!result.success) {
-      // Validation failed - show blocking modal
-      const validationResult = validateHalfBinModeToggle(layout, false);
-      if (validationResult.violation) {
-        setHalfBinViolation(validationResult.violation);
-        setShowHalfBinBlockedModal(true);
-      }
-    }
-  };
-
-  // Remediate fractional bins by moving them to staging
-  const handleRemediate = async () => {
-    if (!halfBinViolation) return;
-
-    await execute(() => {
-      // Move all fractional bins to staging
-      halfBinViolation.binIds.forEach(binId => {
-        updateBin(binId, { layerId: STAGING_ID });
-      });
-    });
-
-    // Now disable half-bin mode (forced, bypassing validation)
-    setHalfBinMode(false);
-
-    // Close modal and show success message
-    setShowHalfBinBlockedModal(false);
-    addToast(
-      `Moved ${halfBinViolation.count} bin${halfBinViolation.count !== 1 ? 's' : ''} to staging`,
-      'success'
-    );
-  };
+    toggleSTLSite,
+    showSaveDefaultsConfirm,
+    setShowSaveDefaultsConfirm,
+    showHalfBinBlockedModal,
+    setShowHalfBinBlockedModal,
+    halfBinViolation,
+  } = useDrawerSettings();
 
   return (
     <aside
@@ -247,7 +137,7 @@ export function Sidebar() {
                       <div className="flex items-center h-6">
                         <button
                           onClick={() => handleDrawerWidthChange(-1)}
-                          disabled={drawerWidth <= 0.5}
+                          disabled={drawer.width <= 0.5}
                           className="h-full px-1 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
                           aria-label="Decrease width"
                         >
@@ -256,7 +146,7 @@ export function Sidebar() {
                           </svg>
                         </button>
                         <DeferredNumberInput
-                          value={drawerWidth}
+                          value={drawer.width}
                           onChange={handleDrawerWidthInput}
                           min={0.5}
                           max={CONSTRAINTS.GRID_MAX}
@@ -266,7 +156,7 @@ export function Sidebar() {
                         />
                         <button
                           onClick={() => handleDrawerWidthChange(1)}
-                          disabled={drawerWidth >= CONSTRAINTS.GRID_MAX}
+                          disabled={drawer.width >= CONSTRAINTS.GRID_MAX}
                           className="h-full px-1 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
                           aria-label="Increase width"
                         >
@@ -283,7 +173,7 @@ export function Sidebar() {
                       <div className="flex items-center h-6">
                         <button
                           onClick={() => handleDrawerDepthChange(-1)}
-                          disabled={drawerDepth <= 0.5}
+                          disabled={drawer.depth <= 0.5}
                           className="h-full px-1 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
                           aria-label="Decrease depth"
                         >
@@ -292,7 +182,7 @@ export function Sidebar() {
                           </svg>
                         </button>
                         <DeferredNumberInput
-                          value={drawerDepth}
+                          value={drawer.depth}
                           onChange={handleDrawerDepthInput}
                           min={0.5}
                           max={CONSTRAINTS.GRID_MAX}
@@ -302,7 +192,7 @@ export function Sidebar() {
                         />
                         <button
                           onClick={() => handleDrawerDepthChange(1)}
-                          disabled={drawerDepth >= CONSTRAINTS.GRID_MAX}
+                          disabled={drawer.depth >= CONSTRAINTS.GRID_MAX}
                           className="h-full px-1 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
                           aria-label="Increase depth"
                         >
@@ -319,7 +209,7 @@ export function Sidebar() {
                       <div className="flex items-center h-6">
                         <button
                           onClick={() => handleDrawerHeightChange(-1)}
-                          disabled={drawerHeight <= 1}
+                          disabled={drawer.height <= 1}
                           className="h-full px-1 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
                           aria-label="Decrease height"
                         >
@@ -328,7 +218,7 @@ export function Sidebar() {
                           </svg>
                         </button>
                         <span className="flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content-secondary text-xs">
-                          {drawerHeight}u
+                          {drawer.height}u
                         </span>
                         <button
                           onClick={() => handleDrawerHeightChange(1)}
@@ -349,7 +239,7 @@ export function Sidebar() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2" />
                     </svg>
                     <span className="tabular-nums">
-                      {(drawerWidth * gridUnitMm).toFixed(0)} × {(drawerDepth * gridUnitMm).toFixed(0)} × {(drawerHeight * heightUnitMm).toFixed(0)} mm
+                      {realWorldDimensions.width.toFixed(0)} × {realWorldDimensions.depth.toFixed(0)} × {realWorldDimensions.height.toFixed(0)} mm
                     </span>
                   </div>
 
@@ -382,9 +272,9 @@ export function Sidebar() {
                           <span className="text-content-tertiary">Width (+.5)</span>
                           <div className="flex rounded overflow-hidden border border-stroke-subtle">
                             <button
-                              onClick={() => execute(() => updateDrawer({ fractionalEdgeX: 'start' }))}
+                              onClick={() => handleFractionalEdgeChange('x', 'start')}
                               className={`px-2 py-0.5 text-[10px] transition-colors ${
-                                fractionalEdgeX === 'start'
+                                fractionalEdges.x === 'start'
                                   ? 'bg-accent text-white'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
@@ -393,9 +283,9 @@ export function Sidebar() {
                               Left
                             </button>
                             <button
-                              onClick={() => execute(() => updateDrawer({ fractionalEdgeX: 'end' }))}
+                              onClick={() => handleFractionalEdgeChange('x', 'end')}
                               className={`px-2 py-0.5 text-[10px] border-l border-stroke-subtle transition-colors ${
-                                fractionalEdgeX === 'end'
+                                fractionalEdges.x === 'end'
                                   ? 'bg-accent text-white'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
@@ -411,9 +301,9 @@ export function Sidebar() {
                           <span className="text-content-tertiary">Depth (+.5)</span>
                           <div className="flex rounded overflow-hidden border border-stroke-subtle">
                             <button
-                              onClick={() => execute(() => updateDrawer({ fractionalEdgeY: 'start' }))}
+                              onClick={() => handleFractionalEdgeChange('y', 'start')}
                               className={`px-2 py-0.5 text-[10px] transition-colors ${
-                                fractionalEdgeY === 'start'
+                                fractionalEdges.y === 'start'
                                   ? 'bg-accent text-white'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
@@ -422,9 +312,9 @@ export function Sidebar() {
                               Bottom
                             </button>
                             <button
-                              onClick={() => execute(() => updateDrawer({ fractionalEdgeY: 'end' }))}
+                              onClick={() => handleFractionalEdgeChange('y', 'end')}
                               className={`px-2 py-0.5 text-[10px] border-l border-stroke-subtle transition-colors ${
-                                fractionalEdgeY === 'end'
+                                fractionalEdges.y === 'end'
                                   ? 'bg-accent text-white'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
@@ -489,7 +379,7 @@ export function Sidebar() {
                     <label
                       htmlFor="printBedSize"
                       className="text-content-tertiary"
-                      title={`Bins larger than ${calcMaxGridUnits(printBedSize, gridUnitMm)}×${calcMaxGridUnits(printBedSize, gridUnitMm)} will be split for printing`}
+                      title={`Bins larger than ${Math.floor((printBedSize - 10) / gridUnitMm)}×${Math.floor((printBedSize - 10) / gridUnitMm)} will be split for printing`}
                     >
                       Print bed
                     </label>
@@ -602,7 +492,7 @@ export function Sidebar() {
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}
         title="Save as Defaults"
-        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawerWidth}×${drawerDepth}×${drawerHeight}u\nLayer height: ${activeLayer?.height ?? 3}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
+        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawer.width}×${drawer.depth}×${drawer.height}u\nLayer height: ${activeLayerHeight}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
         confirmText="Save"
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
