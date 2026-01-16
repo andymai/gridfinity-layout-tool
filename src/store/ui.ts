@@ -371,6 +371,11 @@ export const useUIStore = create<UIState>((_set) => ({
 
 // Subscribe to changes in all underlying stores and sync to useUIStore
 // This ensures components using useUIStore re-render when underlying state changes
+//
+// PERFORMANCE NOTE: This cascade causes ALL useUIStore consumers to re-render
+// when ANY underlying store changes. For hot-path components (Bin.tsx, Overlay.tsx),
+// import from focused stores directly to bypass this overhead:
+//   import { useSelectionStore, useViewStore, useInteractionStore } from '../store';
 useSelectionStore.subscribe(() => {
   useUIStore.setState(getCombinedState());
 });
