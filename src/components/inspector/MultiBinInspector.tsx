@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '../../constants';
 import type { UseBinInspectorReturn } from './useBinInspector';
 import type { Layer } from '../../types';
+import { SelectDropdown } from '../SelectDropdown';
 
 interface MultiBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -147,39 +148,15 @@ export function MultiBinInspector({
           <label className={`block ${labelSize} text-content-tertiary`}>
             Category
           </label>
-          <div className="relative">
-            {categoryColor ? (
-              <div
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded pointer-events-none"
-                style={{ backgroundColor: categoryColor }}
-              />
-            ) : (
-              <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded pointer-events-none bg-surface-hover border border-stroke-subtle" />
-            )}
-            <select
-              value={commonCategory || ''}
-              onChange={(e) => updateMultiCategory(e.target.value)}
-              className={`input w-full pl-8 pr-8 appearance-none ${inputHeight}`}
-              aria-label="Category for selected bins"
-            >
-              {!commonCategory && (
-                <option value="" disabled>
-                  {getMixedLabel()}
-                </option>
-              )}
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <svg
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-content-tertiary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+          <SelectDropdown
+            value={commonCategory || ''}
+            onChange={updateMultiCategory}
+            options={categories.map((c) => ({ id: c.id, name: c.name }))}
+            placeholder={!commonCategory ? { value: '', label: getMixedLabel(), disabled: true } : undefined}
+            colorSwatch={categoryColor}
+            ariaLabel="Category for selected bins"
+            variant={variant}
+          />
         </div>
 
         {/* Layer - only show when there are bins on grid and multiple layers */}
@@ -188,33 +165,18 @@ export function MultiBinInspector({
             <label className={`block ${labelSize} text-content-tertiary`}>
               Layer
             </label>
-            <div className="relative">
-              <select
-                value={commonLayer?.id || ''}
-                onChange={(e) => updateMultiLayer(e.target.value)}
-                className={`input w-full pr-8 appearance-none ${inputHeight}`}
-                aria-label="Layer for selected bins"
-              >
-                {!commonLayer && (
-                  <option value="" disabled>
-                    {getMixedLayerLabel()}
-                  </option>
-                )}
-                {layout.layers.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}{l.id === commonLayer?.id ? ' (current)' : ''}
-                  </option>
-                ))}
-              </select>
-              <svg
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-content-tertiary"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+            <SelectDropdown
+              value={commonLayer?.id || ''}
+              onChange={updateMultiLayer}
+              options={layout.layers.map((l) => ({
+                id: l.id,
+                name: l.name,
+                suffix: l.id === commonLayer?.id ? ' (current)' : '',
+              }))}
+              placeholder={!commonLayer ? { value: '', label: getMixedLayerLabel(), disabled: true } : undefined}
+              ariaLabel="Layer for selected bins"
+              variant={variant}
+            />
           </div>
         )}
 
