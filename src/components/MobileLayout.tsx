@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { useUIStore, useLayoutStore } from '../store';
+import { useUIStore } from '../store';
 import { lazyWithRetry, namedExport } from '../utils/lazyWithRetry';
 import { Grid } from './Grid';
 import { Staging } from './Staging';
@@ -20,8 +20,7 @@ import {
   MobilePrintList,
   MobileSettingsPanel,
   MobileLayoutsPanel,
-  BinContextMenu,
-  MultiBinContextMenu,
+  BinContextMenuWrapper,
 } from './mobile';
 import { LabsDrawer } from './labs';
 import { PresenceAvatarList } from './collab';
@@ -175,39 +174,4 @@ function MobilePanelContent({ panel }: { panel: string }) {
       {content}
     </PanelErrorBoundary>
   );
-}
-
-/**
- * Context menu wrapper that routes to single or multi-bin menu.
- */
-function BinContextMenuWrapper({
-  binIds,
-  position,
-  onClose,
-  source,
-}: {
-  binIds: string[];
-  position: { x: number; y: number };
-  onClose: () => void;
-  source?: 'grid' | 'staging';
-}) {
-  const bins = useLayoutStore(state => state.layout.bins);
-  const selectedBinIds = useUIStore(state => state.selectedBinIds);
-
-  // Guard: ensure binIds is valid
-  if (!binIds || binIds.length === 0) return null;
-
-  // Multi-select detection: if first bin is selected AND multiple bins selected
-  const isMultiSelect = selectedBinIds.includes(binIds[0]) && selectedBinIds.length > 1;
-
-  if (isMultiSelect) {
-    const selectedBins = bins.filter(b => selectedBinIds.includes(b.id));
-    return <MultiBinContextMenu binIds={selectedBins.map(b => b.id)} position={position} onClose={onClose} source={source} />;
-  }
-
-  // Single bin context menu
-  const bin = bins.find(b => b.id === binIds[0]);
-  if (!bin) return null;
-
-  return <BinContextMenu bin={bin} position={position} onClose={onClose} source={source} />;
 }

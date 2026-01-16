@@ -11,4 +11,6 @@ export { MobileLayoutsPanel } from './MobileLayoutsPanel';
 export { MobileGridToolbar } from './MobileGridToolbar';
 export { BinContextMenu } from './BinContextMenu';
 export { MultiBinContextMenu } from './MultiBinContextMenu';
+export { BinContextMenuWrapper } from './BinContextMenuWrapper';
+export type { BinContextMenuWrapperProps } from './BinContextMenuWrapper';
 export { MobileHelpModal } from './MobileHelpModal';
