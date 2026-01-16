@@ -5,6 +5,7 @@ import { useUndoableAction } from '../../store/history';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../../constants';
 import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
+import type { STLSearchSite } from '../../store/settings';
 import { ActiveLayerPanel } from './ActiveLayerPanel';
 import { LayerPanel } from './LayerPanel';
 import { CategoriesPanel } from './CategoriesPanel';
@@ -75,8 +76,17 @@ export function Sidebar() {
 
   const settings = useSettingsStore((state) => state.settings);
   const saveCurrentAsDefaults = useSettingsStore((state) => state.saveCurrentAsDefaults);
+  const updateSetting = useSettingsStore((state) => state.updateSetting);
   const addToast = useToastStore((state) => state.addToast);
   const { execute } = useUndoableAction();
+
+  // STL search site toggle handler
+  const toggleSTLSite = useCallback((siteId: string) => {
+    const updatedSites = settings.stlSearchSites.map((site: STLSearchSite) =>
+      site.id === siteId ? { ...site, enabled: !site.enabled } : site
+    );
+    updateSetting('stlSearchSites', updatedSites);
+  }, [settings.stlSearchSites, updateSetting]);
 
   // Get active layer's height to save as default
   const activeLayerId = useUIStore((state) => state.activeLayerId);
@@ -519,6 +529,30 @@ export function Sidebar() {
                 >
                   Save Current as Defaults
                 </button>
+              </CollapsibleSection>
+            </div>
+
+            {/* STL Search */}
+            <div className="px-4 py-4 border-t border-stroke-subtle">
+              <CollapsibleSection title="STL Search" variant="default" defaultExpanded={false}>
+                <div className="space-y-2">
+                  {settings.stlSearchSites.map((site: STLSearchSite) => (
+                    <label
+                      key={site.id}
+                      className="flex items-center gap-2 text-xs cursor-pointer group"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={site.enabled}
+                        onChange={() => toggleSTLSite(site.id)}
+                        className="rounded border-stroke-subtle text-accent focus:ring-accent focus:ring-offset-0"
+                      />
+                      <span className={`${site.enabled ? 'text-content' : 'text-content-tertiary'} group-hover:text-content transition-colors`}>
+                        {site.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </CollapsibleSection>
             </div>
 
