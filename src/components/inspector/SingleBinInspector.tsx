@@ -86,99 +86,121 @@ export function SingleBinInspector({
       </div>
 
       <div className="space-y-4">
-        {/* Size inputs with rotate button */}
+        {/* Size inputs with flip button between */}
         <div className="flex items-end gap-2">
-          <div className="grid grid-cols-2 gap-3 flex-1">
-            {/* Width control */}
-            <div>
-              <label className={`block ${labelSize} text-content-tertiary`}>
-                Width
-              </label>
-              <div className={`flex items-center ${stepperHeight}`}>
-                <button
-                  type="button"
-                  onClick={() => updateField('width', bin.width - stepSize)}
-                  disabled={bin.width <= minSize}
-                  className="h-full px-2 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
-                  aria-label="Decrease width"
-                >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" d="M20 12H4" />
-                  </svg>
-                </button>
-                <DeferredNumberInput
-                  value={bin.width}
-                  onChange={(val) => updateField('width', val)}
-                  min={minSize}
-                  max={layout.drawer.width}
-                  step={stepSize}
-                  className="input flex-1 h-full text-center font-medium tabular-nums border-x-0 rounded-none text-sm"
-                  aria-label="Bin width"
-                />
-                <button
-                  type="button"
-                  onClick={() => updateField('width', bin.width + stepSize)}
-                  disabled={bin.width >= layout.drawer.width}
-                  className="h-full px-2 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
-                  aria-label="Increase width"
-                >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" d="M12 4v16m8-8H4" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            {/* Depth control */}
-            <div>
-              <label className={`block ${labelSize} text-content-tertiary`}>
-                Depth
-              </label>
-              <div className={`flex items-center ${stepperHeight}`}>
-                <button
-                  type="button"
-                  onClick={() => updateField('depth', bin.depth - stepSize)}
-                  disabled={bin.depth <= minSize}
-                  className="h-full px-2 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
-                  aria-label="Decrease depth"
-                >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" d="M20 12H4" />
-                  </svg>
-                </button>
-                <DeferredNumberInput
-                  value={bin.depth}
-                  onChange={(val) => updateField('depth', val)}
-                  min={minSize}
-                  max={layout.drawer.depth}
-                  step={stepSize}
-                  className="input flex-1 h-full text-center font-medium tabular-nums border-x-0 rounded-none text-sm"
-                  aria-label="Bin depth"
-                />
-                <button
-                  type="button"
-                  onClick={() => updateField('depth', bin.depth + stepSize)}
-                  disabled={bin.depth >= layout.drawer.depth}
-                  className="h-full px-2 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
-                  aria-label="Increase depth"
-                >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" d="M12 4v16m8-8H4" />
-                  </svg>
-                </button>
-              </div>
+          {/* Width control */}
+          <div className="flex-1">
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              Width
+            </label>
+            <div className={`flex items-center ${stepperHeight}`}>
+              <button
+                type="button"
+                onClick={() => updateField('width', bin.width - stepSize)}
+                disabled={bin.width <= minSize}
+                className={isMobile
+                  ? "btn btn-secondary w-12 h-12 p-0 rounded-r-none"
+                  : "h-full px-2 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                }
+                aria-label="Decrease width"
+              >
+                <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
+                  <path strokeLinecap="round" d="M20 12H4" />
+                </svg>
+              </button>
+              <DeferredNumberInput
+                value={bin.width}
+                onChange={(val) => updateField('width', val)}
+                min={minSize}
+                max={layout.drawer.width}
+                step={stepSize}
+                className={isMobile
+                  ? "input flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none"
+                  : "input flex-1 h-full text-center font-medium tabular-nums border-x-0 rounded-none text-sm"
+                }
+                aria-label="Bin width"
+              />
+              <button
+                type="button"
+                onClick={() => updateField('width', bin.width + stepSize)}
+                disabled={bin.width >= layout.drawer.width}
+                className={isMobile
+                  ? "btn btn-secondary w-12 h-12 p-0 rounded-l-none"
+                  : "h-full px-2 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                }
+                aria-label="Increase width"
+              >
+                <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
+                  <path strokeLinecap="round" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
             </div>
           </div>
+
+          {/* Flip button */}
           <button
             type="button"
             onClick={rotateBin}
-            className={`btn btn-ghost p-0 text-content-tertiary hover:text-content ${isMobile ? 'w-12 h-12' : 'w-[38px] h-[38px]'}`}
-            title="Rotate 90° (R)"
-            aria-label="Rotate bin"
+            className={isMobile
+              ? "btn btn-secondary w-12 h-12 p-0 flex-shrink-0"
+              : "flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+            }
+            title="Swap width ↔ depth (R)"
+            aria-label="Swap width and depth"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
             </svg>
           </button>
+
+          {/* Depth control */}
+          <div className="flex-1">
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              Depth
+            </label>
+            <div className={`flex items-center ${stepperHeight}`}>
+              <button
+                type="button"
+                onClick={() => updateField('depth', bin.depth - stepSize)}
+                disabled={bin.depth <= minSize}
+                className={isMobile
+                  ? "btn btn-secondary w-12 h-12 p-0 rounded-r-none"
+                  : "h-full px-2 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                }
+                aria-label="Decrease depth"
+              >
+                <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
+                  <path strokeLinecap="round" d="M20 12H4" />
+                </svg>
+              </button>
+              <DeferredNumberInput
+                value={bin.depth}
+                onChange={(val) => updateField('depth', val)}
+                min={minSize}
+                max={layout.drawer.depth}
+                step={stepSize}
+                className={isMobile
+                  ? "input flex-1 h-12 text-center font-semibold tabular-nums border-x-0 rounded-none"
+                  : "input flex-1 h-full text-center font-medium tabular-nums border-x-0 rounded-none text-sm"
+                }
+                aria-label="Bin depth"
+              />
+              <button
+                type="button"
+                onClick={() => updateField('depth', bin.depth + stepSize)}
+                disabled={bin.depth >= layout.drawer.depth}
+                className={isMobile
+                  ? "btn btn-secondary w-12 h-12 p-0 rounded-l-none"
+                  : "h-full px-2 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                }
+                aria-label="Increase depth"
+              >
+                <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
+                  <path strokeLinecap="round" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Real-world dimensions */}
@@ -203,24 +225,33 @@ export function SingleBinInspector({
                 type="button"
                 onClick={() => updateField('height', bin.height - 1)}
                 disabled={bin.height <= constraints.minHeight}
-                className="h-full px-2 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                className={isMobile
+                  ? "btn btn-secondary w-12 h-12 p-0 rounded-r-none"
+                  : "h-full px-2 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                }
                 aria-label="Decrease height"
               >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
                   <path strokeLinecap="round" d="M20 12H4" />
                 </svg>
               </button>
-              <span className="flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content font-medium text-sm">
+              <span className={isMobile
+                ? "flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content tabular-nums"
+                : "flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content font-medium text-sm"
+              }>
                 {bin.height}u
               </span>
               <button
                 type="button"
                 onClick={() => updateField('height', bin.height + 1)}
                 disabled={bin.height >= constraints.maxHeight}
-                className="h-full px-2 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                className={isMobile
+                  ? "btn btn-secondary w-12 h-12 p-0 rounded-l-none"
+                  : "h-full px-2 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                }
                 aria-label="Increase height"
               >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
                   <path strokeLinecap="round" d="M12 4v16m8-8H4" />
                 </svg>
               </button>
@@ -244,24 +275,33 @@ export function SingleBinInspector({
                   type="button"
                   onClick={() => updateField('clearanceHeight', (bin.clearanceHeight || 0) - 1)}
                   disabled={(bin.clearanceHeight || 0) <= 0}
-                  className="h-full px-2 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                  className={isMobile
+                    ? "btn btn-secondary w-12 h-12 p-0 rounded-r-none"
+                    : "h-full px-2 rounded-l border border-r-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                  }
                   aria-label="Decrease clearance"
                 >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
                     <path strokeLinecap="round" d="M20 12H4" />
                   </svg>
                 </button>
-                <span className="flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content font-medium text-sm">
+                <span className={isMobile
+                  ? "flex-1 h-12 flex items-center justify-center font-semibold bg-surface-elevated text-content tabular-nums"
+                  : "flex-1 h-full flex items-center justify-center border-y border-stroke-subtle bg-surface text-center tabular-nums text-content font-medium text-sm"
+                }>
                   {bin.clearanceHeight || 0}u
                 </span>
                 <button
                   type="button"
                   onClick={() => updateField('clearanceHeight', (bin.clearanceHeight || 0) + 1)}
                   disabled={(bin.clearanceHeight || 0) >= constraints.maxClearance}
-                  className="h-full px-2 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                  className={isMobile
+                    ? "btn btn-secondary w-12 h-12 p-0 rounded-l-none"
+                    : "h-full px-2 rounded-r border border-l-0 border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 transition-colors"
+                  }
                   aria-label="Increase clearance"
                 >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
                     <path strokeLinecap="round" d="M12 4v16m8-8H4" />
                   </svg>
                 </button>
