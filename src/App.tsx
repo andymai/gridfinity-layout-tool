@@ -14,7 +14,7 @@ import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
 import { ToastContainer } from './components/Toast';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
-import { BinContextMenu, MultiBinContextMenu } from './components/mobile';
+import { BinContextMenuWrapper } from './components/mobile';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter } from './components/SharedLayoutImporter';
@@ -342,39 +342,4 @@ export default function App() {
       <LabsDrawer />
     </div>
   );
-}
-
-/**
- * Context menu wrapper that routes to single or multi-bin menu.
- */
-function BinContextMenuWrapper({
-  binIds,
-  position,
-  onClose,
-  source,
-}: {
-  binIds: string[];
-  position: { x: number; y: number };
-  onClose: () => void;
-  source?: 'grid' | 'staging';
-}) {
-  const bins = useLayoutStore(state => state.layout.bins);
-  const selectedBinIds = useUIStore(state => state.selectedBinIds);
-
-  // Guard: ensure binIds is valid
-  if (!binIds || binIds.length === 0) return null;
-
-  // Multi-select detection: if first bin is selected AND multiple bins selected
-  const isMultiSelect = selectedBinIds.includes(binIds[0]) && selectedBinIds.length > 1;
-
-  if (isMultiSelect) {
-    const selectedBins = bins.filter(b => selectedBinIds.includes(b.id));
-    return <MultiBinContextMenu binIds={selectedBins.map(b => b.id)} position={position} onClose={onClose} source={source} />;
-  }
-
-  // Single bin context menu
-  const bin = bins.find(b => b.id === binIds[0]);
-  if (!bin) return null;
-
-  return <BinContextMenu bin={bin} position={position} onClose={onClose} source={source} />;
 }
