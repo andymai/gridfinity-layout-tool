@@ -79,7 +79,9 @@ export function useMutations(): Mutations {
  * This is the primary implementation - all validation is in the store.
  */
 function useStoreMutations(): Mutations {
-  const store = useLayoutStore();
+  // Use getState() instead of the hook since we only need stable method references
+  // This avoids re-renders when layout state changes
+  const store = useLayoutStore.getState();
 
   return useMemo<Mutations>(
     () => ({
@@ -116,7 +118,9 @@ function useStoreMutations(): Mutations {
       setGridUnitMm: store.setGridUnitMm,
       setHeightUnitMm: store.setHeightUnitMm,
     }),
-    [store]
+    // Store methods from getState() are stable references - no deps needed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 }
 
