@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { SplitWarning } from '../../components/Inspector/SplitWarning';
+import { SplitWarning } from '../../components/Inspector';
 
 describe('SplitWarning', () => {
   const defaultProps = {
