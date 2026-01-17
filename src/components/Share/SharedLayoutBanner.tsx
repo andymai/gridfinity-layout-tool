@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore } from '../store/layout';
-import { useLibraryStore, computePreview } from '../store/library';
-import { useUIStore } from '../store/ui';
-import { useHistoryStore } from '../store/history';
-import { useToastStore } from '../store/toast';
+import { useLayoutStore } from '../../store/layout';
+import { useLibraryStore, computePreview } from '../../store/library';
+import { useUIStore } from '../../store/ui';
+import { useHistoryStore } from '../../store/history';
+import { useToastStore } from '../../store/toast';
 import {
   saveLayoutById,
   saveLibrary,
   initializeLayoutLibrary,
-} from '../storage';
-import { generateLayoutId } from '../utils/uuid';
-import { ConfirmDialog } from './Modals/ConfirmDialog';
-import { useCollabMode } from '../hooks/useCollabMode';
+} from '../../storage';
+import { generateLayoutId } from '../../utils/uuid';
+import { ConfirmDialog } from '../Modals/ConfirmDialog';
+import { useCollabMode } from '../../hooks/useCollabMode';
 
 /**
  * Banner shown when viewing a shared layout in view-only mode.

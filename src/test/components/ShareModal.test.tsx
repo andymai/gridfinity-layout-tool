@@ -7,12 +7,15 @@ import * as storage from '../../storage';
 import * as analytics from '../../utils/analytics';
 
 // Mock CloudShareTab since it's a complex component
-vi.mock('../../components/CloudShareTab', () => ({
+vi.mock('../../components/Share', () => ({
   CloudShareTab: ({ onSwitchToUrlTab }: { onSwitchToUrlTab: () => void }) => (
     <div data-testid="cloud-share-tab">
       <button onClick={onSwitchToUrlTab}>Switch to URL</button>
     </div>
   ),
+  ShareButton: () => null,
+  SharedLayoutBanner: () => null,
+  SharedLayoutImporter: () => null,
 }));
 
 // Mock storage utilities
@@ -21,6 +24,8 @@ vi.mock('../../storage', () => ({
   downloadLayoutAsFile: vi.fn(),
   copyToClipboard: vi.fn(() => Promise.resolve(true)),
   exportLayoutJSON: vi.fn(() => '{"version":"1.0","name":"Test"}'),
+  getSharedLayoutFromURL: vi.fn(() => null),
+  getCloudShareIdFromURL: vi.fn(() => null),
 }));
 
 // Mock analytics
