@@ -481,7 +481,7 @@ describe('getActivityContext', () => {
 
   it('returns drawing when in paint mode', () => {
     useInteractionStore.setState({
-      interaction: { type: 'paint', start: { x: 0, y: 0 }, current: { x: 2, y: 2 }, size: { width: 1, depth: 1 } },
+      interaction: { type: 'paint', start: { x: 0, y: 0 }, current: { x: 2, y: 2 }, paintSize: { width: 1, depth: 1 } },
     });
     expect(getActivityContext()).toBe('drawing');
   });
@@ -495,21 +495,21 @@ describe('getActivityContext', () => {
 
   it('returns editing when in drag mode', () => {
     useInteractionStore.setState({
-      interaction: { type: 'drag', binIds: ['bin1'], startCoord: { x: 0, y: 0 }, currentCoord: { x: 1, y: 1 } },
+      interaction: { type: 'drag', binIds: ['bin1'], startCoord: { x: 0, y: 0 }, currentCoord: { x: 1, y: 1 }, valid: true, isOverGrid: true },
     });
     expect(getActivityContext()).toBe('editing');
   });
 
   it('returns editing when in resize mode', () => {
     useInteractionStore.setState({
-      interaction: { type: 'resize', binIds: ['bin1'], handle: 'e', startRects: [], originalRects: [] },
+      interaction: { type: 'resize', binIds: ['bin1'], handle: 'e', startRects: new Map(), currentRects: new Map(), valid: true },
     });
     expect(getActivityContext()).toBe('editing');
   });
 
   it('returns editing when in stagingDrag mode', () => {
     useInteractionStore.setState({
-      interaction: { type: 'stagingDrag', binId: 'bin1', startCoord: { x: 0, y: 0 }, currentCoord: { x: 1, y: 1 } },
+      interaction: { type: 'stagingDrag', binId: 'bin1', currentCoord: { x: 1, y: 1 }, valid: true },
     });
     expect(getActivityContext()).toBe('editing');
   });
