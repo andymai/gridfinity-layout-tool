@@ -10,6 +10,7 @@ import {
   formatPrintDate,
   sortBinsForPrint,
 } from '../../utils/printLayout';
+import { useGridTemplate } from '../../hooks';
 
 // Page widths for print (in pixels at 96 DPI, accounting for 0.5" margins)
 const PORTRAIT_WIDTH_PX = 670;  // 8.5" - 1" margins = 7" ≈ 670px
@@ -72,59 +73,27 @@ export function PrintLayout({
     [allVisibleBins, categories]
   );
 
-  // Calculate remaining grid dimensions
-  const gridRows = Math.ceil(drawer.depth);
-  const integerWidth = Math.floor(drawer.width);
-  const integerDepth = Math.floor(drawer.depth);
-  const hasFractionalWidth = drawer.width % 1 !== 0;
-  const hasFractionalDepth = drawer.depth % 1 !== 0;
-  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
-  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
-
-  // Fractional cell dimensions
-  const fractionalWidthPart = drawer.width - integerWidth;
-  const fractionalDepthPart = drawer.depth - integerDepth;
-  const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
-  const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
-
-  // Generate grid template (fractional edge position determines where fractional cell appears)
-  const gridTemplateColumns = hasFractionalWidth
-    ? fractionalEdgeX === 'start'
-      ? `${fractionalCellWidth}px repeat(${integerWidth}, ${cellSize}px)`
-      : `repeat(${integerWidth}, ${cellSize}px) ${fractionalCellWidth}px`
-    : `repeat(${gridCols}, ${cellSize}px)`;
-
-  const gridTemplateRows = hasFractionalDepth
-    ? fractionalEdgeY === 'start'
-      ? `repeat(${integerDepth}, ${cellSize}px) ${fractionalCellHeight}px`
-      : `${fractionalCellHeight}px repeat(${integerDepth}, ${cellSize}px)`
-    : `repeat(${gridRows}, ${cellSize}px)`;
+  // Use shared hook for grid template computation
+  // Note: gridCols is computed locally above for cellSize calculation, so we don't destructure it here
+  const {
+    gridTemplateColumns,
+    gridTemplateRows,
+    integerWidth,
+    integerDepth,
+    hasFractionalWidth,
+    hasFractionalDepth,
+    fractionalEdgeX,
+    fractionalEdgeY,
+    fractionalCellWidth,
+    fractionalCellHeight,
+    gridRows,
+    getCssColForCell,
+    getCssRowForCell,
+  } = useGridTemplate({ drawer, cellSize, gap });
 
   // Generate grid cells for visual reference
   const cells = useMemo(() => {
     const result: React.ReactNode[] = [];
-
-    // Helper: Get CSS column for integer cell index x (0-indexed)
-    const getCssColForCell = (x: number): number => {
-      if (hasFractionalWidth && fractionalEdgeX === 'start') {
-        return x + 2; // +1 for 1-indexed, +1 to skip fractional col at start
-      }
-      return x + 1;
-    };
-
-    // Helper: Get CSS row for integer cell index y (0-indexed, y=0 is bottom)
-    const getCssRowForCell = (y: number): number => {
-      if (hasFractionalDepth) {
-        if (fractionalEdgeY === 'start') {
-          // Fractional row at bottom (CSS row = gridRows), integer rows above
-          return integerDepth - y;
-        } else {
-          // Fractional row at top (CSS row = 1), integer rows below
-          return integerDepth - y + 1;
-        }
-      }
-      return integerDepth - y;
-    };
 
     for (let y = 0; y < integerDepth; y++) {
       for (let x = 0; x < integerWidth; x++) {
@@ -216,6 +185,8 @@ export function PrintLayout({
     fractionalEdgeY,
     fractionalCellWidth,
     fractionalCellHeight,
+    getCssColForCell,
+    getCssRowForCell,
   ]);
 
   // Generate column labels (1, 2, 3, ...)

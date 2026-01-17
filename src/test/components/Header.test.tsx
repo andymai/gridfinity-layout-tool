@@ -14,11 +14,15 @@ vi.mock('../../components/modals/LayoutManagerModal', () => ({
 // Controllable mock for useFeatureFlag and useCollabMode
 let mockFeatureFlagValue = false;
 let mockIsCollaborative = false;
-vi.mock('../../hooks', () => ({
-  useResponsive: () => ({ isTablet: false, isMobile: false }),
-  useFeatureFlag: () => mockFeatureFlagValue,
-  useCollabMode: () => ({ isCollaborative: mockIsCollaborative, canEdit: true, shareId: null }),
-}));
+vi.mock('../../hooks', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useResponsive: () => ({ isTablet: false, isMobile: false }),
+    useFeatureFlag: () => mockFeatureFlagValue,
+    useCollabMode: () => ({ isCollaborative: mockIsCollaborative, canEdit: true, shareId: null }),
+  };
+});
 
 // Controllable mock for ShareButton
 let mockShareButtonEnabled = false;
