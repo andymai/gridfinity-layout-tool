@@ -27,5 +27,3 @@ export { useCollabPresence } from './useCollabPresence';
 export type { CollabPresenceActions } from './useCollabPresence';
 export { useCollabSync } from './useCollabSync';
 export { useCollabLayout, useCollabLayoutSelector } from './useCollabLayout';
-export { useCollabMutations } from './useCollabMutations';
-export type { CollabMutations } from './useCollabMutations';
