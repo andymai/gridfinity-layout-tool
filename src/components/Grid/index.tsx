@@ -1,6 +1,10 @@
 import { useRef, useState, useCallback, useEffect, useLayoutEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
+import { useLayoutStore, useUndoableAction } from '../../store';
+import { useViewStore } from '../../store/view';
+import { useInteractionStore } from '../../store/interaction';
+import { useSelectionStore } from '../../store/selection';
+import { useHalfBinModeStore } from '../../store/halfBinMode';
 import { useToastStore } from '../../store/toast';
 import { useInteraction, useResponsive } from '../../hooks';
 import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS, getBaseCellSize, HALF_BIN_SCALE } from '../../constants';
@@ -37,6 +41,7 @@ export function Grid() {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [toolbarWidth, setToolbarWidth] = useState(0);
 
+  // View store - zoom, visibility, panels, highlighting
   const {
     zoom,
     setZoom,
@@ -46,24 +51,11 @@ export function Grid() {
     toggleShowOtherLayers,
     showLabels,
     toggleShowLabels,
-    activeLayerId,
-    paintSize,
-    setPaintSize,
-    setSelectedBins,
     leftPanelCollapsed,
     toggleLeftPanel,
-    interaction,
-    showIsometricPreview,
-    toggleIsometricPreview,
-    keyboardDragMode,
-    keyboardResizeMode,
-    setKeyboardDragMode,
-    setKeyboardResizeMode,
-    halfBinMode,
-    selectedBinIds,
     setHighlightedRowLabel,
     setHighlightedColLabel,
-  } = useUIStore(
+  } = useViewStore(
     useShallow((state) => ({
       zoom: state.zoom,
       setZoom: state.setZoom,
@@ -73,25 +65,53 @@ export function Grid() {
       toggleShowOtherLayers: state.toggleShowOtherLayers,
       showLabels: state.showLabels,
       toggleShowLabels: state.toggleShowLabels,
-      activeLayerId: state.activeLayerId,
-      paintSize: state.paintSize,
-      setPaintSize: state.setPaintSize,
-      setSelectedBins: state.setSelectedBins,
-      selectedBinIds: state.selectedBinIds,
       leftPanelCollapsed: state.leftPanelCollapsed,
       toggleLeftPanel: state.toggleLeftPanel,
-      interaction: state.interaction,
-      showIsometricPreview: state.showIsometricPreview,
-      toggleIsometricPreview: state.toggleIsometricPreview,
-      keyboardDragMode: state.keyboardDragMode,
-      keyboardResizeMode: state.keyboardResizeMode,
-      setKeyboardDragMode: state.setKeyboardDragMode,
-      setKeyboardResizeMode: state.setKeyboardResizeMode,
-      halfBinMode: state.halfBinMode,
       setHighlightedRowLabel: state.setHighlightedRowLabel,
       setHighlightedColLabel: state.setHighlightedColLabel,
     }))
   );
+
+  // Interaction store - paint mode, keyboard modes, 3D preview
+  const {
+    interaction,
+    paintSize,
+    setPaintSize,
+    keyboardDragMode,
+    keyboardResizeMode,
+    setKeyboardDragMode,
+    setKeyboardResizeMode,
+    showIsometricPreview,
+    toggleIsometricPreview,
+  } = useInteractionStore(
+    useShallow((state) => ({
+      interaction: state.interaction,
+      paintSize: state.paintSize,
+      setPaintSize: state.setPaintSize,
+      keyboardDragMode: state.keyboardDragMode,
+      keyboardResizeMode: state.keyboardResizeMode,
+      setKeyboardDragMode: state.setKeyboardDragMode,
+      setKeyboardResizeMode: state.setKeyboardResizeMode,
+      showIsometricPreview: state.showIsometricPreview,
+      toggleIsometricPreview: state.toggleIsometricPreview,
+    }))
+  );
+
+  // Selection store - active layer, selected bins
+  const {
+    activeLayerId,
+    selectedBinIds,
+    setSelectedBins,
+  } = useSelectionStore(
+    useShallow((state) => ({
+      activeLayerId: state.activeLayerId,
+      selectedBinIds: state.selectedBinIds,
+      setSelectedBins: state.setSelectedBins,
+    }))
+  );
+
+  // Half-bin mode - single value, no useShallow needed
+  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
 
   const { drawer, layers, bins, updateDrawer, updateBin } = useLayoutStore(
     useShallow((state) => ({

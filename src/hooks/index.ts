@@ -1,6 +1,18 @@
 export { useGridCoords } from './useGridCoords';
 export { useInteraction } from './useInteraction';
 export { useDrawerSettings } from './useDrawerSettings';
+
+// Grid component hooks (extracted from Grid/index.tsx)
+export { useGridZoom } from './useGridZoom';
+export type { GridZoomState, UseGridZoomOptions } from './useGridZoom';
+export { useGridAxisLabels } from './useGridAxisLabels';
+export type { GridAxisLabelsState, UseGridAxisLabelsOptions } from './useGridAxisLabels';
+export { useGridRowColumnSelection } from './useGridRowColumnSelection';
+export type { GridRowColumnSelectionState, UseGridRowColumnSelectionOptions } from './useGridRowColumnSelection';
+export { useGridResize } from './useGridResize';
+export type { GridResizeState, UseGridResizeOptions, ResizeDirection, PendingResize } from './useGridResize';
+export { useGridFirstUseHints } from './useGridFirstUseHints';
+export type { GridFirstUseHintsState, UseGridFirstUseHintsOptions } from './useGridFirstUseHints';
 export type { UseDrawerSettingsReturn } from './useDrawerSettings';
 export { useKeyboard } from './useKeyboard';
 export { useAutoSave } from './useAutoSave';
