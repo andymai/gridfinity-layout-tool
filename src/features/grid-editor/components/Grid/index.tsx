@@ -1,26 +1,26 @@
 import { useRef, useState, useCallback, useEffect, useLayoutEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore } from '../../core/store';
-import { useViewStore } from '../../core/store/view';
-import { useInteractionStore } from '../../core/store/interaction';
-import { useSelectionStore } from '../../core/store/selection';
-import { useHalfBinModeStore } from '../../core/store/halfBinMode';
-import { useToastStore } from '../../core/store/toast';
-import { useInteraction, useResponsive, useGridResize } from '../../hooks';
-import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS, getBaseCellSize, HALF_BIN_SCALE } from '../../core/constants';
-import { lazyWithRetry, namedExport } from '../../utils/lazyWithRetry';
-import { track3DPreview } from '../../utils/analytics';
+import { useLayoutStore } from '../../../../core/store';
+import { useViewStore } from '../../../../core/store/view';
+import { useInteractionStore } from '../../../../core/store/interaction';
+import { useSelectionStore } from '../../../../core/store/selection';
+import { useHalfBinModeStore } from '../../../../core/store/halfBinMode';
+import { useToastStore } from '../../../../core/store/toast';
+import { useInteraction, useResponsive, useGridResize } from '../../../../hooks';
+import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS, getBaseCellSize, HALF_BIN_SCALE } from '../../../../core/constants';
+import { lazyWithRetry, namedExport } from '../../../../utils/lazyWithRetry';
+import { track3DPreview } from '../../../../utils/analytics';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
-import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
-import { MobileGridToolbar } from '../Mobile';
-import { PanelErrorBoundary } from '../PanelErrorBoundary';
-import { CollabCursors, CollabGhosts, CollabSelectionRings } from '../Collab';
-import { useCollabMode } from '../../hooks/useCollabMode';
-import { useCollabPresence } from '../../hooks/useCollabPresence';
-import { useGridCoords } from '../../hooks/useGridCoords';
-import { Checkbox } from '../../shared/components/Checkbox';
+import { ConfirmDialog } from '../../../../shared/components/ConfirmDialog';
+import { MobileGridToolbar } from '../../../../components/Mobile';
+import { PanelErrorBoundary } from '../../../../components/PanelErrorBoundary';
+import { CollabCursors, CollabGhosts, CollabSelectionRings } from '../../../../components/Collab';
+import { useCollabMode } from '../../../../hooks/useCollabMode';
+import { useCollabPresence } from '../../../../hooks/useCollabPresence';
+import { useGridCoords } from '../../../../hooks/useGridCoords';
+import { Checkbox } from '../../../../shared/components/Checkbox';
 // Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
 const IsometricPreview = lazyWithRetry(() =>
   import('./IsometricPreview').then(namedExport('IsometricPreview'))

@@ -24,7 +24,7 @@ vi.mock('../../hooks/useResponsive', () => ({
 }));
 
 // Mock ResizeHandles to simplify testing
-vi.mock('../../components/Grid/ResizeHandles', () => ({
+vi.mock('../../features/grid-editor/components/Grid/ResizeHandles', () => ({
   ResizeHandles: ({ variant, onResizePointerDown }: { variant: string; onResizePointerDown: (e: React.PointerEvent, handle: string) => void }) => (
     <div data-testid={`resize-handles-${variant}`}>
       <button
