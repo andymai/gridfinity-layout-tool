@@ -1,13 +1,13 @@
 import { Suspense } from 'react';
 import { useUIStore } from '../core/store';
 import { lazyWithRetry, namedExport } from '../utils/lazyWithRetry';
-import { Grid } from './Grid';
-import { Staging } from './Staging';
-import { DropZones } from './DropZones';
-import { DragPreview } from './DragPreview';
+import { Grid } from '../components/Grid';
+import { Staging } from '../components/Staging';
+import { DropZones } from '../components/DropZones';
+import { DragPreview } from '../components/DragPreview';
 import { ToastContainer } from '../shared/components/Toast';
-import { PanelErrorBoundary } from './PanelErrorBoundary';
-import { SharedLayoutImporter, SharedLayoutBanner } from './Share';
+import { PanelErrorBoundary } from '../components/PanelErrorBoundary';
+import { SharedLayoutImporter, SharedLayoutBanner } from '../components/Share';
 import {
   MobileHeader,
   BottomNavBar,
@@ -20,9 +20,9 @@ import {
   MobileSettingsPanel,
   MobileLayoutsPanel,
   BinContextMenuWrapper,
-} from './Mobile';
-import { LabsDrawer } from './Labs';
-import { PresenceAvatarList } from './Collab';
+} from '../components/Mobile';
+import { LabsDrawer } from '../components/Labs';
+import { PresenceAvatarList } from '../components/Collab';
 import { usePresence } from '../hooks/usePresence';
 import { useCollabMode } from '../hooks/useCollabMode';
 import type { SaveStatus } from '../shared/hooks';
@@ -35,10 +35,10 @@ interface LegacyContextMenuState {
 
 // Lazy load mobile help modal (with retry for chunk load failures)
 const MobileHelpModal = lazyWithRetry(() =>
-  import('./Mobile/MobileHelpModal').then(namedExport('MobileHelpModal'))
+  import('../components/Mobile/MobileHelpModal').then(namedExport('MobileHelpModal'))
 );
 
-interface MobileLayoutProps {
+export interface MobileLayoutProps {
   isMobileHelpOpen: boolean;
   setIsMobileHelpOpen: (open: boolean) => void;
   saveStatus: SaveStatus;
