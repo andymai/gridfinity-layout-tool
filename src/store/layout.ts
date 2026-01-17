@@ -32,6 +32,7 @@ interface LayoutState {
   addBin: (bin: Omit<Bin, 'id'>) => Result<string, ValidationError>;
   updateBin: (id: string, updates: Partial<Bin>) => Result<void, LayoutError>;
   deleteBin: (id: string) => Result<void, LayoutError>;
+  deleteBins: (ids: string[]) => Result<void, LayoutError>;
   duplicateBin: (id: string) => Result<string, ValidationError | LayoutError>;
   moveBinToStaging: (id: string) => Result<void, LayoutError>;
   moveBinFromStaging: (id: string, layerId: string, x: number, y: number) => Result<void, ValidationError | LayoutError>;
@@ -141,6 +142,20 @@ export const useLayoutStore = create<LayoutState>()(
 
       set(state => {
         state.layout.bins = state.layout.bins.filter(b => b.id !== id);
+        state.lastEditSource = 'local';
+      });
+
+      return OK;
+    },
+
+    deleteBins: (ids) => {
+      if (ids.length === 0) {
+        return OK;
+      }
+
+      set(state => {
+        const idsSet = new Set(ids);
+        state.layout.bins = state.layout.bins.filter(b => !idsSet.has(b.id));
         state.lastEditSource = 'local';
       });
 
