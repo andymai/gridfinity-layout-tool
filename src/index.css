@@ -316,10 +316,15 @@
    TOUCH-SPECIFIC STYLES
    =========================================== */
 @media (pointer: coarse) {
-  /* Larger resize handles on touch devices */
+  /* Larger touch targets on touch devices (48px vs 44px default) */
   .resize-handle {
-    width: 32px !important;
-    height: 32px !important;
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  /* Larger visual indicators on touch devices */
+  .resize-handle .resize-handle-indicator {
+    transform: scale(1.5);
   }
 
   /* Disable hover effects that don't work well on touch */
@@ -355,6 +360,14 @@
   }
 }
 
+/* Touch-specific: Add outline for better visibility against colored bins */
+@media (pointer: coarse) {
+  .resize-handle-indicator {
+    outline: 2px solid rgba(0, 0, 0, 0.3);
+    outline-offset: -1px;
+  }
+}
+
 /* Active/pressed state for all devices */
 .group:active .resize-handle-indicator,
 .resize-handle-indicator:active {
@@ -362,6 +375,16 @@
   filter: brightness(1.15);
   box-shadow: 0 0 16px rgba(251, 191, 36, 0.7),
               0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Touch-specific: More prominent active state */
+@media (pointer: coarse) {
+  .group:active .resize-handle-indicator,
+  .resize-handle-indicator:active {
+    transform: scale(1.8);
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.9),
+                0 6px 12px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* ===========================================
