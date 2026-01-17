@@ -37,8 +37,9 @@ test.describe('Print Modal', () => {
     // Check for settings elements (use heading role to be specific)
     await expect(page.getByRole('heading', { name: 'Layers' })).toBeVisible();
     await expect(page.locator('text=Include in Print')).toBeVisible();
-    await expect(page.locator('label:has-text("Labels")')).toBeVisible();
-    await expect(page.locator('label:has-text("Categories")')).toBeVisible();
+    // Checkboxes are role="checkbox" with aria-label, not actual inputs
+    await expect(page.getByRole('checkbox', { name: 'Labels' })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: 'Categories' })).toBeVisible();
   });
 
   test('print modal has preview panel', async ({ page }) => {
@@ -108,18 +109,19 @@ test.describe('Print Modal', () => {
     await expect(page.locator('h2:has-text("Print Layout")')).toBeVisible();
 
     // Find layer checkbox (Layer 1 should exist by default)
-    const layerCheckbox = page.locator('label:has-text("Layer 1") input[type="checkbox"]');
+    // Checkboxes are role="checkbox" with aria-label="Select Layer 1"
+    const layerCheckbox = page.getByRole('checkbox', { name: /select layer 1/i });
 
     // Should be checked by default
-    await expect(layerCheckbox).toBeChecked();
+    await expect(layerCheckbox).toHaveAttribute('aria-checked', 'true');
 
     // Uncheck it
     await layerCheckbox.click();
-    await expect(layerCheckbox).not.toBeChecked();
+    await expect(layerCheckbox).toHaveAttribute('aria-checked', 'false');
 
     // Check it again
     await layerCheckbox.click();
-    await expect(layerCheckbox).toBeChecked();
+    await expect(layerCheckbox).toHaveAttribute('aria-checked', 'true');
   });
 
   test('display option checkboxes work', async ({ page }) => {
@@ -131,18 +133,20 @@ test.describe('Print Modal', () => {
     await expect(page.locator('h2:has-text("Print Layout")')).toBeVisible();
 
     // Find "Size (WxD)" checkbox and toggle it
-    const showSizeLabel = page.locator('label:has-text("Size (WxD)")');
-    const showSizeCheckbox = showSizeLabel.locator('input[type="checkbox"]');
+    // Checkboxes are role="checkbox" with aria-label
+    const showSizeCheckbox = page.getByRole('checkbox', { name: 'Size (WxD)' });
+
+    // Get current state
+    const wasChecked = (await showSizeCheckbox.getAttribute('aria-checked')) === 'true';
 
     // Toggle the checkbox
-    const wasChecked = await showSizeCheckbox.isChecked();
     await showSizeCheckbox.click();
 
     // Verify it changed
     if (wasChecked) {
-      await expect(showSizeCheckbox).not.toBeChecked();
+      await expect(showSizeCheckbox).toHaveAttribute('aria-checked', 'false');
     } else {
-      await expect(showSizeCheckbox).toBeChecked();
+      await expect(showSizeCheckbox).toHaveAttribute('aria-checked', 'true');
     }
   });
 
@@ -163,17 +167,17 @@ test.describe('Print Modal', () => {
     // Wait for modal
     await expect(page.locator('h2:has-text("Print Layout")')).toBeVisible();
 
-    // Check that bin list checkbox exists and is checked by default
-    const binListCheckbox = page.locator('label:has-text("Bin Details Table") input[type="checkbox"]');
+    // Check that bin list checkbox exists (default is unchecked per settings.ts)
+    // Checkboxes are role="checkbox" with aria-label
+    const binListCheckbox = page.getByRole('checkbox', { name: 'Bin Details Table' });
     await expect(binListCheckbox).toBeVisible();
-    await expect(binListCheckbox).toBeChecked();
 
-    // Toggle it off
+    // Toggle it on
     await binListCheckbox.click();
-    await expect(binListCheckbox).not.toBeChecked();
+    await expect(binListCheckbox).toHaveAttribute('aria-checked', 'true');
 
-    // Toggle it back on
+    // Toggle it back off
     await binListCheckbox.click();
-    await expect(binListCheckbox).toBeChecked();
+    await expect(binListCheckbox).toHaveAttribute('aria-checked', 'false');
   });
 });

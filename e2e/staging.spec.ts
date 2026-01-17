@@ -14,6 +14,7 @@ import {
   resetViewport,
   getInspector,
   getStash,
+  getActiveDialog,
 } from './fixtures';
 
 /**
@@ -36,8 +37,8 @@ test.describe('Staging Area (Stash)', () => {
     await clearAllStorage(page);
     await resetViewport(page);
 
-    // Close any lingering dialogs
-    const dialogs = page.locator('[role="dialog"]');
+    // Close any lingering dialogs (excluding Labs drawer)
+    const dialogs = getActiveDialog(page);
     if ((await dialogs.count()) > 0) {
       await page.keyboard.press('Escape');
       await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
@@ -139,7 +140,7 @@ test.describe('Staging Area (Stash)', () => {
     await clearButton.click();
 
     // Confirm dialog should appear
-    const dialog = page.getByRole('dialog');
+    const dialog = getActiveDialog(page);
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText(/delete all.*stashed bins/i)).toBeVisible();
 
@@ -167,7 +168,7 @@ test.describe('Staging Area (Stash)', () => {
     await stashContainer.getByRole('button', { name: /clear all/i }).click();
 
     // Cancel the dialog
-    const dialog = page.getByRole('dialog');
+    const dialog = getActiveDialog(page);
     await dialog.getByRole('button', { name: /cancel/i }).click();
 
     // Stash should still be visible with the bin

@@ -11,6 +11,7 @@ import {
   waitForBinSelected,
   clearAllStorage,
   resetViewport,
+  getActiveDialog,
 } from './fixtures';
 
 test.describe('Mobile Layout', () => {
@@ -28,8 +29,8 @@ test.describe('Mobile Layout', () => {
     // CRITICAL: Reset viewport after mobile tests to prevent pollution
     await resetViewport(page);
 
-    // Close any lingering dialogs
-    const dialogs = page.locator('[role="dialog"]');
+    // Close any lingering dialogs (excluding Labs drawer)
+    const dialogs = getActiveDialog(page);
     if ((await dialogs.count()) > 0) {
       await page.keyboard.press('Escape');
       await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
@@ -60,7 +61,7 @@ test.describe('Mobile Layout', () => {
 
     // Bottom sheet should open - look for the dialog
     await waitForDialog(page);
-    const sheet = page.locator('[role="dialog"]');
+    const sheet = getActiveDialog(page);
 
     // Sheet should contain layer management content - look for "Add layer" button
     await expect(sheet.getByRole('button', { name: /add.*layer/i })).toBeVisible();
@@ -74,7 +75,7 @@ test.describe('Mobile Layout', () => {
 
     // Bottom sheet should open
     await waitForDialog(page);
-    const sheet = page.locator('[role="dialog"]');
+    const sheet = getActiveDialog(page);
 
     // Should see default categories in the sheet
     await expect(sheet.getByText('Coral')).toBeVisible();
@@ -127,7 +128,7 @@ test.describe('Mobile Layout', () => {
 
     // Inspector should open in bottom sheet showing bin details
     await waitForDialog(page);
-    const sheet = page.locator('[role="dialog"]');
+    const sheet = getActiveDialog(page);
     await expect(sheet.getByRole('heading', { name: /^\d×\d Bin$/ })).toBeVisible({ timeout: 5000 });
   });
 
@@ -139,7 +140,7 @@ test.describe('Mobile Layout', () => {
 
     // Verify layers panel is open
     await waitForDialog(page);
-    const sheet = page.locator('[role="dialog"]');
+    const sheet = getActiveDialog(page);
     await expect(sheet.getByRole('button', { name: /add.*layer/i })).toBeVisible();
 
     // Close the sheet via Escape key (sheet intercepts nav clicks when open)
@@ -202,7 +203,7 @@ test.describe('Mobile Layout', () => {
     await expect(layersTab).toHaveAttribute('aria-pressed', 'true');
 
     // And panel should be open - look for Add Layer button which is unique to layers panel
-    const sheet = page.locator('[role="dialog"]');
+    const sheet = getActiveDialog(page);
     await expect(sheet.getByRole('button', { name: /add.*layer/i })).toBeVisible();
   });
 });

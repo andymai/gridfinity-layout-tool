@@ -9,6 +9,7 @@ import {
   waitForUndoEnabled,
   clearAllStorage,
   resetViewport,
+  getActiveDialog,
 } from './fixtures';
 
 test.describe('Rotate Bins', () => {
@@ -24,7 +25,7 @@ test.describe('Rotate Bins', () => {
     await resetViewport(page);
 
     // Close any lingering dialogs
-    const dialogs = page.locator('[role="dialog"]');
+    const dialogs = getActiveDialog(page);
     if ((await dialogs.count()) > 0) {
       await page.keyboard.press('Escape');
       await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
@@ -66,8 +67,8 @@ test.describe('Rotate Bins', () => {
     const inspector = getInspector(page);
     await expect(inspector.getByText(/2×3 Bin/i)).toBeVisible();
 
-    // Click the rotate button
-    const rotateButton = inspector.getByRole('button', { name: /rotate/i });
+    // Click the rotate/swap button (aria-label is "Swap width and depth")
+    const rotateButton = inspector.getByRole('button', { name: /swap width/i });
     await rotateButton.click();
 
     // Verify dimensions swapped

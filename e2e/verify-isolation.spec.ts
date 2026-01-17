@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForAppReady, clearAllStorage, resetViewport } from './fixtures';
+import { waitForAppReady, clearAllStorage, resetViewport, getActiveDialog } from './fixtures';
 
 test.describe('Test Isolation Verification', () => {
   test.beforeEach(async ({ page }) => {
@@ -13,8 +13,8 @@ test.describe('Test Isolation Verification', () => {
     await clearAllStorage(page);
     await resetViewport(page);
 
-    // Close any lingering dialogs
-    const dialogs = page.locator('[role="dialog"]');
+    // Close any lingering dialogs (excluding Labs drawer)
+    const dialogs = getActiveDialog(page);
     if ((await dialogs.count()) > 0) {
       await page.keyboard.press('Escape');
       await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
@@ -81,7 +81,8 @@ test.describe('Test Isolation Verification', () => {
   });
 
   test('no dialogs left open from previous tests', async ({ page }) => {
-    const dialogs = page.locator('[role="dialog"]');
+    // Check for dialogs excluding the Labs drawer (which is always in DOM)
+    const dialogs = getActiveDialog(page);
     const dialogCount = await dialogs.count();
     expect(dialogCount).toBe(0);
   });
