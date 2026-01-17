@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { LayoutEntry } from '../../../core/types';
-import { LayoutThumbnail } from '../../LayoutThumbnail';
+import type { LayoutEntry } from '../../../../core/types';
+import { LayoutThumbnail } from '../../../../components/LayoutThumbnail';
 import { LayoutActions } from './LayoutActions';
 
 interface LayoutListItemProps {
