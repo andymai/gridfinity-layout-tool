@@ -12,10 +12,10 @@ const INTERNAL_OFFSET = -TOUCH_TARGET_HALF;
 /** Offset for external handles (places target fully outside) */
 const EXTERNAL_OFFSET = -TOUCH_TARGET_SIZE;
 
-/** Visual indicator sizes */
-const EDGE_VISUAL_WIDTH = 10;
-const EDGE_VISUAL_MIN = 20;
-const CORNER_VISUAL_SIZE = 12;
+/** Visual indicator sizes (scaled 1.5x on touch devices via CSS) */
+const EDGE_VISUAL_WIDTH = 12;
+const EDGE_VISUAL_MIN = 24;
+const CORNER_VISUAL_SIZE = 14;
 
 /** Corner handle types */
 const CORNER_HANDLES: ResizeHandle[] = ['nw', 'ne', 'sw', 'se'];
