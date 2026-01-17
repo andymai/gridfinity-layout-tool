@@ -553,9 +553,13 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     e.preventDefault();
     e.stopPropagation();
     if (e.button === 0) {
+      // Haptic feedback on touch devices when starting resize
+      if (isTouchDevice && navigator.vibrate) {
+        navigator.vibrate(30);
+      }
       onStartResize(bin.id, handle, e.pointerId);
     }
-  }, [onStartResize, bin.id]);
+  }, [onStartResize, bin.id, isTouchDevice]);
 
   const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
   const textColors = getBinTextColors(bgColor);

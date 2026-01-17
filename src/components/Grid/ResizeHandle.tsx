@@ -28,7 +28,7 @@ function ResizeHandleComponent({ handle, placement, variant, onPointerDown }: Re
 
   return (
     <div
-      className="absolute flex items-center justify-center group"
+      className="resize-handle absolute flex items-center justify-center group"
       style={{
         left: position.left,
         right: position.right,
