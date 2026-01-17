@@ -7,7 +7,7 @@ import { LayoutManagerModal } from './Modals/LayoutManagerModal';
 import { PrintModal } from './Modals/PrintModal';
 import { ShareButton } from './Share';
 import { PresenceAvatars } from './Collab';
-import type { SaveStatus } from '../hooks/useAutoSave';
+import type { SaveStatus } from '../shared/hooks';
 
 interface HeaderProps {
   onHelpClick: () => void;

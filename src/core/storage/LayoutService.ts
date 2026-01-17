@@ -16,7 +16,7 @@
 import * as backend from './backend';
 import { validateImport } from '../../utils/validation';
 import { generateId, STAGING_ID } from '../constants';
-import { generateLayoutId } from '../../utils/uuid';
+import { generateLayoutId } from '../../shared/utils';
 import type {
   Layout,
   LayoutLibrary,

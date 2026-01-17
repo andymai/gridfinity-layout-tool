@@ -20,7 +20,7 @@ vi.mock('../../components/Sidebar/CategoriesPanel', () => ({
   CategoriesPanel: () => <div data-testid="categories-panel">CategoriesPanel</div>,
 }));
 
-vi.mock('../../components/CollapsibleSection', () => ({
+vi.mock('../../shared/components/CollapsibleSection', () => ({
   CollapsibleSection: ({ children, title }: { children: React.ReactNode; title: string }) => (
     <div data-testid={`collapsible-${title.toLowerCase().replace(/\s+/g, '-')}`}>
       <div>{title}</div>
@@ -29,7 +29,7 @@ vi.mock('../../components/CollapsibleSection', () => ({
   ),
 }));
 
-vi.mock('../../components/Modals/ConfirmDialog', () => ({
+vi.mock('../../shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, onConfirm, onCancel, title, message }: {
     isOpen: boolean;
     onConfirm: () => void;

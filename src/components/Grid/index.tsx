@@ -13,14 +13,14 @@ import { track3DPreview } from '../../utils/analytics';
 import { GridCanvas } from './GridCanvas';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
-import { ConfirmDialog } from '../Modals/ConfirmDialog';
+import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { MobileGridToolbar } from '../Mobile';
 import { PanelErrorBoundary } from '../PanelErrorBoundary';
 import { CollabCursors, CollabGhosts, CollabSelectionRings } from '../Collab';
 import { useCollabMode } from '../../hooks/useCollabMode';
 import { useCollabPresence } from '../../hooks/useCollabPresence';
 import { useGridCoords } from '../../hooks/useGridCoords';
-import { Checkbox } from '../Checkbox';
+import { Checkbox } from '../../shared/components/Checkbox';
 // Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
 const IsometricPreview = lazyWithRetry(() =>
   import('./IsometricPreview').then(namedExport('IsometricPreview'))

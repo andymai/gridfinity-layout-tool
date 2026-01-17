@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
-import { useCrossTabSync } from '../../hooks/useCrossTabSync';
+import { useCrossTabSync } from '../../shared/hooks';
 import { useLayoutStore } from '../../core/store/layout';
 import { useLibraryStore } from '../../core/store/library';
 import { useHistoryStore } from '../../core/store/history';

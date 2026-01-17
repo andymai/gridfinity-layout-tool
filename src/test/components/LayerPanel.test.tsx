@@ -6,7 +6,7 @@ import { resetAllStores } from '../testUtils';
 import type { Layer } from '../../core/types';
 
 // Mock CollapsibleSection to simplify testing
-vi.mock('../../components/CollapsibleSection', () => ({
+vi.mock('../../shared/components/CollapsibleSection', () => ({
   CollapsibleSection: ({ children, title, actions }: { children: React.ReactNode; title: string; actions?: React.ReactNode }) => (
     <div data-testid="collapsible-section">
       <div data-testid="section-header">
@@ -19,7 +19,7 @@ vi.mock('../../components/CollapsibleSection', () => ({
 }));
 
 // Mock ConfirmDialog
-vi.mock('../../components/Modals/ConfirmDialog', () => ({
+vi.mock('../../shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, onConfirm, onCancel, message, title }: {
     isOpen: boolean;
     onConfirm: () => void;

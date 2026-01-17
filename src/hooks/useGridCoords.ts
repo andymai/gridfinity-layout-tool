@@ -4,7 +4,7 @@ import type { Coord } from '../core/types';
 import { useUIStore, useLayoutStore } from '../core/store';
 import { getBaseCellSize, snapToHalf } from '../core/constants';
 import { clamp } from '../utils/validation';
-import { useResponsive } from './useResponsive';
+import { useResponsive } from '../shared/hooks';
 
 /**
  * Hook for converting between screen (pixel) coordinates and grid coordinates.

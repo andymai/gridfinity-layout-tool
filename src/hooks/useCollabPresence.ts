@@ -20,7 +20,7 @@
  */
 
 import { useContext } from 'react';
-import { PresenceContext, type CollabPresenceActions } from '../contexts/PresenceContext';
+import { PresenceContext, type CollabPresenceActions } from '../shared/contexts';
 
 export type { CollabPresenceActions };
 

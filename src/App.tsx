@@ -12,14 +12,14 @@ import { Staging } from './components/Staging';
 import { RightPanel } from './components/RightPanel';
 import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
-import { ToastContainer } from './components/Toast';
+import { ToastContainer } from './shared/components/Toast';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
 import { BinContextMenuWrapper } from './components/Mobile';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter, SharedLayoutBanner } from './components/Share';
 import { LabsDrawer } from './components/Labs';
-import { LocalMutationsProvider } from './contexts/MutationsContext';
+import { LocalMutationsProvider } from './shared/contexts';
 import { SHORTCUTS } from './core/constants';
 
 // Legacy context menu state for backwards compatibility

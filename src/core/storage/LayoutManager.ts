@@ -22,7 +22,7 @@
 
 import * as backend from './backend';
 import { validateImport } from '../../utils/validation';
-import { generateLayoutId } from '../../utils/uuid';
+import { generateLayoutId } from '../../shared/utils';
 import { STAGING_ID, CONSTRAINTS } from '../constants';
 import type {
   Layout,

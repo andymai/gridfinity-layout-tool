@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { throttleRAF, cancelThrottledRAF, throttle } from '../../utils/throttle';
+import { throttleRAF, cancelThrottledRAF, throttle } from '../../shared/utils';
 
 describe('throttleRAF', () => {
   beforeEach(() => {

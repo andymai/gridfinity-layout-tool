@@ -38,7 +38,7 @@ vi.mock('../../components/Print', () => ({
 }));
 
 // Mock CollapsibleSection
-vi.mock('../../components/CollapsibleSection', () => ({
+vi.mock('../../shared/components/CollapsibleSection', () => ({
   CollapsibleSection: ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div data-testid="collapsible-section">
       <div data-testid="collapsible-title">{title}</div>
@@ -48,7 +48,7 @@ vi.mock('../../components/CollapsibleSection', () => ({
 }));
 
 // Mock ConfirmDialog
-vi.mock('../../components/Modals/ConfirmDialog', () => ({
+vi.mock('../../shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, title, message, onConfirm, onCancel }: {
     isOpen: boolean;
     title: string;

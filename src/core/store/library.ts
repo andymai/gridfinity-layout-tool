@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, ThumbnailBin, CloudShareInfo, SharedWithMeEntry, SharePermission } from '../types';
 import { CONSTRAINTS, STAGING_ID } from '../constants';
-import { generateUUID, generateLayoutId } from '../../utils/uuid';
+import { generateUUID, generateLayoutId } from '../../shared/utils';
 import type { Result, Unit, LayoutError } from '../result';
 import { err, layoutLastEntity, OK } from '../result';
 import { saveSharedWithMe } from '../storage/SharedWithMeService';
