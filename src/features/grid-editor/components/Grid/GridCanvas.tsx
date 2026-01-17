@@ -1,12 +1,12 @@
 import type { RefObject, PointerEvent, JSX } from 'react';
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '../../core/store';
-import { useGridCoords, useGridTemplate } from '../../hooks';
+import { useUIStore, useLayoutStore } from '../../../../core/store';
+import { useGridCoords, useGridTemplate } from '../../../../hooks';
 import { Bin } from './Bin';
-import { getBlockedZones } from '../../utils/collision';
-import { DEFAULT_CATEGORY_COLOR } from '../../core/constants';
-import type { Coord, ResizeHandle } from '../../core/types';
+import { getBlockedZones } from '../../../../utils/collision';
+import { DEFAULT_CATEGORY_COLOR } from '../../../../core/constants';
+import type { Coord, ResizeHandle } from '../../../../core/types';
 
 interface GridCanvasProps {
   gridRef: RefObject<HTMLDivElement | null>;
