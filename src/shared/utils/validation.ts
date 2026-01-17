@@ -325,6 +325,7 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
 
   // Validate each layer using type guard and collect IDs
   const layerIds = new Set<string>();
+  const validLayers = layers.filter(isValidLayer);
   layers.forEach((layer, i) => {
     if (!isValidLayer(layer)) {
       errors.push(`Layer ${i} is invalid: must have id, name, and height`);
@@ -335,6 +336,8 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
   layerIds.add(STAGING_ID);
 
   // Validate each bin using type guard
+  // First pass: validate structure and collect valid bins
+  const validatedBins: Bin[] = [];
   bins.forEach((bin, i) => {
     if (!isValidBin(bin)) {
       errors.push(`Bin ${i} is invalid: must have id, layerId, x, y, width, depth, height`);
@@ -342,14 +345,60 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
     }
     if (!layerIds.has(bin.layerId)) {
       errors.push(`Bin ${i} references invalid layer: ${bin.layerId}`);
+      return;
     }
+
+    // For non-staging bins, use canPlaceBin for full validation
+    // (bounds, height, collisions, blocked zones)
     if (bin.layerId !== STAGING_ID) {
-      if (bin.x < 0 || bin.y < 0 ||
-          bin.x + bin.width > drawer.width ||
-          bin.y + bin.depth > drawer.depth) {
-        errors.push(`Bin ${i} is out of bounds`);
+      // Build partial layout with already-validated bins for collision checking
+      const partialLayout: Layout = {
+        version: '1.0',
+        name: 'import-validation',
+        drawer: drawer as Layout['drawer'],
+        layers: validLayers as Layout['layers'],
+        bins: validatedBins,
+        categories: [] as Layout['categories'],
+        printBedSize: 256,
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+      };
+
+      const placementResult = canPlaceBin(
+        { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth, height: bin.height },
+        bin.layerId,
+        partialLayout
+      );
+
+      if (!placementResult.valid) {
+        const reasonMap: Record<string, string> = {
+          out_of_bounds: 'is out of bounds',
+          exceeds_width: 'exceeds drawer width',
+          exceeds_depth: 'exceeds drawer depth',
+          exceeds_height: 'exceeds available height',
+          invalid_layer: 'references invalid layer',
+          blocked_zone: 'overlaps with blocked zone from upper layer',
+          collision: 'collides with another bin',
+        };
+        const message = reasonMap[placementResult.reason || ''] || 'has invalid placement';
+        errors.push(`Bin ${i} ${message}`);
       }
     }
+
+    // Add to validated bins for subsequent collision checks
+    validatedBins.push({
+      id: bin.id,
+      layerId: bin.layerId,
+      x: bin.x,
+      y: bin.y,
+      width: bin.width,
+      depth: bin.depth,
+      height: bin.height,
+      category: bin.category || '',
+      label: bin.label || '',
+      notes: bin.notes || '',
+      customProperties: bin.customProperties,
+    });
 
     // Validate custom properties if present
     if (bin.customProperties) {
@@ -361,7 +410,6 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
   });
 
   // Validate total layer height
-  const validLayers = layers.filter(isValidLayer);
   const totalHeight = validLayers.reduce((sum, layer) => sum + layer.height, 0);
   if (totalHeight > drawer.height) {
     errors.push('Total layer height exceeds drawer height');
@@ -413,8 +461,8 @@ export function validateLayoutIntegrity(layout: Layout): { valid: boolean; error
     if (bin.layerId !== STAGING_ID && !layerIds.has(bin.layerId)) {
       return { valid: false, error: `Bin "${bin.label || bin.id}" references missing layer` };
     }
-    // Check category reference
-    if (!categoryIds.has(bin.category)) {
+    // Check category reference (category is optional, only validate if present)
+    if (bin.category && !categoryIds.has(bin.category)) {
       return { valid: false, error: `Bin "${bin.label || bin.id}" references missing category` };
     }
   }

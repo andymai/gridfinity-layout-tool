@@ -254,7 +254,8 @@ describe('validateImport', () => {
     ];
     const result = validateImport(layout);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('out of bounds'))).toBe(true);
+    // canPlaceBin provides more specific error messages
+    expect(result.errors.some(e => e.includes('exceeds drawer width'))).toBe(true);
   });
 
   it('rejects total layer height exceeding drawer', () => {
