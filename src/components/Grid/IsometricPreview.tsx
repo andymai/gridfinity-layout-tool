@@ -7,7 +7,7 @@ import {
   DEFAULT_CATEGORY_COLOR,
   calcMaxGridUnits,
 } from "../../core/constants"
-import { useResponsive } from "../../hooks/useResponsive"
+import { useResponsive } from "../../shared/hooks"
 import { use3DPreviewKeyboard } from "../../hooks/use3DPreviewKeyboard"
 import { getLayerZStart } from "../../utils/collision"
 import { Scene, type SceneHandle } from "./IsometricPreview/Scene"

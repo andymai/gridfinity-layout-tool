@@ -33,7 +33,7 @@ vi.mock('../utils/validation', () => ({
 }));
 
 // Mock UUID generation for predictable IDs
-vi.mock('../utils/uuid', () => ({
+vi.mock('../shared/utils/uuid', () => ({
   generateLayoutId: vi.fn(() => 'generated-id-123'),
 }));
 

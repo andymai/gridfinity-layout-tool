@@ -10,8 +10,8 @@ import {
   saveLibrary,
   initializeLayoutLibrary,
 } from '../../core/storage';
-import { generateLayoutId } from '../../utils/uuid';
-import { ConfirmDialog } from '../Modals/ConfirmDialog';
+import { generateLayoutId } from '../../shared/utils';
+import { ConfirmDialog } from '../../shared/components';
 import { useCollabMode } from '../../hooks/useCollabMode';
 
 /**

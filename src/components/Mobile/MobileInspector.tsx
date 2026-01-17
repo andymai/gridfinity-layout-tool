@@ -1,4 +1,4 @@
-import { ConfirmDialog } from '../Modals/ConfirmDialog';
+import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import {
   useBinInspector,
   SingleBinInspector,

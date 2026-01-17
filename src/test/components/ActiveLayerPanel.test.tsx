@@ -8,7 +8,7 @@ import { useHalfBinModeStore } from '../../core/store/halfBinMode';
 import { resetAllStores } from '../testUtils';
 
 // Mock ConfirmDialog
-vi.mock('../../components/Modals/ConfirmDialog', () => ({
+vi.mock('../../shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, onConfirm, onCancel, message }: {
     isOpen: boolean;
     onConfirm: () => void;
@@ -24,7 +24,7 @@ vi.mock('../../components/Modals/ConfirmDialog', () => ({
 }));
 
 // Mock CollapsibleSection
-vi.mock('../../components/CollapsibleSection', () => ({
+vi.mock('../../shared/components/CollapsibleSection', () => ({
   CollapsibleSection: ({ children, title }: {
     children: React.ReactNode;
     title: string;

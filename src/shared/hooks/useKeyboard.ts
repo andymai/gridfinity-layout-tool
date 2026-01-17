@@ -1,12 +1,12 @@
 import { useEffect, useCallback } from 'react';
-import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction, useToastStore } from '../core/store';
-import { useMutations } from '../contexts/MutationsContext';
-import { canPlaceBin } from '../utils/validation';
-import { validateBinRotation } from '../utils/binLocation';
-import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
-import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '../core/constants';
-import { useGridNavigation } from './useGridNavigation';
-import { isOk } from '../core/result';
+import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction, useToastStore } from '../../core/store';
+import { useMutations } from '../contexts';
+import { canPlaceBin } from '../../utils/validation';
+import { validateBinRotation } from '../../utils/binLocation';
+import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
+import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '../../core/constants';
+import { useGridNavigation } from '../../hooks/useGridNavigation';
+import { isOk } from '../../core/result';
 
 /**
  * Check if a key matches any shortcut in a readonly array.

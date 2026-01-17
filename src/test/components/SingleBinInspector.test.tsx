@@ -6,7 +6,7 @@ import { resetAllStores } from '../testUtils';
 import { useUIStore } from '../../core/store';
 
 // Mock the DeferredNumberInput component to simplify testing
-vi.mock('../../components/DeferredNumberInput', () => ({
+vi.mock('../../shared/components/DeferredNumberInput', () => ({
   DeferredNumberInput: ({ value, onChange, ...props }: { value: number; onChange: (v: number) => void; [key: string]: unknown }) => (
     <input
       type="number"

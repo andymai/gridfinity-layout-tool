@@ -12,7 +12,7 @@ import {
 import { useToastStore } from '../../core/store/toast';
 import { useResponsive } from '../../hooks';
 import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../../core/constants';
-import { getBinTextColors } from '../../utils/color';
+import { getBinTextColors } from '../../shared/utils';
 import { ResizeHandles } from './ResizeHandles';
 
 /** Clamp a value between min and max */

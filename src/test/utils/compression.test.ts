@@ -11,7 +11,7 @@ import {
   compressString,
   decompressString,
   getCompressionRatio,
-} from '../../utils/compression';
+} from '../../shared/utils';
 import type { Layout } from '../../core/types';
 
 // Helper to create a test layout

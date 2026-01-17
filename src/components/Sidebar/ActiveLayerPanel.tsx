@@ -3,8 +3,8 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../core/store';
 import { useToastStore } from '../../core/store/toast';
 import { STAGING_ID } from '../../core/constants';
-import { ConfirmDialog } from '../Modals/ConfirmDialog';
-import { CollapsibleSection } from '../CollapsibleSection';
+import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
+import { CollapsibleSection } from '../../shared/components/CollapsibleSection';
 
 // Square sizes
 const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];

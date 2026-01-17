@@ -13,7 +13,7 @@
 import { useOthers } from '../../liveblocks.config';
 import { useUIStore, useLayoutStore } from '../../core/store';
 import { getBaseCellSize } from '../../core/constants';
-import { useResponsive } from '../../hooks/useResponsive';
+import { useResponsive } from '../../shared/hooks';
 import { useInterpolatedPresence } from '../../hooks/useInterpolatedPresence';
 import { CollabCursor } from './CollabCursor';
 

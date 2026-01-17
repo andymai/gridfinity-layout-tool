@@ -23,16 +23,15 @@ export type { UseBinInspectorReturn, BinField, BinConstraints, ConfirmDeleteStat
 
 // 3D preview hooks
 export { useBinGeometry, createBinGeometry } from './useBinGeometry';
-export { useKeyboard } from './useKeyboard';
-export { useAutoSave } from './useAutoSave';
-export { useResponsive, prefersTouch } from './useResponsive';
-export type { ResponsiveState, LayoutMode } from './useResponsive';
+
+// Re-export shared hooks for backward compatibility
+export { useKeyboard, useAutoSave, useResponsive, prefersTouch, useCrossTabSync, usePWAUpdate } from '../shared/hooks';
+export type { SaveStatus, ResponsiveState, LayoutMode } from '../shared/hooks';
+
 export { usePrintList } from './usePrintList';
 export type { UsePrintListReturn } from './usePrintList';
 export { useLayoutSwitcher } from './useLayoutSwitcher';
-export { useCrossTabSync } from './useCrossTabSync';
 export { useLayoutRouting } from './useLayoutRouting';
-export { usePWAUpdate } from './usePWAUpdate';
 export { useAnalytics } from './useAnalytics';
 export { useStorageMigration } from './useStorageMigration';
 export { useTabletPanels } from './useTabletPanels';

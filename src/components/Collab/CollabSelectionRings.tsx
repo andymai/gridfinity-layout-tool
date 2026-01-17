@@ -15,7 +15,7 @@ import { useMemo } from 'react';
 import { useOthers } from '../../liveblocks.config';
 import { useLayoutStore, useUIStore } from '../../core/store';
 import { getBaseCellSize, STAGING_ID } from '../../core/constants';
-import { useResponsive } from '../../hooks/useResponsive';
+import { useResponsive } from '../../shared/hooks';
 
 interface CollabSelectionRingsProps {
   /** Optional className for the container */

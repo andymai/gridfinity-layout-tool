@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Checkbox } from '../Checkbox';
+import { Checkbox } from '../../shared/components/Checkbox';
 import type { BinListSortOrder, SortFieldConfig, BinSortField } from '../../core/store/settings';
 import { SORT_FIELD_LABELS } from '../../core/store/settings';
 

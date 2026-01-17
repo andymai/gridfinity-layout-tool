@@ -9,7 +9,7 @@
  */
 
 import { usePresence } from '../../hooks/usePresence';
-import { useResponsive } from '../../hooks/useResponsive';
+import { useResponsive } from '../../shared/hooks';
 import { useUIStore } from '../../core/store/ui';
 import { PresenceAvatarBar } from './PresenceAvatarBar';
 import { PresenceMobileButton } from './PresenceMobileButton';

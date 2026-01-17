@@ -4,11 +4,10 @@ import { useUIStore, useLayoutStore } from '../core/store';
 import { DEFAULT_CATEGORY_COLOR } from '../core/constants';
 import { exportPrintListTSV } from '../core/storage';
 import { trackLayoutSnapshot } from '../utils/analytics';
-import { ConfirmDialog } from './Modals/ConfirmDialog';
+import { ConfirmDialog, CollapsibleSection } from '../shared/components';
 import { BinListModal } from './Modals/BinListModal';
 import { usePrintList } from '../hooks/usePrintList';
 import { SplitPreview, PrintListSummary, PrintListEmpty } from './Print';
-import { CollapsibleSection } from './CollapsibleSection';
 import {
   useBinInspector,
   SingleBinInspector,

@@ -2,10 +2,10 @@ import { useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react'
 import type { RefObject } from 'react';
 import type { Coord, ResizeHandle } from '../core/types';
 import { useLayoutStore, useUndoableAction, useSelectionStore, useInteractionStore } from '../core/store';
-import { useMutations } from '../contexts/MutationsContext';
+import { useMutations } from '../shared/contexts';
 import { useGridCoords } from './useGridCoords';
 import { useCollabPresence } from './useCollabPresence';
-import { throttleRAF, cancelThrottledRAF } from '../utils/throttle';
+import { throttleRAF, cancelThrottledRAF } from '../shared/utils';
 import { mapInteractionToHint } from '../utils/interaction';
 import { useDrawInteraction } from './interactions/useDrawInteraction';
 import { useDragInteraction } from './interactions/useDragInteraction';

@@ -5,7 +5,7 @@ import { useLayoutStore, useUIStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
 
 // Mock ConfirmDialog to simplify testing
-vi.mock('../../components/Modals/ConfirmDialog', () => ({
+vi.mock('../../shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, onConfirm, onCancel, title }: {
     isOpen: boolean;
     onConfirm: () => void;
@@ -21,7 +21,7 @@ vi.mock('../../components/Modals/ConfirmDialog', () => ({
 }));
 
 // Mock CollapsibleSection to show content directly
-vi.mock('../../components/CollapsibleSection', () => ({
+vi.mock('../../shared/components/CollapsibleSection', () => ({
   CollapsibleSection: ({ children, title, actions }: {
     children: React.ReactNode;
     title: string;

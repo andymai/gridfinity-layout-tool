@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
-import { useAutoSave } from '../../hooks/useAutoSave';
+import { useAutoSave } from '../../shared/hooks';
 import { useLayoutStore } from '../../core/store/layout';
 import { useLibraryStore } from '../../core/store/library';
 import { useToastStore } from '../../core/store/toast';
@@ -69,7 +69,7 @@ vi.mock('../../core/storage', () => {
 
 // Mock the idle utility to execute callbacks immediately (synchronously)
 // This simplifies testing since we only need to test debounce behavior
-vi.mock('../../utils/idle', () => ({
+vi.mock('../../shared/utils/idle', () => ({
   scheduleIdleCallback: vi.fn((callback) => {
     // Execute immediately for testing purposes
     callback({ didTimeout: false, timeRemaining: () => 50 });
