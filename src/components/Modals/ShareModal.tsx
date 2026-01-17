@@ -10,7 +10,7 @@ import {
   exportLayoutJSON,
 } from '../../storage';
 import { trackLayoutSnapshot } from '../../utils/analytics';
-import { CloudShareTab } from '../CloudShareTab';
+import { CloudShareTab } from '../Share';
 
 interface ShareModalProps {
   isOpen: boolean;

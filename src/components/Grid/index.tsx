@@ -1,14 +1,13 @@
 import { useRef, useState, useCallback, useEffect, useLayoutEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUndoableAction } from '../../store';
+import { useLayoutStore } from '../../store';
 import { useViewStore } from '../../store/view';
 import { useInteractionStore } from '../../store/interaction';
 import { useSelectionStore } from '../../store/selection';
 import { useHalfBinModeStore } from '../../store/halfBinMode';
 import { useToastStore } from '../../store/toast';
-import { useInteraction, useResponsive } from '../../hooks';
+import { useInteraction, useResponsive, useGridResize } from '../../hooks';
 import { BASE_CELL_SIZE, STAGING_ID, CONSTRAINTS, getBaseCellSize, HALF_BIN_SCALE } from '../../constants';
-import { clamp } from '../../utils/validation';
 import { lazyWithRetry, namedExport } from '../../utils/lazyWithRetry';
 import { track3DPreview } from '../../utils/analytics';
 import { GridCanvas } from './GridCanvas';
@@ -26,8 +25,6 @@ import { Checkbox } from '../Checkbox';
 const IsometricPreview = lazyWithRetry(() =>
   import('./IsometricPreview').then(namedExport('IsometricPreview'))
 );
-
-type ResizeDirection = 'width' | 'depth' | 'both' | null;
 
 /**
  * Main grid container with zoom controls, layer indicator, and row/column numbering.
@@ -113,18 +110,15 @@ export function Grid() {
   // Half-bin mode - single value, no useShallow needed
   const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
 
-  const { drawer, layers, bins, updateDrawer, updateBin } = useLayoutStore(
+  const { drawer, layers, bins } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
       layers: state.layout.layers,
       bins: state.layout.bins,
-      updateDrawer: state.updateDrawer,
-      updateBin: state.updateBin,
     }))
   );
 
   const clearSelection = useCallback(() => setSelectedBins([]), [setSelectedBins]);
-  const { execute } = useUndoableAction();
   const addToast = useToastStore(state => state.addToast);
 
   // Collaborative editing hooks
@@ -193,9 +187,6 @@ export function Grid() {
   // Derive narrow state from actual toolbar width (threshold where content starts to clip)
   const isNarrowToolbar = !isMobile && toolbarWidth > 0 && toolbarWidth < 580;
 
-  // Track if grid resize handles should pulse (first load)
-  const [shouldPulseResizeHandles, setShouldPulseResizeHandles] = useState(false);
-
   // Track last clicked row/column for shift-click range selection
   const [lastClickedRow, setLastClickedRow] = useState<number | null>(null);
   const [lastClickedCol, setLastClickedCol] = useState<number | null>(null);
@@ -229,33 +220,22 @@ export function Grid() {
     }
   }, [paintSize, addToast]);
 
-  // Pulse grid resize handles on first load
-  useEffect(() => {
-    const hintShown = localStorage.getItem('gridfinity-grid-resize-hint-shown');
-    if (!hintShown) {
-      localStorage.setItem('gridfinity-grid-resize-hint-shown', 'true');
-      // Defer state update to avoid cascading renders
-      setTimeout(() => {
-        setShouldPulseResizeHandles(true);
-        // Stop pulsing after 3 seconds
-        setTimeout(() => setShouldPulseResizeHandles(false), 3000);
-      }, 0);
-    }
-  }, []);
-
-  // Pending resize confirmation state
-  const [pendingResize, setPendingResize] = useState<{
-    newWidth: number;
-    newDepth: number;
-    clippedBinIds: string[];
-  } | null>(null);
-
   // Single interaction hook instance for the entire grid
   const { startDraw, startDrag, startResize } = useInteraction(gridRef);
 
   // Adaptive cell size based on viewport width for optimal grid density
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
+
+  // Grid resize hook - handles drawer edge/corner resize logic
+  const {
+    resizeDirection,
+    pendingResize,
+    shouldPulseResizeHandles,
+    handleResizeStart,
+    confirmResize,
+    cancelResize,
+  } = useGridResize({ cellSize, gap });
 
   // In half-bin mode, visual cells are smaller to fit 2x cells in the same space
   // Formula accounts for extra gaps: (cellSize - gap) / 2 keeps total grid size constant
@@ -272,103 +252,6 @@ export function Grid() {
   const placedBins = bins.filter(b => b.layerId !== STAGING_ID);
   const isEmpty = layerBins.length === 0;
   const isFirstLayer = layers.length > 0 && activeLayerId === layers[0]?.id;
-
-  // Confirm pending resize - move clipped bins to staging
-  const confirmResize = useCallback(() => {
-    if (!pendingResize) return;
-    execute(() => {
-      // Move clipped bins to staging
-      for (const binId of pendingResize.clippedBinIds) {
-        updateBin(binId, { layerId: STAGING_ID });
-      }
-      // Apply the resize
-      updateDrawer({ width: pendingResize.newWidth, depth: pendingResize.newDepth });
-    });
-    setPendingResize(null);
-  }, [pendingResize, execute, updateBin, updateDrawer]);
-
-  // Cancel pending resize
-  const cancelResize = useCallback(() => {
-    setPendingResize(null);
-  }, []);
-
-  // Grid edge resize state
-  const [resizeDirection, setResizeDirection] = useState<ResizeDirection>(null);
-  const [resizeStart, setResizeStart] = useState<{ x: number; y: number; width: number; depth: number } | null>(null);
-
-  // Use ref to track current drawer dimensions without causing effect re-runs
-  const drawerRef = useRef(drawer);
-  useEffect(() => {
-    drawerRef.current = drawer;
-  }, [drawer]);
-
-  const handleResizeStart = useCallback((direction: ResizeDirection, e: React.MouseEvent) => {
-    e.preventDefault();
-    setResizeDirection(direction);
-    setResizeStart({ x: e.clientX, y: e.clientY, width: drawerRef.current.width, depth: drawerRef.current.depth });
-  }, []);
-
-  useEffect(() => {
-    if (!resizeDirection || !resizeStart) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const dx = e.clientX - resizeStart.x;
-      const dy = e.clientY - resizeStart.y;
-      const cellStep = cellSize + gap;
-
-      const updates: Partial<typeof drawer> = {};
-      const currentDrawer = drawerRef.current;
-
-      if (resizeDirection === 'width' || resizeDirection === 'both') {
-        const widthDelta = Math.round(dx / cellStep);
-        const newWidth = clamp(resizeStart.width + widthDelta, 1, CONSTRAINTS.GRID_MAX);
-        if (newWidth !== currentDrawer.width) updates.width = newWidth;
-      }
-
-      if (resizeDirection === 'depth' || resizeDirection === 'both') {
-        // Depth increases downward visually (positive dy = increase depth)
-        const depthDelta = Math.round(dy / cellStep);
-        const newDepth = clamp(resizeStart.depth + depthDelta, 1, CONSTRAINTS.GRID_MAX);
-        if (newDepth !== currentDrawer.depth) updates.depth = newDepth;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        updateDrawer(updates);
-      }
-    };
-
-    const handleMouseUp = () => {
-      // Read current state directly from store to ensure we have the latest values
-      const currentState = useLayoutStore.getState().layout;
-      const currentDrawer = currentState.drawer;
-      // Calculate clipped bins directly to avoid stale closure
-      const clippedBins = currentState.bins.filter(b =>
-        b.layerId !== STAGING_ID && (
-          b.x + b.width > currentDrawer.width ||
-          b.y + b.depth > currentDrawer.depth
-        )
-      );
-      if (clippedBins.length > 0) {
-        // Show confirmation dialog - user can confirm to stage bins or cancel to revert
-        setPendingResize({
-          newWidth: currentDrawer.width,
-          newDepth: currentDrawer.depth,
-          clippedBinIds: clippedBins.map(b => b.id),
-        });
-        // Revert to original size temporarily (user will confirm or cancel)
-        updateDrawer({ width: resizeStart.width, depth: resizeStart.depth });
-      }
-      setResizeDirection(null);
-      setResizeStart(null);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [resizeDirection, resizeStart, cellSize, gap, updateDrawer]);
 
   // Grid axis label sizing - must match cellSize for alignment, hide when too small
   // Note: These are separate from bin labels - axis labels always show (unless zoomed out)

@@ -7,8 +7,7 @@ import { DropZones } from './DropZones';
 import { DragPreview } from './DragPreview';
 import { ToastContainer } from './Toast';
 import { PanelErrorBoundary } from './PanelErrorBoundary';
-import { SharedLayoutImporter } from './SharedLayoutImporter';
-import { SharedLayoutBanner } from './SharedLayoutBanner';
+import { SharedLayoutImporter, SharedLayoutBanner } from './Share';
 import {
   MobileHeader,
   BottomNavBar,

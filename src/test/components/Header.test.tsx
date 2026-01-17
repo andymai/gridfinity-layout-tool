@@ -26,13 +26,13 @@ vi.mock('../../hooks', async (importOriginal) => {
 
 // Controllable mock for ShareButton
 let mockShareButtonEnabled = false;
-vi.mock('../../components/ShareButton', () => ({
+vi.mock('../../components/Share', () => ({
   ShareButton: () =>
     mockShareButtonEnabled ? <button data-testid="share-button">Share</button> : null,
 }));
 
 // Mock PresenceAvatars to avoid Liveblocks context requirements
-vi.mock('../../components/collab', () => ({
+vi.mock('../../components/Collab', () => ({
   PresenceAvatars: ({ className }: { className?: string }) => (
     <div data-testid="presence-avatars" className={className}>Presence</div>
   ),

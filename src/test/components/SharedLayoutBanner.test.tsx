@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { SharedLayoutBanner } from '../../components/SharedLayoutBanner';
+import { SharedLayoutBanner } from '../../components/Share';
 import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
 import { useLibraryStore } from '../../store/library';
@@ -30,6 +30,11 @@ vi.mock('../../storage', () => ({
       bins: [],
     },
   })),
+  // Required by SharedLayoutImporter (imported via barrel export)
+  getSharedLayoutFromURL: vi.fn(() => null),
+  clearSharedLayoutFromURL: vi.fn(),
+  getCloudShareIdFromURL: vi.fn(() => null),
+  loadSharedWithMe: vi.fn(() => []),
 }));
 
 // Mock uuid
@@ -38,6 +43,22 @@ vi.mock('../../utils/uuid', () => ({
   generateLayoutId: vi.fn(() => 'newid123test'),
   isValidLayoutId: vi.fn(() => true),
   isLegacyUUID: vi.fn(() => false),
+}));
+
+// Mock hooks (required by SharedLayoutImporter)
+vi.mock('../../hooks/useCollabMode', () => ({
+  useCollabMode: vi.fn(() => ({ isCollaborative: false })),
+}));
+
+// Mock api/share (required by SharedLayoutImporter)
+vi.mock('../../api/share', () => ({
+  fetchShare: vi.fn(),
+}));
+
+// Mock result helpers (required by SharedLayoutImporter)
+vi.mock('../../result', () => ({
+  isOk: vi.fn(),
+  getUserMessage: vi.fn(),
 }));
 
 const mockLayout: Layout = {
