@@ -7,7 +7,7 @@ import { trackLayoutSnapshot } from '../utils/analytics';
 import { ConfirmDialog } from './modals/ConfirmDialog';
 import { BinListModal } from './modals/BinListModal';
 import { usePrintList } from '../hooks/usePrintList';
-import { SplitPreview, PrintListSummary, PrintListEmpty } from './PrintList';
+import { SplitPreview, PrintListSummary, PrintListEmpty } from './Print';
 import { CollapsibleSection } from './CollapsibleSection';
 import {
   useBinInspector,
