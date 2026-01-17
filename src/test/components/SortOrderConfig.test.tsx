@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SortOrderConfig } from '../../components/print/SortOrderConfig';
+import { SortOrderConfig } from '../../components/Print/SortOrderConfig';
 import type { BinListSortOrder } from '../../store/settings';
 
 describe('SortOrderConfig', () => {

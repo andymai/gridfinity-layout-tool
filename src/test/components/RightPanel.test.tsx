@@ -22,8 +22,8 @@ vi.mock('../../components/inspector', () => ({
   EmptyState: () => <div data-testid="empty-state">No selection</div>,
 }));
 
-// Mock PrintList components
-vi.mock('../../components/PrintList', () => ({
+// Mock Print components
+vi.mock('../../components/Print', () => ({
   SplitPreview: ({ width, depth, pieces }: { width: number; depth: number; pieces: { width: number; depth: number; count: number }[] }) => (
     <div data-testid="split-preview">
       Split: {width}×{depth} into {pieces.length} pieces
