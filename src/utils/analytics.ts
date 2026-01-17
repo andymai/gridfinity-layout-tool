@@ -8,6 +8,7 @@ import type { PostHog } from 'posthog-js';
 import type { Layout } from '../types';
 import { STAGING_ID, DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensions, BREAKPOINTS } from '../constants';
 import { useLabsStore } from '../store/labs';
+import { useInteractionStore } from '../store/interaction';
 import { getFeature } from '../labs/features';
 
 // ============================================
@@ -389,4 +390,37 @@ export function trackFillOperation(type: 'fill_layer' | 'fill_gaps', binCount: n
  */
 export function trackPaintMode(action: 'entered' | 'exited', binsCreated?: number): void {
   trackEvent('paint_mode', { action, bins_created: binsCreated || 0 });
+}
+
+// ============================================
+// ACTIVITY CONTEXT (for Vercel heartbeat)
+// ============================================
+
+export type ActivityContext = 'drawing' | 'editing' | 'viewing';
+
+/**
+ * Derive current activity context from interaction store state.
+ * Used for Vercel Analytics heartbeat to show what users are doing.
+ */
+export function getActivityContext(): ActivityContext {
+  const { interaction, paintSize, keyboardDragMode, keyboardResizeMode } =
+    useInteractionStore.getState();
+
+  // Drawing: creating new bins (draw mode or paint mode)
+  if (interaction?.type === 'draw' || interaction?.type === 'paint' || paintSize !== null) {
+    return 'drawing';
+  }
+
+  // Editing: modifying existing bins
+  if (
+    interaction?.type === 'drag' ||
+    interaction?.type === 'resize' ||
+    interaction?.type === 'stagingDrag' ||
+    keyboardDragMode ||
+    keyboardResizeMode
+  ) {
+    return 'editing';
+  }
+
+  return 'viewing';
 }

@@ -3,6 +3,7 @@ import type { Layout } from '../types';
 import {
   computeLayoutMetrics,
   getDeviceType,
+  getActivityContext,
   trackLayoutSnapshot,
   trackEvent,
   track3DPreview,
@@ -10,6 +11,7 @@ import {
   trackFillOperation,
   trackPaintMode,
 } from '../utils/analytics';
+import { useInteractionStore } from '../store/interaction';
 import { STAGING_ID } from '../constants';
 
 // Helper to create a test layout
@@ -452,5 +454,77 @@ describe('tracking functions', () => {
       expect(() => trackPaintMode('entered')).not.toThrow();
       expect(() => trackPaintMode('exited', 5)).not.toThrow();
     });
+  });
+});
+
+describe('getActivityContext', () => {
+  afterEach(() => {
+    // Reset interaction store to initial state
+    useInteractionStore.setState({
+      interaction: null,
+      paintSize: null,
+      keyboardDragMode: false,
+      keyboardResizeMode: false,
+    });
+  });
+
+  it('returns viewing when no interaction is active', () => {
+    expect(getActivityContext()).toBe('viewing');
+  });
+
+  it('returns drawing when in draw mode', () => {
+    useInteractionStore.setState({
+      interaction: { type: 'draw', start: { x: 0, y: 0 }, current: { x: 1, y: 1 } },
+    });
+    expect(getActivityContext()).toBe('drawing');
+  });
+
+  it('returns drawing when in paint mode', () => {
+    useInteractionStore.setState({
+      interaction: { type: 'paint', start: { x: 0, y: 0 }, current: { x: 2, y: 2 }, paintSize: { width: 1, depth: 1 } },
+    });
+    expect(getActivityContext()).toBe('drawing');
+  });
+
+  it('returns drawing when paintSize is set (paint mode active)', () => {
+    useInteractionStore.setState({
+      paintSize: { width: 2, depth: 2 },
+    });
+    expect(getActivityContext()).toBe('drawing');
+  });
+
+  it('returns editing when in drag mode', () => {
+    useInteractionStore.setState({
+      interaction: { type: 'drag', binIds: ['bin1'], startCoord: { x: 0, y: 0 }, currentCoord: { x: 1, y: 1 }, valid: true, isOverGrid: true },
+    });
+    expect(getActivityContext()).toBe('editing');
+  });
+
+  it('returns editing when in resize mode', () => {
+    useInteractionStore.setState({
+      interaction: { type: 'resize', binIds: ['bin1'], handle: 'e', startRects: new Map(), currentRects: new Map(), valid: true },
+    });
+    expect(getActivityContext()).toBe('editing');
+  });
+
+  it('returns editing when in stagingDrag mode', () => {
+    useInteractionStore.setState({
+      interaction: { type: 'stagingDrag', binId: 'bin1', currentCoord: { x: 1, y: 1 }, valid: true },
+    });
+    expect(getActivityContext()).toBe('editing');
+  });
+
+  it('returns editing when keyboard drag mode is active', () => {
+    useInteractionStore.setState({
+      keyboardDragMode: true,
+    });
+    expect(getActivityContext()).toBe('editing');
+  });
+
+  it('returns editing when keyboard resize mode is active', () => {
+    useInteractionStore.setState({
+      keyboardResizeMode: true,
+    });
+    expect(getActivityContext()).toBe('editing');
   });
 });

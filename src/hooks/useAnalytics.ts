@@ -1,16 +1,21 @@
 /**
  * Analytics hook for session tracking.
  * Uses visibilitychange to track engaged sessions reliably.
+ * Sends Vercel heartbeat every 3 minutes while tab is visible.
  */
 
 import { useEffect, useRef } from 'react';
+import { track } from '@vercel/analytics';
 import { useLayoutStore } from '../store';
-import { trackLayoutSnapshot } from '../utils/analytics';
+import { trackLayoutSnapshot, getActivityContext } from '../utils/analytics';
 import { STAGING_ID } from '../constants';
+
+/** Heartbeat interval: 3 minutes (matches Vercel's "online" window) */
+const HEARTBEAT_INTERVAL_MS = 3 * 60 * 1000;
 
 /**
  * Hook to track engaged sessions via visibilitychange.
- * More reliable than beforeunload for analytics.
+ * Also sends Vercel heartbeat every 3 minutes while tab is visible.
  */
 export function useAnalytics(): void {
   const sessionStartRef = useRef<number | null>(null);
@@ -25,6 +30,24 @@ export function useAnalytics(): void {
     // Only track in production
     if (import.meta.env.DEV) return;
 
+    // --- Vercel Heartbeat (every 3 min while visible) ---
+    const sendHeartbeat = () => {
+      if (document.visibilityState !== 'visible') return;
+
+      const startTime = sessionStartRef.current ?? Date.now();
+      const sessionMinutes = Math.floor((Date.now() - startTime) / 60000);
+
+      track('heartbeat', {
+        context: getActivityContext(),
+        session_minutes: sessionMinutes,
+      });
+    };
+
+    // Send initial heartbeat after a short delay (let app stabilize)
+    const initialTimeout = setTimeout(sendHeartbeat, 5000);
+    const heartbeatInterval = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
+
+    // --- Session End Tracking (PostHog) ---
     const handleVisibilityChange = () => {
       // Only track when tab becomes hidden (user leaves)
       if (document.visibilityState !== 'hidden') return;
@@ -48,6 +71,11 @@ export function useAnalytics(): void {
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(heartbeatInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 }
