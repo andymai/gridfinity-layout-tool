@@ -1,20 +1,22 @@
-export { useGridCoords } from './useGridCoords';
-export { useInteraction } from './useInteraction';
+// Re-export grid hooks from features/grid-editor for backward compatibility
+export { useGridCoords } from '../features/grid-editor/hooks/useGridCoords';
+export { useInteraction } from '../features/grid-editor/hooks/useInteraction';
 export { useDrawerSettings } from './useDrawerSettings';
 
-// Grid component hooks (extracted from Grid/index.tsx)
-export { useGridZoom } from './useGridZoom';
-export type { GridZoomState, UseGridZoomOptions } from './useGridZoom';
-export { useGridAxisLabels } from './useGridAxisLabels';
-export type { GridAxisLabelsState, UseGridAxisLabelsOptions } from './useGridAxisLabels';
-export { useGridRowColumnSelection } from './useGridRowColumnSelection';
-export type { GridRowColumnSelectionState, UseGridRowColumnSelectionOptions } from './useGridRowColumnSelection';
-export { useGridResize } from './useGridResize';
-export type { GridResizeState, UseGridResizeOptions, ResizeDirection, PendingResize } from './useGridResize';
-export { useGridFirstUseHints } from './useGridFirstUseHints';
-export type { GridFirstUseHintsState, UseGridFirstUseHintsOptions } from './useGridFirstUseHints';
-export { useGridTemplate } from './useGridTemplate';
-export type { GridTemplateState, UseGridTemplateOptions } from './useGridTemplate';
+// Grid component hooks (extracted from Grid/index.tsx) - re-exported from features/grid-editor
+export { useGridZoom } from '../features/grid-editor/hooks/useGridZoom';
+export type { GridZoomState, UseGridZoomOptions } from '../features/grid-editor/hooks/useGridZoom';
+export { useGridAxisLabels } from '../features/grid-editor/hooks/useGridAxisLabels';
+export type { GridAxisLabelsState, UseGridAxisLabelsOptions } from '../features/grid-editor/hooks/useGridAxisLabels';
+export { useGridRowColumnSelection } from '../features/grid-editor/hooks/useGridRowColumnSelection';
+export type { GridRowColumnSelectionState, UseGridRowColumnSelectionOptions } from '../features/grid-editor/hooks/useGridRowColumnSelection';
+export { useGridResize } from '../features/grid-editor/hooks/useGridResize';
+export type { GridResizeState, UseGridResizeOptions, ResizeDirection, PendingResize } from '../features/grid-editor/hooks/useGridResize';
+export { useGridFirstUseHints } from '../features/grid-editor/hooks/useGridFirstUseHints';
+export type { GridFirstUseHintsState, UseGridFirstUseHintsOptions } from '../features/grid-editor/hooks/useGridFirstUseHints';
+export { useGridTemplate } from '../features/grid-editor/hooks/useGridTemplate';
+export type { GridTemplateState, UseGridTemplateOptions } from '../features/grid-editor/hooks/useGridTemplate';
+export { useGridNavigation } from '../features/grid-editor/hooks/useGridNavigation';
 export type { UseDrawerSettingsReturn } from './useDrawerSettings';
 
 // Bin inspector hook (shared by RightPanel and MobileInspector)
