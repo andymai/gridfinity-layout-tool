@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { createRef } from 'react';
-import { GridCanvas } from '../../components/Grid/GridCanvas';
+import { GridCanvas } from '../../features/grid-editor/components/Grid/GridCanvas';
 import { useLayoutStore } from '../../core/store/layout';
 import { useUIStore } from '../../core/store/ui';
 import { createDefaultLayout } from '../../core/constants';

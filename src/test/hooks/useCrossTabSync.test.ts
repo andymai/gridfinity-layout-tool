@@ -7,14 +7,14 @@ import { useHistoryStore } from '../../core/store/history';
 import { useUIStore } from '../../core/store/ui';
 import { resetAllStores } from '../testUtils';
 import * as storage from '../../core/storage';
-import * as validation from '../../utils/validation';
+import * as validation from '../../shared/utils/validation';
 
 vi.mock('../../core/storage', () => ({
   loadLayoutByIdAsync: vi.fn(),
   loadLibrary: vi.fn(),
 }));
 
-vi.mock('../../utils/validation', () => ({
+vi.mock('../../shared/utils/validation', () => ({
   validateLayoutIntegrity: vi.fn(),
 }));
 

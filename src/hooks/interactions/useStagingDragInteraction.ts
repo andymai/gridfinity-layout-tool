@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useInteractionStore } from '../../core/store';
-import { canPlaceBin, clamp } from '../../utils/validation';
+import { canPlaceBin, clamp } from '../../shared/utils/validation';
 import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from './types';
 import type { Coord } from '../../core/types';
 

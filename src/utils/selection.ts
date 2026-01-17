@@ -1,5 +1,5 @@
 import type { Bin, Rect } from '../core/types';
-import { clamp } from './validation';
+import { clamp } from '../shared/utils/validation';
 
 /**
  * Calculate the bounding box of multiple bins.

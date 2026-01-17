@@ -14,7 +14,7 @@
  */
 
 import * as backend from './backend';
-import { validateImport } from '../../utils/validation';
+import { validateImport } from '../../shared/utils/validation';
 import { generateId, STAGING_ID } from '../constants';
 import { generateLayoutId } from '../../shared/utils';
 import type {

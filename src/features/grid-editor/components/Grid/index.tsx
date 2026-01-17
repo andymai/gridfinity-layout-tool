@@ -19,7 +19,7 @@ import { PanelErrorBoundary } from '../../../../components/PanelErrorBoundary';
 import { CollabCursors, CollabGhosts, CollabSelectionRings } from '../../../../components/Collab';
 import { useCollabMode } from '../../../../hooks/useCollabMode';
 import { useCollabPresence } from '../../../../hooks/useCollabPresence';
-import { useGridCoords } from '../../../../hooks/useGridCoords';
+import { useGridCoords } from '../../hooks/useGridCoords';
 import { Checkbox } from '../../../../shared/components/Checkbox';
 // Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
 const IsometricPreview = lazyWithRetry(() =>

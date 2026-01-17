@@ -7,7 +7,7 @@ import {
   getDisplayLayers,
   checkLayerReorderCollisions,
   isInBlockedZone,
-} from '../utils/collision';
+} from '../features/grid-editor/utils/collision';
 import type { Layer, Bin } from '../core/types';
 import { STAGING_ID } from '../core/constants';
 
