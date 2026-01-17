@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../core/store';
 import { useMutations } from '../shared/contexts';
-import { canPlaceBin } from '../utils/validation';
+import { canPlaceBin } from '../shared/utils/validation';
 import { constrainGroupDelta } from '../utils/selection';
 import { findBinById } from '../utils/entity';
 import type { Bin } from '../core/types';

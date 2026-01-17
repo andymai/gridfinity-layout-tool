@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useInteraction } from '../../hooks/useInteraction';
+import { useInteraction } from '../../features/grid-editor/hooks/useInteraction';
 import { useUIStore } from '../../core/store/ui';
 import { useLayoutStore } from '../../core/store/layout';
 import { useHistoryStore } from '../../core/store/history';

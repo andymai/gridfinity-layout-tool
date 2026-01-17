@@ -5,7 +5,7 @@ import { useLayoutStore, useLibraryStore, useUIStore, useToastStore } from '../.
 import { resetAllStores } from '../testUtils';
 import * as storage from '../../core/storage';
 import * as url from '../../utils/url';
-import * as validation from '../../utils/validation';
+import * as validation from '../../shared/utils/validation';
 
 // Mock storage module
 vi.mock('../../core/storage', () => ({
@@ -23,7 +23,7 @@ vi.mock('../../utils/url', () => ({
 }));
 
 // Mock validation module
-vi.mock('../../utils/validation', () => ({
+vi.mock('../../shared/utils/validation', () => ({
   validateLayoutIntegrity: vi.fn(),
 }));
 

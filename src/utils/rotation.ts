@@ -1,4 +1,4 @@
-import { canPlaceBin } from './validation';
+import { canPlaceBin } from '../shared/utils/validation';
 import type { Bin, Layout } from '../core/types';
 
 export type RotationResult =

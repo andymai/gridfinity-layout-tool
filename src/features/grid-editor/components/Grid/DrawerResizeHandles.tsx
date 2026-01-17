@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import type { ResizeDirection } from '../../../../hooks/useGridResize';
+import type { ResizeDirection } from '../../hooks/useGridResize';
 
 /**
  * Drawer Resize Handles Component

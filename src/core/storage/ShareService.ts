@@ -9,7 +9,7 @@
  * - Result-based imports (*Result suffix)
  */
 
-import { validateImport } from '../../utils/validation';
+import { validateImport } from '../../shared/utils/validation';
 import { generateId, STAGING_ID } from '../constants';
 import type { Layout } from '../types';
 import type { Result, ValidationError } from '../result';
