@@ -1,4 +1,4 @@
-import { useUIStore, type MobilePanel } from '../../store/ui';
+import { useUIStore, type MobilePanel } from '../../core/store/ui';
 
 interface NavItem {
   id: MobilePanel;

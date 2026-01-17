@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useHistoryStore } from '../../store/history';
-import { useLayoutStore } from '../../store/layout';
-import { createDefaultLayout, CONSTRAINTS } from '../../constants';
+import { useHistoryStore } from '../../core/store/history';
+import { useLayoutStore } from '../../core/store/layout';
+import { createDefaultLayout, CONSTRAINTS } from '../../core/constants';
 import { resetAllStores } from '../testUtils';
 
 describe('history store', () => {

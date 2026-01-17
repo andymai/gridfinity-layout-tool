@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ShareModal } from '../../components/Modals/ShareModal';
-import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '../../store';
+import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
-import * as storage from '../../storage';
+import * as storage from '../../core/storage';
 import * as analytics from '../../utils/analytics';
 
 // Mock CloudShareTab since it's a complex component
@@ -19,7 +19,7 @@ vi.mock('../../components/Share', () => ({
 }));
 
 // Mock storage utilities
-vi.mock('../../storage', () => ({
+vi.mock('../../core/storage', () => ({
   generateShareableURL: vi.fn(() => 'https://example.com/share?layout=abc'),
   downloadLayoutAsFile: vi.fn(),
   copyToClipboard: vi.fn(() => Promise.resolve(true)),

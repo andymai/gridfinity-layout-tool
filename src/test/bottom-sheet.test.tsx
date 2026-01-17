@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, act } from '@testing-library/react';
 import { BottomSheet } from '../components/Mobile/BottomSheet';
-import { useUIStore } from '../store/ui';
+import { useUIStore } from '../core/store/ui';
 
 // Mock matchMedia for useResponsive hook
 Object.defineProperty(window, 'matchMedia', {

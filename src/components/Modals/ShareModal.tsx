@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useLayoutStore } from '../../store/layout';
-import { useLibraryStore } from '../../store/library';
-import { useUIStore } from '../../store/ui';
-import { useLabsStore } from '../../store/labs';
+import { useLayoutStore } from '../../core/store/layout';
+import { useLibraryStore } from '../../core/store/library';
+import { useUIStore } from '../../core/store/ui';
+import { useLabsStore } from '../../core/store/labs';
 import {
   generateShareableURL,
   downloadLayoutAsFile,
   copyToClipboard,
   exportLayoutJSON,
-} from '../../storage';
+} from '../../core/storage';
 import { trackLayoutSnapshot } from '../../utils/analytics';
 import { CloudShareTab } from '../Share';
 

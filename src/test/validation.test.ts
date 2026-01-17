@@ -11,9 +11,9 @@ import {
   validateCustomProperties,
   validateCustomPropertiesResult,
 } from '../utils/validation';
-import { CONSTRAINTS } from '../constants';
-import type { Layout } from '../types';
-import { isOk, isErr } from '../result';
+import { CONSTRAINTS } from '../core/constants';
+import type { Layout } from '../core/types';
+import { isOk, isErr } from '../core/result';
 
 const createTestLayout = (): Layout => ({
   version: '1.0',

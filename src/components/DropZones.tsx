@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '../store';
+import { useUIStore } from '../core/store';
 
 /**
  * Drop zone for deleting bins. Appears at top of screen when dragging.

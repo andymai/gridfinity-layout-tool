@@ -1,9 +1,9 @@
 import { useEffect, useCallback, useState } from 'react';
-import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
+import { useUIStore, useLayoutStore, useUndoableAction } from '../core/store';
 import { useMutations } from '../contexts/MutationsContext';
 import { canPlaceBin } from '../utils/validation';
 import { findBinById } from '../utils/entity';
-import { CONSTRAINTS, STAGING_ID, hasFractionalDimensions } from '../constants';
+import { CONSTRAINTS, STAGING_ID, hasFractionalDimensions } from '../core/constants';
 
 /**
  * Hook for keyboard-based bin resizing.

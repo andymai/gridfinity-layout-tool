@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '../../constants';
+import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '../../core/constants';
 import type { UseBinInspectorReturn } from '../../hooks/useBinInspector';
-import type { Layer } from '../../types';
+import type { Layer } from '../../core/types';
 import { SelectDropdown } from '../SelectDropdown';
 import { BulkIncrementControl } from '../BulkIncrementControl';
 

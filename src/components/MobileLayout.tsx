@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { useUIStore } from '../store';
+import { useUIStore } from '../core/store';
 import { lazyWithRetry, namedExport } from '../utils/lazyWithRetry';
 import { Grid } from './Grid';
 import { Staging } from './Staging';

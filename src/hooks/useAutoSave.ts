@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useLibraryStore, useToastStore } from '../store';
-import { saveLayoutWithMetadata } from '../storage';
+import { useLayoutStore, useLibraryStore, useToastStore } from '../core/store';
+import { saveLayoutWithMetadata } from '../core/storage';
 import { scheduleIdleCallback, cancelIdleCallback } from '../utils/idle';
-import { isErr, getUserMessage, isRetryable } from '../result';
-import type { StorageError } from '../result';
+import { isErr, getUserMessage, isRetryable } from '../core/result';
+import type { StorageError } from '../core/result';
 
 const SAVE_DEBOUNCE_MS = 1000;
 const SAVED_DISPLAY_MS = 2500;

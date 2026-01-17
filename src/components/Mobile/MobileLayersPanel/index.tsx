@@ -1,9 +1,9 @@
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '../../../store';
+import { useUIStore } from '../../../core/store';
 import { TabBar } from './TabBar';
 import { LayersTab } from './LayersTab';
 import { ToolsTab } from './ToolsTab';
-import type { MobileLayersTab } from '../../../store/ui';
+import type { MobileLayersTab } from '../../../core/store/ui';
 
 const TABS: { id: MobileLayersTab; label: string }[] = [
   { id: 'layers', label: 'Layers' },

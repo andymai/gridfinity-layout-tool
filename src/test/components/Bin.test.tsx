@@ -6,10 +6,10 @@ import {
   useSelectionStore,
   useViewStore,
   useInteractionStore,
-} from '../../store';
-import { useToastStore } from '../../store/toast';
+} from '../../core/store';
+import { useToastStore } from '../../core/store/toast';
 import { resetAllStores } from '../testUtils';
-import type { Bin as BinType, Category, Layer, Drawer } from '../../types';
+import type { Bin as BinType, Category, Layer, Drawer } from '../../core/types';
 
 // Mock useResponsive
 vi.mock('../../hooks/useResponsive', () => ({

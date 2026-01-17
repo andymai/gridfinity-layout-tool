@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { useSettingsStore, DEFAULT_SETTINGS, DEFAULT_PRINT_VIEW_SETTINGS, DEFAULT_BIN_LIST_SORT_ORDER, normalizeSortOrder } from '../../store/settings';
-import type { BinListSortOrder } from '../../store/settings';
+import { useSettingsStore, DEFAULT_SETTINGS, DEFAULT_PRINT_VIEW_SETTINGS, DEFAULT_BIN_LIST_SORT_ORDER, normalizeSortOrder } from '../../core/store/settings';
+import type { BinListSortOrder } from '../../core/store/settings';
 import { resetAllStores, createIsolatedLocalStorageMock } from '../testUtils';
 
 describe('settings store', () => {

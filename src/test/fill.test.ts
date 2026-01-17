@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { fillAllWithSize, fillGaps, getLayerCoverage } from '../utils/fill';
-import type { Layout } from '../types';
+import type { Layout } from '../core/types';
 
 const createTestLayout = (): Layout => ({
   version: '1.0',

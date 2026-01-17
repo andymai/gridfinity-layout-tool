@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
+import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
 import { useLayoutStore } from './layout';
 import type { Result, Unit, LayoutError } from '../result';
 import { err, layoutInvalidOperation, OK } from '../result';

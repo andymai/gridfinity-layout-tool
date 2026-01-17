@@ -22,9 +22,9 @@
 
 import { useEffect, useRef } from 'react';
 import { useStorage, useMutation } from '../liveblocks.config';
-import { useLayoutStore } from '../store/layout';
-import type { Layout } from '../types';
-import { STAGING_ID } from '../constants';
+import { useLayoutStore } from '../core/store/layout';
+import type { Layout } from '../core/types';
+import { STAGING_ID } from '../core/constants';
 
 /**
  * Check if a layout has actual content (bins on the grid, not just staging).

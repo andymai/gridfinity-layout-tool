@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '../../store';
-import { CONSTRAINTS } from '../../constants';
+import { useUIStore, useLayoutStore } from '../../core/store';
+import { CONSTRAINTS } from '../../core/constants';
 
 interface MobileGridToolbarProps {
   onFitToScreen: () => void;

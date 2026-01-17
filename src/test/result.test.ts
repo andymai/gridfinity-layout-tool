@@ -53,8 +53,8 @@ import {
   formatErrorMessage,
   isRetryable,
   getSeverity,
-} from '../result';
-import type { Result, StorageError, ValidationError } from '../result';
+} from '../core/result';
+import type { Result, StorageError, ValidationError } from '../core/result';
 
 // =============================================================================
 // Core Type Tests

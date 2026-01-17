@@ -5,7 +5,7 @@ import {
   getOverlappingBins,
   type Direction,
 } from '../utils/navigation';
-import type { Bin } from '../types';
+import type { Bin } from '../core/types';
 
 // Helper to create a test bin
 function createTestBin(overrides: Partial<Bin> = {}): Bin {

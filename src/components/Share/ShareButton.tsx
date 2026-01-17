@@ -4,14 +4,14 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useLabsStore } from '../../store/labs';
-import { useLayoutStore } from '../../store/layout';
-import { useUIStore } from '../../store/ui';
-import { useToastStore } from '../../store/toast';
+import { useLabsStore } from '../../core/store/labs';
+import { useLayoutStore } from '../../core/store/layout';
+import { useUIStore } from '../../core/store/ui';
+import { useToastStore } from '../../core/store/toast';
 import { useCloudShare } from '../../hooks/useCloudShare';
 import { useCollabMode } from '../../hooks/useCollabMode';
 import { slugify } from '../../utils/slug';
-import type { SharePermission } from '../../types';
+import type { SharePermission } from '../../core/types';
 
 /** Minimum distance from viewport edge for popover positioning */
 const VIEWPORT_PADDING = 16;

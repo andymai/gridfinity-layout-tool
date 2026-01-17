@@ -6,7 +6,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCloudShare } from '../../hooks/useCloudShare';
 import { formatShareDate } from '../../utils/cloudShare';
-import type { SharePermission } from '../../types';
+import type { SharePermission } from '../../core/types';
 
 interface CloudShareTabProps {
   layoutId: string;

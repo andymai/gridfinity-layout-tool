@@ -7,9 +7,9 @@ import {
   importLayoutJSON,
   exportPrintListTSV,
   getStorageUsage,
-} from '../storage';
-import type { Layout } from '../types';
-import { createDefaultLayout, STAGING_ID } from '../constants';
+} from '../core/storage';
+import type { Layout } from '../core/types';
+import { createDefaultLayout, STAGING_ID } from '../core/constants';
 
 // Mock localStorage
 const localStorageMock = (() => {

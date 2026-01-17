@@ -1,4 +1,4 @@
-import type { STLSearchSite } from '../store/settings';
+import type { STLSearchSite } from '../core/store/settings';
 
 /**
  * Format a dimension value for display in search queries.

@@ -8,9 +8,9 @@ import {
   getBinCountByLayer,
   sortBinsForPrint,
 } from '../utils/printLayout';
-import type { Bin, Layer, Category, Drawer } from '../types';
-import type { BinListSortOrder } from '../store/settings';
-import { STAGING_ID } from '../constants';
+import type { Bin, Layer, Category, Drawer } from '../core/types';
+import type { BinListSortOrder } from '../core/store/settings';
+import { STAGING_ID } from '../core/constants';
 
 describe('printLayout utilities', () => {
   // Test fixtures

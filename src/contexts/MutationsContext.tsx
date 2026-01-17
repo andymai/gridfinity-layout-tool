@@ -16,9 +16,9 @@
 
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { useLayoutStore } from '../store/layout';
-import type { Bin, Layer, Category, Drawer } from '../types';
-import type { Result, ValidationError, LayoutError } from '../result';
+import { useLayoutStore } from '../core/store/layout';
+import type { Bin, Layer, Category, Drawer } from '../core/types';
+import type { Result, ValidationError, LayoutError } from '../core/result';
 
 /**
  * Mutation functions interface.

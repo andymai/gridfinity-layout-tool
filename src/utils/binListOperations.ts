@@ -3,7 +3,7 @@
  * Handles search filtering, selection logic, export formats, and category breakdown.
  */
 
-import type { EnhancedPrintRow, Category, Layout } from '../types';
+import type { EnhancedPrintRow, Category, Layout } from '../core/types';
 
 // === Types ===
 

@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { useCrossTabSync } from '../../hooks/useCrossTabSync';
-import { useLayoutStore } from '../../store/layout';
-import { useLibraryStore } from '../../store/library';
-import { useHistoryStore } from '../../store/history';
-import { useUIStore } from '../../store/ui';
+import { useLayoutStore } from '../../core/store/layout';
+import { useLibraryStore } from '../../core/store/library';
+import { useHistoryStore } from '../../core/store/history';
+import { useUIStore } from '../../core/store/ui';
 import { resetAllStores } from '../testUtils';
-import * as storage from '../../storage';
+import * as storage from '../../core/storage';
 import * as validation from '../../utils/validation';
 
-vi.mock('../../storage', () => ({
+vi.mock('../../core/storage', () => ({
   loadLayoutByIdAsync: vi.fn(),
   loadLibrary: vi.fn(),
 }));

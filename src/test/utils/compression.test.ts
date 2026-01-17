@@ -12,7 +12,7 @@ import {
   decompressString,
   getCompressionRatio,
 } from '../../utils/compression';
-import type { Layout } from '../../types';
+import type { Layout } from '../../core/types';
 
 // Helper to create a test layout
 function createTestLayout(overrides?: Partial<Layout>): Layout {

@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { DEFAULT_CATEGORY_COLOR } from '../../constants';
-import { exportPrintListTSV } from '../../storage';
+import { DEFAULT_CATEGORY_COLOR } from '../../core/constants';
+import { exportPrintListTSV } from '../../core/storage';
 import { usePrintList } from '../../hooks/usePrintList';
-import { useUIStore } from '../../store/ui';
+import { useUIStore } from '../../core/store/ui';
 import { SplitPreview, PrintListSummary, PrintListEmpty } from '../Print';
 import { BinListModal } from '../Modals/BinListModal';
 

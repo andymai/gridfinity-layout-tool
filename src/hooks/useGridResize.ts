@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore } from '../store';
-import { useUndoableAction } from '../store';
-import { CONSTRAINTS, STAGING_ID } from '../constants';
+import { useLayoutStore } from '../core/store';
+import { useUndoableAction } from '../core/store';
+import { CONSTRAINTS, STAGING_ID } from '../core/constants';
 import { clamp } from '../utils/validation';
 
 /**

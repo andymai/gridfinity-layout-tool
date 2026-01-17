@@ -1,4 +1,4 @@
-import type { Coord, Rect, ResizeHandle, Interaction } from '../types';
+import type { Coord, Rect, ResizeHandle, Interaction } from '../core/types';
 import type { InteractionHint } from '../liveblocks.config';
 
 /**

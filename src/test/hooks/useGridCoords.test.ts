@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useGridCoords } from '../../hooks/useGridCoords';
-import { useUIStore } from '../../store/ui';
-import { useLayoutStore } from '../../store/layout';
+import { useUIStore } from '../../core/store/ui';
+import { useLayoutStore } from '../../core/store/layout';
 import { resetAllStores } from '../testUtils';
 import type { RefObject } from 'react';
 

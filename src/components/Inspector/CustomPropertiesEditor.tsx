@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CONSTRAINTS, RESERVED_PROPERTY_KEYS } from '../../constants';
+import { CONSTRAINTS, RESERVED_PROPERTY_KEYS } from '../../core/constants';
 
 interface CustomPropertiesEditorProps {
   customProperties?: Record<string, string>;

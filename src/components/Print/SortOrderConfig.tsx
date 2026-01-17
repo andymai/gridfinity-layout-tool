@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Checkbox } from '../Checkbox';
-import type { BinListSortOrder, SortFieldConfig, BinSortField } from '../../store/settings';
-import { SORT_FIELD_LABELS } from '../../store/settings';
+import type { BinListSortOrder, SortFieldConfig, BinSortField } from '../../core/store/settings';
+import { SORT_FIELD_LABELS } from '../../core/store/settings';
 
 interface SortOrderConfigProps {
   sortOrder: BinListSortOrder;

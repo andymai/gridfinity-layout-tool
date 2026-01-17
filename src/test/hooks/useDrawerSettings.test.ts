@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useDrawerSettings } from '../../hooks/useDrawerSettings';
-import { useLayoutStore } from '../../store/layout';
-import { useUIStore } from '../../store';
-import { useSettingsStore } from '../../store/settings';
+import { useLayoutStore } from '../../core/store/layout';
+import { useUIStore } from '../../core/store';
+import { useSettingsStore } from '../../core/store/settings';
 import { resetAllStores } from '../testUtils';
-import { CONSTRAINTS, STAGING_ID } from '../../constants';
+import { CONSTRAINTS, STAGING_ID } from '../../core/constants';
 
 describe('useDrawerSettings', () => {
   beforeEach(() => {

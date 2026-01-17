@@ -1,5 +1,5 @@
-import type { Bin, Layer, Rect3D, BlockedZone } from '../types';
-import { STAGING_ID } from '../constants';
+import type { Bin, Layer, Rect3D, BlockedZone } from '../core/types';
+import { STAGING_ID } from '../core/constants';
 
 /**
  * Reverse layers for display purposes.

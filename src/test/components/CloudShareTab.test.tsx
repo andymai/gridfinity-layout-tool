@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { CloudShareTab } from '../../components/Share';
-import { useLibraryStore } from '../../store/library';
+import { useLibraryStore } from '../../core/store/library';
 import { resetAllStores } from '../testUtils';
 
 // Mock useCloudShare hook

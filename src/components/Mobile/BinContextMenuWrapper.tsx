@@ -1,4 +1,4 @@
-import { useLayoutStore, useUIStore } from '../../store';
+import { useLayoutStore, useUIStore } from '../../core/store';
 import { BinContextMenu } from './BinContextMenu';
 import { MultiBinContextMenu } from './MultiBinContextMenu';
 

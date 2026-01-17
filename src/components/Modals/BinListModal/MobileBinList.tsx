@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
-import { DEFAULT_CATEGORY_COLOR } from '../../../constants';
+import { DEFAULT_CATEGORY_COLOR } from '../../../core/constants';
 import { useBinList } from '../../../hooks/useBinList';
 import { SplitPreview } from '../../Print';
-import type { EnhancedPrintRow, Category, PrintListSortKey } from '../../../types';
+import type { EnhancedPrintRow, Category, PrintListSortKey } from '../../../core/types';
 
 interface MobileBinListProps {
   isOpen: boolean;

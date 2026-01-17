@@ -1,5 +1,5 @@
-import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '../../constants';
-import { useUIStore } from '../../store';
+import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '../../core/constants';
+import { useUIStore } from '../../core/store';
 import { getBinLocationContext } from '../../utils/binLocation';
 import type { UseBinInspectorReturn } from '../../hooks/useBinInspector';
 import { SplitWarning } from './SplitWarning';

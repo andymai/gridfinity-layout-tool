@@ -5,7 +5,7 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../store';
+import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../core/store';
 import { usePrintList, type UsePrintListReturn } from './usePrintList';
 import {
   filterBySearch,
@@ -18,8 +18,8 @@ import {
   calculateCategoryBreakdown,
   type CategoryBreakdown,
 } from '../utils/binListOperations';
-import { exportPrintListTSV } from '../storage';
-import type { EnhancedPrintRow } from '../types';
+import { exportPrintListTSV } from '../core/storage';
+import type { EnhancedPrintRow } from '../core/types';
 
 export interface UseBinListReturn extends Omit<UsePrintListReturn, 'rows'> {
   // Filtered rows (after text search)

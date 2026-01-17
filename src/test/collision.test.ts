@@ -8,8 +8,8 @@ import {
   checkLayerReorderCollisions,
   isInBlockedZone,
 } from '../utils/collision';
-import type { Layer, Bin } from '../types';
-import { STAGING_ID } from '../constants';
+import type { Layer, Bin } from '../core/types';
+import { STAGING_ID } from '../core/constants';
 
 const layers: Layer[] = [
   { id: 'layer1', name: 'Layer 1', height: 3 },

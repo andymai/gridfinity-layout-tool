@@ -17,18 +17,18 @@ import {
   migrateAllLayoutsToIndexedDBResult,
   getMigrationStatusResult,
   getLayoutStorageKey,
-} from '../storage';
-import { createDefaultLayout } from '../constants';
+} from '../core/storage';
+import { createDefaultLayout } from '../core/constants';
 import {
   isOk,
   isErr,
   getUserMessage,
   isRetryable,
-} from '../result';
-import type { Layout, LayoutLibrary } from '../types';
+} from '../core/result';
+import type { Layout, LayoutLibrary } from '../core/types';
 
 // Mock the backend module
-vi.mock('../storage/backend', () => ({
+vi.mock('../core/storage/backend', () => ({
   saveAsync: vi.fn(),
   loadAsync: vi.fn(),
   deleteAsync: vi.fn(),
@@ -43,20 +43,20 @@ vi.mock('../storage/backend', () => ({
 }));
 
 // Mock the localStorage backend for migration
-vi.mock('../storage/backends/localStorage', () => ({
+vi.mock('../core/storage/backends/localStorage', () => ({
   getAllLayoutIds: vi.fn(),
   loadLayout: vi.fn(),
 }));
 
 // Mock the indexedDB backend for migration
-vi.mock('../storage/backends/indexedDB', () => ({
+vi.mock('../core/storage/backends/indexedDB', () => ({
   saveLayout: vi.fn(),
 }));
 
 // Import the mocked modules
-import * as backend from '../storage/backend';
-import * as localStorageBackend from '../storage/backends/localStorage';
-import * as indexedDBBackend from '../storage/backends/indexedDB';
+import * as backend from '../core/storage/backend';
+import * as localStorageBackend from '../core/storage/backends/localStorage';
+import * as indexedDBBackend from '../core/storage/backends/indexedDB';
 
 describe('Result-based storage functions', () => {
   let defaultLayout: Layout;

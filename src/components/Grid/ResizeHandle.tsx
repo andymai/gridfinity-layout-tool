@@ -1,6 +1,6 @@
 import type { PointerEvent } from 'react';
 import { memo } from 'react';
-import type { ResizeHandle as ResizeHandleType, HandleVariant, HandlePlacement } from '../../types';
+import type { ResizeHandle as ResizeHandleType, HandleVariant, HandlePlacement } from '../../core/types';
 import { getHandlePosition, getHandleVisual, isCornerHandle } from '../../utils/handlePositioning';
 
 interface ResizeHandleProps {

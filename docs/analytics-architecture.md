@@ -450,7 +450,7 @@ Plus discrete events:
 | `layout_created` | `src/hooks/useLayoutSwitcher.ts` → `createNewLayout()` | Create new layout |
 | `layout_imported` | `src/hooks/useLayoutSwitcher.ts` → `importLayoutFromJSON()` | Import from JSON/URL |
 | `layout_switched` | `src/hooks/useLayoutSwitcher.ts` → `switchLayout()` | Switch to different layout |
-| `paint_mode_used` | `src/store/ui.ts` → `setPaintMode()` | Enter paint mode |
+| `paint_mode_used` | `src/core/store/ui.ts` → `setPaintMode()` | Enter paint mode |
 | `fill_gaps_used` | `src/components/Sidebar/ActiveLayerPanel.tsx` | Click fill gaps button |
 | `fill_layer_used` | `src/components/Sidebar/ActiveLayerPanel.tsx` | Click fill layer button |
 

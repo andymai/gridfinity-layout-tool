@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useBinList } from '../../hooks/useBinList';
-import { useLayoutStore } from '../../store/layout';
-import { useToastStore } from '../../store/toast';
-import { createDefaultLayout, generateId } from '../../constants';
+import { useLayoutStore } from '../../core/store/layout';
+import { useToastStore } from '../../core/store/toast';
+import { createDefaultLayout, generateId } from '../../core/constants';
 import { resetAllStores } from '../testUtils';
-import type { Layout, Bin } from '../../types';
+import type { Layout, Bin } from '../../core/types';
 import * as binListOperations from '../../utils/binListOperations';
 
 // Helper to create test bins

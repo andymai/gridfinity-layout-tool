@@ -1,11 +1,11 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '../store';
-import { calcMaxGridUnits, STAGING_ID } from '../constants';
+import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '../core/store';
+import { calcMaxGridUnits, STAGING_ID } from '../core/constants';
 import { getLayerZStart } from '../utils/collision';
 import { clamp, canPlaceBin, validateCustomProperties } from '../utils/validation';
 import { validateBinRotation } from '../utils/binLocation';
-import type { Bin, Category, Layer, Layout } from '../types';
+import type { Bin, Category, Layer, Layout } from '../core/types';
 
 export type BinField = 'width' | 'depth' | 'height' | 'clearanceHeight' | 'category' | 'label' | 'notes';
 

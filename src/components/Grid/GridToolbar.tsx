@@ -1,10 +1,10 @@
 import { memo, useState, useEffect, useRef, type RefObject } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useViewStore } from '../../store/view';
-import { useInteractionStore } from '../../store/interaction';
+import { useViewStore } from '../../core/store/view';
+import { useInteractionStore } from '../../core/store/interaction';
 import { Checkbox } from '../Checkbox';
 import { track3DPreview } from '../../utils/analytics';
-import type { Layer } from '../../types';
+import type { Layer } from '../../core/types';
 import type { GridZoomState } from '../../hooks/useGridZoom';
 
 /**

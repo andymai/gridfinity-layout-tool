@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLayoutRouting } from '../../hooks/useLayoutRouting';
-import { useLayoutStore, useLibraryStore, useUIStore, useToastStore } from '../../store';
+import { useLayoutStore, useLibraryStore, useUIStore, useToastStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
-import * as storage from '../../storage';
+import * as storage from '../../core/storage';
 import * as url from '../../utils/url';
 import * as validation from '../../utils/validation';
 
 // Mock storage module
-vi.mock('../../storage', () => ({
+vi.mock('../../core/storage', () => ({
   loadLayoutByIdAsync: vi.fn(),
 }));
 

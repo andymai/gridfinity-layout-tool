@@ -1,20 +1,20 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useSharedWithMe } from '../../hooks/useSharedWithMe';
-import { useLibraryStore } from '../../store/library';
-import { useLayoutStore } from '../../store/layout';
-import { useUIStore } from '../../store/ui';
-import { useHistoryStore } from '../../store/history';
-import { useToastStore } from '../../store/toast';
-import { createDefaultLayout } from '../../constants';
-import type { SharedWithMeEntry, Layout } from '../../types';
+import { useLibraryStore } from '../../core/store/library';
+import { useLayoutStore } from '../../core/store/layout';
+import { useUIStore } from '../../core/store/ui';
+import { useHistoryStore } from '../../core/store/history';
+import { useToastStore } from '../../core/store/toast';
+import { createDefaultLayout } from '../../core/constants';
+import type { SharedWithMeEntry, Layout } from '../../core/types';
 
 // Mock the API module
-vi.mock('../../api/share', () => ({
+vi.mock('../../core/api/share', () => ({
   fetchShare: vi.fn(),
 }));
 
-import { fetchShare } from '../../api/share';
+import { fetchShare } from '../../core/api/share';
 
 const mockFetchShare = vi.mocked(fetchShare);
 

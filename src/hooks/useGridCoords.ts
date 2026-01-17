@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import type { RefObject } from 'react';
-import type { Coord } from '../types';
-import { useUIStore, useLayoutStore } from '../store';
-import { getBaseCellSize, snapToHalf } from '../constants';
+import type { Coord } from '../core/types';
+import { useUIStore, useLayoutStore } from '../core/store';
+import { getBaseCellSize, snapToHalf } from '../core/constants';
 import { clamp } from '../utils/validation';
 import { useResponsive } from './useResponsive';
 

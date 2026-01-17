@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SingleBinInspector } from '../../components/Inspector/SingleBinInspector';
 import type { UseBinInspectorReturn } from '../../components/Inspector/useBinInspector';
 import { resetAllStores } from '../testUtils';
-import { useUIStore } from '../../store';
+import { useUIStore } from '../../core/store';
 
 // Mock the DeferredNumberInput component to simplify testing
 vi.mock('../../components/DeferredNumberInput', () => ({

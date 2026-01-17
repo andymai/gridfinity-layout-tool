@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useAnalytics } from '../../hooks/useAnalytics';
-import { useLayoutStore } from '../../store/layout';
+import { useLayoutStore } from '../../core/store/layout';
 import { resetAllStores } from '../testUtils';
 import * as analytics from '../../utils/analytics';
 
