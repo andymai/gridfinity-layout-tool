@@ -1,4 +1,4 @@
-// Re-export for backward compatibility
+// Grid editor utilities - barrel export
 export {
   getDisplayLayers,
   getLayerZStart,
@@ -9,4 +9,10 @@ export {
   getBlockedZones,
   isInBlockedZone,
   checkLayerReorderCollisions,
-} from '../features/grid-editor/utils/collision';
+} from './collision';
+
+export {
+  fillAllWithSize,
+  fillGaps,
+  getLayerCoverage,
+} from './fill';
