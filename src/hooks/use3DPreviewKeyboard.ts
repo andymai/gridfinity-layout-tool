@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { SceneHandle } from '../components/Grid/IsometricPreview/Scene';
+import type { SceneHandle } from '../features/grid-editor/components/Grid/IsometricPreview/Scene';
 
 interface Use3DPreviewKeyboardProps {
   sceneRef: React.RefObject<SceneHandle | null>;

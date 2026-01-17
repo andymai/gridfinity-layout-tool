@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
-import { validateImport } from '../../../utils/validation';
+import { validateImport } from '../../../shared/utils/validation';
 import { decodeLayoutFromURL } from '../../../core/storage';
 import type { Layout } from '../../../core/types';
 

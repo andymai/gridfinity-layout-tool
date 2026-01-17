@@ -10,7 +10,7 @@ import {
   validateLayoutIntegrityResult,
   validateCustomProperties,
   validateCustomPropertiesResult,
-} from '../utils/validation';
+} from '../shared/utils/validation';
 import { CONSTRAINTS } from '../core/constants';
 import type { Layout } from '../core/types';
 import { isOk, isErr } from '../core/result';

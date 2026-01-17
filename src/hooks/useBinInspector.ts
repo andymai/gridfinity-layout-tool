@@ -2,8 +2,8 @@ import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '../core/store';
 import { calcMaxGridUnits, STAGING_ID } from '../core/constants';
-import { getLayerZStart } from '../utils/collision';
-import { clamp, canPlaceBin, validateCustomProperties } from '../utils/validation';
+import { getLayerZStart } from '../features/grid-editor/utils/collision';
+import { clamp, canPlaceBin, validateCustomProperties } from '../shared/utils/validation';
 import { validateBinRotation } from '../utils/binLocation';
 import type { Bin, Category, Layer, Layout } from '../core/types';
 

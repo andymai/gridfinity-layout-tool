@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useInteractionStore, useViewStore } from '../../core/store';
-import { canPlaceBin } from '../../utils/validation';
+import { canPlaceBin } from '../../shared/utils/validation';
 import { constrainGroupDelta } from '../../utils/selection';
 import { STAGING_ID, getBaseCellSize } from '../../core/constants';
 import { isOk } from '../../core/result';

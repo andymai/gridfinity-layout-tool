@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useGridCoords } from '../../hooks/useGridCoords';
+import { useGridCoords } from '../../features/grid-editor/hooks/useGridCoords';
 import { useUIStore } from '../../core/store/ui';
 import { useLayoutStore } from '../../core/store/layout';
 import { resetAllStores } from '../testUtils';

@@ -5,7 +5,7 @@ import { useInteractionStore } from '../../../../core/store/interaction';
 import { Checkbox } from '../../../../shared/components/Checkbox';
 import { track3DPreview } from '../../../../utils/analytics';
 import type { Layer } from '../../../../core/types';
-import type { GridZoomState } from '../../../../hooks/useGridZoom';
+import type { GridZoomState } from '../../hooks/useGridZoom';
 
 /**
  * Grid Toolbar Component

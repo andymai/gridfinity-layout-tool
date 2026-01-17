@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, fireEvent, act } from '@testing-library/react';
-import { Bin } from '../components/Grid/Bin';
+import { Bin } from '../features/grid-editor/components/Grid/Bin';
 import { useUIStore } from '../core/store/ui';
 import { useLayoutStore } from '../core/store/layout';
 import { useSelectionStore } from '../core/store/selection';
