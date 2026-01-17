@@ -35,7 +35,7 @@ const HelpModal = lazyWithRetry(() =>
 
 // Lazy load mobile layout - only loaded on mobile devices
 const MobileLayout = lazyWithRetry(() =>
-  import('./components/MobileLayout').then(namedExport('MobileLayout'))
+  import('./layouts/MobileLayout').then(namedExport('MobileLayout'))
 );
 
 // Lazy load collaborative editing provider - only loaded when Labs feature enabled
