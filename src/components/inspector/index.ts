@@ -1,6 +1,6 @@
-// Hook
-export { useBinInspector } from './useBinInspector';
-export type { UseBinInspectorReturn, BinField, BinConstraints, ConfirmDeleteState } from './useBinInspector';
+// Hook - re-exported from src/hooks for backwards compatibility
+export { useBinInspector } from '../../hooks/useBinInspector';
+export type { UseBinInspectorReturn, BinField, BinConstraints, ConfirmDeleteState } from '../../hooks/useBinInspector';
 
 // Components
 export { SplitWarning } from './SplitWarning';

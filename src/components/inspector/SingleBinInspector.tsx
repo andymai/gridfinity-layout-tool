@@ -1,7 +1,7 @@
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '../../constants';
 import { useUIStore } from '../../store';
 import { getBinLocationContext } from '../../utils/binLocation';
-import type { UseBinInspectorReturn } from './useBinInspector';
+import type { UseBinInspectorReturn } from '../../hooks/useBinInspector';
 import { SplitWarning } from './SplitWarning';
 import { StepperControl } from '../StepperControl';
 import { SelectDropdown } from '../SelectDropdown';

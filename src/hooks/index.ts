@@ -16,6 +16,13 @@ export type { GridFirstUseHintsState, UseGridFirstUseHintsOptions } from './useG
 export { useGridTemplate } from './useGridTemplate';
 export type { GridTemplateState, UseGridTemplateOptions } from './useGridTemplate';
 export type { UseDrawerSettingsReturn } from './useDrawerSettings';
+
+// Bin inspector hook (shared by RightPanel and MobileInspector)
+export { useBinInspector } from './useBinInspector';
+export type { UseBinInspectorReturn, BinField, BinConstraints, ConfirmDeleteState } from './useBinInspector';
+
+// 3D preview hooks
+export { useBinGeometry, createBinGeometry } from './useBinGeometry';
 export { useKeyboard } from './useKeyboard';
 export { useAutoSave } from './useAutoSave';
 export { useResponsive, prefersTouch } from './useResponsive';
