@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
-import { useMutations } from '../../context/MutationsContext';
+import { useMutations } from '../../contexts/MutationsContext';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { ConfirmDialog } from '../Modals/ConfirmDialog';
 import { useToastStore } from '../../store/toast';

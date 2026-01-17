@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../store';
-import { useMutations } from '../../context/MutationsContext';
+import { useMutations } from '../../contexts/MutationsContext';
 import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '../ContextMenu';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { STAGING_ID } from '../../constants';

@@ -1,4 +1,4 @@
-import type { FeatureStatus } from '../../Labs/types';
+import type { FeatureStatus } from '../../labs/types';
 
 interface FeatureStatusBadgeProps {
   status: FeatureStatus;

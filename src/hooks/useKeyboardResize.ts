@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
-import { useMutations } from '../context/MutationsContext';
+import { useMutations } from '../contexts/MutationsContext';
 import { canPlaceBin } from '../utils/validation';
 import { findBinById } from '../utils/entity';
 import { CONSTRAINTS, STAGING_ID, hasFractionalDimensions } from '../constants';

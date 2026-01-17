@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useSettingsStore, useToastStore } from '../store';
 import { useUndoableAction } from '../store/history';
-import { useMutations } from '../context/MutationsContext';
+import { useMutations } from '../contexts/MutationsContext';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../constants';
 import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '../utils/halfBinConstraints';

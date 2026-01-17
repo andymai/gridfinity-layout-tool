@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
-import { useMutations } from '../../context/MutationsContext';
+import { useMutations } from '../../contexts/MutationsContext';
 import { CONSTRAINTS } from '../../constants';
 
 /**

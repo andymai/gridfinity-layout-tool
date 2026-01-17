@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction, useToastStore } from '../store';
-import { useMutations } from '../context/MutationsContext';
+import { useMutations } from '../contexts/MutationsContext';
 import { canPlaceBin } from '../utils/validation';
 import { validateBinRotation } from '../utils/binLocation';
 import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
