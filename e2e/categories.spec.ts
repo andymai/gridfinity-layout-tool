@@ -10,6 +10,7 @@ import {
   waitForToast,
   clearAllStorage,
   resetViewport,
+  getActiveDialog,
 } from './fixtures';
 
 test.describe('Categories Management Flow', () => {
@@ -25,7 +26,7 @@ test.describe('Categories Management Flow', () => {
     await resetViewport(page);
 
     // Close any lingering dialogs
-    const dialogs = page.locator('[role="dialog"]');
+    const dialogs = getActiveDialog(page);
     if ((await dialogs.count()) > 0) {
       await page.keyboard.press('Escape');
       await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});

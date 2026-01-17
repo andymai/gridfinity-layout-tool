@@ -9,6 +9,7 @@ import {
   clearAllStorage,
   resetViewport,
   waitForAutoSave,
+  getActiveDialog,
 } from './fixtures';
 
 test.describe('Drawer Settings', () => {
@@ -22,7 +23,7 @@ test.describe('Drawer Settings', () => {
     await resetViewport(page);
 
     // Close any lingering dialogs
-    const dialogs = page.locator('[role="dialog"]');
+    const dialogs = getActiveDialog(page);
     if ((await dialogs.count()) > 0) {
       await page.keyboard.press('Escape');
       await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
@@ -51,39 +52,37 @@ test.describe('Drawer Settings', () => {
   test('can increase height', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    // The max height is displayed between the +/- buttons with min-w-[28px]
-    // It's the only span with that width class showing "Nu" format in the Grid Settings section
-    const increaseButton = sidebar.getByRole('button', { name: /increase height/i });
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease height/i });
+    // Find drawer height controls by their specific aria-labels from StepperControl
+    const increaseButton = sidebar.getByRole('button', { name: /increase drawer height/i });
 
-    // Get parent container of the buttons to find the height display
-    // The height display is between decrease and increase buttons
-    const heightDisplay = decreaseButton.locator('+ span');
-    const initialHeight = await heightDisplay.textContent();
+    // Get the height value display (shows "Nu" format)
+    // It's the button showing the current value between decrease/increase buttons
+    const heightDisplay = sidebar.locator('[aria-label="Drawer height in units"]');
+    const initialHeightText = await heightDisplay.textContent();
+    const initialHeight = parseInt(initialHeightText?.replace('u', '') ?? '0');
 
     // Click increase button
     await increaseButton.click();
 
     // Wait for height to change
     await expect(async () => {
-      const newHeight = await heightDisplay.textContent();
-      const initial = parseInt(initialHeight?.replace('u', '') ?? '0');
-      const updated = parseInt(newHeight?.replace('u', '') ?? '0');
-      expect(updated).toBe(initial + 1);
+      const newHeightText = await heightDisplay.textContent();
+      const newHeight = parseInt(newHeightText?.replace('u', '') ?? '0');
+      expect(newHeight).toBe(initialHeight + 1);
     }).toPass({ timeout: 2000 });
   });
 
   test('can decrease height', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    const increaseButton = sidebar.getByRole('button', { name: /increase height/i });
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease height/i });
+    const increaseButton = sidebar.getByRole('button', { name: /increase drawer height/i });
+    const decreaseButton = sidebar.getByRole('button', { name: /decrease drawer height/i });
 
     // First increase height to ensure we can decrease
     await increaseButton.click();
 
-    // Get the height display (sibling of decrease button)
-    const heightDisplay = decreaseButton.locator('+ span');
+    // Get the height value display
+    const heightDisplay = sidebar.locator('[aria-label="Drawer height in units"]');
 
     // Wait for increase to apply then get value
     await expect(async () => {
@@ -91,25 +90,25 @@ test.describe('Drawer Settings', () => {
       expect(parseInt(text?.replace('u', '') ?? '0')).toBeGreaterThan(0);
     }).toPass({ timeout: 2000 });
 
-    const beforeDecrease = await heightDisplay.textContent();
+    const beforeDecreaseText = await heightDisplay.textContent();
+    const beforeDecrease = parseInt(beforeDecreaseText?.replace('u', '') ?? '0');
 
     // Click decrease button
     await decreaseButton.click();
 
     // Wait for height to change
     await expect(async () => {
-      const afterDecrease = await heightDisplay.textContent();
-      const before = parseInt(beforeDecrease?.replace('u', '') ?? '0');
-      const after = parseInt(afterDecrease?.replace('u', '') ?? '0');
-      expect(after).toBe(before - 1);
+      const afterDecreaseText = await heightDisplay.textContent();
+      const afterDecrease = parseInt(afterDecreaseText?.replace('u', '') ?? '0');
+      expect(afterDecrease).toBe(beforeDecrease - 1);
     }).toPass({ timeout: 2000 });
   });
 
   test('max height has minimum constraint', async ({ page }) => {
     const sidebar = getSidebar(page);
 
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease height/i });
-    const heightDisplay = decreaseButton.locator('+ span');
+    const decreaseButton = sidebar.getByRole('button', { name: /decrease drawer height/i });
+    const heightDisplay = sidebar.locator('[aria-label="Drawer height in units"]');
 
     // Decrease 15 times to approach minimum
     for (let i = 0; i < 15; i++) {
@@ -253,7 +252,7 @@ test.describe('Drawer Settings', () => {
 
     // Increase max height several times
     const sidebar = getSidebar(page);
-    const increaseMaxHeight = sidebar.getByRole('button', { name: /increase height/i });
+    const increaseMaxHeight = sidebar.getByRole('button', { name: /increase drawer height/i });
 
     for (let i = 0; i < 3; i++) {
       await increaseMaxHeight.click();
@@ -263,7 +262,7 @@ test.describe('Drawer Settings', () => {
     await waitForBinCount(page, 1);
 
     // Now decrease height
-    const decreaseMaxHeight = sidebar.getByRole('button', { name: /decrease height/i });
+    const decreaseMaxHeight = sidebar.getByRole('button', { name: /decrease drawer height/i });
     for (let i = 0; i < 3; i++) {
       if (await decreaseMaxHeight.isEnabled()) {
         await decreaseMaxHeight.click();

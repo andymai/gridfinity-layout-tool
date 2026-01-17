@@ -9,6 +9,7 @@ import {
   waitForDialog,
   clearAllStorage,
   resetViewport,
+  getActiveDialog,
 } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -48,8 +49,8 @@ test.describe('Accessibility', () => {
     await clearAllStorage(page);
     await resetViewport(page);
 
-    // Close any lingering dialogs
-    const dialogs = page.locator('[role="dialog"]');
+    // Close any lingering dialogs (excluding Labs drawer)
+    const dialogs = getActiveDialog(page);
     if ((await dialogs.count()) > 0) {
       await page.keyboard.press('Escape');
       await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
@@ -103,9 +104,9 @@ test.describe('Accessibility', () => {
     // Open help modal with ? key
     await page.keyboard.press('Shift+?');
 
-    // Verify modal is visible
+    // Verify modal is visible (excluding Labs drawer)
     await waitForDialog(page);
-    const modal = page.locator('[role="dialog"]');
+    const modal = getActiveDialog(page);
     await expect(modal).toBeVisible({ timeout: 3000 });
 
     // Run axe on the modal
@@ -128,9 +129,9 @@ test.describe('Accessibility', () => {
     await saveDefaultsButton.scrollIntoViewIfNeeded();
     await saveDefaultsButton.click();
 
-    // Verify dialog is visible
+    // Verify dialog is visible (excluding Labs drawer)
     await waitForDialog(page);
-    const dialog = page.getByRole('dialog');
+    const dialog = getActiveDialog(page);
     await expect(dialog).toBeVisible();
 
     // Run axe on the dialog
