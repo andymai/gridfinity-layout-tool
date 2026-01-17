@@ -114,11 +114,23 @@ export function DragPreview() {
               transform: 'scale(1.02)',
             }}
           >
-            {bin.label && (
-              <div className="text-center pointer-events-none select-none text-xs truncate px-1" style={{ color: textColor, opacity: 0.85 }}>
-                {bin.label}
-              </div>
-            )}
+            {bin.label && (() => {
+              // Smart rotation: match Bin.tsx logic - rotate if significantly taller than wide
+              const shouldRotate = bin.depth > bin.width * 1.5;
+              return (
+                <div
+                  className="text-center pointer-events-none select-none text-xs truncate px-1"
+                  style={{
+                    color: textColor,
+                    opacity: 0.85,
+                    transform: shouldRotate ? 'rotate(-90deg)' : 'none',
+                    width: shouldRotate ? `${(bin.depth / bin.width) * 90}%` : 'auto',
+                  }}
+                >
+                  {bin.label}
+                </div>
+              );
+            })()}
           </div>
         );
       })}
