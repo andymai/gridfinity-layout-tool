@@ -13,6 +13,8 @@ export { useGridResize } from './useGridResize';
 export type { GridResizeState, UseGridResizeOptions, ResizeDirection, PendingResize } from './useGridResize';
 export { useGridFirstUseHints } from './useGridFirstUseHints';
 export type { GridFirstUseHintsState, UseGridFirstUseHintsOptions } from './useGridFirstUseHints';
+export { useGridTemplate } from './useGridTemplate';
+export type { GridTemplateState, UseGridTemplateOptions } from './useGridTemplate';
 export type { UseDrawerSettingsReturn } from './useDrawerSettings';
 export { useKeyboard } from './useKeyboard';
 export { useAutoSave } from './useAutoSave';
