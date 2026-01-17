@@ -2,7 +2,7 @@ import { useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useState }
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { OrthographicCamera, Spherical, Vector3 } from 'three';
-import { useUIStore } from '../../../core/store';
+import { useUIStore } from '../../../../../core/store';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { FloorGrid } from './FloorGrid';
 import { FrontLabel } from './FrontLabel';
@@ -10,7 +10,7 @@ import { AxisLabels } from './AxisLabels';
 import { DrawerDimensions } from './DrawerDimensions';
 import { ScaleIndicator } from './ScaleIndicator';
 
-import type { FractionalEdge } from '../../../core/types';
+import type { FractionalEdge } from '../../../../../core/types';
 
 interface SceneProps {
   children: React.ReactNode;

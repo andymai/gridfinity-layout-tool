@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from 'react';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
-import type { FractionalEdge } from '../../../core/types';
+import type { FractionalEdge } from '../../../../../core/types';
 
 interface AxisLabelsProps {
   width: number;

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { useUIStore } from '../../../core/store';
+import { useUIStore } from '../../../../../core/store';
 
 // Height units (7mm) to grid units (42mm) conversion
 const HEIGHT_TO_GRID_SCALE = 7 / 42;
