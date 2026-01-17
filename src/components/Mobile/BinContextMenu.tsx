@@ -1,5 +1,5 @@
 import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../store';
-import { useMutations } from '../../context/MutationsContext';
+import { useMutations } from '../../contexts/MutationsContext';
 import { useResponsive } from '../../hooks/useResponsive';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { validateBinRotation, getBinLocationContext } from '../../utils/binLocation';

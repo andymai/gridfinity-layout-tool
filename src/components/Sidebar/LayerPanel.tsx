@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
-import { useMutations } from '../../context/MutationsContext';
+import { useMutations } from '../../contexts/MutationsContext';
 import { CONSTRAINTS, STAGING_ID } from '../../constants';
 import { getDisplayLayers } from '../../utils/collision';
 import { ConfirmDialog } from '../Modals/ConfirmDialog';
