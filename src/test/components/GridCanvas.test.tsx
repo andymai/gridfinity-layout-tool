@@ -24,7 +24,7 @@ vi.mock('../../hooks/useResponsive', () => ({
 const mockGetGridCoords = vi.fn().mockReturnValue({ x: 0, y: 0 });
 
 // Mock useGridCoords to return predictable coordinates
-vi.mock('../../hooks/useGridCoords', () => ({
+vi.mock('../../features/grid-editor/hooks/useGridCoords', () => ({
   useGridCoords: () => ({
     getGridCoords: mockGetGridCoords,
     halfBinMode: false,
