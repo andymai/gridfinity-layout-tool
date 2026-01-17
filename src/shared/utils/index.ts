@@ -13,3 +13,20 @@ export { generateUUID, generateLayoutId, isValidLayoutId, isLegacyUUID, LAYOUT_I
 export { throttleRAF, cancelThrottledRAF, throttle } from './throttle';
 
 export { scheduleIdleCallback, cancelIdleCallback, runWhenIdle } from './idle';
+
+export {
+  isValidDrawer,
+  isValidLayer,
+  isValidBin,
+  isValidCategory,
+  canPlaceBin,
+  canPlaceBinResult,
+  validateImport,
+  validateImportResult,
+  validateLayoutIntegrity,
+  validateLayoutIntegrityResult,
+  validateCustomProperties,
+  validateCustomPropertiesResult,
+  clamp,
+  truncate,
+} from './validation';
