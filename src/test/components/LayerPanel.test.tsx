@@ -19,7 +19,7 @@ vi.mock('../../components/CollapsibleSection', () => ({
 }));
 
 // Mock ConfirmDialog
-vi.mock('../../components/modals/ConfirmDialog', () => ({
+vi.mock('../../components/Modals/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, onConfirm, onCancel, message, title }: {
     isOpen: boolean;
     onConfirm: () => void;

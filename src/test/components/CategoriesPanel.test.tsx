@@ -5,7 +5,7 @@ import { useLayoutStore, useUIStore } from '../../store';
 import { resetAllStores } from '../testUtils';
 
 // Mock ConfirmDialog to simplify testing
-vi.mock('../../components/modals/ConfirmDialog', () => ({
+vi.mock('../../components/Modals/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, onConfirm, onCancel, title }: {
     isOpen: boolean;
     onConfirm: () => void;

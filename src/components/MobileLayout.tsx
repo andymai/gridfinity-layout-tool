@@ -21,9 +21,9 @@ import {
   MobileSettingsPanel,
   MobileLayoutsPanel,
   BinContextMenuWrapper,
-} from './mobile';
-import { LabsDrawer } from './labs';
-import { PresenceAvatarList } from './collab';
+} from './Mobile';
+import { LabsDrawer } from './Labs';
+import { PresenceAvatarList } from './Collab';
 import { usePresence } from '../hooks/usePresence';
 import { useCollabMode } from '../hooks/useCollabMode';
 import type { SaveStatus } from '../hooks/useAutoSave';
@@ -36,7 +36,7 @@ interface LegacyContextMenuState {
 
 // Lazy load mobile help modal (with retry for chunk load failures)
 const MobileHelpModal = lazyWithRetry(() =>
-  import('./mobile/MobileHelpModal').then(namedExport('MobileHelpModal'))
+  import('./Mobile/MobileHelpModal').then(namedExport('MobileHelpModal'))
 );
 
 interface MobileLayoutProps {

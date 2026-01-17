@@ -12,7 +12,7 @@ vi.mock('../../hooks/useResponsive', () => ({
 }));
 
 // Mock ConfirmDialog
-vi.mock('../../components/modals/ConfirmDialog', () => ({
+vi.mock('../../components/Modals/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, onConfirm, onCancel, message }: {
     isOpen: boolean;
     onConfirm: () => void;

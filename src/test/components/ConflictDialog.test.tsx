@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { ConflictDialog } from '../../components/modals/ConflictDialog';
+import { ConflictDialog } from '../../components/Modals/ConflictDialog';
 
 describe('ConflictDialog', () => {
   const mockOnResolve = vi.fn();

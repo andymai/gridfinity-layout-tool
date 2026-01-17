@@ -5,7 +5,7 @@
  * throughout the application.
  *
  * @example
- * import { useContextMenu, ContextMenuContainer, ContextMenuItem } from './contextMenu';
+ * import { useContextMenu, ContextMenuContainer, ContextMenuItem } from './ContextMenu';
  *
  * const { isOpen, position, show, hide, menuRef } = useContextMenu();
  *

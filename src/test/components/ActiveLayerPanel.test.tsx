@@ -8,7 +8,7 @@ import { useHalfBinModeStore } from '../../store/halfBinMode';
 import { resetAllStores } from '../testUtils';
 
 // Mock ConfirmDialog
-vi.mock('../../components/modals/ConfirmDialog', () => ({
+vi.mock('../../components/Modals/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, onConfirm, onCancel, message }: {
     isOpen: boolean;
     onConfirm: () => void;

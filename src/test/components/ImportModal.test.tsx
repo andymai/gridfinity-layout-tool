@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, waitFor, act, cleanup } from '@testing-library/react';
-import { ImportModal } from '../../components/modals/ImportModal';
+import { ImportModal } from '../../components/Modals/ImportModal';
 import { createDefaultLayout } from '../../constants';
 import { encodeLayoutForURL } from '../../storage';
 

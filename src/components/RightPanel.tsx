@@ -4,8 +4,8 @@ import { useUIStore, useLayoutStore } from '../store';
 import { DEFAULT_CATEGORY_COLOR } from '../constants';
 import { exportPrintListTSV } from '../storage';
 import { trackLayoutSnapshot } from '../utils/analytics';
-import { ConfirmDialog } from './modals/ConfirmDialog';
-import { BinListModal } from './modals/BinListModal';
+import { ConfirmDialog } from './Modals/ConfirmDialog';
+import { BinListModal } from './Modals/BinListModal';
 import { usePrintList } from '../hooks/usePrintList';
 import { SplitPreview, PrintListSummary, PrintListEmpty } from './Print';
 import { CollapsibleSection } from './CollapsibleSection';
@@ -14,7 +14,7 @@ import {
   SingleBinInspector,
   MultiBinInspector,
   EmptyState,
-} from './inspector';
+} from './Inspector';
 
 export function RightPanel() {
   const [printListExpanded, setPrintListExpanded] = useState(true);

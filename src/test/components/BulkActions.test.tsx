@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BulkActions } from '../../components/modals/BinListModal/BulkActions';
+import { BulkActions } from '../../components/Modals/BinListModal/BulkActions';
 import type { Category } from '../../types';
 
 describe('BulkActions', () => {

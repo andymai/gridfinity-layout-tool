@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
-import { ImportView } from '../../components/modals/LayoutManagerModal/ImportView';
+import { ImportView } from '../../components/Modals/LayoutManagerModal/ImportView';
 import * as validation from '../../utils/validation';
 import * as storage from '../../storage';
 

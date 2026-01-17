@@ -14,12 +14,12 @@ import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
 import { ToastContainer } from './components/Toast';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
-import { BinContextMenuWrapper } from './components/mobile';
-import { TabletPanelOverlay, TabletPanelTriggers } from './components/tablet';
+import { BinContextMenuWrapper } from './components/Mobile';
+import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter } from './components/SharedLayoutImporter';
 import { SharedLayoutBanner } from './components/SharedLayoutBanner';
-import { LabsDrawer } from './components/labs';
+import { LabsDrawer } from './components/Labs';
 import { LocalMutationsProvider } from './context/MutationsContext';
 import { SHORTCUTS } from './constants';
 
@@ -31,7 +31,7 @@ interface LegacyContextMenuState {
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
 const HelpModal = lazyWithRetry(() =>
-  import('./components/modals/HelpModal').then(namedExport('HelpModal'))
+  import('./components/Modals/HelpModal').then(namedExport('HelpModal'))
 );
 
 // Lazy load mobile layout - only loaded on mobile devices
@@ -42,7 +42,7 @@ const MobileLayout = lazyWithRetry(() =>
 // Lazy load collaborative editing provider - only loaded when Labs feature enabled
 // AND layout has edit permission (most users never need this ~80KB chunk)
 const CollabProvider = lazyWithRetry(() =>
-  import('./components/collab/CollabProvider').then(namedExport('CollabProvider'))
+  import('./components/Collab/CollabProvider').then(namedExport('CollabProvider'))
 );
 
 // Initialize layout library once at module level to avoid effect setState issues

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { MobileLayoutsPanel } from '../../components/mobile/MobileLayoutsPanel';
+import { MobileLayoutsPanel } from '../../components/Mobile/MobileLayoutsPanel';
 import { useLibraryStore } from '../../store/library';
 import { useLayoutStore } from '../../store/layout';
 import { useUIStore } from '../../store/ui';

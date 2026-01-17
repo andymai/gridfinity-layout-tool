@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { useLabsStore } from '../../store';
 import { useDrawerSettings } from '../../hooks';
-import { getFeature } from '../../labs/features';
-import { SparklesIcon, ChevronRightIcon } from '../labs/icons';
+import { getFeature } from '../../Labs/features';
+import { SparklesIcon, ChevronRightIcon } from '../Labs/icons';
 import { CONSTRAINTS } from '../../constants';
-import { ConfirmDialog } from '../modals/ConfirmDialog';
-import { HalfBinModeBlockedModal } from '../modals/HalfBinModeBlockedModal';
+import { ConfirmDialog } from '../Modals/ConfirmDialog';
+import { HalfBinModeBlockedModal } from '../Modals/HalfBinModeBlockedModal';
 import { DeferredNumberInput } from '../DeferredNumberInput';
 import { StepperControl } from '../StepperControl';
 import { Checkbox } from '../Checkbox';
