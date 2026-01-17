@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { generateUUID } from '../utils/uuid';
+import { generateUUID } from '../shared/utils';
 
 describe('generateUUID', () => {
   describe('with crypto.randomUUID available', () => {

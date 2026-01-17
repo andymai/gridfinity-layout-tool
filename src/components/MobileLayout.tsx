@@ -5,7 +5,7 @@ import { Grid } from './Grid';
 import { Staging } from './Staging';
 import { DropZones } from './DropZones';
 import { DragPreview } from './DragPreview';
-import { ToastContainer } from './Toast';
+import { ToastContainer } from '../shared/components/Toast';
 import { PanelErrorBoundary } from './PanelErrorBoundary';
 import { SharedLayoutImporter, SharedLayoutBanner } from './Share';
 import {
@@ -25,7 +25,7 @@ import { LabsDrawer } from './Labs';
 import { PresenceAvatarList } from './Collab';
 import { usePresence } from '../hooks/usePresence';
 import { useCollabMode } from '../hooks/useCollabMode';
-import type { SaveStatus } from '../hooks/useAutoSave';
+import type { SaveStatus } from '../shared/hooks';
 
 // Legacy context menu state for backwards compatibility
 interface LegacyContextMenuState {

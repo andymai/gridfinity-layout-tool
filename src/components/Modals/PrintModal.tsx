@@ -5,7 +5,7 @@ import { useLayoutStore } from '../../core/store';
 import { useSettingsStore, type PrintViewSettings, type BinListSortOrder } from '../../core/store/settings';
 import { PrintLayout } from '../Print/PrintLayout';
 import { SortOrderConfig } from '../Print/SortOrderConfig';
-import { Checkbox } from '../Checkbox';
+import { Checkbox } from '../../shared/components/Checkbox';
 import { getBinCountByLayer } from '../../utils/printLayout';
 import '../../styles/print.css';
 

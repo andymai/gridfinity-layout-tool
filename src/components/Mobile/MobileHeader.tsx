@@ -4,7 +4,7 @@ import { useCollabMode } from '../../hooks/useCollabMode';
 import { CONSTRAINTS } from '../../core/constants';
 import { PresenceAvatars } from '../Collab';
 import type { MobilePanel } from '../../core/store/ui';
-import type { SaveStatus } from '../../hooks/useAutoSave';
+import type { SaveStatus } from '../../shared/hooks';
 
 interface MobileHeaderProps {
   onMenuClick: () => void;

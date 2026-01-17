@@ -1,14 +1,14 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useToastStore } from '../core/store/toast';
-import { useUIStore } from '../core/store/ui';
-import { STAGING_ID } from '../core/constants';
-import { useLayoutStore } from '../core/store/layout';
+import { useToastStore } from '../../core/store/toast';
+import { useUIStore } from '../../core/store/ui';
+import { STAGING_ID } from '../../core/constants';
+import { useLayoutStore } from '../../core/store/layout';
 import {
   saveEphemeralState,
   loadEphemeralState,
   type EphemeralState,
-} from '../utils/ephemeralState';
+} from '../../utils/ephemeralState';
 
 // Toast duration for update notification
 const UPDATE_TOAST_MS = 5000;

@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../core/store';
-import { useMutations } from '../../contexts/MutationsContext';
+import { useMutations } from '../../shared/contexts';
 import { CONSTRAINTS, STAGING_ID } from '../../core/constants';
 import { getDisplayLayers } from '../../utils/collision';
-import { ConfirmDialog } from '../Modals/ConfirmDialog';
-import { CollapsibleSection } from '../CollapsibleSection';
+import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
+import { CollapsibleSection } from '../../shared/components/CollapsibleSection';
 import { isOk, isErr, getUserMessage } from '../../core/result';
 
 // Drop position indicator for drag-and-drop reordering

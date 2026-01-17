@@ -3,7 +3,7 @@ import { useUIStore } from '../../core/store';
 import { getBinLocationContext } from '../../utils/binLocation';
 import type { UseBinInspectorReturn } from '../../hooks/useBinInspector';
 import { SplitWarning } from './SplitWarning';
-import { StepperControl } from '../StepperControl';
+import { StepperControl } from '../../shared/components/StepperControl';
 import { SelectDropdown } from '../SelectDropdown';
 import { CustomPropertiesEditor } from './CustomPropertiesEditor';
 import { STLSearchDropdown } from '../STLSearchDropdown';

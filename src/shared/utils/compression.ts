@@ -4,7 +4,7 @@
  */
 
 import LZString from 'lz-string';
-import type { Layout } from '../core/types';
+import type { Layout } from '../../core/types';
 
 /**
  * Compress a string using lz-string's UTF-16 compression.

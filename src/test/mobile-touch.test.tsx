@@ -11,7 +11,7 @@ import { createDefaultLayout } from '../core/constants';
 import type { Bin as BinType, Category, Layer } from '../core/types';
 
 // Mock useResponsive to simulate touch device
-vi.mock('../hooks/useResponsive', () => ({
+vi.mock('../shared/hooks/useResponsive', () => ({
   useResponsive: () => ({
     isMobile: true,
     isTablet: false,

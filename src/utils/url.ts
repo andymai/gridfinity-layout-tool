@@ -13,7 +13,7 @@
  * - #share={data} - URL-encoded shares (self-contained)
  */
 
-import { isValidLayoutId, isLegacyUUID } from './uuid';
+import { isValidLayoutId, isLegacyUUID } from '../shared/utils';
 import { slugify } from './slug';
 
 // Legacy prefixes for backward compatibility

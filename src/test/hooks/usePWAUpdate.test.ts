@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
-import { usePWAUpdate } from '../../hooks/usePWAUpdate';
+import { usePWAUpdate } from '../../shared/hooks';
 import { useUIStore } from '../../core/store/ui';
 import { useLayoutStore } from '../../core/store/layout';
 import { useToastStore } from '../../core/store/toast';

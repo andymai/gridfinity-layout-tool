@@ -2,10 +2,10 @@ import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../core/store';
 import { useToastStore } from '../core/store/toast';
-import { useResponsive } from '../hooks/useResponsive';
+import { useResponsive } from '../shared/hooks';
 import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '../core/constants';
-import { getBinTextColors } from '../utils/color';
-import { ConfirmDialog } from './Modals/ConfirmDialog';
+import { getBinTextColors } from '../shared/utils';
+import { ConfirmDialog } from '../shared/components';
 
 /** Clamp a value between min and max */
 function clamp(value: number, min: number, max: number): number {

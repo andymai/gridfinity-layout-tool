@@ -23,10 +23,9 @@ import { useLayoutStore } from '../../core/store/layout';
 import { useUIStore } from '../../core/store/ui';
 import { generateId } from '../../core/constants';
 import { generateGuestName, generateGuestColor } from '../../utils/guestNames';
-import { PresenceContext, type CollabPresenceActions } from '../../contexts/PresenceContext';
-import { LocalMutationsProvider } from '../../contexts/MutationsContext';
+import { PresenceContext, type CollabPresenceActions, LocalMutationsProvider } from '../../shared/contexts';
 import type { Coord } from '../../core/types';
-import { throttle } from '../../utils/throttle';
+import { throttle } from '../../shared/utils';
 import { useCollabSync } from '../../hooks/useCollabSync';
 import { useCloudShareAutoSync } from '../../hooks/useCloudShareAutoSync';
 

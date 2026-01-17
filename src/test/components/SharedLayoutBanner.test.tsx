@@ -38,7 +38,7 @@ vi.mock('../../core/storage', () => ({
 }));
 
 // Mock uuid
-vi.mock('../../utils/uuid', () => ({
+vi.mock('../../shared/utils/uuid', () => ({
   generateUUID: vi.fn(() => 'new-uuid-123'),
   generateLayoutId: vi.fn(() => 'newid123test'),
   isValidLayoutId: vi.fn(() => true),

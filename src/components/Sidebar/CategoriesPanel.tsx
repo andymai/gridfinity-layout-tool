@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../core/store';
-import { useMutations } from '../../contexts/MutationsContext';
+import { useMutations } from '../../shared/contexts';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../core/constants';
-import { ConfirmDialog } from '../Modals/ConfirmDialog';
+import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { useToastStore } from '../../core/store/toast';
-import { CollapsibleSection } from '../CollapsibleSection';
+import { CollapsibleSection } from '../../shared/components/CollapsibleSection';
 import { isOk } from '../../core/result';
 
 // Curated color palette optimized for dark UI backgrounds
