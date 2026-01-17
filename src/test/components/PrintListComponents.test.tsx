@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { PrintListSummary, SplitPreview, PrintListEmpty } from '../../components/PrintList';
+import { PrintListSummary, SplitPreview, PrintListEmpty } from '../../components/Print';
 import type { PrintPiece } from '../../types';
 
 describe('PrintListSummary', () => {

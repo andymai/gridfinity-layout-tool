@@ -3,7 +3,7 @@ import { DEFAULT_CATEGORY_COLOR } from '../../constants';
 import { exportPrintListTSV } from '../../storage';
 import { usePrintList } from '../../hooks/usePrintList';
 import { useUIStore } from '../../store/ui';
-import { SplitPreview, PrintListSummary, PrintListEmpty } from '../PrintList';
+import { SplitPreview, PrintListSummary, PrintListEmpty } from '../Print';
 import { BinListModal } from '../modals/BinListModal';
 
 /**

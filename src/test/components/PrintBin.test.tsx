@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
-import { PrintBin } from '../../components/print/PrintBin';
+import { PrintBin } from '../../components/Print/PrintBin';
 import type { Bin, Category, Drawer } from '../../types';
 import type { PrintViewSettings } from '../../store/settings';
 
