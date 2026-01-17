@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { BREAKPOINTS } from '../constants';
+import { BREAKPOINTS } from '../core/constants';
 
 export type LayoutMode = 'mobile' | 'tablet' | 'desktop';
 

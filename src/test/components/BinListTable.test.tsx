@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BinListTable } from '../../components/Modals/BinListModal/BinListTable';
-import type { EnhancedPrintRow, Category, PrintListSortKey, PrintListSortOrder } from '../../types';
+import type { EnhancedPrintRow, Category, PrintListSortKey, PrintListSortOrder } from '../../core/types';
 
 // Mock SplitPreview
 vi.mock('../../components/Print', () => ({

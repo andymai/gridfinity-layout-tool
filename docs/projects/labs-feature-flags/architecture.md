@@ -196,7 +196,7 @@ export const DEFAULT_LABS_PREFERENCES: LabsPreferences = {
 A new Zustand store manages Labs state, following existing patterns from `settings.ts`.
 
 ```typescript
-// src/store/labs.ts
+// src/core/store/labs.ts
 
 import { create } from 'zustand';
 import type { LabsPreferences, FeatureId } from '../Labs/types';

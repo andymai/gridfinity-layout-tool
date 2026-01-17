@@ -1,9 +1,9 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction } from '../store';
-import { useToastStore } from '../store/toast';
+import { useLayoutStore, useUIStore, useUndoableAction } from '../core/store';
+import { useToastStore } from '../core/store/toast';
 import { useResponsive } from '../hooks/useResponsive';
-import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '../constants';
+import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '../core/constants';
 import { getBinTextColors } from '../utils/color';
 import { ConfirmDialog } from './Modals/ConfirmDialog';
 

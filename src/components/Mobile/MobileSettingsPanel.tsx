@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { useLabsStore } from '../../store';
+import { useLabsStore } from '../../core/store';
 import { useDrawerSettings } from '../../hooks';
-import { getFeature } from '../../labs/features';
+import { getFeature } from '../../core/labs/features';
 import { SparklesIcon, ChevronRightIcon } from '../Labs/icons';
-import { CONSTRAINTS } from '../../constants';
+import { CONSTRAINTS } from '../../core/constants';
 import { ConfirmDialog } from '../Modals/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '../Modals/HalfBinModeBlockedModal';
 import { DeferredNumberInput } from '../DeferredNumberInput';
@@ -11,7 +11,7 @@ import { StepperControl } from '../StepperControl';
 import { Checkbox } from '../Checkbox';
 import { SectionHeader } from '../SectionHeader';
 import { SettingsRow } from '../SettingsRow';
-import type { STLSearchSite } from '../../store/settings';
+import type { STLSearchSite } from '../../core/store/settings';
 
 /**
  * Mobile settings panel with grid configuration and app actions.

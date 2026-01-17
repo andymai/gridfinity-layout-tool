@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { validateImport } from '../../../utils/validation';
-import { decodeLayoutFromURL } from '../../../storage';
-import type { Layout } from '../../../types';
+import { decodeLayoutFromURL } from '../../../core/storage';
+import type { Layout } from '../../../core/types';
 
 interface ImportViewProps {
   onImport: (layout: Layout) => void;

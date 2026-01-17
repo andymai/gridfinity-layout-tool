@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useToastStore } from '../../store/toast';
+import { useToastStore } from '../../core/store/toast';
 import { resetAllStores } from '../testUtils';
 
 describe('toast store', () => {

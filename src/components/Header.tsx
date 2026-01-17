@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '../store';
+import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '../core/store';
 import { useResponsive, useFeatureFlag, useCollabMode } from '../hooks';
-import { CONSTRAINTS } from '../constants';
+import { CONSTRAINTS } from '../core/constants';
 import { LayoutManagerModal } from './Modals/LayoutManagerModal';
 import { PrintModal } from './Modals/PrintModal';
 import { ShareButton } from './Share';

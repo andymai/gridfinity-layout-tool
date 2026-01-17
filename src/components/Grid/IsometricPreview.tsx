@@ -1,12 +1,12 @@
 import { useMemo, useCallback, useRef, useState, useEffect } from "react"
 import { Canvas } from "@react-three/fiber"
 import { useShallow } from "zustand/shallow"
-import { useLayoutStore, useUIStore } from "../../store"
+import { useLayoutStore, useUIStore } from "../../core/store"
 import {
   STAGING_ID,
   DEFAULT_CATEGORY_COLOR,
   calcMaxGridUnits,
-} from "../../constants"
+} from "../../core/constants"
 import { useResponsive } from "../../hooks/useResponsive"
 import { use3DPreviewKeyboard } from "../../hooks/use3DPreviewKeyboard"
 import { getLayerZStart } from "../../utils/collision"

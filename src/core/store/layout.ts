@@ -2,9 +2,9 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { Layout, Bin, Layer, Category, Drawer } from '../types';
 import { createDefaultLayout, generateId, STAGING_ID, CONSTRAINTS, calcMaxGridUnits } from '../constants';
-import { canPlaceBin, clamp } from '../utils/validation';
-import { fillAllWithSize, fillGaps } from '../utils/fill';
-import { checkLayerReorderCollisions } from '../utils/collision';
+import { canPlaceBin, clamp } from '../../utils/validation';
+import { fillAllWithSize, fillGaps } from '../../utils/fill';
+import { checkLayerReorderCollisions } from '../../utils/collision';
 import { useSettingsStore } from './settings';
 import type { Result, LayoutError, ValidationError } from '../result';
 import {

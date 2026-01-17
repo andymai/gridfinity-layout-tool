@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { useLayoutStore, useHistoryStore, useUIStore } from '../../store';
+import { useLayoutStore, useHistoryStore, useUIStore } from '../../core/store';
 import { useCollabMode } from '../../hooks/useCollabMode';
-import { CONSTRAINTS } from '../../constants';
+import { CONSTRAINTS } from '../../core/constants';
 import { PresenceAvatars } from '../Collab';
-import type { MobilePanel } from '../../store/ui';
+import type { MobilePanel } from '../../core/store/ui';
 import type { SaveStatus } from '../../hooks/useAutoSave';
 
 interface MobileHeaderProps {

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import type { Layout, Layer } from '../../types';
-import type { PrintViewSettings } from '../../store/settings';
+import type { Layout, Layer } from '../../core/types';
+import type { PrintViewSettings } from '../../core/store/settings';
 import { PrintBin } from './PrintBin';
 import {
   getVisibleBinsForPrint,

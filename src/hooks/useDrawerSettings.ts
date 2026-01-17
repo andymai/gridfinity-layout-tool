@@ -1,12 +1,12 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useSettingsStore, useToastStore } from '../store';
-import { useUndoableAction } from '../store/history';
+import { useLayoutStore, useUIStore, useSettingsStore, useToastStore } from '../core/store';
+import { useUndoableAction } from '../core/store/history';
 import { useMutations } from '../contexts/MutationsContext';
-import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../constants';
+import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '../core/constants';
 import { validateHalfBinModeToggle } from '../utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '../utils/halfBinConstraints';
-import type { STLSearchSite, UserSettings } from '../store/settings';
+import type { STLSearchSite, UserSettings } from '../core/store/settings';
 
 /**
  * Return type for useDrawerSettings hook.

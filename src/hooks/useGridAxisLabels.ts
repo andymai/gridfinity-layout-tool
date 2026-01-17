@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Drawer } from '../types';
+import type { Drawer } from '../core/types';
 
 /**
  * Grid Axis Labels Hook

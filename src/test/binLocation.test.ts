@@ -6,8 +6,8 @@ import {
   isBinOnGrid,
   type BinLocation,
 } from '../utils/binLocation';
-import { STAGING_ID } from '../constants';
-import type { Bin, Layout } from '../types';
+import { STAGING_ID } from '../core/constants';
+import type { Bin, Layout } from '../core/types';
 
 // Test helper: Create a minimal valid layout
 function createTestLayout(overrides: Partial<Layout> = {}): Layout {

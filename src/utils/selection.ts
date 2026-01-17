@@ -1,4 +1,4 @@
-import type { Bin, Rect } from '../types';
+import type { Bin, Rect } from '../core/types';
 import { clamp } from './validation';
 
 /**

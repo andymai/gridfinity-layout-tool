@@ -10,7 +10,7 @@
 
 import { createContext } from 'react';
 import type { InteractionHint } from '../liveblocks.config';
-import type { Coord } from '../types';
+import type { Coord } from '../core/types';
 
 export interface CollabPresenceActions {
   /** Update cursor position (null when outside grid) */

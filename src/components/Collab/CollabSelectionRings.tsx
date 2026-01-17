@@ -13,8 +13,8 @@
 
 import { useMemo } from 'react';
 import { useOthers } from '../../liveblocks.config';
-import { useLayoutStore, useUIStore } from '../../store';
-import { getBaseCellSize, STAGING_ID } from '../../constants';
+import { useLayoutStore, useUIStore } from '../../core/store';
+import { getBaseCellSize, STAGING_ID } from '../../core/constants';
 import { useResponsive } from '../../hooks/useResponsive';
 
 interface CollabSelectionRingsProps {

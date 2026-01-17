@@ -1,4 +1,4 @@
-import type { ResizeHandle, HandlePlacement, HandlePositionConfig, HandleVisualConfig } from '../types';
+import type { ResizeHandle, HandlePlacement, HandlePositionConfig, HandleVisualConfig } from '../core/types';
 
 /** Touch target size (Apple HIG minimum) */
 const TOUCH_TARGET_SIZE = 44;

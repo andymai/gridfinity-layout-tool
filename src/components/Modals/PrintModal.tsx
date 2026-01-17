@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo, useCallback, useRef, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore } from '../../store';
-import { useSettingsStore, type PrintViewSettings, type BinListSortOrder } from '../../store/settings';
+import { useLayoutStore } from '../../core/store';
+import { useSettingsStore, type PrintViewSettings, type BinListSortOrder } from '../../core/store/settings';
 import { PrintLayout } from '../Print/PrintLayout';
 import { SortOrderConfig } from '../Print/SortOrderConfig';
 import { Checkbox } from '../Checkbox';

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useUIStore } from '../../store/ui';
+import { useUIStore } from '../../core/store/ui';
 import { useResponsive } from '../../hooks';
 
 interface BottomSheetProps {

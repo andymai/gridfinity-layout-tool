@@ -2,14 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { ImportView } from '../../components/Modals/LayoutManagerModal/ImportView';
 import * as validation from '../../utils/validation';
-import * as storage from '../../storage';
+import * as storage from '../../core/storage';
 
 // Mock the modules
 vi.mock('../../utils/validation', () => ({
   validateImport: vi.fn(() => ({ valid: true, errors: [] })),
 }));
 
-vi.mock('../../storage', () => ({
+vi.mock('../../core/storage', () => ({
   decodeLayoutFromURL: vi.fn(() => ({ layout: null, errors: [] })),
 }));
 

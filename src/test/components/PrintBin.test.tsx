@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { PrintBin } from '../../components/Print/PrintBin';
-import type { Bin, Category, Drawer } from '../../types';
-import type { PrintViewSettings } from '../../store/settings';
+import type { Bin, Category, Drawer } from '../../core/types';
+import type { PrintViewSettings } from '../../core/store/settings';
 
 const defaultSettings: PrintViewSettings = {
   showLabel: true,

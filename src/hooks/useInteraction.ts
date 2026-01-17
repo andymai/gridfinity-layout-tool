@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import type { RefObject } from 'react';
-import type { Coord, ResizeHandle } from '../types';
-import { useLayoutStore, useUndoableAction, useSelectionStore, useInteractionStore } from '../store';
+import type { Coord, ResizeHandle } from '../core/types';
+import { useLayoutStore, useUndoableAction, useSelectionStore, useInteractionStore } from '../core/store';
 import { useMutations } from '../contexts/MutationsContext';
 import { useGridCoords } from './useGridCoords';
 import { useCollabPresence } from './useCollabPresence';

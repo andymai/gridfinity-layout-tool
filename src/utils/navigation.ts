@@ -1,4 +1,4 @@
-import type { Bin } from '../types';
+import type { Bin } from '../core/types';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 

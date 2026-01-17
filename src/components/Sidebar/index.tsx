@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '../../store';
+import { useUIStore } from '../../core/store';
 import { useDrawerSettings } from '../../hooks';
-import { CONSTRAINTS } from '../../constants';
+import { CONSTRAINTS } from '../../core/constants';
 import { ActiveLayerPanel } from './ActiveLayerPanel';
 import { LayerPanel } from './LayerPanel';
 import { CategoriesPanel } from './CategoriesPanel';
@@ -15,7 +15,7 @@ import { useResponsive } from '../../hooks/useResponsive';
 import { LabsButton } from '../Labs';
 import { Checkbox } from '../Checkbox';
 import { SettingsRow } from '../SettingsRow';
-import type { STLSearchSite } from '../../store/settings';
+import type { STLSearchSite } from '../../core/store/settings';
 
 export function Sidebar() {
   const [isScrolled, setIsScrolled] = useState(false);

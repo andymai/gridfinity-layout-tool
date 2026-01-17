@@ -1,11 +1,11 @@
 import { useEffect, useCallback, useState } from 'react';
-import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
+import { useUIStore, useLayoutStore, useUndoableAction } from '../core/store';
 import { useMutations } from '../contexts/MutationsContext';
 import { canPlaceBin } from '../utils/validation';
 import { constrainGroupDelta } from '../utils/selection';
 import { findBinById } from '../utils/entity';
-import type { Bin } from '../types';
-import { STAGING_ID, hasFractionalDimensions } from '../constants';
+import type { Bin } from '../core/types';
+import { STAGING_ID, hasFractionalDimensions } from '../core/constants';
 
 /**
  * Hook for keyboard-based bin dragging.

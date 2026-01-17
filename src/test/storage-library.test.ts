@@ -10,9 +10,9 @@ import {
   migrateFromLegacyStorage,
   initializeLayoutLibrary,
   getLayoutStorageKey,
-} from '../storage';
-import { createDefaultLayout } from '../constants';
-import type { Layout, LayoutLibrary, LayoutEntry } from '../types';
+} from '../core/storage';
+import { createDefaultLayout } from '../core/constants';
+import type { Layout, LayoutLibrary, LayoutEntry } from '../core/types';
 
 const LIBRARY_STORAGE_KEY = 'gridfinity-library-v1';
 const LEGACY_STORAGE_KEY = 'gridfinity-layout-v1';

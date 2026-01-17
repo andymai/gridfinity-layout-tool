@@ -107,7 +107,7 @@ This plan combines phased delivery with clean adapter patterns for a balance of 
 | 5 | `api/share/[id].ts` | Permission field | +30 |
 | 6 | `src/hooks/useCloudShare.ts` | updatePermission | +40 |
 | 7 | `src/components/CloudShareTab.tsx` | Permission selector | +50 |
-| 8 | `src/store/history.ts` | Collab-aware undo | +30 |
+| 8 | `src/core/store/history.ts` | Collab-aware undo | +30 |
 
 **Total modifications**: ~180 lines
 

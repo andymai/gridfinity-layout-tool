@@ -18,14 +18,14 @@ import {
   type UserPresence,
   type InteractionHint,
 } from '../../liveblocks.config';
-import { useLibraryStore } from '../../store/library';
-import { useLayoutStore } from '../../store/layout';
-import { useUIStore } from '../../store/ui';
-import { generateId } from '../../constants';
+import { useLibraryStore } from '../../core/store/library';
+import { useLayoutStore } from '../../core/store/layout';
+import { useUIStore } from '../../core/store/ui';
+import { generateId } from '../../core/constants';
 import { generateGuestName, generateGuestColor } from '../../utils/guestNames';
 import { PresenceContext, type CollabPresenceActions } from '../../contexts/PresenceContext';
 import { LocalMutationsProvider } from '../../contexts/MutationsContext';
-import type { Coord } from '../../types';
+import type { Coord } from '../../core/types';
 import { throttle } from '../../utils/throttle';
 import { useCollabSync } from '../../hooks/useCollabSync';
 import { useCloudShareAutoSync } from '../../hooks/useCloudShareAutoSync';

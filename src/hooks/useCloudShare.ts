@@ -4,20 +4,20 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLibraryStore } from '../store/library';
-import { useLayoutStore } from '../store/layout';
-import { useUIStore } from '../store/ui';
-import type { SharePermission, CloudShareInfo, Layout } from '../types';
+import { useLibraryStore } from '../core/store/library';
+import { useLayoutStore } from '../core/store/layout';
+import { useUIStore } from '../core/store/ui';
+import type { SharePermission, CloudShareInfo, Layout } from '../core/types';
 import {
   createShare,
   updateShare,
   updatePermission as updateSharePermission,
   deleteShare,
   type ShareResponse,
-} from '../api/share';
-import { isOk, getUserMessage } from '../result';
-import type { ApiError } from '../result';
-import { copyToClipboard } from '../storage';
+} from '../core/api/share';
+import { isOk, getUserMessage } from '../core/result';
+import type { ApiError } from '../core/result';
+import { copyToClipboard } from '../core/storage';
 import { slugify } from '../utils/slug';
 
 export type CloudShareStatus =

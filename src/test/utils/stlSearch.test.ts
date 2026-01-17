@@ -6,7 +6,7 @@ import {
   openSTLSearch,
   validateUrlTemplate,
 } from '../../utils/stlSearch';
-import type { STLSearchSite } from '../../store/settings';
+import type { STLSearchSite } from '../../core/store/settings';
 
 describe('stlSearch utilities', () => {
   describe('formatDimension', () => {

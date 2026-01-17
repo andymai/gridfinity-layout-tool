@@ -8,7 +8,7 @@ Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organiz
 
 **Main branch is protected.** All changes via PRs - never commit directly to `main`.
 
-Pre-commit hooks enforce lint, build, and test coverage (Lines: 86%, Branches: 74%, Functions: 85%, Statements: 85%). Run `npm run test:coverage` before committing. Focus testing on `src/utils/` (~90%), `src/store/` (~87%), `src/hooks/` (~73%).
+Pre-commit hooks enforce lint, build, and test coverage (Lines: 86%, Branches: 74%, Functions: 85%, Statements: 85%). Run `npm run test:coverage` before committing. Focus testing on `src/utils/` (~90%), `src/core/store/` (~87%), `src/hooks/` (~73%).
 
 ## Code Style (Enforced)
 
@@ -25,7 +25,7 @@ Pre-commit hooks enforce lint, build, and test coverage (Lines: 86%, Branches: 7
 
 ### State Management (Zustand + Immer)
 
-Six stores in `src/store/`:
+Six stores in `src/core/store/`:
 - **layout.ts** - Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>`.
 - **library.ts** - Multi-layout library management. Tracks `activeLayoutId`, CRUD for layouts, generates thumbnails via `computePreview()`.
 - **ui.ts** - UI state (selection, zoom, panels, interaction mode, paint mode, context menu, isometric preview, keyboard nav, half-bin mode)

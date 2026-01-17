@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LayerPanel } from '../../components/Sidebar/LayerPanel';
-import { useLayoutStore, useUIStore } from '../../store';
+import { useLayoutStore, useUIStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
-import type { Layer } from '../../types';
+import type { Layer } from '../../core/types';
 
 // Mock CollapsibleSection to simplify testing
 vi.mock('../../components/CollapsibleSection', () => ({

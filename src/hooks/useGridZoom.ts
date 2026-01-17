@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, type RefObject } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useViewStore } from '../store/view';
-import { BASE_CELL_SIZE, CONSTRAINTS } from '../constants';
+import { useViewStore } from '../core/store/view';
+import { BASE_CELL_SIZE, CONSTRAINTS } from '../core/constants';
 
 /**
  * Grid Zoom Hook

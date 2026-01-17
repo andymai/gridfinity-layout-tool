@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CategoriesPanel } from '../../components/Sidebar/CategoriesPanel';
-import { useLayoutStore, useUIStore } from '../../store';
+import { useLayoutStore, useUIStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
 
 // Mock ConfirmDialog to simplify testing

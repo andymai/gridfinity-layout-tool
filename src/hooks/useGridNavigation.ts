@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { useLayoutStore, useUIStore } from '../store';
+import { useLayoutStore, useUIStore } from '../core/store';
 import { findNearestBinInDirection, type Direction } from '../utils/navigation';
 
 /**

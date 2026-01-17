@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useUIStore, useLayoutStore, useUndoableAction } from '../../store';
+import { useUIStore, useLayoutStore, useUndoableAction } from '../../core/store';
 import { useMutations } from '../../contexts/MutationsContext';
-import { CONSTRAINTS } from '../../constants';
+import { CONSTRAINTS } from '../../core/constants';
 
 /**
  * Small popover that appears near a bin for quick label editing.

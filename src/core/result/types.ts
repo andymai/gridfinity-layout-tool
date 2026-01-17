@@ -7,7 +7,7 @@
  *
  * @example
  * ```ts
- * import { Result, ok, err, isOk } from './result';
+ * import { Result, ok, err, isOk } from '../result';
  *
  * function divide(a: number, b: number): Result<number, string> {
  *   if (b === 0) return err('Division by zero');

@@ -1,9 +1,9 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
-import { useLayoutStore, useUIStore, useLibraryStore } from './store';
+import { useLayoutStore, useUIStore, useLibraryStore } from './core/store';
 import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useStorageMigration, useTabletPanels } from './hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './hooks/useOwnedShareSync';
-import { initializeLayoutLibrary, loadSharedWithMe } from './storage';
+import { initializeLayoutLibrary, loadSharedWithMe } from './core/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
 import { Sidebar } from './components/Sidebar';
@@ -20,7 +20,7 @@ import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter, SharedLayoutBanner } from './components/Share';
 import { LabsDrawer } from './components/Labs';
 import { LocalMutationsProvider } from './contexts/MutationsContext';
-import { SHORTCUTS } from './constants';
+import { SHORTCUTS } from './core/constants';
 
 // Legacy context menu state for backwards compatibility
 interface LegacyContextMenuState {

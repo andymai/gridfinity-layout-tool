@@ -92,7 +92,7 @@ src/
 |------|---------|
 | `vercel.json` | Add rewrites for `/s/:id` and `/api/*` |
 | `package.json` | Add `@vercel/blob`, `@vercel/kv`, `bcryptjs` |
-| `src/store/library.ts` | Add `cloudShare` field to `LayoutEntry` type |
+| `src/core/store/library.ts` | Add `cloudShare` field to `LayoutEntry` type |
 | `src/components/Modals/ShareModal.tsx` | Add "Cloud" tab with re-share support |
 | `src/components/SharedLayoutImporter.tsx` | Handle `/s/{id}` URLs |
 | `src/utils/storage.ts` | Add `getCloudShareIdFromURL()` |
@@ -231,7 +231,7 @@ This keeps the same URL (no need to re-post) while maintaining the snapshot ment
 Store share metadata locally to enable re-sharing:
 
 ```typescript
-// In LayoutEntry (src/store/library.ts)
+// In LayoutEntry (src/core/store/library.ts)
 interface LayoutEntry {
   // ... existing fields
   cloudShare?: {

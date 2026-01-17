@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useLibraryStore, useUIStore, useToastStore, useHistoryStore } from '../store';
-import { loadLayoutByIdAsync } from '../storage';
+import { useLayoutStore, useLibraryStore, useUIStore, useToastStore, useHistoryStore } from '../core/store';
+import { loadLayoutByIdAsync } from '../core/storage';
 import { validateLayoutIntegrity } from '../utils/validation';
 import {
   parseLayoutFromURL,

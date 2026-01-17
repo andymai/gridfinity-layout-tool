@@ -9,9 +9,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLayoutRouting } from '../../hooks/useLayoutRouting';
-import { useLayoutStore } from '../../store/layout';
-import { useLibraryStore } from '../../store/library';
-import { useUIStore } from '../../store/ui';
+import { useLayoutStore } from '../../core/store/layout';
+import { useLibraryStore } from '../../core/store/library';
+import { useUIStore } from '../../core/store/ui';
 import * as url from '../../utils/url';
 
 // Mock the url utilities
@@ -28,7 +28,7 @@ vi.mock('../../utils/url', async () => {
 });
 
 // Mock storage
-vi.mock('../../storage', () => ({
+vi.mock('../../core/storage', () => ({
   loadLayoutByIdAsync: vi.fn(),
 }));
 

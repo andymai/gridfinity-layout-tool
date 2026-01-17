@@ -1,21 +1,21 @@
 import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import type { Layout, LayoutLibrary } from '../types';
-import { createDefaultLayout } from '../constants';
-import { useLayoutStore } from '../store/layout';
-import { useHistoryStore } from '../store/history';
-import { useToastStore } from '../store/toast';
-import { useSettingsStore, DEFAULT_SETTINGS } from '../store/settings';
-import { useLibraryStore } from '../store/library';
-import { useLabsStore } from '../store/labs';
-import { createDefaultLabsPreferences } from '../labs/types';
+import type { Layout, LayoutLibrary } from '../core/types';
+import { createDefaultLayout } from '../core/constants';
+import { useLayoutStore } from '../core/store/layout';
+import { useHistoryStore } from '../core/store/history';
+import { useToastStore } from '../core/store/toast';
+import { useSettingsStore, DEFAULT_SETTINGS } from '../core/store/settings';
+import { useLibraryStore } from '../core/store/library';
+import { useLabsStore } from '../core/store/labs';
+import { createDefaultLabsPreferences } from '../core/labs/types';
 // New stores extracted from ui.ts
-import { useSelectionStore } from '../store/selection';
-import { useViewStore } from '../store/view';
-import { useInteractionStore } from '../store/interaction';
-import { useMobileStore } from '../store/mobile';
-import { useHalfBinModeStore } from '../store/halfBinMode';
-import { useSharedPreviewStore } from '../store/sharedPreview';
+import { useSelectionStore } from '../core/store/selection';
+import { useViewStore } from '../core/store/view';
+import { useInteractionStore } from '../core/store/interaction';
+import { useMobileStore } from '../core/store/mobile';
+import { useHalfBinModeStore } from '../core/store/halfBinMode';
+import { useSharedPreviewStore } from '../core/store/sharedPreview';
 
 /**
  * Reset all Zustand stores to their initial state.

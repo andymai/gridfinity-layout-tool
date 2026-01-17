@@ -5,7 +5,7 @@ import {
   groupByCategory,
   applyFiltersAndSort,
 } from '../utils/printListOperations';
-import type { EnhancedPrintRow, Category } from '../types';
+import type { EnhancedPrintRow, Category } from '../core/types';
 
 // Helper to create test rows
 function createTestRow(overrides: Partial<EnhancedPrintRow> = {}): EnhancedPrintRow {

@@ -1,4 +1,4 @@
-import { useUIStore } from '../store';
+import { useUIStore } from '../core/store';
 
 /**
  * ARIA live region for screen reader announcements.

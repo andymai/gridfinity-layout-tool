@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
-import { useInteractionStore } from '../../store';
+import { useInteractionStore } from '../../core/store';
 import { canPlaceBin, clamp } from '../../utils/validation';
-import type { InteractionContext, ModeHandlers, StagingDragStartArgs, Coord } from './types';
+import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from './types';
+import type { Coord } from '../../core/types';
 
 /**
  * Hook for staging drag mode interactions: dragging bins from the stash onto the grid.
