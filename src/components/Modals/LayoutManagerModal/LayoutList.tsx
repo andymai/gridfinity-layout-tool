@@ -1,9 +1,9 @@
 import { useState, useRef, useCallback } from 'react';
-import type { LayoutEntry, Layout } from '../../../types';
+import type { LayoutEntry, Layout } from '../../../core/types';
 import { LayoutListItem } from './LayoutListItem';
-import { useLayoutStore } from '../../../store/layout';
-import { loadLayoutByIdAsync, downloadLayoutAsFile } from '../../../storage';
-import { useUIStore } from '../../../store/ui';
+import { useLayoutStore } from '../../../core/store/layout';
+import { loadLayoutByIdAsync, downloadLayoutAsFile } from '../../../core/storage';
+import { useUIStore } from '../../../core/store/ui';
 
 /** Threshold for showing search bar */
 const SEARCH_THRESHOLD = 6;

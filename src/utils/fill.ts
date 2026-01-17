@@ -1,5 +1,5 @@
-import type { Bin, Layout } from '../types';
-import { generateId, CONSTRAINTS } from '../constants';
+import type { Bin, Layout } from '../core/types';
+import { generateId, CONSTRAINTS } from '../core/constants';
 import { getBlockedZones } from './collision';
 
 /**

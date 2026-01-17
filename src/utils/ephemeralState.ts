@@ -7,7 +7,7 @@
  * across browser restarts - only across PWA update reloads.
  */
 
-import type { LayerViewMode, PaintSize } from '../store/ui';
+import type { LayerViewMode, PaintSize } from '../core/store/ui';
 
 const EPHEMERAL_STATE_KEY = 'gridfinity-ephemeral-state-v1';
 

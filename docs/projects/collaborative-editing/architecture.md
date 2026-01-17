@@ -722,7 +722,7 @@ export async function POST(req: Request) {
 ### Labs Store Extension
 
 ```typescript
-// src/store/labs.ts (existing)
+// src/core/store/labs.ts (existing)
 interface LabsState {
   flags: {
     collaborativeEditing: boolean;

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import type { FractionalEdge } from '../../../types';
+import type { FractionalEdge } from '../../../core/types';
 
 interface FloorGridProps {
   width: number;

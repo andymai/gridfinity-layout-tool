@@ -23,7 +23,7 @@ import {
   useStorage,
 } from '../liveblocks.config';
 import { useCollabMode } from './useCollabMode';
-import { useToastStore } from '../store/toast';
+import { useToastStore } from '../core/store/toast';
 import { generateGuestName, generateGuestColor } from '../utils/guestNames';
 
 /**

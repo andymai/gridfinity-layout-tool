@@ -9,7 +9,7 @@
 
 import { createClient } from '@liveblocks/client';
 import { createRoomContext } from '@liveblocks/react';
-import type { Layout, Coord, ResizeHandle } from './types';
+import type { Layout, Coord, ResizeHandle } from './core/types';
 
 /**
  * User presence data - ephemeral state visible to other users.

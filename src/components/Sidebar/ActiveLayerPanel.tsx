@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
-import { useToastStore } from '../../store/toast';
-import { STAGING_ID } from '../../constants';
+import { useLayoutStore, useUIStore, useUndoableAction } from '../../core/store';
+import { useToastStore } from '../../core/store/toast';
+import { STAGING_ID } from '../../core/constants';
 import { ConfirmDialog } from '../Modals/ConfirmDialog';
 import { CollapsibleSection } from '../CollapsibleSection';
 

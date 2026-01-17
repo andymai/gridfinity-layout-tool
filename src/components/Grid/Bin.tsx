@@ -1,17 +1,17 @@
 import type { PointerEvent } from 'react';
 import { memo, useRef, useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import type { Bin as BinType, Category, Layer, Drawer, ResizeHandle } from '../../types';
+import type { Bin as BinType, Category, Layer, Drawer, ResizeHandle } from '../../core/types';
 import {
   useLayoutStore,
   useSelectionStore,
   useViewStore,
   useInteractionStore,
   useMobileStore,
-} from '../../store';
-import { useToastStore } from '../../store/toast';
+} from '../../core/store';
+import { useToastStore } from '../../core/store/toast';
 import { useResponsive } from '../../hooks';
-import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../../constants';
+import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '../../core/constants';
 import { getBinTextColors } from '../../utils/color';
 import { ResizeHandles } from './ResizeHandles';
 

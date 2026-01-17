@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useLayoutStore } from '../../store/layout';
-import { useSettingsStore } from '../../store/settings';
-import { createDefaultLayout, STAGING_ID, CONSTRAINTS } from '../../constants';
+import { useLayoutStore } from '../../core/store/layout';
+import { useSettingsStore } from '../../core/store/settings';
+import { createDefaultLayout, STAGING_ID, CONSTRAINTS } from '../../core/constants';
 import { resetAllStores } from '../testUtils';
-import type { Layout } from '../../types';
-import { isOk, isErr } from '../../result';
+import type { Layout } from '../../core/types';
+import { isOk, isErr } from '../../core/result';
 
 describe('layout store', () => {
   beforeEach(() => {

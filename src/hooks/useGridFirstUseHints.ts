@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useToastStore } from '../store/toast';
-import type { PaintSize } from '../store/interaction';
+import { useToastStore } from '../core/store/toast';
+import type { PaintSize } from '../core/store/interaction';
 
 /**
  * Grid First-Use Hints Hook

@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
-import type { Result, AppError } from '../result';
-import { isOk, getUserMessage, getSeverity } from '../result';
-import { useToastStore } from '../store/toast';
-import type { ToastType } from '../store/toast';
+import type { Result, AppError } from '../core/result';
+import { isOk, getUserMessage, getSeverity } from '../core/result';
+import { useToastStore } from '../core/store/toast';
+import type { ToastType } from '../core/store/toast';
 
 interface ExecuteOptions<T> {
   /** Optional success message to display as a toast */

@@ -1,17 +1,17 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useLayoutStore } from '../../store/layout';
-import { useUIStore } from '../../store/ui';
-import { useHistoryStore } from '../../store/history';
-import { useToastStore } from '../../store/toast';
-import { useLibraryStore, computePreview } from '../../store/library';
+import { useLayoutStore } from '../../core/store/layout';
+import { useUIStore } from '../../core/store/ui';
+import { useHistoryStore } from '../../core/store/history';
+import { useToastStore } from '../../core/store/toast';
+import { useLibraryStore, computePreview } from '../../core/store/library';
 import {
   getSharedLayoutFromURL,
   clearSharedLayoutFromURL,
   getCloudShareIdFromURL,
-} from '../../storage';
-import { fetchShare } from '../../api/share';
-import { isOk, getUserMessage } from '../../result';
-import type { Layout, SharePermission, LayoutPreview } from '../../types';
+} from '../../core/storage';
+import { fetchShare } from '../../core/api/share';
+import { isOk, getUserMessage } from '../../core/result';
+import type { Layout, SharePermission, LayoutPreview } from '../../core/types';
 
 // Check for shared layout once at module load time (URL-encoded shares)
 const initialShareResult = getSharedLayoutFromURL();

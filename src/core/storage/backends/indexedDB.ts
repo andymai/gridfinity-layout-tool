@@ -11,7 +11,7 @@ import {
   deleteLayout as idbDeleteLayout,
   getAllLayoutIds as idbGetAllLayoutIds,
   isIndexedDBAvailable as idbIsAvailable,
-} from '../../utils/indexedDB';
+} from '../../../utils/indexedDB';
 import type { Layout } from '../../types';
 
 /**

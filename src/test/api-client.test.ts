@@ -10,9 +10,9 @@ import {
   fetchShare,
   deleteShare,
   reportShare,
-} from '../api/share';
-import { isOk, isErr, getUserMessage } from '../result';
-import type { Layout } from '../types';
+} from '../core/api/share';
+import { isOk, isErr, getUserMessage } from '../core/result';
+import type { Layout } from '../core/types';
 
 // Mock layout for testing
 const mockLayout: Layout = {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useLayoutStore } from '../../store/layout';
-import { createDefaultLayout, STAGING_ID } from '../../constants';
-import { isOk, isErr } from '../../result';
+import { useLayoutStore } from '../../core/store/layout';
+import { createDefaultLayout, STAGING_ID } from '../../core/constants';
+import { isOk, isErr } from '../../core/result';
 
 describe('multi-bin operations', () => {
   beforeEach(() => {

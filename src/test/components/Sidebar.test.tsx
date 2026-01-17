@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Sidebar } from '../../components/Sidebar';
-import { useLayoutStore, useUIStore, useSettingsStore } from '../../store';
-import { useSelectionStore } from '../../store/selection';
-import { useViewStore } from '../../store/view';
-import { useHalfBinModeStore } from '../../store/halfBinMode';
+import { useLayoutStore, useUIStore, useSettingsStore } from '../../core/store';
+import { useSelectionStore } from '../../core/store/selection';
+import { useViewStore } from '../../core/store/view';
+import { useHalfBinModeStore } from '../../core/store/halfBinMode';
 import { resetAllStores } from '../testUtils';
 
 // Mock child components to isolate Sidebar tests

@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useLibraryStore, computePreview, createDefaultLibrary } from '../../store/library';
-import { createDefaultLayout, CONSTRAINTS } from '../../constants';
+import { useLibraryStore, computePreview, createDefaultLibrary } from '../../core/store/library';
+import { createDefaultLayout, CONSTRAINTS } from '../../core/constants';
 import { resetAllStores } from '../testUtils';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview } from '../../types';
-import { isOk, isErr } from '../../result';
+import type { LayoutLibrary, LayoutEntry, LayoutPreview } from '../../core/types';
+import { isOk, isErr } from '../../core/result';
 
 // Helper to create test library with multiple entries (uses testUtils createTestLibrary as base)
 function createTestLibraryWithEntries(entryCount: number): LayoutLibrary {

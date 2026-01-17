@@ -13,11 +13,11 @@
  */
 
 import { useOthers } from '../../liveblocks.config';
-import { useUIStore, useLayoutStore } from '../../store';
-import { getBaseCellSize } from '../../constants';
+import { useUIStore, useLayoutStore } from '../../core/store';
+import { getBaseCellSize } from '../../core/constants';
 import { useResponsive } from '../../hooks/useResponsive';
 import type { InteractionHint } from '../../liveblocks.config';
-import type { Bin } from '../../types';
+import type { Bin } from '../../core/types';
 
 interface CollabGhostsProps {
   /** Optional className for the container */

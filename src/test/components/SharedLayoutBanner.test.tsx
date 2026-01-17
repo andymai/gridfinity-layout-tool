@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { SharedLayoutBanner } from '../../components/Share';
-import { useUIStore } from '../../store/ui';
-import { useLayoutStore } from '../../store/layout';
-import { useLibraryStore } from '../../store/library';
-import { useToastStore } from '../../store/toast';
-import type { Layout } from '../../types';
+import { useUIStore } from '../../core/store/ui';
+import { useLayoutStore } from '../../core/store/layout';
+import { useLibraryStore } from '../../core/store/library';
+import { useToastStore } from '../../core/store/toast';
+import type { Layout } from '../../core/types';
 
 // Mock storage functions
-vi.mock('../../storage', () => ({
+vi.mock('../../core/storage', () => ({
   saveLayoutById: vi.fn(),
   saveLibrary: vi.fn(),
   initializeLayoutLibrary: vi.fn(() => ({
@@ -51,12 +51,12 @@ vi.mock('../../hooks/useCollabMode', () => ({
 }));
 
 // Mock api/share (required by SharedLayoutImporter)
-vi.mock('../../api/share', () => ({
+vi.mock('../../core/api/share', () => ({
   fetchShare: vi.fn(),
 }));
 
 // Mock result helpers (required by SharedLayoutImporter)
-vi.mock('../../result', () => ({
+vi.mock('../../core/result', () => ({
   isOk: vi.fn(),
   getUserMessage: vi.fn(),
 }));

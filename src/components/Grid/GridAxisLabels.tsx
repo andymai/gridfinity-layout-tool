@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useViewStore } from '../../store/view';
+import { useViewStore } from '../../core/store/view';
 import type { GridAxisLabelsState } from '../../hooks/useGridAxisLabels';
 
 /**

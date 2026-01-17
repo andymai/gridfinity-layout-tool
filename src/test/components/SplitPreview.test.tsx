@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { SplitPreview } from '../../components/Print/SplitPreview';
-import type { PrintPiece } from '../../types';
+import type { PrintPiece } from '../../core/types';
 
 describe('SplitPreview', () => {
   const createPiece = (width: number, depth: number, count = 1): PrintPiece => ({

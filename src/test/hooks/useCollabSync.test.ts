@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCollabSync } from '../../hooks/useCollabSync';
-import { useLayoutStore } from '../../store/layout';
-import { createDefaultLayout, STAGING_ID } from '../../constants';
-import type { Layout, Bin } from '../../types';
+import { useLayoutStore } from '../../core/store/layout';
+import { createDefaultLayout, STAGING_ID } from '../../core/constants';
+import type { Layout, Bin } from '../../core/types';
 
 // Mock liveblocks hooks
 const mockUseStorage = vi.fn();

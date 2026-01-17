@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useKeyboard } from '../../hooks/useKeyboard';
-import { useUIStore } from '../../store/ui';
-import { useLayoutStore } from '../../store/layout';
-import { useHistoryStore } from '../../store/history';
-import { useLibraryStore } from '../../store/library';
-import { useSelectionStore } from '../../store/selection';
-import { useInteractionStore } from '../../store/interaction';
-import { useViewStore } from '../../store/view';
-import { useMobileStore } from '../../store/mobile';
-import { useHalfBinModeStore } from '../../store/halfBinMode';
-import { createDefaultLayout, STAGING_ID } from '../../constants';
-import { isOk } from '../../result';
+import { useUIStore } from '../../core/store/ui';
+import { useLayoutStore } from '../../core/store/layout';
+import { useHistoryStore } from '../../core/store/history';
+import { useLibraryStore } from '../../core/store/library';
+import { useSelectionStore } from '../../core/store/selection';
+import { useInteractionStore } from '../../core/store/interaction';
+import { useViewStore } from '../../core/store/view';
+import { useMobileStore } from '../../core/store/mobile';
+import { useHalfBinModeStore } from '../../core/store/halfBinMode';
+import { createDefaultLayout, STAGING_ID } from '../../core/constants';
+import { isOk } from '../../core/result';
 
 // Helper to create keyboard event
 function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {

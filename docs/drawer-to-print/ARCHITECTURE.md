@@ -246,7 +246,7 @@ New Zustand store for managing bin templates and custom models.
 > **UI Reference:** See [DRD: Model Library Navigation](./DRD.md#6-model-library-navigation) for interaction patterns and visual specifications.
 
 ```typescript
-// src/store/models.ts
+// src/core/store/models.ts
 
 interface ModelLibraryState {
   // Built-in parametric templates

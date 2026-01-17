@@ -1,7 +1,7 @@
 import type { RefObject } from 'react';
-import type { Bin, Coord, Layout, Rect, ResizeHandle, Interaction } from '../../types';
-import type { Result } from '../../result';
-import type { ValidationError, LayoutError } from '../../result';
+import type { Bin, Coord, Layout, Rect, ResizeHandle, Interaction } from '../../core/types';
+import type { Result } from '../../core/result';
+import type { ValidationError, LayoutError } from '../../core/result';
 
 /**
  * Paint size configuration for paint mode interactions.

@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore } from '../../store/layout';
-import { useLibraryStore, computePreview } from '../../store/library';
-import { useUIStore } from '../../store/ui';
-import { useHistoryStore } from '../../store/history';
-import { useToastStore } from '../../store/toast';
+import { useLayoutStore } from '../../core/store/layout';
+import { useLibraryStore, computePreview } from '../../core/store/library';
+import { useUIStore } from '../../core/store/ui';
+import { useHistoryStore } from '../../core/store/history';
+import { useToastStore } from '../../core/store/toast';
 import {
   saveLayoutById,
   saveLibrary,
   initializeLayoutLibrary,
-} from '../../storage';
+} from '../../core/storage';
 import { generateLayoutId } from '../../utils/uuid';
 import { ConfirmDialog } from '../Modals/ConfirmDialog';
 import { useCollabMode } from '../../hooks/useCollabMode';

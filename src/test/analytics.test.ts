@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import type { Layout } from '../types';
+import type { Layout } from '../core/types';
 import {
   computeLayoutMetrics,
   getDeviceType,
@@ -11,8 +11,8 @@ import {
   trackFillOperation,
   trackPaintMode,
 } from '../utils/analytics';
-import { useInteractionStore } from '../store/interaction';
-import { STAGING_ID } from '../constants';
+import { useInteractionStore } from '../core/store/interaction';
+import { STAGING_ID } from '../core/constants';
 
 // Helper to create a test layout
 const createTestLayout = (overrides?: Partial<Layout>): Layout => ({

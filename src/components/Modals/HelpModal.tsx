@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, type CSSProperties } from 'react';
-import { SHORTCUTS } from '../../constants';
+import { SHORTCUTS } from '../../core/constants';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {

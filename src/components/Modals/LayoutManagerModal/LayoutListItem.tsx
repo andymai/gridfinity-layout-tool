@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { LayoutEntry } from '../../../types';
+import type { LayoutEntry } from '../../../core/types';
 import { LayoutThumbnail } from '../../LayoutThumbnail';
 import { LayoutActions } from './LayoutActions';
 

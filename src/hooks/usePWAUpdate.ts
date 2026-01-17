@@ -1,9 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useToastStore } from '../store/toast';
-import { useUIStore } from '../store/ui';
-import { STAGING_ID } from '../constants';
-import { useLayoutStore } from '../store/layout';
+import { useToastStore } from '../core/store/toast';
+import { useUIStore } from '../core/store/ui';
+import { STAGING_ID } from '../core/constants';
+import { useLayoutStore } from '../core/store/layout';
 import {
   saveEphemeralState,
   loadEphemeralState,

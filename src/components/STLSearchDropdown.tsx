@@ -1,10 +1,10 @@
 import { useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useSettingsStore } from '../store';
+import { useSettingsStore } from '../core/store';
 import { useContextMenu } from '../hooks/useContextMenu';
 import { ContextMenuContainer, ContextMenuItem } from './ContextMenu';
 import { openSTLSearch, formatDimension } from '../utils/stlSearch';
-import type { STLSearchSite } from '../store/settings';
+import type { STLSearchSite } from '../core/store/settings';
 
 interface STLSearchDropdownProps {
   /** Bin width in grid units */

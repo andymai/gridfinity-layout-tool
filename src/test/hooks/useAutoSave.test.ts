@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { useAutoSave } from '../../hooks/useAutoSave';
-import { useLayoutStore } from '../../store/layout';
-import { useLibraryStore } from '../../store/library';
-import { useToastStore } from '../../store/toast';
+import { useLayoutStore } from '../../core/store/layout';
+import { useLibraryStore } from '../../core/store/library';
+import { useToastStore } from '../../core/store/toast';
 import { resetAllStores, setupFakeTimers } from '../testUtils';
-import * as storage from '../../storage';
-import { err, storageQuotaExceeded, storageUnavailable } from '../../result';
+import * as storage from '../../core/storage';
+import { err, storageQuotaExceeded, storageUnavailable } from '../../core/result';
 
 // Mock the storage module with atomic API functions
 // Note: vi.mock is hoisted, so we must define the factory inline
-vi.mock('../../storage', () => {
+vi.mock('../../core/storage', () => {
   const mockPreview = {
     drawerWidth: 10,
     drawerDepth: 8,

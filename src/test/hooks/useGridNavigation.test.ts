@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGridNavigation } from '../../hooks/useGridNavigation';
-import { useLayoutStore } from '../../store/layout';
-import { useUIStore } from '../../store/ui';
+import { useLayoutStore } from '../../core/store/layout';
+import { useUIStore } from '../../core/store/ui';
 import { resetAllStores } from '../testUtils';
-import type { Bin } from '../../types';
+import type { Bin } from '../../core/types';
 
 describe('useGridNavigation', () => {
   beforeEach(() => {

@@ -9,7 +9,7 @@ import {
   calculateCategoryBreakdown,
   downloadAsFile,
 } from '../utils/binListOperations';
-import type { EnhancedPrintRow, Category, Layout } from '../types';
+import type { EnhancedPrintRow, Category, Layout } from '../core/types';
 
 // Helper to create test rows
 function createTestRow(overrides: Partial<EnhancedPrintRow> = {}): EnhancedPrintRow {

@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, fireEvent, act } from '@testing-library/react';
 import { Bin } from '../components/Grid/Bin';
-import { useUIStore } from '../store/ui';
-import { useLayoutStore } from '../store/layout';
-import { useSelectionStore } from '../store/selection';
-import { useViewStore } from '../store/view';
-import { useInteractionStore } from '../store/interaction';
-import { useMobileStore } from '../store/mobile';
-import { createDefaultLayout } from '../constants';
-import type { Bin as BinType, Category, Layer } from '../types';
+import { useUIStore } from '../core/store/ui';
+import { useLayoutStore } from '../core/store/layout';
+import { useSelectionStore } from '../core/store/selection';
+import { useViewStore } from '../core/store/view';
+import { useInteractionStore } from '../core/store/interaction';
+import { useMobileStore } from '../core/store/mobile';
+import { createDefaultLayout } from '../core/constants';
+import type { Bin as BinType, Category, Layer } from '../core/types';
 
 // Mock useResponsive to simulate touch device
 vi.mock('../hooks/useResponsive', () => ({

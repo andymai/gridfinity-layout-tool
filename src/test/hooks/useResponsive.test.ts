@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useResponsive, prefersTouch } from '../../hooks/useResponsive';
-import { BREAKPOINTS } from '../../constants';
+import { BREAKPOINTS } from '../../core/constants';
 
 // Helper to create a matchMedia mock
 function createMatchMediaMock(matches: Record<string, boolean>) {

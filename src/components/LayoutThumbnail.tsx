@@ -1,4 +1,4 @@
-import type { LayoutPreview } from '../types';
+import type { LayoutPreview } from '../core/types';
 
 interface LayoutThumbnailProps {
   preview: LayoutPreview;

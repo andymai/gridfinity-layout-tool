@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
-import { useInteractionStore, useViewStore } from '../../store';
+import { useInteractionStore, useViewStore } from '../../core/store';
 import { canPlaceBin } from '../../utils/validation';
 import { constrainGroupDelta } from '../../utils/selection';
-import { STAGING_ID, getBaseCellSize } from '../../constants';
-import { isOk } from '../../result';
-import type { InteractionContext, ModeHandlers, DragStartArgs, Coord, Bin } from './types';
+import { STAGING_ID, getBaseCellSize } from '../../core/constants';
+import { isOk } from '../../core/result';
+import type { InteractionContext, ModeHandlers, DragStartArgs } from './types';
+import type { Coord, Bin } from '../../core/types';
 
 /**
  * Hook for drag mode interactions: moving bins by clicking and dragging.

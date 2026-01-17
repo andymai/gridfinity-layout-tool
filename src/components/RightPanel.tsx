@@ -1,8 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '../store';
-import { DEFAULT_CATEGORY_COLOR } from '../constants';
-import { exportPrintListTSV } from '../storage';
+import { useUIStore, useLayoutStore } from '../core/store';
+import { DEFAULT_CATEGORY_COLOR } from '../core/constants';
+import { exportPrintListTSV } from '../core/storage';
 import { trackLayoutSnapshot } from '../utils/analytics';
 import { ConfirmDialog } from './Modals/ConfirmDialog';
 import { BinListModal } from './Modals/BinListModal';

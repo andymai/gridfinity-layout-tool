@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { RightPanel } from '../../components/RightPanel';
-import { useUIStore, useLayoutStore, useViewStore } from '../../store';
+import { useUIStore, useLayoutStore, useViewStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
 import type { UseBinInspectorReturn } from '../../components/Inspector/useBinInspector';
 import type { UsePrintListReturn } from '../../hooks/usePrintList';
@@ -76,7 +76,7 @@ vi.mock('../../components/Modals/BinListModal', () => ({
 
 // Mock storage utilities
 const mockExportPrintListTSV = vi.fn(() => 'Size\tHeight\tQty\n2×2\t3\t1');
-vi.mock('../../storage', () => ({
+vi.mock('../../core/storage', () => ({
   exportPrintListTSV: () => mockExportPrintListTSV(),
 }));
 

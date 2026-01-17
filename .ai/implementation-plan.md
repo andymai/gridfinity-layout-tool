@@ -2235,8 +2235,8 @@ export { useHistoryStore, useUndoableAction } from './history';
 ```typescript
 import { useCallback, RefObject } from 'react';
 import type { Coord } from '../types';
-import { useUIStore } from '../store';
-import { useLayoutStore } from '../store';
+import { useUIStore } from '../core/store';
+import { useLayoutStore } from '../core/store';
 import { BASE_CELL_SIZE } from '../constants';
 
 /**
@@ -2288,7 +2288,7 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement>) {
 ```typescript
 import { useEffect, useCallback, RefObject } from 'react';
 import type { Coord, Rect, ResizeHandle, Bin } from '../types';
-import { useUIStore, useLayoutStore, useUndoableAction } from '../store';
+import { useUIStore, useLayoutStore, useUndoableAction } from '../core/store';
 import { useGridCoords } from './useGridCoords';
 import { canPlaceBin } from '../utils/validation';
 
@@ -2541,7 +2541,7 @@ function calculateResizeRect(
 #### src/hooks/useKeyboard.ts
 ```typescript
 import { useEffect, useCallback } from 'react';
-import { useUIStore, useLayoutStore, useHistoryStore, useUndoableAction } from '../store';
+import { useUIStore, useLayoutStore, useHistoryStore, useUndoableAction } from '../core/store';
 import { canPlaceBin } from '../utils/validation';
 import { SHORTCUTS } from '../constants';
 
@@ -2659,7 +2659,7 @@ export function useKeyboard() {
 #### src/hooks/useAutoSave.ts
 ```typescript
 import { useEffect, useRef } from 'react';
-import { useLayoutStore } from '../store';
+import { useLayoutStore } from '../core/store';
 import { saveLayout } from '../utils/storage';
 
 const SAVE_DEBOUNCE_MS = 1000;
@@ -2761,7 +2761,7 @@ import { Sidebar } from './components/Sidebar';
 import { Grid } from './components/Grid';
 import { Staging } from './components/Staging';
 import { PrintList } from './components/PrintList';
-import { useLayoutStore, useUIStore } from './store';
+import { useLayoutStore, useUIStore } from './core/store';
 import { useKeyboard, useAutoSave } from './hooks';
 
 export default function App() {

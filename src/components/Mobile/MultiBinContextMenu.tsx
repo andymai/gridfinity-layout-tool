@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../store';
+import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../core/store';
 import { useMutations } from '../../contexts/MutationsContext';
 import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '../ContextMenu';
 import { useContextMenu } from '../../hooks/useContextMenu';
-import { STAGING_ID } from '../../constants';
-import type { Bin } from '../../types';
+import { STAGING_ID } from '../../core/constants';
+import type { Bin } from '../../core/types';
 
 interface MultiBinContextMenuProps {
   binIds: string[];

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '../store';
-import { getBaseCellSize, DEFAULT_CATEGORY_COLOR } from '../constants';
+import { useUIStore, useLayoutStore } from '../core/store';
+import { getBaseCellSize, DEFAULT_CATEGORY_COLOR } from '../core/constants';
 import { getContrastColor } from '../utils/color';
 import { useResponsive } from '../hooks';
 
