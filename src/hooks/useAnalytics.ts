@@ -32,15 +32,21 @@ export function useAnalytics(): void {
 
     // --- Vercel Heartbeat (every 3 min while visible) ---
     const sendHeartbeat = () => {
+      // Skip if tab not visible or offline
       if (document.visibilityState !== 'visible') return;
+      if (!navigator.onLine) return;
 
-      const startTime = sessionStartRef.current ?? Date.now();
-      const sessionMinutes = Math.floor((Date.now() - startTime) / 60000);
+      try {
+        const startTime = sessionStartRef.current ?? Date.now();
+        const sessionMinutes = Math.floor((Date.now() - startTime) / 60000);
 
-      track('heartbeat', {
-        context: getActivityContext(),
-        session_minutes: sessionMinutes,
-      });
+        track('heartbeat', {
+          context: getActivityContext(),
+          session_minutes: sessionMinutes,
+        });
+      } catch {
+        // Silently ignore analytics failures (blocked, etc.)
+      }
     };
 
     // Send initial heartbeat after a short delay (let app stabilize)
