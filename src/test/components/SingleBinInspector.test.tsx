@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SingleBinInspector } from '../../components/inspector/SingleBinInspector';
-import type { UseBinInspectorReturn } from '../../components/inspector/useBinInspector';
+import { SingleBinInspector } from '../../components/Inspector/SingleBinInspector';
+import type { UseBinInspectorReturn } from '../../components/Inspector/useBinInspector';
 import { resetAllStores } from '../testUtils';
 import { useUIStore } from '../../store';
 

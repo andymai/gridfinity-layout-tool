@@ -93,7 +93,7 @@ src/
 | `vercel.json` | Add rewrites for `/s/:id` and `/api/*` |
 | `package.json` | Add `@vercel/blob`, `@vercel/kv`, `bcryptjs` |
 | `src/store/library.ts` | Add `cloudShare` field to `LayoutEntry` type |
-| `src/components/modals/ShareModal.tsx` | Add "Cloud" tab with re-share support |
+| `src/components/Modals/ShareModal.tsx` | Add "Cloud" tab with re-share support |
 | `src/components/SharedLayoutImporter.tsx` | Handle `/s/{id}` URLs |
 | `src/utils/storage.ts` | Add `getCloudShareIdFromURL()` |
 | `src/App.tsx` | Check for cloud share on mount |

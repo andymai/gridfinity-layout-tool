@@ -29,7 +29,7 @@ vi.mock('../../components/CollapsibleSection', () => ({
   ),
 }));
 
-vi.mock('../../components/modals/ConfirmDialog', () => ({
+vi.mock('../../components/Modals/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, onConfirm, onCancel, title, message }: {
     isOpen: boolean;
     onConfirm: () => void;
@@ -48,7 +48,7 @@ vi.mock('../../components/modals/ConfirmDialog', () => ({
   ),
 }));
 
-vi.mock('../../components/modals/HalfBinModeBlockedModal', () => ({
+vi.mock('../../components/Modals/HalfBinModeBlockedModal', () => ({
   HalfBinModeBlockedModal: ({ isOpen, onClose, onRemediate }: {
     isOpen: boolean;
     onClose: () => void;

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { BinListFilters } from '../../components/modals/BinListModal/BinListFilters';
+import { BinListFilters } from '../../components/Modals/BinListModal/BinListFilters';
 import type { Category, PrintListFilters } from '../../types';
 
 describe('BinListFilters', () => {

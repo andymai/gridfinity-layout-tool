@@ -4,7 +4,7 @@ import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useMutations } from '../../context/MutationsContext';
 import { CONSTRAINTS, STAGING_ID } from '../../constants';
 import { getDisplayLayers } from '../../utils/collision';
-import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { ConfirmDialog } from '../Modals/ConfirmDialog';
 import { CollapsibleSection } from '../CollapsibleSection';
 import { isOk, isErr, getUserMessage } from '../../result';
 

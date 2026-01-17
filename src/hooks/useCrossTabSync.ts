@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useLabsStore, LABS_STORAGE_KEY } from '../store';
 import { loadLayoutByIdAsync, loadLibrary } from '../storage';
 import { validateLayoutIntegrity } from '../utils/validation';
-import { createDefaultLabsPreferences } from '../labs/types';
+import { createDefaultLabsPreferences } from '../Labs/types';
 
 /**
  * Hook to automatically sync layout data when modified in another browser tab.

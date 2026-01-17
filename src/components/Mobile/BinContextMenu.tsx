@@ -4,7 +4,7 @@ import { useResponsive } from '../../hooks/useResponsive';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { validateBinRotation, getBinLocationContext } from '../../utils/binLocation';
 import { calcMaxGridUnits } from '../../constants';
-import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '../contextMenu';
+import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '../ContextMenu';
 import { STLSearchDropdown } from '../STLSearchDropdown';
 import type { Bin } from '../../types';
 

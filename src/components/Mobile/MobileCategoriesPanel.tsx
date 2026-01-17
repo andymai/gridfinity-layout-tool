@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '../../constants';
-import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { ConfirmDialog } from '../Modals/ConfirmDialog';
 import { isOk } from '../../result';
 
 const COLOR_PALETTE = [

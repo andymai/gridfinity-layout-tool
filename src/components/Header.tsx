@@ -3,10 +3,10 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '../store';
 import { useResponsive, useFeatureFlag, useCollabMode } from '../hooks';
 import { CONSTRAINTS } from '../constants';
-import { LayoutManagerModal } from './modals/LayoutManagerModal';
-import { PrintModal } from './modals/PrintModal';
+import { LayoutManagerModal } from './Modals/LayoutManagerModal';
+import { PrintModal } from './Modals/PrintModal';
 import { ShareButton } from './ShareButton';
-import { PresenceAvatars } from './collab';
+import { PresenceAvatars } from './Collab';
 import type { SaveStatus } from '../hooks/useAutoSave';
 
 interface HeaderProps {

@@ -583,7 +583,7 @@ const throttledUpdateCursor = useCallback(
 
 ```
 src/components/
-├── collab/
+├── Collab/
 │   ├── CollabProvider.tsx       # Liveblocks RoomProvider wrapper
 │   ├── CollabBanner.tsx         # "Collaborating with..." banner
 │   ├── CollabPresenceBar.tsx    # Avatar strip showing participants

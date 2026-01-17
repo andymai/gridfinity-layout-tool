@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../../store';
 import { CONSTRAINTS, STAGING_ID } from '../../../constants';
 import { getDisplayLayers } from '../../../utils/collision';
-import { ConfirmDialog } from '../../modals/ConfirmDialog';
+import { ConfirmDialog } from '../../Modals/ConfirmDialog';
 import { isOk, isErr, getUserMessage } from '../../../result';
 
 /**

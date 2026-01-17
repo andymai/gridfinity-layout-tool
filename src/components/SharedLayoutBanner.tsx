@@ -11,7 +11,7 @@ import {
   initializeLayoutLibrary,
 } from '../storage';
 import { generateLayoutId } from '../utils/uuid';
-import { ConfirmDialog } from './modals/ConfirmDialog';
+import { ConfirmDialog } from './Modals/ConfirmDialog';
 import { useCollabMode } from '../hooks/useCollabMode';
 
 /**

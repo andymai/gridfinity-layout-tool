@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../store';
 import { useMutations } from '../../context/MutationsContext';
-import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '../contextMenu';
+import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '../ContextMenu';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { STAGING_ID } from '../../constants';
 import type { Bin } from '../../types';

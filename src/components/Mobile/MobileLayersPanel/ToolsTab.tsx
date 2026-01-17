@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../../store';
 import { useToastStore } from '../../../store/toast';
-import { ConfirmDialog } from '../../modals/ConfirmDialog';
+import { ConfirmDialog } from '../../Modals/ConfirmDialog';
 
 // Square sizes (matching desktop ActiveLayerPanel)
 const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];

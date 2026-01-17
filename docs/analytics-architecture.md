@@ -435,8 +435,8 @@ Track at these moments:
 
 | Trigger | Location | When |
 |---------|----------|------|
-| `export_json` | `src/components/modals/ShareModal.tsx` | User clicks "Copy JSON" or "Download" |
-| `export_url` | `src/components/modals/ShareModal.tsx` | User clicks "Copy URL" |
+| `export_json` | `src/components/Modals/ShareModal.tsx` | User clicks "Copy JSON" or "Download" |
+| `export_url` | `src/components/Modals/ShareModal.tsx` | User clicks "Copy URL" |
 | `export_tsv` | `src/components/RightPanel.tsx` (desktop) or `src/components/mobile/MobilePrintList.tsx` (mobile) | User exports print list |
 | `session_engaged` | `visibilitychange` event handler in `src/hooks/useAnalytics.ts` | Tab hidden with 5+ bins (more reliable than `beforeunload`) |
 
