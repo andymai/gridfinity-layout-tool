@@ -75,6 +75,10 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
   // Track if grid resize handles should pulse (first load)
   const [shouldPulseResizeHandles, setShouldPulseResizeHandles] = useState(false);
 
+  // Refs for timeout cleanup
+  const pulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stopPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Use ref to track current drawer dimensions without causing effect re-runs
   const drawerRef = useRef(drawer);
   useEffect(() => {
@@ -87,12 +91,18 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
     if (!hintShown) {
       localStorage.setItem('gridfinity-grid-resize-hint-shown', 'true');
       // Defer state update to avoid cascading renders
-      setTimeout(() => {
+      pulseTimeoutRef.current = setTimeout(() => {
         setShouldPulseResizeHandles(true);
         // Stop pulsing after 3 seconds
-        setTimeout(() => setShouldPulseResizeHandles(false), 3000);
+        stopPulseTimeoutRef.current = setTimeout(() => setShouldPulseResizeHandles(false), 3000);
       }, 0);
     }
+
+    // Cleanup timeouts on unmount
+    return () => {
+      if (pulseTimeoutRef.current) clearTimeout(pulseTimeoutRef.current);
+      if (stopPulseTimeoutRef.current) clearTimeout(stopPulseTimeoutRef.current);
+    };
   }, []);
 
   const handleResizeStart = useCallback(

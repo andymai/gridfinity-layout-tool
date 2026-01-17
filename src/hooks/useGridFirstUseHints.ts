@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToastStore } from '../store/toast';
 import type { PaintSize } from '../store/interaction';
 
@@ -29,24 +29,41 @@ export function useGridFirstUseHints(options: UseGridFirstUseHintsOptions): Grid
   // Track if paint mode hint should pulse (first use)
   const [shouldPulsePaintHint, setShouldPulsePaintHint] = useState(false);
 
+  // Refs to track timeout IDs for cleanup
+  const pulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stopPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Show first-time toast when paint mode is activated
   useEffect(() => {
+    // Clear any pending timeouts before setting new ones
+    if (pulseTimeoutRef.current) clearTimeout(pulseTimeoutRef.current);
+    if (stopPulseTimeoutRef.current) clearTimeout(stopPulseTimeoutRef.current);
+    if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
+
     if (paintSize) {
       const hintShown = localStorage.getItem('gridfinity-paint-mode-hint-shown');
       if (!hintShown) {
         addToast('Paint Mode: Drag to fill area, press Esc or click × to exit', 'info');
         localStorage.setItem('gridfinity-paint-mode-hint-shown', 'true');
         // Defer state update to avoid cascading renders
-        setTimeout(() => {
+        pulseTimeoutRef.current = setTimeout(() => {
           setShouldPulsePaintHint(true);
           // Stop pulsing after 3 seconds
-          setTimeout(() => setShouldPulsePaintHint(false), 3000);
+          stopPulseTimeoutRef.current = setTimeout(() => setShouldPulsePaintHint(false), 3000);
         }, 0);
       }
     } else {
       // Defer state update to avoid cascading renders
-      setTimeout(() => setShouldPulsePaintHint(false), 0);
+      resetTimeoutRef.current = setTimeout(() => setShouldPulsePaintHint(false), 0);
     }
+
+    // Cleanup timeouts on unmount or dependency change
+    return () => {
+      if (pulseTimeoutRef.current) clearTimeout(pulseTimeoutRef.current);
+      if (stopPulseTimeoutRef.current) clearTimeout(stopPulseTimeoutRef.current);
+      if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
+    };
   }, [paintSize, addToast]);
 
   return {

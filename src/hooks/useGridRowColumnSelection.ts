@@ -107,6 +107,8 @@ export function useGridRowColumnSelection(
         const rangeIds = rangeBins.map((b) => b.id);
         // Add range to existing selection (deduplicated)
         setSelectedBins([...new Set([...selectedBinIds, ...rangeIds])]);
+        // Update anchor for subsequent shift-clicks
+        setLastClickedRow(rowNum);
       } else if (event.ctrlKey || event.metaKey) {
         // Ctrl/Cmd-click: toggle bins in this row
         if (binIds.length > 0) {
@@ -154,6 +156,8 @@ export function useGridRowColumnSelection(
         const rangeIds = rangeBins.map((b) => b.id);
         // Add range to existing selection (deduplicated)
         setSelectedBins([...new Set([...selectedBinIds, ...rangeIds])]);
+        // Update anchor for subsequent shift-clicks
+        setLastClickedCol(colNum);
       } else if (event.ctrlKey || event.metaKey) {
         // Ctrl/Cmd-click: toggle bins in this column
         if (binIds.length > 0) {
