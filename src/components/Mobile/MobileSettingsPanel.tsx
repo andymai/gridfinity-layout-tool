@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLabsStore } from '../../store';
 import { useDrawerSettings } from '../../hooks';
-import { getFeature } from '../../Labs/features';
+import { getFeature } from '../../labs/features';
 import { SparklesIcon, ChevronRightIcon } from '../Labs/icons';
 import { CONSTRAINTS } from '../../constants';
 import { ConfirmDialog } from '../Modals/ConfirmDialog';

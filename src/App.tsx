@@ -19,7 +19,7 @@ import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { SharedLayoutImporter, SharedLayoutBanner } from './components/Share';
 import { LabsDrawer } from './components/Labs';
-import { LocalMutationsProvider } from './context/MutationsContext';
+import { LocalMutationsProvider } from './contexts/MutationsContext';
 import { SHORTCUTS } from './constants';
 
 // Legacy context menu state for backwards compatibility

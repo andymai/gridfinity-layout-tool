@@ -24,7 +24,7 @@ import { useUIStore } from '../../store/ui';
 import { generateId } from '../../constants';
 import { generateGuestName, generateGuestColor } from '../../utils/guestNames';
 import { PresenceContext, type CollabPresenceActions } from '../../contexts/PresenceContext';
-import { LocalMutationsProvider } from '../../context/MutationsContext';
+import { LocalMutationsProvider } from '../../contexts/MutationsContext';
 import type { Coord } from '../../types';
 import { throttle } from '../../utils/throttle';
 import { useCollabSync } from '../../hooks/useCollabSync';
