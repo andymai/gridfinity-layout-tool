@@ -2,7 +2,7 @@ import { useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useSettingsStore } from '../store';
 import { useContextMenu } from '../hooks/useContextMenu';
-import { ContextMenuContainer, ContextMenuItem } from './contextMenu';
+import { ContextMenuContainer, ContextMenuItem } from './ContextMenu';
 import { openSTLSearch, formatDimension } from '../utils/stlSearch';
 import type { STLSearchSite } from '../store/settings';
 

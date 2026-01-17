@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '../../store';
 import { useToastStore } from '../../store/toast';
 import { STAGING_ID } from '../../constants';
-import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { ConfirmDialog } from '../Modals/ConfirmDialog';
 import { CollapsibleSection } from '../CollapsibleSection';
 
 // Square sizes

@@ -3,10 +3,10 @@ import { renderHook } from '@testing-library/react';
 import { useFeatureFlag, isFeatureEnabled } from '../../hooks/useFeatureFlag';
 import { useLabsStore } from '../../store/labs';
 import { resetAllStores } from '../testUtils';
-import * as features from '../../labs/features';
+import * as features from '../../Labs/features';
 
-vi.mock('../../labs/features', async () => {
-  const actual = await vi.importActual<typeof features>('../../labs/features');
+vi.mock('../../Labs/features', async () => {
+  const actual = await vi.importActual<typeof features>('../../Labs/features');
   return {
     ...actual,
     getFeature: vi.fn(),

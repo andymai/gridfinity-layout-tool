@@ -199,8 +199,8 @@ A new Zustand store manages Labs state, following existing patterns from `settin
 // src/store/labs.ts
 
 import { create } from 'zustand';
-import type { LabsPreferences, FeatureId } from '../labs/types';
-import { DEFAULT_LABS_PREFERENCES, FEATURE_FLAGS, getFeature } from '../labs/features';
+import type { LabsPreferences, FeatureId } from '../Labs/types';
+import { DEFAULT_LABS_PREFERENCES, FEATURE_FLAGS, getFeature } from '../Labs/features';
 import { trackEvent } from '../utils/analytics';
 
 const LABS_STORAGE_KEY = 'gridfinity-labs-v1';
@@ -376,7 +376,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
 // src/hooks/useFeatureFlag.ts
 
 import { useLabsStore } from '../store/labs';
-import type { FeatureId } from '../labs/types';
+import type { FeatureId } from '../Labs/types';
 
 /**
  * Hook to check if a feature flag is enabled.

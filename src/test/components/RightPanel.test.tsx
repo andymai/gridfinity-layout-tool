@@ -3,11 +3,11 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { RightPanel } from '../../components/RightPanel';
 import { useUIStore, useLayoutStore, useViewStore } from '../../store';
 import { resetAllStores } from '../testUtils';
-import type { UseBinInspectorReturn } from '../../components/inspector/useBinInspector';
+import type { UseBinInspectorReturn } from '../../components/Inspector/useBinInspector';
 import type { UsePrintListReturn } from '../../hooks/usePrintList';
 
 // Mock inspector components
-vi.mock('../../components/inspector', () => ({
+vi.mock('../../components/Inspector', () => ({
   useBinInspector: vi.fn(),
   SingleBinInspector: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="single-bin-inspector">
@@ -48,7 +48,7 @@ vi.mock('../../components/CollapsibleSection', () => ({
 }));
 
 // Mock ConfirmDialog
-vi.mock('../../components/modals/ConfirmDialog', () => ({
+vi.mock('../../components/Modals/ConfirmDialog', () => ({
   ConfirmDialog: ({ isOpen, title, message, onConfirm, onCancel }: {
     isOpen: boolean;
     title: string;
@@ -66,7 +66,7 @@ vi.mock('../../components/modals/ConfirmDialog', () => ({
 }));
 
 // Mock BinListModal
-vi.mock('../../components/modals/BinListModal', () => ({
+vi.mock('../../components/Modals/BinListModal', () => ({
   BinListModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => isOpen ? (
     <div data-testid="bin-list-modal">
       <button onClick={onClose}>Close Modal</button>
@@ -101,7 +101,7 @@ vi.mock('../../hooks/usePrintList', () => ({
 }));
 
 // Get useBinInspector mock
-import { useBinInspector } from '../../components/inspector';
+import { useBinInspector } from '../../components/Inspector';
 const mockUseBinInspector = useBinInspector as ReturnType<typeof vi.fn>;
 
 describe('RightPanel', () => {

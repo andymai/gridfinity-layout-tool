@@ -4,7 +4,7 @@ import { exportPrintListTSV } from '../../storage';
 import { usePrintList } from '../../hooks/usePrintList';
 import { useUIStore } from '../../store/ui';
 import { SplitPreview, PrintListSummary, PrintListEmpty } from '../Print';
-import { BinListModal } from '../modals/BinListModal';
+import { BinListModal } from '../Modals/BinListModal';
 
 /**
  * Mobile-optimized print list matching desktop functionality.

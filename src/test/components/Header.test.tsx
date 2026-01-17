@@ -5,7 +5,7 @@ import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '..
 import { resetAllStores } from '../testUtils';
 
 // Mock the LayoutManagerModal to avoid deep component tree
-vi.mock('../../components/modals/LayoutManagerModal', () => ({
+vi.mock('../../components/Modals/LayoutManagerModal', () => ({
   LayoutManagerModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
     isOpen ? <div data-testid="layout-manager-modal" onClick={onClose}>Modal</div> : null
   ),

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MultiBinInspector } from '../../components/inspector/MultiBinInspector';
-import type { UseBinInspectorReturn } from '../../components/inspector/useBinInspector';
+import { MultiBinInspector } from '../../components/Inspector/MultiBinInspector';
+import type { UseBinInspectorReturn } from '../../components/Inspector/useBinInspector';
 import { resetAllStores } from '../testUtils';
 
 describe('MultiBinInspector', () => {

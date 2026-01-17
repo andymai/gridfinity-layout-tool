@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useLayoutStore, useHistoryStore, useUIStore } from '../../store';
 import { useCollabMode } from '../../hooks/useCollabMode';
 import { CONSTRAINTS } from '../../constants';
-import { PresenceAvatars } from '../collab';
+import { PresenceAvatars } from '../Collab';
 import type { MobilePanel } from '../../store/ui';
 import type { SaveStatus } from '../../hooks/useAutoSave';
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { LayoutList } from '../../components/modals/LayoutManagerModal/LayoutList';
+import { LayoutList } from '../../components/Modals/LayoutManagerModal/LayoutList';
 import { useLayoutStore, useUIStore } from '../../store';
 import { resetAllStores } from '../testUtils';
 import type { LayoutEntry } from '../../types';
@@ -31,7 +31,7 @@ vi.mock('../../components/LayoutThumbnail', () => ({
 }));
 
 // Mock LayoutActions to simplify tests
-vi.mock('../../components/modals/LayoutManagerModal/LayoutActions', () => ({
+vi.mock('../../components/Modals/LayoutManagerModal/LayoutActions', () => ({
   LayoutActions: ({
     onCopyLink,
     onDownload,

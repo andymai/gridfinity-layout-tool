@@ -5,7 +5,7 @@
 Displays keyboard shortcuts and mouse interactions reference.
 
 ```tsx
-import { HelpModal } from './components/modals';
+import { HelpModal } from './components/Modals';
 
 function App() {
   const [showHelp, setShowHelp] = useState(false);
@@ -33,7 +33,7 @@ function App() {
 JSON import with validation and preview.
 
 ```tsx
-import { ImportModal } from './components/modals';
+import { ImportModal } from './components/Modals';
 import { useLayoutStore } from './store';
 
 function App() {
@@ -68,7 +68,7 @@ function App() {
 Generic confirmation dialog for destructive actions.
 
 ```tsx
-import { ConfirmDialog } from './components/modals';
+import { ConfirmDialog } from './components/Modals';
 import { useLayoutStore } from './store';
 
 function LayerPanel() {

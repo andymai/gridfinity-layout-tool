@@ -14,9 +14,9 @@ This plan combines phased delivery with clean adapter patterns for a balance of 
 1. Install dependencies: `@liveblocks/client`, `@liveblocks/react`
 2. Create `/src/liveblocks.config.ts` - Liveblocks client + room context
 3. Create `/api/liveblocks-auth.ts` - Auth endpoint (trust-based for MVP)
-4. Create `/src/components/collab/CollabProvider.tsx` - RoomProvider wrapper
+4. Create `/src/components/Collab/CollabProvider.tsx` - RoomProvider wrapper
 5. Create `/src/hooks/useCollabMode.ts` - Mode detection hook
-6. Create `/src/components/collab/CollabCursors.tsx` - Remote cursor rendering
+6. Create `/src/components/Collab/CollabCursors.tsx` - Remote cursor rendering
 7. Modify `/src/components/Grid/index.tsx` - Add CollabCursors overlay
 8. Modify `/src/labs/features.ts` - Set `comingSoon: false`
 
@@ -81,19 +81,19 @@ This plan combines phased delivery with clean adapter patterns for a balance of 
 |---|------|---------|------------|
 | 1 | `src/liveblocks.config.ts` | Liveblocks client setup | 80 |
 | 2 | `api/liveblocks-auth.ts` | Auth endpoint | 100 |
-| 3 | `src/components/collab/CollabProvider.tsx` | Provider wrapper | 80 |
+| 3 | `src/components/Collab/CollabProvider.tsx` | Provider wrapper | 80 |
 | 4 | `src/hooks/useCollabMode.ts` | Mode detection | 50 |
-| 5 | `src/components/collab/CollabCursors.tsx` | Cursor container | 60 |
-| 6 | `src/components/collab/CollabCursor.tsx` | Single cursor | 80 |
+| 5 | `src/components/Collab/CollabCursors.tsx` | Cursor container | 60 |
+| 6 | `src/components/Collab/CollabCursor.tsx` | Single cursor | 80 |
 | 7 | `src/hooks/useCollabSync.ts` | Sync logic | 100 |
 | 8 | `src/hooks/useCollabLayout.ts` | Layout adapter | 60 |
 | 9 | `src/hooks/useCollabMutations.ts` | Mutation adapter | 200 |
 | 10 | `src/hooks/useCanEdit.ts` | Permission check | 30 |
-| 11 | `src/components/collab/CollabPresenceBar.tsx` | Avatars | 100 |
-| 12 | `src/components/collab/CollabBanner.tsx` | Status banner | 80 |
+| 11 | `src/components/Collab/CollabPresenceBar.tsx` | Avatars | 100 |
+| 12 | `src/components/Collab/CollabBanner.tsx` | Status banner | 80 |
 | 13 | `src/hooks/useCollabStatus.ts` | Connection status | 60 |
-| 14 | `src/components/collab/CollabInteractionPreview.tsx` | Remote previews | 120 |
-| 15 | `src/components/collab/index.ts` | Public exports | 20 |
+| 14 | `src/components/Collab/CollabInteractionPreview.tsx` | Remote previews | 120 |
+| 15 | `src/components/Collab/index.ts` | Public exports | 20 |
 
 **Total new code**: ~1,220 lines
 

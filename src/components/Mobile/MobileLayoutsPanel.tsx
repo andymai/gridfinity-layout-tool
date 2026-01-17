@@ -5,7 +5,7 @@ import { useUIStore } from '../../store/ui';
 import { useLayoutStore } from '../../store/layout';
 import { useLayoutSwitcher } from '../../hooks/useLayoutSwitcher';
 import { useCloudShare } from '../../hooks/useCloudShare';
-import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { ConfirmDialog } from '../Modals/ConfirmDialog';
 import { LayoutThumbnail } from '../LayoutThumbnail';
 import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../storage';
 import { formatShareDate } from '../../utils/cloudShare';

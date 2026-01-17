@@ -5,7 +5,7 @@ import { useToastStore } from '../store/toast';
 import { useResponsive } from '../hooks/useResponsive';
 import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '../constants';
 import { getBinTextColors } from '../utils/color';
-import { ConfirmDialog } from './modals/ConfirmDialog';
+import { ConfirmDialog } from './Modals/ConfirmDialog';
 
 /** Clamp a value between min and max */
 function clamp(value: number, min: number, max: number): number {

@@ -21,7 +21,7 @@ export default defineConfig({
         '**/types.ts',
         '**/index.ts', // Barrel files (re-exports only)
         'api/**', // Serverless functions tested separately
-        'src/components/collab/**', // Feature-flagged, requires Liveblocks mock
+        'src/components/Collab/**', // Feature-flagged, requires Liveblocks mock
         'src/hooks/usePresence.ts', // Feature-flagged, tested via usePresence.test.ts utilities
       ],
       thresholds: {

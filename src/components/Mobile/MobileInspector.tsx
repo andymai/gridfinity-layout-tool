@@ -1,10 +1,10 @@
-import { ConfirmDialog } from '../modals/ConfirmDialog';
+import { ConfirmDialog } from '../Modals/ConfirmDialog';
 import {
   useBinInspector,
   SingleBinInspector,
   MultiBinInspector,
   EmptyState,
-} from '../inspector';
+} from '../Inspector';
 
 /**
  * Mobile-optimized bin inspector with large touch targets.

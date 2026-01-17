@@ -9,7 +9,7 @@ import type { Layout } from '../types';
 import { STAGING_ID, DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensions, BREAKPOINTS } from '../constants';
 import { useLabsStore } from '../store/labs';
 import { useInteractionStore } from '../store/interaction';
-import { getFeature } from '../labs/features';
+import { getFeature } from '../Labs/features';
 
 // ============================================
 // INITIALIZATION (LAZY LOADED)

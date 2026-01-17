@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
-import { LayoutActions } from '../../components/modals/LayoutManagerModal/LayoutActions';
+import { LayoutActions } from '../../components/Modals/LayoutManagerModal/LayoutActions';
 import type { LayoutEntry } from '../../types';
 
 function createTestEntry(overrides: Partial<LayoutEntry> = {}): LayoutEntry {
