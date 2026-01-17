@@ -2,7 +2,7 @@ import type { RefObject, PointerEvent, JSX } from 'react';
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '../../store';
-import { useGridCoords } from '../../hooks';
+import { useGridCoords, useGridTemplate } from '../../hooks';
 import { Bin } from './Bin';
 import { getBlockedZones } from '../../utils/collision';
 import { DEFAULT_CATEGORY_COLOR } from '../../constants';
@@ -115,54 +115,23 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
     setSelectedBin(binId);
   };
 
-  // Grid always renders at standard dimensions (half-bin mode only affects snapping)
-  // Use ceiling values for CSS Grid which requires integer row/column counts
-  const integerWidth = Math.floor(drawer.width);
-  const integerDepth = Math.floor(drawer.depth);
-  const gridCols = Math.ceil(drawer.width);
-  const gridRows = Math.ceil(drawer.depth);
-
-  // Check for fractional drawer dimensions
-  const hasFractionalWidth = drawer.width % 1 !== 0;
-  const hasFractionalDepth = drawer.depth % 1 !== 0;
-
-  // Get fractional edge positions (defaults: X=end/right, Y=end/top)
-  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
-  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
-
-  // Fractional cell dimensions
-  const fractionalWidthPart = drawer.width - integerWidth; // e.g., 0.5
-  const fractionalDepthPart = drawer.depth - integerDepth; // e.g., 0.5
-  const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
-  const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
-
-  // Helper: Calculate CSS column for a grid x coordinate
-  // When fractionalEdgeX='start', fractional column is at CSS column 1, integers start at 2
-  // When fractionalEdgeX='end', integers start at 1, fractional at last
-  const getCssCol = (x: number) => {
-    if (hasFractionalWidth && fractionalEdgeX === 'start') {
-      return x + 2; // +1 for 1-based, +1 to skip fractional column
-    }
-    return x + 1;
-  };
-
-  // Helper: Calculate CSS row for a grid y coordinate
-  // CSS Grid row 1 is at top, higher rows are lower on screen
-  // Grid y=0 is at bottom, higher y is higher on screen
-  // When fractionalEdgeY='end' (top), fractional row is CSS row 1
-  // When fractionalEdgeY='start' (bottom), fractional row is CSS row last
-  const getCssRow = (y: number) => {
-    if (hasFractionalDepth) {
-      if (fractionalEdgeY === 'end') {
-        // Fractional at top (CSS row 1), integers are rows 2 to gridRows
-        return integerDepth - y + 1;
-      } else {
-        // Fractional at bottom (CSS row gridRows), integers are rows 1 to integerDepth
-        return integerDepth - y;
-      }
-    }
-    return integerDepth - y;
-  };
+  // Use shared hook for grid template computation
+  const {
+    gridTemplateColumns,
+    gridTemplateRows,
+    integerWidth,
+    integerDepth,
+    hasFractionalWidth,
+    hasFractionalDepth,
+    fractionalEdgeX,
+    fractionalEdgeY,
+    fractionalCellWidth,
+    fractionalCellHeight,
+    gridCols,
+    gridRows,
+    getCssColForCell: getCssCol,
+    getCssRowForCell: getCssRow,
+  } = useGridTemplate({ drawer, cellSize, gap });
 
   // Generate grid cells for visual reference
   // Only render full integer cells - fractional portions are handled separately
@@ -263,18 +232,8 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
         className="absolute inset-0"
         style={{
           display: 'grid',
-          // For fractional drawer dimensions, add a partial column/row
-          // Position depends on fractionalEdgeX/Y settings
-          gridTemplateColumns: hasFractionalWidth
-            ? fractionalEdgeX === 'start'
-              ? `${fractionalCellWidth}px repeat(${integerWidth}, ${cellSize}px)`  // Fractional at left
-              : `repeat(${integerWidth}, ${cellSize}px) ${fractionalCellWidth}px`  // Fractional at right
-            : `repeat(${gridCols}, ${cellSize}px)`,
-          gridTemplateRows: hasFractionalDepth
-            ? fractionalEdgeY === 'end'
-              ? `${fractionalCellHeight}px repeat(${integerDepth}, ${cellSize}px)` // Fractional at top (CSS row 1)
-              : `repeat(${integerDepth}, ${cellSize}px) ${fractionalCellHeight}px` // Fractional at bottom (CSS row last)
-            : `repeat(${gridRows}, ${cellSize}px)`,
+          gridTemplateColumns,
+          gridTemplateRows,
           gap: `${gap}px`,
           padding: `${gap}px`,
         }}
