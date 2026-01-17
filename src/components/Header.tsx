@@ -5,7 +5,7 @@ import { useResponsive, useFeatureFlag, useCollabMode } from '../hooks';
 import { CONSTRAINTS } from '../constants';
 import { LayoutManagerModal } from './Modals/LayoutManagerModal';
 import { PrintModal } from './Modals/PrintModal';
-import { ShareButton } from './ShareButton';
+import { ShareButton } from './Share';
 import { PresenceAvatars } from './Collab';
 import type { SaveStatus } from '../hooks/useAutoSave';
 
