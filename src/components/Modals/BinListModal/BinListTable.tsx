@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { DEFAULT_CATEGORY_COLOR } from '../../../core/constants';
-import { SplitPreview } from '../../Print';
+import { SplitPreview } from '../../Print/SplitPreview';
 import { STLSearchDropdown } from '../../STLSearchDropdown';
 import type { EnhancedPrintRow, Category, PrintListSortKey, PrintListSortOrder } from '../../../core/types';
 

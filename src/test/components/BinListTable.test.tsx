@@ -4,7 +4,7 @@ import { BinListTable } from '../../components/Modals/BinListModal/BinListTable'
 import type { EnhancedPrintRow, Category, PrintListSortKey, PrintListSortOrder } from '../../core/types';
 
 // Mock SplitPreview
-vi.mock('../../components/Print', () => ({
+vi.mock('../../components/Print/SplitPreview', () => ({
   SplitPreview: ({ width, depth, pieces }: { width: number; depth: number; pieces: unknown[] }) => (
     <div data-testid="split-preview" data-width={width} data-depth={depth}>
       {pieces.length} pieces

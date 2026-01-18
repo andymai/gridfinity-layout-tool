@@ -6,7 +6,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../core/store';
-import { usePrintList, type UsePrintListReturn } from './usePrintList';
+import { usePrintList, type UsePrintListReturn } from '../features/print-export/hooks/usePrintList';
 import {
   filterBySearch,
   calculateSelectionRange,

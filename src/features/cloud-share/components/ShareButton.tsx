@@ -4,7 +4,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useLabsStore } from '../../../core/store/labs';
+import { useLabsStore } from '../../../features/labs/store/labs';
 import { useLayoutStore } from '../../../core/store/layout';
 import { useUIStore } from '../../../core/store/ui';
 import { useToastStore } from '../../../core/store/toast';

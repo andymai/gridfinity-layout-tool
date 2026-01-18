@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ShareModal } from '../../components/Modals';
+import { ShareModal } from '../../features/cloud-share/components/ShareModal';
 import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
 import * as storage from '../../core/storage';

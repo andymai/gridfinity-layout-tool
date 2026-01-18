@@ -10,7 +10,7 @@ import { mapInteractionToHint } from '../../../utils/interaction';
 import { useDrawInteraction } from '../../../hooks/interactions/useDrawInteraction';
 import { useDragInteraction } from '../../../hooks/interactions/useDragInteraction';
 import { useResizeInteraction } from '../../../hooks/interactions/useResizeInteraction';
-import { useStagingDragInteraction } from '../../../hooks/interactions/useStagingDragInteraction';
+import { useStagingDragInteraction } from '../../staging/hooks/useStagingDragInteraction';
 import type { InteractionContext, ModeHandlers, DrawStartArgs, DragStartArgs, ResizeStartArgs, StagingDragStartArgs } from '../../../hooks/interactions/types';
 
 /**

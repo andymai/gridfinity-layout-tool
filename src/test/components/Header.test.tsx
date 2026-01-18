@@ -26,7 +26,7 @@ vi.mock('../../hooks', async (importOriginal) => {
 
 // Controllable mock for ShareButton
 let mockShareButtonEnabled = false;
-vi.mock('../../components/Share', () => ({
+vi.mock('../../features/cloud-share/components/ShareButton', () => ({
   ShareButton: () =>
     mockShareButtonEnabled ? <button data-testid="share-button">Share</button> : null,
 }));

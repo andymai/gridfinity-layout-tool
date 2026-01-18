@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CategoriesPanel } from '../../components/Sidebar/CategoriesPanel';
+import { CategoriesPanel } from '../../features/categories/components/CategoriesPanel';
 import { useLayoutStore, useUIStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
 

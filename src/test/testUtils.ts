@@ -7,8 +7,8 @@ import { useHistoryStore } from '../core/store/history';
 import { useToastStore } from '../core/store/toast';
 import { useSettingsStore, DEFAULT_SETTINGS } from '../core/store/settings';
 import { useLibraryStore } from '../core/store/library';
-import { useLabsStore } from '../core/store/labs';
-import { createDefaultLabsPreferences } from '../core/labs/types';
+import { useLabsStore } from '../features/labs/store/labs';
+import { createDefaultLabsPreferences } from '../features/labs/definitions/types';
 // New stores extracted from ui.ts
 import { useSelectionStore } from '../core/store/selection';
 import { useViewStore } from '../core/store/view';
