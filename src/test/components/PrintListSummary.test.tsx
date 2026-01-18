@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { PrintListSummary } from '../../components/Print/PrintListSummary';
+import { PrintListSummary } from '../../components/Print';
 
 describe('PrintListSummary', () => {
   const defaultProps = {
