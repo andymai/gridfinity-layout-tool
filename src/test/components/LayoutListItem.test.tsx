@@ -12,8 +12,8 @@ vi.mock('../../components/LayoutThumbnail', () => ({
   ),
 }));
 
-// Mock LayoutActions
-vi.mock('../../components/Modals/LayoutManagerModal/LayoutActions', () => ({
+// Mock LayoutActions - must mock the actual source module
+vi.mock('../../features/layout-library/components/LayoutManagerModal/LayoutActions', () => ({
   LayoutActions: ({
     isOnlyLayout,
     onCopyLink,
