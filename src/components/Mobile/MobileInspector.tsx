@@ -1,10 +1,10 @@
-import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import {
   useBinInspector,
   SingleBinInspector,
   MultiBinInspector,
   EmptyState,
-} from '../../features/bin-inspector';
+} from '@/features/bin-inspector';
 
 /**
  * Mobile-optimized bin inspector with large touch targets.

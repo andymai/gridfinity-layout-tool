@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { StepperControl } from '../../shared/components/StepperControl';
+import { StepperControl } from '@/shared/components/StepperControl';
 
 describe('StepperControl', () => {
   const mockOnStep = vi.fn();

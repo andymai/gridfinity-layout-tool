@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '../core/store';
-import { getBaseCellSize, DEFAULT_CATEGORY_COLOR } from '../core/constants';
-import { getContrastColor } from '../shared/utils';
-import { useResponsive } from '../hooks';
+import { useUIStore, useLayoutStore } from '@/core/store';
+import { getBaseCellSize, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { getContrastColor } from '@/shared/utils';
+import { useResponsive } from '@/hooks';
 
 /**
  * Floating drag preview that follows the cursor during drag operations.

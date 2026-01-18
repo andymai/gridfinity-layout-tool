@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Staging } from '../../features/staging/components/Staging';
-import { useLayoutStore, useUIStore } from '../../core/store';
-import { resetAllStores } from '../testUtils';
-import { STAGING_ID } from '../../core/constants';
-import type { Bin } from '../../core/types';
+import { Staging } from '@/features/staging/components/Staging';
+import { useLayoutStore, useUIStore } from '@/core/store';
+import { resetAllStores } from '@/test/testUtils';
+import { STAGING_ID } from '@/core/constants';
+import type { Bin } from '@/core/types';
 
 // Mock useResponsive
 vi.mock('../../hooks/useResponsive', () => ({

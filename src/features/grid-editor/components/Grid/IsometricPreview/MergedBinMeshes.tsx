@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { createBinGeometry } from '../../../../../hooks/useBinGeometry';
+import { createBinGeometry } from '@/hooks/useBinGeometry';
 
 interface BinData {
   bin: {

@@ -21,9 +21,9 @@
  */
 
 import * as backend from './backend';
-import { validateImport } from '../../shared/utils/validation';
-import { generateLayoutId } from '../../shared/utils';
-import { STAGING_ID, CONSTRAINTS } from '../constants';
+import { validateImport } from '@/shared/utils/validation';
+import { generateLayoutId } from '@/shared/utils';
+import { STAGING_ID, CONSTRAINTS } from '@/core/constants';
 import type {
   Layout,
   LayoutEntry,
@@ -31,8 +31,8 @@ import type {
   LayoutPreview,
   ThumbnailBin,
   CloudShareInfo,
-} from '../types';
-import type { Result, StorageError } from '../result';
+} from '@/core/types';
+import type { Result, StorageError } from '@/core/result';
 import {
   ok,
   err,
@@ -42,7 +42,7 @@ import {
   storageNotFound,
   storageCorrupted,
   storageUnavailable,
-} from '../result';
+} from '@/core/result';
 
 // === Storage Keys ===
 

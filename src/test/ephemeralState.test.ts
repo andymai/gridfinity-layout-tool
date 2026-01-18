@@ -5,7 +5,7 @@ import {
   hasEphemeralState,
   clearEphemeralState,
   type EphemeralState,
-} from '../utils/ephemeralState';
+} from '@/utils/ephemeralState';
 
 // Mock sessionStorage
 const sessionStorageMock = (() => {

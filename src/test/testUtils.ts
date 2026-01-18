@@ -1,21 +1,21 @@
 import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import type { Layout, LayoutLibrary } from '../core/types';
-import { createDefaultLayout } from '../core/constants';
-import { useLayoutStore } from '../core/store/layout';
-import { useHistoryStore } from '../core/store/history';
-import { useToastStore } from '../core/store/toast';
-import { useSettingsStore, DEFAULT_SETTINGS } from '../core/store/settings';
-import { useLibraryStore } from '../core/store/library';
-import { useLabsStore } from '../features/labs/store/labs';
-import { createDefaultLabsPreferences } from '../features/labs/definitions/types';
+import type { Layout, LayoutLibrary } from '@/core/types';
+import { createDefaultLayout } from '@/core/constants';
+import { useLayoutStore } from '@/core/store/layout';
+import { useHistoryStore } from '@/core/store/history';
+import { useToastStore } from '@/core/store/toast';
+import { useSettingsStore, DEFAULT_SETTINGS } from '@/core/store/settings';
+import { useLibraryStore } from '@/core/store/library';
+import { useLabsStore } from '@/features/labs/store/labs';
+import { createDefaultLabsPreferences } from '@/features/labs/definitions/types';
 // New stores extracted from ui.ts
-import { useSelectionStore } from '../core/store/selection';
-import { useViewStore } from '../core/store/view';
-import { useInteractionStore } from '../core/store/interaction';
-import { useMobileStore } from '../core/store/mobile';
-import { useHalfBinModeStore } from '../core/store/halfBinMode';
-import { useSharedPreviewStore } from '../core/store/sharedPreview';
+import { useSelectionStore } from '@/core/store/selection';
+import { useViewStore } from '@/core/store/view';
+import { useInteractionStore } from '@/core/store/interaction';
+import { useMobileStore } from '@/core/store/mobile';
+import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 
 /**
  * Reset all Zustand stores to their initial state.
@@ -316,7 +316,7 @@ export function setupGlobalCleanup() {
  * Returns mock implementations for both legacy and new atomic storage functions.
  *
  * @example
- * import { createStorageMock } from '../test/testUtils';
+ * import { createStorageMock } from '@/test/testUtils';
  *
  * vi.mock('../../storage', () => createStorageMock());
  */

@@ -10,8 +10,8 @@
  * - Activity indicator showing current operation (Drawing, Moving, etc.)
  */
 
-import type { UserPresence, InteractionHint } from '../../liveblocks.config';
-import type { InterpolatedPosition } from '../../hooks/useInterpolatedPresence';
+import type { UserPresence, InteractionHint } from '@/liveblocks.config';
+import type { InterpolatedPosition } from '@/hooks/useInterpolatedPresence';
 
 interface CollabCursorProps {
   /** User presence data containing cursor position, name, and color */

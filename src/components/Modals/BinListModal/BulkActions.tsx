@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import type { Category } from '../../../core/types';
+import type { Category } from '@/core/types';
 
 interface BulkActionsProps {
   /** Number of selected items */

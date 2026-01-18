@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SingleBinInspector } from '../../features/bin-inspector';
-import type { UseBinInspectorReturn } from '../../features/bin-inspector';
-import { resetAllStores } from '../testUtils';
-import { useUIStore } from '../../core/store';
+import { SingleBinInspector } from '@/features/bin-inspector';
+import type { UseBinInspectorReturn } from '@/features/bin-inspector';
+import { resetAllStores } from '@/test/testUtils';
+import { useUIStore } from '@/core/store';
 
 // Mock the DeferredNumberInput component to simplify testing
 vi.mock('../../shared/components/DeferredNumberInput', () => ({

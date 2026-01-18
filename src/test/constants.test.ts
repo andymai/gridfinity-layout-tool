@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calcMaxGridUnits, generateId, createDefaultLayout, createLayoutWithSettings, DEFAULT_CATEGORIES, STAGING_ID, DEFAULT_CATEGORY_COLOR, getBaseCellSize, BREAKPOINTS } from '../core/constants';
+import { calcMaxGridUnits, generateId, createDefaultLayout, createLayoutWithSettings, DEFAULT_CATEGORIES, STAGING_ID, DEFAULT_CATEGORY_COLOR, getBaseCellSize, BREAKPOINTS } from '@/core/constants';
 
 describe('calcMaxGridUnits', () => {
   it('calculates max units for typical print bed', () => {

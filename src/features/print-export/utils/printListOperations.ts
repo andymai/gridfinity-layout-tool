@@ -2,8 +2,8 @@
  * Composable, pure functions for print list sorting, filtering, and grouping.
  */
 
-import type { EnhancedPrintRow, PrintListGroup, PrintListSortKey, PrintListSortOrder, Category } from '../../../core/types';
-import { DEFAULT_CATEGORY_COLOR } from '../../../core/constants';
+import type { EnhancedPrintRow, PrintListGroup, PrintListSortKey, PrintListSortOrder, Category } from '@/core/types';
+import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 
 /**
  * Apply category filter to print rows.

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
+import type { HalfBinConstraintViolation } from '@/utils/halfBinConstraints';
 
 interface HalfBinModeBlockedModalProps {
   isOpen: boolean;

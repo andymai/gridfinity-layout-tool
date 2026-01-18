@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useUIStore } from '../core/store/ui';
+import { useUIStore } from '@/core/store/ui';
 
 export interface TabletPanelsState {
   leftPanelOpen: boolean;

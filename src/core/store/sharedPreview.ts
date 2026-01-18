@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Layout } from '../types';
+import type { Layout } from '@/core/types';
 
 /**
  * Shared Layout Preview Store

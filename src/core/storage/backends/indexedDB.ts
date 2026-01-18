@@ -11,8 +11,8 @@ import {
   deleteLayout as idbDeleteLayout,
   getAllLayoutIds as idbGetAllLayoutIds,
   isIndexedDBAvailable as idbIsAvailable,
-} from '../../../utils/indexedDB';
-import type { Layout } from '../../types';
+} from '@/utils/indexedDB';
+import type { Layout } from '@/core/types';
 
 /**
  * Check if IndexedDB is available in the current environment.

@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
-import { validateImport } from '../../shared/utils/validation';
-import { decodeLayoutFromURL } from '../../core/storage';
-import type { Layout } from '../../core/types';
+import { validateImport } from '@/shared/utils/validation';
+import { decodeLayoutFromURL } from '@/core/storage';
+import type { Layout } from '@/core/types';
 
 interface ImportModalProps {
   isOpen: boolean;

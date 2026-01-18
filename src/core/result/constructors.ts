@@ -7,7 +7,7 @@
  *
  * @example
  * ```ts
- * import { storageNotFound, validationCollision, apiRateLimited } from '../result';
+ * import { storageNotFound, validationCollision, apiRateLimited } from '@/core/result';
  *
  * // Storage error
  * const error1 = storageNotFound('gridfinity-layout-abc123');

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { FeatureFlag } from '../definitions/types';
+import type { FeatureFlag } from '@/features/labs/definitions/types';
 
 interface GraduatedSectionProps {
   features: FeatureFlag[];

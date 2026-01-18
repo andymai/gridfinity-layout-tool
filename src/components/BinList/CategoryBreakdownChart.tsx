@@ -1,4 +1,4 @@
-import type { CategoryBreakdown } from '../../utils/binListOperations';
+import type { CategoryBreakdown } from '@/utils/binListOperations';
 
 export interface CategoryBreakdownChartProps {
   /** Category breakdown data */

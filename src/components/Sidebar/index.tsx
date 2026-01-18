@@ -1,21 +1,21 @@
 import { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '../../core/store';
-import { useDrawerSettings } from '../../hooks';
-import { CONSTRAINTS } from '../../core/constants';
-import { ActiveLayerPanel } from '../../features/layers/components/ActiveLayerPanel';
-import { LayerPanel } from '../../features/layers/components/LayerPanel';
-import { CategoriesPanel } from '../../features/categories/components/CategoriesPanel';
-import { DeferredNumberInput } from '../../shared/components/DeferredNumberInput';
-import { StepperControl } from '../../shared/components/StepperControl';
-import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
-import { HalfBinModeBlockedModal } from '../Modals/HalfBinModeBlockedModal';
-import { CollapsibleSection } from '../../shared/components/CollapsibleSection';
-import { useResponsive } from '../../shared/hooks';
-import { LabsButton } from '../../features/labs/components';
-import { Checkbox } from '../../shared/components/Checkbox';
-import { SettingsRow } from '../SettingsRow';
-import type { STLSearchSite } from '../../core/store/settings';
+import { useUIStore } from '@/core/store';
+import { useDrawerSettings } from '@/hooks';
+import { CONSTRAINTS } from '@/core/constants';
+import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
+import { LayerPanel } from '@/features/layers/components/LayerPanel';
+import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
+import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { StepperControl } from '@/shared/components/StepperControl';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { HalfBinModeBlockedModal } from '@/components/Modals/HalfBinModeBlockedModal';
+import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { useResponsive } from '@/shared/hooks';
+import { LabsButton } from '@/features/labs/components';
+import { Checkbox } from '@/shared/components/Checkbox';
+import { SettingsRow } from '@/components/SettingsRow';
+import type { STLSearchSite } from '@/core/store/settings';
 
 export function Sidebar() {
   const [isScrolled, setIsScrolled] = useState(false);

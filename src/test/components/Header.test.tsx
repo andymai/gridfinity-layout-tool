@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Header } from '../../components/Header';
-import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '../../core/store';
-import { resetAllStores } from '../testUtils';
+import { Header } from '@/components/Header';
+import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '@/core/store';
+import { resetAllStores } from '@/test/testUtils';
 
 // Mock the LayoutManagerModal to avoid deep component tree
 vi.mock('../../features/layout-library/components/LayoutManagerModal', () => ({

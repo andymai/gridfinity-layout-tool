@@ -1,5 +1,5 @@
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '../../../../core/store';
+import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
 
 interface OverlayProps {
   cellSize: number;

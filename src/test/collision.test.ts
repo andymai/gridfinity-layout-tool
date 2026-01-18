@@ -7,9 +7,9 @@ import {
   getDisplayLayers,
   checkLayerReorderCollisions,
   isInBlockedZone,
-} from '../features/grid-editor/utils/collision';
-import type { Layer, Bin } from '../core/types';
-import { STAGING_ID } from '../core/constants';
+} from '@/features/grid-editor/utils/collision';
+import type { Layer, Bin } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 
 const layers: Layer[] = [
   { id: 'layer1', name: 'Layer 1', height: 3 },

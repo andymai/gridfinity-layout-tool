@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import type { Toast, ToastType } from '../../../core/store/toast';
-import { useToastStore } from '../../../core/store/toast';
-import { useResponsive } from '../../hooks';
+import type { Toast, ToastType } from '@/core/store/toast';
+import { useToastStore } from '@/core/store/toast';
+import { useResponsive } from '@/shared/hooks';
 
 // Animation duration must match CSS in index.css (.toast-exit-*)
 const EXIT_ANIMATION_MS = 150;

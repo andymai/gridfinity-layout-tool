@@ -9,11 +9,11 @@
  * - Result-based imports (*Result suffix)
  */
 
-import { validateImport } from '../../shared/utils/validation';
-import { generateId, STAGING_ID } from '../constants';
-import type { Layout } from '../types';
-import type { Result, ValidationError } from '../result';
-import { ok, err, validationImportFailed } from '../result';
+import { validateImport } from '@/shared/utils/validation';
+import { generateId, STAGING_ID } from '@/core/constants';
+import type { Layout } from '@/core/types';
+import type { Result, ValidationError } from '@/core/result';
+import { ok, err, validationImportFailed } from '@/core/result';
 
 // === JSON Import/Export ===
 

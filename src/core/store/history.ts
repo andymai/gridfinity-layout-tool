@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { useCallback, useRef, useEffect } from 'react';
-import type { Layout } from '../types';
+import type { Layout } from '@/core/types';
 import { useLayoutStore } from './layout';
-import { CONSTRAINTS } from '../constants';
+import { CONSTRAINTS } from '@/core/constants';
 
 /**
  * Deep clone a layout object.

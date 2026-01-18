@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { MobileLayoutsPanel } from '../../components/Mobile/MobileLayoutsPanel';
-import { useLibraryStore } from '../../core/store/library';
-import { useLayoutStore } from '../../core/store/layout';
-import { useUIStore } from '../../core/store/ui';
-import { createDefaultLayout } from '../../core/constants';
-import * as storage from '../../core/storage';
-import * as cloudShareHook from '../../features/cloud-share/hooks/useCloudShare';
-import type { LayoutLibrary, LayoutEntry } from '../../core/types';
+import { MobileLayoutsPanel } from '@/components/Mobile/MobileLayoutsPanel';
+import { useLibraryStore } from '@/core/store/library';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUIStore } from '@/core/store/ui';
+import { createDefaultLayout } from '@/core/constants';
+import * as storage from '@/core/storage';
+import * as cloudShareHook from '@/features/cloud-share/hooks/useCloudShare';
+import type { LayoutLibrary, LayoutEntry } from '@/core/types';
 
 // Mock the storage module
 vi.mock('../../core/storage', () => {

@@ -5,11 +5,11 @@
  */
 
 import type { PostHog } from 'posthog-js';
-import type { Layout } from '../core/types';
-import { STAGING_ID, DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensions, BREAKPOINTS } from '../core/constants';
-import { useLabsStore } from '../features/labs/store/labs';
-import { useInteractionStore } from '../core/store/interaction';
-import { getFeature } from '../features/labs/definitions/features';
+import type { Layout } from '@/core/types';
+import { STAGING_ID, DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensions, BREAKPOINTS } from '@/core/constants';
+import { useLabsStore } from '@/features/labs/store/labs';
+import { useInteractionStore } from '@/core/store/interaction';
+import { getFeature } from '@/features/labs/definitions/features';
 
 // ============================================
 // INITIALIZATION (LAZY LOADED)

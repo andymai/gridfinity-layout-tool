@@ -4,8 +4,8 @@ import {
   CategoryBreakdownChart,
   CategoryStackedBar,
   CategoryLegend,
-} from '../../components/BinList/CategoryBreakdownChart';
-import type { CategoryBreakdown } from '../../utils/binListOperations';
+} from '@/components/BinList/CategoryBreakdownChart';
+import type { CategoryBreakdown } from '@/utils/binListOperations';
 
 describe('CategoryBreakdownChart', () => {
   const createBreakdown = (

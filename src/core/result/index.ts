@@ -5,7 +5,7 @@
  *
  * @example Basic usage:
  * ```ts
- * import { Result, ok, err, isOk, match } from '../result';
+ * import { Result, ok, err, isOk, match } from '@/core/result';
  *
  * function divide(a: number, b: number): Result<number, string> {
  *   if (b === 0) return err('Division by zero');
@@ -28,8 +28,8 @@
  *
  * @example With domain errors:
  * ```ts
- * import { Result, err, storageNotFound, getUserMessage } from '../result';
- * import type { StorageError } from '../result';
+ * import { Result, err, storageNotFound, getUserMessage } from '@/core/result';
+ * import type { StorageError } from '@/core/result';
  *
  * async function loadLayout(id: string): Promise<Result<Layout, StorageError>> {
  *   const data = await storage.load(id);
@@ -46,7 +46,7 @@
  *
  * @example Chaining operations:
  * ```ts
- * import { flatMap, map, tryCatchAsync } from '../result';
+ * import { flatMap, map, tryCatchAsync } from '@/core/result';
  *
  * const result = await tryCatchAsync(
  *   () => fetchData(url),

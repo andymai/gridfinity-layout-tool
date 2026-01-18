@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { lazyWithRetry, namedExport } from '../utils/lazyWithRetry';
+import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import type { ComponentType } from 'react';
 
 // Mock component for testing

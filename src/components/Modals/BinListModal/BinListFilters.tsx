@@ -1,6 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react';
-import { Checkbox } from '../../../shared/components/Checkbox';
-import type { Category, PrintListFilters } from '../../../core/types';
+import { Checkbox } from '@/shared/components/Checkbox';
+import type { Category, PrintListFilters } from '@/core/types';
 
 interface BinListFiltersProps {
   /** Current search query */

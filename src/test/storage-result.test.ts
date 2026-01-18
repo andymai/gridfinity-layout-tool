@@ -17,15 +17,15 @@ import {
   migrateAllLayoutsToIndexedDBResult,
   getMigrationStatusResult,
   getLayoutStorageKey,
-} from '../core/storage';
-import { createDefaultLayout } from '../core/constants';
+} from '@/core/storage';
+import { createDefaultLayout } from '@/core/constants';
 import {
   isOk,
   isErr,
   getUserMessage,
   isRetryable,
-} from '../core/result';
-import type { Layout, LayoutLibrary } from '../core/types';
+} from '@/core/result';
+import type { Layout, LayoutLibrary } from '@/core/types';
 
 // Mock the backend module
 vi.mock('../core/storage/backend', () => ({
@@ -54,9 +54,9 @@ vi.mock('../core/storage/backends/indexedDB', () => ({
 }));
 
 // Import the mocked modules
-import * as backend from '../core/storage/backend';
-import * as localStorageBackend from '../core/storage/backends/localStorage';
-import * as indexedDBBackend from '../core/storage/backends/indexedDB';
+import * as backend from '@/core/storage/backend';
+import * as localStorageBackend from '@/core/storage/backends/localStorage';
+import * as indexedDBBackend from '@/core/storage/backends/indexedDB';
 
 describe('Result-based storage functions', () => {
   let defaultLayout: Layout;

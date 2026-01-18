@@ -12,12 +12,12 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore } from '../../../core/store/layout';
-import { useLibraryStore } from '../../../core/store/library';
-import { updateShare } from '../../../core/api/share';
-import { isOk } from '../../../core/result';
-import { STAGING_ID } from '../../../core/constants';
-import type { CloudShareInfo } from '../../../core/types';
+import { useLayoutStore } from '@/core/store/layout';
+import { useLibraryStore } from '@/core/store/library';
+import { updateShare } from '@/core/api/share';
+import { isOk } from '@/core/result';
+import { STAGING_ID } from '@/core/constants';
+import type { CloudShareInfo } from '@/core/types';
 
 /** Debounce delay for cloud share updates (5 seconds) */
 const CLOUD_SYNC_DEBOUNCE_MS = 5000;

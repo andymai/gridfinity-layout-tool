@@ -4,8 +4,8 @@ import {
   sortRows,
   groupByCategory,
   applyFiltersAndSort,
-} from '../features/print-export/utils/printListOperations';
-import type { EnhancedPrintRow, Category } from '../core/types';
+} from '@/features/print-export/utils/printListOperations';
+import type { EnhancedPrintRow, Category } from '@/core/types';
 
 // Helper to create test rows
 function createTestRow(overrides: Partial<EnhancedPrintRow> = {}): EnhancedPrintRow {

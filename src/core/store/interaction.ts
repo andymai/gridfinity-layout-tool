@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Interaction } from '../types';
+import type { Interaction } from '@/core/types';
 
 /**
  * Interaction Store

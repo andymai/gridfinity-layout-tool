@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction } from '../../../core/store';
-import { CONSTRAINTS, STAGING_ID } from '../../../core/constants';
-import { getDisplayLayers } from '../../../features/grid-editor/utils/collision';
-import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
-import { isOk, isErr, getUserMessage } from '../../../core/result';
+import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { getDisplayLayers } from '@/features/grid-editor/utils/collision';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { isOk, isErr, getUserMessage } from '@/core/result';
 
 /**
  * Layers tab content - layer list with selection, height controls, reordering, and deletion.

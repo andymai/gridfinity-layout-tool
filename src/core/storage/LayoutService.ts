@@ -14,18 +14,18 @@
  */
 
 import * as backend from './backend';
-import { validateImport } from '../../shared/utils/validation';
-import { generateId, STAGING_ID } from '../constants';
-import { generateLayoutId } from '../../shared/utils';
+import { validateImport } from '@/shared/utils/validation';
+import { generateId, STAGING_ID } from '@/core/constants';
+import { generateLayoutId } from '@/shared/utils';
 import type {
   Layout,
   LayoutLibrary,
   LayoutEntry,
   LayoutPreview,
   ThumbnailBin,
-} from '../types';
-import type { Result } from '../result';
-import type { StorageError } from '../result';
+} from '@/core/types';
+import type { Result } from '@/core/result';
+import type { StorageError } from '@/core/result';
 import {
   ok,
   err,
@@ -34,7 +34,7 @@ import {
   storageNotFound,
   storageCorrupted,
   storageUnavailable,
-} from '../result';
+} from '@/core/result';
 
 // Storage keys
 const LEGACY_STORAGE_KEY = 'gridfinity-layout-v1';

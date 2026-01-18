@@ -1,12 +1,12 @@
 import { useEffect, useState, useMemo, useCallback, useRef, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore } from '../../../core/store';
-import { useSettingsStore, type PrintViewSettings, type BinListSortOrder } from '../../../core/store/settings';
+import { useLayoutStore } from '@/core/store';
+import { useSettingsStore, type PrintViewSettings, type BinListSortOrder } from '@/core/store/settings';
 import { PrintLayout } from './PrintLayout';
 import { SortOrderConfig } from './SortOrderConfig';
-import { Checkbox } from '../../../shared/components/Checkbox';
-import { getBinCountByLayer } from '../utils/printLayout';
+import { Checkbox } from '@/shared/components/Checkbox';
+import { getBinCountByLayer } from '@/features/print-export/utils/printLayout';
 import '../../../styles/print.css';
 
 // Style constants

@@ -4,10 +4,10 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import * as backend from '../core/storage/backend';
-import * as localStorage from '../core/storage/backends/localStorage';
-import * as indexedDB from '../utils/indexedDB';
-import type { Layout } from '../core/types';
+import * as backend from '@/core/storage/backend';
+import * as localStorage from '@/core/storage/backends/localStorage';
+import * as indexedDB from '@/utils/indexedDB';
+import type { Layout } from '@/core/types';
 
 // Mock IndexedDB module
 vi.mock('../utils/indexedDB', () => ({

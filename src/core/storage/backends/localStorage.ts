@@ -6,7 +6,7 @@
  * to eliminate code duplication and ensure consistent error handling.
  */
 
-import type { Layout, LayoutLibrary } from '../../types';
+import type { Layout, LayoutLibrary } from '@/core/types';
 
 /**
  * Save data to localStorage as JSON.

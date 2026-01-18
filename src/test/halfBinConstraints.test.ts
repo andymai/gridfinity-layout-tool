@@ -3,9 +3,9 @@ import {
   hasFractionalBins,
   getFractionalBinIds,
   validateHalfBinModeToggle,
-} from '../utils/halfBinConstraints';
-import type { Bin, Layout } from '../core/types';
-import { STAGING_ID } from '../core/constants';
+} from '@/utils/halfBinConstraints';
+import type { Bin, Layout } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 
 // Helper to create a minimal bin
 const createBin = (overrides: Partial<Bin> & { id: string; layerId: string }): Bin => ({

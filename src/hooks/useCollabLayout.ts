@@ -14,10 +14,10 @@
  * ```
  */
 
-import { useLayoutStore } from '../core/store/layout';
-import { useStorage } from '../liveblocks.config';
+import { useLayoutStore } from '@/core/store/layout';
+import { useStorage } from '@/liveblocks.config';
 import { useCollabMode } from './useCollabMode';
-import type { Layout, Bin, Layer, Category, Drawer } from '../core/types';
+import type { Layout, Bin, Layer, Category, Drawer } from '@/core/types';
 
 interface CollabLayoutState {
   /** The full layout object */

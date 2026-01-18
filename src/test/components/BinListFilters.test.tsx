@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { BinListFilters } from '../../components/Modals/BinListModal/BinListFilters';
-import type { Category, PrintListFilters } from '../../core/types';
+import { BinListFilters } from '@/components/Modals/BinListModal/BinListFilters';
+import type { Category, PrintListFilters } from '@/core/types';
 
 describe('BinListFilters', () => {
   const mockCategories: Category[] = [

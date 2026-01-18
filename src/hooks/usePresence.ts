@@ -21,10 +21,10 @@ import {
   useSelf,
   useStatus,
   useStorage,
-} from '../liveblocks.config';
+} from '@/liveblocks.config';
 import { useCollabMode } from './useCollabMode';
-import { useToastStore } from '../core/store/toast';
-import { generateGuestName, generateGuestColor } from '../utils/guestNames';
+import { useToastStore } from '@/core/store/toast';
+import { generateGuestName, generateGuestColor } from '@/utils/guestNames';
 
 /**
  * Represents a participant in a collaborative session.

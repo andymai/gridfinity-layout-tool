@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateGuestName, generateGuestColor } from '../utils/guestNames';
+import { generateGuestName, generateGuestColor } from '@/utils/guestNames';
 
 describe('generateGuestName', () => {
   it('generates a name with adjective and animal', () => {
