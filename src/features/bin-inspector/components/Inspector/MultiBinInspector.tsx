@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '@/core/constants';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import type { Layer } from '@/core/types';
-import { SelectDropdown } from '@/components/SelectDropdown';
-import { BulkIncrementControl } from '@/components/BulkIncrementControl';
+import { SelectDropdown } from '@/shared/components/SelectDropdown';
+import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
 
 interface MultiBinInspectorProps {
   inspector: UseBinInspectorReturn;

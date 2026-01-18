@@ -14,7 +14,7 @@ import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { useResponsive } from '@/shared/hooks';
 import { LabsButton } from '@/features/labs/components';
 import { Checkbox } from '@/shared/components/Checkbox';
-import { SettingsRow } from '@/components/SettingsRow';
+import { SettingsRow } from '@/shared/components/SettingsRow';
 import type { STLSearchSite } from '@/core/store/settings';
 
 export function Sidebar() {

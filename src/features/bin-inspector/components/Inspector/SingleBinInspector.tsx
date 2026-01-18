@@ -4,7 +4,7 @@ import { getBinLocationContext } from '@/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from './SplitWarning';
 import { StepperControl } from '@/shared/components/StepperControl';
-import { SelectDropdown } from '@/components/SelectDropdown';
+import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from './CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 
