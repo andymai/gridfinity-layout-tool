@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { SharedWithMeEntry } from '../../../core/types';
-import { useSharedWithMe } from '../../../hooks/useSharedWithMe';
+import type { SharedWithMeEntry } from '../../../../core/types';
+import { useSharedWithMe } from '../../../../hooks/useSharedWithMe';
 import { SharedWithMeItem } from './SharedWithMeItem';
 
 interface SharedWithMeListProps {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { LayoutList } from '../../components/Modals/LayoutManagerModal/LayoutList';
+import { LayoutList } from '../../features/layout-library/components/LayoutManagerModal/LayoutList';
 import { useLayoutStore, useUIStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
 import type { LayoutEntry } from '../../core/types';
