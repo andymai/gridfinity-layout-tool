@@ -184,9 +184,10 @@ test.describe('Layout Library Management', () => {
       // Click Delete in the dropdown (first click shows confirmation)
       await page.getByRole('menuitem', { name: /delete/i }).click();
 
-      // Wait for the confirmation state and click again
-      await page.waitForTimeout(100);
-      await page.getByRole('menuitem', { name: /click to confirm/i }).click();
+      // Wait for the confirmation state to appear and click again
+      const confirmDeleteMenuItem = page.getByRole('menuitem', { name: /click to confirm/i });
+      await expect(confirmDeleteMenuItem).toBeVisible({ timeout: 5000 });
+      await confirmDeleteMenuItem.click();
 
       // Should now only have 1 layout
       await expect(modal.getByRole('option')).toHaveCount(1, { timeout: 5000 });
@@ -219,7 +220,6 @@ test.describe('Layout Library Management', () => {
       await drawBinOnGrid(page, 50, 50, 100, 100);
       await waitForBinCount(page, 1);
       await waitForAutoSave(page, 3000);
-      await page.waitForTimeout(500);
 
       // Open layout manager and duplicate
       await page.getByRole('button', { name: 'Open layout manager' }).click();
