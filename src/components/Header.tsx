@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '@/core/store';
-import { useResponsive, useFeatureFlag, useCollabMode } from '@/hooks';
+import { useResponsive } from '@/shared/hooks';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
+import { useCollabMode } from '@/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
 import { LayoutManagerModal } from './Modals/LayoutManagerModal';
 import { PrintModal } from '@/features/print-export/components/PrintModal';

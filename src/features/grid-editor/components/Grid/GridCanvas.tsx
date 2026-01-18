@@ -2,7 +2,7 @@ import type { RefObject, PointerEvent, JSX } from 'react';
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '@/core/store';
-import { useGridCoords, useGridTemplate } from '@/hooks';
+import { useGridCoords, useGridTemplate } from '@/features/grid-editor/hooks';
 import { Bin } from './Bin';
 import { getBlockedZones } from '@/features/grid-editor/utils/collision';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
