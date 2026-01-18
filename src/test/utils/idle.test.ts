@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { scheduleIdleCallback, cancelIdleCallback, runWhenIdle } from '../../shared/utils';
+import { scheduleIdleCallback, cancelIdleCallback, runWhenIdle } from '@/shared/utils';
 
 describe('scheduleIdleCallback', () => {
   const originalRIC = globalThis.requestIdleCallback;

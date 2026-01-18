@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import type { LabsPreferences } from '../definitions/types';
-import { createDefaultLabsPreferences } from '../definitions/types';
-import { getFeature, type FeatureId } from '../definitions/features';
-import { trackEvent } from '../../../utils/analytics';
+import type { LabsPreferences } from '@/features/labs/definitions/types';
+import { createDefaultLabsPreferences } from '@/features/labs/definitions/types';
+import { getFeature, type FeatureId } from '@/features/labs/definitions/features';
+import { trackEvent } from '@/utils/analytics';
 
 export const LABS_STORAGE_KEY = 'gridfinity-labs-v1';
 

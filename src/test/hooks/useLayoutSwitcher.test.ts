@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
-import { useLayoutSwitcher } from '../../hooks/useLayoutSwitcher';
-import { useLayoutStore } from '../../core/store/layout';
-import { useLibraryStore } from '../../core/store/library';
-import { useUIStore } from '../../core/store/ui';
-import { useHistoryStore } from '../../core/store/history';
-import { useToastStore } from '../../core/store/toast';
-import { createDefaultLayout } from '../../core/constants';
-import { resetAllStores } from '../testUtils';
-import * as storage from '../../core/storage';
-import type { LayoutLibrary, LayoutEntry, Layout } from '../../core/types';
-import { isOk, isErr } from '../../core/result';
+import { useLayoutSwitcher } from '@/hooks/useLayoutSwitcher';
+import { useLayoutStore } from '@/core/store/layout';
+import { useLibraryStore } from '@/core/store/library';
+import { useUIStore } from '@/core/store/ui';
+import { useHistoryStore } from '@/core/store/history';
+import { useToastStore } from '@/core/store/toast';
+import { createDefaultLayout } from '@/core/constants';
+import { resetAllStores } from '@/test/testUtils';
+import * as storage from '@/core/storage';
+import type { LayoutLibrary, LayoutEntry, Layout } from '@/core/types';
+import { isOk, isErr } from '@/core/result';
 
 // Mock the storage module
 vi.mock('../../core/storage', () => {

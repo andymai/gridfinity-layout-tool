@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { DeferredNumberInput } from '../DeferredNumberInput';
+import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 
 /**
  * Variant determines the visual size and styling of the stepper:

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useGridCoords } from '../../features/grid-editor/hooks/useGridCoords';
-import { useUIStore } from '../../core/store/ui';
-import { useLayoutStore } from '../../core/store/layout';
-import { resetAllStores } from '../testUtils';
+import { useGridCoords } from '@/features/grid-editor/hooks/useGridCoords';
+import { useUIStore } from '@/core/store/ui';
+import { useLayoutStore } from '@/core/store/layout';
+import { resetAllStores } from '@/test/testUtils';
 import type { RefObject } from 'react';
 
 // Mock useResponsive

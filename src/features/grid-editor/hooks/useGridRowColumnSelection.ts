@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useSelectionStore } from '../../../core/store/selection';
-import type { Bin } from '../../../core/types';
-import { STAGING_ID } from '../../../core/constants';
+import { useSelectionStore } from '@/core/store/selection';
+import type { Bin } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 
 /**
  * Grid Row/Column Selection Hook

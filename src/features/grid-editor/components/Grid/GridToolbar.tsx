@@ -1,11 +1,11 @@
 import { memo, useState, useEffect, useRef, type RefObject } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useViewStore } from '../../../../core/store/view';
-import { useInteractionStore } from '../../../../core/store/interaction';
-import { Checkbox } from '../../../../shared/components/Checkbox';
-import { track3DPreview } from '../../../../utils/analytics';
-import type { Layer } from '../../../../core/types';
-import type { GridZoomState } from '../../hooks/useGridZoom';
+import { useViewStore } from '@/core/store/view';
+import { useInteractionStore } from '@/core/store/interaction';
+import { Checkbox } from '@/shared/components/Checkbox';
+import { track3DPreview } from '@/utils/analytics';
+import type { Layer } from '@/core/types';
+import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
 
 /**
  * Grid Toolbar Component

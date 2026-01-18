@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '../../core/store';
-import { canPlaceBin } from '../../shared/utils/validation';
-import { isOk } from '../../core/result';
+import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
+import { canPlaceBin } from '@/shared/utils/validation';
+import { isOk } from '@/core/result';
 import type { InteractionContext, ModeHandlers, DrawStartArgs } from './types';
-import type { Coord } from '../../core/types';
+import type { Coord } from '@/core/types';
 
 /**
  * Hook for draw mode interactions: creating new bins by dragging a rectangle.

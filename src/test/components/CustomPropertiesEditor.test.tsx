@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
-import { CustomPropertiesEditor } from '../../features/bin-inspector';
-import { CONSTRAINTS } from '../../core/constants';
+import { CustomPropertiesEditor } from '@/features/bin-inspector';
+import { CONSTRAINTS } from '@/core/constants';
 
 describe('CustomPropertiesEditor', () => {
   const mockOnChange = vi.fn();

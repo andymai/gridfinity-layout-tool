@@ -8,9 +8,9 @@
  */
 
 import { exportLayoutJSON } from './ShareService';
-import type { Layout } from '../types';
-import type { Result, UnknownError } from '../result';
-import { ok, err, unknownError } from '../result';
+import type { Layout } from '@/core/types';
+import type { Result, UnknownError } from '@/core/result';
+import { ok, err, unknownError } from '@/core/result';
 
 /**
  * Copy text to clipboard.

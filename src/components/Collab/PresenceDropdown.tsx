@@ -6,7 +6,7 @@
  */
 
 import { useRef, useEffect, useLayoutEffect, useCallback, useState } from 'react';
-import type { Participant, ConnectionStatus } from '../../hooks/usePresence';
+import type { Participant, ConnectionStatus } from '@/hooks/usePresence';
 import { PresenceAvatarList } from './PresenceAvatarList';
 import { ConnectionIndicator } from './ConnectionIndicator';
 

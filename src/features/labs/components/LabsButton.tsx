@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useLabsStore } from '../store/labs';
-import { getFeature } from '../definitions/features';
+import { useLabsStore } from '@/features/labs/store/labs';
+import { getFeature } from '@/features/labs/definitions/features';
 import { SparklesIcon } from './icons';
 
 export function LabsButton() {

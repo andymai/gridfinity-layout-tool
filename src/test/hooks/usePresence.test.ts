@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getInitials } from '../../hooks/usePresence';
+import { getInitials } from '@/hooks/usePresence';
 
 // Note: Full hook testing requires mocking Liveblocks hooks which is complex.
 // We focus on testing the utility functions and behavior that doesn't require Liveblocks.
@@ -63,7 +63,7 @@ describe('usePresence integration (mock-based)', () => {
   describe('non-collaborative mode', () => {
     it('exports expected types', async () => {
       // Verify the module exports the expected interfaces
-      const presenceModule = await import('../../hooks/usePresence');
+      const presenceModule = await import('@/hooks/usePresence');
 
       expect(typeof presenceModule.usePresence).toBe('function');
       expect(typeof presenceModule.getInitials).toBe('function');
@@ -71,7 +71,7 @@ describe('usePresence integration (mock-based)', () => {
 
     it('hook interface includes expected properties', async () => {
       // Just verify the shape of the returned state
-      const { usePresence } = await import('../../hooks/usePresence');
+      const { usePresence } = await import('@/hooks/usePresence');
 
       // Note: We can't fully test the hook without mocking Liveblocks,
       // but we can verify it doesn't crash when imported
@@ -82,7 +82,7 @@ describe('usePresence integration (mock-based)', () => {
   describe('PresenceState interface', () => {
     it('defines expected shape', async () => {
       // The EMPTY_STATE constant should match PresenceState interface
-      const presenceModule = await import('../../hooks/usePresence');
+      const presenceModule = await import('@/hooks/usePresence');
 
       // We can't directly access EMPTY_STATE but we can verify
       // the hook exists and the utilities work

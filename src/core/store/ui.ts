@@ -13,17 +13,17 @@
  * New code should import from the specific stores directly.
  *
  * @deprecated Import from specific stores instead:
- * - Selection: import { useSelectionStore } from '../store/selection'
- * - View: import { useViewStore } from '../store/view'
- * - Interaction: import { useInteractionStore } from '../store/interaction'
- * - Mobile: import { useMobileStore } from '../store/mobile'
- * - HalfBinMode: import { useHalfBinModeStore } from '../store/halfBinMode'
- * - SharedPreview: import { useSharedPreviewStore } from '../store/sharedPreview'
+ * - Selection: import { useSelectionStore } from '@/core/store/selection'
+ * - View: import { useViewStore } from '@/core/store/view'
+ * - Interaction: import { useInteractionStore } from '@/core/store/interaction'
+ * - Mobile: import { useMobileStore } from '@/core/store/mobile'
+ * - HalfBinMode: import { useHalfBinModeStore } from '@/core/store/halfBinMode'
+ * - SharedPreview: import { useSharedPreviewStore } from '@/core/store/sharedPreview'
  */
 
 import { create } from 'zustand';
-import type { Interaction, Layout, OperationResult } from '../types';
-import type { Result, Unit, LayoutError } from '../result';
+import type { Interaction, Layout, OperationResult } from '@/core/types';
+import type { Result, Unit, LayoutError } from '@/core/result';
 import { useSelectionStore } from './selection';
 import { useViewStore, type ContextMenuState } from './view';
 import { useInteractionStore, type DropTarget, type PaintSize, type LayerViewMode } from './interaction';
@@ -375,7 +375,7 @@ export const useUIStore = create<UIState>((_set) => ({
 // PERFORMANCE NOTE: This cascade causes ALL useUIStore consumers to re-render
 // when ANY underlying store changes. For hot-path components (Bin.tsx, Overlay.tsx),
 // import from focused stores directly to bypass this overhead:
-//   import { useSelectionStore, useViewStore, useInteractionStore } from '../store';
+//   import { useSelectionStore, useViewStore, useInteractionStore } from '@/core/store';
 useSelectionStore.subscribe(() => {
   useUIStore.setState(getCombinedState());
 });

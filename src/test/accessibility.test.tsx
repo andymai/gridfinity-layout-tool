@@ -11,13 +11,13 @@ declare module 'vitest' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface AsymmetricMatchersContaining extends AxeMatchers {}
 }
-import { Header } from '../components/Header';
-import { Sidebar } from '../components/Sidebar';
-import { RightPanel } from '../components/RightPanel';
-import { Staging } from '../features/staging/components/Staging';
-import { useLayoutStore } from '../core/store/layout';
-import { useUIStore } from '../core/store/ui';
-import { createDefaultLayout } from '../core/constants';
+import { Header } from '@/components/Header';
+import { Sidebar } from '@/components/Sidebar';
+import { RightPanel } from '@/components/RightPanel';
+import { Staging } from '@/features/staging/components/Staging';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUIStore } from '@/core/store/ui';
+import { createDefaultLayout } from '@/core/constants';
 
 // Extend expect with axe matchers
 expect.extend(matchers);

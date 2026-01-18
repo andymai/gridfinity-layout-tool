@@ -3,8 +3,8 @@ import {
   saveSharedWithMe,
   loadSharedWithMe,
   clearSharedWithMe,
-} from '../core/storage/SharedWithMeService';
-import type { SharedWithMeEntry } from '../core/types';
+} from '@/core/storage/SharedWithMeService';
+import type { SharedWithMeEntry } from '@/core/types';
 
 describe('SharedWithMeService', () => {
   const STORAGE_KEY = 'gridfinity-shared-with-me-v1';

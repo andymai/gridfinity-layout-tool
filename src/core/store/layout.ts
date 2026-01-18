@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { Layout, Bin, Layer, Category, Drawer } from '../types';
-import { createDefaultLayout, generateId, STAGING_ID, CONSTRAINTS, calcMaxGridUnits } from '../constants';
-import { canPlaceBin, clamp } from '../../shared/utils/validation';
-import { fillAllWithSize, fillGaps } from '../../features/grid-editor/utils/fill';
-import { checkLayerReorderCollisions } from '../../features/grid-editor/utils/collision';
+import type { Layout, Bin, Layer, Category, Drawer } from '@/core/types';
+import { createDefaultLayout, generateId, STAGING_ID, CONSTRAINTS, calcMaxGridUnits } from '@/core/constants';
+import { canPlaceBin, clamp } from '@/shared/utils/validation';
+import { fillAllWithSize, fillGaps } from '@/features/grid-editor/utils/fill';
+import { checkLayerReorderCollisions } from '@/features/grid-editor/utils/collision';
 import { useSettingsStore } from './settings';
-import type { Result, LayoutError, ValidationError } from '../result';
+import type { Result, LayoutError, ValidationError } from '@/core/result';
 import {
   ok,
   err,
@@ -18,7 +18,7 @@ import {
   validationOutOfBounds,
   validationCollision,
   validationInvalidLayer,
-} from '../result';
+} from '@/core/result';
 
 /** Source of the last edit to the layout - used to distinguish local edits from remote imports */
 export type EditSource = 'local' | 'remote' | 'init' | null;

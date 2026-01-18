@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { getSelectionBounds, constrainGroupDelta, applyGroupDelta } from '../utils/selection';
-import type { Bin } from '../core/types';
+import { getSelectionBounds, constrainGroupDelta, applyGroupDelta } from '@/utils/selection';
+import type { Bin } from '@/core/types';
 
 // Helper to create test bins
 function createBin(overrides: Partial<Bin>): Bin {

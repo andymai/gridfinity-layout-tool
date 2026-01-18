@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, ThumbnailBin, CloudShareInfo, SharedWithMeEntry, SharePermission } from '../types';
-import { CONSTRAINTS, STAGING_ID } from '../constants';
-import { generateUUID, generateLayoutId } from '../../shared/utils';
-import type { Result, Unit, LayoutError } from '../result';
-import { err, layoutLastEntity, OK } from '../result';
-import { saveSharedWithMe } from '../storage/SharedWithMeService';
-import { saveLibrary } from '../storage';
+import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, ThumbnailBin, CloudShareInfo, SharedWithMeEntry, SharePermission } from '@/core/types';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { generateUUID, generateLayoutId } from '@/shared/utils';
+import type { Result, Unit, LayoutError } from '@/core/result';
+import { err, layoutLastEntity, OK } from '@/core/result';
+import { saveSharedWithMe } from '@/core/storage/SharedWithMeService';
+import { saveLibrary } from '@/core/storage';
 
 /**
  * Compute preview data from a layout for display in the library.

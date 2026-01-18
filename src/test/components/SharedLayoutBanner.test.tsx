@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { SharedLayoutBanner } from '../../features/cloud-share/components/SharedLayoutBanner';
-import { useUIStore } from '../../core/store/ui';
-import { useLayoutStore } from '../../core/store/layout';
-import { useLibraryStore } from '../../core/store/library';
-import { useToastStore } from '../../core/store/toast';
-import type { Layout } from '../../core/types';
+import { SharedLayoutBanner } from '@/features/cloud-share/components/SharedLayoutBanner';
+import { useUIStore } from '@/core/store/ui';
+import { useLayoutStore } from '@/core/store/layout';
+import { useLibraryStore } from '@/core/store/library';
+import { useToastStore } from '@/core/store/toast';
+import type { Layout } from '@/core/types';
 
 // Mock storage functions
 vi.mock('../../core/storage', () => ({

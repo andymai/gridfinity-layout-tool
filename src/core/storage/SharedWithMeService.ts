@@ -11,10 +11,10 @@
  * Storage key: gridfinity-shared-with-me-v1
  */
 
-import type { SharedWithMeEntry } from '../types';
-import type { Result } from '../result';
-import type { StorageError } from '../result/errors';
-import { ok, err, storageCorrupted, storageQuotaExceeded } from '../result';
+import type { SharedWithMeEntry } from '@/core/types';
+import type { Result } from '@/core/result';
+import type { StorageError } from '@/core/result/errors';
+import { ok, err, storageCorrupted, storageQuotaExceeded } from '@/core/result';
 
 const SHARED_WITH_ME_KEY = 'gridfinity-shared-with-me-v1';
 

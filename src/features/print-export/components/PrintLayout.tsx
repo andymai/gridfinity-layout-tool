@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import type { Layout, Layer } from '../../../core/types';
-import type { PrintViewSettings } from '../../../core/store/settings';
+import type { Layout, Layer } from '@/core/types';
+import type { PrintViewSettings } from '@/core/store/settings';
 import { PrintBin } from './PrintBin';
 import {
   getVisibleBinsForPrint,
@@ -9,8 +9,8 @@ import {
   formatDrawerDimensions,
   formatPrintDate,
   sortBinsForPrint,
-} from '../utils/printLayout';
-import { useGridTemplate } from '../../../hooks';
+} from '@/features/print-export/utils/printLayout';
+import { useGridTemplate } from '@/hooks';
 
 // Page widths for print (in pixels at 96 DPI, accounting for 0.5" margins)
 const PORTRAIT_WIDTH_PX = 670;  // 8.5" - 1" margins = 7" ≈ 670px

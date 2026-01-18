@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore } from '../../../core/store';
-import { useUndoableAction } from '../../../core/store';
-import { CONSTRAINTS, STAGING_ID } from '../../../core/constants';
-import { clamp } from '../../../shared/utils/validation';
+import { useLayoutStore } from '@/core/store';
+import { useUndoableAction } from '@/core/store';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { clamp } from '@/shared/utils/validation';
 
 /**
  * Grid Resize Hook

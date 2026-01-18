@@ -8,7 +8,7 @@
  * - Red (disconnected): Connection lost
  */
 
-import type { ConnectionStatus } from '../../hooks/usePresence';
+import type { ConnectionStatus } from '@/hooks/usePresence';
 
 interface ConnectionIndicatorProps {
   /** Current connection status */

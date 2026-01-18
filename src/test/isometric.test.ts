@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { darkenColor, lightenColor } from '../utils/isometric';
+import { darkenColor, lightenColor } from '@/utils/isometric';
 
 describe('darkenColor', () => {
   it('darkens white by 50%', () => {

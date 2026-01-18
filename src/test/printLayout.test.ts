@@ -7,10 +7,10 @@ import {
   formatPrintDate,
   getBinCountByLayer,
   sortBinsForPrint,
-} from '../features/print-export/utils/printLayout';
-import type { Bin, Layer, Category, Drawer } from '../core/types';
-import type { BinListSortOrder } from '../core/store/settings';
-import { STAGING_ID } from '../core/constants';
+} from '@/features/print-export/utils/printLayout';
+import type { Bin, Layer, Category, Drawer } from '@/core/types';
+import type { BinListSortOrder } from '@/core/store/settings';
+import { STAGING_ID } from '@/core/constants';
 
 describe('printLayout utilities', () => {
   // Test fixtures

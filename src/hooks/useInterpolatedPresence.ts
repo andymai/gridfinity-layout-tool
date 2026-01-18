@@ -23,7 +23,7 @@
  */
 
 import { useRef, useEffect, useState, useMemo } from 'react';
-import { useOthers } from '../liveblocks.config';
+import { useOthers } from '@/liveblocks.config';
 
 /** Lerp factor - higher = snappier response (0.2 = smooth, 0.5 = responsive) */
 const INTERPOLATION_SPEED = 0.25;

@@ -1,4 +1,4 @@
-import { formatPrintTime, formatCost } from '../utils/printEstimates';
+import { formatPrintTime, formatCost } from '@/features/print-export/utils/printEstimates';
 
 interface PrintListSummaryProps {
   totalBins: number;

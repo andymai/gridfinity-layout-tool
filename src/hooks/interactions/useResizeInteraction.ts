@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import { useInteractionStore, useHalfBinModeStore } from '../../core/store';
-import { canPlaceBin } from '../../shared/utils/validation';
-import { calculateResizeRect } from '../../utils/interaction';
+import { useInteractionStore, useHalfBinModeStore } from '@/core/store';
+import { canPlaceBin } from '@/shared/utils/validation';
+import { calculateResizeRect } from '@/utils/interaction';
 import type { InteractionContext, ModeHandlers, ResizeStartArgs } from './types';
-import type { Coord, Rect } from '../../core/types';
+import type { Coord, Rect } from '@/core/types';
 
 /**
  * Hook for resize mode interactions: resizing bins via corner/edge handles.

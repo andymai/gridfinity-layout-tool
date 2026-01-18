@@ -1,8 +1,8 @@
 import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useToastStore, useSettingsStore } from '../../../core/store';
-import type { Layout } from '../../../core/types';
-import { isErr, isOk } from '../../../core/result';
+import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useToastStore, useSettingsStore } from '@/core/store';
+import type { Layout } from '@/core/types';
+import { isErr, isOk } from '@/core/result';
 import {
   saveLayoutWithMetadata,
   createLayoutEntry,
@@ -10,16 +10,16 @@ import {
   duplicateLayoutEntry as duplicateLayoutStorage,
   switchActiveLayout,
   renameLayoutEntry,
-} from '../../../core/storage';
-import { setLayoutURL } from '../../../utils/url';
-import { createLayoutWithSettings } from '../../../core/constants';
-import { trackLayoutAction } from '../../../utils/analytics';
-import type { Result, Unit, LayoutError, StorageError, UnknownError } from '../../../core/result';
+} from '@/core/storage';
+import { setLayoutURL } from '@/utils/url';
+import { createLayoutWithSettings } from '@/core/constants';
+import { trackLayoutAction } from '@/utils/analytics';
+import type { Result, Unit, LayoutError, StorageError, UnknownError } from '@/core/result';
 import {
   ok, err, OK,
   layoutLastEntity, layoutInvalidOperation,
   fromUnknown,
-} from '../../../core/result';
+} from '@/core/result';
 
 /**
  * Orchestration hook for layout switching and management.

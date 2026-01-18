@@ -9,9 +9,9 @@ import {
   migrateFromLegacyStorage,
   getLayoutStorageKey,
   computeLayoutPreview,
-} from '../core/storage';
-import { createDefaultLayout, STAGING_ID } from '../core/constants';
-import type { Layout, LayoutLibrary } from '../core/types';
+} from '@/core/storage';
+import { createDefaultLayout, STAGING_ID } from '@/core/constants';
+import type { Layout, LayoutLibrary } from '@/core/types';
 
 // Mock localStorage
 const localStorageMock = (() => {

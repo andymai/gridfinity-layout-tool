@@ -10,11 +10,11 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useStorage } from '../../../liveblocks.config';
-import { useLayoutStore } from '../../../core/store/layout';
-import { updateShare } from '../../../core/api/share';
-import { isOk } from '../../../core/result';
-import { STAGING_ID } from '../../../core/constants';
+import { useStorage } from '@/liveblocks.config';
+import { useLayoutStore } from '@/core/store/layout';
+import { updateShare } from '@/core/api/share';
+import { isOk } from '@/core/result';
+import { STAGING_ID } from '@/core/constants';
 
 /** Debounce delay for cloud share updates (1 second) */
 const CLOUD_SYNC_DEBOUNCE_MS = 1000;

@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { RightPanel } from '../../components/RightPanel';
-import { useUIStore, useLayoutStore, useViewStore } from '../../core/store';
-import { resetAllStores } from '../testUtils';
-import type { UseBinInspectorReturn } from '../../features/bin-inspector';
-import type { UsePrintListReturn } from '../../features/print-export/hooks/usePrintList';
+import { RightPanel } from '@/components/RightPanel';
+import { useUIStore, useLayoutStore, useViewStore } from '@/core/store';
+import { resetAllStores } from '@/test/testUtils';
+import type { UseBinInspectorReturn } from '@/features/bin-inspector';
+import type { UsePrintListReturn } from '@/features/print-export/hooks/usePrintList';
 
 // Mock inspector components
 vi.mock('../../features/bin-inspector', () => ({
@@ -105,7 +105,7 @@ vi.mock('../../features/print-export/hooks/usePrintList', () => ({
 }));
 
 // Get useBinInspector mock
-import { useBinInspector } from '../../features/bin-inspector';
+import { useBinInspector } from '@/features/bin-inspector';
 const mockUseBinInspector = useBinInspector as ReturnType<typeof vi.fn>;
 
 describe('RightPanel', () => {

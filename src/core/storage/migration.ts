@@ -15,9 +15,9 @@
 import * as backend from './backend';
 import * as localStorage from './backends/localStorage';
 import * as indexedDB from './backends/indexedDB';
-import type { Layout } from '../types';
-import type { Result, Unit, StorageError } from '../result';
-import { ok, err, OK, storageNotFound, storageUnavailable, storageNetworkError } from '../result';
+import type { Layout } from '@/core/types';
+import type { Result, Unit, StorageError } from '@/core/result';
+import { ok, err, OK, storageNotFound, storageUnavailable, storageNetworkError } from '@/core/result';
 
 // Storage keys
 const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';

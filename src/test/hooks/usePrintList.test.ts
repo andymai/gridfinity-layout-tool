@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { usePrintList } from '../../features/print-export/hooks/usePrintList';
-import { useLayoutStore } from '../../core/store/layout';
-import { useUIStore } from '../../core/store/ui';
-import { createDefaultLayout, generateId } from '../../core/constants';
-import type { Layout, Bin } from '../../core/types';
+import { usePrintList } from '@/features/print-export/hooks/usePrintList';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUIStore } from '@/core/store/ui';
+import { createDefaultLayout, generateId } from '@/core/constants';
+import type { Layout, Bin } from '@/core/types';
 
 // Helper to create test bins
 function createTestBin(overrides: Partial<Bin> = {}): Bin {

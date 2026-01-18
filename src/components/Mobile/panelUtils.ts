@@ -1,4 +1,4 @@
-import type { MobilePanel } from '../../core/store/ui';
+import type { MobilePanel } from '@/core/store/ui';
 
 /**
  * Get the title for a mobile panel

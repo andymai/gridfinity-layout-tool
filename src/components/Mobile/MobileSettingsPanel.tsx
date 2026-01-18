@@ -1,17 +1,17 @@
 import { useMemo } from 'react';
-import { useLabsStore } from '../../core/store';
-import { useDrawerSettings } from '../../hooks';
-import { getFeature } from '../../features/labs/definitions/features';
-import { SparklesIcon, ChevronRightIcon } from '../../features/labs/components/icons';
-import { CONSTRAINTS } from '../../core/constants';
-import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
-import { HalfBinModeBlockedModal } from '../Modals/HalfBinModeBlockedModal';
-import { DeferredNumberInput } from '../../shared/components/DeferredNumberInput';
-import { StepperControl } from '../../shared/components/StepperControl';
-import { Checkbox } from '../../shared/components/Checkbox';
-import { SectionHeader } from '../SectionHeader';
-import { SettingsRow } from '../SettingsRow';
-import type { STLSearchSite } from '../../core/store/settings';
+import { useLabsStore } from '@/core/store';
+import { useDrawerSettings } from '@/hooks';
+import { getFeature } from '@/features/labs/definitions/features';
+import { SparklesIcon, ChevronRightIcon } from '@/features/labs/components/icons';
+import { CONSTRAINTS } from '@/core/constants';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { HalfBinModeBlockedModal } from '@/components/Modals/HalfBinModeBlockedModal';
+import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { StepperControl } from '@/shared/components/StepperControl';
+import { Checkbox } from '@/shared/components/Checkbox';
+import { SectionHeader } from '@/components/SectionHeader';
+import { SettingsRow } from '@/components/SettingsRow';
+import type { STLSearchSite } from '@/core/store/settings';
 
 /**
  * Mobile settings panel with grid configuration and app actions.

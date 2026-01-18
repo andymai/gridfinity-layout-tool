@@ -1,4 +1,4 @@
-import { useLayoutStore } from '../../../core/store';
+import { useLayoutStore } from '@/core/store';
 
 /**
  * Returns true if advanced layer mode should be shown.

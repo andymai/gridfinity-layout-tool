@@ -5,7 +5,7 @@
  * Reused in both the desktop dropdown and mobile bottom sheet.
  */
 
-import type { Participant } from '../../hooks/usePresence';
+import type { Participant } from '@/hooks/usePresence';
 import { PresenceAvatar } from './PresenceAvatar';
 
 interface PresenceAvatarListProps {
