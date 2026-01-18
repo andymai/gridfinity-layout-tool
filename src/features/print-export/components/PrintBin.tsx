@@ -1,6 +1,6 @@
-import type { Bin, Category, Drawer } from '../../core/types';
-import type { PrintViewSettings } from '../../core/store/settings';
-import { DEFAULT_CATEGORY_COLOR } from '../../core/constants';
+import type { Bin, Category, Drawer } from '../../../core/types';
+import type { PrintViewSettings } from '../../../core/store/settings';
+import { DEFAULT_CATEGORY_COLOR } from '../../../core/constants';
 
 interface PrintBinProps {
   bin: Bin;
