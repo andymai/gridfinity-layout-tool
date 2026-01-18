@@ -1,13 +1,13 @@
 import { Suspense } from 'react';
-import { useUIStore } from '../core/store';
-import { lazyWithRetry, namedExport } from '../utils/lazyWithRetry';
-import { Grid } from '../components/Grid';
-import { Staging } from '../features/staging/components/Staging';
-import { DropZones } from '../components/DropZones';
-import { DragPreview } from '../components/DragPreview';
-import { ToastContainer } from '../shared/components/Toast';
-import { PanelErrorBoundary } from '../components/PanelErrorBoundary';
-import { SharedLayoutImporter, SharedLayoutBanner } from '../features/cloud-share/components';
+import { useUIStore } from '@/core/store';
+import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
+import { Grid } from '@/components/Grid';
+import { Staging } from '@/features/staging/components/Staging';
+import { DropZones } from '@/components/DropZones';
+import { DragPreview } from '@/components/DragPreview';
+import { ToastContainer } from '@/shared/components/Toast';
+import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
+import { SharedLayoutImporter, SharedLayoutBanner } from '@/features/cloud-share/components';
 import {
   MobileHeader,
   BottomNavBar,
@@ -20,12 +20,12 @@ import {
   MobileSettingsPanel,
   MobileLayoutsPanel,
   BinContextMenuWrapper,
-} from '../components/Mobile';
-import { LabsDrawer } from '../features/labs/components';
-import { PresenceAvatarList } from '../components/Collab';
-import { usePresence } from '../hooks/usePresence';
-import { useCollabMode } from '../hooks/useCollabMode';
-import type { SaveStatus } from '../shared/hooks';
+} from '@/components/Mobile';
+import { LabsDrawer } from '@/features/labs/components';
+import { PresenceAvatarList } from '@/components/Collab';
+import { usePresence } from '@/hooks/usePresence';
+import { useCollabMode } from '@/hooks/useCollabMode';
+import type { SaveStatus } from '@/shared/hooks';
 
 // Legacy context menu state for backwards compatibility
 interface LegacyContextMenuState {
@@ -35,7 +35,7 @@ interface LegacyContextMenuState {
 
 // Lazy load mobile help modal (with retry for chunk load failures)
 const MobileHelpModal = lazyWithRetry(() =>
-  import('../components/Mobile/MobileHelpModal').then(namedExport('MobileHelpModal'))
+  import('@/components/Mobile/MobileHelpModal').then(namedExport('MobileHelpModal'))
 );
 
 export interface MobileLayoutProps {

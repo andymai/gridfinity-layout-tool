@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BinListDashboard } from '../../components/Modals/BinListModal/BinListDashboard';
-import type { CategoryBreakdown } from '../../utils/binListOperations';
+import { BinListDashboard } from '@/components/Modals/BinListModal/BinListDashboard';
+import type { CategoryBreakdown } from '@/utils/binListOperations';
 
 // Mock the BinList components
 vi.mock('../../components/BinList', () => ({

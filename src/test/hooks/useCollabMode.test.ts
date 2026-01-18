@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useCollabMode, getCollabMode } from '../../hooks/useCollabMode';
-import { useLabsStore } from '../../features/labs/store/labs';
-import { useLibraryStore } from '../../core/store/library';
-import { useUIStore } from '../../core/store/ui';
-import type { CloudShareInfo, LayoutLibrary, LayoutEntry } from '../../core/types';
+import { useCollabMode, getCollabMode } from '@/hooks/useCollabMode';
+import { useLabsStore } from '@/features/labs/store/labs';
+import { useLibraryStore } from '@/core/store/library';
+import { useUIStore } from '@/core/store/ui';
+import type { CloudShareInfo, LayoutLibrary, LayoutEntry } from '@/core/types';
 
 const TEST_LAYOUT_ID = 'test-layout-123';
 const TEST_SHARE_ID = 'share-abc-123';

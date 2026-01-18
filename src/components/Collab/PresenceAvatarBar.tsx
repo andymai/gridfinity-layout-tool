@@ -7,7 +7,7 @@
  */
 
 import { useState, useRef } from 'react';
-import type { Participant, ConnectionStatus } from '../../hooks/usePresence';
+import type { Participant, ConnectionStatus } from '@/hooks/usePresence';
 import { PresenceAvatar } from './PresenceAvatar';
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { PresenceDropdown } from './PresenceDropdown';

@@ -1,16 +1,16 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '../../core/store/ui';
-import { useLayoutStore } from '../../core/store/layout';
-import { useLayoutSwitcher } from '../../hooks/useLayoutSwitcher';
-import { useCloudShare } from '../../features/cloud-share/hooks/useCloudShare';
-import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
-import { LayoutThumbnail } from '../LayoutThumbnail';
-import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../core/storage';
-import { formatShareDate } from '../../features/cloud-share/utils/cloudShare';
-import type { LayoutEntry, SharePermission } from '../../core/types';
-import { isOk } from '../../core/result';
+import { useUIStore } from '@/core/store/ui';
+import { useLayoutStore } from '@/core/store/layout';
+import { useLayoutSwitcher } from '@/hooks/useLayoutSwitcher';
+import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { LayoutThumbnail } from '@/components/LayoutThumbnail';
+import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '@/core/storage';
+import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
+import type { LayoutEntry, SharePermission } from '@/core/types';
+import { isOk } from '@/core/result';
 
 /**
  * Mobile-optimized layouts panel with larger touch targets and swipe gestures.

@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ShareModal } from '../../features/cloud-share/components/ShareModal';
-import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '../../core/store';
-import { resetAllStores } from '../testUtils';
-import * as storage from '../../core/storage';
-import * as analytics from '../../utils/analytics';
+import { ShareModal } from '@/features/cloud-share/components/ShareModal';
+import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '@/core/store';
+import { resetAllStores } from '@/test/testUtils';
+import * as storage from '@/core/storage';
+import * as analytics from '@/utils/analytics';
 
 // Mock CloudShareTab since it's a complex component
 vi.mock('../../features/cloud-share/components/CloudShareTab', () => ({

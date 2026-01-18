@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { CONSTRAINTS } from '../constants';
-import { clamp } from '../../shared/utils/validation';
+import { CONSTRAINTS } from '@/core/constants';
+import { clamp } from '@/shared/utils/validation';
 
 /**
  * View Store

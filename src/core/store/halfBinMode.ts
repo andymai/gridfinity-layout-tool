@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { validateHalfBinModeToggle } from '../../utils/halfBinConstraints';
+import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
 import { useLayoutStore } from './layout';
-import type { Result, Unit, LayoutError } from '../result';
-import { err, layoutInvalidOperation, OK } from '../result';
-import type { OperationResult } from '../types';
+import type { Result, Unit, LayoutError } from '@/core/result';
+import { err, layoutInvalidOperation, OK } from '@/core/result';
+import type { OperationResult } from '@/core/types';
 
 /**
  * Half-Bin Mode Store

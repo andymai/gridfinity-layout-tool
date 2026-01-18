@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useAnalytics } from '../../hooks/useAnalytics';
-import { useLayoutStore } from '../../core/store/layout';
-import { resetAllStores } from '../testUtils';
-import * as analytics from '../../utils/analytics';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { useLayoutStore } from '@/core/store/layout';
+import { resetAllStores } from '@/test/testUtils';
+import * as analytics from '@/utils/analytics';
 
 // Mock the analytics module
 vi.mock('../../utils/analytics', () => ({

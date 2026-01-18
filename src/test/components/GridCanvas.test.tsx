@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { createRef } from 'react';
-import { GridCanvas } from '../../features/grid-editor/components/Grid/GridCanvas';
-import { useLayoutStore } from '../../core/store/layout';
-import { useUIStore } from '../../core/store/ui';
-import { createDefaultLayout } from '../../core/constants';
-import { resetAllStores } from '../testUtils';
-import type { Bin } from '../../core/types';
+import { GridCanvas } from '@/features/grid-editor/components/Grid/GridCanvas';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUIStore } from '@/core/store/ui';
+import { createDefaultLayout } from '@/core/constants';
+import { resetAllStores } from '@/test/testUtils';
+import type { Bin } from '@/core/types';
 
 // Mock useResponsive to avoid matchMedia issues
 vi.mock('../../hooks/useResponsive', () => ({

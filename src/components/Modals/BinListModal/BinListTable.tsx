@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
-import { DEFAULT_CATEGORY_COLOR } from '../../../core/constants';
-import { SplitPreview } from '../../Print/SplitPreview';
-import { STLSearchDropdown } from '../../STLSearchDropdown';
-import type { EnhancedPrintRow, Category, PrintListSortKey, PrintListSortOrder } from '../../../core/types';
+import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { SplitPreview } from '@/components/Print/SplitPreview';
+import { STLSearchDropdown } from '@/components/STLSearchDropdown';
+import type { EnhancedPrintRow, Category, PrintListSortKey, PrintListSortOrder } from '@/core/types';
 
 interface BinListTableProps {
   rows: EnhancedPrintRow[];

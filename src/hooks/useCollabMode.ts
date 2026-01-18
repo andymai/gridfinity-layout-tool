@@ -19,9 +19,9 @@
  * ```
  */
 
-import { useLabsStore } from '../features/labs/store/labs';
-import { useLibraryStore } from '../core/store/library';
-import { useUIStore } from '../core/store/ui';
+import { useLabsStore } from '@/features/labs/store/labs';
+import { useLibraryStore } from '@/core/store/library';
+import { useUIStore } from '@/core/store/ui';
 
 export interface CollabModeState {
   /** Whether collaborative mode is active */

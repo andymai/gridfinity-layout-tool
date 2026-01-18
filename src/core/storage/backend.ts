@@ -14,7 +14,7 @@
 
 import * as localStorage from './backends/localStorage';
 import * as indexedDB from './backends/indexedDB';
-import type { Layout } from '../types';
+import type { Layout } from '@/core/types';
 
 // Cache the backend determination for async operations
 let cachedBackend: 'indexeddb' | 'localstorage' | null = null;

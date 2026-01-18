@@ -14,10 +14,10 @@ import {
   switchActiveLayout,
   updateCloudShare,
   renameLayoutEntry,
-} from '../core/storage/LayoutManager';
-import { isOk, isErr } from '../core/result';
-import { createDefaultLayout, STAGING_ID } from '../core/constants';
-import type { Layout, LayoutLibrary, LayoutEntry, Bin } from '../core/types';
+} from '@/core/storage/LayoutManager';
+import { isOk, isErr } from '@/core/result';
+import { createDefaultLayout, STAGING_ID } from '@/core/constants';
+import type { Layout, LayoutLibrary, LayoutEntry, Bin } from '@/core/types';
 
 // Mock the backend module
 vi.mock('../core/storage/backend', () => ({
@@ -37,7 +37,7 @@ vi.mock('../shared/utils/uuid', () => ({
   generateLayoutId: vi.fn(() => 'generated-id-123'),
 }));
 
-import * as backend from '../core/storage/backend';
+import * as backend from '@/core/storage/backend';
 
 // === Test Fixtures ===
 

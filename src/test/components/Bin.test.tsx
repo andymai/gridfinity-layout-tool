@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { Bin } from '../../features/grid-editor/components/Grid/Bin';
+import { Bin } from '@/features/grid-editor/components/Grid/Bin';
 import {
   useLayoutStore,
   useSelectionStore,
   useViewStore,
   useInteractionStore,
-} from '../../core/store';
-import { useToastStore } from '../../core/store/toast';
-import { resetAllStores } from '../testUtils';
-import type { Bin as BinType, Category, Layer, Drawer } from '../../core/types';
+} from '@/core/store';
+import { useToastStore } from '@/core/store/toast';
+import { resetAllStores } from '@/test/testUtils';
+import type { Bin as BinType, Category, Layer, Drawer } from '@/core/types';
 
 // Mock useResponsive
 vi.mock('../../hooks/useResponsive', () => ({

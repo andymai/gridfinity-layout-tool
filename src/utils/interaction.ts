@@ -1,5 +1,5 @@
-import type { Coord, Rect, ResizeHandle, Interaction } from '../core/types';
-import type { InteractionHint } from '../liveblocks.config';
+import type { Coord, Rect, ResizeHandle, Interaction } from '@/core/types';
+import type { InteractionHint } from '@/liveblocks.config';
 
 /**
  * Calculate new rectangle based on resize handle and cursor position.

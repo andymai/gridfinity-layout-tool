@@ -6,7 +6,7 @@
  * bottom sheet when tapped.
  */
 
-import type { ConnectionStatus } from '../../hooks/usePresence';
+import type { ConnectionStatus } from '@/hooks/usePresence';
 import { ConnectionIndicator } from './ConnectionIndicator';
 
 interface PresenceMobileButtonProps {

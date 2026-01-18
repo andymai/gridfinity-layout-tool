@@ -12,12 +12,12 @@
  * - We transform coordinates when rendering
  */
 
-import { useOthers } from '../../liveblocks.config';
-import { useUIStore, useLayoutStore } from '../../core/store';
-import { getBaseCellSize } from '../../core/constants';
-import { useResponsive } from '../../shared/hooks';
-import type { InteractionHint } from '../../liveblocks.config';
-import type { Bin } from '../../core/types';
+import { useOthers } from '@/liveblocks.config';
+import { useUIStore, useLayoutStore } from '@/core/store';
+import { getBaseCellSize } from '@/core/constants';
+import { useResponsive } from '@/shared/hooks';
+import type { InteractionHint } from '@/liveblocks.config';
+import type { Bin } from '@/core/types';
 
 interface CollabGhostsProps {
   /** Optional className for the container */

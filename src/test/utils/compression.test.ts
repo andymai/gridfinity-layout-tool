@@ -11,8 +11,8 @@ import {
   compressString,
   decompressString,
   getCompressionRatio,
-} from '../../shared/utils';
-import type { Layout } from '../../core/types';
+} from '@/shared/utils';
+import type { Layout } from '@/core/types';
 
 // Helper to create a test layout
 function createTestLayout(overrides?: Partial<Layout>): Layout {

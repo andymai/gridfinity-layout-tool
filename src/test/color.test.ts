@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getContrastColor } from '../shared/utils';
+import { getContrastColor } from '@/shared/utils';
 
 describe('getContrastColor', () => {
   describe('light backgrounds should return dark text', () => {

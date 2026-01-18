@@ -11,7 +11,7 @@ import {
   setLayoutHash,
   clearLayoutHash,
   hasShareHash,
-} from '../../utils/url';
+} from '@/utils/url';
 
 describe('url utilities', () => {
   // Store original location

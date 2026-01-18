@@ -10,8 +10,8 @@
  */
 
 import { memo } from 'react';
-import type { Participant } from '../../hooks/usePresence';
-import { getInitials } from '../../hooks/usePresence';
+import type { Participant } from '@/hooks/usePresence';
+import { getInitials } from '@/hooks/usePresence';
 
 interface PresenceAvatarProps {
   /** Participant data */

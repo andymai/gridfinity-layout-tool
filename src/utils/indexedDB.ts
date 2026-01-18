@@ -9,8 +9,8 @@
  */
 
 import { openDB, type IDBPDatabase } from 'idb';
-import { compressLayout, decompressLayout } from '../shared/utils';
-import type { Layout } from '../core/types';
+import { compressLayout, decompressLayout } from '@/shared/utils';
+import type { Layout } from '@/core/types';
 
 const DB_NAME = 'gridfinity-db';
 const DB_VERSION = 1;

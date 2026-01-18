@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { DeferredNumberInput } from '../../shared/components/DeferredNumberInput';
+import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 
 describe('DeferredNumberInput', () => {
   const mockOnChange = vi.fn();

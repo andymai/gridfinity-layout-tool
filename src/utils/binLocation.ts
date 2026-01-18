@@ -1,6 +1,6 @@
-import { STAGING_ID } from '../core/constants';
+import { STAGING_ID } from '@/core/constants';
 import { validateRotation, type RotationResult as ImportedRotationResult } from './rotation';
-import type { Bin, Layout } from '../core/types';
+import type { Bin, Layout } from '@/core/types';
 
 /**
  * Bin location type - where the bin exists in the UI.

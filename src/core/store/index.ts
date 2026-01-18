@@ -4,7 +4,7 @@ export { useToastStore } from './toast';
 export { useLibraryStore, computePreview, createDefaultLibrary } from './library';
 export { useSettingsStore, DEFAULT_SETTINGS } from './settings';
 export type { UserSettings } from './settings';
-export { useLabsStore, LABS_STORAGE_KEY } from '../../features/labs/store/labs';
+export { useLabsStore, LABS_STORAGE_KEY } from '@/features/labs/store/labs';
 
 // New stores extracted from ui.ts
 export { useSelectionStore } from './selection';

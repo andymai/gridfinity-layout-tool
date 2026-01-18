@@ -1,5 +1,5 @@
-import { canPlaceBin } from '../shared/utils/validation';
-import type { Bin, Layout } from '../core/types';
+import { canPlaceBin } from '@/shared/utils/validation';
+import type { Bin, Layout } from '@/core/types';
 
 export type RotationResult =
   | { valid: true }

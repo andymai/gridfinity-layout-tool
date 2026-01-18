@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CategoriesPanel } from '../../features/categories/components/CategoriesPanel';
-import { useLayoutStore, useUIStore } from '../../core/store';
-import { resetAllStores } from '../testUtils';
+import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
+import { useLayoutStore, useUIStore } from '@/core/store';
+import { resetAllStores } from '@/test/testUtils';
 
 // Mock ConfirmDialog to simplify testing
 vi.mock('../../shared/components/ConfirmDialog', () => ({

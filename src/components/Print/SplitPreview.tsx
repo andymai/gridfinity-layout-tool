@@ -1,4 +1,4 @@
-import type { PrintPiece } from '../../core/types';
+import type { PrintPiece } from '@/core/types';
 
 const STYLES = {
   splitPiece: {

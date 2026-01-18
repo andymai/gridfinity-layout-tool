@@ -17,17 +17,17 @@ import {
   type LiveblocksStorage,
   type UserPresence,
   type InteractionHint,
-} from '../../liveblocks.config';
-import { useLibraryStore } from '../../core/store/library';
-import { useLayoutStore } from '../../core/store/layout';
-import { useUIStore } from '../../core/store/ui';
-import { generateId } from '../../core/constants';
-import { generateGuestName, generateGuestColor } from '../../utils/guestNames';
-import { PresenceContext, type CollabPresenceActions, LocalMutationsProvider } from '../../shared/contexts';
-import type { Coord } from '../../core/types';
-import { throttle } from '../../shared/utils';
-import { useCollabSync } from '../../hooks/useCollabSync';
-import { useCloudShareAutoSync } from '../../features/cloud-share/hooks/useCloudShareAutoSync';
+} from '@/liveblocks.config';
+import { useLibraryStore } from '@/core/store/library';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUIStore } from '@/core/store/ui';
+import { generateId } from '@/core/constants';
+import { generateGuestName, generateGuestColor } from '@/utils/guestNames';
+import { PresenceContext, type CollabPresenceActions, LocalMutationsProvider } from '@/shared/contexts';
+import type { Coord } from '@/core/types';
+import { throttle } from '@/shared/utils';
+import { useCollabSync } from '@/hooks/useCollabSync';
+import { useCloudShareAutoSync } from '@/features/cloud-share/hooks/useCloudShareAutoSync';
 
 interface CollabProviderProps {
   /** The share ID for the collaborative session */

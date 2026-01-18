@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ActiveLayerPanel } from '../../features/layers/components/ActiveLayerPanel';
-import { useLayoutStore, useUIStore } from '../../core/store';
-import { useSelectionStore } from '../../core/store/selection';
-import { useInteractionStore } from '../../core/store/interaction';
-import { useHalfBinModeStore } from '../../core/store/halfBinMode';
-import { resetAllStores } from '../testUtils';
+import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
+import { useLayoutStore, useUIStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useInteractionStore } from '@/core/store/interaction';
+import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { resetAllStores } from '@/test/testUtils';
 
 // Mock ConfirmDialog
 vi.mock('../../shared/components/ConfirmDialog', () => ({

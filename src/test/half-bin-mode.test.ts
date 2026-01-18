@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { snapToHalf, snapToGrid, isFractional, hasFractionalDimensions, HALF_BIN_SCALE } from '../core/constants';
-import { useUIStore } from '../core/store';
+import { snapToHalf, snapToGrid, isFractional, hasFractionalDimensions, HALF_BIN_SCALE } from '@/core/constants';
+import { useUIStore } from '@/core/store';
 
 /**
  * Helper to calculate pixel dimensions for grid elements.

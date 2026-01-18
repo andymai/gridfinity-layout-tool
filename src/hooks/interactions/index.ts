@@ -31,4 +31,4 @@ export type {
 export { useDrawInteraction } from './useDrawInteraction';
 export { useDragInteraction } from './useDragInteraction';
 export { useResizeInteraction } from './useResizeInteraction';
-export { useStagingDragInteraction } from '../../features/staging/hooks/useStagingDragInteraction';
+export { useStagingDragInteraction } from '@/features/staging/hooks/useStagingDragInteraction';

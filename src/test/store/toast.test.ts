@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useToastStore } from '../../core/store/toast';
-import { resetAllStores } from '../testUtils';
+import { useToastStore } from '@/core/store/toast';
+import { resetAllStores } from '@/test/testUtils';
 
 describe('toast store', () => {
   beforeEach(() => {

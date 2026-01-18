@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
-import { usePWAUpdate } from '../../shared/hooks';
-import { useUIStore } from '../../core/store/ui';
-import { useLayoutStore } from '../../core/store/layout';
-import { useToastStore } from '../../core/store/toast';
-import { resetAllStores, setupFakeTimers } from '../testUtils';
-import { STAGING_ID } from '../../core/constants';
-import { saveEphemeralState, type EphemeralState } from '../../utils/ephemeralState';
+import { usePWAUpdate } from '@/shared/hooks';
+import { useUIStore } from '@/core/store/ui';
+import { useLayoutStore } from '@/core/store/layout';
+import { useToastStore } from '@/core/store/toast';
+import { resetAllStores, setupFakeTimers } from '@/test/testUtils';
+import { STAGING_ID } from '@/core/constants';
+import { saveEphemeralState, type EphemeralState } from '@/utils/ephemeralState';
 
 // Constants from usePWAUpdate (mirrored for testing)
 const UPDATE_TOAST_MS = 5000;

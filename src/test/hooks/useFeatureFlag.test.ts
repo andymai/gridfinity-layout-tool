@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useFeatureFlag, isFeatureEnabled } from '../../hooks/useFeatureFlag';
-import { useLabsStore } from '../../features/labs/store/labs';
-import { resetAllStores } from '../testUtils';
-import * as features from '../../features/labs/definitions/features';
+import { useFeatureFlag, isFeatureEnabled } from '@/hooks/useFeatureFlag';
+import { useLabsStore } from '@/features/labs/store/labs';
+import { resetAllStores } from '@/test/testUtils';
+import * as features from '@/features/labs/definitions/features';
 
 // Must mock the actual source module that the store imports from
 vi.mock('../../features/labs/definitions/features', async () => {

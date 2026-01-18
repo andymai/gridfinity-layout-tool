@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { LayoutListItem } from '../../features/layout-library/components/LayoutManagerModal/LayoutListItem';
-import type { LayoutEntry } from '../../core/types';
+import { LayoutListItem } from '@/features/layout-library/components/LayoutManagerModal/LayoutListItem';
+import type { LayoutEntry } from '@/core/types';
 
 // Mock LayoutThumbnail
 vi.mock('../../components/LayoutThumbnail', () => ({

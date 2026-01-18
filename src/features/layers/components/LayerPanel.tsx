@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction } from '../../../core/store';
-import { useMutations } from '../../../shared/contexts';
-import { CONSTRAINTS, STAGING_ID } from '../../../core/constants';
-import { getDisplayLayers } from '../../grid-editor/utils/collision';
-import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
-import { CollapsibleSection } from '../../../shared/components/CollapsibleSection';
-import { isOk, isErr, getUserMessage } from '../../../core/result';
+import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
+import { useMutations } from '@/shared/contexts';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { getDisplayLayers } from '@/features/grid-editor/utils/collision';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { isOk, isErr, getUserMessage } from '@/core/result';
 
 // Drop position indicator for drag-and-drop reordering
 type DropPosition = { index: number; position: 'above' | 'below' } | null;

@@ -5,14 +5,14 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLibraryStore, computePreview } from '../../../core/store/library';
-import { useLayoutStore } from '../../../core/store/layout';
-import { useUIStore } from '../../../core/store/ui';
-import { useHistoryStore } from '../../../core/store/history';
-import { useToastStore } from '../../../core/store/toast';
-import type { SharedWithMeEntry } from '../../../core/types';
-import { fetchShare } from '../../../core/api/share';
-import { isOk, getUserMessage } from '../../../core/result';
+import { useLibraryStore, computePreview } from '@/core/store/library';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUIStore } from '@/core/store/ui';
+import { useHistoryStore } from '@/core/store/history';
+import { useToastStore } from '@/core/store/toast';
+import type { SharedWithMeEntry } from '@/core/types';
+import { fetchShare } from '@/core/api/share';
+import { isOk, getUserMessage } from '@/core/result';
 
 export type SharedWithMeStatus = 'idle' | 'loading' | 'error';
 

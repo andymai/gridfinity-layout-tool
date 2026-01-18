@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { LayoutManagerModal } from '../../features/layout-library/components/LayoutManagerModal';
-import { useLibraryStore } from '../../core/store/library';
-import { useLayoutStore } from '../../core/store/layout';
-import { useUIStore } from '../../core/store/ui';
-import { createDefaultLayout } from '../../core/constants';
-import * as storage from '../../core/storage';
-import type { LayoutLibrary, LayoutEntry } from '../../core/types';
+import { LayoutManagerModal } from '@/features/layout-library/components/LayoutManagerModal';
+import { useLibraryStore } from '@/core/store/library';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUIStore } from '@/core/store/ui';
+import { createDefaultLayout } from '@/core/constants';
+import * as storage from '@/core/storage';
+import type { LayoutLibrary, LayoutEntry } from '@/core/types';
 
 // Mock the storage module
 vi.mock('../../core/storage', () => {

@@ -1,20 +1,20 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '../core/store';
-import { DEFAULT_CATEGORY_COLOR } from '../core/constants';
-import { exportPrintListTSV } from '../core/storage';
-import { trackLayoutSnapshot } from '../utils/analytics';
-import { ConfirmDialog, CollapsibleSection } from '../shared/components';
+import { useUIStore, useLayoutStore } from '@/core/store';
+import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { exportPrintListTSV } from '@/core/storage';
+import { trackLayoutSnapshot } from '@/utils/analytics';
+import { ConfirmDialog, CollapsibleSection } from '@/shared/components';
 import { BinListModal } from './Modals/BinListModal';
-import { usePrintList } from '../features/print-export/hooks/usePrintList';
-import { PrintListSummary, PrintListEmpty } from '../features/print-export/components';
+import { usePrintList } from '@/features/print-export/hooks/usePrintList';
+import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from './Print/SplitPreview';
 import {
   useBinInspector,
   SingleBinInspector,
   MultiBinInspector,
   EmptyState,
-} from '../features/bin-inspector';
+} from '@/features/bin-inspector';
 
 export function RightPanel() {
   const [printListExpanded, setPrintListExpanded] = useState(true);

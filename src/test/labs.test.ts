@@ -5,16 +5,16 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useLabsStore, LABS_STORAGE_KEY } from '../features/labs/store/labs';
+import { useLabsStore, LABS_STORAGE_KEY } from '@/features/labs/store/labs';
 import {
   FEATURE_FLAGS,
   getActiveFeatures,
   getGraduatedFeatures,
   getToggleableFeatures,
   type FeatureId,
-} from '../features/labs/definitions/features';
-import { createDefaultLabsPreferences } from '../features/labs/definitions/types';
-import * as features from '../features/labs/definitions/features';
+} from '@/features/labs/definitions/features';
+import { createDefaultLabsPreferences } from '@/features/labs/definitions/types';
+import * as features from '@/features/labs/definitions/features';
 
 // Mock trackEvent to avoid analytics calls in tests
 vi.mock('../utils/analytics', () => ({

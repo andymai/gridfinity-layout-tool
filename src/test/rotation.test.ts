@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { validateRotation } from '../utils/rotation';
-import type { Bin, Layout } from '../core/types';
+import { validateRotation } from '@/utils/rotation';
+import type { Bin, Layout } from '@/core/types';
 
 function createTestLayout(overrides: Partial<Layout> = {}): Layout {
   return {

@@ -12,9 +12,9 @@ import {
   downloadLayoutAsFile,
   importLayoutResult,
   exportLayoutJSON,
-} from '../core/storage';
-import type { Layout } from '../core/types';
-import { isOk, isErr, getUserMessage } from '../core/result';
+} from '@/core/storage';
+import type { Layout } from '@/core/types';
+import { isOk, isErr, getUserMessage } from '@/core/result';
 
 // Mock clipboard API
 const mockClipboard = {

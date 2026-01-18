@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useCloudShare } from '../../features/cloud-share/hooks/useCloudShare';
-import { useLibraryStore } from '../../core/store/library';
-import { useLayoutStore } from '../../core/store/layout';
-import { useUIStore } from '../../core/store/ui';
-import { createDefaultLayout } from '../../core/constants';
-import * as shareApi from '../../core/api/share';
-import * as storage from '../../core/storage';
-import type { LayoutLibrary, CloudShareInfo } from '../../core/types';
-import { ok, err, apiRateLimited, apiNotFound } from '../../core/result';
+import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
+import { useLibraryStore } from '@/core/store/library';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUIStore } from '@/core/store/ui';
+import { createDefaultLayout } from '@/core/constants';
+import * as shareApi from '@/core/api/share';
+import * as storage from '@/core/storage';
+import type { LayoutLibrary, CloudShareInfo } from '@/core/types';
+import { ok, err, apiRateLimited, apiNotFound } from '@/core/result';
 
 // Mock the share API module
 vi.mock('../../core/api/share', () => ({
@@ -509,7 +509,7 @@ describe('useCloudShare', () => {
 
   describe('reset', () => {
     it('resets state to idle', async () => {
-      const { apiNetworkError } = await import('../../core/result');
+      const { apiNetworkError } = await import('@/core/result');
       vi.mocked(shareApi.createShare).mockResolvedValue(
         err(apiNetworkError())
       );

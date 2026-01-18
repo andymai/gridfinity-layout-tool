@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 
 describe('ConfirmDialog', () => {
   const defaultProps = {

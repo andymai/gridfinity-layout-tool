@@ -1,4 +1,4 @@
-import type { Layout, Bin, Layer, Category } from '../core/types';
+import type { Layout, Bin, Layer, Category } from '@/core/types';
 
 /**
  * Find a bin by ID in the layout.

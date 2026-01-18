@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { LayoutList } from '../../features/layout-library/components/LayoutManagerModal/LayoutList';
-import { useLayoutStore, useUIStore } from '../../core/store';
-import { resetAllStores } from '../testUtils';
-import type { LayoutEntry } from '../../core/types';
+import { LayoutList } from '@/features/layout-library/components/LayoutManagerModal/LayoutList';
+import { useLayoutStore, useUIStore } from '@/core/store';
+import { resetAllStores } from '@/test/testUtils';
+import type { LayoutEntry } from '@/core/types';
 
 // Mock storage
 vi.mock('../../core/storage', () => ({
@@ -388,7 +388,7 @@ describe('LayoutList', () => {
 
   describe('download functionality', () => {
     it('calls download with layout data', async () => {
-      const { downloadLayoutAsFile } = await import('../../core/storage');
+      const { downloadLayoutAsFile } = await import('@/core/storage');
       const announceToScreenReader = vi.fn();
       useUIStore.setState({ announceToScreenReader });
 

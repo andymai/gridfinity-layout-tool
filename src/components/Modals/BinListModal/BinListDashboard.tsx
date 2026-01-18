@@ -1,7 +1,7 @@
 import { useState, useCallback, useId } from 'react';
-import { StatCard, BinIcon, FilamentIcon, CostIcon, TimeIcon, SpoolIcon } from '../../BinList';
-import { CategoryBreakdownChart, CategoryStackedBar, CategoryLegend } from '../../BinList';
-import type { CategoryBreakdown } from '../../../utils/binListOperations';
+import { StatCard, BinIcon, FilamentIcon, CostIcon, TimeIcon, SpoolIcon } from '@/components/BinList';
+import { CategoryBreakdownChart, CategoryStackedBar, CategoryLegend } from '@/components/BinList';
+import type { CategoryBreakdown } from '@/utils/binListOperations';
 
 interface BinListDashboardProps {
   /** Total number of unique bin types */

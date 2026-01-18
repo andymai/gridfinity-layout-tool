@@ -1,15 +1,15 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useLibraryStore, useUIStore, useToastStore, useHistoryStore } from '../../../core/store';
-import { loadLayoutByIdAsync } from '../../../core/storage';
-import { validateLayoutIntegrity } from '../../../shared/utils/validation';
+import { useLayoutStore, useLibraryStore, useUIStore, useToastStore, useHistoryStore } from '@/core/store';
+import { loadLayoutByIdAsync } from '@/core/storage';
+import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import {
   parseLayoutFromURL,
   setLayoutURL,
   clearLayoutURL,
   getLayoutIdFromHistoryState,
   getCanonicalRedirect,
-} from '../../../utils/url';
+} from '@/utils/url';
 
 /**
  * Hook that synchronizes the URL with the active layout.

@@ -10,8 +10,8 @@ import {
   CategoryBreakdownChart,
   CategoryStackedBar,
   CategoryLegend,
-} from '../../components/BinList';
-import type { CategoryBreakdown } from '../../utils/binListOperations';
+} from '@/components/BinList';
+import type { CategoryBreakdown } from '@/utils/binListOperations';
 
 describe('StatCard', () => {
   const defaultIcon = <span data-testid="test-icon">Icon</span>;

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import type { SharedWithMeEntry } from '../../../../core/types';
-import { LayoutThumbnail } from '../../../../components/LayoutThumbnail';
+import type { SharedWithMeEntry } from '@/core/types';
+import { LayoutThumbnail } from '@/components/LayoutThumbnail';
 
 interface SharedWithMeItemProps {
   entry: SharedWithMeEntry;

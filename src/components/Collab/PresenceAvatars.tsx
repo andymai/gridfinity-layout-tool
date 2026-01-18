@@ -8,9 +8,9 @@
  * Returns null when not in collaborative mode or when there are no participants.
  */
 
-import { usePresence } from '../../hooks/usePresence';
-import { useResponsive } from '../../shared/hooks';
-import { useUIStore } from '../../core/store/ui';
+import { usePresence } from '@/hooks/usePresence';
+import { useResponsive } from '@/shared/hooks';
+import { useUIStore } from '@/core/store/ui';
 import { PresenceAvatarBar } from './PresenceAvatarBar';
 import { PresenceMobileButton } from './PresenceMobileButton';
 

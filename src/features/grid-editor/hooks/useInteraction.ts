@@ -1,17 +1,17 @@
 import { useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import type { RefObject } from 'react';
-import type { Coord, ResizeHandle } from '../../../core/types';
-import { useLayoutStore, useUndoableAction, useSelectionStore, useInteractionStore } from '../../../core/store';
-import { useMutations } from '../../../shared/contexts';
+import type { Coord, ResizeHandle } from '@/core/types';
+import { useLayoutStore, useUndoableAction, useSelectionStore, useInteractionStore } from '@/core/store';
+import { useMutations } from '@/shared/contexts';
 import { useGridCoords } from './useGridCoords';
-import { useCollabPresence } from '../../../hooks/useCollabPresence';
-import { throttleRAF, cancelThrottledRAF } from '../../../shared/utils';
-import { mapInteractionToHint } from '../../../utils/interaction';
-import { useDrawInteraction } from '../../../hooks/interactions/useDrawInteraction';
-import { useDragInteraction } from '../../../hooks/interactions/useDragInteraction';
-import { useResizeInteraction } from '../../../hooks/interactions/useResizeInteraction';
-import { useStagingDragInteraction } from '../../staging/hooks/useStagingDragInteraction';
-import type { InteractionContext, ModeHandlers, DrawStartArgs, DragStartArgs, ResizeStartArgs, StagingDragStartArgs } from '../../../hooks/interactions/types';
+import { useCollabPresence } from '@/hooks/useCollabPresence';
+import { throttleRAF, cancelThrottledRAF } from '@/shared/utils';
+import { mapInteractionToHint } from '@/utils/interaction';
+import { useDrawInteraction } from '@/hooks/interactions/useDrawInteraction';
+import { useDragInteraction } from '@/hooks/interactions/useDragInteraction';
+import { useResizeInteraction } from '@/hooks/interactions/useResizeInteraction';
+import { useStagingDragInteraction } from '@/features/staging/hooks/useStagingDragInteraction';
+import type { InteractionContext, ModeHandlers, DrawStartArgs, DragStartArgs, ResizeStartArgs, StagingDragStartArgs } from '@/hooks/interactions/types';
 
 /**
  * Hook for managing all grid interactions including bin creation, movement, and resizing.

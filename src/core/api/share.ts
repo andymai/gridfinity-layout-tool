@@ -5,8 +5,8 @@
  * that integrates with the centralized error system.
  */
 
-import type { Layout, SharePermission } from '../types';
-import type { Result, ApiError } from '../result';
+import type { Layout, SharePermission } from '@/core/types';
+import type { Result, ApiError } from '@/core/result';
 import {
   ok,
   err,
@@ -20,7 +20,7 @@ import {
   apiSizeLimit,
   apiBinLimit,
   apiExpired,
-} from '../result';
+} from '@/core/result';
 
 // API Response types
 export interface ShareResponse {

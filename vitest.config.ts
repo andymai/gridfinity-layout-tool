@@ -36,6 +36,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      // Path alias for clean imports
+      '@': path.resolve(__dirname, 'src'),
       // Mock virtual PWA module for tests
       'virtual:pwa-register/react': path.resolve(__dirname, 'src/test/mocks/pwa-register.ts'),
     },

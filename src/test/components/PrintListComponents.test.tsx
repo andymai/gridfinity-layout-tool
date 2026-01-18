@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { PrintListSummary, PrintListEmpty } from '../../features/print-export';
-import { SplitPreview } from '../../components/Print/SplitPreview';
-import type { PrintPiece } from '../../core/types';
+import { PrintListSummary, PrintListEmpty } from '@/features/print-export';
+import { SplitPreview } from '@/components/Print/SplitPreview';
+import type { PrintPiece } from '@/core/types';
 
 describe('PrintListSummary', () => {
   const defaultProps = {

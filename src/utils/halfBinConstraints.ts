@@ -1,6 +1,6 @@
-import type { Layout, Bin } from '../core/types';
-import { hasFractionalDimensions } from '../core/constants';
-import { STAGING_ID } from '../core/constants';
+import type { Layout, Bin } from '@/core/types';
+import { hasFractionalDimensions } from '@/core/constants';
+import { STAGING_ID } from '@/core/constants';
 
 /**
  * Describes a constraint violation when attempting to disable half-bin mode.

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useUIStore } from '../../core/store/ui';
-import { useLayoutStore } from '../../core/store/layout';
+import { useUIStore } from '@/core/store/ui';
+import { useLayoutStore } from '@/core/store/layout';
 import {
   useSelectionStore,
   useViewStore,
@@ -8,10 +8,10 @@ import {
   useMobileStore,
   useHalfBinModeStore,
   useSharedPreviewStore,
-} from '../../core/store';
-import { CONSTRAINTS } from '../../core/constants';
-import { resetAllStores } from '../testUtils';
-import { isOk, isErr } from '../../core/result';
+} from '@/core/store';
+import { CONSTRAINTS } from '@/core/constants';
+import { resetAllStores } from '@/test/testUtils';
+import { isOk, isErr } from '@/core/result';
 
 // Helper to get state from the correct focused store after facade actions
 // Since the facade no longer syncs state synchronously, we need to read from the source stores

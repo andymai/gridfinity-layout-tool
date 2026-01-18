@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { HalfBinModeBlockedModal } from '../../components/Modals/HalfBinModeBlockedModal';
-import type { HalfBinConstraintViolation } from '../../utils/halfBinConstraints';
+import { HalfBinModeBlockedModal } from '@/components/Modals/HalfBinModeBlockedModal';
+import type { HalfBinConstraintViolation } from '@/utils/halfBinConstraints';
 
 function createViolation(count: number = 3, binIds: string[] = ['bin-1', 'bin-2', 'bin-3']): HalfBinConstraintViolation {
   return {

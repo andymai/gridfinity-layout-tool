@@ -1,12 +1,12 @@
-import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '../../core/store';
-import { useMutations } from '../../shared/contexts';
-import { useResponsive } from '../../shared/hooks';
-import { useContextMenu } from '../../hooks/useContextMenu';
-import { validateBinRotation, getBinLocationContext } from '../../utils/binLocation';
-import { calcMaxGridUnits } from '../../core/constants';
-import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '../../shared/components/ContextMenu';
-import { STLSearchDropdown } from '../STLSearchDropdown';
-import type { Bin } from '../../core/types';
+import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '@/core/store';
+import { useMutations } from '@/shared/contexts';
+import { useResponsive } from '@/shared/hooks';
+import { useContextMenu } from '@/hooks/useContextMenu';
+import { validateBinRotation, getBinLocationContext } from '@/utils/binLocation';
+import { calcMaxGridUnits } from '@/core/constants';
+import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '@/shared/components/ContextMenu';
+import { STLSearchDropdown } from '@/components/STLSearchDropdown';
+import type { Bin } from '@/core/types';
 
 interface BinContextMenuProps {
   bin: Bin;

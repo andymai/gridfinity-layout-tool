@@ -6,9 +6,9 @@ import {
   getTotalBins,
   getTotalFilament,
   getSpoolEstimate,
-} from '../utils/split';
-import type { Bin, PrintRow } from '../core/types';
-import { STAGING_ID } from '../core/constants';
+} from '@/utils/split';
+import type { Bin, PrintRow } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 
 describe('splitBinSize', () => {
   const maxSize = 4;
