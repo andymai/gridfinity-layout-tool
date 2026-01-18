@@ -9,8 +9,8 @@ import { HalfBinModeBlockedModal } from '@/components/Modals/HalfBinModeBlockedM
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
-import { SectionHeader } from '@/components/SectionHeader';
-import { SettingsRow } from '@/components/SettingsRow';
+import { SectionHeader } from '@/shared/components/SectionHeader';
+import { SettingsRow } from '@/shared/components/SettingsRow';
 import type { STLSearchSite } from '@/core/store/settings';
 
 /**

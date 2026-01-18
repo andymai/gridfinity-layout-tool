@@ -9,3 +9,9 @@ export { DeferredNumberInput } from './DeferredNumberInput';
 export { StepperControl } from './StepperControl';
 export type { StepperVariant } from './StepperControl';
 export { ToastContainer } from './Toast';
+
+// Layout primitives
+export { SectionHeader } from './SectionHeader';
+export { SettingsRow } from './SettingsRow';
+export { SelectDropdown } from './SelectDropdown';
+export { BulkIncrementControl } from './BulkIncrementControl';

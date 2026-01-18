@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '@/core/store/ui';
 import { useLayoutStore } from '@/core/store/layout';
-import { useLayoutSwitcher } from '@/hooks/useLayoutSwitcher';
+import { useLayoutSwitcher } from '@/features/layout-library/hooks/useLayoutSwitcher';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LayoutThumbnail } from '@/components/LayoutThumbnail';

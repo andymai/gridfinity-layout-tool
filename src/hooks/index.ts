@@ -6,8 +6,8 @@ export type { UseDrawerSettingsReturn } from './useDrawerSettings';
 
 export { useBinGeometry, createBinGeometry } from './useBinGeometry';
 
-export { useLayoutSwitcher } from './useLayoutSwitcher';
-export { useLayoutRouting } from './useLayoutRouting';
+export { useLayoutSwitcher } from '@/features/layout-library/hooks/useLayoutSwitcher';
+export { useLayoutRouting } from '@/features/layout-library/hooks/useLayoutRouting';
 export { useAnalytics } from './useAnalytics';
 export { useStorageMigration } from './useStorageMigration';
 export { useTabletPanels } from './useTabletPanels';
