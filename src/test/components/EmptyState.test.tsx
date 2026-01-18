@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { EmptyState } from '../../components/Inspector/EmptyState';
+import { EmptyState } from '../../components/Inspector';
 
 describe('EmptyState', () => {
   describe('desktop variant', () => {

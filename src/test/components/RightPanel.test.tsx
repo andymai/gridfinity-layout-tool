@@ -3,7 +3,7 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { RightPanel } from '../../components/RightPanel';
 import { useUIStore, useLayoutStore, useViewStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
-import type { UseBinInspectorReturn } from '../../components/Inspector/useBinInspector';
+import type { UseBinInspectorReturn } from '../../components/Inspector';
 import type { UsePrintListReturn } from '../../hooks/usePrintList';
 
 // Mock inspector components
