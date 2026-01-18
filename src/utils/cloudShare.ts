@@ -1,15 +1,3 @@
-/**
- * Shared utilities for cloud sharing functionality.
- * Used by both CloudShareTab and MobileCloudSharePanel.
- */
-
-/**
- * Format a timestamp as a localized date string.
- */
-export function formatShareDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
+// Re-export from new location for backward compatibility
+// TODO: Remove in Phase 6 - update all imports to use features/cloud-share
+export { formatShareDate } from '../features/cloud-share';

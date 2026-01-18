@@ -5,7 +5,7 @@ import { useLibraryStore } from '../../../../core/store/library';
 import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
 import { SharedWithMeList } from './SharedWithMeList';
-import { ShareModal } from '../../../../components/Modals/ShareModal';
+import { ShareModal } from '../../../../components/Modals';
 import type { Layout } from '../../../../core/types';
 import { isOk } from '../../../../core/result';
 
