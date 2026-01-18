@@ -6,7 +6,7 @@ import { useLayoutStore } from '../../core/store/layout';
 import { useUIStore } from '../../core/store/ui';
 import { createDefaultLayout } from '../../core/constants';
 import * as storage from '../../core/storage';
-import * as cloudShareHook from '../../hooks/useCloudShare';
+import * as cloudShareHook from '../../features/cloud-share/hooks/useCloudShare';
 import type { LayoutLibrary, LayoutEntry } from '../../core/types';
 
 // Mock the storage module
@@ -137,6 +137,8 @@ vi.mock('../../core/storage', () => {
     ),
     updateCloudShare: vi.fn(() => ({ ok: true, value: {} })),
     computePreview: vi.fn(() => mockPreview),
+    getSharedLayoutFromURL: vi.fn(() => null),
+    getCloudShareIdFromURL: vi.fn(() => null),
   };
 });
 
