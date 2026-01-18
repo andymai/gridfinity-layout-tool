@@ -26,11 +26,11 @@ export default defineConfig({
       ],
       thresholds: {
         // Thresholds set slightly below current coverage to prevent regression
-        // Updated 2026-01-18: Raised after adding interaction.ts tests
-        lines: 79.7,
-        branches: 68.7,
-        functions: 79.4,
-        statements: 79,
+        // Updated 2026-01-18: Raised after adding migration.ts + slug.ts tests
+        lines: 80.5,
+        branches: 69.5,
+        functions: 80,
+        statements: 79.8,
       },
     },
   },
