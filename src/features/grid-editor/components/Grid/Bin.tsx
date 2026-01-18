@@ -10,7 +10,7 @@ import {
   useMobileStore,
 } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
-import { useResponsive } from '@/hooks';
+import { useResponsive } from '@/shared/hooks';
 import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getBinTextColors } from '@/shared/utils';
 import { ResizeHandles } from './ResizeHandles';

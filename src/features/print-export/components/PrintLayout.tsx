@@ -10,7 +10,7 @@ import {
   formatPrintDate,
   sortBinsForPrint,
 } from '@/features/print-export/utils/printLayout';
-import { useGridTemplate } from '@/hooks';
+import { useGridTemplate } from '@/features/grid-editor/hooks';
 
 // Page widths for print (in pixels at 96 DPI, accounting for 0.5" margins)
 const PORTRAIT_WIDTH_PX = 670;  // 8.5" - 1" margins = 7" ≈ 670px

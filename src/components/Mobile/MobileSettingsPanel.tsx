@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useLabsStore } from '@/core/store';
-import { useDrawerSettings } from '@/hooks';
+import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { getFeature } from '@/features/labs/definitions/features';
 import { SparklesIcon, ChevronRightIcon } from '@/features/labs/components/icons';
 import { CONSTRAINTS } from '@/core/constants';

@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
 import { useLayoutStore, useUIStore, useLibraryStore } from './core/store';
-import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useStorageMigration, useTabletPanels } from './hooks';
+import { useLayoutRouting, useAnalytics, useStorageMigration, useTabletPanels } from './hooks';
+import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, usePWAUpdate } from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
 import { initializeLayoutLibrary, loadSharedWithMe } from './core/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
-import { Grid } from './components/Grid';
+import { Grid } from './features/grid-editor/components/Grid';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Staging } from './features/staging/components/Staging';

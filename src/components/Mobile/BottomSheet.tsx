@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useUIStore } from '@/core/store/ui';
-import { useResponsive } from '@/hooks';
+import { useResponsive } from '@/shared/hooks';
 
 interface BottomSheetProps {
   children: React.ReactNode;

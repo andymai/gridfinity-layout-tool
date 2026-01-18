@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { useUIStore } from '@/core/store';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
-import { Grid } from '@/components/Grid';
+import { Grid } from '@/features/grid-editor/components/Grid';
 import { Staging } from '@/features/staging/components/Staging';
 import { DropZones } from '@/components/DropZones';
 import { DragPreview } from '@/components/DragPreview';

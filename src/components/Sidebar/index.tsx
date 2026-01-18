@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '@/core/store';
-import { useDrawerSettings } from '@/hooks';
+import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
