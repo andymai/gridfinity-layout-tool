@@ -25,7 +25,7 @@ let mockCloudShareState = {
   reset: mockReset,
 };
 
-vi.mock('../../hooks/useCloudShare', () => ({
+vi.mock('../../features/cloud-share/hooks/useCloudShare', () => ({
   useCloudShare: () => mockCloudShareState,
 }));
 

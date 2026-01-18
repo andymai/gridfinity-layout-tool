@@ -1,16 +1,16 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useLayoutStore } from '../../core/store/layout';
-import { useLibraryStore } from '../../core/store/library';
-import { useUIStore } from '../../core/store/ui';
-import { useLabsStore } from '../../core/store/labs';
+import { useLayoutStore } from '../../../core/store/layout';
+import { useLibraryStore } from '../../../core/store/library';
+import { useUIStore } from '../../../core/store/ui';
+import { useLabsStore } from '../../../core/store/labs';
 import {
   generateShareableURL,
   downloadLayoutAsFile,
   copyToClipboard,
   exportLayoutJSON,
-} from '../../core/storage';
-import { trackLayoutSnapshot } from '../../utils/analytics';
-import { CloudShareTab } from '../Share';
+} from '../../../core/storage';
+import { trackLayoutSnapshot } from '../../../utils/analytics';
+import { CloudShareTab } from './CloudShareTab';
 
 interface ShareModalProps {
   isOpen: boolean;
