@@ -1,2 +1,2 @@
 export { Header } from './Header';
-export { Staging } from './Staging';
+export { Staging } from '../features/staging/components/Staging';

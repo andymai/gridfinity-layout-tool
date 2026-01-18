@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useBinInspector } from '../../hooks/useBinInspector';
+import { useBinInspector } from '../../features/bin-inspector';
 import { useLayoutStore } from '../../core/store/layout';
 import { useUIStore } from '../../core/store/ui';
 import { resetAllStores } from '../testUtils';

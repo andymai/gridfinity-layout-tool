@@ -2,12 +2,12 @@ import { Suspense } from 'react';
 import { useUIStore } from '../core/store';
 import { lazyWithRetry, namedExport } from '../utils/lazyWithRetry';
 import { Grid } from '../components/Grid';
-import { Staging } from '../components/Staging';
+import { Staging } from '../features/staging/components/Staging';
 import { DropZones } from '../components/DropZones';
 import { DragPreview } from '../components/DragPreview';
 import { ToastContainer } from '../shared/components/Toast';
 import { PanelErrorBoundary } from '../components/PanelErrorBoundary';
-import { SharedLayoutImporter, SharedLayoutBanner } from '../components/Share';
+import { SharedLayoutImporter, SharedLayoutBanner } from '../features/cloud-share/components';
 import {
   MobileHeader,
   BottomNavBar,
@@ -21,7 +21,7 @@ import {
   MobileLayoutsPanel,
   BinContextMenuWrapper,
 } from '../components/Mobile';
-import { LabsDrawer } from '../components/Labs';
+import { LabsDrawer } from '../features/labs/components';
 import { PresenceAvatarList } from '../components/Collab';
 import { usePresence } from '../hooks/usePresence';
 import { useCollabMode } from '../hooks/useCollabMode';

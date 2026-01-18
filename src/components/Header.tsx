@@ -4,8 +4,8 @@ import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '..
 import { useResponsive, useFeatureFlag, useCollabMode } from '../hooks';
 import { CONSTRAINTS } from '../core/constants';
 import { LayoutManagerModal } from './Modals/LayoutManagerModal';
-import { PrintModal } from './Modals/PrintModal';
-import { ShareButton } from './Share';
+import { PrintModal } from '../features/print-export/components/PrintModal';
+import { ShareButton } from '../features/cloud-share/components/ShareButton';
 import { PresenceAvatars } from './Collab';
 import type { SaveStatus } from '../shared/hooks';
 

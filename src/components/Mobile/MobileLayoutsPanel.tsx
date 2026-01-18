@@ -4,11 +4,11 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '../../core/store/ui';
 import { useLayoutStore } from '../../core/store/layout';
 import { useLayoutSwitcher } from '../../hooks/useLayoutSwitcher';
-import { useCloudShare } from '../../hooks/useCloudShare';
+import { useCloudShare } from '../../features/cloud-share/hooks/useCloudShare';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { LayoutThumbnail } from '../LayoutThumbnail';
 import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '../../core/storage';
-import { formatShareDate } from '../../utils/cloudShare';
+import { formatShareDate } from '../../features/cloud-share/utils/cloudShare';
 import type { LayoutEntry, SharePermission } from '../../core/types';
 import { isOk } from '../../core/result';
 

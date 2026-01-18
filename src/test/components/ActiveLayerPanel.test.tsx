@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ActiveLayerPanel } from '../../components/Sidebar/ActiveLayerPanel';
+import { ActiveLayerPanel } from '../../features/layers/components/ActiveLayerPanel';
 import { useLayoutStore, useUIStore } from '../../core/store';
 import { useSelectionStore } from '../../core/store/selection';
 import { useInteractionStore } from '../../core/store/interaction';

@@ -8,15 +8,15 @@ import { useHalfBinModeStore } from '../../core/store/halfBinMode';
 import { resetAllStores } from '../testUtils';
 
 // Mock child components to isolate Sidebar tests
-vi.mock('../../components/Sidebar/ActiveLayerPanel', () => ({
+vi.mock('../../features/layers/components/ActiveLayerPanel', () => ({
   ActiveLayerPanel: () => <div data-testid="active-layer-panel">ActiveLayerPanel</div>,
 }));
 
-vi.mock('../../components/Sidebar/LayerPanel', () => ({
+vi.mock('../../features/layers/components/LayerPanel', () => ({
   LayerPanel: () => <div data-testid="layer-panel">LayerPanel</div>,
 }));
 
-vi.mock('../../components/Sidebar/CategoriesPanel', () => ({
+vi.mock('../../features/categories/components/CategoriesPanel', () => ({
   CategoriesPanel: () => <div data-testid="categories-panel">CategoriesPanel</div>,
 }));
 

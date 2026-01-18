@@ -3,11 +3,11 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { RightPanel } from '../../components/RightPanel';
 import { useUIStore, useLayoutStore, useViewStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
-import type { UseBinInspectorReturn } from '../../components/Inspector';
-import type { UsePrintListReturn } from '../../hooks/usePrintList';
+import type { UseBinInspectorReturn } from '../../features/bin-inspector';
+import type { UsePrintListReturn } from '../../features/print-export/hooks/usePrintList';
 
 // Mock inspector components
-vi.mock('../../components/Inspector', () => ({
+vi.mock('../../features/bin-inspector', () => ({
   useBinInspector: vi.fn(),
   SingleBinInspector: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="single-bin-inspector">
@@ -22,13 +22,17 @@ vi.mock('../../components/Inspector', () => ({
   EmptyState: () => <div data-testid="empty-state">No selection</div>,
 }));
 
-// Mock Print components
-vi.mock('../../components/Print', () => ({
+// Mock SplitPreview
+vi.mock('../../components/Print/SplitPreview', () => ({
   SplitPreview: ({ width, depth, pieces }: { width: number; depth: number; pieces: { width: number; depth: number; count: number }[] }) => (
     <div data-testid="split-preview">
       Split: {width}×{depth} into {pieces.length} pieces
     </div>
   ),
+}));
+
+// Mock Print components from print-export feature
+vi.mock('../../features/print-export/components', () => ({
   PrintListSummary: ({ totalBins, totalPieces }: { totalBins: number; totalPieces: number }) => (
     <div data-testid="print-list-summary">
       Summary: {totalBins} bins, {totalPieces} pieces
@@ -96,12 +100,12 @@ Object.defineProperty(navigator, 'clipboard', {
 const mockSelectBinsByRow = vi.fn();
 let mockPrintListReturn: UsePrintListReturn;
 
-vi.mock('../../hooks/usePrintList', () => ({
+vi.mock('../../features/print-export/hooks/usePrintList', () => ({
   usePrintList: () => mockPrintListReturn,
 }));
 
 // Get useBinInspector mock
-import { useBinInspector } from '../../components/Inspector';
+import { useBinInspector } from '../../features/bin-inspector';
 const mockUseBinInspector = useBinInspector as ReturnType<typeof vi.fn>;
 
 describe('RightPanel', () => {

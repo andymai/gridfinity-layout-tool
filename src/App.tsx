@@ -2,13 +2,13 @@ import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'rea
 import { useLayoutStore, useUIStore, useLibraryStore } from './core/store';
 import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, useLayoutRouting, usePWAUpdate, useAnalytics, useStorageMigration, useTabletPanels } from './hooks';
 import { useCollabMode } from './hooks/useCollabMode';
-import { useOwnedShareSync } from './hooks/useOwnedShareSync';
+import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
 import { initializeLayoutLibrary, loadSharedWithMe } from './core/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './components/Grid';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
-import { Staging } from './components/Staging';
+import { Staging } from './features/staging/components/Staging';
 import { RightPanel } from './components/RightPanel';
 import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
@@ -17,8 +17,8 @@ import { PanelErrorBoundary } from './components/PanelErrorBoundary';
 import { BinContextMenuWrapper } from './components/Mobile';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
-import { SharedLayoutImporter, SharedLayoutBanner } from './components/Share';
-import { LabsDrawer } from './components/Labs';
+import { SharedLayoutImporter, SharedLayoutBanner } from './features/cloud-share/components';
+import { LabsDrawer } from './features/labs/components';
 import { LocalMutationsProvider } from './shared/contexts';
 import { SHORTCUTS } from './core/constants';
 

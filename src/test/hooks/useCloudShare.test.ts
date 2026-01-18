@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useCloudShare } from '../../hooks/useCloudShare';
+import { useCloudShare } from '../../features/cloud-share/hooks/useCloudShare';
 import { useLibraryStore } from '../../core/store/library';
 import { useLayoutStore } from '../../core/store/layout';
 import { useUIStore } from '../../core/store/ui';
