@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { LayerPanel } from '../../components/Sidebar/LayerPanel';
+import { LayerPanel } from '../../features/layers/components/LayerPanel';
 import { useLayoutStore, useUIStore } from '../../core/store';
 import { resetAllStores } from '../testUtils';
 import type { Layer } from '../../core/types';

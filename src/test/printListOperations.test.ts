@@ -4,7 +4,7 @@ import {
   sortRows,
   groupByCategory,
   applyFiltersAndSort,
-} from '../utils/printListOperations';
+} from '../features/print-export/utils/printListOperations';
 import type { EnhancedPrintRow, Category } from '../core/types';
 
 // Helper to create test rows

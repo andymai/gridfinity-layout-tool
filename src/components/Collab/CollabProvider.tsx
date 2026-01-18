@@ -27,7 +27,7 @@ import { PresenceContext, type CollabPresenceActions, LocalMutationsProvider } f
 import type { Coord } from '../../core/types';
 import { throttle } from '../../shared/utils';
 import { useCollabSync } from '../../hooks/useCollabSync';
-import { useCloudShareAutoSync } from '../../hooks/useCloudShareAutoSync';
+import { useCloudShareAutoSync } from '../../features/cloud-share/hooks/useCloudShareAutoSync';
 
 interface CollabProviderProps {
   /** The share ID for the collaborative session */

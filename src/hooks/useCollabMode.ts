@@ -19,7 +19,7 @@
  * ```
  */
 
-import { useLabsStore } from '../core/store/labs';
+import { useLabsStore } from '../features/labs/store/labs';
 import { useLibraryStore } from '../core/store/library';
 import { useUIStore } from '../core/store/ui';
 

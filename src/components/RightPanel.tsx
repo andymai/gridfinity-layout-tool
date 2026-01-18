@@ -6,14 +6,15 @@ import { exportPrintListTSV } from '../core/storage';
 import { trackLayoutSnapshot } from '../utils/analytics';
 import { ConfirmDialog, CollapsibleSection } from '../shared/components';
 import { BinListModal } from './Modals/BinListModal';
-import { usePrintList } from '../hooks/usePrintList';
-import { SplitPreview, PrintListSummary, PrintListEmpty } from './Print';
+import { usePrintList } from '../features/print-export/hooks/usePrintList';
+import { PrintListSummary, PrintListEmpty } from '../features/print-export/components';
+import { SplitPreview } from './Print/SplitPreview';
 import {
   useBinInspector,
   SingleBinInspector,
   MultiBinInspector,
   EmptyState,
-} from './Inspector';
+} from '../features/bin-inspector';
 
 export function RightPanel() {
   const [printListExpanded, setPrintListExpanded] = useState(true);

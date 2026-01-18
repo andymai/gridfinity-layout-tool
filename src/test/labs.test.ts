@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useLabsStore, LABS_STORAGE_KEY } from '../core/store/labs';
+import { useLabsStore, LABS_STORAGE_KEY } from '../features/labs/store/labs';
 import {
   FEATURE_FLAGS,
   getActiveFeatures,

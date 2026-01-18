@@ -4,7 +4,7 @@ import {
   SingleBinInspector,
   MultiBinInspector,
   EmptyState,
-} from '../Inspector';
+} from '../../features/bin-inspector';
 
 /**
  * Mobile-optimized bin inspector with large touch targets.

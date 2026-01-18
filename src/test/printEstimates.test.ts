@@ -7,7 +7,7 @@ import {
   formatCost,
   DEFAULT_METERS_PER_KG,
   DEFAULT_COST_PER_KG,
-} from '../utils/printEstimates';
+} from '../features/print-export/utils/printEstimates';
 
 describe('printEstimates', () => {
   describe('calcFilamentCost', () => {

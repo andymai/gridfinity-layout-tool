@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useLabsStore } from '../../core/store';
 import { useDrawerSettings } from '../../hooks';
-import { getFeature } from '../../core/labs/features';
-import { SparklesIcon, ChevronRightIcon } from '../Labs/icons';
+import { getFeature } from '../../features/labs/definitions/features';
+import { SparklesIcon, ChevronRightIcon } from '../../features/labs/components/icons';
 import { CONSTRAINTS } from '../../core/constants';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '../Modals/HalfBinModeBlockedModal';

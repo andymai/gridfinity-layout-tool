@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useFeatureFlag, isFeatureEnabled } from '../../hooks/useFeatureFlag';
-import { useLabsStore } from '../../core/store/labs';
+import { useLabsStore } from '../../features/labs/store/labs';
 import { resetAllStores } from '../testUtils';
 import * as features from '../../features/labs/definitions/features';
 

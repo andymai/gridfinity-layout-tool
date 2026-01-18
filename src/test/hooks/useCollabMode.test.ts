@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useCollabMode, getCollabMode } from '../../hooks/useCollabMode';
-import { useLabsStore } from '../../core/store/labs';
+import { useLabsStore } from '../../features/labs/store/labs';
 import { useLibraryStore } from '../../core/store/library';
 import { useUIStore } from '../../core/store/ui';
 import type { CloudShareInfo, LayoutLibrary, LayoutEntry } from '../../core/types';

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLayoutStore } from '../../../core/store/layout';
 import { useLibraryStore } from '../../../core/store/library';
 import { useUIStore } from '../../../core/store/ui';
-import { useLabsStore } from '../../../core/store/labs';
+import { useLabsStore } from '../../../features/labs/store/labs';
 import {
   generateShareableURL,
   downloadLayoutAsFile,

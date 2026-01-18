@@ -20,8 +20,8 @@ export { useGridNavigation } from '../features/grid-editor/hooks/useGridNavigati
 export type { UseDrawerSettingsReturn } from './useDrawerSettings';
 
 // Bin inspector hook (shared by RightPanel and MobileInspector)
-export { useBinInspector } from './useBinInspector';
-export type { UseBinInspectorReturn, BinField, BinConstraints, ConfirmDeleteState } from './useBinInspector';
+export { useBinInspector } from '../features/bin-inspector';
+export type { UseBinInspectorReturn, BinField, BinConstraints, ConfirmDeleteState } from '../features/bin-inspector';
 
 // 3D preview hooks
 export { useBinGeometry, createBinGeometry } from './useBinGeometry';
@@ -30,8 +30,8 @@ export { useBinGeometry, createBinGeometry } from './useBinGeometry';
 export { useKeyboard, useAutoSave, useResponsive, prefersTouch, useCrossTabSync, usePWAUpdate } from '../shared/hooks';
 export type { SaveStatus, ResponsiveState, LayoutMode } from '../shared/hooks';
 
-export { usePrintList } from './usePrintList';
-export type { UsePrintListReturn } from './usePrintList';
+export { usePrintList } from '../features/print-export/hooks/usePrintList';
+export type { UsePrintListReturn } from '../features/print-export/hooks/usePrintList';
 export { useLayoutSwitcher } from './useLayoutSwitcher';
 export { useLayoutRouting } from './useLayoutRouting';
 export { useAnalytics } from './useAnalytics';
@@ -39,8 +39,8 @@ export { useStorageMigration } from './useStorageMigration';
 export { useTabletPanels } from './useTabletPanels';
 export type { TabletPanelsState } from './useTabletPanels';
 export { useFeatureFlag, isFeatureEnabled } from './useFeatureFlag';
-export { useSharedWithMe } from './useSharedWithMe';
-export type { SharedWithMeStatus } from './useSharedWithMe';
+export { useSharedWithMe } from '../features/cloud-share/hooks/useSharedWithMe';
+export type { SharedWithMeStatus } from '../features/cloud-share/hooks/useSharedWithMe';
 
 // Collaborative editing hooks
 export { useCollabMode, getCollabMode } from './useCollabMode';
