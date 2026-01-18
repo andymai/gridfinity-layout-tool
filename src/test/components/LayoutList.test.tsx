@@ -30,8 +30,8 @@ vi.mock('../../components/LayoutThumbnail', () => ({
   ),
 }));
 
-// Mock LayoutActions to simplify tests
-vi.mock('../../components/Modals/LayoutManagerModal/LayoutActions', () => ({
+// Mock LayoutActions to simplify tests - must mock the actual source module
+vi.mock('../../features/layout-library/components/LayoutManagerModal/LayoutActions', () => ({
   LayoutActions: ({
     onCopyLink,
     onDownload,

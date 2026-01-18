@@ -12,9 +12,9 @@ import {
   getGraduatedFeatures,
   getToggleableFeatures,
   type FeatureId,
-} from '../core/labs/features';
-import { createDefaultLabsPreferences } from '../core/labs/types';
-import * as features from '../core/labs/features';
+} from '../features/labs/definitions/features';
+import { createDefaultLabsPreferences } from '../features/labs/definitions/types';
+import * as features from '../features/labs/definitions/features';
 
 // Mock trackEvent to avoid analytics calls in tests
 vi.mock('../utils/analytics', () => ({
@@ -22,8 +22,9 @@ vi.mock('../utils/analytics', () => ({
 }));
 
 // Mock getFeature for store tests to return features without comingSoon
-vi.mock('../core/labs/features', async () => {
-  const actual = await vi.importActual<typeof features>('../core/labs/features');
+// Note: Must mock the actual source module that the store imports from
+vi.mock('../features/labs/definitions/features', async () => {
+  const actual = await vi.importActual<typeof features>('../features/labs/definitions/features');
   return {
     ...actual,
     getFeature: vi.fn((id: string) => {

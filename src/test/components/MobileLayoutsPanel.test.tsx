@@ -137,6 +137,8 @@ vi.mock('../../core/storage', () => {
     ),
     updateCloudShare: vi.fn(() => ({ ok: true, value: {} })),
     computePreview: vi.fn(() => mockPreview),
+    getSharedLayoutFromURL: vi.fn(() => null),
+    getCloudShareIdFromURL: vi.fn(() => null),
   };
 });
 
