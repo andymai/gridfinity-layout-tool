@@ -1,12 +1,12 @@
-import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '../../core/constants';
-import { useUIStore } from '../../core/store';
-import { getBinLocationContext } from '../../utils/binLocation';
+import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '../../../../core/constants';
+import { useUIStore } from '../../../../core/store';
+import { getBinLocationContext } from '../../../../utils/binLocation';
 import type { UseBinInspectorReturn } from '../../hooks/useBinInspector';
 import { SplitWarning } from './SplitWarning';
-import { StepperControl } from '../../shared/components/StepperControl';
-import { SelectDropdown } from '../SelectDropdown';
+import { StepperControl } from '../../../../shared/components/StepperControl';
+import { SelectDropdown } from '../../../../components/SelectDropdown';
 import { CustomPropertiesEditor } from './CustomPropertiesEditor';
-import { STLSearchDropdown } from '../STLSearchDropdown';
+import { STLSearchDropdown } from '../../../../components/STLSearchDropdown';
 
 interface SingleBinInspectorProps {
   inspector: UseBinInspectorReturn;
