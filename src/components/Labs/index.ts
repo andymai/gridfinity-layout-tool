@@ -1,9 +1,9 @@
-/**
- * Labs Components - Public Exports
- */
-
-export { LabsButton } from './LabsButton';
-export { LabsDrawer } from './LabsDrawer';
-export { FeatureCard } from './FeatureCard';
-export { FeatureStatusBadge } from './FeatureStatusBadge';
-export { GraduatedSection } from './GraduatedSection';
+// Re-export from new location for backward compatibility
+// TODO: Remove in Phase 6 - update all imports to use features/labs
+export {
+  LabsButton,
+  LabsDrawer,
+  FeatureCard,
+  FeatureStatusBadge,
+  GraduatedSection,
+} from '../../features/labs';
