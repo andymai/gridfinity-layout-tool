@@ -5,7 +5,7 @@ import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
-import { LayoutManagerModal } from './Modals/LayoutManagerModal';
+import { LayoutManagerModal } from '@/features/layout-library/components/LayoutManagerModal';
 import { PrintModal } from '@/features/print-export/components/PrintModal';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { PresenceAvatars } from './Collab';
