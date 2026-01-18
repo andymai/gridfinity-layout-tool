@@ -1,4 +1,8 @@
-export { ShareButton } from './ShareButton';
-export { CloudShareTab } from './CloudShareTab';
-export { SharedLayoutBanner } from './SharedLayoutBanner';
-export { SharedLayoutImporter } from './SharedLayoutImporter';
+// Re-export from new location for backward compatibility
+// TODO: Remove in Phase 6 - update all imports to use features/cloud-share
+export {
+  ShareButton,
+  CloudShareTab,
+  SharedLayoutBanner,
+  SharedLayoutImporter,
+} from '../../features/cloud-share';

@@ -1,0 +1,1 @@
+export { formatShareDate } from './cloudShare';
