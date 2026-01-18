@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { LayoutManagerModal } from '../../components/Modals/LayoutManagerModal';
+import { LayoutManagerModal } from '../../features/layout-library/components/LayoutManagerModal';
 import { useLibraryStore } from '../../core/store/library';
 import { useLayoutStore } from '../../core/store/layout';
 import { useUIStore } from '../../core/store/ui';

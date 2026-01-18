@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLayoutSwitcher } from '../../../hooks/useLayoutSwitcher';
-import { useUIStore } from '../../../core/store/ui';
-import { useLibraryStore } from '../../../core/store/library';
+import { useLayoutSwitcher } from '../../hooks/useLayoutSwitcher';
+import { useUIStore } from '../../../../core/store/ui';
+import { useLibraryStore } from '../../../../core/store/library';
 import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
 import { SharedWithMeList } from './SharedWithMeList';
-import { ShareModal } from '../ShareModal';
-import type { Layout } from '../../../core/types';
-import { isOk } from '../../../core/result';
+import { ShareModal } from '../../../../components/Modals/ShareModal';
+import type { Layout } from '../../../../core/types';
+import { isOk } from '../../../../core/result';
 
 type Tab = 'layouts' | 'shared' | 'import';
 

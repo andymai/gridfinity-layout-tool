@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import type { LayoutEntry } from '../../../core/types';
+import type { LayoutEntry } from '../../../../core/types';
 
 interface LayoutActionsProps {
   entry: LayoutEntry;
