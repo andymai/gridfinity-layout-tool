@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useBinList } from '@/hooks/useBinList';
 import { useUIStore } from '@/core/store/ui';
-import { useResponsive } from '@/hooks';
+import { useResponsive } from '@/shared/hooks';
 import { BinListTable } from './BinListTable';
 import { BinListFilters } from './BinListFilters';
 import { BinListDashboard } from './BinListDashboard';

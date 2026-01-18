@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '@/core/store';
 import { getBaseCellSize, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getContrastColor } from '@/shared/utils';
-import { useResponsive } from '@/hooks';
+import { useResponsive } from '@/shared/hooks';
 
 /**
  * Floating drag preview that follows the cursor during drag operations.
