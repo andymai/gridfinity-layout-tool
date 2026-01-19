@@ -117,8 +117,12 @@ describe('settings persistence', () => {
     localStorage.clear();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('handles localStorage errors gracefully', () => {
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
       throw new Error('Storage error');
     });
@@ -127,7 +131,5 @@ describe('settings persistence', () => {
     expect(() => {
       useSettingsStore.getState().updateSetting('defaultDrawerWidth', 15);
     }).not.toThrow();
-
-    consoleSpy.mockRestore();
   });
 });

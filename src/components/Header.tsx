@@ -298,14 +298,16 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         </Suspense>
       )}
 
-      {printModalOpen && (
-        <Suspense fallback={null}>
-          <PrintModal
-            isOpen={printModalOpen}
-            onClose={() => setPrintModalOpen(false)}
-          />
-        </Suspense>
-      )}
+      {/* PrintModal must always be rendered (not just when open) because it always
+          renders a print portal via createPortal that's required for @media print CSS
+          rules to work when user presses Cmd+P or Ctrl+P. The modal UI itself is only
+          shown when printModalOpen is true. */}
+      <Suspense fallback={null}>
+        <PrintModal
+          isOpen={printModalOpen}
+          onClose={() => setPrintModalOpen(false)}
+        />
+      </Suspense>
     </header>
   );
 }
