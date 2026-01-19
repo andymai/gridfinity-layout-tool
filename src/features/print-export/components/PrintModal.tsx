@@ -7,6 +7,7 @@ import { PrintLayout } from './PrintLayout';
 import { SortOrderConfig } from './SortOrderConfig';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { getBinCountByLayer } from '@/features/print-export/utils/printLayout';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import '../../../styles/print.css';
 
 // Style constants
@@ -68,6 +69,9 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
     // Reset selection when modal opens (but not when it closes)
     if (isOpen) {
       setSelectedLayerIds(layout.layers.map((l) => l.id));
+      // Track print preview open for ML telemetry
+      // Opening print preview suggests user is reviewing their layout
+      mlTracking.trackSnapshot('print_preview');
     }
   }
 

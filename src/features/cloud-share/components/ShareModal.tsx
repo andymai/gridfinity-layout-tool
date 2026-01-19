@@ -10,6 +10,7 @@ import {
   exportLayoutJSON,
 } from '@/core/storage';
 import { trackLayoutSnapshot } from '@/utils/analytics';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { CloudShareTab } from './CloudShareTab';
 
 interface ShareModalProps {
@@ -76,6 +77,8 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
       setCopied(true);
       announceToScreenReader('JSON copied to clipboard');
       trackLayoutSnapshot(layout, 'export_json');
+      mlTracking.trackSnapshot('export_json');
+      mlTracking.trackQuality('exported');
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -84,6 +87,8 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
     downloadLayoutAsFile(layout);
     announceToScreenReader('Layout downloaded');
     trackLayoutSnapshot(layout, 'export_json');
+    mlTracking.trackSnapshot('export_json');
+    mlTracking.trackQuality('exported');
   };
 
   const jsonText = exportLayoutJSON(layout);

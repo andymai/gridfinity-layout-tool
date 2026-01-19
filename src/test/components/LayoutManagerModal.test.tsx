@@ -148,6 +148,20 @@ vi.mock('../../utils/validation', async () => {
   };
 });
 
+// Mock ML tracking
+vi.mock('../../shared/analytics/useMLTracking', () => ({
+  mlTracking: {
+    trackSnapshot: vi.fn(),
+    trackQuality: vi.fn(),
+    trackPlacement: vi.fn(),
+    trackLabel: vi.fn(),
+    trackBulk: vi.fn(),
+    trackPurpose: vi.fn(),
+    incrementEdit: vi.fn(),
+    markActivity: vi.fn(),
+  },
+}));
+
 const TEST_LAYOUT_ID = 'test-layout-id';
 const SECOND_LAYOUT_ID = 'second-layout-id';
 

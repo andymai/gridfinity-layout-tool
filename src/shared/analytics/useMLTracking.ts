@@ -3,7 +3,7 @@
  *
  * Usage:
  * ```tsx
- * const { trackPlacement, trackLabel } = useMLTracking();
+ * const { trackPlacement, trackLabel, trackSnapshot } = useMLTracking();
  *
  * // After successful bin creation
  * const result = addBin(binData);
@@ -13,13 +13,28 @@
  *
  * // After label update
  * trackLabel(bin, oldLabel, newLabel);
+ *
+ * // On layout save/export/share
+ * trackSnapshot('save');
  * ```
  */
 
 import { useCallback } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import type { Bin } from '@/core/types';
-import { trackBinPlacement, trackLabelUpdate, trackBulkPlacement, type PlacementMethod } from './mlTelemetry';
+import {
+  trackBinPlacement,
+  trackLabelUpdate,
+  trackBulkPlacement,
+  trackLayoutSnapshot,
+  trackQualitySignal,
+  trackDrawerPurpose,
+  incrementEditCount,
+  markEditActivity,
+  type PlacementMethod,
+  type LayoutSnapshotTrigger,
+  type QualitySignal,
+} from './mlTelemetry';
 
 /**
  * Hook that provides ML telemetry tracking functions.
@@ -52,10 +67,37 @@ export function useMLTracking() {
     trackBulkPlacement(bins, layout, method);
   }, []);
 
+  /**
+   * Track a layout snapshot at a commit point.
+   */
+  const trackSnapshot = useCallback((trigger: LayoutSnapshotTrigger) => {
+    const layout = useLayoutStore.getState().layout;
+    trackLayoutSnapshot(layout, trigger);
+  }, []);
+
+  /**
+   * Track a quality signal for the current layout.
+   */
+  const trackQuality = useCallback((signal: QualitySignal, createdAt?: Date | number) => {
+    const layout = useLayoutStore.getState().layout;
+    trackQualitySignal(layout, signal, createdAt);
+  }, []);
+
+  /**
+   * Track drawer purpose selection.
+   */
+  const trackPurpose = useCallback((purpose: string, isCustom: boolean = false) => {
+    const layout = useLayoutStore.getState().layout;
+    trackDrawerPurpose(layout, purpose, isCustom);
+  }, []);
+
   return {
     trackPlacement,
     trackLabel,
     trackBulk,
+    trackSnapshot,
+    trackQuality,
+    trackPurpose,
   };
 }
 
@@ -85,5 +127,45 @@ export const mlTracking = {
   trackBulk(bins: Bin[], method: PlacementMethod): void {
     const layout = useLayoutStore.getState().layout;
     trackBulkPlacement(bins, layout, method);
+  },
+
+  /**
+   * Track a layout snapshot at a commit point.
+   */
+  trackSnapshot(trigger: LayoutSnapshotTrigger): void {
+    const layout = useLayoutStore.getState().layout;
+    trackLayoutSnapshot(layout, trigger);
+  },
+
+  /**
+   * Track a quality signal for the current layout.
+   */
+  trackQuality(signal: QualitySignal, createdAt?: Date | number): void {
+    const layout = useLayoutStore.getState().layout;
+    trackQualitySignal(layout, signal, createdAt);
+  },
+
+  /**
+   * Track drawer purpose selection.
+   */
+  trackPurpose(purpose: string, isCustom: boolean = false): void {
+    const layout = useLayoutStore.getState().layout;
+    trackDrawerPurpose(layout, purpose, isCustom);
+  },
+
+  /**
+   * Increment edit count for session tracking.
+   * Call when bins are modified.
+   */
+  incrementEdit(): void {
+    incrementEditCount();
+  },
+
+  /**
+   * Mark that an edit occurred (resets idle timer).
+   * Call when bins are modified.
+   */
+  markActivity(): void {
+    markEditActivity();
   },
 };

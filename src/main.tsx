@@ -5,10 +5,17 @@ import './index.css'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
 import { initAnalytics } from './utils/analytics.ts'
-import { initMLTelemetry } from './shared/analytics/mlTelemetry.ts'
+import { initMLTelemetry, setLayoutStoreRef } from './shared/analytics/mlTelemetry.ts'
+import { useLayoutStore } from './core/store/layout.ts'
 
 // Initialize Posthog analytics (no-op in dev)
 initAnalytics()
+
+// Set up layout store reference for ML telemetry (avoids circular dependencies)
+setLayoutStoreRef(
+  () => useLayoutStore.getState(),
+  useLayoutStore.subscribe
+)
 
 // Initialize ML telemetry for bin prediction training
 initMLTelemetry()

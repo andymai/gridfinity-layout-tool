@@ -5,6 +5,8 @@
  * No raw events are stored - only aggregate counts for ML training.
  *
  * Redis Schema:
+ *
+ * === Bin Placement (existing) ===
  * - ml:sizes                  → Global bin size frequency
  * - ml:trans:{prev}           → Transition matrix (prev_size → next_size)
  * - ml:drawer:{size}          → Bin sizes per drawer size
@@ -15,6 +17,20 @@
  * - ml:gapfit:{fit}           → Bin sizes per gap fit type
  * - ml:method:{method}        → Bin sizes per placement method
  * - ml:unknown_hashes         → Popular unknown label hashes (for vocab expansion)
+ *
+ * === Layout Snapshots (new) ===
+ * - ml:drawer_sizes:{drawer}  → Bin size distribution by drawer size
+ * - ml:domains:{drawer}       → Domain distribution by drawer size
+ * - ml:cooccur:{hash}         → Label co-occurrence matrix
+ * - ml:triggers               → Snapshot trigger distribution
+ * - ml:purpose:{purpose}      → Drawer purpose frequency
+ * - ml:purpose_sizes:{purpose} → Bin sizes by drawer purpose
+ *
+ * === Quality Signals (new) ===
+ * - ml:quality:{signal}       → Quality signal counts
+ * - ml:quality_layouts        → Layouts by quality signal type
+ *
+ * === Metadata ===
  * - ml:meta:*                 → Metadata counters
  */
 
@@ -55,7 +71,47 @@ interface LabelUpdateEvent {
   vocab_version: string;
 }
 
-type MLTelemetryEvent = BinPlacementEvent | LabelUpdateEvent;
+interface LayoutSnapshotEvent {
+  type: 'layout_snapshot';
+  trigger: 'save' | 'export_json' | 'export_tsv' | 'share' | 'print' | 'session_end' | 'layout_switch' | 'idle' | 'print_preview';
+  layout_hash: string;
+  snapshot_index: number;
+  drawer_size: string;
+  layer_count: number;
+  purpose: string | null;
+  bin_count: number;
+  size_distribution: Record<string, number>;
+  category_distribution: Record<string, number>;
+  domain_distribution: Record<string, number>;
+  top_label_hashes: string[];
+  fill_percentage: number;
+  labeled_percentage: number;
+  session_duration_ms: number;
+  edit_count: number;
+  quality_tier: 'high' | 'medium' | 'low' | 'skip';
+  vocab_version: string;
+}
+
+interface LayoutQualityEvent {
+  type: 'layout_quality';
+  layout_hash: string;
+  signal: 'shared' | 'exported' | 'duplicated' | 'deleted' | 'revisited_edited' | 'revisited_kept';
+  days_since_creation: number;
+}
+
+interface DrawerPurposeEvent {
+  type: 'drawer_purpose';
+  layout_hash: string;
+  purpose: string;
+  is_custom: boolean;
+}
+
+type MLTelemetryEvent =
+  | BinPlacementEvent
+  | LabelUpdateEvent
+  | LayoutSnapshotEvent
+  | LayoutQualityEvent
+  | DrawerPurposeEvent;
 
 // ============================================
 // REDIS CONNECTION
@@ -131,6 +187,7 @@ const VALID_METHODS = new Set(['draw', 'fill', 'duplicate', 'staging', 'paint'])
 
 // Security: Strict validation for fields used in Redis keys to prevent injection
 const VALID_LABEL_HASH_REGEX = /^[a-f0-9]{8}$/; // 8-char hex hash
+const VALID_LAYOUT_HASH_REGEX = /^[a-f0-9]{8}$/; // 8-char hex hash
 const VALID_NORMALIZED_LABEL_REGEX = /^[a-z][a-z0-9_]{0,31}$/; // lowercase, alphanumeric + underscore
 const VALID_CATEGORY_ID_REGEX = /^[a-zA-Z0-9_-]{1,36}$/; // UUID-like or simple ID
 const VALID_DOMAINS = new Set([
@@ -143,6 +200,39 @@ const VALID_DOMAINS = new Set([
   'cosmetics',
   'misc',
 ]);
+
+// Layout snapshot validation
+const VALID_TRIGGERS = new Set([
+  'save',
+  'export_json',
+  'export_tsv',
+  'share',
+  'print',
+  'session_end',
+  'layout_switch',
+  'idle',
+  'print_preview',
+]);
+const VALID_QUALITY_SIGNALS = new Set([
+  'shared',
+  'exported',
+  'duplicated',
+  'deleted',
+  'revisited_edited',
+  'revisited_kept',
+]);
+const VALID_PURPOSES = new Set([
+  'workshop',
+  'electronics',
+  'office',
+  'craft',
+  'kitchen',
+  'bathroom',
+  'garage',
+  'other',
+]);
+const VALID_PURPOSE_REGEX = /^[a-z][a-z0-9_-]{0,31}$/; // For custom purposes
+const VALID_QUALITY_TIERS = new Set(['high', 'medium', 'low', 'skip']);
 
 /**
  * Validate nullable string field used in Redis keys.
@@ -163,6 +253,47 @@ function validateNullableField(
 function validateNullableDomain(value: unknown): value is string | null {
   if (value === null) return true;
   return typeof value === 'string' && VALID_DOMAINS.has(value);
+}
+
+/**
+ * Validate size distribution object (all keys are valid bin sizes, values are positive numbers).
+ */
+function validateSizeDistribution(value: unknown): value is Record<string, number> {
+  if (!value || typeof value !== 'object') return false;
+  const obj = value as Record<string, unknown>;
+  for (const [key, val] of Object.entries(obj)) {
+    if (!VALID_BIN_SIZE_REGEX.test(key)) return false;
+    if (typeof val !== 'number' || val < 0 || val > 10000) return false;
+  }
+  return true;
+}
+
+/**
+ * Validate category/domain distribution object (keys are valid IDs, values are positive numbers).
+ */
+function validateDistribution(
+  value: unknown,
+  keyPattern: RegExp
+): value is Record<string, number> {
+  if (!value || typeof value !== 'object') return false;
+  const obj = value as Record<string, unknown>;
+  for (const [key, val] of Object.entries(obj)) {
+    if (!keyPattern.test(key) && key !== 'uncategorized' && key !== 'unknown') return false;
+    if (typeof val !== 'number' || val < 0 || val > 10000) return false;
+  }
+  return true;
+}
+
+/**
+ * Validate label hash array (all are valid 8-char hex hashes).
+ */
+function validateLabelHashArray(value: unknown): value is string[] {
+  if (!Array.isArray(value)) return false;
+  if (value.length > 20) return false; // Cap at 20 hashes
+  for (const hash of value) {
+    if (typeof hash !== 'string' || !VALID_LABEL_HASH_REGEX.test(hash)) return false;
+  }
+  return true;
 }
 
 function validateEvent(event: unknown): event is MLTelemetryEvent {
@@ -205,6 +336,67 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       validateNullableField(e.new_label_hash, VALID_LABEL_HASH_REGEX) &&
       validateNullableField(e.new_label_normalized, VALID_NORMALIZED_LABEL_REGEX) &&
       validateNullableDomain(e.new_label_domain)
+    );
+  }
+
+  if (e.type === 'layout_snapshot') {
+    return (
+      typeof e.trigger === 'string' &&
+      VALID_TRIGGERS.has(e.trigger) &&
+      typeof e.layout_hash === 'string' &&
+      VALID_LAYOUT_HASH_REGEX.test(e.layout_hash) &&
+      typeof e.snapshot_index === 'number' &&
+      e.snapshot_index >= 0 &&
+      e.snapshot_index < 10000 &&
+      typeof e.drawer_size === 'string' &&
+      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size) &&
+      typeof e.layer_count === 'number' &&
+      e.layer_count >= 0 &&
+      e.layer_count <= 20 &&
+      (e.purpose === null ||
+        (typeof e.purpose === 'string' &&
+          (VALID_PURPOSES.has(e.purpose) || VALID_PURPOSE_REGEX.test(e.purpose)))) &&
+      typeof e.bin_count === 'number' &&
+      e.bin_count >= 0 &&
+      e.bin_count < 10000 &&
+      validateSizeDistribution(e.size_distribution) &&
+      validateDistribution(e.category_distribution, VALID_CATEGORY_ID_REGEX) &&
+      validateDistribution(e.domain_distribution, /^[a-z_]+$/) &&
+      validateLabelHashArray(e.top_label_hashes) &&
+      typeof e.fill_percentage === 'number' &&
+      e.fill_percentage >= 0 &&
+      e.fill_percentage <= 100 &&
+      typeof e.labeled_percentage === 'number' &&
+      e.labeled_percentage >= 0 &&
+      e.labeled_percentage <= 100 &&
+      typeof e.session_duration_ms === 'number' &&
+      e.session_duration_ms >= 0 &&
+      typeof e.edit_count === 'number' &&
+      e.edit_count >= 0 &&
+      typeof e.quality_tier === 'string' &&
+      VALID_QUALITY_TIERS.has(e.quality_tier)
+    );
+  }
+
+  if (e.type === 'layout_quality') {
+    return (
+      typeof e.layout_hash === 'string' &&
+      VALID_LAYOUT_HASH_REGEX.test(e.layout_hash) &&
+      typeof e.signal === 'string' &&
+      VALID_QUALITY_SIGNALS.has(e.signal) &&
+      typeof e.days_since_creation === 'number' &&
+      e.days_since_creation >= 0 &&
+      e.days_since_creation < 10000
+    );
+  }
+
+  if (e.type === 'drawer_purpose') {
+    return (
+      typeof e.layout_hash === 'string' &&
+      VALID_LAYOUT_HASH_REGEX.test(e.layout_hash) &&
+      typeof e.purpose === 'string' &&
+      (VALID_PURPOSES.has(e.purpose) || VALID_PURPOSE_REGEX.test(e.purpose)) &&
+      typeof e.is_custom === 'boolean'
     );
   }
 
@@ -311,6 +503,120 @@ function aggregateLabelUpdate(event: LabelUpdateEvent, inc: Increments): void {
   }
 }
 
+function aggregateLayoutSnapshot(event: LayoutSnapshotEvent, inc: Increments): void {
+  const { drawer_size, trigger, purpose } = event;
+
+  // 1. Track size distribution by drawer size
+  for (const [size, count] of Object.entries(event.size_distribution)) {
+    const drawerSizeKey = `ml:drawer_sizes:${drawer_size}`;
+    inc[drawerSizeKey] = inc[drawerSizeKey] || {};
+    inc[drawerSizeKey][size] = (inc[drawerSizeKey][size] || 0) + count;
+  }
+
+  // 2. Track domain distribution by drawer size
+  for (const [domain, count] of Object.entries(event.domain_distribution)) {
+    const domainKey = `ml:domains:${drawer_size}`;
+    inc[domainKey] = inc[domainKey] || {};
+    inc[domainKey][domain] = (inc[domainKey][domain] || 0) + count;
+  }
+
+  // 3. Build co-occurrence matrix from top label hashes
+  // Track pairs of labels that appear together in the same layout
+  const hashes = event.top_label_hashes;
+  for (let i = 0; i < hashes.length; i++) {
+    for (let j = i + 1; j < hashes.length; j++) {
+      // Bidirectional: A→B and B→A
+      const cooccurKeyA = `ml:cooccur:${hashes[i]}`;
+      inc[cooccurKeyA] = inc[cooccurKeyA] || {};
+      inc[cooccurKeyA][hashes[j]] = (inc[cooccurKeyA][hashes[j]] || 0) + 1;
+
+      const cooccurKeyB = `ml:cooccur:${hashes[j]}`;
+      inc[cooccurKeyB] = inc[cooccurKeyB] || {};
+      inc[cooccurKeyB][hashes[i]] = (inc[cooccurKeyB][hashes[i]] || 0) + 1;
+    }
+  }
+
+  // 4. Track snapshot trigger distribution
+  inc['ml:triggers'] = inc['ml:triggers'] || {};
+  inc['ml:triggers'][trigger] = (inc['ml:triggers'][trigger] || 0) + 1;
+
+  // 5. Track purpose if set
+  if (purpose) {
+    inc['ml:purpose'] = inc['ml:purpose'] || {};
+    inc['ml:purpose'][purpose] = (inc['ml:purpose'][purpose] || 0) + 1;
+
+    // Track size distribution by purpose
+    for (const [size, count] of Object.entries(event.size_distribution)) {
+      const purposeSizeKey = `ml:purpose_sizes:${purpose}`;
+      inc[purposeSizeKey] = inc[purposeSizeKey] || {};
+      inc[purposeSizeKey][size] = (inc[purposeSizeKey][size] || 0) + count;
+    }
+  }
+
+  // 6. Track fill percentage buckets (0-25%, 25-50%, 50-75%, 75-100%)
+  const fillBucket = Math.min(Math.floor(event.fill_percentage / 25), 3);
+  const fillKey = `ml:fill_bucket:${fillBucket}`;
+  inc[fillKey] = inc[fillKey] || {};
+  inc[fillKey][drawer_size] = (inc[fillKey][drawer_size] || 0) + 1;
+
+  // 7. Track labeled percentage buckets
+  const labeledBucket = Math.min(Math.floor(event.labeled_percentage / 25), 3);
+  const labeledKey = `ml:labeled_bucket:${labeledBucket}`;
+  inc[labeledKey] = inc[labeledKey] || {};
+  inc[labeledKey][drawer_size] = (inc[labeledKey][drawer_size] || 0) + 1;
+
+  // 8. Track quality tier distribution (for backend weighting)
+  const { quality_tier } = event;
+  inc['ml:quality_tier'] = inc['ml:quality_tier'] || {};
+  inc['ml:quality_tier'][quality_tier] = (inc['ml:quality_tier'][quality_tier] || 0) + 1;
+
+  // 9. Track size distribution by quality tier (high-quality layouts are better training data)
+  if (quality_tier === 'high' || quality_tier === 'medium') {
+    for (const [size, count] of Object.entries(event.size_distribution)) {
+      const tierSizeKey = `ml:tier_sizes:${quality_tier}`;
+      inc[tierSizeKey] = inc[tierSizeKey] || {};
+      inc[tierSizeKey][size] = (inc[tierSizeKey][size] || 0) + count;
+    }
+  }
+}
+
+function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): void {
+  const { signal } = event;
+
+  // Track quality signal frequency
+  inc['ml:quality'] = inc['ml:quality'] || {};
+  inc['ml:quality'][signal] = (inc['ml:quality'][signal] || 0) + 1;
+
+  // Track by age bucket (0-1 day, 1-7 days, 7-30 days, 30+ days)
+  let ageBucket: string;
+  if (event.days_since_creation <= 1) {
+    ageBucket = 'day1';
+  } else if (event.days_since_creation <= 7) {
+    ageBucket = 'week1';
+  } else if (event.days_since_creation <= 30) {
+    ageBucket = 'month1';
+  } else {
+    ageBucket = 'older';
+  }
+
+  const ageKey = `ml:quality_age:${signal}`;
+  inc[ageKey] = inc[ageKey] || {};
+  inc[ageKey][ageBucket] = (inc[ageKey][ageBucket] || 0) + 1;
+}
+
+function aggregateDrawerPurpose(event: DrawerPurposeEvent, inc: Increments): void {
+  const { purpose, is_custom } = event;
+
+  // Track purpose frequency
+  inc['ml:purpose'] = inc['ml:purpose'] || {};
+  inc['ml:purpose'][purpose] = (inc['ml:purpose'][purpose] || 0) + 1;
+
+  // Track custom vs predefined
+  const customKey = is_custom ? 'custom' : 'predefined';
+  inc['ml:purpose_type'] = inc['ml:purpose_type'] || {};
+  inc['ml:purpose_type'][customKey] = (inc['ml:purpose_type'][customKey] || 0) + 1;
+}
+
 // ============================================
 // HANDLER
 // ============================================
@@ -366,10 +672,22 @@ export default async function handler(
     if (!validateEvent(event)) continue;
     validCount++;
 
-    if (event.type === 'bin_placed') {
-      aggregateBinPlacement(event, increments);
-    } else if (event.type === 'label_updated') {
-      aggregateLabelUpdate(event, increments);
+    switch (event.type) {
+      case 'bin_placed':
+        aggregateBinPlacement(event, increments);
+        break;
+      case 'label_updated':
+        aggregateLabelUpdate(event, increments);
+        break;
+      case 'layout_snapshot':
+        aggregateLayoutSnapshot(event, increments);
+        break;
+      case 'layout_quality':
+        aggregateQualitySignal(event, increments);
+        break;
+      case 'drawer_purpose':
+        aggregateDrawerPurpose(event, increments);
+        break;
     }
   }
 
