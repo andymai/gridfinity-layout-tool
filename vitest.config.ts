@@ -26,11 +26,11 @@ export default defineConfig({
       ],
       thresholds: {
         // Thresholds set slightly below current coverage to prevent regression
-        // TODO: Incrementally raise these as coverage improves
-        lines: 77.9,
-        branches: 67,
-        functions: 77,
-        statements: 77,
+        // Updated 2026-01-18: Raised after adding Toast + PrintModal tests
+        lines: 83,
+        branches: 71,
+        functions: 83,
+        statements: 82,
       },
     },
   },

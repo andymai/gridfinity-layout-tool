@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { useSettingsStore, DEFAULT_SETTINGS, DEFAULT_PRINT_VIEW_SETTINGS, DEFAULT_BIN_LIST_SORT_ORDER, normalizeSortOrder } from '@/core/store/settings';
-import type { BinListSortOrder } from '@/core/store/settings';
+import { useSettingsStore, DEFAULT_SETTINGS, DEFAULT_PRINT_VIEW_SETTINGS, DEFAULT_BIN_LIST_SORT_ORDER, normalizeSortOrder, DEFAULT_STL_SEARCH_SITES, STL_SEARCH_CONSTRAINTS } from '@/core/store/settings';
+import type { BinListSortOrder, STLSearchSite } from '@/core/store/settings';
 import { resetAllStores, createIsolatedLocalStorageMock } from '@/test/testUtils';
 
 describe('settings store', () => {
@@ -433,5 +433,95 @@ describe('settings store', () => {
       expect(result.find(s => s.field === 'label')?.enabled).toBe(true);
     });
   });
+
+  describe('STL search sites', () => {
+    it('has default STL search sites', () => {
+      const settings = useSettingsStore.getState().settings;
+      expect(settings.stlSearchSites).toBeDefined();
+      expect(settings.stlSearchSites.length).toBeGreaterThan(0);
+    });
+
+    it('can update STL search sites', () => {
+      const { updateSetting } = useSettingsStore.getState();
+      const newSites: STLSearchSite[] = [
+        {
+          id: 'custom-site',
+          name: 'Custom Site',
+          urlTemplate: 'https://example.com/search?q={width}x{depth}',
+          enabled: true,
+        },
+      ];
+
+      updateSetting('stlSearchSites', newSites);
+
+      const settings = useSettingsStore.getState().settings;
+      expect(settings.stlSearchSites).toEqual(newSites);
+    });
+
+    it('persists STL search sites to localStorage', () => {
+      const { updateSetting } = useSettingsStore.getState();
+      const newSites: STLSearchSite[] = [
+        {
+          id: 'custom',
+          name: 'Custom',
+          urlTemplate: 'https://example.com/{width}x{depth}',
+          enabled: true,
+        },
+      ];
+
+      updateSetting('stlSearchSites', newSites);
+
+      const savedData = JSON.parse(localStorageMock.mock._store['gridfinity-settings-v1']);
+      expect(savedData.stlSearchSites).toEqual(newSites);
+    });
+  });
+
+  describe('DEFAULT_STL_SEARCH_SITES', () => {
+    it('includes Printables', () => {
+      const printables = DEFAULT_STL_SEARCH_SITES.find(s => s.id === 'printables');
+      expect(printables).toBeDefined();
+      expect(printables?.enabled).toBe(true);
+      expect(printables?.isDefault).toBe(true);
+    });
+
+    it('includes MakerWorld', () => {
+      const makerworld = DEFAULT_STL_SEARCH_SITES.find(s => s.id === 'makerworld');
+      expect(makerworld).toBeDefined();
+      expect(makerworld?.enabled).toBe(true);
+      expect(makerworld?.isDefault).toBe(true);
+    });
+
+    it('includes Thangs (disabled by default)', () => {
+      const thangs = DEFAULT_STL_SEARCH_SITES.find(s => s.id === 'thangs');
+      expect(thangs).toBeDefined();
+      expect(thangs?.enabled).toBe(false);
+      expect(thangs?.isDefault).toBe(true);
+    });
+
+    it('has valid URL templates with placeholders', () => {
+      for (const site of DEFAULT_STL_SEARCH_SITES) {
+        expect(site.urlTemplate).toContain('{width}');
+        expect(site.urlTemplate).toContain('{depth}');
+      }
+    });
+  });
+
+  describe('STL_SEARCH_CONSTRAINTS', () => {
+    it('has max sites limit', () => {
+      expect(STL_SEARCH_CONSTRAINTS.MAX_SITES).toBe(5);
+    });
+
+    it('has name max length', () => {
+      expect(STL_SEARCH_CONSTRAINTS.NAME_MAX_LENGTH).toBe(24);
+    });
+
+    it('has URL template max length', () => {
+      expect(STL_SEARCH_CONSTRAINTS.URL_TEMPLATE_MAX_LENGTH).toBe(256);
+    });
+  });
+
+  // Note: Tests for loadSettings() initialization behavior are not feasible in unit tests
+  // because Zustand stores initialize their state once at module load time.
+  // The localStorage loading and normalization logic is tested via e2e tests instead.
 
 });
