@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect, useLayoutEffect, Suspense } from 'react';
+import { useRef, useState, useCallback, useEffect, useLayoutEffect, Suspense, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
@@ -417,38 +417,54 @@ export function Grid() {
     }
   }, [bins, activeLayerId, setSelectedBins, lastClickedCol, selectedBinIds, getBinsInColRange]);
 
-  // Generate column numbers (1-indexed, displayed at bottom)
-  // Include fractional edge label when drawer has fractional width
-  // Position depends on fractionalEdgeX setting ('start' = left, 'end' = right)
+  // Memoized grid dimension calculations - intermediate values used in JSX below
   const integerWidth = Math.floor(drawer.width);
   const hasFractionalWidth = drawer.width % 1 !== 0;
   const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
+  const integerDepth = Math.floor(drawer.depth);
+  const hasFractionalDepth = drawer.depth % 1 !== 0;
   const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
-  const columnLabels: (number | string)[] = Array.from({ length: integerWidth }, (_, i) => i + 1);
-  if (hasFractionalWidth) {
-    if (fractionalEdgeX === 'start') {
-      columnLabels.unshift('+.5'); // Fractional at left
-    } else {
-      columnLabels.push('+.5'); // Fractional at right (default)
+
+  // Generate column numbers (1-indexed, displayed at bottom)
+  // Include fractional edge label when drawer has fractional width
+  // Position depends on fractionalEdgeX setting ('start' = left, 'end' = right)
+  // Dependencies use drawer source values to ensure memoization works correctly
+  const columnLabels = useMemo(() => {
+    const width = Math.floor(drawer.width);
+    const hasFractional = drawer.width % 1 !== 0;
+    const edgeX = drawer.fractionalEdgeX ?? 'end';
+    const labels: (number | string)[] = Array.from({ length: width }, (_, i) => i + 1);
+    if (hasFractional) {
+      if (edgeX === 'start') {
+        labels.unshift('+.5'); // Fractional at left
+      } else {
+        labels.push('+.5'); // Fractional at right (default)
+      }
     }
-  }
+    return labels;
+  }, [drawer.width, drawer.fractionalEdgeX]);
 
   // Generate row numbers (1-indexed, displayed on left)
   // Visual row at top = highest Y coordinate (drawer.depth)
   // Bottom row = Y coordinate 1
   // Include fractional edge label when drawer has fractional depth
   // Position depends on fractionalEdgeY setting ('start' = bottom, 'end' = top)
-  const integerDepth = Math.floor(drawer.depth);
-  const hasFractionalDepth = drawer.depth % 1 !== 0;
   // For depth 9.5: integer labels are 9,8,7,6,5,4,3,2,1 (rows 1-9 from bottom)
-  const rowLabels: (number | string)[] = Array.from({ length: integerDepth }, (_, i) => integerDepth - i);
-  if (hasFractionalDepth) {
-    if (fractionalEdgeY === 'end') {
-      rowLabels.unshift('+.5'); // Fractional at top (CSS row 1)
-    } else {
-      rowLabels.push('+.5'); // Fractional at bottom
+  // Dependencies use drawer source values to ensure memoization works correctly
+  const rowLabels = useMemo(() => {
+    const depth = Math.floor(drawer.depth);
+    const hasFractional = drawer.depth % 1 !== 0;
+    const edgeY = drawer.fractionalEdgeY ?? 'end';
+    const labels: (number | string)[] = Array.from({ length: depth }, (_, i) => depth - i);
+    if (hasFractional) {
+      if (edgeY === 'end') {
+        labels.unshift('+.5'); // Fractional at top (CSS row 1)
+      } else {
+        labels.push('+.5'); // Fractional at bottom
+      }
     }
-  }
+    return labels;
+  }, [drawer.depth, drawer.fractionalEdgeY]);
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-surface relative">

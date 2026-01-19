@@ -85,6 +85,35 @@ describe('splitBinSize', () => {
     expect(pieces.length).toBe(4);
     expect(pieces.every(p => p.width <= 2 && p.depth <= 2)).toBe(true);
   });
+
+  it('handles 8×2 with maxSize 4 (splits width only into equal halves)', () => {
+    // 8×2 → 4×2 + 4×2 (right half is exactly 4, not 0)
+    const pieces = splitBinSize(8, 2, 4);
+    expect(pieces.length).toBe(2);
+    expect(pieces.every(p => p.width === 4 && p.depth === 2)).toBe(true);
+  });
+
+  it('handles 2×8 with maxSize 4 (splits depth only into equal halves)', () => {
+    // 2×8 → 2×4 + 2×4 (bottom half is exactly 4, not 0)
+    const pieces = splitBinSize(2, 8, 4);
+    expect(pieces.length).toBe(2);
+    expect(pieces.every(p => p.width === 2 && p.depth === 4)).toBe(true);
+  });
+
+  it('handles 8×8 with maxSize 4 (splits both into equal halves)', () => {
+    // 8×8 → 4 pieces of 4×4
+    const pieces = splitBinSize(8, 8, 4);
+    expect(pieces.length).toBe(4);
+    expect(pieces.every(p => p.width === 4 && p.depth === 4)).toBe(true);
+  });
+
+  it('handles 6×5 with maxSize 4 (both dimensions need splitting)', () => {
+    // 6×5 → leftW=3, rightW=3, topD=3, bottomD=2
+    // Results in: 3×3, 3×3, 3×2, 3×2
+    const pieces = splitBinSize(6, 5, 4);
+    expect(pieces.length).toBe(4);
+    expect(pieces.every(p => p.width <= 4 && p.depth <= 4)).toBe(true);
+  });
 });
 
 describe('splitBinSize with fractional dimensions (half-bin mode)', () => {
