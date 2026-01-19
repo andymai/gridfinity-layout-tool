@@ -1,7 +1,8 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import type { Layout } from '@/core/types';
 import {
   computeLayoutMetrics,
+  computeLabsMetrics,
   getDeviceType,
   getActivityContext,
   trackLayoutSnapshot,
@@ -10,8 +11,10 @@ import {
   trackLayoutAction,
   trackFillOperation,
   trackPaintMode,
+  initAnalytics,
 } from '@/utils/analytics';
 import { useInteractionStore } from '@/core/store/interaction';
+import { useLabsStore } from '@/features/labs/store/labs';
 import { STAGING_ID } from '@/core/constants';
 
 // Helper to create a test layout
@@ -526,5 +529,84 @@ describe('getActivityContext', () => {
       keyboardResizeMode: true,
     });
     expect(getActivityContext()).toBe('editing');
+  });
+});
+
+describe('initAnalytics', () => {
+  it('does not throw when called in dev mode', () => {
+    // In dev mode, initAnalytics returns early at line 25 and does nothing
+    // This test verifies the function handles dev mode gracefully
+    expect(() => initAnalytics()).not.toThrow();
+  });
+
+  it('is idempotent (multiple calls are safe)', () => {
+    // First call (returns early in dev mode)
+    initAnalytics();
+    // Subsequent calls should also return early without error
+    expect(() => initAnalytics()).not.toThrow();
+    expect(() => initAnalytics()).not.toThrow();
+  });
+});
+
+describe('computeLabsMetrics', () => {
+  beforeEach(() => {
+    // Reset labs store to default state
+    useLabsStore.setState({
+      preferences: {
+        enabledFeatures: {},
+        dismissedFeatures: [],
+      },
+    });
+  });
+
+  it('returns empty features when none enabled', () => {
+    const metrics = computeLabsMetrics();
+    expect(metrics.labs_enabled_features).toEqual([]);
+    expect(metrics.labs_enabled_count).toBe(0);
+  });
+
+  it('includes experimental features that are enabled', () => {
+    useLabsStore.setState({
+      preferences: {
+        enabledFeatures: {
+          collaborative_editing: true,
+        },
+        dismissedFeatures: [],
+      },
+    });
+
+    const metrics = computeLabsMetrics();
+    expect(metrics.labs_enabled_features).toContain('collaborative_editing');
+    expect(metrics.labs_enabled_count).toBe(1);
+  });
+
+  it('excludes disabled features', () => {
+    useLabsStore.setState({
+      preferences: {
+        enabledFeatures: {
+          collaborative_editing: false,
+        },
+        dismissedFeatures: [],
+      },
+    });
+
+    const metrics = computeLabsMetrics();
+    expect(metrics.labs_enabled_features).not.toContain('collaborative_editing');
+    expect(metrics.labs_enabled_count).toBe(0);
+  });
+
+  it('excludes unknown feature IDs', () => {
+    useLabsStore.setState({
+      preferences: {
+        enabledFeatures: {
+          unknown_feature: true,
+        },
+        dismissedFeatures: [],
+      },
+    });
+
+    const metrics = computeLabsMetrics();
+    // Unknown features should be excluded since getFeature returns null
+    expect(metrics.labs_enabled_features).not.toContain('unknown_feature');
   });
 });

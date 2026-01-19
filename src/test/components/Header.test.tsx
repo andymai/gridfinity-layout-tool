@@ -1,13 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Header } from '@/components/Header';
 import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 
 // Mock the LayoutManagerModal to avoid deep component tree
+// Note: Module is lazy-loaded in Header, so mock must be set up before import
 vi.mock('../../features/layout-library/components/LayoutManagerModal', () => ({
   LayoutManagerModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
     isOpen ? <div data-testid="layout-manager-modal" onClick={onClose}>Modal</div> : null
+  ),
+}));
+
+// Mock the PrintModal to avoid deep component tree
+vi.mock('../../features/print-export/components/PrintModal', () => ({
+  PrintModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
+    isOpen ? <div data-testid="print-modal" onClick={onClose}>Print Modal</div> : null
   ),
 }));
 
@@ -289,25 +297,33 @@ describe('Header', () => {
   });
 
   describe('layout manager', () => {
-    it('opens layout manager on button click', () => {
+    it('opens layout manager on button click', async () => {
       render(<Header {...defaultProps} />);
 
       expect(screen.queryByTestId('layout-manager-modal')).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByLabelText('Open layout manager'));
 
-      expect(screen.getByTestId('layout-manager-modal')).toBeInTheDocument();
+      // Wait for lazy-loaded modal to render
+      await waitFor(() => {
+        expect(screen.getByTestId('layout-manager-modal')).toBeInTheDocument();
+      });
     });
 
-    it('closes layout manager when modal is closed', () => {
+    it('closes layout manager when modal is closed', async () => {
       useLibraryStore.getState().setShowLayoutManager(true);
       render(<Header {...defaultProps} />);
 
-      expect(screen.getByTestId('layout-manager-modal')).toBeInTheDocument();
+      // Wait for lazy-loaded modal to render
+      await waitFor(() => {
+        expect(screen.getByTestId('layout-manager-modal')).toBeInTheDocument();
+      });
 
       fireEvent.click(screen.getByTestId('layout-manager-modal'));
 
-      expect(screen.queryByTestId('layout-manager-modal')).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByTestId('layout-manager-modal')).not.toBeInTheDocument();
+      });
     });
   });
 

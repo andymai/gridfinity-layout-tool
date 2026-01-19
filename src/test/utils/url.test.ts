@@ -166,6 +166,12 @@ describe('url utilities', () => {
       const redirect = getCanonicalRedirect('abc123xyz789', 'My Layout');
       expect(redirect).toBeNull();
     });
+
+    it('returns null when not on a layout URL', () => {
+      window.location.pathname = '/';
+      const redirect = getCanonicalRedirect('abc123xyz789', 'My Layout');
+      expect(redirect).toBeNull();
+    });
   });
 
   describe('hasLegacyShareHash', () => {
@@ -241,6 +247,20 @@ describe('legacy API aliases', () => {
       '',
       '/l/test123test12'
     );
+  });
+
+  it('setLayoutHash uses pushState when addToHistory is true', () => {
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/', hash: '' },
+      writable: true,
+    });
+    setLayoutHash('test123test12', true);
+    expect(window.history.pushState).toHaveBeenCalledWith(
+      { layoutId: 'test123test12' },
+      '',
+      '/l/test123test12'
+    );
+    expect(window.history.replaceState).not.toHaveBeenCalled();
   });
 
   it('clearLayoutHash clears to root', () => {
