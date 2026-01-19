@@ -32,6 +32,7 @@ export function ContextMenuItem({
 }: ContextMenuItemProps) {
   return (
     <button
+      role="menuitem"
       onClick={onClick}
       disabled={disabled}
       className={`w-full px-4 py-3 flex items-center gap-3 transition-colors ${

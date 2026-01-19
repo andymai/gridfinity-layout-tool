@@ -47,6 +47,8 @@ export function ContextMenuContainer({
       {/* Menu */}
       <div
         ref={menuRef}
+        role="menu"
+        aria-label="Context menu"
         className="fixed z-50 rounded-xl overflow-hidden shadow-xl bg-surface-elevated border border-stroke-subtle animate-fade-in"
         style={{
           left: position.x,

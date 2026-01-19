@@ -135,18 +135,21 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-overlay-medium flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="bg-zinc-800 rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[80vh] flex flex-col"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="import-modal-title"
+        className="bg-surface-secondary rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">Import Layout</h2>
+          <h2 id="import-modal-title" className="text-2xl font-bold text-content">Import Layout</h2>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-white transition-colors"
+            className="text-content-tertiary hover:text-content transition-colors"
             aria-label="Close"
           >
             <svg
@@ -175,7 +178,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded transition-colors"
+              className="px-4 py-2 bg-surface-hover hover:bg-surface-active text-content rounded transition-colors"
             >
               Upload JSON File
             </button>
@@ -183,7 +186,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
 
           {/* Textarea */}
           <div className="flex-1 flex flex-col min-h-0">
-            <label htmlFor="json-input" className="text-sm text-zinc-300 mb-2">
+            <label htmlFor="json-input" className="text-sm text-content-secondary mb-2">
               Or paste JSON or share link:
             </label>
             <textarea
@@ -192,17 +195,21 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               value={jsonText}
               onChange={handleTextChange}
               placeholder='{"version": "1.0", "name": "My Layout", ...} or https://...#share=...'
-              className="flex-1 bg-zinc-900 text-white p-3 rounded font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
 
           {/* Validation Errors */}
           {errors.length > 0 && (
-            <div className="bg-red-900/30 border border-red-500 rounded p-3 max-h-32 overflow-y-auto">
-              <div className="text-sm font-semibold text-red-400 mb-1">
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="bg-error/10 border border-error rounded p-3 max-h-32 overflow-y-auto"
+            >
+              <div className="text-sm font-semibold text-error mb-1">
                 Validation Errors:
               </div>
-              <ul className="text-sm text-red-300 space-y-1">
+              <ul className="text-sm text-error/80 space-y-1">
                 {errors.map((error) => (
                   <li key={error}>• {error}</li>
                 ))}
@@ -212,11 +219,14 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
 
           {/* Preview */}
           {preview && (
-            <div className="bg-green-900/30 border border-green-500 rounded p-3">
-              <div className="text-sm font-semibold text-green-400 mb-2">
+            <div
+              aria-live="polite"
+              className="bg-success/10 border border-success rounded p-3"
+            >
+              <div className="text-sm font-semibold text-success mb-2">
                 Preview:
               </div>
-              <div className="text-sm text-green-300 space-y-1">
+              <div className="text-sm text-success/80 space-y-1">
                 <div>Drawer size: {preview.drawerSize}</div>
                 <div>Layers: {preview.layerCount}</div>
                 <div>Bins: {preview.binCount}</div>
@@ -230,13 +240,13 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
           <button
             onClick={handleImport}
             disabled={!!errors.length || !jsonText.trim()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-600 disabled:cursor-not-allowed text-white rounded transition-colors"
+            className="btn btn-primary"
           >
             Import
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded transition-colors"
+            className="btn btn-secondary"
           >
             Cancel
           </button>

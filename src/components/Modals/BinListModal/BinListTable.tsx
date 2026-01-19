@@ -126,6 +126,18 @@ export function BinListTable({
     [onEditLabel, onEditNotes]
   );
 
+  const handleCellKeyDown = useCallback(
+    (e: React.KeyboardEvent, rowIndex: number, field: 'label' | 'notes', currentValue: string) => {
+      // Start editing on Enter or F2
+      if (e.key === 'Enter' || e.key === 'F2') {
+        e.preventDefault();
+        if (!onEditLabel && !onEditNotes) return;
+        setEditing({ rowIndex, field, value: currentValue });
+      }
+    },
+    [onEditLabel, onEditNotes]
+  );
+
   const handleEditSave = useCallback(() => {
     if (!editing) return;
 
@@ -287,8 +299,14 @@ export function BinListTable({
 
                 {/* Label (editable) */}
                 <td
-                  className="px-3 py-2 text-content-secondary max-w-[150px]"
+                  role={onEditLabel ? 'gridcell' : undefined}
+                  tabIndex={onEditLabel ? 0 : undefined}
+                  className={`px-3 py-2 text-content-secondary max-w-[150px] ${
+                    onEditLabel ? 'cursor-text hover:bg-surface-hover focus:outline-none focus:ring-1 focus:ring-accent focus:ring-inset' : ''
+                  }`}
                   onDoubleClick={() => handleDoubleClick(index, 'label', (row.labels ?? [])[0] || '')}
+                  onKeyDown={(e) => handleCellKeyDown(e, index, 'label', (row.labels ?? [])[0] || '')}
+                  aria-label={onEditLabel ? `Label: ${(row.labels ?? [])[0] || 'empty'}. Press Enter to edit.` : undefined}
                 >
                   {editing?.rowIndex === index && editing.field === 'label' ? (
                     <input
@@ -310,8 +328,14 @@ export function BinListTable({
 
                 {/* Notes (editable) */}
                 <td
-                  className="px-3 py-2 text-content-tertiary max-w-[200px]"
+                  role={onEditNotes ? 'gridcell' : undefined}
+                  tabIndex={onEditNotes ? 0 : undefined}
+                  className={`px-3 py-2 text-content-tertiary max-w-[200px] ${
+                    onEditNotes ? 'cursor-text hover:bg-surface-hover focus:outline-none focus:ring-1 focus:ring-accent focus:ring-inset' : ''
+                  }`}
                   onDoubleClick={() => handleDoubleClick(index, 'notes', row.notes || '')}
+                  onKeyDown={(e) => handleCellKeyDown(e, index, 'notes', row.notes || '')}
+                  aria-label={onEditNotes ? `Notes: ${row.notes || 'empty'}. Press Enter to edit.` : undefined}
                 >
                   {editing?.rowIndex === index && editing.field === 'notes' ? (
                     <input
