@@ -299,6 +299,7 @@ export function BinListTable({
 
                 {/* Label (editable) */}
                 <td
+                  role={onEditLabel ? 'gridcell' : undefined}
                   tabIndex={onEditLabel ? 0 : undefined}
                   className={`px-3 py-2 text-content-secondary max-w-[150px] ${
                     onEditLabel ? 'cursor-text hover:bg-surface-hover focus:outline-none focus:ring-1 focus:ring-accent focus:ring-inset' : ''
@@ -327,6 +328,7 @@ export function BinListTable({
 
                 {/* Notes (editable) */}
                 <td
+                  role={onEditNotes ? 'gridcell' : undefined}
                   tabIndex={onEditNotes ? 0 : undefined}
                   className={`px-3 py-2 text-content-tertiary max-w-[200px] ${
                     onEditNotes ? 'cursor-text hover:bg-surface-hover focus:outline-none focus:ring-1 focus:ring-accent focus:ring-inset' : ''

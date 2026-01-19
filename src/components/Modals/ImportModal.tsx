@@ -240,7 +240,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
           <button
             onClick={handleImport}
             disabled={!!errors.length || !jsonText.trim()}
-            className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary"
           >
             Import
           </button>

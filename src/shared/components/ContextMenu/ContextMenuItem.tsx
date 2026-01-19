@@ -35,7 +35,6 @@ export function ContextMenuItem({
       role="menuitem"
       onClick={onClick}
       disabled={disabled}
-      aria-disabled={disabled}
       className={`w-full px-4 py-3 flex items-center gap-3 transition-colors ${
         destructive
           ? 'text-error hover:bg-surface-hover'

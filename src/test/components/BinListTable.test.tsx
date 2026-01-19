@@ -440,6 +440,55 @@ describe('BinListTable', () => {
       expect(screen.queryByDisplayValue('Changed')).not.toBeInTheDocument();
     });
 
+    it('enters edit mode on Enter key for focused label cell', () => {
+      render(<BinListTable {...defaultProps} />);
+
+      // Get the cell containing the label (parent of the text span)
+      const labelText = screen.getByText('Screws');
+      const labelCell = labelText.closest('td');
+
+      // Simulate Enter keydown on the cell
+      fireEvent.keyDown(labelCell!, { key: 'Enter' });
+
+      // Should show input in edit mode
+      expect(screen.getByDisplayValue('Screws')).toBeInTheDocument();
+    });
+
+    it('enters edit mode on F2 key for focused label cell', () => {
+      render(<BinListTable {...defaultProps} />);
+
+      const labelText = screen.getByText('Screws');
+      const labelCell = labelText.closest('td');
+
+      // Simulate F2 keydown on the cell
+      fireEvent.keyDown(labelCell!, { key: 'F2' });
+
+      // Should show input in edit mode
+      expect(screen.getByDisplayValue('Screws')).toBeInTheDocument();
+    });
+
+    it('enters edit mode on Enter key for focused notes cell', () => {
+      render(<BinListTable {...defaultProps} />);
+
+      const notesText = screen.getByText('Small hardware');
+      const notesCell = notesText.closest('td');
+
+      fireEvent.keyDown(notesCell!, { key: 'Enter' });
+
+      expect(screen.getByDisplayValue('Small hardware')).toBeInTheDocument();
+    });
+
+    it('enters edit mode on F2 key for focused notes cell', () => {
+      render(<BinListTable {...defaultProps} />);
+
+      const notesText = screen.getByText('Small hardware');
+      const notesCell = notesText.closest('td');
+
+      fireEvent.keyDown(notesCell!, { key: 'F2' });
+
+      expect(screen.getByDisplayValue('Small hardware')).toBeInTheDocument();
+    });
+
     it('does not enter edit mode when edit handlers not provided', () => {
       render(<BinListTable {...defaultProps} onEditLabel={undefined} onEditNotes={undefined} />);
 
