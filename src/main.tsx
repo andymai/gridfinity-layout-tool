@@ -5,9 +5,13 @@ import './index.css'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
 import { initAnalytics } from './utils/analytics.ts'
+import { initMLTelemetry } from './shared/analytics/mlTelemetry.ts'
 
 // Initialize Posthog analytics (no-op in dev)
 initAnalytics()
+
+// Initialize ML telemetry for bin prediction training
+initMLTelemetry()
 
 // Prevent pinch-to-zoom on iOS (Safari ignores viewport meta since iOS 10)
 document.addEventListener('gesturestart', (e) => e.preventDefault());
