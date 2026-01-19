@@ -379,10 +379,12 @@ export function trackBulkPlacement(
   if (!isEnabled()) return;
   if (bins.length === 0) return;
 
-  // For bulk operations, we track as a summary rather than individual events
-  // to avoid flooding the telemetry with 100+ events from a single fill
+  // For bulk operations, we track a sample rather than all events
+  // to avoid flooding the telemetry with 100+ events from a single fill.
+  // Use stratified sampling to get bins spread across the batch (not just first 5)
   const sampleSize = Math.min(bins.length, 5);
-  const sampledBins = bins.slice(0, sampleSize);
+  const stride = Math.max(1, Math.floor(bins.length / sampleSize));
+  const sampledBins = bins.filter((_, i) => i % stride === 0).slice(0, sampleSize);
 
   for (const bin of sampledBins) {
     trackBinPlacement(bin, layout, method);

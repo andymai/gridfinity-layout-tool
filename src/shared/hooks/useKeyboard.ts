@@ -7,6 +7,7 @@ import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants';
 import { useGridNavigation } from '@/features/grid-editor/hooks/useGridNavigation';
 import { isOk } from '@/core/result';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 
 /**
  * Check if a key matches any shortcut in a readonly array.
@@ -138,6 +139,11 @@ export function useKeyboard() {
           const result = duplicateBin(binId);
           if (isOk(result)) {
             newIds.push(result.value);
+            // Track for ML telemetry
+            const newBin = useLayoutStore.getState().layout.bins.find(b => b.id === result.value);
+            if (newBin) {
+              mlTracking.trackPlacement(newBin, 'duplicate');
+            }
           }
         }
         // Select the duplicated bins

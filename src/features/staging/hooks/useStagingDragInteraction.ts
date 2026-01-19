@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useInteractionStore } from '@/core/store';
 import { canPlaceBin, clamp } from '@/shared/utils/validation';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from '@/hooks/interactions/types';
 import type { Coord } from '@/core/types';
 
@@ -147,6 +148,11 @@ export function useStagingDragInteraction(
           });
         });
         setSelectedBin(interaction.binId);
+        // Track for ML telemetry (bin moved from staging to grid)
+        mlTracking.trackPlacement(
+          { ...bin, x, y, layerId: activeLayerId },
+          'staging'
+        );
       }
     }
     // If invalid or no position, bin stays in staging (no action needed)

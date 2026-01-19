@@ -6,6 +6,8 @@ import { validateBinRotation, getBinLocationContext } from '@/utils/binLocation'
 import { calcMaxGridUnits } from '@/core/constants';
 import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '@/shared/components/ContextMenu';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { isOk } from '@/core/result';
 import type { Bin } from '@/core/types';
 
 interface BinContextMenuProps {
@@ -56,7 +58,16 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   };
 
   const handleDuplicate = () => {
-    execute(() => duplicateBin(bin.id));
+    execute(() => {
+      const result = duplicateBin(bin.id);
+      if (isOk(result)) {
+        // Track for ML telemetry
+        const newBin = useLayoutStore.getState().layout.bins.find(b => b.id === result.value);
+        if (newBin) {
+          mlTracking.trackPlacement(newBin, 'duplicate');
+        }
+      }
+    });
     onClose();
   };
 
