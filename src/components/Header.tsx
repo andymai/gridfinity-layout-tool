@@ -1,15 +1,22 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useHistoryStore, useUIStore, useLibraryStore } from '@/core/store';
 import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
-import { LayoutManagerModal } from '@/features/layout-library/components/LayoutManagerModal';
-import { PrintModal } from '@/features/print-export/components/PrintModal';
+import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { PresenceAvatars } from './Collab';
 import type { SaveStatus } from '@/shared/hooks';
+
+// Lazy load modals - only loaded when opened (with retry for chunk load failures)
+const LayoutManagerModal = lazyWithRetry(() =>
+  import('@/features/layout-library/components/LayoutManagerModal').then(namedExport('LayoutManagerModal'))
+);
+const PrintModal = lazyWithRetry(() =>
+  import('@/features/print-export/components/PrintModal').then(namedExport('PrintModal'))
+);
 
 interface HeaderProps {
   onHelpClick: () => void;
@@ -281,15 +288,24 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         </button>
       </div>
 
-      <LayoutManagerModal
-        isOpen={showLayoutManager}
-        onClose={() => setShowLayoutManager(false)}
-      />
+      {/* Lazy-loaded modals - only load chunks when modal is opened */}
+      {showLayoutManager && (
+        <Suspense fallback={null}>
+          <LayoutManagerModal
+            isOpen={showLayoutManager}
+            onClose={() => setShowLayoutManager(false)}
+          />
+        </Suspense>
+      )}
 
-      <PrintModal
-        isOpen={printModalOpen}
-        onClose={() => setPrintModalOpen(false)}
-      />
+      {printModalOpen && (
+        <Suspense fallback={null}>
+          <PrintModal
+            isOpen={printModalOpen}
+            onClose={() => setPrintModalOpen(false)}
+          />
+        </Suspense>
+      )}
     </header>
   );
 }
