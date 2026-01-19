@@ -26,11 +26,11 @@ export default defineConfig({
       ],
       thresholds: {
         // Thresholds set slightly below current coverage to prevent regression
-        // Updated 2026-01-18: Raised after adding useGridResize + useGridZoom tests
-        lines: 82,
-        branches: 70,
-        functions: 81,
-        statements: 81,
+        // Updated 2026-01-18: Raised after adding Toast + PrintModal tests
+        lines: 83,
+        branches: 71,
+        functions: 83,
+        statements: 82,
       },
     },
   },
