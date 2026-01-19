@@ -129,6 +129,42 @@ const VALID_DRAWER_SIZE_REGEX = /^\d+(\.\d+)?x\d+(\.\d+)?x\d+(\.\d+)?$/;
 const VALID_GAP_FIT = new Set(['exact', 'partial', 'none']);
 const VALID_METHODS = new Set(['draw', 'fill', 'duplicate', 'staging', 'paint']);
 
+// Security: Strict validation for fields used in Redis keys to prevent injection
+const VALID_LABEL_HASH_REGEX = /^[a-f0-9]{8}$/; // 8-char hex hash
+const VALID_NORMALIZED_LABEL_REGEX = /^[a-z][a-z0-9_]{0,31}$/; // lowercase, alphanumeric + underscore
+const VALID_CATEGORY_ID_REGEX = /^[a-zA-Z0-9_-]{1,36}$/; // UUID-like or simple ID
+const VALID_DOMAINS = new Set([
+  'tools',
+  'fasteners',
+  'electronics',
+  'office',
+  'craft',
+  'printing_3d',
+  'cosmetics',
+  'misc',
+]);
+
+/**
+ * Validate nullable string field used in Redis keys.
+ * Returns true if null or matches the pattern.
+ */
+function validateNullableField(
+  value: unknown,
+  pattern: RegExp
+): value is string | null {
+  if (value === null) return true;
+  return typeof value === 'string' && pattern.test(value);
+}
+
+/**
+ * Validate nullable domain field.
+ * Returns true if null or is a known domain.
+ */
+function validateNullableDomain(value: unknown): value is string | null {
+  if (value === null) return true;
+  return typeof value === 'string' && VALID_DOMAINS.has(value);
+}
+
 function validateEvent(event: unknown): event is MLTelemetryEvent {
   if (!event || typeof event !== 'object') return false;
 
@@ -139,7 +175,8 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       typeof e.bin_size === 'string' &&
       VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
       (e.prev_bin_size === null ||
-        (typeof e.prev_bin_size === 'string' && VALID_BIN_SIZE_REGEX.test(e.prev_bin_size))) &&
+        (typeof e.prev_bin_size === 'string' &&
+          VALID_BIN_SIZE_REGEX.test(e.prev_bin_size))) &&
       typeof e.drawer_size === 'string' &&
       VALID_DRAWER_SIZE_REGEX.test(e.drawer_size) &&
       typeof e.gap_fit === 'string' &&
@@ -148,14 +185,26 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       VALID_METHODS.has(e.method) &&
       typeof e.session_index === 'number' &&
       e.session_index >= 0 &&
-      e.session_index < 10000 // Sanity check
+      e.session_index < 10000 &&
+      // Security: Validate fields used in Redis keys
+      validateNullableField(e.label_hash, VALID_LABEL_HASH_REGEX) &&
+      validateNullableField(e.label_normalized, VALID_NORMALIZED_LABEL_REGEX) &&
+      validateNullableDomain(e.label_domain) &&
+      typeof e.category_id === 'string' &&
+      VALID_CATEGORY_ID_REGEX.test(e.category_id)
     );
   }
 
   if (e.type === 'label_updated') {
     return (
       typeof e.bin_size === 'string' &&
-      VALID_BIN_SIZE_REGEX.test(e.bin_size)
+      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      // Security: Validate fields used in Redis keys
+      validateNullableField(e.old_label_hash, VALID_LABEL_HASH_REGEX) &&
+      validateNullableField(e.old_label_normalized, VALID_NORMALIZED_LABEL_REGEX) &&
+      validateNullableField(e.new_label_hash, VALID_LABEL_HASH_REGEX) &&
+      validateNullableField(e.new_label_normalized, VALID_NORMALIZED_LABEL_REGEX) &&
+      validateNullableDomain(e.new_label_domain)
     );
   }
 
