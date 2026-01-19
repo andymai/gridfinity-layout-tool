@@ -92,9 +92,9 @@ export function LabsDrawer() {
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
             {/* Description */}
-            <p className="text-sm text-content-secondary leading-relaxed mb-6">
-              Try experimental features before they're ready for everyone. These
-              may be buggy or change without notice.
+            <p className="text-sm text-content-secondary leading-relaxed mb-6" data-nosnippet>
+              Try new features before they're released to everyone. Features may
+              change based on feedback.
             </p>
 
             {/* Feature Cards */}
