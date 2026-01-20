@@ -232,6 +232,8 @@ export function useDragInteraction(
     // Handle drop to trash
     if (currentDropTarget === 'trash') {
       // Track deletion BEFORE executing (need bin data)
+      // Note: drag-to-trash deletions are categorized under 'context_menu' method
+      // to group all explicit user-initiated deletions in a single analytics bucket
       const binsToDelete = interaction.binIds
         .map((id) => layout.bins.find((b) => b.id === id))
         .filter((b): b is Bin => b !== undefined);

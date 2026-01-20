@@ -868,8 +868,8 @@ function aggregateBinMove(event: BinMovedEvent, inc: Increments): void {
     distanceBucket = 'micro'; // 1 cell or less
   } else if (distance <= 3) {
     distanceBucket = 'short'; // 2-3 cells
-  } else if (distance <= 10) {
-    distanceBucket = 'medium'; // 4-10 cells
+  } else if (distance < 10) {
+    distanceBucket = 'medium'; // 4-9 cells
   } else {
     distanceBucket = 'long'; // 10+ cells (likely repositioning)
   }

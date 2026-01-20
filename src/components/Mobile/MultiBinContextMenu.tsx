@@ -54,8 +54,9 @@ export function MultiBinContextMenu({ binIds, position, onClose, source }: Multi
 
   const handleDeleteAll = () => {
     // Track deletion BEFORE executing (need bin data)
+    // Use 'bulk' method since this deletes multiple bins at once
     if (bins.length > 0) {
-      mlTracking.trackDeletion(bins[0], 'context_menu', bins.length);
+      mlTracking.trackDeletion(bins[0], 'bulk', bins.length);
     }
 
     execute(() => {

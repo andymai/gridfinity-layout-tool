@@ -1297,11 +1297,15 @@ export function trackBinDeletion(
   }
 
   // Calculate fill percentage AFTER deletion (approximate by subtracting this bin)
+  // Note: computeFillPercentage already excludes STAGING_ID bins, so don't double-subtract
   const currentFill = computeFillPercentage(layout);
   const totalArea = layout.drawer.width * layout.drawer.depth;
   const binArea = bin.width * bin.depth;
+  const subtractsFromFill = bin.layerId !== STAGING_ID;
   const fillAfter = totalArea > 0
-    ? Math.max(0, currentFill - Math.round((binArea / totalArea) * 100))
+    ? subtractsFromFill
+      ? Math.max(0, currentFill - Math.round((binArea / totalArea) * 100))
+      : currentFill
     : 0;
 
   const event: BinDeletedEvent = {
