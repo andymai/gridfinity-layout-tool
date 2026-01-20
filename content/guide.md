@@ -13,11 +13,11 @@ Printing without a plan wastes filament. You'll end up with bins that don't fit,
 
 Get the inside dimensions in millimeters. You need:
 
-- **Width** — left to right
-- **Depth** — front to back
-- **Height** — bottom to top (clearance when closed)
+- **Width** - left to right
+- **Depth** - front to back
+- **Height** - bottom to top (clearance when closed)
 
-Measure at a few spots. Drawers are rarely perfect rectangles—older furniture especially. Use the smallest measurements to be safe.
+Measure at a few spots. Drawers are rarely perfect rectangles, especially older furniture. Use the smallest measurements to be safe.
 
 ### Convert to Grid Units
 
@@ -28,7 +28,7 @@ Width:  380mm ÷ 42 = 9.04 → 9 units
 Depth:  290mm ÷ 42 = 6.9  → 6 units
 ```
 
-A 9×6 grid is 378mm × 252mm. You'll have a 2mm gap on one side and 38mm on the other. That's fine—baseplates don't need to fill every millimeter.
+A 9×6 grid is 378mm × 252mm. You'll have a 2mm gap on one side and 38mm on the other. That's fine. Baseplates don't need to fill every millimeter.
 
 ## Figure Out What Goes In It
 
@@ -40,7 +40,7 @@ Take everything out of the drawer. Group it:
 - Things you grab weekly
 - Things you forget you own
 
-The daily stuff needs to be accessible. The weekly stuff can go in back. The forgotten stuff—maybe it doesn't need a bin at all.
+The daily stuff needs to be accessible. The weekly stuff can go in back. The forgotten stuff? Maybe it doesn't need a bin at all.
 
 ### Match Items to Bin Sizes
 
@@ -54,7 +54,7 @@ Rough guidelines:
 | Tape, glue bottles | 2×2 or 2×3 |
 | Large tools | 3×3 or bigger |
 
-Don't obsess over this. You can always print different bins later—that's the point of the system.
+Don't obsess over this. You can always print different bins later. That's the point of the system.
 
 ## Plan the Layout
 
@@ -96,9 +96,9 @@ When you're happy with the layout, export a print list. You get:
 
 Search for the bin size you need:
 
-- [Printables](https://www.printables.com/search/models?q=gridfinity) — largest selection
-- [Thangs](https://thangs.com/search/gridfinity) — good for finding similar designs
-- [MakerWorld](https://makerworld.com/en/search/models?keyword=gridfinity) — Bambu Lab community
+- [Printables](https://www.printables.com/search/models?q=gridfinity) - largest selection
+- [Thangs](https://thangs.com/search/gridfinity) - good for finding similar designs
+- [MakerWorld](https://makerworld.com/en/search/models?keyword=gridfinity) - Bambu Lab community
 
 Example search: "gridfinity 2x2 3U" finds 2×2 bins that are 3 height units tall.
 
