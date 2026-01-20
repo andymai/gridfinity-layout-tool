@@ -9,7 +9,7 @@ schema: Article
 
 Gridfinity is a modular storage system you 3D print yourself. Zack Freedman released it in 2022 and it spread fast. There are now over 10,000 free designs on Printables alone.
 
-The idea is simple: everything sits on a 42mm grid. Bins lock into baseplates, baseplates tile to fill any drawer. When you need to reorganize, just pick up the bins and move them.
+The idea is simple: everything sits on a 42mm grid. Bins sit on baseplates, baseplates tile to fill any drawer. When you need to reorganize, just pick up the bins and move them.
 
 ## How It Works
 
@@ -17,7 +17,7 @@ A Gridfinity setup has two parts:
 
 **Baseplates** go in your drawer. They're flat grids with a raised pattern that bins sit on. You tile them to cover whatever space you have.
 
-**Bins** hold your stuff. They come in grid sizes (1×1, 2×2, 3×1, etc.) and heights. Heights are measured in units. Each unit is 7mm, so a 3U bin gives you about 21mm of depth inside.
+**Bins** hold your stuff. They come in grid sizes (1×1, 2×2, 3×1, etc.) and heights. Heights are measured in units. Each unit is 7mm, so a 3U bin gives you about 21mm of internal height.
 
 The bins have a profiled base that mates with the baseplate pattern. They stay put when you open the drawer but lift out easily when you need them.
 
@@ -49,7 +49,7 @@ Search for what you need (e.g., "gridfinity 2x2 bit holder") and you'll find opt
 
 That third part is what this tool is for. You can mock up your drawer layout before printing anything.
 
-[CTA: Plan Your Layout](/guide)
+[CTA: Plan Your Layout](/)
 
 ## Common Questions
 
@@ -59,7 +59,7 @@ PLA for most things. PETG if you want more durability. ASA if it's going somewhe
 
 ### How long do bins take to print?
 
-A 2×2 bin runs about 1-2 hours depending on height and your printer speed. Baseplates are thin and print faster.
+A 2×2 bin runs about 1-2 hours depending on height and your printer speed.
 
 ### Can I buy pre-printed bins?
 

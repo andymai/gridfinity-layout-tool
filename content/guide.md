@@ -28,7 +28,7 @@ Width:  380mm ÷ 42 = 9.04 → 9 units
 Depth:  290mm ÷ 42 = 6.9  → 6 units
 ```
 
-A 9×6 grid is 378mm × 252mm. You'll have a 2mm gap on one side and 38mm on the other. That's fine. Baseplates don't need to fill every millimeter.
+A 9×6 grid is 378mm × 252mm. You'll have small gaps at the edges. That's fine. Baseplates don't need to fill every millimeter.
 
 ## Figure Out What Goes In It
 
@@ -78,9 +78,9 @@ If your drawer has height clearance, you can stack bins vertically. Layer 1 is t
 
 This works well for:
 
-- Flat items on bottom (cables, papers), taller bins on top
+- Flat items on bottom (cables, small parts), taller bins on top
 - Separating categories vertically
-- Getting more storage from deep drawers
+- Getting more storage from tall drawers
 
 Keep heavy things on the bottom. Put things you access often on top.
 
@@ -106,15 +106,15 @@ Example search: "gridfinity 2x2 3U" finds 2×2 bins that are 3 height units tall
 
 ### Test with cardboard first
 
-Cut cardboard to your bin sizes and arrange them in the drawer. It takes 10 minutes and costs nothing. If something feels wrong, you haven't wasted any filament.
+Cut cardboard to your bin sizes (42mm per grid unit) and arrange them in the drawer. It takes 10 minutes and costs nothing. If something feels wrong, you haven't wasted any filament.
 
 ### Print one bin first
 
-Before printing 20 bins, print one. Check that it fits your baseplate, that the height works, that you like the design. Adjust your printer settings if needed.
+Before printing 20 bins, print one. Check that the dimensions are right, that the height works for your drawer, and that you like the design. Adjust your printer settings if needed.
 
 ### Check your clearance
 
-Your tallest bin plus baseplate height needs to fit when the drawer closes. Measure this before committing to tall bins.
+Your tallest bin plus baseplate (about 5mm) needs to fit when the drawer closes. Measure this before committing to tall bins.
 
 ## Common Mistakes
 
