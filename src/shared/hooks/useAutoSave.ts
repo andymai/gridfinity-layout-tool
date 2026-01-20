@@ -4,6 +4,7 @@ import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
 import { saveLayoutWithMetadata } from '@/core/storage';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';
 import { isErr, getUserMessage, isRetryable } from '@/core/result';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { StorageError } from '@/core/result';
 
 const SAVE_DEBOUNCE_MS = 1000;
@@ -93,6 +94,9 @@ export function useAutoSave(): SaveStatus {
           // Success - reset error tracking
           hasShownErrorRef.current = false;
           failureCountRef.current = 0;
+
+          // Track layout snapshot for ML telemetry (rate-limited internally)
+          mlTracking.trackSnapshot('save');
 
           setSaveStatus('saved');
 

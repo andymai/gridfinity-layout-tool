@@ -19,6 +19,7 @@ import { isOk, getUserMessage } from '@/core/result';
 import type { ApiError } from '@/core/result';
 import { copyToClipboard } from '@/core/storage';
 import { slugify } from '@/utils/slug';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 
 export type CloudShareStatus =
   | 'idle'
@@ -135,6 +136,12 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
           ? 'Share updated successfully. Link copied to clipboard.'
           : 'Layout shared successfully. Link copied to clipboard.'
       );
+
+      // Track for ML telemetry (share is high-quality signal)
+      if (!isUpdate) {
+        mlTracking.trackSnapshot('share');
+        mlTracking.trackQuality('shared');
+      }
 
       // Auto-copy URL
       copyToClipboard(response.url);

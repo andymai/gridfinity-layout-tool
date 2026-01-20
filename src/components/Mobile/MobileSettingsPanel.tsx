@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useLabsStore } from '@/core/store';
+import { useLabsStore, useSettingsStore } from '@/core/store';
+import { useShallow } from 'zustand/shallow';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { getFeature } from '@/features/labs/definitions/features';
 import { SparklesIcon, ChevronRightIcon } from '@/features/labs/components/icons';
@@ -12,6 +13,50 @@ import { Checkbox } from '@/shared/components/Checkbox';
 import { SectionHeader } from '@/shared/components/SectionHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import type { STLSearchSite } from '@/core/store/settings';
+
+/**
+ * Privacy settings section for mobile.
+ */
+function MobilePrivacySection() {
+  const { mlTelemetryEnabled, updateSetting } = useSettingsStore(
+    useShallow((state) => ({
+      mlTelemetryEnabled: state.settings.mlTelemetryEnabled,
+      updateSetting: state.updateSetting,
+    }))
+  );
+
+  const handleToggle = () => {
+    updateSetting('mlTelemetryEnabled', !mlTelemetryEnabled);
+  };
+
+  return (
+    <section>
+      <SectionHeader title="Privacy" />
+      <div
+        className="flex items-center justify-between py-2 cursor-pointer"
+        onClick={handleToggle}
+        role="checkbox"
+        aria-checked={mlTelemetryEnabled}
+        aria-label="Toggle usage data collection"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            handleToggle();
+          }
+        }}
+      >
+        <div>
+          <span className={`text-sm ${mlTelemetryEnabled ? 'text-content' : 'text-content-secondary'}`}>
+            Help improve suggestions
+          </span>
+          <p className="text-xs text-content-tertiary">Share bin sizes and placement patterns (no personal data)</p>
+        </div>
+        <Checkbox checked={mlTelemetryEnabled} variant="mobile" />
+      </div>
+    </section>
+  );
+}
 
 /**
  * Mobile settings panel with grid configuration and app actions.
@@ -259,6 +304,9 @@ export function MobileSettingsPanel() {
           </button>
         </div>
       </section>
+
+      {/* Privacy */}
+      <MobilePrivacySection />
 
       {/* Labs */}
       <section>

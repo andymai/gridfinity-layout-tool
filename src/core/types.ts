@@ -10,6 +10,7 @@ export interface Layout {
   categories: Category[];    // 1-20 items
   layers: Layer[];           // 1-10 items, index 0 = bottom
   bins: Bin[];
+  purpose?: string;          // Optional drawer purpose (e.g., "workshop", "electronics")
 }
 
 /** Position of fractional edge when drawer has half-unit dimensions */

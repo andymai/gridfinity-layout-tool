@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '@/core/store';
+import { useUIStore, useSettingsStore } from '@/core/store';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
@@ -16,6 +16,55 @@ import { LabsButton } from '@/features/labs/components';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import type { STLSearchSite } from '@/core/store/settings';
+
+/**
+ * Privacy settings section with ML telemetry opt-out toggle.
+ */
+function PrivacySection() {
+  const { mlTelemetryEnabled, updateSetting } = useSettingsStore(
+    useShallow((state) => ({
+      mlTelemetryEnabled: state.settings.mlTelemetryEnabled,
+      updateSetting: state.updateSetting,
+    }))
+  );
+
+  const handleToggle = () => {
+    updateSetting('mlTelemetryEnabled', !mlTelemetryEnabled);
+  };
+
+  return (
+    <div className="px-4 py-4 border-t border-stroke-subtle">
+      <CollapsibleSection title="Privacy" variant="default" defaultExpanded={false}>
+        <div className="space-y-2">
+          <div
+            className="flex items-center justify-between text-xs cursor-pointer group"
+            onClick={handleToggle}
+            role="checkbox"
+            aria-checked={mlTelemetryEnabled}
+            aria-label="Toggle usage data collection"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                handleToggle();
+              }
+            }}
+          >
+            <div>
+              <span className={`${mlTelemetryEnabled ? 'text-content' : 'text-content-tertiary'} group-hover:text-content transition-colors`}>
+                Help improve suggestions
+              </span>
+              <p className="text-[10px] text-content-disabled mt-0.5">
+                Share bin sizes and placement patterns (no personal data)
+              </p>
+            </div>
+            <Checkbox checked={mlTelemetryEnabled} variant="desktop" />
+          </div>
+        </div>
+      </CollapsibleSection>
+    </div>
+  );
+}
 
 export function Sidebar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -390,6 +439,9 @@ export function Sidebar() {
                 </div>
               </CollapsibleSection>
             </div>
+
+            {/* Privacy */}
+            <PrivacySection />
 
             {/* Labs */}
             <div className="px-4 py-4 border-t border-stroke-subtle">

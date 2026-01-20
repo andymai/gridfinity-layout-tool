@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useUIStore, useLayoutStore, useUndoableAction } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS } from '@/core/constants';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 
 /**
  * Small popover that appears near a bin for quick label editing.
@@ -31,9 +32,13 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
 
   const handleSave = useCallback(() => {
     if (bin && value !== (bin.label || '')) {
+      const oldLabel = bin.label;
+      const newLabel = value.trim() || undefined;
       execute(() => {
-        updateBin(bin.id, { label: value.trim() || undefined });
+        updateBin(bin.id, { label: newLabel });
       });
+      // Track label change for ML telemetry
+      mlTracking.trackLabel(bin, oldLabel, newLabel);
     }
     hideQuickLabel();
   }, [bin, value, execute, updateBin, hideQuickLabel]);
