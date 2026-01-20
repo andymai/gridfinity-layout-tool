@@ -9,13 +9,13 @@ schema: Article
 
 Gridfinity is a modular storage system you 3D print yourself. Zack Freedman released it in 2022. There are now over 10,000 free designs on Printables alone.
 
-The idea is simple: everything sits on a 42mm grid. Bins sit on baseplates, baseplates tile to fill any drawer. When you need to reorganize, just pick up the bins and move them.
+The idea is simple: everything uses a 42mm grid. Bins rest on baseplates, baseplates tile to fill any drawer. When you need to reorganize, just pick up the bins and move them.
 
 ## How It Works
 
 A Gridfinity setup has two parts:
 
-**Baseplates** go in your drawer. They're flat grids with a raised pattern that bins sit on. You tile them to cover whatever space you have.
+**Baseplates** go in your drawer. They're flat grids with a raised pattern that holds bins in place. You tile them to cover whatever space you have.
 
 **Bins** hold your stuff. They come in grid sizes (1×1, 2×2, 3×1, etc.) and heights. Heights are measured in units. Each unit is 7mm, so a 3U bin gives you about 21mm of internal height.
 
@@ -25,13 +25,13 @@ The bins have a profiled base that mates with the baseplate pattern. They stay p
 
 **You print exactly what you need.** No buying a 12-pack of bins when you need 2. No hunting for the right size. If a bin exists for your specific drill bits or M3 screws, you print it.
 
-**Everything is compatible.** That 2×2 bin you printed last year works with the baseplate you print today. Every design from every creator follows the same spec.
+**Everything is compatible.** A 2×2 bin from one designer works with a baseplate from another. Every design follows the same spec.
 
-**It's free.** The designs are open source. The only cost is filament. A typical bin uses 20-40 grams, about $0.50 worth of PLA.
+**It's free.** The designs are open source. The only cost is filament. A typical bin uses 20-40 grams of PLA.
 
 ## Finding Designs
 
-The community has made bins for everything: screwdriver holders, battery organizers, drill bit trays, cable management. If you can think of it, someone's probably designed it.
+The community has made bins for most common needs: screwdriver holders, battery organizers, drill bit trays, cable management, and more.
 
 The main repositories:
 
@@ -63,7 +63,7 @@ A 2×2 bin runs about 1-2 hours depending on height and your printer speed.
 
 ### Can I buy pre-printed bins?
 
-Yes, people sell them on Etsy. It's more expensive than printing yourself, but it's an option if you don't have a printer.
+Yes, people sell them on Etsy. It's an option if you don't have a printer.
 
 ### Do bins fall out when you open the drawer?
 

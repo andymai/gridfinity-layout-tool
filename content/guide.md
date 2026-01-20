@@ -40,7 +40,7 @@ Take everything out of the drawer. Group it:
 - Things you grab weekly
 - Things you forget you own
 
-The daily stuff needs to be accessible. The weekly stuff can go in back. The forgotten stuff? Maybe it doesn't need a bin at all.
+The daily stuff needs to be accessible. The weekly stuff can go in back. The forgotten stuff might not need a bin at all.
 
 ### Match Items to Bin Sizes
 
@@ -54,7 +54,7 @@ Rough guidelines:
 | Tape, glue bottles | 2×2 or 2×3 |
 | Large tools | 3×3 or bigger |
 
-Don't obsess over this. You can always print different bins later. That's the point of the system.
+Don't obsess over this. You can always print different bins later.
 
 ## Plan the Layout
 
@@ -80,7 +80,6 @@ This works well for:
 
 - Flat items on bottom (cables, small parts), taller bins on top
 - Keeping electrical separate from mechanical
-- Getting more storage from tall drawers
 
 Keep heavy things on the bottom. Put things you access often on top.
 
@@ -110,7 +109,7 @@ Cut cardboard to your bin sizes (42mm per grid unit) and arrange them in the dra
 
 ### Print one bin first
 
-Before printing 20 bins, print one. Check that the dimensions are right, that the height works for your drawer, and that you like the design. Adjust your printer settings if needed.
+Before printing 20 bins, print one. Check the fit, check the height, and make sure you like the design. Adjust your printer settings if needed.
 
 ### Check your clearance
 
