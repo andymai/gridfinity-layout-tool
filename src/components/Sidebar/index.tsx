@@ -15,6 +15,7 @@ import { useResponsive } from '@/shared/hooks';
 import { LabsButton } from '@/features/labs/components';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { CommunityResourcesSection } from '@/shared/components/CommunityResourcesSection';
 import type { STLSearchSite } from '@/core/store/settings';
 
 /**
@@ -446,6 +447,11 @@ export function Sidebar() {
             {/* Labs */}
             <div className="px-4 py-4 border-t border-stroke-subtle">
               <LabsButton />
+            </div>
+
+            {/* Community Resources */}
+            <div className="px-4 py-4 border-t border-stroke-subtle">
+              <CommunityResourcesSection />
             </div>
 
             {/* Attribution */}

@@ -438,14 +438,16 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       expect(screen.getByText(/Gridfinity by/)).toBeInTheDocument();
-      expect(screen.getByText('Zack Freedman')).toBeInTheDocument();
+      // Multiple instances of Zack Freedman exist (attribution + community resources)
+      expect(screen.getAllByText('Zack Freedman').length).toBeGreaterThanOrEqual(1);
     });
 
     it('renders tool attribution', () => {
       render(<Sidebar />);
 
       expect(screen.getByText(/Tool by/)).toBeInTheDocument();
-      expect(screen.getByText('Andy Aragon')).toBeInTheDocument();
+      // Multiple instances of Andy Aragon may exist
+      expect(screen.getAllByText('Andy Aragon').length).toBeGreaterThanOrEqual(1);
     });
 
     it('renders tip link', () => {

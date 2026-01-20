@@ -6,6 +6,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
+import { SocialShareButtons } from './SocialShareButtons';
+import { useLayoutStore } from '@/core/store/layout';
 import type { SharePermission } from '@/core/types';
 
 interface CloudShareTabProps {
@@ -18,6 +20,10 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
   const urlInputRef = useRef<HTMLInputElement>(null);
+
+  // Get layout data for social share summary
+  const layout = useLayoutStore((state) => state.layout);
+  const layoutSummary = `${layout.drawer.width}×${layout.drawer.depth} drawer with ${layout.bins.length} bins`;
 
   const {
     status,
@@ -174,6 +180,13 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         <div className="text-xs text-content-tertiary border-t border-stroke-subtle pt-3 mt-3">
           Changing permission will update who can access your shared layout.
         </div>
+
+        <SocialShareButtons
+          url={`${window.location.origin}/l/${existingShare.id}`}
+          title={`${layout.name || 'Gridfinity Layout'} | Gridfinity Layout Tool`}
+          description="Check out this Gridfinity drawer layout I created!"
+          layoutSummary={layoutSummary}
+        />
       </div>
     );
   }
@@ -257,6 +270,13 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
             Share Another
           </button>
         </div>
+
+        <SocialShareButtons
+          url={result.url}
+          title={`${layout.name || 'Gridfinity Layout'} | Gridfinity Layout Tool`}
+          description="Check out this Gridfinity drawer layout I created!"
+          layoutSummary={layoutSummary}
+        />
       </div>
     );
   }
