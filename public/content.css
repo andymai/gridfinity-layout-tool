@@ -11,7 +11,6 @@
   /* Colors - matching app */
   --color-bg: #0f0f12;
   --color-surface: #1a1a1f;
-  --color-surface-elevated: #252530;
   --color-surface-hover: #2a2a35;
 
   --color-content: #fafafa;
@@ -19,7 +18,6 @@
   --color-content-tertiary: #8b8c92;
   --color-content-disabled: #6b6b75;
 
-  --color-stroke: #3a3a45;
   --color-stroke-subtle: #2a2a35;
 
   --color-accent: #f59e0b;
@@ -64,6 +62,28 @@ body {
   color: var(--color-content);
   line-height: 1.6;
   min-height: 100vh;
+}
+
+/* ===========================================
+   SKIP LINK (Accessibility)
+   =========================================== */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 6px 6px;
+  z-index: 200;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
 }
 
 /* ===========================================
@@ -136,7 +156,7 @@ body {
    =========================================== */
 .content-h1 {
   font-size: 2.25rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
   margin-bottom: var(--space-lg);
   color: var(--color-content);
@@ -269,43 +289,29 @@ body {
   color: var(--color-content-secondary);
 }
 
-.content-callout strong {
-  color: var(--color-content);
-}
-
 /* ===========================================
    CALL TO ACTION
    =========================================== */
 .content-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-sm);
+  display: inline-block;
   padding: var(--space-md) var(--space-xl);
   margin: var(--space-xl) 0;
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-bg);
   background-color: var(--color-accent);
-  border: none;
   border-radius: 8px;
   text-decoration: none;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .content-cta:hover {
   background-color: var(--color-accent-hover);
-  transform: translateY(-1px);
 }
 
 .content-cta:focus-visible {
   outline: 2px solid var(--color-content);
   outline-offset: 2px;
-}
-
-.content-cta svg {
-  width: 20px;
-  height: 20px;
 }
 
 /* ===========================================

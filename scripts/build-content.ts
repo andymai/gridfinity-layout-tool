@@ -117,8 +117,14 @@ ${JSON.stringify(structuredData, null, 2)}
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
+
+  <!-- Mobile -->
+  <meta name="theme-color" content="#0f0f12">
 </head>
 <body>
+  <!-- Skip to content link for accessibility -->
+  <a href="#main-content" class="skip-link">Skip to content</a>
+
   <!-- Navigation -->
   <nav class="content-nav">
     <a href="/" class="content-nav__logo">
@@ -136,7 +142,7 @@ ${JSON.stringify(structuredData, null, 2)}
   </nav>
 
   <!-- Main Content -->
-  <main class="content-page content-body">
+  <main id="main-content" class="content-page content-body">
 ${content}
   </main>
 
@@ -193,11 +199,11 @@ function configureMarked(): void {
       link({ href, text }) {
         if (text.startsWith('CTA:')) {
           const ctaText = text.replace('CTA:', '').trim();
-          return `<a href="${href}" class="content-cta">${ctaText} →</a>`;
+          return `<a href="${href}" class="content-cta">${ctaText} &rarr;</a>`;
         }
         return `<a href="${href}">${text}</a>`;
       },
-      // Handle callout blocks (blockquotes starting with "Tip:" or "Note:")
+      // Convert blockquotes to styled callout boxes
       blockquote({ tokens }) {
         const content = this.parser.parse(tokens);
         return `<div class="content-callout">${content}</div>\n`;
