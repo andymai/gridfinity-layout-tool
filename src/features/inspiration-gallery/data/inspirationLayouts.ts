@@ -276,37 +276,34 @@ function createElectronicsBench(): InspirationLayout {
     createCategory('Tools', '#4ade80'),
     createCategory('Supplies', '#fbbf24'),
   ];
-  const layers = [createLayer('Bottom', 3), createLayer('Top', 3)];
+  const layer = createLayer('Layer 1', 3);
 
-  // Two-layer layout for electronics work
   const bins = [
-    // Bottom layer: Larger tool storage
-    createBin(0, 0, 3, 4, { layerId: layers[0].id, categoryId: categories[1].id, label: 'Soldering Iron' }),
-    createBin(3, 0, 3, 4, { layerId: layers[0].id, categoryId: categories[1].id, label: 'Hot Air' }),
-    createBin(6, 0, 2, 4, { layerId: layers[0].id, categoryId: categories[2].id, label: 'Solder' }),
-    createBin(0, 4, 4, 4, { layerId: layers[0].id, categoryId: categories[2].id, label: 'Wire Spools' }),
-    createBin(4, 4, 4, 4, { layerId: layers[0].id, categoryId: categories[2].id, label: 'Shrink Tubing' }),
-
-    // Top layer: Small components
-    createBin(0, 0, 2, 2, { layerId: layers[1].id, categoryId: categories[0].id, label: 'Resistors' }),
-    createBin(2, 0, 2, 2, { layerId: layers[1].id, categoryId: categories[0].id, label: 'Capacitors' }),
-    createBin(4, 0, 2, 2, { layerId: layers[1].id, categoryId: categories[0].id, label: 'LEDs' }),
-    createBin(6, 0, 2, 2, { layerId: layers[1].id, categoryId: categories[0].id, label: 'Transistors' }),
-    createBin(0, 2, 2, 2, { layerId: layers[1].id, categoryId: categories[0].id, label: 'Headers' }),
-    createBin(2, 2, 2, 2, { layerId: layers[1].id, categoryId: categories[0].id, label: 'Connectors' }),
-    createBin(4, 2, 2, 2, { layerId: layers[1].id, categoryId: categories[1].id, label: 'Tweezers' }),
-    createBin(6, 2, 2, 2, { layerId: layers[1].id, categoryId: categories[1].id, label: 'Flush Cutters' }),
+    // Small components - top rows
+    createBin(0, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Resistors' }),
+    createBin(2, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Capacitors' }),
+    createBin(4, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'LEDs' }),
+    createBin(6, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Transistors' }),
+    createBin(0, 2, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Headers' }),
+    createBin(2, 2, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Connectors' }),
+    // Tools
+    createBin(4, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Tweezers' }),
+    createBin(6, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Flush Cutters' }),
+    // Supplies - bottom section
+    createBin(0, 4, 2, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Solder' }),
+    createBin(2, 4, 3, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Wire Spools' }),
+    createBin(5, 4, 3, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Shrink Tubing' }),
   ];
 
   const layout: Layout = {
     version: '1.0',
     name: 'Electronics Bench',
-    drawer: { width: 8, depth: 8, height: 12 },
+    drawer: { width: 8, depth: 8, height: 6 },
     printBedSize: 256,
     gridUnitMm: 42,
     heightUnitMm: 7,
     categories,
-    layers,
+    layers: [layer],
     bins,
   };
 
@@ -315,10 +312,10 @@ function createElectronicsBench(): InspirationLayout {
     name: 'Electronics Bench',
     theme: 'workshop',
     description:
-      'A two-layer electronics workstation. The bottom layer holds larger items like soldering equipment, while the top layer organizes small components in a grid of labeled bins.',
-    shortDescription: 'Two-layer electronics workstation',
-    complexity: 'advanced',
-    tags: ['workshop', 'electronics', 'soldering', 'components', 'multi-layer'],
+      'Electronics workstation with component storage, tools, and supplies. Small bins for resistors, capacitors, and LEDs; larger bins for wire and solder.',
+    shortDescription: 'Components, tools, and supplies',
+    complexity: 'intermediate',
+    tags: ['workshop', 'electronics', 'soldering', 'components'],
   });
 }
 
@@ -562,46 +559,37 @@ function createCraftSupplies(): InspirationLayout {
   const categories = [
     createCategory('Adhesives', '#f87171'),
     createCategory('Cutting', '#38bdf8'),
-    createCategory('Measuring', '#4ade80'),
     createCategory('Misc', '#e2e8f0'),
   ];
-  const layers = [createLayer('Bottom', 3), createLayer('Top', 3)];
+  const layer = createLayer('Layer 1', 3);
 
-  // Real dimensions:
-  // - Craft scissors: 180-220mm (need 5+ units = 210mm+)
-  // - X-Acto knife: ~150mm with cap
-  // - Glue sticks: ~100mm
   const bins = [
-    // Bottom layer: Larger items
-    createBin(0, 0, 2, 3, { layerId: layers[0].id, categoryId: categories[0].id, label: 'Glue Sticks', height: 6 }),
-    createBin(2, 0, 2, 3, { layerId: layers[0].id, categoryId: categories[0].id, label: 'Super Glue', height: 6 }),
-    createBin(4, 0, 2, 3, { layerId: layers[0].id, categoryId: categories[0].id, label: 'Tape Rolls', height: 6 }),
-    // Scissors - 5 units (210mm) for craft scissors ~200mm
-    createBin(0, 3, 2, 5, { layerId: layers[0].id, categoryId: categories[1].id, label: 'Scissors' }),
-    // X-Acto - 4 units (168mm) for ~150mm knife
-    createBin(2, 3, 2, 4, { layerId: layers[0].id, categoryId: categories[1].id, label: 'X-Acto' }),
-    createBin(4, 3, 2, 4, { layerId: layers[0].id, categoryId: categories[1].id, label: 'Box Cutter' }),
-    createBin(2, 7, 4, 1, { layerId: layers[0].id, categoryId: categories[2].id, label: 'Cutting Mat' }),
-
-    // Top layer: Small items
-    createBin(0, 0, 1, 1, { layerId: layers[1].id, categoryId: categories[3].id, label: 'Pins' }),
-    createBin(1, 0, 1, 1, { layerId: layers[1].id, categoryId: categories[3].id, label: 'Needles' }),
-    createBin(2, 0, 1, 1, { layerId: layers[1].id, categoryId: categories[3].id, label: 'Buttons' }),
-    createBin(3, 0, 1, 1, { layerId: layers[1].id, categoryId: categories[3].id, label: 'Beads' }),
-    createBin(4, 0, 2, 2, { layerId: layers[1].id, categoryId: categories[3].id, label: 'Thimbles' }),
-    createBin(0, 1, 4, 2, { layerId: layers[1].id, categoryId: categories[0].id, label: 'Washi Tape' }),
-    createBin(0, 3, 6, 1, { layerId: layers[1].id, categoryId: categories[2].id, label: 'Ruler' }),
+    // Adhesives - top row
+    createBin(0, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Glue Sticks' }),
+    createBin(2, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Super Glue' }),
+    createBin(4, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Tape' }),
+    // Small items
+    createBin(0, 2, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Pins' }),
+    createBin(1, 2, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Needles' }),
+    createBin(2, 2, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Buttons' }),
+    createBin(3, 2, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Beads' }),
+    createBin(4, 2, 2, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Thimbles' }),
+    // Cutting tools - bottom section
+    createBin(0, 3, 2, 5, { layerId: layer.id, categoryId: categories[1].id, label: 'Scissors' }),
+    createBin(2, 3, 2, 4, { layerId: layer.id, categoryId: categories[1].id, label: 'X-Acto' }),
+    createBin(4, 3, 2, 4, { layerId: layer.id, categoryId: categories[1].id, label: 'Box Cutter' }),
+    createBin(2, 7, 4, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Ruler' }),
   ];
 
   const layout: Layout = {
     version: '1.0',
     name: 'Craft Supplies',
-    drawer: { width: 6, depth: 8, height: 12 },
+    drawer: { width: 6, depth: 8, height: 6 },
     printBedSize: 256,
     gridUnitMm: 42,
     heightUnitMm: 7,
     categories,
-    layers,
+    layers: [layer],
     bins,
   };
 
@@ -610,10 +598,10 @@ function createCraftSupplies(): InspirationLayout {
     name: 'Craft Supplies',
     theme: 'hobby',
     description:
-      'Two-layer craft organization. Bottom layer holds adhesives and cutting tools, top layer keeps small items like pins, needles, and decorations organized.',
-    shortDescription: 'Two-layer craft and DIY supplies',
-    complexity: 'advanced',
-    tags: ['hobby', 'craft', 'sewing', 'diy', 'multi-layer'],
+      'Craft organization with adhesives, cutting tools, and small notions. Dedicated slots for scissors, X-Acto knives, and glue.',
+    shortDescription: 'Adhesives, cutting tools, and notions',
+    complexity: 'intermediate',
+    tags: ['hobby', 'craft', 'sewing', 'diy'],
   });
 }
 
