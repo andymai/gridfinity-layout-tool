@@ -231,6 +231,16 @@ export function useDragInteraction(
 
     // Handle drop to trash
     if (currentDropTarget === 'trash') {
+      // Track deletion BEFORE executing (need bin data)
+      // Note: drag-to-trash deletions are categorized under 'context_menu' method
+      // to group all explicit user-initiated deletions in a single analytics bucket
+      const binsToDelete = interaction.binIds
+        .map((id) => layout.bins.find((b) => b.id === id))
+        .filter((b): b is Bin => b !== undefined);
+      if (binsToDelete.length > 0) {
+        mlTracking.trackDeletion(binsToDelete[0], 'context_menu', binsToDelete.length);
+      }
+
       execute(() => {
         for (const binId of interaction.binIds) {
           deleteBin(binId);
@@ -303,6 +313,18 @@ export function useDragInteraction(
           }
         } else {
           // Move mode: update bin positions
+          // Track move BEFORE executing (capture old positions)
+          const binsToMove = interaction.binIds
+            .map((id) => layout.bins.find((b) => b.id === id))
+            .filter((b): b is Bin => b !== undefined);
+          if (binsToMove.length > 0) {
+            const firstBin = binsToMove[0];
+            const oldPosition = { x: firstBin.x, y: firstBin.y };
+            // Track with new position (after move)
+            const movedBin = { ...firstBin, x: firstBin.x + deltaX, y: firstBin.y + deltaY };
+            mlTracking.trackMove(movedBin, oldPosition, 'drag', binsToMove.length);
+          }
+
           execute(() => {
             for (const binId of interaction.binIds) {
               const bin = layout.bins.find((b) => b.id === binId);

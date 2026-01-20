@@ -255,6 +255,71 @@ export interface BinResizeEvent {
   fill_pct: number;
 }
 
+/**
+ * Bin deletion event - when user deletes a bin.
+ * Important negative signal for ML training - helps identify
+ * which placements users reject or find unsuitable.
+ */
+export interface BinDeletedEvent {
+  type: 'bin_deleted';
+
+  /** Size of deleted bin as "WxDxH" string */
+  bin_size: string;
+
+  /** Position of deleted bin as "X,Y" string */
+  position: string;
+
+  /** Layer index where bin was (0 = bottom) */
+  layer_index: number;
+
+  /** Whether bin had a label (indicates intentional placement) */
+  had_label: boolean;
+
+  /** Label domain if present (for correlation) */
+  label_domain: string | null;
+
+  /** How long bin existed before deletion (ms), or null if unknown */
+  age_ms: number | null;
+
+  /** Number of bins deleted together (for bulk delete) */
+  batch_size: number;
+
+  /** Fill percentage after deletion */
+  fill_pct: number;
+
+  /** Delete method */
+  method: DeleteMethod;
+}
+
+/**
+ * Bin move event - when user moves/nudges a bin after placement.
+ * Tracks position adjustment patterns to understand preferred layouts.
+ */
+export interface BinMovedEvent {
+  type: 'bin_moved';
+
+  /** Bin size as "WxDxH" string */
+  bin_size: string;
+
+  /** Original position as "X,Y" string */
+  old_position: string;
+
+  /** New position as "X,Y" string */
+  new_position: string;
+
+  /** Manhattan distance moved (grid units) */
+  distance: number;
+
+  /** Layer index (0 = bottom) */
+  layer_index: number;
+
+  /** Number of bins moved together (for multi-select move) */
+  batch_size: number;
+
+  /** Move method */
+  method: MoveMethod;
+}
+
 export type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
@@ -262,9 +327,15 @@ export type MLTelemetryEvent =
   | LayoutQualityEvent
   | DrawerPurposeEvent
   | CategoryChangeEvent
-  | BinResizeEvent;
+  | BinResizeEvent
+  | BinDeletedEvent
+  | BinMovedEvent;
 
 export type PlacementMethod = 'draw' | 'fill' | 'duplicate' | 'staging' | 'paint';
+
+export type DeleteMethod = 'key' | 'context_menu' | 'bulk' | 'inspector';
+
+export type MoveMethod = 'drag' | 'nudge';
 
 export type LayoutSnapshotTrigger =
   | 'save'
@@ -1181,6 +1252,127 @@ export function trackBinResize(
     dimensions_changed: dimensionsChanged,
     batch_size: batchSize,
     fill_pct: computeFillPercentage(layout),
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// BIN DELETION TRACKING
+// ============================================
+
+/**
+ * Track a bin deletion event.
+ *
+ * Deletion is an important negative signal - it indicates bins that
+ * users found unsuitable, wrongly placed, or no longer needed.
+ *
+ * @param bin - The bin being deleted (capture BEFORE deletion)
+ * @param layout - Current layout state (for layer index and fill percentage)
+ * @param method - How the bin was deleted
+ * @param batchSize - Number of bins deleted together (default 1)
+ */
+export function trackBinDeletion(
+  bin: Bin,
+  layout: Layout,
+  method: DeleteMethod,
+  batchSize: number = 1
+): void {
+  if (!isEnabled()) return;
+
+  // Find layer index
+  const layerIndex = layout.layers.findIndex((l) => l.id === bin.layerId);
+
+  // Process label domain for correlation
+  let labelDomain: string | null = null;
+  if (bin.label?.trim()) {
+    const labelData = processLabel(bin.label);
+    labelDomain = labelData.domain;
+  }
+
+  // Calculate fill percentage AFTER deletion (approximate by subtracting this bin)
+  // Note: computeFillPercentage already excludes STAGING_ID bins, so don't double-subtract
+  const currentFill = computeFillPercentage(layout);
+  const totalArea = layout.drawer.width * layout.drawer.depth;
+  const binArea = bin.width * bin.depth;
+  const subtractsFromFill = bin.layerId !== STAGING_ID;
+  const fillAfter = totalArea > 0
+    ? subtractsFromFill
+      ? Math.max(0, currentFill - Math.round((binArea / totalArea) * 100))
+      : currentFill
+    : 0;
+
+  const event: BinDeletedEvent = {
+    type: 'bin_deleted',
+    bin_size: `${bin.width}x${bin.depth}x${bin.height}`,
+    position: `${bin.x},${bin.y}`,
+    layer_index: layerIndex >= 0 ? layerIndex : 0,
+    had_label: Boolean(bin.label?.trim()),
+    label_domain: labelDomain,
+    age_ms: null, // We don't track bin creation time currently
+    batch_size: batchSize,
+    fill_pct: fillAfter,
+    method,
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// BIN MOVE TRACKING
+// ============================================
+
+/**
+ * Track a bin move event.
+ *
+ * Move tracking helps understand position adjustment patterns -
+ * whether users commonly reposition bins after initial placement.
+ *
+ * @param bin - The bin after being moved
+ * @param oldPosition - Original position { x, y }
+ * @param layout - Current layout state
+ * @param method - How the bin was moved (drag or nudge)
+ * @param batchSize - Number of bins moved together (default 1)
+ */
+export function trackBinMove(
+  bin: Bin,
+  oldPosition: { x: number; y: number },
+  layout: Layout,
+  method: MoveMethod,
+  batchSize: number = 1
+): void {
+  if (!isEnabled()) return;
+
+  // Skip if position didn't actually change
+  if (oldPosition.x === bin.x && oldPosition.y === bin.y) return;
+
+  // Find layer index
+  const layerIndex = layout.layers.findIndex((l) => l.id === bin.layerId);
+
+  // Calculate Manhattan distance
+  const distance = Math.abs(bin.x - oldPosition.x) + Math.abs(bin.y - oldPosition.y);
+
+  const event: BinMovedEvent = {
+    type: 'bin_moved',
+    bin_size: `${bin.width}x${bin.depth}x${bin.height}`,
+    old_position: `${oldPosition.x},${oldPosition.y}`,
+    new_position: `${bin.x},${bin.y}`,
+    distance,
+    layer_index: layerIndex >= 0 ? layerIndex : 0,
+    batch_size: batchSize,
+    method,
   };
 
   eventBuffer.push(event);
