@@ -2,6 +2,7 @@ import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
+import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';
 import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getBinTextColors } from '@/shared/utils';
@@ -106,6 +107,14 @@ export function Staging() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredBinId, setHoveredBinId] = useState<string | null>(null);
   const isTouchDevice = useResponsive().isTouchDevice;
+
+  // Collapse state with persistence
+  // Use lazy initializer to read from settings store on first render
+  const lastStashCollapsed = useSettingsStore(state => state.settings.lastStashCollapsed);
+  const updateSetting = useSettingsStore(state => state.updateSetting);
+  const [isExpanded, setIsExpanded] = useState(() => !lastStashCollapsed);
+  const [hasToggled, setHasToggled] = useState(false);
+  const prevBinCountRef = useRef(-1); // -1 = not yet initialized
 
   // Long-press detection state for context menu
   const longPressTimerRef = useRef<number | null>(null);
@@ -292,6 +301,44 @@ export function Staging() {
 
   const showAsDropTarget = isDraggingFromGrid && hasMoved;
 
+  // Auto-expand when dragging from grid (so user sees drop target)
+  // Use requestAnimationFrame to defer state update and avoid cascading renders
+  useEffect(() => {
+    if (showAsDropTarget && !isExpanded) {
+      requestAnimationFrame(() => {
+        setIsExpanded(true);
+        setHasToggled(true);
+      });
+    }
+  }, [showAsDropTarget, isExpanded]);
+
+  // Auto-expand when bins first added to empty stash (but not on initial load)
+  // Use requestAnimationFrame to defer state update and avoid cascading renders
+  useEffect(() => {
+    const currentCount = stagingBins.length;
+    // Skip auto-expand on initial mount - only trigger on actual 0->N transitions during session
+    // prevBinCountRef.current === -1 indicates not yet initialized
+    if (prevBinCountRef.current === -1) {
+      prevBinCountRef.current = currentCount;
+      return;
+    }
+    if (currentCount > 0 && prevBinCountRef.current === 0 && !isExpanded) {
+      requestAnimationFrame(() => {
+        setIsExpanded(true);
+        setHasToggled(true);
+      });
+    }
+    prevBinCountRef.current = currentCount;
+  }, [stagingBins.length, isExpanded]);
+
+  // Toggle handler that persists to settings
+  const handleToggleExpand = useCallback(() => {
+    setHasToggled(true);
+    const newExpanded = !isExpanded;
+    setIsExpanded(newExpanded);
+    updateSetting('lastStashCollapsed', !newExpanded);
+  }, [isExpanded, updateSetting]);
+
   // Track pointer position to set drop target when hovering over stash
   useEffect(() => {
     if (!isDraggingFromGrid) return;
@@ -431,9 +478,24 @@ export function Staging() {
           : 'border-stroke bg-surface-secondary'
       }`}
     >
-      {/* Header */}
+      {/* Header with collapse toggle */}
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2" title="Drag bins here to save them for later. Drag back to the grid to place.">
+        <button
+          type="button"
+          className="flex items-center gap-2 bg-transparent hover:opacity-80 transition-opacity"
+          onClick={handleToggleExpand}
+          aria-expanded={isExpanded}
+          aria-controls="staging-stash-panel"
+          title={isExpanded ? 'Click to collapse stash' : 'Click to expand stash'}
+        >
+          <svg
+            className={`w-3.5 h-3.5 transition-transform duration-200 text-content-tertiary ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
           <svg
             className="w-4 h-4 text-content-tertiary"
             fill="none"
@@ -448,7 +510,7 @@ export function Staging() {
           <span className="px-1.5 py-0.5 rounded text-xs bg-surface-hover text-content-tertiary">
             {stagingBins.length} {stagingBins.length === 1 ? 'bin' : 'bins'}
           </span>
-        </div>
+        </button>
 
         <button
           onClick={() => setShowClearConfirm(true)}
@@ -461,17 +523,25 @@ export function Staging() {
         </button>
       </div>
 
-      {/* Staging Grid */}
+      {/* Collapsible staging grid content */}
       <div
-        className="relative inline-block rounded-lg"
-        style={{
-          // Width: integer columns + optional fractional column + gaps + padding
-          width: integerWidth * (cellSize + gap) + (hasFractionalWidth ? fractionalCellWidth + gap : 0) + gap,
-          height: gridHeight * (cellSize + gap) + gap,
-          backgroundColor: 'var(--staging-bg)',
-          boxShadow: 'var(--shadow-sm)',
-        }}
+        className={`overflow-hidden ${
+          hasToggled ? 'transition-all duration-200' : ''
+        } ${
+          isExpanded ? 'opacity-100 max-h-[2000px]' : 'opacity-0 max-h-0'
+        }`}
       >
+        {/* Staging Grid */}
+        <div
+          className="relative inline-block rounded-lg"
+          style={{
+            // Width: integer columns + optional fractional column + gaps + padding
+            width: integerWidth * (cellSize + gap) + (hasFractionalWidth ? fractionalCellWidth + gap : 0) + gap,
+            height: gridHeight * (cellSize + gap) + gap,
+            backgroundColor: 'var(--staging-bg)',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
         {/* CSS Grid container */}
         <div
           className="absolute inset-0"
@@ -682,6 +752,7 @@ export function Staging() {
           })}
         </div>
 
+        </div>
       </div>
 
       {/* Clear confirmation dialog */}
