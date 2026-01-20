@@ -306,7 +306,7 @@ body {
 /* ===========================================
    CALL TO ACTION
    =========================================== */
-.content-cta {
+.content-body .content-cta {
   display: inline-block;
   padding: var(--space-md) var(--space-xl);
   margin: var(--space-xl) 0;
@@ -319,11 +319,12 @@ body {
   transition: background-color 0.15s ease;
 }
 
-.content-cta:hover {
+.content-body .content-cta:hover {
   background-color: var(--color-accent-hover);
+  color: var(--color-bg);
 }
 
-.content-cta:focus-visible {
+.content-body .content-cta:focus-visible {
   outline: 2px solid var(--color-content);
   outline-offset: 2px;
 }
