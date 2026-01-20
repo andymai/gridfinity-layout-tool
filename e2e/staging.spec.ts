@@ -15,6 +15,7 @@ import {
   getInspector,
   getStash,
   getActiveDialog,
+  waitForAutoSave,
 } from './fixtures';
 
 /**
@@ -282,5 +283,184 @@ test.describe('Staging Area (Stash)', () => {
     // Bin should be back on grid
     await waitForBinCount(page, 1);
     await waitForStashHidden(page);
+  });
+
+  test.describe('Stash Collapse/Expand', () => {
+    test('can collapse and expand stash via header toggle', async ({ page }) => {
+      // Create and stash a bin
+      await drawBinOnGrid(page, 50, 50, 100, 100);
+
+      const bin = page.locator('[data-bin-id]').first();
+      await bin.click();
+      await waitForBinSelected(bin);
+
+      const inspector = getInspector(page);
+      await inspector.getByRole('button', { name: /to stash/i }).click();
+      await waitForStashVisible(page);
+
+      const stashContainer = getStash(page);
+      const stagingBin = page.locator('[data-staging-bin-id]').first();
+
+      // Verify stash is expanded by default (bins visible)
+      await expect(stagingBin).toBeVisible();
+
+      // Click the header toggle (button with "Stash" text)
+      const toggleButton = stashContainer.locator('button[aria-expanded]');
+      await expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+      await toggleButton.click();
+
+      // Stash should now be collapsed (grid hidden, header still visible)
+      await expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+      // Bin count badge should still be visible in header
+      await expect(getStashBinCount(page)).toHaveText('1 bin');
+      // The collapsible container should have opacity-0 class (visually hidden)
+      const collapsibleContent = stashContainer.locator('.overflow-hidden');
+      await expect(collapsibleContent).toHaveClass(/opacity-0/);
+
+      // Click again to expand
+      await toggleButton.click();
+      await expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+      await expect(collapsibleContent).toHaveClass(/opacity-100/);
+      await expect(stagingBin).toBeVisible();
+    });
+
+    test('collapse state persists across page reloads', async ({ page }) => {
+      // Create and stash a bin
+      await drawBinOnGrid(page, 50, 50, 100, 100);
+      await waitForBinCount(page, 1);
+
+      const bin = page.locator('[data-bin-id]').first();
+      await bin.click();
+      await waitForBinSelected(bin);
+
+      const inspector = getInspector(page);
+      await inspector.getByRole('button', { name: /to stash/i }).click();
+      await waitForStashVisible(page);
+      await waitForStagingBinCount(page, 1);
+
+      // Wait for auto-save to complete
+      await waitForAutoSave(page, 3000);
+      await page.waitForTimeout(1000);
+
+      const stashContainer = getStash(page);
+      const toggleButton = stashContainer.locator('button[aria-expanded]');
+
+      // Collapse the stash
+      await toggleButton.click();
+      await expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+
+      // Wait a moment for settings to save
+      await page.waitForTimeout(500);
+
+      // Reload the page
+      await page.reload();
+      await waitForAppReady(page);
+
+      // Wait for the stash to appear (layout loads asynchronously)
+      const stashAfterReload = getStash(page);
+      await stashAfterReload.waitFor({ state: 'visible', timeout: 5000 });
+
+      // Stash should still be collapsed
+      const toggleAfterReload = stashAfterReload.locator('button[aria-expanded]');
+      await expect(toggleAfterReload).toHaveAttribute('aria-expanded', 'false');
+
+      // The collapsible content should have opacity-0 class
+      const collapsibleContent = stashAfterReload.locator('.overflow-hidden');
+      await expect(collapsibleContent).toHaveClass(/opacity-0/);
+
+      // Bin count should still be visible
+      await expect(getStashBinCount(page)).toHaveText('1 bin');
+    });
+
+    test('stash auto-expands when dragging from grid', async ({ page }) => {
+      // Create and stash a bin first, then collapse
+      await drawBinOnGrid(page, 50, 50, 100, 100);
+
+      const firstBin = page.locator('[data-bin-id]').first();
+      await firstBin.click();
+      await waitForBinSelected(firstBin);
+
+      const inspector = getInspector(page);
+      await inspector.getByRole('button', { name: /to stash/i }).click();
+      await waitForStashVisible(page);
+
+      // Collapse the stash
+      const stashContainer = getStash(page);
+      const toggleButton = stashContainer.locator('button[aria-expanded]');
+      await toggleButton.click();
+      await expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+
+      // Create another bin on the grid
+      await drawBinOnGrid(page, 150, 50, 200, 100);
+
+      // Start dragging the new bin
+      const newBin = page.locator('[data-bin-id]').first();
+      const bounds = await newBin.boundingBox();
+      if (!bounds) throw new Error('Bin not found');
+
+      await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+      await page.mouse.down();
+      // Move slightly to trigger drag detection
+      await page.mouse.move(bounds.x + bounds.width / 2 + 50, bounds.y + bounds.height / 2, { steps: 5 });
+
+      // Stash should auto-expand to show drop target
+      await expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+
+      // Release
+      await page.mouse.up();
+    });
+
+    test('stash auto-expands when first bin is added', async ({ page }) => {
+      // Create a bin on the grid
+      await drawBinOnGrid(page, 50, 50, 100, 100);
+
+      // Stash should be hidden initially
+      await expect(getStash(page)).not.toBeVisible();
+
+      // Move bin to stash
+      const bin = page.locator('[data-bin-id]').first();
+      await bin.click();
+      await waitForBinSelected(bin);
+
+      const inspector = getInspector(page);
+      await inspector.getByRole('button', { name: /to stash/i }).click();
+
+      // Stash should appear expanded
+      await waitForStashVisible(page);
+      const stashContainer = getStash(page);
+      const toggleButton = stashContainer.locator('button[aria-expanded]');
+      await expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+
+      // Staging bin should be visible
+      const stagingBin = page.locator('[data-staging-bin-id]').first();
+      await expect(stagingBin).toBeVisible();
+    });
+
+    test('chevron icon rotates when collapsing', async ({ page }) => {
+      // Create and stash a bin
+      await drawBinOnGrid(page, 50, 50, 100, 100);
+
+      const bin = page.locator('[data-bin-id]').first();
+      await bin.click();
+      await waitForBinSelected(bin);
+
+      const inspector = getInspector(page);
+      await inspector.getByRole('button', { name: /to stash/i }).click();
+      await waitForStashVisible(page);
+
+      const stashContainer = getStash(page);
+      const toggleButton = stashContainer.locator('button[aria-expanded]');
+      // The chevron is the first svg inside the toggle button
+      const chevron = toggleButton.locator('svg').first();
+
+      // When expanded, chevron should not have -rotate-90 class
+      await expect(chevron).not.toHaveClass(/-rotate-90/);
+
+      // Collapse
+      await toggleButton.click();
+
+      // When collapsed, chevron should have -rotate-90 class
+      await expect(chevron).toHaveClass(/-rotate-90/);
+    });
   });
 });
