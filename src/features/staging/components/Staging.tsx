@@ -485,6 +485,7 @@ export function Staging() {
           className="flex items-center gap-2 bg-transparent hover:opacity-80 transition-opacity"
           onClick={handleToggleExpand}
           aria-expanded={isExpanded}
+          aria-controls="staging-stash-panel"
           title={isExpanded ? 'Click to collapse stash' : 'Click to expand stash'}
         >
           <svg
