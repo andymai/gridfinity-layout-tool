@@ -4,6 +4,7 @@ import { useMutations } from '@/shared/contexts';
 import { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from '@/shared/components/ContextMenu';
 import { useContextMenu } from '@/hooks/useContextMenu';
 import { STAGING_ID } from '@/core/constants';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Bin } from '@/core/types';
 
 interface MultiBinContextMenuProps {
@@ -61,10 +62,28 @@ export function MultiBinContextMenu({ binIds, position, onClose, source }: Multi
   };
 
   const handleChangeCategory = (categoryId: string) => {
+    // Filter to only bins that actually change
+    const binsToUpdate = bins.filter(b => b.category !== categoryId);
+    if (binsToUpdate.length === 0) {
+      onClose();
+      return;
+    }
+
+    const batchSize = binsToUpdate.length;
+    const category = layout.categories.find(c => c.id === categoryId);
+
     execute(() => {
-      bins.forEach(b => updateBin(b.id, { category: categoryId }));
+      binsToUpdate.forEach(b => {
+        updateBin(b.id, { category: categoryId });
+      });
     });
-    addToast(`Updated ${bins.length} bins`, 'success');
+
+    // Track once per batch (not per bin)
+    if (category && binsToUpdate.length > 0) {
+      mlTracking.trackCategory(binsToUpdate[0], category.name, batchSize);
+    }
+
+    addToast(`Updated ${binsToUpdate.length} bins`, 'success');
     onClose();
   };
 

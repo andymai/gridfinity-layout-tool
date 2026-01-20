@@ -201,12 +201,22 @@ export function useBinInspector(): UseBinInspectorReturn {
           const oldLabel = bin.label;
           updateBin(bin.id, { label: value as string });
           mlTracking.trackLabel(bin, oldLabel, value as string);
-        } else {
-          updateBin(bin.id, { [field]: value });
+        } else if (field === 'category') {
+          const newCategoryId = value as string;
+          // Skip no-op updates
+          if (bin.category === newCategoryId) return;
+          updateBin(bin.id, { category: newCategoryId });
+          // Track category change with the category name (not ID)
+          const newCategory = layout.categories.find((c) => c.id === newCategoryId);
+          if (newCategory) {
+            mlTracking.trackCategory(bin, newCategory.name);
+          }
+        } else if (field === 'notes') {
+          updateBin(bin.id, { notes: value as string });
         }
       });
     },
-    [bin, layer, constraints.maxHeight, constraints.maxClearance, execute, updateBin]
+    [bin, layer, constraints.maxHeight, constraints.maxClearance, execute, updateBin, layout.categories]
   );
 
   const updateCustomProperties = useCallback(
@@ -231,13 +241,25 @@ export function useBinInspector(): UseBinInspectorReturn {
     (categoryId: string) => {
       if (selectedBins.length === 0) return;
 
+      // Filter to only bins whose category actually changes
+      const binsToUpdate = selectedBins.filter((b) => b.category !== categoryId);
+      if (binsToUpdate.length === 0) return;
+
+      const batchSize = binsToUpdate.length;
+      const category = layout.categories.find((c) => c.id === categoryId);
+
       execute(() => {
-        for (const b of selectedBins) {
+        for (const b of binsToUpdate) {
           updateBin(b.id, { category: categoryId });
         }
       });
+
+      // Track once per batch with category name (not per bin)
+      if (category && binsToUpdate.length > 0) {
+        mlTracking.trackCategory(binsToUpdate[0], category.name, batchSize);
+      }
     },
-    [selectedBins, execute, updateBin]
+    [selectedBins, layout.categories, execute, updateBin]
   );
 
   // Update/add a custom property on multiple bins

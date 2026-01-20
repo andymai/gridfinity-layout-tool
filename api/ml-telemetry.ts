@@ -6,7 +6,7 @@
  *
  * Redis Schema:
  *
- * === Bin Placement (existing) ===
+ * === Bin Placement ===
  * - ml:sizes                  → Global bin size frequency
  * - ml:trans:{prev}           → Transition matrix (prev_size → next_size)
  * - ml:drawer:{size}          → Bin sizes per drawer size
@@ -18,7 +18,7 @@
  * - ml:method:{method}        → Bin sizes per placement method
  * - ml:unknown_hashes         → Popular unknown label hashes (for vocab expansion)
  *
- * === Layout Snapshots (new) ===
+ * === Layout Snapshots ===
  * - ml:drawer_sizes:{drawer}  → Bin size distribution by drawer size
  * - ml:domains:{drawer}       → Domain distribution by drawer size
  * - ml:cooccur:{hash}         → Label co-occurrence matrix
@@ -26,9 +26,21 @@
  * - ml:purpose:{purpose}      → Drawer purpose frequency
  * - ml:purpose_sizes:{purpose} → Bin sizes by drawer purpose
  *
- * === Quality Signals (new) ===
+ * === Quality Signals ===
  * - ml:quality:{signal}       → Quality signal counts
  * - ml:quality_layouts        → Layouts by quality signal type
+ *
+ * === Category Changes ===
+ * - ml:cat_sizes:{cat_hash}   → Bin sizes assigned to each category (by name hash)
+ * - ml:label_cat:{label_hash} → Which categories labeled items are assigned to
+ * - ml:domain_cat:{domain}    → Category assignments by label domain
+ * - ml:cat_changes            → Total category change event count
+ *
+ * === Bin Resizes ===
+ * - ml:resize:{old_size}      → Resize transition matrix (old → new size)
+ * - ml:resize_dims            → Which dimensions are resized (width/depth)
+ * - ml:resizes                → Total resize event count
+ * - ml:resize_results         → Distribution of resulting sizes after resize
  *
  * === Metadata ===
  * - ml:meta:*                 → Metadata counters
@@ -106,12 +118,34 @@ interface DrawerPurposeEvent {
   is_custom: boolean;
 }
 
+interface CategoryChangeEvent {
+  type: 'category_changed';
+  bin_size: string;
+  /** Hash of the category name (custom categories only, defaults skipped client-side) */
+  category_name_hash: string;
+  batch_size: number;
+  label_hash: string | null;
+  label_domain: string | null;
+  vocab_version: string;
+}
+
+interface BinResizeEvent {
+  type: 'bin_resized';
+  old_size: string;
+  new_size: string;
+  dimensions_changed: ('width' | 'depth')[];
+  batch_size: number;
+  fill_pct: number;
+}
+
 type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
   | LayoutSnapshotEvent
   | LayoutQualityEvent
-  | DrawerPurposeEvent;
+  | DrawerPurposeEvent
+  | CategoryChangeEvent
+  | BinResizeEvent;
 
 // ============================================
 // REDIS CONNECTION
@@ -400,6 +434,40 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
     );
   }
 
+  if (e.type === 'category_changed') {
+    return (
+      typeof e.bin_size === 'string' &&
+      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      // Category name hash: 8-char hex (same format as label hashes)
+      typeof e.category_name_hash === 'string' &&
+      VALID_LABEL_HASH_REGEX.test(e.category_name_hash) &&
+      typeof e.batch_size === 'number' &&
+      e.batch_size > 0 &&
+      e.batch_size < 1000 &&
+      validateNullableField(e.label_hash, VALID_LABEL_HASH_REGEX) &&
+      validateNullableDomain(e.label_domain)
+    );
+  }
+
+  if (e.type === 'bin_resized') {
+    const validDimensions = Array.isArray(e.dimensions_changed) &&
+      e.dimensions_changed.length > 0 &&
+      e.dimensions_changed.every((d: unknown) => d === 'width' || d === 'depth');
+    return (
+      typeof e.old_size === 'string' &&
+      VALID_BIN_SIZE_REGEX.test(e.old_size) &&
+      typeof e.new_size === 'string' &&
+      VALID_BIN_SIZE_REGEX.test(e.new_size) &&
+      validDimensions &&
+      typeof e.batch_size === 'number' &&
+      e.batch_size > 0 &&
+      e.batch_size < 1000 &&
+      typeof e.fill_pct === 'number' &&
+      e.fill_pct >= 0 &&
+      e.fill_pct <= 100
+    );
+  }
+
   return false;
 }
 
@@ -617,6 +685,57 @@ function aggregateDrawerPurpose(event: DrawerPurposeEvent, inc: Increments): voi
   inc['ml:purpose_type'][customKey] = (inc['ml:purpose_type'][customKey] || 0) + 1;
 }
 
+function aggregateCategoryChange(event: CategoryChangeEvent, inc: Increments): void {
+  const { bin_size, category_name_hash, label_hash, label_domain } = event;
+
+  // Track which bin sizes are assigned to which categories (by name hash)
+  // Only custom categories reach here (defaults filtered client-side)
+  const catSizeKey = `ml:cat_sizes:${category_name_hash}`;
+  inc[catSizeKey] = inc[catSizeKey] || {};
+  inc[catSizeKey][bin_size] = (inc[catSizeKey][bin_size] || 0) + 1;
+
+  // Track label→category associations (helps learn what items go in what categories)
+  if (label_hash) {
+    const labelCatKey = `ml:label_cat:${label_hash}`;
+    inc[labelCatKey] = inc[labelCatKey] || {};
+    inc[labelCatKey][category_name_hash] = (inc[labelCatKey][category_name_hash] || 0) + 1;
+  }
+
+  // Track domain→category associations (broader pattern)
+  if (label_domain) {
+    const domainCatKey = `ml:domain_cat:${label_domain}`;
+    inc[domainCatKey] = inc[domainCatKey] || {};
+    inc[domainCatKey][category_name_hash] = (inc[domainCatKey][category_name_hash] || 0) + 1;
+  }
+
+  // Track total category change events
+  inc['ml:cat_changes'] = inc['ml:cat_changes'] || {};
+  inc['ml:cat_changes']['total'] = (inc['ml:cat_changes']['total'] || 0) + 1;
+}
+
+function aggregateBinResize(event: BinResizeEvent, inc: Increments): void {
+  const { old_size, new_size, dimensions_changed } = event;
+
+  // Track resize transitions (what sizes users resize to what)
+  const resizeKey = `ml:resize:${old_size}`;
+  inc[resizeKey] = inc[resizeKey] || {};
+  inc[resizeKey][new_size] = (inc[resizeKey][new_size] || 0) + 1;
+
+  // Track which dimensions are resized most often
+  for (const dim of dimensions_changed) {
+    inc['ml:resize_dims'] = inc['ml:resize_dims'] || {};
+    inc['ml:resize_dims'][dim] = (inc['ml:resize_dims'][dim] || 0) + 1;
+  }
+
+  // Track total resize events
+  inc['ml:resizes'] = inc['ml:resizes'] || {};
+  inc['ml:resizes']['total'] = (inc['ml:resizes']['total'] || 0) + 1;
+
+  // Track resulting sizes (what users resize to)
+  inc['ml:resize_results'] = inc['ml:resize_results'] || {};
+  inc['ml:resize_results'][new_size] = (inc['ml:resize_results'][new_size] || 0) + 1;
+}
+
 // ============================================
 // HANDLER
 // ============================================
@@ -687,6 +806,12 @@ export default async function handler(
         break;
       case 'drawer_purpose':
         aggregateDrawerPurpose(event, increments);
+        break;
+      case 'category_changed':
+        aggregateCategoryChange(event, increments);
+        break;
+      case 'bin_resized':
+        aggregateBinResize(event, increments);
         break;
     }
   }

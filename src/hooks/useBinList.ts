@@ -157,19 +157,30 @@ export function useBinList(): UseBinListReturn {
   const changeBulkCategory = useCallback((categoryId: string) => {
     if (selectedBinIds.length === 0) return;
 
-    const count = selectedBinIds.length;
+    // Filter to only bins that actually change
+    const binsToUpdate = selectedBinIds
+      .map((id) => layout.bins.find((b) => b.id === id))
+      .filter((bin): bin is typeof layout.bins[number] => !!bin && bin.category !== categoryId);
+    if (binsToUpdate.length === 0) return;
+
+    const count = binsToUpdate.length;
     const category = printList.categories.find((c) => c.id === categoryId);
 
     execute(() => {
-      for (const binId of selectedBinIds) {
-        updateBin(binId, { category: categoryId });
+      for (const bin of binsToUpdate) {
+        updateBin(bin.id, { category: categoryId });
       }
     });
+
+    // Track once per batch (not per bin)
+    if (category && binsToUpdate.length > 0) {
+      mlTracking.trackCategory(binsToUpdate[0], category.name, count);
+    }
 
     clearSelection();
     addToast(`Changed ${count} bin${count !== 1 ? 's' : ''} to ${category?.name || 'category'}`, 'success');
     announceToScreenReader(`Changed category for ${count} bins`);
-  }, [selectedBinIds, printList.categories, execute, updateBin, clearSelection, addToast, announceToScreenReader]);
+  }, [selectedBinIds, layout, printList.categories, execute, updateBin, clearSelection, addToast, announceToScreenReader]);
 
   const updateBulkLabel = useCallback((label: string) => {
     if (selectedBinIds.length === 0) return;
