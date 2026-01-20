@@ -2,8 +2,9 @@ import { useCallback } from 'react';
 import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { isOk } from '@/core/result';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, DrawStartArgs } from './types';
-import type { Coord } from '@/core/types';
+import type { Coord, Bin } from '@/core/types';
 
 /**
  * Hook for draw mode interactions: creating new bins by dragging a rectangle.
@@ -133,7 +134,7 @@ export function useDrawInteraction(
       const layer = layout.layers.find((l) => l.id === activeLayerId);
       if (layer) {
         execute(() => {
-          const result = addBin({
+          const binData = {
             layerId: activeLayerId,
             x: x1,
             y: y1,
@@ -143,9 +144,13 @@ export function useDrawInteraction(
             category: activeCategoryId,
             label: '',
             notes: '',
-          });
+          };
+          const result = addBin(binData);
           if (isOk(result)) {
             setSelectedBin(result.value);
+            // Track for ML telemetry
+            const placedBin: Bin = { ...binData, id: result.value };
+            mlTracking.trackPlacement(placedBin, 'draw');
           }
         });
       }
@@ -171,6 +176,7 @@ export function useDrawInteraction(
         if (binsAcross > 0 && binsDown > 0) {
           const currentLayout = useLayoutStore.getState().layout;
           const placedBinIds: string[] = [];
+          const placedBins: Bin[] = [];
 
           execute(() => {
             // Place bins in a grid pattern
@@ -195,7 +201,7 @@ export function useDrawInteraction(
                 );
 
                 if (result.valid) {
-                  const addResult = addBin({
+                  const binData = {
                     layerId: activeLayerId,
                     x: binX,
                     y: binY,
@@ -205,9 +211,11 @@ export function useDrawInteraction(
                     category: activeCategoryId,
                     label: '',
                     notes: '',
-                  });
+                  };
+                  const addResult = addBin(binData);
                   if (isOk(addResult)) {
                     placedBinIds.push(addResult.value);
+                    placedBins.push({ ...binData, id: addResult.value });
                   }
                 }
               }
@@ -217,6 +225,8 @@ export function useDrawInteraction(
           // Select all placed bins
           if (placedBinIds.length > 0) {
             setSelectedBins(placedBinIds);
+            // Track for ML telemetry (bulk placement)
+            mlTracking.trackBulk(placedBins, 'paint');
           }
         }
       }

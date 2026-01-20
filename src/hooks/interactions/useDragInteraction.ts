@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
-import { useInteractionStore, useViewStore } from '@/core/store';
+import { useInteractionStore, useViewStore, useLayoutStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { constrainGroupDelta } from '@/utils/selection';
 import { STAGING_ID, getBaseCellSize } from '@/core/constants';
 import { isOk } from '@/core/result';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, DragStartArgs } from './types';
 import type { Coord, Bin } from '@/core/types';
 
@@ -287,6 +288,15 @@ export function useDragInteraction(
               }
             }
           });
+          // Track ML telemetry for newly created duplicates
+          if (newBinIds.length > 0) {
+            const newBins = newBinIds
+              .map((id) => useLayoutStore.getState().layout.bins.find((b) => b.id === id))
+              .filter((b): b is Bin => b !== undefined);
+            if (newBins.length > 0) {
+              mlTracking.trackBulk(newBins, 'duplicate');
+            }
+          }
           // Select the newly created duplicates
           if (newBinIds.length > 0) {
             setSelectedBins(newBinIds);

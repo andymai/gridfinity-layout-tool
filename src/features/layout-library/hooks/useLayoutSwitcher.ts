@@ -14,6 +14,7 @@ import {
 import { setLayoutURL } from '@/utils/url';
 import { createLayoutWithSettings } from '@/core/constants';
 import { trackLayoutAction } from '@/utils/analytics';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Result, Unit, LayoutError, StorageError, UnknownError } from '@/core/result';
 import {
   ok, err, OK,
@@ -135,6 +136,10 @@ export function useLayoutSwitcher() {
       // 9. Track analytics
       trackLayoutAction('switched');
 
+      // 10. Track ML snapshot for the layout we're leaving (if substantial)
+      // The old layout was just saved in step 4, so this captures the "finished" state
+      mlTracking.trackSnapshot('layout_switch');
+
       return OK;
     } catch (error) {
       addToast('Failed to switch layout', 'error');
@@ -251,6 +256,8 @@ export function useLayoutSwitcher() {
       }
 
       trackLayoutAction('deleted');
+      // Track quality signal (deleted = negative signal for ML)
+      mlTracking.trackQuality('deleted');
 
       addToast('Layout deleted', 'success');
       return OK;
@@ -284,6 +291,8 @@ export function useLayoutSwitcher() {
       setLibrary(result.value.library);
 
       trackLayoutAction('duplicated');
+      // Track quality signal (duplicated = positive signal for ML)
+      mlTracking.trackQuality('duplicated');
 
       addToast('Layout duplicated', 'success');
       return ok(result.value.layoutId);
