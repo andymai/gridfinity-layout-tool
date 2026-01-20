@@ -7,6 +7,7 @@ import { useResponsive } from '@/shared/hooks';
 import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getBinTextColors } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 
 /** Clamp a value between min and max */
 function clamp(value: number, min: number, max: number): number {
@@ -270,6 +271,12 @@ export function Staging() {
 
   const handleClearStaging = () => {
     const count = stagingBins.length;
+
+    // Track deletion BEFORE executing (need bin data)
+    if (stagingBins.length > 0) {
+      mlTracking.trackDeletion(stagingBins[0], 'bulk', count);
+    }
+
     execute(() => {
       for (const bin of stagingBins) {
         deleteBin(bin.id);

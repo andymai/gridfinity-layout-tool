@@ -42,6 +42,19 @@
  * - ml:resizes                → Total resize event count
  * - ml:resize_results         → Distribution of resulting sizes after resize
  *
+ * === Bin Deletions (Negative Signal) ===
+ * - ml:deleted_sizes          → Size distribution of deleted bins (negative signal)
+ * - ml:delete_methods         → Deletion method distribution (key/context_menu/bulk/inspector)
+ * - ml:delete_labeled         → Labeled vs unlabeled deletion rate
+ * - ml:delete_domain:{domain} → Deleted sizes by label domain
+ * - ml:deletions              → Total deletion event count
+ *
+ * === Bin Moves ===
+ * - ml:moved_sizes            → Size distribution of moved bins
+ * - ml:move_methods           → Move method distribution (drag/nudge)
+ * - ml:move_distances         → Move distance buckets (micro/short/medium/long)
+ * - ml:moves                  → Total move event count
+ *
  * === Metadata ===
  * - ml:meta:*                 → Metadata counters
  */
@@ -138,6 +151,30 @@ interface BinResizeEvent {
   fill_pct: number;
 }
 
+interface BinDeletedEvent {
+  type: 'bin_deleted';
+  bin_size: string;
+  position: string;
+  layer_index: number;
+  had_label: boolean;
+  label_domain: string | null;
+  age_ms: number | null;
+  batch_size: number;
+  fill_pct: number;
+  method: 'key' | 'context_menu' | 'bulk' | 'inspector';
+}
+
+interface BinMovedEvent {
+  type: 'bin_moved';
+  bin_size: string;
+  old_position: string;
+  new_position: string;
+  distance: number;
+  layer_index: number;
+  batch_size: number;
+  method: 'drag' | 'nudge';
+}
+
 type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
@@ -145,7 +182,9 @@ type MLTelemetryEvent =
   | LayoutQualityEvent
   | DrawerPurposeEvent
   | CategoryChangeEvent
-  | BinResizeEvent;
+  | BinResizeEvent
+  | BinDeletedEvent
+  | BinMovedEvent;
 
 // ============================================
 // REDIS CONNECTION
@@ -267,6 +306,9 @@ const VALID_PURPOSES = new Set([
 ]);
 const VALID_PURPOSE_REGEX = /^[a-z][a-z0-9_-]{0,31}$/; // For custom purposes
 const VALID_QUALITY_TIERS = new Set(['high', 'medium', 'low', 'skip']);
+const VALID_DELETE_METHODS = new Set(['key', 'context_menu', 'bulk', 'inspector']);
+const VALID_MOVE_METHODS = new Set(['drag', 'nudge']);
+const VALID_POSITION_REGEX = /^\d+(\.\d+)?,\d+(\.\d+)?$/; // e.g., "3,5" or "3.5,2.5"
 
 /**
  * Validate nullable string field used in Redis keys.
@@ -465,6 +507,51 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       typeof e.fill_pct === 'number' &&
       e.fill_pct >= 0 &&
       e.fill_pct <= 100
+    );
+  }
+
+  if (e.type === 'bin_deleted') {
+    return (
+      typeof e.bin_size === 'string' &&
+      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      typeof e.position === 'string' &&
+      VALID_POSITION_REGEX.test(e.position) &&
+      typeof e.layer_index === 'number' &&
+      e.layer_index >= 0 &&
+      e.layer_index <= 20 &&
+      typeof e.had_label === 'boolean' &&
+      validateNullableDomain(e.label_domain) &&
+      (e.age_ms === null || (typeof e.age_ms === 'number' && e.age_ms >= 0)) &&
+      typeof e.batch_size === 'number' &&
+      e.batch_size > 0 &&
+      e.batch_size < 1000 &&
+      typeof e.fill_pct === 'number' &&
+      e.fill_pct >= 0 &&
+      e.fill_pct <= 100 &&
+      typeof e.method === 'string' &&
+      VALID_DELETE_METHODS.has(e.method)
+    );
+  }
+
+  if (e.type === 'bin_moved') {
+    return (
+      typeof e.bin_size === 'string' &&
+      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      typeof e.old_position === 'string' &&
+      VALID_POSITION_REGEX.test(e.old_position) &&
+      typeof e.new_position === 'string' &&
+      VALID_POSITION_REGEX.test(e.new_position) &&
+      typeof e.distance === 'number' &&
+      e.distance >= 0 &&
+      e.distance < 1000 &&
+      typeof e.layer_index === 'number' &&
+      e.layer_index >= 0 &&
+      e.layer_index <= 20 &&
+      typeof e.batch_size === 'number' &&
+      e.batch_size > 0 &&
+      e.batch_size < 1000 &&
+      typeof e.method === 'string' &&
+      VALID_MOVE_METHODS.has(e.method)
     );
   }
 
@@ -736,6 +823,64 @@ function aggregateBinResize(event: BinResizeEvent, inc: Increments): void {
   inc['ml:resize_results'][new_size] = (inc['ml:resize_results'][new_size] || 0) + 1;
 }
 
+function aggregateBinDeletion(event: BinDeletedEvent, inc: Increments): void {
+  const { bin_size, method, had_label, label_domain } = event;
+
+  // Track deleted sizes (important negative signal - what users rejected)
+  inc['ml:deleted_sizes'] = inc['ml:deleted_sizes'] || {};
+  inc['ml:deleted_sizes'][bin_size] = (inc['ml:deleted_sizes'][bin_size] || 0) + 1;
+
+  // Track deletion method distribution
+  inc['ml:delete_methods'] = inc['ml:delete_methods'] || {};
+  inc['ml:delete_methods'][method] = (inc['ml:delete_methods'][method] || 0) + 1;
+
+  // Track whether deleted bins had labels (labeled bins being deleted may indicate bad ML suggestions)
+  inc['ml:delete_labeled'] = inc['ml:delete_labeled'] || {};
+  const labeledKey = had_label ? 'labeled' : 'unlabeled';
+  inc['ml:delete_labeled'][labeledKey] = (inc['ml:delete_labeled'][labeledKey] || 0) + 1;
+
+  // Track deleted bins by domain
+  if (label_domain) {
+    const domainKey = `ml:delete_domain:${label_domain}`;
+    inc[domainKey] = inc[domainKey] || {};
+    inc[domainKey][bin_size] = (inc[domainKey][bin_size] || 0) + 1;
+  }
+
+  // Track total deletions
+  inc['ml:deletions'] = inc['ml:deletions'] || {};
+  inc['ml:deletions']['total'] = (inc['ml:deletions']['total'] || 0) + 1;
+}
+
+function aggregateBinMove(event: BinMovedEvent, inc: Increments): void {
+  const { bin_size, distance, method } = event;
+
+  // Track moved sizes (helps understand position adjustment patterns)
+  inc['ml:moved_sizes'] = inc['ml:moved_sizes'] || {};
+  inc['ml:moved_sizes'][bin_size] = (inc['ml:moved_sizes'][bin_size] || 0) + 1;
+
+  // Track move method distribution (drag vs nudge)
+  inc['ml:move_methods'] = inc['ml:move_methods'] || {};
+  inc['ml:move_methods'][method] = (inc['ml:move_methods'][method] || 0) + 1;
+
+  // Track move distance buckets (short, medium, long moves)
+  let distanceBucket: string;
+  if (distance <= 1) {
+    distanceBucket = 'micro'; // 1 cell or less
+  } else if (distance <= 3) {
+    distanceBucket = 'short'; // 2-3 cells
+  } else if (distance < 10) {
+    distanceBucket = 'medium'; // 4-9 cells
+  } else {
+    distanceBucket = 'long'; // 10+ cells (likely repositioning)
+  }
+  inc['ml:move_distances'] = inc['ml:move_distances'] || {};
+  inc['ml:move_distances'][distanceBucket] = (inc['ml:move_distances'][distanceBucket] || 0) + 1;
+
+  // Track total moves
+  inc['ml:moves'] = inc['ml:moves'] || {};
+  inc['ml:moves']['total'] = (inc['ml:moves']['total'] || 0) + 1;
+}
+
 // ============================================
 // HANDLER
 // ============================================
@@ -812,6 +957,12 @@ export default async function handler(
         break;
       case 'bin_resized':
         aggregateBinResize(event, increments);
+        break;
+      case 'bin_deleted':
+        aggregateBinDeletion(event, increments);
+        break;
+      case 'bin_moved':
+        aggregateBinMove(event, increments);
         break;
     }
   }

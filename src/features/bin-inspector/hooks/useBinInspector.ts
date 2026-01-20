@@ -439,6 +439,9 @@ export function useBinInspector(): UseBinInspectorReturn {
   const confirmDeleteAction = useCallback(() => {
     if (selectedBins.length === 0) return;
 
+    // Track deletion BEFORE executing (need bin data)
+    mlTracking.trackDeletion(selectedBins[0], 'inspector', selectedBins.length);
+
     execute(() => {
       for (const b of selectedBins) {
         deleteBin(b.id);

@@ -141,6 +141,14 @@ export function useBinList(): UseBinListReturn {
   const deleteBulkSelection = useCallback(() => {
     if (selectedBinIds.length === 0) return;
 
+    // Track deletion BEFORE executing (need bin data)
+    const binsToDelete = selectedBinIds
+      .map((id) => layout.bins.find((b) => b.id === id))
+      .filter((bin): bin is typeof layout.bins[number] => bin !== undefined);
+    if (binsToDelete.length > 0) {
+      mlTracking.trackDeletion(binsToDelete[0], 'bulk', binsToDelete.length);
+    }
+
     const count = selectedBinIds.length;
     execute(() => {
       for (const binId of selectedBinIds) {
@@ -152,7 +160,7 @@ export function useBinList(): UseBinListReturn {
     setSelectedBins([]);
     addToast(`Deleted ${count} bin${count !== 1 ? 's' : ''}`, 'success');
     announceToScreenReader(`Deleted ${count} bins`);
-  }, [selectedBinIds, execute, deleteBin, clearSelection, setSelectedBins, addToast, announceToScreenReader]);
+  }, [selectedBinIds, layout, execute, deleteBin, clearSelection, setSelectedBins, addToast, announceToScreenReader]);
 
   const changeBulkCategory = useCallback((categoryId: string) => {
     if (selectedBinIds.length === 0) return;

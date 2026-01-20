@@ -31,11 +31,15 @@ import {
   trackDrawerPurpose,
   trackCategoryChange,
   trackBinResize,
+  trackBinDeletion,
+  trackBinMove,
   incrementEditCount,
   markEditActivity,
   type PlacementMethod,
   type LayoutSnapshotTrigger,
   type QualitySignal,
+  type DeleteMethod,
+  type MoveMethod,
 } from './mlTelemetry';
 
 /**
@@ -120,6 +124,29 @@ export function useMLTracking() {
     []
   );
 
+  /**
+   * Track a bin deletion.
+   * Important negative signal for ML training.
+   */
+  const trackDeletion = useCallback(
+    (bin: Bin, method: DeleteMethod, batchSize?: number) => {
+      const layout = useLayoutStore.getState().layout;
+      trackBinDeletion(bin, layout, method, batchSize);
+    },
+    []
+  );
+
+  /**
+   * Track a bin move.
+   */
+  const trackMove = useCallback(
+    (bin: Bin, oldPosition: { x: number; y: number }, method: MoveMethod, batchSize?: number) => {
+      const layout = useLayoutStore.getState().layout;
+      trackBinMove(bin, oldPosition, layout, method, batchSize);
+    },
+    []
+  );
+
   return {
     trackPlacement,
     trackLabel,
@@ -129,6 +156,8 @@ export function useMLTracking() {
     trackPurpose,
     trackCategory,
     trackResize,
+    trackDeletion,
+    trackMove,
   };
 }
 
@@ -203,6 +232,23 @@ export const mlTracking = {
   ): void {
     const layout = useLayoutStore.getState().layout;
     trackBinResize(oldRect, newRect, height, layout, batchSize);
+  },
+
+  /**
+   * Track a bin deletion.
+   * Important negative signal for ML training.
+   */
+  trackDeletion(bin: Bin, method: DeleteMethod, batchSize?: number): void {
+    const layout = useLayoutStore.getState().layout;
+    trackBinDeletion(bin, layout, method, batchSize);
+  },
+
+  /**
+   * Track a bin move.
+   */
+  trackMove(bin: Bin, oldPosition: { x: number; y: number }, method: MoveMethod, batchSize?: number): void {
+    const layout = useLayoutStore.getState().layout;
+    trackBinMove(bin, oldPosition, layout, method, batchSize);
   },
 
   /**
