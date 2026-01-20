@@ -13,7 +13,7 @@ import matter from 'gray-matter';
 
 const CONTENT_DIR = path.join(process.cwd(), 'content');
 const OUTPUT_DIR = path.join(process.cwd(), 'public');
-const SITE_URL = 'https://www.gridfinitylayouttool.com';
+const SITE_URL = 'https://gridfinitylayouttool.com';
 
 // Will be set during build after hashing the CSS
 let cssFilename = 'content.css';
