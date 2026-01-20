@@ -3,6 +3,7 @@ import { useCallback, useRef, useEffect } from 'react';
 import type { Layout } from '@/core/types';
 import { useLayoutStore } from './layout';
 import { CONSTRAINTS } from '@/core/constants';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 
 /**
  * Deep clone a layout object.
@@ -65,6 +66,10 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     }));
 
     useLayoutStore.setState({ layout: previous });
+
+    // Track undo for ML telemetry
+    // previousLayout = state we're reverting TO, currentLayout = state we had BEFORE undo
+    mlTracking.trackUndoOp(previous, current);
   },
 
   redo: () => {
@@ -106,6 +111,8 @@ export function useUndoableAction() {
   const execute = useCallback((action: () => void) => {
     push(cloneLayout(layoutRef.current));
     action();
+    // Record timestamp AFTER action executes for accurate undo timing
+    mlTracking.recordAction();
   }, [push]); // Only depends on push, which is stable from Zustand
 
   return { execute };

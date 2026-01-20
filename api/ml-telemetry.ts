@@ -55,6 +55,25 @@
  * - ml:move_distances         → Move distance buckets (micro/short/medium/long)
  * - ml:moves                  → Total move event count
  *
+ * === Placement Rejections (Negative Signal) ===
+ * - ml:rejections             → Total rejection count by reason
+ * - ml:reject_modes           → Rejection count by draw/paint mode
+ * - ml:reject_sizes           → Intended sizes that were rejected
+ * - ml:neg:reject_by_drawer:{size} → Rejected sizes by drawer size
+ *
+ * === Undo Events (Negative Signal) ===
+ * - ml:undos                  → Total undo count by action type
+ * - ml:undo_timing            → Undo timing buckets (immediate/quick/delayed)
+ * - ml:undo_action_timing     → Action + timing combos (e.g., placement_immediate)
+ * - ml:undo_scale             → Undo scale (single/few/many/bulk bins)
+ *
+ * === Quick Corrections (Negative Signal - STRONGEST) ===
+ * - ml:quick_corrections      → Total quick correction count by type
+ * - ml:neg:corrected_sizes    → Sizes that get quickly corrected (BAD sizes)
+ * - ml:neg:correct_by_method:{method} → Corrections by placement method
+ * - ml:correction_timing      → How fast corrections happen
+ * - ml:neg:resize_correct:{size} → What users resize corrected bins to
+ *
  * === Metadata ===
  * - ml:meta:*                 → Metadata counters
  */
@@ -210,6 +229,39 @@ interface BinRotatedEvent {
   batch_size: number;
 }
 
+// ============================================
+// NEGATIVE SIGNAL EVENT TYPES
+// ============================================
+
+interface PlacementRejectedEvent {
+  type: 'placement_rejected';
+  rejection_reason: 'cancelled' | 'second_touch' | 'outside_bounds' | 'too_small';
+  intended_size: string | null;
+  intended_position: string | null;
+  layer_index: number;
+  drawer_size: string;
+  fill_pct: number;
+  mode: 'draw' | 'paint';
+}
+
+interface UndoEvent {
+  type: 'undo';
+  action_undone: 'placement' | 'deletion' | 'move' | 'resize' | 'fill' | 'layer_change' | 'drawer_resize' | 'other';
+  bins_affected: number;
+  time_since_action_ms: number;
+  drawer_size: string;
+}
+
+interface QuickCorrectionEvent {
+  type: 'quick_correction';
+  correction_type: 'delete' | 'resize' | 'move';
+  original_size: string;
+  new_size: string | null;
+  placement_method: 'draw' | 'fill' | 'duplicate' | 'staging' | 'paint';
+  time_to_correction_ms: number;
+  layer_index: number;
+}
+
 type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
@@ -223,7 +275,10 @@ type MLTelemetryEvent =
   | DrawerResizedEvent
   | FillOperationEvent
   | LayerMoveEvent
-  | BinRotatedEvent;
+  | BinRotatedEvent
+  | PlacementRejectedEvent
+  | UndoEvent
+  | QuickCorrectionEvent;
 
 // ============================================
 // REDIS CONNECTION
@@ -351,6 +406,12 @@ const VALID_POSITION_REGEX = /^\d+(\.\d+)?,\d+(\.\d+)?$/; // e.g., "3,5" or "3.5
 const VALID_FILL_METHODS = new Set(['uniform', 'gaps']);
 const VALID_LAYER_MOVE_METHODS = new Set(['inspector', 'drag', 'keyboard', 'context_menu']);
 const VALID_FILL_SIZE_REGEX = /^\d+(\.\d+)?x\d+(\.\d+)?$/; // WxD (no height)
+
+// Negative signal validation
+const VALID_REJECTION_REASONS = new Set(['cancelled', 'second_touch', 'outside_bounds', 'too_small']);
+const VALID_DRAW_MODES = new Set(['draw', 'paint']);
+const VALID_UNDO_ACTIONS = new Set(['placement', 'deletion', 'move', 'resize', 'fill', 'layer_change', 'drawer_resize', 'other']);
+const VALID_CORRECTION_TYPES = new Set(['delete', 'resize', 'move']);
 
 /**
  * Validate nullable string field used in Redis keys.
@@ -663,6 +724,65 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       typeof e.batch_size === 'number' &&
       e.batch_size > 0 &&
       e.batch_size < 1000
+    );
+  }
+
+  // ============================================
+  // NEGATIVE SIGNAL EVENT VALIDATION
+  // ============================================
+
+  if (e.type === 'placement_rejected') {
+    return (
+      typeof e.rejection_reason === 'string' &&
+      VALID_REJECTION_REASONS.has(e.rejection_reason) &&
+      // intended_size is 2D format (WxD) since height isn't known for rejected placements
+      (e.intended_size === null ||
+        (typeof e.intended_size === 'string' && VALID_FILL_SIZE_REGEX.test(e.intended_size))) &&
+      (e.intended_position === null ||
+        (typeof e.intended_position === 'string' && VALID_POSITION_REGEX.test(e.intended_position))) &&
+      typeof e.layer_index === 'number' &&
+      e.layer_index >= 0 &&
+      e.layer_index <= 20 &&
+      typeof e.drawer_size === 'string' &&
+      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size) &&
+      typeof e.fill_pct === 'number' &&
+      e.fill_pct >= 0 &&
+      e.fill_pct <= 100 &&
+      typeof e.mode === 'string' &&
+      VALID_DRAW_MODES.has(e.mode)
+    );
+  }
+
+  if (e.type === 'undo') {
+    return (
+      typeof e.action_undone === 'string' &&
+      VALID_UNDO_ACTIONS.has(e.action_undone) &&
+      typeof e.bins_affected === 'number' &&
+      e.bins_affected >= 0 &&
+      e.bins_affected < 10000 &&
+      typeof e.time_since_action_ms === 'number' &&
+      e.time_since_action_ms >= 0 &&
+      typeof e.drawer_size === 'string' &&
+      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size)
+    );
+  }
+
+  if (e.type === 'quick_correction') {
+    return (
+      typeof e.correction_type === 'string' &&
+      VALID_CORRECTION_TYPES.has(e.correction_type) &&
+      typeof e.original_size === 'string' &&
+      VALID_BIN_SIZE_REGEX.test(e.original_size) &&
+      (e.new_size === null ||
+        (typeof e.new_size === 'string' && VALID_BIN_SIZE_REGEX.test(e.new_size))) &&
+      typeof e.placement_method === 'string' &&
+      VALID_METHODS.has(e.placement_method) &&
+      typeof e.time_to_correction_ms === 'number' &&
+      e.time_to_correction_ms >= 0 &&
+      e.time_to_correction_ms < 600_000 && // Max 10 minutes
+      typeof e.layer_index === 'number' &&
+      e.layer_index >= 0 &&
+      e.layer_index <= 20
     );
   }
 
@@ -1107,6 +1227,146 @@ function aggregateBinRotation(event: BinRotatedEvent, inc: Increments): void {
 }
 
 // ============================================
+// NEGATIVE SIGNAL AGGREGATION
+// ============================================
+
+/**
+ * Aggregate placement rejection events (negative signal).
+ * Tracks why users abandon draw/paint interactions.
+ *
+ * Redis keys:
+ * - ml:rejections                     → Total rejection count by reason
+ * - ml:reject_modes                   → Rejection count by draw/paint mode
+ * - ml:reject_sizes                   → Intended sizes that were rejected (negative signal)
+ * - ml:neg:reject_by_drawer:{size}    → Rejected sizes by drawer size (negative signal)
+ */
+function aggregatePlacementRejection(event: PlacementRejectedEvent, inc: Increments): void {
+  const { rejection_reason, intended_size, mode, drawer_size } = event;
+
+  // Track rejection reasons
+  inc['ml:rejections'] = inc['ml:rejections'] || {};
+  inc['ml:rejections'][rejection_reason] = (inc['ml:rejections'][rejection_reason] || 0) + 1;
+
+  // Track by mode (draw vs paint)
+  inc['ml:reject_modes'] = inc['ml:reject_modes'] || {};
+  inc['ml:reject_modes'][mode] = (inc['ml:reject_modes'][mode] || 0) + 1;
+
+  // Track rejected sizes (important negative signal - what users tried but abandoned)
+  if (intended_size) {
+    inc['ml:reject_sizes'] = inc['ml:reject_sizes'] || {};
+    inc['ml:reject_sizes'][intended_size] = (inc['ml:reject_sizes'][intended_size] || 0) + 1;
+
+    // Negative signal: size rejection by drawer size
+    const negKey = `ml:neg:reject_by_drawer:${drawer_size}`;
+    inc[negKey] = inc[negKey] || {};
+    inc[negKey][intended_size] = (inc[negKey][intended_size] || 0) + 1;
+  }
+
+  // Track total rejections
+  inc['ml:rejections']['total'] = (inc['ml:rejections']['total'] || 0) + 1;
+}
+
+/**
+ * Aggregate undo events (negative signal).
+ * Tracks what actions users regret and how quickly.
+ *
+ * Redis keys:
+ * - ml:undos              → Total undo count by action type (negative signal)
+ * - ml:undo_timing        → Undo timing buckets (immediate, quick, delayed)
+ * - ml:undo_action_timing → Action + timing combos (e.g., placement_immediate)
+ * - ml:undo_scale         → Distribution of undos by bins affected (single/few/many/bulk)
+ */
+function aggregateUndo(event: UndoEvent, inc: Increments): void {
+  const { action_undone, bins_affected, time_since_action_ms } = event;
+
+  // Track what actions get undone (strong negative signal)
+  inc['ml:undos'] = inc['ml:undos'] || {};
+  inc['ml:undos'][action_undone] = (inc['ml:undos'][action_undone] || 0) + 1;
+
+  // Track timing buckets (how fast did user regret?)
+  // Immediate: <2s, Quick: 2-10s, Delayed: >10s
+  let timingBucket: string;
+  if (time_since_action_ms < 2000) {
+    timingBucket = 'immediate'; // Likely accidental or instant regret
+  } else if (time_since_action_ms < 10000) {
+    timingBucket = 'quick'; // Realized mistake quickly
+  } else {
+    timingBucket = 'delayed'; // Thought about it, then undid
+  }
+  inc['ml:undo_timing'] = inc['ml:undo_timing'] || {};
+  inc['ml:undo_timing'][timingBucket] = (inc['ml:undo_timing'][timingBucket] || 0) + 1;
+
+  // Track by action + timing (e.g., "placement_immediate" indicates bad auto-suggestion)
+  const actionTimingKey = `${action_undone}_${timingBucket}`;
+  inc['ml:undo_action_timing'] = inc['ml:undo_action_timing'] || {};
+  inc['ml:undo_action_timing'][actionTimingKey] = (inc['ml:undo_action_timing'][actionTimingKey] || 0) + 1;
+
+  // Track bins affected (bulk undos vs single-bin undos)
+  const binsBucket = bins_affected <= 1 ? 'single' :
+    bins_affected <= 5 ? 'few' :
+    bins_affected <= 20 ? 'many' : 'bulk';
+  inc['ml:undo_scale'] = inc['ml:undo_scale'] || {};
+  inc['ml:undo_scale'][binsBucket] = (inc['ml:undo_scale'][binsBucket] || 0) + 1;
+
+  // Track total undos
+  inc['ml:undos']['total'] = (inc['ml:undos']['total'] || 0) + 1;
+}
+
+/**
+ * Aggregate quick correction events (negative signal).
+ * Tracks bins that were created then immediately changed/deleted.
+ * This is the strongest negative signal - user explicitly rejected the result.
+ *
+ * Redis keys:
+ * - ml:quick_corrections                 → Total quick correction count by type
+ * - ml:neg:corrected_sizes               → Sizes that get quickly corrected (BAD sizes)
+ * - ml:neg:correct_by_method:{method}    → Which placement methods produce corrections
+ * - ml:correction_timing                 → How fast corrections happen
+ * - ml:neg:resize_correct:{size}         → What users resize corrected bins to
+ */
+function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments): void {
+  const { correction_type, original_size, new_size, placement_method, time_to_correction_ms } = event;
+
+  // Track correction type (delete, resize, move)
+  inc['ml:quick_corrections'] = inc['ml:quick_corrections'] || {};
+  inc['ml:quick_corrections'][correction_type] = (inc['ml:quick_corrections'][correction_type] || 0) + 1;
+
+  // STRONG NEGATIVE SIGNAL: Track which sizes get quickly corrected
+  // These are sizes the model should NOT suggest
+  inc['ml:neg:corrected_sizes'] = inc['ml:neg:corrected_sizes'] || {};
+  inc['ml:neg:corrected_sizes'][original_size] = (inc['ml:neg:corrected_sizes'][original_size] || 0) + 1;
+
+  // Track which placement methods produce quick corrections
+  // High correction rate for a method = that method needs improvement
+  const methodCorrKey = `ml:neg:correct_by_method:${placement_method}`;
+  inc[methodCorrKey] = inc[methodCorrKey] || {};
+  inc[methodCorrKey][correction_type] = (inc[methodCorrKey][correction_type] || 0) + 1;
+
+  // Track correction timing
+  // <5s = very quick (probably obvious mistake), 5-15s = quick, 15-30s = considered
+  let timingBucket: string;
+  if (time_to_correction_ms < 5000) {
+    timingBucket = 'very_quick';
+  } else if (time_to_correction_ms < 15000) {
+    timingBucket = 'quick';
+  } else {
+    timingBucket = 'considered';
+  }
+  inc['ml:correction_timing'] = inc['ml:correction_timing'] || {};
+  inc['ml:correction_timing'][timingBucket] = (inc['ml:correction_timing'][timingBucket] || 0) + 1;
+
+  // For resize corrections, track the size transition (what user ACTUALLY wanted)
+  if (correction_type === 'resize' && new_size) {
+    const resizeCorrKey = `ml:neg:resize_correct:${original_size}`;
+    inc[resizeCorrKey] = inc[resizeCorrKey] || {};
+    inc[resizeCorrKey][new_size] = (inc[resizeCorrKey][new_size] || 0) + 1;
+  }
+
+  // Track total quick corrections
+  inc['ml:quick_corrections']['total'] = (inc['ml:quick_corrections']['total'] || 0) + 1;
+}
+
+// ============================================
 // HANDLER
 // ============================================
 
@@ -1200,6 +1460,16 @@ export default async function handler(
         break;
       case 'bin_rotated':
         aggregateBinRotation(event, increments);
+        break;
+      // Negative signal events
+      case 'placement_rejected':
+        aggregatePlacementRejection(event, increments);
+        break;
+      case 'undo':
+        aggregateUndo(event, increments);
+        break;
+      case 'quick_correction':
+        aggregateQuickCorrection(event, increments);
         break;
     }
   }

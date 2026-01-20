@@ -409,6 +409,85 @@ export interface BinRotatedEvent {
   batch_size: number;
 }
 
+// ============================================
+// NEGATIVE SIGNAL EVENT TYPES
+// ============================================
+
+/**
+ * Placement rejected event - when user cancels a draw/paint interaction.
+ * Critical negative signal showing what users DON'T want.
+ */
+export interface PlacementRejectedEvent {
+  type: 'placement_rejected';
+
+  /** Why the placement was rejected */
+  rejection_reason: RejectionReason;
+
+  /** Intended bin size as "WxD" string (if determinable) */
+  intended_size: string | null;
+
+  /** Intended position as "X,Y" string (if determinable) */
+  intended_position: string | null;
+
+  /** Layer index where placement was attempted */
+  layer_index: number;
+
+  /** Drawer size for context */
+  drawer_size: string;
+
+  /** Fill percentage at rejection time */
+  fill_pct: number;
+
+  /** Whether it was paint mode (multi-bin) or draw mode (single bin) */
+  mode: 'draw' | 'paint';
+}
+
+/**
+ * Undo event - when user undoes an action.
+ * Strong signal that previous action was a mistake.
+ */
+export interface UndoEvent {
+  type: 'undo';
+
+  /** What type of action was undone */
+  action_undone: UndoActionType;
+
+  /** Number of bins affected by the undo */
+  bins_affected: number;
+
+  /** Milliseconds since the action was originally performed */
+  time_since_action_ms: number;
+
+  /** Drawer size for context */
+  drawer_size: string;
+}
+
+/**
+ * Quick correction event - when user deletes or resizes a bin shortly after placing it.
+ * Indicates the original placement was wrong.
+ */
+export interface QuickCorrectionEvent {
+  type: 'quick_correction';
+
+  /** Type of correction */
+  correction_type: 'delete' | 'resize' | 'move';
+
+  /** Original bin size as "WxDxH" string */
+  original_size: string;
+
+  /** New size (for resize) or null (for delete) */
+  new_size: string | null;
+
+  /** How the bin was originally placed */
+  placement_method: PlacementMethod;
+
+  /** Milliseconds between placement and correction */
+  time_to_correction_ms: number;
+
+  /** Layer index */
+  layer_index: number;
+}
+
 export type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
@@ -422,7 +501,10 @@ export type MLTelemetryEvent =
   | DrawerResizedEvent
   | FillOperationEvent
   | LayerMoveEvent
-  | BinRotatedEvent;
+  | BinRotatedEvent
+  | PlacementRejectedEvent
+  | UndoEvent
+  | QuickCorrectionEvent;
 
 export type PlacementMethod = 'draw' | 'fill' | 'duplicate' | 'staging' | 'paint';
 
@@ -433,6 +515,22 @@ export type MoveMethod = 'drag' | 'nudge';
 export type FillMethod = 'uniform' | 'gaps';
 
 export type LayerMoveMethod = 'inspector' | 'drag' | 'keyboard' | 'context_menu';
+
+export type RejectionReason =
+  | 'cancelled'        // User pressed Escape or clicked away
+  | 'second_touch'     // Second finger arrived (two-finger pan)
+  | 'outside_bounds'   // Released outside grid bounds
+  | 'too_small';       // Rectangle too small to create bin
+
+export type UndoActionType =
+  | 'placement'        // Undid bin placement
+  | 'deletion'         // Undid bin deletion
+  | 'move'             // Undid bin move
+  | 'resize'           // Undid bin resize
+  | 'fill'             // Undid fill operation
+  | 'layer_change'     // Undid layer assignment
+  | 'drawer_resize'    // Undid drawer resize
+  | 'other';           // Unknown/mixed action
 
 export type LayoutSnapshotTrigger =
   | 'save'
@@ -512,6 +610,111 @@ let layoutSession: LayoutSessionState = {
 
 // Minimum time between snapshots for same layout (60 seconds)
 const MIN_SNAPSHOT_INTERVAL_MS = 60_000;
+
+// ============================================
+// BIN TIMESTAMP TRACKING (for quick-correction detection)
+// ============================================
+
+/**
+ * Tracks when bins were created and how they were placed.
+ * Used to detect quick corrections (delete/resize shortly after placement).
+ */
+interface BinCreationRecord {
+  createdAt: number;
+  method: PlacementMethod;
+  originalSize: string;
+}
+
+/** Map of bin ID to creation record */
+const binCreationRecords: Map<string, BinCreationRecord> = new Map();
+
+/** Threshold for "quick" corrections (30 seconds) */
+const QUICK_CORRECTION_THRESHOLD_MS = 30_000;
+
+/** Maximum records to keep (prevents memory leak) */
+const MAX_BIN_RECORDS = 500;
+
+/**
+ * Record that a bin was created.
+ * Call this after successful bin placement.
+ */
+export function recordBinCreation(binId: string, method: PlacementMethod, size: string): void {
+  // Prune old records if at or above capacity
+  if (binCreationRecords.size >= MAX_BIN_RECORDS) {
+    const now = Date.now();
+
+    // First, remove records that are clearly too old
+    for (const [id, record] of binCreationRecords) {
+      if (now - record.createdAt > QUICK_CORRECTION_THRESHOLD_MS * 2) {
+        binCreationRecords.delete(id);
+      }
+    }
+
+    // If still at capacity, force-remove oldest records to make room
+    if (binCreationRecords.size >= MAX_BIN_RECORDS) {
+      const entries = Array.from(binCreationRecords.entries());
+      entries.sort((a, b) => a[1].createdAt - b[1].createdAt);
+
+      // Remove oldest entries to get below capacity
+      const toDelete = entries.length - MAX_BIN_RECORDS + 1;
+      for (let i = 0; i < toDelete; i++) {
+        binCreationRecords.delete(entries[i][0]);
+      }
+    }
+  }
+
+  binCreationRecords.set(binId, {
+    createdAt: Date.now(),
+    method,
+    originalSize: size,
+  });
+}
+
+/**
+ * Get creation record for a bin (if tracked and recent).
+ */
+export function getBinCreationRecord(binId: string): BinCreationRecord | null {
+  const record = binCreationRecords.get(binId);
+  if (!record) return null;
+
+  // Only return if within threshold
+  if (Date.now() - record.createdAt > QUICK_CORRECTION_THRESHOLD_MS) {
+    binCreationRecords.delete(binId);
+    return null;
+  }
+
+  return record;
+}
+
+/**
+ * Remove a bin from tracking (call on delete).
+ */
+export function removeBinCreationRecord(binId: string): BinCreationRecord | null {
+  const record = binCreationRecords.get(binId);
+  binCreationRecords.delete(binId);
+  return record ?? null;
+}
+
+// ============================================
+// UNDO TIMESTAMP TRACKING
+// ============================================
+
+/** Timestamp of the last action (for undo timing) */
+let lastActionTimestamp = Date.now();
+
+/**
+ * Record that an action was performed (call before undoable actions).
+ */
+export function recordActionTimestamp(): void {
+  lastActionTimestamp = Date.now();
+}
+
+/**
+ * Get time since last action (for undo event).
+ */
+export function getTimeSinceLastAction(): number {
+  return Date.now() - lastActionTimestamp;
+}
 
 /**
  * Reset session state (call on new layout or page load).
@@ -1651,6 +1854,222 @@ export function trackBinRotation(
     old_size: `${bin.width}x${bin.depth}x${bin.height}`,
     new_size: `${bin.depth}x${bin.width}x${bin.height}`, // Rotated: width/depth swapped
     batch_size: batchSize,
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// NEGATIVE SIGNAL TRACKING
+// ============================================
+
+/**
+ * Track a placement rejection (cancelled draw/paint).
+ *
+ * @param reason - Why the placement was rejected
+ * @param mode - 'draw' or 'paint'
+ * @param interaction - The interaction state at rejection time
+ * @param layout - Current layout state
+ * @param activeLayerId - Active layer ID
+ */
+export function trackPlacementRejection(
+  reason: RejectionReason,
+  mode: 'draw' | 'paint',
+  interaction: { start: { x: number; y: number }; current: { x: number; y: number } } | null,
+  layout: Layout,
+  activeLayerId: string
+): void {
+  if (!isEnabled()) return;
+
+  // Calculate intended size/position if we have interaction data
+  let intendedSize: string | null = null;
+  let intendedPosition: string | null = null;
+
+  if (interaction) {
+    const x1 = Math.min(interaction.start.x, interaction.current.x);
+    const y1 = Math.min(interaction.start.y, interaction.current.y);
+    const x2 = Math.max(interaction.start.x, interaction.current.x);
+    const y2 = Math.max(interaction.start.y, interaction.current.y);
+
+    const width = x2 - x1 + 1; // Assuming minimum size of 1
+    const depth = y2 - y1 + 1;
+
+    // Only track if there was meaningful intent (rectangle > 0)
+    if (width > 0 && depth > 0) {
+      intendedSize = `${width}x${depth}`;
+      intendedPosition = `${x1},${y1}`;
+    }
+  }
+
+  // Skip if no intent captured (immediate cancel with no movement)
+  if (!intendedSize && reason !== 'cancelled') return;
+
+  const layerIndex = layout.layers.findIndex((l) => l.id === activeLayerId);
+
+  const event: PlacementRejectedEvent = {
+    type: 'placement_rejected',
+    rejection_reason: reason,
+    intended_size: intendedSize,
+    intended_position: intendedPosition,
+    layer_index: layerIndex >= 0 ? layerIndex : 0,
+    drawer_size: `${layout.drawer.width}x${layout.drawer.depth}x${layout.drawer.height}`,
+    fill_pct: computeFillPercentage(layout),
+    mode,
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+/**
+ * Track an undo operation.
+ *
+ * @param previousLayout - Layout state before undo
+ * @param currentLayout - Layout state after undo
+ */
+export function trackUndo(
+  previousLayout: Layout,
+  currentLayout: Layout
+): void {
+  if (!isEnabled()) return;
+
+  // Determine what type of action was undone by comparing layouts
+  const prevBins = previousLayout.bins.filter(b => b.layerId !== STAGING_ID);
+  const currBins = currentLayout.bins.filter(b => b.layerId !== STAGING_ID);
+
+  const prevBinIds = new Set(prevBins.map(b => b.id));
+  const currBinIds = new Set(currBins.map(b => b.id));
+
+  // Count differences
+  const addedBins = currBins.filter(b => !prevBinIds.has(b.id));
+  const removedBins = prevBins.filter(b => !currBinIds.has(b.id));
+
+  // Determine action type
+  let actionUndone: UndoActionType = 'other';
+  let binsAffected = 0;
+
+  if (removedBins.length > 0 && addedBins.length === 0) {
+    // Bins were removed = undoing a placement
+    actionUndone = 'placement';
+    binsAffected = removedBins.length;
+  } else if (addedBins.length > 0 && removedBins.length === 0) {
+    // Bins were restored = undoing a deletion
+    actionUndone = 'deletion';
+    binsAffected = addedBins.length;
+  } else if (addedBins.length === 0 && removedBins.length === 0) {
+    // Same bins, check for position/size changes
+    const changedBins = currBins.filter(currBin => {
+      const prevBin = prevBins.find(b => b.id === currBin.id);
+      if (!prevBin) return false;
+      return prevBin.x !== currBin.x ||
+             prevBin.y !== currBin.y ||
+             prevBin.width !== currBin.width ||
+             prevBin.depth !== currBin.depth ||
+             prevBin.layerId !== currBin.layerId;
+    });
+
+    if (changedBins.length > 0) {
+      const prevBin = prevBins.find(b => b.id === changedBins[0].id);
+      const currBin = changedBins[0];
+      if (prevBin) {
+        if (prevBin.width !== currBin.width || prevBin.depth !== currBin.depth) {
+          actionUndone = 'resize';
+        } else if (prevBin.layerId !== currBin.layerId) {
+          actionUndone = 'layer_change';
+        } else {
+          actionUndone = 'move';
+        }
+      }
+      binsAffected = changedBins.length;
+    }
+  } else {
+    // Mixed changes
+    actionUndone = 'other';
+    binsAffected = Math.max(addedBins.length, removedBins.length);
+  }
+
+  // Check for drawer resize
+  if (
+    previousLayout.drawer.width !== currentLayout.drawer.width ||
+    previousLayout.drawer.depth !== currentLayout.drawer.depth ||
+    previousLayout.drawer.height !== currentLayout.drawer.height
+  ) {
+    actionUndone = 'drawer_resize';
+  }
+
+  // Check for fill (large number of placements undone)
+  if (actionUndone === 'placement' && binsAffected >= 3) {
+    actionUndone = 'fill';
+  }
+
+  const event: UndoEvent = {
+    type: 'undo',
+    action_undone: actionUndone,
+    bins_affected: binsAffected,
+    time_since_action_ms: getTimeSinceLastAction(),
+    drawer_size: `${currentLayout.drawer.width}x${currentLayout.drawer.depth}x${currentLayout.drawer.height}`,
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+/**
+ * Track a quick correction (delete/resize shortly after placement).
+ *
+ * @param correctionType - Type of correction
+ * @param binId - ID of the bin being corrected
+ * @param bin - Current bin state
+ * @param layout - Current layout state
+ * @param newSize - New size for resize (null for delete)
+ */
+export function trackQuickCorrection(
+  correctionType: 'delete' | 'resize' | 'move',
+  binId: string,
+  bin: Bin,
+  layout: Layout,
+  newSize?: { width: number; depth: number; height: number }
+): void {
+  if (!isEnabled()) return;
+
+  // Get creation record
+  const record = correctionType === 'delete'
+    ? removeBinCreationRecord(binId)
+    : getBinCreationRecord(binId);
+
+  if (!record) return; // Not a recent placement
+
+  const timeSincePlacement = Date.now() - record.createdAt;
+
+  // Only track if within threshold
+  if (timeSincePlacement > QUICK_CORRECTION_THRESHOLD_MS) return;
+
+  const layerIndex = layout.layers.findIndex((l) => l.id === bin.layerId);
+
+  const event: QuickCorrectionEvent = {
+    type: 'quick_correction',
+    correction_type: correctionType,
+    original_size: record.originalSize,
+    new_size: newSize ? `${newSize.width}x${newSize.depth}x${newSize.height}` : null,
+    placement_method: record.method,
+    time_to_correction_ms: timeSincePlacement,
+    layer_index: layerIndex >= 0 ? layerIndex : 0,
   };
 
   eventBuffer.push(event);

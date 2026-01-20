@@ -11,6 +11,7 @@ import { useDrawInteraction } from '@/hooks/interactions/useDrawInteraction';
 import { useDragInteraction } from '@/hooks/interactions/useDragInteraction';
 import { useResizeInteraction } from '@/hooks/interactions/useResizeInteraction';
 import { useStagingDragInteraction } from '@/features/staging/hooks/useStagingDragInteraction';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, DrawStartArgs, DragStartArgs, ResizeStartArgs, StagingDragStartArgs } from '@/hooks/interactions/types';
 
 /**
@@ -195,6 +196,15 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
   // Cancel current interaction
   const cancel = useCallback(() => {
+    // Track rejection for draw/paint interactions (ML negative signal)
+    const currentInteraction = useInteractionStore.getState().interaction;
+    if (currentInteraction?.type === 'draw' || currentInteraction?.type === 'paint') {
+      mlTracking.trackRejection(
+        'cancelled',
+        currentInteraction.type,
+        { start: currentInteraction.start, current: currentInteraction.current }
+      );
+    }
     setInteraction(null);
   }, [setInteraction]);
 
@@ -211,6 +221,12 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       if (activePointerIdRef.current !== null && e.pointerId !== activePointerIdRef.current) {
         // Second finger - cancel current interaction to allow pan
         if (interaction.type === 'draw' || interaction.type === 'paint') {
+          // Track rejection (ML negative signal)
+          mlTracking.trackRejection(
+            'second_touch',
+            interaction.type,
+            { start: interaction.start, current: interaction.current }
+          );
           setInteraction(null);
           activePointerIdRef.current = null;
         }
