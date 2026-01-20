@@ -481,6 +481,10 @@ export function initMLTelemetry(): () => void {
   if (typeof window === 'undefined') {
     return () => {};
   }
+  // Skip in development mode (same pattern as initAnalytics)
+  if (import.meta.env.DEV) {
+    return () => {};
+  }
 
   isInitialized = true;
   cleanupFunctions = [];
