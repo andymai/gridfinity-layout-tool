@@ -746,6 +746,221 @@ function createNightstandDrawer(): InspirationLayout {
   });
 }
 
+function createBatteryDrawer(): InspirationLayout {
+  const categories = [
+    createCategory('Common', '#fbbf24'),
+    createCategory('Rechargeable', '#4ade80'),
+    createCategory('Specialty', '#38bdf8'),
+  ];
+  const layer = createLayer('Layer 1', 3);
+
+  // Based on popular gridfinity battery organizers:
+  // - AA: 50mm length, 14mm diameter → 1x2 bins work well
+  // - AAA: 44mm length, 10mm diameter → 1x2 bins
+  // - 9V: 48mm tall, 26x17mm → 1x2 bins
+  // - 18650: 65mm length, 18mm diameter → 2x2 bins
+  // - Coin cells (CR2032): 20mm diameter → 1x1 bins
+  const bins = [
+    // Common batteries - AA and AAA
+    createBin(0, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'AA' }),
+    createBin(2, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'AAA' }),
+    createBin(4, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: '9V' }),
+    // Rechargeable - 18650s and similar (popular for flashlights, vapes)
+    createBin(0, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: '18650' }),
+    createBin(2, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: '21700' }),
+    createBin(4, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'AA Recharge' }),
+    // Specialty - coin cells, watch batteries
+    createBin(0, 4, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'CR2032' }),
+    createBin(1, 4, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'LR44' }),
+    createBin(2, 4, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'CR123' }),
+    createBin(3, 4, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'AAAA' }),
+    createBin(4, 4, 2, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'C & D' }),
+  ];
+
+  const layout: Layout = {
+    version: '1.0',
+    name: 'Battery Drawer',
+    drawer: { width: 6, depth: 5, height: 6 },
+    printBedSize: 256,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    categories,
+    layers: [layer],
+    bins,
+  };
+
+  return buildInspirationLayout(layout, {
+    id: 'battery-drawer',
+    name: 'Battery Drawer',
+    theme: 'workshop',
+    description:
+      'Keep all your batteries organized by type. Dedicated bins for common AA/AAA, rechargeable 18650s, and specialty coin cells. Based on popular gridfinity battery organizers.',
+    shortDescription: 'AA, AAA, 18650, and coin cell batteries',
+    complexity: 'beginner',
+    tags: ['workshop', 'batteries', 'electronics', 'storage'],
+  });
+}
+
+function createArtStation(): InspirationLayout {
+  const categories = [
+    createCategory('Brushes', '#f87171'),
+    createCategory('Markers', '#a855f7'),
+    createCategory('Supplies', '#fbbf24'),
+  ];
+  const layer = createLayer('Layer 1', 6);
+
+  // Based on art supply gridfinity research:
+  // - Paint brushes: 150-300mm, can fit 100+ in 4x4 space standing
+  // - Standard Sharpie: ~140mm, 12mm diameter
+  // - Chisel tip markers: fit 16x22mm ellipse
+  // - Pencils: ~170-190mm
+  const bins = [
+    // Brushes - tall bins (6 units = 252mm depth for 150-200mm brushes laying flat)
+    createBin(0, 0, 2, 6, { layerId: layer.id, categoryId: categories[0].id, label: 'Fine Brushes', height: 6 }),
+    createBin(2, 0, 2, 6, { layerId: layer.id, categoryId: categories[0].id, label: 'Flat Brushes', height: 6 }),
+    // Markers and pens - 4 units deep (168mm) for standing
+    createBin(4, 0, 2, 4, { layerId: layer.id, categoryId: categories[1].id, label: 'Markers', height: 6 }),
+    createBin(6, 0, 2, 4, { layerId: layer.id, categoryId: categories[1].id, label: 'Pens', height: 6 }),
+    // Pencils and charcoal
+    createBin(4, 4, 2, 5, { layerId: layer.id, categoryId: categories[1].id, label: 'Pencils', height: 6 }),
+    createBin(6, 4, 2, 5, { layerId: layer.id, categoryId: categories[1].id, label: 'Charcoal', height: 6 }),
+    // Supplies
+    createBin(0, 6, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Erasers' }),
+    createBin(2, 6, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Sharpeners' }),
+  ];
+
+  const layout: Layout = {
+    version: '1.0',
+    name: 'Art Station',
+    drawer: { width: 8, depth: 9, height: 12 },
+    printBedSize: 256,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    categories,
+    layers: [layer],
+    bins,
+  };
+
+  return buildInspirationLayout(layout, {
+    id: 'art-station',
+    name: 'Art Station',
+    theme: 'hobby',
+    description:
+      'Artist workstation with tall bins for brushes, markers, and pencils. Taller height (12 units) accommodates standing art supplies.',
+    shortDescription: 'Brushes, markers, pencils, and art supplies',
+    complexity: 'beginner',
+    tags: ['hobby', 'art', 'brushes', 'markers', 'drawing'],
+  });
+}
+
+function createFirstAidKit(): InspirationLayout {
+  const categories = [
+    createCategory('Bandages', '#f87171'),
+    createCategory('Medications', '#4ade80'),
+    createCategory('Tools', '#38bdf8'),
+  ];
+  const layer = createLayer('Layer 1', 3);
+
+  // First aid supplies:
+  // - Band-aids box: ~100x60mm → 3x2
+  // - Gauze rolls: ~50mm diameter → 2x2
+  // - Medication bottles: ~50-80mm tall → 2 units
+  // - Scissors/tweezers: 100-150mm → 3-4 units
+  const bins = [
+    // Bandages section
+    createBin(0, 0, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Band-Aids' }),
+    createBin(3, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Gauze' }),
+    createBin(5, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Tape' }),
+    createBin(0, 2, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Wraps' }),
+    // Medications
+    createBin(2, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Pain Relief' }),
+    createBin(4, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Allergy' }),
+    createBin(6, 2, 1, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Antacid' }),
+    // Ointments and tools
+    createBin(0, 4, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Ointments' }),
+    createBin(2, 4, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Scissors' }),
+    createBin(4, 4, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Tweezers' }),
+    createBin(6, 4, 1, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Thermometer' }),
+  ];
+
+  const layout: Layout = {
+    version: '1.0',
+    name: 'First Aid Kit',
+    drawer: { width: 7, depth: 7, height: 6 },
+    printBedSize: 256,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    categories,
+    layers: [layer],
+    bins,
+  };
+
+  return buildInspirationLayout(layout, {
+    id: 'first-aid-kit',
+    name: 'First Aid Kit',
+    theme: 'personal',
+    description:
+      'Organize medical supplies with dedicated sections for bandages, medications, and tools. Keep everything visible and accessible for emergencies.',
+    shortDescription: 'Bandages, medications, and medical supplies',
+    complexity: 'beginner',
+    tags: ['personal', 'medical', 'first-aid', 'health'],
+  });
+}
+
+function createJewelryDrawer(): InspirationLayout {
+  const categories = [
+    createCategory('Rings', '#fbbf24'),
+    createCategory('Earrings', '#f472b6'),
+    createCategory('Other', '#94a3b8'),
+  ];
+  const layer = createLayer('Layer 1', 3);
+
+  // Jewelry storage (popular for IKEA Alex drawers):
+  // - Rings: small 1x1 bins with dividers
+  // - Earrings: shallow compartments
+  // - Necklaces: longer bins to prevent tangling
+  // - Watches: 2x2 for watch face + band
+  const bins = [
+    // Rings - small compartments
+    createBin(0, 0, 1, 1, { layerId: layer.id, categoryId: categories[0].id, label: 'Rings' }),
+    createBin(1, 0, 1, 1, { layerId: layer.id, categoryId: categories[0].id, label: 'Rings' }),
+    createBin(2, 0, 1, 1, { layerId: layer.id, categoryId: categories[0].id, label: 'Rings' }),
+    createBin(3, 0, 1, 1, { layerId: layer.id, categoryId: categories[0].id, label: 'Rings' }),
+    // Earrings
+    createBin(0, 1, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Studs' }),
+    createBin(2, 1, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Dangles' }),
+    // Bracelets and watches
+    createBin(4, 0, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Bracelets' }),
+    createBin(6, 0, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Watch' }),
+    // Necklaces - longer to prevent tangling
+    createBin(0, 3, 4, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Necklaces' }),
+    createBin(4, 3, 4, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Chains' }),
+  ];
+
+  const layout: Layout = {
+    version: '1.0',
+    name: 'Jewelry Drawer',
+    drawer: { width: 8, depth: 6, height: 6 },
+    printBedSize: 256,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    categories,
+    layers: [layer],
+    bins,
+  };
+
+  return buildInspirationLayout(layout, {
+    id: 'jewelry-drawer',
+    name: 'Jewelry Drawer',
+    theme: 'personal',
+    description:
+      'Keep jewelry organized and tangle-free. Small compartments for rings, wider bins for earrings, and long trays for necklaces and chains.',
+    shortDescription: 'Rings, earrings, necklaces, and watches',
+    complexity: 'beginner',
+    tags: ['personal', 'jewelry', 'accessories', 'organization'],
+  });
+}
+
 // ============================================================
 // EXPORT ALL LAYOUTS
 // ============================================================
@@ -755,21 +970,25 @@ export const INSPIRATION_LAYOUTS: InspirationLayout[] = [
   createCutleryDrawer(),
   createCookingUtensils(),
   createKnifeDrawer(),
-  // Workshop (4)
+  // Workshop (5)
   createScrewOrganizer(),
   createToolDrawer(),
   createElectronicsBench(),
   createSocketOrganizer(),
+  createBatteryDrawer(),
   // Office (2)
   createDeskDrawer(),
   createCableDrawer(),
-  // Hobby (3)
+  // Hobby (4)
   create3DPrintingSupplies(),
   createCraftSupplies(),
   createSewingKit(),
-  // Personal (2)
+  createArtStation(),
+  // Personal (5)
   createBathroomMakeup(),
   createNightstandDrawer(),
+  createFirstAidKit(),
+  createJewelryDrawer(),
 ];
 
 /**

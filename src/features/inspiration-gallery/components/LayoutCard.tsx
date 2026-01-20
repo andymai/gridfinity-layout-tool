@@ -47,11 +47,11 @@ export function LayoutCard({ layout: inspirationLayout, onClick, onQuickUse, ind
       data-layout-card
     >
       {/* Thumbnail - portrait aspect for typical drawer layouts */}
-      <div className="aspect-[3/4] bg-surface-secondary rounded overflow-hidden mb-1.5 flex items-center justify-center relative">
+      <div className="aspect-[3/4] bg-surface-secondary rounded overflow-hidden mb-1.5 flex items-center justify-center relative p-4">
         <LayoutThumbnailWithLabels
           layout={layout}
-          size={120}
-          className="transition-transform duration-200 group-hover:scale-105"
+          responsive
+          className="transition-transform duration-200 group-hover:scale-105 max-w-full max-h-full"
         />
         {/* Quick use button - appears on hover */}
         <button

@@ -2,9 +2,11 @@ import type { Layout } from '@/core/types';
 
 interface LayoutThumbnailWithLabelsProps {
   layout: Layout;
-  /** Width in pixels (height auto-calculated from aspect ratio) */
+  /** Base size for internal calculations (actual display size controlled by CSS) */
   size?: number;
   className?: string;
+  /** If true, SVG fills container via CSS instead of using fixed dimensions */
+  responsive?: boolean;
 }
 
 /**
@@ -16,14 +18,17 @@ export function LayoutThumbnailWithLabels({
   layout,
   size = 160,
   className = '',
+  responsive = false,
 }: LayoutThumbnailWithLabelsProps) {
   const { drawer, bins, categories } = layout;
   const { width: drawerWidth, depth: drawerDepth } = drawer;
 
   // Calculate aspect ratio and dimensions
+  // Use a larger base size for responsive mode to get better label detail
+  const baseSize = responsive ? 200 : size;
   const aspectRatio = drawerDepth / drawerWidth;
-  const width = size;
-  const height = Math.round(size * aspectRatio);
+  const width = baseSize;
+  const height = Math.round(baseSize * aspectRatio);
 
   // Padding for the drawer border
   const padding = 2;
@@ -44,8 +49,9 @@ export function LayoutThumbnailWithLabels({
 
   return (
     <svg
-      width={width}
-      height={height}
+      {...(responsive
+        ? { width: '100%', height: '100%', preserveAspectRatio: 'xMidYMid meet' }
+        : { width, height })}
       viewBox={`0 0 ${width} ${height}`}
       className={`rounded-lg ${className}`}
       aria-hidden="true"
