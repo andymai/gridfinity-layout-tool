@@ -17,13 +17,13 @@ A Gridfinity setup has two parts:
 
 **Baseplates** go in your drawer. They're flat grids with a raised pattern that holds bins in place. You tile them to cover whatever space you have.
 
-**Bins** hold your stuff. They come in grid sizes (1×1, 2×2, 3×1, etc.) and heights. Heights are measured in units. Each unit is 7mm, so a 3U bin gives you about 21mm of internal height.
+**Bins** hold your stuff. They come in grid sizes (1×1, 2×2, 3×1, etc.) and heights measured in 7mm units. A 3U bin gives you about 21mm of internal height.
 
 The bins have a profiled base that mates with the baseplate pattern. They stay put when you open the drawer but lift out easily when you need them.
 
 ## Why People Use It
 
-**You print exactly what you need.** No buying a 12-pack of bins when you need 2. No hunting for the right size. If a bin exists for your specific drill bits or M3 screws, you print it.
+**You print exactly what you need.** No buying a 12-pack of bins when you need 2. No hunting for the right size. If a bin exists for your specific drill bits or screws, you print it.
 
 **Everything is compatible.** A 2×2 bin from one designer works with a baseplate from another. Every design follows the same spec.
 

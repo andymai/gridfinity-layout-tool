@@ -36,9 +36,9 @@ Most people skip this and regret it.
 
 Take everything out of the drawer. Group it:
 
-- Things you grab daily
-- Things you grab weekly
-- Things you forget you own
+- Daily items
+- Weekly items
+- Stuff you forgot you own
 
 The daily stuff needs to be accessible. The weekly stuff can go in back. The forgotten stuff might not need a bin at all.
 
@@ -66,7 +66,7 @@ Drag to create bins. The tool won't let you overlap or go out of bounds.
 
 **Put frequently-used items near the front.** When you open the drawer, what do you reach for first? That goes in front.
 
-**Group related items.** All the screwdrivers together, all the measuring tools together. You'll remember where things are.
+**Group related items.** Screwdrivers in one spot, measuring tools in another. You'll remember where things are.
 
 **Leave some empty space.** Your collection will grow. A drawer that's 100% planned today is a problem tomorrow.
 
@@ -119,6 +119,6 @@ Your tallest bin plus baseplate (about 5mm) needs to fit when the drawer closes.
 
 **Filling every square.** This leaves no room for new items. Plan for 10-20% empty space.
 
-**Ignoring what you actually use.** Don't organize around what you think you should have. Organize around what you actually reach for.
+**Ignoring what you actually use.** Don't organize around what you think you should have. Organize around what you reach for.
 
 [CTA: Open the Layout Tool](/)
