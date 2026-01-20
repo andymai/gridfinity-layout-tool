@@ -49,8 +49,6 @@ Search for what you need (e.g., "gridfinity 2x2 battery holder") and you'll find
 
 This tool helps with step 3. Mock up your layout, see how everything fits, then export a list of what to print.
 
-[CTA: Plan Your Layout](/)
-
 ## Common Questions
 
 ### What filament should I use?

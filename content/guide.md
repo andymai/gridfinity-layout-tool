@@ -58,11 +58,7 @@ Don't obsess over this. You can always print different bins later.
 
 ## Plan the Layout
 
-Open the tool and set your grid size.
-
-[CTA: Open the Planner](/)
-
-Drag to create bins. The tool won't let you overlap or go out of bounds.
+Open the tool and set your grid size. Drag to create bins. The tool won't let you overlap or go out of bounds.
 
 **Put frequently-used items near the front.** When you open the drawer, what do you reach for first? That goes in front.
 
@@ -103,7 +99,7 @@ Example search: "gridfinity 2x2 3U" finds 2×2 bins that are 3 height units tall
 
 ### Test with cardboard first
 
-Cut cardboard to your bin sizes (42mm per grid unit) and arrange them in the drawer. If something feels wrong, you haven't wasted any filament.
+> Cut cardboard to your bin sizes (42mm per grid unit) and arrange them in the drawer. If something feels wrong, you haven't wasted any filament.
 
 ### Print one bin first
 
