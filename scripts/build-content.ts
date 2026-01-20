@@ -103,7 +103,7 @@ function generateHtml(
 
   <!-- Structured Data -->
   <script type="application/ld+json">
-${JSON.stringify(structuredData, null, 2)}
+${safeJsonLd(structuredData)}
   </script>
 
   <!-- Fonts -->
@@ -176,6 +176,16 @@ function escapeHtml(str: string): string {
 }
 
 /**
+ * Safely serialize JSON-LD to prevent script tag breakout
+ * Escapes < and > to their Unicode equivalents
+ */
+function safeJsonLd(data: object): string {
+  return JSON.stringify(data, null, 2)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e');
+}
+
+/**
  * Configure marked for our needs
  */
 function configureMarked(): void {
@@ -197,16 +207,18 @@ function configureMarked(): void {
       },
       // Handle special CTA syntax: [CTA: text](url)
       link({ href, text }) {
+        const safeHref = escapeHtml(href);
+        const safeText = escapeHtml(text);
         if (text.startsWith('CTA:')) {
           const ctaText = text.replace('CTA:', '').trim();
-          return `<a href="${href}" class="content-cta">${ctaText} &rarr;</a>`;
+          return `<a href="${safeHref}" class="content-cta">${escapeHtml(ctaText)} &rarr;</a>`;
         }
         // External links get target="_blank" and rel="noopener"
         const isExternal = href.startsWith('http://') || href.startsWith('https://');
         if (isExternal) {
-          return `<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
+          return `<a href="${safeHref}" target="_blank" rel="noopener">${safeText}</a>`;
         }
-        return `<a href="${href}">${text}</a>`;
+        return `<a href="${safeHref}">${safeText}</a>`;
       },
       // Convert blockquotes to styled callout boxes
       blockquote({ tokens }) {

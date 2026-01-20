@@ -23,7 +23,7 @@ Measure at a few spots. Drawers are rarely perfect rectangles, especially older 
 
 Gridfinity uses 42mm units. Divide and round down:
 
-```
+```text
 Width:  380mm ÷ 42 = 9.04 → 9 units
 Depth:  260mm ÷ 42 = 6.19 → 6 units
 ```
