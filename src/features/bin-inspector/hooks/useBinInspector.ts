@@ -5,6 +5,7 @@ import { calcMaxGridUnits, STAGING_ID } from '@/core/constants';
 import { getLayerZStart } from '@/features/grid-editor/utils/collision';
 import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/utils/binLocation';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Bin, Category, Layer, Layout } from '@/core/types';
 
 export type BinField = 'width' | 'depth' | 'height' | 'clearanceHeight' | 'category' | 'label' | 'notes';
@@ -196,6 +197,10 @@ export function useBinInspector(): UseBinInspectorReturn {
             constraints.maxClearance
           );
           updateBin(bin.id, { clearanceHeight: newClearance });
+        } else if (field === 'label') {
+          const oldLabel = bin.label;
+          updateBin(bin.id, { label: value as string });
+          mlTracking.trackLabel(bin, oldLabel, value as string);
         } else {
           updateBin(bin.id, { [field]: value });
         }
