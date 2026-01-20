@@ -7,7 +7,7 @@ schema: HowTo
 
 # How to Plan a Gridfinity Drawer Layout
 
-Printing without a plan wastes filament. You'll end up with bins that don't fit, gaps you didn't want, and a drawer that's half-organized. This guide covers how to measure, plan, and get a print list before you start.
+Printing without a plan wastes filament. You'll end up reprinting bins because you guessed wrong on sizes, leaving gaps you didn't want, or forgetting what you needed. This guide covers how to measure, plan, and get a print list before you start.
 
 ## Measure Your Drawer
 
