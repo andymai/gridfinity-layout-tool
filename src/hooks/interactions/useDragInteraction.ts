@@ -239,6 +239,10 @@ export function useDragInteraction(
         .filter((b): b is Bin => b !== undefined);
       if (binsToDelete.length > 0) {
         mlTracking.trackDeletion(binsToDelete[0], 'context_menu', binsToDelete.length);
+        // Check for quick-correction (deleted shortly after creation)
+        for (const bin of binsToDelete) {
+          mlTracking.trackQuickCorrect('delete', bin.id, bin);
+        }
       }
 
       execute(() => {
@@ -318,6 +322,10 @@ export function useDragInteraction(
               .filter((b): b is Bin => b !== undefined);
             if (newBins.length > 0) {
               mlTracking.trackBulk(newBins, 'duplicate');
+              // Record creation for quick-correction detection
+              for (const bin of newBins) {
+                mlTracking.recordCreation(bin.id, 'duplicate', `${bin.width}x${bin.depth}x${bin.height}`);
+              }
             }
           }
           // Select the newly created duplicates

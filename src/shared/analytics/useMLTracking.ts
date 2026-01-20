@@ -22,6 +22,7 @@
 import { useCallback } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import type { Bin } from '@/core/types';
+import { useSelectionStore } from '@/core/store/selection';
 import {
   trackBinPlacement,
   trackLabelUpdate,
@@ -37,6 +38,11 @@ import {
   trackFillOperation,
   trackLayerMove,
   trackBinRotation,
+  trackPlacementRejection,
+  trackUndo,
+  trackQuickCorrection,
+  recordBinCreation,
+  recordActionTimestamp,
   incrementEditCount,
   markEditActivity,
   type PlacementMethod,
@@ -46,7 +52,9 @@ import {
   type MoveMethod,
   type FillMethod,
   type LayerMoveMethod,
+  type RejectionReason,
 } from './mlTelemetry';
+import type { Layout } from '@/core/types';
 
 /**
  * Hook that provides ML telemetry tracking functions.
@@ -376,5 +384,61 @@ export const mlTracking = {
    */
   trackRotation(bin: Bin, batchSize?: number): void {
     trackBinRotation(bin, batchSize);
+  },
+
+  // ============================================
+  // NEGATIVE SIGNAL TRACKING
+  // ============================================
+
+  /**
+   * Track a placement rejection (cancelled draw/paint).
+   * Important negative signal showing what users DON'T want.
+   */
+  trackRejection(
+    reason: RejectionReason,
+    mode: 'draw' | 'paint',
+    interaction: { start: { x: number; y: number }; current: { x: number; y: number } } | null
+  ): void {
+    const layout = useLayoutStore.getState().layout;
+    const activeLayerId = useSelectionStore.getState().activeLayerId;
+    trackPlacementRejection(reason, mode, interaction, layout, activeLayerId);
+  },
+
+  /**
+   * Track an undo operation.
+   * Strong signal that previous action was a mistake.
+   */
+  trackUndoOp(previousLayout: Layout, currentLayout: Layout): void {
+    trackUndo(previousLayout, currentLayout);
+  },
+
+  /**
+   * Track a quick correction (delete/resize shortly after placement).
+   * Indicates the original placement was wrong.
+   */
+  trackQuickCorrect(
+    correctionType: 'delete' | 'resize' | 'move',
+    binId: string,
+    bin: Bin,
+    newSize?: { width: number; depth: number; height: number }
+  ): void {
+    const layout = useLayoutStore.getState().layout;
+    trackQuickCorrection(correctionType, binId, bin, layout, newSize);
+  },
+
+  /**
+   * Record that a bin was created (for quick-correction detection).
+   * Call this after successful bin placement.
+   */
+  recordCreation(binId: string, method: PlacementMethod, size: string): void {
+    recordBinCreation(binId, method, size);
+  },
+
+  /**
+   * Record that an action was performed (for undo timing).
+   * Call this before undoable actions.
+   */
+  recordAction(): void {
+    recordActionTimestamp();
   },
 };
