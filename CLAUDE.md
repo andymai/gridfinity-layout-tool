@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organizer layouts. Multi-layer support, drag-and-drop, 3D preview (react-three-fiber), print optimization, cloud sharing, real-time collaboration, responsive design.
 
 **Stack:** React 19, TypeScript 5.9, Vite 7, Zustand 5 + Immer, Tailwind CSS 4, Three.js, Vitest, Playwright, PWA, Vercel Blob + Redis, Liveblocks (real-time), PostHog analytics.
@@ -271,6 +273,27 @@ Current flags:
 - `createShare()`, `updateShare()`, `fetchShare()`, `deleteShare()`, `reportShare()`
 - Types: `ShareResponse`, `ShareErrorResponse`, `ShareResult<T>`
 
+### ML Telemetry (`src/shared/analytics/`, `api/ml-telemetry.ts`)
+
+Privacy-preserving telemetry for training bin size prediction models. No PII stored - only aggregate counts in Redis.
+
+**Event Types:**
+- `bin_placed` - Size, position, label hash, drawer context, placement method
+- `layout_snapshot` - Triggered on save/export/share with size distributions
+- `bin_resized`, `bin_deleted`, `bin_moved` - User corrections (negative signals)
+- `placement_rejected`, `undo`, `quick_correction` - Strong negative signals
+
+**Client** (`src/shared/analytics/useMLTracking.ts`):
+```typescript
+import { mlTracking } from '@/shared/analytics/useMLTracking';
+
+mlTracking.trackPlacement(bin, 'draw');
+mlTracking.trackDeletion(bin, 'key', batchSize);
+mlTracking.recordCreation(binId, 'draw', '2x3x6'); // For quick-correction detection
+```
+
+Events are batched (20 events or 30s) and sent to `/api/ml-telemetry`. Redis keys prefixed with `ml:` for positive signals, `ml:neg:` for negative signals.
+
 ## Constants (`src/core/constants.ts`)
 
 **Constraints:**
@@ -332,3 +355,11 @@ Vercel backend (set in Vercel dashboard):
 Optional (for Liveblocks):
 - `VITE_LIVEBLOCKS_PUBLIC_KEY` - Client-side Liveblocks key
 - `LIVEBLOCKS_SECRET_KEY` - Server-side auth (if using auth endpoint)
+
+## Claude Code Hooks (`.claude/hooks/`)
+
+Pre-configured hooks for quality checks:
+- `pre-pr-review.sh` - Runs before PR creation (lint, build, test coverage)
+- `post-edit-test.sh` - Runs affected tests after file edits
+- `coverage-check.sh` - Validates coverage thresholds
+- `a11y-check.sh` - Accessibility audit for component changes
