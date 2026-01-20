@@ -156,7 +156,6 @@ ${content}
       <div class="content-footer__links">
         <a href="/what-is-gridfinity">What is Gridfinity?</a>
         <a href="/guide">Planning Guide</a>
-        <a href="https://github.com/andymai/gridfinity-layout-tool" target="_blank" rel="noopener">GitHub</a>
       </div>
       <p class="content-footer__copyright">
         © ${new Date().getFullYear()} Gridfinity Layout Tool. Free and open source.
