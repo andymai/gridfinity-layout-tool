@@ -4,7 +4,7 @@ import type { Layout, LayoutPreview } from '@/core/types';
  * Theme categories for inspiration layouts.
  * Based on telemetry data showing common drawer purposes.
  */
-export type InspirationTheme = 'kitchen' | 'workshop' | 'office' | 'hobby';
+export type InspirationTheme = 'kitchen' | 'workshop' | 'office' | 'hobby' | 'personal';
 
 /**
  * Features that a layout can showcase.
@@ -83,6 +83,11 @@ export const THEME_CONFIG: Record<
     label: 'Hobby',
     icon: 'palette',
     description: 'Craft supplies, 3D printing, and creative projects',
+  },
+  personal: {
+    label: 'Personal',
+    icon: 'sparkles',
+    description: 'Bathroom, bedroom, and personal care organization',
   },
 };
 

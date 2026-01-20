@@ -97,6 +97,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     workshop: searchFilteredLayouts.filter((l) => l.theme === 'workshop').length,
     office: searchFilteredLayouts.filter((l) => l.theme === 'office').length,
     hobby: searchFilteredLayouts.filter((l) => l.theme === 'hobby').length,
+    personal: searchFilteredLayouts.filter((l) => l.theme === 'personal').length,
   };
 
   // Handle escape key

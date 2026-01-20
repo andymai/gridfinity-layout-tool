@@ -278,6 +278,8 @@ function createElectronicsBench(): InspirationLayout {
   ];
   const layer = createLayer('Layer 1', 3);
 
+  // Tweezers: 100-150mm → 3 units (126mm) minimum
+  // Flush cutters: 100-130mm → 3 units (126mm) minimum
   const bins = [
     // Small components - top rows
     createBin(0, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Resistors' }),
@@ -286,19 +288,19 @@ function createElectronicsBench(): InspirationLayout {
     createBin(6, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Transistors' }),
     createBin(0, 2, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Headers' }),
     createBin(2, 2, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Connectors' }),
-    // Tools
-    createBin(4, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Tweezers' }),
-    createBin(6, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Flush Cutters' }),
-    // Supplies - bottom section
-    createBin(0, 4, 2, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Solder' }),
-    createBin(2, 4, 3, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Wire Spools' }),
-    createBin(5, 4, 3, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Shrink Tubing' }),
+    // Tools - 3 units deep for 100-150mm tools
+    createBin(4, 2, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Tweezers' }),
+    createBin(6, 2, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Cutters' }),
+    // Supplies - bottom section (shifted down 1 unit)
+    createBin(0, 4, 2, 5, { layerId: layer.id, categoryId: categories[2].id, label: 'Solder' }),
+    createBin(2, 5, 3, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Wire Spools' }),
+    createBin(5, 5, 3, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Shrink Tubing' }),
   ];
 
   const layout: Layout = {
     version: '1.0',
     name: 'Electronics Bench',
-    drawer: { width: 8, depth: 8, height: 6 },
+    drawer: { width: 8, depth: 9, height: 6 },
     printBedSize: 256,
     gridUnitMm: 42,
     heightUnitMm: 7,
@@ -321,60 +323,35 @@ function createElectronicsBench(): InspirationLayout {
 
 function createSocketOrganizer(): InspirationLayout {
   const categories = [
-    createCategory('1/4" Drive', '#38bdf8'),
-    createCategory('3/8" Drive', '#4ade80'),
-    createCategory('1/2" Drive', '#fbbf24'),
+    createCategory('Sockets', '#38bdf8'),
     createCategory('Ratchets', '#f87171'),
+    createCategory('Accessories', '#4ade80'),
   ];
   const layer = createLayer('Layer 1', 3);
 
-  // Real socket dimensions:
-  // - 1/4" sockets: ~20-25mm diameter, fit in 1x1 bins
-  // - 3/8" sockets: ~25-35mm diameter, fit in 1x1 bins
-  // - 1/2" sockets: ~30-45mm diameter, fit in 1.5x1.5 bins
-  // - Ratchets: 150-250mm long
-  // - Extensions: 75-250mm long
+  // Simplified socket organizer - group sockets by drive size
+  // Most socket sets come with 8-12 sockets per drive size
+  // A 3x2 bin (126mm x 84mm) can hold ~6-8 sockets standing upright
   const bins = [
-    // 1/4" drive sockets - 1x1 bins (42mm fits 25mm socket + clearance)
-    ...Array.from({ length: 10 }, (_, i) =>
-      createBin(i, 0, 1, 1, {
-        layerId: layer.id,
-        categoryId: categories[0].id,
-        label: ['4mm', '5mm', '6mm', '7mm', '8mm', '9mm', '10mm', '11mm', '12mm', '13mm'][i],
-      })
-    ),
-    // 3/8" drive sockets - 1x1 bins
-    ...Array.from({ length: 10 }, (_, i) =>
-      createBin(i, 1, 1, 1, {
-        layerId: layer.id,
-        categoryId: categories[1].id,
-        label: ['10mm', '11mm', '12mm', '13mm', '14mm', '15mm', '16mm', '17mm', '18mm', '19mm'][i],
-      })
-    ),
-    // 1/2" drive sockets - 1.5x1.5 bins (larger sockets)
-    ...Array.from({ length: 6 }, (_, i) =>
-      createBin(i * 1.5, 2, 1.5, 1.5, {
-        layerId: layer.id,
-        categoryId: categories[2].id,
-        label: ['17mm', '19mm', '21mm', '22mm', '24mm', '27mm'][i],
-      })
-    ),
-    // Universal joint adapter - fills gap at end of socket row
-    createBin(9, 2, 1, 1.5, { layerId: layer.id, categoryId: categories[3].id, label: 'U-Joint' }),
+    // Socket bins - grouped by drive size
+    createBin(0, 0, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: '1/4" Metric' }),
+    createBin(3, 0, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: '3/8" Metric' }),
+    createBin(0, 2, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: '3/8" Deep' }),
+    createBin(3, 2, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: '1/2" Metric' }),
     // Ratchets - 6 units deep (252mm) for 200-250mm ratchets
-    createBin(0, 3.5, 2, 6, { layerId: layer.id, categoryId: categories[3].id, label: '1/4" Ratchet' }),
-    createBin(2, 3.5, 2, 6, { layerId: layer.id, categoryId: categories[3].id, label: '3/8" Ratchet' }),
-    createBin(4, 3.5, 2, 6, { layerId: layer.id, categoryId: categories[3].id, label: '1/2" Ratchet' }),
-    // Extensions - 3" (75mm), 6" (150mm), 10" (250mm)
-    createBin(6, 3.5, 2, 2, { layerId: layer.id, categoryId: categories[3].id, label: '3" Ext' }),
-    createBin(6, 5.5, 2, 4, { layerId: layer.id, categoryId: categories[3].id, label: '6" Ext' }),
-    createBin(8, 3.5, 2, 6, { layerId: layer.id, categoryId: categories[3].id, label: '10" Ext' }),
+    createBin(0, 4, 2, 6, { layerId: layer.id, categoryId: categories[1].id, label: '1/4" Ratchet' }),
+    createBin(2, 4, 2, 6, { layerId: layer.id, categoryId: categories[1].id, label: '3/8" Ratchet' }),
+    createBin(4, 4, 2, 6, { layerId: layer.id, categoryId: categories[1].id, label: '1/2" Ratchet' }),
+    // Accessories - extensions, adapters
+    createBin(6, 0, 2, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Extensions' }),
+    createBin(6, 4, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Adapters' }),
+    createBin(6, 7, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Spark Plugs' }),
   ];
 
   const layout: Layout = {
     version: '1.0',
     name: 'Socket Organizer',
-    drawer: { width: 10, depth: 9.5, height: 6 },
+    drawer: { width: 8, depth: 10, height: 6 },
     printBedSize: 256,
     gridUnitMm: 42,
     heightUnitMm: 7,
@@ -388,9 +365,9 @@ function createSocketOrganizer(): InspirationLayout {
     name: 'Socket Organizer',
     theme: 'workshop',
     description:
-      'Complete socket set organization with dedicated rows for 1/4", 3/8", and 1/2" drive sockets. Includes space for ratchets and extensions.',
+      'Practical socket set organization with grouped bins for metric sockets by drive size. Includes dedicated slots for ratchets and accessories.',
     shortDescription: 'Socket sets with ratchets and extensions',
-    complexity: 'intermediate',
+    complexity: 'beginner',
     tags: ['workshop', 'sockets', 'automotive', 'mechanic'],
   });
 }
@@ -659,6 +636,117 @@ function createSewingKit(): InspirationLayout {
 }
 
 // ============================================================
+// PERSONAL LAYOUTS (2 layouts) - Bathroom/Makeup, Nightstand
+// ============================================================
+
+function createBathroomMakeup(): InspirationLayout {
+  const categories = [
+    createCategory('Brushes', '#f472b6'),
+    createCategory('Makeup', '#c084fc'),
+    createCategory('Small Items', '#94a3b8'),
+  ];
+  const layer = createLayer('Layer 1', 3);
+
+  // Real dimensions:
+  // - Makeup brushes: 150-180mm → 4-5 units
+  // - Lipsticks: 70-80mm → 2 units
+  // - Mascara/eyeliner: 100-120mm → 3 units
+  // - Compact mirrors: 60-80mm diameter → 2 units
+  // - Nail polish bottles: 50-60mm tall → 1.5-2 units
+  const bins = [
+    // Brushes - 5 units deep (210mm) for 150-180mm brushes
+    createBin(0, 0, 2, 5, { layerId: layer.id, categoryId: categories[0].id, label: 'Face Brushes' }),
+    createBin(2, 0, 2, 5, { layerId: layer.id, categoryId: categories[0].id, label: 'Eye Brushes' }),
+    // Mascara/eyeliner - 3 units deep (126mm) for 100-120mm
+    createBin(4, 0, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Mascara' }),
+    createBin(4, 3, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Eyeliner' }),
+    // Lipsticks - 2 units deep (84mm) for 70-80mm
+    createBin(0, 5, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Lipsticks' }),
+    createBin(2, 5, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Lip Gloss' }),
+    // Compact items - 2x2 for mirrors, palettes
+    createBin(4, 6, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Compacts' }),
+    // Small items
+    createBin(0, 7, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Hair Ties' }),
+    createBin(1, 7, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Bobby Pins' }),
+    createBin(2, 7, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Clips' }),
+    createBin(3, 7, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Bands' }),
+  ];
+
+  const layout: Layout = {
+    version: '1.0',
+    name: 'Bathroom/Makeup',
+    drawer: { width: 6, depth: 8, height: 6 },
+    printBedSize: 256,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    categories,
+    layers: [layer],
+    bins,
+  };
+
+  return buildInspirationLayout(layout, {
+    id: 'bathroom-makeup',
+    name: 'Bathroom/Makeup',
+    theme: 'personal',
+    description:
+      'Organize makeup and bathroom essentials with dedicated slots for brushes, lipsticks, and small accessories. Bins sized for real cosmetics dimensions.',
+    shortDescription: 'Makeup brushes, cosmetics, and accessories',
+    complexity: 'beginner',
+    tags: ['bathroom', 'makeup', 'cosmetics', 'personal'],
+  });
+}
+
+function createNightstandDrawer(): InspirationLayout {
+  const categories = [
+    createCategory('Tech', '#38bdf8'),
+    createCategory('Health', '#4ade80'),
+    createCategory('Personal', '#94a3b8'),
+  ];
+  const layer = createLayer('Layer 1', 3);
+
+  // Real dimensions for nightstand items:
+  // - Phone: ~160mm length → 4 units
+  // - Glasses case: 160mm → 4 units depth
+  // - Earbuds case: ~60-80mm → 2 units
+  // - Lip balm, hand cream tubes: 80-120mm → 2-3 units
+  const bins = [
+    // Tech items
+    createBin(0, 0, 2, 4, { layerId: layer.id, categoryId: categories[0].id, label: 'Phone' }),
+    createBin(2, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Earbuds' }),
+    createBin(4, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Charger' }),
+    // Glasses case - 4 units deep
+    createBin(2, 2, 4, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Glasses' }),
+    // Health/personal items
+    createBin(0, 4, 2, 1, { layerId: layer.id, categoryId: categories[1].id, label: 'Meds' }),
+    createBin(2, 5, 2, 1, { layerId: layer.id, categoryId: categories[1].id, label: 'Vitamins' }),
+    createBin(4, 5, 2, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Lip Balm' }),
+  ];
+
+  const layout: Layout = {
+    version: '1.0',
+    name: 'Nightstand Drawer',
+    drawer: { width: 6, depth: 6, height: 6 },
+    printBedSize: 256,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    categories,
+    layers: [layer],
+    bins,
+  };
+
+  return buildInspirationLayout(layout, {
+    id: 'nightstand-drawer',
+    name: 'Nightstand Drawer',
+    theme: 'personal',
+    description:
+      'Keep bedside essentials organized with spots for phone, glasses, medications, and personal items. Shallow layout fits typical nightstand drawers.',
+    shortDescription: 'Phone, glasses, and bedside essentials',
+    complexity: 'beginner',
+    tags: ['bedroom', 'nightstand', 'personal', 'simple'],
+  });
+}
+
+// ============================================================
 // EXPORT ALL LAYOUTS
 // ============================================================
 
@@ -679,6 +767,9 @@ export const INSPIRATION_LAYOUTS: InspirationLayout[] = [
   create3DPrintingSupplies(),
   createCraftSupplies(),
   createSewingKit(),
+  // Personal (2)
+  createBathroomMakeup(),
+  createNightstandDrawer(),
 ];
 
 /**
