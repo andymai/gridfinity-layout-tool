@@ -94,6 +94,13 @@ export function useKeyboard() {
 
     if (isShortcut(key, SHORTCUTS.DELETE) && selectedBinIds.length > 0) {
       e.preventDefault();
+      // Track deletion BEFORE executing (need bin data)
+      const binsToDelete = selectedBinIds
+        .map(id => layout.bins.find(b => b.id === id))
+        .filter((b): b is typeof layout.bins[number] => b !== undefined);
+      if (binsToDelete.length > 0) {
+        mlTracking.trackDeletion(binsToDelete[0], 'key', binsToDelete.length);
+      }
       execute(() => {
         for (const binId of selectedBinIds) {
           deleteBin(binId);
@@ -412,6 +419,15 @@ export function useKeyboard() {
         }
 
         if (allValid) {
+          // Track move BEFORE executing (capture old positions)
+          const firstBin = selectedBins[0];
+          if (firstBin) {
+            const oldPosition = { x: firstBin.x, y: firstBin.y };
+            // Track once per batch with representative data
+            const newFirstBin = { ...firstBin, x: firstBin.x + dx, y: firstBin.y + dy };
+            mlTracking.trackMove(newFirstBin, oldPosition, 'nudge', selectedBins.length);
+          }
+
           execute(() => {
             for (const binId of selectedBinIds) {
               const bin = layout.bins.find(b => b.id === binId);

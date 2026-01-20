@@ -47,6 +47,9 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const { isDesktop } = useResponsive();
 
   const handleDelete = () => {
+    // Track deletion BEFORE executing (need bin data)
+    mlTracking.trackDeletion(bin, 'context_menu');
+
     execute(() => deleteBin(bin.id));
     setSelectedBins([]);
     onClose();
