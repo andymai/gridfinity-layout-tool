@@ -62,23 +62,28 @@ export function MultiBinContextMenu({ binIds, position, onClose, source }: Multi
   };
 
   const handleChangeCategory = (categoryId: string) => {
-    const batchSize = bins.length;
+    // Filter to only bins that actually change
+    const binsToUpdate = bins.filter(b => b.category !== categoryId);
+    if (binsToUpdate.length === 0) {
+      onClose();
+      return;
+    }
+
+    const batchSize = binsToUpdate.length;
     const category = layout.categories.find(c => c.id === categoryId);
 
     execute(() => {
-      bins.forEach(b => {
+      binsToUpdate.forEach(b => {
         updateBin(b.id, { category: categoryId });
       });
     });
 
-    // Track with category name (tracking filters out default categories)
-    if (category) {
-      bins.forEach(b => {
-        mlTracking.trackCategory(b, category.name, batchSize);
-      });
+    // Track once per batch (not per bin)
+    if (category && binsToUpdate.length > 0) {
+      mlTracking.trackCategory(binsToUpdate[0], category.name, batchSize);
     }
 
-    addToast(`Updated ${bins.length} bins`, 'success');
+    addToast(`Updated ${binsToUpdate.length} bins`, 'success');
     onClose();
   };
 

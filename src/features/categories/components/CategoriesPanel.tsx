@@ -76,19 +76,22 @@ export function CategoriesPanel() {
 
     // If bins are selected, update their categories
     if (selectedBinIds.length > 0) {
-      const binCount = selectedBinIds.length;
+      // Filter to only bins that actually change
+      const binsToUpdate = selectedBinIds
+        .map((id) => bins.find((b) => b.id === id))
+        .filter((bin): bin is typeof bins[number] => !!bin && bin.category !== categoryId);
+      if (binsToUpdate.length === 0) return;
+
+      const binCount = binsToUpdate.length;
       execute(() => {
-        for (const binId of selectedBinIds) {
-          updateBin(binId, { category: categoryId });
+        for (const bin of binsToUpdate) {
+          updateBin(bin.id, { category: categoryId });
         }
       });
 
-      // Track with category name (tracking filters out default categories)
-      for (const binId of selectedBinIds) {
-        const bin = bins.find((b) => b.id === binId);
-        if (bin) {
-          mlTracking.trackCategory(bin, categoryName, binCount);
-        }
+      // Track once per batch (not per bin)
+      if (binsToUpdate.length > 0) {
+        mlTracking.trackCategory(binsToUpdate[0], categoryName, binCount);
       }
 
       addToast(

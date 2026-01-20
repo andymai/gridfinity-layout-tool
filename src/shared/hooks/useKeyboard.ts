@@ -253,23 +253,24 @@ export function useKeyboard() {
           newCategoryId = categories[currentIndex - 1].id;
         }
 
-        const batchSize = selectedBinIds.length;
+        // Filter to only bins that actually change
+        const binsToUpdate = selectedBinIds
+          .map(id => layout.bins.find(b => b.id === id))
+          .filter((bin): bin is typeof layout.bins[number] => !!bin && bin.category !== newCategoryId);
+        if (binsToUpdate.length === 0) return;
+
+        const batchSize = binsToUpdate.length;
         const newCategory = newCategoryId ? categories.find(c => c.id === newCategoryId) : undefined;
 
         execute(() => {
-          for (const binId of selectedBinIds) {
-            updateBin(binId, { category: newCategoryId });
+          for (const bin of binsToUpdate) {
+            updateBin(bin.id, { category: newCategoryId });
           }
         });
 
-        // Track with category name (tracking filters out default categories)
-        if (newCategory) {
-          for (const binId of selectedBinIds) {
-            const bin = layout.bins.find(b => b.id === binId);
-            if (bin) {
-              mlTracking.trackCategory(bin, newCategory.name, batchSize);
-            }
-          }
+        // Track once per batch (not per bin)
+        if (newCategory && binsToUpdate.length > 0) {
+          mlTracking.trackCategory(binsToUpdate[0], newCategory.name, batchSize);
         }
       } else {
         // Cycle active drawing category (no "no category" option for drawing)
@@ -302,23 +303,24 @@ export function useKeyboard() {
           newCategoryId = categories[currentIndex + 1].id;
         }
 
-        const batchSize = selectedBinIds.length;
+        // Filter to only bins that actually change
+        const binsToUpdate = selectedBinIds
+          .map(id => layout.bins.find(b => b.id === id))
+          .filter((bin): bin is typeof layout.bins[number] => !!bin && bin.category !== newCategoryId);
+        if (binsToUpdate.length === 0) return;
+
+        const batchSize = binsToUpdate.length;
         const newCategory = newCategoryId ? categories.find(c => c.id === newCategoryId) : undefined;
 
         execute(() => {
-          for (const binId of selectedBinIds) {
-            updateBin(binId, { category: newCategoryId });
+          for (const bin of binsToUpdate) {
+            updateBin(bin.id, { category: newCategoryId });
           }
         });
 
-        // Track with category name (tracking filters out default categories)
-        if (newCategory) {
-          for (const binId of selectedBinIds) {
-            const bin = layout.bins.find(b => b.id === binId);
-            if (bin) {
-              mlTracking.trackCategory(bin, newCategory.name, batchSize);
-            }
-          }
+        // Track once per batch (not per bin)
+        if (newCategory && binsToUpdate.length > 0) {
+          mlTracking.trackCategory(binsToUpdate[0], newCategory.name, batchSize);
         }
       } else {
         // Cycle active drawing category (no "no category" option for drawing)
