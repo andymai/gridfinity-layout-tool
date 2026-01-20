@@ -320,6 +320,95 @@ export interface BinMovedEvent {
   method: MoveMethod;
 }
 
+/**
+ * Drawer resize event - when user changes drawer dimensions.
+ * Essential context for understanding container constraints.
+ */
+export interface DrawerResizedEvent {
+  type: 'drawer_resized';
+
+  /** Old size as "WxDxH" string */
+  old_size: string;
+
+  /** New size as "WxDxH" string */
+  new_size: string;
+
+  /** Which dimension(s) changed */
+  dimensions_changed: ('width' | 'depth' | 'height')[];
+
+  /** Number of bins moved to staging due to resize */
+  bins_staged: number;
+
+  /** Fill percentage after resize */
+  fill_pct: number;
+}
+
+/**
+ * Fill operation event - when user uses fill to populate the grid.
+ * Direct statement of user's preferred bin size for the area.
+ */
+export interface FillOperationEvent {
+  type: 'fill_operation';
+
+  /** Fill method: 'uniform' for fillAllWithSize, 'gaps' for fillGaps */
+  method: FillMethod;
+
+  /** Bin size used for uniform fill as "WxD" (no height - layer determines it) */
+  fill_size: string | null;
+
+  /** Number of bins created by the fill */
+  bins_created: number;
+
+  /** Layer index where fill was applied */
+  layer_index: number;
+
+  /** Fill percentage after operation */
+  fill_pct: number;
+
+  /** Drawer size for context */
+  drawer_size: string;
+}
+
+/**
+ * Layer movement event - when bins are moved between layers.
+ * Reveals organizational strategy and layer usage patterns.
+ */
+export interface LayerMoveEvent {
+  type: 'layer_move';
+
+  /** Bin size as "WxDxH" string */
+  bin_size: string;
+
+  /** Source layer index (0 = bottom, -1 = staging) */
+  from_layer_index: number;
+
+  /** Target layer index (0 = bottom, -1 = staging) */
+  to_layer_index: number;
+
+  /** Number of bins moved together */
+  batch_size: number;
+
+  /** How the move was initiated */
+  method: LayerMoveMethod;
+}
+
+/**
+ * Bin rotation event - when user swaps width and depth.
+ * Completes the picture of dimension adjustments.
+ */
+export interface BinRotatedEvent {
+  type: 'bin_rotated';
+
+  /** Original size as "WxDxH" string */
+  old_size: string;
+
+  /** New size (rotated) as "WxDxH" string */
+  new_size: string;
+
+  /** Number of bins rotated together (for multi-select) */
+  batch_size: number;
+}
+
 export type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
@@ -329,13 +418,21 @@ export type MLTelemetryEvent =
   | CategoryChangeEvent
   | BinResizeEvent
   | BinDeletedEvent
-  | BinMovedEvent;
+  | BinMovedEvent
+  | DrawerResizedEvent
+  | FillOperationEvent
+  | LayerMoveEvent
+  | BinRotatedEvent;
 
 export type PlacementMethod = 'draw' | 'fill' | 'duplicate' | 'staging' | 'paint';
 
 export type DeleteMethod = 'key' | 'context_menu' | 'bulk' | 'inspector';
 
 export type MoveMethod = 'drag' | 'nudge';
+
+export type FillMethod = 'uniform' | 'gaps';
+
+export type LayerMoveMethod = 'inspector' | 'drag' | 'keyboard' | 'context_menu';
 
 export type LayoutSnapshotTrigger =
   | 'save'
@@ -1373,6 +1470,187 @@ export function trackBinMove(
     layer_index: layerIndex >= 0 ? layerIndex : 0,
     batch_size: batchSize,
     method,
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// DRAWER RESIZE TRACKING
+// ============================================
+
+/**
+ * Track a drawer resize event.
+ *
+ * @param oldDrawer - Original drawer dimensions
+ * @param newDrawer - New drawer dimensions
+ * @param layout - Current layout state (after resize)
+ * @param binsStaged - Number of bins moved to staging due to resize
+ */
+export function trackDrawerResize(
+  oldDrawer: { width: number; depth: number; height: number },
+  newDrawer: { width: number; depth: number; height: number },
+  layout: Layout,
+  binsStaged: number = 0
+): void {
+  if (!isEnabled()) return;
+
+  // Skip if dimensions didn't actually change
+  if (
+    oldDrawer.width === newDrawer.width &&
+    oldDrawer.depth === newDrawer.depth &&
+    oldDrawer.height === newDrawer.height
+  ) return;
+
+  const dimensionsChanged: ('width' | 'depth' | 'height')[] = [];
+  if (oldDrawer.width !== newDrawer.width) dimensionsChanged.push('width');
+  if (oldDrawer.depth !== newDrawer.depth) dimensionsChanged.push('depth');
+  if (oldDrawer.height !== newDrawer.height) dimensionsChanged.push('height');
+
+  const event: DrawerResizedEvent = {
+    type: 'drawer_resized',
+    old_size: `${oldDrawer.width}x${oldDrawer.depth}x${oldDrawer.height}`,
+    new_size: `${newDrawer.width}x${newDrawer.depth}x${newDrawer.height}`,
+    dimensions_changed: dimensionsChanged,
+    bins_staged: binsStaged,
+    fill_pct: computeFillPercentage(layout),
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// FILL OPERATION TRACKING
+// ============================================
+
+/**
+ * Track a fill operation.
+ *
+ * @param method - 'uniform' for fillAllWithSize, 'gaps' for fillGaps
+ * @param binsCreated - Number of bins created by the fill
+ * @param layerId - Layer where fill was applied
+ * @param layout - Current layout state (after fill)
+ * @param fillSize - Bin dimensions used for uniform fill (null for gap fill)
+ */
+export function trackFillOperation(
+  method: FillMethod,
+  binsCreated: number,
+  layerId: string,
+  layout: Layout,
+  fillSize?: { width: number; depth: number }
+): void {
+  if (!isEnabled()) return;
+
+  // Skip if no bins were created
+  if (binsCreated === 0) return;
+
+  const layerIndex = layout.layers.findIndex((l) => l.id === layerId);
+
+  const event: FillOperationEvent = {
+    type: 'fill_operation',
+    method,
+    fill_size: fillSize ? `${fillSize.width}x${fillSize.depth}` : null,
+    bins_created: binsCreated,
+    layer_index: layerIndex >= 0 ? layerIndex : 0,
+    fill_pct: computeFillPercentage(layout),
+    drawer_size: `${layout.drawer.width}x${layout.drawer.depth}x${layout.drawer.height}`,
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// LAYER MOVEMENT TRACKING
+// ============================================
+
+/**
+ * Track bins moving between layers.
+ *
+ * @param bin - Representative bin that was moved
+ * @param fromLayerId - Original layer ID (or STAGING_ID)
+ * @param toLayerId - New layer ID (or STAGING_ID)
+ * @param layout - Current layout state
+ * @param method - How the move was initiated
+ * @param batchSize - Number of bins moved together
+ */
+export function trackLayerMove(
+  bin: Bin,
+  fromLayerId: string,
+  toLayerId: string,
+  layout: Layout,
+  method: LayerMoveMethod,
+  batchSize: number = 1
+): void {
+  if (!isEnabled()) return;
+
+  // Skip if layer didn't change
+  if (fromLayerId === toLayerId) return;
+
+  // Convert layer IDs to indices (-1 for staging)
+  const fromIndex = fromLayerId === STAGING_ID
+    ? -1
+    : layout.layers.findIndex((l) => l.id === fromLayerId);
+  const toIndex = toLayerId === STAGING_ID
+    ? -1
+    : layout.layers.findIndex((l) => l.id === toLayerId);
+
+  const event: LayerMoveEvent = {
+    type: 'layer_move',
+    bin_size: `${bin.width}x${bin.depth}x${bin.height}`,
+    from_layer_index: fromIndex >= 0 ? fromIndex : (fromLayerId === STAGING_ID ? -1 : 0),
+    to_layer_index: toIndex >= 0 ? toIndex : (toLayerId === STAGING_ID ? -1 : 0),
+    batch_size: batchSize,
+    method,
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// BIN ROTATION TRACKING
+// ============================================
+
+/**
+ * Track a bin rotation event.
+ *
+ * @param bin - The bin before rotation
+ * @param batchSize - Number of bins rotated together
+ */
+export function trackBinRotation(
+  bin: Bin,
+  batchSize: number = 1
+): void {
+  if (!isEnabled()) return;
+
+  const event: BinRotatedEvent = {
+    type: 'bin_rotated',
+    old_size: `${bin.width}x${bin.depth}x${bin.height}`,
+    new_size: `${bin.depth}x${bin.width}x${bin.height}`, // Rotated: width/depth swapped
+    batch_size: batchSize,
   };
 
   eventBuffer.push(event);

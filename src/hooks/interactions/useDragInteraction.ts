@@ -254,11 +254,24 @@ export function useDragInteraction(
 
     // Handle drop to staging
     if (currentDropTarget === 'staging') {
-      execute(() => {
-        for (const binId of interaction.binIds) {
-          updateBin(binId, { layerId: STAGING_ID });
-        }
-      });
+      // Capture original layer for tracking (use first bin as representative)
+      const binsToStage = interaction.binIds
+        .map((id) => layout.bins.find((b) => b.id === id))
+        .filter((b): b is Bin => b !== undefined);
+
+      if (binsToStage.length > 0) {
+        const firstBin = binsToStage[0];
+        const fromLayerId = firstBin.layerId;
+
+        execute(() => {
+          for (const binId of interaction.binIds) {
+            updateBin(binId, { layerId: STAGING_ID });
+          }
+        });
+
+        // Track layer movement to staging
+        mlTracking.trackLayerMove(firstBin, fromLayerId, STAGING_ID, 'drag', binsToStage.length);
+      }
       setSelectedBins([]);
       setDropTarget(null);
       setInteraction(null);
