@@ -9,7 +9,7 @@ schema: Article
 
 Gridfinity is a modular, open-source storage system designed for 3D printing. Created by Zack Freedman in 2022, it has become one of the most popular organization systems in the maker community.
 
-The system uses a standardized 42mm grid that lets you create custom drawer organizers, desktop storage, and tool holders that snap together perfectly every time.
+The system uses a standardized 42mm grid that lets you create custom drawer organizers, desktop storage, and tool holders that fit together perfectly every time.
 
 ## How the Grid System Works
 
@@ -17,11 +17,11 @@ Gridfinity is built on a simple but powerful concept: everything fits a 42mm × 
 
 ### Base Plates
 
-Base plates are the foundation. They snap or stick into your drawer and provide the grid pattern that holds bins in place. Bases come in various sizes—1×1, 2×2, 4×4, and larger—so you can cover any drawer.
+Base plates are the foundation. They sit in your drawer and provide the grid pattern that holds bins in place. Bases come in various sizes—1×1, 2×2, 4×4, and larger—so you can cover any drawer.
 
 ### Bins
 
-Bins click onto the bases and hold your stuff. They come in different footprints (1×1, 2×1, 3×2, etc.) and heights measured in "units" (U). Each height unit is 7mm, so a 3U bin has 21mm of internal storage height (plus a few mm for the base that locks into the grid).
+Bins drop onto the bases and hold your stuff. They come in different footprints (1×1, 2×1, 3×2, etc.) and heights measured in "units" (U). Each height unit is 7mm, so a 3U bin has 21mm of internal storage height (plus a few mm for the base that sits in the grid).
 
 ### The Magic of Modularity
 
@@ -54,7 +54,7 @@ Thousands of free STL files are available on:
 
 ### It Just Works
 
-The snap-fit design means bins stay put but can be easily rearranged. No glue, no screws, no fuss.
+The weighted design means bins stay put but can be easily rearranged. No glue, no screws, no fuss.
 
 ## Getting Started with Gridfinity
 
