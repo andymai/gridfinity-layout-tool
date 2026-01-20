@@ -19,6 +19,7 @@ import {
   type CategoryBreakdown,
 } from '@/utils/binListOperations';
 import { exportPrintListTSV } from '@/core/storage';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { EnhancedPrintRow } from '@/core/types';
 
 export interface UseBinListReturn extends Omit<UsePrintListReturn, 'rows'> {
@@ -176,12 +177,17 @@ export function useBinList(): UseBinListReturn {
     const count = selectedBinIds.length;
     execute(() => {
       for (const binId of selectedBinIds) {
-        updateBin(binId, { label });
+        const bin = layout.bins.find((b) => b.id === binId);
+        if (bin) {
+          const oldLabel = bin.label;
+          updateBin(binId, { label });
+          mlTracking.trackLabel(bin, oldLabel, label);
+        }
       }
     });
 
     addToast(`Updated label for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
-  }, [selectedBinIds, execute, updateBin, addToast]);
+  }, [selectedBinIds, layout.bins, execute, updateBin, addToast]);
 
   const updateBulkNotes = useCallback((notes: string) => {
     if (selectedBinIds.length === 0) return;
@@ -203,12 +209,17 @@ export function useBinList(): UseBinListReturn {
     const count = binIds.length;
     execute(() => {
       for (const binId of binIds) {
-        updateBin(binId, { label });
+        const bin = layout.bins.find((b) => b.id === binId);
+        if (bin) {
+          const oldLabel = bin.label;
+          updateBin(binId, { label });
+          mlTracking.trackLabel(bin, oldLabel, label);
+        }
       }
     });
 
     addToast(`Updated label for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
-  }, [execute, updateBin, addToast]);
+  }, [layout.bins, execute, updateBin, addToast]);
 
   const updateBinNotes = useCallback((binIds: string[], notes: string) => {
     if (binIds.length === 0) return;
@@ -254,16 +265,22 @@ export function useBinList(): UseBinListReturn {
         content = exportToTSV();
         extension = 'tsv';
         mimeType = 'text/tab-separated-values';
+        mlTracking.trackSnapshot('export_tsv');
+        mlTracking.trackQuality('exported');
         break;
       case 'csv':
         content = exportToCSV();
         extension = 'csv';
         mimeType = 'text/csv';
+        mlTracking.trackSnapshot('export_tsv'); // CSV is similar quality signal
+        mlTracking.trackQuality('exported');
         break;
       case 'json':
         content = exportToJSON();
         extension = 'json';
         mimeType = 'application/json';
+        mlTracking.trackSnapshot('export_json');
+        mlTracking.trackQuality('exported');
         break;
     }
 
