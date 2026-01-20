@@ -183,9 +183,12 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
       );
 
       if (isOk(result)) {
-        await switchLayout(result.value);
-        addToast(`Added "${layout.name}"`, 'success');
-        announceToScreenReader(`${layout.name} added to your library`);
+        const switchResult = await switchLayout(result.value);
+        if (isOk(switchResult)) {
+          addToast(`Added "${layout.name}"`, 'success');
+          announceToScreenReader(`${layout.name} added to your library`);
+        }
+        // Close gallery regardless - layout was added to library
         closeMobilePanel();
         onClose();
       } else {
