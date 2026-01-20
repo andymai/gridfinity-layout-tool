@@ -1,13 +1,16 @@
 /**
  * Gap analysis utilities for ML telemetry.
  * Computes spatial context: largest empty rectangle, fill percentage.
+ *
+ * Handles half-bin mode by detecting fractional coordinates and scaling
+ * the internal grid by 2x for accurate measurements.
  */
 
 import type { Layout, Bin } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
+import { STAGING_ID, isFractional } from '@/core/constants';
 
 export interface GapAnalysis {
-  /** Largest empty rectangle as "WxD" string */
+  /** Largest empty rectangle as "WxD" string (in grid units) */
   largestGap: string;
   /** Fill percentage (0-100) of occupied cells */
   fillPct: number;
@@ -16,17 +19,48 @@ export interface GapAnalysis {
 }
 
 /**
+ * Check if any bin or drawer dimension has fractional values.
+ * Used to determine if we need to scale the grid for half-bin support.
+ */
+function hasFractionalCoordinates(bins: Bin[], drawerWidth: number, drawerDepth: number): boolean {
+  if (isFractional(drawerWidth) || isFractional(drawerDepth)) return true;
+  return bins.some(
+    (b) =>
+      isFractional(b.x) ||
+      isFractional(b.y) ||
+      isFractional(b.width) ||
+      isFractional(b.depth)
+  );
+}
+
+/**
  * Create a 2D grid of occupied cells for a specific layer.
  * Returns a Set of "x,y" strings for O(1) lookup.
+ *
+ * @param scale - Grid scale factor (2 for half-bin mode, 1 otherwise)
  */
-function createOccupiedGrid(bins: Bin[], layerId: string, width: number, depth: number): Set<string> {
+function createOccupiedGrid(
+  bins: Bin[],
+  layerId: string,
+  width: number,
+  depth: number,
+  scale: number
+): Set<string> {
   const occupied = new Set<string>();
+  const scaledWidth = width * scale;
+  const scaledDepth = depth * scale;
 
   for (const bin of bins) {
     if (bin.layerId !== layerId) continue;
-    for (let x = Math.floor(bin.x); x < Math.ceil(bin.x + bin.width); x++) {
-      for (let y = Math.floor(bin.y); y < Math.ceil(bin.y + bin.depth); y++) {
-        if (x >= 0 && x < width && y >= 0 && y < depth) {
+    // Scale bin coordinates and iterate at scaled resolution
+    const startX = Math.round(bin.x * scale);
+    const startY = Math.round(bin.y * scale);
+    const endX = Math.round((bin.x + bin.width) * scale);
+    const endY = Math.round((bin.y + bin.depth) * scale);
+
+    for (let x = startX; x < endX; x++) {
+      for (let y = startY; y < endY; y++) {
+        if (x >= 0 && x < scaledWidth && y >= 0 && y < scaledDepth) {
           occupied.add(`${x},${y}`);
         }
       }
@@ -96,6 +130,9 @@ function findLargestEmptyRect(
 /**
  * Analyze gaps in a layout for ML telemetry.
  *
+ * Handles half-bin mode by scaling the internal grid by 2x when fractional
+ * coordinates are detected, ensuring accurate fill and gap calculations.
+ *
  * @param layout - Current layout state
  * @param layerId - Layer to analyze
  * @param placedBinSize - Size of the bin that was just placed (for gap fit check)
@@ -107,35 +144,47 @@ export function analyzeGaps(
   placedBinSize?: { width: number; depth: number }
 ): GapAnalysis {
   const { drawer } = layout;
-  const width = Math.ceil(drawer.width);
-  const depth = Math.ceil(drawer.depth);
-  const totalCells = width * depth;
 
   // Get bins on this layer (excluding staging)
   const layerBins = layout.bins.filter(
     (b) => b.layerId === layerId && b.layerId !== STAGING_ID
   );
 
-  // Create occupied grid
-  const occupied = createOccupiedGrid(layerBins, layerId, width, depth);
+  // Determine scale factor: 2x for half-bin mode, 1x otherwise
+  const scale = hasFractionalCoordinates(layerBins, drawer.width, drawer.depth) ? 2 : 1;
+
+  const width = Math.ceil(drawer.width);
+  const depth = Math.ceil(drawer.depth);
+  const scaledWidth = width * scale;
+  const scaledDepth = depth * scale;
+  const totalScaledCells = scaledWidth * scaledDepth;
+
+  // Create occupied grid at scaled resolution
+  const occupied = createOccupiedGrid(layerBins, layerId, width, depth, scale);
   const occupiedCount = occupied.size;
 
-  // Calculate fill percentage
-  const fillPct = totalCells > 0 ? Math.round((occupiedCount / totalCells) * 100) : 0;
+  // Calculate fill percentage (same regardless of scale)
+  const fillPct = totalScaledCells > 0 ? Math.round((occupiedCount / totalScaledCells) * 100) : 0;
 
-  // Find largest empty rectangle
-  const largest = findLargestEmptyRect(occupied, width, depth);
-  const largestGap = largest.w > 0 && largest.d > 0 ? `${largest.w}x${largest.d}` : '0x0';
+  // Find largest empty rectangle at scaled resolution
+  const largest = findLargestEmptyRect(occupied, scaledWidth, scaledDepth);
+
+  // Convert back to grid units (may be fractional for half-bin mode)
+  const gapW = largest.w / scale;
+  const gapD = largest.d / scale;
+  const largestGap = gapW > 0 && gapD > 0 ? `${gapW}x${gapD}` : '0x0';
 
   // Determine gap fit
   let gapFit: 'exact' | 'partial' | 'none' = 'none';
-  if (placedBinSize && largest.w > 0 && largest.d > 0) {
-    const binW = Math.ceil(placedBinSize.width);
-    const binD = Math.ceil(placedBinSize.depth);
+  if (placedBinSize && gapW > 0 && gapD > 0) {
+    const binW = placedBinSize.width;
+    const binD = placedBinSize.depth;
 
-    if (binW === largest.w && binD === largest.d) {
+    // Use small epsilon for floating point comparison
+    const epsilon = 0.001;
+    if (Math.abs(binW - gapW) < epsilon && Math.abs(binD - gapD) < epsilon) {
       gapFit = 'exact';
-    } else if (binW <= largest.w && binD <= largest.d) {
+    } else if (binW <= gapW + epsilon && binD <= gapD + epsilon) {
       gapFit = 'partial';
     }
   }
@@ -150,19 +199,21 @@ export function analyzeGaps(
 /**
  * Quick fill percentage calculation (without full gap analysis).
  * Use this when you only need fill % and not the largest gap.
+ *
+ * Handles half-bin mode by using actual bin dimensions rather than rounding.
  */
 export function calculateFillPercentage(layout: Layout, layerId: string): number {
   const { drawer } = layout;
-  const totalCells = Math.ceil(drawer.width) * Math.ceil(drawer.depth);
+  const totalArea = drawer.width * drawer.depth;
 
-  if (totalCells === 0) return 0;
+  if (totalArea === 0) return 0;
 
-  let occupiedCells = 0;
+  let occupiedArea = 0;
   for (const bin of layout.bins) {
     if (bin.layerId === layerId && bin.layerId !== STAGING_ID) {
-      occupiedCells += Math.ceil(bin.width) * Math.ceil(bin.depth);
+      occupiedArea += bin.width * bin.depth;
     }
   }
 
-  return Math.round((occupiedCells / totalCells) * 100);
+  return Math.round((occupiedArea / totalArea) * 100);
 }

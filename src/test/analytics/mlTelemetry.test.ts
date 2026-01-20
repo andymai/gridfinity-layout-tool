@@ -3,6 +3,9 @@ import {
   resetMLSession,
   getBufferSize,
   forceFlush,
+  trackBinPlacement,
+  trackLabelUpdate,
+  trackBulkPlacement,
   trackLayoutSnapshot,
   trackQualitySignal,
   trackDrawerPurpose,
@@ -10,7 +13,9 @@ import {
   incrementEditCount,
   markEditActivity,
   getSessionContext,
+  cleanupMLTelemetry,
 } from '@/shared/analytics/mlTelemetry';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Layout } from '@/core/types';
 import { createDefaultLayout } from '@/core/constants';
 
@@ -22,6 +27,24 @@ vi.mock('@/core/store/settings', () => ({
         mlTelemetryEnabled: true,
       },
     })),
+  },
+}));
+
+// Mock the layout store for mlTracking tests
+vi.mock('@/core/store/layout', () => ({
+  useLayoutStore: {
+    getState: vi.fn(() => ({
+      layout: {
+        drawer: { width: 10, depth: 8, height: 12 },
+        bins: [],
+        layers: [{ id: 'layer-1', name: 'Layer 1', height: 6 }],
+        categories: [{ id: 'cat-1', name: 'Default', color: '#888888' }],
+        printBedSize: 256,
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+      },
+    })),
+    subscribe: vi.fn(() => () => {}),
   },
 }));
 
@@ -172,6 +195,128 @@ describe('mlTelemetry', () => {
     });
   });
 
+  describe('trackBinPlacement', () => {
+    it('buffers bin placement event', () => {
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      trackBinPlacement(bin, layout, 'draw');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('tracks session index incrementing', () => {
+      forceFlush();
+      resetMLSession();
+      const layout = createTestLayoutWithBins(5);
+      const bin1 = layout.bins[0];
+      const bin2 = layout.bins[1];
+      trackBinPlacement(bin1, layout, 'draw');
+      trackBinPlacement(bin2, layout, 'draw');
+      expect(getBufferSize()).toBe(2);
+    });
+  });
+
+  describe('trackLabelUpdate', () => {
+    it('buffers label update event', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      trackLabelUpdate(bin, 'old label', 'new label');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('skips when labels are the same', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      trackLabelUpdate(bin, 'same label', 'same label');
+      expect(getBufferSize()).toBe(0);
+    });
+  });
+
+  describe('trackBulkPlacement', () => {
+    it('buffers sampled events from bulk placement', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(20);
+      trackBulkPlacement(layout.bins, layout, 'fill');
+      // Samples up to 5 bins from larger sets
+      expect(getBufferSize()).toBeLessThanOrEqual(5);
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('handles empty array', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(0);
+      trackBulkPlacement([], layout, 'fill');
+      expect(getBufferSize()).toBe(0);
+    });
+  });
+
+  describe('cleanupMLTelemetry', () => {
+    it('cleans up without throwing', () => {
+      expect(() => cleanupMLTelemetry()).not.toThrow();
+    });
+  });
+
+  describe('mlTracking object', () => {
+    const testBin = {
+      id: 'test-bin',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      layerId: 'layer-1',
+      category: 'cat-1',
+      label: 'Test Bin',
+    };
+
+    it('trackPlacement tracks a single bin', () => {
+      forceFlush();
+      mlTracking.trackPlacement(testBin, 'draw');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('trackLabel tracks label updates', () => {
+      forceFlush();
+      mlTracking.trackLabel(testBin, 'old', 'new');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('trackBulk tracks multiple bins', () => {
+      forceFlush();
+      mlTracking.trackBulk([testBin], 'fill');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('trackSnapshot tracks layout snapshots', () => {
+      forceFlush();
+      mlTracking.trackSnapshot('save');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('trackQuality tracks quality signals', () => {
+      forceFlush();
+      mlTracking.trackQuality('shared');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('trackPurpose tracks drawer purpose', () => {
+      forceFlush();
+      mlTracking.trackPurpose('workshop');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('incrementEdit increments edit count', () => {
+      const before = getSessionContext().editCount;
+      mlTracking.incrementEdit();
+      expect(getSessionContext().editCount).toBe(before + 1);
+    });
+
+    it('markActivity marks edit activity', () => {
+      expect(() => mlTracking.markActivity()).not.toThrow();
+    });
+  });
+
   describe('module exports', () => {
     it('exports expected functions', async () => {
       const module = await import('@/shared/analytics/mlTelemetry');
@@ -190,6 +335,7 @@ describe('mlTelemetry', () => {
       expect(typeof module.resetMLSession).toBe('function');
       expect(typeof module.forceFlush).toBe('function');
       expect(typeof module.getBufferSize).toBe('function');
+      expect(typeof module.cleanupMLTelemetry).toBe('function');
     });
   });
 });

@@ -464,20 +464,32 @@ function isSubstantialLayout(layout: Layout): boolean {
   return assessLayoutQuality(layout) !== 'skip';
 }
 
+// Cleanup function references (for testing)
+let cleanupFunctions: (() => void)[] = [];
+
 /**
  * Initialize ML telemetry listeners.
  * Call once on app startup.
+ *
+ * @returns Cleanup function to remove event listeners (useful for testing)
  */
-export function initMLTelemetry(): void {
-  if (isInitialized) return;
-  if (typeof window === 'undefined') return;
+export function initMLTelemetry(): () => void {
+  if (isInitialized) {
+    // Return existing cleanup if already initialized
+    return () => cleanupMLTelemetry();
+  }
+  if (typeof window === 'undefined') {
+    return () => {};
+  }
 
   isInitialized = true;
+  cleanupFunctions = [];
 
   // Subscribe to layout store changes to track edit activity
   // This resets idle timer and increments edit count on local changes
+  let storeUnsubscribe: (() => void) | null = null;
   if (layoutStoreSubscribe) {
-    layoutStoreSubscribe((state: { lastEditSource: string | null }) => {
+    storeUnsubscribe = layoutStoreSubscribe((state: { lastEditSource: string | null }) => {
       // Track activity on every local edit
       // Each immer set() call triggers one subscription, so this counts each mutation
       if (state.lastEditSource === 'local') {
@@ -485,11 +497,14 @@ export function initMLTelemetry(): void {
         incrementEditCount();
       }
     });
+    if (storeUnsubscribe) {
+      cleanupFunctions.push(storeUnsubscribe);
+    }
   }
 
   // Flush on page hide (tab switch, close, navigation)
   // Also capture session_end snapshot
-  window.addEventListener('visibilitychange', () => {
+  const handleVisibilityChange = () => {
     if (document.visibilityState === 'hidden') {
       // Capture session_end snapshot before flushing
       if (layoutStoreGetter) {
@@ -500,16 +515,20 @@ export function initMLTelemetry(): void {
       }
       flush();
     }
-  });
+  };
+  window.addEventListener('visibilitychange', handleVisibilityChange);
+  cleanupFunctions.push(() => window.removeEventListener('visibilitychange', handleVisibilityChange));
 
   // Flush on page unload
   window.addEventListener('pagehide', flush);
+  cleanupFunctions.push(() => window.removeEventListener('pagehide', flush));
 
   // Also try beforeunload as fallback
   window.addEventListener('beforeunload', flush);
+  cleanupFunctions.push(() => window.removeEventListener('beforeunload', flush));
 
-  // Start idle detection (interval runs for page lifetime, no cleanup needed)
-  setInterval(() => {
+  // Start idle detection
+  const idleIntervalId = setInterval(() => {
     if (!isEnabled()) return;
 
     const timeSinceEdit = Date.now() - lastEditTime;
@@ -523,6 +542,25 @@ export function initMLTelemetry(): void {
       }
     }
   }, IDLE_CHECK_INTERVAL_MS);
+  cleanupFunctions.push(() => clearInterval(idleIntervalId));
+
+  return () => cleanupMLTelemetry();
+}
+
+/**
+ * Cleanup ML telemetry listeners.
+ * Call in tests or when module is unloaded.
+ */
+export function cleanupMLTelemetry(): void {
+  for (const cleanup of cleanupFunctions) {
+    try {
+      cleanup();
+    } catch {
+      // Ignore cleanup errors
+    }
+  }
+  cleanupFunctions = [];
+  isInitialized = false;
 }
 
 // ============================================
@@ -681,9 +719,24 @@ export function trackLabelUpdate(
 /**
  * Track multiple bins placed at once (e.g., from fill operation).
  *
+ * Uses stratified sampling to reduce telemetry volume while maintaining
+ * data quality. This approach is chosen over random sampling because:
+ *
+ * 1. **Reproducibility**: Same input produces same sample, making debugging easier
+ * 2. **Spatial coverage**: Evenly-spaced samples capture bins across the fill area
+ * 3. **Performance**: No need for random number generation
+ * 4. **Acceptable bias**: For fill operations, bins are typically uniform in size,
+ *    so regular sampling captures representative data. The key metric we care
+ *    about (bin sizes in fill operations) isn't affected by position sampling.
+ *
+ * For fill operations specifically, all bins are usually the same size, so any
+ * 5 bins provide equivalent information. For heterogeneous batches (e.g.,
+ * paste operations), stratified sampling ensures we get bins from different
+ * parts of the selection rather than clustering at the start.
+ *
  * @param bins - Array of bins that were placed
  * @param layout - Current layout state
- * @param method - How the bins were placed (usually 'fill')
+ * @param method - How the bins were placed (usually 'fill' or 'duplicate')
  */
 export function trackBulkPlacement(
   bins: Bin[],
@@ -693,9 +746,8 @@ export function trackBulkPlacement(
   if (!isEnabled()) return;
   if (bins.length === 0) return;
 
-  // For bulk operations, we track a sample rather than all events
-  // to avoid flooding the telemetry with 100+ events from a single fill.
-  // Use stratified sampling to get bins spread across the batch (not just first 5)
+  // Sample up to 5 bins, evenly distributed across the array
+  // This captures spatial diversity without flooding telemetry
   const sampleSize = Math.min(bins.length, 5);
   const stride = Math.max(1, Math.floor(bins.length / sampleSize));
   const sampledBins = bins.filter((_, i) => i % stride === 0).slice(0, sampleSize);

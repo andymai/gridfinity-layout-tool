@@ -55,7 +55,7 @@ function PrivacySection() {
                 Help improve suggestions
               </span>
               <p className="text-[10px] text-content-disabled mt-0.5">
-                Share anonymous usage patterns
+                Share bin sizes and placement patterns (no personal data)
               </p>
             </div>
             <Checkbox checked={mlTelemetryEnabled} variant="desktop" />

@@ -1,9 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   processLabel,
+  normalizeLabel,
   getCanonicalTerms,
   isKnownTerm,
   getTermDomain,
+  clearLabelCache,
   VOCAB_VERSION,
 } from '@/shared/analytics/labelVocabulary';
 
@@ -186,6 +188,68 @@ describe('labelVocabulary', () => {
     it('is defined', () => {
       expect(VOCAB_VERSION).toBeDefined();
       expect(typeof VOCAB_VERSION).toBe('string');
+    });
+  });
+
+  describe('normalizeLabel (deprecated)', () => {
+    it('delegates to processLabel', () => {
+      const result = normalizeLabel('screwdriver');
+      const expected = processLabel('screwdriver');
+      expect(result.normalized).toBe(expected.normalized);
+      expect(result.domain).toBe(expected.domain);
+    });
+  });
+
+  describe('label cache', () => {
+    beforeEach(() => {
+      clearLabelCache();
+    });
+
+    it('clearLabelCache clears the cache', () => {
+      // Process a label to populate cache
+      const result1 = processLabel('screwdriver');
+      expect(result1.normalized).toBe('screwdriver');
+
+      // Clear the cache
+      clearLabelCache();
+
+      // Should still work after cache clear (cache is rebuilt)
+      const result2 = processLabel('screwdriver');
+      expect(result2.normalized).toBe('screwdriver');
+      expect(result2.hash).toBe(result1.hash);
+    });
+
+    it('cached results are identical to original', () => {
+      // First call populates cache
+      const result1 = processLabel('my phillips screwdriver');
+
+      // Second call should return cached result
+      const result2 = processLabel('my phillips screwdriver');
+
+      expect(result2).toBe(result1); // Same object reference (cached)
+      expect(result2.normalized).toBe(result1.normalized);
+      expect(result2.hash).toBe(result1.hash);
+      expect(result2.confidence).toBe(result1.confidence);
+    });
+
+    it('caches unknown labels', () => {
+      const result1 = processLabel('totally unknown xyz123');
+      const result2 = processLabel('totally unknown xyz123');
+
+      expect(result2).toBe(result1); // Same object reference (cached)
+      expect(result2.normalized).toBeNull();
+    });
+
+    it('handles many different labels without issue', () => {
+      // Process many unique labels to test cache eviction
+      for (let i = 0; i < 600; i++) {
+        const result = processLabel(`unique label ${i}`);
+        expect(result.hash).toBeTruthy();
+      }
+
+      // Cache should still work after eviction
+      const result = processLabel('screwdriver');
+      expect(result.normalized).toBe('screwdriver');
     });
   });
 });

@@ -751,6 +751,26 @@ for (const [canonical, aliases] of Object.entries(VOCABULARY)) {
   }
 }
 
+// ============================================
+// LABEL PROCESSING CACHE
+// ============================================
+
+/**
+ * Cache for processLabel results.
+ * Avoids repeated expensive partial matching for the same labels.
+ * Max size prevents unbounded memory growth.
+ */
+const LABEL_CACHE_MAX_SIZE = 500;
+const labelCache = new Map<string, LabelData>();
+
+/**
+ * Clear the label cache.
+ * Useful for testing or when vocabulary changes.
+ */
+export function clearLabelCache(): void {
+  labelCache.clear();
+}
+
 /**
  * Simple hash function for labels.
  * Returns first 8 chars of a basic hash - enough for grouping, not reversible.
@@ -809,6 +829,9 @@ export interface LabelData {
  * - Any domain (makeup, hardware, fishing, etc.)
  * - Specialized terminology (M3x8 SHCS, MAC Ruby Woo, etc.)
  *
+ * Results are cached to avoid repeated expensive partial matching.
+ * Cache size is bounded to prevent unbounded memory growth.
+ *
  * @param raw - Raw user input
  * @returns Label data with hash (always) and optional enrichment
  *
@@ -829,32 +852,45 @@ export interface LabelData {
  */
 export function processLabel(raw: string): LabelData {
   const cleaned = raw.toLowerCase().trim();
+
+  // Check cache first
+  const cached = labelCache.get(cleaned);
+  if (cached) {
+    return cached;
+  }
+
   const hash = simpleHash(cleaned);
 
   if (!cleaned) {
-    return { hash, normalized: null, domain: null, confidence: 0 };
+    const result = { hash, normalized: null, domain: null, confidence: 0 };
+    cacheResult(cleaned, result);
+    return result;
   }
 
   // 1. Exact match
   const exactMatch = ALIAS_MAP.get(cleaned);
   if (exactMatch) {
-    return {
+    const result = {
       hash,
       normalized: exactMatch,
       domain: TERM_DOMAINS[exactMatch] ?? null,
       confidence: 1.0,
     };
+    cacheResult(cleaned, result);
+    return result;
   }
 
   // 2. Partial match - label contains an alias (e.g., "my phillips screwdriver")
   for (const [alias, canonical] of ALIAS_MAP) {
     if (alias.length >= 3 && cleaned.includes(alias)) {
-      return {
+      const result = {
         hash,
         normalized: canonical,
         domain: TERM_DOMAINS[canonical] ?? null,
         confidence: 0.8,
       };
+      cacheResult(cleaned, result);
+      return result;
     }
   }
 
@@ -862,18 +898,42 @@ export function processLabel(raw: string): LabelData {
   if (cleaned.length >= 4) {
     for (const [alias, canonical] of ALIAS_MAP) {
       if (alias.includes(cleaned)) {
-        return {
+        const result = {
           hash,
           normalized: canonical,
           domain: TERM_DOMAINS[canonical] ?? null,
           confidence: 0.7,
         };
+        cacheResult(cleaned, result);
+        return result;
       }
     }
   }
 
   // 4. Unknown label - hash is still valid for grouping!
-  return { hash, normalized: null, domain: null, confidence: 0 };
+  const result: LabelData = { hash, normalized: null, domain: null, confidence: 0 };
+  cacheResult(cleaned, result);
+  return result;
+}
+
+/**
+ * Add a result to the cache, evicting oldest entries if full.
+ * Uses simple FIFO eviction for simplicity.
+ */
+function cacheResult(key: string, value: LabelData): void {
+  // Evict oldest entries if cache is full
+  if (labelCache.size >= LABEL_CACHE_MAX_SIZE) {
+    // Delete first 10% of entries (FIFO eviction)
+    const toDelete = Math.ceil(LABEL_CACHE_MAX_SIZE * 0.1);
+    const keys = labelCache.keys();
+    for (let i = 0; i < toDelete; i++) {
+      const next = keys.next();
+      if (!next.done) {
+        labelCache.delete(next.value);
+      }
+    }
+  }
+  labelCache.set(key, value);
 }
 
 /**

@@ -50,7 +50,7 @@ function MobilePrivacySection() {
           <span className={`text-sm ${mlTelemetryEnabled ? 'text-content' : 'text-content-secondary'}`}>
             Help improve suggestions
           </span>
-          <p className="text-xs text-content-tertiary">Share anonymous usage patterns</p>
+          <p className="text-xs text-content-tertiary">Share bin sizes and placement patterns (no personal data)</p>
         </div>
         <Checkbox checked={mlTelemetryEnabled} variant="mobile" />
       </div>
