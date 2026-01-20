@@ -128,7 +128,7 @@ body {
   background-color: var(--color-accent);
   text-decoration: none;
   border-radius: 6px;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .content-nav__cta:hover {
@@ -250,7 +250,7 @@ body {
   color: var(--color-content-secondary);
 }
 
-.content-body tr:hover td {
+.content-body tbody tr:hover td {
   background-color: var(--color-surface);
 }
 
@@ -385,5 +385,10 @@ body {
 
   .content-nav__logo span {
     display: none;
+  }
+
+  .content-body table {
+    display: block;
+    overflow-x: auto;
   }
 }

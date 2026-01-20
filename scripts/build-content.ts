@@ -126,7 +126,7 @@ ${JSON.stringify(structuredData, null, 2)}
   <a href="#main-content" class="skip-link">Skip to content</a>
 
   <!-- Navigation -->
-  <nav class="content-nav">
+  <nav class="content-nav" aria-label="Main navigation">
     <a href="/" class="content-nav__logo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -200,6 +200,11 @@ function configureMarked(): void {
         if (text.startsWith('CTA:')) {
           const ctaText = text.replace('CTA:', '').trim();
           return `<a href="${href}" class="content-cta">${ctaText} &rarr;</a>`;
+        }
+        // External links get target="_blank" and rel="noopener"
+        const isExternal = href.startsWith('http://') || href.startsWith('https://');
+        if (isExternal) {
+          return `<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
         }
         return `<a href="${href}">${text}</a>`;
       },
