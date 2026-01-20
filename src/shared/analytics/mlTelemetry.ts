@@ -639,12 +639,26 @@ const MAX_BIN_RECORDS = 500;
  * Call this after successful bin placement.
  */
 export function recordBinCreation(binId: string, method: PlacementMethod, size: string): void {
-  // Prune old records if needed
+  // Prune old records if at or above capacity
   if (binCreationRecords.size >= MAX_BIN_RECORDS) {
     const now = Date.now();
+
+    // First, remove records that are clearly too old
     for (const [id, record] of binCreationRecords) {
       if (now - record.createdAt > QUICK_CORRECTION_THRESHOLD_MS * 2) {
         binCreationRecords.delete(id);
+      }
+    }
+
+    // If still at capacity, force-remove oldest records to make room
+    if (binCreationRecords.size >= MAX_BIN_RECORDS) {
+      const entries = Array.from(binCreationRecords.entries());
+      entries.sort((a, b) => a[1].createdAt - b[1].createdAt);
+
+      // Remove oldest entries to get below capacity
+      const toDelete = entries.length - MAX_BIN_RECORDS + 1;
+      for (let i = 0; i < toDelete; i++) {
+        binCreationRecords.delete(entries[i][0]);
       }
     }
   }

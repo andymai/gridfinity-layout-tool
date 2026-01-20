@@ -735,8 +735,9 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
     return (
       typeof e.rejection_reason === 'string' &&
       VALID_REJECTION_REASONS.has(e.rejection_reason) &&
+      // intended_size is 2D format (WxD) since height isn't known for rejected placements
       (e.intended_size === null ||
-        (typeof e.intended_size === 'string' && VALID_BIN_SIZE_REGEX.test(e.intended_size))) &&
+        (typeof e.intended_size === 'string' && VALID_FILL_SIZE_REGEX.test(e.intended_size))) &&
       (e.intended_position === null ||
         (typeof e.intended_position === 'string' && VALID_POSITION_REGEX.test(e.intended_position))) &&
       typeof e.layer_index === 'number' &&
@@ -1234,10 +1235,10 @@ function aggregateBinRotation(event: BinRotatedEvent, inc: Increments): void {
  * Tracks why users abandon draw/paint interactions.
  *
  * Redis keys:
- * - ml:rejections          → Total rejection count by reason
- * - ml:reject_modes        → Rejection count by draw/paint mode
- * - ml:reject_sizes        → Intended sizes that were rejected
- * - ml:neg:rejected_sizes  → Negative signal: sizes users tried but rejected
+ * - ml:rejections                     → Total rejection count by reason
+ * - ml:reject_modes                   → Rejection count by draw/paint mode
+ * - ml:reject_sizes                   → Intended sizes that were rejected (negative signal)
+ * - ml:neg:reject_by_drawer:{size}    → Rejected sizes by drawer size (negative signal)
  */
 function aggregatePlacementRejection(event: PlacementRejectedEvent, inc: Increments): void {
   const { rejection_reason, intended_size, mode, drawer_size } = event;
@@ -1270,9 +1271,10 @@ function aggregatePlacementRejection(event: PlacementRejectedEvent, inc: Increme
  * Tracks what actions users regret and how quickly.
  *
  * Redis keys:
- * - ml:undos              → Total undo count by action type
+ * - ml:undos              → Total undo count by action type (negative signal)
  * - ml:undo_timing        → Undo timing buckets (immediate, quick, delayed)
- * - ml:neg:undo_actions   → Negative signal: which actions get undone most
+ * - ml:undo_action_timing → Action + timing combos (e.g., placement_immediate)
+ * - ml:undo_scale         → Distribution of undos by bins affected (single/few/many/bulk)
  */
 function aggregateUndo(event: UndoEvent, inc: Increments): void {
   const { action_undone, bins_affected, time_since_action_ms } = event;
@@ -1316,10 +1318,11 @@ function aggregateUndo(event: UndoEvent, inc: Increments): void {
  * This is the strongest negative signal - user explicitly rejected the result.
  *
  * Redis keys:
- * - ml:quick_corrections          → Total quick correction count by type
- * - ml:neg:corrected_sizes        → Sizes that get quickly corrected (BAD sizes)
- * - ml:neg:corrected_by_method    → Which placement methods produce corrections
- * - ml:correction_timing          → How fast corrections happen
+ * - ml:quick_corrections                 → Total quick correction count by type
+ * - ml:neg:corrected_sizes               → Sizes that get quickly corrected (BAD sizes)
+ * - ml:neg:correct_by_method:{method}    → Which placement methods produce corrections
+ * - ml:correction_timing                 → How fast corrections happen
+ * - ml:neg:resize_correct:{size}         → What users resize corrected bins to
  */
 function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments): void {
   const { correction_type, original_size, new_size, placement_method, time_to_correction_ms } = event;

@@ -67,8 +67,9 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 
     useLayoutStore.setState({ layout: previous });
 
-    // Track undo for ML telemetry (captures before/after layouts)
-    mlTracking.trackUndoOp(current, previous);
+    // Track undo for ML telemetry
+    // previousLayout = state we're reverting TO, currentLayout = state we had BEFORE undo
+    mlTracking.trackUndoOp(previous, current);
   },
 
   redo: () => {
@@ -109,9 +110,9 @@ export function useUndoableAction() {
 
   const execute = useCallback((action: () => void) => {
     push(cloneLayout(layoutRef.current));
-    // Record timestamp for undo timing (how fast did user undo?)
-    mlTracking.recordAction();
     action();
+    // Record timestamp AFTER action executes for accurate undo timing
+    mlTracking.recordAction();
   }, [push]); // Only depends on push, which is stable from Zustand
 
   return { execute };
