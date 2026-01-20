@@ -139,6 +139,8 @@ export function useStagingDragInteraction(
       const bin = layout.bins.find((b) => b.id === interaction.binId);
       if (bin) {
         const { x, y } = interaction.currentCoord;
+        const fromLayerId = bin.layerId; // Should be STAGING_ID
+
         execute(() => {
           updateBin(interaction.binId, {
             x,
@@ -153,6 +155,8 @@ export function useStagingDragInteraction(
           { ...bin, x, y, layerId: activeLayerId },
           'staging'
         );
+        // Also track layer movement (from staging to active layer)
+        mlTracking.trackLayerMove(bin, fromLayerId, activeLayerId, 'drag', 1);
       }
     }
     // If invalid or no position, bin stays in staging (no action needed)

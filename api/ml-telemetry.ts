@@ -175,6 +175,41 @@ interface BinMovedEvent {
   method: 'drag' | 'nudge';
 }
 
+interface DrawerResizedEvent {
+  type: 'drawer_resized';
+  old_size: string;
+  new_size: string;
+  dimensions_changed: ('width' | 'depth' | 'height')[];
+  bins_staged: number;
+  fill_pct: number;
+}
+
+interface FillOperationEvent {
+  type: 'fill_operation';
+  method: 'uniform' | 'gaps';
+  fill_size: string | null;
+  bins_created: number;
+  layer_index: number;
+  fill_pct: number;
+  drawer_size: string;
+}
+
+interface LayerMoveEvent {
+  type: 'layer_move';
+  bin_size: string;
+  from_layer_index: number;
+  to_layer_index: number;
+  batch_size: number;
+  method: 'inspector' | 'drag' | 'keyboard' | 'context_menu';
+}
+
+interface BinRotatedEvent {
+  type: 'bin_rotated';
+  old_size: string;
+  new_size: string;
+  batch_size: number;
+}
+
 type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
@@ -184,7 +219,11 @@ type MLTelemetryEvent =
   | CategoryChangeEvent
   | BinResizeEvent
   | BinDeletedEvent
-  | BinMovedEvent;
+  | BinMovedEvent
+  | DrawerResizedEvent
+  | FillOperationEvent
+  | LayerMoveEvent
+  | BinRotatedEvent;
 
 // ============================================
 // REDIS CONNECTION
@@ -309,6 +348,9 @@ const VALID_QUALITY_TIERS = new Set(['high', 'medium', 'low', 'skip']);
 const VALID_DELETE_METHODS = new Set(['key', 'context_menu', 'bulk', 'inspector']);
 const VALID_MOVE_METHODS = new Set(['drag', 'nudge']);
 const VALID_POSITION_REGEX = /^\d+(\.\d+)?,\d+(\.\d+)?$/; // e.g., "3,5" or "3.5,2.5"
+const VALID_FILL_METHODS = new Set(['uniform', 'gaps']);
+const VALID_LAYER_MOVE_METHODS = new Set(['inspector', 'drag', 'keyboard', 'context_menu']);
+const VALID_FILL_SIZE_REGEX = /^\d+(\.\d+)?x\d+(\.\d+)?$/; // WxD (no height)
 
 /**
  * Validate nullable string field used in Redis keys.
@@ -552,6 +594,75 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       e.batch_size < 1000 &&
       typeof e.method === 'string' &&
       VALID_MOVE_METHODS.has(e.method)
+    );
+  }
+
+  if (e.type === 'drawer_resized') {
+    const validDimensions = Array.isArray(e.dimensions_changed) &&
+      e.dimensions_changed.length > 0 &&
+      e.dimensions_changed.every((d: unknown) => d === 'width' || d === 'depth' || d === 'height');
+    return (
+      typeof e.old_size === 'string' &&
+      VALID_DRAWER_SIZE_REGEX.test(e.old_size) &&
+      typeof e.new_size === 'string' &&
+      VALID_DRAWER_SIZE_REGEX.test(e.new_size) &&
+      validDimensions &&
+      typeof e.bins_staged === 'number' &&
+      e.bins_staged >= 0 &&
+      e.bins_staged < 10000 &&
+      typeof e.fill_pct === 'number' &&
+      e.fill_pct >= 0 &&
+      e.fill_pct <= 100
+    );
+  }
+
+  if (e.type === 'fill_operation') {
+    return (
+      typeof e.method === 'string' &&
+      VALID_FILL_METHODS.has(e.method) &&
+      (e.fill_size === null ||
+        (typeof e.fill_size === 'string' && VALID_FILL_SIZE_REGEX.test(e.fill_size))) &&
+      typeof e.bins_created === 'number' &&
+      e.bins_created > 0 &&
+      e.bins_created < 10000 &&
+      typeof e.layer_index === 'number' &&
+      e.layer_index >= 0 &&
+      e.layer_index <= 20 &&
+      typeof e.fill_pct === 'number' &&
+      e.fill_pct >= 0 &&
+      e.fill_pct <= 100 &&
+      typeof e.drawer_size === 'string' &&
+      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size)
+    );
+  }
+
+  if (e.type === 'layer_move') {
+    return (
+      typeof e.bin_size === 'string' &&
+      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      typeof e.from_layer_index === 'number' &&
+      e.from_layer_index >= -1 && // -1 = staging
+      e.from_layer_index <= 20 &&
+      typeof e.to_layer_index === 'number' &&
+      e.to_layer_index >= -1 && // -1 = staging
+      e.to_layer_index <= 20 &&
+      typeof e.batch_size === 'number' &&
+      e.batch_size > 0 &&
+      e.batch_size < 1000 &&
+      typeof e.method === 'string' &&
+      VALID_LAYER_MOVE_METHODS.has(e.method)
+    );
+  }
+
+  if (e.type === 'bin_rotated') {
+    return (
+      typeof e.old_size === 'string' &&
+      VALID_BIN_SIZE_REGEX.test(e.old_size) &&
+      typeof e.new_size === 'string' &&
+      VALID_BIN_SIZE_REGEX.test(e.new_size) &&
+      typeof e.batch_size === 'number' &&
+      e.batch_size > 0 &&
+      e.batch_size < 1000
     );
   }
 
@@ -881,6 +992,120 @@ function aggregateBinMove(event: BinMovedEvent, inc: Increments): void {
   inc['ml:moves']['total'] = (inc['ml:moves']['total'] || 0) + 1;
 }
 
+function aggregateDrawerResize(event: DrawerResizedEvent, inc: Increments): void {
+  const { old_size, new_size, dimensions_changed, bins_staged } = event;
+
+  // Track resize transitions (what drawer sizes users resize to)
+  const drawerResizeKey = `ml:drawer_resize:${old_size}`;
+  inc[drawerResizeKey] = inc[drawerResizeKey] || {};
+  inc[drawerResizeKey][new_size] = (inc[drawerResizeKey][new_size] || 0) + 1;
+
+  // Track which dimensions are changed most often
+  for (const dim of dimensions_changed) {
+    inc['ml:drawer_resize_dims'] = inc['ml:drawer_resize_dims'] || {};
+    inc['ml:drawer_resize_dims'][dim] = (inc['ml:drawer_resize_dims'][dim] || 0) + 1;
+  }
+
+  // Track how often bins are staged due to resize
+  if (bins_staged > 0) {
+    inc['ml:drawer_resize_staged'] = inc['ml:drawer_resize_staged'] || {};
+    inc['ml:drawer_resize_staged']['with_bins'] = (inc['ml:drawer_resize_staged']['with_bins'] || 0) + 1;
+  } else {
+    inc['ml:drawer_resize_staged'] = inc['ml:drawer_resize_staged'] || {};
+    inc['ml:drawer_resize_staged']['no_bins'] = (inc['ml:drawer_resize_staged']['no_bins'] || 0) + 1;
+  }
+
+  // Track total drawer resizes
+  inc['ml:drawer_resizes'] = inc['ml:drawer_resizes'] || {};
+  inc['ml:drawer_resizes']['total'] = (inc['ml:drawer_resizes']['total'] || 0) + 1;
+
+  // Track resulting drawer sizes (what sizes users resize to)
+  inc['ml:drawer_resize_results'] = inc['ml:drawer_resize_results'] || {};
+  inc['ml:drawer_resize_results'][new_size] = (inc['ml:drawer_resize_results'][new_size] || 0) + 1;
+}
+
+function aggregateFillOperation(event: FillOperationEvent, inc: Increments): void {
+  const { method, fill_size, bins_created, drawer_size } = event;
+
+  // Track fill method distribution (uniform vs gaps)
+  inc['ml:fill_methods'] = inc['ml:fill_methods'] || {};
+  inc['ml:fill_methods'][method] = (inc['ml:fill_methods'][method] || 0) + 1;
+
+  // Track which sizes users fill with (for uniform fill - strong preference signal!)
+  if (fill_size) {
+    inc['ml:fill_sizes'] = inc['ml:fill_sizes'] || {};
+    inc['ml:fill_sizes'][fill_size] = (inc['ml:fill_sizes'][fill_size] || 0) + 1;
+
+    // Track fill size by drawer size (size preferences depend on container)
+    const fillByDrawerKey = `ml:fill_by_drawer:${drawer_size}`;
+    inc[fillByDrawerKey] = inc[fillByDrawerKey] || {};
+    inc[fillByDrawerKey][fill_size] = (inc[fillByDrawerKey][fill_size] || 0) + 1;
+  }
+
+  // Track bins created per fill (helps understand fill efficiency)
+  const binsBucket = bins_created <= 10 ? 'small' :
+    bins_created <= 50 ? 'medium' :
+    bins_created <= 100 ? 'large' : 'xlarge';
+  inc['ml:fill_bins'] = inc['ml:fill_bins'] || {};
+  inc['ml:fill_bins'][binsBucket] = (inc['ml:fill_bins'][binsBucket] || 0) + 1;
+
+  // Track total fill operations
+  inc['ml:fills'] = inc['ml:fills'] || {};
+  inc['ml:fills']['total'] = (inc['ml:fills']['total'] || 0) + 1;
+}
+
+function aggregateLayerMove(event: LayerMoveEvent, inc: Increments): void {
+  const { bin_size, from_layer_index, to_layer_index, method } = event;
+
+  // Track layer movement patterns (which layers users move bins between)
+  const fromKey = from_layer_index === -1 ? 'staging' : `layer${from_layer_index}`;
+  const toKey = to_layer_index === -1 ? 'staging' : `layer${to_layer_index}`;
+
+  // Track from→to transitions
+  const layerTransKey = `ml:layer_trans:${fromKey}`;
+  inc[layerTransKey] = inc[layerTransKey] || {};
+  inc[layerTransKey][toKey] = (inc[layerTransKey][toKey] || 0) + 1;
+
+  // Track sizes moved between layers
+  inc['ml:layer_moved_sizes'] = inc['ml:layer_moved_sizes'] || {};
+  inc['ml:layer_moved_sizes'][bin_size] = (inc['ml:layer_moved_sizes'][bin_size] || 0) + 1;
+
+  // Track layer move method distribution
+  inc['ml:layer_move_methods'] = inc['ml:layer_move_methods'] || {};
+  inc['ml:layer_move_methods'][method] = (inc['ml:layer_move_methods'][method] || 0) + 1;
+
+  // Track staging in/out specifically (important for understanding stash usage)
+  if (from_layer_index === -1) {
+    inc['ml:staging_out'] = inc['ml:staging_out'] || {};
+    inc['ml:staging_out'][toKey] = (inc['ml:staging_out'][toKey] || 0) + 1;
+  }
+  if (to_layer_index === -1) {
+    inc['ml:staging_in'] = inc['ml:staging_in'] || {};
+    inc['ml:staging_in'][fromKey] = (inc['ml:staging_in'][fromKey] || 0) + 1;
+  }
+
+  // Track total layer moves
+  inc['ml:layer_moves'] = inc['ml:layer_moves'] || {};
+  inc['ml:layer_moves']['total'] = (inc['ml:layer_moves']['total'] || 0) + 1;
+}
+
+function aggregateBinRotation(event: BinRotatedEvent, inc: Increments): void {
+  const { old_size, new_size } = event;
+
+  // Track rotation transitions (shows which sizes users rotate)
+  const rotateKey = `ml:rotate:${old_size}`;
+  inc[rotateKey] = inc[rotateKey] || {};
+  inc[rotateKey][new_size] = (inc[rotateKey][new_size] || 0) + 1;
+
+  // Track total rotations
+  inc['ml:rotations'] = inc['ml:rotations'] || {};
+  inc['ml:rotations']['total'] = (inc['ml:rotations']['total'] || 0) + 1;
+
+  // Track rotated sizes (which sizes users rotate most)
+  inc['ml:rotated_sizes'] = inc['ml:rotated_sizes'] || {};
+  inc['ml:rotated_sizes'][old_size] = (inc['ml:rotated_sizes'][old_size] || 0) + 1;
+}
+
 // ============================================
 // HANDLER
 // ============================================
@@ -963,6 +1188,18 @@ export default async function handler(
         break;
       case 'bin_moved':
         aggregateBinMove(event, increments);
+        break;
+      case 'drawer_resized':
+        aggregateDrawerResize(event, increments);
+        break;
+      case 'fill_operation':
+        aggregateFillOperation(event, increments);
+        break;
+      case 'layer_move':
+        aggregateLayerMove(event, increments);
+        break;
+      case 'bin_rotated':
+        aggregateBinRotation(event, increments);
         break;
     }
   }

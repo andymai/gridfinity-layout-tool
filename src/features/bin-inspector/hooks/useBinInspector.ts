@@ -354,12 +354,18 @@ export function useBinInspector(): UseBinInspectorReturn {
         return;
       }
 
+      // Track layer move BEFORE executing (capture original layer)
+      const fromLayerId = bin.layerId;
+
       execute(() => {
         updateBin(bin.id, {
           layerId: targetLayerId,
           // Keep bin's original height - don't auto-adjust to layer minimum
         });
       });
+
+      // Track layer movement after execution
+      mlTracking.trackLayerMove(bin, fromLayerId, targetLayerId, 'inspector', 1);
 
       addToast(`Moved to ${targetLayer.name}`, 'success');
     },
@@ -404,6 +410,10 @@ export function useBinInspector(): UseBinInspectorReturn {
         return;
       }
 
+      // Capture original layer IDs for tracking (use first bin as representative)
+      const firstBin = movable[0];
+      const fromLayerId = firstBin.layerId;
+
       execute(() => {
         for (const b of movable) {
           updateBin(b.id, {
@@ -412,6 +422,9 @@ export function useBinInspector(): UseBinInspectorReturn {
           });
         }
       });
+
+      // Track layer movement after execution
+      mlTracking.trackLayerMove(firstBin, fromLayerId, targetLayerId, 'inspector', movable.length);
 
       if (blocked.length > 0) {
         addToast(`Moved ${movable.length} of ${binsToMove.length} bins (${blocked.length} blocked)`, 'info');
@@ -484,6 +497,9 @@ export function useBinInspector(): UseBinInspectorReturn {
       addToast(result.message, 'error');
       return false;
     }
+
+    // Track rotation BEFORE executing (capture original dimensions)
+    mlTracking.trackRotation(bin, 1);
 
     // Rotation is valid, perform it
     execute(() => {
