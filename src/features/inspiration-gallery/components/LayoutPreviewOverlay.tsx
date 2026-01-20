@@ -1,14 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { useResponsive } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
 import { LayoutThumbnailWithLabels } from './LayoutThumbnailWithLabels';
 import { THEME_CONFIG, FEATURE_CONFIG } from '../types';
+import { INSPIRATION_LAYOUTS } from '../data/inspirationLayouts';
 import type { InspirationLayout } from '../types';
 
 interface LayoutPreviewOverlayProps {
   layout: InspirationLayout;
   onClose: () => void;
   onUseLayout: () => void;
+  onSelectRelated?: (layout: InspirationLayout) => void;
   isImporting: boolean;
 }
 
@@ -19,6 +21,7 @@ export function LayoutPreviewOverlay({
   layout,
   onClose,
   onUseLayout,
+  onSelectRelated,
   isImporting,
 }: LayoutPreviewOverlayProps) {
   const { isMobile } = useResponsive();
@@ -37,6 +40,13 @@ export function LayoutPreviewOverlay({
     metrics,
     layout: layoutData,
   } = layout;
+
+  // Find related layouts (same theme, excluding current)
+  const relatedLayouts = useMemo(() => {
+    return INSPIRATION_LAYOUTS
+      .filter((l) => l.theme === theme && l.id !== layout.id)
+      .slice(0, 3);
+  }, [theme, layout.id]);
 
   // Get current drawer size for comparison
   const currentDrawer = useLayoutStore((state) => state.layout.drawer);
@@ -125,20 +135,13 @@ export function LayoutPreviewOverlay({
               realDepth={realDepth}
             />
 
-            {/* Metrics */}
+            {/* Metrics - streamlined, no redundant drawer size */}
             <div>
               <h3 className="text-sm font-medium text-content mb-3">Layout Details</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <MetricCard
-                  label="Drawer Size"
-                  value={`${metrics.drawerSize.width}×${metrics.drawerSize.depth}`}
-                  subtext={`${realWidth}×${realDepth}mm`}
-                />
-                <MetricCard label="Drawer Height" value={`${metrics.drawerSize.height}u`} />
-                <MetricCard label="Total Bins" value={metrics.binCount.toString()} />
+              <div className="grid grid-cols-3 gap-2">
+                <MetricCard label="Bins" value={metrics.binCount.toString()} />
                 <MetricCard label="Layers" value={metrics.layerCount.toString()} />
                 <MetricCard label="Categories" value={metrics.categoryCount.toString()} />
-                <MetricCard label="Labeled Bins" value={labeledBins.length.toString()} />
               </div>
             </div>
 
@@ -181,6 +184,31 @@ export function LayoutPreviewOverlay({
                 </div>
               </div>
             )}
+
+            {/* Related layouts */}
+            {relatedLayouts.length > 0 && onSelectRelated && (
+              <div>
+                <h3 className="text-sm font-medium text-content mb-2">More {THEME_CONFIG[theme].label}</h3>
+                <div className="flex gap-2">
+                  {relatedLayouts.map((related) => (
+                    <button
+                      key={related.id}
+                      onClick={() => onSelectRelated(related)}
+                      className="flex-1 p-2 rounded-lg bg-surface hover:bg-surface-hover border border-stroke-subtle hover:border-stroke transition-colors text-left"
+                    >
+                      <div className="aspect-square bg-surface-secondary rounded mb-1.5 flex items-center justify-center overflow-hidden">
+                        <LayoutThumbnailWithLabels
+                          layout={related.layout}
+                          size={60}
+                        />
+                      </div>
+                      <div className="text-[10px] font-medium text-content truncate">{related.name}</div>
+                      <div className="text-[9px] text-content-tertiary">{related.metrics.binCount} bins</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -208,10 +236,10 @@ export function LayoutPreviewOverlay({
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    Creating...
+                    Adding...
                   </>
                 ) : (
-                  'Use This Layout'
+                  'Add to My Layouts'
                 )}
               </button>
             </div>
