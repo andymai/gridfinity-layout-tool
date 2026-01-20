@@ -85,6 +85,8 @@
       "source": "/ph/:path(.*)",
       "destination": "https://us.i.posthog.com/:path"
     },
+    { "source": "/what-is-gridfinity", "destination": "/what-is-gridfinity/index.html" },
+    { "source": "/guide", "destination": "/guide/index.html" },
     { "source": "/s/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/l/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/l/:id([a-zA-Z0-9]{12})/:slug*", "destination": "/" },
