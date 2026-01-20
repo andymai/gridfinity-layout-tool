@@ -132,9 +132,9 @@ Don't plan your entire workshop on day one. Do one drawer, live with it, learn w
 
 For a tool drawer, arrange items in the order you use them. For hardware, group by project type or size.
 
-### Print Bases Last
+### Print Bins First
 
-Print a few bins first to test fit and quality. Once you're confident, print the base plates. They use more filament and take longer.
+Print a few bins first to test fit and quality. Once you're confident in your printer settings, print the base plates.
 
 ## Common Layout Mistakes
 

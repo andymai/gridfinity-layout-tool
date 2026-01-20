@@ -21,7 +21,7 @@ Base plates are the foundation. They sit in your drawer and provide the grid pat
 
 ### Bins
 
-Bins drop onto the bases and hold your stuff. They come in different footprints (1×1, 2×1, 3×2, etc.) and heights measured in "units" (U). Each height unit is 7mm, so a 3U bin has 21mm of internal storage height (plus a few mm for the base that sits in the grid).
+Bins drop onto the bases and hold your stuff. They come in different footprints (1×1, 2×1, 3×2, etc.) and heights measured in "units" (U). Each height unit is 7mm, so a 3U bin provides about 21mm of usable storage height.
 
 ### The Magic of Modularity
 
@@ -54,7 +54,7 @@ Thousands of free STL files are available on:
 
 ### It Just Works
 
-The weighted design means bins stay put but can be easily rearranged. No glue, no screws, no fuss.
+The profiled base of each bin mates with the baseplate's raised grid, so bins stay put but can be easily rearranged. No glue, no screws, no fuss.
 
 ## Getting Started with Gridfinity
 
@@ -76,7 +76,7 @@ No. Standard PLA works great. Some people use PETG for durability or ASA for hea
 
 ### How long does it take to print?
 
-A typical 2×2 bin takes 1-2 hours. Base plates are faster. You can print overnight and wake up to a finished organizer.
+A typical 2×2 bin takes 1-2 hours depending on height. You can print overnight and wake up to a finished organizer.
 
 ### Can I use Gridfinity without a 3D printer?
 
