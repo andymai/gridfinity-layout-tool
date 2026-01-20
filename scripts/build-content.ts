@@ -7,12 +7,16 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { marked } from 'marked';
 import matter from 'gray-matter';
 
 const CONTENT_DIR = path.join(process.cwd(), 'content');
 const OUTPUT_DIR = path.join(process.cwd(), 'public');
 const SITE_URL = 'https://gridfinitylayouttool.com';
+
+// Will be set during build after hashing the CSS
+let cssFilename = 'content.css';
 
 interface Frontmatter {
   title: string;
@@ -112,7 +116,7 @@ ${safeJsonLd(structuredData)}
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/content.css">
+  <link rel="stylesheet" href="/${cssFilename}">
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
@@ -267,6 +271,36 @@ function processFile(filePath: string): void {
 }
 
 /**
+ * Hash the CSS file and copy it with a content-based filename for cache busting
+ */
+function processCss(): void {
+  const cssSourcePath = path.join(OUTPUT_DIR, 'content.css');
+
+  if (!fs.existsSync(cssSourcePath)) {
+    console.error('content.css not found in public/');
+    process.exit(1);
+  }
+
+  const cssContent = fs.readFileSync(cssSourcePath, 'utf-8');
+  const hash = crypto.createHash('md5').update(cssContent).digest('hex').slice(0, 8);
+  cssFilename = `content.${hash}.css`;
+
+  const cssDestPath = path.join(OUTPUT_DIR, cssFilename);
+
+  // Remove old hashed CSS files
+  const existingFiles = fs.readdirSync(OUTPUT_DIR);
+  for (const file of existingFiles) {
+    if (file.startsWith('content.') && file.endsWith('.css') && file !== 'content.css') {
+      fs.unlinkSync(path.join(OUTPUT_DIR, file));
+    }
+  }
+
+  // Copy CSS with hashed filename
+  fs.copyFileSync(cssSourcePath, cssDestPath);
+  console.log(`✓ Generated ${cssFilename}`);
+}
+
+/**
  * Main build function
  */
 function build(): void {
@@ -280,6 +314,9 @@ function build(): void {
     console.log('No content directory found. Skipping content build.');
     return;
   }
+
+  // Hash and copy CSS file first (sets cssFilename for HTML generation)
+  processCss();
 
   // Get all markdown files
   const files = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith('.md'));
