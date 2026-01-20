@@ -109,7 +109,7 @@ ${JSON.stringify(structuredData, null, 2)}
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
 
   <!-- Styles -->
   <link rel="stylesheet" href="/content.css">
@@ -130,8 +130,8 @@ ${JSON.stringify(structuredData, null, 2)}
       </svg>
       <span>Gridfinity Layout Tool</span>
     </a>
-    <a href="/" class="content-nav__back">
-      ← Back to Tool
+    <a href="/" class="content-nav__cta">
+      Open Tool
     </a>
   </nav>
 
@@ -144,7 +144,6 @@ ${content}
   <footer class="content-page">
     <div class="content-footer">
       <div class="content-footer__links">
-        <a href="/">Layout Tool</a>
         <a href="/what-is-gridfinity">What is Gridfinity?</a>
         <a href="/guide">Planning Guide</a>
         <a href="https://github.com/andymai/gridfinity-layout-tool" target="_blank" rel="noopener">GitHub</a>
