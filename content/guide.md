@@ -25,14 +25,14 @@ Gridfinity uses 42mm units. Divide and round down:
 
 ```
 Width:  380mm ÷ 42 = 9.04 → 9 units
-Depth:  290mm ÷ 42 = 6.9  → 6 units
+Depth:  260mm ÷ 42 = 6.19 → 6 units
 ```
 
 A 9×6 grid is 378mm × 252mm. You'll have small gaps at the edges. That's fine. Baseplates don't need to fill every millimeter.
 
 ## Figure Out What Goes In It
 
-This step is easy to skip and expensive to get wrong.
+Most people skip this and regret it.
 
 Take everything out of the drawer. Group it:
 
@@ -79,7 +79,7 @@ If your drawer has height clearance, you can stack bins vertically. Layer 1 is t
 This works well for:
 
 - Flat items on bottom (cables, small parts), taller bins on top
-- Separating categories vertically
+- Keeping electrical separate from mechanical
 - Getting more storage from tall drawers
 
 Keep heavy things on the bottom. Put things you access often on top.
@@ -118,12 +118,10 @@ Your tallest bin plus baseplate (about 5mm) needs to fit when the drawer closes.
 
 ## Common Mistakes
 
-**Too many tiny bins.** A grid of 1×1 bins looks satisfying but is annoying to use. Larger bins with dividers are usually better.
+**Too many tiny bins.** A grid of 1×1 bins looks organized but is annoying to use. Larger bins with dividers are usually better.
 
 **Filling every square.** Leaves no room for new items. Plan for 10-20% empty space.
 
 **Ignoring what you actually use.** Don't organize around what you think you should have. Organize around what you actually reach for.
-
-## Start Planning
 
 [CTA: Open the Layout Tool](/)
