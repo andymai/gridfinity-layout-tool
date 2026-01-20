@@ -64,8 +64,6 @@ Open the tool and set your grid size.
 
 Drag to create bins. The tool won't let you overlap or go out of bounds.
 
-A few things to consider:
-
 **Put frequently-used items near the front.** When you open the drawer, what do you reach for first? That goes in front.
 
 **Group related items.** All the screwdrivers together, all the measuring tools together. You'll remember where things are.
@@ -81,11 +79,11 @@ This works well for:
 - Flat items on bottom (cables, small parts), taller bins on top
 - Keeping electrical separate from mechanical
 
-Keep heavy things on the bottom. Put things you access often on top.
+Keep heavy things on the bottom, frequently-used things on top.
 
 ## Export Your Print List
 
-When you're happy with the layout, export a print list. You get:
+When you're happy with the layout, export a print list:
 
 - Every bin size and quantity
 - Filament estimates in grams
@@ -105,7 +103,7 @@ Example search: "gridfinity 2x2 3U" finds 2×2 bins that are 3 height units tall
 
 ### Test with cardboard first
 
-Cut cardboard to your bin sizes (42mm per grid unit) and arrange them in the drawer. It takes 10 minutes and costs nothing. If something feels wrong, you haven't wasted any filament.
+Cut cardboard to your bin sizes (42mm per grid unit) and arrange them in the drawer. If something feels wrong, you haven't wasted any filament.
 
 ### Print one bin first
 
@@ -119,7 +117,7 @@ Your tallest bin plus baseplate (about 5mm) needs to fit when the drawer closes.
 
 **Too many tiny bins.** A grid of 1×1 bins looks organized but is annoying to use. Larger bins with dividers are usually better.
 
-**Filling every square.** Leaves no room for new items. Plan for 10-20% empty space.
+**Filling every square.** This leaves no room for new items. Plan for 10-20% empty space.
 
 **Ignoring what you actually use.** Don't organize around what you think you should have. Organize around what you actually reach for.
 

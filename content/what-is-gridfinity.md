@@ -7,9 +7,9 @@ schema: Article
 
 # What is Gridfinity?
 
-Gridfinity is a modular storage system you 3D print yourself. Zack Freedman released it in 2022. There are now over 10,000 free designs on Printables alone.
+Gridfinity is a modular storage system you 3D print yourself. Zack Freedman, a maker and YouTuber, released it in 2022. There are now over 10,000 free designs on Printables alone.
 
-The idea is simple: everything uses a 42mm grid. Bins rest on baseplates, baseplates tile to fill any drawer. When you need to reorganize, just pick up the bins and move them.
+The idea is simple: everything uses a 42mm grid. Bins rest on baseplates. Baseplates tile to fill any drawer. When you need to reorganize, pick up the bins and move them.
 
 ## How It Works
 
@@ -31,7 +31,7 @@ The bins have a profiled base that mates with the baseplate pattern. They stay p
 
 ## Finding Designs
 
-The community has made bins for most common needs: screwdriver holders, battery organizers, drill bit trays, cable management, and more.
+The community has made bins for most common needs: screwdriver holders, battery organizers, drill bit trays, cable management.
 
 The main repositories:
 
@@ -55,7 +55,7 @@ This tool helps with step 3. Mock up your layout, see how everything fits, then 
 
 ### What filament should I use?
 
-PLA for most things. PETG if you want more durability. ASA if it's going somewhere hot. Most people just use whatever PLA they have.
+PLA for most things. PETG if you want more durability. ASA if it's going somewhere hot.
 
 ### How long do bins take to print?
 
