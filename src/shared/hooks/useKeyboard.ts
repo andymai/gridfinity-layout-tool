@@ -100,6 +100,10 @@ export function useKeyboard() {
         .filter((b): b is typeof layout.bins[number] => b !== undefined);
       if (binsToDelete.length > 0) {
         mlTracking.trackDeletion(binsToDelete[0], 'key', binsToDelete.length);
+        // Check for quick-correction (deleted shortly after creation)
+        for (const bin of binsToDelete) {
+          mlTracking.trackQuickCorrect('delete', bin.id, bin);
+        }
       }
       execute(() => {
         for (const binId of selectedBinIds) {

@@ -151,6 +151,8 @@ export function useDrawInteraction(
             // Track for ML telemetry
             const placedBin: Bin = { ...binData, id: result.value };
             mlTracking.trackPlacement(placedBin, 'draw');
+            // Record creation for quick-correction detection
+            mlTracking.recordCreation(result.value, 'draw', `${width}x${depth}x${layer.height}`);
           }
         });
       }
@@ -227,6 +229,10 @@ export function useDrawInteraction(
             setSelectedBins(placedBinIds);
             // Track for ML telemetry (bulk placement)
             mlTracking.trackBulk(placedBins, 'paint');
+            // Record creation for all placed bins (for quick-correction detection)
+            for (const bin of placedBins) {
+              mlTracking.recordCreation(bin.id, 'paint', `${bin.width}x${bin.depth}x${bin.height}`);
+            }
           }
         }
       }
