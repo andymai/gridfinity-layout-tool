@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { useResponsive } from '@/shared/hooks';
 import { useLayoutSwitcher } from '@/features/layout-library/hooks/useLayoutSwitcher';
 import { useUIStore } from '@/core/store/ui';
@@ -42,10 +43,12 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
   const gridRef = useRef<HTMLDivElement>(null);
 
   const { importLayoutFromJSON, switchLayout, createNewLayout } = useLayoutSwitcher();
-  const { announceToScreenReader, closeMobilePanel } = useUIStore((state) => ({
-    announceToScreenReader: state.announceToScreenReader,
-    closeMobilePanel: state.closeMobilePanel,
-  }));
+  const { announceToScreenReader, closeMobilePanel } = useUIStore(
+    useShallow((state) => ({
+      announceToScreenReader: state.announceToScreenReader,
+      closeMobilePanel: state.closeMobilePanel,
+    }))
+  );
   const addToast = useToastStore((state) => state.addToast);
 
   // Filter by search query first (to get accurate theme counts)
