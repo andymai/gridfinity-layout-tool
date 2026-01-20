@@ -175,6 +175,7 @@ export interface UserSettings {
   rememberPanelState: boolean; // Whether to remember panel collapse state
   lastLeftPanelCollapsed: boolean;
   lastRightPanelCollapsed: boolean;
+  lastStashCollapsed: boolean;
 
   // Print view preferences
   printViewSettings: PrintViewSettings;
@@ -209,6 +210,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   rememberPanelState: true,
   lastLeftPanelCollapsed: false,
   lastRightPanelCollapsed: false,
+  lastStashCollapsed: false,
 
   // Print view preferences
   printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },
