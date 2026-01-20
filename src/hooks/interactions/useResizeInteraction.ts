@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { calculateResizeRect } from '@/utils/interaction';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, ResizeStartArgs } from './types';
 import type { Coord, Rect } from '@/core/types';
 
@@ -185,6 +186,31 @@ export function useResizeInteraction(
     }
 
     if (hasChanges) {
+      const batchSize = interaction.binIds.length;
+
+      // Find first bin with dimension changes for tracking (before execute)
+      let firstResize: {
+        old: { width: number; depth: number };
+        new: { width: number; depth: number };
+        height: number;
+      } | null = null;
+
+      for (const binId of interaction.binIds) {
+        const bin = layout.bins.find((b) => b.id === binId);
+        const startRect = interaction.startRects.get(binId);
+        const currentRect = interaction.currentRects.get(binId);
+        if (!bin || !startRect || !currentRect) continue;
+
+        if (startRect.width !== currentRect.width || startRect.depth !== currentRect.depth) {
+          firstResize = {
+            old: { width: startRect.width, depth: startRect.depth },
+            new: { width: currentRect.width, depth: currentRect.depth },
+            height: bin.height,
+          };
+          break;
+        }
+      }
+
       execute(() => {
         for (const binId of interaction.binIds) {
           const currentRect = interaction.currentRects.get(binId);
@@ -198,10 +224,15 @@ export function useResizeInteraction(
           });
         }
       });
+
+      // Track once per batch operation (not per bin)
+      if (firstResize) {
+        mlTracking.trackResize(firstResize.old, firstResize.new, firstResize.height, batchSize);
+      }
     }
 
     // Note: setInteraction(null) is called by the parent hook
-  }, [execute, updateBin]);
+  }, [layout, execute, updateBin]);
 
   return { start, handleMove, handleUp };
 }

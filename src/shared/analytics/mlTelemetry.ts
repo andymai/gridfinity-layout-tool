@@ -206,12 +206,63 @@ export interface DrawerPurposeEvent {
   is_custom: boolean;
 }
 
+/**
+ * Category change event - when user assigns/changes a bin's category.
+ * Tracks category assignment patterns for learning grouping behavior.
+ *
+ * Only tracks changes to custom categories (user-created names).
+ * Default color-based categories (Coral, Sky, Green, etc.) are skipped.
+ */
+export interface CategoryChangeEvent {
+  type: 'category_changed';
+
+  /** Bin size as "WxDxH" string */
+  bin_size: string;
+
+  /** Hash of the NEW category name (for pattern learning) */
+  category_name_hash: string;
+
+  /** Number of bins changed in this batch (for bulk operations) */
+  batch_size: number;
+
+  /** Label data for context (helps correlate item types with categories) */
+  label_hash: string | null;
+  label_domain: string | null;
+
+  vocab_version: string;
+}
+
+/**
+ * Bin resize event - when user manually resizes a bin.
+ * Tracks size adjustment patterns after initial placement.
+ */
+export interface BinResizeEvent {
+  type: 'bin_resized';
+
+  /** Original size as "WxDxH" string */
+  old_size: string;
+
+  /** New size as "WxDxH" string */
+  new_size: string;
+
+  /** Which dimension(s) changed */
+  dimensions_changed: ('width' | 'depth')[];
+
+  /** Number of bins resized together (for multi-select resize) */
+  batch_size: number;
+
+  /** Fill percentage after resize */
+  fill_pct: number;
+}
+
 export type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
   | LayoutSnapshotEvent
   | LayoutQualityEvent
-  | DrawerPurposeEvent;
+  | DrawerPurposeEvent
+  | CategoryChangeEvent
+  | BinResizeEvent;
 
 export type PlacementMethod = 'draw' | 'fill' | 'duplicate' | 'staging' | 'paint';
 
@@ -1002,6 +1053,134 @@ export function trackDrawerPurpose(
     layout_hash: layoutHash,
     purpose: purpose.toLowerCase().trim(),
     is_custom: isCustom,
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// CATEGORY CHANGE TRACKING
+// ============================================
+
+/**
+ * Default category names that we skip tracking (color-based, not meaningful).
+ */
+const DEFAULT_CATEGORY_NAMES = new Set([
+  'coral', 'sky', 'green', 'cloud', 'charcoal',
+  'new category', // Default name when creating
+]);
+
+/**
+ * Check if a category name is a default/color-based name.
+ */
+function isDefaultCategoryName(name: string): boolean {
+  return DEFAULT_CATEGORY_NAMES.has(name.toLowerCase().trim());
+}
+
+/**
+ * Simple hash for category names (same algorithm as label hashing).
+ */
+function hashCategoryName(name: string): string {
+  const normalized = name.toLowerCase().trim();
+  let hash = 0;
+  for (let i = 0; i < normalized.length; i++) {
+    const char = normalized.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(16).padStart(8, '0');
+}
+
+/**
+ * Track a category change event.
+ *
+ * Only tracks changes to custom categories (user-created names).
+ * Default color-based categories (Coral, Sky, Green, etc.) are skipped.
+ *
+ * @param bin - The bin being updated
+ * @param categoryName - Name of the NEW category (for hashing)
+ * @param batchSize - Number of bins changed in this batch (default 1)
+ */
+export function trackCategoryChange(
+  bin: Bin,
+  categoryName: string,
+  batchSize: number = 1
+): void {
+  if (!isEnabled()) return;
+
+  // Skip default/color-based category names - not useful signal
+  if (isDefaultCategoryName(categoryName)) return;
+
+  // Process label for correlation learning
+  let labelHash: string | null = null;
+  let labelDomain: string | null = null;
+  if (bin.label?.trim()) {
+    const labelData = processLabel(bin.label);
+    labelHash = labelData.hash;
+    labelDomain = labelData.domain;
+  }
+
+  const event: CategoryChangeEvent = {
+    type: 'category_changed',
+    bin_size: `${bin.width}x${bin.depth}x${bin.height}`,
+    category_name_hash: hashCategoryName(categoryName),
+    batch_size: batchSize,
+    label_hash: labelHash,
+    label_domain: labelDomain,
+    vocab_version: VOCAB_VERSION,
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// BIN RESIZE TRACKING
+// ============================================
+
+/**
+ * Track a bin resize event.
+ *
+ * @param oldRect - Original dimensions { width, depth }
+ * @param newRect - New dimensions { width, depth }
+ * @param height - Bin height (unchanged during resize)
+ * @param layout - Current layout state (for fill percentage)
+ * @param batchSize - Number of bins resized together (default 1)
+ */
+export function trackBinResize(
+  oldRect: { width: number; depth: number },
+  newRect: { width: number; depth: number },
+  height: number,
+  layout: Layout,
+  batchSize: number = 1
+): void {
+  if (!isEnabled()) return;
+
+  // Skip if dimensions didn't actually change
+  if (oldRect.width === newRect.width && oldRect.depth === newRect.depth) return;
+
+  const dimensionsChanged: ('width' | 'depth')[] = [];
+  if (oldRect.width !== newRect.width) dimensionsChanged.push('width');
+  if (oldRect.depth !== newRect.depth) dimensionsChanged.push('depth');
+
+  const event: BinResizeEvent = {
+    type: 'bin_resized',
+    old_size: `${oldRect.width}x${oldRect.depth}x${height}`,
+    new_size: `${newRect.width}x${newRect.depth}x${height}`,
+    dimensions_changed: dimensionsChanged,
+    batch_size: batchSize,
+    fill_pct: computeFillPercentage(layout),
   };
 
   eventBuffer.push(event);

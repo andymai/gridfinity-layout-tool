@@ -29,6 +29,8 @@ import {
   trackLayoutSnapshot,
   trackQualitySignal,
   trackDrawerPurpose,
+  trackCategoryChange,
+  trackBinResize,
   incrementEditCount,
   markEditActivity,
   type PlacementMethod,
@@ -91,6 +93,33 @@ export function useMLTracking() {
     trackDrawerPurpose(layout, purpose, isCustom);
   }, []);
 
+  /**
+   * Track a category change on a bin.
+   * Only tracks custom categories - default color-based categories are skipped.
+   */
+  const trackCategory = useCallback(
+    (bin: Bin, categoryName: string, batchSize?: number) => {
+      trackCategoryChange(bin, categoryName, batchSize);
+    },
+    []
+  );
+
+  /**
+   * Track a bin resize.
+   */
+  const trackResize = useCallback(
+    (
+      oldRect: { width: number; depth: number },
+      newRect: { width: number; depth: number },
+      height: number,
+      batchSize?: number
+    ) => {
+      const layout = useLayoutStore.getState().layout;
+      trackBinResize(oldRect, newRect, height, layout, batchSize);
+    },
+    []
+  );
+
   return {
     trackPlacement,
     trackLabel,
@@ -98,6 +127,8 @@ export function useMLTracking() {
     trackSnapshot,
     trackQuality,
     trackPurpose,
+    trackCategory,
+    trackResize,
   };
 }
 
@@ -151,6 +182,27 @@ export const mlTracking = {
   trackPurpose(purpose: string, isCustom: boolean = false): void {
     const layout = useLayoutStore.getState().layout;
     trackDrawerPurpose(layout, purpose, isCustom);
+  },
+
+  /**
+   * Track a category change.
+   * Only tracks custom categories - default color-based categories are skipped.
+   */
+  trackCategory(bin: Bin, categoryName: string, batchSize?: number): void {
+    trackCategoryChange(bin, categoryName, batchSize);
+  },
+
+  /**
+   * Track a bin resize.
+   */
+  trackResize(
+    oldRect: { width: number; depth: number },
+    newRect: { width: number; depth: number },
+    height: number,
+    batchSize?: number
+  ): void {
+    const layout = useLayoutStore.getState().layout;
+    trackBinResize(oldRect, newRect, height, layout, batchSize);
   },
 
   /**
