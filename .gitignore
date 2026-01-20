@@ -34,3 +34,8 @@ coverage/
 .vercel
 .env*.local
 .playwright-mcp/
+
+# Generated content pages (built from content/*.md)
+public/what-is-gridfinity/
+public/guide/
+public/content.*.css

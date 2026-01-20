@@ -1,7 +1,35 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "ignoreCommand": "bash scripts/vercel-ignore.sh",
+  "trailingSlash": false,
   "headers": [
+    {
+      "source": "/what-is-gridfinity",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/guide",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/content.:hash.css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
     {
       "source": "/sw.js",
       "headers": [
@@ -57,6 +85,8 @@
       "source": "/ph/:path(.*)",
       "destination": "https://us.i.posthog.com/:path"
     },
+    { "source": "/what-is-gridfinity", "destination": "/what-is-gridfinity/index.html" },
+    { "source": "/guide", "destination": "/guide/index.html" },
     { "source": "/s/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/l/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/l/:id([a-zA-Z0-9]{12})/:slug*", "destination": "/" },
