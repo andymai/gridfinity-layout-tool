@@ -158,7 +158,7 @@ ${content}
         <a href="/guide">Planning Guide</a>
       </div>
       <p class="content-footer__copyright">
-        © ${new Date().getFullYear()} Gridfinity Layout Tool. Free and open source.
+        © ${new Date().getFullYear()} Gridfinity Layout Tool. Free to use.
       </p>
     </div>
   </footer>
