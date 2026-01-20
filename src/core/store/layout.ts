@@ -6,6 +6,7 @@ import { canPlaceBin, clamp } from '@/shared/utils/validation';
 import { fillAllWithSize, fillGaps } from '@/features/grid-editor/utils/fill';
 import { checkLayerReorderCollisions } from '@/features/grid-editor/utils/collision';
 import { useSettingsStore } from './settings';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Result, LayoutError, ValidationError } from '@/core/result';
 import {
   ok,
@@ -508,6 +509,9 @@ export const useLayoutStore = create<LayoutState>()(
           state.layout.bins.push(...result.bins);
           state.lastEditSource = 'local';
         });
+
+        // Track fill operation after bins are added
+        mlTracking.trackFill('uniform', result.bins.length, layerId, { width, depth });
       }
 
       return result.bins.length;
@@ -524,6 +528,9 @@ export const useLayoutStore = create<LayoutState>()(
           state.layout.bins.push(...result.bins);
           state.lastEditSource = 'local';
         });
+
+        // Track fill operation after bins are added
+        mlTracking.trackFill('gaps', result.bins.length, layerId);
       }
 
       return result.addedCount;

@@ -33,6 +33,10 @@ import {
   trackBinResize,
   trackBinDeletion,
   trackBinMove,
+  trackDrawerResize,
+  trackFillOperation,
+  trackLayerMove,
+  trackBinRotation,
   incrementEditCount,
   markEditActivity,
   type PlacementMethod,
@@ -40,6 +44,8 @@ import {
   type QualitySignal,
   type DeleteMethod,
   type MoveMethod,
+  type FillMethod,
+  type LayerMoveMethod,
 } from './mlTelemetry';
 
 /**
@@ -147,6 +153,61 @@ export function useMLTracking() {
     []
   );
 
+  /**
+   * Track a drawer resize.
+   */
+  const trackDrawerResizeHook = useCallback(
+    (
+      oldDrawer: { width: number; depth: number; height: number },
+      newDrawer: { width: number; depth: number; height: number },
+      binsStaged?: number
+    ) => {
+      const layout = useLayoutStore.getState().layout;
+      trackDrawerResize(oldDrawer, newDrawer, layout, binsStaged);
+    },
+    []
+  );
+
+  /**
+   * Track a fill operation.
+   */
+  const trackFill = useCallback(
+    (
+      method: FillMethod,
+      binsCreated: number,
+      layerId: string,
+      fillSize?: { width: number; depth: number }
+    ) => {
+      const layout = useLayoutStore.getState().layout;
+      trackFillOperation(method, binsCreated, layerId, layout, fillSize);
+    },
+    []
+  );
+
+  /**
+   * Track a layer move.
+   */
+  const trackLayerMoveHook = useCallback(
+    (
+      bin: Bin,
+      fromLayerId: string,
+      toLayerId: string,
+      method: LayerMoveMethod,
+      batchSize?: number
+    ) => {
+      const layout = useLayoutStore.getState().layout;
+      trackLayerMove(bin, fromLayerId, toLayerId, layout, method, batchSize);
+    },
+    []
+  );
+
+  /**
+   * Track a bin rotation.
+   */
+  const trackRotation = useCallback((bin: Bin, batchSize?: number) => {
+    trackBinRotation(bin, batchSize);
+  }, []);
+
   return {
     trackPlacement,
     trackLabel,
@@ -158,6 +219,10 @@ export function useMLTracking() {
     trackResize,
     trackDeletion,
     trackMove,
+    trackDrawerResize: trackDrawerResizeHook,
+    trackFill,
+    trackLayerMove: trackLayerMoveHook,
+    trackRotation,
   };
 }
 
@@ -265,5 +330,51 @@ export const mlTracking = {
    */
   markActivity(): void {
     markEditActivity();
+  },
+
+  /**
+   * Track a drawer resize.
+   */
+  trackDrawerResize(
+    oldDrawer: { width: number; depth: number; height: number },
+    newDrawer: { width: number; depth: number; height: number },
+    binsStaged?: number
+  ): void {
+    const layout = useLayoutStore.getState().layout;
+    trackDrawerResize(oldDrawer, newDrawer, layout, binsStaged);
+  },
+
+  /**
+   * Track a fill operation.
+   */
+  trackFill(
+    method: FillMethod,
+    binsCreated: number,
+    layerId: string,
+    fillSize?: { width: number; depth: number }
+  ): void {
+    const layout = useLayoutStore.getState().layout;
+    trackFillOperation(method, binsCreated, layerId, layout, fillSize);
+  },
+
+  /**
+   * Track a layer move.
+   */
+  trackLayerMove(
+    bin: Bin,
+    fromLayerId: string,
+    toLayerId: string,
+    method: LayerMoveMethod,
+    batchSize?: number
+  ): void {
+    const layout = useLayoutStore.getState().layout;
+    trackLayerMove(bin, fromLayerId, toLayerId, layout, method, batchSize);
+  },
+
+  /**
+   * Track a bin rotation.
+   */
+  trackRotation(bin: Bin, batchSize?: number): void {
+    trackBinRotation(bin, batchSize);
   },
 };

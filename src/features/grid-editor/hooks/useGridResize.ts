@@ -4,6 +4,7 @@ import { useLayoutStore } from '@/core/store';
 import { useUndoableAction } from '@/core/store';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 
 /**
  * Grid Resize Hook
@@ -167,6 +168,19 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
         });
         // Revert to original size temporarily (user will confirm or cancel)
         updateDrawer({ width: resizeStart.width, depth: resizeStart.depth });
+      } else {
+        // No clipped bins - track the completed resize
+        // Only track if dimensions actually changed
+        if (
+          resizeStart.width !== currentDrawer.width ||
+          resizeStart.depth !== currentDrawer.depth
+        ) {
+          mlTracking.trackDrawerResize(
+            { width: resizeStart.width, depth: resizeStart.depth, height: currentDrawer.height },
+            currentDrawer,
+            0
+          );
+        }
       }
       setResizeDirection(null);
       setResizeStart(null);
@@ -183,6 +197,10 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
   // Confirm pending resize - move clipped bins to staging
   const confirmResize = useCallback(() => {
     if (!pendingResize) return;
+
+    // Capture old dimensions for tracking (current state before applying resize)
+    const oldDrawer = { ...drawerRef.current };
+
     execute(() => {
       // Move clipped bins to staging
       for (const binId of pendingResize.clippedBinIds) {
@@ -191,6 +209,14 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
       // Apply the resize
       updateDrawer({ width: pendingResize.newWidth, depth: pendingResize.newDepth });
     });
+
+    // Track drawer resize after execution
+    mlTracking.trackDrawerResize(
+      oldDrawer,
+      { width: pendingResize.newWidth, depth: pendingResize.newDepth, height: oldDrawer.height },
+      pendingResize.clippedBinIds.length
+    );
+
     setPendingResize(null);
   }, [pendingResize, execute, updateBin, updateDrawer]);
 
