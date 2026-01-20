@@ -46,8 +46,8 @@ export function LayoutCard({ layout: inspirationLayout, onClick, onQuickUse, ind
       aria-label={`${name}. ${metrics.binCount} bins. ${shortDescription}`}
       data-layout-card
     >
-      {/* Thumbnail */}
-      <div className="aspect-[4/3] bg-surface-secondary rounded overflow-hidden mb-1.5 flex items-center justify-center relative">
+      {/* Thumbnail - portrait aspect for typical drawer layouts */}
+      <div className="aspect-[3/4] bg-surface-secondary rounded overflow-hidden mb-1.5 flex items-center justify-center relative">
         <LayoutThumbnailWithLabels
           layout={layout}
           size={120}
