@@ -21,7 +21,7 @@ Base plates are the foundation. They snap or stick into your drawer and provide 
 
 ### Bins
 
-Bins click onto the bases and hold your stuff. They come in different footprints (1×1, 2×1, 3×2, etc.) and heights. A "1U" bin is 7mm tall; a "3U" bin is 21mm.
+Bins click onto the bases and hold your stuff. They come in different footprints (1×1, 2×1, 3×2, etc.) and heights measured in "units" (U). Each height unit is 7mm, so a 3U bin has 21mm of internal storage height (plus a few mm for the base that locks into the grid).
 
 ### The Magic of Modularity
 

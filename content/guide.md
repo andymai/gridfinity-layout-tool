@@ -69,9 +69,9 @@ Click and drag to create bins. The tool prevents overlaps and shows when somethi
 
 Color-code bins by type:
 
-- 🔴 Red for hardware
-- 🔵 Blue for electronics
-- 🟢 Green for tools
+- Red for hardware
+- Blue for electronics
+- Green for tools
 
 This helps visualize the layout and creates a system you'll actually maintain.
 
