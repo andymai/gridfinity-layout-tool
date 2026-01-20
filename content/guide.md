@@ -1,157 +1,129 @@
 ---
 title: How to Plan a Gridfinity Drawer Layout
-description: Step-by-step guide to planning your Gridfinity drawer layout. Learn how to measure, design, and export your custom 3D-printed organizer.
+description: A practical guide to planning Gridfinity drawer layouts. Measure your drawer, figure out what bins you need, and export a print list.
 keywords: gridfinity planner, gridfinity layout, how to plan gridfinity, drawer organizer planning, gridfinity guide
 schema: HowTo
 ---
 
 # How to Plan a Gridfinity Drawer Layout
 
-Planning before printing saves filament, time, and frustration. This guide walks you through creating a Gridfinity layout that actually fits your drawer and your stuff.
+Printing without a plan wastes filament. You'll end up with bins that don't fit, gaps you didn't want, and a drawer that's half-organized. This guide covers how to measure, plan, and get a print list before you start.
 
-## Step 1: Measure Your Drawer
+## Measure Your Drawer
 
-Grab a ruler or tape measure and get the inside dimensions of your drawer in millimeters.
+Get the inside dimensions in millimeters. You need:
 
-You need three measurements:
+- **Width** — left to right
+- **Depth** — front to back
+- **Height** — bottom to top (clearance when closed)
 
-- **Width** — Side to side
-- **Depth** — Front to back
-- **Height** — Bottom to top (inside clearance)
-
-> **Tip:** Measure at multiple points. Drawers aren't always perfectly rectangular, especially older furniture.
+Measure at a few spots. Drawers are rarely perfect rectangles—older furniture especially. Use the smallest measurements to be safe.
 
 ### Convert to Grid Units
 
-Gridfinity uses 42mm grid units. Divide your measurements:
+Gridfinity uses 42mm units. Divide and round down:
 
-- Width: 420mm ÷ 42 = **10 units**
-- Depth: 336mm ÷ 42 = **8 units**
+```
+Width:  380mm ÷ 42 = 9.04 → 9 units
+Depth:  290mm ÷ 42 = 6.9  → 6 units
+```
 
-Round down to ensure bases fit. A 425mm drawer is still 10 units—you'll have a small gap at the edge.
+A 9×6 grid is 378mm × 252mm. You'll have a 2mm gap on one side and 38mm on the other. That's fine—baseplates don't need to fill every millimeter.
 
-## Step 2: Inventory What You're Storing
+## Figure Out What Goes In It
 
-Before placing bins, know what goes in them.
+This step is easy to skip and expensive to get wrong.
 
-### Group Similar Items
+Take everything out of the drawer. Group it:
 
-- Small hardware (screws, nuts, bolts)
-- Tools (screwdrivers, pliers, wrenches)
-- Electronics (cables, adapters, components)
-- Craft supplies (buttons, beads, thread)
+- Things you grab daily
+- Things you grab weekly
+- Things you forget you own
 
-### Note the Sizes
+The daily stuff needs to be accessible. The weekly stuff can go in back. The forgotten stuff—maybe it doesn't need a bin at all.
 
-- Tiny items (M3 screws) → 1×1 bins with dividers
-- Medium items (markers, USB drives) → 2×1 or 2×2 bins
-- Large items (tape rolls, small tools) → 3×2 or larger
+### Match Items to Bin Sizes
 
-### Think About Access
+Rough guidelines:
 
-Items you grab daily should be easy to reach. Rarely-used items can go in the back or bottom layer.
+| Items | Bin Size |
+|-------|----------|
+| M3 screws, small components | 1×1 with dividers |
+| Pens, USB drives, batteries | 1×2 or 2×2 |
+| Screwdrivers, pliers | 1×3 or 1×4 |
+| Tape, glue bottles | 2×2 or 2×3 |
+| Large tools | 3×3 or bigger |
 
-## Step 3: Plan Your Layout
+Don't obsess over this. You can always print different bins later—that's the point of the system.
 
-Now the fun part—designing your drawer.
+## Plan the Layout
 
-[CTA: Open the Layout Tool](/)
+Open the tool and set your grid size.
 
-### Set Your Drawer Size
+[CTA: Open the Planner](/)
 
-Enter your grid dimensions (e.g., 10×8) in the drawer settings. The tool shows your available space.
+Drag to create bins. The tool won't let you overlap or go out of bounds.
 
-### Place Your Bins
+A few things to consider:
 
-Click and drag to create bins. The tool prevents overlaps and shows when something doesn't fit.
+**Put frequently-used items near the front.** When you open the drawer, what do you reach for first? That goes in front.
 
-### Use Categories
+**Group related items.** All the screwdrivers together, all the measuring tools together. You'll remember where things are.
 
-Color-code bins by type:
+**Leave some empty space.** Your collection will grow. A drawer that's 100% planned today is a problem tomorrow.
 
-- Red for hardware
-- Blue for electronics
-- Green for tools
+### Use Layers for Tall Drawers
 
-This helps visualize the layout and creates a system you'll actually maintain.
+If your drawer has height clearance, you can stack bins vertically. Layer 1 is the bottom.
 
-## Step 4: Use Layers for Stacking
+This works well for:
 
-Gridfinity supports vertical stacking. Use layers when:
+- Flat items on bottom (cables, papers), taller bins on top
+- Separating categories vertically
+- Getting more storage from deep drawers
 
-- You have tall drawer clearance
-- You want to separate item types
-- You need more density
+Keep heavy things on the bottom. Put things you access often on top.
 
-### How Layers Work
+## Export Your Print List
 
-Layer 1 is the bottom. Add layers above for taller storage. A 3-layer drawer might have:
+When you're happy with the layout, export a print list. You get:
 
-- **Layer 1:** Flat items (cables, papers)
-- **Layer 2:** Medium bins (tools, supplies)
-- **Layer 3:** Tall bins (bottles, large tools)
-
-> **Tip:** Put frequently-accessed items on top. Heavy items on the bottom for stability.
-
-## Step 5: Export Your Print List
-
-When your layout is complete, export a print list.
-
-### What You Get
-
-- List of every bin size needed
-- Quantity of each size
-- Filament estimates (grams and meters)
-- Links to find STL files
+- Every bin size and quantity
+- Filament estimates in grams
+- Search links for each size
 
 ### Finding STL Files
 
-The maker community has created thousands of Gridfinity designs:
+Search for the bin size you need:
 
-- [Printables](https://www.printables.com/search/models?q=gridfinity) — Largest collection
-- [Thangs](https://thangs.com/search/gridfinity) — AI-powered search
+- [Printables](https://www.printables.com/search/models?q=gridfinity) — largest selection
+- [Thangs](https://thangs.com/search/gridfinity) — good for finding similar designs
 - [MakerWorld](https://makerworld.com/en/search/models?keyword=gridfinity) — Bambu Lab community
 
-Search for the bin size you need (e.g., "gridfinity 2x2 3U") and pick a design you like.
+Example search: "gridfinity 2x2 3U" finds 2×2 bins that are 3 height units tall.
 
-## Tips for Better Layouts
+## Before You Print
 
-### Leave Room for Growth
+### Test with cardboard first
 
-Don't fill every square. Leave 10-20% empty for future items. Your collection will grow.
+Cut cardboard to your bin sizes and arrange them in the drawer. It takes 10 minutes and costs nothing. If something feels wrong, you haven't wasted any filament.
 
-### Test with Paper First
+### Print one bin first
 
-Cut cardboard or paper to your bin sizes and arrange them in the drawer. It's free to iterate on paper.
+Before printing 20 bins, print one. Check that it fits your baseplate, that the height works, that you like the design. Adjust your printer settings if needed.
 
-### Start Small
+### Check your clearance
 
-Don't plan your entire workshop on day one. Do one drawer, live with it, learn what works, then expand.
+Your tallest bin plus baseplate height needs to fit when the drawer closes. Measure this before committing to tall bins.
 
-### Consider the Workflow
+## Common Mistakes
 
-For a tool drawer, arrange items in the order you use them. For hardware, group by project type or size.
+**Too many tiny bins.** A grid of 1×1 bins looks satisfying but is annoying to use. Larger bins with dividers are usually better.
 
-### Print Bins First
+**Filling every square.** Leaves no room for new items. Plan for 10-20% empty space.
 
-Print a few bins first to test fit and quality. Once you're confident in your printer settings, print the base plates.
+**Ignoring what you actually use.** Don't organize around what you think you should have. Organize around what you actually reach for.
 
-## Common Layout Mistakes
+## Start Planning
 
-### Too Many Small Bins
-
-Lots of 1×1 bins looks organized but is annoying to use. You'll spend more time finding things than a few larger bins with dividers.
-
-### Ignoring Height
-
-A drawer might fit 4 layers of short bins or 2 layers of tall bins. Consider what you're storing before deciding.
-
-### Forgetting Clearance
-
-Make sure your tallest bin fits when the drawer closes. Measure twice, print once.
-
-## Ready to Start?
-
-You've got the knowledge. Time to plan your perfect drawer.
-
-[CTA: Create Your Layout](/)
+[CTA: Open the Layout Tool](/)
