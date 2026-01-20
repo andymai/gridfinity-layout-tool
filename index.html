@@ -11,7 +11,16 @@
     <meta name="author" content="Andy Aragon">
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large">
+    <meta name="rating" content="General">
+    <meta name="coverage" content="Worldwide">
+    <meta name="distribution" content="Global">
+    <meta name="revisit-after" content="7 days">
     <link rel="canonical" href="https://gridfinitylayouttool.com/">
+
+    <!-- International targeting: hreflang for multilingual/multiregional SEO -->
+    <link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/">
+    <link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -46,9 +55,12 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
 
-    <!-- Performance: DNS prefetch and preconnect for fonts -->
+    <!-- Performance: DNS prefetch and preconnect for fonts and external services -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://us.i.posthog.com">
+    <link rel="dns-prefetch" href="https://va.vercel-scripts.com">
+    <link rel="dns-prefetch" href="https://api.liveblocks.io">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!--
@@ -212,6 +224,53 @@
       }
     </script>
 
+    <!-- Structured Data: WebSite with SearchAction for sitelinks search box -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Gridfinity Layout Tool",
+        "alternateName": ["Gridfinity Planner", "Gridfinity Drawer Organizer Tool", "Gridfinity Bin Layout Tool"],
+        "url": "https://gridfinitylayouttool.com/",
+        "description": "Design Gridfinity drawer layouts for 3D printing with drag-and-drop bins, multi-layer support, and print optimization.",
+        "inLanguage": "en-US",
+        "isAccessibleForFree": true,
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://gridfinitylayouttool.com/?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+
+    <!-- Structured Data: Organization for knowledge panel -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Gridfinity Layout Tool",
+        "url": "https://gridfinitylayouttool.com/",
+        "logo": "https://gridfinitylayouttool.com/icons/icon-512.png",
+        "description": "Free online tool for designing Gridfinity drawer organizer layouts for 3D printing",
+        "foundingDate": "2024",
+        "founder": {
+          "@type": "Person",
+          "name": "Andy Aragon"
+        },
+        "sameAs": [
+          "https://github.com/andymai/gridfinity-layout-tool"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "technical support",
+          "url": "https://github.com/andymai/gridfinity-layout-tool/issues"
+        }
+      }
+    </script>
+
     <!-- Structured Data: HowTo for rich snippets -->
     <script type="application/ld+json">
       {
@@ -307,12 +366,29 @@
         </ol>
         <h2>Perfect For</h2>
         <ul>
-          <li>Tool drawer organization</li>
-          <li>Desk drawer organizers</li>
-          <li>Workshop storage planning</li>
-          <li>Parts bin layouts</li>
-          <li>Craft supply organization</li>
+          <li>Tool drawer organization - Organize wrenches, screwdrivers, pliers, and hand tools</li>
+          <li>Desk drawer organizers - Keep office supplies, pens, and accessories tidy</li>
+          <li>Workshop storage planning - Design custom storage for your garage or maker space</li>
+          <li>Parts bin layouts - Organize electronics, screws, nuts, bolts, and small components</li>
+          <li>Craft supply organization - Perfect for sewing, jewelry making, and hobby supplies</li>
+          <li>Kitchen drawer dividers - Organize utensils and cooking tools</li>
+          <li>3D printing accessories - Store nozzles, tools, and filament samples</li>
         </ul>
+        <h2>Why Choose This Gridfinity Layout Planner?</h2>
+        <ul>
+          <li><strong>100% Free</strong> - No subscriptions, no hidden costs, no signup required</li>
+          <li><strong>Privacy-focused</strong> - All data stays in your browser, nothing uploaded to servers</li>
+          <li><strong>Works offline</strong> - Install as PWA and use without internet connection</li>
+          <li><strong>Mobile-friendly</strong> - Design layouts on your phone, tablet, or desktop</li>
+          <li><strong>Share layouts</strong> - Generate shareable links to collaborate with others</li>
+          <li><strong>Accurate print estimates</strong> - Know exactly how much filament you'll need</li>
+        </ul>
+        <h2>Getting Started with Gridfinity</h2>
+        <p>New to Gridfinity? It's the most popular modular storage system for 3D printing. The standard 42mm grid unit allows you to mix and match bins from different designers. This layout tool helps you plan before you print, saving time and filament.</p>
+        <h2>Frequently Asked Questions</h2>
+        <p><strong>What size should I make my Gridfinity bins?</strong> Measure your drawer in millimeters and divide by 42 to get the number of grid units. Most drawers fit between 5-15 units wide and 8-20 units deep.</p>
+        <p><strong>Where can I download Gridfinity STL files?</strong> Popular sources include Thangs, Printables, MakerWorld, and Thingiverse. Search for "Gridfinity" followed by your bin dimensions (e.g., "Gridfinity 2x3").</p>
+        <p><strong>Can I use half-bin sizes?</strong> Yes! Enable half-bin mode (press H) to place bins at 0.5 unit increments for tighter fits.</p>
         <p><strong>JavaScript is required to use the interactive layout editor.</strong> Please enable JavaScript in your browser to access the full Gridfinity Layout Tool.</p>
       </div>
     </noscript>
