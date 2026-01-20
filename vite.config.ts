@@ -68,6 +68,8 @@ export default defineConfig({
           /^\/api\//,
           /^\/sitemap\.xml$/,
           /^\/robots\.txt$/,
+          /^\/what-is-gridfinity(?:\/|$)/,
+          /^\/guide(?:\/|$)/,
         ],
         runtimeCaching: [
           {
