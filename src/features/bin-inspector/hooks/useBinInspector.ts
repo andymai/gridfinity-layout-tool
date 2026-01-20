@@ -201,8 +201,15 @@ export function useBinInspector(): UseBinInspectorReturn {
           const oldLabel = bin.label;
           updateBin(bin.id, { label: value as string });
           mlTracking.trackLabel(bin, oldLabel, value as string);
-        } else {
-          updateBin(bin.id, { [field]: value });
+        } else if (field === 'category') {
+          updateBin(bin.id, { category: value as string });
+          // Track category change with the category name (not ID)
+          const newCategory = layout.categories.find((c) => c.id === value);
+          if (newCategory) {
+            mlTracking.trackCategory(bin, newCategory.name);
+          }
+        } else if (field === 'notes') {
+          updateBin(bin.id, { notes: value as string });
         }
       });
     },
@@ -231,13 +238,23 @@ export function useBinInspector(): UseBinInspectorReturn {
     (categoryId: string) => {
       if (selectedBins.length === 0) return;
 
+      const batchSize = selectedBins.length;
+      const category = layout.categories.find((c) => c.id === categoryId);
+
       execute(() => {
         for (const b of selectedBins) {
           updateBin(b.id, { category: categoryId });
         }
       });
+
+      // Track with category name (tracking filters out default categories)
+      if (category) {
+        for (const b of selectedBins) {
+          mlTracking.trackCategory(b, category.name, batchSize);
+        }
+      }
     },
-    [selectedBins, execute, updateBin]
+    [selectedBins, layout.categories, execute, updateBin]
   );
 
   // Update/add a custom property on multiple bins

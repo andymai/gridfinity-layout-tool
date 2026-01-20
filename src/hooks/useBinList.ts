@@ -166,10 +166,20 @@ export function useBinList(): UseBinListReturn {
       }
     });
 
+    // Track with category name (tracking filters out default categories)
+    if (category) {
+      for (const binId of selectedBinIds) {
+        const bin = layout.bins.find((b) => b.id === binId);
+        if (bin) {
+          mlTracking.trackCategory(bin, category.name, count);
+        }
+      }
+    }
+
     clearSelection();
     addToast(`Changed ${count} bin${count !== 1 ? 's' : ''} to ${category?.name || 'category'}`, 'success');
     announceToScreenReader(`Changed category for ${count} bins`);
-  }, [selectedBinIds, printList.categories, execute, updateBin, clearSelection, addToast, announceToScreenReader]);
+  }, [selectedBinIds, layout.bins, printList.categories, execute, updateBin, clearSelection, addToast, announceToScreenReader]);
 
   const updateBulkLabel = useCallback((label: string) => {
     if (selectedBinIds.length === 0) return;

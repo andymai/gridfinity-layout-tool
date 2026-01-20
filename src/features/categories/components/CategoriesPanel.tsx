@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useToastStore } from '@/core/store/toast';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { isOk } from '@/core/result';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 
 // Curated color palette optimized for dark UI backgrounds
 // Colors chosen for: visual distinction, balanced saturation, good contrast
@@ -75,12 +76,21 @@ export function CategoriesPanel() {
 
     // If bins are selected, update their categories
     if (selectedBinIds.length > 0) {
+      const binCount = selectedBinIds.length;
       execute(() => {
         for (const binId of selectedBinIds) {
           updateBin(binId, { category: categoryId });
         }
       });
-      const binCount = selectedBinIds.length;
+
+      // Track with category name (tracking filters out default categories)
+      for (const binId of selectedBinIds) {
+        const bin = bins.find((b) => b.id === binId);
+        if (bin) {
+          mlTracking.trackCategory(bin, categoryName, binCount);
+        }
+      }
+
       addToast(
         `Changed ${binCount} bin${binCount > 1 ? 's' : ''} to "${categoryName}"`,
         'success'

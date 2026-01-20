@@ -253,11 +253,24 @@ export function useKeyboard() {
           newCategoryId = categories[currentIndex - 1].id;
         }
 
+        const batchSize = selectedBinIds.length;
+        const newCategory = newCategoryId ? categories.find(c => c.id === newCategoryId) : undefined;
+
         execute(() => {
           for (const binId of selectedBinIds) {
             updateBin(binId, { category: newCategoryId });
           }
         });
+
+        // Track with category name (tracking filters out default categories)
+        if (newCategory) {
+          for (const binId of selectedBinIds) {
+            const bin = layout.bins.find(b => b.id === binId);
+            if (bin) {
+              mlTracking.trackCategory(bin, newCategory.name, batchSize);
+            }
+          }
+        }
       } else {
         // Cycle active drawing category (no "no category" option for drawing)
         const currentIndex = categories.findIndex(c => c.id === activeCategoryId);
@@ -289,11 +302,24 @@ export function useKeyboard() {
           newCategoryId = categories[currentIndex + 1].id;
         }
 
+        const batchSize = selectedBinIds.length;
+        const newCategory = newCategoryId ? categories.find(c => c.id === newCategoryId) : undefined;
+
         execute(() => {
           for (const binId of selectedBinIds) {
             updateBin(binId, { category: newCategoryId });
           }
         });
+
+        // Track with category name (tracking filters out default categories)
+        if (newCategory) {
+          for (const binId of selectedBinIds) {
+            const bin = layout.bins.find(b => b.id === binId);
+            if (bin) {
+              mlTracking.trackCategory(bin, newCategory.name, batchSize);
+            }
+          }
+        }
       } else {
         // Cycle active drawing category (no "no category" option for drawing)
         const currentIndex = categories.findIndex(c => c.id === activeCategoryId);

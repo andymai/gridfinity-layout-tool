@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { calculateResizeRect } from '@/utils/interaction';
+import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, ResizeStartArgs } from './types';
 import type { Coord, Rect } from '@/core/types';
 
@@ -185,10 +186,14 @@ export function useResizeInteraction(
     }
 
     if (hasChanges) {
+      const batchSize = interaction.binIds.length;
+
       execute(() => {
         for (const binId of interaction.binIds) {
+          const bin = layout.bins.find((b) => b.id === binId);
+          const startRect = interaction.startRects.get(binId);
           const currentRect = interaction.currentRects.get(binId);
-          if (!currentRect) continue;
+          if (!currentRect || !bin) continue;
 
           updateBin(binId, {
             x: currentRect.x,
@@ -196,12 +201,22 @@ export function useResizeInteraction(
             width: currentRect.width,
             depth: currentRect.depth,
           });
+
+          // Track resize if dimensions changed (not just position)
+          if (startRect && (startRect.width !== currentRect.width || startRect.depth !== currentRect.depth)) {
+            mlTracking.trackResize(
+              { width: startRect.width, depth: startRect.depth },
+              { width: currentRect.width, depth: currentRect.depth },
+              bin.height,
+              batchSize
+            );
+          }
         }
       });
     }
 
     // Note: setInteraction(null) is called by the parent hook
-  }, [execute, updateBin]);
+  }, [layout, execute, updateBin]);
 
   return { start, handleMove, handleUp };
 }
