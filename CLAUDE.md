@@ -294,6 +294,18 @@ mlTracking.recordCreation(binId, 'draw', '2x3x6'); // For quick-correction detec
 
 Events are batched (20 events or 30s) and sent to `/api/ml-telemetry`. Redis keys prefixed with `ml:` for positive signals, `ml:neg:` for negative signals.
 
+**Auditing Production Data:**
+```bash
+# Run the audit script
+./scripts/audit-ml-telemetry.sh
+
+# Or query directly
+source .env.local
+redis-cli -u "$REDIS_URL" HGETALL "ml:sizes"
+```
+
+See `docs/ml-telemetry-audit.md` for full audit guide, key structure documentation, and troubleshooting.
+
 ## Constants (`src/core/constants.ts`)
 
 **Constraints:**
