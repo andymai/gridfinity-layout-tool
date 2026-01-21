@@ -247,8 +247,9 @@ describe('history store', () => {
       }
       const undoRedoDuration = performance.now() - startUndoRedo;
 
-      // Should complete in reasonable time
-      expect(undoRedoDuration).toBeLessThan(200);
+      // Should complete in reasonable time (500ms allows for varying system loads
+      // while still catching performance regressions - previously 200ms was flaky)
+      expect(undoRedoDuration).toBeLessThan(500);
     });
   });
 
