@@ -2,7 +2,7 @@ import type { RedisOptions } from 'ioredis';
 import Redis from 'ioredis';
 
 export type RateLimitAction =
-  | 'create' | 'update' | 'view' | 'delete' | 'report';
+  | 'create' | 'update' | 'view' | 'delete' | 'report' | 'telemetry';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -31,6 +31,7 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   view: { limit: 100, windowSeconds: 60 },         // 100/minute
   delete: { limit: 100, windowSeconds: 60 },       // 100/minute (dev friendly)
   report: { limit: 10, windowSeconds: 3600 },      // 10/hour
+  telemetry: { limit: 100, windowSeconds: 60 },    // 100/minute (ML telemetry)
 };
 
 interface RateLimitResult {

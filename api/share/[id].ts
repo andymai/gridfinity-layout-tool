@@ -3,52 +3,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from '../lib/rateLimit.js';
 import { validateShareLayout } from '../lib/validation.js';
 import { filterLayoutContent } from '../lib/contentFilter.js';
-
-interface ShareMetadata {
-  deleteTokenHash: string;
-  createdAt: string;
-  lastUpdatedAt: string;
-  lastAccessedAt: string;
-  permission: 'view' | 'edit';
-  authorName?: string;
-  reportCount: number;
-}
-
-interface ShareData {
-  layout: unknown;
-  metadata: ShareMetadata;
-}
-
-/**
- * Hash a delete token using SHA-256 with server salt.
- */
-async function hashToken(token: string): Promise<string> {
-  const salt = process.env.TOKEN_SALT;
-  if (!salt) {
-    throw new Error('TOKEN_SALT environment variable must be configured');
-  }
-  const data = new TextEncoder().encode(salt + token);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-/**
- * Validate share ID format.
- * Supports multiple formats for backwards compatibility:
- * - Standard UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (older layouts)
- * - Base36 timestamp: {timestamp}-{random 7 chars}
- * - Legacy 12-char: alphanumeric only
- */
-function isValidShareId(id: string): boolean {
-  // Standard UUID format (8-4-4-4-12 hex chars)
-  if (/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)) return true;
-  // Base36 timestamp format
-  if (/^[a-z0-9]+-[a-z0-9]{7}$/.test(id)) return true;
-  // Legacy 12-char alphanumeric format
-  if (/^[a-zA-Z0-9]{12}$/.test(id)) return true;
-  return false;
-}
+import {
+  isValidShareId,
+  hashToken,
+  ErrorCode,
+  type ShareData,
+} from '../lib/shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = req.query;
@@ -56,7 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (typeof id !== 'string' || !isValidShareId(id)) {
     return res.status(400).json({
       error: 'Invalid share ID',
-      code: 'VALIDATION_ERROR',
+      code: ErrorCode.VALIDATION_ERROR,
     });
   }
 
@@ -71,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return handleDelete(req, res, id, blobPath);
     default:
       res.setHeader('Allow', 'GET, PUT, DELETE');
-      return res.status(405).json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' });
+      return res.status(405).json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
   }
 }
 
@@ -92,7 +52,7 @@ async function handleGet(
     if (!rateLimit.allowed) {
       return res.status(429).json({
         error: 'Too many requests. Try again later.',
-        code: 'RATE_LIMITED',
+        code: ErrorCode.RATE_LIMITED,
         retryAfter: rateLimit.retryAfterSeconds,
       });
     }
@@ -102,7 +62,7 @@ async function handleGet(
     if (!blobInfo) {
       return res.status(404).json({
         error: 'Share not found',
-        code: 'NOT_FOUND',
+        code: ErrorCode.NOT_FOUND,
       });
     }
 
@@ -111,7 +71,7 @@ async function handleGet(
     if (!response.ok) {
       return res.status(404).json({
         error: 'Share not found',
-        code: 'NOT_FOUND',
+        code: ErrorCode.NOT_FOUND,
       });
     }
 
@@ -146,7 +106,7 @@ async function handleGet(
     console.error('Share fetch error:', error);
     return res.status(500).json({
       error: 'Failed to fetch share',
-      code: 'NETWORK_ERROR',
+      code: ErrorCode.SERVER_ERROR,
     });
   }
 }
@@ -168,7 +128,7 @@ async function handlePut(
     if (!rateLimit.allowed) {
       return res.status(429).json({
         error: 'Too many updates. Try again later.',
-        code: 'RATE_LIMITED',
+        code: ErrorCode.RATE_LIMITED,
         retryAfter: rateLimit.retryAfterSeconds,
       });
     }
@@ -178,7 +138,7 @@ async function handlePut(
     if (!deleteToken) {
       return res.status(401).json({
         error: 'Delete token required for updates',
-        code: 'UNAUTHORIZED',
+        code: ErrorCode.UNAUTHORIZED,
       });
     }
 
@@ -187,7 +147,7 @@ async function handlePut(
     if (!blobInfo) {
       return res.status(404).json({
         error: 'Share not found',
-        code: 'NOT_FOUND',
+        code: ErrorCode.NOT_FOUND,
       });
     }
 
@@ -195,7 +155,7 @@ async function handlePut(
     if (!response.ok) {
       return res.status(404).json({
         error: 'Share not found',
-        code: 'NOT_FOUND',
+        code: ErrorCode.NOT_FOUND,
       });
     }
 
@@ -206,7 +166,7 @@ async function handlePut(
     if (tokenHash !== existingData.metadata.deleteTokenHash) {
       return res.status(401).json({
         error: 'Invalid delete token',
-        code: 'UNAUTHORIZED',
+        code: ErrorCode.UNAUTHORIZED,
       });
     }
 
@@ -215,7 +175,7 @@ async function handlePut(
     if (newPermission !== 'view' && newPermission !== 'edit') {
       return res.status(400).json({
         error: 'Invalid permission. Must be "view" or "edit".',
-        code: 'VALIDATION_ERROR',
+        code: ErrorCode.VALIDATION_ERROR,
       });
     }
 
@@ -264,7 +224,7 @@ async function handlePut(
     if (!contentResult.passed) {
       return res.status(400).json({
         error: `Content blocked: ${contentResult.reason}`,
-        code: 'CONTENT_BLOCKED',
+        code: ErrorCode.CONTENT_BLOCKED,
       });
     }
 
@@ -296,7 +256,7 @@ async function handlePut(
     console.error('Share update error:', error);
     return res.status(500).json({
       error: 'Failed to update share',
-      code: 'NETWORK_ERROR',
+      code: ErrorCode.SERVER_ERROR,
     });
   }
 }
@@ -318,7 +278,7 @@ async function handleDelete(
     if (!rateLimit.allowed) {
       return res.status(429).json({
         error: 'Too many delete attempts. Try again later.',
-        code: 'RATE_LIMITED',
+        code: ErrorCode.RATE_LIMITED,
         retryAfter: rateLimit.retryAfterSeconds,
       });
     }
@@ -330,7 +290,7 @@ async function handleDelete(
     if (!deleteToken) {
       return res.status(401).json({
         error: 'Delete token required',
-        code: 'UNAUTHORIZED',
+        code: ErrorCode.UNAUTHORIZED,
       });
     }
 
@@ -339,7 +299,7 @@ async function handleDelete(
     if (!blobInfo) {
       return res.status(404).json({
         error: 'Share not found',
-        code: 'NOT_FOUND',
+        code: ErrorCode.NOT_FOUND,
       });
     }
 
@@ -347,7 +307,7 @@ async function handleDelete(
     if (!response.ok) {
       return res.status(404).json({
         error: 'Share not found',
-        code: 'NOT_FOUND',
+        code: ErrorCode.NOT_FOUND,
       });
     }
 
@@ -358,7 +318,7 @@ async function handleDelete(
     if (tokenHash !== existingData.metadata.deleteTokenHash) {
       return res.status(401).json({
         error: 'Invalid delete token',
-        code: 'UNAUTHORIZED',
+        code: ErrorCode.UNAUTHORIZED,
       });
     }
 
@@ -373,7 +333,7 @@ async function handleDelete(
     console.error('Share delete error:', error);
     return res.status(500).json({
       error: 'Failed to delete share',
-      code: 'NETWORK_ERROR',
+      code: ErrorCode.SERVER_ERROR,
     });
   }
 }

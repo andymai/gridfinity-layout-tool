@@ -113,6 +113,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { RedisOptions } from 'ioredis';
 import Redis from 'ioredis';
+import { getClientIP } from './lib/rateLimit.js';
 
 // ============================================
 // TYPES
@@ -427,10 +428,11 @@ function getRedis(): Redis | null {
 // ============================================
 
 /**
- * Simple rate limiting using IP hash.
+ * Internal rate limiting for ML telemetry endpoint.
+ * Uses the same Redis client as aggregation operations.
  * 100 requests per minute per IP.
  */
-async function checkRateLimit(ip: string, client: Redis): Promise<boolean> {
+async function checkRateLimitInternal(ip: string, client: Redis): Promise<boolean> {
   const hashedIP = hashIP(ip);
   const key = `ml_ratelimit:${hashedIP}`;
   const now = Math.floor(Date.now() / 1000);
@@ -2014,11 +2016,9 @@ export default async function handler(
   }
 
   // Rate limiting
-  const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
-    req.socket?.remoteAddress ||
-    'unknown';
+  const ip = getClientIP(req);
 
-  const allowed = await checkRateLimit(ip, client);
+  const allowed = await checkRateLimitInternal(ip, client);
   if (!allowed) {
     res.status(429).json({ error: 'Rate limit exceeded' });
     return;
