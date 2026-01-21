@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   processLabel,
-  normalizeLabel,
   getCanonicalTerms,
   isKnownTerm,
   getTermDomain,
@@ -188,15 +187,6 @@ describe('labelVocabulary', () => {
     it('is defined', () => {
       expect(VOCAB_VERSION).toBeDefined();
       expect(typeof VOCAB_VERSION).toBe('string');
-    });
-  });
-
-  describe('normalizeLabel (deprecated)', () => {
-    it('delegates to processLabel', () => {
-      const result = normalizeLabel('screwdriver');
-      const expected = processLabel('screwdriver');
-      expect(result.normalized).toBe(expected.normalized);
-      expect(result.domain).toBe(expected.domain);
     });
   });
 

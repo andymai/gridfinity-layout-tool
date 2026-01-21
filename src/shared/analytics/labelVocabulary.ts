@@ -950,13 +950,6 @@ function cacheResult(key: string, value: LabelData): void {
 }
 
 /**
- * @deprecated Use processLabel() instead - renamed for clarity
- */
-export function normalizeLabel(raw: string): LabelData {
-  return processLabel(raw);
-}
-
-/**
  * Get all canonical terms in the vocabulary.
  * Useful for debugging or UI display.
  */

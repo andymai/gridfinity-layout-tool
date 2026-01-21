@@ -960,6 +960,26 @@ let consecutiveFailures = 0;
 let circuitBreakerTrippedAt: number | null = null;
 
 /**
+ * Buffer a telemetry event and schedule/trigger a flush.
+ *
+ * This is the common exit path for all tracking functions.
+ * Adds the event to the buffer and either flushes immediately
+ * if threshold is reached, or schedules a deferred flush.
+ *
+ * @param event - The telemetry event to buffer
+ * @param immediate - If true, flush immediately regardless of threshold
+ */
+function bufferEvent(event: MLTelemetryEvent, immediate = false): void {
+  eventBuffer.push(event);
+
+  if (immediate || eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+/**
  * Schedule a future buffer flush if one is not already pending.
  *
  * Schedules a call to `flush()` after `FLUSH_INTERVAL_MS`. If a flush timer is already set, this is a no-op.
@@ -1021,13 +1041,12 @@ function recordSuccess(): void {
  * Record a failed telemetry send and trip the circuit breaker when the failure threshold is reached.
  *
  * Increments the internal consecutive failure counter and, if the configured threshold is met
- * and the breaker is not already tripped, sets the trip timestamp and logs a warning.
+ * and the breaker is not already tripped, sets the trip timestamp.
  */
 function recordFailure(): void {
   consecutiveFailures++;
   if (consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD && circuitBreakerTrippedAt === null) {
     circuitBreakerTrippedAt = Date.now();
-    console.warn(`ML telemetry circuit breaker tripped after ${consecutiveFailures} failures. Will retry in ${CIRCUIT_BREAKER_RESET_MS / 1000}s.`);
   }
 }
 
@@ -1400,14 +1419,7 @@ export function trackBinPlacement(
   layoutSession.lastEditTime = Date.now();
 
   // Buffer event
-  eventBuffer.push(event);
-
-  // Flush if threshold reached
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 /**
@@ -1463,13 +1475,7 @@ export function trackLabelUpdate(
     vocab_version: VOCAB_VERSION,
   };
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 /**
@@ -1688,8 +1694,6 @@ export function trackLayoutSnapshot(
     vocab_version: VOCAB_VERSION,
   };
 
-  eventBuffer.push(event);
-
   // Also track cross-layout patterns at high-value commit points
   // This is done after the snapshot to ensure label sizes are recorded
   if (trigger === 'save' || trigger === 'share' || trigger === 'session_end') {
@@ -1698,11 +1702,7 @@ export function trackLayoutSnapshot(
     setTimeout(() => trackCrossLayoutPattern(layout), 0);
   }
 
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -1751,13 +1751,7 @@ export function trackQualitySignal(
     time_since_last_edit_ms: timeSinceLastEditMs,
   };
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -1787,13 +1781,7 @@ export function trackDrawerPurpose(
     is_custom: isCustom,
   };
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -1868,13 +1856,7 @@ export function trackCategoryChange(
     vocab_version: VOCAB_VERSION,
   };
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -1919,13 +1901,7 @@ export function trackBinResize(
   layoutSession.resizeCount += batchSize;
   layoutSession.lastEditTime = Date.now();
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -1990,13 +1966,7 @@ export function trackBinDeletion(
   layoutSession.deletedCount += batchSize;
   layoutSession.lastEditTime = Date.now();
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -2048,13 +2018,7 @@ export function trackBinMove(
   layoutSession.moveCount += batchSize;
   layoutSession.lastEditTime = Date.now();
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -2098,13 +2062,7 @@ export function trackDrawerResize(
     fill_pct: computeFillPercentage(layout),
   };
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -2144,13 +2102,7 @@ export function trackFillOperation(
     drawer_size: `${layout.drawer.width}x${layout.drawer.depth}x${layout.drawer.height}`,
   };
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -2200,13 +2152,7 @@ export function trackLayerMove(
   // Update last edit time for dormancy tracking
   markEditActivity();
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -2235,13 +2181,7 @@ export function trackBinRotation(
   // Update last edit time for dormancy tracking
   markEditActivity();
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -2302,13 +2242,7 @@ export function trackPlacementRejection(
     mode,
   };
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 /**
@@ -2406,13 +2340,7 @@ export function trackUndo(
   // Update last edit time for dormancy tracking
   markEditActivity();
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 /**
@@ -2457,13 +2385,7 @@ export function trackQuickCorrection(
     layer_index: layerIndex >= 0 ? layerIndex : 0,
   };
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================
@@ -2718,16 +2640,8 @@ export function trackSessionSummary(
     final_fill_pct: computeFillPercentage(layout),
   };
 
-  eventBuffer.push(event);
-
-  // Flush immediately since this is typically called on session end
-  if (trigger === 'session_end') {
-    flush();
-  } else if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  // Flush immediately if session_end (ensures data is sent before page unload)
+  bufferEvent(event, trigger === 'session_end');
 }
 
 // ============================================
@@ -2822,13 +2736,7 @@ export function trackCrossLayoutPattern(layout: Layout): void {
     drawer_size: `${layout.drawer.width}x${layout.drawer.depth}x${layout.drawer.height}`,
   };
 
-  eventBuffer.push(event);
-
-  if (eventBuffer.length >= FLUSH_THRESHOLD) {
-    flush();
-  } else {
-    scheduleFlush();
-  }
+  bufferEvent(event);
 }
 
 // ============================================

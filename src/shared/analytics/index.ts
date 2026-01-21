@@ -22,7 +22,6 @@ export {
 // Label processing
 export {
   processLabel,
-  normalizeLabel,
   getCanonicalTerms,
   isKnownTerm,
   getTermDomain,
