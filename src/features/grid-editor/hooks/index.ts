@@ -5,6 +5,8 @@ export { useGridFirstUseHints } from './useGridFirstUseHints';
 export { useGridNavigation } from './useGridNavigation';
 export { useGridResize } from './useGridResize';
 export { useGridRowColumnSelection } from './useGridRowColumnSelection';
-export { useGridTemplate } from './useGridTemplate';
+// Re-export from shared (useGridTemplate moved to shared layer)
+export { useGridTemplate } from '@/shared/hooks';
+export type { GridTemplateState, UseGridTemplateOptions } from '@/shared/hooks';
 export { useGridZoom } from './useGridZoom';
 export { useInteraction } from './useInteraction';

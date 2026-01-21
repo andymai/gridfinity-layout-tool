@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useResponsive } from '@/shared/hooks';
-import { useLayoutSwitcher } from '@/features/layout-library/hooks/useLayoutSwitcher';
+import { useLayoutSwitcher } from '@/hooks';
 import { useUIStore } from '@/core/store/ui';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
