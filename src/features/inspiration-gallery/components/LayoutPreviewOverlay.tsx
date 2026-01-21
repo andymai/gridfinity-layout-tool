@@ -145,10 +145,10 @@ export function LayoutPreviewOverlay({
               </div>
             </div>
 
-            {/* Sample labels */}
+            {/* Example items */}
             {labeledBins.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-content mb-2">Sample Labels</h3>
+                <h3 className="text-sm font-medium text-content mb-2">Example Items</h3>
                 <div className="flex flex-wrap gap-1">
                   {labeledBins.slice(0, 8).map((bin) => (
                     <span
@@ -199,7 +199,7 @@ export function LayoutPreviewOverlay({
         <div className="p-4 md:p-6 border-t border-stroke-subtle bg-surface shrink-0">
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm text-content-secondary">
-              Creates a copy in your library
+              Use as a starting point — customize to fit your items
             </p>
             <button
               onClick={onUseLayout}
@@ -215,7 +215,7 @@ export function LayoutPreviewOverlay({
                   Adding...
                 </>
               ) : (
-                'Add to My Layouts'
+                'Use as Starting Point'
               )}
             </button>
           </div>

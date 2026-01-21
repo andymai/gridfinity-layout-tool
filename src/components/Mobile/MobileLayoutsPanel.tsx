@@ -381,7 +381,7 @@ export function MobileLayoutsPanel() {
         </div>
         <div className="flex-1 text-left">
           <div className="text-sm font-medium text-content">Inspiration Gallery</div>
-          <div className="text-xs text-content-tertiary">Browse pre-made layouts</div>
+          <div className="text-xs text-content-tertiary">Get ideas for your drawer</div>
         </div>
         <svg className="w-4 h-4 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

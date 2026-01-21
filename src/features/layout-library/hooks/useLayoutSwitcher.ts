@@ -106,11 +106,15 @@ export function useLayoutSwitcher() {
       clearSharedLayoutPreview();
 
       // 4. Atomic switch: save current, load target, update library
+      // Note: Get fresh state to avoid stale closure issues
+      // (e.g., when called right after importLayoutFromJSON or deleteLayout)
+      const currentLibrary = useLibraryStore.getState().library;
+      const currentActiveId = useLayoutStore.getState().activeLayoutId;
       const result = await switchActiveLayout(
-        activeLayoutId || '__shared_preview__',
+        currentActiveId || '__shared_preview__',
         layout,
         targetId,
-        library
+        currentLibrary
       );
 
       if (isErr(result)) {
@@ -237,7 +241,9 @@ export function useLayoutSwitcher() {
 
     try {
       // Atomic delete: remove layout, update library
-      const result = await deleteLayoutWithEntry(id, library);
+      // Note: Get fresh library state to avoid stale closure issues
+      const currentLibrary = useLibraryStore.getState().library;
+      const result = await deleteLayoutWithEntry(id, currentLibrary);
 
       if (isErr(result)) {
         addToast('Failed to delete layout', 'error');
