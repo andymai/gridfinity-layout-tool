@@ -302,9 +302,25 @@ const MAX_LABEL_ENTRIES = 500;
 const MAX_SIZES_PER_LABEL = 5;
 
 /**
+ * Check if localStorage is available.
+ */
+function isLocalStorageAvailable(): boolean {
+  try {
+    const testKey = '__storage_test__';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Load stored label sizes from localStorage.
  */
 export function loadLabelSizes(): Record<string, string[]> {
+  if (!isLocalStorageAvailable()) return {};
+
   try {
     const stored = localStorage.getItem(LABEL_SIZES_STORAGE_KEY);
     if (!stored) return {};
@@ -361,19 +377,39 @@ export function recordLabelSize(labelHash: string, size: string): void {
 
 /**
  * Extract and record all label→size associations from a layout.
+ * Uses batched localStorage operations for better performance.
  *
  * @param layout - Layout to process
  */
 export function recordLayoutLabelSizes(layout: Layout): void {
   const gridBins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const labeledBins = gridBins.filter((b) => b.label?.trim());
 
-  for (const bin of gridBins) {
-    if (!bin.label?.trim()) continue;
+  if (labeledBins.length === 0) return;
 
-    const labelData = processLabel(bin.label);
+  // Load once, update all, save once (batched for performance)
+  const data = loadLabelSizes();
+
+  for (const bin of labeledBins) {
+    const labelData = processLabel(bin.label!);
     const size = `${bin.width}x${bin.depth}x${bin.height}`;
-    recordLabelSize(labelData.hash, size);
+
+    if (!data[labelData.hash]) {
+      data[labelData.hash] = [];
+    }
+
+    // Add size if not already tracked
+    if (!data[labelData.hash].includes(size)) {
+      data[labelData.hash].push(size);
+
+      // Limit sizes per label
+      if (data[labelData.hash].length > MAX_SIZES_PER_LABEL) {
+        data[labelData.hash] = data[labelData.hash].slice(-MAX_SIZES_PER_LABEL);
+      }
+    }
   }
+
+  saveLabelSizes(data);
 }
 
 /**

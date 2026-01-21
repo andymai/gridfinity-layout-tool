@@ -31,6 +31,15 @@ Object.defineProperty(global, 'localStorage', {
   value: localStorageMock,
 });
 
+const STORAGE_KEY = 'gridfinity-ml-label-sizes-v1';
+
+// Helper to get only label-size storage calls (filtering out availability check calls)
+function getStorageCalls(): Array<[string, string]> {
+  return localStorageMock.setItem.mock.calls.filter(
+    (call: [string, string]) => call[0] === STORAGE_KEY
+  );
+}
+
 // Helper to create test layouts
 function createTestLayout(bins: Partial<Bin>[], drawer?: Partial<Drawer>): Layout {
   const defaultDrawer: Drawer = {
@@ -201,7 +210,9 @@ describe('purposeInference', () => {
     it('records a new label-size association', () => {
       recordLabelSize('abc12345', '2x2x3');
 
-      const stored = JSON.parse(localStorageMock.setItem.mock.calls[0][1]);
+      const storageCalls = getStorageCalls();
+      expect(storageCalls.length).toBeGreaterThan(0);
+      const stored = JSON.parse(storageCalls[0][1]);
       expect(stored['abc12345']).toContain('2x2x3');
     });
 
@@ -209,7 +220,8 @@ describe('purposeInference', () => {
       recordLabelSize('abc12345', '2x2x3');
       recordLabelSize('abc12345', '2x2x3');
 
-      const lastCall = localStorageMock.setItem.mock.calls[localStorageMock.setItem.mock.calls.length - 1];
+      const storageCalls = getStorageCalls();
+      const lastCall = storageCalls[storageCalls.length - 1];
       const stored = JSON.parse(lastCall[1]);
       expect(stored['abc12345'].filter((s: string) => s === '2x2x3').length).toBe(1);
     });
@@ -218,7 +230,8 @@ describe('purposeInference', () => {
       recordLabelSize('abc12345', '2x2x3');
       recordLabelSize('abc12345', '3x3x6');
 
-      const lastCall = localStorageMock.setItem.mock.calls[localStorageMock.setItem.mock.calls.length - 1];
+      const storageCalls = getStorageCalls();
+      const lastCall = storageCalls[storageCalls.length - 1];
       const stored = JSON.parse(lastCall[1]);
       expect(stored['abc12345']).toContain('2x2x3');
       expect(stored['abc12345']).toContain('3x3x6');

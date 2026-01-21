@@ -2429,21 +2429,40 @@ export function trackSessionSummary(
 const USER_HASH_STORAGE_KEY = 'gridfinity-ml-user-hash-v1';
 
 /**
+ * Check if localStorage is available.
+ */
+function isLocalStorageAvailable(): boolean {
+  try {
+    const testKey = '__storage_test__';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Get or create a stable user hash for cross-layout correlation.
  * This is NOT personally identifiable - just a random ID for grouping.
  */
 function getUserHash(): string {
+  if (!isLocalStorageAvailable()) {
+    return 'anonymous';
+  }
+
   try {
     let hash = localStorage.getItem(USER_HASH_STORAGE_KEY);
     if (!hash) {
-      // Generate a random hash
-      hash = Math.random().toString(36).substring(2, 10) +
-             Math.random().toString(36).substring(2, 10);
+      // Use crypto.randomUUID for better randomness
+      hash = typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : Math.random().toString(36).substring(2, 10) +
+          Math.random().toString(36).substring(2, 10);
       localStorage.setItem(USER_HASH_STORAGE_KEY, hash);
     }
     return hash;
   } catch {
-    // Fallback if localStorage not available
     return 'anonymous';
   }
 }
