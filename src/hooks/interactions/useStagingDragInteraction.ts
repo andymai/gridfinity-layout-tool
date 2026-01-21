@@ -4,7 +4,7 @@ import { canPlaceBin, clamp } from '@/shared/utils/validation';
 import { capturePointer } from '@/utils/interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from '@/hooks/interactions/types';
+import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from './types';
 import type { Coord } from '@/core/types';
 
 /**
