@@ -50,9 +50,19 @@ export interface UpdateShareResponse {
 
 export interface ShareErrorResponse {
   error: string;
-  code: 'VALIDATION_ERROR' | 'SIZE_LIMIT' | 'BIN_LIMIT' | 'RATE_LIMITED' |
-        'CONTENT_BLOCKED' | 'NETWORK_ERROR' | 'NOT_FOUND' | 'UNAUTHORIZED' |
-        'EXPIRED' | 'INVALID_PERMISSION';
+  code:
+    | 'VALIDATION_ERROR'
+    | 'SIZE_LIMIT'
+    | 'BIN_LIMIT'
+    | 'RATE_LIMITED'
+    | 'CONTENT_BLOCKED'
+    | 'NOT_FOUND'
+    | 'UNAUTHORIZED'
+    | 'EXPIRED'
+    | 'INVALID_PERMISSION'
+    | 'SERVER_ERROR'
+    | 'CONFIGURATION_ERROR'
+    | 'METHOD_NOT_ALLOWED';
   retryAfter?: number;
 }
 
@@ -123,8 +133,6 @@ function mapShareErrorToApiError(error: ShareErrorResponse): ApiError {
       return apiNotFound();
     case 'UNAUTHORIZED':
       return apiUnauthorized();
-    case 'NETWORK_ERROR':
-      return apiNetworkError();
     case 'VALIDATION_ERROR':
       return apiValidationError();
     case 'EXPIRED':
@@ -132,6 +140,11 @@ function mapShareErrorToApiError(error: ShareErrorResponse): ApiError {
     case 'INVALID_PERMISSION':
       // Invalid permission errors are treated as validation errors
       return apiValidationError();
+    case 'SERVER_ERROR':
+    case 'CONFIGURATION_ERROR':
+    case 'METHOD_NOT_ALLOWED':
+      // Server-side errors
+      return apiServerError();
     default:
       return apiServerError();
   }
