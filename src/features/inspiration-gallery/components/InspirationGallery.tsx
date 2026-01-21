@@ -26,10 +26,8 @@ export function InspirationGallery({ isOpen, onClose }: InspirationGalleryProps)
   return <InspirationGalleryContent onClose={onClose} />;
 }
 
-// Calculate responsive default grid columns based on window width
-function getDefaultGridColumns(): number {
-  if (typeof window === 'undefined') return 5;
-  const width = window.innerWidth;
+// Calculate responsive grid columns based on viewport width
+function getGridColumns(width: number): number {
   if (width >= 1536) return 7; // 2xl
   if (width >= 1280) return 6; // xl
   if (width >= 1024) return 5; // lg
@@ -37,12 +35,13 @@ function getDefaultGridColumns(): number {
 }
 
 function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
-  const { isMobile } = useResponsive();
+  const { isMobile, viewportWidth } = useResponsive();
   const [selectedTheme, setSelectedTheme] = useState<InspirationTheme | 'all'>('all');
   const [previewLayout, setPreviewLayout] = useState<InspirationLayout | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [focusedCardIndex, setFocusedCardIndex] = useState(-1);
-  const [gridColumns, setGridColumns] = useState(getDefaultGridColumns);
+  // Initialize grid columns from responsive viewport (user can adjust via slider)
+  const [gridColumns, setGridColumns] = useState(() => getGridColumns(viewportWidth));
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
