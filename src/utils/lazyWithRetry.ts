@@ -9,6 +9,12 @@ import { lazy, type ComponentType } from 'react';
  * On failure, it will:
  * 1. Retry the import up to `retries` times
  * 2. If all retries fail, reload the page (once) to get fresh assets
+ *
+ * Note: Uses `ComponentType<never>` as the constraint because TypeScript's
+ * type inference for lazy-loaded components requires the most permissive type.
+ * The actual component props are preserved through the generic T parameter.
+ *
+ * @typeParam T - The component type, inferred from the import function
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function lazyWithRetry<T extends ComponentType<any>>(
@@ -65,6 +71,11 @@ export function lazyWithRetry<T extends ComponentType<any>>(
  *   import('./modals/HelpModal').then(namedExport('HelpModal'))
  * );
  * ```
+ *
+ * Note: Uses `any` in the module type because TypeScript cannot infer
+ * the specific component props from a dynamic import's module object.
+ *
+ * @typeParam T - The component type to extract from the module
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function namedExport<T extends ComponentType<any>>(name: string) {

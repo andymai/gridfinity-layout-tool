@@ -56,6 +56,55 @@ export interface ShareErrorResponse {
   retryAfter?: number;
 }
 
+// Type guards for runtime validation of API responses
+
+function isShareErrorResponse(data: unknown): data is ShareErrorResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'error' in data &&
+    'code' in data &&
+    typeof (data as Record<string, unknown>).error === 'string' &&
+    typeof (data as Record<string, unknown>).code === 'string'
+  );
+}
+
+function isShareResponse(data: unknown): data is ShareResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'id' in data &&
+    'url' in data &&
+    'deleteToken' in data &&
+    'permission' in data &&
+    typeof (data as Record<string, unknown>).id === 'string' &&
+    typeof (data as Record<string, unknown>).url === 'string'
+  );
+}
+
+function isUpdateShareResponse(data: unknown): data is UpdateShareResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'id' in data &&
+    'url' in data &&
+    'permission' in data &&
+    typeof (data as Record<string, unknown>).id === 'string' &&
+    typeof (data as Record<string, unknown>).url === 'string'
+  );
+}
+
+function isFetchShareResponse(data: unknown): data is FetchShareResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'layout' in data &&
+    'metadata' in data &&
+    typeof (data as Record<string, unknown>).layout === 'object' &&
+    typeof (data as Record<string, unknown>).metadata === 'object'
+  );
+}
+
 /**
  * Map a ShareErrorResponse to an ApiError.
  * This bridges the server error format to the Result type system.
@@ -119,13 +168,19 @@ export async function createShare(
       body: JSON.stringify({ layoutId, layout, permission, authorName }),
     });
 
-    const data = await response.json();
+    const data: unknown = await response.json();
 
     if (!response.ok) {
-      return err(mapShareErrorToApiError(data as ShareErrorResponse));
+      if (isShareErrorResponse(data)) {
+        return err(mapShareErrorToApiError(data));
+      }
+      return err(apiServerError());
     }
 
-    return ok(data as ShareResponse);
+    if (isShareResponse(data)) {
+      return ok(data);
+    }
+    return err(apiServerError());
   } catch (error) {
     return err(apiNetworkError(error));
   }
@@ -147,13 +202,19 @@ export async function updateShare(
       body: JSON.stringify({ layout, permission, deleteToken }),
     });
 
-    const data = await response.json();
+    const data: unknown = await response.json();
 
     if (!response.ok) {
-      return err(mapShareErrorToApiError(data as ShareErrorResponse));
+      if (isShareErrorResponse(data)) {
+        return err(mapShareErrorToApiError(data));
+      }
+      return err(apiServerError());
     }
 
-    return ok(data as UpdateShareResponse);
+    if (isUpdateShareResponse(data)) {
+      return ok(data);
+    }
+    return err(apiServerError());
   } catch (error) {
     return err(apiNetworkError(error));
   }
@@ -174,13 +235,19 @@ export async function updatePermission(
       body: JSON.stringify({ permission, deleteToken }),
     });
 
-    const data = await response.json();
+    const data: unknown = await response.json();
 
     if (!response.ok) {
-      return err(mapShareErrorToApiError(data as ShareErrorResponse));
+      if (isShareErrorResponse(data)) {
+        return err(mapShareErrorToApiError(data));
+      }
+      return err(apiServerError());
     }
 
-    return ok(data as UpdateShareResponse);
+    if (isUpdateShareResponse(data)) {
+      return ok(data);
+    }
+    return err(apiServerError());
   } catch (error) {
     return err(apiNetworkError(error));
   }
@@ -194,13 +261,19 @@ export async function fetchShare(
 ): Promise<Result<FetchShareResponse, ApiError>> {
   try {
     const response = await fetch(`/api/share/${id}`);
-    const data = await response.json();
+    const data: unknown = await response.json();
 
     if (!response.ok) {
-      return err(mapShareErrorToApiError(data as ShareErrorResponse));
+      if (isShareErrorResponse(data)) {
+        return err(mapShareErrorToApiError(data));
+      }
+      return err(apiServerError());
     }
 
-    return ok(data as FetchShareResponse);
+    if (isFetchShareResponse(data)) {
+      return ok(data);
+    }
+    return err(apiServerError());
   } catch (error) {
     return err(apiNetworkError(error));
   }
@@ -222,13 +295,25 @@ export async function deleteShare(
       },
     });
 
-    const data = await response.json();
+    const data: unknown = await response.json();
 
     if (!response.ok) {
-      return err(mapShareErrorToApiError(data as ShareErrorResponse));
+      if (isShareErrorResponse(data)) {
+        return err(mapShareErrorToApiError(data));
+      }
+      return err(apiServerError());
     }
 
-    return ok(data);
+    // Validate success response structure
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'success' in data &&
+      'message' in data
+    ) {
+      return ok(data as { success: true; message: string });
+    }
+    return err(apiServerError());
   } catch (error) {
     return err(apiNetworkError(error));
   }
@@ -248,13 +333,25 @@ export async function reportShare(
       body: JSON.stringify({ reason }),
     });
 
-    const data = await response.json();
+    const data: unknown = await response.json();
 
     if (!response.ok) {
-      return err(mapShareErrorToApiError(data as ShareErrorResponse));
+      if (isShareErrorResponse(data)) {
+        return err(mapShareErrorToApiError(data));
+      }
+      return err(apiServerError());
     }
 
-    return ok(data);
+    // Validate success response structure
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'success' in data &&
+      'message' in data
+    ) {
+      return ok(data as { success: true; message: string });
+    }
+    return err(apiServerError());
   } catch (error) {
     return err(apiNetworkError(error));
   }
