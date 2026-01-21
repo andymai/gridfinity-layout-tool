@@ -38,7 +38,7 @@ export function computeStructureHash(layout: Layout): string {
   const quadrantOccupancy = computeQuadrantOccupancy(bins, layout.drawer);
 
   // Component 5: Layer usage pattern (3 bits)
-  const layerPattern = computeLayerPattern(bins, layout.layers.length);
+  const layerPattern = computeLayerPattern(bins, layout.layers);
 
   // Combine components into a 20-bit value
   const combined =
@@ -168,11 +168,17 @@ function computeQuadrantOccupancy(
  * - bit 0: single layer only
  * - bit 1: bottom-heavy (more bins in lower layers)
  * - bit 2: uses many layers (3+)
+ *
+ * @param bins - Array of bins
+ * @param layers - Array of layers (index 0 = bottom layer)
  */
-function computeLayerPattern(bins: Bin[], layerCount: number): number {
-  if (bins.length === 0) return 0;
+function computeLayerPattern(
+  bins: Bin[],
+  layers: Array<{ id: string }>
+): number {
+  if (bins.length === 0 || layers.length === 0) return 0;
 
-  // Get layer indices used
+  // Count bins per layer using layer index order (deterministic)
   const layerBinCounts = new Map<string, number>();
   for (const bin of bins) {
     layerBinCounts.set(bin.layerId, (layerBinCounts.get(bin.layerId) || 0) + 1);
@@ -187,14 +193,25 @@ function computeLayerPattern(bins: Bin[], layerCount: number): number {
   // Bit 2: Uses many layers
   if (layersUsed >= 3) pattern |= 4;
 
-  // Bit 1: Bottom-heavy (we can't determine this without layer order)
-  // Use a heuristic: if there are multiple layers and most bins are NOT spread evenly
-  if (layersUsed > 1 && layerCount > 1) {
-    const avgBinsPerLayer = bins.length / layersUsed;
-    const firstLayerCount = Array.from(layerBinCounts.values())[0] || 0;
+  // Bit 1: Bottom-heavy (more bins in lower layers)
+  // Use layer index order from layout.layers (index 0 = bottom layer)
+  if (layersUsed > 1 && layers.length > 1) {
+    // Count bins in bottom half vs top half of layers
+    const midpoint = layers.length / 2;
+    let bottomHalfBins = 0;
+    let topHalfBins = 0;
 
-    // Bottom-heavy if first used layer has more than average
-    if (firstLayerCount > avgBinsPerLayer * 1.5) pattern |= 2;
+    for (let i = 0; i < layers.length; i++) {
+      const count = layerBinCounts.get(layers[i].id) || 0;
+      if (i < midpoint) {
+        bottomHalfBins += count;
+      } else {
+        topHalfBins += count;
+      }
+    }
+
+    // Bottom-heavy if bottom half has significantly more bins
+    if (bottomHalfBins > topHalfBins * 1.5) pattern |= 2;
   }
 
   return pattern;
