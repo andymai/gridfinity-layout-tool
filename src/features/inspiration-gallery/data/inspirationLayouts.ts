@@ -69,7 +69,8 @@ function createCookingUtensils(): InspirationLayout {
     createCategory('Medium Tools', '#38bdf8'),
     createCategory('Small Tools', '#fbbf24'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 5 (35mm) for spatula/ladle handles that are 25-40mm thick
+  const layer = createLayer('Layer 1', 5);
 
   // Utensils stored across width (wider drawer accommodates long tools)
   // - Ladles/spoons: 300-350mm → 8 units
@@ -272,7 +273,8 @@ function createToolDrawer(): InspirationLayout {
     createCategory('Wrenches', '#fbbf24'),
     createCategory('Other', '#e2e8f0'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 5 (35mm) for pliers that are 25-40mm thick when closed
+  const layer = createLayer('Layer 1', 5);
 
   // Real tool dimensions:
   // - Pliers: 150-200mm → 5 units (210mm)
@@ -392,7 +394,8 @@ function createSocketOrganizer(): InspirationLayout {
     createCategory('Ratchets', '#f87171'),
     createCategory('Accessories', '#4ade80'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 6 (42mm) for shallow sockets (25-30mm) standing upright
+  const layer = createLayer('Layer 1', 6);
 
   // Simplified socket organizer - group sockets by drive size
   // Most socket sets come with 8-12 sockets per drive size
@@ -675,7 +678,8 @@ function createSewingKit(): InspirationLayout {
     createCategory('Notions', '#4ade80'),
     createCategory('Tools', '#e2e8f0'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 5 (35mm) for standard thread spools (35-40mm diameter)
+  const layer = createLayer('Layer 1', 5);
 
   // Uses half-bins for small sewing notions
   const bins = [
@@ -731,7 +735,8 @@ function createBathroomMakeup(): InspirationLayout {
     createCategory('Makeup', '#c084fc'),
     createCategory('Small Items', '#94a3b8'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 5 (35mm) for mascara tubes (~15mm diameter) and lipsticks lying flat (~20mm)
+  const layer = createLayer('Layer 1', 5);
 
   // Real dimensions:
   // - Makeup brushes: 150-180mm → 4-5 units
@@ -788,7 +793,8 @@ function createNightstandDrawer(): InspirationLayout {
     createCategory('Health', '#4ade80'),
     createCategory('Personal', '#94a3b8'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 4 (28mm) for glasses cases (30-40mm thick) and earbuds cases (~25mm)
+  const layer = createLayer('Layer 1', 4);
 
   // Real dimensions for nightstand items:
   // - Phone: ~160mm length → 4 units
@@ -838,7 +844,8 @@ function createBatteryDrawer(): InspirationLayout {
     createCategory('Rechargeable', '#4ade80'),
     createCategory('Specialty', '#38bdf8'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 5 (35mm) for C batteries (26mm) and D batteries (34mm) lying flat
+  const layer = createLayer('Layer 1', 5);
 
   // Based on popular gridfinity battery organizers:
   // - AA: 50mm length, 14mm diameter → 1x2 bins work well
@@ -945,7 +952,8 @@ function createFirstAidKit(): InspirationLayout {
     createCategory('Medications', '#4ade80'),
     createCategory('Tools', '#38bdf8'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 5 (35mm) for small medication bottles lying flat (~30mm diameter)
+  const layer = createLayer('Layer 1', 5);
 
   // First aid supplies:
   // - Band-aids box: ~100x60mm → 3x2
@@ -1055,7 +1063,8 @@ function createSpiceDrawer(): InspirationLayout {
     createCategory('Herbs', '#4ade80'),
     createCategory('Specialty', '#fbbf24'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 7 (49mm) for standard spice jars lying on their side (~45mm diameter)
+  const layer = createLayer('Layer 1', 7);
 
   // Standard spice jar: ~45mm diameter → fits in 1.5×1.5 or 2×2 bins
   // Larger spice containers: ~60-70mm → fits in 2×2 bins
@@ -1202,7 +1211,8 @@ function createEDCDrawer(): InspirationLayout {
     createCategory('Tech', '#38bdf8'),
     createCategory('Accessories', '#94a3b8'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 4 (28mm) for EDC flashlights (~22mm diameter) and glasses cases
+  const layer = createLayer('Layer 1', 4);
 
   // EDC items based on telemetry gaps: key, coin, flashlight, glasses, watch
   // Real dimensions:
@@ -1321,7 +1331,8 @@ function createMakerStation(): InspirationLayout {
     createCategory('Connectivity', '#38bdf8'),
     createCategory('Supplies', '#fbbf24'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 4 (28mm) for Raspberry Pi with heatsink (~25mm) and motor modules
+  const layer = createLayer('Layer 1', 4);
 
   // Maker/Arduino supplies based on telemetry: arduino, sd_card, wire
   // Real dimensions:
