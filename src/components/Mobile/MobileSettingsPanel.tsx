@@ -6,7 +6,7 @@ import { getFeature } from '@/features/labs/definitions/features';
 import { SparklesIcon, ChevronRightIcon } from '@/features/labs/components/icons';
 import { CONSTRAINTS } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { HalfBinModeBlockedModal } from '@/components/Modals/HalfBinModeBlockedModal';
+import { HalfBinModeBlockedModal } from '@/components/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
