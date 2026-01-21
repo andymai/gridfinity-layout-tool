@@ -63,6 +63,19 @@ vi.mock('../../components/Modals/HalfBinModeBlockedModal', () => ({
   ),
 }));
 
+vi.mock('../../components/Modals/SettingsModal', () => ({
+  SettingsModal: ({ isOpen, onClose }: {
+    isOpen: boolean;
+    onClose: () => void;
+  }) => (
+    isOpen ? (
+      <div data-testid="settings-modal">
+        <button data-testid="close-settings" onClick={onClose}>Close</button>
+      </div>
+    ) : null
+  ),
+}));
+
 vi.mock('../../hooks/useResponsive', () => ({
   useResponsive: () => ({ isDesktop: true, isMobile: false, isTablet: false }),
 }));
@@ -377,59 +390,30 @@ describe('Sidebar', () => {
     });
   });
 
-  describe('default preferences', () => {
-    it('renders Default Preferences section', () => {
+  describe('settings modal', () => {
+    it('renders settings button in header', () => {
       render(<Sidebar />);
 
-      expect(screen.getByText('Default Preferences')).toBeInTheDocument();
+      expect(screen.getByLabelText('Open settings')).toBeInTheDocument();
     });
 
-    it('shows Save Current as Defaults button', () => {
+    it('opens settings modal when settings button clicked', () => {
       render(<Sidebar />);
 
-      expect(screen.getByText('Save Current as Defaults')).toBeInTheDocument();
+      fireEvent.click(screen.getByLabelText('Open settings'));
+
+      expect(screen.getByTestId('settings-modal')).toBeInTheDocument();
     });
 
-    it('shows current default settings', () => {
+    it('closes settings modal when close button clicked', () => {
       render(<Sidebar />);
 
-      // Check for default drawer dimensions display
-      expect(screen.getByText(/Drawer:/)).toBeInTheDocument();
-      expect(screen.getByText(/Layer height:/)).toBeInTheDocument();
-      expect(screen.getByText(/Print bed:/)).toBeInTheDocument();
-    });
+      fireEvent.click(screen.getByLabelText('Open settings'));
+      expect(screen.getByTestId('settings-modal')).toBeInTheDocument();
 
-    it('opens confirm dialog when Save Defaults clicked', () => {
-      render(<Sidebar />);
+      fireEvent.click(screen.getByTestId('close-settings'));
 
-      fireEvent.click(screen.getByText('Save Current as Defaults'));
-
-      expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
-      expect(screen.getByTestId('dialog-title')).toHaveTextContent('Save as Defaults');
-    });
-
-    it('saves defaults when confirmed', () => {
-      render(<Sidebar />);
-
-      fireEvent.click(screen.getByText('Save Current as Defaults'));
-      fireEvent.click(screen.getByTestId('confirm-btn'));
-
-      // Settings should be updated
-      const settings = useSettingsStore.getState().settings;
-      expect(settings.defaultDrawerWidth).toBe(10);
-      expect(settings.defaultDrawerDepth).toBe(8);
-      expect(settings.defaultDrawerHeight).toBe(12);
-    });
-
-    it('closes dialog when cancelled', () => {
-      render(<Sidebar />);
-
-      fireEvent.click(screen.getByText('Save Current as Defaults'));
-      expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
-
-      fireEvent.click(screen.getByTestId('cancel-btn'));
-
-      expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('settings-modal')).not.toBeInTheDocument();
     });
   });
 
