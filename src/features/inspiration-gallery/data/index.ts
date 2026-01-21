@@ -8,6 +8,34 @@ import {
 } from './themes';
 
 // ============================================================
+// LAYOUT ORDERING HELPERS
+// ============================================================
+
+/**
+ * Select layouts from a source array in a specific order, with validation.
+ * Throws an error if any expected ID is missing from the source.
+ */
+function pickLayouts(
+  layouts: InspirationLayout[],
+  orderedIds: string[],
+): InspirationLayout[] {
+  const byId = new Map(layouts.map((layout) => [layout.id, layout]));
+  const result: InspirationLayout[] = [];
+
+  for (const id of orderedIds) {
+    const layout = byId.get(id);
+    if (!layout) {
+      throw new Error(
+        `Inspiration layout with id "${id}" is missing from its theme source.`,
+      );
+    }
+    result.push(layout);
+  }
+
+  return result;
+}
+
+// ============================================================
 // EXPORT ALL LAYOUTS
 // ============================================================
 
@@ -26,34 +54,46 @@ import {
 
 export const INSPIRATION_LAYOUTS: InspirationLayout[] = [
   // Workshop - most popular (tools, fasteners, electronics domains heavily tracked)
-  ...WORKSHOP_LAYOUTS.filter((l) => l.id === 'screw-organizer'),
-  ...WORKSHOP_LAYOUTS.filter((l) => l.id === 'tool-drawer'),
-  ...WORKSHOP_LAYOUTS.filter((l) => l.id === 'drill-bit-organizer'),
-  ...WORKSHOP_LAYOUTS.filter((l) => l.id === 'electronics-bench'),
-  ...WORKSHOP_LAYOUTS.filter((l) => l.id === 'battery-drawer'),
-  ...WORKSHOP_LAYOUTS.filter((l) => l.id === 'socket-organizer'),
-  ...WORKSHOP_LAYOUTS.filter((l) => l.id === 'garage-drawer'),
+  ...pickLayouts(WORKSHOP_LAYOUTS, [
+    'screw-organizer',
+    'hand-tools',
+    'drill-bit-organizer',
+    'electronics-bench',
+    'battery-drawer',
+    'socket-organizer',
+    'garage-drawer',
+  ]),
   // Hobby - Maker/3D Printing (core gridfinity user base)
-  ...HOBBY_LAYOUTS.filter((l) => l.id === '3d-printing-supplies'),
-  ...HOBBY_LAYOUTS.filter((l) => l.id === 'maker-station'),
+  ...pickLayouts(HOBBY_LAYOUTS, [
+    '3d-printing-supplies',
+    'maker-station',
+  ]),
   // Office (USB cables, pens, clips tracked)
-  ...OFFICE_LAYOUTS.filter((l) => l.id === 'cable-drawer'),
-  ...OFFICE_LAYOUTS.filter((l) => l.id === 'desk-drawer'),
+  ...pickLayouts(OFFICE_LAYOUTS, [
+    'cable-drawer',
+    'desk-drawer',
+  ]),
   // Kitchen (common household use)
-  ...KITCHEN_LAYOUTS.filter((l) => l.id === 'cutlery-drawer'),
-  ...KITCHEN_LAYOUTS.filter((l) => l.id === 'cooking-utensils'),
-  ...KITCHEN_LAYOUTS.filter((l) => l.id === 'knife-drawer'),
-  ...KITCHEN_LAYOUTS.filter((l) => l.id === 'spice-drawer'),
+  ...pickLayouts(KITCHEN_LAYOUTS, [
+    'cutlery-drawer',
+    'cooking-utensils',
+    'knife-drawer',
+    'spice-drawer',
+  ]),
   // Hobby - Craft (paint, brush, glue tracked)
-  ...HOBBY_LAYOUTS.filter((l) => l.id === 'craft-supplies'),
-  ...HOBBY_LAYOUTS.filter((l) => l.id === 'art-station'),
-  ...HOBBY_LAYOUTS.filter((l) => l.id === 'sewing-kit'),
+  ...pickLayouts(HOBBY_LAYOUTS, [
+    'craft-supplies',
+    'art-station',
+    'sewing-kit',
+  ]),
   // Personal (key, coin, flashlight, glasses, watch, medication, jewelry tracked)
-  ...PERSONAL_LAYOUTS.filter((l) => l.id === 'edc-drawer'),
-  ...PERSONAL_LAYOUTS.filter((l) => l.id === 'first-aid-kit'),
-  ...PERSONAL_LAYOUTS.filter((l) => l.id === 'jewelry-drawer'),
-  ...PERSONAL_LAYOUTS.filter((l) => l.id === 'nightstand-drawer'),
-  ...PERSONAL_LAYOUTS.filter((l) => l.id === 'bathroom-makeup'),
+  ...pickLayouts(PERSONAL_LAYOUTS, [
+    'edc-drawer',
+    'first-aid-kit',
+    'jewelry-drawer',
+    'nightstand-drawer',
+    'bathroom-makeup',
+  ]),
 ];
 
 /**
