@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '@/core/store';
 import { useGridCoords, useGridTemplate } from '@/features/grid-editor/hooks';
 import { Bin } from './Bin';
-import { getBlockedZones } from '@/features/grid-editor/utils/collision';
+import { getBlockedZones } from '@/shared/utils/collision';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import type { Coord, ResizeHandle } from '@/core/types';
 
