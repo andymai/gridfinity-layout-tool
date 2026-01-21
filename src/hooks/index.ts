@@ -14,6 +14,9 @@ export { useTabletPanels } from './useTabletPanels';
 export type { TabletPanelsState } from './useTabletPanels';
 export { useFeatureFlag, isFeatureEnabled } from './useFeatureFlag';
 
+// Global keyboard shortcuts
+export { useKeyboard } from './useKeyboard';
+
 // Collaborative editing hooks
 export { useCollabMode, getCollabMode } from './useCollabMode';
 export type { CollabModeState } from './useCollabMode';

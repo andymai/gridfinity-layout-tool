@@ -9,5 +9,3 @@ export type { ResponsiveState, LayoutMode } from './useResponsive';
 export { useCrossTabSync } from './useCrossTabSync';
 
 export { usePWAUpdate } from './usePWAUpdate';
-
-export { useKeyboard } from './useKeyboard';
