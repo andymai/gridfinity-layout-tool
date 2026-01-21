@@ -16,7 +16,9 @@
     "test:e2e:ui": "playwright test --ui",
     "prepare": "husky",
     "size": "size-limit",
-    "size:check": "size-limit --limit"
+    "size:check": "size-limit --limit",
+    "check:boundaries": "./scripts/check-module-boundaries.sh",
+    "check:boundaries:staged": "./scripts/check-module-boundaries.sh --staged"
   },
   "size-limit": [
     {

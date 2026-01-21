@@ -6,7 +6,8 @@ export type { UseDrawerSettingsReturn } from './useDrawerSettings';
 
 export { useBinGeometry, createBinGeometry } from './useBinGeometry';
 
-export { useLayoutSwitcher } from '@/features/layout-library/hooks/useLayoutSwitcher';
+// Layout orchestration (moved from features/layout-library to app-level)
+export { useLayoutSwitcher } from './useLayoutSwitcher';
 export { useLayoutRouting } from '@/features/layout-library/hooks/useLayoutRouting';
 export { useAnalytics } from './useAnalytics';
 export { useStorageMigration } from './useStorageMigration';

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
-import { useLayoutSwitcher } from '@/features/layout-library/hooks/useLayoutSwitcher';
+import { useLayoutSwitcher } from '@/hooks/useLayoutSwitcher';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useUIStore } from '@/core/store/ui';

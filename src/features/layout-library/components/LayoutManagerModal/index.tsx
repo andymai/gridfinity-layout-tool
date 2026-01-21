@@ -1,31 +1,45 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLayoutSwitcher } from '@/features/layout-library/hooks/useLayoutSwitcher';
+import type { ReactNode } from 'react';
+import { useLayoutSwitcher } from '@/hooks';
 import { useUIStore } from '@/core/store/ui';
 import { useLibraryStore } from '@/core/store/library';
 import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
 import { SharedWithMeList } from './SharedWithMeList';
-import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import type { Layout } from '@/core/types';
 import { isOk } from '@/core/result';
 
 type Tab = 'layouts' | 'shared' | 'import';
 
+export interface ShareModalRenderProps {
+  isOpen: boolean;
+  onClose: () => void;
+  layoutId?: string;
+}
+
 interface LayoutManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Render prop for ShareModal - allows dependency injection to avoid cross-feature imports */
+  renderShareModal?: (props: ShareModalRenderProps) => ReactNode;
 }
 
 /**
  * Layout Manager Modal - main entry point.
  * Provides tabbed interface for managing layouts (list view) and importing layouts.
  */
-export function LayoutManagerModal({ isOpen, onClose }: LayoutManagerModalProps) {
+export function LayoutManagerModal({ isOpen, onClose, renderShareModal }: LayoutManagerModalProps) {
   if (!isOpen) return null;
-  return <LayoutManagerModalContent onClose={onClose} />;
+  return <LayoutManagerModalContent onClose={onClose} renderShareModal={renderShareModal} />;
 }
 
-function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
+function LayoutManagerModalContent({
+  onClose,
+  renderShareModal,
+}: {
+  onClose: () => void;
+  renderShareModal?: (props: ShareModalRenderProps) => ReactNode;
+}) {
   const [shareModalLayoutId, setShareModalLayoutId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('layouts');
   const modalRef = useRef<HTMLDivElement>(null);
@@ -295,12 +309,12 @@ function LayoutManagerModalContent({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      {/* Share Modal */}
-      <ShareModal
-        isOpen={shareModalLayoutId !== null}
-        onClose={() => setShareModalLayoutId(null)}
-        layoutId={shareModalLayoutId ?? undefined}
-      />
+      {/* Share Modal - rendered via dependency injection */}
+      {renderShareModal?.({
+        isOpen: shareModalLayoutId !== null,
+        onClose: () => setShareModalLayoutId(null),
+        layoutId: shareModalLayoutId ?? undefined,
+      })}
     </div>
   );
 }
