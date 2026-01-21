@@ -1,5 +1,38 @@
 import type { Coord, Rect, ResizeHandle, Interaction } from '@/core/types';
 import type { InteractionHint } from '@/liveblocks.config';
+import type { PointerCaptureHandle } from '@/hooks/interactions/types';
+
+/**
+ * Capture pointer at document body level for reliable event delivery during interactions.
+ *
+ * This is used by all interaction modes (drag, resize, draw, staging drag) to ensure
+ * pointer events continue to be delivered even when the cursor moves outside the
+ * original target element.
+ *
+ * @param pointerId - The pointer ID to capture (from PointerEvent.pointerId)
+ * @param activePointerIdRef - Ref to store the active pointer ID
+ * @param capturedPointerRef - Ref to store the capture handle for cleanup
+ * @returns true if capture succeeded, false otherwise
+ */
+export function capturePointer(
+  pointerId: number | undefined,
+  activePointerIdRef: React.MutableRefObject<number | null>,
+  capturedPointerRef: React.MutableRefObject<PointerCaptureHandle | null>
+): boolean {
+  if (pointerId === undefined) {
+    return false;
+  }
+
+  activePointerIdRef.current = pointerId;
+  try {
+    document.body.setPointerCapture(pointerId);
+    capturedPointerRef.current = { element: document.body, pointerId };
+    return true;
+  } catch {
+    // Ignore if capture fails (e.g., pointer already released)
+    return false;
+  }
+}
 
 /**
  * Calculate new rectangle based on resize handle and cursor position.

@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 import { useInteractionStore } from '@/core/store';
 import { canPlaceBin, clamp } from '@/shared/utils/validation';
+import { capturePointer } from '@/utils/interaction';
+import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from '@/hooks/interactions/types';
 import type { Coord } from '@/core/types';
@@ -54,20 +56,11 @@ export function useStagingDragInteraction(
    */
   const start = useCallback(
     (binId: string, pointerId?: number) => {
-      const bin = layout.bins.find((b) => b.id === binId);
+      const bin = findBinById(layout, binId);
       if (!bin) return;
 
-      // Set pointer ID immediately on interaction start
-      if (pointerId !== undefined) {
-        activePointerIdRef.current = pointerId;
-        // Capture pointer at document level for reliable event delivery
-        try {
-          document.body.setPointerCapture(pointerId);
-          capturedPointerRef.current = { element: document.body, pointerId };
-        } catch {
-          // Ignore if capture fails
-        }
-      }
+      // Capture pointer at document level for reliable event delivery
+      capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
 
       setInteraction({
         type: 'stagingDrag',
@@ -76,7 +69,7 @@ export function useStagingDragInteraction(
         valid: false,
       });
     },
-    [layout.bins, setInteraction, activePointerIdRef, capturedPointerRef]
+    [layout, setInteraction, activePointerIdRef, capturedPointerRef]
   );
 
   /**
@@ -90,7 +83,7 @@ export function useStagingDragInteraction(
       if (!interaction || interaction.type !== 'stagingDrag') return;
 
       // Dragging a bin from staging to main grid
-      const bin = layout.bins.find((b) => b.id === interaction.binId);
+      const bin = findBinById(layout, interaction.binId);
       if (!bin) return;
 
       // Calculate where the bin would be placed (clamped to grid bounds)
@@ -136,7 +129,7 @@ export function useStagingDragInteraction(
 
     // Place bin on grid if valid position
     if (interaction.valid && interaction.currentCoord) {
-      const bin = layout.bins.find((b) => b.id === interaction.binId);
+      const bin = findBinById(layout, interaction.binId);
       if (bin) {
         const { x, y } = interaction.currentCoord;
         const fromLayerId = bin.layerId; // Should be STAGING_ID

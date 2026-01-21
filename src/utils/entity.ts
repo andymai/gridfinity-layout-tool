@@ -59,3 +59,16 @@ export function getBinsByLayerId(layout: Layout, layerId: string): Bin[] {
 export function getBinsByCategoryId(layout: Layout, categoryId: string): Bin[] {
   return layout.bins.filter(b => b.category === categoryId);
 }
+
+/**
+ * Find multiple bins by their IDs.
+ * Filters out undefined results for IDs that don't match any bin.
+ * @param layout - The layout containing bins
+ * @param ids - Array of bin IDs to find
+ * @returns Array of found bins (in the same order as input IDs, excluding missing)
+ */
+export function findBinsByIds(layout: Layout, ids: string[]): Bin[] {
+  return ids
+    .map(id => layout.bins.find(b => b.id === id))
+    .filter((b): b is Bin => b !== undefined);
+}

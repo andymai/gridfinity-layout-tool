@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import { useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
-import { calculateResizeRect } from '@/utils/interaction';
+import { calculateResizeRect, capturePointer } from '@/utils/interaction';
+import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, ResizeStartArgs } from './types';
 import type { Coord, Rect } from '@/core/types';
@@ -48,20 +49,11 @@ export function useResizeInteraction(
    */
   const start = useCallback(
     (binId: string, handle: ResizeStartArgs[1], pointerId?: number) => {
-      const bin = layout.bins.find((b) => b.id === binId);
+      const bin = findBinById(layout, binId);
       if (!bin) return;
 
-      // Set pointer ID immediately on interaction start
-      if (pointerId !== undefined) {
-        activePointerIdRef.current = pointerId;
-        // Capture pointer at document level for reliable event delivery
-        try {
-          document.body.setPointerCapture(pointerId);
-          capturedPointerRef.current = { element: document.body, pointerId };
-        } catch {
-          // Ignore if capture fails
-        }
-      }
+      // Capture pointer at document level for reliable event delivery
+      capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
 
       // If clicked bin is in selection, resize all selected bins
       let binIds: string[];
@@ -76,7 +68,7 @@ export function useResizeInteraction(
       const startRects = new Map<string, Rect>();
       const currentRects = new Map<string, Rect>();
       for (const id of binIds) {
-        const b = layout.bins.find((x) => x.id === id);
+        const b = findBinById(layout, id);
         if (b) {
           const rect = { x: b.x, y: b.y, width: b.width, depth: b.depth };
           startRects.set(id, rect);
@@ -94,7 +86,7 @@ export function useResizeInteraction(
       });
     },
     [
-      layout.bins,
+      layout,
       selectedBinIds,
       setSelectedBin,
       setInteraction,
@@ -119,7 +111,7 @@ export function useResizeInteraction(
       const otherBinIds = new Set(interaction.binIds);
 
       for (const binId of interaction.binIds) {
-        const bin = layout.bins.find((b) => b.id === binId);
+        const bin = findBinById(layout, binId);
         const startRect = interaction.startRects.get(binId);
         if (!bin || !startRect) continue;
 
@@ -196,7 +188,7 @@ export function useResizeInteraction(
       } | null = null;
 
       for (const binId of interaction.binIds) {
-        const bin = layout.bins.find((b) => b.id === binId);
+        const bin = findBinById(layout, binId);
         const startRect = interaction.startRects.get(binId);
         const currentRect = interaction.currentRects.get(binId);
         if (!bin || !startRect || !currentRect) continue;
@@ -231,7 +223,7 @@ export function useResizeInteraction(
 
         // Track quick corrections for each resized bin
         for (const binId of interaction.binIds) {
-          const bin = layout.bins.find((b) => b.id === binId);
+          const bin = findBinById(layout, binId);
           const startRect = interaction.startRects.get(binId);
           const currentRect = interaction.currentRects.get(binId);
           if (!bin || !startRect || !currentRect) continue;
