@@ -47,7 +47,10 @@ All ML telemetry keys are prefixed with `ml:`. Data is stored as Redis hashes wh
 | `ml:label_hash:{hash}` | Bin sizes associated with each label hash |
 | `ml:trans:{prev_size}` | Transition matrix: what size follows what |
 | `ml:embed:{bucket}` | Bin sizes by embedding bucket (semantic similarity) |
-| `ml:cooccur:{hash}` | Label co-occurrence matrix |
+| `ml:cooccur:{hash}` | Label co-occurrence matrix (which labels appear together) |
+| `ml:first_label:{hash}` | Initial size choices when user first labels an item type |
+| `ml:sequences` | Placement sequence patterns (size1>size2>size3) |
+| `ml:adjacent_counts` | Distribution of adjacent bin counts at placement time |
 | `ml:method:{method}` | Sizes by placement method (draw/fill/duplicate/etc.) |
 | `ml:cat:{category_id}` | Sizes by category |
 
@@ -62,6 +65,8 @@ All ML telemetry keys are prefixed with `ml:`. Data is stored as Redis hashes wh
 | `ml:uniformity` | Layout uniformity score buckets |
 | `ml:edge_combo` | Edge usage combinations |
 | `ml:clusters:{hash}` | Structure cluster distributions |
+| `ml:resize_direction` | Resize direction distribution (grow/shrink/mixed) |
+| `ml:resize_delta` | Area change magnitude buckets (+0-1, +1-4, -0-1, etc.) |
 
 ### Session Metrics
 
@@ -85,6 +90,11 @@ All ML telemetry keys are prefixed with `ml:`. Data is stored as Redis hashes wh
 | `ml:neg:quick_corrections` | Corrections within 30s of placement |
 | `ml:neg:corrected_sizes` | Sizes that get quickly corrected |
 | `ml:neg:correction_timing` | Correction timing distribution |
+| `ml:neg:abandoned_sizes` | Sizes that get abandoned (placed but never used) |
+| `ml:neg:abandoned_by_method:{method}` | Abandonment rate by creation method |
+| `ml:neg:abandon_lifetime` | How long bins existed before abandonment |
+| `ml:neg:abandoned_by_drawer:{size}` | Per-drawer abandonment patterns |
+| `ml:neg:abandonment_total` | Total abandoned bin count |
 
 ### Temporal Data
 
