@@ -6,11 +6,6 @@ import {
   hasLegacyShareHash,
   getLayoutIdFromHistoryState,
   getCanonicalRedirect,
-  // Legacy aliases
-  parseLayoutIdFromHash,
-  setLayoutHash,
-  clearLayoutHash,
-  hasShareHash,
 } from '@/utils/url';
 
 describe('url utilities', () => {
@@ -215,69 +210,6 @@ describe('url utilities', () => {
     it('returns layoutId from valid state', () => {
       expect(getLayoutIdFromHistoryState({ layoutId: 'test-id' })).toBe('test-id');
     });
-  });
-});
-
-describe('legacy API aliases', () => {
-  beforeEach(() => {
-    vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
-    vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('parseLayoutIdFromHash returns ID from path', () => {
-    Object.defineProperty(window, 'location', {
-      value: { pathname: '/l/abc123xyz789/my-layout', hash: '' },
-      writable: true,
-    });
-    expect(parseLayoutIdFromHash()).toBe('abc123xyz789');
-  });
-
-  it('setLayoutHash sets path-based URL', () => {
-    Object.defineProperty(window, 'location', {
-      value: { pathname: '/', hash: '' },
-      writable: true,
-    });
-    setLayoutHash('test123test12');
-    expect(window.history.replaceState).toHaveBeenCalledWith(
-      { layoutId: 'test123test12' },
-      '',
-      '/l/test123test12'
-    );
-  });
-
-  it('setLayoutHash uses pushState when addToHistory is true', () => {
-    Object.defineProperty(window, 'location', {
-      value: { pathname: '/', hash: '' },
-      writable: true,
-    });
-    setLayoutHash('test123test12', true);
-    expect(window.history.pushState).toHaveBeenCalledWith(
-      { layoutId: 'test123test12' },
-      '',
-      '/l/test123test12'
-    );
-    expect(window.history.replaceState).not.toHaveBeenCalled();
-  });
-
-  it('clearLayoutHash clears to root', () => {
-    Object.defineProperty(window, 'location', {
-      value: { pathname: '/l/abc123xyz789', hash: '' },
-      writable: true,
-    });
-    clearLayoutHash();
-    expect(window.history.replaceState).toHaveBeenCalledWith({}, '', '/');
-  });
-
-  it('hasShareHash checks for legacy share hash', () => {
-    Object.defineProperty(window, 'location', {
-      value: { hash: '#share=abc123' },
-      writable: true,
-    });
-    expect(hasShareHash()).toBe(true);
   });
 });
 
