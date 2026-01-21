@@ -9,6 +9,8 @@
  * Versioned to prevent training-serving skew when vocabulary expands.
  */
 
+import { computeEmbeddingBucket } from './labelEmbedding';
+
 export const VOCAB_VERSION = 'v1';
 
 /**
@@ -814,6 +816,13 @@ export interface LabelData {
    * 0.7 = reverse partial (alias contains label), 0 = no match
    */
   confidence: number;
+
+  /**
+   * Embedding bucket for semantic similarity grouping.
+   * 4-char hex encoding structural features (length, char class, pattern, n-gram).
+   * Enables ML to learn "labels like this tend to be in bins of size X".
+   */
+  embedding_bucket: string;
 }
 
 /**
@@ -860,9 +869,10 @@ export function processLabel(raw: string): LabelData {
   }
 
   const hash = simpleHash(cleaned);
+  const embedding_bucket = computeEmbeddingBucket(raw); // Use original casing for embedding
 
   if (!cleaned) {
-    const result = { hash, normalized: null, domain: null, confidence: 0 };
+    const result: LabelData = { hash, normalized: null, domain: null, confidence: 0, embedding_bucket };
     cacheResult(cleaned, result);
     return result;
   }
@@ -870,11 +880,12 @@ export function processLabel(raw: string): LabelData {
   // 1. Exact match
   const exactMatch = ALIAS_MAP.get(cleaned);
   if (exactMatch) {
-    const result = {
+    const result: LabelData = {
       hash,
       normalized: exactMatch,
       domain: TERM_DOMAINS[exactMatch] ?? null,
       confidence: 1.0,
+      embedding_bucket,
     };
     cacheResult(cleaned, result);
     return result;
@@ -883,11 +894,12 @@ export function processLabel(raw: string): LabelData {
   // 2. Partial match - label contains an alias (e.g., "my phillips screwdriver")
   for (const [alias, canonical] of ALIAS_MAP) {
     if (alias.length >= 3 && cleaned.includes(alias)) {
-      const result = {
+      const result: LabelData = {
         hash,
         normalized: canonical,
         domain: TERM_DOMAINS[canonical] ?? null,
         confidence: 0.8,
+        embedding_bucket,
       };
       cacheResult(cleaned, result);
       return result;
@@ -898,11 +910,12 @@ export function processLabel(raw: string): LabelData {
   if (cleaned.length >= 4) {
     for (const [alias, canonical] of ALIAS_MAP) {
       if (alias.includes(cleaned)) {
-        const result = {
+        const result: LabelData = {
           hash,
           normalized: canonical,
           domain: TERM_DOMAINS[canonical] ?? null,
           confidence: 0.7,
+          embedding_bucket,
         };
         cacheResult(cleaned, result);
         return result;
@@ -911,7 +924,7 @@ export function processLabel(raw: string): LabelData {
   }
 
   // 4. Unknown label - hash is still valid for grouping!
-  const result: LabelData = { hash, normalized: null, domain: null, confidence: 0 };
+  const result: LabelData = { hash, normalized: null, domain: null, confidence: 0, embedding_bucket };
   cacheResult(cleaned, result);
   return result;
 }

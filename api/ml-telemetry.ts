@@ -119,6 +119,7 @@ interface BinPlacementEvent {
   label_hash: string | null;
   label_normalized: string | null;
   label_domain: string | null;
+  label_embedding_bucket: string | null;
   category_id: string;
   method: string;
   session_index: number;
@@ -133,6 +134,7 @@ interface LabelUpdateEvent {
   new_label_hash: string | null;
   new_label_normalized: string | null;
   new_label_domain: string | null;
+  new_label_embedding_bucket: string | null;
   vocab_version: string;
 }
 
@@ -416,6 +418,7 @@ const VALID_LABEL_HASH_REGEX = /^[a-f0-9]{8}$/; // 8-char hex hash
 const VALID_LAYOUT_HASH_REGEX = /^[a-f0-9]{8}$/; // 8-char hex hash
 const VALID_NORMALIZED_LABEL_REGEX = /^[a-z][a-z0-9_]{0,31}$/; // lowercase, alphanumeric + underscore
 const VALID_CATEGORY_ID_REGEX = /^[a-zA-Z0-9_-]{1,36}$/; // UUID-like or simple ID
+const VALID_EMBEDDING_BUCKET_REGEX = /^[a-f0-9]{4}$/; // 4-char hex embedding bucket
 const VALID_DOMAINS = new Set([
   'tools',
   'fasteners',
@@ -598,6 +601,7 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       validateNullableField(e.label_hash, VALID_LABEL_HASH_REGEX) &&
       validateNullableField(e.label_normalized, VALID_NORMALIZED_LABEL_REGEX) &&
       validateNullableDomain(e.label_domain) &&
+      validateNullableField(e.label_embedding_bucket, VALID_EMBEDDING_BUCKET_REGEX) &&
       typeof e.category_id === 'string' &&
       VALID_CATEGORY_ID_REGEX.test(e.category_id)
     );
@@ -612,7 +616,8 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       validateNullableField(e.old_label_normalized, VALID_NORMALIZED_LABEL_REGEX) &&
       validateNullableField(e.new_label_hash, VALID_LABEL_HASH_REGEX) &&
       validateNullableField(e.new_label_normalized, VALID_NORMALIZED_LABEL_REGEX) &&
-      validateNullableDomain(e.new_label_domain)
+      validateNullableDomain(e.new_label_domain) &&
+      validateNullableField(e.new_label_embedding_bucket, VALID_EMBEDDING_BUCKET_REGEX)
     );
   }
 
@@ -1001,6 +1006,13 @@ function aggregateBinPlacement(event: BinPlacementEvent, inc: Increments): void 
     inc[domainKey][bin_size] = (inc[domainKey][bin_size] || 0) + 1;
   }
 
+  // 6b. Embedding bucket (semantic similarity grouping)
+  if (event.label_embedding_bucket) {
+    const embedKey = `ml:embed:${event.label_embedding_bucket}`;
+    inc[embedKey] = inc[embedKey] || {};
+    inc[embedKey][bin_size] = (inc[embedKey][bin_size] || 0) + 1;
+  }
+
   // 7. Category
   const catKey = `ml:cat:${event.category_id}`;
   inc[catKey] = inc[catKey] || {};
@@ -1043,6 +1055,13 @@ function aggregateLabelUpdate(event: LabelUpdateEvent, inc: Increments): void {
     const domainKey = `ml:label_domain:${event.new_label_domain}`;
     inc[domainKey] = inc[domainKey] || {};
     inc[domainKey][bin_size] = (inc[domainKey][bin_size] || 0) + 1;
+  }
+
+  // Track embedding bucket for semantic similarity
+  if (event.new_label_embedding_bucket) {
+    const embedKey = `ml:embed:${event.new_label_embedding_bucket}`;
+    inc[embedKey] = inc[embedKey] || {};
+    inc[embedKey][bin_size] = (inc[embedKey][bin_size] || 0) + 1;
   }
 }
 

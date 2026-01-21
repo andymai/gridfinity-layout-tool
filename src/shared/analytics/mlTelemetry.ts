@@ -89,6 +89,8 @@ export interface BinPlacementEvent {
   label_normalized: string | null;
   /** Label domain category, or null */
   label_domain: string | null;
+  /** Embedding bucket for semantic similarity (4-char hex) */
+  label_embedding_bucket: string | null;
   /** Category ID from the layout */
   category_id: string;
 
@@ -120,6 +122,7 @@ export interface LabelUpdateEvent {
   new_label_hash: string | null;
   new_label_normalized: string | null;
   new_label_domain: string | null;
+  new_label_embedding_bucket: string | null;
 
   vocab_version: string;
 }
@@ -1131,12 +1134,14 @@ export function trackBinPlacement(
   let labelHash: string | null = null;
   let labelNormalized: string | null = null;
   let labelDomain: string | null = null;
+  let labelEmbeddingBucket: string | null = null;
 
   if (bin.label?.trim()) {
     const labelData = processLabel(bin.label);
     labelHash = labelData.hash;
     labelNormalized = labelData.normalized;
     labelDomain = labelData.domain;
+    labelEmbeddingBucket = labelData.embedding_bucket;
   }
 
   // Build bin size string
@@ -1161,6 +1166,7 @@ export function trackBinPlacement(
     label_hash: labelHash,
     label_normalized: labelNormalized,
     label_domain: labelDomain,
+    label_embedding_bucket: labelEmbeddingBucket,
     category_id: bin.category,
 
     // Context
@@ -1228,11 +1234,13 @@ export function trackLabelUpdate(
   let newLabelHash: string | null = null;
   let newLabelNormalized: string | null = null;
   let newLabelDomain: string | null = null;
+  let newLabelEmbeddingBucket: string | null = null;
   if (newTrimmed) {
     const newData = processLabel(newTrimmed);
     newLabelHash = newData.hash;
     newLabelNormalized = newData.normalized;
     newLabelDomain = newData.domain;
+    newLabelEmbeddingBucket = newData.embedding_bucket;
   }
 
   const event: LabelUpdateEvent = {
@@ -1243,6 +1251,7 @@ export function trackLabelUpdate(
     new_label_hash: newLabelHash,
     new_label_normalized: newLabelNormalized,
     new_label_domain: newLabelDomain,
+    new_label_embedding_bucket: newLabelEmbeddingBucket,
     vocab_version: VOCAB_VERSION,
   };
 
