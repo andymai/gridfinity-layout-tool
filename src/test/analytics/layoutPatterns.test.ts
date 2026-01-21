@@ -11,7 +11,7 @@ import type { Bin, Layout } from '@/core/types';
 // Helper to create a test bin
 function createBin(overrides: Partial<Bin> = {}): Bin {
   return {
-    id: `bin-${Math.random().toString(36).substr(2, 9)}`,
+    id: `bin-${Math.random().toString(36).substring(2, 11)}`,
     x: 0,
     y: 0,
     width: 1,
@@ -82,6 +82,30 @@ describe('layoutPatterns', () => {
       ];
       layout.bins = bins.map((b, i) => createBin({ ...b, id: `bin-${i}` }));
       expect(detectArchetype(layout)).toBe('border_fill');
+    });
+
+    it('returns layered when layers have different size patterns', () => {
+      const layout = createDefaultLayout();
+      layout.layers = [
+        { id: 'layer-1', name: 'Layer 1', height: 5 },
+        { id: 'layer-2', name: 'Layer 2', height: 5 },
+      ];
+      // Layer 1 has small bins (1x1, 2x1)
+      // Layer 2 has large bins (3x3, 4x4)
+      // Different size sets with <50% overlap
+      const bins: Partial<Bin>[] = [
+        // Layer 1 - small bins
+        { x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: 'layer-1' },
+        { x: 1, y: 0, width: 2, depth: 1, height: 3, layerId: 'layer-1' },
+        { x: 0, y: 1, width: 1, depth: 1, height: 3, layerId: 'layer-1' },
+        { x: 1, y: 1, width: 2, depth: 1, height: 3, layerId: 'layer-1' },
+        // Layer 2 - large bins with different sizes
+        { x: 0, y: 0, width: 3, depth: 3, height: 4, layerId: 'layer-2' },
+        { x: 3, y: 0, width: 4, depth: 4, height: 4, layerId: 'layer-2' },
+        { x: 0, y: 3, width: 3, depth: 3, height: 4, layerId: 'layer-2' },
+      ];
+      layout.bins = bins.map((b, i) => createBin({ ...b, id: `bin-${i}` }));
+      expect(detectArchetype(layout)).toBe('layered');
     });
 
     it('detects compartmentalized or uniform for clustered categories', () => {
