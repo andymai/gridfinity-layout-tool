@@ -18,7 +18,7 @@ export interface GridToolbarProps {
   /** Fit to screen callback from useGridZoom */
   zoomState: GridZoomState;
   /** Reference to toolbar element for width measurement */
-  toolbarRef: RefObject<HTMLDivElement>;
+  toolbarRef: RefObject<HTMLDivElement | null>;
   /** All layers in the layout */
   layers: Layer[];
   /** Currently active layer */
