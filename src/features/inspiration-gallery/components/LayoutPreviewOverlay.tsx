@@ -3,7 +3,7 @@ import { useResponsive } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
 import { LayoutThumbnailWithLabels } from './LayoutThumbnailWithLabels';
 import { THEME_CONFIG } from '../types';
-import { INSPIRATION_LAYOUTS } from '../data/inspirationLayouts';
+import { INSPIRATION_LAYOUTS } from '../data';
 import type { InspirationLayout } from '../types';
 
 interface LayoutPreviewOverlayProps {
