@@ -2,43 +2,17 @@ import { put, head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from '../lib/rateLimit.js';
 import { REPORT_THRESHOLD } from '../lib/contentFilter.js';
-
-interface ShareMetadata {
-  deleteTokenHash: string;
-  expiresAt: string;
-  expiresInDays: number;
-  createdAt: string;
-  authorName?: string;
-  reportCount: number;
-}
-
-interface ShareData {
-  layout: unknown;
-  metadata: ShareMetadata;
-}
-
-/**
- * Validate share ID format.
- * Supports multiple formats for backwards compatibility:
- * - Standard UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (older layouts)
- * - Base36 timestamp: {timestamp}-{random 7 chars}
- * - Legacy 12-char: alphanumeric only
- */
-function isValidShareId(id: string): boolean {
-  // Standard UUID format (8-4-4-4-12 hex chars)
-  if (/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)) return true;
-  // Base36 timestamp format
-  if (/^[a-z0-9]+-[a-z0-9]{7}$/.test(id)) return true;
-  // Legacy 12-char alphanumeric format
-  if (/^[a-zA-Z0-9]{12}$/.test(id)) return true;
-  return false;
-}
+import {
+  isValidShareId,
+  ErrorCode,
+  type ShareData,
+} from '../lib/shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST for reports
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' });
+    return res.status(405).json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
   }
 
   const { id } = req.query;
@@ -46,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (typeof id !== 'string' || !isValidShareId(id)) {
     return res.status(400).json({
       error: 'Invalid share ID',
-      code: 'VALIDATION_ERROR',
+      code: ErrorCode.VALIDATION_ERROR,
     });
   }
 
@@ -58,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!rateLimit.allowed) {
       return res.status(429).json({
         error: 'Too many reports. Try again later.',
-        code: 'RATE_LIMITED',
+        code: ErrorCode.RATE_LIMITED,
         retryAfter: rateLimit.retryAfterSeconds,
       });
     }
@@ -75,7 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!blobInfo) {
       return res.status(404).json({
         error: 'Share not found',
-        code: 'NOT_FOUND',
+        code: ErrorCode.NOT_FOUND,
       });
     }
 
@@ -83,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!response.ok) {
       return res.status(404).json({
         error: 'Share not found',
-        code: 'NOT_FOUND',
+        code: ErrorCode.NOT_FOUND,
       });
     }
 
@@ -133,7 +107,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Report error:', error);
     return res.status(500).json({
       error: 'Failed to submit report',
-      code: 'NETWORK_ERROR',
+      code: ErrorCode.SERVER_ERROR,
     });
   }
 }

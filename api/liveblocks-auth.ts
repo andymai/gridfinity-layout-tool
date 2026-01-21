@@ -1,6 +1,7 @@
 import { Liveblocks } from '@liveblocks/node';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
+import { ErrorCode } from './lib/shared.js';
 
 /**
  * Liveblocks authentication endpoint.
@@ -64,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' });
+    return res.status(405).json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
   }
 
   try {
@@ -73,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.error('LIVEBLOCKS_SECRET_KEY not configured');
       return res.status(500).json({
         error: 'Collaboration not configured',
-        code: 'CONFIGURATION_ERROR',
+        code: ErrorCode.CONFIGURATION_ERROR,
       });
     }
 
@@ -84,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!rateLimit.allowed) {
       return res.status(429).json({
         error: 'Too many requests. Try again later.',
-        code: 'RATE_LIMITED',
+        code: ErrorCode.RATE_LIMITED,
         retryAfter: rateLimit.retryAfterSeconds,
       });
     }
@@ -96,14 +97,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!room || typeof room !== 'string') {
       return res.status(400).json({
         error: 'Missing room ID',
-        code: 'VALIDATION_ERROR',
+        code: ErrorCode.VALIDATION_ERROR,
       });
     }
 
     if (!room.startsWith('gridfinity-')) {
       return res.status(400).json({
         error: 'Invalid room ID format',
-        code: 'VALIDATION_ERROR',
+        code: ErrorCode.VALIDATION_ERROR,
       });
     }
 
@@ -112,7 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (shareId.length !== 12) {
       return res.status(400).json({
         error: 'Invalid share ID',
-        code: 'VALIDATION_ERROR',
+        code: ErrorCode.VALIDATION_ERROR,
       });
     }
 
@@ -120,7 +121,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!userId || typeof userId !== 'string') {
       return res.status(400).json({
         error: 'Missing user ID',
-        code: 'VALIDATION_ERROR',
+        code: ErrorCode.VALIDATION_ERROR,
       });
     }
 
@@ -148,7 +149,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Liveblocks auth error:', error);
     return res.status(500).json({
       error: 'Authentication failed',
-      code: 'SERVER_ERROR',
+      code: ErrorCode.SERVER_ERROR,
     });
   }
 }
