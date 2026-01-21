@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { getDisplayLayers } from '@/features/grid-editor/utils/collision';
+import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { isOk, isErr, getUserMessage } from '@/core/result';

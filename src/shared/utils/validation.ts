@@ -1,6 +1,6 @@
 import type { Bin, Layout, ValidationResult, Rect, OperationResult } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID, RESERVED_PROPERTY_KEYS } from '@/core/constants';
-import { binsCollide, getLayerZStart, getBlockedZones, isInBlockedZone } from '@/features/grid-editor/utils/collision';
+import { binsCollide, getLayerZStart, getBlockedZones, isInBlockedZone } from './collision';
 import type { Result, ValidationError } from '@/core/result';
 import {
   ok,

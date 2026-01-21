@@ -9,7 +9,7 @@ import {
 } from "@/core/constants"
 import { useResponsive } from "@/shared/hooks"
 import { use3DPreviewKeyboard } from "@/hooks/use3DPreviewKeyboard"
-import { getLayerZStart } from "@/features/grid-editor/utils/collision"
+import { getLayerZStart } from "@/shared/utils/collision"
 import { Scene, type SceneHandle } from "./IsometricPreview/Scene"
 import { BinMesh } from "./IsometricPreview/BinMesh"
 import { SplitLineOverlay } from "./IsometricPreview/SplitLineOverlay"
