@@ -29,6 +29,12 @@
  * === Quality Signals ===
  * - ml:quality:{signal}       → Quality signal counts
  * - ml:quality_layouts        → Layouts by quality signal type
+ * - ml:quality_confidence     → Confidence score distribution buckets
+ * - ml:quality_conf_by_signal:{signal} → Confidence by signal type
+ * - ml:quality_score:{score_name} → Individual score distributions (undo, completion, session, correction)
+ * - ml:abandonment            → Abandonment type distribution (incomplete, deleted, dormant, superseded)
+ * - ml:abandonment_age:{type} → Abandonment by layout age
+ * - ml:quality_dormancy       → Time since last edit buckets (active, recent, idle, dormant)
  *
  * === Category Changes ===
  * - ml:cat_sizes:{cat_hash}   → Bin sizes assigned to each category (by name hash)
@@ -177,11 +183,24 @@ interface LayoutSnapshotEvent {
   vocab_version: string;
 }
 
+interface ConfidenceBreakdown {
+  undo_score: number;
+  completion_score: number;
+  session_score: number;
+  correction_score: number;
+  combined: number;
+}
+
+type AbandonmentType = 'incomplete' | 'deleted' | 'dormant' | 'superseded';
+
 interface LayoutQualityEvent {
   type: 'layout_quality';
   layout_hash: string;
-  signal: 'shared' | 'exported' | 'duplicated' | 'deleted' | 'revisited_edited' | 'revisited_kept';
+  signal: 'shared' | 'exported' | 'duplicated' | 'deleted' | 'revisited_edited' | 'revisited_kept' | 'modified';
   days_since_creation: number;
+  confidence_breakdown?: ConfidenceBreakdown;
+  abandonment_type: AbandonmentType | null;
+  time_since_last_edit_ms: number;
 }
 
 interface DrawerPurposeEvent {
@@ -449,7 +468,9 @@ const VALID_QUALITY_SIGNALS = new Set([
   'deleted',
   'revisited_edited',
   'revisited_kept',
+  'modified',
 ]);
+const VALID_ABANDONMENT_TYPES = new Set(['incomplete', 'deleted', 'dormant', 'superseded']);
 const VALID_PURPOSES = new Set([
   'workshop',
   'electronics',
@@ -499,6 +520,24 @@ function validateEdgeUsage(value: unknown): value is EdgeUsage {
     typeof e.right === 'boolean' &&
     typeof e.top === 'boolean' &&
     typeof e.bottom === 'boolean'
+  );
+}
+
+/**
+ * Validate confidence breakdown object.
+ * All scores must be numbers between 0 and 1.
+ */
+function validateConfidenceBreakdown(value: unknown): value is ConfidenceBreakdown {
+  if (!value || typeof value !== 'object') return false;
+  const c = value as Record<string, unknown>;
+  const isValidScore = (v: unknown): boolean =>
+    typeof v === 'number' && v >= 0 && v <= 1;
+  return (
+    isValidScore(c.undo_score) &&
+    isValidScore(c.completion_score) &&
+    isValidScore(c.session_score) &&
+    isValidScore(c.correction_score) &&
+    isValidScore(c.combined)
   );
 }
 
@@ -687,7 +726,14 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       VALID_QUALITY_SIGNALS.has(e.signal) &&
       typeof e.days_since_creation === 'number' &&
       e.days_since_creation >= 0 &&
-      e.days_since_creation < 10000
+      e.days_since_creation < 10000 &&
+      // New fields for PR 5
+      (e.confidence_breakdown === undefined || validateConfidenceBreakdown(e.confidence_breakdown)) &&
+      (e.abandonment_type === null ||
+        (typeof e.abandonment_type === 'string' && VALID_ABANDONMENT_TYPES.has(e.abandonment_type))) &&
+      typeof e.time_since_last_edit_ms === 'number' &&
+      e.time_since_last_edit_ms >= 0 &&
+      e.time_since_last_edit_ms < 86400000 // Max 24 hours
     );
   }
 
@@ -1216,7 +1262,7 @@ function aggregateLayoutSnapshot(event: LayoutSnapshotEvent, inc: Increments): v
 }
 
 function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): void {
-  const { signal } = event;
+  const { signal, confidence_breakdown, abandonment_type, time_since_last_edit_ms } = event;
 
   // Track quality signal frequency
   inc['ml:quality'] = inc['ml:quality'] || {};
@@ -1237,6 +1283,49 @@ function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): voi
   const ageKey = `ml:quality_age:${signal}`;
   inc[ageKey] = inc[ageKey] || {};
   inc[ageKey][ageBucket] = (inc[ageKey][ageBucket] || 0) + 1;
+
+  // Track confidence breakdown distribution (if provided)
+  if (confidence_breakdown) {
+    // Track combined confidence in buckets
+    const confBucket = confidence_breakdown.combined < 0.25 ? 'very_low' :
+      confidence_breakdown.combined < 0.5 ? 'low' :
+      confidence_breakdown.combined < 0.75 ? 'medium' : 'high';
+    inc['ml:quality_confidence'] = inc['ml:quality_confidence'] || {};
+    inc['ml:quality_confidence'][confBucket] = (inc['ml:quality_confidence'][confBucket] || 0) + 1;
+
+    // Track confidence by signal type (export/share with high confidence = good data)
+    const confBySignalKey = `ml:quality_conf_by_signal:${signal}`;
+    inc[confBySignalKey] = inc[confBySignalKey] || {};
+    inc[confBySignalKey][confBucket] = (inc[confBySignalKey][confBucket] || 0) + 1;
+
+    // Track individual score distributions for analysis
+    const scoreNames = ['undo_score', 'completion_score', 'session_score', 'correction_score'] as const;
+    for (const scoreName of scoreNames) {
+      const score = confidence_breakdown[scoreName];
+      const scoreBucket = score < 0.4 ? 'low' : score < 0.7 ? 'medium' : 'high';
+      const scoreKey = `ml:quality_score:${scoreName}`;
+      inc[scoreKey] = inc[scoreKey] || {};
+      inc[scoreKey][scoreBucket] = (inc[scoreKey][scoreBucket] || 0) + 1;
+    }
+  }
+
+  // Track abandonment patterns
+  if (abandonment_type) {
+    inc['ml:abandonment'] = inc['ml:abandonment'] || {};
+    inc['ml:abandonment'][abandonment_type] = (inc['ml:abandonment'][abandonment_type] || 0) + 1;
+
+    // Track abandonment by age (newer layouts abandoned more often = exploration)
+    const abandonAgeKey = `ml:abandonment_age:${abandonment_type}`;
+    inc[abandonAgeKey] = inc[abandonAgeKey] || {};
+    inc[abandonAgeKey][ageBucket] = (inc[abandonAgeKey][ageBucket] || 0) + 1;
+  }
+
+  // Track time since last edit (dormancy detection)
+  const dormancyBucket = time_since_last_edit_ms < 60_000 ? 'active' :
+    time_since_last_edit_ms < 300_000 ? 'recent' :
+    time_since_last_edit_ms < 1800_000 ? 'idle' : 'dormant';
+  inc['ml:quality_dormancy'] = inc['ml:quality_dormancy'] || {};
+  inc['ml:quality_dormancy'][dormancyBucket] = (inc['ml:quality_dormancy'][dormancyBucket] || 0) + 1;
 }
 
 function aggregateDrawerPurpose(event: DrawerPurposeEvent, inc: Increments): void {
