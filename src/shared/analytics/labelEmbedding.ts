@@ -111,7 +111,7 @@ function computeNgramFingerprint(label: string): number {
 function getPatternType(label: string): number {
   // Measurement patterns: dimensions, sizes
   if (/\d+\s*(mm|cm|m|in|inch|"|'|x)\s*\d*/i.test(label)) return 1;
-  if (/m\d+/i.test(label)) return 1; // M3, M4, etc.
+  if (/\bm\d+\b/i.test(label)) return 1; // M3, M4, etc. (word boundary to avoid "medium3")
   if (/\d+\/\d+/.test(label)) return 1; // Fractions like 1/4
 
   // Code patterns: short alphanumeric codes
@@ -162,8 +162,7 @@ export function computeEmbeddingBucket(label: string): string {
   const ngramFp = computeNgramFingerprint(cleaned); // 8 bits
 
   // Pack into 16-bit value:
-  // [15:14] length | [13:12] charClass | [11:10] pattern | [9:0] ngram (using 10 bits)
-  // Actually: [15:14] length | [13:12] charClass | [11:10] pattern | [7:0] ngram
+  // [15:14] length | [13:12] charClass | [11:10] pattern | [9:8] unused | [7:0] ngram
   const bucket =
     ((lengthBucket & 0x3) << 14) |
     ((charClass & 0x3) << 12) |

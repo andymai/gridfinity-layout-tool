@@ -83,6 +83,22 @@ describe('labelEmbedding', () => {
       expect(decoded2.pattern).toBe('measurement');
     });
 
+    it('avoids false positives for measurement pattern', () => {
+      // Words containing "m" + digits should not match unless standalone metric screw
+      const bucket1 = computeEmbeddingBucket('medium3');
+      const decoded1 = decodeEmbeddingBucket(bucket1);
+      expect(decoded1.pattern).not.toBe('measurement');
+
+      const bucket2 = computeEmbeddingBucket('item30');
+      const decoded2 = decodeEmbeddingBucket(bucket2);
+      expect(decoded2.pattern).not.toBe('measurement');
+
+      // But standalone M3, M4 should still match
+      const bucket3 = computeEmbeddingBucket('M3');
+      const decoded3 = decodeEmbeddingBucket(bucket3);
+      expect(decoded3.pattern).toBe('measurement');
+    });
+
     it('detects code pattern', () => {
       const bucket = computeEmbeddingBucket('608ZZ');
       const decoded = decodeEmbeddingBucket(bucket);
