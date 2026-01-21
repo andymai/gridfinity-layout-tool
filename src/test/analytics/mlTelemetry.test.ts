@@ -24,6 +24,8 @@ import {
   trackPlacementRejection,
   trackQuickCorrection,
   recordBinCreation,
+  computeConfidenceBreakdown,
+  detectAbandonmentType,
 } from '@/shared/analytics/mlTelemetry';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Layout } from '@/core/types';
@@ -157,6 +159,133 @@ describe('mlTelemetry', () => {
       const createdAt = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 days ago
       trackQualitySignal(layout, 'exported', createdAt);
       expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('tracks modified signal for abandonment detection', () => {
+      const layout = createTestLayoutWithBins(3);
+      trackQualitySignal(layout, 'modified');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+  });
+
+  describe('computeConfidenceBreakdown', () => {
+    it('returns zero scores for empty layout', () => {
+      const layout = createDefaultLayout();
+      layout.bins = [];
+      const breakdown = computeConfidenceBreakdown(layout);
+      expect(breakdown.undo_score).toBe(0);
+      expect(breakdown.completion_score).toBe(0);
+      expect(breakdown.session_score).toBe(0);
+      expect(breakdown.correction_score).toBe(0);
+      expect(breakdown.combined).toBe(0);
+    });
+
+    it('returns high scores for layout with bins and no corrections', () => {
+      const layout = createTestLayoutWithBins(5);
+      resetMLSession(); // Fresh session with no corrections
+      const breakdown = computeConfidenceBreakdown(layout);
+      expect(breakdown.undo_score).toBe(1); // No undos
+      expect(breakdown.correction_score).toBe(1); // No corrections
+      expect(breakdown.combined).toBeGreaterThan(0.5);
+    });
+
+    it('returns scores between 0 and 1', () => {
+      const layout = createTestLayoutWithBins(10);
+      const breakdown = computeConfidenceBreakdown(layout);
+      expect(breakdown.undo_score).toBeGreaterThanOrEqual(0);
+      expect(breakdown.undo_score).toBeLessThanOrEqual(1);
+      expect(breakdown.completion_score).toBeGreaterThanOrEqual(0);
+      expect(breakdown.completion_score).toBeLessThanOrEqual(1);
+      expect(breakdown.session_score).toBeGreaterThanOrEqual(0);
+      expect(breakdown.session_score).toBeLessThanOrEqual(1);
+      expect(breakdown.correction_score).toBeGreaterThanOrEqual(0);
+      expect(breakdown.correction_score).toBeLessThanOrEqual(1);
+      expect(breakdown.combined).toBeGreaterThanOrEqual(0);
+      expect(breakdown.combined).toBeLessThanOrEqual(1);
+    });
+
+    it('includes fill percentage in completion score', () => {
+      // Layout with bins should have higher completion than empty
+      const layoutWithBins = createTestLayoutWithBins(20);
+      const emptyLayout = createDefaultLayout();
+      emptyLayout.bins = [];
+
+      const withBinsBreakdown = computeConfidenceBreakdown(layoutWithBins);
+      const emptyBreakdown = computeConfidenceBreakdown(emptyLayout);
+
+      // Empty layout has 0 for all
+      expect(emptyBreakdown.completion_score).toBe(0);
+      // Layout with bins should have positive completion score
+      expect(withBinsBreakdown.completion_score).toBeGreaterThan(0);
+    });
+  });
+
+  describe('detectAbandonmentType', () => {
+    it('returns null for active layouts with good fill', () => {
+      const layout = createTestLayoutWithBins(20);
+      resetMLSession();
+      const abandonmentType = detectAbandonmentType(layout, 'shared');
+      expect(abandonmentType).toBeNull();
+    });
+
+    it('detects deleted abandonment when bins cleared', () => {
+      // Start with bins, then clear them
+      resetMLSession();
+      // Simulate deletions
+      const layout = createDefaultLayout();
+      layout.bins = [];
+      // Track some deletions first
+      const testBin = {
+        id: 'test-bin',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        layerId: layout.layers[0].id,
+        category: layout.categories[0].id,
+      };
+      trackBinDeletion(testBin, layout, 'key', 1);
+
+      const abandonmentType = detectAbandonmentType(layout, 'modified');
+      expect(abandonmentType).toBe('deleted');
+    });
+
+    it('detects incomplete abandonment for low fill layouts', () => {
+      const layout = createDefaultLayout();
+      // Add just 2 bins for very low fill
+      layout.bins = [
+        {
+          id: 'bin-1',
+          x: 0,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 1,
+          layerId: layout.layers[0].id,
+          category: layout.categories[0].id,
+        },
+        {
+          id: 'bin-2',
+          x: 1,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 1,
+          layerId: layout.layers[0].id,
+          category: layout.categories[0].id,
+        },
+      ];
+      resetMLSession();
+      const abandonmentType = detectAbandonmentType(layout, 'modified');
+      expect(abandonmentType).toBe('incomplete');
+    });
+
+    it('returns null for shared signals (positive intent)', () => {
+      const layout = createTestLayoutWithBins(5);
+      resetMLSession();
+      const abandonmentType = detectAbandonmentType(layout, 'shared');
+      expect(abandonmentType).toBeNull();
     });
   });
 

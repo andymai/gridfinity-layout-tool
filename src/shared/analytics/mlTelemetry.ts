@@ -208,6 +208,33 @@ export interface LayoutSnapshotEvent {
 }
 
 /**
+ * Confidence breakdown - detailed quality scoring components.
+ * Helps ML understand WHY a layout is high/low quality.
+ */
+export interface ConfidenceBreakdown {
+  /** Score based on undo frequency (0-1, fewer undos = higher) */
+  undo_score: number;
+  /** Score based on fill % and labeling rate (0-1) */
+  completion_score: number;
+  /** Score based on session time spent (0-1) */
+  session_score: number;
+  /** Score based on quick correction rate (0-1, fewer = higher) */
+  correction_score: number;
+  /** Combined weighted score (0-1) */
+  combined: number;
+}
+
+/**
+ * Types of layout abandonment.
+ * Helps identify negative training signals.
+ */
+export type AbandonmentType =
+  | 'incomplete'   // User stopped mid-layout (low fill, short session)
+  | 'deleted'      // Layout was explicitly deleted
+  | 'dormant'      // Layout untouched for extended period
+  | 'superseded';  // Layout replaced by a newer version
+
+/**
  * Quality signal event - tracks what happens to layouts after creation.
  * Used to weight training data (shared layouts are higher quality).
  */
@@ -222,6 +249,15 @@ export interface LayoutQualityEvent {
 
   /** Days since layout was created */
   days_since_creation: number;
+
+  /** Detailed confidence breakdown (optional for backward compat) */
+  confidence_breakdown?: ConfidenceBreakdown;
+
+  /** Type of abandonment if applicable */
+  abandonment_type: AbandonmentType | null;
+
+  /** Milliseconds since last edit */
+  time_since_last_edit_ms: number;
 }
 
 /**
@@ -629,7 +665,8 @@ export type QualitySignal =
   | 'duplicated'       // Used as starting point
   | 'deleted'          // Negative signal
   | 'revisited_edited' // Came back and changed
-  | 'revisited_kept';  // Came back, no changes (validation)
+  | 'revisited_kept'   // Came back, no changes (validation)
+  | 'modified';        // Layout modified (for abandonment detection)
 
 // ============================================
 // DRAWER PURPOSE CONSTANTS
@@ -693,6 +730,8 @@ interface LayoutSessionState {
   resizeCount: number;
   /** Number of move operations this session */
   moveCount: number;
+  /** Timestamp of last edit action (placement, resize, move, delete) */
+  lastEditTime: number;
 }
 
 let layoutSession: LayoutSessionState = {
@@ -704,6 +743,7 @@ let layoutSession: LayoutSessionState = {
   deletedCount: 0,
   resizeCount: 0,
   moveCount: 0,
+  lastEditTime: Date.now(),
 };
 
 // Minimum time between snapshots for same layout (60 seconds)
@@ -833,6 +873,7 @@ export function resetMLSession(): void {
     deletedCount: 0,
     resizeCount: 0,
     moveCount: 0,
+    lastEditTime: Date.now(),
   };
 }
 
@@ -1191,6 +1232,9 @@ export function trackBinPlacement(
     sessionState.firstBinTime = Date.now();
   }
 
+  // Update last edit time for quality tracking
+  layoutSession.lastEditTime = Date.now();
+
   // Buffer event
   eventBuffer.push(event);
 
@@ -1516,11 +1560,23 @@ export function trackQualitySignal(
     daysSinceCreation = Math.floor((Date.now() - createdTime) / (1000 * 60 * 60 * 24));
   }
 
+  // Compute confidence breakdown
+  const confidenceBreakdown = computeConfidenceBreakdown(layout);
+
+  // Detect abandonment type
+  const abandonmentType = detectAbandonmentType(layout, signal);
+
+  // Calculate time since last edit
+  const timeSinceLastEditMs = Date.now() - layoutSession.lastEditTime;
+
   const event: LayoutQualityEvent = {
     type: 'layout_quality',
     layout_hash: layoutHash,
     signal,
     days_since_creation: daysSinceCreation,
+    confidence_breakdown: confidenceBreakdown,
+    abandonment_type: abandonmentType,
+    time_since_last_edit_ms: timeSinceLastEditMs,
   };
 
   eventBuffer.push(event);
@@ -1687,8 +1743,9 @@ export function trackBinResize(
     fill_pct: computeFillPercentage(layout),
   };
 
-  // Increment session resize count
+  // Increment session resize count and update last edit time
   layoutSession.resizeCount += batchSize;
+  layoutSession.lastEditTime = Date.now();
 
   eventBuffer.push(event);
 
@@ -1757,8 +1814,9 @@ export function trackBinDeletion(
     method,
   };
 
-  // Increment session deleted count
+  // Increment session deleted count and update last edit time
   layoutSession.deletedCount += batchSize;
+  layoutSession.lastEditTime = Date.now();
 
   eventBuffer.push(event);
 
@@ -1814,8 +1872,9 @@ export function trackBinMove(
     method,
   };
 
-  // Increment session move count
+  // Increment session move count and update last edit time
   layoutSession.moveCount += batchSize;
+  layoutSession.lastEditTime = Date.now();
 
   eventBuffer.push(event);
 
@@ -2295,6 +2354,131 @@ function computeSessionConfidence(
 
   // Round to 2 decimal places
   return Math.round(weighted * 100) / 100;
+}
+
+/**
+ * Compute detailed confidence breakdown for quality events.
+ * Provides per-component scores rather than just a combined value.
+ *
+ * @param layout - Current layout state
+ * @returns Confidence breakdown with individual component scores
+ */
+export function computeConfidenceBreakdown(layout: Layout): ConfidenceBreakdown {
+  const binsPlaced = layout.bins.filter((b) => b.layerId !== STAGING_ID).length;
+
+  // No bins = all scores at minimum
+  if (binsPlaced === 0) {
+    return {
+      undo_score: 0,
+      completion_score: 0,
+      session_score: 0,
+      correction_score: 0,
+      combined: 0,
+    };
+  }
+
+  // Undo score: fewer undos = higher score
+  // 0 undos = 1.0, 1-2 undos = 0.8, 3-5 undos = 0.6, 6+ undos = 0.4
+  const undoScore =
+    layoutSession.undoCount === 0
+      ? 1.0
+      : layoutSession.undoCount <= 2
+        ? 0.8
+        : layoutSession.undoCount <= 5
+          ? 0.6
+          : 0.4;
+
+  // Completion score: fill percentage + labeling rate
+  const fillPct = computeFillPercentage(layout);
+  const labeledBins = layout.bins.filter(
+    (b) => b.layerId !== STAGING_ID && b.label?.trim()
+  ).length;
+  const labelRate = binsPlaced > 0 ? labeledBins / binsPlaced : 0;
+
+  // Weight fill at 70%, labels at 30%
+  const completionScore = Math.round((fillPct * 0.7 + labelRate * 100 * 0.3)) / 100;
+
+  // Session score: time spent indicates deliberate work
+  const sessionDurationMs = Date.now() - layoutSession.startTime;
+  const binsPerMinute = binsPlaced / (sessionDurationMs / 60_000);
+  const sessionScore =
+    binsPerMinute > 2
+      ? 1.0 // >2 bins/min = efficient
+      : binsPerMinute > 0.5
+        ? 0.8 // 0.5-2 bins/min = normal
+        : binsPerMinute > 0.1
+          ? 0.6
+          : 0.4; // <0.1 = very slow/exploratory
+
+  // Correction score: ratio of corrections to bins placed
+  const totalCorrections =
+    layoutSession.deletedCount + layoutSession.resizeCount + layoutSession.moveCount;
+  const correctionRatio = totalCorrections / binsPlaced;
+  // 0 corrections = 1.0, <0.3 ratio = 0.8, <0.6 = 0.6, >=0.6 = 0.4
+  const correctionScore =
+    correctionRatio === 0
+      ? 1.0
+      : correctionRatio < 0.3
+        ? 0.8
+        : correctionRatio < 0.6
+          ? 0.6
+          : 0.4;
+
+  // Combined: weighted average (corrections matter most)
+  const weights = { undo: 0.2, completion: 0.25, session: 0.25, correction: 0.3 };
+  const combined =
+    undoScore * weights.undo +
+    completionScore * weights.completion +
+    sessionScore * weights.session +
+    correctionScore * weights.correction;
+
+  return {
+    undo_score: Math.round(undoScore * 100) / 100,
+    completion_score: Math.round(completionScore * 100) / 100,
+    session_score: Math.round(sessionScore * 100) / 100,
+    correction_score: Math.round(correctionScore * 100) / 100,
+    combined: Math.round(combined * 100) / 100,
+  };
+}
+
+/**
+ * Detect abandonment type based on layout state and session context.
+ *
+ * @param layout - Current layout state
+ * @param signal - Quality signal being tracked
+ * @returns Abandonment type or null if not abandoned
+ */
+export function detectAbandonmentType(
+  layout: Layout,
+  signal: QualitySignal
+): AbandonmentType | null {
+  const binsOnGrid = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const fillPct = computeFillPercentage(layout);
+  const timeSinceLastEdit = Date.now() - layoutSession.lastEditTime;
+
+  // Dormant: no edits in last 30 minutes but session still active
+  const DORMANT_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
+  if (timeSinceLastEdit > DORMANT_THRESHOLD_MS && binsOnGrid.length > 0) {
+    return 'dormant';
+  }
+
+  // Incomplete: has bins but very low fill rate (<20%) and not saved/exported
+  if (signal === 'modified' && fillPct < 20 && binsOnGrid.length >= 2) {
+    return 'incomplete';
+  }
+
+  // Deleted: layout being cleared (delete signal with bins present)
+  if (signal === 'modified' && binsOnGrid.length === 0 && layoutSession.deletedCount > 0) {
+    return 'deleted';
+  }
+
+  // Superseded: layout switch without save (detected elsewhere)
+  // This would be set by the caller when switching layouts without saving
+  if (signal === 'modified' && layoutSession.editCount > 0 && fillPct < 10) {
+    return 'superseded';
+  }
+
+  return null;
 }
 
 /**
