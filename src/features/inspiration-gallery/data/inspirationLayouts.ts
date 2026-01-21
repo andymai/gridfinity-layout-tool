@@ -17,7 +17,9 @@ function createCutleryDrawer(): InspirationLayout {
     createCategory('Silverware', '#94a3b8'),
     createCategory('Small', '#38bdf8'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 5 (35mm) for stacked flatware - fits 12-17 pieces per slot
+  // (single fork/spoon ~2-3mm thick, households typically have 8-12+ of each)
+  const layer = createLayer('Layer 1', 5);
 
   // Real cutlery dimensions:
   // - Dinner fork: ~200mm, dinner knife: ~230mm, tablespoon: ~200mm → 6 units (252mm)
@@ -332,7 +334,9 @@ function createElectronicsBench(): InspirationLayout {
     createCategory('Tools', '#4ade80'),
     createCategory('Supplies', '#fbbf24'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 6 (42mm) for solder spools (~50-60mm) and wire spools (~40-70mm)
+  // Small component bins just won't use full height, which is fine
+  const layer = createLayer('Layer 1', 6);
 
   // Component bins: 1x1 or 2x2 for small parts
   // Tools: Tweezers 100-150mm → 3-4 units, Flush cutters 100-130mm → 3 units
@@ -451,7 +455,8 @@ function createDeskDrawer(): InspirationLayout {
     createCategory('Clips', '#fbbf24'),
     createCategory('Other', '#e2e8f0'),
   ];
-  const layer = createLayer('Layer 1', 3);
+  // Height 4 (28mm) for piled pens/pencils (~8mm diameter each, pile of 10+ = 25-30mm)
+  const layer = createLayer('Layer 1', 4);
 
   // Real dimensions:
   // - Pens/pencils: ~150mm → 4 units (168mm)
@@ -1133,7 +1138,8 @@ function createGarageDrawer(): InspirationLayout {
     createCategory('Hardware', '#fbbf24'),
     createCategory('Electrical', '#f87171'),
   ];
-  const layer = createLayer('Layer 1', 6);
+  // Height 7 (49mm) for small spray cans lying flat (~45mm diameter)
+  const layer = createLayer('Layer 1', 7);
 
   // Realistic automotive drawer supplies (small containers that fit in shallow drawer):
   // - Small spray cans (3oz WD-40): ~45×90mm → 2x3 bins (84×126mm)
@@ -1141,11 +1147,11 @@ function createGarageDrawer(): InspirationLayout {
   // - Electrical tape: ~50mm diameter → 2x2 bins
   // - Drain plugs, fuses, connectors: small hardware → 2x2 or 3x3 bins
   const bins = [
-    // Lubricants section - small spray cans and bottles
-    createBin(0, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'WD-40', height: 6 }),
-    createBin(2, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'PB Blaster', height: 6 }),
-    createBin(4, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'Silicone', height: 6 }),
-    createBin(6, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'Grease', height: 6 }),
+    // Lubricants section - small spray cans and bottles (lying flat, 45mm diameter)
+    createBin(0, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'WD-40', height: 7 }),
+    createBin(2, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'PB Blaster', height: 7 }),
+    createBin(4, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'Silicone', height: 7 }),
+    createBin(6, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'Grease', height: 7 }),
     createBin(8, 0, 1, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Blue Loctite' }),
     createBin(9, 0, 1, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Red Loctite' }),
     createBin(10, 0, 1, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Anti-Seize' }),
