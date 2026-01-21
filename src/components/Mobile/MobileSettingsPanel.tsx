@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useLabsStore, useSettingsStore } from '@/core/store';
+import { getFeature } from '@/core/labs';
 import { useShallow } from 'zustand/shallow';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
-import { getFeature } from '@/features/labs/definitions/features';
 import { SparklesIcon, ChevronRightIcon } from '@/features/labs/components/icons';
 import { CONSTRAINTS } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';

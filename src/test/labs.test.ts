@@ -5,16 +5,16 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useLabsStore, LABS_STORAGE_KEY } from '@/features/labs/store/labs';
+import { useLabsStore, LABS_STORAGE_KEY } from '@/core/store';
 import {
   FEATURE_FLAGS,
   getActiveFeatures,
   getGraduatedFeatures,
   getToggleableFeatures,
+  createDefaultLabsPreferences,
   type FeatureId,
-} from '@/features/labs/definitions/features';
-import { createDefaultLabsPreferences } from '@/features/labs/definitions/types';
-import * as features from '@/features/labs/definitions/features';
+} from '@/core/labs';
+import * as features from '@/core/labs/features';
 
 // Mock trackEvent to avoid analytics calls in tests
 vi.mock('../utils/analytics', () => ({
@@ -23,8 +23,8 @@ vi.mock('../utils/analytics', () => ({
 
 // Mock getFeature for store tests to return features without comingSoon
 // Note: Must mock the actual source module that the store imports from
-vi.mock('../features/labs/definitions/features', async () => {
-  const actual = await vi.importActual<typeof features>('../features/labs/definitions/features');
+vi.mock('../core/labs/features', async () => {
+  const actual = await vi.importActual<typeof features>('../core/labs/features');
   return {
     ...actual,
     getFeature: vi.fn((id: string) => {

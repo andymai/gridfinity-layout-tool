@@ -1,4 +1,4 @@
-import type { FeatureFlag } from '@/features/labs/definitions/types';
+import type { FeatureFlag } from '@/core/labs';
 import { FeatureStatusBadge } from './FeatureStatusBadge';
 import { SparklesIcon } from './icons';
 
