@@ -74,6 +74,16 @@
  * - ml:correction_timing      → How fast corrections happen
  * - ml:neg:resize_correct:{size} → What users resize corrected bins to
  *
+ * === Temporal Patterns ===
+ * - ml:temporal:hour:{hour}   → Activity by hour of day (0-23)
+ * - ml:temporal:day:{day}     → Activity by day of week (0-6)
+ * - ml:temporal:weekday       → Weekend vs weekday activity
+ *
+ * === Layout Clustering ===
+ * - ml:clusters:{structure_hash} → Size distributions per structure cluster
+ * - ml:cluster_archetypes:{hash} → Archetype correlations per cluster
+ * - ml:cluster_distribution   → How common each structure hash is
+ *
  * === Metadata ===
  * - ml:meta:*                 → Metadata counters
  */
@@ -147,6 +157,10 @@ interface LayoutSnapshotEvent {
   spatial_patterns: SpatialPattern[];
   uniformity_score: number;
   edge_usage: EdgeUsage;
+  hour_of_day: number;
+  day_of_week: number;
+  is_weekend: boolean;
+  structure_hash: string;
   vocab_version: string;
 }
 
@@ -602,7 +616,18 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       typeof e.uniformity_score === 'number' &&
       e.uniformity_score >= 0 &&
       e.uniformity_score <= 1 &&
-      validateEdgeUsage(e.edge_usage)
+      validateEdgeUsage(e.edge_usage) &&
+      // Temporal fields
+      typeof e.hour_of_day === 'number' &&
+      e.hour_of_day >= 0 &&
+      e.hour_of_day <= 23 &&
+      typeof e.day_of_week === 'number' &&
+      e.day_of_week >= 0 &&
+      e.day_of_week <= 6 &&
+      typeof e.is_weekend === 'boolean' &&
+      // Structure clustering
+      typeof e.structure_hash === 'string' &&
+      /^[a-f0-9]{8}$/.test(e.structure_hash)
     );
   }
 
@@ -1049,6 +1074,43 @@ function aggregateLayoutSnapshot(event: LayoutSnapshotEvent, inc: Increments): v
   const edgeKey = `${edge_usage.left ? 'L' : ''}${edge_usage.right ? 'R' : ''}${edge_usage.top ? 'T' : ''}${edge_usage.bottom ? 'B' : ''}` || 'none';
   inc['ml:edge_combo'] = inc['ml:edge_combo'] || {};
   inc['ml:edge_combo'][edgeKey] = (inc['ml:edge_combo'][edgeKey] || 0) + 1;
+
+  // 14. Track temporal patterns
+  const { hour_of_day, day_of_week, is_weekend, structure_hash } = event;
+
+  // Track activity by hour (helps understand when users are most active)
+  const hourKey = `ml:temporal:hour:${hour_of_day}`;
+  inc[hourKey] = inc[hourKey] || {};
+  inc[hourKey]['count'] = (inc[hourKey]['count'] || 0) + 1;
+
+  // Track activity by day of week
+  const dayKey = `ml:temporal:day:${day_of_week}`;
+  inc[dayKey] = inc[dayKey] || {};
+  inc[dayKey]['count'] = (inc[dayKey]['count'] || 0) + 1;
+
+  // Track weekend vs weekday activity
+  const weekendKey = is_weekend ? 'weekend' : 'weekday';
+  inc['ml:temporal:weekday'] = inc['ml:temporal:weekday'] || {};
+  inc['ml:temporal:weekday'][weekendKey] = (inc['ml:temporal:weekday'][weekendKey] || 0) + 1;
+
+  // 15. Track layout clusters by structure hash
+  // This enables finding layouts with similar structural characteristics
+  const clusterKey = `ml:clusters:${structure_hash}`;
+  inc[clusterKey] = inc[clusterKey] || {};
+
+  // Track size distribution within each cluster
+  for (const [size, count] of Object.entries(event.size_distribution)) {
+    inc[clusterKey][size] = (inc[clusterKey][size] || 0) + count;
+  }
+
+  // Track archetype correlations with clusters
+  const clusterArchetypeKey = `ml:cluster_archetypes:${structure_hash}`;
+  inc[clusterArchetypeKey] = inc[clusterArchetypeKey] || {};
+  inc[clusterArchetypeKey][archetype] = (inc[clusterArchetypeKey][archetype] || 0) + 1;
+
+  // Track cluster distribution (how common each structure hash is)
+  inc['ml:cluster_distribution'] = inc['ml:cluster_distribution'] || {};
+  inc['ml:cluster_distribution'][structure_hash] = (inc['ml:cluster_distribution'][structure_hash] || 0) + 1;
 }
 
 function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): void {
