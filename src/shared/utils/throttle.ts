@@ -4,14 +4,21 @@
  * because it aligns with the browser's rendering cycle.
  */
 
-// Type for any callable function (WeakMap key compatible)
+/**
+ * Type for callable functions that can be used as WeakMap keys.
+ *
+ * Note: We use `any[]` here because TypeScript's type system cannot express
+ * "any function" in a way that satisfies WeakMap's key constraint without `any`.
+ * The public API (throttleRAF, throttle) preserves full type safety through
+ * generics - this internal type is just for storage.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyFunction = (...args: any[]) => void;
+type ThrottledFunction = (...args: any[]) => void;
 
 // WeakMap to store RAF IDs for each throttled function
-const rafIds = new WeakMap<AnyFunction, number>();
-const pendingArgs = new WeakMap<AnyFunction, unknown[]>();
-const pendingThis = new WeakMap<AnyFunction, unknown>();
+const rafIds = new WeakMap<ThrottledFunction, number>();
+const pendingArgs = new WeakMap<ThrottledFunction, unknown[]>();
+const pendingThis = new WeakMap<ThrottledFunction, unknown>();
 
 /**
  * Creates a throttled version of a function that uses requestAnimationFrame.
@@ -86,7 +93,7 @@ export function throttleRAF<T extends (...args: any[]) => void>(
  *
  * @param throttledFn The throttled function to cancel
  */
-export function cancelThrottledRAF(throttledFn: AnyFunction): void {
+export function cancelThrottledRAF(throttledFn: ThrottledFunction): void {
   const rafId = rafIds.get(throttledFn);
   if (rafId !== undefined) {
     cancelAnimationFrame(rafId);
