@@ -49,11 +49,11 @@
  * - ml:resize_results         → Distribution of resulting sizes after resize
  *
  * === Bin Deletions (Negative Signal) ===
- * - ml:deleted_sizes          → Size distribution of deleted bins (negative signal)
- * - ml:delete_methods         → Deletion method distribution (key/context_menu/bulk/inspector)
- * - ml:delete_labeled         → Labeled vs unlabeled deletion rate
- * - ml:delete_domain:{domain} → Deleted sizes by label domain
- * - ml:deletions              → Total deletion event count
+ * - ml:neg:deleted_sizes      → Size distribution of deleted bins (negative signal)
+ * - ml:neg:delete_methods     → Deletion method distribution (key/context_menu/bulk/inspector)
+ * - ml:neg:delete_labeled     → Labeled vs unlabeled deletion rate
+ * - ml:neg:delete_domain:{domain} → Deleted sizes by label domain
+ * - ml:neg:deletions          → Total deletion event count
  *
  * === Bin Moves ===
  * - ml:moved_sizes            → Size distribution of moved bins
@@ -68,16 +68,16 @@
  * - ml:neg:reject_by_drawer:{size} → Rejected sizes by drawer size
  *
  * === Undo Events (Negative Signal) ===
- * - ml:undos                  → Total undo count by action type
- * - ml:undo_timing            → Undo timing buckets (immediate/quick/delayed)
- * - ml:undo_action_timing     → Action + timing combos (e.g., placement_immediate)
- * - ml:undo_scale             → Undo scale (single/few/many/bulk bins)
+ * - ml:neg:undos              → Total undo count by action type
+ * - ml:neg:undo_timing        → Undo timing buckets (immediate/quick/delayed)
+ * - ml:neg:undo_action_timing → Action + timing combos (e.g., placement_immediate)
+ * - ml:neg:undo_scale         → Undo scale (single/few/many/bulk bins)
  *
  * === Quick Corrections (Negative Signal - STRONGEST) ===
- * - ml:quick_corrections      → Total quick correction count by type
+ * - ml:neg:quick_corrections  → Total quick correction count by type
  * - ml:neg:corrected_sizes    → Sizes that get quickly corrected (BAD sizes)
  * - ml:neg:correct_by_method:{method} → Corrections by placement method
- * - ml:correction_timing      → How fast corrections happen
+ * - ml:neg:correction_timing  → How fast corrections happen
  * - ml:neg:resize_correct:{size} → What users resize corrected bins to
  *
  * === Session Summary ===
@@ -103,6 +103,11 @@
  *
  * === Metadata ===
  * - ml:meta:*                 → Metadata counters
+ * - ml:meta:validation:passed → Total events that passed validation
+ * - ml:meta:validation:failed → Total events that failed validation
+ * - ml:meta:validation:failed:{type} → Failed events by event type
+ * - ml:meta:vocab_version:{version} → Events by vocabulary version
+ * - ml:meta:client_version:{version} → Events by client version
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -1466,34 +1471,56 @@ function aggregateBinResize(event: BinResizeEvent, inc: Increments): void {
   inc['ml:resize_results'][new_size] = (inc['ml:resize_results'][new_size] || 0) + 1;
 }
 
+/**
+ * Record metrics for a bin deletion event by incrementing the appropriate aggregate counters in the provided increments map.
+ *
+ * Updates the `inc` object with counts for negative-signal deletion metrics, including:
+ * - `ml:neg:deleted_sizes` (by `bin_size`)
+ * - `ml:neg:delete_methods` (by `method`)
+ * - `ml:neg:delete_labeled` (`"labeled"` or `"unlabeled"`)
+ * - `ml:neg:delete_domain:{domain}` (per-domain by `bin_size`, when `label_domain` is present)
+ * - `ml:neg:deletions` (`total`)
+ *
+ * @param event - The BinDeletedEvent containing `bin_size`, `method`, `had_label`, and optional `label_domain`
+ * @param inc - Mutable increments map that will be populated with hash-field count updates to write to Redis
+ */
 function aggregateBinDeletion(event: BinDeletedEvent, inc: Increments): void {
   const { bin_size, method, had_label, label_domain } = event;
 
   // Track deleted sizes (important negative signal - what users rejected)
-  inc['ml:deleted_sizes'] = inc['ml:deleted_sizes'] || {};
-  inc['ml:deleted_sizes'][bin_size] = (inc['ml:deleted_sizes'][bin_size] || 0) + 1;
+  inc['ml:neg:deleted_sizes'] = inc['ml:neg:deleted_sizes'] || {};
+  inc['ml:neg:deleted_sizes'][bin_size] = (inc['ml:neg:deleted_sizes'][bin_size] || 0) + 1;
 
   // Track deletion method distribution
-  inc['ml:delete_methods'] = inc['ml:delete_methods'] || {};
-  inc['ml:delete_methods'][method] = (inc['ml:delete_methods'][method] || 0) + 1;
+  inc['ml:neg:delete_methods'] = inc['ml:neg:delete_methods'] || {};
+  inc['ml:neg:delete_methods'][method] = (inc['ml:neg:delete_methods'][method] || 0) + 1;
 
   // Track whether deleted bins had labels (labeled bins being deleted may indicate bad ML suggestions)
-  inc['ml:delete_labeled'] = inc['ml:delete_labeled'] || {};
+  inc['ml:neg:delete_labeled'] = inc['ml:neg:delete_labeled'] || {};
   const labeledKey = had_label ? 'labeled' : 'unlabeled';
-  inc['ml:delete_labeled'][labeledKey] = (inc['ml:delete_labeled'][labeledKey] || 0) + 1;
+  inc['ml:neg:delete_labeled'][labeledKey] = (inc['ml:neg:delete_labeled'][labeledKey] || 0) + 1;
 
   // Track deleted bins by domain
   if (label_domain) {
-    const domainKey = `ml:delete_domain:${label_domain}`;
+    const domainKey = `ml:neg:delete_domain:${label_domain}`;
     inc[domainKey] = inc[domainKey] || {};
     inc[domainKey][bin_size] = (inc[domainKey][bin_size] || 0) + 1;
   }
 
   // Track total deletions
-  inc['ml:deletions'] = inc['ml:deletions'] || {};
-  inc['ml:deletions']['total'] = (inc['ml:deletions']['total'] || 0) + 1;
+  inc['ml:neg:deletions'] = inc['ml:neg:deletions'] || {};
+  inc['ml:neg:deletions']['total'] = (inc['ml:neg:deletions']['total'] || 0) + 1;
 }
 
+/**
+ * Aggregate move-related telemetry from a bin move event into the provided increments map.
+ *
+ * Increments counters for moved bin sizes, move methods, distance buckets, and the overall move total.
+ * Distance is mapped to one of the buckets: `micro` (<=1), `short` (2–3), `medium` (4–9), or `long` (10+).
+ *
+ * @param event - The bin move event containing `bin_size`, `distance`, and `method`
+ * @param inc - Mutable increments map that will be updated with counters to write to Redis
+ */
 function aggregateBinMove(event: BinMovedEvent, inc: Increments): void {
   const { bin_size, distance, method } = event;
 
@@ -1679,21 +1706,24 @@ function aggregatePlacementRejection(event: PlacementRejectedEvent, inc: Increme
 }
 
 /**
- * Aggregate undo events (negative signal).
- * Tracks what actions users regret and how quickly.
+ * Aggregate an undo (negative signal) event into telemetry counters.
  *
- * Redis keys:
- * - ml:undos              → Total undo count by action type (negative signal)
- * - ml:undo_timing        → Undo timing buckets (immediate, quick, delayed)
- * - ml:undo_action_timing → Action + timing combos (e.g., placement_immediate)
- * - ml:undo_scale         → Distribution of undos by bins affected (single/few/many/bulk)
+ * Increments counters that record what action was undone, how quickly it was undone,
+ * combined action+timing counts, the scale of the undo by number of bins affected,
+ * and a total undo counter.
+ *
+ * Timing buckets: `immediate` (< 2000 ms), `quick` (2000–9999 ms), `delayed` (>= 10000 ms).
+ * Undo scale buckets: `single` (<=1), `few` (2–5), `many` (6–20), `bulk` (>20).
+ *
+ * @param event - The undo event; uses `action_undone`, `bins_affected`, and `time_since_action_ms`.
+ * @param inc - Mutable increments map to update with counts keyed by Redis metric names.
  */
 function aggregateUndo(event: UndoEvent, inc: Increments): void {
   const { action_undone, bins_affected, time_since_action_ms } = event;
 
   // Track what actions get undone (strong negative signal)
-  inc['ml:undos'] = inc['ml:undos'] || {};
-  inc['ml:undos'][action_undone] = (inc['ml:undos'][action_undone] || 0) + 1;
+  inc['ml:neg:undos'] = inc['ml:neg:undos'] || {};
+  inc['ml:neg:undos'][action_undone] = (inc['ml:neg:undos'][action_undone] || 0) + 1;
 
   // Track timing buckets (how fast did user regret?)
   // Immediate: <2s, Quick: 2-10s, Delayed: >10s
@@ -1705,23 +1735,23 @@ function aggregateUndo(event: UndoEvent, inc: Increments): void {
   } else {
     timingBucket = 'delayed'; // Thought about it, then undid
   }
-  inc['ml:undo_timing'] = inc['ml:undo_timing'] || {};
-  inc['ml:undo_timing'][timingBucket] = (inc['ml:undo_timing'][timingBucket] || 0) + 1;
+  inc['ml:neg:undo_timing'] = inc['ml:neg:undo_timing'] || {};
+  inc['ml:neg:undo_timing'][timingBucket] = (inc['ml:neg:undo_timing'][timingBucket] || 0) + 1;
 
   // Track by action + timing (e.g., "placement_immediate" indicates bad auto-suggestion)
   const actionTimingKey = `${action_undone}_${timingBucket}`;
-  inc['ml:undo_action_timing'] = inc['ml:undo_action_timing'] || {};
-  inc['ml:undo_action_timing'][actionTimingKey] = (inc['ml:undo_action_timing'][actionTimingKey] || 0) + 1;
+  inc['ml:neg:undo_action_timing'] = inc['ml:neg:undo_action_timing'] || {};
+  inc['ml:neg:undo_action_timing'][actionTimingKey] = (inc['ml:neg:undo_action_timing'][actionTimingKey] || 0) + 1;
 
   // Track bins affected (bulk undos vs single-bin undos)
   const binsBucket = bins_affected <= 1 ? 'single' :
     bins_affected <= 5 ? 'few' :
     bins_affected <= 20 ? 'many' : 'bulk';
-  inc['ml:undo_scale'] = inc['ml:undo_scale'] || {};
-  inc['ml:undo_scale'][binsBucket] = (inc['ml:undo_scale'][binsBucket] || 0) + 1;
+  inc['ml:neg:undo_scale'] = inc['ml:neg:undo_scale'] || {};
+  inc['ml:neg:undo_scale'][binsBucket] = (inc['ml:neg:undo_scale'][binsBucket] || 0) + 1;
 
   // Track total undos
-  inc['ml:undos']['total'] = (inc['ml:undos']['total'] || 0) + 1;
+  inc['ml:neg:undos']['total'] = (inc['ml:neg:undos']['total'] || 0) + 1;
 }
 
 /**
@@ -1730,18 +1760,18 @@ function aggregateUndo(event: UndoEvent, inc: Increments): void {
  * This is the strongest negative signal - user explicitly rejected the result.
  *
  * Redis keys:
- * - ml:quick_corrections                 → Total quick correction count by type
+ * - ml:neg:quick_corrections             → Total quick correction count by type
  * - ml:neg:corrected_sizes               → Sizes that get quickly corrected (BAD sizes)
  * - ml:neg:correct_by_method:{method}    → Which placement methods produce corrections
- * - ml:correction_timing                 → How fast corrections happen
+ * - ml:neg:correction_timing             → How fast corrections happen
  * - ml:neg:resize_correct:{size}         → What users resize corrected bins to
  */
 function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments): void {
   const { correction_type, original_size, new_size, placement_method, time_to_correction_ms } = event;
 
   // Track correction type (delete, resize, move)
-  inc['ml:quick_corrections'] = inc['ml:quick_corrections'] || {};
-  inc['ml:quick_corrections'][correction_type] = (inc['ml:quick_corrections'][correction_type] || 0) + 1;
+  inc['ml:neg:quick_corrections'] = inc['ml:neg:quick_corrections'] || {};
+  inc['ml:neg:quick_corrections'][correction_type] = (inc['ml:neg:quick_corrections'][correction_type] || 0) + 1;
 
   // STRONG NEGATIVE SIGNAL: Track which sizes get quickly corrected
   // These are sizes the model should NOT suggest
@@ -1764,8 +1794,8 @@ function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments):
   } else {
     timingBucket = 'considered';
   }
-  inc['ml:correction_timing'] = inc['ml:correction_timing'] || {};
-  inc['ml:correction_timing'][timingBucket] = (inc['ml:correction_timing'][timingBucket] || 0) + 1;
+  inc['ml:neg:correction_timing'] = inc['ml:neg:correction_timing'] || {};
+  inc['ml:neg:correction_timing'][timingBucket] = (inc['ml:neg:correction_timing'][timingBucket] || 0) + 1;
 
   // For resize corrections, track the size transition (what user ACTUALLY wanted)
   if (correction_type === 'resize' && new_size) {
@@ -1775,7 +1805,7 @@ function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments):
   }
 
   // Track total quick corrections
-  inc['ml:quick_corrections']['total'] = (inc['ml:quick_corrections']['total'] || 0) + 1;
+  inc['ml:neg:quick_corrections']['total'] = (inc['ml:neg:quick_corrections']['total'] || 0) + 1;
 }
 
 /**
@@ -1927,7 +1957,24 @@ function aggregateSessionSummary(event: SessionSummaryEvent, inc: Increments): v
 
 // ============================================
 // HANDLER
-// ============================================
+/**
+ * HTTP POST handler for the ML telemetry ingestion endpoint.
+ *
+ * Validates and aggregates a batch of telemetry events, writing aggregated counters and metadata to Redis and returning a JSON summary of processed and failed events.
+ *
+ * Behavior:
+ * - Only accepts POST; responds 405 for other methods.
+ * - Applies a per-IP rate limit; responds 429 when exceeded.
+ * - Accepts a JSON event or an array of events (batch capped at 100).
+ * - Validates events, accumulates per-event-type failure counts, and tallies vocab/client versions from valid events.
+ * - Writes aggregated counters and metadata (with appropriate TTLs) to Redis in a single pipeline.
+ * - Responds 200 with { ok: true, processed, failed } on success.
+ * - On Redis/storage errors responds 200 with { ok: true, processed: 0, error: 'storage_error' }.
+ * - If Redis is not configured (development), responds 200 with { ok: true, processed: 0 }.
+ *
+ * @param req - Incoming VercelRequest containing the telemetry event(s)
+ * @param res - VercelResponse used to send the JSON response
+ */
 
 export default async function handler(
   req: VercelRequest,
@@ -1975,10 +2022,31 @@ export default async function handler(
   // Validate and aggregate
   const increments: Increments = {};
   let validCount = 0;
+  let failedCount = 0;
+  const failedByType: Record<string, number> = {};
+  const vocabVersions: Record<string, number> = {};
+  const clientVersions: Record<string, number> = {};
 
   for (const event of events) {
-    if (!validateEvent(event)) continue;
+    if (!validateEvent(event)) {
+      failedCount++;
+      // Track failures by event type (extract from potentially invalid event)
+      const maybeType = (event as Record<string, unknown>)?.type;
+      const eventType = typeof maybeType === 'string' ? maybeType : 'unknown';
+      failedByType[eventType] = (failedByType[eventType] || 0) + 1;
+      continue;
+    }
     validCount++;
+
+    // Track vocab version from events that have it
+    if ('vocab_version' in event && typeof event.vocab_version === 'string') {
+      vocabVersions[event.vocab_version] = (vocabVersions[event.vocab_version] || 0) + 1;
+    }
+
+    // Track client version from events
+    if ('client_version' in event && typeof event.client_version === 'string') {
+      clientVersions[event.client_version] = (clientVersions[event.client_version] || 0) + 1;
+    }
 
     switch (event.type) {
       case 'bin_placed':
@@ -2040,11 +2108,7 @@ export default async function handler(
     }
   }
 
-  if (validCount === 0) {
-    res.status(200).json({ ok: true, processed: 0 });
-    return;
-  }
-
+  // Write to Redis even if validCount is 0 (to track failures)
   // Write to Redis in single pipeline
   try {
     const pipe = client.pipeline();
@@ -2053,15 +2117,55 @@ export default async function handler(
       for (const [field, count] of Object.entries(fields)) {
         pipe.hincrby(hash, field, count);
       }
+
+      // Add TTLs for keys that can grow unbounded (90 days)
+      // These are lower-value or temporary data
+      // Use NX flag to only set TTL on first creation, not reset on every write
+      if (hash === 'ml:unknown_hashes' ||
+          hash.startsWith('ml:size_seq:') ||
+          hash.startsWith('ml:cooccur:')) {
+        pipe.expire(hash, 90 * 24 * 60 * 60, 'NX'); // 90 days, only if no TTL exists
+      }
     }
 
     // Update metadata
-    pipe.incrby('ml:meta:total_events', validCount);
+    if (validCount > 0) {
+      pipe.incrby('ml:meta:total_events', validCount);
+    }
     pipe.set('ml:meta:last_updated', new Date().toISOString());
+
+    // Track validation metrics
+    if (validCount > 0) {
+      pipe.incrby('ml:meta:validation:passed', validCount);
+    }
+    if (failedCount > 0) {
+      pipe.incrby('ml:meta:validation:failed', failedCount);
+      for (const [eventType, count] of Object.entries(failedByType)) {
+        // Sanitize event type for Redis key (only allow alphanumeric and underscore)
+        const safeType = eventType.replace(/[^a-z0-9_]/gi, '_').slice(0, 32) || 'unknown';
+        pipe.hincrby('ml:meta:validation:failed_by_type', safeType, count);
+      }
+    }
+
+    // Track vocab versions (90 day TTL for version tracking)
+    for (const [version, count] of Object.entries(vocabVersions)) {
+      const safeVersion = version.replace(/[^a-z0-9_.]/gi, '_').slice(0, 16) || 'unknown';
+      pipe.hincrby('ml:meta:vocab_versions', safeVersion, count);
+    }
+    // Use NX flag to only set TTL on first creation, not reset on every write
+    pipe.expire('ml:meta:vocab_versions', 90 * 24 * 60 * 60, 'NX');
+
+    // Track client versions (90 day TTL for version tracking)
+    for (const [version, count] of Object.entries(clientVersions)) {
+      const safeVersion = version.replace(/[^a-z0-9_.]/gi, '_').slice(0, 16) || 'unknown';
+      pipe.hincrby('ml:meta:client_versions', safeVersion, count);
+    }
+    // Use NX flag to only set TTL on first creation, not reset on every write
+    pipe.expire('ml:meta:client_versions', 90 * 24 * 60 * 60, 'NX');
 
     await pipe.exec();
 
-    res.status(200).json({ ok: true, processed: validCount });
+    res.status(200).json({ ok: true, processed: validCount, failed: failedCount });
   } catch (error) {
     console.error('ML telemetry Redis error:', error);
     // Don't fail the request - telemetry should never break UX

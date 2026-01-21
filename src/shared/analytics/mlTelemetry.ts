@@ -939,10 +939,31 @@ export function getSessionContext(): { durationMs: number; editCount: number } {
 const FLUSH_INTERVAL_MS = 30_000; // 30 seconds
 const FLUSH_THRESHOLD = 20; // or 20 events
 
+// Sampling: After this many bins, start sampling at 25% rate
+const SAMPLING_THRESHOLD = 50;
+const SAMPLING_RATE = 0.25;
+
+// Circuit breaker: Stop sending after this many consecutive failures
+const CIRCUIT_BREAKER_THRESHOLD = 5;
+const CIRCUIT_BREAKER_RESET_MS = 5 * 60 * 1000; // 5 minutes
+
+// Telemetry client version for tracking schema/protocol changes
+// Separate from app version - increment when telemetry format changes
+export const CLIENT_VERSION = '0.1.0';
+
 let eventBuffer: MLTelemetryEvent[] = [];
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;
 let isInitialized = false;
 
+// Circuit breaker state
+let consecutiveFailures = 0;
+let circuitBreakerTrippedAt: number | null = null;
+
+/**
+ * Schedule a future buffer flush if one is not already pending.
+ *
+ * Schedules a call to `flush()` after `FLUSH_INTERVAL_MS`. If a flush timer is already set, this is a no-op.
+ */
 function scheduleFlush(): void {
   if (flushTimeout) return;
   flushTimeout = setTimeout(() => {
@@ -950,6 +971,11 @@ function scheduleFlush(): void {
   }, FLUSH_INTERVAL_MS);
 }
 
+/**
+ * Cancels any scheduled telemetry flush.
+ *
+ * If a flush timer is pending, clears the timeout and resets the internal timer reference.
+ */
 function cancelFlush(): void {
   if (flushTimeout) {
     clearTimeout(flushTimeout);
@@ -958,7 +984,61 @@ function cancelFlush(): void {
 }
 
 /**
- * Flush buffered events to the API.
+ * Determine whether the telemetry circuit breaker is currently open.
+ *
+ * If the breaker has been tripped and the reset window has elapsed, this function resets the breaker.
+ *
+ * @returns `true` if the circuit breaker is open and telemetry should be skipped, `false` otherwise.
+ */
+function isCircuitBreakerOpen(): boolean {
+  if (consecutiveFailures < CIRCUIT_BREAKER_THRESHOLD) {
+    return false;
+  }
+
+  // Check if enough time has passed to reset
+  if (circuitBreakerTrippedAt !== null) {
+    const elapsed = Date.now() - circuitBreakerTrippedAt;
+    if (elapsed >= CIRCUIT_BREAKER_RESET_MS) {
+      // Reset circuit breaker
+      consecutiveFailures = 0;
+      circuitBreakerTrippedAt = null;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Record a successful send (resets circuit breaker).
+ */
+function recordSuccess(): void {
+  consecutiveFailures = 0;
+  circuitBreakerTrippedAt = null;
+}
+
+/**
+ * Record a failed telemetry send and trip the circuit breaker when the failure threshold is reached.
+ *
+ * Increments the internal consecutive failure counter and, if the configured threshold is met
+ * and the breaker is not already tripped, sets the trip timestamp and logs a warning.
+ */
+function recordFailure(): void {
+  consecutiveFailures++;
+  if (consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD && circuitBreakerTrippedAt === null) {
+    circuitBreakerTrippedAt = Date.now();
+    console.warn(`ML telemetry circuit breaker tripped after ${consecutiveFailures} failures. Will retry in ${CIRCUIT_BREAKER_RESET_MS / 1000}s.`);
+  }
+}
+
+/**
+ * Sends buffered ML telemetry events to the server and clears the local buffer.
+ *
+ * If there are no events, the function returns immediately. If telemetry is disabled
+ * or the internal circuit breaker is open, buffered events are dropped and the buffer
+ * is cleared. Before transmission, each event is annotated with the client version.
+ * The function attempts reliable delivery (preferring navigator.sendBeacon and falling
+ * back to fetch) and updates internal circuit-breaker state based on success or failure.
  */
 function flush(): void {
   cancelFlush();
@@ -972,27 +1052,50 @@ function flush(): void {
     return;
   }
 
+  // Check circuit breaker
+  if (isCircuitBreakerOpen()) {
+    // Drop events when circuit is open to prevent memory buildup
+    eventBuffer = [];
+    return;
+  }
+
   const events = eventBuffer;
   eventBuffer = [];
 
+  // Add client_version to all events for schema tracking
+  const eventsWithVersion = events.map((event) => ({
+    ...event,
+    client_version: CLIENT_VERSION,
+  }));
+
   // Use sendBeacon for reliability on page close
   try {
-    const blob = new Blob([JSON.stringify(events)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(eventsWithVersion)], { type: 'application/json' });
     const sent = navigator.sendBeacon('/api/ml-telemetry', blob);
 
-    if (!sent) {
+    if (sent) {
+      recordSuccess();
+    } else {
       // Fallback to fetch if sendBeacon fails (shouldn't happen often)
       fetch('/api/ml-telemetry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(events),
+        body: JSON.stringify(eventsWithVersion),
         keepalive: true,
-      }).catch(() => {
-        // Silently fail - telemetry should never break the app
-      });
+      })
+        .then((response) => {
+          if (response.ok) {
+            recordSuccess();
+          } else {
+            recordFailure();
+          }
+        })
+        .catch(() => {
+          recordFailure();
+        });
     }
   } catch {
-    // Silently fail
+    recordFailure();
   }
 }
 
@@ -1186,11 +1289,13 @@ function isEnabled(): boolean {
 }
 
 /**
- * Track a bin placement event.
+ * Buffer a telemetry event for a bin placement, update session state, and schedule a flush.
+ *
+ * May skip emitting an event under high-volume sampling while still updating session counters and timing.
  *
  * @param bin - The bin that was placed
- * @param layout - Current layout state
- * @param method - How the bin was placed
+ * @param layout - The current layout state containing drawer and layer context
+ * @param method - The placement method used (e.g., manual, fill, quick place)
  */
 export function trackBinPlacement(
   bin: Bin,
@@ -1198,6 +1303,28 @@ export function trackBinPlacement(
   method: PlacementMethod
 ): void {
   if (!isEnabled()) return;
+
+  // Apply sampling for high-volume sessions to reduce telemetry load
+  // After SAMPLING_THRESHOLD bins, only track 25% of placements
+  // Always track the first bin and any bin with a label (labels are high value)
+  const shouldSample = sessionState.sessionIndex >= SAMPLING_THRESHOLD &&
+    !bin.label?.trim() &&
+    Math.random() > SAMPLING_RATE;
+
+  if (shouldSample) {
+    // Still update session state for accurate counts
+    const binSize = `${bin.width}x${bin.depth}x${bin.height}`;
+    sessionState.prevBinSize = binSize;
+    sessionState.sessionIndex++;
+    if (sessionState.sizeSequence.length < 100) {
+      sessionState.sizeSequence.push(binSize);
+    }
+    if (sessionState.firstBinTime === null) {
+      sessionState.firstBinTime = Date.now();
+    }
+    layoutSession.lastEditTime = Date.now();
+    return; // Skip sending event
+  }
 
   // Find layer index
   const layerIndex = layout.layers.findIndex((l) => l.id === bin.layerId);
