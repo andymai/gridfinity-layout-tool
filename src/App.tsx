@@ -23,10 +23,23 @@ import { LabsDrawer } from './features/labs/components';
 import { LocalMutationsProvider } from './shared/contexts';
 import { SHORTCUTS } from './core/constants';
 
-// Legacy context menu state for backwards compatibility
-interface LegacyContextMenuState {
-  binId?: string;
+// Legacy context menu state for backwards compatibility (has binId instead of binIds)
+interface LegacyContextMenuStateWithBinId {
+  binId: string;  // Non-optional when used with type guard
   position: { x: number; y: number };
+}
+
+/**
+ * Type guard to check if context menu state has legacy binId property.
+ * Used for backward compatibility during migration period.
+ */
+function hasLegacyBinId(state: unknown): state is LegacyContextMenuStateWithBinId {
+  return (
+    typeof state === 'object' &&
+    state !== null &&
+    'binId' in state &&
+    typeof (state as { binId?: unknown }).binId === 'string'
+  );
 }
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
@@ -245,8 +258,7 @@ export default function App() {
         {/* Context menu (long-press on bin) */}
         {(() => {
           if (contextMenu) {
-            const legacy = contextMenu as unknown as LegacyContextMenuState;
-            const binIds = contextMenu.binIds || (legacy.binId ? [legacy.binId] : []);
+            const binIds = contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : []);
             return (
               <BinContextMenuWrapper
                 binIds={binIds}
@@ -315,8 +327,7 @@ export default function App() {
       {/* Context menu (right-click on bin) */}
       {(() => {
         if (contextMenu) {
-          const legacy = contextMenu as unknown as LegacyContextMenuState;
-          const binIds = contextMenu.binIds || (legacy.binId ? [legacy.binId] : []);
+          const binIds = contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : []);
           return (
             <BinContextMenuWrapper
               binIds={binIds}
