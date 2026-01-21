@@ -12,7 +12,7 @@
  * The public API (throttleRAF, throttle) preserves full type safety through
  * generics - this internal type is just for storage.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required for WeakMap key constraint with generic functions
 type ThrottledFunction = (...args: any[]) => void;
 
 // WeakMap to store RAF IDs for each throttled function
@@ -44,7 +44,7 @@ const pendingThis = new WeakMap<ThrottledFunction, unknown>();
  *   throttledMove(e.clientX, e.clientY);
  * });
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Generic constraint for any callable function type
 export function throttleRAF<T extends (...args: any[]) => void>(
   fn: T
 ): T {
@@ -118,7 +118,7 @@ export function cancelThrottledRAF(throttledFn: ThrottledFunction): void {
  *   sendToServer(data);
  * }, 50); // Max 20 calls per second
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Generic constraint for any callable function type
 export function throttle<T extends (...args: any[]) => void>(
   fn: T,
   delay: number

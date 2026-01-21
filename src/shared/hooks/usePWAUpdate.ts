@@ -450,7 +450,6 @@ export function usePWAUpdate(): void {
     }, 100);
 
     return () => clearTimeout(timeoutId);
-    // Only run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only run once on mount
   }, []);
 }

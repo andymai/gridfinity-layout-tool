@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { calculateResizeRect, mapInteractionToHint } from '@/utils/interaction';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { capturePointer, calculateResizeRect, mapInteractionToHint } from '@/utils/interaction';
 import type { Interaction, Rect, ResizeHandle } from '@/core/types';
+import type { PointerCaptureHandle } from '@/hooks/interactions/types';
 
 describe('calculateResizeRect', () => {
   const defaultDrawer = { width: 10, depth: 8 };
@@ -302,5 +303,90 @@ describe('mapInteractionToHint', () => {
       const result = mapInteractionToHint(interaction);
       expect(result).toEqual({ type: 'idle' });
     });
+  });
+
+  describe('unknown interaction type', () => {
+    it('returns idle hint for unknown type (defensive fallback)', () => {
+      // Force an unknown type to test the default case
+      const interaction = {
+        type: 'unknown_type',
+      } as unknown as Interaction;
+      const result = mapInteractionToHint(interaction);
+      expect(result).toEqual({ type: 'idle' });
+    });
+  });
+});
+
+describe('capturePointer', () => {
+  let mockSetPointerCapture: ReturnType<typeof vi.fn>;
+  let originalSetPointerCapture: typeof document.body.setPointerCapture;
+
+  beforeEach(() => {
+    mockSetPointerCapture = vi.fn();
+    originalSetPointerCapture = document.body.setPointerCapture;
+    document.body.setPointerCapture = mockSetPointerCapture;
+  });
+
+  afterEach(() => {
+    document.body.setPointerCapture = originalSetPointerCapture;
+    vi.restoreAllMocks();
+  });
+
+  it('returns false when pointerId is undefined', () => {
+    const activePointerIdRef = { current: null };
+    const capturedPointerRef = { current: null as PointerCaptureHandle | null };
+
+    const result = capturePointer(undefined, activePointerIdRef, capturedPointerRef);
+
+    expect(result).toBe(false);
+    expect(activePointerIdRef.current).toBeNull();
+    expect(capturedPointerRef.current).toBeNull();
+    expect(mockSetPointerCapture).not.toHaveBeenCalled();
+  });
+
+  it('captures pointer and returns true on success', () => {
+    const activePointerIdRef = { current: null as number | null };
+    const capturedPointerRef = { current: null as PointerCaptureHandle | null };
+    const pointerId = 42;
+
+    const result = capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
+
+    expect(result).toBe(true);
+    expect(activePointerIdRef.current).toBe(42);
+    expect(capturedPointerRef.current).toEqual({
+      element: document.body,
+      pointerId: 42,
+    });
+    expect(mockSetPointerCapture).toHaveBeenCalledWith(42);
+  });
+
+  it('returns false when setPointerCapture throws (e.g., pointer already released)', () => {
+    mockSetPointerCapture.mockImplementation(() => {
+      throw new Error('InvalidPointerId: Pointer not found');
+    });
+
+    const activePointerIdRef = { current: null as number | null };
+    const capturedPointerRef = { current: null as PointerCaptureHandle | null };
+    const pointerId = 99;
+
+    const result = capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
+
+    expect(result).toBe(false);
+    // activePointerIdRef is set before the try block
+    expect(activePointerIdRef.current).toBe(99);
+    // capturedPointerRef should remain null since capture failed
+    expect(capturedPointerRef.current).toBeNull();
+  });
+
+  it('handles zero as a valid pointerId', () => {
+    const activePointerIdRef = { current: null as number | null };
+    const capturedPointerRef = { current: null as PointerCaptureHandle | null };
+    const pointerId = 0;
+
+    const result = capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
+
+    expect(result).toBe(true);
+    expect(activePointerIdRef.current).toBe(0);
+    expect(mockSetPointerCapture).toHaveBeenCalledWith(0);
   });
 });
