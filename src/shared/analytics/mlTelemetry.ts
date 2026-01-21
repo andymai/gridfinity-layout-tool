@@ -33,6 +33,7 @@ import {
   type SpatialPattern,
   type EdgeUsage,
 } from './layoutPatterns';
+import { computeStructureHash, computeTemporalFields } from './structureHash';
 
 // Lazy store getter to avoid circular dependencies
 // The store is imported dynamically on first use after initialization
@@ -187,6 +188,18 @@ export interface LayoutSnapshotEvent {
   uniformity_score: number;
   /** Which drawer edges have bins touching */
   edge_usage: EdgeUsage;
+
+  // === Temporal patterns ===
+  /** Hour of day when snapshot was taken (0-23) */
+  hour_of_day: number;
+  /** Day of week (0 = Sunday, 6 = Saturday) */
+  day_of_week: number;
+  /** Whether this is a weekend day */
+  is_weekend: boolean;
+
+  // === Structure clustering ===
+  /** Structural fingerprint hash for clustering similar layouts */
+  structure_hash: string;
 
   vocab_version: string;
 }
@@ -1345,6 +1358,9 @@ export function trackLayoutSnapshot(
 
   const bins = layout.bins.filter(b => b.layerId !== STAGING_ID);
 
+  // Compute temporal fields
+  const temporal = computeTemporalFields();
+
   const event: LayoutSnapshotEvent = {
     type: 'layout_snapshot',
     trigger,
@@ -1367,6 +1383,10 @@ export function trackLayoutSnapshot(
     spatial_patterns: detectSpatialPatterns(layout),
     uniformity_score: computeUniformityScore(bins),
     edge_usage: computeEdgeUsage(bins, layout.drawer),
+    hour_of_day: temporal.hour_of_day,
+    day_of_week: temporal.day_of_week,
+    is_weekend: temporal.is_weekend,
+    structure_hash: computeStructureHash(layout),
     vocab_version: VOCAB_VERSION,
   };
 
