@@ -1,7 +1,14 @@
+/**
+ * Labs feature flag store.
+ *
+ * Manages the state of experimental feature flags. This store is part of
+ * core infrastructure, not a specific feature, because other parts of the
+ * application depend on feature flag state.
+ */
+
 import { create } from 'zustand';
-import type { LabsPreferences } from '@/features/labs/definitions/types';
-import { createDefaultLabsPreferences } from '@/features/labs/definitions/types';
-import { getFeature, type FeatureId } from '@/features/labs/definitions/features';
+import type { LabsPreferences, FeatureId } from '@/core/labs';
+import { createDefaultLabsPreferences, getFeature } from '@/core/labs';
 import { trackEvent } from '@/utils/analytics';
 
 export const LABS_STORAGE_KEY = 'gridfinity-labs-v1';

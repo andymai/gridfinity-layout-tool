@@ -1,3 +1,10 @@
+/**
+ * Labs feature flag type definitions.
+ *
+ * These types define the structure of feature flags used throughout the application.
+ * This module is part of core infrastructure, not a specific feature.
+ */
+
 export type FeatureStatus =
   | 'experimental' // Active experiment, may have bugs
   | 'preview' // More stable, nearing graduation

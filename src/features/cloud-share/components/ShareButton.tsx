@@ -4,10 +4,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useLabsStore } from '@/features/labs/store/labs';
-import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
-import { useToastStore } from '@/core/store/toast';
+import { useLabsStore, useLayoutStore, useUIStore, useToastStore } from '@/core/store';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { slugify } from '@/utils/slug';

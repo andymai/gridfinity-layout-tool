@@ -13,8 +13,7 @@ import {
   trackPaintMode,
   initAnalytics,
 } from '@/utils/analytics';
-import { useInteractionStore } from '@/core/store/interaction';
-import { useLabsStore } from '@/features/labs/store/labs';
+import { useInteractionStore, useLabsStore } from '@/core/store';
 import { STAGING_ID } from '@/core/constants';
 
 // Helper to create a test layout

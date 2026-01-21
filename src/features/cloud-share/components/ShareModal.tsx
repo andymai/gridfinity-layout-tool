@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useLayoutStore } from '@/core/store/layout';
-import { useLibraryStore } from '@/core/store/library';
-import { useUIStore } from '@/core/store/ui';
-import { useLabsStore } from '@/features/labs/store/labs';
+import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '@/core/store';
 import {
   generateShareableURL,
   downloadLayoutAsFile,
