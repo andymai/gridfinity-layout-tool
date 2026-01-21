@@ -74,6 +74,17 @@
  * - ml:correction_timing      → How fast corrections happen
  * - ml:neg:resize_correct:{size} → What users resize corrected bins to
  *
+ * === Session Summary ===
+ * - ml:session:bins_placed    → Histogram of bins placed per session
+ * - ml:session:edit_ratio     → Edit-to-done ratio buckets (zero/low/medium/high)
+ * - ml:session:time_to_first  → Time to first bin buckets (quick/normal/slow/very_slow)
+ * - ml:session:confidence     → Confidence score distribution
+ * - ml:session:duration       → Session duration buckets
+ * - ml:size_seq:{drawer}      → Common size sequences by drawer
+ * - ml:session:undo_count     → Undo count distribution
+ * - ml:session:conf_by_drawer:{size} → Confidence by drawer size
+ * - ml:session:totals         → Total session counts
+ *
  * === Temporal Patterns ===
  * - ml:temporal:hour:{hour}   → Activity by hour of day (0-23)
  * - ml:temporal:day:{day}     → Activity by day of week (0-6)
@@ -290,6 +301,25 @@ interface QuickCorrectionEvent {
   layer_index: number;
 }
 
+// ============================================
+// SESSION SUMMARY EVENT TYPE
+// ============================================
+
+interface SessionSummaryEvent {
+  type: 'session_summary';
+  bins_placed: number;
+  bins_deleted: number;
+  edits_total: number;
+  time_to_first_bin_ms: number | null;
+  session_duration_ms: number;
+  size_sequence: string[];
+  edit_to_done_ratio: number;
+  undo_count: number;
+  confidence_score: number;
+  drawer_size: string;
+  final_fill_pct: number;
+}
+
 type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
@@ -306,7 +336,8 @@ type MLTelemetryEvent =
   | BinRotatedEvent
   | PlacementRejectedEvent
   | UndoEvent
-  | QuickCorrectionEvent;
+  | QuickCorrectionEvent
+  | SessionSummaryEvent;
 
 // ============================================
 // REDIS CONNECTION
@@ -526,6 +557,18 @@ function validateLabelHashArray(value: unknown): value is string[] {
   if (value.length > 20) return false; // Cap at 20 hashes
   for (const hash of value) {
     if (typeof hash !== 'string' || !VALID_LABEL_HASH_REGEX.test(hash)) return false;
+  }
+  return true;
+}
+
+/**
+ * Validate size sequence array (all are valid bin sizes).
+ */
+function validateSizeSequenceArray(value: unknown): value is string[] {
+  if (!Array.isArray(value)) return false;
+  if (value.length > 100) return false; // Cap at 100 sizes
+  for (const size of value) {
+    if (typeof size !== 'string' || !VALID_BIN_SIZE_REGEX.test(size)) return false;
   }
   return true;
 }
@@ -857,6 +900,46 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       typeof e.layer_index === 'number' &&
       e.layer_index >= 0 &&
       e.layer_index <= 20
+    );
+  }
+
+  // ============================================
+  // SESSION SUMMARY VALIDATION
+  // ============================================
+
+  if (e.type === 'session_summary') {
+    return (
+      typeof e.bins_placed === 'number' &&
+      e.bins_placed >= 0 &&
+      e.bins_placed < 10000 &&
+      typeof e.bins_deleted === 'number' &&
+      e.bins_deleted >= 0 &&
+      e.bins_deleted < 10000 &&
+      typeof e.edits_total === 'number' &&
+      e.edits_total >= 0 &&
+      e.edits_total < 100000 &&
+      (e.time_to_first_bin_ms === null ||
+        (typeof e.time_to_first_bin_ms === 'number' &&
+          e.time_to_first_bin_ms >= 0 &&
+          e.time_to_first_bin_ms < 86400000)) && // Max 24 hours
+      typeof e.session_duration_ms === 'number' &&
+      e.session_duration_ms >= 0 &&
+      e.session_duration_ms < 86400000 && // Max 24 hours
+      validateSizeSequenceArray(e.size_sequence) &&
+      typeof e.edit_to_done_ratio === 'number' &&
+      e.edit_to_done_ratio >= 0 &&
+      e.edit_to_done_ratio <= 1 && // Ratio is 0-1, not percentage
+      typeof e.undo_count === 'number' &&
+      e.undo_count >= 0 &&
+      e.undo_count < 10000 &&
+      typeof e.confidence_score === 'number' &&
+      e.confidence_score >= 0 &&
+      e.confidence_score <= 1 &&
+      typeof e.drawer_size === 'string' &&
+      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size) &&
+      typeof e.final_fill_pct === 'number' &&
+      e.final_fill_pct >= 0 &&
+      e.final_fill_pct <= 100
     );
   }
 
@@ -1514,6 +1597,101 @@ function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments):
 }
 
 // ============================================
+// SESSION SUMMARY AGGREGATION
+// ============================================
+
+/**
+ * Aggregate session summary events.
+ * Tracks workflow patterns and session quality metrics.
+ *
+ * Redis keys:
+ * - ml:session:bins_placed           → Histogram of bins placed per session
+ * - ml:session:edit_ratio            → Edit-to-done ratio buckets (low/medium/high)
+ * - ml:session:time_to_first         → Time to first bin buckets
+ * - ml:session:confidence            → Confidence score distribution
+ * - ml:session:duration              → Session duration buckets
+ * - ml:size_seq:{drawer}             → Common size sequences by drawer
+ * - ml:session:totals                → Total session counts
+ */
+function aggregateSessionSummary(event: SessionSummaryEvent, inc: Increments): void {
+  const {
+    bins_placed,
+    edit_to_done_ratio,
+    time_to_first_bin_ms,
+    session_duration_ms,
+    confidence_score,
+    drawer_size,
+    size_sequence,
+    undo_count,
+  } = event;
+
+  // 1. Track bins placed per session (histogram buckets)
+  const binsBucket = bins_placed === 0 ? '0' :
+    bins_placed <= 5 ? '1-5' :
+    bins_placed <= 10 ? '6-10' :
+    bins_placed <= 20 ? '11-20' :
+    bins_placed <= 50 ? '21-50' : '51+';
+  inc['ml:session:bins_placed'] = inc['ml:session:bins_placed'] || {};
+  inc['ml:session:bins_placed'][binsBucket] = (inc['ml:session:bins_placed'][binsBucket] || 0) + 1;
+
+  // 2. Track edit-to-done ratio buckets
+  const editRatioBucket = edit_to_done_ratio === 0 ? 'zero' :
+    edit_to_done_ratio < 0.3 ? 'low' :
+    edit_to_done_ratio < 0.6 ? 'medium' : 'high';
+  inc['ml:session:edit_ratio'] = inc['ml:session:edit_ratio'] || {};
+  inc['ml:session:edit_ratio'][editRatioBucket] = (inc['ml:session:edit_ratio'][editRatioBucket] || 0) + 1;
+
+  // 3. Track time to first bin buckets
+  if (time_to_first_bin_ms !== null) {
+    const ttfbBucket = time_to_first_bin_ms < 10_000 ? 'quick' :      // <10s
+      time_to_first_bin_ms < 30_000 ? 'normal' :                        // 10-30s
+      time_to_first_bin_ms < 120_000 ? 'slow' : 'very_slow';            // 30-120s, >120s
+    inc['ml:session:time_to_first'] = inc['ml:session:time_to_first'] || {};
+    inc['ml:session:time_to_first'][ttfbBucket] = (inc['ml:session:time_to_first'][ttfbBucket] || 0) + 1;
+  }
+
+  // 4. Track confidence score distribution (buckets of 0.2)
+  const confidenceBucket = confidence_score < 0.2 ? 'very_low' :
+    confidence_score < 0.4 ? 'low' :
+    confidence_score < 0.6 ? 'medium' :
+    confidence_score < 0.8 ? 'high' : 'very_high';
+  inc['ml:session:confidence'] = inc['ml:session:confidence'] || {};
+  inc['ml:session:confidence'][confidenceBucket] = (inc['ml:session:confidence'][confidenceBucket] || 0) + 1;
+
+  // 5. Track session duration buckets
+  const durationBucket = session_duration_ms < 60_000 ? '<1min' :
+    session_duration_ms < 300_000 ? '1-5min' :
+    session_duration_ms < 900_000 ? '5-15min' :
+    session_duration_ms < 1800_000 ? '15-30min' : '30min+';
+  inc['ml:session:duration'] = inc['ml:session:duration'] || {};
+  inc['ml:session:duration'][durationBucket] = (inc['ml:session:duration'][durationBucket] || 0) + 1;
+
+  // 6. Track size sequences by drawer (first 5 sizes as pattern)
+  if (size_sequence.length >= 2) {
+    const seqPattern = size_sequence.slice(0, 5).join('>');
+    const seqKey = `ml:size_seq:${drawer_size}`;
+    inc[seqKey] = inc[seqKey] || {};
+    inc[seqKey][seqPattern] = (inc[seqKey][seqPattern] || 0) + 1;
+  }
+
+  // 7. Track undo count distribution
+  const undoBucket = undo_count === 0 ? '0' :
+    undo_count <= 2 ? '1-2' :
+    undo_count <= 5 ? '3-5' : '6+';
+  inc['ml:session:undo_count'] = inc['ml:session:undo_count'] || {};
+  inc['ml:session:undo_count'][undoBucket] = (inc['ml:session:undo_count'][undoBucket] || 0) + 1;
+
+  // 8. Track confidence by drawer size (helps identify difficult drawer sizes)
+  const confByDrawerKey = `ml:session:conf_by_drawer:${drawer_size}`;
+  inc[confByDrawerKey] = inc[confByDrawerKey] || {};
+  inc[confByDrawerKey][confidenceBucket] = (inc[confByDrawerKey][confidenceBucket] || 0) + 1;
+
+  // 9. Track total sessions
+  inc['ml:session:totals'] = inc['ml:session:totals'] || {};
+  inc['ml:session:totals']['total'] = (inc['ml:session:totals']['total'] || 0) + 1;
+}
+
+// ============================================
 // HANDLER
 // ============================================
 
@@ -1617,6 +1795,9 @@ export default async function handler(
         break;
       case 'quick_correction':
         aggregateQuickCorrection(event, increments);
+        break;
+      case 'session_summary':
+        aggregateSessionSummary(event, increments);
         break;
     }
   }

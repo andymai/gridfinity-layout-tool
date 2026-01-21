@@ -41,6 +41,7 @@ import {
   trackPlacementRejection,
   trackUndo,
   trackQuickCorrection,
+  trackSessionSummary,
   recordBinCreation,
   recordActionTimestamp,
   incrementEditCount,
@@ -338,6 +339,15 @@ export const mlTracking = {
    */
   markActivity(): void {
     markEditActivity();
+  },
+
+  /**
+   * Track a session summary (called on layout switch or session end).
+   * Captures workflow metrics for the current session.
+   */
+  trackSession(trigger: 'session_end' | 'layout_switch'): void {
+    const layout = useLayoutStore.getState().layout;
+    trackSessionSummary(layout, trigger);
   },
 
   /**

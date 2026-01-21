@@ -26,7 +26,7 @@ export default defineConfig({
       ],
       thresholds: {
         // Thresholds set slightly below current coverage to prevent regression
-        // Updated 2026-01-20: Adjusted after ML layout pattern detection (PR 2)
+        // Updated 2026-01-21: Adjusted after ML PRs (session metrics + temporal/clustering)
         lines: 83.2,
         branches: 70.9,
         functions: 82.4,
