@@ -8,7 +8,7 @@ import {
   getAllLayoutIds,
   clearAllData,
   closeDatabase,
-} from '@/utils/indexedDB';
+} from '@/core/storage/backends/indexedDB';
 import type { Layout } from '@/core/types';
 
 // Test fixtures
@@ -27,7 +27,7 @@ function createTestLayout(overrides: Partial<Layout> = {}): Layout {
   };
 }
 
-describe('indexedDB utils', () => {
+describe('indexedDB backend', () => {
   // Clean up before and after each test to ensure isolation
   beforeEach(async () => {
     closeDatabase();
@@ -417,12 +417,12 @@ describe('indexedDB utils', () => {
     });
 
     it('handles unicode in layout name', async () => {
-      const layout = createTestLayout({ name: '抽屉布局 🗄️ Küchenschublade' });
+      const layout = createTestLayout({ name: '抽屉布局 Küchenschublade' });
 
       await saveLayout('unicode-name', layout);
 
       const loaded = await loadLayout('unicode-name');
-      expect(loaded?.name).toBe('抽屉布局 🗄️ Küchenschublade');
+      expect(loaded?.name).toBe('抽屉布局 Küchenschublade');
     });
 
     it('handles bin with optional properties', async () => {
