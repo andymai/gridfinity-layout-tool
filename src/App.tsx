@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
 import { useLayoutStore, useUIStore, useLibraryStore } from './core/store';
-import { useLayoutRouting, useAnalytics, useStorageMigration, useTabletPanels } from './hooks';
-import { useKeyboard, useAutoSave, useResponsive, useCrossTabSync, usePWAUpdate } from './shared/hooks';
+import { useLayoutRouting, useAnalytics, useStorageMigration, useTabletPanels, useKeyboard } from './hooks';
+import { useAutoSave, useResponsive, useCrossTabSync, usePWAUpdate } from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
 import { initializeLayoutLibrary, loadSharedWithMe } from './core/storage';
