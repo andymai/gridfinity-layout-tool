@@ -34,6 +34,11 @@ import {
   type EdgeUsage,
 } from './layoutPatterns';
 import { computeStructureHash, computeTemporalFields } from './structureHash';
+import {
+  inferDrawerPurpose,
+  getLabelSizeConsistency,
+  recordLayoutLabelSizes,
+} from './purposeInference';
 
 // Lazy store getter to avoid circular dependencies
 // The store is imported dynamically on first use after initialization
@@ -603,6 +608,37 @@ export interface SessionSummaryEvent {
   final_fill_pct: number;
 }
 
+// ============================================
+// CROSS-LAYOUT PATTERN EVENT (PR 4)
+// ============================================
+
+/**
+ * Cross-layout pattern event - tracks label-size consistency across layouts.
+ * Helps ML learn which labels typically use which bin sizes.
+ */
+export interface CrossLayoutPatternEvent {
+  type: 'cross_layout_pattern';
+
+  /** Hashed user identifier (device/session based, not reversible) */
+  user_hash: string;
+
+  /** Label-size consistency data (limited to top 10 by usage) */
+  label_size_consistency: Array<{
+    label_hash: string;
+    sizes_used: string[];
+    is_consistent: boolean;
+  }>;
+
+  /** Inferred drawer purpose from label domains */
+  inferred_purpose: string | null;
+
+  /** Confidence in the purpose inference (0-1) */
+  inferred_purpose_confidence: number;
+
+  /** Drawer size for context */
+  drawer_size: string;
+}
+
 export type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
@@ -620,7 +656,8 @@ export type MLTelemetryEvent =
   | PlacementRejectedEvent
   | UndoEvent
   | QuickCorrectionEvent
-  | SessionSummaryEvent;
+  | SessionSummaryEvent
+  | CrossLayoutPatternEvent;
 
 export type PlacementMethod = 'draw' | 'fill' | 'duplicate' | 'staging' | 'paint';
 
@@ -1525,6 +1562,14 @@ export function trackLayoutSnapshot(
   };
 
   eventBuffer.push(event);
+
+  // Also track cross-layout patterns at high-value commit points
+  // This is done after the snapshot to ensure label sizes are recorded
+  if (trigger === 'save' || trigger === 'share' || trigger === 'session_end') {
+    // Note: trackCrossLayoutPattern is called separately to allow
+    // the snapshot event to be pushed first
+    setTimeout(() => trackCrossLayoutPattern(layout), 0);
+  }
 
   if (eventBuffer.length >= FLUSH_THRESHOLD) {
     flush();
@@ -2552,6 +2597,107 @@ export function trackSessionSummary(
   if (trigger === 'session_end') {
     flush();
   } else if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// CROSS-LAYOUT PATTERN TRACKING
+// ============================================
+
+/**
+ * Storage key for user hash.
+ */
+const USER_HASH_STORAGE_KEY = 'gridfinity-ml-user-hash-v1';
+
+/**
+ * Check if localStorage is available.
+ */
+function isLocalStorageAvailable(): boolean {
+  try {
+    const testKey = '__storage_test__';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Get or create a stable user hash for cross-layout correlation.
+ * This is NOT personally identifiable - just a random ID for grouping.
+ */
+function getUserHash(): string {
+  if (!isLocalStorageAvailable()) {
+    return 'anonymous';
+  }
+
+  try {
+    let hash = localStorage.getItem(USER_HASH_STORAGE_KEY);
+    if (!hash) {
+      // Use crypto.randomUUID for better randomness
+      hash = typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : Math.random().toString(36).substring(2, 10) +
+          Math.random().toString(36).substring(2, 10);
+      localStorage.setItem(USER_HASH_STORAGE_KEY, hash);
+    }
+    return hash;
+  } catch {
+    return 'anonymous';
+  }
+}
+
+/**
+ * Track cross-layout patterns at commit points.
+ * Records label-size consistency and inferred purpose.
+ *
+ * Call this at significant points: save, share, export, session end.
+ *
+ * @param layout - Current layout state
+ */
+export function trackCrossLayoutPattern(layout: Layout): void {
+  if (!isEnabled()) return;
+
+  const gridBins = layout.bins.filter(b => b.layerId !== STAGING_ID);
+
+  // Skip if no labeled bins
+  const labeledBins = gridBins.filter(b => b.label?.trim());
+  if (labeledBins.length === 0) return;
+
+  // Record current layout's label sizes for future comparisons
+  recordLayoutLabelSizes(layout);
+
+  // Get consistency data (limit to top 10 by variety)
+  const consistency = getLabelSizeConsistency(layout)
+    .sort((a, b) => b.sizesUsed.length - a.sizesUsed.length)
+    .slice(0, 10);
+
+  // Skip if no consistency data
+  if (consistency.length === 0) return;
+
+  // Infer purpose
+  const inference = inferDrawerPurpose(layout);
+
+  const event: CrossLayoutPatternEvent = {
+    type: 'cross_layout_pattern',
+    user_hash: getUserHash(),
+    label_size_consistency: consistency.map(c => ({
+      label_hash: c.labelHash,
+      sizes_used: c.sizesUsed,
+      is_consistent: c.isConsistent,
+    })),
+    inferred_purpose: inference.purpose,
+    inferred_purpose_confidence: inference.confidence,
+    drawer_size: `${layout.drawer.width}x${layout.drawer.depth}x${layout.drawer.height}`,
+  };
+
+  eventBuffer.push(event);
+
+  if (eventBuffer.length >= FLUSH_THRESHOLD) {
     flush();
   } else {
     scheduleFlush();
