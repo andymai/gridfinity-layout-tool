@@ -24,6 +24,15 @@ import { STAGING_ID } from '@/core/constants';
 import { useSettingsStore } from '@/core/store/settings';
 import { processLabel, VOCAB_VERSION } from './labelVocabulary';
 import { analyzeGaps } from './gapAnalysis';
+import {
+  detectArchetype,
+  detectSpatialPatterns,
+  computeUniformityScore,
+  computeEdgeUsage,
+  type LayoutArchetype,
+  type SpatialPattern,
+  type EdgeUsage,
+} from './layoutPatterns';
 
 // Lazy store getter to avoid circular dependencies
 // The store is imported dynamically on first use after initialization
@@ -168,6 +177,16 @@ export interface LayoutSnapshotEvent {
   // === Quality tier ===
   /** Assessed quality tier for backend weighting */
   quality_tier: LayoutQualityTier;
+
+  // === Pattern detection ===
+  /** High-level layout archetype */
+  archetype: LayoutArchetype;
+  /** Spatial patterns detected in layout */
+  spatial_patterns: SpatialPattern[];
+  /** Bin size uniformity score (0-1) */
+  uniformity_score: number;
+  /** Which drawer edges have bins touching */
+  edge_usage: EdgeUsage;
 
   vocab_version: string;
 }
@@ -1344,6 +1363,10 @@ export function trackLayoutSnapshot(
     session_duration_ms: layoutSession.editCount > 0 ? Date.now() - layoutSession.startTime : 0,
     edit_count: layoutSession.editCount,
     quality_tier: assessLayoutQuality(layout),
+    archetype: detectArchetype(layout),
+    spatial_patterns: detectSpatialPatterns(layout),
+    uniformity_score: computeUniformityScore(bins),
+    edge_usage: computeEdgeUsage(bins, layout.drawer),
     vocab_version: VOCAB_VERSION,
   };
 

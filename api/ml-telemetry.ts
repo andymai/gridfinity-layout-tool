@@ -115,6 +115,16 @@ interface LabelUpdateEvent {
   vocab_version: string;
 }
 
+type LayoutArchetype = 'uniform' | 'mixed' | 'border_fill' | 'compartmentalized' | 'layered';
+type SpatialPattern = 'corner_start' | 'large_first' | 'category_grouped' | 'edge_aligned' | 'center_out';
+
+interface EdgeUsage {
+  left: boolean;
+  right: boolean;
+  top: boolean;
+  bottom: boolean;
+}
+
 interface LayoutSnapshotEvent {
   type: 'layout_snapshot';
   trigger: 'save' | 'export_json' | 'export_tsv' | 'share' | 'print' | 'session_end' | 'layout_switch' | 'idle' | 'print_preview';
@@ -133,6 +143,10 @@ interface LayoutSnapshotEvent {
   session_duration_ms: number;
   edit_count: number;
   quality_tier: 'high' | 'medium' | 'low' | 'skip';
+  archetype: LayoutArchetype;
+  spatial_patterns: SpatialPattern[];
+  uniformity_score: number;
+  edge_usage: EdgeUsage;
   vocab_version: string;
 }
 
@@ -413,6 +427,33 @@ const VALID_DRAW_MODES = new Set(['draw', 'paint']);
 const VALID_UNDO_ACTIONS = new Set(['placement', 'deletion', 'move', 'resize', 'fill', 'layer_change', 'drawer_resize', 'other']);
 const VALID_CORRECTION_TYPES = new Set(['delete', 'resize', 'move']);
 
+// Pattern detection validation
+const VALID_ARCHETYPES = new Set(['uniform', 'mixed', 'border_fill', 'compartmentalized', 'layered']);
+const VALID_SPATIAL_PATTERNS = new Set(['corner_start', 'large_first', 'category_grouped', 'edge_aligned', 'center_out']);
+
+/**
+ * Validate spatial patterns array.
+ */
+function validateSpatialPatterns(value: unknown): value is SpatialPattern[] {
+  if (!Array.isArray(value)) return false;
+  if (value.length > 10) return false; // Reasonable limit
+  return value.every((p) => typeof p === 'string' && VALID_SPATIAL_PATTERNS.has(p));
+}
+
+/**
+ * Validate edge usage object.
+ */
+function validateEdgeUsage(value: unknown): value is EdgeUsage {
+  if (!value || typeof value !== 'object') return false;
+  const e = value as Record<string, unknown>;
+  return (
+    typeof e.left === 'boolean' &&
+    typeof e.right === 'boolean' &&
+    typeof e.top === 'boolean' &&
+    typeof e.bottom === 'boolean'
+  );
+}
+
 /**
  * Validate nullable string field used in Redis keys.
  * Returns true if null or matches the pattern.
@@ -553,7 +594,15 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       typeof e.edit_count === 'number' &&
       e.edit_count >= 0 &&
       typeof e.quality_tier === 'string' &&
-      VALID_QUALITY_TIERS.has(e.quality_tier)
+      VALID_QUALITY_TIERS.has(e.quality_tier) &&
+      // Pattern detection fields
+      typeof e.archetype === 'string' &&
+      VALID_ARCHETYPES.has(e.archetype) &&
+      validateSpatialPatterns(e.spatial_patterns) &&
+      typeof e.uniformity_score === 'number' &&
+      e.uniformity_score >= 0 &&
+      e.uniformity_score <= 1 &&
+      validateEdgeUsage(e.edge_usage)
     );
   }
 
@@ -964,6 +1013,42 @@ function aggregateLayoutSnapshot(event: LayoutSnapshotEvent, inc: Increments): v
       inc[tierSizeKey][size] = (inc[tierSizeKey][size] || 0) + count;
     }
   }
+
+  // 10. Track layout archetype distribution
+  const { archetype, spatial_patterns, uniformity_score, edge_usage } = event;
+  inc['ml:archetype'] = inc['ml:archetype'] || {};
+  inc['ml:archetype'][archetype] = (inc['ml:archetype'][archetype] || 0) + 1;
+
+  // Track archetype by drawer size
+  const archetypeDrawerKey = `ml:archetype:${drawer_size}`;
+  inc[archetypeDrawerKey] = inc[archetypeDrawerKey] || {};
+  inc[archetypeDrawerKey][archetype] = (inc[archetypeDrawerKey][archetype] || 0) + 1;
+
+  // 11. Track spatial patterns
+  for (const pattern of spatial_patterns) {
+    inc['ml:patterns'] = inc['ml:patterns'] || {};
+    inc['ml:patterns'][pattern] = (inc['ml:patterns'][pattern] || 0) + 1;
+
+    // Track pattern co-occurrence with archetype
+    const patternArchetypeKey = `ml:patterns:${archetype}`;
+    inc[patternArchetypeKey] = inc[patternArchetypeKey] || {};
+    inc[patternArchetypeKey][pattern] = (inc[patternArchetypeKey][pattern] || 0) + 1;
+  }
+
+  // 12. Track uniformity score buckets (0-0.25, 0.25-0.5, 0.5-0.75, 0.75-1.0)
+  const uniformityBucket = Math.min(Math.floor(uniformity_score * 4), 3);
+  inc['ml:uniformity'] = inc['ml:uniformity'] || {};
+  inc['ml:uniformity'][`bucket_${uniformityBucket}`] = (inc['ml:uniformity'][`bucket_${uniformityBucket}`] || 0) + 1;
+
+  // 13. Track edge usage patterns
+  const edgeCount = [edge_usage.left, edge_usage.right, edge_usage.top, edge_usage.bottom].filter(Boolean).length;
+  inc['ml:edge_count'] = inc['ml:edge_count'] || {};
+  inc['ml:edge_count'][`edges_${edgeCount}`] = (inc['ml:edge_count'][`edges_${edgeCount}`] || 0) + 1;
+
+  // Track specific edge combinations
+  const edgeKey = `${edge_usage.left ? 'L' : ''}${edge_usage.right ? 'R' : ''}${edge_usage.top ? 'T' : ''}${edge_usage.bottom ? 'B' : ''}` || 'none';
+  inc['ml:edge_combo'] = inc['ml:edge_combo'] || {};
+  inc['ml:edge_combo'][edgeKey] = (inc['ml:edge_combo'][edgeKey] || 0) + 1;
 }
 
 function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): void {
