@@ -1,12 +1,11 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useSettingsStore } from '@/core/store';
-import { useLabsStore } from '@/features/labs/store/labs';
+import { useSettingsStore, useLabsStore } from '@/core/store';
 import {
   getToggleableFeatures,
   getGraduatedFeatures,
   type FeatureId,
-} from '@/features/labs/definitions/features';
+} from '@/core/labs';
 import { FeatureCard } from '@/features/labs/components/FeatureCard';
 import { GraduatedSection } from '@/features/labs/components/GraduatedSection';
 import { SparklesIcon } from '@/features/labs/components/icons';
