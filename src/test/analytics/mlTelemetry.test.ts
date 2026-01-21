@@ -9,11 +9,21 @@ import {
   trackLayoutSnapshot,
   trackQualitySignal,
   trackDrawerPurpose,
+  trackSessionSummary,
   setLayoutStoreRef,
   incrementEditCount,
   markEditActivity,
   getSessionContext,
   cleanupMLTelemetry,
+  trackBinResize,
+  trackBinDeletion,
+  trackBinMove,
+  trackUndo,
+  trackLayerMove,
+  trackBinRotation,
+  trackPlacementRejection,
+  trackQuickCorrection,
+  recordBinCreation,
 } from '@/shared/analytics/mlTelemetry';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Layout } from '@/core/types';
@@ -251,9 +261,281 @@ describe('mlTelemetry', () => {
     });
   });
 
+  describe('trackBinResize', () => {
+    it('buffers bin resize event', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      trackBinResize({ width: 1, depth: 1 }, { width: 2, depth: 2 }, 3, layout);
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('skips when sizes are the same', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      trackBinResize({ width: 2, depth: 2 }, { width: 2, depth: 2 }, 3, layout);
+      expect(getBufferSize()).toBe(0);
+    });
+  });
+
+  describe('trackBinDeletion', () => {
+    it('buffers bin deletion event', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      trackBinDeletion(bin, layout, 'key');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('tracks batch size for bulk deletions', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      trackBinDeletion(bin, layout, 'bulk', 5);
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+  });
+
+  describe('trackBinMove', () => {
+    it('buffers bin move event', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      // bin is at position (0,0), old position was (3,3)
+      trackBinMove(bin, { x: 3, y: 3 }, layout, 'drag');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('skips when positions are the same', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      // bin is at (0,0) and old position is also (0,0)
+      trackBinMove(bin, { x: 0, y: 0 }, layout, 'drag');
+      expect(getBufferSize()).toBe(0);
+    });
+  });
+
+  describe('trackUndo', () => {
+    it('buffers undo event when bins differ', () => {
+      forceFlush();
+      const prevLayout = createTestLayoutWithBins(5);
+      const currLayout = createTestLayoutWithBins(4);
+      trackUndo(prevLayout, currLayout);
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('buffers undo event even when layouts are identical', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      trackUndo(layout, layout);
+      // Still buffers event (action_undone = 'other')
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+  });
+
+  describe('trackLayerMove', () => {
+    it('buffers layer move event', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      trackLayerMove(bin, 'layer-old', layout.layers[0].id, layout, 'drag');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('skips when layers are the same', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      trackLayerMove(bin, layout.layers[0].id, layout.layers[0].id, layout, 'drag');
+      expect(getBufferSize()).toBe(0);
+    });
+  });
+
+  describe('trackBinRotation', () => {
+    it('buffers bin rotation event', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      trackBinRotation(bin);
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('tracks batch rotations', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      trackBinRotation(bin, 3);
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+  });
+
+  describe('trackPlacementRejection', () => {
+    it('buffers placement rejection event', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      trackPlacementRejection('outside_bounds', 'draw', {
+        start: { x: 0, y: 0 },
+        current: { x: 2, y: 2 },
+      }, layout, layout.layers[0].id);
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('handles null interaction with cancelled reason', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      // cancelled reason bypasses intent check
+      trackPlacementRejection('cancelled', 'paint', null, layout, layout.layers[0].id);
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('skips when no intent and non-cancelled reason', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      // outside_bounds reason with null interaction = no intent = skip
+      trackPlacementRejection('outside_bounds', 'paint', null, layout, layout.layers[0].id);
+      expect(getBufferSize()).toBe(0);
+    });
+  });
+
+  describe('trackQuickCorrection', () => {
+    it('buffers quick correction event when creation is recorded', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      // Record creation first
+      recordBinCreation(bin.id, 'draw', '1x1x1');
+      // Now track correction
+      trackQuickCorrection('delete', bin.id, bin, layout);
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('skips when no creation record exists', () => {
+      forceFlush();
+      const layout = createTestLayoutWithBins(5);
+      const bin = layout.bins[0];
+      // Don't record creation
+      trackQuickCorrection('resize', 'nonexistent-id', bin, layout, { width: 2, depth: 2, height: 2 });
+      expect(getBufferSize()).toBe(0);
+    });
+  });
+
+  describe('recordBinCreation', () => {
+    it('records creation without throwing', () => {
+      expect(() => recordBinCreation('bin-1', 'draw', '2x2x6')).not.toThrow();
+    });
+  });
+
   describe('cleanupMLTelemetry', () => {
     it('cleans up without throwing', () => {
       expect(() => cleanupMLTelemetry()).not.toThrow();
+    });
+  });
+
+  describe('trackSessionSummary', () => {
+    it('buffers session summary event when there is activity (layout_switch)', () => {
+      forceFlush();
+      resetMLSession();
+      const layout = createTestLayoutWithBins(5);
+
+      // Simulate some activity
+      trackBinPlacement(layout.bins[0], layout, 'draw');
+      trackBinPlacement(layout.bins[1], layout, 'draw');
+      incrementEditCount();
+      incrementEditCount();
+
+      forceFlush();
+      // Use layout_switch trigger which doesn't auto-flush
+      trackSessionSummary(layout, 'layout_switch');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('session_end trigger flushes immediately', () => {
+      forceFlush();
+      resetMLSession();
+      const layout = createTestLayoutWithBins(5);
+
+      // Simulate some activity
+      trackBinPlacement(layout.bins[0], layout, 'draw');
+      incrementEditCount();
+
+      forceFlush();
+      // session_end trigger auto-flushes, so buffer will be empty after
+      trackSessionSummary(layout, 'session_end');
+      // Buffer should be empty after session_end (it flushed)
+      expect(getBufferSize()).toBe(0);
+    });
+
+    it('skips session summary when no activity', () => {
+      forceFlush();
+      resetMLSession();
+      const layout = createTestLayoutWithBins(5);
+
+      // No activity - just create layout
+      trackSessionSummary(layout, 'layout_switch');
+      expect(getBufferSize()).toBe(0);
+    });
+
+    it('tracks size sequence from placements', () => {
+      forceFlush();
+      resetMLSession();
+      const layout = createTestLayoutWithBins(5);
+
+      // Place multiple bins
+      trackBinPlacement(layout.bins[0], layout, 'draw');
+      trackBinPlacement(layout.bins[1], layout, 'draw');
+      trackBinPlacement(layout.bins[2], layout, 'draw');
+
+      forceFlush();
+      trackSessionSummary(layout, 'layout_switch');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('respects session state reset', () => {
+      const layout = createTestLayoutWithBins(5);
+
+      // First session
+      trackBinPlacement(layout.bins[0], layout, 'draw');
+      incrementEditCount();
+
+      // Reset and start new session
+      forceFlush();
+      resetMLSession();
+
+      // No activity in new session
+      trackSessionSummary(layout, 'layout_switch');
+      expect(getBufferSize()).toBe(0);
+    });
+
+    it('tracks session with many bins and edits', () => {
+      forceFlush();
+      resetMLSession();
+      const layout = createTestLayoutWithBins(10);
+
+      // Place many bins
+      for (let i = 0; i < 10; i++) {
+        trackBinPlacement(layout.bins[i], layout, 'draw');
+        incrementEditCount();
+      }
+
+      forceFlush();
+      trackSessionSummary(layout, 'layout_switch');
+      expect(getBufferSize()).toBeGreaterThan(0);
+    });
+
+    it('tracks empty activity with only edit count', () => {
+      forceFlush();
+      resetMLSession();
+      const layout = createTestLayoutWithBins(5);
+
+      // Only increment edit count, no bin placements
+      incrementEditCount();
+      incrementEditCount();
+      incrementEditCount();
+
+      forceFlush();
+      trackSessionSummary(layout, 'layout_switch');
+      // Should still track because editCount > 0
+      expect(getBufferSize()).toBeGreaterThan(0);
     });
   });
 
@@ -328,6 +610,7 @@ describe('mlTelemetry', () => {
       expect(typeof module.trackLayoutSnapshot).toBe('function');
       expect(typeof module.trackQualitySignal).toBe('function');
       expect(typeof module.trackDrawerPurpose).toBe('function');
+      expect(typeof module.trackSessionSummary).toBe('function');
       expect(typeof module.setLayoutStoreRef).toBe('function');
       expect(typeof module.incrementEditCount).toBe('function');
       expect(typeof module.markEditActivity).toBe('function');
@@ -336,6 +619,15 @@ describe('mlTelemetry', () => {
       expect(typeof module.forceFlush).toBe('function');
       expect(typeof module.getBufferSize).toBe('function');
       expect(typeof module.cleanupMLTelemetry).toBe('function');
+      expect(typeof module.trackBinResize).toBe('function');
+      expect(typeof module.trackBinDeletion).toBe('function');
+      expect(typeof module.trackBinMove).toBe('function');
+      expect(typeof module.trackUndo).toBe('function');
+      expect(typeof module.trackLayerMove).toBe('function');
+      expect(typeof module.trackBinRotation).toBe('function');
+      expect(typeof module.trackPlacementRejection).toBe('function');
+      expect(typeof module.trackQuickCorrection).toBe('function');
+      expect(typeof module.recordBinCreation).toBe('function');
     });
   });
 });

@@ -147,7 +147,11 @@ export function useLayoutSwitcher() {
       // 9. Track analytics
       trackLayoutAction('switched');
 
-      // 10. Track ML snapshot for the layout we're leaving (if substantial)
+      // 10. Track ML session summary for the layout we're leaving
+      // Captures session workflow metrics (bins placed, edit ratio, etc.)
+      mlTracking.trackSession('layout_switch');
+
+      // 11. Track ML snapshot for the layout we're leaving (if substantial)
       // The old layout was just saved in step 4, so this captures the "finished" state
       mlTracking.trackSnapshot('layout_switch');
 

@@ -520,6 +520,50 @@ export interface QuickCorrectionEvent {
   layer_index: number;
 }
 
+// ============================================
+// SESSION SUMMARY EVENT (PR 1)
+// ============================================
+
+/**
+ * Session summary event - captures workflow metrics at session end.
+ * Used to understand user behavior patterns and assess data quality.
+ */
+export interface SessionSummaryEvent {
+  type: 'session_summary';
+
+  // === Session activity ===
+  /** Total bins placed this session */
+  bins_placed: number;
+  /** Total bins deleted this session */
+  bins_deleted: number;
+  /** Total edit actions this session */
+  edits_total: number;
+
+  // === Timing ===
+  /** Milliseconds from session start to first bin placement, or null if no bins */
+  time_to_first_bin_ms: number | null;
+  /** Total session duration in milliseconds */
+  session_duration_ms: number;
+
+  // === Size sequence ===
+  /** Full ordered sequence of bin sizes placed (max 100) */
+  size_sequence: string[];
+
+  // === Workflow quality ===
+  /** Ratio of corrections (deletes+resizes+moves) to total bins */
+  edit_to_done_ratio: number;
+  /** Number of undo operations this session */
+  undo_count: number;
+  /** Confidence score 0-1 based on workflow signals */
+  confidence_score: number;
+
+  // === Final state ===
+  /** Drawer size as "WxDxH" string */
+  drawer_size: string;
+  /** Final fill percentage (0-100) */
+  final_fill_pct: number;
+}
+
 export type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
@@ -536,7 +580,8 @@ export type MLTelemetryEvent =
   | BinRotatedEvent
   | PlacementRejectedEvent
   | UndoEvent
-  | QuickCorrectionEvent;
+  | QuickCorrectionEvent
+  | SessionSummaryEvent;
 
 export type PlacementMethod = 'draw' | 'fill' | 'duplicate' | 'staging' | 'paint';
 
@@ -612,11 +657,17 @@ interface SessionState {
   prevBinSize: string | null;
   /** Number of bins placed this session */
   sessionIndex: number;
+  /** Full sequence of bin sizes placed this session */
+  sizeSequence: string[];
+  /** Timestamp of first bin placement, or null if none */
+  firstBinTime: number | null;
 }
 
 let sessionState: SessionState = {
   prevBinSize: null,
   sessionIndex: 0,
+  sizeSequence: [],
+  firstBinTime: null,
 };
 
 /**
@@ -631,6 +682,14 @@ interface LayoutSessionState {
   snapshotCounts: Map<string, number>;
   /** Last snapshot timestamp by layout hash (for rate limiting) */
   lastSnapshotTime: Map<string, number>;
+  /** Number of undo operations this session */
+  undoCount: number;
+  /** Number of bins deleted this session */
+  deletedCount: number;
+  /** Number of resize operations this session */
+  resizeCount: number;
+  /** Number of move operations this session */
+  moveCount: number;
 }
 
 let layoutSession: LayoutSessionState = {
@@ -638,6 +697,10 @@ let layoutSession: LayoutSessionState = {
   editCount: 0,
   snapshotCounts: new Map(),
   lastSnapshotTime: new Map(),
+  undoCount: 0,
+  deletedCount: 0,
+  resizeCount: 0,
+  moveCount: 0,
 };
 
 // Minimum time between snapshots for same layout (60 seconds)
@@ -755,12 +818,18 @@ export function resetMLSession(): void {
   sessionState = {
     prevBinSize: null,
     sessionIndex: 0,
+    sizeSequence: [],
+    firstBinTime: null,
   };
   layoutSession = {
     startTime: Date.now(),
     editCount: 0,
     snapshotCounts: new Map(),
     lastSnapshotTime: new Map(),
+    undoCount: 0,
+    deletedCount: 0,
+    resizeCount: 0,
+    moveCount: 0,
   };
 }
 
@@ -961,12 +1030,14 @@ export function initMLTelemetry(): () => void {
   }
 
   // Flush on page hide (tab switch, close, navigation)
-  // Also capture session_end snapshot
+  // Also capture session_end snapshot and session summary
   const handleVisibilityChange = () => {
     if (document.visibilityState === 'hidden') {
-      // Capture session_end snapshot before flushing
       if (layoutStoreGetter) {
         const layout = layoutStoreGetter().layout;
+        // Capture session summary before flushing
+        trackSessionSummary(layout, 'session_end');
+        // Also capture layout snapshot if substantial
         if (isSubstantialLayout(layout)) {
           trackLayoutSnapshot(layout, 'session_end');
         }
@@ -1103,6 +1174,16 @@ export function trackBinPlacement(
   // Update session state
   sessionState.prevBinSize = binSize;
   sessionState.sessionIndex++;
+
+  // Track size sequence (cap at 100 to avoid memory issues)
+  if (sessionState.sizeSequence.length < 100) {
+    sessionState.sizeSequence.push(binSize);
+  }
+
+  // Track time to first bin
+  if (sessionState.firstBinTime === null) {
+    sessionState.firstBinTime = Date.now();
+  }
 
   // Buffer event
   eventBuffer.push(event);
@@ -1597,6 +1678,9 @@ export function trackBinResize(
     fill_pct: computeFillPercentage(layout),
   };
 
+  // Increment session resize count
+  layoutSession.resizeCount += batchSize;
+
   eventBuffer.push(event);
 
   if (eventBuffer.length >= FLUSH_THRESHOLD) {
@@ -1664,6 +1748,9 @@ export function trackBinDeletion(
     method,
   };
 
+  // Increment session deleted count
+  layoutSession.deletedCount += batchSize;
+
   eventBuffer.push(event);
 
   if (eventBuffer.length >= FLUSH_THRESHOLD) {
@@ -1717,6 +1804,9 @@ export function trackBinMove(
     batch_size: batchSize,
     method,
   };
+
+  // Increment session move count
+  layoutSession.moveCount += batchSize;
 
   eventBuffer.push(event);
 
@@ -1867,6 +1957,9 @@ export function trackLayerMove(
     method,
   };
 
+  // Update last edit time for dormancy tracking
+  markEditActivity();
+
   eventBuffer.push(event);
 
   if (eventBuffer.length >= FLUSH_THRESHOLD) {
@@ -1898,6 +1991,9 @@ export function trackBinRotation(
     new_size: `${bin.depth}x${bin.width}x${bin.height}`, // Rotated: width/depth swapped
     batch_size: batchSize,
   };
+
+  // Update last edit time for dormancy tracking
+  markEditActivity();
 
   eventBuffer.push(event);
 
@@ -2064,6 +2160,12 @@ export function trackUndo(
     drawer_size: `${currentLayout.drawer.width}x${currentLayout.drawer.depth}x${currentLayout.drawer.height}`,
   };
 
+  // Increment session undo count
+  layoutSession.undoCount++;
+
+  // Update last edit time for dormancy tracking
+  markEditActivity();
+
   eventBuffer.push(event);
 
   if (eventBuffer.length >= FLUSH_THRESHOLD) {
@@ -2118,6 +2220,145 @@ export function trackQuickCorrection(
   eventBuffer.push(event);
 
   if (eventBuffer.length >= FLUSH_THRESHOLD) {
+    flush();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================
+// SESSION SUMMARY TRACKING
+// ============================================
+
+/**
+ * Compute session confidence score (0-1).
+ * Higher scores indicate more confident, deliberate sessions.
+ *
+ * Factors:
+ * - Fewer undos = higher confidence
+ * - Fewer quick corrections = higher confidence
+ * - Reasonable edit-to-done ratio = higher confidence
+ * - Longer session with more bins = higher confidence
+ */
+function computeSessionConfidence(
+  binsPlaced: number,
+  undoCount: number,
+  deletedCount: number,
+  resizeCount: number,
+  moveCount: number,
+  sessionDurationMs: number
+): number {
+  // No bins placed = no confidence
+  if (binsPlaced === 0) return 0;
+
+  // Undo score: fewer undos = higher score
+  // 0 undos = 1.0, 1-2 undos = 0.8, 3-5 undos = 0.6, 6+ undos = 0.4
+  const undoScore = undoCount === 0 ? 1.0 :
+    undoCount <= 2 ? 0.8 :
+    undoCount <= 5 ? 0.6 : 0.4;
+
+  // Correction score: ratio of corrections to bins placed
+  const totalCorrections = deletedCount + resizeCount + moveCount;
+  const correctionRatio = totalCorrections / binsPlaced;
+  // 0 corrections = 1.0, <0.3 ratio = 0.8, <0.6 = 0.6, >=0.6 = 0.4
+  const correctionScore = correctionRatio === 0 ? 1.0 :
+    correctionRatio < 0.3 ? 0.8 :
+    correctionRatio < 0.6 ? 0.6 : 0.4;
+
+  // Session score: longer sessions with more bins are more deliberate
+  // Short session with many bins = efficient (good)
+  // Long session with few bins = exploratory (medium)
+  // Guard against division by zero for very fast operations
+  const binsPerMinute = sessionDurationMs > 0
+    ? binsPlaced / (sessionDurationMs / 60_000)
+    : binsPlaced > 0 ? Infinity : 0;
+  const sessionScore = binsPerMinute > 2 ? 1.0 :  // >2 bins/min = efficient
+    binsPerMinute > 0.5 ? 0.8 :                    // 0.5-2 bins/min = normal
+    binsPerMinute > 0.1 ? 0.6 : 0.4;               // <0.1 = very slow/exploratory
+
+  // Weighted average: corrections matter most (user explicitly rejected)
+  const weights = { undo: 0.25, correction: 0.45, session: 0.30 };
+  const weighted = (
+    undoScore * weights.undo +
+    correctionScore * weights.correction +
+    sessionScore * weights.session
+  );
+
+  // Round to 2 decimal places
+  return Math.round(weighted * 100) / 100;
+}
+
+/**
+ * Track a session summary event.
+ * Called automatically on session_end and layout_switch.
+ *
+ * @param layout - Current layout state
+ * @param trigger - What triggered the summary (session_end or layout_switch)
+ */
+export function trackSessionSummary(
+  layout: Layout,
+  trigger: 'session_end' | 'layout_switch'
+): void {
+  if (!isEnabled()) return;
+
+  // Skip if no meaningful activity
+  if (sessionState.sessionIndex === 0 && layoutSession.editCount === 0) return;
+
+  const binsPlaced = sessionState.sessionIndex;
+  const sessionDurationMs = Date.now() - layoutSession.startTime;
+
+  // Calculate time to first bin
+  const timeToFirstBinMs = sessionState.firstBinTime !== null
+    ? sessionState.firstBinTime - layoutSession.startTime
+    : null;
+
+  // Calculate edit-to-done ratio
+  const totalCorrections = layoutSession.deletedCount + layoutSession.resizeCount + layoutSession.moveCount;
+  const editToDoneRatio = binsPlaced > 0
+    ? Math.round((totalCorrections / binsPlaced) * 100) / 100
+    : 0;
+
+  // Compute confidence score
+  const confidenceScore = computeSessionConfidence(
+    binsPlaced,
+    layoutSession.undoCount,
+    layoutSession.deletedCount,
+    layoutSession.resizeCount,
+    layoutSession.moveCount,
+    sessionDurationMs
+  );
+
+  const event: SessionSummaryEvent = {
+    type: 'session_summary',
+
+    // Activity
+    bins_placed: binsPlaced,
+    bins_deleted: layoutSession.deletedCount,
+    edits_total: layoutSession.editCount,
+
+    // Timing
+    time_to_first_bin_ms: timeToFirstBinMs,
+    session_duration_ms: sessionDurationMs,
+
+    // Size sequence (already capped at 100 in trackBinPlacement)
+    size_sequence: [...sessionState.sizeSequence],
+
+    // Workflow quality
+    edit_to_done_ratio: editToDoneRatio,
+    undo_count: layoutSession.undoCount,
+    confidence_score: confidenceScore,
+
+    // Final state
+    drawer_size: `${layout.drawer.width}x${layout.drawer.depth}x${layout.drawer.height}`,
+    final_fill_pct: computeFillPercentage(layout),
+  };
+
+  eventBuffer.push(event);
+
+  // Flush immediately since this is typically called on session end
+  if (trigger === 'session_end') {
+    flush();
+  } else if (eventBuffer.length >= FLUSH_THRESHOLD) {
     flush();
   } else {
     scheduleFlush();
