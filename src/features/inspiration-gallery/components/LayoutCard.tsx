@@ -7,12 +7,13 @@ interface LayoutCardProps {
   onClick: () => void;
   index: number;
   tabIndex?: number;
+  onFocus?: () => void;
 }
 
 /**
  * Layout card with thumbnail, title, description, and metadata.
  */
-export function LayoutCard({ layout: inspirationLayout, onClick, index, tabIndex = 0 }: LayoutCardProps) {
+export function LayoutCard({ layout: inspirationLayout, onClick, index, tabIndex = 0, onFocus }: LayoutCardProps) {
   const { name, shortDescription, metrics, layout, theme } = inspirationLayout;
 
   const animationDelay = `${Math.min(index * 50, 300)}ms`;
@@ -23,6 +24,7 @@ export function LayoutCard({ layout: inspirationLayout, onClick, index, tabIndex
       role="button"
       tabIndex={tabIndex}
       onClick={onClick}
+      onFocus={onFocus}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();

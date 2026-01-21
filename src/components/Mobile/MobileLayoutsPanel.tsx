@@ -542,11 +542,14 @@ export function MobileLayoutsPanel() {
         document.body
       )}
 
-      {/* Inspiration Gallery */}
-      <InspirationGallery
-        isOpen={showInspirationGallery}
-        onClose={() => setShowInspirationGallery(false)}
-      />
+      {/* Inspiration Gallery - portaled to avoid BottomSheet clipping */}
+      {showInspirationGallery && createPortal(
+        <InspirationGallery
+          isOpen={showInspirationGallery}
+          onClose={() => setShowInspirationGallery(false)}
+        />,
+        document.body
+      )}
     </div>
   );
 }

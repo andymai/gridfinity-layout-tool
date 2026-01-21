@@ -30,6 +30,7 @@ export function ThemeFilterPills({
 
         return (
           <button
+            type="button"
             key={theme}
             role="tab"
             aria-selected={isSelected}

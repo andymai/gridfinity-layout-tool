@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useResponsive } from '@/shared/hooks';
 import { useLayoutSwitcher } from '@/features/layout-library/hooks/useLayoutSwitcher';
@@ -61,15 +61,15 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     ? INSPIRATION_LAYOUTS
     : INSPIRATION_LAYOUTS.filter((l) => l.theme === selectedTheme);
 
-  // Count layouts per theme
-  const themeCounts = {
+  // Count layouts per theme (memoized since INSPIRATION_LAYOUTS is static)
+  const themeCounts = useMemo(() => ({
     all: INSPIRATION_LAYOUTS.length,
     kitchen: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'kitchen').length,
     workshop: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'workshop').length,
     office: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'office').length,
     hobby: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'hobby').length,
     personal: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'personal').length,
-  };
+  }), []);
 
   // Handle escape key
   useEffect(() => {
@@ -91,7 +91,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Tab' && modalRef.current) {
         const focusable = modalRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
         );
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
@@ -113,7 +113,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     closeButtonRef.current?.focus();
     announceToScreenReader(
-      `Inspiration Gallery opened. ${INSPIRATION_LAYOUTS.length} layouts available. Use arrow keys to navigate.`
+      `Inspiration Gallery opened. ${INSPIRATION_LAYOUTS.length} layouts available. Use Tab to navigate.`
     );
   }, [announceToScreenReader]);
 
@@ -314,7 +314,8 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
                 layout={layout}
                 onClick={() => handleSelectLayout(layout)}
                 index={index}
-                tabIndex={focusedCardIndex === index ? 0 : -1}
+                tabIndex={(focusedCardIndex === -1 && index === 0) || focusedCardIndex === index ? 0 : -1}
+                onFocus={() => setFocusedCardIndex(index)}
               />
             ))}
           </div>

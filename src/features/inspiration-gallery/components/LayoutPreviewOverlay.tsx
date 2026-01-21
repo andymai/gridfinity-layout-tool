@@ -27,10 +27,18 @@ export function LayoutPreviewOverlay({
   const { isMobile } = useResponsive();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Focus close button on mount
+  // Focus close button on mount and handle Escape key
   useEffect(() => {
     closeButtonRef.current?.focus();
-  }, []);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const {
     name,
@@ -60,8 +68,8 @@ export function LayoutPreviewOverlay({
     metrics.drawerSize.width === currentDrawer.width &&
     metrics.drawerSize.depth === currentDrawer.depth;
 
-  // Count labeled bins
-  const labeledBins = layout.layout.bins.filter((b) => b.label.trim() !== '');
+  // Count labeled bins (guard against undefined labels)
+  const labeledBins = layout.layout.bins.filter((b) => b.label && b.label.trim() !== '');
 
   return (
     <div
