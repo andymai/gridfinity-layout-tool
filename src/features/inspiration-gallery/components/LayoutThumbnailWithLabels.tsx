@@ -108,18 +108,38 @@ export function LayoutThumbnailWithLabels({
         const binY = padding + innerHeight - (bin.y + bin.depth) * scaleY;
         const binWidth = Math.max(bin.width * scaleX - 1, 2);
         const binHeight = Math.max(bin.depth * scaleY - 1, 2);
+        const binMin = Math.min(binWidth, binHeight);
         const color = categoryColors.get(bin.category) || '#94a3b8';
+
+        // Smart rotation: rotate text when bin is significantly taller than wide (matches Bin.tsx)
+        const shouldRotate = bin.depth > bin.width * 1.5;
+
+        // Available dimensions for text (accounting for rotation)
+        const textWidth = shouldRotate ? binHeight : binWidth;
+        const textHeight = shouldRotate ? binWidth : binHeight;
 
         // Determine if we have space for a label
         const hasLabel = bin.label && bin.label.trim() !== '';
-        const canShowLabel = hasLabel && binWidth >= minLabelWidth && binHeight >= minLabelHeight;
+        const canShowLabel = hasLabel && textWidth >= minLabelWidth && textHeight >= minLabelHeight;
 
-        // Calculate font size based on bin size
-        const fontSize = Math.min(
-          Math.max(binWidth / 6, 6),
-          Math.max(binHeight / 2, 6),
-          10
-        );
+        // Font sizing logic matching Bin.tsx: binPixelMin * 0.28, clamped 5-10 for thumbnails
+        const maxFontSize = Math.min(Math.max(Math.round(binMin * 0.28), 5), 10);
+
+        // Check if label fits at calculated font size
+        let labelFits = false;
+        let fontSize = maxFontSize;
+        if (canShowLabel && bin.label) {
+          const effectiveWidth = textWidth * 0.75;
+          const neededFontSize = effectiveWidth / (bin.label.length * 0.6);
+          if (neededFontSize >= 5) {
+            labelFits = true;
+            fontSize = Math.min(Math.max(Math.floor(neededFontSize), 5), maxFontSize);
+          }
+        }
+
+        const showLabel = canShowLabel && labelFits;
+        const centerX = binX + binWidth / 2;
+        const centerY = binY + binHeight / 2;
 
         return (
           <g key={bin.id}>
@@ -134,20 +154,21 @@ export function LayoutThumbnailWithLabels({
               opacity={0.85}
             />
 
-            {/* Label text */}
-            {canShowLabel && (
+            {/* Label text with rotation support */}
+            {showLabel && (
               <text
-                x={binX + binWidth / 2}
-                y={binY + binHeight / 2}
+                x={centerX}
+                y={centerY}
                 textAnchor="middle"
                 dominantBaseline="central"
                 fontSize={fontSize}
                 fontWeight="500"
                 fill={getContrastColor(color)}
                 opacity={0.9}
+                transform={shouldRotate ? `rotate(-90 ${centerX} ${centerY})` : undefined}
                 style={{ pointerEvents: 'none' }}
               >
-                {truncateLabel(bin.label, binWidth, fontSize)}
+                {truncateLabel(bin.label, textWidth, fontSize)}
               </text>
             )}
           </g>

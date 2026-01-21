@@ -2,7 +2,7 @@ import { useEffect, useRef, useMemo } from 'react';
 import { useResponsive } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
 import { LayoutThumbnailWithLabels } from './LayoutThumbnailWithLabels';
-import { THEME_CONFIG, FEATURE_CONFIG } from '../types';
+import { THEME_CONFIG } from '../types';
 import { INSPIRATION_LAYOUTS } from '../data/inspirationLayouts';
 import type { InspirationLayout } from '../types';
 
@@ -36,7 +36,6 @@ export function LayoutPreviewOverlay({
     name,
     description,
     theme,
-    features,
     metrics,
     layout: layoutData,
   } = layout;
@@ -107,19 +106,20 @@ export function LayoutPreviewOverlay({
         </div>
 
         {/* Content */}
-        <div className={`flex-1 overflow-y-auto ${isMobile ? 'flex flex-col' : 'flex'}`}>
-          {/* Large preview */}
+        <div className={`flex-1 overflow-y-auto scrollbar-thin ${isMobile ? 'flex flex-col' : 'flex'}`}>
+          {/* Large preview - fills available space */}
           <div className={`${isMobile ? 'p-4' : 'flex-1 p-6'} flex items-center justify-center bg-surface`}>
-            <div className="bg-surface-secondary rounded-xl p-4 md:p-8">
+            <div className="bg-surface-secondary rounded-xl p-6 md:p-8 w-full h-full max-h-[60vh] flex items-center justify-center">
               <LayoutThumbnailWithLabels
                 layout={layoutData}
-                size={isMobile ? 280 : 400}
+                responsive
+                className="max-w-full max-h-full"
               />
             </div>
           </div>
 
-          {/* Details panel */}
-          <div className={`${isMobile ? 'p-4' : 'w-80 p-6 border-l border-stroke-subtle'} space-y-6`}>
+          {/* Details panel - wider on desktop */}
+          <div className={`${isMobile ? 'p-4' : 'w-96 p-6 border-l border-stroke-subtle'} space-y-5`}>
             {/* Description */}
             <div>
               <h3 className="text-sm font-medium text-content mb-2">Description</h3>
@@ -144,24 +144,6 @@ export function LayoutPreviewOverlay({
                 <MetricCard label="Categories" value={metrics.categoryCount.toString()} />
               </div>
             </div>
-
-            {/* Features */}
-            {features.length > 0 && (
-              <div>
-                <h3 className="text-sm font-medium text-content mb-3">Features Used</h3>
-                <div className="flex flex-wrap gap-2">
-                  {features.map((feature) => (
-                    <span
-                      key={feature}
-                      className="text-xs px-2 py-1 rounded-full bg-accent/10 text-accent"
-                      title={FEATURE_CONFIG[feature].description}
-                    >
-                      {FEATURE_CONFIG[feature].label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Sample labels */}
             {labeledBins.length > 0 && (
@@ -196,14 +178,15 @@ export function LayoutPreviewOverlay({
                       onClick={() => onSelectRelated(related)}
                       className="flex-1 p-2 rounded-lg bg-surface hover:bg-surface-hover border border-stroke-subtle hover:border-stroke transition-colors text-left"
                     >
-                      <div className="aspect-square bg-surface-secondary rounded mb-1.5 flex items-center justify-center overflow-hidden">
+                      <div className="aspect-[3/4] bg-surface-secondary rounded mb-1.5 flex items-center justify-center overflow-hidden p-1">
                         <LayoutThumbnailWithLabels
                           layout={related.layout}
-                          size={60}
+                          responsive
+                          className="max-w-full max-h-full"
                         />
                       </div>
-                      <div className="text-[10px] font-medium text-content truncate">{related.name}</div>
-                      <div className="text-[9px] text-content-tertiary">{related.metrics.binCount} bins</div>
+                      <div className="text-xs font-medium text-content truncate">{related.name}</div>
+                      <div className="text-[10px] text-content-tertiary">{related.metrics.binCount} bins</div>
                     </button>
                   ))}
                 </div>
@@ -215,34 +198,26 @@ export function LayoutPreviewOverlay({
         {/* Footer with CTA */}
         <div className="p-4 md:p-6 border-t border-stroke-subtle bg-surface shrink-0">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-sm text-content-secondary hidden md:block">
-              This will create a copy in your layout library.
+            <p className="text-sm text-content-secondary">
+              Creates a copy in your library
             </p>
-            <div className="flex gap-3 w-full md:w-auto">
-              <button
-                onClick={onClose}
-                className="flex-1 md:flex-none btn btn-secondary px-6"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={onUseLayout}
-                disabled={isImporting}
-                className="flex-1 md:flex-none btn btn-primary px-6"
-              >
-                {isImporting ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Adding...
-                  </>
-                ) : (
-                  'Add to My Layouts'
-                )}
-              </button>
-            </div>
+            <button
+              onClick={onUseLayout}
+              disabled={isImporting}
+              className="btn btn-primary px-6 shrink-0"
+            >
+              {isImporting ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Adding...
+                </>
+              ) : (
+                'Add to My Layouts'
+              )}
+            </button>
           </div>
         </div>
       </div>

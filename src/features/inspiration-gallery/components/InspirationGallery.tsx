@@ -12,9 +12,6 @@ import { ThemeFilterPills } from './ThemeFilterPills';
 import { LayoutCard } from './LayoutCard';
 import { LayoutPreviewOverlay } from './LayoutPreviewOverlay';
 
-type SortOption = 'default' | 'bins-desc' | 'bins-asc' | 'size-desc' | 'size-asc';
-
-const SEARCH_SUGGESTIONS = ['screwdriver', 'utensils', 'cables', 'craft', 'sockets'];
 
 interface InspirationGalleryProps {
   isOpen: boolean;
@@ -29,20 +26,28 @@ export function InspirationGallery({ isOpen, onClose }: InspirationGalleryProps)
   return <InspirationGalleryContent onClose={onClose} />;
 }
 
+// Calculate responsive default grid columns based on window width
+function getDefaultGridColumns(): number {
+  if (typeof window === 'undefined') return 5;
+  const width = window.innerWidth;
+  if (width >= 1536) return 7; // 2xl
+  if (width >= 1280) return 6; // xl
+  if (width >= 1024) return 5; // lg
+  return 4; // md-lg
+}
+
 function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
   const { isMobile } = useResponsive();
   const [selectedTheme, setSelectedTheme] = useState<InspirationTheme | 'all'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('default');
   const [previewLayout, setPreviewLayout] = useState<InspirationLayout | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [focusedCardIndex, setFocusedCardIndex] = useState(-1);
+  const [gridColumns, setGridColumns] = useState(getDefaultGridColumns);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const { importLayoutFromJSON, switchLayout, createNewLayout } = useLayoutSwitcher();
+  const { importLayoutFromJSON, switchLayout } = useLayoutSwitcher();
   const { announceToScreenReader, closeMobilePanel } = useUIStore(
     useShallow((state) => ({
       announceToScreenReader: state.announceToScreenReader,
@@ -51,53 +56,19 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
   );
   const addToast = useToastStore((state) => state.addToast);
 
-  // Filter by search query first (to get accurate theme counts)
-  const searchFilteredLayouts = searchQuery.trim()
-    ? INSPIRATION_LAYOUTS.filter((layout) => {
-        const query = searchQuery.toLowerCase();
-        return (
-          layout.name.toLowerCase().includes(query) ||
-          layout.description.toLowerCase().includes(query) ||
-          layout.shortDescription.toLowerCase().includes(query) ||
-          layout.tags.some((tag) => tag.toLowerCase().includes(query)) ||
-          layout.layout.bins.some((bin) => bin.label.toLowerCase().includes(query))
-        );
-      })
-    : INSPIRATION_LAYOUTS;
+  // Filter by theme
+  const filteredLayouts = selectedTheme === 'all'
+    ? INSPIRATION_LAYOUTS
+    : INSPIRATION_LAYOUTS.filter((l) => l.theme === selectedTheme);
 
-  // Then filter by theme
-  const themeFilteredLayouts = selectedTheme === 'all'
-    ? searchFilteredLayouts
-    : searchFilteredLayouts.filter((l) => l.theme === selectedTheme);
-
-  // Apply sorting
-  const sortedLayouts = [...themeFilteredLayouts].sort((a, b) => {
-    switch (sortBy) {
-      case 'bins-desc':
-        return b.metrics.binCount - a.metrics.binCount;
-      case 'bins-asc':
-        return a.metrics.binCount - b.metrics.binCount;
-      case 'size-desc':
-        return (b.metrics.drawerSize.width * b.metrics.drawerSize.depth) -
-               (a.metrics.drawerSize.width * a.metrics.drawerSize.depth);
-      case 'size-asc':
-        return (a.metrics.drawerSize.width * a.metrics.drawerSize.depth) -
-               (b.metrics.drawerSize.width * b.metrics.drawerSize.depth);
-      default:
-        return 0;
-    }
-  });
-
-  const filteredLayouts = sortedLayouts;
-
-  // Count layouts per theme based on search results (not total)
+  // Count layouts per theme
   const themeCounts = {
-    all: searchFilteredLayouts.length,
-    kitchen: searchFilteredLayouts.filter((l) => l.theme === 'kitchen').length,
-    workshop: searchFilteredLayouts.filter((l) => l.theme === 'workshop').length,
-    office: searchFilteredLayouts.filter((l) => l.theme === 'office').length,
-    hobby: searchFilteredLayouts.filter((l) => l.theme === 'hobby').length,
-    personal: searchFilteredLayouts.filter((l) => l.theme === 'personal').length,
+    all: INSPIRATION_LAYOUTS.length,
+    kitchen: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'kitchen').length,
+    workshop: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'workshop').length,
+    office: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'office').length,
+    hobby: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'hobby').length,
+    personal: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'personal').length,
   };
 
   // Handle escape key
@@ -172,24 +143,23 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     setPreviewLayout(null);
   }, []);
 
-  // Quick use - directly add layout without preview
-  const handleQuickUse = useCallback(async (layout: InspirationLayout) => {
-    if (isImporting) return;
+  // Use layout from preview - imports and switches to it
+  const handleUseLayout = useCallback(async () => {
+    if (!previewLayout || isImporting) return;
 
     setIsImporting(true);
     try {
       const result = await importLayoutFromJSON(
-        { ...layout.layout, name: layout.name },
-        { name: layout.name, author: 'Gridfinity Templates' }
+        { ...previewLayout.layout, name: previewLayout.name },
+        { name: previewLayout.name, author: 'Gridfinity Templates' }
       );
 
       if (isOk(result)) {
         const switchResult = await switchLayout(result.value);
         if (isOk(switchResult)) {
-          addToast(`Added "${layout.name}"`, 'success');
-          announceToScreenReader(`${layout.name} added to your library`);
+          addToast(`Added "${previewLayout.name}"`, 'success');
+          announceToScreenReader(`${previewLayout.name} added to your library`);
         }
-        // Close gallery regardless - layout was added to library
         closeMobilePanel();
         onClose();
       } else {
@@ -198,23 +168,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     } finally {
       setIsImporting(false);
     }
-  }, [isImporting, importLayoutFromJSON, switchLayout, addToast, announceToScreenReader, closeMobilePanel, onClose]);
-
-  const handleUseLayout = useCallback(async () => {
-    if (!previewLayout || isImporting) return;
-    await handleQuickUse(previewLayout);
-  }, [previewLayout, isImporting, handleQuickUse]);
-
-  // Start fresh - create blank layout
-  const handleStartFresh = useCallback(async () => {
-    const result = await createNewLayout();
-    if (isOk(result)) {
-      addToast('New layout created', 'success');
-      announceToScreenReader('New blank layout created');
-      closeMobilePanel();
-      onClose();
-    }
-  }, [createNewLayout, addToast, announceToScreenReader, closeMobilePanel, onClose]);
+  }, [previewLayout, isImporting, importLayoutFromJSON, switchLayout, addToast, announceToScreenReader, closeMobilePanel, onClose]);
 
   // Keyboard navigation for grid
   const handleGridKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -257,10 +211,10 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     }
   }, [focusedCardIndex]);
 
-  // Responsive grid columns - 2 cols on mobile for better density
-  const gridCols = isMobile
-    ? 'grid-cols-2'
-    : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+  // Grid column style - fixed 2 cols on mobile, user-controlled on desktop
+  const gridStyle = isMobile
+    ? undefined
+    : { gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))` };
 
   return (
     <>
@@ -286,184 +240,72 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
         `}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 md:p-6 border-b border-stroke-subtle shrink-0">
+        {/* Header with integrated filter */}
+        <div className="flex items-center justify-between px-4 py-2 border-b border-stroke-subtle shrink-0">
           {isMobile && (
             <div className="absolute left-1/2 -translate-x-1/2 top-2 w-10 h-1 rounded-full bg-content-disabled" />
           )}
-          <div>
-            <h2
-              id="inspiration-gallery-title"
-              className="text-xl md:text-2xl font-bold text-content"
-            >
-              Inspiration Gallery
-            </h2>
-            <p className="text-sm text-content-secondary mt-1 hidden sm:block">
-              Browse pre-designed layouts to get started quickly
-            </p>
-          </div>
-          <button
-            ref={closeButtonRef}
-            onClick={onClose}
-            className="p-2 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
-            aria-label="Close gallery"
+          <h2
+            id="inspiration-gallery-title"
+            className="text-base font-semibold text-content shrink-0"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Search and filter */}
-        <div className="px-4 md:px-6 py-3 border-b border-stroke-subtle shrink-0 space-y-2">
-          {/* Search input with suggestions */}
-          <div className="space-y-1.5">
-            <div className="relative">
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search layouts, bins, tags..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 text-sm bg-surface border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-content placeholder:text-content-disabled"
-                aria-label="Search layouts"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-content rounded"
-                  aria-label="Clear search"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-            {/* Search suggestions - only show when no search query */}
-            {!searchQuery && (
-              <div className="flex items-center gap-1.5 text-[10px] text-content-disabled">
-                <span>Try:</span>
-                {SEARCH_SUGGESTIONS.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    onClick={() => setSearchQuery(suggestion)}
-                    className="px-1.5 py-0.5 rounded bg-surface-secondary hover:bg-surface-hover text-content-tertiary hover:text-content transition-colors"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
+            Inspiration Gallery
+          </h2>
+          <div className="flex-1 mx-4 overflow-x-auto">
+            <ThemeFilterPills
+              selectedTheme={selectedTheme}
+              onThemeChange={handleThemeChange}
+              themeCounts={themeCounts}
+            />
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Grid size slider (desktop only) */}
+            {!isMobile && (
+              <div className="flex items-center gap-1.5 mr-2">
+                <svg className="w-4 h-4 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                <input
+                  type="range"
+                  min={3}
+                  max={8}
+                  value={gridColumns}
+                  onChange={(e) => setGridColumns(Number(e.target.value))}
+                  className="w-16"
+                  aria-label="Grid columns"
+                />
               </div>
             )}
-          </div>
-
-          {/* Filter row: Theme pills + Sort */}
-          <div className="flex items-center gap-2">
-            {/* Theme filter pills */}
-            <div className="flex-1 overflow-x-auto -mx-4 md:-mx-6 px-4 md:px-6">
-              <ThemeFilterPills
-                selectedTheme={selectedTheme}
-                onThemeChange={handleThemeChange}
-                themeCounts={themeCounts}
-              />
-            </div>
-            {/* Sort dropdown */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="text-xs bg-surface border border-stroke rounded-lg px-2 py-1.5 text-content-secondary focus:outline-none focus:ring-2 focus:ring-accent shrink-0"
-              aria-label="Sort layouts"
+            <button
+              ref={closeButtonRef}
+              onClick={onClose}
+              className="p-1.5 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
+              aria-label="Close gallery"
             >
-              <option value="default">Default</option>
-              <option value="bins-desc">Most bins</option>
-              <option value="bins-asc">Fewest bins</option>
-              <option value="size-desc">Largest drawer</option>
-              <option value="size-asc">Smallest drawer</option>
-            </select>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-
-          {/* Active filter indicator on mobile */}
-          {isMobile && (selectedTheme !== 'all' || searchQuery) && (
-            <div className="flex items-center gap-2 text-xs">
-              {selectedTheme !== 'all' && (
-                <span className="px-2 py-0.5 rounded-full bg-accent/10 text-accent flex items-center gap-1">
-                  {THEME_CONFIG[selectedTheme].label}
-                  <button
-                    onClick={() => setSelectedTheme('all')}
-                    className="hover:text-accent/70"
-                    aria-label="Clear theme filter"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              {searchQuery && (
-                <span className="px-2 py-0.5 rounded-full bg-surface-secondary text-content-secondary flex items-center gap-1">
-                  "{searchQuery}"
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="hover:text-content"
-                    aria-label="Clear search"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Layout grid */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div className="flex-1 overflow-y-auto scrollbar-thin p-3 md:p-4">
           <div
             ref={gridRef}
-            className={`grid ${gridCols} gap-3 md:gap-4`}
+            className={`grid ${isMobile ? 'grid-cols-2' : ''} gap-3 md:gap-4`}
+            style={gridStyle}
             onKeyDown={handleGridKeyDown}
             role="grid"
             aria-label="Layout gallery"
           >
-            {/* Start Fresh card */}
-            <button
-              onClick={handleStartFresh}
-              className="
-                group w-full text-left bg-surface rounded-xl p-2 md:p-3
-                border-2 border-dashed border-stroke hover:border-accent
-                transition-all duration-200 ease-out
-                hover:shadow-md hover:-translate-y-0.5
-                focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
-                animate-fade-in-up cursor-pointer flex flex-col items-center justify-center
-                min-h-[140px] md:min-h-[180px]
-              "
-              aria-label="Start with a blank layout"
-            >
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-surface-secondary group-hover:bg-accent/10 flex items-center justify-center transition-colors mb-2">
-                <svg className="w-5 h-5 md:w-6 md:h-6 text-content-tertiary group-hover:text-accent transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </div>
-              <span className="text-xs md:text-sm font-medium text-content-secondary group-hover:text-content transition-colors">
-                Start Fresh
-              </span>
-              <span className="text-[10px] text-content-tertiary mt-0.5">
-                Blank canvas
-              </span>
-            </button>
             {filteredLayouts.map((layout, index) => (
               <LayoutCard
                 key={layout.id}
                 layout={layout}
                 onClick={() => handleSelectLayout(layout)}
-                onQuickUse={() => handleQuickUse(layout)}
-                index={index + 1}
-                tabIndex={focusedCardIndex === index + 1 ? 0 : -1}
+                index={index}
+                tabIndex={focusedCardIndex === index ? 0 : -1}
               />
             ))}
           </div>
@@ -472,29 +314,17 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
           {filteredLayouts.length === 0 && (
             <div className="text-center py-12">
               <svg className="w-12 h-12 mx-auto text-content-disabled mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
               </svg>
-              <p className="text-content-secondary mb-1">
-                {searchQuery ? 'No layouts match your search' : 'No layouts found for this theme'}
-              </p>
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="text-sm text-accent hover:underline"
-                >
-                  Clear search
-                </button>
-              )}
+              <p className="text-content-secondary">No layouts found for this theme</p>
             </div>
           )}
         </div>
 
         {/* Footer with count */}
-        <div className="px-4 md:px-6 py-3 border-t border-stroke-subtle text-sm text-content-tertiary shrink-0">
+        <div className="px-3 py-1.5 border-t border-stroke-subtle text-xs text-content-tertiary shrink-0">
           {filteredLayouts.length} layout{filteredLayouts.length !== 1 ? 's' : ''}
-          {searchQuery && ` matching "${searchQuery}"`}
-          {selectedTheme !== 'all' && !searchQuery && ` in ${THEME_CONFIG[selectedTheme].label}`}
-          {selectedTheme !== 'all' && searchQuery && ` in ${THEME_CONFIG[selectedTheme].label}`}
+          {selectedTheme !== 'all' && ` in ${THEME_CONFIG[selectedTheme].label}`}
         </div>
       </div>
 
