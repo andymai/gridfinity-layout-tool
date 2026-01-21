@@ -10,6 +10,7 @@ import {
   validateLayoutIntegrityResult,
   validateCustomProperties,
   validateCustomPropertiesResult,
+  isValidBin,
 } from '@/shared/utils/validation';
 import { CONSTRAINTS } from '@/core/constants';
 import type { Layout } from '@/core/types';
@@ -530,6 +531,53 @@ describe('validateLayoutIntegrity', () => {
     expect(result.valid).toBe(false);
     expect(result.error).toContain('bin-abc-123');
   });
+
+  it('returns error for invalid layer (missing required properties)', () => {
+    const layout = createTestLayout();
+    // Create a malformed layer with id set to a number instead of string
+    const invalidLayout = {
+      ...layout,
+      layers: [
+        { id: 123, name: 'Bad Layer', height: 3 },
+      ],
+      bins: [],
+    };
+
+    const result = validateImport(invalidLayout);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('Layer 0 is invalid'))).toBe(true);
+  });
+
+  it('returns error for bin with invalid custom properties (too many)', () => {
+    const layout = createTestLayout();
+    // Use staging bin (layerId '__staging__') to skip canPlaceBin and test customProperties validation
+    const invalidLayout = {
+      ...layout,
+      bins: [
+        {
+          id: 'bin1',
+          layerId: '__staging__',
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
+          // Create custom properties with too many entries (over 50)
+          customProperties: Object.fromEntries(
+            Array.from({ length: 60 }, (_, i) => [`key${i}`, `value${i}`])
+          ),
+        },
+      ],
+    };
+
+    const result = validateImport(invalidLayout);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('Bin 0'))).toBe(true);
+    expect(result.errors.some(e => e.includes('50'))).toBe(true);
+  });
 });
 
 describe('validateCustomProperties', () => {
@@ -937,5 +985,71 @@ describe('validateCustomPropertiesResult', () => {
         expect(result.error.errors[0]).toContain('reserved');
       }
     }
+  });
+});
+
+describe('isValidBin type guard', () => {
+  it('returns true for valid bin object', () => {
+    const validBin = {
+      id: 'bin1',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+    };
+    expect(isValidBin(validBin)).toBe(true);
+  });
+
+  it('returns false for null', () => {
+    expect(isValidBin(null)).toBe(false);
+  });
+
+  it('returns false for undefined', () => {
+    expect(isValidBin(undefined)).toBe(false);
+  });
+
+  it('returns false for non-object', () => {
+    expect(isValidBin('string')).toBe(false);
+  });
+
+  it('returns false when height is missing', () => {
+    const bin = {
+      id: 'bin1',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      // height missing
+    };
+    expect(isValidBin(bin)).toBe(false);
+  });
+
+  it('returns false when height is not a number', () => {
+    const bin = {
+      id: 'bin1',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: '3', // string instead of number
+    };
+    expect(isValidBin(bin)).toBe(false);
+  });
+
+  it('returns false when id is not a string', () => {
+    const bin = {
+      id: 123, // number instead of string
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+    };
+    expect(isValidBin(bin)).toBe(false);
   });
 });
