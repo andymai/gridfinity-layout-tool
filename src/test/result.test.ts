@@ -40,9 +40,12 @@ import {
   validationCollision,
   validationOutOfBounds,
   layoutLayerLimit,
+  layoutLibraryLimit,
   layoutLastEntity,
   apiRateLimited,
   apiNetworkError,
+  apiServerError,
+  apiInvalidExpiration,
   unknownError,
   fromUnknown,
 
@@ -296,9 +299,19 @@ describe('Result utilities', () => {
       expect(result).toEqual({ ok: true, value: [1, 'hello', true] });
     });
 
-    it('returns first error encountered', () => {
+    it('returns first error when first is err', () => {
+      const result = combine3(err('first'), ok('hello'), ok(true));
+      expect(result).toEqual({ ok: false, error: 'first' });
+    });
+
+    it('returns second error when first is ok and second is err', () => {
       const result = combine3(ok(1), err('second'), err('third'));
       expect(result).toEqual({ ok: false, error: 'second' });
+    });
+
+    it('returns third error when first two are ok', () => {
+      const result = combine3(ok(1), ok('hello'), err('third'));
+      expect(result).toEqual({ ok: false, error: 'third' });
     });
   });
 
@@ -399,6 +412,14 @@ describe('Result utilities', () => {
         () => 'ASYNC_ERROR'
       );
       expect(result).toEqual({ ok: false, error: 'ASYNC_ERROR' });
+    });
+
+    it('returns raw error when no mapError provided', async () => {
+      const originalError = new Error('raw error');
+      const result = await tryCatchAsync(async () => {
+        throw originalError;
+      });
+      expect(result).toEqual({ ok: false, error: originalError });
     });
   });
 
@@ -544,6 +565,15 @@ describe('Error constructors', () => {
       expect(error.entityType).toBe('layer');
       expect(error.metadata).toEqual({ entityType: 'layer' });
     });
+
+    it('creates layoutLibraryLimit with counts', () => {
+      const error = layoutLibraryLimit(100, 100);
+      expect(error.kind).toBe('LayoutError');
+      expect(error.code).toBe('LAYOUT_LIBRARY_LIMIT');
+      expect(error.currentCount).toBe(100);
+      expect(error.maxCount).toBe(100);
+      expect(error.timestamp).toBeGreaterThan(0);
+    });
   });
 
   describe('API errors', () => {
@@ -560,6 +590,37 @@ describe('Error constructors', () => {
       const error = apiNetworkError(cause);
       expect(error.code).toBe('API_NETWORK_ERROR');
       expect(error.cause).toBe(cause);
+    });
+
+    it('creates apiServerError with status and cause', () => {
+      const cause = new Error('Internal server error');
+      const error = apiServerError(500, cause);
+      expect(error.kind).toBe('ApiError');
+      expect(error.code).toBe('API_SERVER_ERROR');
+      expect(error.status).toBe(500);
+      expect(error.cause).toBe(cause);
+      expect(error.timestamp).toBeGreaterThan(0);
+    });
+
+    it('creates apiServerError without optional parameters', () => {
+      const error = apiServerError();
+      expect(error.code).toBe('API_SERVER_ERROR');
+      expect(error.status).toBeUndefined();
+      expect(error.cause).toBeUndefined();
+    });
+
+    it('creates apiInvalidExpiration with provided value', () => {
+      const error = apiInvalidExpiration(-100);
+      expect(error.kind).toBe('ApiError');
+      expect(error.code).toBe('API_INVALID_EXPIRATION');
+      expect(error.providedValue).toBe(-100);
+      expect(error.timestamp).toBeGreaterThan(0);
+    });
+
+    it('creates apiInvalidExpiration without value', () => {
+      const error = apiInvalidExpiration();
+      expect(error.code).toBe('API_INVALID_EXPIRATION');
+      expect(error.providedValue).toBeUndefined();
     });
   });
 

@@ -213,7 +213,6 @@ export function useInterpolatedPresence(
     }
 
     return result;
-    // Re-run when forceUpdate triggers via updateTrigger counter
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Re-run only when forceUpdate triggers via updateTrigger counter
   }, [updateTrigger]);
 }

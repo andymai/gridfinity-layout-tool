@@ -132,8 +132,7 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
         deleteToken: cloudShare?.deleteToken,
       },
     }),
-    // Only use layout on initial mount, not on every change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only use layout on initial mount, not on every change
     []
   );
 

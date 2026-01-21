@@ -182,7 +182,7 @@ function SharePopover({
     // Calculate initial position after mount when ref is available
     const position = calculatePosition();
     if (position) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- DOM ref unavailable during render, must setState after mount
       setPopoverPosition(position);
     }
 
