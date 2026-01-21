@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore, useUndoableAction, useToastStore } from '@/core/store';
 import { calcMaxGridUnits, STAGING_ID } from '@/core/constants';
-import { getLayerZStart } from '@/features/grid-editor/utils/collision';
+import { getLayerZStart } from '@/shared/utils/collision';
 import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
