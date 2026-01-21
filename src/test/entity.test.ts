@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  findBinById,
-  findLayerById,
-  findCategoryById,
-  findLayerIndex,
-  getBinsByLayerId,
-  getBinsByCategoryId,
-} from '@/utils/entity';
+import { findBinById, findBinsByIds } from '@/utils/entity';
 import type { Layout } from '@/core/types';
 
 const createTestLayout = (): Layout => ({
@@ -53,107 +46,36 @@ describe('findBinById', () => {
   });
 });
 
-describe('findLayerById', () => {
-  it('returns layer when found', () => {
+describe('findBinsByIds', () => {
+  it('returns all bins when all IDs exist', () => {
     const layout = createTestLayout();
-    const layer = findLayerById(layout, 'layer1');
-    expect(layer).toBeDefined();
-    expect(layer?.name).toBe('Layer 1');
-  });
-
-  it('returns undefined when not found', () => {
-    const layout = createTestLayout();
-    const layer = findLayerById(layout, 'nonexistent');
-    expect(layer).toBeUndefined();
-  });
-});
-
-describe('findCategoryById', () => {
-  it('returns category when found', () => {
-    const layout = createTestLayout();
-    const category = findCategoryById(layout, 'cat1');
-    expect(category).toBeDefined();
-    expect(category?.name).toBe('Category 1');
-  });
-
-  it('returns undefined when not found', () => {
-    const layout = createTestLayout();
-    const category = findCategoryById(layout, 'nonexistent');
-    expect(category).toBeUndefined();
-  });
-});
-
-describe('findLayerIndex', () => {
-  it('returns correct index for first layer', () => {
-    const layout = createTestLayout();
-    expect(findLayerIndex(layout, 'layer1')).toBe(0);
-  });
-
-  it('returns correct index for second layer', () => {
-    const layout = createTestLayout();
-    expect(findLayerIndex(layout, 'layer2')).toBe(1);
-  });
-
-  it('returns -1 when not found', () => {
-    const layout = createTestLayout();
-    expect(findLayerIndex(layout, 'nonexistent')).toBe(-1);
-  });
-});
-
-describe('getBinsByLayerId', () => {
-  it('returns all bins on layer', () => {
-    const layout = createTestLayout();
-    const bins = getBinsByLayerId(layout, 'layer1');
+    const bins = findBinsByIds(layout, ['bin1', 'bin2']);
     expect(bins).toHaveLength(2);
     expect(bins.map(b => b.id)).toEqual(['bin1', 'bin2']);
   });
 
-  it('returns single bin when only one exists', () => {
+  it('filters out nonexistent IDs', () => {
     const layout = createTestLayout();
-    const bins = getBinsByLayerId(layout, 'layer2');
-    expect(bins).toHaveLength(1);
-    expect(bins[0].id).toBe('bin3');
-  });
-
-  it('returns empty array for layer with no bins', () => {
-    const layout = createTestLayout();
-    layout.layers.push({ id: 'layer3', name: 'Layer 3', height: 3 });
-    const bins = getBinsByLayerId(layout, 'layer3');
-    expect(bins).toHaveLength(0);
-  });
-
-  it('returns empty array for nonexistent layer', () => {
-    const layout = createTestLayout();
-    const bins = getBinsByLayerId(layout, 'nonexistent');
-    expect(bins).toHaveLength(0);
-  });
-});
-
-describe('getBinsByCategoryId', () => {
-  it('returns all bins with category', () => {
-    const layout = createTestLayout();
-    const bins = getBinsByCategoryId(layout, 'cat1');
+    const bins = findBinsByIds(layout, ['bin1', 'nonexistent', 'bin3']);
     expect(bins).toHaveLength(2);
     expect(bins.map(b => b.id)).toEqual(['bin1', 'bin3']);
   });
 
-  it('returns single bin when only one has category', () => {
+  it('returns empty array when no IDs match', () => {
     const layout = createTestLayout();
-    const bins = getBinsByCategoryId(layout, 'cat2');
-    expect(bins).toHaveLength(1);
-    expect(bins[0].id).toBe('bin2');
-  });
-
-  it('returns empty array for unused category', () => {
-    const layout = createTestLayout();
-    layout.categories.push({ id: 'cat3', name: 'Category 3', color: '#0000ff' });
-    const bins = getBinsByCategoryId(layout, 'cat3');
+    const bins = findBinsByIds(layout, ['nonexistent1', 'nonexistent2']);
     expect(bins).toHaveLength(0);
   });
 
-  it('returns empty array for nonexistent category', () => {
+  it('returns empty array for empty input', () => {
     const layout = createTestLayout();
-    const bins = getBinsByCategoryId(layout, 'nonexistent');
+    const bins = findBinsByIds(layout, []);
     expect(bins).toHaveLength(0);
+  });
+
+  it('preserves order of input IDs', () => {
+    const layout = createTestLayout();
+    const bins = findBinsByIds(layout, ['bin3', 'bin1', 'bin2']);
+    expect(bins.map(b => b.id)).toEqual(['bin3', 'bin1', 'bin2']);
   });
 });
