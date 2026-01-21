@@ -22,15 +22,20 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
 # Skip if --no-verify flag is present
 [[ "$COMMAND" == *"--no-verify"* ]] && exit 0
 
-# Get staged TS/TSX files (excluding tests)
-STAGED=$(git diff --cached --name-only --diff-filter=d 2>/dev/null | grep -E '\.(ts|tsx)$' | grep -v '\.test\.')
+# Get staged TS/TSX files (excluding tests), safely handling spaces
+TS_FILES=()
+while IFS= read -r -d '' file; do
+  [[ "$file" =~ \.(ts|tsx)$ ]] || continue
+  [[ "$file" =~ \.test\. ]] && continue
+  TS_FILES+=("$file")
+done < <(git diff --cached --name-only -z --diff-filter=d 2>/dev/null)
 
 # No staged files - allow
-[[ -z "$STAGED" ]] && exit 0
+[[ ${#TS_FILES[@]} -eq 0 ]] && exit 0
 
 ISSUES=""
 
-for file in $STAGED; do
+for file in "${TS_FILES[@]}"; do
   [[ ! -f "$file" ]] && continue
 
   # Get only added lines from staged changes (with line content)
@@ -39,10 +44,14 @@ for file in $STAGED; do
   # Skip if no additions
   [[ -z "$ADDED_LINES" ]] && continue
 
+  # Get the actual diff with context once per file (for checks that need it)
+  DIFF_CONTEXT=$(git diff --cached -U10 "$file" 2>/dev/null)
+
   # Check 1: innerHTML assignment (XSS risk)
   if echo "$ADDED_LINES" | grep -qE '\.innerHTML\s*='; then
-    # Allow if it's a sanitized value or empty string
-    UNSAFE=$(echo "$ADDED_LINES" | grep -E '\.innerHTML\s*=' | grep -vE 'innerHTML\s*=\s*["'\'']\s*["'\'']|sanitize|DOMPurify')
+    # Allow if it's a sanitized value or explicit empty string assignment
+    UNSAFE_LINES=$(echo "$ADDED_LINES" | grep -E '\.innerHTML\s*=' 2>/dev/null || true)
+    UNSAFE=$(echo "$UNSAFE_LINES" | grep -vE '\.innerHTML\s*=\s*["'\'']\s*["'\'']\s*;?\s*$|sanitize|DOMPurify' 2>/dev/null || true)
     if [[ -n "$UNSAFE" ]]; then
       ISSUES+="  $file: .innerHTML assignment (XSS risk)\n"
       ISSUES+="    Use textContent or sanitize input\n"
@@ -68,43 +77,55 @@ for file in $STAGED; do
   # Check 5: Unguarded JSON.parse
   # Look for JSON.parse not inside a try block or without catch nearby
   if echo "$ADDED_LINES" | grep -qE 'JSON\.parse\s*\('; then
-    # Get the actual diff with context to check for try-catch
-    DIFF_CONTEXT=$(git diff --cached -U10 "$file" 2>/dev/null)
+    # Find all JSON.parse occurrences and check each one
+    while IFS= read -r match_line; do
+      [[ -z "$match_line" ]] && continue
+      LINE_NUM=$(echo "$match_line" | cut -d: -f1)
 
-    # Find JSON.parse lines and check if they're in try blocks
-    while IFS= read -r line; do
       # Skip if line is in a comment
-      [[ "$line" == *"//"*"JSON.parse"* ]] && continue
+      LINE_CONTENT=$(echo "$DIFF_CONTEXT" | sed -n "${LINE_NUM}p")
+      [[ "$LINE_CONTENT" == *"//"*"JSON.parse"* ]] && continue
 
-      # Check if there's a try block nearby (crude but effective)
-      LINE_NUM=$(echo "$DIFF_CONTEXT" | grep -n "JSON\.parse" | head -1 | cut -d: -f1)
-      if [[ -n "$LINE_NUM" ]]; then
-        # Get surrounding context
-        CONTEXT=$(echo "$DIFF_CONTEXT" | sed -n "$((LINE_NUM > 10 ? LINE_NUM - 10 : 1)),$((LINE_NUM + 5))p")
-        if ! echo "$CONTEXT" | grep -qE 'try\s*\{|\.catch\(|catch\s*\('; then
-          ISSUES+="  $file: JSON.parse without try-catch\n"
-          ISSUES+="    Wrap in try-catch or use a safe parser\n"
-          break
-        fi
+      # Get surrounding context
+      CONTEXT_START=$((LINE_NUM > 10 ? LINE_NUM - 10 : 1))
+      CONTEXT_END=$((LINE_NUM + 5))
+      CONTEXT=$(echo "$DIFF_CONTEXT" | sed -n "${CONTEXT_START},${CONTEXT_END}p")
+
+      if ! echo "$CONTEXT" | grep -qE 'try\s*\{|\.catch\(|catch\s*\('; then
+        ISSUES+="  $file: JSON.parse without try-catch\n"
+        ISSUES+="    Wrap in try-catch or use a safe parser\n"
+        break  # Only report once per file
       fi
-    done <<< "$(echo "$ADDED_LINES" | grep 'JSON\.parse')"
+    done < <(echo "$DIFF_CONTEXT" | grep -n 'JSON\.parse' | grep '^[0-9]*:+')
   fi
 
   # Check 6: Unguarded localStorage/sessionStorage in non-utility files
   # Storage can throw in private browsing, when full, or when disabled
   if echo "$ADDED_LINES" | grep -qE '(localStorage|sessionStorage)\.(get|set|remove)Item'; then
     # Skip if file is in storage/ directory (assumed to have proper handling)
-    if [[ "$file" != *"/storage/"* ]]; then
-      DIFF_CONTEXT=$(git diff --cached -U10 "$file" 2>/dev/null)
-      if ! echo "$DIFF_CONTEXT" | grep -qE 'try\s*\{|\.catch\(|catch\s*\('; then
-        ISSUES+="  $file: localStorage/sessionStorage without error handling\n"
-        ISSUES+="    Use core/storage layer or wrap in try-catch\n"
-      fi
+    if [[ "$file" != */storage/* ]]; then
+      # Check each storage access for try-catch
+      while IFS= read -r match_line; do
+        [[ -z "$match_line" ]] && continue
+        LINE_NUM=$(echo "$match_line" | cut -d: -f1)
+
+        # Get surrounding context for this specific line
+        CONTEXT_START=$((LINE_NUM > 10 ? LINE_NUM - 10 : 1))
+        CONTEXT_END=$((LINE_NUM + 5))
+        CONTEXT=$(echo "$DIFF_CONTEXT" | sed -n "${CONTEXT_START},${CONTEXT_END}p")
+
+        if ! echo "$CONTEXT" | grep -qE 'try\s*\{|\.catch\(|catch\s*\('; then
+          ISSUES+="  $file: localStorage/sessionStorage without error handling\n"
+          ISSUES+="    Use core/storage layer or wrap in try-catch\n"
+          break  # Only report once per file
+        fi
+      done < <(echo "$DIFF_CONTEXT" | grep -n -E '(localStorage|sessionStorage)\.(get|set|remove)Item' | grep '^[0-9]*:+')
     fi
   fi
 
   # Check 7: Hardcoded API keys or secrets patterns
-  if echo "$ADDED_LINES" | grep -qiE '(api[_-]?key|secret|password|token)\s*[:=]\s*["\x27][a-zA-Z0-9_-]{20,}'; then
+  # Only match actual assignment with quoted string values of significant length
+  if echo "$ADDED_LINES" | grep -qiE "(api[_-]?key|secret|password|token)\s*[:=]\s*['\"][a-zA-Z0-9+/=_-]{32,}['\"]"; then
     ISSUES+="  $file: Possible hardcoded secret detected\n"
     ISSUES+="    Use environment variables instead\n"
   fi
@@ -119,10 +140,10 @@ done
 
 if [[ -n "$ISSUES" ]]; then
   echo ""
-  echo "🚨 Dangerous patterns detected:"
-  echo "─────────────────────────────────────────────────"
-  echo -e "$ISSUES"
-  echo "─────────────────────────────────────────────────"
+  echo "Dangerous patterns detected:"
+  echo "---------------------------------------------"
+  printf '%b' "$ISSUES"
+  echo "---------------------------------------------"
   echo "Fix these issues or use --no-verify to skip (not recommended)"
   exit 2  # Block the commit
 fi

@@ -79,8 +79,7 @@ export function lazyWithRetry<T extends ComponentType<any>>(
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Generic constraint for React component type
 export function namedExport<T extends ComponentType<any>>(name: string) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Module type from dynamic import cannot be inferred
-  return (module: Record<string, any>): { default: T } => ({
+  return (module: Record<string, unknown>): { default: T } => ({
     default: module[name] as T,
   });
 }
