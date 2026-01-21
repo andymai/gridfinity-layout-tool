@@ -1957,6 +1957,9 @@ export function trackLayerMove(
     method,
   };
 
+  // Update last edit time for dormancy tracking
+  markEditActivity();
+
   eventBuffer.push(event);
 
   if (eventBuffer.length >= FLUSH_THRESHOLD) {
@@ -1988,6 +1991,9 @@ export function trackBinRotation(
     new_size: `${bin.depth}x${bin.width}x${bin.height}`, // Rotated: width/depth swapped
     batch_size: batchSize,
   };
+
+  // Update last edit time for dormancy tracking
+  markEditActivity();
 
   eventBuffer.push(event);
 
@@ -2156,6 +2162,9 @@ export function trackUndo(
 
   // Increment session undo count
   layoutSession.undoCount++;
+
+  // Update last edit time for dormancy tracking
+  markEditActivity();
 
   eventBuffer.push(event);
 

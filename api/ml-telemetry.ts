@@ -928,7 +928,7 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       validateSizeSequenceArray(e.size_sequence) &&
       typeof e.edit_to_done_ratio === 'number' &&
       e.edit_to_done_ratio >= 0 &&
-      e.edit_to_done_ratio <= 100 &&
+      e.edit_to_done_ratio <= 1 && // Ratio is 0-1, not percentage
       typeof e.undo_count === 'number' &&
       e.undo_count >= 0 &&
       e.undo_count < 10000 &&
