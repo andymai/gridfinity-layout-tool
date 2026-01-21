@@ -1,7 +1,24 @@
+import type { RedisOptions } from 'ioredis';
 import Redis from 'ioredis';
 
 export type RateLimitAction =
   | 'create' | 'update' | 'view' | 'delete' | 'report';
+
+/**
+ * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
+ * ioredis accepts URL strings but uses the legacy url.parse() internally.
+ */
+function parseRedisUrl(redisUrl: string): RedisOptions {
+  const url = new URL(redisUrl);
+  return {
+    host: url.hostname,
+    port: url.port ? parseInt(url.port, 10) : 6379,
+    password: url.password || undefined,
+    username: url.username || undefined,
+    tls: url.protocol === 'rediss:' ? {} : undefined,
+    db: url.pathname ? parseInt(url.pathname.slice(1), 10) || 0 : 0,
+  };
+}
 
 interface RateLimitConfig {
   limit: number;
@@ -31,7 +48,9 @@ function getRedis(): Redis | null {
     return null;
   }
   if (!redis) {
-    redis = new Redis(process.env.REDIS_URL, {
+    const urlConfig = parseRedisUrl(process.env.REDIS_URL);
+    redis = new Redis({
+      ...urlConfig,
       maxRetriesPerRequest: 1,
       connectTimeout: 5000,
       commandTimeout: 5000,

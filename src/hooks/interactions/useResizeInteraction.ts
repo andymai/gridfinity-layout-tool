@@ -228,6 +228,22 @@ export function useResizeInteraction(
       // Track once per batch operation (not per bin)
       if (firstResize) {
         mlTracking.trackResize(firstResize.old, firstResize.new, firstResize.height, batchSize);
+
+        // Track quick corrections for each resized bin
+        for (const binId of interaction.binIds) {
+          const bin = layout.bins.find((b) => b.id === binId);
+          const startRect = interaction.startRects.get(binId);
+          const currentRect = interaction.currentRects.get(binId);
+          if (!bin || !startRect || !currentRect) continue;
+
+          if (startRect.width !== currentRect.width || startRect.depth !== currentRect.depth) {
+            mlTracking.trackQuickCorrect('resize', binId, bin, {
+              width: currentRect.width,
+              depth: currentRect.depth,
+              height: bin.height,
+            });
+          }
+        }
       }
     }
 
