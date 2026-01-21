@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store';
+import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useSelectionStore } from '@/core/store/selection';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
@@ -22,7 +23,6 @@ import { GridToolbar } from './GridToolbar';
 import { RowLabels, ColumnLabels } from './GridAxisLabels';
 import { DrawerResizeHandles } from './DrawerResizeHandles';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { MobileGridToolbar } from '@/components/Mobile';
 import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
 import { CollabCursors, CollabGhosts, CollabSelectionRings } from '@/components/Collab';
 import { useCollabMode } from '@/hooks/useCollabMode';
@@ -32,6 +32,11 @@ import { useGridCoords } from '@/features/grid-editor/hooks/useGridCoords';
 // Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
 const IsometricPreview = lazyWithRetry(() =>
   import('./IsometricPreview').then(namedExport('IsometricPreview'))
+);
+
+// Lazy load mobile toolbar (only used on mobile)
+const MobileGridToolbar = lazyWithRetry(() =>
+  import('@/components/Mobile').then(namedExport('MobileGridToolbar'))
 );
 
 /**
@@ -137,7 +142,13 @@ export function Grid() {
   const { startDraw, startDrag, startResize } = useInteraction(gridRef);
 
   // Grid resize hook - handles drawer edge/corner resize logic
+  // Note: We get zoom from the view store directly (instead of from useGridZoom)
+  // to avoid circular dependency - useGridZoom needs isResizing from useGridResize
   const gap = 1; // 1px gap between cells
+  const zoomFromStore = useViewStore((state) => state.zoom);
+  const baseCellSize = getBaseCellSize(viewportWidth);
+  const zoomedCellSize = Math.round(baseCellSize * zoomFromStore);
+
   const {
     resizeDirection,
     pendingResize,
@@ -145,7 +156,7 @@ export function Grid() {
     handleResizeStart,
     confirmResize,
     cancelResize,
-  } = useGridResize({ cellSize: Math.round(getBaseCellSize(viewportWidth)), gap });
+  } = useGridResize({ cellSize: zoomedCellSize, gap });
 
   // Grid zoom hook - encapsulates zoom controls
   const zoomState = useGridZoom({
@@ -158,8 +169,8 @@ export function Grid() {
     showIsometricPreview,
   });
 
-  // Calculate cellSize using zoom from zoomState
-  const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoomState.zoom);
+  // Calculate cellSize using zoom from zoomState (may differ slightly due to fit-to-screen)
+  const cellSize = Math.round(baseCellSize * zoomState.zoom);
 
   // In half-bin mode, visual cells are smaller to fit 2x cells in the same space
   // Formula accounts for extra gaps: (cellSize - gap) / 2 keeps total grid size constant
@@ -208,7 +219,11 @@ export function Grid() {
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-surface relative">
       {/* Mobile toolbar - always at very top */}
-      {isMobile && <MobileGridToolbar onFitToScreen={zoomState.fitToScreen} />}
+      {isMobile && (
+        <Suspense fallback={<div className="h-12 bg-surface-secondary" />}>
+          <MobileGridToolbar onFitToScreen={zoomState.fitToScreen} />
+        </Suspense>
+      )}
 
       {/* Main content area: horizontal split on desktop, vertical on mobile */}
       <div
