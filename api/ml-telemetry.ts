@@ -1023,7 +1023,7 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       validateSizeSequenceArray(e.size_sequence) &&
       typeof e.edit_to_done_ratio === 'number' &&
       e.edit_to_done_ratio >= 0 &&
-      e.edit_to_done_ratio <= 1 && // Ratio is 0-1, not percentage
+      e.edit_to_done_ratio <= 100 && // Ratio can exceed 1.0 when edits > bins (e.g., heavy editing then deleting)
       typeof e.undo_count === 'number' &&
       e.undo_count >= 0 &&
       e.undo_count < 10000 &&
@@ -1043,8 +1043,10 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
   // ============================================
 
   if (e.type === 'cross_layout_pattern') {
-    // Validate user_hash (should be a simple alphanumeric string)
-    if (typeof e.user_hash !== 'string' || !/^[a-z0-9]{8,20}$/.test(e.user_hash)) {
+    // Validate user_hash (UUID format from crypto.randomUUID() or simple alphanumeric)
+    // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (36 chars with hyphens)
+    // Simple format: 8-20 lowercase alphanumeric chars
+    if (typeof e.user_hash !== 'string' || !/^[a-z0-9-]{8,36}$/.test(e.user_hash)) {
       // Allow 'anonymous' as fallback
       if (e.user_hash !== 'anonymous') return false;
     }
