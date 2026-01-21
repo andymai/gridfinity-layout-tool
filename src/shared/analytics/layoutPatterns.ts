@@ -191,7 +191,7 @@ function isCompartmentalized(bins: Bin[], layout: Layout): boolean {
 /**
  * Check if two bins are adjacent (touching).
  */
-function areBinsAdjacent(a: Bin, b: Bin): boolean {
+export function areBinsAdjacent(a: Bin, b: Bin): boolean {
   // Check if bins share an edge (not just corners)
   const aLeft = a.x;
   const aRight = a.x + a.width;
