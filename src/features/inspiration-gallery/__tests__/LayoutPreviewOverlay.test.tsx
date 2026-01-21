@@ -16,7 +16,7 @@ vi.mock('../components/LayoutThumbnailWithLabels', () => ({
 }));
 
 // Mock INSPIRATION_LAYOUTS for related layouts
-vi.mock('../data/inspirationLayouts', () => ({
+vi.mock('../data', () => ({
   INSPIRATION_LAYOUTS: [
     {
       id: 'related-1',

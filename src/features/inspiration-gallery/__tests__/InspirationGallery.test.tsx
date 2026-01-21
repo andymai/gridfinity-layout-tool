@@ -21,7 +21,7 @@ vi.mock('@/features/layout-library/hooks/useLayoutSwitcher', () => ({
 }));
 
 // Mock data - defined inside the mock factory to avoid hoisting issues
-vi.mock('../data/inspirationLayouts', () => {
+vi.mock('../data', () => {
   const mockLayouts = [
     {
       id: 'workshop-1',

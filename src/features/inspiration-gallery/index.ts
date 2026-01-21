@@ -11,4 +11,4 @@ export type {
 export { THEME_CONFIG, FEATURE_CONFIG } from './types';
 
 // Data
-export { INSPIRATION_LAYOUTS, getLayoutsByTheme, getLayoutById } from './data/inspirationLayouts';
+export { INSPIRATION_LAYOUTS, getLayoutsByTheme, getLayoutById } from './data';

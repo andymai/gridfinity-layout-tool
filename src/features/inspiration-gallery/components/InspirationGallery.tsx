@@ -5,7 +5,7 @@ import { useLayoutSwitcher } from '@/features/layout-library/hooks/useLayoutSwit
 import { useUIStore } from '@/core/store/ui';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
-import { INSPIRATION_LAYOUTS, getLayoutsByTheme } from '../data/inspirationLayouts';
+import { INSPIRATION_LAYOUTS, getLayoutsByTheme } from '../data';
 import { THEME_CONFIG } from '../types';
 import type { InspirationLayout, InspirationTheme } from '../types';
 import { ThemeFilterPills } from './ThemeFilterPills';
