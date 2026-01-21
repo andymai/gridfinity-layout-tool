@@ -29,6 +29,7 @@ import {
   detectSpatialPatterns,
   computeUniformityScore,
   computeEdgeUsage,
+  areBinsAdjacent,
   type LayoutArchetype,
   type SpatialPattern,
   type EdgeUsage,
@@ -98,6 +99,22 @@ export interface BinPlacementEvent {
   label_embedding_bucket: string | null;
   /** Category ID from the layout */
   category_id: string;
+
+  // === Adjacent context (for co-location learning) ===
+  /** Label hashes of adjacent bins on same layer (max 4) */
+  adjacent_label_hashes: string[];
+  /** Sizes of adjacent bins on same layer (max 4) */
+  adjacent_sizes: string[];
+  /** Number of adjacent bins */
+  adjacent_count: number;
+
+  // === Sequence context (for workflow learning) ===
+  /** Sizes of last 3 placements in this session */
+  recent_sizes: string[];
+  /** Time since last placement in ms, or null if first placement */
+  time_since_last_ms: number | null;
+  /** Whether this is the first bin with this label in the session */
+  is_first_of_label: boolean;
 
   // === Context ===
   /** How the bin was placed */
@@ -329,6 +346,12 @@ export interface BinResizeEvent {
 
   /** Fill percentage after resize */
   fill_pct: number;
+
+  /** Direction of resize: 'grow' = bin got larger, 'shrink' = smaller, 'mixed' = one grew, one shrank */
+  resize_direction: 'grow' | 'shrink' | 'mixed';
+
+  /** Area change in grid units squared (positive = grew, negative = shrank) */
+  area_delta: number;
 }
 
 /**
@@ -365,6 +388,36 @@ export interface BinDeletedEvent {
 
   /** Delete method */
   method: DeleteMethod;
+}
+
+
+/**
+ * Abandoned bin: unlabeled bin deleted shortly after creation.
+ * Strong negative signal - user created bin but couldn't figure out what to put there.
+ */
+export interface AbandonedBinEvent {
+  type: 'bin_abandoned';
+
+  /** Size of abandoned bin as "WxDxH" string */
+  bin_size: string;
+
+  /** Position where it was placed as "X,Y" string */
+  position: string;
+
+  /** Layer index */
+  layer_index: number;
+
+  /** How long the bin existed before deletion (ms) */
+  lifetime_ms: number;
+
+  /** How the bin was created */
+  creation_method: PlacementMethod;
+
+  /** Fill percentage when abandoned */
+  fill_pct: number;
+
+  /** Drawer size for context */
+  drawer_size: string;
 }
 
 /**
@@ -648,6 +701,7 @@ export type MLTelemetryEvent =
   | CategoryChangeEvent
   | BinResizeEvent
   | BinDeletedEvent
+  | AbandonedBinEvent
   | BinMovedEvent
   | DrawerResizedEvent
   | FillOperationEvent
@@ -769,6 +823,13 @@ interface LayoutSessionState {
   moveCount: number;
   /** Timestamp of last edit action (placement, resize, move, delete) */
   lastEditTime: number;
+  /** Rolling window of recent placements for sequence learning (max 5) */
+  recentPlacements: Array<{
+    size: string;
+    labelHash: string | null;
+    position: string;
+    timestamp: number;
+  }>;
 }
 
 let layoutSession: LayoutSessionState = {
@@ -781,6 +842,7 @@ let layoutSession: LayoutSessionState = {
   resizeCount: 0,
   moveCount: 0,
   lastEditTime: Date.now(),
+  recentPlacements: [],
 };
 
 // Minimum time between snapshots for same layout (60 seconds)
@@ -911,6 +973,7 @@ export function resetMLSession(): void {
     resizeCount: 0,
     moveCount: 0,
     lastEditTime: Date.now(),
+    recentPlacements: [],
   };
 }
 
@@ -1316,6 +1379,45 @@ function isEnabled(): boolean {
  * @param layout - The current layout state containing drawer and layer context
  * @param method - The placement method used (e.g., manual, fill, quick place)
  */
+
+/**
+ * Get labels and sizes of bins adjacent to the given bin on the same layer.
+ * Used to provide context for understanding co-location patterns.
+ */
+function getAdjacentBinContext(
+  bin: Bin,
+  layout: Layout
+): { labelHashes: string[]; sizes: string[]; count: number } {
+  // Find bins on the same layer (excluding the bin itself)
+  // Note: b.layerId === bin.layerId already excludes staging since bin is never in staging
+  const sameLevelBins = layout.bins.filter(
+    (b) => b.layerId === bin.layerId && b.id !== bin.id
+  );
+
+  const adjacentLabelHashes: string[] = [];
+  const adjacentSizes: string[] = [];
+
+  for (const other of sameLevelBins) {
+    if (areBinsAdjacent(bin, other)) {
+      // Collect label hash if the adjacent bin has a label
+      if (other.label?.trim()) {
+        const labelData = processLabel(other.label);
+        if (labelData.hash) {
+          adjacentLabelHashes.push(labelData.hash);
+        }
+      }
+      // Always collect size
+      adjacentSizes.push(`${other.width}x${other.depth}x${other.height}`);
+    }
+  }
+
+  return {
+    labelHashes: adjacentLabelHashes.slice(0, 4), // Cap at 4 to limit payload size
+    sizes: adjacentSizes.slice(0, 4),
+    count: adjacentSizes.length, // Total adjacent count before capping
+  };
+}
+
 export function trackBinPlacement(
   bin: Bin,
   layout: Layout,
@@ -1368,6 +1470,22 @@ export function trackBinPlacement(
     labelEmbeddingBucket = labelData.embedding_bucket;
   }
 
+  // Get adjacent bin context for co-location learning
+  const adjacentContext = getAdjacentBinContext(bin, layout);
+
+  // Compute sequence context for workflow learning
+  const now = Date.now();
+  const lastPlacement = layoutSession.recentPlacements[layoutSession.recentPlacements.length - 1];
+  const timeSinceLastMs = lastPlacement ? now - lastPlacement.timestamp : null;
+
+  // Check if this is the first bin with this label in the session
+  const isFirstOfLabel = labelHash !== null &&
+    !layoutSession.recentPlacements.some((p) => p.labelHash === labelHash);
+
+  // Get recent sizes from the last 3 placements (before current)
+  // Intentionally reads BEFORE pushing current placement to capture the context that led to this choice
+  const recentSizes = layoutSession.recentPlacements.slice(-3).map((p) => p.size);
+
   // Build bin size string
   const binSize = `${bin.width}x${bin.depth}x${bin.height}`;
 
@@ -1393,6 +1511,16 @@ export function trackBinPlacement(
     label_embedding_bucket: labelEmbeddingBucket,
     category_id: bin.category,
 
+    // Adjacent context
+    adjacent_label_hashes: adjacentContext.labelHashes,
+    adjacent_sizes: adjacentContext.sizes,
+    adjacent_count: adjacentContext.count,
+
+    // Sequence context
+    recent_sizes: recentSizes,
+    time_since_last_ms: timeSinceLastMs,
+    is_first_of_label: isFirstOfLabel,
+
     // Context
     method,
     session_index: sessionState.sessionIndex,
@@ -1413,6 +1541,17 @@ export function trackBinPlacement(
   // Track time to first bin
   if (sessionState.firstBinTime === null) {
     sessionState.firstBinTime = Date.now();
+  }
+
+  // Update recent placements (keep last 5 for sequence learning)
+  layoutSession.recentPlacements.push({
+    size: binSize,
+    labelHash,
+    position: `${bin.x},${bin.y}`,
+    timestamp: now,
+  });
+  if (layoutSession.recentPlacements.length > 5) {
+    layoutSession.recentPlacements.shift();
   }
 
   // Update last edit time for quality tracking
@@ -1888,6 +2027,25 @@ export function trackBinResize(
   if (oldRect.width !== newRect.width) dimensionsChanged.push('width');
   if (oldRect.depth !== newRect.depth) dimensionsChanged.push('depth');
 
+  // Compute resize direction and area delta
+  const oldArea = oldRect.width * oldRect.depth;
+  const newArea = newRect.width * newRect.depth;
+  const areaDelta = newArea - oldArea;
+
+  const widthGrew = newRect.width > oldRect.width;
+  const depthGrew = newRect.depth > oldRect.depth;
+  const widthShrank = newRect.width < oldRect.width;
+  const depthShrank = newRect.depth < oldRect.depth;
+
+  let resizeDirection: 'grow' | 'shrink' | 'mixed';
+  if ((widthGrew || depthGrew) && !widthShrank && !depthShrank) {
+    resizeDirection = 'grow';
+  } else if ((widthShrank || depthShrank) && !widthGrew && !depthGrew) {
+    resizeDirection = 'shrink';
+  } else {
+    resizeDirection = 'mixed'; // One dimension grew, other shrank
+  }
+
   const event: BinResizeEvent = {
     type: 'bin_resized',
     old_size: `${oldRect.width}x${oldRect.depth}x${height}`,
@@ -1895,6 +2053,8 @@ export function trackBinResize(
     dimensions_changed: dimensionsChanged,
     batch_size: batchSize,
     fill_pct: computeFillPercentage(layout),
+    resize_direction: resizeDirection,
+    area_delta: areaDelta,
   };
 
   // Increment session resize count and update last edit time
@@ -1949,6 +2109,39 @@ export function trackBinDeletion(
       : currentFill
     : 0;
 
+  // Look up bin creation record to calculate age
+  // Use removeBinCreationRecord to also clean up the record since bin is being deleted
+  const creationRecord = removeBinCreationRecord(bin.id);
+  const ageMs = creationRecord ? Date.now() - creationRecord.createdAt : null;
+
+  // Detect abandoned bin pattern:
+  // - Bin had no label (user never figured out what to put there)
+  // - Deleted within 5 minutes of creation (not intentional reorganization)
+  // - Single bin delete (not bulk cleanup)
+  const ABANDONED_THRESHOLD_MS = 300_000; // 5 minutes
+
+  // Check creationRecord first to narrow type for TypeScript
+  if (
+    creationRecord &&
+    ageMs !== null &&
+    ageMs < ABANDONED_THRESHOLD_MS &&
+    !bin.label?.trim() &&
+    batchSize === 1
+  ) {
+    const abandonedEvent: AbandonedBinEvent = {
+      type: 'bin_abandoned',
+      bin_size: `${bin.width}x${bin.depth}x${bin.height}`,
+      position: `${bin.x},${bin.y}`,
+      layer_index: layerIndex >= 0 ? layerIndex : 0,
+      lifetime_ms: ageMs,
+      creation_method: creationRecord.method,
+      fill_pct: fillAfter,
+      drawer_size: `${layout.drawer.width}x${layout.drawer.depth}x${layout.drawer.height}`,
+    };
+    bufferEvent(abandonedEvent);
+  }
+
+  // Always send normal deletion event (for full tracking)
   const event: BinDeletedEvent = {
     type: 'bin_deleted',
     bin_size: `${bin.width}x${bin.depth}x${bin.height}`,
@@ -1956,7 +2149,7 @@ export function trackBinDeletion(
     layer_index: layerIndex >= 0 ? layerIndex : 0,
     had_label: Boolean(bin.label?.trim()),
     label_domain: labelDomain,
-    age_ms: null, // We don't track bin creation time currently
+    age_ms: ageMs,
     batch_size: batchSize,
     fill_pct: fillAfter,
     method,

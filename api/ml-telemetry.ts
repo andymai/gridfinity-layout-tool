@@ -134,6 +134,15 @@ interface BinPlacementEvent {
   label_domain: string | null;
   label_embedding_bucket: string | null;
   category_id: string;
+  // Adjacent context
+  adjacent_label_hashes: string[];
+  adjacent_sizes: string[];
+  adjacent_count: number;
+  // Sequence context
+  recent_sizes: string[];
+  time_since_last_ms: number | null;
+  is_first_of_label: boolean;
+  // Context
   method: string;
   session_index: number;
   vocab_version: string;
@@ -235,6 +244,8 @@ interface BinResizeEvent {
   dimensions_changed: ('width' | 'depth')[];
   batch_size: number;
   fill_pct: number;
+  resize_direction: 'grow' | 'shrink' | 'mixed';
+  area_delta: number;
 }
 
 interface BinDeletedEvent {
@@ -248,6 +259,18 @@ interface BinDeletedEvent {
   batch_size: number;
   fill_pct: number;
   method: 'key' | 'context_menu' | 'bulk' | 'inspector';
+}
+
+
+interface AbandonedBinEvent {
+  type: 'bin_abandoned';
+  bin_size: string;
+  position: string;
+  layer_index: number;
+  lifetime_ms: number;
+  creation_method: string;
+  fill_pct: number;
+  drawer_size: string;
 }
 
 interface BinMovedEvent {
@@ -374,6 +397,7 @@ type MLTelemetryEvent =
   | CategoryChangeEvent
   | BinResizeEvent
   | BinDeletedEvent
+  | AbandonedBinEvent
   | BinMovedEvent
   | DrawerResizedEvent
   | FillOperationEvent
@@ -539,6 +563,7 @@ const VALID_REJECTION_REASONS = new Set(['cancelled', 'second_touch', 'outside_b
 const VALID_DRAW_MODES = new Set(['draw', 'paint']);
 const VALID_UNDO_ACTIONS = new Set(['placement', 'deletion', 'move', 'resize', 'fill', 'layer_change', 'drawer_resize', 'other']);
 const VALID_CORRECTION_TYPES = new Set(['delete', 'resize', 'move']);
+const VALID_RESIZE_DIRECTIONS = new Set(['grow', 'shrink', 'mixed']);
 
 // Pattern detection validation
 const VALID_ARCHETYPES = new Set(['uniform', 'mixed', 'border_fill', 'compartmentalized', 'layered']);
@@ -686,7 +711,26 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       validateNullableDomain(e.label_domain) &&
       validateNullableField(e.label_embedding_bucket, VALID_EMBEDDING_BUCKET_REGEX) &&
       typeof e.category_id === 'string' &&
-      VALID_CATEGORY_ID_REGEX.test(e.category_id)
+      VALID_CATEGORY_ID_REGEX.test(e.category_id) &&
+      // Adjacent context validation (Priority 3)
+      Array.isArray(e.adjacent_label_hashes) &&
+      e.adjacent_label_hashes.length <= 8 &&
+      e.adjacent_label_hashes.every((h: unknown) => typeof h === 'string' && VALID_LABEL_HASH_REGEX.test(h)) &&
+      Array.isArray(e.adjacent_sizes) &&
+      e.adjacent_sizes.length <= 8 &&
+      e.adjacent_sizes.every((s: unknown) => typeof s === 'string' && VALID_BIN_SIZE_REGEX.test(s)) &&
+      typeof e.adjacent_count === 'number' &&
+      e.adjacent_count >= 0 &&
+      e.adjacent_count <= 8 &&
+      // Sequence context validation (Priority 5)
+      Array.isArray(e.recent_sizes) &&
+      e.recent_sizes.length <= 5 &&
+      e.recent_sizes.every((s: unknown) => typeof s === 'string' && VALID_BIN_SIZE_REGEX.test(s)) &&
+      (e.time_since_last_ms === null ||
+        (typeof e.time_since_last_ms === 'number' &&
+          e.time_since_last_ms >= 0 &&
+          e.time_since_last_ms < 86400000)) && // Max 24 hours
+      typeof e.is_first_of_label === 'boolean'
     );
   }
 
@@ -821,7 +865,12 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       e.batch_size < 1000 &&
       typeof e.fill_pct === 'number' &&
       e.fill_pct >= 0 &&
-      e.fill_pct <= 100
+      e.fill_pct <= 100 &&
+      // Resize direction (Priority 1)
+      typeof e.resize_direction === 'string' &&
+      VALID_RESIZE_DIRECTIONS.has(e.resize_direction) &&
+      typeof e.area_delta === 'number' &&
+      Math.abs(e.area_delta) < 10000 // Reasonable bound for area change
     );
   }
 
@@ -995,6 +1044,28 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       typeof e.layer_index === 'number' &&
       e.layer_index >= 0 &&
       e.layer_index <= 20
+    );
+  }
+
+  if (e.type === 'bin_abandoned') {
+    return (
+      typeof e.bin_size === 'string' &&
+      VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
+      typeof e.position === 'string' &&
+      VALID_POSITION_REGEX.test(e.position) &&
+      typeof e.layer_index === 'number' &&
+      e.layer_index >= 0 &&
+      e.layer_index <= 20 &&
+      typeof e.lifetime_ms === 'number' &&
+      e.lifetime_ms >= 0 &&
+      e.lifetime_ms < 86400000 && // Max 24 hours
+      typeof e.creation_method === 'string' &&
+      VALID_METHODS.has(e.creation_method) &&
+      typeof e.fill_pct === 'number' &&
+      e.fill_pct >= 0 &&
+      e.fill_pct <= 100 &&
+      typeof e.drawer_size === 'string' &&
+      VALID_DRAWER_SIZE_REGEX.test(e.drawer_size)
     );
   }
 
@@ -1175,6 +1246,39 @@ function aggregateBinPlacement(event: BinPlacementEvent, inc: Increments): void 
   const methodKey = `ml:method:${event.method}`;
   inc[methodKey] = inc[methodKey] || {};
   inc[methodKey][bin_size] = (inc[methodKey][bin_size] || 0) + 1;
+
+  // 10. Adjacent label co-occurrence (Priority 3)
+  // Track which label hashes appear adjacent to each other
+  if (event.label_hash && event.adjacent_label_hashes.length > 0) {
+    for (const adjHash of event.adjacent_label_hashes) {
+      // Store in lexicographic order to avoid duplicates
+      const [first, second] = [event.label_hash, adjHash].sort();
+      const cooccurKey = `ml:cooccur:${first}`;
+      inc[cooccurKey] = inc[cooccurKey] || {};
+      inc[cooccurKey][second] = (inc[cooccurKey][second] || 0) + 1;
+    }
+  }
+
+  // Track adjacent bin count distribution
+  inc['ml:adjacent_counts'] = inc['ml:adjacent_counts'] || {};
+  const adjBucket = event.adjacent_count >= 4 ? '4+' : String(event.adjacent_count);
+  inc['ml:adjacent_counts'][adjBucket] =
+    (inc['ml:adjacent_counts'][adjBucket] || 0) + 1;
+
+  // 11. First-of-label tracking (Priority 5)
+  // Track initial size choices for new item types - strong learning signal
+  if (event.is_first_of_label && event.label_hash) {
+    const firstLabelKey = `ml:first_label:${event.label_hash}`;
+    inc[firstLabelKey] = inc[firstLabelKey] || {};
+    inc[firstLabelKey][bin_size] = (inc[firstLabelKey][bin_size] || 0) + 1;
+  }
+
+  // Track placement sequence patterns (recent sizes)
+  if (event.recent_sizes.length > 0) {
+    const seqKey = event.recent_sizes.join('>');
+    inc['ml:sequences'] = inc['ml:sequences'] || {};
+    inc['ml:sequences'][seqKey] = (inc['ml:sequences'][seqKey] || 0) + 1;
+  }
 }
 
 function aggregateLabelUpdate(event: LabelUpdateEvent, inc: Increments): void {
@@ -1472,7 +1576,7 @@ function aggregateCategoryChange(event: CategoryChangeEvent, inc: Increments): v
 }
 
 function aggregateBinResize(event: BinResizeEvent, inc: Increments): void {
-  const { old_size, new_size, dimensions_changed } = event;
+  const { old_size, new_size, dimensions_changed, resize_direction, area_delta } = event;
 
   // Track resize transitions (what sizes users resize to what)
   const resizeKey = `ml:resize:${old_size}`;
@@ -1492,6 +1596,27 @@ function aggregateBinResize(event: BinResizeEvent, inc: Increments): void {
   // Track resulting sizes (what users resize to)
   inc['ml:resize_results'] = inc['ml:resize_results'] || {};
   inc['ml:resize_results'][new_size] = (inc['ml:resize_results'][new_size] || 0) + 1;
+
+  // Track resize direction (Priority 1)
+  // grow = user made bin bigger (likely initial was too small)
+  // shrink = user made bin smaller (likely initial was too big)
+  inc['ml:resize_direction'] = inc['ml:resize_direction'] || {};
+  inc['ml:resize_direction'][resize_direction] =
+    (inc['ml:resize_direction'][resize_direction] || 0) + 1;
+
+  // Track area delta buckets (how much users adjust)
+  const absAreaDelta = Math.abs(area_delta);
+  let deltaBucket: string;
+  if (absAreaDelta === 0) deltaBucket = '0';
+  else if (absAreaDelta <= 1) deltaBucket = '0-1';
+  else if (absAreaDelta <= 4) deltaBucket = '1-4';
+  else if (absAreaDelta <= 9) deltaBucket = '4-9';
+  else deltaBucket = '9+';
+
+  const directionPrefix = area_delta > 0 ? '+' : area_delta < 0 ? '-' : '';
+  inc['ml:resize_delta'] = inc['ml:resize_delta'] || {};
+  inc['ml:resize_delta'][`${directionPrefix}${deltaBucket}`] =
+    (inc['ml:resize_delta'][`${directionPrefix}${deltaBucket}`] || 0) + 1;
 }
 
 /**
@@ -1832,6 +1957,58 @@ function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments):
 }
 
 /**
+ * Aggregate bin abandonment events (Priority 4).
+ * Tracks bins that users placed but never labeled or used - strong negative signal.
+ *
+ * Redis keys:
+ * - ml:neg:abandoned_sizes        → Sizes that get abandoned most
+ * - ml:neg:abandoned_by_method    → Abandonment rate by creation method
+ * - ml:neg:abandon_lifetime       → How long bins existed before being abandoned
+ * - ml:neg:abandonment_total      → Total abandoned bins
+ */
+function aggregateBinAbandonment(event: AbandonedBinEvent, inc: Increments): void {
+  const { bin_size, creation_method, lifetime_ms, drawer_size } = event;
+
+  // STRONG NEGATIVE SIGNAL: Track which sizes get abandoned
+  // These are sizes the model should be cautious about suggesting
+  inc['ml:neg:abandoned_sizes'] = inc['ml:neg:abandoned_sizes'] || {};
+  inc['ml:neg:abandoned_sizes'][bin_size] =
+    (inc['ml:neg:abandoned_sizes'][bin_size] || 0) + 1;
+
+  // Track abandonment by creation method
+  // High abandonment for a method = that method produces regrettable placements
+  const methodKey = `ml:neg:abandoned_by_method:${creation_method}`;
+  inc[methodKey] = inc[methodKey] || {};
+  inc[methodKey][bin_size] = (inc[methodKey][bin_size] || 0) + 1;
+
+  // Track lifetime buckets
+  // <1min = very quick abandon, 1-5min = quick, 5-30min = considered, >30min = long-lived
+  let lifetimeBucket: string;
+  if (lifetime_ms < 60000) {
+    lifetimeBucket = '<1min';
+  } else if (lifetime_ms < 300000) {
+    lifetimeBucket = '1-5min';
+  } else if (lifetime_ms < 1800000) {
+    lifetimeBucket = '5-30min';
+  } else {
+    lifetimeBucket = '>30min';
+  }
+  inc['ml:neg:abandon_lifetime'] = inc['ml:neg:abandon_lifetime'] || {};
+  inc['ml:neg:abandon_lifetime'][lifetimeBucket] =
+    (inc['ml:neg:abandon_lifetime'][lifetimeBucket] || 0) + 1;
+
+  // Track by drawer size (some drawer contexts may have more abandoned bins)
+  const drawerKey = `ml:neg:abandoned_by_drawer:${drawer_size}`;
+  inc[drawerKey] = inc[drawerKey] || {};
+  inc[drawerKey][bin_size] = (inc[drawerKey][bin_size] || 0) + 1;
+
+  // Track total
+  inc['ml:neg:abandonment_total'] = inc['ml:neg:abandonment_total'] || {};
+  inc['ml:neg:abandonment_total']['total'] =
+    (inc['ml:neg:abandonment_total']['total'] || 0) + 1;
+}
+
+/**
  * Aggregate cross-layout pattern events.
  * Tracks label-size consistency and inferred purposes across layouts.
  *
@@ -2118,6 +2295,9 @@ export default async function handler(
         break;
       case 'quick_correction':
         aggregateQuickCorrection(event, increments);
+        break;
+      case 'bin_abandoned':
+        aggregateBinAbandonment(event, increments);
         break;
       case 'session_summary':
         aggregateSessionSummary(event, increments);

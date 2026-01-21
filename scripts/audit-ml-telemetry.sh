@@ -65,7 +65,7 @@ echo ""
 echo "┌─────────────────────────────────────────────────────────────┐"
 echo "│ KEY DISTRIBUTION                                            │"
 echo "└─────────────────────────────────────────────────────────────┘"
-for prefix in "ml:label_hash:" "ml:embed:" "ml:cooccur:" "ml:clusters:" "ml:trans:" "ml:drawer:" "ml:neg:" "ml:session:"; do
+for prefix in "ml:label_hash:" "ml:embed:" "ml:cooccur:" "ml:first_label:" "ml:clusters:" "ml:trans:" "ml:drawer:" "ml:neg:" "ml:session:"; do
   count=$($REDIS KEYS "${prefix}*" | wc -l)
   printf "%-20s %d keys\n" "$prefix*" "$count"
 done
@@ -141,7 +141,56 @@ else
 fi
 echo ""
 
-# 8. Negative Signals
+# 8. Contextual Signals (new in PR #266)
+echo "┌─────────────────────────────────────────────────────────────┐"
+echo "│ CONTEXTUAL SIGNALS                                         │"
+echo "└─────────────────────────────────────────────────────────────┘"
+
+echo "Resize Direction (grow = too small, shrink = too big):"
+resize_dir=$($REDIS HGETALL "ml:resize_direction")
+if [ -n "$resize_dir" ]; then
+  echo "$resize_dir" | paste - - | while read -r dir count; do
+    printf "  %-15s %s\n" "$dir" "$count"
+  done
+else
+  echo "  (no resize direction data)"
+fi
+echo ""
+
+echo "Resize Area Delta:"
+resize_delta=$($REDIS HGETALL "ml:resize_delta")
+if [ -n "$resize_delta" ]; then
+  echo "$resize_delta" | paste - - | while read -r bucket count; do
+    printf "  %-15s %s\n" "$bucket" "$count"
+  done
+else
+  echo "  (no area delta data)"
+fi
+echo ""
+
+echo "Adjacent Bin Count Distribution:"
+adj_counts=$($REDIS HGETALL "ml:adjacent_counts")
+if [ -n "$adj_counts" ]; then
+  echo "$adj_counts" | paste - - | while read -r bucket count; do
+    printf "  %-15s %s\n" "$bucket" "$count"
+  done
+else
+  echo "  (no adjacent count data)"
+fi
+echo ""
+
+echo "Top Placement Sequences (first 10):"
+sequences=$($REDIS HGETALL "ml:sequences")
+if [ -n "$sequences" ]; then
+  echo "$sequences" | paste - - | sort -t$'\t' -k2 -nr | head -10 | while read -r seq count; do
+    printf "  %-30s %s\n" "$seq" "$count"
+  done
+else
+  echo "  (no sequence data)"
+fi
+echo ""
+
+# 9. Negative Signals
 echo "┌─────────────────────────────────────────────────────────────┐"
 echo "│ NEGATIVE SIGNALS                                            │"
 echo "└─────────────────────────────────────────────────────────────┘"
@@ -189,7 +238,29 @@ else
 fi
 echo ""
 
-# 9. Session Summary
+echo "Top 10 Abandoned Sizes (placed but never used):"
+abandoned=$($REDIS HGETALL "ml:neg:abandoned_sizes")
+if [ -n "$abandoned" ]; then
+  echo "$abandoned" | paste - - | sort -t$'\t' -k2 -nr | head -10 | while read -r size count; do
+    printf "  %-15s %s\n" "$size" "$count"
+  done
+else
+  echo "  (no abandonment data)"
+fi
+echo ""
+
+echo "Abandonment Lifetime (how long before abandoned):"
+abandon_lifetime=$($REDIS HGETALL "ml:neg:abandon_lifetime")
+if [ -n "$abandon_lifetime" ]; then
+  echo "$abandon_lifetime" | paste - - | while read -r bucket count; do
+    printf "  %-15s %s\n" "$bucket" "$count"
+  done
+else
+  echo "  (no lifetime data)"
+fi
+echo ""
+
+# 10. Session Summary
 echo "┌─────────────────────────────────────────────────────────────┐"
 echo "│ SESSION SUMMARY                                             │"
 echo "└─────────────────────────────────────────────────────────────┘"
@@ -220,7 +291,7 @@ else
 fi
 echo ""
 
-# 10. Vocab Versions
+# 11. Vocab Versions
 echo "┌─────────────────────────────────────────────────────────────┐"
 echo "│ VOCABULARY VERSIONS                                         │"
 echo "└─────────────────────────────────────────────────────────────┘"
@@ -234,7 +305,7 @@ else
 fi
 echo ""
 
-# 11. Sample Data
+# 12. Sample Data
 echo "┌─────────────────────────────────────────────────────────────┐"
 echo "│ SAMPLE DATA                                                 │"
 echo "└─────────────────────────────────────────────────────────────┘"
@@ -255,6 +326,26 @@ for key in $($REDIS KEYS 'ml:trans:*' | head -3); do
   echo "  From $from_size →"
   $REDIS HGETALL "$key" | paste - - | head -3 | while read -r to_size count; do
     printf "    → %-12s %s\n" "$to_size" "$count"
+  done
+done
+echo ""
+
+echo "Sample first-of-label choices (first 5):"
+for key in $($REDIS KEYS 'ml:first_label:*' | head -5); do
+  label_hash=${key#ml:first_label:}
+  echo "  Label $label_hash:"
+  $REDIS HGETALL "$key" | paste - - | head -3 | while read -r size count; do
+    printf "    %-12s %s\n" "$size" "$count"
+  done
+done
+echo ""
+
+echo "Sample label co-occurrences (first 3):"
+for key in $($REDIS KEYS 'ml:cooccur:*' | head -3); do
+  label_hash=${key#ml:cooccur:}
+  echo "  Label $label_hash appears with:"
+  $REDIS HGETALL "$key" | paste - - | head -3 | while read -r other_hash count; do
+    printf "    %-12s %s times\n" "$other_hash" "$count"
   done
 done
 echo ""
