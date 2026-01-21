@@ -843,7 +843,7 @@ let layoutSession: LayoutSessionState = {
   moveCount: 0,
   lastEditTime: Date.now(),
   recentPlacements: [],
-};;
+};
 
 // Minimum time between snapshots for same layout (60 seconds)
 const MIN_SNAPSHOT_INTERVAL_MS = 60_000;
@@ -1388,9 +1388,10 @@ function getAdjacentBinContext(
   bin: Bin,
   layout: Layout
 ): { labelHashes: string[]; sizes: string[]; count: number } {
-  // Find bins on the same layer (excluding the bin itself and staging)
+  // Find bins on the same layer (excluding the bin itself)
+  // Note: b.layerId === bin.layerId already excludes staging since bin is never in staging
   const sameLevelBins = layout.bins.filter(
-    (b) => b.layerId === bin.layerId && b.id !== bin.id && b.layerId !== STAGING_ID
+    (b) => b.layerId === bin.layerId && b.id !== bin.id
   );
 
   const adjacentLabelHashes: string[] = [];
@@ -1481,7 +1482,8 @@ export function trackBinPlacement(
   const isFirstOfLabel = labelHash !== null &&
     !layoutSession.recentPlacements.some((p) => p.labelHash === labelHash);
 
-  // Get recent sizes from the last 3 placements
+  // Get recent sizes from the last 3 placements (before current)
+  // Intentionally reads BEFORE pushing current placement to capture the context that led to this choice
   const recentSizes = layoutSession.recentPlacements.slice(-3).map((p) => p.size);
 
   // Build bin size string
@@ -2117,14 +2119,15 @@ export function trackBinDeletion(
   // - Deleted within 5 minutes of creation (not intentional reorganization)
   // - Single bin delete (not bulk cleanup)
   const ABANDONED_THRESHOLD_MS = 300_000; // 5 minutes
-  const isAbandoned =
-    !bin.label?.trim() &&
+
+  // Check creationRecord first to narrow type for TypeScript
+  if (
+    creationRecord &&
     ageMs !== null &&
     ageMs < ABANDONED_THRESHOLD_MS &&
-    batchSize === 1 &&
-    creationRecord !== null;
-
-  if (isAbandoned && creationRecord) {
+    !bin.label?.trim() &&
+    batchSize === 1
+  ) {
     const abandonedEvent: AbandonedBinEvent = {
       type: 'bin_abandoned',
       bin_size: `${bin.width}x${bin.depth}x${bin.height}`,

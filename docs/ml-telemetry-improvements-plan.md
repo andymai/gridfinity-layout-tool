@@ -260,7 +260,7 @@ function getAdjacentBinContext(
   return {
     labels: adjacentLabels.slice(0, 4), // Cap at 4 to limit payload size
     sizes: adjacentSizes.slice(0, 4),
-    count: adjacentLabels.length + adjacentSizes.filter(s => !adjacentLabels.length).length,
+    count: adjacentSizes.length, // Total adjacent bins (size is added for every adjacent bin)
   };
 }
 ```
