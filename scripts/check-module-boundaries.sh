@@ -47,28 +47,35 @@ get_feature() {
 # Check for cross-feature imports in a file
 check_file() {
   local file="$1"
-  local source_feature=$(get_feature "$file")
+  local source_feature
+  source_feature=$(get_feature "$file")
 
   # Skip files not in features/
   [[ -z "$source_feature" ]] && return 0
 
-  # Extract all @/features imports
-  local imports=$(grep -E "from ['\"]@/features/[^'\"]+['\"]" "$file" 2>/dev/null || true)
+  # Extract all @/features imports.
+  # Note: This pattern only matches single-line imports with standard string literals.
+  # It will not detect imports that use template literals (backticks) or multi-line import statements.
+  local imports
+  imports=$(grep -E "from ['\"]@/features/[^'\"]+['\"]" "$file" 2>/dev/null || true)
 
   while IFS= read -r line; do
     [[ -z "$line" ]] && continue
 
     # Extract the import path
-    local import_path=$(echo "$line" | sed -n "s|.*from ['\"]\\(@/features/[^'\"]*\\)['\"].*|\\1|p")
+    local import_path
+    import_path=$(echo "$line" | sed -n "s|.*from ['\"]\\(@/features/[^'\"]*\\)['\"].*|\\1|p")
     [[ -z "$import_path" ]] && continue
 
     # Extract target feature name
-    local target_feature=$(echo "$import_path" | sed 's|@/features/||' | cut -d'/' -f1)
+    local target_feature
+    target_feature=$(echo "$import_path" | sed 's|@/features/||' | cut -d'/' -f1)
 
     # Check for cross-feature import
     if [[ "$target_feature" != "$source_feature" ]]; then
-      # Get line number
-      local line_num=$(grep -n "$import_path" "$file" | head -1 | cut -d':' -f1)
+      # Get line number (match the actual import statement with fixed-string matching)
+      local line_num
+      line_num=$(grep -nE "from ['\"]$import_path['\"]" "$file" | head -1 | cut -d':' -f1)
 
       echo -e "${RED}VIOLATION${NC} $file:$line_num"
       echo -e "  ${BLUE}features/$source_feature${NC} → ${YELLOW}features/$target_feature${NC}"
