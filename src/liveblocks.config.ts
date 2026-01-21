@@ -100,7 +100,7 @@ const client = isLiveblocksConfigured
  *
  * Context is only created when the client is available.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Liveblocks requires JsonObject types, our strict interfaces are cast via hook re-exports
 const context = client ? createRoomContext<any, any>(client) : null;
 
 /**

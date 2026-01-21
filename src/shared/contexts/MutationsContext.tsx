@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable react-refresh/only-export-components -- Context exports multiple hooks by design */
 /**
  * Mutations Context - Provides a unified interface for layout mutations.
  *
@@ -118,8 +118,7 @@ function useStoreMutations(): Mutations {
       setGridUnitMm: store.setGridUnitMm,
       setHeightUnitMm: store.setHeightUnitMm,
     }),
-    // Store methods from getState() are stable references - no deps needed
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Store methods from getState() are stable references
     []
   );
 }

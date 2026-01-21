@@ -25,6 +25,16 @@
             "type": "command",
             "command": ".claude/hooks/coverage-check.sh",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/suppression-guard.sh",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/dangerous-patterns.sh",
+            "timeout": 30
           }
         ]
       },

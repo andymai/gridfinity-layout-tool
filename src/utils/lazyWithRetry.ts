@@ -16,7 +16,7 @@ import { lazy, type ComponentType } from 'react';
  *
  * @typeParam T - The component type, inferred from the import function
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Generic constraint for React.lazy component type inference
 export function lazyWithRetry<T extends ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
   retries = 2,
@@ -77,9 +77,9 @@ export function lazyWithRetry<T extends ComponentType<any>>(
  *
  * @typeParam T - The component type to extract from the module
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Generic constraint for React component type
 export function namedExport<T extends ComponentType<any>>(name: string) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Module type from dynamic import cannot be inferred
   return (module: Record<string, any>): { default: T } => ({
     default: module[name] as T,
   });
