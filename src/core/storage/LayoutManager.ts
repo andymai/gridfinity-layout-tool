@@ -545,9 +545,10 @@ export async function switchActiveLayout(
     return err(storageNotFound(getLayoutKey(toId)));
   }
 
-  // 2. Save current layout (skip if it's a shared preview)
+  // 2. Save current layout (skip if it's a shared preview or was deleted)
   let updatedLibrary = library;
-  if (fromId !== '__shared_preview__') {
+  const fromEntry = library.entries.find(e => e.id === fromId);
+  if (fromId !== '__shared_preview__' && fromEntry) {
     const saveResult = await saveLayoutWithMetadata(fromId, fromLayout, library);
     if (isErr(saveResult)) {
       // Current layout save failed - don't proceed with switch

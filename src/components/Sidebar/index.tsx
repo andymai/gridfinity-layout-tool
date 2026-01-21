@@ -15,6 +15,7 @@ import { useResponsive } from '@/shared/hooks';
 import { LabsButton } from '@/features/labs/components';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { InspirationGallery } from '@/features/inspiration-gallery';
 import type { STLSearchSite } from '@/core/store/settings';
 
 /**
@@ -68,6 +69,7 @@ function PrivacySection() {
 
 export function Sidebar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showInspirationGallery, setShowInspirationGallery] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { isDesktop } = useResponsive();
 
@@ -174,6 +176,27 @@ export function Sidebar() {
             </div>
             <div data-categories-panel className="px-4 py-4 border-b border-stroke-subtle">
               <CategoriesPanel />
+            </div>
+
+            {/* Inspiration Gallery - Prominent placement */}
+            <div className="px-4 py-4 border-b border-stroke-subtle">
+              <button
+                onClick={() => setShowInspirationGallery(true)}
+                className="w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-accent/10 to-purple-500/10 hover:from-accent/20 hover:to-purple-500/20 border border-accent/20 transition-all group"
+              >
+                <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-content">Inspiration Gallery</div>
+                  <div className="text-xs text-content-tertiary">Get ideas for your drawer</div>
+                </div>
+                <svg className="w-4 h-4 text-content-tertiary group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
 
             {/* Grid Size */}
@@ -503,6 +526,11 @@ export function Sidebar() {
           onRemediate={handleRemediate}
         />
       )}
+
+      <InspirationGallery
+        isOpen={showInspirationGallery}
+        onClose={() => setShowInspirationGallery(false)}
+      />
     </aside>
   );
 }
