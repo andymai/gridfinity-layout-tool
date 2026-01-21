@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
+import { capturePointer } from '@/utils/interaction';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, DrawStartArgs } from './types';
@@ -53,15 +54,7 @@ export function useDrawInteraction(
   const start = useCallback(
     (coord: Coord, pointerId?: number) => {
       // Capture pointer for reliable event delivery during draw
-      if (pointerId !== undefined) {
-        activePointerIdRef.current = pointerId;
-        try {
-          document.body.setPointerCapture(pointerId);
-          capturedPointerRef.current = { element: document.body, pointerId };
-        } catch {
-          // Ignore if capture fails
-        }
-      }
+      capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
 
       // If paint mode is active, start paint area selection
       if (paintSize) {

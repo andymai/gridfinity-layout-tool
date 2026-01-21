@@ -2,11 +2,13 @@ import { useCallback } from 'react';
 import { useInteractionStore, useViewStore, useLayoutStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { constrainGroupDelta } from '@/utils/selection';
+import { capturePointer } from '@/utils/interaction';
+import { findBinById, findBinsByIds } from '@/utils/entity';
 import { STAGING_ID, getBaseCellSize } from '@/core/constants';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, DragStartArgs } from './types';
-import type { Coord, Bin } from '@/core/types';
+import type { Coord } from '@/core/types';
 
 /**
  * Hook for drag mode interactions: moving bins by clicking and dragging.
@@ -66,24 +68,15 @@ export function useDragInteraction(
       pointerId?: number,
       duplicate?: boolean
     ) => {
-      const bin = layout.bins.find((b) => b.id === binId);
+      const bin = findBinById(layout, binId);
       if (!bin) return;
 
       // Convert mouse click position to grid coordinates
       const clickCoord = getGridCoords(clientX, clientY);
       if (!clickCoord) return;
 
-      // Set pointer ID immediately on interaction start
-      if (pointerId !== undefined) {
-        activePointerIdRef.current = pointerId;
-        // Capture pointer at document level for reliable event delivery
-        try {
-          document.body.setPointerCapture(pointerId);
-          capturedPointerRef.current = { element: document.body, pointerId };
-        } catch {
-          // Ignore if capture fails
-        }
-      }
+      // Capture pointer at document level for reliable event delivery
+      capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
 
       // Calculate pixel offset from bin origin to click position
       // This allows the bin to stay at the same relative position under the cursor
@@ -138,8 +131,7 @@ export function useDragInteraction(
       });
     },
     [
-      layout.bins,
-      layout.drawer.depth,
+      layout,
       selectedBinIds,
       getGridCoords,
       gridRef,
@@ -162,9 +154,7 @@ export function useDragInteraction(
 
       const overGrid = isInBounds(coords);
 
-      const draggedBins = interaction.binIds
-        .map((id) => layout.bins.find((b) => b.id === id))
-        .filter((b): b is Bin => b !== undefined);
+      const draggedBins = findBinsByIds(layout, interaction.binIds);
 
       if (draggedBins.length === 0) return;
 
@@ -234,9 +224,7 @@ export function useDragInteraction(
       // Track deletion BEFORE executing (need bin data)
       // Note: drag-to-trash deletions are categorized under 'context_menu' method
       // to group all explicit user-initiated deletions in a single analytics bucket
-      const binsToDelete = interaction.binIds
-        .map((id) => layout.bins.find((b) => b.id === id))
-        .filter((b): b is Bin => b !== undefined);
+      const binsToDelete = findBinsByIds(layout, interaction.binIds);
       if (binsToDelete.length > 0) {
         mlTracking.trackDeletion(binsToDelete[0], 'context_menu', binsToDelete.length);
         // Check for quick-correction (deleted shortly after creation)
@@ -259,9 +247,7 @@ export function useDragInteraction(
     // Handle drop to staging
     if (currentDropTarget === 'staging') {
       // Capture original layer for tracking (use first bin as representative)
-      const binsToStage = interaction.binIds
-        .map((id) => layout.bins.find((b) => b.id === id))
-        .filter((b): b is Bin => b !== undefined);
+      const binsToStage = findBinsByIds(layout, interaction.binIds);
 
       if (binsToStage.length > 0) {
         const firstBin = binsToStage[0];
@@ -294,7 +280,7 @@ export function useDragInteraction(
           const newBinIds: string[] = [];
           execute(() => {
             for (const binId of interaction.binIds) {
-              const bin = layout.bins.find((b) => b.id === binId);
+              const bin = findBinById(layout, binId);
               if (!bin) continue;
 
               const addResult = addBin({
@@ -317,9 +303,8 @@ export function useDragInteraction(
           });
           // Track ML telemetry for newly created duplicates
           if (newBinIds.length > 0) {
-            const newBins = newBinIds
-              .map((id) => useLayoutStore.getState().layout.bins.find((b) => b.id === id))
-              .filter((b): b is Bin => b !== undefined);
+            const currentLayout = useLayoutStore.getState().layout;
+            const newBins = findBinsByIds(currentLayout, newBinIds);
             if (newBins.length > 0) {
               mlTracking.trackBulk(newBins, 'duplicate');
               // Record creation for quick-correction detection
@@ -335,9 +320,7 @@ export function useDragInteraction(
         } else {
           // Move mode: update bin positions
           // Track move BEFORE executing (capture old positions)
-          const binsToMove = interaction.binIds
-            .map((id) => layout.bins.find((b) => b.id === id))
-            .filter((b): b is Bin => b !== undefined);
+          const binsToMove = findBinsByIds(layout, interaction.binIds);
           if (binsToMove.length > 0) {
             const firstBin = binsToMove[0];
             const oldPosition = { x: firstBin.x, y: firstBin.y };
@@ -348,7 +331,7 @@ export function useDragInteraction(
 
           execute(() => {
             for (const binId of interaction.binIds) {
-              const bin = layout.bins.find((b) => b.id === binId);
+              const bin = findBinById(layout, binId);
               if (!bin) continue;
 
               updateBin(binId, {
