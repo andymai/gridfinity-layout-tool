@@ -939,9 +939,24 @@ export function getSessionContext(): { durationMs: number; editCount: number } {
 const FLUSH_INTERVAL_MS = 30_000; // 30 seconds
 const FLUSH_THRESHOLD = 20; // or 20 events
 
+// Sampling: After this many bins, start sampling at 25% rate
+const SAMPLING_THRESHOLD = 50;
+const SAMPLING_RATE = 0.25;
+
+// Circuit breaker: Stop sending after this many consecutive failures
+const CIRCUIT_BREAKER_THRESHOLD = 5;
+const CIRCUIT_BREAKER_RESET_MS = 5 * 60 * 1000; // 5 minutes
+
+// Client version for tracking (set from package.json or build)
+export const CLIENT_VERSION = '1.0.0';
+
 let eventBuffer: MLTelemetryEvent[] = [];
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;
 let isInitialized = false;
+
+// Circuit breaker state
+let consecutiveFailures = 0;
+let circuitBreakerTrippedAt: number | null = null;
 
 function scheduleFlush(): void {
   if (flushTimeout) return;
@@ -954,6 +969,48 @@ function cancelFlush(): void {
   if (flushTimeout) {
     clearTimeout(flushTimeout);
     flushTimeout = null;
+  }
+}
+
+/**
+ * Check if the circuit breaker is tripped.
+ * Returns true if we should skip sending telemetry.
+ */
+function isCircuitBreakerOpen(): boolean {
+  if (consecutiveFailures < CIRCUIT_BREAKER_THRESHOLD) {
+    return false;
+  }
+
+  // Check if enough time has passed to reset
+  if (circuitBreakerTrippedAt !== null) {
+    const elapsed = Date.now() - circuitBreakerTrippedAt;
+    if (elapsed >= CIRCUIT_BREAKER_RESET_MS) {
+      // Reset circuit breaker
+      consecutiveFailures = 0;
+      circuitBreakerTrippedAt = null;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Record a successful send (resets circuit breaker).
+ */
+function recordSuccess(): void {
+  consecutiveFailures = 0;
+  circuitBreakerTrippedAt = null;
+}
+
+/**
+ * Record a failed send (may trip circuit breaker).
+ */
+function recordFailure(): void {
+  consecutiveFailures++;
+  if (consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD && circuitBreakerTrippedAt === null) {
+    circuitBreakerTrippedAt = Date.now();
+    console.warn(`ML telemetry circuit breaker tripped after ${consecutiveFailures} failures. Will retry in ${CIRCUIT_BREAKER_RESET_MS / 1000}s.`);
   }
 }
 
@@ -972,27 +1029,50 @@ function flush(): void {
     return;
   }
 
+  // Check circuit breaker
+  if (isCircuitBreakerOpen()) {
+    // Drop events when circuit is open to prevent memory buildup
+    eventBuffer = [];
+    return;
+  }
+
   const events = eventBuffer;
   eventBuffer = [];
 
+  // Add client_version to all events for schema tracking
+  const eventsWithVersion = events.map((event) => ({
+    ...event,
+    client_version: CLIENT_VERSION,
+  }));
+
   // Use sendBeacon for reliability on page close
   try {
-    const blob = new Blob([JSON.stringify(events)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(eventsWithVersion)], { type: 'application/json' });
     const sent = navigator.sendBeacon('/api/ml-telemetry', blob);
 
-    if (!sent) {
+    if (sent) {
+      recordSuccess();
+    } else {
       // Fallback to fetch if sendBeacon fails (shouldn't happen often)
       fetch('/api/ml-telemetry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(events),
+        body: JSON.stringify(eventsWithVersion),
         keepalive: true,
-      }).catch(() => {
-        // Silently fail - telemetry should never break the app
-      });
+      })
+        .then((response) => {
+          if (response.ok) {
+            recordSuccess();
+          } else {
+            recordFailure();
+          }
+        })
+        .catch(() => {
+          recordFailure();
+        });
     }
   } catch {
-    // Silently fail
+    recordFailure();
   }
 }
 
@@ -1198,6 +1278,28 @@ export function trackBinPlacement(
   method: PlacementMethod
 ): void {
   if (!isEnabled()) return;
+
+  // Apply sampling for high-volume sessions to reduce telemetry load
+  // After SAMPLING_THRESHOLD bins, only track 25% of placements
+  // Always track the first bin and any bin with a label (labels are high value)
+  const shouldSample = sessionState.sessionIndex >= SAMPLING_THRESHOLD &&
+    !bin.label?.trim() &&
+    Math.random() > SAMPLING_RATE;
+
+  if (shouldSample) {
+    // Still update session state for accurate counts
+    const binSize = `${bin.width}x${bin.depth}x${bin.height}`;
+    sessionState.prevBinSize = binSize;
+    sessionState.sessionIndex++;
+    if (sessionState.sizeSequence.length < 100) {
+      sessionState.sizeSequence.push(binSize);
+    }
+    if (sessionState.firstBinTime === null) {
+      sessionState.firstBinTime = Date.now();
+    }
+    layoutSession.lastEditTime = Date.now();
+    return; // Skip sending event
+  }
 
   // Find layer index
   const layerIndex = layout.layers.findIndex((l) => l.id === bin.layerId);
