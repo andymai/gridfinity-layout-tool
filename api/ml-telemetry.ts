@@ -1471,6 +1471,19 @@ function aggregateBinResize(event: BinResizeEvent, inc: Increments): void {
   inc['ml:resize_results'][new_size] = (inc['ml:resize_results'][new_size] || 0) + 1;
 }
 
+/**
+ * Record metrics for a bin deletion event by incrementing the appropriate aggregate counters in the provided increments map.
+ *
+ * Updates the `inc` object with counts for negative-signal deletion metrics, including:
+ * - `ml:neg:deleted_sizes` (by `bin_size`)
+ * - `ml:neg:delete_methods` (by `method`)
+ * - `ml:neg:delete_labeled` (`"labeled"` or `"unlabeled"`)
+ * - `ml:neg:delete_domain:{domain}` (per-domain by `bin_size`, when `label_domain` is present)
+ * - `ml:neg:deletions` (`total`)
+ *
+ * @param event - The BinDeletedEvent containing `bin_size`, `method`, `had_label`, and optional `label_domain`
+ * @param inc - Mutable increments map that will be populated with hash-field count updates to write to Redis
+ */
 function aggregateBinDeletion(event: BinDeletedEvent, inc: Increments): void {
   const { bin_size, method, had_label, label_domain } = event;
 
@@ -1499,6 +1512,15 @@ function aggregateBinDeletion(event: BinDeletedEvent, inc: Increments): void {
   inc['ml:neg:deletions']['total'] = (inc['ml:neg:deletions']['total'] || 0) + 1;
 }
 
+/**
+ * Aggregate move-related telemetry from a bin move event into the provided increments map.
+ *
+ * Increments counters for moved bin sizes, move methods, distance buckets, and the overall move total.
+ * Distance is mapped to one of the buckets: `micro` (<=1), `short` (2–3), `medium` (4–9), or `long` (10+).
+ *
+ * @param event - The bin move event containing `bin_size`, `distance`, and `method`
+ * @param inc - Mutable increments map that will be updated with counters to write to Redis
+ */
 function aggregateBinMove(event: BinMovedEvent, inc: Increments): void {
   const { bin_size, distance, method } = event;
 
@@ -1684,14 +1706,17 @@ function aggregatePlacementRejection(event: PlacementRejectedEvent, inc: Increme
 }
 
 /**
- * Aggregate undo events (negative signal).
- * Tracks what actions users regret and how quickly.
+ * Aggregate an undo (negative signal) event into telemetry counters.
  *
- * Redis keys:
- * - ml:neg:undos              → Total undo count by action type (negative signal)
- * - ml:neg:undo_timing        → Undo timing buckets (immediate, quick, delayed)
- * - ml:neg:undo_action_timing → Action + timing combos (e.g., placement_immediate)
- * - ml:neg:undo_scale         → Distribution of undos by bins affected (single/few/many/bulk)
+ * Increments counters that record what action was undone, how quickly it was undone,
+ * combined action+timing counts, the scale of the undo by number of bins affected,
+ * and a total undo counter.
+ *
+ * Timing buckets: `immediate` (< 2000 ms), `quick` (2000–9999 ms), `delayed` (>= 10000 ms).
+ * Undo scale buckets: `single` (<=1), `few` (2–5), `many` (6–20), `bulk` (>20).
+ *
+ * @param event - The undo event; uses `action_undone`, `bins_affected`, and `time_since_action_ms`.
+ * @param inc - Mutable increments map to update with counts keyed by Redis metric names.
  */
 function aggregateUndo(event: UndoEvent, inc: Increments): void {
   const { action_undone, bins_affected, time_since_action_ms } = event;
@@ -1932,7 +1957,24 @@ function aggregateSessionSummary(event: SessionSummaryEvent, inc: Increments): v
 
 // ============================================
 // HANDLER
-// ============================================
+/**
+ * HTTP POST handler for the ML telemetry ingestion endpoint.
+ *
+ * Validates and aggregates a batch of telemetry events, writing aggregated counters and metadata to Redis and returning a JSON summary of processed and failed events.
+ *
+ * Behavior:
+ * - Only accepts POST; responds 405 for other methods.
+ * - Applies a per-IP rate limit; responds 429 when exceeded.
+ * - Accepts a JSON event or an array of events (batch capped at 100).
+ * - Validates events, accumulates per-event-type failure counts, and tallies vocab/client versions from valid events.
+ * - Writes aggregated counters and metadata (with appropriate TTLs) to Redis in a single pipeline.
+ * - Responds 200 with { ok: true, processed, failed } on success.
+ * - On Redis/storage errors responds 200 with { ok: true, processed: 0, error: 'storage_error' }.
+ * - If Redis is not configured (development), responds 200 with { ok: true, processed: 0 }.
+ *
+ * @param req - Incoming VercelRequest containing the telemetry event(s)
+ * @param res - VercelResponse used to send the JSON response
+ */
 
 export default async function handler(
   req: VercelRequest,
