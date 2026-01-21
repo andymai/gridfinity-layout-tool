@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useSharedWithMe } from '@/features/cloud-share/hooks/useSharedWithMe';
+import { useSharedWithMe } from '@/shared/hooks/useSharedWithMe';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore } from '@/core/store/ui';

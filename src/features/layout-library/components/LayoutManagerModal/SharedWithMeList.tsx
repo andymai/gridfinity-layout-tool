@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { SharedWithMeEntry } from '@/core/types';
-import { useSharedWithMe } from '@/features/cloud-share/hooks/useSharedWithMe';
+import { useSharedWithMe } from '@/shared/hooks';
 import { SharedWithMeItem } from './SharedWithMeItem';
 
 interface SharedWithMeListProps {

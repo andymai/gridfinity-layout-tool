@@ -13,7 +13,7 @@ vi.mock('@/shared/hooks', () => ({
 const mockImportLayoutFromJSON = vi.fn();
 const mockSwitchLayout = vi.fn();
 
-vi.mock('@/features/layout-library/hooks/useLayoutSwitcher', () => ({
+vi.mock('@/hooks/useLayoutSwitcher', () => ({
   useLayoutSwitcher: () => ({
     importLayoutFromJSON: mockImportLayoutFromJSON,
     switchLayout: mockSwitchLayout,

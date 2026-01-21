@@ -7,8 +7,10 @@ import { useCollabMode } from '@/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
+import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { PresenceAvatars } from './Collab';
 import type { SaveStatus } from '@/shared/hooks';
+import type { ShareModalRenderProps } from '@/features/layout-library/components/LayoutManagerModal';
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
 const LayoutManagerModal = lazyWithRetry(() =>
@@ -294,6 +296,13 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           <LayoutManagerModal
             isOpen={showLayoutManager}
             onClose={() => setShowLayoutManager(false)}
+            renderShareModal={(props: ShareModalRenderProps) => (
+              <ShareModal
+                isOpen={props.isOpen}
+                onClose={props.onClose}
+                layoutId={props.layoutId}
+              />
+            )}
           />
         </Suspense>
       )}
