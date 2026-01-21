@@ -947,8 +947,9 @@ const SAMPLING_RATE = 0.25;
 const CIRCUIT_BREAKER_THRESHOLD = 5;
 const CIRCUIT_BREAKER_RESET_MS = 5 * 60 * 1000; // 5 minutes
 
-// Client version for tracking (set from package.json or build)
-export const CLIENT_VERSION = '1.0.0';
+// Telemetry client version for tracking schema/protocol changes
+// Separate from app version - increment when telemetry format changes
+export const CLIENT_VERSION = '0.1.0';
 
 let eventBuffer: MLTelemetryEvent[] = [];
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;

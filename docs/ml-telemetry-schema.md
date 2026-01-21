@@ -91,6 +91,7 @@ The telemetry system collects user behavior data to train ML models that can:
 ### Negative Signals
 
 #### Deletions
+
 | Key | Type | Description | TTL |
 |-----|------|-------------|-----|
 | `ml:neg:deleted_sizes` | Hash | Size distribution of deleted bins | None |
@@ -100,6 +101,7 @@ The telemetry system collects user behavior data to train ML models that can:
 | `ml:neg:deletions` | Hash | Total deletion event count | None |
 
 #### Undos
+
 | Key | Type | Description | TTL |
 |-----|------|-------------|-----|
 | `ml:neg:undos` | Hash | Total undo count by action type | None |
@@ -108,6 +110,7 @@ The telemetry system collects user behavior data to train ML models that can:
 | `ml:neg:undo_scale` | Hash | Undo scale (bins affected) | None |
 
 #### Placement Rejections
+
 | Key | Type | Description | TTL |
 |-----|------|-------------|-----|
 | `ml:rejections` | Hash | Total rejection count by reason | None |
@@ -116,6 +119,7 @@ The telemetry system collects user behavior data to train ML models that can:
 | `ml:neg:reject_by_drawer:{size}` | Hash | Rejected sizes by drawer size | None |
 
 #### Quick Corrections (Strongest Signal)
+
 | Key | Type | Description | TTL |
 |-----|------|-------------|-----|
 | `ml:neg:quick_corrections` | Hash | Quick correction count by type | None |

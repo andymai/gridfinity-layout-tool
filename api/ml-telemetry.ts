@@ -2120,10 +2120,11 @@ export default async function handler(
 
       // Add TTLs for keys that can grow unbounded (90 days)
       // These are lower-value or temporary data
+      // Use NX flag to only set TTL on first creation, not reset on every write
       if (hash === 'ml:unknown_hashes' ||
           hash.startsWith('ml:size_seq:') ||
           hash.startsWith('ml:cooccur:')) {
-        pipe.expire(hash, 90 * 24 * 60 * 60); // 90 days
+        pipe.expire(hash, 90 * 24 * 60 * 60, 'NX'); // 90 days, only if no TTL exists
       }
     }
 
@@ -2141,24 +2142,26 @@ export default async function handler(
       pipe.incrby('ml:meta:validation:failed', failedCount);
       for (const [eventType, count] of Object.entries(failedByType)) {
         // Sanitize event type for Redis key (only allow alphanumeric and underscore)
-        const safeType = eventType.replace(/[^a-z0-9_]/gi, '_').slice(0, 32);
+        const safeType = eventType.replace(/[^a-z0-9_]/gi, '_').slice(0, 32) || 'unknown';
         pipe.hincrby('ml:meta:validation:failed_by_type', safeType, count);
       }
     }
 
     // Track vocab versions (90 day TTL for version tracking)
     for (const [version, count] of Object.entries(vocabVersions)) {
-      const safeVersion = version.replace(/[^a-z0-9_.]/gi, '_').slice(0, 16);
+      const safeVersion = version.replace(/[^a-z0-9_.]/gi, '_').slice(0, 16) || 'unknown';
       pipe.hincrby('ml:meta:vocab_versions', safeVersion, count);
     }
-    pipe.expire('ml:meta:vocab_versions', 90 * 24 * 60 * 60);
+    // Use NX flag to only set TTL on first creation, not reset on every write
+    pipe.expire('ml:meta:vocab_versions', 90 * 24 * 60 * 60, 'NX');
 
     // Track client versions (90 day TTL for version tracking)
     for (const [version, count] of Object.entries(clientVersions)) {
-      const safeVersion = version.replace(/[^a-z0-9_.]/gi, '_').slice(0, 16);
+      const safeVersion = version.replace(/[^a-z0-9_.]/gi, '_').slice(0, 16) || 'unknown';
       pipe.hincrby('ml:meta:client_versions', safeVersion, count);
     }
-    pipe.expire('ml:meta:client_versions', 90 * 24 * 60 * 60);
+    // Use NX flag to only set TTL on first creation, not reset on every write
+    pipe.expire('ml:meta:client_versions', 90 * 24 * 60 * 60, 'NX');
 
     await pipe.exec();
 
