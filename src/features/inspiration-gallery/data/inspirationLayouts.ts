@@ -126,19 +126,25 @@ function createKnifeDrawer(): InspirationLayout {
   ];
   const layer = createLayer('Layer 1', 6);
 
-  // Real knife dimensions - stored horizontally across 8-unit width (336mm)
+  // Real knife dimensions - stored horizontally across width
   // Most kitchen knives 200-350mm, stored diagonally or with handles overhanging slightly
+  // Kitchen shears: 200-250mm → 5 units (210mm)
   const bins = [
-    // Large knives - stored across full width
-    createBin(0, 0, 8, 2, { layerId: layer.id, categoryId: categories[0].id, label: "Chef's Knife" }),
-    createBin(0, 2, 8, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Bread Knife' }),
-    createBin(0, 4, 8, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Carving Knife' }),
-    // Medium knives - 6 units wide
-    createBin(0, 6, 6, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Santoku' }),
-    // Small knives and accessories
+    // Large knives - 6 units wide to leave room for shears column
+    createBin(0, 0, 6, 2, { layerId: layer.id, categoryId: categories[0].id, label: "Chef's Knife" }),
+    createBin(0, 2, 6, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Bread Knife' }),
+    createBin(0, 4, 6, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Carving Knife' }),
+    // Kitchen shears - 5 units deep (210mm) for 200mm shears
+    createBin(6, 0, 2, 5, { layerId: layer.id, categoryId: categories[2].id, label: 'Shears' }),
+    // Small accessories
+    createBin(6, 5, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Peeler' }),
+    // Medium knives
+    createBin(0, 6, 4, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Santoku' }),
+    createBin(4, 6, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Utility' }),
+    // Small knives - bottom row
     createBin(0, 8, 4, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Paring' }),
-    createBin(4, 8, 4, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Utility' }),
-    createBin(6, 6, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Shears' }),
+    createBin(4, 8, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Sharpener' }),
+    createBin(6, 7, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Steak' }),
   ];
 
   const layout: Layout = {
@@ -946,6 +952,7 @@ function createFirstAidKit(): InspirationLayout {
   // - Gauze rolls: ~50mm diameter → 2x2
   // - Medication bottles: ~50-80mm tall → 2 units
   // - Scissors/tweezers: 100-150mm → 3-4 units
+  // - Digital thermometer: 120-150mm → 3 units (126mm)
   const bins = [
     // Bandages section
     createBin(0, 0, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Band-Aids' }),
@@ -959,8 +966,8 @@ function createFirstAidKit(): InspirationLayout {
     // Ointments and tools
     createBin(0, 4, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Ointments' }),
     createBin(2, 4, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Scissors' }),
-    createBin(4, 4, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Tweezers' }),
-    createBin(6, 4, 1, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Thermometer' }),
+    createBin(4, 4, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Tweezers' }),
+    createBin(6, 4, 1, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Thermometer' }),
   ];
 
   const layout: Layout = {
@@ -1273,12 +1280,12 @@ function createDrillBitOrganizer(): InspirationLayout {
     // Forstner bits - 2x2 bins for fat bits
     createBin(4, 4, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Forstner 15-25' }),
     createBin(4, 6, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Forstner 30-50' }),
-    // Hole saws - need larger bins
+    // Hole saws - need larger bins for 50-100mm diameter saws
     createBin(0, 9, 3, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Hole Saw S', height: 6 }),
-    createBin(3, 9, 4, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Hole Saw L', height: 6 }),
-    // Countersinks and step bits
-    createBin(4, 8, 3, 1, { layerId: layer.id, categoryId: categories[1].id, label: 'Step Bits' }),
+    createBin(3, 9, 3, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Hole Saw L', height: 6 }),
+    // Countersinks and step bits - step bits stored flat (75-100mm long)
     createBin(6, 4, 1, 4, { layerId: layer.id, categoryId: categories[1].id, label: 'Countersink' }),
+    createBin(6, 8, 1, 4, { layerId: layer.id, categoryId: categories[1].id, label: 'Step Bits' }),
   ];
 
   const layout: Layout = {
