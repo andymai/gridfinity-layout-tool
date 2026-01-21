@@ -5,7 +5,7 @@ import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { useUIStore } from '@/core/store/ui';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from '@/components/Print/SplitPreview';
-import { BinListModal } from '@/components/Modals/BinListModal';
+import { BinListModal } from '@/components/Modals';
 
 /**
  * Mobile-optimized print list matching desktop functionality.
