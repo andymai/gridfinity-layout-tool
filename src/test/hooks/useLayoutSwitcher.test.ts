@@ -750,4 +750,223 @@ describe('useLayoutSwitcher', () => {
       expect(toasts.some(t => t.message.includes('Imported'))).toBe(true);
     });
   });
+
+  describe('race condition prevention', () => {
+    it('uses fresh layout state when switching (not stale closure)', async () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      // Modify the layout in the store after the hook was rendered
+      // This simulates auto-save or another component updating the layout
+      const modifiedLayout = createTestLayout('Modified Layout');
+      modifiedLayout.drawer = { ...modifiedLayout.drawer, width: 20 };
+
+      // Update store directly (simulating external mutation)
+      useLayoutStore.setState({ layout: modifiedLayout });
+
+      await act(async () => {
+        await result.current.switchLayout(SECOND_LAYOUT_ID);
+      });
+
+      // switchActiveLayout should have been called with the FRESH layout (width: 20)
+      // not the stale closure value from when the hook was rendered
+      expect(storage.switchActiveLayout).toHaveBeenCalledWith(
+        TEST_LAYOUT_ID,
+        expect.objectContaining({
+          drawer: expect.objectContaining({ width: 20 }),
+        }),
+        SECOND_LAYOUT_ID,
+        expect.any(Object)
+      );
+    });
+
+    it('uses fresh library state when switching (not stale closure)', async () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      // Add a new entry to library after hook was rendered
+      // This simulates another operation adding a layout
+      const newEntry = createTestEntry('third-layout-id', 'Third Layout');
+      const currentLibrary = useLibraryStore.getState().library;
+      useLibraryStore.setState({
+        library: {
+          ...currentLibrary,
+          entries: [...currentLibrary.entries, newEntry],
+        },
+      });
+
+      await act(async () => {
+        await result.current.switchLayout(SECOND_LAYOUT_ID);
+      });
+
+      // switchActiveLayout should be called with the FRESH library (3 entries)
+      expect(storage.switchActiveLayout).toHaveBeenCalledWith(
+        TEST_LAYOUT_ID,
+        expect.any(Object),
+        SECOND_LAYOUT_ID,
+        expect.objectContaining({
+          entries: expect.arrayContaining([
+            expect.objectContaining({ id: 'third-layout-id' }),
+          ]),
+        })
+      );
+    });
+
+    it('uses fresh library state when creating new layout', async () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      // Modify library after hook was rendered
+      const currentLibrary = useLibraryStore.getState().library;
+      useLibraryStore.setState({
+        library: {
+          ...currentLibrary,
+          settings: { authorName: 'Updated Author' },
+        },
+      });
+
+      await act(async () => {
+        await result.current.createNewLayout('New Layout');
+      });
+
+      // createLayoutEntry should be called with the FRESH library settings
+      expect(storage.createLayoutEntry).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          settings: { authorName: 'Updated Author' },
+        }),
+        expect.objectContaining({
+          author: 'Updated Author',
+        })
+      );
+    });
+
+    it('uses fresh library state when deleting layout', async () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      // Add a third entry after hook was rendered
+      const currentLibrary = useLibraryStore.getState().library;
+      const thirdEntry = createTestEntry('third-layout-id', 'Third Layout');
+      useLibraryStore.setState({
+        library: {
+          ...currentLibrary,
+          entries: [...currentLibrary.entries, thirdEntry],
+        },
+      });
+
+      await act(async () => {
+        await result.current.deleteLayout(SECOND_LAYOUT_ID);
+      });
+
+      // deleteLayoutWithEntry should be called with the FRESH library (3 entries)
+      expect(storage.deleteLayoutWithEntry).toHaveBeenCalledWith(
+        SECOND_LAYOUT_ID,
+        expect.objectContaining({
+          entries: expect.arrayContaining([
+            expect.objectContaining({ id: 'third-layout-id' }),
+          ]),
+        })
+      );
+    });
+
+    it('uses fresh library state when duplicating layout', async () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      // Modify library settings after hook was rendered
+      const currentLibrary = useLibraryStore.getState().library;
+      useLibraryStore.setState({
+        library: {
+          ...currentLibrary,
+          settings: { authorName: 'Fresh Author' },
+        },
+      });
+
+      await act(async () => {
+        await result.current.duplicateLayout(TEST_LAYOUT_ID);
+      });
+
+      // duplicateLayoutEntry should be called with the FRESH library
+      expect(storage.duplicateLayoutEntry).toHaveBeenCalledWith(
+        TEST_LAYOUT_ID,
+        expect.objectContaining({
+          settings: { authorName: 'Fresh Author' },
+        })
+      );
+    });
+
+    it('uses fresh library state when importing layout', async () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+      const importedLayout = createTestLayout('Imported');
+
+      // Modify library settings after hook was rendered
+      const currentLibrary = useLibraryStore.getState().library;
+      useLibraryStore.setState({
+        library: {
+          ...currentLibrary,
+          settings: { authorName: 'Import Author' },
+        },
+      });
+
+      await act(async () => {
+        await result.current.importLayoutFromJSON(importedLayout);
+      });
+
+      // createLayoutEntry should be called with the FRESH author
+      expect(storage.createLayoutEntry).toHaveBeenCalledWith(
+        importedLayout,
+        expect.any(Object),
+        expect.objectContaining({
+          author: 'Import Author',
+        })
+      );
+    });
+
+    it('uses fresh state when renaming layout', () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      // Add a new entry to library after hook was rendered
+      const currentLibrary = useLibraryStore.getState().library;
+      const newEntry = createTestEntry('new-entry-id', 'New Entry');
+      useLibraryStore.setState({
+        library: {
+          ...currentLibrary,
+          entries: [...currentLibrary.entries, newEntry],
+        },
+      });
+
+      act(() => {
+        result.current.renameLayout('new-entry-id', 'Renamed Entry');
+      });
+
+      // renameLayoutEntry should be called with the FRESH library
+      expect(storage.renameLayoutEntry).toHaveBeenCalledWith(
+        'new-entry-id',
+        'Renamed Entry',
+        expect.objectContaining({
+          entries: expect.arrayContaining([
+            expect.objectContaining({ id: 'new-entry-id' }),
+          ]),
+        })
+      );
+    });
+
+    it('saveCurrentLayout uses fresh state', async () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      // Modify layout after hook was rendered
+      const modifiedLayout = createTestLayout('Modified');
+      modifiedLayout.drawer = { ...modifiedLayout.drawer, depth: 15 };
+      useLayoutStore.setState({ layout: modifiedLayout });
+
+      await act(async () => {
+        await result.current.saveCurrentLayout();
+      });
+
+      // saveLayoutWithMetadata should be called with the FRESH layout
+      expect(storage.saveLayoutWithMetadata).toHaveBeenCalledWith(
+        TEST_LAYOUT_ID,
+        expect.objectContaining({
+          drawer: expect.objectContaining({ depth: 15 }),
+        }),
+        expect.any(Object)
+      );
+    });
+  });
 });
