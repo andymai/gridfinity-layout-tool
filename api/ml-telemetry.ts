@@ -341,6 +341,23 @@ interface SessionSummaryEvent {
   final_fill_pct: number;
 }
 
+// ============================================
+// CROSS-LAYOUT PATTERN EVENT TYPE
+// ============================================
+
+interface CrossLayoutPatternEvent {
+  type: 'cross_layout_pattern';
+  user_hash: string;
+  label_size_consistency: Array<{
+    label_hash: string;
+    sizes_used: string[];
+    is_consistent: boolean;
+  }>;
+  inferred_purpose: string | null;
+  inferred_purpose_confidence: number;
+  drawer_size: string;
+}
+
 type MLTelemetryEvent =
   | BinPlacementEvent
   | LabelUpdateEvent
@@ -358,7 +375,8 @@ type MLTelemetryEvent =
   | PlacementRejectedEvent
   | UndoEvent
   | QuickCorrectionEvent
-  | SessionSummaryEvent;
+  | SessionSummaryEvent
+  | CrossLayoutPatternEvent;
 
 // ============================================
 // REDIS CONNECTION
@@ -992,6 +1010,62 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       e.final_fill_pct >= 0 &&
       e.final_fill_pct <= 100
     );
+  }
+
+  // ============================================
+  // CROSS-LAYOUT PATTERN VALIDATION
+  // ============================================
+
+  if (e.type === 'cross_layout_pattern') {
+    // Validate user_hash (should be a simple alphanumeric string)
+    if (typeof e.user_hash !== 'string' || !/^[a-z0-9]{8,20}$/.test(e.user_hash)) {
+      // Allow 'anonymous' as fallback
+      if (e.user_hash !== 'anonymous') return false;
+    }
+
+    // Validate drawer_size
+    if (typeof e.drawer_size !== 'string' || !VALID_DRAWER_SIZE_REGEX.test(e.drawer_size)) {
+      return false;
+    }
+
+    // Validate inferred_purpose
+    if (e.inferred_purpose !== null &&
+        (typeof e.inferred_purpose !== 'string' ||
+         (!VALID_PURPOSES.has(e.inferred_purpose) && !VALID_PURPOSE_REGEX.test(e.inferred_purpose)))) {
+      return false;
+    }
+
+    // Validate confidence
+    if (typeof e.inferred_purpose_confidence !== 'number' ||
+        e.inferred_purpose_confidence < 0 ||
+        e.inferred_purpose_confidence > 1) {
+      return false;
+    }
+
+    // Validate label_size_consistency array
+    if (!Array.isArray(e.label_size_consistency) || e.label_size_consistency.length > 20) {
+      return false;
+    }
+
+    for (const item of e.label_size_consistency) {
+      if (!item || typeof item !== 'object') return false;
+      if (typeof item.label_hash !== 'string' || !VALID_LABEL_HASH_REGEX.test(item.label_hash)) {
+        return false;
+      }
+      if (!Array.isArray(item.sizes_used) || item.sizes_used.length === 0 || item.sizes_used.length > 10) {
+        return false;
+      }
+      for (const size of item.sizes_used) {
+        if (typeof size !== 'string' || !VALID_BIN_SIZE_REGEX.test(size)) {
+          return false;
+        }
+      }
+      if (typeof item.is_consistent !== 'boolean') {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   return false;
@@ -1704,6 +1778,58 @@ function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments):
   inc['ml:quick_corrections']['total'] = (inc['ml:quick_corrections']['total'] || 0) + 1;
 }
 
+/**
+ * Aggregate cross-layout pattern events.
+ * Tracks label-size consistency and inferred purposes across layouts.
+ *
+ * Redis keys:
+ * - ml:inferred_purpose:{drawer}      → Inferred purposes by drawer size
+ * - ml:purpose_confidence             → Purpose confidence distribution
+ * - ml:label_consistency              → Label-size consistency rates
+ * - ml:user_patterns                  → Pattern count by user hash (for sampling)
+ * - ml:cross_layout_total             → Total cross-layout events
+ */
+function aggregateCrossLayoutPattern(event: CrossLayoutPatternEvent, inc: Increments): void {
+  const { drawer_size, inferred_purpose, inferred_purpose_confidence, label_size_consistency } = event;
+
+  // Track inferred purpose by drawer size
+  if (inferred_purpose) {
+    const purposeKey = `ml:inferred_purpose:${drawer_size}`;
+    inc[purposeKey] = inc[purposeKey] || {};
+    inc[purposeKey][inferred_purpose] = (inc[purposeKey][inferred_purpose] || 0) + 1;
+  }
+
+  // Track confidence distribution (bucketed)
+  const confidenceBucket = inferred_purpose_confidence < 0.4 ? 'low' :
+    inferred_purpose_confidence < 0.7 ? 'medium' : 'high';
+  inc['ml:purpose_confidence'] = inc['ml:purpose_confidence'] || {};
+  inc['ml:purpose_confidence'][confidenceBucket] = (inc['ml:purpose_confidence'][confidenceBucket] || 0) + 1;
+
+  // Track label-size consistency
+  let consistentCount = 0;
+  let inconsistentCount = 0;
+  for (const item of label_size_consistency) {
+    if (item.is_consistent) {
+      consistentCount++;
+    } else {
+      inconsistentCount++;
+      // Track sizes used for inconsistent labels (users might be experimenting)
+      for (const size of item.sizes_used) {
+        inc['ml:inconsistent_sizes'] = inc['ml:inconsistent_sizes'] || {};
+        inc['ml:inconsistent_sizes'][size] = (inc['ml:inconsistent_sizes'][size] || 0) + 1;
+      }
+    }
+  }
+
+  inc['ml:label_consistency'] = inc['ml:label_consistency'] || {};
+  inc['ml:label_consistency']['consistent'] = (inc['ml:label_consistency']['consistent'] || 0) + consistentCount;
+  inc['ml:label_consistency']['inconsistent'] = (inc['ml:label_consistency']['inconsistent'] || 0) + inconsistentCount;
+
+  // Track total cross-layout events
+  inc['ml:cross_layout_total'] = inc['ml:cross_layout_total'] || {};
+  inc['ml:cross_layout_total']['total'] = (inc['ml:cross_layout_total']['total'] || 0) + 1;
+}
+
 // ============================================
 // SESSION SUMMARY AGGREGATION
 // ============================================
@@ -1906,6 +2032,10 @@ export default async function handler(
         break;
       case 'session_summary':
         aggregateSessionSummary(event, increments);
+        break;
+      // Cross-layout learning
+      case 'cross_layout_pattern':
+        aggregateCrossLayoutPattern(event, increments);
         break;
     }
   }
