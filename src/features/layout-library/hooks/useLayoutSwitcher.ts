@@ -30,9 +30,9 @@ export function useLayoutSwitcher() {
   const pendingSaveRef = useRef<number | null>(null);
 
   // Layout store
-  const { layout, activeLayoutId, importLayout } = useLayoutStore(
+  // Note: layout is accessed via getState() in callbacks to avoid stale closures
+  const { activeLayoutId, importLayout } = useLayoutStore(
     useShallow(state => ({
-      layout: state.layout,
       activeLayoutId: state.activeLayoutId,
       importLayout: state.importLayout,
     }))
@@ -70,18 +70,24 @@ export function useLayoutSwitcher() {
   /**
    * Save the current layout to storage and update library entry.
    * Uses atomic save for data consistency.
+   * Gets fresh state to avoid stale closure issues.
    */
   const saveCurrentLayout = useCallback(async () => {
-    if (!activeLayoutId || activeLayoutId === '__shared_preview__') return;
+    // Get fresh state to avoid stale closures
+    const currentActiveId = useLayoutStore.getState().activeLayoutId;
+    const currentLayout = useLayoutStore.getState().layout;
+    const currentLibrary = useLibraryStore.getState().library;
 
-    const result = await saveLayoutWithMetadata(activeLayoutId, layout, library);
+    if (!currentActiveId || currentActiveId === '__shared_preview__') return;
+
+    const result = await saveLayoutWithMetadata(currentActiveId, currentLayout, currentLibrary);
     if (isErr(result)) {
       console.error('Failed to save current layout:', result.error);
       return;
     }
 
     setLibrary(result.value.library);
-  }, [activeLayoutId, layout, library, setLibrary]);
+  }, [setLibrary]);
 
   /**
    * Switch to a different layout.
@@ -106,13 +112,14 @@ export function useLayoutSwitcher() {
       clearSharedLayoutPreview();
 
       // 4. Atomic switch: save current, load target, update library
-      // Note: Get fresh state to avoid stale closure issues
-      // (e.g., when called right after importLayoutFromJSON or deleteLayout)
+      // Note: Get ALL fresh state to avoid stale closure issues
+      // (e.g., when called right after importLayoutFromJSON, deleteLayout, or auto-save)
       const currentLibrary = useLibraryStore.getState().library;
       const currentActiveId = useLayoutStore.getState().activeLayoutId;
+      const currentLayout = useLayoutStore.getState().layout;
       const result = await switchActiveLayout(
         currentActiveId || '__shared_preview__',
-        layout,
+        currentLayout,
         targetId,
         currentLibrary
       );
@@ -150,9 +157,7 @@ export function useLayoutSwitcher() {
       return err(fromUnknown(error));
     }
   }, [
-    activeLayoutId,
-    layout,
-    library,
+    // Note: activeLayoutId, layout, library removed - we use fresh state via getState()
     getEntry,
     setLibrary,
     importLayout,
@@ -181,10 +186,13 @@ export function useLayoutSwitcher() {
     newLayout.name = name || 'Untitled layout';
 
     try {
+      // Get fresh library state after saveCurrentLayout (may have updated it)
+      const currentLibrary = useLibraryStore.getState().library;
+
       // Atomic create: save layout, create entry, save library
-      const result = await createLayoutEntry(newLayout, library, {
+      const result = await createLayoutEntry(newLayout, currentLibrary, {
         name: newLayout.name,
-        author: library.settings.authorName,
+        author: currentLibrary.settings.authorName,
       });
 
       if (isErr(result)) {
@@ -215,7 +223,7 @@ export function useLayoutSwitcher() {
     }
   }, [
     saveCurrentLayout,
-    library,
+    // Note: library removed - we use fresh state via getState()
     setLibrary,
     importLayout,
     clearSelection,
@@ -232,17 +240,16 @@ export function useLayoutSwitcher() {
   const deleteLayout = useCallback(async (
     id: string
   ): Promise<Result<Unit, LayoutError | StorageError | UnknownError>> => {
-    const { entries } = library;
+    // Get fresh library state to avoid stale closure issues
+    const currentLibrary = useLibraryStore.getState().library;
 
     // Can't delete last layout
-    if (entries.length <= 1) {
+    if (currentLibrary.entries.length <= 1) {
       return err(layoutLastEntity('layout'));
     }
 
     try {
       // Atomic delete: remove layout, update library
-      // Note: Get fresh library state to avoid stale closure issues
-      const currentLibrary = useLibraryStore.getState().library;
       const result = await deleteLayoutWithEntry(id, currentLibrary);
 
       if (isErr(result)) {
@@ -271,7 +278,7 @@ export function useLayoutSwitcher() {
       addToast('Failed to delete layout', 'error');
       return err(fromUnknown(error));
     }
-  }, [library, setLibrary, switchLayout, addToast]);
+  }, [setLibrary, switchLayout, addToast]);
 
   /**
    * Duplicate a layout.
@@ -285,8 +292,11 @@ export function useLayoutSwitcher() {
     }
 
     try {
+      // Get fresh library state to avoid stale closure
+      const currentLibrary = useLibraryStore.getState().library;
+
       // Atomic duplicate: load source, create copy, save both layout and library
-      const result = await duplicateLayoutStorage(id, library);
+      const result = await duplicateLayoutStorage(id, currentLibrary);
 
       if (isErr(result)) {
         addToast('Failed to duplicate layout', 'error');
@@ -306,26 +316,30 @@ export function useLayoutSwitcher() {
       addToast('Failed to duplicate layout', 'error');
       return err(fromUnknown(error));
     }
-  }, [getEntry, library, setLibrary, addToast]);
+  }, [getEntry, setLibrary, addToast]);
 
   /**
    * Rename a layout.
    */
   const renameLayout = useCallback((id: string, newName: string): void => {
+    // Get fresh library state to avoid stale closure
+    const currentLibrary = useLibraryStore.getState().library;
+    const currentActiveId = useLayoutStore.getState().activeLayoutId;
+
     // Atomic rename: update library entry and save
-    const result = renameLayoutEntry(id, newName, library);
+    const result = renameLayoutEntry(id, newName, currentLibrary);
 
     if (isOk(result)) {
       setLibrary(result.value);
 
       // Also update the layout store's name if this is the active layout
-      if (id === activeLayoutId) {
+      if (id === currentActiveId) {
         useLayoutStore.getState().setName(newName);
       }
 
       trackLayoutAction('renamed');
     }
-  }, [activeLayoutId, library, setLibrary]);
+  }, [setLibrary]);
 
   /**
    * Import a layout from JSON and add to library.
@@ -335,10 +349,13 @@ export function useLayoutSwitcher() {
     forkedFrom?: { name: string; author?: string }
   ): Promise<Result<string, StorageError | UnknownError>> => {
     try {
+      // Get fresh library state to avoid stale closure
+      const currentLibrary = useLibraryStore.getState().library;
+
       // Atomic create: save layout, create entry, save library
-      const result = await createLayoutEntry(importedLayout, library, {
+      const result = await createLayoutEntry(importedLayout, currentLibrary, {
         name: importedLayout.name,
-        author: library.settings.authorName,
+        author: currentLibrary.settings.authorName,
         forkedFrom,
       });
 
@@ -358,7 +375,7 @@ export function useLayoutSwitcher() {
       addToast('Failed to import layout', 'error');
       return err(fromUnknown(error));
     }
-  }, [library, setLibrary, addToast]);
+  }, [setLibrary, addToast]);
 
   return {
     // State

@@ -539,4 +539,157 @@ describe('useAutoSave', () => {
       expect(updatedEntry.modifiedAt).toBeGreaterThanOrEqual(initialModifiedAt);
     });
   });
+
+  describe('race condition prevention', () => {
+    it('discards save result if layout switched during save', async () => {
+      const mockPreview = {
+        drawerWidth: 10,
+        drawerDepth: 8,
+        drawerHeight: 12,
+        binCount: 0,
+        layerCount: 1,
+        binMap: [],
+      };
+
+      // Make the mock change the activeLayoutId DURING the save
+      // to simulate a layout switch that happens while save is in progress
+      vi.mocked(storage.saveLayoutWithMetadata).mockImplementation(
+        async (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
+          // Simulate layout switch happening during the save operation
+          useLayoutStore.setState({ activeLayoutId: 'different-layout-id' });
+
+          const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
+          return {
+            ok: true as const,
+            value: {
+              layoutId,
+              entry: entry ? { ...entry, modifiedAt: Date.now(), preview: mockPreview } : undefined,
+              library,
+            },
+          };
+        }
+      );
+
+      // Track setLibrary calls AFTER mock setup
+      const setLibrarySpy = vi.spyOn(useLibraryStore.getState(), 'setLibrary');
+
+      renderHook(() => useAutoSave());
+
+      // Trigger the save
+      await act(async () => {
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
+      });
+
+      // setLibrary should NOT have been called because layout switched during save
+      // The save completed, but the result was discarded
+      expect(setLibrarySpy).not.toHaveBeenCalled();
+
+      setLibrarySpy.mockRestore();
+    });
+
+    it('updates library if layout has not changed during save', async () => {
+      const mockPreview = {
+        drawerWidth: 10,
+        drawerDepth: 8,
+        drawerHeight: 12,
+        binCount: 0,
+        layerCount: 1,
+        binMap: [],
+      };
+
+      // Reset mock to default implementation (no layout switch during save)
+      vi.mocked(storage.saveLayoutWithMetadata).mockImplementation(
+        (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
+          const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
+          return Promise.resolve({
+            ok: true as const,
+            value: {
+              layoutId,
+              entry: entry ? { ...entry, modifiedAt: Date.now(), preview: mockPreview } : undefined,
+              library,
+            },
+          });
+        }
+      );
+
+      // Track setLibrary calls AFTER mock setup
+      const setLibrarySpy = vi.spyOn(useLibraryStore.getState(), 'setLibrary');
+
+      renderHook(() => useAutoSave());
+
+      await act(async () => {
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
+      });
+
+      // setLibrary SHOULD be called because layout didn't change
+      expect(setLibrarySpy).toHaveBeenCalled();
+
+      setLibrarySpy.mockRestore();
+    });
+
+    it('uses fresh library state when saving (not stale closure)', async () => {
+      const mockPreview = {
+        drawerWidth: 10,
+        drawerDepth: 8,
+        drawerHeight: 12,
+        binCount: 0,
+        layerCount: 1,
+        binMap: [],
+      };
+
+      // Reset mock to default implementation
+      vi.mocked(storage.saveLayoutWithMetadata).mockImplementation(
+        (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
+          const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
+          return Promise.resolve({
+            ok: true as const,
+            value: {
+              layoutId,
+              entry: entry ? { ...entry, modifiedAt: Date.now(), preview: mockPreview } : undefined,
+              library,
+            },
+          });
+        }
+      );
+
+      renderHook(() => useAutoSave());
+
+      // Advance halfway through debounce
+      act(() => {
+        timerUtils.advanceTime(500);
+      });
+
+      // Modify library state after hook was rendered but before save
+      const currentLibrary = useLibraryStore.getState().library;
+      const modifiedLibrary = {
+        ...currentLibrary,
+        settings: { authorName: 'Modified Author' },
+      };
+      act(() => {
+        useLibraryStore.setState({ library: modifiedLibrary });
+      });
+
+      // Trigger a layout change to reset the debounce and use fresh state
+      act(() => {
+        useLayoutStore.getState().updateDrawer({ width: 15, depth: 10 });
+      });
+
+      // Complete the debounce
+      await act(async () => {
+        timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
+        await Promise.resolve();
+      });
+
+      // saveLayoutWithMetadata should be called with the FRESH library
+      expect(storage.saveLayoutWithMetadata).toHaveBeenCalledWith(
+        TEST_LAYOUT_ID,
+        expect.any(Object),
+        expect.objectContaining({
+          settings: { authorName: 'Modified Author' },
+        })
+      );
+    });
+  });
 });
