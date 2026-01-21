@@ -958,6 +958,11 @@ let isInitialized = false;
 let consecutiveFailures = 0;
 let circuitBreakerTrippedAt: number | null = null;
 
+/**
+ * Schedule a future buffer flush if one is not already pending.
+ *
+ * Schedules a call to `flush()` after `FLUSH_INTERVAL_MS`. If a flush timer is already set, this is a no-op.
+ */
 function scheduleFlush(): void {
   if (flushTimeout) return;
   flushTimeout = setTimeout(() => {
@@ -965,6 +970,11 @@ function scheduleFlush(): void {
   }, FLUSH_INTERVAL_MS);
 }
 
+/**
+ * Cancels any scheduled telemetry flush.
+ *
+ * If a flush timer is pending, clears the timeout and resets the internal timer reference.
+ */
 function cancelFlush(): void {
   if (flushTimeout) {
     clearTimeout(flushTimeout);
@@ -973,8 +983,11 @@ function cancelFlush(): void {
 }
 
 /**
- * Check if the circuit breaker is tripped.
- * Returns true if we should skip sending telemetry.
+ * Determine whether the telemetry circuit breaker is currently open.
+ *
+ * If the breaker has been tripped and the reset window has elapsed, this function resets the breaker.
+ *
+ * @returns `true` if the circuit breaker is open and telemetry should be skipped, `false` otherwise.
  */
 function isCircuitBreakerOpen(): boolean {
   if (consecutiveFailures < CIRCUIT_BREAKER_THRESHOLD) {
@@ -1004,7 +1017,10 @@ function recordSuccess(): void {
 }
 
 /**
- * Record a failed send (may trip circuit breaker).
+ * Record a failed telemetry send and trip the circuit breaker when the failure threshold is reached.
+ *
+ * Increments the internal consecutive failure counter and, if the configured threshold is met
+ * and the breaker is not already tripped, sets the trip timestamp and logs a warning.
  */
 function recordFailure(): void {
   consecutiveFailures++;
@@ -1015,7 +1031,13 @@ function recordFailure(): void {
 }
 
 /**
- * Flush buffered events to the API.
+ * Sends buffered ML telemetry events to the server and clears the local buffer.
+ *
+ * If there are no events, the function returns immediately. If telemetry is disabled
+ * or the internal circuit breaker is open, buffered events are dropped and the buffer
+ * is cleared. Before transmission, each event is annotated with the client version.
+ * The function attempts reliable delivery (preferring navigator.sendBeacon and falling
+ * back to fetch) and updates internal circuit-breaker state based on success or failure.
  */
 function flush(): void {
   cancelFlush();
@@ -1266,11 +1288,13 @@ function isEnabled(): boolean {
 }
 
 /**
- * Track a bin placement event.
+ * Buffer a telemetry event for a bin placement, update session state, and schedule a flush.
+ *
+ * May skip emitting an event under high-volume sampling while still updating session counters and timing.
  *
  * @param bin - The bin that was placed
- * @param layout - Current layout state
- * @param method - How the bin was placed
+ * @param layout - The current layout state containing drawer and layer context
+ * @param method - The placement method used (e.g., manual, fill, quick place)
  */
 export function trackBinPlacement(
   bin: Bin,
