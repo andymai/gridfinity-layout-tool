@@ -527,6 +527,54 @@ input[type="number"] {
   background: var(--border-strong);
 }
 
+/* Custom range slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-default);
+  border-radius: 3px;
+  height: 4px;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background: var(--border-default);
+  border-radius: 3px;
+  height: 4px;
+}
+
+input[type="range"]::-moz-range-track {
+  background: var(--border-default);
+  border-radius: 3px;
+  height: 4px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--color-accent);
+  border-radius: 50%;
+  height: 14px;
+  width: 14px;
+  margin-top: -5px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  background: var(--color-accent);
+  border: none;
+  border-radius: 50%;
+  height: 14px;
+  width: 14px;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+  background: var(--color-accent-hover);
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+  background: var(--color-accent-hover);
+}
+
 /* ===========================================
    ANIMATIONS
    =========================================== */

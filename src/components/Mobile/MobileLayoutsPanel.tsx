@@ -7,6 +7,7 @@ import { useLayoutSwitcher } from '@/features/layout-library/hooks/useLayoutSwit
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LayoutThumbnail } from '@/components/LayoutThumbnail';
+import { InspirationGallery } from '@/features/inspiration-gallery';
 import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '@/core/storage';
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
 import type { LayoutEntry, SharePermission } from '@/core/types';
@@ -24,6 +25,7 @@ export function MobileLayoutsPanel() {
   const [cloudShareId, setCloudShareId] = useState<string | null>(null);
   const [renameLayoutId, setRenameLayoutId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [showInspirationGallery, setShowInspirationGallery] = useState(false);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
   // Scroll rename input into view when keyboard appears on mobile
@@ -367,10 +369,29 @@ export function MobileLayoutsPanel() {
         })}
       </div>
 
+      {/* Inspiration Gallery button */}
+      <button
+        onClick={() => setShowInspirationGallery(true)}
+        className="w-full flex items-center gap-3 mt-4 p-3 rounded-xl bg-gradient-to-r from-accent/10 to-purple-500/10 border border-accent/20 active:scale-[0.98] transition-transform"
+      >
+        <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
+          <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+          </svg>
+        </div>
+        <div className="flex-1 text-left">
+          <div className="text-sm font-medium text-content">Inspiration Gallery</div>
+          <div className="text-xs text-content-tertiary">Get ideas for your drawer</div>
+        </div>
+        <svg className="w-4 h-4 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
       {/* Create new button */}
       <button
         onClick={handleCreateNew}
-        className="btn btn-primary w-full mt-4 h-12"
+        className="btn btn-secondary w-full mt-3 h-12"
       >
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -517,6 +538,15 @@ export function MobileLayoutsPanel() {
         <MobileCloudSharePanel
           layoutId={cloudShareId}
           onClose={() => setCloudShareId(null)}
+        />,
+        document.body
+      )}
+
+      {/* Inspiration Gallery - portaled to avoid BottomSheet clipping */}
+      {showInspirationGallery && createPortal(
+        <InspirationGallery
+          isOpen={showInspirationGallery}
+          onClose={() => setShowInspirationGallery(false)}
         />,
         document.body
       )}
