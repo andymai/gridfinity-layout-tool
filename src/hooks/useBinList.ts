@@ -147,6 +147,11 @@ export function useBinList(): UseBinListReturn {
       .filter((bin): bin is typeof layout.bins[number] => bin !== undefined);
     if (binsToDelete.length > 0) {
       mlTracking.trackDeletion(binsToDelete[0], 'bulk', binsToDelete.length);
+
+      // Track quick corrections for each deleted bin
+      for (const bin of binsToDelete) {
+        mlTracking.trackQuickCorrect('delete', bin.id, bin);
+      }
     }
 
     const count = selectedBinIds.length;

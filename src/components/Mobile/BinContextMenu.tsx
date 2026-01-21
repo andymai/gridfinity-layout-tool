@@ -50,6 +50,9 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
     // Track deletion BEFORE executing (need bin data)
     mlTracking.trackDeletion(bin, 'context_menu');
 
+    // Track quick correction for deleted bin
+    mlTracking.trackQuickCorrect('delete', bin.id, bin);
+
     execute(() => deleteBin(bin.id));
     setSelectedBins([]);
     onClose();

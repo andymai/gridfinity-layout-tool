@@ -275,6 +275,11 @@ export function Staging() {
     // Track deletion BEFORE executing (need bin data)
     if (stagingBins.length > 0) {
       mlTracking.trackDeletion(stagingBins[0], 'bulk', count);
+
+      // Track quick corrections for each deleted bin
+      for (const bin of stagingBins) {
+        mlTracking.trackQuickCorrect('delete', bin.id, bin);
+      }
     }
 
     execute(() => {
