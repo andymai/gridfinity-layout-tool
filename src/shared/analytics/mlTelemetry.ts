@@ -2259,7 +2259,10 @@ function computeSessionConfidence(
   // Session score: longer sessions with more bins are more deliberate
   // Short session with many bins = efficient (good)
   // Long session with few bins = exploratory (medium)
-  const binsPerMinute = binsPlaced / (sessionDurationMs / 60_000);
+  // Guard against division by zero for very fast operations
+  const binsPerMinute = sessionDurationMs > 0
+    ? binsPlaced / (sessionDurationMs / 60_000)
+    : binsPlaced > 0 ? Infinity : 0;
   const sessionScore = binsPerMinute > 2 ? 1.0 :  // >2 bins/min = efficient
     binsPerMinute > 0.5 ? 0.8 :                    // 0.5-2 bins/min = normal
     binsPerMinute > 0.1 ? 0.6 : 0.4;               // <0.1 = very slow/exploratory

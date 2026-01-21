@@ -157,6 +157,7 @@ vi.mock('../../shared/analytics/useMLTracking', () => ({
     trackLabel: vi.fn(),
     trackBulk: vi.fn(),
     trackPurpose: vi.fn(),
+    trackSession: vi.fn(),
     incrementEdit: vi.fn(),
     markActivity: vi.fn(),
   },

@@ -290,7 +290,7 @@ describe('mlTelemetry', () => {
       forceFlush();
       const layout = createTestLayoutWithBins(5);
       const bin = layout.bins[0];
-      trackBinDeletion(bin, layout, 'toolbar', 5);
+      trackBinDeletion(bin, layout, 'bulk', 5);
       expect(getBufferSize()).toBeGreaterThan(0);
     });
   });
@@ -373,7 +373,7 @@ describe('mlTelemetry', () => {
     it('buffers placement rejection event', () => {
       forceFlush();
       const layout = createTestLayoutWithBins(5);
-      trackPlacementRejection('collision', 'draw', {
+      trackPlacementRejection('outside_bounds', 'draw', {
         start: { x: 0, y: 0 },
         current: { x: 2, y: 2 },
       }, layout, layout.layers[0].id);
@@ -391,8 +391,8 @@ describe('mlTelemetry', () => {
     it('skips when no intent and non-cancelled reason', () => {
       forceFlush();
       const layout = createTestLayoutWithBins(5);
-      // bounds reason with null interaction = no intent = skip
-      trackPlacementRejection('bounds', 'paint', null, layout, layout.layers[0].id);
+      // outside_bounds reason with null interaction = no intent = skip
+      trackPlacementRejection('outside_bounds', 'paint', null, layout, layout.layers[0].id);
       expect(getBufferSize()).toBe(0);
     });
   });
