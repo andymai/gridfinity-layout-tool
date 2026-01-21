@@ -123,9 +123,16 @@ test.describe('Accessibility', () => {
   });
 
   test('confirm dialog is accessible', async ({ page }) => {
-    // Scroll to see the "Save Current as Defaults" button in the sidebar
+    // Open Settings modal first
     const sidebar = getSidebar(page);
-    const saveDefaultsButton = sidebar.getByRole('button', { name: 'Save Current as Defaults' });
+    const settingsButton = sidebar.getByRole('button', { name: 'Open settings' });
+    await settingsButton.click();
+
+    // Wait for settings modal to open
+    await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
+
+    // Click "Save Current as Defaults" button in the settings modal
+    const saveDefaultsButton = page.getByRole('button', { name: 'Save Current as Defaults' });
     await saveDefaultsButton.scrollIntoViewIfNeeded();
     await saveDefaultsButton.click();
 

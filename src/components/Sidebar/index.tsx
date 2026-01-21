@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useSettingsStore } from '@/core/store';
+import { useUIStore } from '@/core/store';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
@@ -8,68 +8,18 @@ import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { StepperControl } from '@/shared/components/StepperControl';
-import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '@/components/Modals/HalfBinModeBlockedModal';
+import { SettingsModal } from '@/components/Modals/SettingsModal';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { useResponsive } from '@/shared/hooks';
-import { LabsButton } from '@/features/labs/components';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { InspirationGallery } from '@/features/inspiration-gallery';
-import type { STLSearchSite } from '@/core/store/settings';
-
-/**
- * Privacy settings section with ML telemetry opt-out toggle.
- */
-function PrivacySection() {
-  const { mlTelemetryEnabled, updateSetting } = useSettingsStore(
-    useShallow((state) => ({
-      mlTelemetryEnabled: state.settings.mlTelemetryEnabled,
-      updateSetting: state.updateSetting,
-    }))
-  );
-
-  const handleToggle = () => {
-    updateSetting('mlTelemetryEnabled', !mlTelemetryEnabled);
-  };
-
-  return (
-    <div className="px-4 py-4 border-t border-stroke-subtle">
-      <CollapsibleSection title="Privacy" variant="default" defaultExpanded={false}>
-        <div className="space-y-2">
-          <div
-            className="flex items-center justify-between text-xs cursor-pointer group"
-            onClick={handleToggle}
-            role="checkbox"
-            aria-checked={mlTelemetryEnabled}
-            aria-label="Toggle usage data collection"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === ' ' || e.key === 'Enter') {
-                e.preventDefault();
-                handleToggle();
-              }
-            }}
-          >
-            <div>
-              <span className={`${mlTelemetryEnabled ? 'text-content' : 'text-content-tertiary'} group-hover:text-content transition-colors`}>
-                Help improve suggestions
-              </span>
-              <p className="text-[10px] text-content-disabled mt-0.5">
-                Share bin sizes and placement patterns (no personal data)
-              </p>
-            </div>
-            <Checkbox checked={mlTelemetryEnabled} variant="desktop" />
-          </div>
-        </div>
-      </CollapsibleSection>
-    </div>
-  );
-}
 
 export function Sidebar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { isDesktop } = useResponsive();
 
@@ -99,8 +49,6 @@ export function Sidebar() {
     heightUnitMm,
     printBedSize,
     halfBinMode,
-    settings,
-    activeLayerHeight,
     handleDrawerWidthChange,
     handleDrawerDepthChange,
     handleDrawerHeightChange,
@@ -109,13 +57,9 @@ export function Sidebar() {
     handleFractionalEdgeChange,
     handleHalfBinToggle,
     handleRemediate,
-    handleSaveDefaults,
     setGridUnitMm,
     setHeightUnitMm,
     setPrintBedSize,
-    toggleSTLSite,
-    showSaveDefaultsConfirm,
-    setShowSaveDefaultsConfirm,
     showHalfBinBlockedModal,
     setShowHalfBinBlockedModal,
     halfBinViolation,
@@ -152,6 +96,17 @@ export function Sidebar() {
             <h2 className="flex-1 text-xs font-semibold text-content-tertiary uppercase tracking-wider">
               Tools
             </h2>
+            <button
+              onClick={() => setShowSettingsModal(true)}
+              className="p-1 rounded transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
+              title="Settings"
+              aria-label="Open settings"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
             <button
               onClick={toggle}
               className="p-1 rounded transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
@@ -411,66 +366,6 @@ export function Sidebar() {
               </CollapsibleSection>
             </div>
 
-            {/* Default Preferences */}
-            <div className="px-4 py-4 border-t border-stroke-subtle">
-              <CollapsibleSection title="Default Preferences" variant="default" defaultExpanded={true}>
-                <div className="text-xs text-content-tertiary mb-2">
-                  New layouts will use:
-                </div>
-                <div className="text-xs text-content-secondary space-y-1 mb-3">
-                  <div>Drawer: {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×{settings.defaultDrawerHeight}u</div>
-                  <div>Layer height: {settings.defaultLayerHeight}u</div>
-                  <div>Print bed: {settings.defaultPrintBedSize}mm</div>
-                  <div>Grid unit: {settings.defaultGridUnitMm}mm</div>
-                </div>
-                <button
-                  onClick={() => setShowSaveDefaultsConfirm(true)}
-                  className="w-full text-xs py-1.5 px-2 rounded bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle transition-colors"
-                  title="Save current layout settings as defaults for new layouts"
-                >
-                  Save Current as Defaults
-                </button>
-              </CollapsibleSection>
-            </div>
-
-            {/* STL Search */}
-            <div className="px-4 py-4 border-t border-stroke-subtle">
-              <CollapsibleSection title="STL Search" variant="default" defaultExpanded={false}>
-                <div className="space-y-2">
-                  {settings.stlSearchSites.map((site: STLSearchSite) => (
-                    <div
-                      key={site.id}
-                      className="flex items-center justify-between text-xs cursor-pointer group"
-                      onClick={() => toggleSTLSite(site.id)}
-                      role="checkbox"
-                      aria-checked={site.enabled}
-                      aria-label={`Toggle ${site.name}`}
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === ' ' || e.key === 'Enter') {
-                          e.preventDefault();
-                          toggleSTLSite(site.id);
-                        }
-                      }}
-                    >
-                      <span className={`${site.enabled ? 'text-content' : 'text-content-tertiary'} group-hover:text-content transition-colors`}>
-                        {site.name}
-                      </span>
-                      <Checkbox checked={site.enabled} variant="desktop" />
-                    </div>
-                  ))}
-                </div>
-              </CollapsibleSection>
-            </div>
-
-            {/* Privacy */}
-            <PrivacySection />
-
-            {/* Labs */}
-            <div className="px-4 py-4 border-t border-stroke-subtle">
-              <LabsButton />
-            </div>
-
             {/* Attribution */}
             <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
               Gridfinity by{' '}
@@ -509,15 +404,6 @@ export function Sidebar() {
         </>
       )}
 
-      <ConfirmDialog
-        isOpen={showSaveDefaultsConfirm}
-        title="Save as Defaults"
-        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawer.width}×${drawer.depth}×${drawer.height}u\nLayer height: ${activeLayerHeight}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
-        confirmText="Save"
-        onConfirm={handleSaveDefaults}
-        onCancel={() => setShowSaveDefaultsConfirm(false)}
-      />
-
       {halfBinViolation && (
         <HalfBinModeBlockedModal
           isOpen={showHalfBinBlockedModal}
@@ -530,6 +416,11 @@ export function Sidebar() {
       <InspirationGallery
         isOpen={showInspirationGallery}
         onClose={() => setShowInspirationGallery(false)}
+      />
+
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
       />
     </aside>
   );
