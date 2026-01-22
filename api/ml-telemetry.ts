@@ -111,7 +111,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import type { RedisOptions } from 'ioredis';
+import type { RedisOptions, Redis as RedisInstance } from 'ioredis';
 import Redis from 'ioredis';
 import { getClientIP } from './lib/rateLimit.js';
 
@@ -161,7 +161,12 @@ interface LabelUpdateEvent {
 }
 
 type LayoutArchetype = 'uniform' | 'mixed' | 'border_fill' | 'compartmentalized' | 'layered';
-type SpatialPattern = 'corner_start' | 'large_first' | 'category_grouped' | 'edge_aligned' | 'center_out';
+type SpatialPattern =
+  | 'corner_start'
+  | 'large_first'
+  | 'category_grouped'
+  | 'edge_aligned'
+  | 'center_out';
 
 interface EdgeUsage {
   left: boolean;
@@ -172,7 +177,16 @@ interface EdgeUsage {
 
 interface LayoutSnapshotEvent {
   type: 'layout_snapshot';
-  trigger: 'save' | 'export_json' | 'export_tsv' | 'share' | 'print' | 'session_end' | 'layout_switch' | 'idle' | 'print_preview';
+  trigger:
+    | 'save'
+    | 'export_json'
+    | 'export_tsv'
+    | 'share'
+    | 'print'
+    | 'session_end'
+    | 'layout_switch'
+    | 'idle'
+    | 'print_preview';
   layout_hash: string;
   snapshot_index: number;
   drawer_size: string;
@@ -212,7 +226,14 @@ type AbandonmentType = 'incomplete' | 'deleted' | 'dormant' | 'superseded';
 interface LayoutQualityEvent {
   type: 'layout_quality';
   layout_hash: string;
-  signal: 'shared' | 'exported' | 'duplicated' | 'deleted' | 'revisited_edited' | 'revisited_kept' | 'modified';
+  signal:
+    | 'shared'
+    | 'exported'
+    | 'duplicated'
+    | 'deleted'
+    | 'revisited_edited'
+    | 'revisited_kept'
+    | 'modified';
   days_since_creation: number;
   confidence_breakdown?: ConfidenceBreakdown;
   abandonment_type: AbandonmentType | null;
@@ -260,7 +281,6 @@ interface BinDeletedEvent {
   fill_pct: number;
   method: 'key' | 'context_menu' | 'bulk' | 'inspector';
 }
-
 
 interface AbandonedBinEvent {
   type: 'bin_abandoned';
@@ -336,7 +356,15 @@ interface PlacementRejectedEvent {
 
 interface UndoEvent {
   type: 'undo';
-  action_undone: 'placement' | 'deletion' | 'move' | 'resize' | 'fill' | 'layer_change' | 'drawer_resize' | 'other';
+  action_undone:
+    | 'placement'
+    | 'deletion'
+    | 'move'
+    | 'resize'
+    | 'fill'
+    | 'layer_change'
+    | 'drawer_resize'
+    | 'other';
   bins_affected: number;
   time_since_action_ms: number;
   drawer_size: string;
@@ -429,9 +457,9 @@ function parseRedisUrl(redisUrl: string): RedisOptions {
   };
 }
 
-let redis: Redis | null = null;
+let redis: RedisInstance | null = null;
 
-function getRedis(): Redis | null {
+function getRedis(): RedisInstance | null {
   if (!process.env.REDIS_URL) {
     return null;
   }
@@ -456,7 +484,7 @@ function getRedis(): Redis | null {
  * Uses the same Redis client as aggregation operations.
  * 100 requests per minute per IP.
  */
-async function checkRateLimitInternal(ip: string, client: Redis): Promise<boolean> {
+async function checkRateLimitInternal(ip: string, client: RedisInstance): Promise<boolean> {
   const hashedIP = hashIP(ip);
   const key = `ml_ratelimit:${hashedIP}`;
   const now = Math.floor(Date.now() / 1000);
@@ -485,7 +513,7 @@ function hashIP(ip: string): string {
   let hash = 0;
   for (let i = 0; i < ip.length; i++) {
     const char = ip.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return Math.abs(hash).toString(16).slice(0, 8);
@@ -559,15 +587,41 @@ const VALID_LAYER_MOVE_METHODS = new Set(['inspector', 'drag', 'keyboard', 'cont
 const VALID_FILL_SIZE_REGEX = /^\d+(\.\d+)?x\d+(\.\d+)?$/; // WxD (no height)
 
 // Negative signal validation
-const VALID_REJECTION_REASONS = new Set(['cancelled', 'second_touch', 'outside_bounds', 'too_small']);
+const VALID_REJECTION_REASONS = new Set([
+  'cancelled',
+  'second_touch',
+  'outside_bounds',
+  'too_small',
+]);
 const VALID_DRAW_MODES = new Set(['draw', 'paint']);
-const VALID_UNDO_ACTIONS = new Set(['placement', 'deletion', 'move', 'resize', 'fill', 'layer_change', 'drawer_resize', 'other']);
+const VALID_UNDO_ACTIONS = new Set([
+  'placement',
+  'deletion',
+  'move',
+  'resize',
+  'fill',
+  'layer_change',
+  'drawer_resize',
+  'other',
+]);
 const VALID_CORRECTION_TYPES = new Set(['delete', 'resize', 'move']);
 const VALID_RESIZE_DIRECTIONS = new Set(['grow', 'shrink', 'mixed']);
 
 // Pattern detection validation
-const VALID_ARCHETYPES = new Set(['uniform', 'mixed', 'border_fill', 'compartmentalized', 'layered']);
-const VALID_SPATIAL_PATTERNS = new Set(['corner_start', 'large_first', 'category_grouped', 'edge_aligned', 'center_out']);
+const VALID_ARCHETYPES = new Set([
+  'uniform',
+  'mixed',
+  'border_fill',
+  'compartmentalized',
+  'layered',
+]);
+const VALID_SPATIAL_PATTERNS = new Set([
+  'corner_start',
+  'large_first',
+  'category_grouped',
+  'edge_aligned',
+  'center_out',
+]);
 
 /**
  * Validate spatial patterns array.
@@ -599,8 +653,7 @@ function validateEdgeUsage(value: unknown): value is EdgeUsage {
 function validateConfidenceBreakdown(value: unknown): value is ConfidenceBreakdown {
   if (!value || typeof value !== 'object') return false;
   const c = value as Record<string, unknown>;
-  const isValidScore = (v: unknown): boolean =>
-    typeof v === 'number' && v >= 0 && v <= 1;
+  const isValidScore = (v: unknown): boolean => typeof v === 'number' && v >= 0 && v <= 1;
   return (
     isValidScore(c.undo_score) &&
     isValidScore(c.completion_score) &&
@@ -614,10 +667,7 @@ function validateConfidenceBreakdown(value: unknown): value is ConfidenceBreakdo
  * Validate nullable string field used in Redis keys.
  * Returns true if null or matches the pattern.
  */
-function validateNullableField(
-  value: unknown,
-  pattern: RegExp
-): value is string | null {
+function validateNullableField(value: unknown, pattern: RegExp): value is string | null {
   if (value === null) return true;
   return typeof value === 'string' && pattern.test(value);
 }
@@ -647,10 +697,7 @@ function validateSizeDistribution(value: unknown): value is Record<string, numbe
 /**
  * Validate category/domain distribution object (keys are valid IDs, values are positive numbers).
  */
-function validateDistribution(
-  value: unknown,
-  keyPattern: RegExp
-): value is Record<string, number> {
+function validateDistribution(value: unknown, keyPattern: RegExp): value is Record<string, number> {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
   for (const [key, val] of Object.entries(obj)) {
@@ -694,8 +741,7 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       typeof e.bin_size === 'string' &&
       VALID_BIN_SIZE_REGEX.test(e.bin_size) &&
       (e.prev_bin_size === null ||
-        (typeof e.prev_bin_size === 'string' &&
-          VALID_BIN_SIZE_REGEX.test(e.prev_bin_size))) &&
+        (typeof e.prev_bin_size === 'string' && VALID_BIN_SIZE_REGEX.test(e.prev_bin_size))) &&
       typeof e.drawer_size === 'string' &&
       VALID_DRAWER_SIZE_REGEX.test(e.drawer_size) &&
       typeof e.gap_fit === 'string' &&
@@ -715,10 +761,14 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       // Adjacent context validation (Priority 3)
       Array.isArray(e.adjacent_label_hashes) &&
       e.adjacent_label_hashes.length <= 8 &&
-      e.adjacent_label_hashes.every((h: unknown) => typeof h === 'string' && VALID_LABEL_HASH_REGEX.test(h)) &&
+      e.adjacent_label_hashes.every(
+        (h: unknown) => typeof h === 'string' && VALID_LABEL_HASH_REGEX.test(h)
+      ) &&
       Array.isArray(e.adjacent_sizes) &&
       e.adjacent_sizes.length <= 8 &&
-      e.adjacent_sizes.every((s: unknown) => typeof s === 'string' && VALID_BIN_SIZE_REGEX.test(s)) &&
+      e.adjacent_sizes.every(
+        (s: unknown) => typeof s === 'string' && VALID_BIN_SIZE_REGEX.test(s)
+      ) &&
       typeof e.adjacent_count === 'number' &&
       e.adjacent_count >= 0 &&
       e.adjacent_count <= 8 &&
@@ -816,9 +866,11 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       e.days_since_creation >= 0 &&
       e.days_since_creation < 10000 &&
       // New fields for PR 5
-      (e.confidence_breakdown === undefined || validateConfidenceBreakdown(e.confidence_breakdown)) &&
+      (e.confidence_breakdown === undefined ||
+        validateConfidenceBreakdown(e.confidence_breakdown)) &&
       (e.abandonment_type === null ||
-        (typeof e.abandonment_type === 'string' && VALID_ABANDONMENT_TYPES.has(e.abandonment_type))) &&
+        (typeof e.abandonment_type === 'string' &&
+          VALID_ABANDONMENT_TYPES.has(e.abandonment_type))) &&
       typeof e.time_since_last_edit_ms === 'number' &&
       e.time_since_last_edit_ms >= 0 &&
       e.time_since_last_edit_ms < 86400000 // Max 24 hours
@@ -851,7 +903,8 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
   }
 
   if (e.type === 'bin_resized') {
-    const validDimensions = Array.isArray(e.dimensions_changed) &&
+    const validDimensions =
+      Array.isArray(e.dimensions_changed) &&
       e.dimensions_changed.length > 0 &&
       e.dimensions_changed.every((d: unknown) => d === 'width' || d === 'depth');
     return (
@@ -920,7 +973,8 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
   }
 
   if (e.type === 'drawer_resized') {
-    const validDimensions = Array.isArray(e.dimensions_changed) &&
+    const validDimensions =
+      Array.isArray(e.dimensions_changed) &&
       e.dimensions_changed.length > 0 &&
       e.dimensions_changed.every((d: unknown) => d === 'width' || d === 'depth' || d === 'height');
     return (
@@ -1000,7 +1054,8 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       (e.intended_size === null ||
         (typeof e.intended_size === 'string' && VALID_FILL_SIZE_REGEX.test(e.intended_size))) &&
       (e.intended_position === null ||
-        (typeof e.intended_position === 'string' && VALID_POSITION_REGEX.test(e.intended_position))) &&
+        (typeof e.intended_position === 'string' &&
+          VALID_POSITION_REGEX.test(e.intended_position))) &&
       typeof e.layer_index === 'number' &&
       e.layer_index >= 0 &&
       e.layer_index <= 20 &&
@@ -1128,16 +1183,20 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
     }
 
     // Validate inferred_purpose
-    if (e.inferred_purpose !== null &&
-        (typeof e.inferred_purpose !== 'string' ||
-         (!VALID_PURPOSES.has(e.inferred_purpose) && !VALID_PURPOSE_REGEX.test(e.inferred_purpose)))) {
+    if (
+      e.inferred_purpose !== null &&
+      (typeof e.inferred_purpose !== 'string' ||
+        (!VALID_PURPOSES.has(e.inferred_purpose) && !VALID_PURPOSE_REGEX.test(e.inferred_purpose)))
+    ) {
       return false;
     }
 
     // Validate confidence
-    if (typeof e.inferred_purpose_confidence !== 'number' ||
-        e.inferred_purpose_confidence < 0 ||
-        e.inferred_purpose_confidence > 1) {
+    if (
+      typeof e.inferred_purpose_confidence !== 'number' ||
+      e.inferred_purpose_confidence < 0 ||
+      e.inferred_purpose_confidence > 1
+    ) {
       return false;
     }
 
@@ -1151,7 +1210,11 @@ function validateEvent(event: unknown): event is MLTelemetryEvent {
       if (typeof item.label_hash !== 'string' || !VALID_LABEL_HASH_REGEX.test(item.label_hash)) {
         return false;
       }
-      if (!Array.isArray(item.sizes_used) || item.sizes_used.length === 0 || item.sizes_used.length > 10) {
+      if (
+        !Array.isArray(item.sizes_used) ||
+        item.sizes_used.length === 0 ||
+        item.sizes_used.length > 10
+      ) {
         return false;
       }
       for (const size of item.sizes_used) {
@@ -1262,8 +1325,7 @@ function aggregateBinPlacement(event: BinPlacementEvent, inc: Increments): void 
   // Track adjacent bin count distribution
   inc['ml:adjacent_counts'] = inc['ml:adjacent_counts'] || {};
   const adjBucket = event.adjacent_count >= 4 ? '4+' : String(event.adjacent_count);
-  inc['ml:adjacent_counts'][adjBucket] =
-    (inc['ml:adjacent_counts'][adjBucket] || 0) + 1;
+  inc['ml:adjacent_counts'][adjBucket] = (inc['ml:adjacent_counts'][adjBucket] || 0) + 1;
 
   // 11. First-of-label tracking (Priority 5)
   // Track initial size choices for new item types - strong learning signal
@@ -1417,15 +1479,21 @@ function aggregateLayoutSnapshot(event: LayoutSnapshotEvent, inc: Increments): v
   // 12. Track uniformity score buckets (0-0.25, 0.25-0.5, 0.5-0.75, 0.75-1.0)
   const uniformityBucket = Math.min(Math.floor(uniformity_score * 4), 3);
   inc['ml:uniformity'] = inc['ml:uniformity'] || {};
-  inc['ml:uniformity'][`bucket_${uniformityBucket}`] = (inc['ml:uniformity'][`bucket_${uniformityBucket}`] || 0) + 1;
+  inc['ml:uniformity'][`bucket_${uniformityBucket}`] =
+    (inc['ml:uniformity'][`bucket_${uniformityBucket}`] || 0) + 1;
 
   // 13. Track edge usage patterns
-  const edgeCount = [edge_usage.left, edge_usage.right, edge_usage.top, edge_usage.bottom].filter(Boolean).length;
+  const edgeCount = [edge_usage.left, edge_usage.right, edge_usage.top, edge_usage.bottom].filter(
+    Boolean
+  ).length;
   inc['ml:edge_count'] = inc['ml:edge_count'] || {};
-  inc['ml:edge_count'][`edges_${edgeCount}`] = (inc['ml:edge_count'][`edges_${edgeCount}`] || 0) + 1;
+  inc['ml:edge_count'][`edges_${edgeCount}`] =
+    (inc['ml:edge_count'][`edges_${edgeCount}`] || 0) + 1;
 
   // Track specific edge combinations
-  const edgeKey = `${edge_usage.left ? 'L' : ''}${edge_usage.right ? 'R' : ''}${edge_usage.top ? 'T' : ''}${edge_usage.bottom ? 'B' : ''}` || 'none';
+  const edgeKey =
+    `${edge_usage.left ? 'L' : ''}${edge_usage.right ? 'R' : ''}${edge_usage.top ? 'T' : ''}${edge_usage.bottom ? 'B' : ''}` ||
+    'none';
   inc['ml:edge_combo'] = inc['ml:edge_combo'] || {};
   inc['ml:edge_combo'][edgeKey] = (inc['ml:edge_combo'][edgeKey] || 0) + 1;
 
@@ -1464,7 +1532,8 @@ function aggregateLayoutSnapshot(event: LayoutSnapshotEvent, inc: Increments): v
 
   // Track cluster distribution (how common each structure hash is)
   inc['ml:cluster_distribution'] = inc['ml:cluster_distribution'] || {};
-  inc['ml:cluster_distribution'][structure_hash] = (inc['ml:cluster_distribution'][structure_hash] || 0) + 1;
+  inc['ml:cluster_distribution'][structure_hash] =
+    (inc['ml:cluster_distribution'][structure_hash] || 0) + 1;
 }
 
 function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): void {
@@ -1493,9 +1562,14 @@ function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): voi
   // Track confidence breakdown distribution (if provided)
   if (confidence_breakdown) {
     // Track combined confidence in buckets
-    const confBucket = confidence_breakdown.combined < 0.25 ? 'very_low' :
-      confidence_breakdown.combined < 0.5 ? 'low' :
-      confidence_breakdown.combined < 0.75 ? 'medium' : 'high';
+    const confBucket =
+      confidence_breakdown.combined < 0.25
+        ? 'very_low'
+        : confidence_breakdown.combined < 0.5
+          ? 'low'
+          : confidence_breakdown.combined < 0.75
+            ? 'medium'
+            : 'high';
     inc['ml:quality_confidence'] = inc['ml:quality_confidence'] || {};
     inc['ml:quality_confidence'][confBucket] = (inc['ml:quality_confidence'][confBucket] || 0) + 1;
 
@@ -1505,7 +1579,12 @@ function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): voi
     inc[confBySignalKey][confBucket] = (inc[confBySignalKey][confBucket] || 0) + 1;
 
     // Track individual score distributions for analysis
-    const scoreNames = ['undo_score', 'completion_score', 'session_score', 'correction_score'] as const;
+    const scoreNames = [
+      'undo_score',
+      'completion_score',
+      'session_score',
+      'correction_score',
+    ] as const;
     for (const scoreName of scoreNames) {
       const score = confidence_breakdown[scoreName];
       const scoreBucket = score < 0.4 ? 'low' : score < 0.7 ? 'medium' : 'high';
@@ -1527,11 +1606,17 @@ function aggregateQualitySignal(event: LayoutQualityEvent, inc: Increments): voi
   }
 
   // Track time since last edit (dormancy detection)
-  const dormancyBucket = time_since_last_edit_ms < 60_000 ? 'active' :
-    time_since_last_edit_ms < 300_000 ? 'recent' :
-    time_since_last_edit_ms < 1800_000 ? 'idle' : 'dormant';
+  const dormancyBucket =
+    time_since_last_edit_ms < 60_000
+      ? 'active'
+      : time_since_last_edit_ms < 300_000
+        ? 'recent'
+        : time_since_last_edit_ms < 1800_000
+          ? 'idle'
+          : 'dormant';
   inc['ml:quality_dormancy'] = inc['ml:quality_dormancy'] || {};
-  inc['ml:quality_dormancy'][dormancyBucket] = (inc['ml:quality_dormancy'][dormancyBucket] || 0) + 1;
+  inc['ml:quality_dormancy'][dormancyBucket] =
+    (inc['ml:quality_dormancy'][dormancyBucket] || 0) + 1;
 }
 
 function aggregateDrawerPurpose(event: DrawerPurposeEvent, inc: Increments): void {
@@ -1716,10 +1801,12 @@ function aggregateDrawerResize(event: DrawerResizedEvent, inc: Increments): void
   // Track how often bins are staged due to resize
   if (bins_staged > 0) {
     inc['ml:drawer_resize_staged'] = inc['ml:drawer_resize_staged'] || {};
-    inc['ml:drawer_resize_staged']['with_bins'] = (inc['ml:drawer_resize_staged']['with_bins'] || 0) + 1;
+    inc['ml:drawer_resize_staged']['with_bins'] =
+      (inc['ml:drawer_resize_staged']['with_bins'] || 0) + 1;
   } else {
     inc['ml:drawer_resize_staged'] = inc['ml:drawer_resize_staged'] || {};
-    inc['ml:drawer_resize_staged']['no_bins'] = (inc['ml:drawer_resize_staged']['no_bins'] || 0) + 1;
+    inc['ml:drawer_resize_staged']['no_bins'] =
+      (inc['ml:drawer_resize_staged']['no_bins'] || 0) + 1;
   }
 
   // Track total drawer resizes
@@ -1750,9 +1837,14 @@ function aggregateFillOperation(event: FillOperationEvent, inc: Increments): voi
   }
 
   // Track bins created per fill (helps understand fill efficiency)
-  const binsBucket = bins_created <= 10 ? 'small' :
-    bins_created <= 50 ? 'medium' :
-    bins_created <= 100 ? 'large' : 'xlarge';
+  const binsBucket =
+    bins_created <= 10
+      ? 'small'
+      : bins_created <= 50
+        ? 'medium'
+        : bins_created <= 100
+          ? 'large'
+          : 'xlarge';
   inc['ml:fill_bins'] = inc['ml:fill_bins'] || {};
   inc['ml:fill_bins'][binsBucket] = (inc['ml:fill_bins'][binsBucket] || 0) + 1;
 
@@ -1889,12 +1981,18 @@ function aggregateUndo(event: UndoEvent, inc: Increments): void {
   // Track by action + timing (e.g., "placement_immediate" indicates bad auto-suggestion)
   const actionTimingKey = `${action_undone}_${timingBucket}`;
   inc['ml:neg:undo_action_timing'] = inc['ml:neg:undo_action_timing'] || {};
-  inc['ml:neg:undo_action_timing'][actionTimingKey] = (inc['ml:neg:undo_action_timing'][actionTimingKey] || 0) + 1;
+  inc['ml:neg:undo_action_timing'][actionTimingKey] =
+    (inc['ml:neg:undo_action_timing'][actionTimingKey] || 0) + 1;
 
   // Track bins affected (bulk undos vs single-bin undos)
-  const binsBucket = bins_affected <= 1 ? 'single' :
-    bins_affected <= 5 ? 'few' :
-    bins_affected <= 20 ? 'many' : 'bulk';
+  const binsBucket =
+    bins_affected <= 1
+      ? 'single'
+      : bins_affected <= 5
+        ? 'few'
+        : bins_affected <= 20
+          ? 'many'
+          : 'bulk';
   inc['ml:neg:undo_scale'] = inc['ml:neg:undo_scale'] || {};
   inc['ml:neg:undo_scale'][binsBucket] = (inc['ml:neg:undo_scale'][binsBucket] || 0) + 1;
 
@@ -1915,16 +2013,19 @@ function aggregateUndo(event: UndoEvent, inc: Increments): void {
  * - ml:neg:resize_correct:{size}         → What users resize corrected bins to
  */
 function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments): void {
-  const { correction_type, original_size, new_size, placement_method, time_to_correction_ms } = event;
+  const { correction_type, original_size, new_size, placement_method, time_to_correction_ms } =
+    event;
 
   // Track correction type (delete, resize, move)
   inc['ml:neg:quick_corrections'] = inc['ml:neg:quick_corrections'] || {};
-  inc['ml:neg:quick_corrections'][correction_type] = (inc['ml:neg:quick_corrections'][correction_type] || 0) + 1;
+  inc['ml:neg:quick_corrections'][correction_type] =
+    (inc['ml:neg:quick_corrections'][correction_type] || 0) + 1;
 
   // STRONG NEGATIVE SIGNAL: Track which sizes get quickly corrected
   // These are sizes the model should NOT suggest
   inc['ml:neg:corrected_sizes'] = inc['ml:neg:corrected_sizes'] || {};
-  inc['ml:neg:corrected_sizes'][original_size] = (inc['ml:neg:corrected_sizes'][original_size] || 0) + 1;
+  inc['ml:neg:corrected_sizes'][original_size] =
+    (inc['ml:neg:corrected_sizes'][original_size] || 0) + 1;
 
   // Track which placement methods produce quick corrections
   // High correction rate for a method = that method needs improvement
@@ -1943,7 +2044,8 @@ function aggregateQuickCorrection(event: QuickCorrectionEvent, inc: Increments):
     timingBucket = 'considered';
   }
   inc['ml:neg:correction_timing'] = inc['ml:neg:correction_timing'] || {};
-  inc['ml:neg:correction_timing'][timingBucket] = (inc['ml:neg:correction_timing'][timingBucket] || 0) + 1;
+  inc['ml:neg:correction_timing'][timingBucket] =
+    (inc['ml:neg:correction_timing'][timingBucket] || 0) + 1;
 
   // For resize corrections, track the size transition (what user ACTUALLY wanted)
   if (correction_type === 'resize' && new_size) {
@@ -1972,8 +2074,7 @@ function aggregateBinAbandonment(event: AbandonedBinEvent, inc: Increments): voi
   // STRONG NEGATIVE SIGNAL: Track which sizes get abandoned
   // These are sizes the model should be cautious about suggesting
   inc['ml:neg:abandoned_sizes'] = inc['ml:neg:abandoned_sizes'] || {};
-  inc['ml:neg:abandoned_sizes'][bin_size] =
-    (inc['ml:neg:abandoned_sizes'][bin_size] || 0) + 1;
+  inc['ml:neg:abandoned_sizes'][bin_size] = (inc['ml:neg:abandoned_sizes'][bin_size] || 0) + 1;
 
   // Track abandonment by creation method
   // High abandonment for a method = that method produces regrettable placements
@@ -2004,8 +2105,7 @@ function aggregateBinAbandonment(event: AbandonedBinEvent, inc: Increments): voi
 
   // Track total
   inc['ml:neg:abandonment_total'] = inc['ml:neg:abandonment_total'] || {};
-  inc['ml:neg:abandonment_total']['total'] =
-    (inc['ml:neg:abandonment_total']['total'] || 0) + 1;
+  inc['ml:neg:abandonment_total']['total'] = (inc['ml:neg:abandonment_total']['total'] || 0) + 1;
 }
 
 /**
@@ -2020,7 +2120,8 @@ function aggregateBinAbandonment(event: AbandonedBinEvent, inc: Increments): voi
  * - ml:cross_layout_total             → Total cross-layout events
  */
 function aggregateCrossLayoutPattern(event: CrossLayoutPatternEvent, inc: Increments): void {
-  const { drawer_size, inferred_purpose, inferred_purpose_confidence, label_size_consistency } = event;
+  const { drawer_size, inferred_purpose, inferred_purpose_confidence, label_size_consistency } =
+    event;
 
   // Track inferred purpose by drawer size
   if (inferred_purpose) {
@@ -2030,10 +2131,15 @@ function aggregateCrossLayoutPattern(event: CrossLayoutPatternEvent, inc: Increm
   }
 
   // Track confidence distribution (bucketed)
-  const confidenceBucket = inferred_purpose_confidence < 0.4 ? 'low' :
-    inferred_purpose_confidence < 0.7 ? 'medium' : 'high';
+  const confidenceBucket =
+    inferred_purpose_confidence < 0.4
+      ? 'low'
+      : inferred_purpose_confidence < 0.7
+        ? 'medium'
+        : 'high';
   inc['ml:purpose_confidence'] = inc['ml:purpose_confidence'] || {};
-  inc['ml:purpose_confidence'][confidenceBucket] = (inc['ml:purpose_confidence'][confidenceBucket] || 0) + 1;
+  inc['ml:purpose_confidence'][confidenceBucket] =
+    (inc['ml:purpose_confidence'][confidenceBucket] || 0) + 1;
 
   // Track label-size consistency
   let consistentCount = 0;
@@ -2052,8 +2158,10 @@ function aggregateCrossLayoutPattern(event: CrossLayoutPatternEvent, inc: Increm
   }
 
   inc['ml:label_consistency'] = inc['ml:label_consistency'] || {};
-  inc['ml:label_consistency']['consistent'] = (inc['ml:label_consistency']['consistent'] || 0) + consistentCount;
-  inc['ml:label_consistency']['inconsistent'] = (inc['ml:label_consistency']['inconsistent'] || 0) + inconsistentCount;
+  inc['ml:label_consistency']['consistent'] =
+    (inc['ml:label_consistency']['consistent'] || 0) + consistentCount;
+  inc['ml:label_consistency']['inconsistent'] =
+    (inc['ml:label_consistency']['inconsistent'] || 0) + inconsistentCount;
 
   // Track total cross-layout events
   inc['ml:cross_layout_total'] = inc['ml:cross_layout_total'] || {};
@@ -2090,45 +2198,78 @@ function aggregateSessionSummary(event: SessionSummaryEvent, inc: Increments): v
   } = event;
 
   // 1. Track bins placed per session (histogram buckets)
-  const binsBucket = bins_placed === 0 ? '0' :
-    bins_placed <= 5 ? '1-5' :
-    bins_placed <= 10 ? '6-10' :
-    bins_placed <= 20 ? '11-20' :
-    bins_placed <= 50 ? '21-50' : '51+';
+  const binsBucket =
+    bins_placed === 0
+      ? '0'
+      : bins_placed <= 5
+        ? '1-5'
+        : bins_placed <= 10
+          ? '6-10'
+          : bins_placed <= 20
+            ? '11-20'
+            : bins_placed <= 50
+              ? '21-50'
+              : '51+';
   inc['ml:session:bins_placed'] = inc['ml:session:bins_placed'] || {};
   inc['ml:session:bins_placed'][binsBucket] = (inc['ml:session:bins_placed'][binsBucket] || 0) + 1;
 
   // 2. Track edit-to-done ratio buckets
-  const editRatioBucket = edit_to_done_ratio === 0 ? 'zero' :
-    edit_to_done_ratio < 0.3 ? 'low' :
-    edit_to_done_ratio < 0.6 ? 'medium' : 'high';
+  const editRatioBucket =
+    edit_to_done_ratio === 0
+      ? 'zero'
+      : edit_to_done_ratio < 0.3
+        ? 'low'
+        : edit_to_done_ratio < 0.6
+          ? 'medium'
+          : 'high';
   inc['ml:session:edit_ratio'] = inc['ml:session:edit_ratio'] || {};
-  inc['ml:session:edit_ratio'][editRatioBucket] = (inc['ml:session:edit_ratio'][editRatioBucket] || 0) + 1;
+  inc['ml:session:edit_ratio'][editRatioBucket] =
+    (inc['ml:session:edit_ratio'][editRatioBucket] || 0) + 1;
 
   // 3. Track time to first bin buckets
   if (time_to_first_bin_ms !== null) {
-    const ttfbBucket = time_to_first_bin_ms < 10_000 ? 'quick' :      // <10s
-      time_to_first_bin_ms < 30_000 ? 'normal' :                        // 10-30s
-      time_to_first_bin_ms < 120_000 ? 'slow' : 'very_slow';            // 30-120s, >120s
+    const ttfbBucket =
+      time_to_first_bin_ms < 10_000
+        ? 'quick' // <10s
+        : time_to_first_bin_ms < 30_000
+          ? 'normal' // 10-30s
+          : time_to_first_bin_ms < 120_000
+            ? 'slow'
+            : 'very_slow'; // 30-120s, >120s
     inc['ml:session:time_to_first'] = inc['ml:session:time_to_first'] || {};
-    inc['ml:session:time_to_first'][ttfbBucket] = (inc['ml:session:time_to_first'][ttfbBucket] || 0) + 1;
+    inc['ml:session:time_to_first'][ttfbBucket] =
+      (inc['ml:session:time_to_first'][ttfbBucket] || 0) + 1;
   }
 
   // 4. Track confidence score distribution (buckets of 0.2)
-  const confidenceBucket = confidence_score < 0.2 ? 'very_low' :
-    confidence_score < 0.4 ? 'low' :
-    confidence_score < 0.6 ? 'medium' :
-    confidence_score < 0.8 ? 'high' : 'very_high';
+  const confidenceBucket =
+    confidence_score < 0.2
+      ? 'very_low'
+      : confidence_score < 0.4
+        ? 'low'
+        : confidence_score < 0.6
+          ? 'medium'
+          : confidence_score < 0.8
+            ? 'high'
+            : 'very_high';
   inc['ml:session:confidence'] = inc['ml:session:confidence'] || {};
-  inc['ml:session:confidence'][confidenceBucket] = (inc['ml:session:confidence'][confidenceBucket] || 0) + 1;
+  inc['ml:session:confidence'][confidenceBucket] =
+    (inc['ml:session:confidence'][confidenceBucket] || 0) + 1;
 
   // 5. Track session duration buckets
-  const durationBucket = session_duration_ms < 60_000 ? '<1min' :
-    session_duration_ms < 300_000 ? '1-5min' :
-    session_duration_ms < 900_000 ? '5-15min' :
-    session_duration_ms < 1800_000 ? '15-30min' : '30min+';
+  const durationBucket =
+    session_duration_ms < 60_000
+      ? '<1min'
+      : session_duration_ms < 300_000
+        ? '1-5min'
+        : session_duration_ms < 900_000
+          ? '5-15min'
+          : session_duration_ms < 1800_000
+            ? '15-30min'
+            : '30min+';
   inc['ml:session:duration'] = inc['ml:session:duration'] || {};
-  inc['ml:session:duration'][durationBucket] = (inc['ml:session:duration'][durationBucket] || 0) + 1;
+  inc['ml:session:duration'][durationBucket] =
+    (inc['ml:session:duration'][durationBucket] || 0) + 1;
 
   // 6. Track size sequences by drawer (first 5 sizes as pattern)
   if (size_sequence.length >= 2) {
@@ -2139,9 +2280,8 @@ function aggregateSessionSummary(event: SessionSummaryEvent, inc: Increments): v
   }
 
   // 7. Track undo count distribution
-  const undoBucket = undo_count === 0 ? '0' :
-    undo_count <= 2 ? '1-2' :
-    undo_count <= 5 ? '3-5' : '6+';
+  const undoBucket =
+    undo_count === 0 ? '0' : undo_count <= 2 ? '1-2' : undo_count <= 5 ? '3-5' : '6+';
   inc['ml:session:undo_count'] = inc['ml:session:undo_count'] || {};
   inc['ml:session:undo_count'][undoBucket] = (inc['ml:session:undo_count'][undoBucket] || 0) + 1;
 
@@ -2176,10 +2316,7 @@ function aggregateSessionSummary(event: SessionSummaryEvent, inc: Increments): v
  * @param res - VercelResponse used to send the JSON response
  */
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-): Promise<void> {
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   // Only accept POST
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -2322,9 +2459,11 @@ export default async function handler(
       // Add TTLs for keys that can grow unbounded (90 days)
       // These are lower-value or temporary data
       // Use NX flag to only set TTL on first creation, not reset on every write
-      if (hash === 'ml:unknown_hashes' ||
-          hash.startsWith('ml:size_seq:') ||
-          hash.startsWith('ml:cooccur:')) {
+      if (
+        hash === 'ml:unknown_hashes' ||
+        hash.startsWith('ml:size_seq:') ||
+        hash.startsWith('ml:cooccur:')
+      ) {
         pipe.expire(hash, 90 * 24 * 60 * 60, 'NX'); // 90 days, only if no TTL exists
       }
     }
