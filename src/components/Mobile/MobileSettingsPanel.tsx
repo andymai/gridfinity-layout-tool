@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useSettingsStore } from '@/core/store';
-// Import useLabsStore directly to avoid circular dependency via barrel export
+// Import stores directly to avoid circular dependency via barrel export
+import { useSettingsStore } from '@/core/store/settings';
 import { useLabsStore } from '@/core/store/labs';
 import { getFeature } from '@/core/labs';
 import { useShallow } from 'zustand/shallow';

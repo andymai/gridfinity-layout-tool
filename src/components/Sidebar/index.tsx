@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, Suspense, lazy } from 'react';
+import { useState, useRef, useCallback, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '@/core/store';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
@@ -13,13 +13,14 @@ import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { useResponsive } from '@/shared/hooks';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 
-// Lazy load modals/galleries - only loaded when opened
-const InspirationGallery = lazy(() =>
-  import('@/features/inspiration-gallery').then((m) => ({ default: m.InspirationGallery }))
+// Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
+const InspirationGallery = lazyWithRetry(() =>
+  import('@/features/inspiration-gallery').then(namedExport('InspirationGallery'))
 );
-const SettingsModal = lazy(() =>
-  import('@/components/Modals/SettingsModal').then((m) => ({ default: m.SettingsModal }))
+const SettingsModal = lazyWithRetry(() =>
+  import('@/components/Modals/SettingsModal').then(namedExport('SettingsModal'))
 );
 
 export function Sidebar() {

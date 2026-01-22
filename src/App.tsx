@@ -1,6 +1,13 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useLibraryStore, useSelectionStore, useViewStore } from './core/store';
+import {
+  useLayoutStore,
+  useLibraryStore,
+  useSelectionStore,
+  useViewStore,
+  useLabsStore,
+  useUIStore,
+} from './core/store';
 import {
   useLayoutRouting,
   useAnalytics,
@@ -104,6 +111,19 @@ export default function App() {
 
   // Collaborative mode detection
   const { isCollaborative, shareId } = useCollabMode();
+
+  // Lazy loading conditions - only load chunks when actually needed
+  const isLabsDrawerOpen = useLabsStore((state) => state.isDrawerOpen);
+  const hasSharedLayoutPreview = useUIStore((state) => state.sharedLayoutPreview !== null);
+
+  // Check if URL contains share parameters (determines if SharedLayoutImporter is needed)
+  // This is checked once at component mount and doesn't re-run on URL changes
+  // (SharedLayoutImporter handles subsequent URL changes internally)
+  const [hasShareUrl] = useState(() => {
+    const hash = window.location.hash;
+    const pathname = window.location.pathname;
+    return hash.includes('share=') || /^\/l\/[a-zA-Z0-9]{12}$/.test(pathname);
+  });
 
   // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
   useOwnedShareSync();
@@ -226,9 +246,11 @@ export default function App() {
     return wrapWithMutations(
       <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
         {/* Shared layout banner (shown when viewing unsaved shared layout) */}
-        <Suspense fallback={null}>
-          <SharedLayoutBanner />
-        </Suspense>
+        {hasSharedLayoutPreview && (
+          <Suspense fallback={null}>
+            <SharedLayoutBanner />
+          </Suspense>
+        )}
 
         {/* Header */}
         <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
@@ -296,15 +318,19 @@ export default function App() {
         {/* Toast notifications */}
         <ToastContainer />
 
-        {/* Shared layout URL importer */}
-        <Suspense fallback={null}>
-          <SharedLayoutImporter />
-        </Suspense>
+        {/* Shared layout URL importer - only load when URL has share params */}
+        {hasShareUrl && (
+          <Suspense fallback={null}>
+            <SharedLayoutImporter />
+          </Suspense>
+        )}
 
-        {/* Labs drawer */}
-        <Suspense fallback={null}>
-          <LabsDrawer />
-        </Suspense>
+        {/* Labs drawer - only load when drawer is open */}
+        {isLabsDrawerOpen && (
+          <Suspense fallback={null}>
+            <LabsDrawer />
+          </Suspense>
+        )}
       </div>
     );
   }
@@ -313,9 +339,11 @@ export default function App() {
   return wrapWithMutations(
     <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
-      <Suspense fallback={null}>
-        <SharedLayoutBanner />
-      </Suspense>
+      {hasSharedLayoutPreview && (
+        <Suspense fallback={null}>
+          <SharedLayoutBanner />
+        </Suspense>
+      )}
 
       {/* Header */}
       <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
@@ -375,15 +403,19 @@ export default function App() {
       {/* ARIA live region for screen reader announcements */}
       <LiveRegion />
 
-      {/* Shared layout URL importer */}
-      <Suspense fallback={null}>
-        <SharedLayoutImporter />
-      </Suspense>
+      {/* Shared layout URL importer - only load when URL has share params */}
+      {hasShareUrl && (
+        <Suspense fallback={null}>
+          <SharedLayoutImporter />
+        </Suspense>
+      )}
 
-      {/* Labs drawer */}
-      <Suspense fallback={null}>
-        <LabsDrawer />
-      </Suspense>
+      {/* Labs drawer - only load when drawer is open */}
+      {isLabsDrawerOpen && (
+        <Suspense fallback={null}>
+          <LabsDrawer />
+        </Suspense>
+      )}
     </div>
   );
 }
