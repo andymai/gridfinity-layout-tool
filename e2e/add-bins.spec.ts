@@ -93,7 +93,9 @@ test.describe('Add Bins Flow', () => {
 
     // The inspector should show bin details
     const inspector = getInspector(page);
-    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({ timeout: 3000 });
+    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({
+      timeout: 3000,
+    });
   });
 
   test('can draw a bin by dragging on grid', async ({ page }) => {
@@ -107,7 +109,9 @@ test.describe('Add Bins Flow', () => {
     // Should see a bin created - the inspector should show selection
     const inspector = getInspector(page);
     // Look for size notation like "3×3 Bin" in the inspector header
-    await expect(inspector.getByRole('heading', { name: /\d×\d Bin/i })).toBeVisible({ timeout: 3000 });
+    await expect(inspector.getByRole('heading', { name: /\d×\d Bin/i })).toBeVisible({
+      timeout: 3000,
+    });
 
     // Verify the bin is selected
     await waitForBinSelected(bin);

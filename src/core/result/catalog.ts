@@ -371,10 +371,7 @@ export function getUserMessage(error: {
   const message = info.userMessage || info.defaultMessage;
 
   if (error.metadata) {
-    return formatErrorMessage(
-      message,
-      error.metadata as Record<string, string | number>
-    );
+    return formatErrorMessage(message, error.metadata as Record<string, string | number>);
   }
 
   return message;
@@ -402,10 +399,7 @@ export function getRecoveryHint(error: {
   if (!info.recoveryHint) return undefined;
 
   if (error.metadata) {
-    return formatErrorMessage(
-      info.recoveryHint,
-      error.metadata as Record<string, string | number>
-    );
+    return formatErrorMessage(info.recoveryHint, error.metadata as Record<string, string | number>);
   }
 
   return info.recoveryHint;

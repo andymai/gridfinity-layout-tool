@@ -144,7 +144,7 @@ describe('bins utilities', () => {
     it('should return only staging bins when includeStaging and layerIds=[STAGING_ID]', () => {
       const result = getVisibleBins(bins, {
         includeStaging: true,
-        layerIds: [STAGING_ID]
+        layerIds: [STAGING_ID],
       });
       expect(result).toHaveLength(2);
       expect(result.map((b) => b.id)).toEqual(['bin4', 'bin5']);

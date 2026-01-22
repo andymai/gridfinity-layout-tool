@@ -20,10 +20,7 @@ interface ConnectionIndicatorProps {
 }
 
 /** Status-specific styling */
-const STATUS_STYLES: Record<
-  ConnectionStatus,
-  { bg: string; label: string; animate: boolean }
-> = {
+const STATUS_STYLES: Record<ConnectionStatus, { bg: string; label: string; animate: boolean }> = {
   connected: {
     bg: 'bg-success',
     label: 'Connected',

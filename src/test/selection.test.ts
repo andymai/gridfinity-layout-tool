@@ -171,10 +171,7 @@ describe('applyGroupDelta', () => {
   });
 
   it('preserves relative positions', () => {
-    const bins = [
-      createBin({ id: 'a', x: 1, y: 2 }),
-      createBin({ id: 'b', x: 4, y: 5 }),
-    ];
+    const bins = [createBin({ id: 'a', x: 1, y: 2 }), createBin({ id: 'b', x: 4, y: 5 })];
     const result = applyGroupDelta(bins, 3, 2);
 
     const posA = result.get('a')!;
@@ -247,10 +244,10 @@ describe('integration: constrainGroupDelta + applyGroupDelta', () => {
 
     // Try to move in each direction
     const directions = [
-      { dx: 100, dy: 0 },   // right
-      { dx: -100, dy: 0 },  // left
-      { dx: 0, dy: 100 },   // up
-      { dx: 0, dy: -100 },  // down
+      { dx: 100, dy: 0 }, // right
+      { dx: -100, dy: 0 }, // left
+      { dx: 0, dy: 100 }, // up
+      { dx: 0, dy: -100 }, // down
       { dx: 100, dy: 100 }, // diagonal
     ];
 

@@ -41,7 +41,18 @@ describe('ShareModal', () => {
     categories: [{ id: 'coral', name: 'Coral', color: '#FF6B6B' }],
     layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
     bins: [
-      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
+      {
+        id: 'bin1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      },
     ],
   };
 
@@ -74,9 +85,7 @@ describe('ShareModal', () => {
 
   describe('rendering', () => {
     it('returns null when not open', () => {
-      const { container } = render(
-        <ShareModal isOpen={false} onClose={mockOnClose} />
-      );
+      const { container } = render(<ShareModal isOpen={false} onClose={mockOnClose} />);
       expect(container.firstChild).toBeNull();
     });
 
@@ -221,7 +230,6 @@ describe('ShareModal', () => {
 
       expect(analytics.trackLayoutSnapshot).toHaveBeenCalledWith(mockLayout, 'export_json');
     });
-
   });
 
   describe('JSON tab', () => {
@@ -327,7 +335,9 @@ describe('ShareModal', () => {
     it('does not close when modal content clicked', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
 
-      const content = screen.getByText('Share Layout').closest('div[class*="bg-surface-elevated"]')!;
+      const content = screen
+        .getByText('Share Layout')
+        .closest('div[class*="bg-surface-elevated"]')!;
       fireEvent.click(content);
 
       expect(mockOnClose).not.toHaveBeenCalled();
@@ -399,7 +409,7 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByText('Copy'));
 
       // Wait a bit to ensure state would have updated if successful
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(screen.queryByText('Copied!')).not.toBeInTheDocument();
     });

@@ -101,9 +101,7 @@ describe('PrintListSummary', () => {
 });
 
 describe('SplitPreview', () => {
-  const pieces: PrintPiece[] = [
-    { width: 4, depth: 4, count: 4 },
-  ];
+  const pieces: PrintPiece[] = [{ width: 4, depth: 4, count: 4 }];
 
   it('renders split pieces', () => {
     render(<SplitPreview width={8} depth={8} pieces={pieces} />);
@@ -129,9 +127,7 @@ describe('SplitPreview', () => {
   });
 
   it('applies custom gap', () => {
-    const { container } = render(
-      <SplitPreview width={8} depth={8} pieces={pieces} gap={4} />
-    );
+    const { container } = render(<SplitPreview width={8} depth={8} pieces={pieces} gap={4} />);
 
     const wrapper = container.querySelector('.relative');
     expect(wrapper).toHaveStyle({ width: '156px' }); // 8 * 16 + 7 * 4 = 156
@@ -150,9 +146,7 @@ describe('SplitPreview', () => {
   });
 
   it('handles single piece', () => {
-    const singlePiece: PrintPiece[] = [
-      { width: 6, depth: 6, count: 1 },
-    ];
+    const singlePiece: PrintPiece[] = [{ width: 6, depth: 6, count: 1 }];
 
     render(<SplitPreview width={6} depth={6} pieces={singlePiece} />);
 

@@ -98,10 +98,7 @@ export function findNearestBinInDirection(
  * Check if a bin overlaps with a given position/size.
  * Used for collision detection during keyboard drag/resize.
  */
-export function doesBinOverlap(
-  bin1: BinPosition,
-  bin2: BinPosition
-): boolean {
+export function doesBinOverlap(bin1: BinPosition, bin2: BinPosition): boolean {
   return !(
     bin1.x >= bin2.x + bin2.width ||
     bin1.x + bin1.width <= bin2.x ||

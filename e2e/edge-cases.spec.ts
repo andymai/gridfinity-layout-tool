@@ -92,7 +92,9 @@ test.describe('Edge Cases', () => {
   });
 
   test('handles zoom at extremes', async ({ page }) => {
-    const zoomDisplay = page.locator('[role="group"][aria-label="Zoom controls"] span.tabular-nums');
+    const zoomDisplay = page.locator(
+      '[role="group"][aria-label="Zoom controls"] span.tabular-nums'
+    );
     await expect(zoomDisplay).toBeVisible();
 
     // Get initial zoom

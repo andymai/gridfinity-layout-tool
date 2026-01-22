@@ -11,7 +11,8 @@ const mockUseMutation = vi.fn();
 const mockUpdateRemoteLayout = vi.fn();
 
 vi.mock('../../liveblocks.config', () => ({
-  useStorage: (selector: (root: { layout: Layout } | null) => Layout | null) => mockUseStorage(selector),
+  useStorage: (selector: (root: { layout: Layout } | null) => Layout | null) =>
+    mockUseStorage(selector),
   useMutation: (callback: unknown) => {
     mockUseMutation(callback);
     return mockUpdateRemoteLayout;

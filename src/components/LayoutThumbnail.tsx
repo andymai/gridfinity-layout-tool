@@ -35,14 +35,7 @@ export function LayoutThumbnail({ preview, size = 48, className = '' }: LayoutTh
       aria-hidden="true"
     >
       {/* Drawer background */}
-      <rect
-        x={0}
-        y={0}
-        width={width}
-        height={height}
-        rx={2}
-        className="fill-surface-secondary"
-      />
+      <rect x={0} y={0} width={width} height={height} rx={2} className="fill-surface-secondary" />
 
       {/* Inner drawer area */}
       <rect

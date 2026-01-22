@@ -94,10 +94,7 @@ export const THEME_CONFIG: Record<
 /**
  * Feature metadata for badges.
  */
-export const FEATURE_CONFIG: Record<
-  LayoutFeature,
-  { label: string; description: string }
-> = {
+export const FEATURE_CONFIG: Record<LayoutFeature, { label: string; description: string }> = {
   'multiple-layers': {
     label: 'Multi-layer',
     description: 'Uses multiple vertical layers for stacking',

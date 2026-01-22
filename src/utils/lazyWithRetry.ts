@@ -34,7 +34,7 @@ export function lazyWithRetry<T extends ComponentType<any>>(
 
         if (attempt < retries) {
           // Wait a bit before retrying (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, attempt)));
+          await new Promise((resolve) => setTimeout(resolve, 100 * Math.pow(2, attempt)));
           continue;
         }
 

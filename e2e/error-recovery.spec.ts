@@ -39,16 +39,21 @@ test.describe('Error Recovery', () => {
       await page.evaluate(() => {
         // Set corrupted JSON for the active layout
         localStorage.setItem('gridfinity-layout-test-corrupt', 'not valid json {{{');
-        localStorage.setItem('gridfinity-library-v1', JSON.stringify({
-          activeLayoutId: 'test-corrupt',
-          settings: {},
-          layouts: [{
-            id: 'test-corrupt',
-            name: 'Corrupted Layout',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          }]
-        }));
+        localStorage.setItem(
+          'gridfinity-library-v1',
+          JSON.stringify({
+            activeLayoutId: 'test-corrupt',
+            settings: {},
+            layouts: [
+              {
+                id: 'test-corrupt',
+                name: 'Corrupted Layout',
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              },
+            ],
+          })
+        );
       });
 
       // Reload to trigger loading corrupted data
@@ -97,16 +102,21 @@ test.describe('Error Recovery', () => {
           categories: [{ id: 'default', name: 'Default', color: '#3b82f6' }],
         };
         localStorage.setItem(`gridfinity-layout-${layoutId}`, JSON.stringify(invalidLayout));
-        localStorage.setItem('gridfinity-library-v1', JSON.stringify({
-          activeLayoutId: layoutId,
-          settings: {},
-          layouts: [{
-            id: layoutId,
-            name: 'Missing Drawer',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          }]
-        }));
+        localStorage.setItem(
+          'gridfinity-library-v1',
+          JSON.stringify({
+            activeLayoutId: layoutId,
+            settings: {},
+            layouts: [
+              {
+                id: layoutId,
+                name: 'Missing Drawer',
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              },
+            ],
+          })
+        );
       });
 
       await page.reload();
@@ -128,27 +138,62 @@ test.describe('Error Recovery', () => {
           layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
           bins: [
             // Bin with negative dimensions
-            { id: 'bin-1', x: 0, y: 0, width: -1, depth: -1, height: 3, layerId: 'layer-1', category: 'default' },
+            {
+              id: 'bin-1',
+              x: 0,
+              y: 0,
+              width: -1,
+              depth: -1,
+              height: 3,
+              layerId: 'layer-1',
+              category: 'default',
+            },
             // Bin with missing fields
             { id: 'bin-2' },
             // Bin out of bounds
-            { id: 'bin-3', x: 100, y: 100, width: 2, depth: 2, height: 3, layerId: 'layer-1', category: 'default' },
+            {
+              id: 'bin-3',
+              x: 100,
+              y: 100,
+              width: 2,
+              depth: 2,
+              height: 3,
+              layerId: 'layer-1',
+              category: 'default',
+            },
             // Valid bin
-            { id: 'bin-4', x: 0, y: 0, width: 2, depth: 2, height: 3, layerId: 'layer-1', category: 'default' },
+            {
+              id: 'bin-4',
+              x: 0,
+              y: 0,
+              width: 2,
+              depth: 2,
+              height: 3,
+              layerId: 'layer-1',
+              category: 'default',
+            },
           ],
           categories: [{ id: 'default', name: 'Default', color: '#3b82f6' }],
         };
-        localStorage.setItem(`gridfinity-layout-${layoutId}`, JSON.stringify(layoutWithInvalidBins));
-        localStorage.setItem('gridfinity-library-v1', JSON.stringify({
-          activeLayoutId: layoutId,
-          settings: {},
-          layouts: [{
-            id: layoutId,
-            name: 'Invalid Bins',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          }]
-        }));
+        localStorage.setItem(
+          `gridfinity-layout-${layoutId}`,
+          JSON.stringify(layoutWithInvalidBins)
+        );
+        localStorage.setItem(
+          'gridfinity-library-v1',
+          JSON.stringify({
+            activeLayoutId: layoutId,
+            settings: {},
+            layouts: [
+              {
+                id: layoutId,
+                name: 'Invalid Bins',
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              },
+            ],
+          })
+        );
       });
 
       await page.reload();
@@ -183,16 +228,21 @@ test.describe('Error Recovery', () => {
       await page.goto('/');
       await page.evaluate(() => {
         // Library references a layout that doesn't exist in storage
-        localStorage.setItem('gridfinity-library-v1', JSON.stringify({
-          activeLayoutId: 'non-existent-layout-id',
-          settings: {},
-          layouts: [{
-            id: 'non-existent-layout-id',
-            name: 'Ghost Layout',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          }]
-        }));
+        localStorage.setItem(
+          'gridfinity-library-v1',
+          JSON.stringify({
+            activeLayoutId: 'non-existent-layout-id',
+            settings: {},
+            layouts: [
+              {
+                id: 'non-existent-layout-id',
+                name: 'Ghost Layout',
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              },
+            ],
+          })
+        );
         // Don't set the actual layout data
       });
 
@@ -216,17 +266,25 @@ test.describe('Error Recovery', () => {
           bins: [],
           // categories array missing
         };
-        localStorage.setItem(`gridfinity-layout-${layoutId}`, JSON.stringify(layoutWithoutCategories));
-        localStorage.setItem('gridfinity-library-v1', JSON.stringify({
-          activeLayoutId: layoutId,
-          settings: {},
-          layouts: [{
-            id: layoutId,
-            name: 'No Categories',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          }]
-        }));
+        localStorage.setItem(
+          `gridfinity-layout-${layoutId}`,
+          JSON.stringify(layoutWithoutCategories)
+        );
+        localStorage.setItem(
+          'gridfinity-library-v1',
+          JSON.stringify({
+            activeLayoutId: layoutId,
+            settings: {},
+            layouts: [
+              {
+                id: layoutId,
+                name: 'No Categories',
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              },
+            ],
+          })
+        );
       });
 
       await page.reload();
@@ -250,16 +308,21 @@ test.describe('Error Recovery', () => {
           // layers array missing
         };
         localStorage.setItem(`gridfinity-layout-${layoutId}`, JSON.stringify(layoutWithoutLayers));
-        localStorage.setItem('gridfinity-library-v1', JSON.stringify({
-          activeLayoutId: layoutId,
-          settings: {},
-          layouts: [{
-            id: layoutId,
-            name: 'No Layers',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          }]
-        }));
+        localStorage.setItem(
+          'gridfinity-library-v1',
+          JSON.stringify({
+            activeLayoutId: layoutId,
+            settings: {},
+            layouts: [
+              {
+                id: layoutId,
+                name: 'No Layers',
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              },
+            ],
+          })
+        );
       });
 
       await page.reload();
@@ -284,17 +347,25 @@ test.describe('Error Recovery', () => {
           bins: [],
           categories: [{ id: 'default', name: 'Default', color: '#3b82f6' }],
         };
-        localStorage.setItem(`gridfinity-layout-${layoutId}`, JSON.stringify(layoutWithStringNumbers));
-        localStorage.setItem('gridfinity-library-v1', JSON.stringify({
-          activeLayoutId: layoutId,
-          settings: {},
-          layouts: [{
-            id: layoutId,
-            name: 'String Numbers',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          }]
-        }));
+        localStorage.setItem(
+          `gridfinity-layout-${layoutId}`,
+          JSON.stringify(layoutWithStringNumbers)
+        );
+        localStorage.setItem(
+          'gridfinity-library-v1',
+          JSON.stringify({
+            activeLayoutId: layoutId,
+            settings: {},
+            layouts: [
+              {
+                id: layoutId,
+                name: 'String Numbers',
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              },
+            ],
+          })
+        );
       });
 
       await page.reload();
@@ -330,23 +401,28 @@ test.describe('Error Recovery', () => {
               category: 'default',
               label: null, // Explicitly null
               notes: null,
-            }
+            },
           ],
           categories: [{ id: 'default', name: 'Default', color: '#3b82f6' }],
           gridUnitMm: null, // Explicitly null
           heightUnitMm: null,
         };
         localStorage.setItem(`gridfinity-layout-${layoutId}`, JSON.stringify(layoutWithNulls));
-        localStorage.setItem('gridfinity-library-v1', JSON.stringify({
-          activeLayoutId: layoutId,
-          settings: {},
-          layouts: [{
-            id: layoutId,
-            name: 'Null Fields',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          }]
-        }));
+        localStorage.setItem(
+          'gridfinity-library-v1',
+          JSON.stringify({
+            activeLayoutId: layoutId,
+            settings: {},
+            layouts: [
+              {
+                id: layoutId,
+                name: 'Null Fields',
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              },
+            ],
+          })
+        );
       });
 
       await page.reload();
@@ -372,20 +448,36 @@ test.describe('Error Recovery', () => {
           name: 'Old Format',
           drawer: { width: 10, depth: 8, height: 12 },
           layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
-          bins: [{ id: 'bin-1', x: 0, y: 0, width: 2, depth: 2, height: 3, layerId: 'layer-1', category: 'default' }],
+          bins: [
+            {
+              id: 'bin-1',
+              x: 0,
+              y: 0,
+              width: 2,
+              depth: 2,
+              height: 3,
+              layerId: 'layer-1',
+              category: 'default',
+            },
+          ],
           categories: [{ id: 'default', name: 'Default', color: '#3b82f6' }],
         };
         localStorage.setItem(`gridfinity-layout-${layoutId}`, JSON.stringify(oldFormatLayout));
-        localStorage.setItem('gridfinity-library-v1', JSON.stringify({
-          activeLayoutId: layoutId,
-          settings: {},
-          layouts: [{
-            id: layoutId,
-            name: 'Old Format',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          }]
-        }));
+        localStorage.setItem(
+          'gridfinity-library-v1',
+          JSON.stringify({
+            activeLayoutId: layoutId,
+            settings: {},
+            layouts: [
+              {
+                id: layoutId,
+                name: 'Old Format',
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              },
+            ],
+          })
+        );
       });
 
       await page.reload();

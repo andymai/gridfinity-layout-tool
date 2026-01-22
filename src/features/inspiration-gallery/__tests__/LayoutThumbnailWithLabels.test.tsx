@@ -64,9 +64,7 @@ describe('LayoutThumbnailWithLabels', () => {
 
     it('uses fixed dimensions by default', () => {
       const layout = createTestLayout();
-      const { container } = render(
-        <LayoutThumbnailWithLabels layout={layout} size={200} />
-      );
+      const { container } = render(<LayoutThumbnailWithLabels layout={layout} size={200} />);
 
       const svg = container.querySelector('svg');
       expect(svg).toHaveAttribute('width', '200');
@@ -74,9 +72,7 @@ describe('LayoutThumbnailWithLabels', () => {
 
     it('uses responsive sizing when responsive prop is true', () => {
       const layout = createTestLayout();
-      const { container } = render(
-        <LayoutThumbnailWithLabels layout={layout} responsive />
-      );
+      const { container } = render(<LayoutThumbnailWithLabels layout={layout} responsive />);
 
       const svg = container.querySelector('svg');
       expect(svg).toHaveAttribute('width', '100%');
@@ -269,9 +265,7 @@ describe('LayoutThumbnailWithLabels', () => {
       const layout = createTestLayout({
         drawer: { width: 10, depth: 10, height: 12 },
       });
-      const { container } = render(
-        <LayoutThumbnailWithLabels layout={layout} size={100} />
-      );
+      const { container } = render(<LayoutThumbnailWithLabels layout={layout} size={100} />);
 
       const svg = container.querySelector('svg');
       expect(svg).toHaveAttribute('viewBox', '0 0 100 100');
@@ -281,9 +275,7 @@ describe('LayoutThumbnailWithLabels', () => {
       const layout = createTestLayout({
         drawer: { width: 20, depth: 10, height: 12 },
       });
-      const { container } = render(
-        <LayoutThumbnailWithLabels layout={layout} size={100} />
-      );
+      const { container } = render(<LayoutThumbnailWithLabels layout={layout} size={100} />);
 
       const svg = container.querySelector('svg');
       expect(svg).toHaveAttribute('viewBox', '0 0 100 50');
@@ -293,9 +285,7 @@ describe('LayoutThumbnailWithLabels', () => {
       const layout = createTestLayout({
         drawer: { width: 10, depth: 20, height: 12 },
       });
-      const { container } = render(
-        <LayoutThumbnailWithLabels layout={layout} size={100} />
-      );
+      const { container } = render(<LayoutThumbnailWithLabels layout={layout} size={100} />);
 
       const svg = container.querySelector('svg');
       expect(svg).toHaveAttribute('viewBox', '0 0 100 200');

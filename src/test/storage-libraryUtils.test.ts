@@ -94,10 +94,7 @@ describe('libraryUtils', () => {
 
   describe('updateLibraryEntryAtIndex', () => {
     it('updates entry at specified index', () => {
-      const entries = [
-        createMockEntry('layout-1', 'First'),
-        createMockEntry('layout-2', 'Second'),
-      ];
+      const entries = [createMockEntry('layout-1', 'First'), createMockEntry('layout-2', 'Second')];
       const library = createMockLibrary(entries);
 
       const result = updateLibraryEntryAtIndex(library, 1, { name: 'Updated' });
@@ -134,10 +131,7 @@ describe('libraryUtils', () => {
 
   describe('updateLibraryEntryById', () => {
     it('updates entry by ID', () => {
-      const entries = [
-        createMockEntry('layout-1', 'First'),
-        createMockEntry('layout-2', 'Second'),
-      ];
+      const entries = [createMockEntry('layout-1', 'First'), createMockEntry('layout-2', 'Second')];
       const library = createMockLibrary(entries);
 
       const result = updateLibraryEntryById(library, 'layout-2', {
@@ -195,10 +189,7 @@ describe('libraryUtils', () => {
     });
 
     it('does not mutate original library', () => {
-      const entries = [
-        createMockEntry('layout-1', 'First'),
-        createMockEntry('layout-2', 'Second'),
-      ];
+      const entries = [createMockEntry('layout-1', 'First'), createMockEntry('layout-2', 'Second')];
       const library = createMockLibrary(entries);
 
       const result = removeLibraryEntry(library, 'layout-2');

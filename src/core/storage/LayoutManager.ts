@@ -42,14 +42,8 @@ import {
   storageCorrupted,
   storageUnavailable,
 } from '@/core/result';
-import {
-  classifyStorageError,
-  createStorageErrorClassifier,
-} from './errorUtils';
-import {
-  findLibraryEntry,
-  updateLibraryEntryAtIndex,
-} from './libraryUtils';
+import { classifyStorageError, createStorageErrorClassifier } from './errorUtils';
+import { findLibraryEntry, updateLibraryEntryAtIndex } from './libraryUtils';
 
 // === Storage Keys ===
 
@@ -127,8 +121,8 @@ export function computePreview(layout: Layout): LayoutPreview {
   }
 
   const binMap: ThumbnailBin[] = layout.bins
-    .filter(bin => bin.layerId !== STAGING_ID)
-    .map(bin => ({
+    .filter((bin) => bin.layerId !== STAGING_ID)
+    .map((bin) => ({
       x: bin.x,
       y: bin.y,
       w: bin.width,
@@ -178,9 +172,7 @@ async function saveLayoutInternal(
 /**
  * Load layout from storage (IndexedDB with localStorage fallback).
  */
-async function loadLayoutInternal(
-  layoutId: string
-): Promise<Result<Layout, StorageError>> {
+async function loadLayoutInternal(layoutId: string): Promise<Result<Layout, StorageError>> {
   const key = getLayoutKey(layoutId);
 
   let data: Layout | null;
@@ -206,9 +198,7 @@ async function loadLayoutInternal(
 /**
  * Delete layout from storage (both IndexedDB and localStorage).
  */
-async function deleteLayoutInternal(
-  layoutId: string
-): Promise<Result<void, StorageError>> {
+async function deleteLayoutInternal(layoutId: string): Promise<Result<void, StorageError>> {
   const key = getLayoutKey(layoutId);
 
   return tryCatchAsync(
@@ -410,7 +400,7 @@ export async function deleteLayoutWithEntry(
   }
 
   // 3. Build updated library
-  const remainingEntries = library.entries.filter(e => e.id !== layoutId);
+  const remainingEntries = library.entries.filter((e) => e.id !== layoutId);
   let newActiveId: string | undefined;
 
   // If deleting active layout, switch to first remaining
@@ -462,7 +452,7 @@ export async function duplicateLayoutEntry(
   library: LayoutLibrary
 ): Promise<Result<DuplicateResult, StorageError>> {
   // 1. Find source entry
-  const sourceEntry = library.entries.find(e => e.id === sourceId);
+  const sourceEntry = library.entries.find((e) => e.id === sourceId);
   if (!sourceEntry) {
     return err(storageNotFound(getLayoutKey(sourceId)));
   }
@@ -524,14 +514,14 @@ export async function switchActiveLayout(
   library: LayoutLibrary
 ): Promise<Result<SwitchResult, StorageError>> {
   // 1. Validate target exists
-  const targetEntry = library.entries.find(e => e.id === toId);
+  const targetEntry = library.entries.find((e) => e.id === toId);
   if (!targetEntry) {
     return err(storageNotFound(getLayoutKey(toId)));
   }
 
   // 2. Save current layout (skip if it's a shared preview or was deleted)
   let updatedLibrary = library;
-  const fromEntry = library.entries.find(e => e.id === fromId);
+  const fromEntry = library.entries.find((e) => e.id === fromId);
   if (fromId !== '__shared_preview__' && fromEntry) {
     const saveResult = await saveLayoutWithMetadata(fromId, fromLayout, library);
     if (isErr(saveResult)) {

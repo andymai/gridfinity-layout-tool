@@ -30,50 +30,64 @@ vi.mock('../../shared/components/CollapsibleSection', () => ({
 }));
 
 vi.mock('../../shared/components/ConfirmDialog', () => ({
-  ConfirmDialog: ({ isOpen, onConfirm, onCancel, title, message }: {
+  ConfirmDialog: ({
+    isOpen,
+    onConfirm,
+    onCancel,
+    title,
+    message,
+  }: {
     isOpen: boolean;
     onConfirm: () => void;
     onCancel: () => void;
     title: string;
     message: string;
-  }) => (
+  }) =>
     isOpen ? (
       <div data-testid="confirm-dialog">
         <span data-testid="dialog-title">{title}</span>
         <span data-testid="dialog-message">{message}</span>
-        <button data-testid="confirm-btn" onClick={onConfirm}>Confirm</button>
-        <button data-testid="cancel-btn" onClick={onCancel}>Cancel</button>
+        <button data-testid="confirm-btn" onClick={onConfirm}>
+          Confirm
+        </button>
+        <button data-testid="cancel-btn" onClick={onCancel}>
+          Cancel
+        </button>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 vi.mock('../../components/Modals/HalfBinModeBlockedModal', () => ({
-  HalfBinModeBlockedModal: ({ isOpen, onClose, onRemediate }: {
+  HalfBinModeBlockedModal: ({
+    isOpen,
+    onClose,
+    onRemediate,
+  }: {
     isOpen: boolean;
     onClose: () => void;
     onRemediate: () => void;
-  }) => (
+  }) =>
     isOpen ? (
       <div data-testid="half-bin-blocked-modal">
-        <button data-testid="close-modal" onClick={onClose}>Close</button>
-        <button data-testid="remediate-btn" onClick={onRemediate}>Remediate</button>
+        <button data-testid="close-modal" onClick={onClose}>
+          Close
+        </button>
+        <button data-testid="remediate-btn" onClick={onRemediate}>
+          Remediate
+        </button>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 vi.mock('../../components/Modals/SettingsModal', () => ({
-  SettingsModal: ({ isOpen, onClose }: {
-    isOpen: boolean;
-    onClose: () => void;
-  }) => (
+  SettingsModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
     isOpen ? (
       <div data-testid="settings-modal">
-        <button data-testid="close-settings" onClick={onClose}>Close</button>
+        <button data-testid="close-settings" onClick={onClose}>
+          Close
+        </button>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 vi.mock('../../hooks/useResponsive', () => ({

@@ -30,7 +30,11 @@ function createDeskDrawer(): InspirationLayout {
     createBin(4, 0, 3, 4, { layerId: layer.id, categoryId: categories[0].id, label: 'Markers' }),
     // Middle section: Larger tools - 5 units deep (210mm)
     createBin(0, 4, 2, 5, { layerId: layer.id, categoryId: categories[2].id, label: 'Scissors' }),
-    createBin(2, 4, 2, 5, { layerId: layer.id, categoryId: categories[2].id, label: 'Letter Opener' }),
+    createBin(2, 4, 2, 5, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Letter Opener',
+    }),
     createBin(4, 4, 3, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Stapler' }),
     // Small supplies row
     createBin(0, 9, 1, 1, { layerId: layer.id, categoryId: categories[1].id, label: 'Clips' }),
@@ -41,8 +45,16 @@ function createDeskDrawer(): InspirationLayout {
     createBin(5, 8, 1, 1, { layerId: layer.id, categoryId: categories[1].id, label: 'Erasers' }),
     createBin(6, 8, 1, 1, { layerId: layer.id, categoryId: categories[1].id, label: 'Sharpener' }),
     // Bottom section: Larger items
-    createBin(0, 10, 4, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Tape & Glue' }),
-    createBin(4, 9, 3, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Sticky Notes' }),
+    createBin(0, 10, 4, 2, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Tape & Glue',
+    }),
+    createBin(4, 9, 3, 3, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Sticky Notes',
+    }),
   ];
 
   const layout: Layout = {
@@ -81,14 +93,44 @@ function createCableDrawer(): InspirationLayout {
 
   const bins = [
     // USB cables (various lengths)
-    createBin(0, 0, 3, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'USB-C', height: 6 }),
-    createBin(3, 0, 3, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'Lightning', height: 6 }),
-    createBin(6, 0, 3, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'Micro USB', height: 6 }),
+    createBin(0, 0, 3, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'USB-C',
+      height: 6,
+    }),
+    createBin(3, 0, 3, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Lightning',
+      height: 6,
+    }),
+    createBin(6, 0, 3, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Micro USB',
+      height: 6,
+    }),
     // Power cables
-    createBin(0, 3, 4, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Power Cables', height: 6 }),
-    createBin(4, 3, 3, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Extension', height: 6 }),
+    createBin(0, 3, 4, 3, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Power Cables',
+      height: 6,
+    }),
+    createBin(4, 3, 3, 3, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Extension',
+      height: 6,
+    }),
     // Audio/Video
-    createBin(7, 3, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'HDMI', height: 6 }),
+    createBin(7, 3, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'HDMI',
+      height: 6,
+    }),
     // Adapters
     createBin(0, 6, 2, 2, { layerId: layer.id, categoryId: categories[3].id, label: 'USB Hubs' }),
     createBin(2, 6, 2, 2, { layerId: layer.id, categoryId: categories[3].id, label: 'Dongles' }),
@@ -120,7 +162,4 @@ function createCableDrawer(): InspirationLayout {
   });
 }
 
-export const OFFICE_LAYOUTS: InspirationLayout[] = [
-  createCableDrawer(),
-  createDeskDrawer(),
-];
+export const OFFICE_LAYOUTS: InspirationLayout[] = [createCableDrawer(), createDeskDrawer()];

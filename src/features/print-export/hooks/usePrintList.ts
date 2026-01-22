@@ -7,10 +7,30 @@ import { useMemo, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore } from '@/core/store';
 import { calcMaxGridUnits } from '@/core/constants';
-import { generateEnhancedPrintList, getTotalBins, getTotalPieces, getSpoolEstimate } from '@/utils/split';
-import { applyFiltersAndSort, groupByCategory } from '@/features/print-export/utils/printListOperations';
-import { calcFilamentCost, calcSpoolPercentage, calcPrintTimeHours, DEFAULT_COST_PER_KG, DEFAULT_METERS_PER_KG } from '@/features/print-export/utils/printEstimates';
-import type { EnhancedPrintRow, PrintListGroup, PrintListFilters, PrintListSortKey, PrintListConfig } from '@/core/types';
+import {
+  generateEnhancedPrintList,
+  getTotalBins,
+  getTotalPieces,
+  getSpoolEstimate,
+} from '@/utils/split';
+import {
+  applyFiltersAndSort,
+  groupByCategory,
+} from '@/features/print-export/utils/printListOperations';
+import {
+  calcFilamentCost,
+  calcSpoolPercentage,
+  calcPrintTimeHours,
+  DEFAULT_COST_PER_KG,
+  DEFAULT_METERS_PER_KG,
+} from '@/features/print-export/utils/printEstimates';
+import type {
+  EnhancedPrintRow,
+  PrintListGroup,
+  PrintListFilters,
+  PrintListSortKey,
+  PrintListConfig,
+} from '@/core/types';
 
 const DEFAULT_FILTERS: PrintListFilters = {
   hiddenCategoryIds: new Set(),
@@ -84,7 +104,8 @@ export function usePrintList(): UsePrintListReturn {
 
   // Filtered and sorted rows
   const rows = useMemo(
-    () => applyFiltersAndSort(baseRows, filters.hiddenCategoryIds, filters.sortKey, filters.sortOrder),
+    () =>
+      applyFiltersAndSort(baseRows, filters.hiddenCategoryIds, filters.sortKey, filters.sortOrder),
     [baseRows, filters.hiddenCategoryIds, filters.sortKey, filters.sortOrder]
   );
 

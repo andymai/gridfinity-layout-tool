@@ -19,6 +19,7 @@ Focus testing on `src/shared/utils/` (~90%), `src/core/store/` (~87%), `src/hook
 ## Code Style (Enforced)
 
 **Required:**
+
 - `import type` for type-only imports
 - Explicit types (never `any`, use `unknown`)
 - Prefix unused params with `_`
@@ -77,29 +78,33 @@ src/
 
 Stores in `src/core/store/`:
 
-| Store | Purpose |
-|-------|---------|
-| `layout.ts` | Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>` |
-| `library.ts` | Multi-layout library. Tracks `activeLayoutId`, CRUD, thumbnails via `computePreview()` |
-| `settings.ts` | Persisted user preferences (localStorage: `gridfinity-settings-v1`) |
-| `history.ts` | Undo/redo (max 50). Wrap mutations with `useUndoableAction()` |
-| `toast.ts` | Toast notifications (max 3) |
-| `selection.ts` | Selected bin IDs, active layer/category |
-| `view.ts` | Zoom, panels, context menu state |
-| `interaction.ts` | Current interaction mode, drop targets, paint mode |
-| `halfBinMode.ts` | Half-bin mode toggle state |
-| `mobile.ts` | Mobile panel state, touch interactions |
-| `sharedPreview.ts` | Shared layout preview state |
+| Store              | Purpose                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| `layout.ts`        | Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>`       |
+| `library.ts`       | Multi-layout library. Tracks `activeLayoutId`, CRUD, thumbnails via `computePreview()` |
+| `settings.ts`      | Persisted user preferences (localStorage: `gridfinity-settings-v1`)                    |
+| `history.ts`       | Undo/redo (max 50). Wrap mutations with `useUndoableAction()`                          |
+| `toast.ts`         | Toast notifications (max 3)                                                            |
+| `selection.ts`     | Selected bin IDs, active layer/category                                                |
+| `view.ts`          | Zoom, panels, context menu state                                                       |
+| `interaction.ts`   | Current interaction mode, drop targets, paint mode                                     |
+| `halfBinMode.ts`   | Half-bin mode toggle state                                                             |
+| `mobile.ts`        | Mobile panel state, touch interactions                                                 |
+| `sharedPreview.ts` | Shared layout preview state                                                            |
 
 **Pattern:** Use `useShallow` for multiple selections:
+
 ```typescript
-const { drawer, bins } = useLayoutStore(useShallow((state) => ({
-  drawer: state.layout.drawer,
-  bins: state.layout.bins
-})));
+const { drawer, bins } = useLayoutStore(
+  useShallow((state) => ({
+    drawer: state.layout.drawer,
+    bins: state.layout.bins,
+  }))
+);
 ```
 
 **Undo pattern:**
+
 ```typescript
 const { execute } = useUndoableAction();
 execute(() => addBin({ ... }));
@@ -167,6 +172,7 @@ Error types: `LayoutError`, `ValidationError`, `StorageError`, `ApiError` with s
 **Grid rendering:** CSS Grid-based (NOT HTML Canvas), despite `GridCanvas.tsx` naming. DOM overlay (`Overlay.tsx`) handles interactive bins with drag/resize handles.
 
 **Responsive:** Three layout modes detected via `useResponsive.ts`:
+
 - Mobile (<768px): `Mobile/` components, lazy-loaded `MobileLayout.tsx`
 - Tablet (768-900px): `Tablet/` overlay panels
 - Desktop (>=900px): Standard sidebar layout
@@ -178,17 +184,20 @@ Error types: `LayoutError`, `ValidationError`, `StorageError`, `ApiError` with s
 Service-layer architecture with dual-write backend (IndexedDB + localStorage):
 
 **Atomic Operations (Preferred):**
+
 - `saveLayoutWithMetadata()` - Atomic layout + library save
 - `createLayoutEntry()` - Create new layout with entry
 - `deleteLayoutWithEntry()` - Delete layout and entry atomically
 - `switchActiveLayout()` - Switch and update library
 
 **Legacy CRUD:**
+
 - Async (runtime): `saveLayoutAsync()`, `loadLayoutAsync()`, `deleteLayoutAsync()`
 - Sync (init only): `saveLayoutSync()`, `loadLayoutSync()`, `deleteLayoutSync()`
 - Result-based: `saveLayoutResult()`, `loadLayoutResult()`, `deleteLayoutResult()`
 
 **Other:**
+
 - Library: `saveLibrary()`, `loadLibrary()`, `initializeLayoutLibrary()`
 - Share: `exportLayoutJSON()`, `importLayoutJSON()`, `encodeLayoutForURL()`, `decodeLayoutResult()`
 - SharedWithMe: `saveSharedWithMe()`, `loadSharedWithMe()` - Track layouts shared by others
@@ -199,6 +208,7 @@ Import from `@/core/storage` (public API facade).
 ### Interaction System (`src/hooks/interactions/`)
 
 Five interaction modes (union type):
+
 - **draw** - Drag-select to create bin
 - **drag** - Move selected bins
 - **resize** - Corner/edge handles
@@ -210,17 +220,20 @@ Five interaction modes (union type):
 Experimental feature using Liveblocks. Enable via Labs settings.
 
 **Presence data:**
+
 - Cursor position (normalized 0-1 coords)
 - User name and color
 - Interaction hints (drawing, dragging, resizing)
 - Selected bin IDs (for Figma-style selection rings)
 
 **Storage sync:**
+
 - Layout data synchronized in real-time
 - Owner permissions (view/edit) enforced
 - Schema versioning for migrations
 
 **Key hooks:**
+
 - `useCollabMode()` - Check/enable collab mode
 - `useCollabSync()` - Sync local <-> Liveblocks state
 - `useCollabPresence()` - Update presence data
@@ -237,23 +250,27 @@ const isEnabled = useFeatureFlag('collaborative_editing');
 ```
 
 Current flags:
+
 - `collaborative_editing` - Real-time collaboration (experimental)
 - `layout_to_print` - STL export (coming soon)
 
 ### Key Utilities
 
 **Validation & Collision (`src/shared/utils/`, `src/features/grid-editor/utils/`):**
+
 - `validation.ts` - `canPlaceBin()` checks bounds, height, collisions; `validateImport()` for imports
 - `collision.ts` - Collision detection, blocked zones, layer Z calculations, `getDisplayLayers()`
 - `halfBinConstraints.ts` - Validates half-bin mode toggle
 
 **Bulk Operations:**
+
 - `fill.ts` - `fillAllWithSize()`, `fillGaps()`
 - `split.ts` - `splitBinSize()` recursively splits oversized bins, `generatePrintList()` creates manifest with filament estimates
 - `printEstimates.ts` - Filament cost/spool calculations
 - **Print Bed Constraints:** `calcMaxGridUnits(printBedSizeMm, gridUnitMm)` computes max bin dimensions for printer.
 
 **Other utilities:**
+
 - `compression.ts` - LZ-string compression for URL sharing
 - `guestNames.ts` - Random guest name generation for collab
 - `throttle.ts` - Throttle/debounce for presence updates
@@ -262,6 +279,7 @@ Current flags:
 ### API (Vercel Serverless)
 
 **Backend** (`api/`):
+
 - `share.ts` - POST: Create share (Vercel Blob)
 - `share/[id].ts` - GET/PUT/DELETE share
 - `report/[id].ts` - POST: Report content
@@ -270,6 +288,7 @@ Current flags:
 - `lib/validation.ts` - 500KB max, 2500 bins max
 
 **Client** (`src/core/api/share.ts`):
+
 - `createShare()`, `updateShare()`, `fetchShare()`, `deleteShare()`, `reportShare()`
 - Types: `ShareResponse`, `ShareErrorResponse`, `ShareResult<T>`
 
@@ -278,12 +297,14 @@ Current flags:
 Privacy-preserving telemetry for training bin size prediction models. No PII stored - only aggregate counts in Redis.
 
 **Event Types:**
+
 - `bin_placed` - Size, position, label hash, drawer context, placement method
 - `layout_snapshot` - Triggered on save/export/share with size distributions
 - `bin_resized`, `bin_deleted`, `bin_moved` - User corrections (negative signals)
 - `placement_rejected`, `undo`, `quick_correction` - Strong negative signals
 
 **Client** (`src/shared/analytics/useMLTracking.ts`):
+
 ```typescript
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 
@@ -295,6 +316,7 @@ mlTracking.recordCreation(binId, 'draw', '2x3x6'); // For quick-correction detec
 Events are batched (20 events or 30s) and sent to `/api/ml-telemetry`. Redis keys prefixed with `ml:` for positive signals, `ml:neg:` for negative signals.
 
 **Auditing Production Data:**
+
 ```bash
 # Run the audit script
 ./scripts/audit-ml-telemetry.sh
@@ -309,6 +331,7 @@ See `docs/ml-telemetry-audit.md` for full audit guide, key structure documentati
 ## Constants (`src/core/constants.ts`)
 
 **Constraints:**
+
 - Grid: 0.5-50 units (half-unit increments supported)
 - Layers: 1-10, Categories: 1-20, Layouts: 100 max (warn at 80)
 - Undo: 50 states, Zoom: 0.25-4.0
@@ -316,6 +339,7 @@ See `docs/ml-telemetry-audit.md` for full audit guide, key structure documentati
 - Print gap: 10mm, Custom properties: max 50/bin
 
 **Defaults:**
+
 - Cell: 32px (`BASE_CELL_SIZE`), Drawer: 10x8x12 units
 - Grid unit: 42mm, Height unit: 7mm, Print bed: 256mm
 
@@ -330,6 +354,7 @@ See `docs/ml-telemetry-audit.md` for full audit guide, key structure documentati
 **E2E tests** (`e2e/`): Playwright. Full user flows. Run `npm run test:e2e` (headless) or `npm run test:e2e:ui` (interactive).
 
 **Test setup** (`src/test/setup.ts`):
+
 - fake-indexeddb for storage tests
 - Mocked pointer capture, matchMedia
 - Auto-cleanup after each test
@@ -337,6 +362,7 @@ See `docs/ml-telemetry-audit.md` for full audit guide, key structure documentati
 ## Build Config
 
 **Vite** (`vite.config.ts`):
+
 - Code splitting: `three` (lazy), `react-three`, `react-vendor`, `state` (Zustand + Immer)
 - Bundle limits: Main 126 kB gzip, Total 690 kB gzip
 - Path alias: `@/` -> `src/`
@@ -360,17 +386,20 @@ npm run size         # Check bundle sizes
 ## Environment Variables
 
 Vercel backend (set in Vercel dashboard):
+
 - `BLOB_READ_WRITE_TOKEN` - Vercel Blob access
 - `KV_REST_API_URL`, `KV_REST_API_TOKEN` - Vercel KV (Redis)
 - `TOKEN_SALT` - Delete token hashing
 
 Optional (for Liveblocks):
+
 - `VITE_LIVEBLOCKS_PUBLIC_KEY` - Client-side Liveblocks key
 - `LIVEBLOCKS_SECRET_KEY` - Server-side auth (if using auth endpoint)
 
 ## Claude Code Hooks (`.claude/hooks/`)
 
 Pre-configured hooks for quality checks:
+
 - `pre-pr-review.sh` - Runs before PR creation (lint, build, test coverage)
 - `post-edit-test.sh` - Runs affected tests after file edits
 - `coverage-check.sh` - Validates coverage thresholds

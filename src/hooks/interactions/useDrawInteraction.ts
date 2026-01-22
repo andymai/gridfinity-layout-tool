@@ -30,9 +30,7 @@ import type { Coord, Bin } from '@/core/types';
  * @param context - Shared interaction context from parent hook
  * @returns ModeHandlers for draw/paint interactions
  */
-export function useDrawInteraction(
-  context: InteractionContext
-): ModeHandlers<DrawStartArgs> {
+export function useDrawInteraction(context: InteractionContext): ModeHandlers<DrawStartArgs> {
   const {
     layout,
     activeLayerId,

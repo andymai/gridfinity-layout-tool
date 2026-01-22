@@ -293,9 +293,7 @@ describe('useBinGeometry', () => {
         const normals = geometry.attributes.normal.array as Float32Array;
 
         for (let i = 0; i < normals.length; i += 3) {
-          const length = Math.sqrt(
-            normals[i] ** 2 + normals[i + 1] ** 2 + normals[i + 2] ** 2
-          );
+          const length = Math.sqrt(normals[i] ** 2 + normals[i + 1] ** 2 + normals[i + 2] ** 2);
           expect(length).toBeCloseTo(1, 2);
         }
 

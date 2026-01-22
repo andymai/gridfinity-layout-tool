@@ -61,7 +61,11 @@ function createScrewOrganizer(): InspirationLayout {
     createBin(2, 6, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'M8 Short' }),
     createBin(4, 6, 3, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'M8 Long' }),
     createBin(0, 8, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'M10' }),
-    createBin(2, 8, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Wood Screws' }),
+    createBin(2, 8, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Wood Screws',
+    }),
     // Rows 9-12: Nuts, washers, and hardware
     createBin(4, 8, 3, 2, { layerId: layer.id, categoryId: categories[3].id, label: 'Hex Nuts' }),
     createBin(0, 10, 2, 2, { layerId: layer.id, categoryId: categories[3].id, label: 'Washers' }),
@@ -113,12 +117,24 @@ function createToolDrawer(): InspirationLayout {
   // - Combination wrenches: 150-300mm depending on size
   const bins = [
     // Row 1: Pliers section - 5 units deep (210mm) for 150-200mm pliers
-    createBin(0, 0, 2, 5, { layerId: layer.id, categoryId: categories[0].id, label: 'Needle Nose' }),
-    createBin(2, 0, 2, 5, { layerId: layer.id, categoryId: categories[0].id, label: 'Diagonal Cut' }),
+    createBin(0, 0, 2, 5, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Needle Nose',
+    }),
+    createBin(2, 0, 2, 5, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Diagonal Cut',
+    }),
     createBin(4, 0, 2, 5, { layerId: layer.id, categoryId: categories[0].id, label: 'Linesman' }),
     createBin(6, 0, 2, 5, { layerId: layer.id, categoryId: categories[0].id, label: 'Slip Joint' }),
     createBin(8, 0, 2, 5, { layerId: layer.id, categoryId: categories[0].id, label: 'Locking' }),
-    createBin(10, 0, 3, 5, { layerId: layer.id, categoryId: categories[0].id, label: 'Channel Lock' }),
+    createBin(10, 0, 3, 5, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Channel Lock',
+    }),
     // Row 2: Screwdrivers - 6 units deep (252mm) for standard screwdrivers
     createBin(0, 5, 2, 6, { layerId: layer.id, categoryId: categories[1].id, label: 'Phillips' }),
     createBin(2, 5, 2, 6, { layerId: layer.id, categoryId: categories[1].id, label: 'Flathead' }),
@@ -126,8 +142,16 @@ function createToolDrawer(): InspirationLayout {
     createBin(6, 5, 2, 6, { layerId: layer.id, categoryId: categories[1].id, label: 'Hex' }),
     // Wrenches section - right side
     createBin(8, 5, 2, 6, { layerId: layer.id, categoryId: categories[2].id, label: 'Adjustable' }),
-    createBin(10, 5, 3, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Allen Keys' }),
-    createBin(10, 8, 3, 3, { layerId: layer.id, categoryId: categories[3].id, label: 'Tape/Level' }),
+    createBin(10, 5, 3, 3, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Allen Keys',
+    }),
+    createBin(10, 8, 3, 3, {
+      layerId: layer.id,
+      categoryId: categories[3].id,
+      label: 'Tape/Level',
+    }),
   ];
 
   const layout: Layout = {
@@ -181,7 +205,11 @@ function createElectronicsBench(): InspirationLayout {
     createBin(0, 1, 1, 1, { layerId: layer.id, categoryId: categories[0].id, label: 'LEDs Red' }),
     createBin(1, 1, 1, 1, { layerId: layer.id, categoryId: categories[0].id, label: 'LEDs Grn' }),
     createBin(2, 1, 1, 1, { layerId: layer.id, categoryId: categories[0].id, label: 'LEDs Blu' }),
-    createBin(3, 1, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Transistors' }),
+    createBin(3, 1, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Transistors',
+    }),
     createBin(5, 1, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'ICs' }),
     createBin(0, 2, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Headers' }),
     // Middle section: Tools (rows 4-7)
@@ -191,8 +219,16 @@ function createElectronicsBench(): InspirationLayout {
     createBin(4, 6, 3, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Multimeter' }),
     // Bottom section: Supplies (rows 8-11)
     createBin(0, 8, 2, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Solder' }),
-    createBin(2, 8, 3, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Wire Spools' }),
-    createBin(5, 8, 2, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Heat Shrink' }),
+    createBin(2, 8, 3, 4, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Wire Spools',
+    }),
+    createBin(5, 8, 2, 4, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Heat Shrink',
+    }),
   ];
 
   const layout: Layout = {
@@ -234,18 +270,46 @@ function createSocketOrganizer(): InspirationLayout {
   // A 3x2 bin (126mm x 84mm) can hold ~6-8 sockets standing upright
   const bins = [
     // Socket bins - grouped by drive size
-    createBin(0, 0, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: '1/4" Metric' }),
-    createBin(3, 0, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: '3/8" Metric' }),
+    createBin(0, 0, 3, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: '1/4" Metric',
+    }),
+    createBin(3, 0, 3, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: '3/8" Metric',
+    }),
     createBin(0, 2, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: '3/8" Deep' }),
-    createBin(3, 2, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: '1/2" Metric' }),
+    createBin(3, 2, 3, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: '1/2" Metric',
+    }),
     // Ratchets - 6 units deep (252mm) for 200-250mm ratchets
-    createBin(0, 4, 2, 6, { layerId: layer.id, categoryId: categories[1].id, label: '1/4" Ratchet' }),
-    createBin(2, 4, 2, 6, { layerId: layer.id, categoryId: categories[1].id, label: '3/8" Ratchet' }),
-    createBin(4, 4, 2, 6, { layerId: layer.id, categoryId: categories[1].id, label: '1/2" Ratchet' }),
+    createBin(0, 4, 2, 6, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: '1/4" Ratchet',
+    }),
+    createBin(2, 4, 2, 6, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: '3/8" Ratchet',
+    }),
+    createBin(4, 4, 2, 6, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: '1/2" Ratchet',
+    }),
     // Accessories - extensions, adapters
     createBin(6, 0, 2, 4, { layerId: layer.id, categoryId: categories[2].id, label: 'Extensions' }),
     createBin(6, 4, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Adapters' }),
-    createBin(6, 7, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Spark Plugs' }),
+    createBin(6, 7, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Spark Plugs',
+    }),
   ];
 
   const layout: Layout = {
@@ -295,7 +359,11 @@ function createBatteryDrawer(): InspirationLayout {
     // Rechargeable - 18650s and similar (popular for flashlights, vapes)
     createBin(0, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: '18650' }),
     createBin(2, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: '21700' }),
-    createBin(4, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'AA Recharge' }),
+    createBin(4, 2, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'AA Recharge',
+    }),
     // Specialty - coin cells, watch batteries
     createBin(0, 4, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'CR2032' }),
     createBin(1, 4, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'LR44' }),
@@ -347,30 +415,98 @@ function createGarageDrawer(): InspirationLayout {
   // - Drain plugs, fuses, connectors: small hardware → 2x2 or 3x3 bins
   const bins = [
     // Lubricants section - small spray cans and bottles (lying flat, 45mm diameter)
-    createBin(0, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'WD-40', height: 7 }),
-    createBin(2, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'PB Blaster', height: 7 }),
-    createBin(4, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'Silicone', height: 7 }),
-    createBin(6, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'Grease', height: 7 }),
-    createBin(8, 0, 1, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Blue Loctite' }),
-    createBin(9, 0, 1, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Red Loctite' }),
-    createBin(10, 0, 1, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Anti-Seize' }),
-    createBin(11, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Dielectric' }),
+    createBin(0, 0, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'WD-40',
+      height: 7,
+    }),
+    createBin(2, 0, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'PB Blaster',
+      height: 7,
+    }),
+    createBin(4, 0, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Silicone',
+      height: 7,
+    }),
+    createBin(6, 0, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Grease',
+      height: 7,
+    }),
+    createBin(8, 0, 1, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Blue Loctite',
+    }),
+    createBin(9, 0, 1, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Red Loctite',
+    }),
+    createBin(10, 0, 1, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Anti-Seize',
+    }),
+    createBin(11, 0, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Dielectric',
+    }),
     // Consumables - tapes, gloves, towels
     createBin(0, 3, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Elec Tape' }),
-    createBin(2, 3, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Teflon Tape' }),
-    createBin(4, 3, 3, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Nitrile Gloves' }),
+    createBin(2, 3, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Teflon Tape',
+    }),
+    createBin(4, 3, 3, 2, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Nitrile Gloves',
+    }),
     createBin(7, 3, 3, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Shop Rags' }),
-    createBin(10, 3, 3, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Latex Gloves' }),
+    createBin(10, 3, 3, 2, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Latex Gloves',
+    }),
     // Hardware - small automotive parts
-    createBin(8, 2, 2, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Crush Washers' }),
-    createBin(10, 2, 3, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'Drain Plugs' }),
+    createBin(8, 2, 2, 1, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Crush Washers',
+    }),
+    createBin(10, 2, 3, 1, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Drain Plugs',
+    }),
     createBin(0, 5, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Zip Ties' }),
-    createBin(2, 5, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Hose Clamps' }),
+    createBin(2, 5, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Hose Clamps',
+    }),
     createBin(4, 5, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'O-Rings' }),
-    createBin(6, 5, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Cotter Pins' }),
+    createBin(6, 5, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Cotter Pins',
+    }),
     // Electrical - small components
     createBin(8, 5, 2, 3, { layerId: layer.id, categoryId: categories[3].id, label: 'Fuses' }),
-    createBin(10, 5, 2, 3, { layerId: layer.id, categoryId: categories[3].id, label: 'Connectors' }),
+    createBin(10, 5, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[3].id,
+      label: 'Connectors',
+    }),
     createBin(12, 5, 1, 3, { layerId: layer.id, categoryId: categories[3].id, label: 'Bulbs' }),
     // Bottom row - larger items
     createBin(0, 7, 3, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Gaskets' }),
@@ -429,16 +565,48 @@ function createDrillBitOrganizer(): InspirationLayout {
     createBin(5, 0, 1, 4, { layerId: layer.id, categoryId: categories[0].id, label: '6.5-8mm' }),
     createBin(6, 0, 1, 4, { layerId: layer.id, categoryId: categories[0].id, label: '9-13mm' }),
     // Spade bits - longer, need 5 units depth
-    createBin(0, 4, 2, 5, { layerId: layer.id, categoryId: categories[1].id, label: 'Spade Small', height: 6 }),
-    createBin(2, 4, 2, 5, { layerId: layer.id, categoryId: categories[1].id, label: 'Spade Large', height: 6 }),
+    createBin(0, 4, 2, 5, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Spade Small',
+      height: 6,
+    }),
+    createBin(2, 4, 2, 5, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Spade Large',
+      height: 6,
+    }),
     // Forstner bits - 2x2 bins for fat bits
-    createBin(4, 4, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Forstner 15-25' }),
-    createBin(4, 6, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Forstner 30-50' }),
+    createBin(4, 4, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Forstner 15-25',
+    }),
+    createBin(4, 6, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Forstner 30-50',
+    }),
     // Hole saws - need larger bins for 50-100mm diameter saws
-    createBin(0, 9, 3, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Hole Saw S', height: 6 }),
-    createBin(3, 9, 3, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Hole Saw L', height: 6 }),
+    createBin(0, 9, 3, 3, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Hole Saw S',
+      height: 6,
+    }),
+    createBin(3, 9, 3, 3, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Hole Saw L',
+      height: 6,
+    }),
     // Countersinks and step bits - step bits stored flat (75-100mm long)
-    createBin(6, 4, 1, 4, { layerId: layer.id, categoryId: categories[1].id, label: 'Countersink' }),
+    createBin(6, 4, 1, 4, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Countersink',
+    }),
     createBin(6, 8, 1, 4, { layerId: layer.id, categoryId: categories[1].id, label: 'Step Bits' }),
   ];
 

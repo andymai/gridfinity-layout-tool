@@ -33,7 +33,13 @@ interface BinProps {
   halfBinMode?: boolean;
   isGhost: boolean;
   isSelected: boolean;
-  onStartDrag: (binId: string, clientX: number, clientY: number, pointerId?: number, duplicate?: boolean) => void;
+  onStartDrag: (
+    binId: string,
+    clientX: number,
+    clientY: number,
+    pointerId?: number,
+    duplicate?: boolean
+  ) => void;
   onStartResize: (binId: string, handle: ResizeHandle, pointerId?: number) => void;
 }
 
@@ -41,7 +47,19 @@ interface BinProps {
  * Single bin with selection ring and resize handles.
  * Features improved selection states with glow effect and refined handles.
  */
-function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBinMode: _halfBinMode = false, isGhost, isSelected, onStartDrag, onStartResize }: BinProps) {
+function BinComponent({
+  bin,
+  category,
+  layer,
+  drawer,
+  cellSize,
+  gap = 1,
+  halfBinMode: _halfBinMode = false,
+  isGhost,
+  isSelected,
+  onStartDrag,
+  onStartResize,
+}: BinProps) {
   const { isTouchDevice } = useResponsive();
 
   // Performance: Use focused stores directly instead of useUIStore facade.
@@ -66,9 +84,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   const isCategoryHighlighted = useViewStore(
     (state) => state.highlightedCategoryId !== null && state.highlightedCategoryId === bin.category
   );
-  const isAnyCategoryHighlighted = useViewStore(
-    (state) => state.highlightedCategoryId !== null
-  );
+  const isAnyCategoryHighlighted = useViewStore((state) => state.highlightedCategoryId !== null);
 
   // Performance: Use derived selector for row/column label highlighting.
   // Check if this bin overlaps with the highlighted row or column (1-indexed).
@@ -132,7 +148,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
 
   // Hover state for ghost handles (desktop only)
   const [isHovered, setIsHovered] = useState(false);
-  const addToast = useToastStore(state => state.addToast);
+  const addToast = useToastStore((state) => state.addToast);
 
   const isBeingDragged = interaction?.type === 'drag' && interaction.binIds.includes(bin.id);
   const isFocused = focusedBinId === bin.id;
@@ -150,7 +166,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
   // to prevent recalculation when only UI state (hover, focus, etc.) changes.
   const layoutCalcs = useMemo(() => {
     // Format dimensions - show decimal if fractional (half-bin mode)
-    const formatDim = (val: number) => val % 1 === 0 ? val.toString() : val.toFixed(1);
+    const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
     const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
 
     // Calculate grid position (always use standard grid, no scaling)
@@ -158,7 +174,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     const hasFractionalY = bin.y % 1 !== 0;
     const hasFractionalWidth = bin.width % 1 !== 0;
     const hasFractionalDepth = bin.depth % 1 !== 0;
-    const hasFractionalDims = hasFractionalX || hasFractionalY || hasFractionalWidth || hasFractionalDepth;
+    const hasFractionalDims =
+      hasFractionalX || hasFractionalY || hasFractionalWidth || hasFractionalDepth;
 
     // CSS Grid positioning with configurable fractional edge placement
     const integerWidth = Math.floor(drawer.width);
@@ -273,7 +290,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     }
 
     // Need custom sizing when drawer has fractional dimensions or bin has fractional coords
-    const needsCustomSizing = hasFractionalDims || hasFractionalDrawerWidth || hasFractionalDrawerDepth;
+    const needsCustomSizing =
+      hasFractionalDims || hasFractionalDrawerWidth || hasFractionalDrawerDepth;
 
     // Calculate pixel offset for fractional positions
     let offsetX = 0;
@@ -294,7 +312,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
       // Y offset
       if (hasFractionalDrawerDepth && fractionalEdgeY === 'start') {
         if (binEndY <= fractionalDepthPart) {
-          offsetY = (fractionalDepthPart - binEndY) / fractionalDepthPart * fractionalCellHeight;
+          offsetY = ((fractionalDepthPart - binEndY) / fractionalDepthPart) * fractionalCellHeight;
         } else {
           const integerY = binEndY - fractionalDepthPart;
           offsetY = (Math.ceil(integerY) - integerY) * (cellSize + gap);
@@ -302,7 +320,8 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
       } else if (hasFractionalDrawerDepth && fractionalEdgeY === 'end') {
         if (binEndY > integerDepth) {
           const fractionalY = binEndY - integerDepth;
-          offsetY = (fractionalDepthPart - fractionalY) / fractionalDepthPart * fractionalCellHeight;
+          offsetY =
+            ((fractionalDepthPart - fractionalY) / fractionalDepthPart) * fractionalCellHeight;
         } else {
           offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
         }
@@ -324,7 +343,18 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
       offsetX,
       offsetY,
     };
-  }, [bin.x, bin.y, bin.width, bin.depth, drawer.width, drawer.depth, drawer.fractionalEdgeX, drawer.fractionalEdgeY, cellSize, gap]);
+  }, [
+    bin.x,
+    bin.y,
+    bin.width,
+    bin.depth,
+    drawer.width,
+    drawer.depth,
+    drawer.fractionalEdgeX,
+    drawer.fractionalEdgeY,
+    cellSize,
+    gap,
+  ]);
 
   // Destructure memoized values for readability
   const {
@@ -392,9 +422,18 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
       showLabel,
       primaryText,
       secondaryText,
-      letterSpacing: primaryFontSize < 11 ? '0.02em' as const : 'normal' as const,
+      letterSpacing: primaryFontSize < 11 ? ('0.02em' as const) : ('normal' as const),
     };
-  }, [binPixelMin, binPixelWidth, binPixelHeight, bin.depth, bin.width, bin.label, hasLabel, dimensionsText]);
+  }, [
+    binPixelMin,
+    binPixelWidth,
+    binPixelHeight,
+    bin.depth,
+    bin.width,
+    bin.label,
+    hasLabel,
+    dimensionsText,
+  ]);
 
   const {
     shouldRotate,
@@ -547,23 +586,25 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
     showContextMenu([bin.id], { x: e.clientX, y: e.clientY }, 'grid');
   };
 
-  const handleResizePointerDown = useCallback((e: PointerEvent<HTMLDivElement>, handle: ResizeHandle) => {
-    // Ignore secondary touches (allow two-finger pan)
-    if (!e.isPrimary) return;
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.button === 0) {
-      // Haptic feedback on touch devices when starting resize
-      if (isTouchDevice && navigator.vibrate) {
-        navigator.vibrate(30);
+  const handleResizePointerDown = useCallback(
+    (e: PointerEvent<HTMLDivElement>, handle: ResizeHandle) => {
+      // Ignore secondary touches (allow two-finger pan)
+      if (!e.isPrimary) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.button === 0) {
+        // Haptic feedback on touch devices when starting resize
+        if (isTouchDevice && navigator.vibrate) {
+          navigator.vibrate(30);
+        }
+        onStartResize(bin.id, handle, e.pointerId);
       }
-      onStartResize(bin.id, handle, e.pointerId);
-    }
-  }, [onStartResize, bin.id, isTouchDevice]);
+    },
+    [onStartResize, bin.id, isTouchDevice]
+  );
 
   const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
   const textColors = getBinTextColors(bgColor);
-
 
   // Selection and hover styles
   const getBoxShadow = () => {
@@ -608,12 +649,14 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         // Only transition visual properties, not positioning (causes bounce on grid line crossing)
         transition: 'opacity 150ms, box-shadow 150ms, transform 150ms',
         // Override size and position when drawer has fractional dimensions (different row/column sizes)
-        ...(needsCustomSizing ? {
-          width: binPixelWidth,
-          height: binPixelHeight,
-          marginLeft: offsetX,
-          marginTop: offsetY,
-        } : {}),
+        ...(needsCustomSizing
+          ? {
+              width: binPixelWidth,
+              height: binPixelHeight,
+              marginLeft: offsetX,
+              marginTop: offsetY,
+            }
+          : {}),
         backgroundColor: bgColor,
         borderRadius: 'var(--radius-sm)',
         border: isSelected ? 'none' : '1px solid var(--border-on-color)',
@@ -623,14 +666,26 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
         WebkitUserSelect: 'none',
         userSelect: 'none',
         pointerEvents: isGhost || isBeingDragged ? 'none' : 'auto',
-        opacity: isGhost ? 0.3
-          : isBeingDragged ? 0.5
-          : (isAnyCategoryHighlighted && !isCategoryHighlighted) ? 0.4
-          : (isAnyRowColHighlighted && !isRowColHighlighted) ? 0.6
-          : 1,
+        opacity: isGhost
+          ? 0.3
+          : isBeingDragged
+            ? 0.5
+            : isAnyCategoryHighlighted && !isCategoryHighlighted
+              ? 0.4
+              : isAnyRowColHighlighted && !isRowColHighlighted
+                ? 0.6
+                : 1,
         // Selected bins need higher z-index (40) to ensure resize handles appear above axis labels (30)
         // Hovered bins (30) need to be above regular bins (10) so resize handles aren't clipped by neighbors
-        zIndex: isGhost ? 5 : isSelected ? 40 : isHovered ? 30 : (isCategoryHighlighted || isRowColHighlighted) ? 15 : 10,
+        zIndex: isGhost
+          ? 5
+          : isSelected
+            ? 40
+            : isHovered
+              ? 30
+              : isCategoryHighlighted || isRowColHighlighted
+                ? 15
+                : 10,
         boxShadow: getBoxShadow(),
         transform: getTransform(),
         // Allow resize handles to extend outside bin (text constrained by whitespace-nowrap and sizing)
@@ -661,7 +716,7 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
       aria-label={`Bin ${bin.width} by ${bin.depth}${bin.label ? `, labeled ${bin.label}` : ''}${category ? `, category ${category.name}` : ''}`}
       aria-pressed={isSelected}
       tabIndex={isGhost ? -1 : 0}
-      title={isGhost ? undefined : (bin.label ? `${dimensionsText} - ${bin.label}` : undefined)}
+      title={isGhost ? undefined : bin.label ? `${dimensionsText} - ${bin.label}` : undefined}
     >
       {/* Tall bin indicator badge */}
       {isTall && !isGhost && (
@@ -669,13 +724,17 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
           className="absolute top-0.5 right-0.5 px-1.5 py-0.5 rounded-sm flex items-center gap-0.5 pointer-events-none bg-surface text-xs font-medium"
           style={{
             color: 'var(--color-warning)',
-            boxShadow: 'var(--shadow-sm)'
+            boxShadow: 'var(--shadow-sm)',
           }}
           title={`Spans multiple layers (${bin.height}u)`}
         >
           <span>{bin.height}u</span>
           <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            <path
+              fillRule="evenodd"
+              d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z"
+              clipRule="evenodd"
+            />
           </svg>
         </div>
       )}
@@ -697,7 +756,11 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
                 strokeWidth={useSmallBadges ? 2.5 : 2}
                 aria-label="Has notes"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                />
               </svg>
             </div>
           )}
@@ -715,7 +778,11 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
                 strokeWidth={useSmallBadges ? 2.5 : 2}
                 aria-label="Has custom properties"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"
+                />
               </svg>
             </div>
           )}
@@ -801,14 +868,19 @@ function BinComponent({ bin, category, layer, drawer, cellSize, gap = 1, halfBin
 
       {/* Ghost resize handles - show on hover when nothing is selected (desktop only) */}
       {/* Hidden when any bins are selected to avoid interfering with multi-selection clicks */}
-      {!isSelected && !isGhost && isHovered && !isTouchDevice && !interaction && selectedBinIds.length === 0 && (
-        <ResizeHandles
-          binWidth={bin.width}
-          binDepth={bin.depth}
-          variant="ghost"
-          onResizePointerDown={handleResizePointerDown}
-        />
-      )}
+      {!isSelected &&
+        !isGhost &&
+        isHovered &&
+        !isTouchDevice &&
+        !interaction &&
+        selectedBinIds.length === 0 && (
+          <ResizeHandles
+            binWidth={bin.width}
+            binDepth={bin.depth}
+            variant="ghost"
+            onResizePointerDown={handleResizePointerDown}
+          />
+        )}
     </div>
   );
 }
@@ -854,28 +926,33 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
   }
 
   // Re-render if category changes
-  if (prevProps.category?.id !== nextProps.category?.id ||
-      prevProps.category?.color !== nextProps.category?.color) {
+  if (
+    prevProps.category?.id !== nextProps.category?.id ||
+    prevProps.category?.color !== nextProps.category?.color
+  ) {
     return false;
   }
 
   // Re-render if layer changes
-  if (prevProps.layer?.id !== nextProps.layer?.id ||
-      prevProps.layer?.height !== nextProps.layer?.height) {
+  if (
+    prevProps.layer?.id !== nextProps.layer?.id ||
+    prevProps.layer?.height !== nextProps.layer?.height
+  ) {
     return false;
   }
 
   // Re-render if drawer dimensions or edge configuration changes
-  if (prevProps.drawer.width !== nextProps.drawer.width ||
-      prevProps.drawer.depth !== nextProps.drawer.depth ||
-      prevProps.drawer.fractionalEdgeX !== nextProps.drawer.fractionalEdgeX ||
-      prevProps.drawer.fractionalEdgeY !== nextProps.drawer.fractionalEdgeY) {
+  if (
+    prevProps.drawer.width !== nextProps.drawer.width ||
+    prevProps.drawer.depth !== nextProps.drawer.depth ||
+    prevProps.drawer.fractionalEdgeX !== nextProps.drawer.fractionalEdgeX ||
+    prevProps.drawer.fractionalEdgeY !== nextProps.drawer.fractionalEdgeY
+  ) {
     return false;
   }
 
   // Re-render if cellSize or gap changes (affects sizing)
-  if (prevProps.cellSize !== nextProps.cellSize ||
-      prevProps.gap !== nextProps.gap) {
+  if (prevProps.cellSize !== nextProps.cellSize || prevProps.gap !== nextProps.gap) {
     return false;
   }
 

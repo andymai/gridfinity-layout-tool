@@ -12,20 +12,20 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 // Curated color palette optimized for dark UI backgrounds
 // Colors chosen for: visual distinction, balanced saturation, good contrast
 const COLOR_PALETTE = [
-  { color: '#f87171', name: 'Coral' },      // Warm red, softer than pure red
-  { color: '#fb923c', name: 'Orange' },     // Vibrant orange
-  { color: '#fbbf24', name: 'Amber' },      // Golden yellow
-  { color: '#a3e635', name: 'Lime' },       // Yellow-green, high visibility
-  { color: '#4ade80', name: 'Green' },      // Fresh green
-  { color: '#2dd4bf', name: 'Teal' },       // Blue-green
-  { color: '#38bdf8', name: 'Sky' },        // Light blue
-  { color: '#818cf8', name: 'Indigo' },     // Purple-blue
-  { color: '#c084fc', name: 'Purple' },     // Vibrant purple
-  { color: '#f472b6', name: 'Pink' },       // Warm pink
-  { color: '#e2e8f0', name: 'Cloud' },      // Soft off-white
-  { color: '#334155', name: 'Charcoal' },   // Near-black
-  { color: '#94a3b8', name: 'Slate' },      // Cool neutral
-  { color: '#a8a29e', name: 'Stone' },      // Warm neutral
+  { color: '#f87171', name: 'Coral' }, // Warm red, softer than pure red
+  { color: '#fb923c', name: 'Orange' }, // Vibrant orange
+  { color: '#fbbf24', name: 'Amber' }, // Golden yellow
+  { color: '#a3e635', name: 'Lime' }, // Yellow-green, high visibility
+  { color: '#4ade80', name: 'Green' }, // Fresh green
+  { color: '#2dd4bf', name: 'Teal' }, // Blue-green
+  { color: '#38bdf8', name: 'Sky' }, // Light blue
+  { color: '#818cf8', name: 'Indigo' }, // Purple-blue
+  { color: '#c084fc', name: 'Purple' }, // Vibrant purple
+  { color: '#f472b6', name: 'Pink' }, // Warm pink
+  { color: '#e2e8f0', name: 'Cloud' }, // Soft off-white
+  { color: '#334155', name: 'Charcoal' }, // Near-black
+  { color: '#94a3b8', name: 'Slate' }, // Cool neutral
+  { color: '#a8a29e', name: 'Stone' }, // Warm neutral
 ];
 
 export function CategoriesPanel() {
@@ -41,16 +41,17 @@ export function CategoriesPanel() {
   );
   const { addCategory, updateCategory, deleteCategory, updateBin } = useMutations();
 
-  const { activeCategoryId, setActiveCategory, setHighlightedCategoryId, selectedBinIds } = useUIStore(
-    useShallow((state) => ({
-      activeCategoryId: state.activeCategoryId,
-      setActiveCategory: state.setActiveCategory,
-      setHighlightedCategoryId: state.setHighlightedCategoryId,
-      selectedBinIds: state.selectedBinIds,
-    }))
-  );
+  const { activeCategoryId, setActiveCategory, setHighlightedCategoryId, selectedBinIds } =
+    useUIStore(
+      useShallow((state) => ({
+        activeCategoryId: state.activeCategoryId,
+        setActiveCategory: state.setActiveCategory,
+        setHighlightedCategoryId: state.setHighlightedCategoryId,
+        selectedBinIds: state.selectedBinIds,
+      }))
+    );
 
-  const addToast = useToastStore(state => state.addToast);
+  const addToast = useToastStore((state) => state.addToast);
   const { execute } = useUndoableAction();
 
   // Calculate bin counts per category
@@ -79,7 +80,7 @@ export function CategoriesPanel() {
       // Filter to only bins that actually change
       const binsToUpdate = selectedBinIds
         .map((id) => bins.find((b) => b.id === id))
-        .filter((bin): bin is typeof bins[number] => !!bin && bin.category !== categoryId);
+        .filter((bin): bin is (typeof bins)[number] => !!bin && bin.category !== categoryId);
       if (binsToUpdate.length === 0) return;
 
       const binCount = binsToUpdate.length;
@@ -94,10 +95,7 @@ export function CategoriesPanel() {
         mlTracking.trackCategory(binsToUpdate[0], categoryName, binCount);
       }
 
-      addToast(
-        `Changed ${binCount} bin${binCount > 1 ? 's' : ''} to "${categoryName}"`,
-        'success'
-      );
+      addToast(`Changed ${binCount} bin${binCount > 1 ? 's' : ''} to "${categoryName}"`, 'success');
     }
   };
 
@@ -113,7 +111,9 @@ export function CategoriesPanel() {
 
   const handleUpdateCategory = (id: string, field: 'name' | 'color', value: string) => {
     execute(() => {
-      updateCategory(id, { [field]: field === 'name' ? value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) : value });
+      updateCategory(id, {
+        [field]: field === 'name' ? value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) : value,
+      });
     });
   };
 
@@ -123,7 +123,10 @@ export function CategoriesPanel() {
 
     // Show helpful message if category is in use
     if (binCount > 0) {
-      addToast(`${binCount} bin${binCount > 1 ? 's' : ''} use "${name}". Reassign them first.`, 'error');
+      addToast(
+        `${binCount} bin${binCount > 1 ? 's' : ''} use "${name}". Reassign them first.`,
+        'error'
+      );
       return;
     }
 
@@ -172,140 +175,182 @@ export function CategoriesPanel() {
     <div>
       <CollapsibleSection title="Categories" variant="default" actions={addCategoryButton}>
         <div className="space-y-1">
-        {categories.map((category) => {
-          const isActive = category.id === activeCategoryId;
-          const isEditing = editingId === category.id;
-          const binCount = binCounts.get(category.id) || 0;
-          const canDelete = binCount === 0 && categories.length > CONSTRAINTS.CATEGORIES_MIN;
-          const isHovered = hoveredCategoryId === category.id;
+          {categories.map((category) => {
+            const isActive = category.id === activeCategoryId;
+            const isEditing = editingId === category.id;
+            const binCount = binCounts.get(category.id) || 0;
+            const canDelete = binCount === 0 && categories.length > CONSTRAINTS.CATEGORIES_MIN;
+            const isHovered = hoveredCategoryId === category.id;
 
-          return (
-            <div
-              key={category.id}
-              className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-all ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
-              onClick={() => handleCategorySelect(category.id, category.name)}
-              onMouseEnter={() => {
-                setHoveredCategoryId(category.id);
-                setHighlightedCategoryId(category.id);
-              }}
-              onMouseLeave={() => {
-                setHoveredCategoryId(null);
-                setHighlightedCategoryId(null);
-              }}
-            >
-              {isEditing ? (
-                <div className="flex flex-col gap-2 w-full" onClick={(e) => e.stopPropagation()}>
-                  {/* Name input */}
-                  <input
-                    type="text"
-                    value={category.name}
-                    onChange={(e) => handleUpdateCategory(category.id, 'name', e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
-                    className="input w-full py-1 px-2 text-sm"
-                    autoFocus
-                  />
-                  {/* Color palette */}
-                  <div className="grid grid-cols-6 gap-1.5">
-                    {COLOR_PALETTE.map(({ color, name }) => (
+            return (
+              <div
+                key={category.id}
+                className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-all ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
+                onClick={() => handleCategorySelect(category.id, category.name)}
+                onMouseEnter={() => {
+                  setHoveredCategoryId(category.id);
+                  setHighlightedCategoryId(category.id);
+                }}
+                onMouseLeave={() => {
+                  setHoveredCategoryId(null);
+                  setHighlightedCategoryId(null);
+                }}
+              >
+                {isEditing ? (
+                  <div className="flex flex-col gap-2 w-full" onClick={(e) => e.stopPropagation()}>
+                    {/* Name input */}
+                    <input
+                      type="text"
+                      value={category.name}
+                      onChange={(e) => handleUpdateCategory(category.id, 'name', e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
+                      className="input w-full py-1 px-2 text-sm"
+                      autoFocus
+                    />
+                    {/* Color palette */}
+                    <div className="grid grid-cols-6 gap-1.5">
+                      {COLOR_PALETTE.map(({ color, name }) => (
+                        <button
+                          key={color}
+                          onClick={() => handleUpdateCategory(category.id, 'color', color)}
+                          className="w-6 h-6 rounded transition-transform hover:scale-110"
+                          style={{
+                            backgroundColor: color,
+                            boxShadow:
+                              category.color === color
+                                ? '0 0 0 2px var(--color-primary)'
+                                : 'var(--shadow-sm)',
+                          }}
+                          title={name}
+                          aria-label={`Set color to ${name}`}
+                        />
+                      ))}
+                    </div>
+                    {/* Action buttons */}
+                    <div className="flex gap-2 mt-1">
                       <button
-                        key={color}
-                        onClick={() => handleUpdateCategory(category.id, 'color', color)}
-                        className="w-6 h-6 rounded transition-transform hover:scale-110"
-                        style={{
-                          backgroundColor: color,
-                          boxShadow: category.color === color ? '0 0 0 2px var(--color-primary)' : 'var(--shadow-sm)',
-                        }}
-                        title={name}
-                        aria-label={`Set color to ${name}`}
-                      />
-                    ))}
+                        onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
+                        className={`btn btn-sm flex-1 justify-center ${canDelete ? 'btn-danger' : 'btn-secondary opacity-50 cursor-not-allowed'}`}
+                        aria-label={
+                          canDelete
+                            ? `Delete ${category.name} category`
+                            : `Cannot delete: ${binCount} bins use this category`
+                        }
+                        title={canDelete ? 'Delete category' : `${binCount} bins use this category`}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className="btn btn-secondary btn-sm flex-1 justify-center"
+                        aria-label="Finish editing category"
+                      >
+                        Done
+                      </button>
+                    </div>
                   </div>
-                  {/* Action buttons */}
-                  <div className="flex gap-2 mt-1">
-                    <button
-                      onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
-                      className={`btn btn-sm flex-1 justify-center ${canDelete ? 'btn-danger' : 'btn-secondary opacity-50 cursor-not-allowed'}`}
-                      aria-label={canDelete ? `Delete ${category.name} category` : `Cannot delete: ${binCount} bins use this category`}
-                      title={canDelete ? 'Delete category' : `${binCount} bins use this category`}
+                ) : (
+                  <>
+                    {/* Color swatch with checkmark overlay */}
+                    <div
+                      className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm cursor-pointer transition-transform hover:scale-110"
+                      style={{ backgroundColor: category.color }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingId(category.id);
+                      }}
+                      title="Click to edit color"
+                      aria-hidden="true"
                     >
-                      Delete
-                    </button>
+                      {isActive && (
+                        <svg
+                          className="absolute inset-0 w-5 h-5 p-0.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="white"
+                          style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }}
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    {/* Category name - click to select, double-click to edit */}
                     <button
-                      onClick={() => setEditingId(null)}
-                      className="btn btn-secondary btn-sm flex-1 justify-center"
-                      aria-label="Finish editing category"
+                      className="flex-1 min-w-0 text-left"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCategorySelect(category.id, category.name);
+                      }}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        setEditingId(category.id);
+                      }}
+                      aria-pressed={isActive}
+                      aria-label={
+                        selectedBinIds.length > 0
+                          ? `Apply ${category.name} to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}`
+                          : isActive
+                            ? `${category.name} (selected for new bins)`
+                            : `Select ${category.name} for new bins`
+                      }
+                      title={
+                        selectedBinIds.length > 0
+                          ? `Apply to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}`
+                          : undefined
+                      }
                     >
-                      Done
+                      <span className="text-sm truncate text-content block">{category.name}</span>
                     </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {/* Color swatch with checkmark overlay */}
-                  <div
-                    className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm cursor-pointer transition-transform hover:scale-110"
-                    style={{ backgroundColor: category.color }}
-                    onClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
-                    title="Click to edit color"
-                    aria-hidden="true"
-                  >
-                    {isActive && (
+                    {/* Edit button - appears on hover */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingId(category.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 -my-1 rounded hover:bg-surface-elevated transition-opacity flex-shrink-0"
+                      title="Edit category"
+                      aria-label={`Edit ${category.name}`}
+                    >
                       <svg
-                        className="absolute inset-0 w-5 h-5 p-0.5"
+                        className="w-3.5 h-3.5 text-content-secondary"
                         fill="none"
                         viewBox="0 0 24 24"
-                        stroke="white"
-                        style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }}
-                        aria-hidden="true"
+                        stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                        />
                       </svg>
-                    )}
-                  </div>
-                  {/* Category name - click to select, double-click to edit */}
-                  <button
-                    className="flex-1 min-w-0 text-left"
-                    onClick={(e) => { e.stopPropagation(); handleCategorySelect(category.id, category.name); }}
-                    onDoubleClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
-                    aria-pressed={isActive}
-                    aria-label={
-                      selectedBinIds.length > 0
-                        ? `Apply ${category.name} to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}`
-                        : isActive
-                          ? `${category.name} (selected for new bins)`
-                          : `Select ${category.name} for new bins`
-                    }
-                    title={selectedBinIds.length > 0 ? `Apply to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}` : undefined}
-                  >
-                    <span className="text-sm truncate text-content block">
-                      {category.name}
+                    </button>
+                    {/* Bin count badge */}
+                    <span
+                      className={`text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${
+                        isHovered && binCount > 0
+                          ? 'bg-accent/20 text-accent'
+                          : 'text-content-tertiary'
+                      }`}
+                      title={
+                        binCount > 0
+                          ? `${binCount} bin${binCount > 1 ? 's' : ''} use this category`
+                          : 'No bins use this category'
+                      }
+                    >
+                      {binCount > 0 ? binCount : ''}
                     </span>
-                  </button>
-                  {/* Edit button - appears on hover */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
-                    className="opacity-0 group-hover:opacity-100 p-1 -my-1 rounded hover:bg-surface-elevated transition-opacity flex-shrink-0"
-                    title="Edit category"
-                    aria-label={`Edit ${category.name}`}
-                  >
-                    <svg className="w-3.5 h-3.5 text-content-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
-                  {/* Bin count badge */}
-                  <span
-                    className={`text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${
-                      isHovered && binCount > 0 ? 'bg-accent/20 text-accent' : 'text-content-tertiary'
-                    }`}
-                    title={binCount > 0 ? `${binCount} bin${binCount > 1 ? 's' : ''} use this category` : 'No bins use this category'}
-                  >
-                    {binCount > 0 ? binCount : ''}
-                  </span>
-                </>
-              )}
-            </div>
-          );
-        })}
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
       </CollapsibleSection>
 

@@ -5,7 +5,14 @@ import type { CategoryBreakdown } from '@/utils/binListOperations';
 
 // Mock the BinList components
 vi.mock('../../components/BinList', () => ({
-  StatCard: ({ icon, label, value, unit, title, variant }: {
+  StatCard: ({
+    icon,
+    label,
+    value,
+    unit,
+    title,
+    variant,
+  }: {
     icon: React.ReactNode;
     label: string;
     value: string | number;
@@ -29,8 +36,16 @@ vi.mock('../../components/BinList', () => ({
   CategoryBreakdownChart: ({ breakdown }: { breakdown: CategoryBreakdown[] }) => (
     <div data-testid="category-breakdown-chart">{breakdown.length} categories</div>
   ),
-  CategoryStackedBar: ({ breakdown, height }: { breakdown: CategoryBreakdown[]; height?: string }) => (
-    <div data-testid="category-stacked-bar" data-height={height}>{breakdown.length} categories</div>
+  CategoryStackedBar: ({
+    breakdown,
+    height,
+  }: {
+    breakdown: CategoryBreakdown[];
+    height?: string;
+  }) => (
+    <div data-testid="category-stacked-bar" data-height={height}>
+      {breakdown.length} categories
+    </div>
   ),
   CategoryLegend: ({ breakdown }: { breakdown: CategoryBreakdown[] }) => (
     <div data-testid="category-legend">{breakdown.length} legend items</div>
@@ -232,7 +247,10 @@ describe('BinListDashboard', () => {
     it('bin types stat has correct title', () => {
       render(<BinListDashboard {...defaultProps} />);
 
-      expect(screen.getByTestId('stat-bin-types')).toHaveAttribute('title', '5 unique bin configurations');
+      expect(screen.getByTestId('stat-bin-types')).toHaveAttribute(
+        'title',
+        '5 unique bin configurations'
+      );
     });
 
     it('total bins stat has correct title', () => {
@@ -244,7 +262,10 @@ describe('BinListDashboard', () => {
     it('print pieces stat has correct title', () => {
       render(<BinListDashboard {...defaultProps} />);
 
-      expect(screen.getByTestId('stat-print-pieces')).toHaveAttribute('title', '20 pieces after split optimization');
+      expect(screen.getByTestId('stat-print-pieces')).toHaveAttribute(
+        'title',
+        '20 pieces after split optimization'
+      );
     });
   });
 
@@ -326,13 +347,16 @@ describe('BinListDashboard', () => {
 
   describe('edge cases', () => {
     it('handles zero values', () => {
-      render(<BinListDashboard {...defaultProps}
-        totalBinTypes={0}
-        totalBins={0}
-        totalFilament={0}
-        totalCost={0}
-        totalPrintTimeHours={0}
-      />);
+      render(
+        <BinListDashboard
+          {...defaultProps}
+          totalBinTypes={0}
+          totalBins={0}
+          totalFilament={0}
+          totalCost={0}
+          totalPrintTimeHours={0}
+        />
+      );
 
       const binTypesStat = screen.getByTestId('stat-bin-types');
       expect(binTypesStat.querySelector('[data-testid="value"]')?.textContent).toBe('0');
@@ -346,11 +370,14 @@ describe('BinListDashboard', () => {
     });
 
     it('handles large values', () => {
-      render(<BinListDashboard {...defaultProps}
-        totalBins={9999}
-        totalFilament={1234.5}
-        totalPrintTimeHours={99.5}
-      />);
+      render(
+        <BinListDashboard
+          {...defaultProps}
+          totalBins={9999}
+          totalFilament={1234.5}
+          totalPrintTimeHours={99.5}
+        />
+      );
 
       const binsStat = screen.getByTestId('stat-total-bins');
       expect(binsStat.querySelector('[data-testid="value"]')?.textContent).toBe('9999');

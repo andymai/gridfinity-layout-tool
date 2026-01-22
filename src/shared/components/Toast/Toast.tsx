@@ -10,7 +10,13 @@ const EXIT_ANIMATION_MS = 150;
 // Icons for each toast type
 function SuccessIcon() {
   return (
-    <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+    <svg
+      className="w-5 h-5 flex-shrink-0"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
     </svg>
   );
@@ -18,7 +24,13 @@ function SuccessIcon() {
 
 function ErrorIcon() {
   return (
-    <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+    <svg
+      className="w-5 h-5 flex-shrink-0"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -31,7 +43,13 @@ function ErrorIcon() {
 
 function InfoIcon() {
   return (
-    <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+    <svg
+      className="w-5 h-5 flex-shrink-0"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -113,11 +131,16 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
 
   // Animation classes based on position and state
   const animationClass = isExiting
-    ? (position === 'top' ? 'toast-exit-top' : 'toast-exit-bottom')
-    : (position === 'top' ? 'toast-enter-top' : 'toast-enter-bottom');
+    ? position === 'top'
+      ? 'toast-exit-top'
+      : 'toast-exit-bottom'
+    : position === 'top'
+      ? 'toast-enter-top'
+      : 'toast-enter-bottom';
 
   // Icon based on type
-  const Icon = toast.type === 'error' ? ErrorIcon : toast.type === 'success' ? SuccessIcon : InfoIcon;
+  const Icon =
+    toast.type === 'error' ? ErrorIcon : toast.type === 'success' ? SuccessIcon : InfoIcon;
 
   return (
     <div
@@ -139,9 +162,7 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
 
       {/* Message and action */}
       <div className="flex-1 min-w-0">
-        <div className="text-sm leading-relaxed whitespace-pre-wrap pr-1">
-          {toast.message}
-        </div>
+        <div className="text-sm leading-relaxed whitespace-pre-wrap pr-1">{toast.message}</div>
         {toast.action && (
           <button
             onClick={() => {
@@ -201,12 +222,7 @@ export function ToastContainer() {
   const toastWidth = isMobile ? 'w-full max-w-md' : 'w-80';
 
   return (
-    <div
-      className={containerClasses}
-      role="region"
-      aria-label="Notifications"
-      aria-live="polite"
-    >
+    <div className={containerClasses} role="region" aria-label="Notifications" aria-live="polite">
       {toasts.map((toast) => (
         <div key={toast.id} className={toastWidth}>
           <ToastItem toast={toast} position={position} onRemove={removeToast} />

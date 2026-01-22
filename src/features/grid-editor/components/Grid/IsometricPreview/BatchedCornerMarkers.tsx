@@ -34,15 +34,71 @@ export function BatchedCornerMarkers({ bins }: BatchedCornerMarkersProps) {
       // Corner definitions: position relative to bin origin, and 3 direction vectors
       const corners = [
         // Bottom corners (z = 0)
-        { pos: [0, 0, 0], dirs: [[1, 0, 0], [0, 1, 0], [0, 0, 1]] },
-        { pos: [width, 0, 0], dirs: [[-1, 0, 0], [0, 1, 0], [0, 0, 1]] },
-        { pos: [width, depth, 0], dirs: [[-1, 0, 0], [0, -1, 0], [0, 0, 1]] },
-        { pos: [0, depth, 0], dirs: [[1, 0, 0], [0, -1, 0], [0, 0, 1]] },
+        {
+          pos: [0, 0, 0],
+          dirs: [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+          ],
+        },
+        {
+          pos: [width, 0, 0],
+          dirs: [
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+          ],
+        },
+        {
+          pos: [width, depth, 0],
+          dirs: [
+            [-1, 0, 0],
+            [0, -1, 0],
+            [0, 0, 1],
+          ],
+        },
+        {
+          pos: [0, depth, 0],
+          dirs: [
+            [1, 0, 0],
+            [0, -1, 0],
+            [0, 0, 1],
+          ],
+        },
         // Top corners (z = height)
-        { pos: [0, 0, height], dirs: [[1, 0, 0], [0, 1, 0], [0, 0, -1]] },
-        { pos: [width, 0, height], dirs: [[-1, 0, 0], [0, 1, 0], [0, 0, -1]] },
-        { pos: [width, depth, height], dirs: [[-1, 0, 0], [0, -1, 0], [0, 0, -1]] },
-        { pos: [0, depth, height], dirs: [[1, 0, 0], [0, -1, 0], [0, 0, -1]] },
+        {
+          pos: [0, 0, height],
+          dirs: [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, -1],
+          ],
+        },
+        {
+          pos: [width, 0, height],
+          dirs: [
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, 0, -1],
+          ],
+        },
+        {
+          pos: [width, depth, height],
+          dirs: [
+            [-1, 0, 0],
+            [0, -1, 0],
+            [0, 0, -1],
+          ],
+        },
+        {
+          pos: [0, depth, height],
+          dirs: [
+            [1, 0, 0],
+            [0, -1, 0],
+            [0, 0, -1],
+          ],
+        },
       ];
 
       for (const corner of corners) {
@@ -52,8 +108,12 @@ export function BatchedCornerMarkers({ bins }: BatchedCornerMarkersProps) {
           const [dx, dy, dz] = dir;
           // Line from corner point along direction
           positions.push(
-            x + cx, y + cy, z + cz,
-            x + cx + dx * MARKER_SIZE, y + cy + dy * MARKER_SIZE, z + cz + dz * MARKER_SIZE
+            x + cx,
+            y + cy,
+            z + cz,
+            x + cx + dx * MARKER_SIZE,
+            y + cy + dy * MARKER_SIZE,
+            z + cz + dz * MARKER_SIZE
           );
         }
       }
@@ -75,11 +135,7 @@ export function BatchedCornerMarkers({ bins }: BatchedCornerMarkersProps) {
 
   return (
     <lineSegments geometry={geometry}>
-      <lineBasicMaterial
-        color={LINE_COLOR}
-        transparent
-        opacity={LINE_OPACITY}
-      />
+      <lineBasicMaterial color={LINE_COLOR} transparent opacity={LINE_OPACITY} />
     </lineSegments>
   );
 }

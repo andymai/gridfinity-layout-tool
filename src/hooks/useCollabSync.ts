@@ -62,12 +62,9 @@ export function useCollabSync(): void {
   const importLayout = useLayoutStore((state) => state.importLayout);
 
   // Liveblocks mutation to update storage
-  const updateRemoteLayout = useMutation(
-    ({ storage }, layout: Layout) => {
-      storage.set('layout', layout);
-    },
-    []
-  );
+  const updateRemoteLayout = useMutation(({ storage }, layout: Layout) => {
+    storage.set('layout', layout);
+  }, []);
 
   // Effect: Remote → Local sync
   // When remote layout changes, update local store

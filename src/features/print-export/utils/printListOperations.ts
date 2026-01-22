@@ -2,7 +2,13 @@
  * Composable, pure functions for print list sorting, filtering, and grouping.
  */
 
-import type { EnhancedPrintRow, PrintListGroup, PrintListSortKey, PrintListSortOrder, Category } from '@/core/types';
+import type {
+  EnhancedPrintRow,
+  PrintListGroup,
+  PrintListSortKey,
+  PrintListSortOrder,
+  Category,
+} from '@/core/types';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 
 /**
@@ -14,9 +20,7 @@ export function filterByCategory(
   hiddenCategoryIds: Set<string>
 ): EnhancedPrintRow[] {
   if (hiddenCategoryIds.size === 0) return rows;
-  return rows.filter(row =>
-    !row.categoryIds.every(id => hiddenCategoryIds.has(id))
-  );
+  return rows.filter((row) => !row.categoryIds.every((id) => hiddenCategoryIds.has(id)));
 }
 
 /**
@@ -70,7 +74,7 @@ export function groupByCategory(
   const result: PrintListGroup[] = [];
 
   for (const [catId, catRows] of groups) {
-    const category = categories.find(c => c.id === catId);
+    const category = categories.find((c) => c.id === catId);
     result.push({
       categoryId: catId,
       categoryName: category?.name || 'Uncategorized',

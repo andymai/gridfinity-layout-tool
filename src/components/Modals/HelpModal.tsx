@@ -117,7 +117,10 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
       { keys: formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase(), description: 'Layer below' },
       { keys: formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase(), description: 'Previous bin' },
       { keys: formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase(), description: 'Next bin' },
-      { keys: `${formatKey(SHORTCUTS.CATEGORY_PREV)} / ${formatKey(SHORTCUTS.CATEGORY_NEXT)}`, description: 'Cycle category' },
+      {
+        keys: `${formatKey(SHORTCUTS.CATEGORY_PREV)} / ${formatKey(SHORTCUTS.CATEGORY_NEXT)}`,
+        description: 'Cycle category',
+      },
     ],
   },
   {
@@ -147,7 +150,10 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     name: 'Advanced',
     icon: <SettingsIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.HALF_BIN_TOGGLE).toUpperCase(), description: 'Toggle half-bin mode' },
+      {
+        keys: formatKey(SHORTCUTS.HALF_BIN_TOGGLE).toUpperCase(),
+        description: 'Toggle half-bin mode',
+      },
     ],
   },
 ];
@@ -179,15 +185,16 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
     if (!searchQuery.trim()) return SHORTCUT_CATEGORIES;
 
     const query = searchQuery.toLowerCase();
-    return SHORTCUT_CATEGORIES.map(category => ({
+    return SHORTCUT_CATEGORIES.map((category) => ({
       ...category,
       shortcuts: category.shortcuts.filter(
-        shortcut =>
+        (shortcut) =>
           shortcut.description.toLowerCase().includes(query) ||
           (typeof shortcut.keys === 'string' && shortcut.keys.toLowerCase().includes(query)) ||
-          (Array.isArray(shortcut.keys) && shortcut.keys.some(k => k.toLowerCase().includes(query)))
+          (Array.isArray(shortcut.keys) &&
+            shortcut.keys.some((k) => k.toLowerCase().includes(query)))
       ),
-    })).filter(category => category.shortcuts.length > 0);
+    })).filter((category) => category.shortcuts.length > 0);
   }, [searchQuery]);
 
   if (!isOpen) return null;
@@ -220,7 +227,12 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
             aria-label="Close help"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -259,7 +271,12 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
                 <input
                   type="text"
@@ -274,7 +291,12 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-content-tertiary hover:text-content"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 )}
@@ -399,7 +421,9 @@ function MouseInteractionsSection() {
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-accent"><MouseIcon /></span>
+        <span className="text-accent">
+          <MouseIcon />
+        </span>
         <h3 style={STYLES.sectionHeader}>Mouse</h3>
       </div>
       <div className="grid gap-2">
@@ -421,7 +445,9 @@ function TouchGesturesSection() {
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-accent"><TouchIcon /></span>
+        <span className="text-accent">
+          <TouchIcon />
+        </span>
         <h3 style={STYLES.sectionHeader}>Touch Gestures</h3>
       </div>
       <div className="grid gap-2">
@@ -439,7 +465,9 @@ function InteractionRow({ action, description }: { action: string; description: 
   return (
     <div className="flex justify-between items-center py-1.5 px-3 rounded-lg hover:bg-surface-hover/50 transition-colors">
       <span className="text-sm text-content-secondary">{description}</span>
-      <span className="text-xs text-content-tertiary bg-surface-elevated px-2 py-1 rounded">{action}</span>
+      <span className="text-xs text-content-tertiary bg-surface-elevated px-2 py-1 rounded">
+        {action}
+      </span>
     </div>
   );
 }
@@ -485,12 +513,13 @@ function BlockedZonesSection() {
           <strong style={STYLES.textPrimary}>What are blocked zones?</strong>
         </p>
         <p className="mb-3">
-          When a bin is taller than its layer height, it extends into layers above.
-          These areas appear as striped cells and cannot have new bins placed on them.
+          When a bin is taller than its layer height, it extends into layers above. These areas
+          appear as striped cells and cannot have new bins placed on them.
         </p>
         <p>
-          <strong style={STYLES.textPrimary}>Example:</strong> A 5u tall bin on Layer 1 (3u) extends 2u into Layer 2.
-          Those cells on Layer 2 are blocked because the physical bin occupies that space.
+          <strong style={STYLES.textPrimary}>Example:</strong> A 5u tall bin on Layer 1 (3u) extends
+          2u into Layer 2. Those cells on Layer 2 are blocked because the physical bin occupies that
+          space.
         </p>
       </div>
     </section>
@@ -509,17 +538,17 @@ function BinClearanceSection() {
           <strong style={STYLES.textPrimary}>What is clearance?</strong>
         </p>
         <p className="mb-3">
-          Clearance reserves empty space above a bin for tall contents that stick out,
-          like scissors handles or tool grips. This space blocks bins on layers above
-          without adding physical bin height.
+          Clearance reserves empty space above a bin for tall contents that stick out, like scissors
+          handles or tool grips. This space blocks bins on layers above without adding physical bin
+          height.
         </p>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>Example:</strong> A 2u tall bin with 1u clearance
-          will block 3u total of vertical space, but only prints as a 2u bin.
+          <strong style={STYLES.textPrimary}>Example:</strong> A 2u tall bin with 1u clearance will
+          block 3u total of vertical space, but only prints as a 2u bin.
         </p>
         <p>
-          Set clearance in the bin inspector (right panel) when you have multiple layers.
-          The 3D preview shows clearance as a translucent red zone above the bin.
+          Set clearance in the bin inspector (right panel) when you have multiple layers. The 3D
+          preview shows clearance as a translucent red zone above the bin.
         </p>
       </div>
     </section>
@@ -530,7 +559,12 @@ function BinClearanceSection() {
 function CommandIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 6h16M4 12h16M4 18h7"
+      />
     </svg>
   );
 }
@@ -538,7 +572,12 @@ function CommandIcon() {
 function EditIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+      />
     </svg>
   );
 }
@@ -546,7 +585,12 @@ function EditIcon() {
 function NavigationIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+      />
     </svg>
   );
 }
@@ -554,8 +598,18 @@ function NavigationIcon() {
 function ViewIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+      />
     </svg>
   );
 }
@@ -563,7 +617,12 @@ function ViewIcon() {
 function CubeIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+      />
     </svg>
   );
 }
@@ -571,8 +630,18 @@ function CubeIcon() {
 function SettingsIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
     </svg>
   );
 }
@@ -580,7 +649,12 @@ function SettingsIcon() {
 function MouseIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
+      />
     </svg>
   );
 }
@@ -588,7 +662,12 @@ function MouseIcon() {
 function TouchIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"
+      />
     </svg>
   );
 }

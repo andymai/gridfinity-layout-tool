@@ -35,9 +35,7 @@ export interface HalfBinConstraintResult {
  * ```
  */
 export function hasFractionalBins(bins: Bin[]): boolean {
-  return bins.some(
-    bin => bin.layerId !== STAGING_ID && hasFractionalDimensions(bin)
-  );
+  return bins.some((bin) => bin.layerId !== STAGING_ID && hasFractionalDimensions(bin));
 }
 
 /**
@@ -55,9 +53,9 @@ export function hasFractionalBins(bins: Bin[]): boolean {
  */
 export function getFractionalBinIds(bins: Bin[]): string[] {
   return bins
-    .filter(bin => bin.layerId !== STAGING_ID)
-    .filter(bin => hasFractionalDimensions(bin))
-    .map(bin => bin.id);
+    .filter((bin) => bin.layerId !== STAGING_ID)
+    .filter((bin) => hasFractionalDimensions(bin))
+    .map((bin) => bin.id);
 }
 
 /**

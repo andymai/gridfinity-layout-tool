@@ -12,7 +12,7 @@ export const FEATURE_FLAGS = [
     id: 'collaborative_editing',
     name: 'Collaborative Editing',
     description:
-      'Work on layouts together in real-time with other people. Share a link and see each other\'s cursors as you design.',
+      "Work on layouts together in real-time with other people. Share a link and see each other's cursors as you design.",
     status: 'experimental',
     risk: 'medium',
     warning: 'This feature is experimental. Real-time sync may have delays or conflicts.',
@@ -40,15 +40,11 @@ export function getFeature(id: string): FeatureFlag | undefined {
 }
 
 export function getActiveFeatures(): FeatureFlag[] {
-  return (FEATURE_FLAGS as readonly FeatureFlag[]).filter(
-    (f) => f.status !== 'deprecated'
-  );
+  return (FEATURE_FLAGS as readonly FeatureFlag[]).filter((f) => f.status !== 'deprecated');
 }
 
 export function getGraduatedFeatures(): FeatureFlag[] {
-  return (FEATURE_FLAGS as readonly FeatureFlag[]).filter(
-    (f) => f.status === 'graduated'
-  );
+  return (FEATURE_FLAGS as readonly FeatureFlag[]).filter((f) => f.status === 'graduated');
 }
 
 export function getToggleableFeatures(): FeatureFlag[] {

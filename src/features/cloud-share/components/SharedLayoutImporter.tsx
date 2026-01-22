@@ -58,82 +58,91 @@ export function SharedLayoutImporter() {
    * Owners shouldn't see their own layouts in "Shared with me".
    * Since share IDs equal layout UUIDs, we check entry.id directly.
    */
-  const isOwnShare = useCallback((shareId: string) => {
-    return libraryEntries.some(entry => entry.id === shareId);
-  }, [libraryEntries]);
+  const isOwnShare = useCallback(
+    (shareId: string) => {
+      return libraryEntries.some((entry) => entry.id === shareId);
+    },
+    [libraryEntries]
+  );
 
   /**
    * Auto-track a cloud share in the "Shared with me" list.
    * Skips if the user is the owner of the share.
    */
-  const trackSharedLayout = useCallback((
-    shareId: string,
-    layout: Layout,
-    authorName: string | undefined,
-    permission: SharePermission,
-    preview: LayoutPreview
-  ) => {
-    // Don't track if this is the owner's own share
-    if (isOwnShare(shareId)) return;
+  const trackSharedLayout = useCallback(
+    (
+      shareId: string,
+      layout: Layout,
+      authorName: string | undefined,
+      permission: SharePermission,
+      preview: LayoutPreview
+    ) => {
+      // Don't track if this is the owner's own share
+      if (isOwnShare(shareId)) return;
 
-    const existingEntry = getSharedWithMeByShareId(shareId);
+      const existingEntry = getSharedWithMeByShareId(shareId);
 
-    if (existingEntry) {
-      // Update existing entry with latest info
-      markShareAccessed(shareId);
-      // Update permission and name if they've changed
-      if (existingEntry.permission !== permission || existingEntry.name !== layout.name) {
-        updateSharedWithMe(existingEntry.id, {
-          permission,
+      if (existingEntry) {
+        // Update existing entry with latest info
+        markShareAccessed(shareId);
+        // Update permission and name if they've changed
+        if (existingEntry.permission !== permission || existingEntry.name !== layout.name) {
+          updateSharedWithMe(existingEntry.id, {
+            permission,
+            name: layout.name,
+            authorName,
+            preview,
+          });
+        }
+      } else {
+        // Add new entry
+        addSharedWithMe({
+          sourceShareId: shareId,
           name: layout.name,
           authorName,
+          permission,
           preview,
         });
       }
-    } else {
-      // Add new entry
-      addSharedWithMe({
-        sourceShareId: shareId,
-        name: layout.name,
-        authorName,
-        permission,
-        preview,
-      });
-    }
-  }, [isOwnShare, getSharedWithMeByShareId, markShareAccessed, updateSharedWithMe, addSharedWithMe]);
+    },
+    [isOwnShare, getSharedWithMeByShareId, markShareAccessed, updateSharedWithMe, addSharedWithMe]
+  );
 
   // Helper function to load a layout into preview
-  const loadLayoutPreview = useCallback((layout: Layout, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => {
-    // Load the shared layout directly into the view
-    // Use a temporary ID since it's not saved yet
-    importLayout(layout, '__shared_preview__', 'init');
+  const loadLayoutPreview = useCallback(
+    (layout: Layout, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => {
+      // Load the shared layout directly into the view
+      // Use a temporary ID since it's not saved yet
+      importLayout(layout, '__shared_preview__', 'init');
 
-    // Set the preview state so the banner knows to show
-    setSharedLayoutPreview(layout, layout.name, authorName, cloudShareId, permission);
+      // Set the preview state so the banner knows to show
+      setSharedLayoutPreview(layout, layout.name, authorName, cloudShareId, permission);
 
-    // Reset UI state for the new layout
-    clearSelection();
-    if (layout.layers[0]) {
-      setActiveLayer(layout.layers[0].id);
-    }
-    if (layout.categories[0]) {
-      setActiveCategory(layout.categories[0].id);
-    }
+      // Reset UI state for the new layout
+      clearSelection();
+      if (layout.layers[0]) {
+        setActiveLayer(layout.layers[0].id);
+      }
+      if (layout.categories[0]) {
+        setActiveCategory(layout.categories[0].id);
+      }
 
-    // Clear undo history (can't undo into previous layout)
-    clearHistory();
+      // Clear undo history (can't undo into previous layout)
+      clearHistory();
 
-    // Announce for accessibility
-    announceToScreenReader(`Viewing shared layout: ${layout.name}`);
-  }, [
-    importLayout,
-    setSharedLayoutPreview,
-    clearSelection,
-    setActiveLayer,
-    setActiveCategory,
-    clearHistory,
-    announceToScreenReader,
-  ]);
+      // Announce for accessibility
+      announceToScreenReader(`Viewing shared layout: ${layout.name}`);
+    },
+    [
+      importLayout,
+      setSharedLayoutPreview,
+      clearSelection,
+      setActiveLayer,
+      setActiveCategory,
+      clearHistory,
+      announceToScreenReader,
+    ]
+  );
 
   // Track whether we've processed the URL share (persists through Strict Mode remounts)
   const hasProcessedUrlShare = useRef(false);
@@ -187,8 +196,8 @@ export function SharedLayoutImporter() {
     }
 
     // Check if this layout exists locally - if so, let useLayoutRouting handle it
-    const isLocalLayout = libraryEntries.some(entry =>
-      entry.id === initialCloudShareId || entry.cloudShare?.id === initialCloudShareId
+    const isLocalLayout = libraryEntries.some(
+      (entry) => entry.id === initialCloudShareId || entry.cloudShare?.id === initialCloudShareId
     );
     if (isLocalLayout) {
       return;
@@ -258,7 +267,16 @@ export function SharedLayoutImporter() {
 
     loadCloudShare();
     // No cleanup needed - isMountedRef is managed by the separate mount/unmount effect
-  }, [loadLayoutPreview, addToast, trackSharedLayout, libraryIsLoaded, sharedWithMeLoaded, libraryEntries, sharedLayoutCloudShareId, getSharedWithMeByShareId]);
+  }, [
+    loadLayoutPreview,
+    addToast,
+    trackSharedLayout,
+    libraryIsLoaded,
+    sharedWithMeLoaded,
+    libraryEntries,
+    sharedLayoutCloudShareId,
+    getSharedWithMeByShareId,
+  ]);
 
   // Show loading state for cloud shares
   if (isLoading) {

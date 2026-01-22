@@ -11,7 +11,9 @@ interface SectionHeaderProps {
  */
 export function SectionHeader({ title, className = '' }: SectionHeaderProps) {
   return (
-    <h3 className={`text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary ${className}`}>
+    <h3
+      className={`text-xs font-medium uppercase tracking-wide mb-3 text-content-tertiary ${className}`}
+    >
       {title}
     </h3>
   );

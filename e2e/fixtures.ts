@@ -177,8 +177,15 @@ export async function waitForStagingBinCount(page: Page, count: number, timeout 
 /**
  * Wait for paint mode indicator to be visible.
  */
-export async function waitForPaintMode(page: Page, width: number, depth: number, timeout = DEFAULT_TIMEOUT) {
-  await expect(page.getByText(new RegExp(`paint.*${width}×${depth}`, 'i'))).toBeVisible({ timeout });
+export async function waitForPaintMode(
+  page: Page,
+  width: number,
+  depth: number,
+  timeout = DEFAULT_TIMEOUT
+) {
+  await expect(page.getByText(new RegExp(`paint.*${width}×${depth}`, 'i'))).toBeVisible({
+    timeout,
+  });
 }
 
 /**
@@ -242,7 +249,9 @@ export async function selectBinAt(page: Page, x: number, y: number) {
   await page.mouse.click(bounds.x + x, bounds.y + y);
 
   // Wait for at least one bin to be selected
-  await expect(page.locator('[data-bin-id][aria-pressed="true"]').first()).toBeVisible({ timeout: DEFAULT_TIMEOUT });
+  await expect(page.locator('[data-bin-id][aria-pressed="true"]').first()).toBeVisible({
+    timeout: DEFAULT_TIMEOUT,
+  });
 }
 
 /**
@@ -257,10 +266,14 @@ export async function countBins(page: Page): Promise<number> {
  * Helper to select a bin size from the palette.
  */
 export async function selectBinSize(page: Page, width: number, depth: number) {
-  const sizeButton = page.getByRole('button', { name: new RegExp(`${width}×${depth}`, 'i') }).first();
+  const sizeButton = page
+    .getByRole('button', { name: new RegExp(`${width}×${depth}`, 'i') })
+    .first();
   await sizeButton.click();
   // Wait for paint mode indicator to appear (confirms selection worked)
-  await page.getByText(new RegExp(`paint.*${width}×${depth}`, 'i')).waitFor({ state: 'visible', timeout: 2000 });
+  await page
+    .getByText(new RegExp(`paint.*${width}×${depth}`, 'i'))
+    .waitFor({ state: 'visible', timeout: 2000 });
 }
 
 /**
@@ -271,7 +284,9 @@ export async function fillLayerWithSize(page: Page, width: number, depth: number
 
   // Fill button is in the sidebar
   const sidebar = getSidebar(page);
-  const fillButton = sidebar.getByRole('button', { name: new RegExp(`fill with ${width}×${depth}`, 'i') });
+  const fillButton = sidebar.getByRole('button', {
+    name: new RegExp(`fill with ${width}×${depth}`, 'i'),
+  });
   await fillButton.click();
 
   // Wait for toast notification confirming bins were added
@@ -360,5 +375,7 @@ export function getBottomNav(page: Page): Locator {
  * Get the mobile bottom sheet (when a panel is open).
  */
 export function getBottomSheet(page: Page): Locator {
-  return page.locator('[role="dialog"]').filter({ hasText: /(Layers|Categories|Inspector|Settings|Print)/ });
+  return page
+    .locator('[role="dialog"]')
+    .filter({ hasText: /(Layers|Categories|Inspector|Settings|Print)/ });
 }

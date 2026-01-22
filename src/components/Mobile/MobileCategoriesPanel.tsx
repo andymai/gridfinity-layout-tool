@@ -28,16 +28,17 @@ export function MobileCategoriesPanel() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
-  const { categories, bins, addCategory, updateCategory, deleteCategory, updateBin } = useLayoutStore(
-    useShallow((state) => ({
-      categories: state.layout.categories,
-      bins: state.layout.bins,
-      addCategory: state.addCategory,
-      updateCategory: state.updateCategory,
-      deleteCategory: state.deleteCategory,
-      updateBin: state.updateBin,
-    }))
-  );
+  const { categories, bins, addCategory, updateCategory, deleteCategory, updateBin } =
+    useLayoutStore(
+      useShallow((state) => ({
+        categories: state.layout.categories,
+        bins: state.layout.bins,
+        addCategory: state.addCategory,
+        updateCategory: state.updateCategory,
+        deleteCategory: state.deleteCategory,
+        updateBin: state.updateBin,
+      }))
+    );
 
   const { activeCategoryId, setActiveCategory, closeMobilePanel, selectedBinIds } = useUIStore(
     useShallow((state) => ({
@@ -48,7 +49,7 @@ export function MobileCategoriesPanel() {
     }))
   );
 
-  const addToast = useToastStore(state => state.addToast);
+  const addToast = useToastStore((state) => state.addToast);
   const { execute } = useUndoableAction();
 
   // Calculate bin counts per category
@@ -72,10 +73,7 @@ export function MobileCategoriesPanel() {
         }
       });
       const binCount = selectedBinIds.length;
-      addToast(
-        `Changed ${binCount} bin${binCount > 1 ? 's' : ''} to "${name}"`,
-        'success'
-      );
+      addToast(`Changed ${binCount} bin${binCount > 1 ? 's' : ''} to "${name}"`, 'success');
     }
 
     closeMobilePanel();
@@ -108,7 +106,10 @@ export function MobileCategoriesPanel() {
 
     // Show helpful message if category is in use
     if (binCount > 0) {
-      addToast(`${binCount} bin${binCount > 1 ? 's' : ''} use "${name}". Reassign them first.`, 'error');
+      addToast(
+        `${binCount} bin${binCount > 1 ? 's' : ''} use "${name}". Reassign them first.`,
+        'error'
+      );
       return;
     }
 
@@ -141,9 +142,7 @@ export function MobileCategoriesPanel() {
 
   return (
     <div className="pb-4">
-      <p
-        className="text-sm mb-4 text-content-tertiary"
-      >
+      <p className="text-sm mb-4 text-content-tertiary">
         {selectedBinIds.length > 0
           ? `Tap a category to apply it to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}.`
           : 'Select a category to use when drawing bins.'}
@@ -183,9 +182,10 @@ export function MobileCategoriesPanel() {
                         className="w-10 h-10 rounded-lg transition-transform active:scale-95"
                         style={{
                           backgroundColor: color,
-                          boxShadow: category.color === color
-                            ? '0 0 0 3px var(--color-primary)'
-                            : 'var(--shadow-sm)',
+                          boxShadow:
+                            category.color === color
+                              ? '0 0 0 3px var(--color-primary)'
+                              : 'var(--shadow-sm)',
                         }}
                         aria-label={name}
                       />
@@ -200,10 +200,7 @@ export function MobileCategoriesPanel() {
                     >
                       Delete{binCount > 0 ? ` (${binCount} bins)` : ''}
                     </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="btn btn-secondary flex-1"
-                    >
+                    <button onClick={() => setEditingId(null)} className="btn btn-secondary flex-1">
                       Done
                     </button>
                   </div>
@@ -222,32 +219,34 @@ export function MobileCategoriesPanel() {
                     className="w-10 h-10 rounded-lg flex-shrink-0"
                     style={{ backgroundColor: category.color, boxShadow: 'var(--shadow-sm)' }}
                   />
-                  <span
-                    className="flex-1 text-left font-medium truncate text-content"
-                  >
+                  <span className="flex-1 text-left font-medium truncate text-content">
                     {category.name}
                   </span>
                   {binCount > 0 && (
-                    <span
-                      className="px-2 py-1 rounded-full text-xs font-medium bg-surface text-content-tertiary"
-                    >
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-surface text-content-tertiary">
                       {binCount}
                     </span>
                   )}
                   {isActive && (
-                    <span
-                      className="px-2 py-1 rounded text-xs font-medium bg-accent text-black"
-                    >
+                    <span className="px-2 py-1 rounded text-xs font-medium bg-accent text-black">
                       Active
                     </span>
                   )}
                   <button
-                    onClick={(e) => { e.stopPropagation(); setEditingId(category.id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingId(category.id);
+                    }}
                     className="btn btn-ghost w-10 h-10 p-0"
                     aria-label="Edit category"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
                     </svg>
                   </button>
                 </button>

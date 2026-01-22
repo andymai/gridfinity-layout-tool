@@ -49,13 +49,7 @@ export const RowLabels = memo(function RowLabels({
 }: RowLabelsProps) {
   const setHighlightedRowLabel = useViewStore((state) => state.setHighlightedRowLabel);
 
-  const {
-    rowLabels,
-    labelWidth,
-    labelFontSize,
-    hasFractionalDepth,
-    fractionalEdgeY,
-  } = labels;
+  const { rowLabels, labelWidth, labelFontSize, hasFractionalDepth, fractionalEdgeY } = labels;
 
   // Build grid template based on fractionalEdgeY setting
   // 'end' = fractional at top (CSS row 1), 'start' = fractional at bottom (CSS row last)
@@ -130,13 +124,8 @@ export const ColumnLabels = memo(function ColumnLabels({
 }: ColumnLabelsProps) {
   const setHighlightedColLabel = useViewStore((state) => state.setHighlightedColLabel);
 
-  const {
-    columnLabels,
-    columnLabelHeight,
-    labelFontSize,
-    hasFractionalWidth,
-    fractionalEdgeX,
-  } = labels;
+  const { columnLabels, columnLabelHeight, labelFontSize, hasFractionalWidth, fractionalEdgeX } =
+    labels;
 
   // Build grid template based on fractionalEdgeX setting
   // 'start' = fractional at left (CSS col 1), 'end' = fractional at right (CSS col last)

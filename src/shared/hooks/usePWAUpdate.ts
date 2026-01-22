@@ -42,7 +42,7 @@ function isSafeToReload(): boolean {
   }
 
   // Don't reload with bins in staging (user might lose track of them)
-  const stagedBins = layout.layout.bins.filter(b => b.layerId === STAGING_ID);
+  const stagedBins = layout.layout.bins.filter((b) => b.layerId === STAGING_ID);
   if (stagedBins.length > 0) {
     return false;
   }
@@ -75,10 +75,7 @@ function isSafeToReload(): boolean {
  * Returns true if safe, false if timed out.
  * Supports cancellation via AbortSignal for proper cleanup on unmount.
  */
-function waitForSafeReload(
-  timeoutMs: number,
-  signal?: AbortSignal
-): Promise<boolean> {
+function waitForSafeReload(timeoutMs: number, signal?: AbortSignal): Promise<boolean> {
   return new Promise((resolve) => {
     // Check immediately - if already safe, resolve without starting interval
     if (isSafeToReload()) {
@@ -177,17 +174,13 @@ function restoreEphemeralState(): boolean {
 
   // Validate and restore selected bins (filter out any that no longer exist)
   const existingBinIds = new Set(layout.bins.map((b) => b.id));
-  const validSelectedIds = state.selectedBinIds.filter((id) =>
-    existingBinIds.has(id)
-  );
+  const validSelectedIds = state.selectedBinIds.filter((id) => existingBinIds.has(id));
   if (validSelectedIds.length > 0) {
     ui.setSelectedBins(validSelectedIds);
   }
 
   // Restore active category (categories might have changed, but IDs are stable)
-  const categoryExists = layout.categories.some(
-    (c) => c.id === state.activeCategoryId
-  );
+  const categoryExists = layout.categories.some((c) => c.id === state.activeCategoryId);
   if (categoryExists) {
     ui.setActiveCategory(state.activeCategoryId);
   }
@@ -250,7 +243,7 @@ function restoreEphemeralState(): boolean {
  * - Auto-reloads after a short delay
  */
 export function usePWAUpdate(): void {
-  const addToast = useToastStore(state => state.addToast);
+  const addToast = useToastStore((state) => state.addToast);
   const hasTriggeredReload = useRef(false);
   const intervalRef = useRef<number | undefined>(undefined);
   const lastCheckRef = useRef<number>(0);
@@ -334,7 +327,7 @@ export function usePWAUpdate(): void {
     const handleOffline = () => {
       if (!wasOfflineRef.current) {
         wasOfflineRef.current = true;
-        addToast('You\'re offline. Changes save locally.', 'info');
+        addToast("You're offline. Changes save locally.", 'info');
       }
     };
 

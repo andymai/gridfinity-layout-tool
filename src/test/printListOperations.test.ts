@@ -54,7 +54,7 @@ describe('printListOperations', () => {
       ];
       const result = filterByCategory(rows, new Set(['cat2']));
       expect(result).toHaveLength(2);
-      expect(result.map(r => r.categoryIds[0])).toEqual(['cat1', 'cat3']);
+      expect(result.map((r) => r.categoryIds[0])).toEqual(['cat1', 'cat3']);
     });
 
     it('keeps rows with at least one visible category', () => {
@@ -82,9 +82,7 @@ describe('printListOperations', () => {
     });
 
     it('handles rows with empty categoryIds', () => {
-      const rows = [
-        createTestRow({ categoryIds: [] }),
-      ];
+      const rows = [createTestRow({ categoryIds: [] })];
       // Row with empty categoryIds is filtered out because every() on empty array returns true
       // (vacuously true - all 0 elements satisfy any condition)
       const result = filterByCategory(rows, new Set(['cat1']));
@@ -100,7 +98,7 @@ describe('printListOperations', () => {
         createTestRow({ area: 4 }),
       ];
       const result = sortRows(rows, 'default', 'asc');
-      expect(result.map(r => r.area)).toEqual([9, 1, 4]);
+      expect(result.map((r) => r.area)).toEqual([9, 1, 4]);
     });
 
     it('sorts by area ascending', () => {
@@ -110,7 +108,7 @@ describe('printListOperations', () => {
         createTestRow({ area: 4 }),
       ];
       const result = sortRows(rows, 'area', 'asc');
-      expect(result.map(r => r.area)).toEqual([1, 4, 9]);
+      expect(result.map((r) => r.area)).toEqual([1, 4, 9]);
     });
 
     it('sorts by area descending', () => {
@@ -120,7 +118,7 @@ describe('printListOperations', () => {
         createTestRow({ area: 4 }),
       ];
       const result = sortRows(rows, 'area', 'desc');
-      expect(result.map(r => r.area)).toEqual([9, 4, 1]);
+      expect(result.map((r) => r.area)).toEqual([9, 4, 1]);
     });
 
     it('sorts by height ascending', () => {
@@ -130,7 +128,7 @@ describe('printListOperations', () => {
         createTestRow({ height: 9 }),
       ];
       const result = sortRows(rows, 'height', 'asc');
-      expect(result.map(r => r.height)).toEqual([3, 6, 9]);
+      expect(result.map((r) => r.height)).toEqual([3, 6, 9]);
     });
 
     it('sorts by height descending', () => {
@@ -140,7 +138,7 @@ describe('printListOperations', () => {
         createTestRow({ height: 6 }),
       ];
       const result = sortRows(rows, 'height', 'desc');
-      expect(result.map(r => r.height)).toEqual([9, 6, 3]);
+      expect(result.map((r) => r.height)).toEqual([9, 6, 3]);
     });
 
     it('sorts by filament ascending', () => {
@@ -150,7 +148,7 @@ describe('printListOperations', () => {
         createTestRow({ filament: 9.9 }),
       ];
       const result = sortRows(rows, 'filament', 'asc');
-      expect(result.map(r => r.filament)).toEqual([2.3, 5.5, 9.9]);
+      expect(result.map((r) => r.filament)).toEqual([2.3, 5.5, 9.9]);
     });
 
     it('sorts by filament descending', () => {
@@ -160,7 +158,7 @@ describe('printListOperations', () => {
         createTestRow({ filament: 5.5 }),
       ];
       const result = sortRows(rows, 'filament', 'desc');
-      expect(result.map(r => r.filament)).toEqual([9.9, 5.5, 2.3]);
+      expect(result.map((r) => r.filament)).toEqual([9.9, 5.5, 2.3]);
     });
 
     it('handles empty array', () => {
@@ -176,13 +174,10 @@ describe('printListOperations', () => {
     });
 
     it('does not mutate original array', () => {
-      const rows = [
-        createTestRow({ area: 9 }),
-        createTestRow({ area: 1 }),
-      ];
+      const rows = [createTestRow({ area: 9 }), createTestRow({ area: 1 })];
       const original = [...rows];
       sortRows(rows, 'area', 'asc');
-      expect(rows.map(r => r.area)).toEqual(original.map(r => r.area));
+      expect(rows.map((r) => r.area)).toEqual(original.map((r) => r.area));
     });
 
     it('handles equal values (stable sort behavior)', () => {
@@ -194,7 +189,7 @@ describe('printListOperations', () => {
       const result = sortRows(rows, 'area', 'asc');
       expect(result).toHaveLength(3);
       // All should still be present
-      expect(result.map(r => r.binIds[0]).sort()).toEqual(['a', 'b', 'c']);
+      expect(result.map((r) => r.binIds[0]).sort()).toEqual(['a', 'b', 'c']);
     });
   });
 
@@ -209,7 +204,7 @@ describe('printListOperations', () => {
 
       expect(groups).toHaveLength(2);
 
-      const cat1Group = groups.find(g => g.categoryId === 'cat1');
+      const cat1Group = groups.find((g) => g.categoryId === 'cat1');
       expect(cat1Group).toBeDefined();
       expect(cat1Group!.rows).toHaveLength(2);
       expect(cat1Group!.categoryName).toBe('Tools');
@@ -230,9 +225,7 @@ describe('printListOperations', () => {
     });
 
     it('handles uncategorized rows', () => {
-      const rows = [
-        createTestRow({ categoryIds: ['unknown-cat'], binCount: 1 }),
-      ];
+      const rows = [createTestRow({ categoryIds: ['unknown-cat'], binCount: 1 })];
       const groups = groupByCategory(rows, testCategories);
 
       expect(groups).toHaveLength(1);
@@ -241,9 +234,7 @@ describe('printListOperations', () => {
     });
 
     it('uses primary category (first in array)', () => {
-      const rows = [
-        createTestRow({ categoryIds: ['cat2', 'cat1'] }),
-      ];
+      const rows = [createTestRow({ categoryIds: ['cat2', 'cat1'] })];
       const groups = groupByCategory(rows, testCategories);
 
       expect(groups).toHaveLength(1);
@@ -310,24 +301,19 @@ describe('printListOperations', () => {
       const result = applyFiltersAndSort(rows, new Set(['cat2']), 'area', 'asc');
 
       expect(result).toHaveLength(2);
-      expect(result.map(r => r.area)).toEqual([4, 9]);
+      expect(result.map((r) => r.area)).toEqual([4, 9]);
     });
 
     it('handles no filters and default sort', () => {
-      const rows = [
-        createTestRow({ area: 9 }),
-        createTestRow({ area: 1 }),
-      ];
+      const rows = [createTestRow({ area: 9 }), createTestRow({ area: 1 })];
       const result = applyFiltersAndSort(rows, new Set(), 'default', 'asc');
 
       expect(result).toHaveLength(2);
-      expect(result.map(r => r.area)).toEqual([9, 1]); // Original order
+      expect(result.map((r) => r.area)).toEqual([9, 1]); // Original order
     });
 
     it('returns empty array when all filtered out', () => {
-      const rows = [
-        createTestRow({ categoryIds: ['cat1'] }),
-      ];
+      const rows = [createTestRow({ categoryIds: ['cat1'] })];
       const result = applyFiltersAndSort(rows, new Set(['cat1']), 'area', 'asc');
 
       expect(result).toHaveLength(0);

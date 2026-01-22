@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview, CloudShareInfo, SharedWithMeEntry, SharePermission } from '@/core/types';
+import type {
+  LayoutLibrary,
+  LayoutEntry,
+  LayoutPreview,
+  CloudShareInfo,
+  SharedWithMeEntry,
+  SharePermission,
+} from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { generateUUID, generateLayoutId } from '@/shared/utils';
 import type { Result, Unit, LayoutError } from '@/core/result';
@@ -14,24 +21,29 @@ export { computePreview } from '@/core/storage';
 /**
  * Create a default empty library with one default layout entry.
  */
-export function createDefaultLibrary(initialLayoutId: string, initialLayoutName: string): LayoutLibrary {
+export function createDefaultLibrary(
+  initialLayoutId: string,
+  initialLayoutName: string
+): LayoutLibrary {
   return {
     version: '1.0',
     activeLayoutId: initialLayoutId,
     settings: {},
-    entries: [{
-      id: initialLayoutId,
-      name: initialLayoutName,
-      createdAt: Date.now(),
-      modifiedAt: Date.now(),
-      preview: {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
-        binCount: 0,
-        layerCount: 1,
+    entries: [
+      {
+        id: initialLayoutId,
+        name: initialLayoutName,
+        createdAt: Date.now(),
+        modifiedAt: Date.now(),
+        preview: {
+          drawerWidth: 10,
+          drawerDepth: 8,
+          drawerHeight: 12,
+          binCount: 0,
+          layerCount: 1,
+        },
       },
-    }],
+    ],
   };
 }
 
@@ -47,7 +59,12 @@ interface LibraryState {
   initLibrary: (library: LayoutLibrary) => void;
   setLibrary: (library: LayoutLibrary) => void;
 
-  createEntry: (name: string, layoutId: string, preview: LayoutPreview, author?: string) => LayoutEntry;
+  createEntry: (
+    name: string,
+    layoutId: string,
+    preview: LayoutPreview,
+    author?: string
+  ) => LayoutEntry;
   deleteEntry: (id: string) => Result<Unit, LayoutError>;
   updateEntry: (id: string, updates: Partial<Omit<LayoutEntry, 'id'>>) => void;
   duplicateEntry: (sourceEntry: LayoutEntry, newLayoutId: string) => LayoutEntry;
@@ -107,7 +124,7 @@ export const useLibraryStore = create<LibraryState>()(
         preview,
       };
 
-      set(state => {
+      set((state) => {
         state.library.entries.push(entry);
       });
 
@@ -122,8 +139,8 @@ export const useLibraryStore = create<LibraryState>()(
         return err(layoutLastEntity('layout'));
       }
 
-      set(state => {
-        state.library.entries = state.library.entries.filter(e => e.id !== id);
+      set((state) => {
+        state.library.entries = state.library.entries.filter((e) => e.id !== id);
 
         // If deleting active layout, switch to first remaining
         if (state.library.activeLayoutId === id) {
@@ -135,8 +152,8 @@ export const useLibraryStore = create<LibraryState>()(
     },
 
     updateEntry: (id, updates) => {
-      set(state => {
-        const entry = state.library.entries.find(e => e.id === id);
+      set((state) => {
+        const entry = state.library.entries.find((e) => e.id === id);
         if (entry) {
           if (updates.name !== undefined) {
             entry.name = updates.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
@@ -167,7 +184,7 @@ export const useLibraryStore = create<LibraryState>()(
         preview: { ...sourceEntry.preview },
       };
 
-      set(state => {
+      set((state) => {
         state.library.entries.push(newEntry);
       });
 
@@ -175,31 +192,29 @@ export const useLibraryStore = create<LibraryState>()(
     },
 
     getEntry: (id) => {
-      return get().library.entries.find(e => e.id === id);
+      return get().library.entries.find((e) => e.id === id);
     },
 
     getRecentEntries: (count) => {
       const { entries } = get().library;
-      return [...entries]
-        .sort((a, b) => b.modifiedAt - a.modifiedAt)
-        .slice(0, count);
+      return [...entries].sort((a, b) => b.modifiedAt - a.modifiedAt).slice(0, count);
     },
 
     setActiveLayoutId: (id) => {
-      set(state => {
+      set((state) => {
         state.library.activeLayoutId = id;
       });
     },
 
     setAuthorName: (name) => {
-      set(state => {
+      set((state) => {
         state.library.settings.authorName = name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
       });
     },
 
     setCloudShare: (layoutId, share) => {
-      set(state => {
-        const entry = state.library.entries.find(e => e.id === layoutId);
+      set((state) => {
+        const entry = state.library.entries.find((e) => e.id === layoutId);
         if (entry) {
           entry.cloudShare = share;
         }
@@ -209,8 +224,8 @@ export const useLibraryStore = create<LibraryState>()(
     },
 
     clearCloudShare: (layoutId) => {
-      set(state => {
-        const entry = state.library.entries.find(e => e.id === layoutId);
+      set((state) => {
+        const entry = state.library.entries.find((e) => e.id === layoutId);
         if (entry) {
           entry.cloudShare = undefined;
         }
@@ -242,7 +257,7 @@ export const useLibraryStore = create<LibraryState>()(
         status: 'available',
       };
 
-      set(state => {
+      set((state) => {
         state.sharedWithMe.push(newEntry);
       });
 
@@ -253,8 +268,8 @@ export const useLibraryStore = create<LibraryState>()(
     },
 
     updateSharedWithMe: (id, updates) => {
-      set(state => {
-        const entry = state.sharedWithMe.find(e => e.id === id);
+      set((state) => {
+        const entry = state.sharedWithMe.find((e) => e.id === id);
         if (entry) {
           if (updates.name !== undefined) {
             entry.name = updates.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
@@ -282,8 +297,8 @@ export const useLibraryStore = create<LibraryState>()(
     },
 
     removeSharedWithMe: (id) => {
-      set(state => {
-        state.sharedWithMe = state.sharedWithMe.filter(e => e.id !== id);
+      set((state) => {
+        state.sharedWithMe = state.sharedWithMe.filter((e) => e.id !== id);
       });
 
       // Persist to localStorage
@@ -291,12 +306,12 @@ export const useLibraryStore = create<LibraryState>()(
     },
 
     getSharedWithMeByShareId: (shareId) => {
-      return get().sharedWithMe.find(e => e.sourceShareId === shareId);
+      return get().sharedWithMe.find((e) => e.sourceShareId === shareId);
     },
 
     markShareAccessed: (shareId) => {
-      set(state => {
-        const entry = state.sharedWithMe.find(e => e.sourceShareId === shareId);
+      set((state) => {
+        const entry = state.sharedWithMe.find((e) => e.sourceShareId === shareId);
         if (entry) {
           entry.lastAccessedAt = Date.now();
         }

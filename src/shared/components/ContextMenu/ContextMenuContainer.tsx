@@ -39,10 +39,7 @@ export function ContextMenuContainer({
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-50 bg-overlay-light"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-50 bg-overlay-light" onClick={onClose} />
 
       {/* Menu */}
       <div

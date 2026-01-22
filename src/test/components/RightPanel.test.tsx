@@ -24,7 +24,15 @@ vi.mock('../../features/bin-inspector', () => ({
 
 // Mock SplitPreview
 vi.mock('../../components/Print/SplitPreview', () => ({
-  SplitPreview: ({ width, depth, pieces }: { width: number; depth: number; pieces: { width: number; depth: number; count: number }[] }) => (
+  SplitPreview: ({
+    width,
+    depth,
+    pieces,
+  }: {
+    width: number;
+    depth: number;
+    pieces: { width: number; depth: number; count: number }[];
+  }) => (
     <div data-testid="split-preview">
       Split: {width}×{depth} into {pieces.length} pieces
     </div>
@@ -53,29 +61,37 @@ vi.mock('../../shared/components/CollapsibleSection', () => ({
 
 // Mock ConfirmDialog
 vi.mock('../../shared/components/ConfirmDialog', () => ({
-  ConfirmDialog: ({ isOpen, title, message, onConfirm, onCancel }: {
+  ConfirmDialog: ({
+    isOpen,
+    title,
+    message,
+    onConfirm,
+    onCancel,
+  }: {
     isOpen: boolean;
     title: string;
     message: string;
     onConfirm: () => void;
     onCancel: () => void;
-  }) => isOpen ? (
-    <div data-testid="confirm-dialog">
-      <div data-testid="confirm-title">{title}</div>
-      <div data-testid="confirm-message">{message}</div>
-      <button onClick={onConfirm}>Confirm Delete</button>
-      <button onClick={onCancel}>Cancel Delete</button>
-    </div>
-  ) : null,
+  }) =>
+    isOpen ? (
+      <div data-testid="confirm-dialog">
+        <div data-testid="confirm-title">{title}</div>
+        <div data-testid="confirm-message">{message}</div>
+        <button onClick={onConfirm}>Confirm Delete</button>
+        <button onClick={onCancel}>Cancel Delete</button>
+      </div>
+    ) : null,
 }));
 
 // Mock BinListModal
 vi.mock('../../components/Modals/BinListModal', () => ({
-  BinListModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => isOpen ? (
-    <div data-testid="bin-list-modal">
-      <button onClick={onClose}>Close Modal</button>
-    </div>
-  ) : null,
+  BinListModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+    isOpen ? (
+      <div data-testid="bin-list-modal">
+        <button onClick={onClose}>Close Modal</button>
+      </div>
+    ) : null,
 }));
 
 // Mock storage utilities
@@ -122,11 +138,24 @@ describe('RightPanel', () => {
     ],
     layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
     bins: [
-      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: 'Screws', notes: 'M3' },
+      {
+        id: 'bin1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: 'Screws',
+        notes: 'M3',
+      },
     ],
   };
 
-  const createMockInspector = (overrides: Partial<UseBinInspectorReturn> = {}): UseBinInspectorReturn => ({
+  const createMockInspector = (
+    overrides: Partial<UseBinInspectorReturn> = {}
+  ): UseBinInspectorReturn => ({
     selectedBins: [],
     isMultiSelect: false,
     bin: null,
@@ -158,7 +187,9 @@ describe('RightPanel', () => {
     ...overrides,
   });
 
-  const createMockPrintList = (overrides: Partial<UsePrintListReturn> = {}): UsePrintListReturn => ({
+  const createMockPrintList = (
+    overrides: Partial<UsePrintListReturn> = {}
+  ): UsePrintListReturn => ({
     rows: [],
     groupedRows: null,
     totalBins: 0,
@@ -265,10 +296,12 @@ describe('RightPanel', () => {
 
   describe('inspector section', () => {
     it('shows EmptyState when no selection', () => {
-      mockUseBinInspector.mockReturnValue(createMockInspector({
-        bin: null,
-        isMultiSelect: false,
-      }));
+      mockUseBinInspector.mockReturnValue(
+        createMockInspector({
+          bin: null,
+          isMultiSelect: false,
+        })
+      );
 
       render(<RightPanel />);
 
@@ -278,11 +311,13 @@ describe('RightPanel', () => {
 
     it('shows SingleBinInspector when one bin selected', () => {
       const bin = mockLayout.bins[0];
-      mockUseBinInspector.mockReturnValue(createMockInspector({
-        bin,
-        selectedBins: [bin],
-        isMultiSelect: false,
-      }));
+      mockUseBinInspector.mockReturnValue(
+        createMockInspector({
+          bin,
+          selectedBins: [bin],
+          isMultiSelect: false,
+        })
+      );
 
       render(<RightPanel />);
 
@@ -292,10 +327,12 @@ describe('RightPanel', () => {
 
     it('shows MultiBinInspector when multiple bins selected', () => {
       const bins = [mockLayout.bins[0], { ...mockLayout.bins[0], id: 'bin2' }];
-      mockUseBinInspector.mockReturnValue(createMockInspector({
-        selectedBins: bins,
-        isMultiSelect: true,
-      }));
+      mockUseBinInspector.mockReturnValue(
+        createMockInspector({
+          selectedBins: bins,
+          isMultiSelect: true,
+        })
+      );
 
       render(<RightPanel />);
 
@@ -306,12 +343,14 @@ describe('RightPanel', () => {
     it('calls clearSelection when single inspector close clicked', () => {
       const bin = mockLayout.bins[0];
       const mockClearSelection = vi.fn();
-      mockUseBinInspector.mockReturnValue(createMockInspector({
-        bin,
-        selectedBins: [bin],
-        isMultiSelect: false,
-        clearSelection: mockClearSelection,
-      }));
+      mockUseBinInspector.mockReturnValue(
+        createMockInspector({
+          bin,
+          selectedBins: [bin],
+          isMultiSelect: false,
+          clearSelection: mockClearSelection,
+        })
+      );
 
       render(<RightPanel />);
 
@@ -323,11 +362,13 @@ describe('RightPanel', () => {
     it('calls clearSelection when multi inspector close clicked', () => {
       const bins = [mockLayout.bins[0], { ...mockLayout.bins[0], id: 'bin2' }];
       const mockClearSelection = vi.fn();
-      mockUseBinInspector.mockReturnValue(createMockInspector({
-        selectedBins: bins,
-        isMultiSelect: true,
-        clearSelection: mockClearSelection,
-      }));
+      mockUseBinInspector.mockReturnValue(
+        createMockInspector({
+          selectedBins: bins,
+          isMultiSelect: true,
+          clearSelection: mockClearSelection,
+        })
+      );
 
       render(<RightPanel />);
 
@@ -458,19 +499,21 @@ describe('RightPanel', () => {
   describe('print list - copy functionality', () => {
     beforeEach(() => {
       mockPrintListReturn = createMockPrintList({
-        rows: [{
-          size: '2×2',
-          height: 3,
-          binCount: 1,
-          binIds: ['bin1'],
-          labels: [],
-          notes: '',
-          needsSplit: false,
-          pieces: [],
-          totalPieces: 1,
-          filament: 0.8,
-          categoryIds: ['coral'],
-        }],
+        rows: [
+          {
+            size: '2×2',
+            height: 3,
+            binCount: 1,
+            binIds: ['bin1'],
+            labels: [],
+            notes: '',
+            needsSplit: false,
+            pieces: [],
+            totalPieces: 1,
+            filament: 0.8,
+            categoryIds: ['coral'],
+          },
+        ],
         totalBins: 1,
       });
     });
@@ -508,19 +551,21 @@ describe('RightPanel', () => {
   describe('print list - collapsible', () => {
     beforeEach(() => {
       mockPrintListReturn = createMockPrintList({
-        rows: [{
-          size: '2×2',
-          height: 3,
-          binCount: 1,
-          binIds: ['bin1'],
-          labels: [],
-          notes: '',
-          needsSplit: false,
-          pieces: [],
-          totalPieces: 1,
-          filament: 0.8,
-          categoryIds: ['coral'],
-        }],
+        rows: [
+          {
+            size: '2×2',
+            height: 3,
+            binCount: 1,
+            binIds: ['bin1'],
+            labels: [],
+            notes: '',
+            needsSplit: false,
+            pieces: [],
+            totalPieces: 1,
+            filament: 0.8,
+            categoryIds: ['coral'],
+          },
+        ],
         totalBins: 1,
       });
     });
@@ -566,9 +611,7 @@ describe('RightPanel', () => {
       labels: [],
       notes: '',
       needsSplit: true,
-      pieces: [
-        { width: 4, depth: 4, count: 4 },
-      ],
+      pieces: [{ width: 4, depth: 4, count: 4 }],
       totalPieces: 4,
       filament: 3.2,
       categoryIds: ['coral'],
@@ -624,19 +667,21 @@ describe('RightPanel', () => {
   describe('print list - category indicators', () => {
     it('displays category color dot', () => {
       mockPrintListReturn = createMockPrintList({
-        rows: [{
-          size: '2×2',
-          height: 3,
-          binCount: 1,
-          binIds: ['bin1'],
-          labels: [],
-          notes: '',
-          needsSplit: false,
-          pieces: [],
-          totalPieces: 1,
-          filament: 0.8,
-          categoryIds: ['coral'],
-        }],
+        rows: [
+          {
+            size: '2×2',
+            height: 3,
+            binCount: 1,
+            binIds: ['bin1'],
+            labels: [],
+            notes: '',
+            needsSplit: false,
+            pieces: [],
+            totalPieces: 1,
+            filament: 0.8,
+            categoryIds: ['coral'],
+          },
+        ],
         totalBins: 1,
       });
 
@@ -648,19 +693,21 @@ describe('RightPanel', () => {
 
     it('shows +N indicator when more than 3 categories', () => {
       mockPrintListReturn = createMockPrintList({
-        rows: [{
-          size: '2×2',
-          height: 3,
-          binCount: 4,
-          binIds: ['bin1', 'bin2', 'bin3', 'bin4'],
-          labels: [],
-          notes: '',
-          needsSplit: false,
-          pieces: [],
-          totalPieces: 4,
-          filament: 3.2,
-          categoryIds: ['coral', 'blue', 'cat3', 'cat4', 'cat5'],
-        }],
+        rows: [
+          {
+            size: '2×2',
+            height: 3,
+            binCount: 4,
+            binIds: ['bin1', 'bin2', 'bin3', 'bin4'],
+            labels: [],
+            notes: '',
+            needsSplit: false,
+            pieces: [],
+            totalPieces: 4,
+            filament: 3.2,
+            categoryIds: ['coral', 'blue', 'cat3', 'cat4', 'cat5'],
+          },
+        ],
         totalBins: 4,
       });
 
@@ -672,12 +719,14 @@ describe('RightPanel', () => {
 
   describe('delete confirmation', () => {
     it('shows confirm dialog when deleteConfirmState is set', () => {
-      mockUseBinInspector.mockReturnValue(createMockInspector({
-        deleteConfirmState: {
-          title: 'Delete Bin',
-          message: 'Delete this 2×2 bin?',
-        },
-      }));
+      mockUseBinInspector.mockReturnValue(
+        createMockInspector({
+          deleteConfirmState: {
+            title: 'Delete Bin',
+            message: 'Delete this 2×2 bin?',
+          },
+        })
+      );
 
       render(<RightPanel />);
 
@@ -688,13 +737,15 @@ describe('RightPanel', () => {
 
     it('calls confirmDelete when confirmed', () => {
       const mockConfirmDelete = vi.fn();
-      mockUseBinInspector.mockReturnValue(createMockInspector({
-        deleteConfirmState: {
-          title: 'Delete Bin',
-          message: 'Delete this 2×2 bin?',
-        },
-        confirmDelete: mockConfirmDelete,
-      }));
+      mockUseBinInspector.mockReturnValue(
+        createMockInspector({
+          deleteConfirmState: {
+            title: 'Delete Bin',
+            message: 'Delete this 2×2 bin?',
+          },
+          confirmDelete: mockConfirmDelete,
+        })
+      );
 
       render(<RightPanel />);
 
@@ -705,13 +756,15 @@ describe('RightPanel', () => {
 
     it('calls cancelDelete when cancelled', () => {
       const mockCancelDelete = vi.fn();
-      mockUseBinInspector.mockReturnValue(createMockInspector({
-        deleteConfirmState: {
-          title: 'Delete Bin',
-          message: 'Delete this 2×2 bin?',
-        },
-        cancelDelete: mockCancelDelete,
-      }));
+      mockUseBinInspector.mockReturnValue(
+        createMockInspector({
+          deleteConfirmState: {
+            title: 'Delete Bin',
+            message: 'Delete this 2×2 bin?',
+          },
+          cancelDelete: mockCancelDelete,
+        })
+      );
 
       render(<RightPanel />);
 
@@ -721,9 +774,11 @@ describe('RightPanel', () => {
     });
 
     it('hides confirm dialog when deleteConfirmState is null', () => {
-      mockUseBinInspector.mockReturnValue(createMockInspector({
-        deleteConfirmState: null,
-      }));
+      mockUseBinInspector.mockReturnValue(
+        createMockInspector({
+          deleteConfirmState: null,
+        })
+      );
 
       render(<RightPanel />);
 
@@ -782,19 +837,21 @@ describe('RightPanel', () => {
 
     it('copy button has proper aria-label', () => {
       mockPrintListReturn = createMockPrintList({
-        rows: [{
-          size: '2×2',
-          height: 3,
-          binCount: 1,
-          binIds: ['bin1'],
-          labels: [],
-          notes: '',
-          needsSplit: false,
-          pieces: [],
-          totalPieces: 1,
-          filament: 0.8,
-          categoryIds: ['coral'],
-        }],
+        rows: [
+          {
+            size: '2×2',
+            height: 3,
+            binCount: 1,
+            binIds: ['bin1'],
+            labels: [],
+            notes: '',
+            needsSplit: false,
+            pieces: [],
+            totalPieces: 1,
+            filament: 0.8,
+            categoryIds: ['coral'],
+          },
+        ],
         totalBins: 1,
       });
 
@@ -805,25 +862,29 @@ describe('RightPanel', () => {
 
     it('expand modal button has proper aria-label', () => {
       mockPrintListReturn = createMockPrintList({
-        rows: [{
-          size: '2×2',
-          height: 3,
-          binCount: 1,
-          binIds: ['bin1'],
-          labels: [],
-          notes: '',
-          needsSplit: false,
-          pieces: [],
-          totalPieces: 1,
-          filament: 0.8,
-          categoryIds: ['coral'],
-        }],
+        rows: [
+          {
+            size: '2×2',
+            height: 3,
+            binCount: 1,
+            binIds: ['bin1'],
+            labels: [],
+            notes: '',
+            needsSplit: false,
+            pieces: [],
+            totalPieces: 1,
+            filament: 0.8,
+            categoryIds: ['coral'],
+          },
+        ],
         totalBins: 1,
       });
 
       render(<RightPanel />);
 
-      expect(screen.getByRole('button', { name: 'Expand bin list to full view' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Expand bin list to full view' })
+      ).toBeInTheDocument();
     });
   });
 });

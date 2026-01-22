@@ -233,14 +233,14 @@ describe('layout store', () => {
 
       // Now duplicate one of the bins - should go to staging
       const bins = useLayoutStore.getState().layout.bins;
-      const binToClone = bins.find(b => b.layerId !== STAGING_ID);
+      const binToClone = bins.find((b) => b.layerId !== STAGING_ID);
 
       const dupResult = duplicateBin(binToClone!.id);
       expect(isOk(dupResult)).toBe(true);
       if (!isOk(dupResult)) return;
 
       const updatedBins = useLayoutStore.getState().layout.bins;
-      const newBin = updatedBins.find(b => b.id === dupResult.value);
+      const newBin = updatedBins.find((b) => b.id === dupResult.value);
       expect(newBin?.layerId).toBe(STAGING_ID);
     });
 
@@ -424,18 +424,20 @@ describe('layout store', () => {
         heightUnitMm: 7,
         categories: [{ id: 'cat1', name: 'Custom Cat', color: '#ff0000' }],
         layers: [{ id: 'layer1', name: 'Custom Layer', height: 3 }],
-        bins: [{
-          id: 'bin1',
-          layerId: 'layer1',
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
-          category: 'cat1',
-          label: 'Imported bin',
-          notes: '',
-        }],
+        bins: [
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'cat1',
+            label: 'Imported bin',
+            notes: '',
+          },
+        ],
       };
 
       importLayout(customLayout);
@@ -527,13 +529,25 @@ describe('layout store', () => {
       // Add bin to each layer
       addBin({
         layerId: layer1Id,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
       addBin({
         layerId: layer2Id,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(2);
@@ -575,8 +589,8 @@ describe('layout store', () => {
       updateDrawer({ width: 100, depth: -5 });
 
       const drawer = useLayoutStore.getState().layout.drawer;
-      expect(drawer.width).toBe(50);   // GRID_MAX
-      expect(drawer.depth).toBe(0.5);  // GRID_MIN (now supports half-units)
+      expect(drawer.width).toBe(50); // GRID_MAX
+      expect(drawer.depth).toBe(0.5); // GRID_MIN (now supports half-units)
     });
 
     it('updateDrawer moves out-of-bounds bins to staging', () => {
@@ -614,7 +628,7 @@ describe('layout store', () => {
       if (!isOk(result)) return;
 
       const cats = useLayoutStore.getState().layout.categories;
-      const newCat = cats.find(c => c.id === result.value);
+      const newCat = cats.find((c) => c.id === result.value);
       expect(newCat?.name).toBe('New Cat');
       expect(newCat?.color).toBe('#00ff00');
     });
@@ -628,7 +642,9 @@ describe('layout store', () => {
 
       const result = deleteCategory(addResult.value);
       expect(isOk(result)).toBe(true);
-      expect(useLayoutStore.getState().layout.categories.find(c => c.id === addResult.value)).toBeUndefined();
+      expect(
+        useLayoutStore.getState().layout.categories.find((c) => c.id === addResult.value)
+      ).toBeUndefined();
     });
 
     it('deleteCategory returns Err when category is in use', () => {
@@ -638,8 +654,14 @@ describe('layout store', () => {
 
       addBin({
         layerId,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       const result = deleteCategory(categoryId);
@@ -1067,7 +1089,7 @@ describe('layout store', () => {
       expect(count).toBeGreaterThan(0);
       // Verify bins were created with fractional dimensions
       const bins = useLayoutStore.getState().layout.bins;
-      const hasFractional = bins.some(b => b.width === 1.5 || b.depth === 1.5);
+      const hasFractional = bins.some((b) => b.width === 1.5 || b.depth === 1.5);
       expect(hasFractional).toBe(true);
     });
   });
@@ -1100,15 +1122,17 @@ describe('layout store', () => {
       addLayer();
       addLayer();
 
-      const totalLayerHeight = useLayoutStore.getState().layout.layers.reduce(
-        (sum, l) => sum + l.height, 0
-      );
+      const totalLayerHeight = useLayoutStore
+        .getState()
+        .layout.layers.reduce((sum, l) => sum + l.height, 0);
 
       // Try to set height below total layer heights
       updateDrawer({ height: 1 });
 
       // Should be clamped to at least total layer height
-      expect(useLayoutStore.getState().layout.drawer.height).toBeGreaterThanOrEqual(totalLayerHeight);
+      expect(useLayoutStore.getState().layout.drawer.height).toBeGreaterThanOrEqual(
+        totalLayerHeight
+      );
     });
   });
 
@@ -1144,7 +1168,7 @@ describe('layout store', () => {
       expect(isOk(dupResult)).toBe(true);
       if (!isOk(dupResult)) return;
 
-      const newBin = useLayoutStore.getState().layout.bins.find(b => b.id === dupResult.value);
+      const newBin = useLayoutStore.getState().layout.bins.find((b) => b.id === dupResult.value);
       expect(newBin?.clearanceHeight).toBe(2);
     });
   });
@@ -1543,7 +1567,7 @@ describe('layout store', () => {
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
         expect(result.value).toBeDefined();
-        const cat = useLayoutStore.getState().layout.categories.find(c => c.id === result.value);
+        const cat = useLayoutStore.getState().layout.categories.find((c) => c.id === result.value);
         expect(cat?.name).toBe('New Cat');
       }
     });
@@ -1577,7 +1601,9 @@ describe('layout store', () => {
       const result = deleteCategory(addResult.value);
 
       expect(isOk(result)).toBe(true);
-      expect(useLayoutStore.getState().layout.categories.find(c => c.id === addResult.value)).toBeUndefined();
+      expect(
+        useLayoutStore.getState().layout.categories.find((c) => c.id === addResult.value)
+      ).toBeUndefined();
     });
 
     it('returns Err with LAYOUT_INVALID_OPERATION when category is in use', () => {
@@ -1644,5 +1670,4 @@ describe('layout store', () => {
       }
     });
   });
-
 });

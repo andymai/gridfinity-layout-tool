@@ -83,18 +83,20 @@ describe('useAnalytics', () => {
       // Set up engaged layout
       const layout = useLayoutStore.getState().layout;
       layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
-      layout.bins = Array(10).fill(null).map((_, i) => ({
-        id: `bin${i}`,
-        layerId: 'layer1',
-        x: i,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        category: 'coral',
-        label: '',
-        notes: '',
-      }));
+      layout.bins = Array(10)
+        .fill(null)
+        .map((_, i) => ({
+          id: `bin${i}`,
+          layerId: 'layer1',
+          x: i,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 3,
+          category: 'coral',
+          label: '',
+          notes: '',
+        }));
       useLayoutStore.setState({ layout });
 
       renderHook(() => useAnalytics());
@@ -106,7 +108,7 @@ describe('useAnalytics', () => {
       });
 
       // Trigger any registered handlers
-      visibilityChangeHandlers.forEach(handler => handler());
+      visibilityChangeHandlers.forEach((handler) => handler());
 
       // Should not track when visible
       expect(analytics.trackLayoutSnapshot).not.toHaveBeenCalled();
@@ -116,18 +118,20 @@ describe('useAnalytics', () => {
       // Set up layout with few bins
       const layout = useLayoutStore.getState().layout;
       layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
-      layout.bins = Array(3).fill(null).map((_, i) => ({
-        id: `bin${i}`,
-        layerId: 'layer1',
-        x: i,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        category: 'coral',
-        label: '',
-        notes: '',
-      }));
+      layout.bins = Array(3)
+        .fill(null)
+        .map((_, i) => ({
+          id: `bin${i}`,
+          layerId: 'layer1',
+          x: i,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 3,
+          category: 'coral',
+          label: '',
+          notes: '',
+        }));
       useLayoutStore.setState({ layout });
 
       renderHook(() => useAnalytics());
@@ -139,7 +143,7 @@ describe('useAnalytics', () => {
       });
 
       // Trigger any registered handlers
-      visibilityChangeHandlers.forEach(handler => handler());
+      visibilityChangeHandlers.forEach((handler) => handler());
 
       // Should not track non-engaged sessions
       expect(analytics.trackLayoutSnapshot).not.toHaveBeenCalled();
@@ -149,18 +153,20 @@ describe('useAnalytics', () => {
       // Set up engaged layout (5+ bins)
       const layout = useLayoutStore.getState().layout;
       layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
-      layout.bins = Array(10).fill(null).map((_, i) => ({
-        id: `bin${i}`,
-        layerId: 'layer1',
-        x: i,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        category: 'coral',
-        label: '',
-        notes: '',
-      }));
+      layout.bins = Array(10)
+        .fill(null)
+        .map((_, i) => ({
+          id: `bin${i}`,
+          layerId: 'layer1',
+          x: i,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 3,
+          category: 'coral',
+          label: '',
+          notes: '',
+        }));
       useLayoutStore.setState({ layout });
 
       renderHook(() => useAnalytics());
@@ -172,7 +178,7 @@ describe('useAnalytics', () => {
       });
 
       // Trigger any registered handlers
-      visibilityChangeHandlers.forEach(handler => handler());
+      visibilityChangeHandlers.forEach((handler) => handler());
 
       // In dev mode, no handler registered so nothing called
       // In prod mode, would track the session
@@ -183,18 +189,20 @@ describe('useAnalytics', () => {
       // Set up engaged layout
       const layout = useLayoutStore.getState().layout;
       layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
-      layout.bins = Array(10).fill(null).map((_, i) => ({
-        id: `bin${i}`,
-        layerId: 'layer1',
-        x: i,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        category: 'coral',
-        label: '',
-        notes: '',
-      }));
+      layout.bins = Array(10)
+        .fill(null)
+        .map((_, i) => ({
+          id: `bin${i}`,
+          layerId: 'layer1',
+          x: i,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 3,
+          category: 'coral',
+          label: '',
+          notes: '',
+        }));
       useLayoutStore.setState({ layout });
 
       renderHook(() => useAnalytics());
@@ -206,12 +214,13 @@ describe('useAnalytics', () => {
       });
 
       // Trigger handler twice
-      visibilityChangeHandlers.forEach(handler => handler());
-      visibilityChangeHandlers.forEach(handler => handler());
+      visibilityChangeHandlers.forEach((handler) => handler());
+      visibilityChangeHandlers.forEach((handler) => handler());
 
       // In prod mode, should only be called once due to hasTrackedRef
       // In dev mode, never called
-      const callCount = (analytics.trackLayoutSnapshot as ReturnType<typeof vi.fn>).mock.calls.length;
+      const callCount = (analytics.trackLayoutSnapshot as ReturnType<typeof vi.fn>).mock.calls
+        .length;
       expect(callCount).toBeLessThanOrEqual(1);
     });
 
@@ -221,31 +230,35 @@ describe('useAnalytics', () => {
       layout.layers = [{ id: 'layer1', name: 'Layer 1', height: 3 }];
       layout.bins = [
         // 3 bins on grid (not engaged)
-        ...Array(3).fill(null).map((_, i) => ({
-          id: `bin${i}`,
-          layerId: 'layer1',
-          x: i,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          category: 'coral',
-          label: '',
-          notes: '',
-        })),
+        ...Array(3)
+          .fill(null)
+          .map((_, i) => ({
+            id: `bin${i}`,
+            layerId: 'layer1',
+            x: i,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          })),
         // 5 bins in staging (should be excluded)
-        ...Array(5).fill(null).map((_, i) => ({
-          id: `staging${i}`,
-          layerId: '__staging__',
-          x: i,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
-          category: 'coral',
-          label: '',
-          notes: '',
-        })),
+        ...Array(5)
+          .fill(null)
+          .map((_, i) => ({
+            id: `staging${i}`,
+            layerId: '__staging__',
+            x: i,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          })),
       ];
       useLayoutStore.setState({ layout });
 
@@ -258,7 +271,7 @@ describe('useAnalytics', () => {
       });
 
       // Trigger handler
-      visibilityChangeHandlers.forEach(handler => handler());
+      visibilityChangeHandlers.forEach((handler) => handler());
 
       // Should NOT track because only 3 bins are on grid
       expect(analytics.trackLayoutSnapshot).not.toHaveBeenCalled();

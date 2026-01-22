@@ -14,10 +14,7 @@ describe('filterLayoutContent', () => {
           { label: 'Screws', notes: 'For woodworking projects' },
           { label: 'Nails', notes: '2 inch and 3 inch sizes' },
         ],
-        categories: [
-          { name: 'Hardware' },
-          { name: 'Tools' },
-        ],
+        categories: [{ name: 'Hardware' }, { name: 'Tools' }],
       });
 
       expect(result.passed).toBe(true);
@@ -26,12 +23,8 @@ describe('filterLayoutContent', () => {
     it('passes layout with empty strings', () => {
       const result = filterLayoutContent({
         name: 'Untitled',
-        bins: [
-          { label: '', notes: '' },
-        ],
-        categories: [
-          { name: 'Default' },
-        ],
+        bins: [{ label: '', notes: '' }],
+        categories: [{ name: 'Default' }],
       });
 
       expect(result.passed).toBe(true);
@@ -40,12 +33,8 @@ describe('filterLayoutContent', () => {
     it('passes layout with numbers and special characters', () => {
       const result = filterLayoutContent({
         name: 'Layout #1 (2024)',
-        bins: [
-          { label: 'M3x10mm', notes: 'Qty: 100+' },
-        ],
-        categories: [
-          { name: 'Bolts & Screws' },
-        ],
+        bins: [{ label: 'M3x10mm', notes: 'Qty: 100+' }],
+        categories: [{ name: 'Bolts & Screws' }],
       });
 
       expect(result.passed).toBe(true);
@@ -79,9 +68,7 @@ describe('filterLayoutContent', () => {
     it('blocks bins with slurs in label', () => {
       const result = filterLayoutContent({
         name: 'My Layout',
-        bins: [
-          { label: 'retard stuff', notes: '' },
-        ],
+        bins: [{ label: 'retard stuff', notes: '' }],
         categories: [{ name: 'Default' }],
       });
 
@@ -94,9 +81,7 @@ describe('filterLayoutContent', () => {
     it('blocks bins with slurs in notes', () => {
       const result = filterLayoutContent({
         name: 'My Layout',
-        bins: [
-          { label: 'Tools', notes: 'This is some cunt text' },
-        ],
+        bins: [{ label: 'Tools', notes: 'This is some cunt text' }],
         categories: [{ name: 'Default' }],
       });
 
@@ -184,9 +169,7 @@ describe('filterLayoutContent', () => {
     it('handles undefined label and notes', () => {
       const result = filterLayoutContent({
         name: 'My Layout',
-        bins: [
-          { label: undefined, notes: undefined },
-        ],
+        bins: [{ label: undefined, notes: undefined }],
         categories: [{ name: 'Default' }],
       });
 

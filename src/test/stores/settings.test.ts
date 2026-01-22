@@ -46,19 +46,17 @@ describe('settings store', () => {
     it('resets to default values', () => {
       useSettingsStore.getState().updateSetting('defaultDrawerWidth', 99);
       useSettingsStore.getState().resetSettings();
-      expect(useSettingsStore.getState().settings.defaultDrawerWidth).toBe(DEFAULT_SETTINGS.defaultDrawerWidth);
+      expect(useSettingsStore.getState().settings.defaultDrawerWidth).toBe(
+        DEFAULT_SETTINGS.defaultDrawerWidth
+      );
     });
   });
 
   describe('saveCurrentAsDefaults', () => {
     it('saves drawer and unit settings', () => {
-      useSettingsStore.getState().saveCurrentAsDefaults(
-        { width: 20, depth: 16, height: 15 },
-        300,
-        50,
-        10,
-        6
-      );
+      useSettingsStore
+        .getState()
+        .saveCurrentAsDefaults({ width: 20, depth: 16, height: 15 }, 300, 50, 10, 6);
       const { settings } = useSettingsStore.getState();
       expect(settings.defaultDrawerWidth).toBe(20);
       expect(settings.defaultDrawerDepth).toBe(16);
@@ -98,8 +96,8 @@ describe('normalizeSortOrder', () => {
     // Should have all fields
     expect(result.length).toBe(DEFAULT_BIN_LIST_SORT_ORDER.length);
     // Missing fields should be at the end, disabled
-    const missingFields = result.filter(s => s.field !== 'category');
-    expect(missingFields.every(s => !s.enabled)).toBe(true);
+    const missingFields = result.filter((s) => s.field !== 'category');
+    expect(missingFields.every((s) => !s.enabled)).toBe(true);
   });
 
   it('filters out invalid fields', () => {
@@ -108,7 +106,7 @@ describe('normalizeSortOrder', () => {
       { field: 'invalid_field' as const, enabled: true },
     ];
     const result = normalizeSortOrder(stored as typeof DEFAULT_BIN_LIST_SORT_ORDER);
-    expect(result.find(s => s.field === 'invalid_field' as typeof s.field)).toBeUndefined();
+    expect(result.find((s) => s.field === ('invalid_field' as typeof s.field))).toBeUndefined();
   });
 });
 

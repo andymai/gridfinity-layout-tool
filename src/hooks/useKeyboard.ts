@@ -1,5 +1,12 @@
 import { useEffect, useCallback } from 'react';
-import { useUIStore, useLayoutStore, useHistoryStore, useLibraryStore, useUndoableAction, useToastStore } from '@/core/store';
+import {
+  useUIStore,
+  useLayoutStore,
+  useHistoryStore,
+  useLibraryStore,
+  useUndoableAction,
+  useToastStore,
+} from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/utils/binLocation';
@@ -53,397 +60,450 @@ function isShortcut(key: string, shortcuts: readonly string[]): boolean {
  * ```
  */
 export function useKeyboard() {
-  const selectedBinIds = useUIStore(state => state.selectedBinIds);
-  const focusedBinId = useUIStore(state => state.focusedBinId);
-  const setSelectedBins = useUIStore(state => state.setSelectedBins);
-  const setInteraction = useUIStore(state => state.setInteraction);
-  const setPaintSize = useUIStore(state => state.setPaintSize);
-  const zoomIn = useUIStore(state => state.zoomIn);
-  const zoomOut = useUIStore(state => state.zoomOut);
-  const activeLayerId = useUIStore(state => state.activeLayerId);
-  const setActiveLayer = useUIStore(state => state.setActiveLayer);
-  const showQuickLabel = useUIStore(state => state.showQuickLabel);
-  const activeCategoryId = useUIStore(state => state.activeCategoryId);
-  const setActiveCategory = useUIStore(state => state.setActiveCategory);
-  const toggleHalfBinMode = useUIStore(state => state.toggleHalfBinMode);
+  const selectedBinIds = useUIStore((state) => state.selectedBinIds);
+  const focusedBinId = useUIStore((state) => state.focusedBinId);
+  const setSelectedBins = useUIStore((state) => state.setSelectedBins);
+  const setInteraction = useUIStore((state) => state.setInteraction);
+  const setPaintSize = useUIStore((state) => state.setPaintSize);
+  const zoomIn = useUIStore((state) => state.zoomIn);
+  const zoomOut = useUIStore((state) => state.zoomOut);
+  const activeLayerId = useUIStore((state) => state.activeLayerId);
+  const setActiveLayer = useUIStore((state) => state.setActiveLayer);
+  const showQuickLabel = useUIStore((state) => state.showQuickLabel);
+  const activeCategoryId = useUIStore((state) => state.activeCategoryId);
+  const setActiveCategory = useUIStore((state) => state.setActiveCategory);
+  const toggleHalfBinMode = useUIStore((state) => state.toggleHalfBinMode);
 
-  const setShowLayoutManager = useLibraryStore(state => state.setShowLayoutManager);
-  const addToast = useToastStore(state => state.addToast);
+  const setShowLayoutManager = useLibraryStore((state) => state.setShowLayoutManager);
+  const addToast = useToastStore((state) => state.addToast);
 
   // Grid navigation hook for spatial arrow key navigation
   const { handleNavigationKey } = useGridNavigation();
 
-  const layout = useLayoutStore(state => state.layout);
+  const layout = useLayoutStore((state) => state.layout);
   const { deleteBin, duplicateBin, updateBin } = useMutations();
 
-  const undo = useHistoryStore(state => state.undo);
-  const redo = useHistoryStore(state => state.redo);
-  const canUndo = useHistoryStore(state => state.canUndo);
-  const canRedo = useHistoryStore(state => state.canRedo);
+  const undo = useHistoryStore((state) => state.undo);
+  const redo = useHistoryStore((state) => state.redo);
+  const canUndo = useHistoryStore((state) => state.canUndo);
+  const canRedo = useHistoryStore((state) => state.canRedo);
 
   const { execute } = useUndoableAction();
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Ignore if in input/textarea
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-      return;
-    }
-
-    const key = e.key;
-    const ctrlOrMeta = e.ctrlKey || e.metaKey;
-
-    if (isShortcut(key, SHORTCUTS.DELETE) && selectedBinIds.length > 0) {
-      e.preventDefault();
-      // Track deletion BEFORE executing (need bin data)
-      const binsToDelete = selectedBinIds
-        .map(id => layout.bins.find(b => b.id === id))
-        .filter((b): b is typeof layout.bins[number] => b !== undefined);
-      if (binsToDelete.length > 0) {
-        mlTracking.trackDeletion(binsToDelete[0], 'key', binsToDelete.length);
-        // Check for quick-correction (deleted shortly after creation)
-        for (const bin of binsToDelete) {
-          mlTracking.trackQuickCorrect('delete', bin.id, bin);
-        }
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      // Ignore if in input/textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
       }
-      execute(() => {
-        for (const binId of selectedBinIds) {
-          deleteBin(binId);
+
+      const key = e.key;
+      const ctrlOrMeta = e.ctrlKey || e.metaKey;
+
+      if (isShortcut(key, SHORTCUTS.DELETE) && selectedBinIds.length > 0) {
+        e.preventDefault();
+        // Track deletion BEFORE executing (need bin data)
+        const binsToDelete = selectedBinIds
+          .map((id) => layout.bins.find((b) => b.id === id))
+          .filter((b): b is (typeof layout.bins)[number] => b !== undefined);
+        if (binsToDelete.length > 0) {
+          mlTracking.trackDeletion(binsToDelete[0], 'key', binsToDelete.length);
+          // Check for quick-correction (deleted shortly after creation)
+          for (const bin of binsToDelete) {
+            mlTracking.trackQuickCorrect('delete', bin.id, bin);
+          }
         }
-      });
-      setSelectedBins([]);
-      return;
-    }
+        execute(() => {
+          for (const binId of selectedBinIds) {
+            deleteBin(binId);
+          }
+        });
+        setSelectedBins([]);
+        return;
+      }
 
-    if (isShortcut(key, SHORTCUTS.ESCAPE)) {
-      e.preventDefault();
-      setInteraction(null);
-      setSelectedBins([]);
-      setPaintSize(null);
-      return;
-    }
+      if (isShortcut(key, SHORTCUTS.ESCAPE)) {
+        e.preventDefault();
+        setInteraction(null);
+        setSelectedBins([]);
+        setPaintSize(null);
+        return;
+      }
 
-    if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.UNDO && !e.shiftKey) {
-      e.preventDefault();
-      if (canUndo) undo();
-      return;
-    }
+      if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.UNDO && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo) undo();
+        return;
+      }
 
-    if (ctrlOrMeta && (key.toLowerCase() === SHORTCUTS.REDO || (key === SHORTCUTS.REDO_ALT && e.shiftKey))) {
-      e.preventDefault();
-      if (canRedo) redo();
-      return;
-    }
+      if (
+        ctrlOrMeta &&
+        (key.toLowerCase() === SHORTCUTS.REDO || (key === SHORTCUTS.REDO_ALT && e.shiftKey))
+      ) {
+        e.preventDefault();
+        if (canRedo) redo();
+        return;
+      }
 
-    // Open layout manager (Ctrl+O)
-    if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.LAYOUT_MANAGER) {
-      e.preventDefault();
-      setShowLayoutManager(true);
-      return;
-    }
+      // Open layout manager (Ctrl+O)
+      if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.LAYOUT_MANAGER) {
+        e.preventDefault();
+        setShowLayoutManager(true);
+        return;
+      }
 
-    // Duplicate all selected bins (Ctrl+D)
-    if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.DUPLICATE && selectedBinIds.length > 0) {
-      e.preventDefault();
-      execute(() => {
-        const newIds: string[] = [];
-        for (const binId of selectedBinIds) {
-          const result = duplicateBin(binId);
-          if (isOk(result)) {
-            newIds.push(result.value);
-            // Track for ML telemetry
-            const newBin = useLayoutStore.getState().layout.bins.find(b => b.id === result.value);
-            if (newBin) {
-              mlTracking.trackPlacement(newBin, 'duplicate');
+      // Duplicate all selected bins (Ctrl+D)
+      if (ctrlOrMeta && key.toLowerCase() === SHORTCUTS.DUPLICATE && selectedBinIds.length > 0) {
+        e.preventDefault();
+        execute(() => {
+          const newIds: string[] = [];
+          for (const binId of selectedBinIds) {
+            const result = duplicateBin(binId);
+            if (isOk(result)) {
+              newIds.push(result.value);
+              // Track for ML telemetry
+              const newBin = useLayoutStore
+                .getState()
+                .layout.bins.find((b) => b.id === result.value);
+              if (newBin) {
+                mlTracking.trackPlacement(newBin, 'duplicate');
+              }
             }
           }
-        }
-        // Select the duplicated bins
-        if (newIds.length > 0) {
-          setSelectedBins(newIds);
-        }
-      });
-      return;
-    }
-
-    // Rotate selected bin (R) - swap width and depth (standalone key, no Ctrl/Cmd)
-    if (key.toLowerCase() === SHORTCUTS.ROTATE && !ctrlOrMeta && selectedBinIds.length === 1) {
-      e.preventDefault();
-      const bin = layout.bins.find(b => b.id === selectedBinIds[0]);
-      if (!bin) return;
-
-      const result = validateBinRotation(bin, layout);
-      if (!result.valid) {
-        addToast(result.message, 'error');
+          // Select the duplicated bins
+          if (newIds.length > 0) {
+            setSelectedBins(newIds);
+          }
+        });
         return;
       }
 
-      // Rotation is valid, perform it
-      execute(() => {
-        updateBin(bin.id, { width: bin.depth, depth: bin.width });
-      });
-      return;
-    }
+      // Rotate selected bin (R) - swap width and depth (standalone key, no Ctrl/Cmd)
+      if (key.toLowerCase() === SHORTCUTS.ROTATE && !ctrlOrMeta && selectedBinIds.length === 1) {
+        e.preventDefault();
+        const bin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+        if (!bin) return;
 
-    // Zoom
-    if (isShortcut(key, SHORTCUTS.ZOOM_IN)) {
-      e.preventDefault();
-      zoomIn();
-      return;
-    }
-    if (isShortcut(key, SHORTCUTS.ZOOM_OUT)) {
-      e.preventDefault();
-      zoomOut();
-      return;
-    }
-
-    // Layer navigation (W/S)
-    if (key.toLowerCase() === SHORTCUTS.LAYER_UP && !ctrlOrMeta) {
-      e.preventDefault();
-      const currentIndex = layout.layers.findIndex(l => l.id === activeLayerId);
-      if (currentIndex < layout.layers.length - 1) {
-        setActiveLayer(layout.layers[currentIndex + 1].id);
-      }
-      return;
-    }
-    if (key.toLowerCase() === SHORTCUTS.LAYER_DOWN && !ctrlOrMeta) {
-      e.preventDefault();
-      const currentIndex = layout.layers.findIndex(l => l.id === activeLayerId);
-      if (currentIndex > 0) {
-        setActiveLayer(layout.layers[currentIndex - 1].id);
-      }
-      return;
-    }
-
-    // Bin selection cycling (A/D) - cycles through bins on current layer
-    if (key.toLowerCase() === SHORTCUTS.SELECT_PREV_BIN && !ctrlOrMeta) {
-      e.preventDefault();
-      const layerBins = layout.bins
-        .filter(b => b.layerId === activeLayerId && b.layerId !== STAGING_ID)
-        .sort((a, b) => a.y === b.y ? a.x - b.x : a.y - b.y); // Sort by row then column
-      if (layerBins.length === 0) return;
-
-      const currentId = selectedBinIds[0];
-      const currentIndex = layerBins.findIndex(b => b.id === currentId);
-      const prevIndex = currentIndex <= 0 ? layerBins.length - 1 : currentIndex - 1;
-      setSelectedBins([layerBins[prevIndex].id]);
-      return;
-    }
-    if (key.toLowerCase() === SHORTCUTS.SELECT_NEXT_BIN && !ctrlOrMeta) {
-      e.preventDefault();
-      const layerBins = layout.bins
-        .filter(b => b.layerId === activeLayerId && b.layerId !== STAGING_ID)
-        .sort((a, b) => a.y === b.y ? a.x - b.x : a.y - b.y); // Sort by row then column
-      if (layerBins.length === 0) return;
-
-      const currentId = selectedBinIds[0];
-      const currentIndex = layerBins.findIndex(b => b.id === currentId);
-      const nextIndex = currentIndex < 0 || currentIndex >= layerBins.length - 1 ? 0 : currentIndex + 1;
-      setSelectedBins([layerBins[nextIndex].id]);
-      return;
-    }
-
-    // Category cycling ([ / ]) - cycles category of selected bins, or active drawing category if none selected
-    if (key === SHORTCUTS.CATEGORY_PREV) {
-      e.preventDefault();
-      const categories = layout.categories;
-      if (categories.length === 0) return;
-
-      if (selectedBinIds.length > 0) {
-        // Change category of selected bins
-        const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
-        if (!firstBin) return;
-
-        const currentIndex = firstBin.category
-          ? categories.findIndex(c => c.id === firstBin.category)
-          : -1;
-
-        let newCategoryId: string | undefined;
-        if (currentIndex <= 0) {
-          newCategoryId = currentIndex === 0 ? undefined : categories[categories.length - 1].id;
-        } else {
-          newCategoryId = categories[currentIndex - 1].id;
+        const result = validateBinRotation(bin, layout);
+        if (!result.valid) {
+          addToast(result.message, 'error');
+          return;
         }
 
-        // Filter to only bins that actually change
-        const binsToUpdate = selectedBinIds
-          .map(id => layout.bins.find(b => b.id === id))
-          .filter((bin): bin is typeof layout.bins[number] => !!bin && bin.category !== newCategoryId);
-        if (binsToUpdate.length === 0) return;
-
-        const batchSize = binsToUpdate.length;
-        const newCategory = newCategoryId ? categories.find(c => c.id === newCategoryId) : undefined;
-
+        // Rotation is valid, perform it
         execute(() => {
-          for (const bin of binsToUpdate) {
-            updateBin(bin.id, { category: newCategoryId });
-          }
+          updateBin(bin.id, { width: bin.depth, depth: bin.width });
         });
-
-        // Track once per batch (not per bin)
-        if (newCategory && binsToUpdate.length > 0) {
-          mlTracking.trackCategory(binsToUpdate[0], newCategory.name, batchSize);
-        }
-      } else {
-        // Cycle active drawing category (no "no category" option for drawing)
-        const currentIndex = categories.findIndex(c => c.id === activeCategoryId);
-        const prevIndex = currentIndex <= 0 ? categories.length - 1 : currentIndex - 1;
-        setActiveCategory(categories[prevIndex].id);
-      }
-      return;
-    }
-    if (key === SHORTCUTS.CATEGORY_NEXT) {
-      e.preventDefault();
-      const categories = layout.categories;
-      if (categories.length === 0) return;
-
-      if (selectedBinIds.length > 0) {
-        // Change category of selected bins
-        const firstBin = layout.bins.find(b => b.id === selectedBinIds[0]);
-        if (!firstBin) return;
-
-        const currentIndex = firstBin.category
-          ? categories.findIndex(c => c.id === firstBin.category)
-          : -1;
-
-        let newCategoryId: string | undefined;
-        if (currentIndex === -1) {
-          newCategoryId = categories[0].id;
-        } else if (currentIndex >= categories.length - 1) {
-          newCategoryId = undefined;
-        } else {
-          newCategoryId = categories[currentIndex + 1].id;
-        }
-
-        // Filter to only bins that actually change
-        const binsToUpdate = selectedBinIds
-          .map(id => layout.bins.find(b => b.id === id))
-          .filter((bin): bin is typeof layout.bins[number] => !!bin && bin.category !== newCategoryId);
-        if (binsToUpdate.length === 0) return;
-
-        const batchSize = binsToUpdate.length;
-        const newCategory = newCategoryId ? categories.find(c => c.id === newCategoryId) : undefined;
-
-        execute(() => {
-          for (const bin of binsToUpdate) {
-            updateBin(bin.id, { category: newCategoryId });
-          }
-        });
-
-        // Track once per batch (not per bin)
-        if (newCategory && binsToUpdate.length > 0) {
-          mlTracking.trackCategory(binsToUpdate[0], newCategory.name, batchSize);
-        }
-      } else {
-        // Cycle active drawing category (no "no category" option for drawing)
-        const currentIndex = categories.findIndex(c => c.id === activeCategoryId);
-        const nextIndex = currentIndex >= categories.length - 1 ? 0 : currentIndex + 1;
-        setActiveCategory(categories[nextIndex].id);
-      }
-      return;
-    }
-
-    // L key - open quick label popover for selected bin
-    if (key.toLowerCase() === SHORTCUTS.QUICK_LABEL && !ctrlOrMeta && selectedBinIds.length === 1) {
-      e.preventDefault();
-      showQuickLabel(selectedBinIds[0]);
-      return;
-    }
-
-    // H key - toggle half-bin mode (with validation)
-    if (key.toLowerCase() === SHORTCUTS.HALF_BIN_TOGGLE && !ctrlOrMeta) {
-      e.preventDefault();
-
-      const result = toggleHalfBinMode();
-
-      if (!result.success) {
-        // Validation failed - show toast notification
-        const validationResult = validateHalfBinModeToggle(layout, false);
-        if (validationResult.violation) {
-          addToast(
-            `Cannot disable half-bin mode: ${validationResult.violation.count} bin${validationResult.violation.count !== 1 ? 's have' : ' has'} fractional dimensions. Move them to staging first.`,
-            'error'
-          );
-        }
-      }
-
-      return;
-    }
-
-    // Arrow keys - spatial navigation OR nudge
-    const arrowKeys: readonly string[] = [SHORTCUTS.NUDGE_UP, SHORTCUTS.NUDGE_DOWN, SHORTCUTS.NUDGE_LEFT, SHORTCUTS.NUDGE_RIGHT];
-    if (arrowKeys.includes(key)) {
-      e.preventDefault();
-
-      // If there's a focused bin but no selection, use spatial navigation
-      if (focusedBinId && selectedBinIds.length === 0) {
-        handleNavigationKey(key);
         return;
       }
 
-      // Otherwise, use existing nudge logic for selected bins
-      if (selectedBinIds.length > 0) {
-        // Check if any selected bins have fractional dimensions
-        const selectedBins = selectedBinIds
-          .map(id => layout.bins.find(b => b.id === id))
-          .filter((b): b is typeof layout.bins[number] => b !== undefined);
-        const increment = selectedBins.some(bin => hasFractionalDimensions(bin)) ? 0.5 : 1;
+      // Zoom
+      if (isShortcut(key, SHORTCUTS.ZOOM_IN)) {
+        e.preventDefault();
+        zoomIn();
+        return;
+      }
+      if (isShortcut(key, SHORTCUTS.ZOOM_OUT)) {
+        e.preventDefault();
+        zoomOut();
+        return;
+      }
 
-        let dx = 0, dy = 0;
-        if (key === SHORTCUTS.NUDGE_UP) dy = increment;
-        if (key === SHORTCUTS.NUDGE_DOWN) dy = -increment;
-        if (key === SHORTCUTS.NUDGE_LEFT) dx = -increment;
-        if (key === SHORTCUTS.NUDGE_RIGHT) dx = increment;
-
-        // Check if all bins can move
-        const excludeIds = new Set(selectedBinIds);
-        let allValid = true;
-
-        for (const binId of selectedBinIds) {
-          const bin = layout.bins.find(b => b.id === binId);
-          if (!bin || bin.layerId === STAGING_ID) {
-            allValid = false;
-            break;
-          }
-
-          const newX = bin.x + dx;
-          const newY = bin.y + dy;
-
-          const result = canPlaceBin(
-            { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
-            bin.layerId,
-            layout,
-            binId,
-            excludeIds
-          );
-
-          if (!result.valid) {
-            allValid = false;
-            break;
-          }
+      // Layer navigation (W/S)
+      if (key.toLowerCase() === SHORTCUTS.LAYER_UP && !ctrlOrMeta) {
+        e.preventDefault();
+        const currentIndex = layout.layers.findIndex((l) => l.id === activeLayerId);
+        if (currentIndex < layout.layers.length - 1) {
+          setActiveLayer(layout.layers[currentIndex + 1].id);
         }
+        return;
+      }
+      if (key.toLowerCase() === SHORTCUTS.LAYER_DOWN && !ctrlOrMeta) {
+        e.preventDefault();
+        const currentIndex = layout.layers.findIndex((l) => l.id === activeLayerId);
+        if (currentIndex > 0) {
+          setActiveLayer(layout.layers[currentIndex - 1].id);
+        }
+        return;
+      }
 
-        if (allValid) {
-          // Track move BEFORE executing (capture old positions)
-          const firstBin = selectedBins[0];
-          if (firstBin) {
-            const oldPosition = { x: firstBin.x, y: firstBin.y };
-            // Track once per batch with representative data
-            const newFirstBin = { ...firstBin, x: firstBin.x + dx, y: firstBin.y + dy };
-            mlTracking.trackMove(newFirstBin, oldPosition, 'nudge', selectedBins.length);
+      // Bin selection cycling (A/D) - cycles through bins on current layer
+      if (key.toLowerCase() === SHORTCUTS.SELECT_PREV_BIN && !ctrlOrMeta) {
+        e.preventDefault();
+        const layerBins = layout.bins
+          .filter((b) => b.layerId === activeLayerId && b.layerId !== STAGING_ID)
+          .sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y)); // Sort by row then column
+        if (layerBins.length === 0) return;
+
+        const currentId = selectedBinIds[0];
+        const currentIndex = layerBins.findIndex((b) => b.id === currentId);
+        const prevIndex = currentIndex <= 0 ? layerBins.length - 1 : currentIndex - 1;
+        setSelectedBins([layerBins[prevIndex].id]);
+        return;
+      }
+      if (key.toLowerCase() === SHORTCUTS.SELECT_NEXT_BIN && !ctrlOrMeta) {
+        e.preventDefault();
+        const layerBins = layout.bins
+          .filter((b) => b.layerId === activeLayerId && b.layerId !== STAGING_ID)
+          .sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y)); // Sort by row then column
+        if (layerBins.length === 0) return;
+
+        const currentId = selectedBinIds[0];
+        const currentIndex = layerBins.findIndex((b) => b.id === currentId);
+        const nextIndex =
+          currentIndex < 0 || currentIndex >= layerBins.length - 1 ? 0 : currentIndex + 1;
+        setSelectedBins([layerBins[nextIndex].id]);
+        return;
+      }
+
+      // Category cycling ([ / ]) - cycles category of selected bins, or active drawing category if none selected
+      if (key === SHORTCUTS.CATEGORY_PREV) {
+        e.preventDefault();
+        const categories = layout.categories;
+        if (categories.length === 0) return;
+
+        if (selectedBinIds.length > 0) {
+          // Change category of selected bins
+          const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+          if (!firstBin) return;
+
+          const currentIndex = firstBin.category
+            ? categories.findIndex((c) => c.id === firstBin.category)
+            : -1;
+
+          let newCategoryId: string | undefined;
+          if (currentIndex <= 0) {
+            newCategoryId = currentIndex === 0 ? undefined : categories[categories.length - 1].id;
+          } else {
+            newCategoryId = categories[currentIndex - 1].id;
           }
+
+          // Filter to only bins that actually change
+          const binsToUpdate = selectedBinIds
+            .map((id) => layout.bins.find((b) => b.id === id))
+            .filter(
+              (bin): bin is (typeof layout.bins)[number] => !!bin && bin.category !== newCategoryId
+            );
+          if (binsToUpdate.length === 0) return;
+
+          const batchSize = binsToUpdate.length;
+          const newCategory = newCategoryId
+            ? categories.find((c) => c.id === newCategoryId)
+            : undefined;
 
           execute(() => {
-            for (const binId of selectedBinIds) {
-              const bin = layout.bins.find(b => b.id === binId);
-              if (!bin) continue;
-              updateBin(binId, { x: bin.x + dx, y: bin.y + dy });
+            for (const bin of binsToUpdate) {
+              updateBin(bin.id, { category: newCategoryId });
             }
           });
+
+          // Track once per batch (not per bin)
+          if (newCategory && binsToUpdate.length > 0) {
+            mlTracking.trackCategory(binsToUpdate[0], newCategory.name, batchSize);
+          }
+        } else {
+          // Cycle active drawing category (no "no category" option for drawing)
+          const currentIndex = categories.findIndex((c) => c.id === activeCategoryId);
+          const prevIndex = currentIndex <= 0 ? categories.length - 1 : currentIndex - 1;
+          setActiveCategory(categories[prevIndex].id);
         }
+        return;
       }
-      return;
-    }
-  }, [selectedBinIds, focusedBinId, layout, canUndo, canRedo, undo, redo, zoomIn, zoomOut, deleteBin, duplicateBin, updateBin, setSelectedBins, setInteraction, setPaintSize, execute, handleNavigationKey, activeLayerId, setActiveLayer, showQuickLabel, activeCategoryId, setActiveCategory, toggleHalfBinMode, setShowLayoutManager, addToast]);
+      if (key === SHORTCUTS.CATEGORY_NEXT) {
+        e.preventDefault();
+        const categories = layout.categories;
+        if (categories.length === 0) return;
+
+        if (selectedBinIds.length > 0) {
+          // Change category of selected bins
+          const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+          if (!firstBin) return;
+
+          const currentIndex = firstBin.category
+            ? categories.findIndex((c) => c.id === firstBin.category)
+            : -1;
+
+          let newCategoryId: string | undefined;
+          if (currentIndex === -1) {
+            newCategoryId = categories[0].id;
+          } else if (currentIndex >= categories.length - 1) {
+            newCategoryId = undefined;
+          } else {
+            newCategoryId = categories[currentIndex + 1].id;
+          }
+
+          // Filter to only bins that actually change
+          const binsToUpdate = selectedBinIds
+            .map((id) => layout.bins.find((b) => b.id === id))
+            .filter(
+              (bin): bin is (typeof layout.bins)[number] => !!bin && bin.category !== newCategoryId
+            );
+          if (binsToUpdate.length === 0) return;
+
+          const batchSize = binsToUpdate.length;
+          const newCategory = newCategoryId
+            ? categories.find((c) => c.id === newCategoryId)
+            : undefined;
+
+          execute(() => {
+            for (const bin of binsToUpdate) {
+              updateBin(bin.id, { category: newCategoryId });
+            }
+          });
+
+          // Track once per batch (not per bin)
+          if (newCategory && binsToUpdate.length > 0) {
+            mlTracking.trackCategory(binsToUpdate[0], newCategory.name, batchSize);
+          }
+        } else {
+          // Cycle active drawing category (no "no category" option for drawing)
+          const currentIndex = categories.findIndex((c) => c.id === activeCategoryId);
+          const nextIndex = currentIndex >= categories.length - 1 ? 0 : currentIndex + 1;
+          setActiveCategory(categories[nextIndex].id);
+        }
+        return;
+      }
+
+      // L key - open quick label popover for selected bin
+      if (
+        key.toLowerCase() === SHORTCUTS.QUICK_LABEL &&
+        !ctrlOrMeta &&
+        selectedBinIds.length === 1
+      ) {
+        e.preventDefault();
+        showQuickLabel(selectedBinIds[0]);
+        return;
+      }
+
+      // H key - toggle half-bin mode (with validation)
+      if (key.toLowerCase() === SHORTCUTS.HALF_BIN_TOGGLE && !ctrlOrMeta) {
+        e.preventDefault();
+
+        const result = toggleHalfBinMode();
+
+        if (!result.success) {
+          // Validation failed - show toast notification
+          const validationResult = validateHalfBinModeToggle(layout, false);
+          if (validationResult.violation) {
+            addToast(
+              `Cannot disable half-bin mode: ${validationResult.violation.count} bin${validationResult.violation.count !== 1 ? 's have' : ' has'} fractional dimensions. Move them to staging first.`,
+              'error'
+            );
+          }
+        }
+
+        return;
+      }
+
+      // Arrow keys - spatial navigation OR nudge
+      const arrowKeys: readonly string[] = [
+        SHORTCUTS.NUDGE_UP,
+        SHORTCUTS.NUDGE_DOWN,
+        SHORTCUTS.NUDGE_LEFT,
+        SHORTCUTS.NUDGE_RIGHT,
+      ];
+      if (arrowKeys.includes(key)) {
+        e.preventDefault();
+
+        // If there's a focused bin but no selection, use spatial navigation
+        if (focusedBinId && selectedBinIds.length === 0) {
+          handleNavigationKey(key);
+          return;
+        }
+
+        // Otherwise, use existing nudge logic for selected bins
+        if (selectedBinIds.length > 0) {
+          // Check if any selected bins have fractional dimensions
+          const selectedBins = selectedBinIds
+            .map((id) => layout.bins.find((b) => b.id === id))
+            .filter((b): b is (typeof layout.bins)[number] => b !== undefined);
+          const increment = selectedBins.some((bin) => hasFractionalDimensions(bin)) ? 0.5 : 1;
+
+          let dx = 0,
+            dy = 0;
+          if (key === SHORTCUTS.NUDGE_UP) dy = increment;
+          if (key === SHORTCUTS.NUDGE_DOWN) dy = -increment;
+          if (key === SHORTCUTS.NUDGE_LEFT) dx = -increment;
+          if (key === SHORTCUTS.NUDGE_RIGHT) dx = increment;
+
+          // Check if all bins can move
+          const excludeIds = new Set(selectedBinIds);
+          let allValid = true;
+
+          for (const binId of selectedBinIds) {
+            const bin = layout.bins.find((b) => b.id === binId);
+            if (!bin || bin.layerId === STAGING_ID) {
+              allValid = false;
+              break;
+            }
+
+            const newX = bin.x + dx;
+            const newY = bin.y + dy;
+
+            const result = canPlaceBin(
+              { x: newX, y: newY, width: bin.width, depth: bin.depth, height: bin.height },
+              bin.layerId,
+              layout,
+              binId,
+              excludeIds
+            );
+
+            if (!result.valid) {
+              allValid = false;
+              break;
+            }
+          }
+
+          if (allValid) {
+            // Track move BEFORE executing (capture old positions)
+            const firstBin = selectedBins[0];
+            if (firstBin) {
+              const oldPosition = { x: firstBin.x, y: firstBin.y };
+              // Track once per batch with representative data
+              const newFirstBin = { ...firstBin, x: firstBin.x + dx, y: firstBin.y + dy };
+              mlTracking.trackMove(newFirstBin, oldPosition, 'nudge', selectedBins.length);
+            }
+
+            execute(() => {
+              for (const binId of selectedBinIds) {
+                const bin = layout.bins.find((b) => b.id === binId);
+                if (!bin) continue;
+                updateBin(binId, { x: bin.x + dx, y: bin.y + dy });
+              }
+            });
+          }
+        }
+        return;
+      }
+    },
+    [
+      selectedBinIds,
+      focusedBinId,
+      layout,
+      canUndo,
+      canRedo,
+      undo,
+      redo,
+      zoomIn,
+      zoomOut,
+      deleteBin,
+      duplicateBin,
+      updateBin,
+      setSelectedBins,
+      setInteraction,
+      setPaintSize,
+      execute,
+      handleNavigationKey,
+      activeLayerId,
+      setActiveLayer,
+      showQuickLabel,
+      activeCategoryId,
+      setActiveCategory,
+      toggleHalfBinMode,
+      setShowLayoutManager,
+      addToast,
+    ]
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

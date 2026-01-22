@@ -219,7 +219,9 @@ test.describe('Keyboard Navigation', () => {
 
   test('= key zooms in', async ({ page }) => {
     // Get zoom display using the established pattern
-    const zoomDisplay = page.locator('[role="group"][aria-label="Zoom controls"] span.tabular-nums');
+    const zoomDisplay = page.locator(
+      '[role="group"][aria-label="Zoom controls"] span.tabular-nums'
+    );
     await expect(zoomDisplay).toBeVisible();
     const initialZoomText = await zoomDisplay.textContent();
     const initialZoom = parseInt(initialZoomText || '100');
@@ -241,7 +243,9 @@ test.describe('Keyboard Navigation', () => {
     await page.keyboard.press('Equal');
     await page.keyboard.press('Equal');
 
-    const zoomDisplay = page.locator('[role="group"][aria-label="Zoom controls"] span.tabular-nums');
+    const zoomDisplay = page.locator(
+      '[role="group"][aria-label="Zoom controls"] span.tabular-nums'
+    );
     await expect(zoomDisplay).toBeVisible();
 
     // Wait for zoom to settle
@@ -250,7 +254,7 @@ test.describe('Keyboard Navigation', () => {
       expect(parseInt(text || '0')).toBeGreaterThan(100);
     }).toPass({ timeout: 2000 });
 
-    const beforeZoom = parseInt(await zoomDisplay.textContent() || '0');
+    const beforeZoom = parseInt((await zoomDisplay.textContent()) || '0');
 
     // Press Minus key to zoom out
     await page.keyboard.press('Minus');
@@ -269,7 +273,7 @@ test.describe('Keyboard Navigation', () => {
     // Help modal should be visible with heading "Help & Shortcuts"
     await waitForDialog(page);
     const helpModal = page.locator('[role="dialog"]').filter({
-      has: page.getByRole('heading', { name: /help/i })
+      has: page.getByRole('heading', { name: /help/i }),
     });
     await expect(helpModal).toBeVisible();
   });
@@ -281,7 +285,7 @@ test.describe('Keyboard Navigation', () => {
     // Wait for modal to open
     await waitForDialog(page);
     const helpModal = page.locator('[role="dialog"]').filter({
-      has: page.getByRole('heading', { name: /help/i })
+      has: page.getByRole('heading', { name: /help/i }),
     });
     await expect(helpModal).toBeVisible();
 

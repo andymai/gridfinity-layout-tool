@@ -96,8 +96,7 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
     if (!result.canDisable) {
       return {
         success: false,
-        error:
-          'Cannot disable half-bin mode while bins with fractional dimensions exist',
+        error: 'Cannot disable half-bin mode while bins with fractional dimensions exist',
       };
     }
 

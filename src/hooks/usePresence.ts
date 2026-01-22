@@ -16,12 +16,7 @@
  */
 
 import { useMemo, useEffect, useRef } from 'react';
-import {
-  useOthers,
-  useSelf,
-  useStatus,
-  useStorage,
-} from '@/liveblocks.config';
+import { useOthers, useSelf, useStatus, useStorage } from '@/liveblocks.config';
 import { useCollabMode } from './useCollabMode';
 import { useToastStore } from '@/core/store/toast';
 import { generateGuestName, generateGuestColor } from '@/utils/guestNames';
@@ -45,11 +40,7 @@ export interface Participant {
 /**
  * Connection status for the collaborative session.
  */
-export type ConnectionStatus =
-  | 'connecting'
-  | 'connected'
-  | 'reconnecting'
-  | 'disconnected';
+export type ConnectionStatus = 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
 
 /**
  * Return type for the usePresence hook.

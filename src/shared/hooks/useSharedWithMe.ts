@@ -133,7 +133,13 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
       importLayout(layout, '__shared_preview__', 'init');
 
       // Set preview state so the banner shows
-      setSharedLayoutPreview(layout, layout.name, metadata.authorName, entry.sourceShareId, permission);
+      setSharedLayoutPreview(
+        layout,
+        layout.name,
+        metadata.authorName,
+        entry.sourceShareId,
+        permission
+      );
 
       // Reset UI state
       clearSelection();

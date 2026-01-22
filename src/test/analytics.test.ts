@@ -28,9 +28,7 @@ const createTestLayout = (overrides?: Partial<Layout>): Layout => ({
     { id: 'coral', name: 'Coral', color: '#FF6B6B' },
     { id: 'custom1', name: 'My Custom Category', color: '#00FF00' },
   ],
-  layers: [
-    { id: 'layer1', name: 'Layer 1', height: 3 },
-  ],
+  layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
   bins: [],
   ...overrides,
 });
@@ -78,9 +76,42 @@ describe('computeLayoutMetrics', () => {
     it('counts total bins', () => {
       const layout = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin3', layerId: STAGING_ID, x: 0, y: 0, width: 1, depth: 1, height: 3, category: 'coral', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin2',
+            layerId: 'layer1',
+            x: 2,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin3',
+            layerId: STAGING_ID,
+            x: 0,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -93,9 +124,42 @@ describe('computeLayoutMetrics', () => {
     it('counts bins with labels', () => {
       const layout = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: 'Screws', notes: '' },
-          { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin3', layerId: 'layer1', x: 4, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '  ', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: 'Screws',
+            notes: '',
+          },
+          {
+            id: 'bin2',
+            layerId: 'layer1',
+            x: 2,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin3',
+            layerId: 'layer1',
+            x: 4,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '  ',
+            notes: '',
+          },
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -106,8 +170,30 @@ describe('computeLayoutMetrics', () => {
     it('counts bins with notes', () => {
       const layout = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: 'M3 screws' },
-          { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: 'M3 screws',
+          },
+          {
+            id: 'bin2',
+            layerId: 'layer1',
+            x: 2,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -118,9 +204,44 @@ describe('computeLayoutMetrics', () => {
     it('counts bins with clearance height', () => {
       const layout = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '', clearanceHeight: 2 },
-          { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '', clearanceHeight: 0 },
-          { id: 'bin3', layerId: 'layer1', x: 4, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+            clearanceHeight: 2,
+          },
+          {
+            id: 'bin2',
+            layerId: 'layer1',
+            x: 2,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+            clearanceHeight: 0,
+          },
+          {
+            id: 'bin3',
+            layerId: 'layer1',
+            x: 4,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -131,9 +252,42 @@ describe('computeLayoutMetrics', () => {
     it('counts bins with half-unit dimensions', () => {
       const layout = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0.5, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 1.5, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin3', layerId: 'layer1', x: 4, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0.5,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin2',
+            layerId: 'layer1',
+            x: 2,
+            y: 0,
+            width: 1.5,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin3',
+            layerId: 'layer1',
+            x: 4,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -144,8 +298,30 @@ describe('computeLayoutMetrics', () => {
     it('calculates average bin area', () => {
       const layout = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' }, // 4
-          { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 3, depth: 2, height: 3, category: 'coral', label: '', notes: '' }, // 6
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          }, // 4
+          {
+            id: 'bin2',
+            layerId: 'layer1',
+            x: 2,
+            y: 0,
+            width: 3,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          }, // 6
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -163,9 +339,42 @@ describe('computeLayoutMetrics', () => {
     it('tracks top bin sizes', () => {
       const layout = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin3', layerId: 'layer1', x: 4, y: 0, width: 1, depth: 1, height: 3, category: 'coral', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin2',
+            layerId: 'layer1',
+            x: 2,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin3',
+            layerId: 'layer1',
+            x: 4,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -177,9 +386,42 @@ describe('computeLayoutMetrics', () => {
     it('tracks bin height distribution', () => {
       const layout = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin3', layerId: 'layer1', x: 4, y: 0, width: 2, depth: 2, height: 6, category: 'coral', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin2',
+            layerId: 'layer1',
+            x: 2,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin3',
+            layerId: 'layer1',
+            x: 4,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 6,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -244,9 +486,42 @@ describe('computeLayoutMetrics', () => {
           { id: 'sky', name: 'Sky', color: '#38bdf8' },
         ],
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin3', layerId: 'layer1', x: 4, y: 0, width: 2, depth: 2, height: 3, category: 'sky', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin2',
+            layerId: 'layer1',
+            x: 2,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin3',
+            layerId: 'layer1',
+            x: 4,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'sky',
+            label: '',
+            notes: '',
+          },
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -275,14 +550,36 @@ describe('computeLayoutMetrics', () => {
     it('detects half-bin usage', () => {
       const wholeBins = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
         ],
       });
       expect(computeLayoutMetrics(wholeBins).feature_half_bins).toBe(false);
 
       const halfBins = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0.5, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0.5,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
         ],
       });
       expect(computeLayoutMetrics(halfBins).feature_half_bins).toBe(true);
@@ -304,7 +601,18 @@ describe('computeLayoutMetrics', () => {
         printBedSize: 256,
         gridUnitMm: 42,
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 7, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 7,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -316,8 +624,30 @@ describe('computeLayoutMetrics', () => {
     it('tracks max bin dimensions', () => {
       const layout = createTestLayout({
         bins: [
-          { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 3, depth: 4, height: 3, category: 'coral', label: '', notes: '' },
-          { id: 'bin2', layerId: 'layer1', x: 3, y: 0, width: 5, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
+          {
+            id: 'bin1',
+            layerId: 'layer1',
+            x: 0,
+            y: 0,
+            width: 3,
+            depth: 4,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'bin2',
+            layerId: 'layer1',
+            x: 3,
+            y: 0,
+            width: 5,
+            depth: 2,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          },
         ],
       });
       const metrics = computeLayoutMetrics(layout);
@@ -330,32 +660,76 @@ describe('computeLayoutMetrics', () => {
   describe('engagement metrics', () => {
     it('marks as engaged at 5+ bins', () => {
       const fewBins = createTestLayout({
-        bins: Array(4).fill(null).map((_, i) => ({
-          id: `bin${i}`, layerId: 'layer1', x: i, y: 0, width: 1, depth: 1, height: 3, category: 'coral', label: '', notes: '',
-        })),
+        bins: Array(4)
+          .fill(null)
+          .map((_, i) => ({
+            id: `bin${i}`,
+            layerId: 'layer1',
+            x: i,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          })),
       });
       expect(computeLayoutMetrics(fewBins).is_engaged).toBe(false);
 
       const engagedBins = createTestLayout({
-        bins: Array(5).fill(null).map((_, i) => ({
-          id: `bin${i}`, layerId: 'layer1', x: i, y: 0, width: 1, depth: 1, height: 3, category: 'coral', label: '', notes: '',
-        })),
+        bins: Array(5)
+          .fill(null)
+          .map((_, i) => ({
+            id: `bin${i}`,
+            layerId: 'layer1',
+            x: i,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          })),
       });
       expect(computeLayoutMetrics(engagedBins).is_engaged).toBe(true);
     });
 
     it('marks as substantial at 15+ bins', () => {
       const moderateBins = createTestLayout({
-        bins: Array(14).fill(null).map((_, i) => ({
-          id: `bin${i}`, layerId: 'layer1', x: i % 10, y: Math.floor(i / 10), width: 1, depth: 1, height: 3, category: 'coral', label: '', notes: '',
-        })),
+        bins: Array(14)
+          .fill(null)
+          .map((_, i) => ({
+            id: `bin${i}`,
+            layerId: 'layer1',
+            x: i % 10,
+            y: Math.floor(i / 10),
+            width: 1,
+            depth: 1,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          })),
       });
       expect(computeLayoutMetrics(moderateBins).is_substantial).toBe(false);
 
       const substantialBins = createTestLayout({
-        bins: Array(15).fill(null).map((_, i) => ({
-          id: `bin${i}`, layerId: 'layer1', x: i % 10, y: Math.floor(i / 10), width: 1, depth: 1, height: 3, category: 'coral', label: '', notes: '',
-        })),
+        bins: Array(15)
+          .fill(null)
+          .map((_, i) => ({
+            id: `bin${i}`,
+            layerId: 'layer1',
+            x: i % 10,
+            y: Math.floor(i / 10),
+            width: 1,
+            depth: 1,
+            height: 3,
+            category: 'coral',
+            label: '',
+            notes: '',
+          })),
       });
       expect(computeLayoutMetrics(substantialBins).is_substantial).toBe(true);
     });
@@ -401,7 +775,9 @@ describe('tracking functions', () => {
 
     it('does not throw with session context', () => {
       const layout = createTestLayout();
-      expect(() => trackLayoutSnapshot(layout, 'session_engaged', { duration_seconds: 300 })).not.toThrow();
+      expect(() =>
+        trackLayoutSnapshot(layout, 'session_engaged', { duration_seconds: 300 })
+      ).not.toThrow();
     });
 
     it('skips non-engaged users on session_engaged trigger', () => {
@@ -483,7 +859,12 @@ describe('getActivityContext', () => {
 
   it('returns drawing when in paint mode', () => {
     useInteractionStore.setState({
-      interaction: { type: 'paint', start: { x: 0, y: 0 }, current: { x: 2, y: 2 }, paintSize: { width: 1, depth: 1 } },
+      interaction: {
+        type: 'paint',
+        start: { x: 0, y: 0 },
+        current: { x: 2, y: 2 },
+        paintSize: { width: 1, depth: 1 },
+      },
     });
     expect(getActivityContext()).toBe('drawing');
   });
@@ -497,21 +878,40 @@ describe('getActivityContext', () => {
 
   it('returns editing when in drag mode', () => {
     useInteractionStore.setState({
-      interaction: { type: 'drag', binIds: ['bin1'], startCoord: { x: 0, y: 0 }, currentCoord: { x: 1, y: 1 }, valid: true, isOverGrid: true },
+      interaction: {
+        type: 'drag',
+        binIds: ['bin1'],
+        startCoord: { x: 0, y: 0 },
+        currentCoord: { x: 1, y: 1 },
+        valid: true,
+        isOverGrid: true,
+      },
     });
     expect(getActivityContext()).toBe('editing');
   });
 
   it('returns editing when in resize mode', () => {
     useInteractionStore.setState({
-      interaction: { type: 'resize', binIds: ['bin1'], handle: 'e', startRects: new Map(), currentRects: new Map(), valid: true },
+      interaction: {
+        type: 'resize',
+        binIds: ['bin1'],
+        handle: 'e',
+        startRects: new Map(),
+        currentRects: new Map(),
+        valid: true,
+      },
     });
     expect(getActivityContext()).toBe('editing');
   });
 
   it('returns editing when in stagingDrag mode', () => {
     useInteractionStore.setState({
-      interaction: { type: 'stagingDrag', binId: 'bin1', currentCoord: { x: 1, y: 1 }, valid: true },
+      interaction: {
+        type: 'stagingDrag',
+        binId: 'bin1',
+        currentCoord: { x: 1, y: 1 },
+        valid: true,
+      },
     });
     expect(getActivityContext()).toBe('editing');
   });

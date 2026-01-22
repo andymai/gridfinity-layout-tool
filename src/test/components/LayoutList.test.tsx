@@ -7,17 +7,19 @@ import type { LayoutEntry } from '@/core/types';
 
 // Mock storage
 vi.mock('../../core/storage', () => ({
-  loadLayoutAsync: vi.fn(() => Promise.resolve({
-    id: 'test-layout',
-    name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    layers: [],
-    categories: [],
-    bins: [],
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-  })),
+  loadLayoutAsync: vi.fn(() =>
+    Promise.resolve({
+      id: 'test-layout',
+      name: 'Test Layout',
+      drawer: { width: 10, depth: 8, height: 12 },
+      layers: [],
+      categories: [],
+      bins: [],
+      printBedSize: 256,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+    })
+  ),
   downloadLayoutAsFile: vi.fn(),
 }));
 
@@ -46,11 +48,21 @@ vi.mock('../../features/layout-library/components/LayoutManagerModal/LayoutActio
     onDelete: () => void;
   }) => (
     <div data-testid="layout-actions">
-      <button data-testid="copy-link-btn" onClick={onCopyLink}>Copy Link</button>
-      <button data-testid="download-btn" onClick={onDownload}>Download</button>
-      <button data-testid="rename-btn" onClick={onRename}>Rename</button>
-      <button data-testid="duplicate-btn" onClick={onDuplicate}>Duplicate</button>
-      <button data-testid="delete-btn" onClick={onDelete}>Delete</button>
+      <button data-testid="copy-link-btn" onClick={onCopyLink}>
+        Copy Link
+      </button>
+      <button data-testid="download-btn" onClick={onDownload}>
+        Download
+      </button>
+      <button data-testid="rename-btn" onClick={onRename}>
+        Rename
+      </button>
+      <button data-testid="duplicate-btn" onClick={onDuplicate}>
+        Duplicate
+      </button>
+      <button data-testid="delete-btn" onClick={onDelete}>
+        Delete
+      </button>
     </div>
   ),
 }));
@@ -374,7 +386,7 @@ describe('LayoutList', () => {
 
       render(<LayoutList {...defaultProps} entries={entries} activeLayoutId="layout-1" />);
 
-      const layoutNames = screen.getAllByRole('option').map(opt => {
+      const layoutNames = screen.getAllByRole('option').map((opt) => {
         // Find the layout name text in each option
         return opt.querySelector('.font-medium')?.textContent;
       });

@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { useSettingsStore, DEFAULT_SETTINGS, DEFAULT_PRINT_VIEW_SETTINGS, DEFAULT_BIN_LIST_SORT_ORDER, normalizeSortOrder, DEFAULT_STL_SEARCH_SITES, STL_SEARCH_CONSTRAINTS } from '@/core/store/settings';
+import {
+  useSettingsStore,
+  DEFAULT_SETTINGS,
+  DEFAULT_PRINT_VIEW_SETTINGS,
+  DEFAULT_BIN_LIST_SORT_ORDER,
+  normalizeSortOrder,
+  DEFAULT_STL_SEARCH_SITES,
+  STL_SEARCH_CONSTRAINTS,
+} from '@/core/store/settings';
 import type { BinListSortOrder, STLSearchSite } from '@/core/store/settings';
 import { resetAllStores, createIsolatedLocalStorageMock } from '@/test/testUtils';
 
@@ -136,13 +144,7 @@ describe('settings store', () => {
     it('saves drawer dimensions and settings', () => {
       const { saveCurrentAsDefaults } = useSettingsStore.getState();
 
-      saveCurrentAsDefaults(
-        { width: 25, depth: 20, height: 15 },
-        300,
-        50,
-        10,
-        5
-      );
+      saveCurrentAsDefaults({ width: 25, depth: 20, height: 15 }, 300, 50, 10, 5);
 
       const settings = useSettingsStore.getState().settings;
       expect(settings.defaultDrawerWidth).toBe(25);
@@ -161,13 +163,7 @@ describe('settings store', () => {
       updateSetting('defaultZoom', 1.5);
 
       // Save layout defaults
-      saveCurrentAsDefaults(
-        { width: 25, depth: 20, height: 15 },
-        300,
-        50,
-        10,
-        5
-      );
+      saveCurrentAsDefaults({ width: 25, depth: 20, height: 15 }, 300, 50, 10, 5);
 
       const settings = useSettingsStore.getState().settings;
       expect(settings.defaultZoom).toBe(1.5);
@@ -176,13 +172,7 @@ describe('settings store', () => {
     it('persists to localStorage', () => {
       const { saveCurrentAsDefaults } = useSettingsStore.getState();
 
-      saveCurrentAsDefaults(
-        { width: 25, depth: 20, height: 15 },
-        300,
-        50,
-        10,
-        5
-      );
+      saveCurrentAsDefaults({ width: 25, depth: 20, height: 15 }, 300, 50, 10, 5);
 
       const savedData = JSON.parse(localStorageMock.mock._store['gridfinity-settings-v1']);
       expect(savedData.defaultDrawerWidth).toBe(25);
@@ -234,7 +224,9 @@ describe('settings store', () => {
       expect(() => resetSettings()).not.toThrow();
 
       // State should still be reset
-      expect(useSettingsStore.getState().settings.defaultDrawerWidth).toBe(DEFAULT_SETTINGS.defaultDrawerWidth);
+      expect(useSettingsStore.getState().settings.defaultDrawerWidth).toBe(
+        DEFAULT_SETTINGS.defaultDrawerWidth
+      );
       expect(warnSpy).toHaveBeenCalledWith('Failed to save settings:', expect.any(Error));
       warnSpy.mockRestore();
     });
@@ -255,8 +247,8 @@ describe('settings store', () => {
       expect(sortOrder).toBeDefined();
       expect(sortOrder.length).toBeGreaterThan(0);
       // Category and position should be enabled by default
-      expect(sortOrder.find(s => s.field === 'category')?.enabled).toBe(true);
-      expect(sortOrder.find(s => s.field === 'position')?.enabled).toBe(true);
+      expect(sortOrder.find((s) => s.field === 'category')?.enabled).toBe(true);
+      expect(sortOrder.find((s) => s.field === 'position')?.enabled).toBe(true);
     });
 
     it('updates print view setting', () => {
@@ -275,7 +267,7 @@ describe('settings store', () => {
       const { updateSetting } = useSettingsStore.getState();
       const currentSettings = useSettingsStore.getState().settings.printViewSettings;
 
-      const newSortOrder = currentSettings.binListSortOrder.map(s =>
+      const newSortOrder = currentSettings.binListSortOrder.map((s) =>
         s.field === 'size' ? { ...s, enabled: true } : s
       );
 
@@ -285,7 +277,7 @@ describe('settings store', () => {
       });
 
       const sortOrder = useSettingsStore.getState().settings.printViewSettings.binListSortOrder;
-      expect(sortOrder.find(s => s.field === 'size')?.enabled).toBe(true);
+      expect(sortOrder.find((s) => s.field === 'size')?.enabled).toBe(true);
     });
   });
 
@@ -314,7 +306,7 @@ describe('settings store', () => {
 
   describe('DEFAULT_BIN_LIST_SORT_ORDER', () => {
     it('has all sort fields', () => {
-      const fields = DEFAULT_BIN_LIST_SORT_ORDER.map(s => s.field);
+      const fields = DEFAULT_BIN_LIST_SORT_ORDER.map((s) => s.field);
       expect(fields).toContain('category');
       expect(fields).toContain('layer');
       expect(fields).toContain('position');
@@ -324,15 +316,15 @@ describe('settings store', () => {
     });
 
     it('has category and position enabled by default', () => {
-      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'category')?.enabled).toBe(true);
-      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'position')?.enabled).toBe(true);
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find((s) => s.field === 'category')?.enabled).toBe(true);
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find((s) => s.field === 'position')?.enabled).toBe(true);
     });
 
     it('has other fields disabled by default', () => {
-      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'layer')?.enabled).toBe(false);
-      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'size')?.enabled).toBe(false);
-      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'height')?.enabled).toBe(false);
-      expect(DEFAULT_BIN_LIST_SORT_ORDER.find(s => s.field === 'label')?.enabled).toBe(false);
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find((s) => s.field === 'layer')?.enabled).toBe(false);
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find((s) => s.field === 'size')?.enabled).toBe(false);
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find((s) => s.field === 'height')?.enabled).toBe(false);
+      expect(DEFAULT_BIN_LIST_SORT_ORDER.find((s) => s.field === 'label')?.enabled).toBe(false);
     });
   });
 
@@ -386,8 +378,8 @@ describe('settings store', () => {
       // Missing fields added at end, disabled
       const addedFields = result.slice(4);
       expect(addedFields.length).toBe(2);
-      expect(addedFields.every(f => f.enabled === false)).toBe(true);
-      expect(addedFields.map(f => f.field).sort()).toEqual(['height', 'size']);
+      expect(addedFields.every((f) => f.enabled === false)).toBe(true);
+      expect(addedFields.map((f) => f.field).sort()).toEqual(['height', 'size']);
     });
 
     it('removes invalid fields', () => {
@@ -400,19 +392,19 @@ describe('settings store', () => {
       const result = normalizeSortOrder(stored);
 
       // Invalid field should be removed
-      expect(result.find(s => s.field === 'invalid_field' as string)).toBeUndefined();
+      expect(result.find((s) => s.field === ('invalid_field' as string))).toBeUndefined();
 
       // Valid fields preserved
-      expect(result.find(s => s.field === 'category')?.enabled).toBe(true);
-      expect(result.find(s => s.field === 'position')?.enabled).toBe(true);
+      expect(result.find((s) => s.field === 'category')?.enabled).toBe(true);
+      expect(result.find((s) => s.field === 'position')?.enabled).toBe(true);
     });
 
     it('handles empty array', () => {
       const result = normalizeSortOrder([]);
       expect(result.length).toBe(6);
       // All fields added (disabled by default from DEFAULT_BIN_LIST_SORT_ORDER)
-      expect(result.map(s => s.field).sort()).toEqual(
-        DEFAULT_BIN_LIST_SORT_ORDER.map(s => s.field).sort()
+      expect(result.map((s) => s.field).sort()).toEqual(
+        DEFAULT_BIN_LIST_SORT_ORDER.map((s) => s.field).sort()
       );
     });
 
@@ -427,10 +419,10 @@ describe('settings store', () => {
       ];
       const result = normalizeSortOrder(stored);
 
-      expect(result.find(s => s.field === 'size')?.enabled).toBe(true);
-      expect(result.find(s => s.field === 'category')?.enabled).toBe(false);
-      expect(result.find(s => s.field === 'layer')?.enabled).toBe(true);
-      expect(result.find(s => s.field === 'label')?.enabled).toBe(true);
+      expect(result.find((s) => s.field === 'size')?.enabled).toBe(true);
+      expect(result.find((s) => s.field === 'category')?.enabled).toBe(false);
+      expect(result.find((s) => s.field === 'layer')?.enabled).toBe(true);
+      expect(result.find((s) => s.field === 'label')?.enabled).toBe(true);
     });
   });
 
@@ -478,21 +470,21 @@ describe('settings store', () => {
 
   describe('DEFAULT_STL_SEARCH_SITES', () => {
     it('includes Printables', () => {
-      const printables = DEFAULT_STL_SEARCH_SITES.find(s => s.id === 'printables');
+      const printables = DEFAULT_STL_SEARCH_SITES.find((s) => s.id === 'printables');
       expect(printables).toBeDefined();
       expect(printables?.enabled).toBe(true);
       expect(printables?.isDefault).toBe(true);
     });
 
     it('includes MakerWorld', () => {
-      const makerworld = DEFAULT_STL_SEARCH_SITES.find(s => s.id === 'makerworld');
+      const makerworld = DEFAULT_STL_SEARCH_SITES.find((s) => s.id === 'makerworld');
       expect(makerworld).toBeDefined();
       expect(makerworld?.enabled).toBe(true);
       expect(makerworld?.isDefault).toBe(true);
     });
 
     it('includes Thangs (disabled by default)', () => {
-      const thangs = DEFAULT_STL_SEARCH_SITES.find(s => s.id === 'thangs');
+      const thangs = DEFAULT_STL_SEARCH_SITES.find((s) => s.id === 'thangs');
       expect(thangs).toBeDefined();
       expect(thangs?.enabled).toBe(false);
       expect(thangs?.isDefault).toBe(true);
@@ -523,5 +515,4 @@ describe('settings store', () => {
   // Note: Tests for loadSettings() initialization behavior are not feasible in unit tests
   // because Zustand stores initialize their state once at module load time.
   // The localStorage loading and normalization logic is tested via e2e tests instead.
-
 });

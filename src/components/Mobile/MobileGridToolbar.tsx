@@ -35,30 +35,29 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
     }))
   );
 
-  const layers = useLayoutStore(state => state.layout.layers);
-  const activeLayer = layers.find(l => l.id === activeLayerId);
+  const layers = useLayoutStore((state) => state.layout.layers);
+  const activeLayer = layers.find((l) => l.id === activeLayerId);
 
   const canZoomOut = zoom > CONSTRAINTS.ZOOM_MIN;
   const canZoomIn = zoom < CONSTRAINTS.ZOOM_MAX;
 
   return (
-    <div
-      className="flex items-center justify-between px-3 py-2 flex-shrink-0 bg-surface-secondary border-b border-stroke-subtle"
-    >
+    <div className="flex items-center justify-between px-3 py-2 flex-shrink-0 bg-surface-secondary border-b border-stroke-subtle">
       {/* Left: Layer indicator (tappable) */}
       <button
         onClick={() => toggleMobilePanel('layers')}
         className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors bg-surface-elevated border border-stroke-subtle"
       >
-        <div
-          className="w-2 h-2 rounded-full flex-shrink-0 bg-accent"
-        />
-        <span
-          className="font-medium truncate max-w-[80px] text-sm text-content"
-        >
+        <div className="w-2 h-2 rounded-full flex-shrink-0 bg-accent" />
+        <span className="font-medium truncate max-w-[80px] text-sm text-content">
           {activeLayer?.name || 'Layer'}
         </span>
-        <svg className="w-3 h-3 flex-shrink-0 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg
+          className="w-3 h-3 flex-shrink-0 text-content-tertiary"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -72,11 +71,21 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
           aria-label={`Exit paint mode (${paintSize.width}×${paintSize.depth})`}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+            />
           </svg>
           {paintSize.width}×{paintSize.depth}
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       )}
@@ -91,7 +100,12 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
           title={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+            />
           </svg>
         </button>
         <button

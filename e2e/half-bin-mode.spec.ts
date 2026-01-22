@@ -63,7 +63,9 @@ test.describe('Half-Bin Mode', () => {
       await waitForAppReady(page);
 
       // Half-bin mode should still be enabled
-      const toggleAfterReload = getSidebar(page).getByRole('checkbox', { name: /toggle half-bin mode/i });
+      const toggleAfterReload = getSidebar(page).getByRole('checkbox', {
+        name: /toggle half-bin mode/i,
+      });
       await toggleAfterReload.scrollIntoViewIfNeeded();
       await expect(toggleAfterReload).toBeChecked();
     });
@@ -215,7 +217,9 @@ test.describe('Half-Bin Mode', () => {
   });
 
   test.describe('Fractional Drawer Edges', () => {
-    test('fractional edge controls appear when drawer has half-unit dimensions', async ({ page }) => {
+    test('fractional edge controls appear when drawer has half-unit dimensions', async ({
+      page,
+    }) => {
       const sidebar = getSidebar(page);
       const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-bin mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
@@ -241,8 +245,11 @@ test.describe('Half-Bin Mode', () => {
       const edgeControls = sidebar.locator('[data-grid-size-panel]').getByRole('radio');
 
       // Either the label should be visible OR the radio controls should exist
-      const hasLabel = await fractionalEdgeLabel.first().isVisible().catch(() => false);
-      const hasControls = await edgeControls.count() > 0;
+      const hasLabel = await fractionalEdgeLabel
+        .first()
+        .isVisible()
+        .catch(() => false);
+      const hasControls = (await edgeControls.count()) > 0;
 
       expect(hasLabel || hasControls).toBe(true);
     });

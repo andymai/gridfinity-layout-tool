@@ -31,10 +31,7 @@ import { ok, err, isOk, isErr, OK } from './types';
  * // { ok: true, value: 10 }
  * ```
  */
-export function map<T, U, E>(
-  result: Result<T, E>,
-  fn: (value: T) => U
-): Result<U, E> {
+export function map<T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> {
   if (isOk(result)) {
     return ok(fn(result.value));
   }
@@ -50,10 +47,7 @@ export function map<T, U, E>(
  * const mapped = mapErr(result, e => ({ ...e, logged: true }));
  * ```
  */
-export function mapErr<T, E, F>(
-  result: Result<T, E>,
-  fn: (error: E) => F
-): Result<T, F> {
+export function mapErr<T, E, F>(result: Result<T, E>, fn: (error: E) => F): Result<T, F> {
   if (isErr(result)) {
     return err(fn(result.error));
   }
@@ -137,10 +131,7 @@ export function unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
  * // 'default'
  * ```
  */
-export function unwrapOrElse<T, E>(
-  result: Result<T, E>,
-  fn: (error: E) => T
-): T {
+export function unwrapOrElse<T, E>(result: Result<T, E>, fn: (error: E) => T): T {
   return isOk(result) ? result.value : fn(result.error);
 }
 
@@ -202,10 +193,7 @@ export function match<T, E, U>(
  * // { ok: true, value: [1, 'hello'] }
  * ```
  */
-export function combine<T1, T2, E>(
-  r1: Result<T1, E>,
-  r2: Result<T2, E>
-): Result<[T1, T2], E> {
+export function combine<T1, T2, E>(r1: Result<T1, E>, r2: Result<T2, E>): Result<[T1, T2], E> {
   if (isErr(r1)) return r1;
   if (isErr(r2)) return r2;
   return ok([r1.value, r2.value]);
@@ -391,10 +379,7 @@ export function toUnit<T, E>(result: Result<T, E>): Result<Unit, E> {
  * });
  * ```
  */
-export function tap<T, E>(
-  result: Result<T, E>,
-  fn: (value: T) => void
-): Result<T, E> {
+export function tap<T, E>(result: Result<T, E>, fn: (value: T) => void): Result<T, E> {
   if (isOk(result)) {
     fn(result.value);
   }
@@ -412,10 +397,7 @@ export function tap<T, E>(
  * });
  * ```
  */
-export function tapErr<T, E>(
-  result: Result<T, E>,
-  fn: (error: E) => void
-): Result<T, E> {
+export function tapErr<T, E>(result: Result<T, E>, fn: (error: E) => void): Result<T, E> {
   if (isErr(result)) {
     fn(result.error);
   }

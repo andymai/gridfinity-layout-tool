@@ -96,9 +96,7 @@ describe('CategoryBreakdownChart', () => {
 
   describe('compact mode', () => {
     it('applies compact styles', () => {
-      const { container } = render(
-        <CategoryBreakdownChart breakdown={sampleBreakdown} compact />
-      );
+      const { container } = render(<CategoryBreakdownChart breakdown={sampleBreakdown} compact />);
 
       // Compact mode uses smaller heights and fonts
       const bars = container.querySelectorAll('.h-5');
@@ -153,9 +151,7 @@ describe('CategoryStackedBar', () => {
   });
 
   it('applies custom height', () => {
-    const { container } = render(
-      <CategoryStackedBar breakdown={sampleBreakdown} height="h-8" />
-    );
+    const { container } = render(<CategoryStackedBar breakdown={sampleBreakdown} height="h-8" />);
 
     expect(container.querySelector('.h-8')).toBeInTheDocument();
   });

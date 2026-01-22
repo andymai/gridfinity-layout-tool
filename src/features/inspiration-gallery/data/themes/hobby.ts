@@ -20,18 +20,50 @@ function create3DPrintingSupplies(): InspirationLayout {
   // Based on telemetry: heat_insert, magnet, bearing, filament_sample are most tracked
   const bins = [
     // Filament samples - top section
-    createBin(0, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'PLA', height: 6 }),
-    createBin(2, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'PETG', height: 6 }),
-    createBin(4, 0, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'TPU', height: 6 }),
-    createBin(6, 0, 1, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'ABS', height: 6 }),
+    createBin(0, 0, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'PLA',
+      height: 6,
+    }),
+    createBin(2, 0, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'PETG',
+      height: 6,
+    }),
+    createBin(4, 0, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'TPU',
+      height: 6,
+    }),
+    createBin(6, 0, 1, 3, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'ABS',
+      height: 6,
+    }),
     // Hardware - most popular per telemetry (heat inserts, magnets, bearings)
     createBin(0, 3, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'M3 Inserts' }),
     createBin(2, 3, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'M4 Inserts' }),
     createBin(4, 3, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'M5 Inserts' }),
     createBin(6, 3, 1, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Misc' }),
-    createBin(0, 5, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: '6x3 Magnets' }),
-    createBin(2, 5, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: '8x3 Magnets' }),
-    createBin(4, 5, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: '608 Bearings' }),
+    createBin(0, 5, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: '6x3 Magnets',
+    }),
+    createBin(2, 5, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: '8x3 Magnets',
+    }),
+    createBin(4, 5, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: '608 Bearings',
+    }),
     createBin(6, 5, 1, 2, { layerId: layer.id, categoryId: categories[1].id, label: '625' }),
     // Tools
     createBin(0, 7, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Scrapers' }),
@@ -90,12 +122,24 @@ function createMakerStation(): InspirationLayout {
   // - Jumper wire bundle: varies → 2x3 bins
   const bins = [
     // Development boards - 2x2 bins for Arduino-sized boards
-    createBin(0, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Arduino Uno' }),
-    createBin(2, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Arduino Nano' }),
+    createBin(0, 0, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Arduino Uno',
+    }),
+    createBin(2, 0, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Arduino Nano',
+    }),
     createBin(4, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'ESP32' }),
     createBin(6, 0, 1, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Wemos D1' }),
     // Raspberry Pi and larger boards
-    createBin(0, 2, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Raspberry Pi' }),
+    createBin(0, 2, 3, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Raspberry Pi',
+    }),
     createBin(3, 2, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Pico' }),
     // Sensors - 1x1 bins for small modules
     createBin(5, 2, 1, 1, { layerId: layer.id, categoryId: categories[1].id, label: 'DHT22' }),
@@ -110,9 +154,21 @@ function createMakerStation(): InspirationLayout {
     createBin(6, 4, 1, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'MicroSD' }),
     createBin(5, 5, 2, 1, { layerId: layer.id, categoryId: categories[2].id, label: 'USB Cables' }),
     // Jumper wires and supplies
-    createBin(0, 6, 2, 3, { layerId: layer.id, categoryId: categories[3].id, label: 'M-M Jumpers' }),
-    createBin(2, 6, 2, 3, { layerId: layer.id, categoryId: categories[3].id, label: 'M-F Jumpers' }),
-    createBin(4, 6, 2, 3, { layerId: layer.id, categoryId: categories[3].id, label: 'F-F Jumpers' }),
+    createBin(0, 6, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[3].id,
+      label: 'M-M Jumpers',
+    }),
+    createBin(2, 6, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[3].id,
+      label: 'M-F Jumpers',
+    }),
+    createBin(4, 6, 2, 3, {
+      layerId: layer.id,
+      categoryId: categories[3].id,
+      label: 'F-F Jumpers',
+    }),
     createBin(6, 6, 1, 3, { layerId: layer.id, categoryId: categories[3].id, label: 'Dupont' }),
     // Bottom row - displays and modules
     createBin(0, 9, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'OLED' }),
@@ -156,7 +212,11 @@ function createCraftSupplies(): InspirationLayout {
 
   const bins = [
     // Adhesives - top row
-    createBin(0, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Glue Sticks' }),
+    createBin(0, 0, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Glue Sticks',
+    }),
     createBin(2, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Super Glue' }),
     createBin(4, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Tape' }),
     // Small items
@@ -211,14 +271,44 @@ function createArtStation(): InspirationLayout {
   // - Pencils: ~170-190mm
   const bins = [
     // Brushes - tall bins (6 units = 252mm depth for 150-200mm brushes laying flat)
-    createBin(0, 0, 2, 6, { layerId: layer.id, categoryId: categories[0].id, label: 'Fine Brushes', height: 6 }),
-    createBin(2, 0, 2, 6, { layerId: layer.id, categoryId: categories[0].id, label: 'Flat Brushes', height: 6 }),
+    createBin(0, 0, 2, 6, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Fine Brushes',
+      height: 6,
+    }),
+    createBin(2, 0, 2, 6, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Flat Brushes',
+      height: 6,
+    }),
     // Markers and pens - 4 units deep (168mm) for standing
-    createBin(4, 0, 2, 4, { layerId: layer.id, categoryId: categories[1].id, label: 'Markers', height: 6 }),
-    createBin(6, 0, 2, 4, { layerId: layer.id, categoryId: categories[1].id, label: 'Pens', height: 6 }),
+    createBin(4, 0, 2, 4, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Markers',
+      height: 6,
+    }),
+    createBin(6, 0, 2, 4, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Pens',
+      height: 6,
+    }),
     // Pencils and charcoal
-    createBin(4, 4, 2, 5, { layerId: layer.id, categoryId: categories[1].id, label: 'Pencils', height: 6 }),
-    createBin(6, 4, 2, 5, { layerId: layer.id, categoryId: categories[1].id, label: 'Charcoal', height: 6 }),
+    createBin(4, 4, 2, 5, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Pencils',
+      height: 6,
+    }),
+    createBin(6, 4, 2, 5, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Charcoal',
+      height: 6,
+    }),
     // Supplies
     createBin(0, 6, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Erasers' }),
     createBin(2, 6, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Sharpeners' }),

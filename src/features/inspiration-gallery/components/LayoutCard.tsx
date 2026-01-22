@@ -13,7 +13,13 @@ interface LayoutCardProps {
 /**
  * Layout card with thumbnail, title, description, and metadata.
  */
-export function LayoutCard({ layout: inspirationLayout, onClick, index, tabIndex = 0, onFocus }: LayoutCardProps) {
+export function LayoutCard({
+  layout: inspirationLayout,
+  onClick,
+  index,
+  tabIndex = 0,
+  onFocus,
+}: LayoutCardProps) {
   const { name, shortDescription, metrics, layout, theme } = inspirationLayout;
 
   const animationDelay = `${Math.min(index * 50, 300)}ms`;
@@ -44,11 +50,7 @@ export function LayoutCard({ layout: inspirationLayout, onClick, index, tabIndex
     >
       {/* Thumbnail - portrait aspect for taller cards */}
       <div className="aspect-[3/4] bg-surface-secondary rounded overflow-hidden mb-2 flex items-center justify-center relative p-2">
-        <LayoutThumbnailWithLabels
-          layout={layout}
-          responsive
-          className="max-w-full max-h-full"
-        />
+        <LayoutThumbnailWithLabels layout={layout} responsive className="max-w-full max-h-full" />
         {/* Theme indicator - top right */}
         <span
           className="absolute top-1.5 right-1.5 text-xs px-1.5 py-0.5 rounded-full bg-black/70 text-white backdrop-blur-sm"

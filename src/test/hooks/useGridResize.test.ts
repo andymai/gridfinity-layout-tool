@@ -43,17 +43,13 @@ describe('useGridResize', () => {
 
   describe('initial state', () => {
     it('returns null resizeDirection when not resizing', () => {
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       expect(result.current.resizeDirection).toBeNull();
     });
 
     it('returns null pendingResize when no resize pending', () => {
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       expect(result.current.pendingResize).toBeNull();
     });
@@ -61,9 +57,7 @@ describe('useGridResize', () => {
 
   describe('pulse animation for first-use hint', () => {
     it('starts pulsing resize handles on first load', () => {
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       // Initially false
       expect(result.current.shouldPulseResizeHandles).toBe(false);
@@ -77,9 +71,7 @@ describe('useGridResize', () => {
     });
 
     it('stops pulsing after 3 seconds', () => {
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       // Start pulsing
       act(() => {
@@ -98,9 +90,7 @@ describe('useGridResize', () => {
     it('does not pulse if hint was already shown', () => {
       localStorage.setItem(HINT_KEY, 'true');
 
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       act(() => {
         vi.advanceTimersByTime(1);
@@ -119,9 +109,7 @@ describe('useGridResize', () => {
 
   describe('handleResizeStart', () => {
     it('sets resizeDirection to width', () => {
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       const mockEvent = {
         preventDefault: vi.fn(),
@@ -138,9 +126,7 @@ describe('useGridResize', () => {
     });
 
     it('sets resizeDirection to depth', () => {
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       const mockEvent = {
         preventDefault: vi.fn(),
@@ -156,9 +142,7 @@ describe('useGridResize', () => {
     });
 
     it('sets resizeDirection to both', () => {
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       const mockEvent = {
         preventDefault: vi.fn(),
@@ -332,9 +316,7 @@ describe('useGridResize', () => {
 
   describe('mouse up completes resize', () => {
     it('clears resize direction on mouse up', () => {
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       // Start resize
       act(() => {
@@ -447,9 +429,7 @@ describe('useGridResize', () => {
 
   describe('confirmResize', () => {
     it('does nothing when no pending resize', () => {
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       // No pending resize
       expect(result.current.pendingResize).toBeNull();
@@ -465,9 +445,7 @@ describe('useGridResize', () => {
 
   describe('cancelResize', () => {
     it('does nothing when no pending resize', () => {
-      const { result } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       // No pending resize
       expect(result.current.pendingResize).toBeNull();
@@ -483,9 +461,7 @@ describe('useGridResize', () => {
 
   describe('cleanup', () => {
     it('removes event listeners on unmount', () => {
-      const { result, unmount } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { result, unmount } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       // Start resize
       act(() => {
@@ -501,9 +477,7 @@ describe('useGridResize', () => {
     });
 
     it('clears timeouts on unmount', () => {
-      const { unmount } = renderHook(() =>
-        useGridResize({ cellSize: 32, gap: 2 })
-      );
+      const { unmount } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       // Unmount before timers fire
       expect(() => unmount()).not.toThrow();

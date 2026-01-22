@@ -164,9 +164,6 @@ export function addLibraryEntry(
 ): LayoutLibrary {
   return {
     ...library,
-    entries:
-      position === 'start'
-        ? [entry, ...library.entries]
-        : [...library.entries, entry],
+    entries: position === 'start' ? [entry, ...library.entries] : [...library.entries, entry],
   };
 }

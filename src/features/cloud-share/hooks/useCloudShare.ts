@@ -21,13 +21,7 @@ import { copyToClipboard } from '@/core/storage';
 import { slugify } from '@/utils/slug';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 
-export type CloudShareStatus =
-  | 'idle'
-  | 'sharing'
-  | 'updating'
-  | 'deleting'
-  | 'success'
-  | 'error';
+export type CloudShareStatus = 'idle' | 'sharing' | 'updating' | 'deleting' | 'success' | 'error';
 
 interface CloudShareResult {
   id: string;
@@ -78,13 +72,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     };
   }, []);
 
-  const {
-    activeLayoutId,
-    entries,
-    authorName,
-    setCloudShare,
-    clearCloudShare,
-  } = useLibraryStore(
+  const { activeLayoutId, entries, authorName, setCloudShare, clearCloudShare } = useLibraryStore(
     useShallow((state) => ({
       activeLayoutId: state.library.activeLayoutId,
       entries: state.library.entries,
@@ -357,7 +345,14 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         return false;
       }
     },
-    [existingShare, targetLayoutId, setCloudShare, clearCloudShare, handleError, announceToScreenReader]
+    [
+      existingShare,
+      targetLayoutId,
+      setCloudShare,
+      clearCloudShare,
+      handleError,
+      announceToScreenReader,
+    ]
   );
 
   const remove = useCallback(async (): Promise<boolean> => {

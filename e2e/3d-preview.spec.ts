@@ -131,7 +131,7 @@ test.describe('3D Preview', () => {
     // Look for layer view mode controls (buttons for focus/stack/all modes)
     // These are typically near the preview or in a controls panel
     const layerControls = page.locator('button').filter({
-      hasText: /focus|stack|all/i
+      hasText: /focus|stack|all/i,
     });
 
     // If layer controls exist, verify they're interactive

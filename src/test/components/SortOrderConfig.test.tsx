@@ -54,7 +54,7 @@ describe('SortOrderConfig', () => {
     });
 
     it('does not show summary when no fields are enabled', () => {
-      const allDisabled: BinListSortOrder = defaultSortOrder.map(s => ({ ...s, enabled: false }));
+      const allDisabled: BinListSortOrder = defaultSortOrder.map((s) => ({ ...s, enabled: false }));
       render(<SortOrderConfig sortOrder={allDisabled} onChange={() => {}} />);
 
       expect(screen.queryByText(/Sorting by:/)).not.toBeInTheDocument();
@@ -175,14 +175,18 @@ describe('SortOrderConfig', () => {
 
   describe('drag and drop', () => {
     it('makes items draggable', () => {
-      const { container } = render(<SortOrderConfig sortOrder={defaultSortOrder} onChange={() => {}} />);
+      const { container } = render(
+        <SortOrderConfig sortOrder={defaultSortOrder} onChange={() => {}} />
+      );
 
       const draggableItems = container.querySelectorAll('[draggable="true"]');
       expect(draggableItems).toHaveLength(6);
     });
 
     it('handles drag start', () => {
-      const { container } = render(<SortOrderConfig sortOrder={defaultSortOrder} onChange={() => {}} />);
+      const { container } = render(
+        <SortOrderConfig sortOrder={defaultSortOrder} onChange={() => {}} />
+      );
 
       const items = container.querySelectorAll('[draggable="true"]');
       fireEvent.dragStart(items[0]);
@@ -192,7 +196,9 @@ describe('SortOrderConfig', () => {
     });
 
     it('handles drag over', () => {
-      const { container } = render(<SortOrderConfig sortOrder={defaultSortOrder} onChange={() => {}} />);
+      const { container } = render(
+        <SortOrderConfig sortOrder={defaultSortOrder} onChange={() => {}} />
+      );
 
       const items = container.querySelectorAll('[draggable="true"]');
       fireEvent.dragStart(items[0]);
@@ -204,7 +210,9 @@ describe('SortOrderConfig', () => {
 
     it('handles drag end without valid drop', () => {
       const onChange = vi.fn();
-      const { container } = render(<SortOrderConfig sortOrder={defaultSortOrder} onChange={onChange} />);
+      const { container } = render(
+        <SortOrderConfig sortOrder={defaultSortOrder} onChange={onChange} />
+      );
 
       const items = container.querySelectorAll('[draggable="true"]');
       fireEvent.dragStart(items[0]);
@@ -216,7 +224,9 @@ describe('SortOrderConfig', () => {
 
     it('reorders items on valid drag and drop', () => {
       const onChange = vi.fn();
-      const { container } = render(<SortOrderConfig sortOrder={defaultSortOrder} onChange={onChange} />);
+      const { container } = render(
+        <SortOrderConfig sortOrder={defaultSortOrder} onChange={onChange} />
+      );
 
       const items = container.querySelectorAll('[draggable="true"]');
 
@@ -234,7 +244,9 @@ describe('SortOrderConfig', () => {
     });
 
     it('handles drag leave', () => {
-      const { container } = render(<SortOrderConfig sortOrder={defaultSortOrder} onChange={() => {}} />);
+      const { container } = render(
+        <SortOrderConfig sortOrder={defaultSortOrder} onChange={() => {}} />
+      );
 
       const items = container.querySelectorAll('[draggable="true"]');
       fireEvent.dragStart(items[0]);

@@ -18,11 +18,7 @@ import { validateImport } from '@/shared/utils/validation';
 import { generateId } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import { computePreview } from './LayoutManager';
-import type {
-  Layout,
-  LayoutLibrary,
-  LayoutEntry,
-} from '@/core/types';
+import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
 import type { Result } from '@/core/result';
 import type { StorageError } from '@/core/result';
 import {
@@ -173,9 +169,7 @@ export async function saveLayoutResult(
  * });
  * ```
  */
-export async function loadLayoutResult(
-  layoutId: string
-): Promise<Result<Layout, StorageError>> {
+export async function loadLayoutResult(layoutId: string): Promise<Result<Layout, StorageError>> {
   const key = getLayoutStorageKey(layoutId);
 
   let data: Layout | null;
@@ -209,9 +203,7 @@ export async function loadLayoutResult(
  * Delete a layout asynchronously with Result-based error handling.
  * Returns Ok on success (including when layout doesn't exist).
  */
-export async function deleteLayoutResult(
-  layoutId: string
-): Promise<Result<void, StorageError>> {
+export async function deleteLayoutResult(layoutId: string): Promise<Result<void, StorageError>> {
   const key = getLayoutStorageKey(layoutId);
 
   return tryCatchAsync(
@@ -286,9 +278,7 @@ export function saveLibrary(library: LayoutLibrary): void {
  * Save the layout library index with Result-based error handling.
  * Returns Ok on success, or Err with StorageError on failure.
  */
-export function saveLibraryResult(
-  library: LayoutLibrary
-): Result<void, StorageError> {
+export function saveLibraryResult(library: LayoutLibrary): Result<void, StorageError> {
   try {
     backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, library);
     return ok(undefined);
@@ -374,7 +364,9 @@ export function loadLibraryResult(): Result<LayoutLibrary, StorageError> {
 
     // Basic validation
     if (!parsed.version || !parsed.activeLayoutId || !Array.isArray(parsed.entries)) {
-      return err(storageCorrupted(LIBRARY_STORAGE_KEY, ['Invalid library format: missing required fields']));
+      return err(
+        storageCorrupted(LIBRARY_STORAGE_KEY, ['Invalid library format: missing required fields'])
+      );
     }
 
     // Validate each entry exists in storage (clean up orphaned entries)
@@ -432,13 +424,15 @@ export function migrateFromLegacyStorage(): LayoutLibrary | null {
     version: '1.0',
     activeLayoutId: layoutId,
     settings: {},
-    entries: [{
-      id: layoutId,
-      name: legacyLayout.name || 'Untitled layout',
-      createdAt: now,
-      modifiedAt: now,
-      preview: computeLayoutPreview(legacyLayout),
-    }],
+    entries: [
+      {
+        id: layoutId,
+        name: legacyLayout.name || 'Untitled layout',
+        createdAt: now,
+        modifiedAt: now,
+        preview: computeLayoutPreview(legacyLayout),
+      },
+    ],
   };
 
   // Save layout under new key
@@ -500,13 +494,15 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
     version: '1.0',
     activeLayoutId: layoutId,
     settings: {},
-    entries: [{
-      id: layoutId,
-      name: legacyData.name || 'Untitled layout',
-      createdAt: now,
-      modifiedAt: now,
-      preview: computeLayoutPreview(legacyData),
-    }],
+    entries: [
+      {
+        id: layoutId,
+        name: legacyData.name || 'Untitled layout',
+        createdAt: now,
+        modifiedAt: now,
+        preview: computeLayoutPreview(legacyData),
+      },
+    ],
   };
 
   // Save layout and library
@@ -556,9 +552,7 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
         { id: generateId(), name: 'Cloud', color: '#e2e8f0' },
         { id: generateId(), name: 'Charcoal', color: '#334155' },
       ],
-      layers: [
-        { id: generateId(), name: 'Layer 1', height: 3 },
-      ],
+      layers: [{ id: generateId(), name: 'Layer 1', height: 3 }],
       bins: [],
     };
 
@@ -566,13 +560,15 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
       version: '1.0',
       activeLayoutId: layoutId,
       settings: {},
-      entries: [{
-        id: layoutId,
-        name: defaultLayout.name,
-        createdAt: Date.now(),
-        modifiedAt: Date.now(),
-        preview: computeLayoutPreview(defaultLayout),
-      }],
+      entries: [
+        {
+          id: layoutId,
+          name: defaultLayout.name,
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          preview: computeLayoutPreview(defaultLayout),
+        },
+      ],
     };
 
     // Save to localStorage (sync for immediate availability)
@@ -611,23 +607,21 @@ export function initializeLayoutLibrary(): { library: LayoutLibrary; activeLayou
         printBedSize: 256,
         gridUnitMm: 42,
         heightUnitMm: 7,
-        categories: [
-          { id: generateId(), name: 'Default', color: '#6b7280' },
-        ],
-        layers: [
-          { id: generateId(), name: 'Layer 1', height: 3 },
-        ],
+        categories: [{ id: generateId(), name: 'Default', color: '#6b7280' }],
+        layers: [{ id: generateId(), name: 'Layer 1', height: 3 }],
         bins: [],
       };
 
       library.activeLayoutId = layoutId;
-      library.entries = [{
-        id: layoutId,
-        name: activeLayout.name,
-        createdAt: Date.now(),
-        modifiedAt: Date.now(),
-        preview: computeLayoutPreview(activeLayout),
-      }];
+      library.entries = [
+        {
+          id: layoutId,
+          name: activeLayout.name,
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          preview: computeLayoutPreview(activeLayout),
+        },
+      ];
 
       // Save to localStorage (sync)
       saveLayoutSync(layoutId, activeLayout);
@@ -691,4 +685,3 @@ export function loadLayout(): Layout | null {
 export function clearStorage(): void {
   backend.deleteSync(LEGACY_STORAGE_KEY);
 }
-

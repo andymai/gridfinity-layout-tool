@@ -109,8 +109,26 @@ describe('indexedDB backend', () => {
       const layout = createTestLayout({
         name: 'Layout with Bins',
         bins: [
-          { id: 'bin-1', x: 0, y: 0, width: 2, depth: 2, height: 3, layerId: 'layer-1', category: 'default' },
-          { id: 'bin-2', x: 2, y: 0, width: 3, depth: 2, height: 3, layerId: 'layer-1', category: 'default' },
+          {
+            id: 'bin-1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            layerId: 'layer-1',
+            category: 'default',
+          },
+          {
+            id: 'bin-2',
+            x: 2,
+            y: 0,
+            width: 3,
+            depth: 2,
+            height: 3,
+            layerId: 'layer-1',
+            category: 'default',
+          },
         ],
       });
 
@@ -135,7 +153,7 @@ describe('indexedDB backend', () => {
 
       const loaded = await loadLayout('layers-id');
       expect(loaded?.layers).toHaveLength(3);
-      expect(loaded?.layers.map(l => l.name)).toEqual(['Bottom', 'Middle', 'Top']);
+      expect(loaded?.layers.map((l) => l.name)).toEqual(['Bottom', 'Middle', 'Top']);
     });
 
     it('saves layout with categories', async () => {
@@ -427,22 +445,24 @@ describe('indexedDB backend', () => {
 
     it('handles bin with optional properties', async () => {
       const layout = createTestLayout({
-        bins: [{
-          id: 'full-bin',
-          x: 0,
-          y: 0,
-          width: 2,
-          depth: 2,
-          height: 3,
-          layerId: 'layer-1',
-          category: 'default',
-          label: 'Test Label',
-          notes: 'Some notes here',
-          clearanceHeight: 5,
-          customProperties: {
-            'custom-key': 'custom-value',
+        bins: [
+          {
+            id: 'full-bin',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            layerId: 'layer-1',
+            category: 'default',
+            label: 'Test Label',
+            notes: 'Some notes here',
+            clearanceHeight: 5,
+            customProperties: {
+              'custom-key': 'custom-value',
+            },
           },
-        }],
+        ],
       });
 
       await saveLayout('full-bin-layout', layout);

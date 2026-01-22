@@ -20,7 +20,16 @@ interface BinMeshProps {
  * Uses world-space lighting for realistic shadows and highlights.
  * Includes rounded corners for polished appearance.
  */
-export function BinMesh({ x, y, z, bin, color, opacity, height, isSelected = false }: BinMeshProps) {
+export function BinMesh({
+  x,
+  y,
+  z,
+  bin,
+  color,
+  opacity,
+  height,
+  isSelected = false,
+}: BinMeshProps) {
   const materialRef = useRef<THREE.MeshStandardMaterial>(null);
 
   const geometry = useBinGeometry({
@@ -45,7 +54,7 @@ export function BinMesh({ x, y, z, bin, color, opacity, height, isSelected = fal
         ref={materialRef}
         vertexColors
         roughness={0.4} // Smoother finish for vibrant colors
-        metalness={0}   // Non-metallic
+        metalness={0} // Non-metallic
         transparent={opacity < 1}
         opacity={opacity}
         depthWrite={opacity === 1}

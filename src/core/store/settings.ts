@@ -232,10 +232,10 @@ export function normalizeSortOrder(stored: BinListSortOrder | undefined): BinLis
     return [...DEFAULT_BIN_LIST_SORT_ORDER];
   }
 
-  const allFields = new Set(DEFAULT_BIN_LIST_SORT_ORDER.map(s => s.field));
-  const storedFields = new Set(stored.map(s => s.field));
+  const allFields = new Set(DEFAULT_BIN_LIST_SORT_ORDER.map((s) => s.field));
+  const storedFields = new Set(stored.map((s) => s.field));
 
-  const result: BinListSortOrder = stored.filter(s => allFields.has(s.field));
+  const result: BinListSortOrder = stored.filter((s) => allFields.has(s.field));
 
   for (const defaultConfig of DEFAULT_BIN_LIST_SORT_ORDER) {
     if (!storedFields.has(defaultConfig.field)) {
@@ -255,15 +255,15 @@ function normalizeSTLSearchSites(stored: STLSearchSite[] | undefined): STLSearch
     return [...DEFAULT_STL_SEARCH_SITES];
   }
 
-  const defaultIds = new Set(DEFAULT_STL_SEARCH_SITES.map(s => s.id));
-  const storedIds = new Set(stored.map(s => s.id));
+  const defaultIds = new Set(DEFAULT_STL_SEARCH_SITES.map((s) => s.id));
+  const storedIds = new Set(stored.map((s) => s.id));
 
   // Filter out removed default sites, keep custom sites (non-default)
-  const validStored = stored.filter(s => !s.isDefault || defaultIds.has(s.id));
+  const validStored = stored.filter((s) => !s.isDefault || defaultIds.has(s.id));
 
   // Separate defaults and custom sites
-  const defaults = validStored.filter(s => defaultIds.has(s.id));
-  const custom = validStored.filter(s => !defaultIds.has(s.id));
+  const defaults = validStored.filter((s) => defaultIds.has(s.id));
+  const custom = validStored.filter((s) => !defaultIds.has(s.id));
 
   // Add any missing default sites (disabled by default if user had customized)
   for (const defaultSite of DEFAULT_STL_SEARCH_SITES) {
@@ -321,7 +321,13 @@ interface SettingsState {
   resetSettings: () => void;
 
   // Save current layout defaults from the current layout
-  saveCurrentAsDefaults: (drawer: { width: number; depth: number; height: number }, printBedSize: number, gridUnitMm: number, heightUnitMm: number, layerHeight: number) => void;
+  saveCurrentAsDefaults: (
+    drawer: { width: number; depth: number; height: number },
+    printBedSize: number,
+    gridUnitMm: number,
+    heightUnitMm: number,
+    layerHeight: number
+  ) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()((set) => ({

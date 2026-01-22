@@ -13,20 +13,28 @@ vi.mock('../../hooks/useResponsive', () => ({
 
 // Mock ConfirmDialog
 vi.mock('../../shared/components/ConfirmDialog', () => ({
-  ConfirmDialog: ({ isOpen, onConfirm, onCancel, message }: {
+  ConfirmDialog: ({
+    isOpen,
+    onConfirm,
+    onCancel,
+    message,
+  }: {
     isOpen: boolean;
     onConfirm: () => void;
     onCancel: () => void;
     message: string;
-  }) => (
+  }) =>
     isOpen ? (
       <div data-testid="confirm-dialog">
         <span data-testid="confirm-message">{message}</span>
-        <button data-testid="confirm-button" onClick={onConfirm}>Confirm</button>
-        <button data-testid="cancel-button" onClick={onCancel}>Cancel</button>
+        <button data-testid="confirm-button" onClick={onConfirm}>
+          Confirm
+        </button>
+        <button data-testid="cancel-button" onClick={onCancel}>
+          Cancel
+        </button>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 describe('Staging', () => {
@@ -216,11 +224,7 @@ describe('Staging', () => {
       const binElement = document.querySelector(`[data-staging-bin-id="${bins[0].id}"]`);
       fireEvent.contextMenu(binElement!, { clientX: 100, clientY: 100 });
 
-      expect(showContextMenuSpy).toHaveBeenCalledWith(
-        [bins[0].id],
-        { x: 100, y: 100 },
-        'staging'
-      );
+      expect(showContextMenuSpy).toHaveBeenCalledWith([bins[0].id], { x: 100, y: 100 }, 'staging');
     });
 
     it('selects bin if not already selected on right-click', () => {
@@ -269,9 +273,9 @@ describe('Staging', () => {
       fireEvent.click(screen.getByTestId('confirm-button'));
 
       // Staged bins should be deleted
-      const stagingBins = useLayoutStore.getState().layout.bins.filter(
-        b => b.layerId === STAGING_ID
-      );
+      const stagingBins = useLayoutStore
+        .getState()
+        .layout.bins.filter((b) => b.layerId === STAGING_ID);
       expect(stagingBins).toHaveLength(0);
     });
 
@@ -296,9 +300,9 @@ describe('Staging', () => {
       fireEvent.click(screen.getByText('Clear All'));
       fireEvent.click(screen.getByTestId('cancel-button'));
 
-      const stagingBins = useLayoutStore.getState().layout.bins.filter(
-        b => b.layerId === STAGING_ID
-      );
+      const stagingBins = useLayoutStore
+        .getState()
+        .layout.bins.filter((b) => b.layerId === STAGING_ID);
       expect(stagingBins).toHaveLength(2);
     });
   });

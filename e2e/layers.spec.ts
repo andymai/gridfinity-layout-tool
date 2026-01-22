@@ -88,7 +88,12 @@ test.describe('Layers Management Flow', () => {
     const inspector = getInspector(page);
     await expect(inspector.getByText(/height/i)).toBeVisible({ timeout: 3000 });
     // Height is shown as "Xu" where X is a number
-    await expect(inspector.locator('span').filter({ hasText: /^\d+u$/ }).first()).toBeVisible({ timeout: 3000 });
+    await expect(
+      inspector
+        .locator('span')
+        .filter({ hasText: /^\d+u$/ })
+        .first()
+    ).toBeVisible({ timeout: 3000 });
   });
 
   test('layer indicator shows in toolbar when multiple layers exist', async ({ page }) => {

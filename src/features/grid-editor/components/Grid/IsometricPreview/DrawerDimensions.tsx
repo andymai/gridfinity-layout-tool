@@ -21,7 +21,13 @@ const FONT_SIZE = 0.32;
  * Architectural dimension lines showing drawer width, depth, and height.
  * Positioned just outside the drawer bounds with end caps and centered labels.
  */
-export function DrawerDimensions({ width, depth, height, gridUnitMm, heightUnitMm }: DrawerDimensionsProps) {
+export function DrawerDimensions({
+  width,
+  depth,
+  height,
+  gridUnitMm,
+  heightUnitMm,
+}: DrawerDimensionsProps) {
   // Convert height from height-units to grid-units for 3D space
   const heightInGridUnits = height * (heightUnitMm / gridUnitMm);
 
@@ -30,59 +36,66 @@ export function DrawerDimensions({ width, depth, height, gridUnitMm, heightUnitM
   const depthMm = depth * gridUnitMm;
   const heightMm = height * heightUnitMm;
 
-  const dimensions = useMemo(() => ({
-    // Width dimension - along front edge (Y = -OFFSET)
-    width: {
-      start: [0, -OFFSET, 0] as [number, number, number],
-      end: [width, -OFFSET, 0] as [number, number, number],
-      labelPos: [width / 2, -OFFSET - 0.3, 0] as [number, number, number],
-      label: `${widthMm}mm`,
-      endCaps: {
-        left: [
-          [0, -OFFSET - END_CAP_SIZE, 0],
-          [0, -OFFSET + END_CAP_SIZE, 0],
-        ] as [[number, number, number], [number, number, number]],
-        right: [
-          [width, -OFFSET - END_CAP_SIZE, 0],
-          [width, -OFFSET + END_CAP_SIZE, 0],
-        ] as [[number, number, number], [number, number, number]],
+  const dimensions = useMemo(
+    () => ({
+      // Width dimension - along front edge (Y = -OFFSET)
+      width: {
+        start: [0, -OFFSET, 0] as [number, number, number],
+        end: [width, -OFFSET, 0] as [number, number, number],
+        labelPos: [width / 2, -OFFSET - 0.3, 0] as [number, number, number],
+        label: `${widthMm}mm`,
+        endCaps: {
+          left: [
+            [0, -OFFSET - END_CAP_SIZE, 0],
+            [0, -OFFSET + END_CAP_SIZE, 0],
+          ] as [[number, number, number], [number, number, number]],
+          right: [
+            [width, -OFFSET - END_CAP_SIZE, 0],
+            [width, -OFFSET + END_CAP_SIZE, 0],
+          ] as [[number, number, number], [number, number, number]],
+        },
       },
-    },
-    // Depth dimension - along left edge (X = -OFFSET)
-    depth: {
-      start: [-OFFSET, 0, 0] as [number, number, number],
-      end: [-OFFSET, depth, 0] as [number, number, number],
-      labelPos: [-OFFSET - 0.3, depth / 2, 0] as [number, number, number],
-      label: `${depthMm}mm`,
-      endCaps: {
-        left: [
-          [-OFFSET - END_CAP_SIZE, 0, 0],
-          [-OFFSET + END_CAP_SIZE, 0, 0],
-        ] as [[number, number, number], [number, number, number]],
-        right: [
-          [-OFFSET - END_CAP_SIZE, depth, 0],
-          [-OFFSET + END_CAP_SIZE, depth, 0],
-        ] as [[number, number, number], [number, number, number]],
+      // Depth dimension - along left edge (X = -OFFSET)
+      depth: {
+        start: [-OFFSET, 0, 0] as [number, number, number],
+        end: [-OFFSET, depth, 0] as [number, number, number],
+        labelPos: [-OFFSET - 0.3, depth / 2, 0] as [number, number, number],
+        label: `${depthMm}mm`,
+        endCaps: {
+          left: [
+            [-OFFSET - END_CAP_SIZE, 0, 0],
+            [-OFFSET + END_CAP_SIZE, 0, 0],
+          ] as [[number, number, number], [number, number, number]],
+          right: [
+            [-OFFSET - END_CAP_SIZE, depth, 0],
+            [-OFFSET + END_CAP_SIZE, depth, 0],
+          ] as [[number, number, number], [number, number, number]],
+        },
       },
-    },
-    // Height dimension - vertical along back-left corner
-    height: {
-      start: [-OFFSET, depth + OFFSET, 0] as [number, number, number],
-      end: [-OFFSET, depth + OFFSET, heightInGridUnits] as [number, number, number],
-      labelPos: [-OFFSET - 0.3, depth + OFFSET, heightInGridUnits / 2] as [number, number, number],
-      label: `${heightMm}mm`,
-      endCaps: {
-        left: [
-          [-OFFSET - END_CAP_SIZE, depth + OFFSET, 0],
-          [-OFFSET + END_CAP_SIZE, depth + OFFSET, 0],
-        ] as [[number, number, number], [number, number, number]],
-        right: [
-          [-OFFSET - END_CAP_SIZE, depth + OFFSET, heightInGridUnits],
-          [-OFFSET + END_CAP_SIZE, depth + OFFSET, heightInGridUnits],
-        ] as [[number, number, number], [number, number, number]],
+      // Height dimension - vertical along back-left corner
+      height: {
+        start: [-OFFSET, depth + OFFSET, 0] as [number, number, number],
+        end: [-OFFSET, depth + OFFSET, heightInGridUnits] as [number, number, number],
+        labelPos: [-OFFSET - 0.3, depth + OFFSET, heightInGridUnits / 2] as [
+          number,
+          number,
+          number,
+        ],
+        label: `${heightMm}mm`,
+        endCaps: {
+          left: [
+            [-OFFSET - END_CAP_SIZE, depth + OFFSET, 0],
+            [-OFFSET + END_CAP_SIZE, depth + OFFSET, 0],
+          ] as [[number, number, number], [number, number, number]],
+          right: [
+            [-OFFSET - END_CAP_SIZE, depth + OFFSET, heightInGridUnits],
+            [-OFFSET + END_CAP_SIZE, depth + OFFSET, heightInGridUnits],
+          ] as [[number, number, number], [number, number, number]],
+        },
       },
-    },
-  }), [width, depth, heightInGridUnits, widthMm, depthMm, heightMm]);
+    }),
+    [width, depth, heightInGridUnits, widthMm, depthMm, heightMm]
+  );
 
   return (
     <group>

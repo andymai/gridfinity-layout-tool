@@ -269,9 +269,7 @@ export async function updatePermission(
 /**
  * Fetch a shared layout by ID.
  */
-export async function fetchShare(
-  id: string
-): Promise<Result<FetchShareResponse, ApiError>> {
+export async function fetchShare(id: string): Promise<Result<FetchShareResponse, ApiError>> {
   try {
     const response = await fetch(`/api/share/${id}`);
     const data: unknown = await response.json();
@@ -318,12 +316,7 @@ export async function deleteShare(
     }
 
     // Validate success response structure
-    if (
-      typeof data === 'object' &&
-      data !== null &&
-      'success' in data &&
-      'message' in data
-    ) {
+    if (typeof data === 'object' && data !== null && 'success' in data && 'message' in data) {
       return ok(data as { success: true; message: string });
     }
     return err(apiServerError());
@@ -356,12 +349,7 @@ export async function reportShare(
     }
 
     // Validate success response structure
-    if (
-      typeof data === 'object' &&
-      data !== null &&
-      'success' in data &&
-      'message' in data
-    ) {
+    if (typeof data === 'object' && data !== null && 'success' in data && 'message' in data) {
       return ok(data as { success: true; message: string });
     }
     return err(apiServerError());

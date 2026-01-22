@@ -50,13 +50,7 @@ describe('SplitWarning', () => {
     });
 
     it('calculates pieces correctly for both dimensions overflow', () => {
-      render(
-        <SplitWarning
-          {...defaultProps}
-          binWidth={12}
-          binDepth={10}
-        />
-      );
+      render(<SplitWarning {...defaultProps} binWidth={12} binDepth={10} />);
 
       // 12 width / 6 max = 2 pieces wide, 10 depth / 6 max = 2 pieces deep
       // Total: 2 * 2 = 4 pieces
@@ -109,38 +103,20 @@ describe('SplitWarning', () => {
 
   describe('edge cases', () => {
     it('handles exact max size (no split needed)', () => {
-      render(
-        <SplitWarning
-          {...defaultProps}
-          binWidth={6}
-          binDepth={6}
-        />
-      );
+      render(<SplitWarning {...defaultProps} binWidth={6} binDepth={6} />);
 
       expect(screen.getByText(/Fits print bed/)).toBeInTheDocument();
     });
 
     it('handles one unit over max', () => {
-      render(
-        <SplitWarning
-          {...defaultProps}
-          binWidth={7}
-          binDepth={6}
-        />
-      );
+      render(<SplitWarning {...defaultProps} binWidth={7} binDepth={6} />);
 
       // 7 / 6 = 2 pieces wide, 6 / 6 = 1 piece deep = 2 pieces
       expect(screen.getByText(/2 pieces/)).toBeInTheDocument();
     });
 
     it('handles fractional dimensions', () => {
-      render(
-        <SplitWarning
-          {...defaultProps}
-          binWidth={6.5}
-          binDepth={3}
-        />
-      );
+      render(<SplitWarning {...defaultProps} binWidth={6.5} binDepth={3} />);
 
       // 6.5 > 6 so needs split
       expect(screen.getByText(/Exceeds print bed/)).toBeInTheDocument();

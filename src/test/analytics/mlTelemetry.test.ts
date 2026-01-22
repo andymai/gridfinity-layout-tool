@@ -156,7 +156,7 @@ describe('mlTelemetry', () => {
 
     it('tracks days since creation when provided', () => {
       const layout = createTestLayoutWithBins(5);
-      const createdAt = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 days ago
+      const createdAt = Date.now() - 7 * 24 * 60 * 60 * 1000; // 7 days ago
       trackQualitySignal(layout, 'exported', createdAt);
       expect(getBufferSize()).toBeGreaterThan(0);
     });
@@ -502,10 +502,16 @@ describe('mlTelemetry', () => {
     it('buffers placement rejection event', () => {
       forceFlush();
       const layout = createTestLayoutWithBins(5);
-      trackPlacementRejection('outside_bounds', 'draw', {
-        start: { x: 0, y: 0 },
-        current: { x: 2, y: 2 },
-      }, layout, layout.layers[0].id);
+      trackPlacementRejection(
+        'outside_bounds',
+        'draw',
+        {
+          start: { x: 0, y: 0 },
+          current: { x: 2, y: 2 },
+        },
+        layout,
+        layout.layers[0].id
+      );
       expect(getBufferSize()).toBeGreaterThan(0);
     });
 
@@ -543,7 +549,11 @@ describe('mlTelemetry', () => {
       const layout = createTestLayoutWithBins(5);
       const bin = layout.bins[0];
       // Don't record creation
-      trackQuickCorrection('resize', 'nonexistent-id', bin, layout, { width: 2, depth: 2, height: 2 });
+      trackQuickCorrection('resize', 'nonexistent-id', bin, layout, {
+        width: 2,
+        depth: 2,
+        height: 2,
+      });
       expect(getBufferSize()).toBe(0);
     });
   });

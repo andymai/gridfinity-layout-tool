@@ -186,9 +186,7 @@ describe('lazyWithRetry', () => {
 
   describe('final failure with reload', () => {
     it('reloads page when all retries exhausted', async () => {
-      const importFn = vi
-        .fn()
-        .mockRejectedValue(new Error('Chunk permanently unavailable'));
+      const importFn = vi.fn().mockRejectedValue(new Error('Chunk permanently unavailable'));
 
       const LazyComponent = lazyWithRetry(importFn, 1, true);
 
@@ -217,9 +215,7 @@ describe('lazyWithRetry', () => {
     });
 
     it('sets sessionStorage flag before reload', async () => {
-      const importFn = vi
-        .fn()
-        .mockRejectedValue(new Error('Chunk permanently unavailable'));
+      const importFn = vi.fn().mockRejectedValue(new Error('Chunk permanently unavailable'));
 
       const LazyComponent = lazyWithRetry(importFn, 0, true);
 

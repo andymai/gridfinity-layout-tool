@@ -50,4 +50,3 @@ export function cancelIdleCallback(handle: number): void {
     window.clearTimeout(handle);
   }
 }
-

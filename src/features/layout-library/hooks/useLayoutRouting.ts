@@ -1,6 +1,12 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useLibraryStore, useUIStore, useToastStore, useHistoryStore } from '@/core/store';
+import {
+  useLayoutStore,
+  useLibraryStore,
+  useUIStore,
+  useToastStore,
+  useHistoryStore,
+} from '@/core/store';
 import { loadLayoutAsync } from '@/core/storage';
 import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import {
@@ -63,50 +69,53 @@ export function useLayoutRouting() {
    * Switch to a layout by ID (used for URL navigation).
    * Returns true if successful, false if layout not found.
    */
-  const navigateToLayout = useCallback(async (layoutId: string, addToHistory = false): Promise<boolean> => {
-    // Check if layout exists in library
-    const entry = getEntry(layoutId);
-    if (!entry) {
-      return false;
-    }
+  const navigateToLayout = useCallback(
+    async (layoutId: string, addToHistory = false): Promise<boolean> => {
+      // Check if layout exists in library
+      const entry = getEntry(layoutId);
+      if (!entry) {
+        return false;
+      }
 
-    // Load layout data from IndexedDB (with localStorage fallback)
-    const loadedLayout = await loadLayoutAsync(layoutId);
-    if (!loadedLayout) {
-      return false;
-    }
+      // Load layout data from IndexedDB (with localStorage fallback)
+      const loadedLayout = await loadLayoutAsync(layoutId);
+      if (!loadedLayout) {
+        return false;
+      }
 
-    // Validate layout integrity
-    const validation = validateLayoutIntegrity(loadedLayout);
-    if (!validation.valid) {
-      return false;
-    }
+      // Validate layout integrity
+      const validation = validateLayoutIntegrity(loadedLayout);
+      if (!validation.valid) {
+        return false;
+      }
 
-    // Switch to the layout
-    importLayout(loadedLayout, layoutId, 'init');
-    setActiveLayoutId(layoutId);
+      // Switch to the layout
+      importLayout(loadedLayout, layoutId, 'init');
+      setActiveLayoutId(layoutId);
 
-    // Reset UI state
-    clearSelection();
-    setActiveLayer(loadedLayout.layers[0]?.id ?? '');
-    setActiveCategory(loadedLayout.categories[0]?.id ?? '');
+      // Reset UI state
+      clearSelection();
+      setActiveLayer(loadedLayout.layers[0]?.id ?? '');
+      setActiveCategory(loadedLayout.categories[0]?.id ?? '');
 
-    // Clear undo history
-    clearHistory();
+      // Clear undo history
+      clearHistory();
 
-    // Update URL with layout name for slug
-    setLayoutURL(layoutId, loadedLayout.name, addToHistory);
+      // Update URL with layout name for slug
+      setLayoutURL(layoutId, loadedLayout.name, addToHistory);
 
-    return true;
-  }, [
-    getEntry,
-    importLayout,
-    setActiveLayoutId,
-    clearSelection,
-    setActiveLayer,
-    setActiveCategory,
-    clearHistory,
-  ]);
+      return true;
+    },
+    [
+      getEntry,
+      importLayout,
+      setActiveLayoutId,
+      clearSelection,
+      setActiveLayer,
+      setActiveCategory,
+      clearHistory,
+    ]
+  );
 
   // Handle initial URL on mount (after library is loaded)
   useEffect(() => {
@@ -171,13 +180,7 @@ export function useLayoutRouting() {
       .catch((error) => {
         console.error('[LayoutRouting] Navigation failed:', error);
       });
-  }, [
-    isLoaded,
-    activeLayoutId,
-    navigateToLayout,
-    getEntry,
-    sharedLayoutPreview,
-  ]);
+  }, [isLoaded, activeLayoutId, navigateToLayout, getEntry, sharedLayoutPreview]);
 
   // Handle browser back/forward navigation
   useEffect(() => {
@@ -223,13 +226,7 @@ export function useLayoutRouting() {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [
-    activeLayoutId,
-    sharedLayoutPreview,
-    navigateToLayout,
-    addToast,
-    getEntry,
-  ]);
+  }, [activeLayoutId, sharedLayoutPreview, navigateToLayout, addToast, getEntry]);
 
   // Update URL when active layout changes (from UI interactions)
   useEffect(() => {

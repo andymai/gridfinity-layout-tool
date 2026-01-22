@@ -1,7 +1,11 @@
 import type { Bin, PrintPiece, PrintRow, EnhancedPrintRow, PrintListConfig } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
-import { calcFilamentCost, calcSpoolPercentage, DEFAULT_METERS_PER_KG, DEFAULT_COST_PER_KG } from '@/features/print-export/utils/printEstimates';
-
+import {
+  calcFilamentCost,
+  calcSpoolPercentage,
+  DEFAULT_METERS_PER_KG,
+  DEFAULT_COST_PER_KG,
+} from '@/features/print-export/utils/printEstimates';
 
 // Default height unit size in mm (used as reference for scaling)
 const DEFAULT_HEIGHT_UNIT_MM = 7;
@@ -22,12 +26,7 @@ const DEFAULT_HEIGHT_UNIT_MM = 7;
  * - 2×2×3u: 2 + 3.6 = 5.6m
  * - 4×4×3u: 8 + 7.2 = 15.2m (vs 11.67m light = ~30% buffer for dividers)
  */
-function calcFilament(
-  width: number,
-  depth: number,
-  height: number,
-  heightUnitMm: number
-): number {
+function calcFilament(width: number, depth: number, height: number, heightUnitMm: number): number {
   // Base: floor, stacking lip, and internal grid structure
   const baseContribution = 0.5 * width * depth;
 
@@ -107,7 +106,7 @@ export function splitBinSize(width: number, depth: number, maxSize: number): Pri
     if (rightW > 0 && bottomD > 0) pieces.push(...splitBinSize(rightW, bottomD, maxSize));
   }
 
-  return pieces.filter(p => p.width > 0 && p.depth > 0);
+  return pieces.filter((p) => p.width > 0 && p.depth > 0);
 }
 
 /**
@@ -146,20 +145,23 @@ export function generatePrintList(
   maxPrintSize: number,
   heightUnitMm: number = DEFAULT_HEIGHT_UNIT_MM
 ): PrintRow[] {
-  const placedBins = bins.filter(b => b.layerId !== STAGING_ID);
+  const placedBins = bins.filter((b) => b.layerId !== STAGING_ID);
 
   // Group by size, height, category. Labeled bins and bins with custom properties get their own rows.
-  const groups = new Map<string, {
-    width: number;
-    depth: number;
-    height: number;
-    count: number;
-    categoryId: string;
-    label: string;
-    notes: string;
-    binIds: string[];
-    customProperties?: Record<string, string>;
-  }>();
+  const groups = new Map<
+    string,
+    {
+      width: number;
+      depth: number;
+      height: number;
+      count: number;
+      categoryId: string;
+      label: string;
+      notes: string;
+      binIds: string[];
+      customProperties?: Record<string, string>;
+    }
+  >();
 
   for (const bin of placedBins) {
     // Labeled bins and bins with custom properties get their own row
@@ -255,7 +257,7 @@ export function getTotalFilament(rows: PrintRow[]): number {
  */
 export function getSpoolEstimate(totalFilament: number): number {
   const METERS_PER_SPOOL = 330;
-  return Math.ceil(totalFilament / METERS_PER_SPOOL * 10) / 10; // Round up to 0.1
+  return Math.ceil((totalFilament / METERS_PER_SPOOL) * 10) / 10; // Round up to 0.1
 }
 
 /**
@@ -266,11 +268,14 @@ export function generateEnhancedPrintList(
   bins: Bin[],
   maxPrintSize: number,
   heightUnitMm: number = DEFAULT_HEIGHT_UNIT_MM,
-  config: PrintListConfig = { filamentCostPerKg: DEFAULT_COST_PER_KG, metersPerKg: DEFAULT_METERS_PER_KG }
+  config: PrintListConfig = {
+    filamentCostPerKg: DEFAULT_COST_PER_KG,
+    metersPerKg: DEFAULT_METERS_PER_KG,
+  }
 ): EnhancedPrintRow[] {
   const baseRows = generatePrintList(bins, maxPrintSize, heightUnitMm);
 
-  return baseRows.map(row => {
+  return baseRows.map((row) => {
     const [width, depth] = row.size.split('×').map(Number);
     const area = width * depth;
 

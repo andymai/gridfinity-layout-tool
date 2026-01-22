@@ -18,9 +18,7 @@ describe('ConfirmDialog', () => {
 
   describe('rendering', () => {
     it('returns null when not open', () => {
-      const { container } = render(
-        <ConfirmDialog {...defaultProps} isOpen={false} />
-      );
+      const { container } = render(<ConfirmDialog {...defaultProps} isOpen={false} />);
       expect(container.firstChild).toBeNull();
     });
 
@@ -46,13 +44,7 @@ describe('ConfirmDialog', () => {
     });
 
     it('uses custom button text', () => {
-      render(
-        <ConfirmDialog
-          {...defaultProps}
-          confirmText="Yes, Delete"
-          cancelText="No, Keep"
-        />
-      );
+      render(<ConfirmDialog {...defaultProps} confirmText="Yes, Delete" cancelText="No, Keep" />);
       expect(screen.getByText('Yes, Delete')).toBeInTheDocument();
       expect(screen.getByText('No, Keep')).toBeInTheDocument();
     });
@@ -188,9 +180,7 @@ describe('ConfirmDialog', () => {
       render(<ConfirmDialog {...defaultProps} isOpen={false} />);
 
       // Should not have added keydown listeners for closed dialog
-      const keydownCalls = addEventListenerSpy.mock.calls.filter(
-        call => call[0] === 'keydown'
-      );
+      const keydownCalls = addEventListenerSpy.mock.calls.filter((call) => call[0] === 'keydown');
       expect(keydownCalls).toHaveLength(0);
 
       addEventListenerSpy.mockRestore();

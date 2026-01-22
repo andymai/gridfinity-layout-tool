@@ -1,25 +1,21 @@
-import { useMemo, useCallback, useRef, useState, useEffect } from "react"
-import { Canvas } from "@react-three/fiber"
-import { useShallow } from "zustand/shallow"
-import { useLayoutStore, useUIStore } from "@/core/store"
-import {
-  STAGING_ID,
-  DEFAULT_CATEGORY_COLOR,
-  calcMaxGridUnits,
-} from "@/core/constants"
-import { useResponsive } from "@/shared/hooks"
-import { use3DPreviewKeyboard } from "@/hooks/use3DPreviewKeyboard"
-import { getLayerZStart } from "@/shared/utils/collision"
-import { Scene, type SceneHandle } from "./IsometricPreview/Scene"
-import { BinMesh } from "./IsometricPreview/BinMesh"
-import { SplitLineOverlay } from "./IsometricPreview/SplitLineOverlay"
-import { BatchedCornerMarkers } from "./IsometricPreview/BatchedCornerMarkers"
-import { MergedBinMeshes } from "./IsometricPreview/MergedBinMeshes"
+import { useMemo, useCallback, useRef, useState, useEffect } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { useShallow } from 'zustand/shallow';
+import { useLayoutStore, useUIStore } from '@/core/store';
+import { STAGING_ID, DEFAULT_CATEGORY_COLOR, calcMaxGridUnits } from '@/core/constants';
+import { useResponsive } from '@/shared/hooks';
+import { use3DPreviewKeyboard } from '@/hooks/use3DPreviewKeyboard';
+import { getLayerZStart } from '@/shared/utils/collision';
+import { Scene, type SceneHandle } from './IsometricPreview/Scene';
+import { BinMesh } from './IsometricPreview/BinMesh';
+import { SplitLineOverlay } from './IsometricPreview/SplitLineOverlay';
+import { BatchedCornerMarkers } from './IsometricPreview/BatchedCornerMarkers';
+import { MergedBinMeshes } from './IsometricPreview/MergedBinMeshes';
 
-const PREVIEW_SIZE_SMALL = 280 // Default small preview
+const PREVIEW_SIZE_SMALL = 280; // Default small preview
 
 interface IsometricPreviewProps {
-  inline?: boolean // When true, fills container instead of using fixed sizing
+  inline?: boolean; // When true, fills container instead of using fixed sizing
 }
 
 /**
@@ -27,10 +23,10 @@ interface IsometricPreviewProps {
  * Shows all layers stacked with bins colored by category.
  */
 export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
-  const sceneRef = useRef<SceneHandle>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const { isMobile, isTablet } = useResponsive()
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
+  const sceneRef = useRef<SceneHandle>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { isMobile, isTablet } = useResponsive();
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   const {
     showIsometricPreview,
@@ -52,46 +48,46 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       setPreviewExpanded: state.setPreviewExpanded,
       toggleIsometricPreview: state.toggleIsometricPreview,
     }))
-  )
+  );
 
   // Track container dimensions in inline mode
   useEffect(() => {
-    if (!inline || !containerRef.current) return
+    if (!inline || !containerRef.current) return;
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const { width, height } = entry.contentRect
-        setContainerSize({ width, height })
+        const { width, height } = entry.contentRect;
+        setContainerSize({ width, height });
       }
-    })
+    });
 
-    resizeObserver.observe(containerRef.current)
-    return () => resizeObserver.disconnect()
-  }, [inline])
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, [inline]);
 
   // Calculate preview size based on mode, expanded state, and device
   const previewSize = useMemo(() => {
     // In inline mode, use container dimensions (square aspect ratio)
     if (inline && containerSize.width > 0 && containerSize.height > 0) {
-      return Math.min(containerSize.width, containerSize.height)
+      return Math.min(containerSize.width, containerSize.height);
     }
 
-    if (!isPreviewExpanded) return PREVIEW_SIZE_SMALL
+    if (!isPreviewExpanded) return PREVIEW_SIZE_SMALL;
 
-    const vw = typeof window !== "undefined" ? window.innerWidth : 800
-    const vh = typeof window !== "undefined" ? window.innerHeight : 600
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 800;
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 600;
 
     if (isMobile) {
       // Mobile: nearly fullscreen (98% of viewport)
-      return Math.min(vw * 0.98, vh * 0.98)
+      return Math.min(vw * 0.98, vh * 0.98);
     } else if (isTablet) {
       // Tablet: large but with some margin (95%)
-      return Math.min(vw * 0.95, vh * 0.95)
+      return Math.min(vw * 0.95, vh * 0.95);
     } else {
       // Desktop: fill most of viewport (90%)
-      return Math.min(vw * 0.9, vh * 0.9)
+      return Math.min(vw * 0.9, vh * 0.9);
     }
-  }, [inline, containerSize, isPreviewExpanded, isMobile, isTablet])
+  }, [inline, containerSize, isPreviewExpanded, isMobile, isTablet]);
 
   // Keyboard shortcuts for 3D preview navigation
   use3DPreviewKeyboard({
@@ -101,101 +97,95 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     togglePreviewVisibility: toggleIsometricPreview,
     togglePreviewExpanded,
     setPreviewExpanded,
-  })
+  });
 
   // Handle backdrop click
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) {
-        setPreviewExpanded(false)
+        setPreviewExpanded(false);
       }
     },
     [setPreviewExpanded]
-  )
+  );
 
   // Select only needed layout properties to prevent unnecessary re-renders
-  const { bins, layers, categories, drawer, printBedSize, gridUnitMm, heightUnitMm, layoutName } = useLayoutStore(
-    useShallow((state) => ({
-      bins: state.layout.bins,
-      layers: state.layout.layers,
-      categories: state.layout.categories,
-      drawer: state.layout.drawer,
-      printBedSize: state.layout.printBedSize,
-      gridUnitMm: state.layout.gridUnitMm,
-      heightUnitMm: state.layout.heightUnitMm,
-      layoutName: state.layout.name,
-    }))
-  )
+  const { bins, layers, categories, drawer, printBedSize, gridUnitMm, heightUnitMm, layoutName } =
+    useLayoutStore(
+      useShallow((state) => ({
+        bins: state.layout.bins,
+        layers: state.layout.layers,
+        categories: state.layout.categories,
+        drawer: state.layout.drawer,
+        printBedSize: state.layout.printBedSize,
+        gridUnitMm: state.layout.gridUnitMm,
+        heightUnitMm: state.layout.heightUnitMm,
+        layoutName: state.layout.name,
+      }))
+    );
 
   // Calculate height-to-grid scale from user settings
-  const heightToGridScale = heightUnitMm / gridUnitMm
-  const activeLayerId = useUIStore((state) => state.activeLayerId)
+  const heightToGridScale = heightUnitMm / gridUnitMm;
+  const activeLayerId = useUIStore((state) => state.activeLayerId);
 
   // Memoize active layer index calculation
   const activeLayerIndex = useMemo(
     () => layers.findIndex((l) => l.id === activeLayerId),
     [layers, activeLayerId]
-  )
+  );
 
   // Calculate max print size for split line visualization
   const maxGridUnits = useMemo(
     () => calcMaxGridUnits(printBedSize, gridUnitMm),
     [printBedSize, gridUnitMm]
-  )
+  );
 
   // Performance: Create O(1) lookup maps to avoid O(n²) .findIndex()/.find() calls in render loop
-  const layerIndexMap = useMemo(
-    () => new Map(layers.map((l, idx) => [l.id, idx])),
-    [layers]
-  )
-  const categoryMap = useMemo(
-    () => new Map(categories.map((c) => [c.id, c])),
-    [categories]
-  )
+  const layerIndexMap = useMemo(() => new Map(layers.map((l, idx) => [l.id, idx])), [layers]);
+  const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
 
   // Convert layout bins to renderable format with layer filtering
   // Dependencies are specific properties (bins, layers, categories) not entire layout object
   const binsToRender = useMemo(() => {
     const result: Array<{
-      bin: (typeof bins)[0]
-      x: number
-      y: number
-      z: number
-      height: number
-      clearanceHeight: number
-      color: string
-      opacity: number
-    }> = []
+      bin: (typeof bins)[0];
+      x: number;
+      y: number;
+      z: number;
+      height: number;
+      clearanceHeight: number;
+      color: string;
+      opacity: number;
+    }> = [];
 
     for (const bin of bins) {
-      if (bin.layerId === STAGING_ID) continue
+      if (bin.layerId === STAGING_ID) continue;
 
       // Filter bins based on layer view mode (O(1) lookup instead of O(n) findIndex)
       if (activeLayerIndex >= 0) {
-        const binLayerIndex = layerIndexMap.get(bin.layerId) ?? -1
+        const binLayerIndex = layerIndexMap.get(bin.layerId) ?? -1;
 
         switch (layerViewMode) {
           case 'focus':
             // Show only the active layer
-            if (binLayerIndex !== activeLayerIndex) continue
-            break
+            if (binLayerIndex !== activeLayerIndex) continue;
+            break;
           case 'stack':
             // Show active layer and layers below (slice view)
-            if (binLayerIndex > activeLayerIndex) continue
-            break
+            if (binLayerIndex > activeLayerIndex) continue;
+            break;
           case 'all':
             // Show all layers
-            break
+            break;
         }
       }
 
-      const zStart =
-        getLayerZStart(bin.layerId, layers) * heightToGridScale
-      const category = categoryMap.get(bin.category)
-      const baseColor = category?.color || DEFAULT_CATEGORY_COLOR
+      const zStart = getLayerZStart(bin.layerId, layers) * heightToGridScale;
+      const category = categoryMap.get(bin.category);
+      const baseColor = category?.color || DEFAULT_CATEGORY_COLOR;
 
       // No dimming needed since focus mode now hides other layers entirely
-      const color = baseColor
+      const color = baseColor;
 
       // Y-axis: In grid, y=0 is front (bottom), y increases toward back (top)
       // In 3D: Y=0 is front (toward camera), Y increases away (toward back)
@@ -209,7 +199,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         clearanceHeight: (bin.clearanceHeight || 0) * heightToGridScale,
         color,
         opacity: 1,
-      })
+      });
     }
 
     // Sort bins for correct depth ordering with camera at front-right viewing toward center
@@ -219,25 +209,25 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     result.sort((a, b) => {
       // Layer depth (z) is primary
       if (a.z !== b.z) {
-        return a.z - b.z
+        return a.z - b.z;
       }
 
       // Within same layer, sort by distance from camera
       // Camera at (X+, Y-) means close bins have high (x-y), far bins have low (x-y)
       // Sort ascending (x-y) to render far bins first (with low z-offsets)
-      const depthA = a.x - a.y
-      const depthB = b.x - b.y
+      const depthA = a.x - a.y;
+      const depthB = b.x - b.y;
 
-      return depthA - depthB
-    })
+      return depthA - depthB;
+    });
 
     // Add tiny z-offsets to prevent z-fighting on coplanar surfaces
     // 0.0002 units = 0.2mm per bin - imperceptible but prevents flickering
     result.forEach((binData, index) => {
-      binData.z += index * 0.0002
-    })
+      binData.z += index * 0.0002;
+    });
 
-    return result
+    return result;
   }, [
     bins,
     layers,
@@ -246,27 +236,26 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     activeLayerIndex,
     layerViewMode,
     heightToGridScale,
-  ])
+  ]);
 
   // Memoize filtered bin arrays to prevent recalculation on every render
   const { selectedBins, nonSelectedBins, binsWithOverlays } = useMemo(() => {
-    const selected: typeof binsToRender = []
-    const nonSelected: typeof binsToRender = []
-    const withOverlays: typeof binsToRender = []
+    const selected: typeof binsToRender = [];
+    const nonSelected: typeof binsToRender = [];
+    const withOverlays: typeof binsToRender = [];
 
     for (const binData of binsToRender) {
       if (selectedBinIds.includes(binData.bin.id)) {
-        selected.push(binData)
+        selected.push(binData);
       } else {
-        nonSelected.push(binData)
+        nonSelected.push(binData);
       }
 
       // Only include bins that need overlays (clearance or split lines)
-      const needsClearance = binData.clearanceHeight > 0
-      const needsSplitLines =
-        binData.bin.width > maxGridUnits || binData.bin.depth > maxGridUnits
+      const needsClearance = binData.clearanceHeight > 0;
+      const needsSplitLines = binData.bin.width > maxGridUnits || binData.bin.depth > maxGridUnits;
       if (needsClearance || needsSplitLines) {
-        withOverlays.push(binData)
+        withOverlays.push(binData);
       }
     }
 
@@ -274,11 +263,11 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       selectedBins: selected,
       nonSelectedBins: nonSelected,
       binsWithOverlays: withOverlays,
-    }
-  }, [binsToRender, selectedBinIds, maxGridUnits])
+    };
+  }, [binsToRender, selectedBinIds, maxGridUnits]);
 
   if (!showIsometricPreview) {
-    return null
+    return null;
   }
 
   // Preview container content (shared between small and expanded modes)
@@ -286,8 +275,11 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     <div
       ref={containerRef}
       className={`relative overflow-hidden select-none ${
-        inline ? "w-full h-full flex items-center justify-center" :
-        isPreviewExpanded ? "rounded-lg shadow-lg border border-stroke-subtle" : "absolute top-14 right-4 rounded-lg shadow-lg border border-stroke-subtle"
+        inline
+          ? 'w-full h-full flex items-center justify-center'
+          : isPreviewExpanded
+            ? 'rounded-lg shadow-lg border border-stroke-subtle'
+            : 'absolute top-14 right-4 rounded-lg shadow-lg border border-stroke-subtle'
       }`}
       style={{
         width: inline ? undefined : previewSize,
@@ -303,7 +295,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           near: 0.1,
           far: 1000,
         }}
-        style={{ background: "#0a0a0f" }}
+        style={{ background: '#0a0a0f' }}
       >
         <Scene
           ref={sceneRef}
@@ -363,8 +355,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                 </mesh>
               )}
               {/* Split lines for oversized bins */}
-              {(binData.bin.width > maxGridUnits ||
-                binData.bin.depth > maxGridUnits) && (
+              {(binData.bin.width > maxGridUnits || binData.bin.depth > maxGridUnits) && (
                 <SplitLineOverlay
                   x={binData.x}
                   y={binData.y}
@@ -401,19 +392,19 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
           <div
             className="flex flex-col items-center gap-3 px-6 py-8 rounded-lg text-center"
             style={{
-              background: "rgba(255, 255, 255, 0.08)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              maxWidth: isPreviewExpanded ? "400px" : "240px",
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              maxWidth: isPreviewExpanded ? '400px' : '240px',
             }}
           >
             {/* SVG Icon - Box/Cube */}
             <svg
-              className={isPreviewExpanded ? "w-12 h-12" : "w-10 h-10"}
+              className={isPreviewExpanded ? 'w-12 h-12' : 'w-10 h-10'}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
-              style={{ color: "rgba(255, 255, 255, 0.6)" }}
+              style={{ color: 'rgba(255, 255, 255, 0.6)' }}
             >
               <path
                 strokeLinecap="round"
@@ -424,17 +415,15 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             </svg>
             {/* Heading */}
             <h3
-              className={`font-semibold ${
-                isPreviewExpanded ? "text-lg" : "text-base"
-              }`}
-              style={{ color: "rgba(255, 255, 255, 0.9)" }}
+              className={`font-semibold ${isPreviewExpanded ? 'text-lg' : 'text-base'}`}
+              style={{ color: 'rgba(255, 255, 255, 0.9)' }}
             >
               No Bins Yet
             </h3>
             {/* Message */}
             <p
-              className={isPreviewExpanded ? "text-sm" : "text-xs"}
-              style={{ color: "rgba(255, 255, 255, 0.7)" }}
+              className={isPreviewExpanded ? 'text-sm' : 'text-xs'}
+              style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
               Place bins on the grid to see your 3D layout
             </p>
@@ -444,22 +433,22 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       {/* Camera preset buttons */}
       <div
         className={`absolute top-1 left-1/2 transform -translate-x-1/2 flex ${
-          isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg bg-surface/50" : "gap-0.5"
+          isPreviewExpanded && !isMobile ? 'gap-1 p-1 rounded-lg bg-surface/50' : 'gap-0.5'
         }`}
       >
         {/* Isometric view - 3D cube */}
         <button
           onClick={(e) => {
-            e.stopPropagation()
-            sceneRef.current?.setPreset('isometric')
+            e.stopPropagation();
+            sceneRef.current?.setPreset('isometric');
           }}
           className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
           }`}
           title="Isometric view"
         >
           <svg
-            className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
+            className={isPreviewExpanded && !isMobile ? 'w-4 h-4' : 'w-4 h-4'}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -471,23 +460,21 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
             />
           </svg>
-          {isPreviewExpanded && !isMobile && (
-            <span className="text-xs font-medium">3D</span>
-          )}
+          {isPreviewExpanded && !isMobile && <span className="text-xs font-medium">3D</span>}
         </button>
         {/* Front view - rectangle wider than tall */}
         <button
           onClick={(e) => {
-            e.stopPropagation()
-            sceneRef.current?.setPreset('front')
+            e.stopPropagation();
+            sceneRef.current?.setPreset('front');
           }}
           className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
           }`}
           title="Front view"
         >
           <svg
-            className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
+            className={isPreviewExpanded && !isMobile ? 'w-4 h-4' : 'w-4 h-4'}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -496,23 +483,21 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <rect x="3" y="8" width="18" height="10" strokeWidth={2} rx="1" />
             <line x1="3" y1="13" x2="21" y2="13" strokeWidth={1.5} />
           </svg>
-          {isPreviewExpanded && !isMobile && (
-            <span className="text-xs font-medium">Front</span>
-          )}
+          {isPreviewExpanded && !isMobile && <span className="text-xs font-medium">Front</span>}
         </button>
         {/* Side view - rectangle taller than wide */}
         <button
           onClick={(e) => {
-            e.stopPropagation()
-            sceneRef.current?.setPreset('side')
+            e.stopPropagation();
+            sceneRef.current?.setPreset('side');
           }}
           className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
           }`}
           title="Side view"
         >
           <svg
-            className={isPreviewExpanded && !isMobile ? "w-4 h-4" : "w-4 h-4"}
+            className={isPreviewExpanded && !isMobile ? 'w-4 h-4' : 'w-4 h-4'}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -521,9 +506,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <rect x="7" y="3" width="10" height="18" strokeWidth={2} rx="1" />
             <line x1="7" y1="12" x2="17" y2="12" strokeWidth={1.5} />
           </svg>
-          {isPreviewExpanded && !isMobile && (
-            <span className="text-xs font-medium">Side</span>
-          )}
+          {isPreviewExpanded && !isMobile && <span className="text-xs font-medium">Side</span>}
         </button>
       </div>
       {/* Layer view mode selector - segmented control, only show when multiple layers */}
@@ -531,15 +514,15 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         <div
           className={`absolute bottom-1 right-1 flex rounded-lg overflow-hidden ${
             isPreviewExpanded && !isMobile
-              ? "gap-0.5 p-1 bg-surface/50"
-              : "bg-surface-secondary/80 border border-stroke-subtle"
+              ? 'gap-0.5 p-1 bg-surface/50'
+              : 'bg-surface-secondary/80 border border-stroke-subtle'
           }`}
         >
           {/* Focus - show only active layer */}
           <button
             onClick={(e) => {
-              e.stopPropagation()
-              setLayerViewMode('focus')
+              e.stopPropagation();
+              setLayerViewMode('focus');
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
@@ -549,7 +532,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             title="Focus: Show only active layer"
           >
             <svg
-              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-3.5 h-3.5"}
+              className={isPreviewExpanded && !isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -560,15 +543,13 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               {/* Single layer icon */}
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
             </svg>
-            {isPreviewExpanded && !isMobile && (
-              <span className="text-xs">Focus</span>
-            )}
+            {isPreviewExpanded && !isMobile && <span className="text-xs">Focus</span>}
           </button>
           {/* Stack - show active layer and below */}
           <button
             onClick={(e) => {
-              e.stopPropagation()
-              setLayerViewMode('stack')
+              e.stopPropagation();
+              setLayerViewMode('stack');
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
@@ -578,7 +559,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             title="Stack: Show active layer and below"
           >
             <svg
-              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-3.5 h-3.5"}
+              className={isPreviewExpanded && !isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -590,15 +571,13 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
               <path d="M2 12l10 5 10-5" />
             </svg>
-            {isPreviewExpanded && !isMobile && (
-              <span className="text-xs">Stack</span>
-            )}
+            {isPreviewExpanded && !isMobile && <span className="text-xs">Stack</span>}
           </button>
           {/* All - show all layers */}
           <button
             onClick={(e) => {
-              e.stopPropagation()
-              setLayerViewMode('all')
+              e.stopPropagation();
+              setLayerViewMode('all');
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
@@ -608,7 +587,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             title="All: Show all layers"
           >
             <svg
-              className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-3.5 h-3.5"}
+              className={isPreviewExpanded && !isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -621,33 +600,31 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               <path d="M2 17l10 5 10-5" />
               <path d="M2 12l10 5 10-5" />
             </svg>
-            {isPreviewExpanded && !isMobile && (
-              <span className="text-xs">All</span>
-            )}
+            {isPreviewExpanded && !isMobile && <span className="text-xs">All</span>}
           </button>
         </div>
       )}
       {/* Top button row */}
       <div
         className={`absolute top-1 right-1 flex ${
-          isPreviewExpanded && !isMobile ? "gap-1 p-1 rounded-lg bg-surface/50" : "gap-0.5"
+          isPreviewExpanded && !isMobile ? 'gap-1 p-1 rounded-lg bg-surface/50' : 'gap-0.5'
         }`}
       >
         {/* Expand/Collapse button */}
         <button
           onClick={(e) => {
-            e.stopPropagation()
-            togglePreviewExpanded()
+            e.stopPropagation();
+            togglePreviewExpanded();
           }}
           className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
           }`}
-          title={isPreviewExpanded ? "Collapse preview" : "Expand preview"}
+          title={isPreviewExpanded ? 'Collapse preview' : 'Expand preview'}
         >
           {isPreviewExpanded ? (
             <>
               <svg
-                className={isMobile ? "w-4 h-4" : "w-5 h-5"}
+                className={isMobile ? 'w-4 h-4' : 'w-5 h-5'}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -662,12 +639,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               {!isMobile && <span className="text-xs font-medium">Collapse</span>}
             </>
           ) : (
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -680,20 +652,20 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         {/* Close button */}
         <button
           onClick={(e) => {
-            e.stopPropagation()
+            e.stopPropagation();
             if (isPreviewExpanded) {
-              setPreviewExpanded(false)
+              setPreviewExpanded(false);
             } else {
-              useUIStore.getState().toggleIsometricPreview()
+              useUIStore.getState().toggleIsometricPreview();
             }
           }}
           className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? "gap-2 px-3 py-2" : "w-8 h-8 p-0"
+            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
           }`}
-          title={isPreviewExpanded ? "Collapse preview" : "Close preview"}
+          title={isPreviewExpanded ? 'Collapse preview' : 'Close preview'}
         >
           <svg
-            className={isPreviewExpanded && !isMobile ? "w-5 h-5" : "w-4 h-4"}
+            className={isPreviewExpanded && !isMobile ? 'w-5 h-5' : 'w-4 h-4'}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -705,9 +677,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-          {isPreviewExpanded && !isMobile && (
-            <span className="text-xs font-medium">Close</span>
-          )}
+          {isPreviewExpanded && !isMobile && <span className="text-xs font-medium">Close</span>}
         </button>
       </div>
 
@@ -716,21 +686,41 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
         <div
           className="absolute bottom-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg text-xs"
           style={{
-            background: "rgba(0, 0, 0, 0.8)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            pointerEvents: "none",
+            background: 'rgba(0, 0, 0, 0.8)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            pointerEvents: 'none',
           }}
         >
           <div className="flex items-center gap-4 text-content-secondary">
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">V</kbd> Toggle</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">Space</kbd> Expand</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">R</kbd> Reset</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">Esc</kbd> Close</span>
+            <span>
+              <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
+                V
+              </kbd>{' '}
+              Toggle
+            </span>
+            <span>
+              <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
+                Space
+              </kbd>{' '}
+              Expand
+            </span>
+            <span>
+              <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
+                R
+              </kbd>{' '}
+              Reset
+            </span>
+            <span>
+              <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
+                Esc
+              </kbd>{' '}
+              Close
+            </span>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 
   // Always render in same DOM location to preserve Canvas state (camera angle, etc.)
   // Use CSS to switch between corner mode and expanded modal mode
@@ -746,18 +736,21 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       {/* Preview wrapper - changes positioning based on expanded state */}
       <div
         data-3d-expanded={isPreviewExpanded || undefined}
-        className={isPreviewExpanded
-          ? "fixed inset-0 z-50 flex items-center justify-center"
-          : "contents"
+        className={
+          isPreviewExpanded ? 'fixed inset-0 z-50 flex items-center justify-center' : 'contents'
         }
-        style={isPreviewExpanded ? {
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "env(safe-area-inset-bottom)",
-        } : undefined}
+        style={
+          isPreviewExpanded
+            ? {
+                paddingTop: 'env(safe-area-inset-top)',
+                paddingBottom: 'env(safe-area-inset-bottom)',
+              }
+            : undefined
+        }
         onClick={isPreviewExpanded ? handleBackdropClick : undefined}
       >
         {previewContent}
       </div>
     </>
-  )
+  );
 }

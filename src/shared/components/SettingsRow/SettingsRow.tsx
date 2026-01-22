@@ -30,34 +30,23 @@ export function SettingsRow({
   const isMobile = variant === 'mobile';
 
   // Sizing based on variant
-  const labelClass = isMobile
-    ? 'text-sm text-content-secondary'
-    : 'text-xs text-content-tertiary';
+  const labelClass = isMobile ? 'text-sm text-content-secondary' : 'text-xs text-content-tertiary';
   const gapClass = isMobile ? 'gap-2' : 'gap-1';
 
   return (
     <div className="flex items-center justify-between">
       {htmlFor ? (
-        <label
-          htmlFor={htmlFor}
-          className={labelClass}
-          title={tooltip}
-        >
+        <label htmlFor={htmlFor} className={labelClass} title={tooltip}>
           {label}
         </label>
       ) : (
-        <span
-          className={labelClass}
-          title={tooltip}
-        >
+        <span className={labelClass} title={tooltip}>
           {label}
         </span>
       )}
       <div className={`flex items-center ${gapClass}`}>
         {children}
-        {unit && (
-          <span className="text-content-tertiary">{unit}</span>
-        )}
+        {unit && <span className="text-content-tertiary">{unit}</span>}
       </div>
     </div>
   );

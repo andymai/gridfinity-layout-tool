@@ -52,26 +52,43 @@ export function MobilePrintList() {
             aria-label="Expand bin list"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+              />
             </svg>
             Expand
           </button>
           {/* Copy button */}
-          <button
-            onClick={handleCopy}
-            className="btn btn-ghost btn-sm gap-1.5"
-          >
+          <button onClick={handleCopy} className="btn btn-ghost btn-sm gap-1.5">
             {copyFeedback ? (
               <>
-                <svg className="w-4 h-4 text-[var(--color-success)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-4 h-4 text-[var(--color-success)]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
                 Copied
               </>
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
                 </svg>
                 Copy
               </>
@@ -103,7 +120,7 @@ export function MobilePrintList() {
                   {/* Category colors */}
                   <div className="flex gap-1 pt-0.5">
                     {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
-                      const cat = printList.categories.find(c => c.id === catId);
+                      const cat = printList.categories.find((c) => c.id === catId);
                       return (
                         <div
                           key={catId}
@@ -122,12 +139,8 @@ export function MobilePrintList() {
                   {/* Size, height, labels */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-content">
-                        {row.size}
-                      </span>
-                      <span className="text-sm text-content-tertiary">
-                        {row.height}u
-                      </span>
+                      <span className="font-semibold text-content">{row.size}</span>
+                      <span className="text-sm text-content-tertiary">{row.height}u</span>
                       {row.needsSplit && (
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-[var(--color-warning-muted)] text-[var(--color-warning)]">
                           Split
@@ -137,13 +150,20 @@ export function MobilePrintList() {
                             viewBox="0 0 24 24"
                             stroke="currentColor"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
                           </svg>
                         </span>
                       )}
                     </div>
                     {/* Label and notes/properties indicators */}
-                    {((row.labels ?? [])[0] || row.notes || (row.customProperties && Object.keys(row.customProperties).length > 0)) && (
+                    {((row.labels ?? [])[0] ||
+                      row.notes ||
+                      (row.customProperties && Object.keys(row.customProperties).length > 0)) && (
                       <div className="flex items-center gap-1.5 mt-0.5">
                         {(row.labels ?? [])[0] && (
                           <span className="text-sm truncate text-content-tertiary">
@@ -159,7 +179,12 @@ export function MobilePrintList() {
                               stroke="currentColor"
                               aria-label="Has notes"
                             >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                              />
                             </svg>
                           </span>
                         )}
@@ -171,7 +196,12 @@ export function MobilePrintList() {
                             stroke="currentColor"
                             aria-label="Has custom properties"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"
+                            />
                           </svg>
                         )}
                       </div>
@@ -180,17 +210,11 @@ export function MobilePrintList() {
 
                   {/* Count and filament */}
                   <div className="text-right flex-shrink-0">
-                    <span className="font-semibold text-content">
-                      ×{row.binCount}
-                    </span>
+                    <span className="font-semibold text-content">×{row.binCount}</span>
                     {row.needsSplit && (
-                      <div className="text-xs text-content-tertiary">
-                        {row.totalPieces} pcs
-                      </div>
+                      <div className="text-xs text-content-tertiary">{row.totalPieces} pcs</div>
                     )}
-                    <div className="text-xs text-content-disabled mt-0.5">
-                      ~{row.filament}m
-                    </div>
+                    <div className="text-xs text-content-disabled mt-0.5">~{row.filament}m</div>
                   </div>
                 </div>
 
@@ -200,11 +224,12 @@ export function MobilePrintList() {
                     <div className="flex items-start gap-4">
                       <SplitPreview width={w} depth={d} pieces={row.pieces} cellSize={14} />
                       <div className="text-xs text-content-secondary flex-1">
-                        <div className="font-medium mb-1">
-                          Split into {row.totalPieces} pieces:
-                        </div>
+                        <div className="font-medium mb-1">Split into {row.totalPieces} pieces:</div>
                         {row.pieces.map((piece) => (
-                          <div key={`${piece.width}x${piece.depth}`} className="text-content-tertiary">
+                          <div
+                            key={`${piece.width}x${piece.depth}`}
+                            className="text-content-tertiary"
+                          >
                             {piece.count}× {piece.width}×{piece.depth}
                           </div>
                         ))}
@@ -233,10 +258,7 @@ export function MobilePrintList() {
       </div>
 
       {/* Expanded bin list modal */}
-      <BinListModal
-        isOpen={isExpandedModalOpen}
-        onClose={() => setIsExpandedModalOpen(false)}
-      />
+      <BinListModal isOpen={isExpandedModalOpen} onClose={() => setIsExpandedModalOpen(false)} />
     </div>
   );
 }

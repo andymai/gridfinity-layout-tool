@@ -39,27 +39,15 @@ export type {
 
 // === Layout CRUD (Async - Legacy API) ===
 // Consider using atomic operations above instead for automatic library sync.
-export {
-  saveLayoutAsync,
-  loadLayoutAsync,
-  deleteLayoutAsync,
-} from './LayoutService';
+export { saveLayoutAsync, loadLayoutAsync, deleteLayoutAsync } from './LayoutService';
 
 // === Layout CRUD (Async - Result-Based) ===
 // Use these when you need explicit error handling with Result types
-export {
-  saveLayoutResult,
-  loadLayoutResult,
-  deleteLayoutResult,
-} from './LayoutService';
+export { saveLayoutResult, loadLayoutResult, deleteLayoutResult } from './LayoutService';
 
 // === Layout CRUD (Sync - Initialization Only) ===
 // Use only during app startup when async is not available
-export {
-  saveLayoutSync,
-  loadLayoutSync,
-  deleteLayoutSync,
-} from './LayoutService';
+export { saveLayoutSync, loadLayoutSync, deleteLayoutSync } from './LayoutService';
 
 // === Library Management ===
 export {
@@ -99,10 +87,7 @@ export {
 } from './ShareService';
 
 // === Utilities ===
-export {
-  copyToClipboard,
-  downloadLayoutAsFile,
-} from './utils';
+export { copyToClipboard, downloadLayoutAsFile } from './utils';
 
 // === Shared With Me ===
 export {
@@ -132,16 +117,8 @@ export {
 export type { MigrationStats } from './migration';
 
 // === Backend (Internal - for useStorageMigration hook) ===
-export {
-  getStorageBackend,
-  resetStorageBackendCache,
-} from './backend';
+export { getStorageBackend, resetStorageBackendCache } from './backend';
 
 // === Legacy API (Deprecated) ===
 // These are kept for backward compatibility only
-export {
-  saveLayout,
-  loadLayout,
-  clearStorage,
-} from './LayoutService';
-
+export { saveLayout, loadLayout, clearStorage } from './LayoutService';

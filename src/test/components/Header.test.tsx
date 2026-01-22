@@ -7,16 +7,22 @@ import { resetAllStores } from '@/test/testUtils';
 // Mock the LayoutManagerModal to avoid deep component tree
 // Note: Module is lazy-loaded in Header, so mock must be set up before import
 vi.mock('../../features/layout-library/components/LayoutManagerModal', () => ({
-  LayoutManagerModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
-    isOpen ? <div data-testid="layout-manager-modal" onClick={onClose}>Modal</div> : null
-  ),
+  LayoutManagerModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+    isOpen ? (
+      <div data-testid="layout-manager-modal" onClick={onClose}>
+        Modal
+      </div>
+    ) : null,
 }));
 
 // Mock the PrintModal to avoid deep component tree
 vi.mock('../../features/print-export/components/PrintModal', () => ({
-  PrintModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
-    isOpen ? <div data-testid="print-modal" onClick={onClose}>Print Modal</div> : null
-  ),
+  PrintModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+    isOpen ? (
+      <div data-testid="print-modal" onClick={onClose}>
+        Print Modal
+      </div>
+    ) : null,
 }));
 
 // Controllable mock for useFeatureFlag and useCollabMode
@@ -49,7 +55,9 @@ vi.mock('../../features/cloud-share/components/ShareButton', () => ({
 // Mock PresenceAvatars to avoid Liveblocks context requirements
 vi.mock('../../components/Collab', () => ({
   PresenceAvatars: ({ className }: { className?: string }) => (
-    <div data-testid="presence-avatars" className={className}>Presence</div>
+    <div data-testid="presence-avatars" className={className}>
+      Presence
+    </div>
   ),
 }));
 
@@ -360,4 +368,3 @@ describe('Header', () => {
     });
   });
 });
-

@@ -132,7 +132,8 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
       // Select all with Ctrl+A (but not when inside text inputs)
       if ((e.metaKey || e.ctrlKey) && e.key === 'a' && rows.length > 0) {
         const target = e.target as HTMLElement;
-        const isInTextInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+        const isInTextInput =
+          target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
         if (!isInTextInput) {
           e.preventDefault();
           selectAllRows();
@@ -191,7 +192,10 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
         {/* Header */}
         <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-stroke bg-surface-elevated">
           <div className="flex items-center gap-2 md:gap-4">
-            <h2 id="bin-list-modal-title" className="text-base md:text-lg font-semibold text-content">
+            <h2
+              id="bin-list-modal-title"
+              className="text-base md:text-lg font-semibold text-content"
+            >
               Bin List
             </h2>
             <span className="text-xs md:text-sm text-content-tertiary hidden sm:inline">
@@ -218,10 +222,7 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
             </button>
 
             {/* Export dropdown */}
-            <ExportDropdown
-              onDownload={downloadExport}
-              onCopy={copyToClipboard}
-            />
+            <ExportDropdown onDownload={downloadExport} onCopy={copyToClipboard} />
 
             {/* Close button */}
             <button
@@ -231,7 +232,12 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
               aria-label="Close bin list"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -312,9 +318,13 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
               Tap to select · Long-press for options
             </div>
             <div className="hidden md:flex items-center gap-2">
-              <kbd className="px-1.5 py-0.5 text-xs bg-surface border border-stroke rounded">⌘A</kbd>
+              <kbd className="px-1.5 py-0.5 text-xs bg-surface border border-stroke rounded">
+                ⌘A
+              </kbd>
               <span className="text-xs text-content-tertiary">Select all</span>
-              <kbd className="px-1.5 py-0.5 text-xs bg-surface border border-stroke rounded ml-3">Esc</kbd>
+              <kbd className="px-1.5 py-0.5 text-xs bg-surface border border-stroke rounded ml-3">
+                Esc
+              </kbd>
               <span className="text-xs text-content-tertiary">Clear / Close</span>
             </div>
           </div>

@@ -72,11 +72,9 @@ describe('Labs Feature Registry', () => {
   describe('getToggleableFeatures', () => {
     it('returns only experimental and preview features', () => {
       const toggleable = getToggleableFeatures();
-      expect(
-        toggleable.every(
-          (f) => f.status === 'experimental' || f.status === 'preview'
-        )
-      ).toBe(true);
+      expect(toggleable.every((f) => f.status === 'experimental' || f.status === 'preview')).toBe(
+        true
+      );
     });
   });
 
@@ -84,9 +82,7 @@ describe('Labs Feature Registry', () => {
     it('returns only graduated features', () => {
       const graduated = getGraduatedFeatures();
       // Currently no graduated features, so should be empty
-      expect(
-        graduated.every((f) => f.status === 'graduated')
-      ).toBe(true);
+      expect(graduated.every((f) => f.status === 'graduated')).toBe(true);
     });
   });
 
@@ -250,9 +246,7 @@ describe('Labs Store', () => {
         },
       });
 
-      expect(useLabsStore.getState().isFeatureEnabled('layout_to_print')).toBe(
-        true
-      );
+      expect(useLabsStore.getState().isFeatureEnabled('layout_to_print')).toBe(true);
     });
   });
 
@@ -268,12 +262,8 @@ describe('Labs Store', () => {
 
       store.syncFromStorage(newPrefs);
 
-      expect(useLabsStore.getState().isFeatureEnabled('collaborative_editing')).toBe(
-        true
-      );
-      expect(useLabsStore.getState().isFeatureEnabled('layout_to_print')).toBe(
-        true
-      );
+      expect(useLabsStore.getState().isFeatureEnabled('collaborative_editing')).toBe(true);
+      expect(useLabsStore.getState().isFeatureEnabled('layout_to_print')).toBe(true);
     });
   });
 

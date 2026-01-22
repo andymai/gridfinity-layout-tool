@@ -26,31 +26,15 @@ const variantClasses = {
  * Stat card for displaying key metrics in the bin list dashboard.
  * Shows an icon, label, and value in a compact card format.
  */
-export function StatCard({
-  icon,
-  label,
-  value,
-  unit,
-  title,
-  variant = 'default',
-}: StatCardProps) {
+export function StatCard({ icon, label, value, unit, title, variant = 'default' }: StatCardProps) {
   return (
-    <div
-      className="flex items-center gap-3 p-3 rounded-lg bg-surface-elevated"
-      title={title}
-    >
-      <div className={`flex-shrink-0 ${variantClasses[variant]}`}>
-        {icon}
-      </div>
+    <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-elevated" title={title}>
+      <div className={`flex-shrink-0 ${variantClasses[variant]}`}>{icon}</div>
       <div className="min-w-0 flex-1">
         <div className="text-xs text-content-tertiary truncate">{label}</div>
         <div className="flex items-baseline gap-1">
-          <span className="text-lg font-semibold text-content tabular-nums">
-            {value}
-          </span>
-          {unit && (
-            <span className="text-xs text-content-secondary">{unit}</span>
-          )}
+          <span className="text-lg font-semibold text-content tabular-nums">{value}</span>
+          {unit && <span className="text-xs text-content-secondary">{unit}</span>}
         </div>
       </div>
     </div>

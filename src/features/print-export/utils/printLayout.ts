@@ -29,10 +29,7 @@ export function getUsedCategories(bins: Bin[], categories: Category[]): Category
  * Format drawer dimensions for display.
  * Returns "10x8 (420x336 mm)" format.
  */
-export function formatDrawerDimensions(
-  drawer: Drawer,
-  gridUnitMm: number
-): string {
+export function formatDrawerDimensions(drawer: Drawer, gridUnitMm: number): string {
   const widthMm = Math.round(drawer.width * gridUnitMm);
   const depthMm = Math.round(drawer.depth * gridUnitMm);
   return `${drawer.width}x${drawer.depth} (${widthMm}x${depthMm} mm)`;
@@ -52,10 +49,7 @@ export function formatPrintDate(): string {
 /**
  * Get bin count per layer for display.
  */
-export function getBinCountByLayer(
-  bins: Bin[],
-  layers: Layer[]
-): Map<string, number> {
+export function getBinCountByLayer(bins: Bin[], layers: Layer[]): Map<string, number> {
   const counts = new Map<string, number>();
 
   // Initialize all layers to 0

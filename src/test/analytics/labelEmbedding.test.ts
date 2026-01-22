@@ -141,13 +141,15 @@ describe('labelEmbedding', () => {
         const bucket = computeEmbeddingBucket(label);
         const decoded = decodeEmbeddingBucket(bucket);
         // Verify the bucket value matches what we expect from decoded components
-        const expectedBucket =
-          (((['short', 'medium', 'long', 'long'].indexOf(decoded.length) & 0x3) << 14) |
-          ((['alpha', 'numeric', 'alphanumeric', 'special'].indexOf(decoded.charClass) & 0x3) << 12) |
+        const expectedBucket = (
+          ((['short', 'medium', 'long', 'long'].indexOf(decoded.length) & 0x3) << 14) |
+          ((['alpha', 'numeric', 'alphanumeric', 'special'].indexOf(decoded.charClass) & 0x3) <<
+            12) |
           ((['plain', 'measurement', 'code', 'descriptive'].indexOf(decoded.pattern) & 0x3) << 10) |
-          (decoded.ngramHash & 0xff))
-            .toString(16)
-            .padStart(4, '0');
+          (decoded.ngramHash & 0xff)
+        )
+          .toString(16)
+          .padStart(4, '0');
         expect(bucket).toBe(expectedBucket);
       }
     });

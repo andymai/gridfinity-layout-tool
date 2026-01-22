@@ -9,57 +9,65 @@ import type { Layout } from '@/core/types';
 
 // Hoisted mock for computePreview - used by both storage and library store re-export
 const { mockComputePreview } = vi.hoisted(() => ({
-  mockComputePreview: vi.fn((layout: { drawer: { width: number; depth: number; height: number }; bins: unknown[]; layers: unknown[] }) => ({
-    drawerWidth: layout.drawer.width,
-    drawerDepth: layout.drawer.depth,
-    drawerHeight: layout.drawer.height,
-    binCount: layout.bins.length,
-    layerCount: layout.layers.length,
-    binMap: [],
-  })),
+  mockComputePreview: vi.fn(
+    (layout: {
+      drawer: { width: number; depth: number; height: number };
+      bins: unknown[];
+      layers: unknown[];
+    }) => ({
+      drawerWidth: layout.drawer.width,
+      drawerDepth: layout.drawer.depth,
+      drawerHeight: layout.drawer.height,
+      binCount: layout.bins.length,
+      layerCount: layout.layers.length,
+      binMap: [],
+    })
+  ),
 }));
 
 // Mock storage functions
 vi.mock('../../core/storage', () => ({
-  createLayoutEntry: vi.fn(() => Promise.resolve({
-    ok: true,
-    value: {
-      layoutId: 'newid123test',
-      entry: {
-        id: 'newid123test',
-        name: 'Original Name (imported)',
-        createdAt: Date.now(),
-        modifiedAt: Date.now(),
-        preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
-          binCount: 0,
-          layerCount: 1,
+  createLayoutEntry: vi.fn(() =>
+    Promise.resolve({
+      ok: true,
+      value: {
+        layoutId: 'newid123test',
+        entry: {
+          id: 'newid123test',
+          name: 'Original Name (imported)',
+          createdAt: Date.now(),
+          modifiedAt: Date.now(),
+          preview: {
+            drawerWidth: 10,
+            drawerDepth: 8,
+            drawerHeight: 12,
+            binCount: 0,
+            layerCount: 1,
+          },
+        },
+        library: {
+          version: '1.0',
+          activeLayoutId: 'existing-layout',
+          entries: [
+            { id: 'existing-layout', name: 'Existing Layout' },
+            { id: 'newid123test', name: 'Original Name (imported)' },
+          ],
+          settings: { authorName: '' },
+        },
+        layout: {
+          version: '1.0',
+          name: 'Original Name (imported)',
+          drawer: { width: 10, depth: 8, height: 12 },
+          printBedSize: 256,
+          gridUnitMm: 42,
+          heightUnitMm: 7,
+          categories: [{ id: 'cat1', name: 'Category', color: '#ff0000' }],
+          layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+          bins: [],
         },
       },
-      library: {
-        version: '1.0',
-        activeLayoutId: 'existing-layout',
-        entries: [
-          { id: 'existing-layout', name: 'Existing Layout' },
-          { id: 'newid123test', name: 'Original Name (imported)' },
-        ],
-        settings: { authorName: '' },
-      },
-      layout: {
-        version: '1.0',
-        name: 'Original Name (imported)',
-        drawer: { width: 10, depth: 8, height: 12 },
-        printBedSize: 256,
-        gridUnitMm: 42,
-        heightUnitMm: 7,
-        categories: [{ id: 'cat1', name: 'Category', color: '#ff0000' }],
-        layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
-        bins: [],
-      },
-    },
-  })),
+    })
+  ),
   computePreview: mockComputePreview,
   initializeLayoutLibrary: vi.fn(() => ({
     library: {
@@ -298,7 +306,7 @@ describe('SharedLayoutBanner', () => {
       await waitFor(() => {
         const entries = useLibraryStore.getState().library.entries;
         // New layouts use generateLayoutId which returns 'newid123test'
-        const newEntry = entries.find(e => e.id === 'newid123test');
+        const newEntry = entries.find((e) => e.id === 'newid123test');
         expect(newEntry?.name).toBe('Original Name (imported)');
       });
     });

@@ -34,12 +34,8 @@ describe('storage-share', () => {
     printBedSize: 256,
     gridUnitMm: 42,
     heightUnitMm: 7,
-    categories: [
-      { id: 'cat-1', name: 'Red', color: '#ff0000' },
-    ],
-    layers: [
-      { id: 'layer-1', name: 'Layer 1', height: 3 },
-    ],
+    categories: [{ id: 'cat-1', name: 'Red', color: '#ff0000' }],
+    layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
     bins: [
       {
         id: 'bin-1',
@@ -418,8 +414,8 @@ describe('storage-share', () => {
       expect(decoded.bins.length).toBe(layout.bins.length);
 
       // Verify bin data preserved (except IDs)
-      const originalBin = layout.bins.find(b => b.label === 'Test Bin');
-      const decodedBin = decoded.bins.find(b => b.label === 'Test Bin');
+      const originalBin = layout.bins.find((b) => b.label === 'Test Bin');
+      const decodedBin = decoded.bins.find((b) => b.label === 'Test Bin');
       expect(decodedBin).toBeDefined();
       expect(decodedBin!.position).toEqual(originalBin!.position);
       expect(decodedBin!.size).toEqual(originalBin!.size);
@@ -463,7 +459,9 @@ describe('storage-share', () => {
         expect(result.error.code).toBe('VALIDATION_IMPORT_FAILED');
         expect(result.error.errors.length).toBeGreaterThan(0);
         // Errors should describe what's missing
-        expect(result.error.errors.some(e => e.includes('drawer') || e.includes('Missing'))).toBe(true);
+        expect(result.error.errors.some((e) => e.includes('drawer') || e.includes('Missing'))).toBe(
+          true
+        );
       }
     });
 
@@ -617,5 +615,4 @@ describe('storage-share', () => {
       }
     });
   });
-
 });

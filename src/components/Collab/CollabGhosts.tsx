@@ -41,9 +41,7 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
 
   // Filter to users with active (non-idle) interactions
   const usersWithInteractions = others.filter(
-    ({ presence }) =>
-      presence.interaction &&
-      presence.interaction.type !== 'idle'
+    ({ presence }) => presence.interaction && presence.interaction.type !== 'idle'
   );
 
   if (usersWithInteractions.length === 0) {
@@ -81,13 +79,15 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
     if (hasFractionalDepth && fractionalEdgeY === 'start') {
       if (binTopGridY <= fractionalDepthPart) {
         const fractionalRowCssTop = gap + integerDepth * (cellSize + gap);
-        const offsetFromTop = (fractionalDepthPart - binTopGridY) / fractionalDepthPart * fractionalCellHeight;
+        const offsetFromTop =
+          ((fractionalDepthPart - binTopGridY) / fractionalDepthPart) * fractionalCellHeight;
         return fractionalRowCssTop + offsetFromTop;
       }
       const integerY = binTopGridY - fractionalDepthPart;
       const wholeRows = Math.floor(integerY);
       const fractionalPart = integerY - wholeRows;
-      const cssTop = gap + (integerDepth - 1 - wholeRows) * (cellSize + gap) + (1 - fractionalPart) * cellSize;
+      const cssTop =
+        gap + (integerDepth - 1 - wholeRows) * (cellSize + gap) + (1 - fractionalPart) * cellSize;
       return cssTop;
     }
 
@@ -339,9 +339,7 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
     const keyPrefix = `ghost-${connectionId}`;
 
     if (interaction.type === 'drawing' || interaction.type === 'selecting') {
-      ghostElements.push(
-        renderDrawingGhost(`${keyPrefix}-draw`, interaction, color)
-      );
+      ghostElements.push(renderDrawingGhost(`${keyPrefix}-draw`, interaction, color));
     } else if (interaction.type === 'dragging') {
       ghostElements.push(...renderDraggingGhosts(keyPrefix, interaction, color, bins));
     } else if (interaction.type === 'resizing') {

@@ -4,7 +4,13 @@ import type { InspirationTheme, LayoutFeature } from '../types';
 
 describe('types', () => {
   describe('THEME_CONFIG', () => {
-    const expectedThemes: InspirationTheme[] = ['kitchen', 'workshop', 'office', 'hobby', 'personal'];
+    const expectedThemes: InspirationTheme[] = [
+      'kitchen',
+      'workshop',
+      'office',
+      'hobby',
+      'personal',
+    ];
 
     it('has all 5 themes', () => {
       const themes = Object.keys(THEME_CONFIG);

@@ -63,7 +63,7 @@ test.describe('Create Layout Flow', () => {
     // Wait for help modal with title "Help & Shortcuts"
     await waitForDialog(page);
     const modal = page.locator('[role="dialog"]').filter({
-      has: page.getByRole('heading', { name: /help/i })
+      has: page.getByRole('heading', { name: /help/i }),
     });
     await expect(modal).toBeVisible({ timeout: 5000 });
 
@@ -111,6 +111,8 @@ test.describe('Create Layout Flow', () => {
     await waitForAppReady(page);
 
     // Should still show the custom name
-    await expect(page.getByRole('button', { name: 'Persisted Layout' })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('button', { name: 'Persisted Layout' })).toBeVisible({
+      timeout: 5000,
+    });
   });
 });
