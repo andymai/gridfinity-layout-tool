@@ -111,8 +111,8 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import type { RedisOptions, Redis as RedisInstance } from 'ioredis';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
+import type { RedisOptions } from 'ioredis';
 import { getClientIP } from './lib/rateLimit.js';
 
 // ============================================
@@ -457,9 +457,9 @@ function parseRedisUrl(redisUrl: string): RedisOptions {
   };
 }
 
-let redis: RedisInstance | null = null;
+let redis: Redis | null = null;
 
-function getRedis(): RedisInstance | null {
+function getRedis(): Redis | null {
   if (!process.env.REDIS_URL) {
     return null;
   }
@@ -484,7 +484,7 @@ function getRedis(): RedisInstance | null {
  * Uses the same Redis client as aggregation operations.
  * 100 requests per minute per IP.
  */
-async function checkRateLimitInternal(ip: string, client: RedisInstance): Promise<boolean> {
+async function checkRateLimitInternal(ip: string, client: Redis): Promise<boolean> {
   const hashedIP = hashIP(ip);
   const key = `ml_ratelimit:${hashedIP}`;
   const now = Math.floor(Date.now() / 1000);

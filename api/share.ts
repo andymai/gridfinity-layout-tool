@@ -1,7 +1,7 @@
 import { put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
-import { validateShareLayout } from './lib/validation.js';
+import { validateShareLayout, isValidationError } from './lib/validation.js';
 import { filterLayoutContent } from './lib/contentFilter.js';
 import {
   isValidShareId,
@@ -63,11 +63,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const layoutJson = JSON.stringify(layout);
     const validationResult = validateShareLayout(layout, layoutJson.length);
 
-    if (!validationResult.valid) {
-      const { error } = validationResult;
+    if (isValidationError(validationResult)) {
       return res.status(400).json({
-        error: error.message,
-        code: error.code,
+        error: validationResult.error.message,
+        code: validationResult.error.code,
       });
     }
 

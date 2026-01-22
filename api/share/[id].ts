@@ -1,7 +1,7 @@
 import { put, del, head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from '../lib/rateLimit.js';
-import { validateShareLayout } from '../lib/validation.js';
+import { validateShareLayout, isValidationError } from '../lib/validation.js';
 import { filterLayoutContent } from '../lib/contentFilter.js';
 import { isValidShareId, hashToken, ErrorCode, type ShareData } from '../lib/shared.js';
 
@@ -199,11 +199,10 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     const layoutJson = JSON.stringify(layout);
     const validationResult = validateShareLayout(layout, layoutJson.length);
 
-    if (!validationResult.valid) {
-      const { error } = validationResult;
+    if (isValidationError(validationResult)) {
       return res.status(400).json({
-        error: error.message,
-        code: error.code,
+        error: validationResult.error.message,
+        code: validationResult.error.code,
       });
     }
 
