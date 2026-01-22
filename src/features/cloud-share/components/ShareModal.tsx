@@ -6,7 +6,7 @@ import {
   copyToClipboard,
   exportLayoutJSON,
 } from '@/core/storage';
-import { trackLayoutSnapshot } from '@/utils/analytics';
+import { trackLayoutSnapshot, trackEvent } from '@/utils/analytics';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { CloudShareTab } from './CloudShareTab';
 
@@ -37,6 +37,12 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
   const [activeTab, setActiveTab] = useState<'cloud' | 'url' | 'file' | 'json'>(
     isCollabEnabled ? 'url' : 'cloud'
   );
+
+  // Track tab switches for share funnel analysis
+  const handleTabChange = (tab: 'cloud' | 'url' | 'file' | 'json') => {
+    setActiveTab(tab);
+    trackEvent('share_tab_selected', { tab });
+  };
   const [copied, setCopied] = useState(false);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const jsonTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -44,7 +50,13 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
   // Compute shareURL from layout (memoized to avoid recomputing on every render)
   const shareURL = useMemo(() => generateShareableURL(layout), [layout]);
 
+  // Track modal open and handle escape key
   useEffect(() => {
+    trackEvent('share_modal_opened', {
+      default_tab: isCollabEnabled ? 'url' : 'cloud',
+      bin_count: layout.bins.length,
+    });
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
@@ -53,7 +65,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [onClose]);
+  }, [onClose, isCollabEnabled, layout.bins.length]);
 
   const handleCopyURL = async () => {
     const success = await copyToClipboard(shareURL);
@@ -130,7 +142,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
             <button
               role="tab"
               aria-selected={activeTab === 'cloud'}
-              onClick={() => setActiveTab('cloud')}
+              onClick={() => handleTabChange('cloud')}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'cloud'
                   ? 'bg-accent text-white'
@@ -143,7 +155,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
           <button
             role="tab"
             aria-selected={activeTab === 'url'}
-            onClick={() => setActiveTab('url')}
+            onClick={() => handleTabChange('url')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
               activeTab === 'url'
                 ? 'bg-accent text-white'
@@ -155,7 +167,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
           <button
             role="tab"
             aria-selected={activeTab === 'file'}
-            onClick={() => setActiveTab('file')}
+            onClick={() => handleTabChange('file')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
               activeTab === 'file'
                 ? 'bg-accent text-white'
@@ -167,7 +179,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
           <button
             role="tab"
             aria-selected={activeTab === 'json'}
-            onClick={() => setActiveTab('json')}
+            onClick={() => handleTabChange('json')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
               activeTab === 'json'
                 ? 'bg-accent text-white'
@@ -185,7 +197,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
             <CloudShareTab
               layoutId={targetLayoutId}
               onClose={onClose}
-              onSwitchToUrlTab={() => setActiveTab('url')}
+              onSwitchToUrlTab={() => handleTabChange('url')}
             />
           )}
 

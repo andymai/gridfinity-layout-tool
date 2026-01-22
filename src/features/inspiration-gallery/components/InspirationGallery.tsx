@@ -5,6 +5,7 @@ import { useLayoutSwitcher } from '@/hooks';
 import { useUIStore } from '@/core/store/ui';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
+import { trackEvent } from '@/utils/analytics';
 import { INSPIRATION_LAYOUTS, getLayoutsByTheme } from '../data';
 import { THEME_CONFIG } from '../types';
 import type { InspirationLayout, InspirationTheme } from '../types';
@@ -111,12 +112,15 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Focus close button on mount
+  // Focus close button on mount and track gallery open
   useEffect(() => {
     closeButtonRef.current?.focus();
     announceToScreenReader(
       `Inspiration Gallery opened. ${INSPIRATION_LAYOUTS.length} layouts available. Use Tab to navigate.`
     );
+    trackEvent('gallery_opened', {
+      layout_count: INSPIRATION_LAYOUTS.length,
+    });
   }, [announceToScreenReader]);
 
   // Lock body scroll
@@ -133,12 +137,22 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
       const count = theme === 'all' ? INSPIRATION_LAYOUTS.length : getLayoutsByTheme(theme).length;
       const label = theme === 'all' ? 'all themes' : THEME_CONFIG[theme].label;
       announceToScreenReader(`Showing ${count} ${label} layouts`);
+      trackEvent('gallery_filter_changed', {
+        theme,
+        result_count: count,
+      });
     },
     [announceToScreenReader]
   );
 
   const handleSelectLayout = useCallback((layout: InspirationLayout) => {
     setPreviewLayout(layout);
+    trackEvent('template_preview', {
+      template_id: layout.id,
+      template_name: layout.name,
+      template_theme: layout.theme,
+      bin_count: layout.metrics.binCount,
+    });
   }, []);
 
   const handleClosePreview = useCallback(() => {
@@ -161,6 +175,13 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
         if (isOk(switchResult)) {
           addToast(`Added "${previewLayout.name}"`, 'success');
           announceToScreenReader(`${previewLayout.name} added to your library`);
+          trackEvent('template_applied', {
+            template_id: previewLayout.id,
+            template_name: previewLayout.name,
+            template_theme: previewLayout.theme,
+            bin_count: previewLayout.metrics.binCount,
+            layer_count: previewLayout.metrics.layerCount,
+          });
         }
         closeMobilePanel();
         onClose();

@@ -326,10 +326,7 @@ export function trackAISuggestion(params: {
  * Track when a user accepts/rejects an AI suggestion.
  * Use this standalone when you have a trace ID from a previous tracking call.
  */
-export function trackAIFeedback(
-  traceId: string,
-  feedback: AIFeedback
-): void {
+export function trackAIFeedback(traceId: string, feedback: AIFeedback): void {
   const posthog = getPostHogInstance();
   if (!posthog) return;
 

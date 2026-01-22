@@ -7,7 +7,13 @@ import type { InspirationLayout } from '../types';
 
 // Mock hooks
 vi.mock('@/shared/hooks', () => ({
-  useResponsive: () => ({ isMobile: false }),
+  useResponsive: () => ({ isMobile: false, viewportWidth: 1280 }),
+}));
+
+// Mock analytics
+const mockTrackEvent = vi.fn();
+vi.mock('@/utils/analytics', () => ({
+  trackEvent: (...args: unknown[]) => mockTrackEvent(...args),
 }));
 
 const mockImportLayoutFromJSON = vi.fn();
@@ -573,6 +579,66 @@ describe('InspirationGallery', () => {
 
       const grid = screen.getByRole('grid', { name: 'Layout gallery' });
       expect(grid).toBeInTheDocument();
+    });
+  });
+
+  describe('analytics tracking', () => {
+    it('tracks gallery_opened on mount', () => {
+      render(<InspirationGallery {...defaultProps} />);
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('gallery_opened', {
+        layout_count: 3, // Mock has 3 layouts
+      });
+    });
+
+    it('tracks gallery_filter_changed when theme filter changes', () => {
+      render(<InspirationGallery {...defaultProps} />);
+      mockTrackEvent.mockClear();
+
+      // Click workshop filter
+      fireEvent.click(screen.getByText('Workshop (2)'));
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('gallery_filter_changed', {
+        theme: 'workshop',
+        result_count: 2,
+      });
+    });
+
+    it('tracks template_preview when layout card is clicked', () => {
+      render(<InspirationGallery {...defaultProps} />);
+      mockTrackEvent.mockClear();
+
+      // Click a layout card to preview it
+      fireEvent.click(screen.getByTestId('layout-card-workshop-1'));
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('template_preview', {
+        template_id: 'workshop-1',
+        template_name: 'Workshop Layout 1',
+        template_theme: 'workshop',
+        bin_count: 10,
+      });
+    });
+
+    it('tracks template_applied when layout is used', async () => {
+      render(<InspirationGallery {...defaultProps} />);
+
+      // Open preview
+      fireEvent.click(screen.getByTestId('layout-card-workshop-1'));
+      mockTrackEvent.mockClear();
+
+      // Click "Use Layout" button (mocked preview overlay button)
+      const useButton = screen.getByTestId('preview-use');
+      fireEvent.click(useButton);
+
+      await waitFor(() => {
+        expect(mockTrackEvent).toHaveBeenCalledWith('template_applied', {
+          template_id: 'workshop-1',
+          template_name: 'Workshop Layout 1',
+          template_theme: 'workshop',
+          bin_count: 10,
+          layer_count: 1,
+        });
+      });
     });
   });
 });
