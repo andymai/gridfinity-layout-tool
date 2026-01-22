@@ -278,7 +278,9 @@ export function useBinList(): UseBinListReturn {
           `Updated label for ${successCount} bin${successCount !== 1 ? 's' : ''}`,
           'success'
         );
-        markFeatureUsed('labels');
+        if (label.trim()) {
+          markFeatureUsed('labels');
+        }
       }
       if (lastError) {
         addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');

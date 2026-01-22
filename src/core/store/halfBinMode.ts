@@ -115,6 +115,7 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
     if (targetState === true) {
       saveToStorage(true);
       set({ halfBinMode: true });
+      markFeatureUsed('half_bins');
       return OK;
     }
 
