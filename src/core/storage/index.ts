@@ -101,7 +101,6 @@ export {
 // === Utilities ===
 export {
   copyToClipboard,
-  copyToClipboardResult,
   downloadLayoutAsFile,
 } from './utils';
 
@@ -146,13 +145,3 @@ export {
   clearStorage,
 } from './LayoutService';
 
-// === Backward Compatibility Aliases ===
-// Old function names mapped to new names for smooth migration
-export {
-  saveLayoutAsync as saveLayoutByIdAsync,
-  loadLayoutAsync as loadLayoutByIdAsync,
-  deleteLayoutAsync as deleteLayoutByIdAsync,
-  saveLayoutSync as saveLayoutById,
-  loadLayoutSync as loadLayoutById,
-  deleteLayoutSync as deleteLayoutById,
-} from './LayoutService';

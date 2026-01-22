@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-  saveLayoutById,
-  loadLayoutById,
-  deleteLayoutById,
+  saveLayoutSync,
+  loadLayoutSync,
+  deleteLayoutSync,
   saveLibrary,
   loadLibrary,
   computeLayoutPreview,
@@ -65,11 +65,11 @@ describe('storage-library', () => {
     });
   });
 
-  describe('saveLayoutById', () => {
+  describe('saveLayoutSync', () => {
     it('saves layout to localStorage with correct key', () => {
       const layout = createTestLayout();
 
-      saveLayoutById('test-id', layout);
+      saveLayoutSync('test-id', layout);
 
       const stored = localStorage.getItem('gridfinity-layout-test-id');
       expect(stored).not.toBeNull();
@@ -80,8 +80,8 @@ describe('storage-library', () => {
       const layout1 = createTestLayout('First');
       const layout2 = createTestLayout('Second');
 
-      saveLayoutById('test-id', layout1);
-      saveLayoutById('test-id', layout2);
+      saveLayoutSync('test-id', layout1);
+      saveLayoutSync('test-id', layout2);
 
       const stored = JSON.parse(localStorage.getItem('gridfinity-layout-test-id')!);
       expect(stored.name).toBe('Second');
@@ -95,25 +95,25 @@ describe('storage-library', () => {
 
       const layout = createTestLayout();
 
-      expect(() => saveLayoutById('test-id', layout)).toThrow('Storage full');
+      expect(() => saveLayoutSync('test-id', layout)).toThrow('Storage full');
 
       mockSetItem.mockRestore();
     });
   });
 
-  describe('loadLayoutById', () => {
+  describe('loadLayoutSync', () => {
     it('loads and returns layout', () => {
       const layout = createTestLayout('My Layout');
-      saveLayoutById('test-id', layout);
+      saveLayoutSync('test-id', layout);
 
-      const loaded = loadLayoutById('test-id');
+      const loaded = loadLayoutSync('test-id');
 
       expect(loaded).not.toBeNull();
       expect(loaded!.name).toBe('My Layout');
     });
 
     it('returns null for non-existent id', () => {
-      const loaded = loadLayoutById('non-existent');
+      const loaded = loadLayoutSync('non-existent');
 
       expect(loaded).toBeNull();
     });
@@ -121,7 +121,7 @@ describe('storage-library', () => {
     it('returns null for corrupted JSON', () => {
       localStorage.setItem('gridfinity-layout-corrupt', 'not valid json {{{');
 
-      const loaded = loadLayoutById('corrupt');
+      const loaded = loadLayoutSync('corrupt');
 
       expect(loaded).toBeNull();
     });
@@ -134,7 +134,7 @@ describe('storage-library', () => {
         // Missing drawer, layers, categories, bins
       }));
 
-      const loaded = loadLayoutById('invalid');
+      const loaded = loadLayoutSync('invalid');
 
       expect(loaded).toBeNull();
     });
@@ -152,7 +152,7 @@ describe('storage-library', () => {
       };
       localStorage.setItem('gridfinity-layout-old', JSON.stringify(oldLayout));
 
-      const loaded = loadLayoutById('old');
+      const loaded = loadLayoutSync('old');
 
       expect(loaded).not.toBeNull();
       expect(loaded!.gridUnitMm).toBe(42); // Default value
@@ -160,18 +160,18 @@ describe('storage-library', () => {
     });
   });
 
-  describe('deleteLayoutById', () => {
+  describe('deleteLayoutSync', () => {
     it('removes layout from localStorage', () => {
       const layout = createTestLayout();
-      saveLayoutById('test-id', layout);
+      saveLayoutSync('test-id', layout);
 
-      deleteLayoutById('test-id');
+      deleteLayoutSync('test-id');
 
       expect(localStorage.getItem('gridfinity-layout-test-id')).toBeNull();
     });
 
     it('does not throw for non-existent id', () => {
-      expect(() => deleteLayoutById('non-existent')).not.toThrow();
+      expect(() => deleteLayoutSync('non-existent')).not.toThrow();
     });
   });
 
@@ -204,7 +204,7 @@ describe('storage-library', () => {
       const library = createTestLibrary(3);
       // Also save the layouts themselves so orphan cleanup doesn't remove them
       library.entries.forEach(entry => {
-        saveLayoutById(entry.id, createTestLayout(entry.name));
+        saveLayoutSync(entry.id, createTestLayout(entry.name));
       });
       saveLibrary(library);
 
@@ -242,7 +242,7 @@ describe('storage-library', () => {
     it('removes orphaned entries (entry in library but layout missing)', () => {
       const library = createTestLibrary(3);
       // Only save layout for first entry
-      saveLayoutById('layout-0', createTestLayout('Layout 0'));
+      saveLayoutSync('layout-0', createTestLayout('Layout 0'));
       saveLibrary(library);
 
       const loaded = loadLibrary();
@@ -256,7 +256,7 @@ describe('storage-library', () => {
       const library = createTestLibrary(3);
       library.activeLayoutId = 'layout-2'; // This one will be orphaned
       // Only save layout for first entry
-      saveLayoutById('layout-0', createTestLayout('Layout 0'));
+      saveLayoutSync('layout-0', createTestLayout('Layout 0'));
       saveLibrary(library);
 
       const loaded = loadLibrary();
@@ -356,7 +356,7 @@ describe('storage-library', () => {
       const library = migrateFromLegacyStorage();
 
       // Should be able to load it with new system
-      const loaded = loadLayoutById(library!.activeLayoutId);
+      const loaded = loadLayoutSync(library!.activeLayoutId);
       expect(loaded).not.toBeNull();
       expect(loaded!.name).toBe('Legacy');
     });
@@ -374,7 +374,7 @@ describe('storage-library', () => {
     it('returns existing library if present', () => {
       const library = createTestLibrary(2);
       library.entries.forEach(entry => {
-        saveLayoutById(entry.id, createTestLayout(entry.name));
+        saveLayoutSync(entry.id, createTestLayout(entry.name));
       });
       saveLibrary(library);
 
@@ -405,7 +405,7 @@ describe('storage-library', () => {
     it('recovers if active layout is missing', () => {
       const library = createTestLibrary(2);
       // Only save the second layout, not the first (which is active)
-      saveLayoutById('layout-1', createTestLayout('Layout 1'));
+      saveLayoutSync('layout-1', createTestLayout('Layout 1'));
       saveLibrary(library);
 
       const result = initializeLayoutLibrary();
@@ -450,11 +450,11 @@ describe('storage-library', () => {
 
       // Rapid saves
       layouts.forEach((layout, i) => {
-        saveLayoutById(`rapid-${i}`, layout);
+        saveLayoutSync(`rapid-${i}`, layout);
       });
 
       // Rapid loads
-      const loaded = layouts.map((_, i) => loadLayoutById(`rapid-${i}`));
+      const loaded = layouts.map((_, i) => loadLayoutSync(`rapid-${i}`));
 
       // All should be loaded correctly
       loaded.forEach((layout, i) => {
@@ -468,12 +468,12 @@ describe('storage-library', () => {
       const layout2 = createTestLayout('Layout 2');
 
       // Interleaved operations
-      saveLayoutById('id-1', layout1);
-      const loaded1 = loadLayoutById('id-1');
-      saveLayoutById('id-2', layout2);
-      deleteLayoutById('id-1');
-      const loaded1After = loadLayoutById('id-1');
-      const loaded2 = loadLayoutById('id-2');
+      saveLayoutSync('id-1', layout1);
+      const loaded1 = loadLayoutSync('id-1');
+      saveLayoutSync('id-2', layout2);
+      deleteLayoutSync('id-1');
+      const loaded1After = loadLayoutSync('id-1');
+      const loaded2 = loadLayoutSync('id-2');
 
       expect(loaded1).not.toBeNull();
       expect(loaded1After).toBeNull();
@@ -486,8 +486,8 @@ describe('storage-library', () => {
       const layout = createTestLayout('Special');
       const specialId = 'id-with-special_chars.and-dots';
 
-      saveLayoutById(specialId, layout);
-      const loaded = loadLayoutById(specialId);
+      saveLayoutSync(specialId, layout);
+      const loaded = loadLayoutSync(specialId);
 
       expect(loaded).not.toBeNull();
       expect(loaded!.name).toBe('Special');
@@ -497,8 +497,8 @@ describe('storage-library', () => {
       const layout = createTestLayout('Long ID');
       const longId = 'a'.repeat(200);
 
-      saveLayoutById(longId, layout);
-      const loaded = loadLayoutById(longId);
+      saveLayoutSync(longId, layout);
+      const loaded = loadLayoutSync(longId);
 
       expect(loaded).not.toBeNull();
       expect(loaded!.name).toBe('Long ID');
@@ -507,8 +507,8 @@ describe('storage-library', () => {
     it('handles empty string layout ID', () => {
       const layout = createTestLayout('Empty ID');
 
-      saveLayoutById('', layout);
-      const loaded = loadLayoutById('');
+      saveLayoutSync('', layout);
+      const loaded = loadLayoutSync('');
 
       expect(loaded).not.toBeNull();
       expect(loaded!.name).toBe('Empty ID');
@@ -539,8 +539,8 @@ describe('storage-library', () => {
         });
       }
 
-      saveLayoutById('many-bins', layout);
-      const loaded = loadLayoutById('many-bins');
+      saveLayoutSync('many-bins', layout);
+      const loaded = loadLayoutSync('many-bins');
 
       expect(loaded).not.toBeNull();
       expect(loaded!.bins).toHaveLength(100);
@@ -550,7 +550,7 @@ describe('storage-library', () => {
       const library = createTestLibrary(2);
       library.settings = { authorName: 'Test Author' };
       library.entries.forEach(entry => {
-        saveLayoutById(entry.id, createTestLayout(entry.name));
+        saveLayoutSync(entry.id, createTestLayout(entry.name));
       });
       saveLibrary(library);
 
@@ -562,7 +562,7 @@ describe('storage-library', () => {
 
     it('handles library with single entry correctly', () => {
       const library = createTestLibrary(1);
-      saveLayoutById('layout-0', createTestLayout('Only Layout'));
+      saveLayoutSync('layout-0', createTestLayout('Only Layout'));
       saveLibrary(library);
 
       const loaded = loadLibrary();
@@ -575,8 +575,8 @@ describe('storage-library', () => {
     it('handles layout with unicode characters in name', () => {
       const layout = createTestLayout('レイアウト 🎨 émoji');
 
-      saveLayoutById('unicode', layout);
-      const loaded = loadLayoutById('unicode');
+      saveLayoutSync('unicode', layout);
+      const loaded = loadLayoutSync('unicode');
 
       expect(loaded).not.toBeNull();
       expect(loaded!.name).toBe('レイアウト 🎨 émoji');
@@ -601,8 +601,8 @@ describe('storage-library', () => {
         clearanceHeight: 5,
       }];
 
-      saveLayoutById('clearance', layout);
-      const loaded = loadLayoutById('clearance');
+      saveLayoutSync('clearance', layout);
+      const loaded = loadLayoutSync('clearance');
 
       expect(loaded).not.toBeNull();
       expect(loaded!.bins[0].clearanceHeight).toBe(5);

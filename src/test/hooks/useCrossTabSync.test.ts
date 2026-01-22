@@ -11,7 +11,7 @@ import * as storage from '@/core/storage';
 import * as validation from '@/shared/utils/validation';
 
 vi.mock('../../core/storage', () => ({
-  loadLayoutByIdAsync: vi.fn(),
+  loadLayoutAsync: vi.fn(),
   loadLibrary: vi.fn(),
 }));
 
@@ -72,7 +72,7 @@ describe('useCrossTabSync', () => {
       gridUnitMm: 42,
       heightUnitMm: 7,
     };
-    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
+    vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
     const importLayoutSpy = vi.spyOn(useLayoutStore.getState(), 'importLayout');
@@ -88,9 +88,9 @@ describe('useCrossTabSync', () => {
       }));
     });
 
-    // loadLayoutByIdAsync is called with .then(), so wait for async to complete
+    // loadLayoutAsync is called with .then(), so wait for async to complete
     await vi.waitFor(() => {
-      expect(storage.loadLayoutByIdAsync).toHaveBeenCalledWith('test-layout-id');
+      expect(storage.loadLayoutAsync).toHaveBeenCalledWith('test-layout-id');
       expect(validation.validateLayoutIntegrity).toHaveBeenCalledWith(mockLayout);
       expect(importLayoutSpy).toHaveBeenCalledWith(mockLayout, 'test-layout-id', 'remote');
       expect(clearHistorySpy).toHaveBeenCalled();
@@ -99,7 +99,7 @@ describe('useCrossTabSync', () => {
 
   it('does not sync when non-active layout changes', () => {
     const mockLayout = { name: 'Other Layout' };
-    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
+    vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
 
     const importLayoutSpy = vi.spyOn(useLayoutStore.getState(), 'importLayout');
 
@@ -113,13 +113,13 @@ describe('useCrossTabSync', () => {
       }));
     });
 
-    expect(storage.loadLayoutByIdAsync).not.toHaveBeenCalled();
+    expect(storage.loadLayoutAsync).not.toHaveBeenCalled();
     expect(importLayoutSpy).not.toHaveBeenCalled();
   });
 
   it('does not sync invalid layout data', () => {
     const mockLayout = { name: 'Invalid' };
-    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
+    vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: false, error: 'Invalid' });
 
     const importLayoutSpy = vi.spyOn(useLayoutStore.getState(), 'importLayout');
@@ -149,7 +149,7 @@ describe('useCrossTabSync', () => {
     });
 
     expect(storage.loadLibrary).not.toHaveBeenCalled();
-    expect(storage.loadLayoutByIdAsync).not.toHaveBeenCalled();
+    expect(storage.loadLayoutAsync).not.toHaveBeenCalled();
   });
 
   it('removes event listener on unmount', () => {
@@ -172,7 +172,7 @@ describe('useCrossTabSync', () => {
       gridUnitMm: 42,
       heightUnitMm: 7,
     };
-    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
+    vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
     useUIStore.setState({ selectedBinIds: ['bin-1', 'bin-2'] });
@@ -204,7 +204,7 @@ describe('useCrossTabSync', () => {
       gridUnitMm: 42,
       heightUnitMm: 7,
     };
-    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
+    vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
     useUIStore.setState({ activeLayerId: 'old-layer' });
@@ -284,7 +284,7 @@ describe('useCrossTabSync', () => {
   describe('Layout load error handling', () => {
     it('handles layout load errors gracefully', async () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      vi.mocked(storage.loadLayoutByIdAsync).mockRejectedValue(new Error('Load failed'));
+      vi.mocked(storage.loadLayoutAsync).mockRejectedValue(new Error('Load failed'));
 
       renderHook(() => useCrossTabSync());
 
@@ -318,7 +318,7 @@ describe('useCrossTabSync', () => {
       gridUnitMm: 42,
       heightUnitMm: 7,
     };
-    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
+    vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
     useUIStore.setState({ activeCategoryId: 'old-cat' });

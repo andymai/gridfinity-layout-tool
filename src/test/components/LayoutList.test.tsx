@@ -7,7 +7,7 @@ import type { LayoutEntry } from '@/core/types';
 
 // Mock storage
 vi.mock('../../core/storage', () => ({
-  loadLayoutByIdAsync: vi.fn(() => Promise.resolve({
+  loadLayoutAsync: vi.fn(() => Promise.resolve({
     id: 'test-layout',
     name: 'Test Layout',
     drawer: { width: 10, depth: 8, height: 12 },

@@ -6,7 +6,7 @@ import { useUIStore } from '@/core/store/ui';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import {
-  saveLayoutById,
+  saveLayoutSync,
   saveLibrary,
   initializeLayoutLibrary,
 } from '@/core/storage';
@@ -74,7 +74,7 @@ export function SharedLayoutBanner() {
     };
 
     // Save the layout to storage
-    saveLayoutById(layoutId, savedLayout);
+    saveLayoutSync(layoutId, savedLayout);
 
     // Create entry in library store
     createEntry(

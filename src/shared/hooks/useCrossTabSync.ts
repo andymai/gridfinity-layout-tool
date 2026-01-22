@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useLabsStore, LABS_STORAGE_KEY } from '@/core/store';
-import { loadLayoutByIdAsync, loadLibrary } from '@/core/storage';
+import { loadLayoutAsync, loadLibrary } from '@/core/storage';
 import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import { createDefaultLabsPreferences } from '@/core/labs';
 
@@ -46,7 +46,7 @@ export function useCrossTabSync() {
         // Only reload if it's the currently active layout
         if (layoutId === activeLayoutId) {
           // Load asynchronously from IndexedDB (with localStorage fallback)
-          loadLayoutByIdAsync(layoutId)
+          loadLayoutAsync(layoutId)
             .then((newLayout) => {
               if (newLayout) {
                 // Validate before applying

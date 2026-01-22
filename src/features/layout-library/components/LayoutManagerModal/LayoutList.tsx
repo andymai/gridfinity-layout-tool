@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import type { LayoutEntry, Layout } from '@/core/types';
 import { LayoutListItem } from './LayoutListItem';
 import { useLayoutStore } from '@/core/store/layout';
-import { loadLayoutByIdAsync, downloadLayoutAsFile } from '@/core/storage';
+import { loadLayoutAsync, downloadLayoutAsFile } from '@/core/storage';
 import { useUIStore } from '@/core/store/ui';
 
 /** Threshold for showing search bar */
@@ -89,7 +89,7 @@ export function LayoutList({
   const getLayoutData = useCallback(
     async (id: string): Promise<Layout | null> => {
       // For active layout, use current state; otherwise load from IndexedDB
-      return id === activeLayoutId ? currentLayout : loadLayoutByIdAsync(id);
+      return id === activeLayoutId ? currentLayout : loadLayoutAsync(id);
     },
     [activeLayoutId, currentLayout]
   );

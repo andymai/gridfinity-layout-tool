@@ -9,7 +9,7 @@ import type { Layout } from '@/core/types';
 
 // Mock storage functions
 vi.mock('../../core/storage', () => ({
-  saveLayoutById: vi.fn(),
+  saveLayoutSync: vi.fn(),
   saveLibrary: vi.fn(),
   initializeLayoutLibrary: vi.fn(() => ({
     library: {

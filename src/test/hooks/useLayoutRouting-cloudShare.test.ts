@@ -29,7 +29,7 @@ vi.mock('../../utils/url', async () => {
 
 // Mock storage
 vi.mock('../../core/storage', () => ({
-  loadLayoutByIdAsync: vi.fn(),
+  loadLayoutAsync: vi.fn(),
 }));
 
 describe('useLayoutRouting with cloud share URLs', () => {

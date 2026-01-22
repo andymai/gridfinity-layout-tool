@@ -51,29 +51,3 @@ export function cancelIdleCallback(handle: number): void {
   }
 }
 
-/**
- * Run a function during idle time, with a maximum timeout.
- * Returns a promise that resolves when the function completes.
- *
- * @param fn - Function to run (can be async)
- * @param timeout - Maximum time to wait before running anyway (default: 1000ms)
- * @returns Promise that resolves when fn completes
- */
-export function runWhenIdle<T>(
-  fn: () => T | Promise<T>,
-  timeout: number = 1000
-): Promise<T> {
-  return new Promise((resolve, reject) => {
-    scheduleIdleCallback(
-      async () => {
-        try {
-          const result = await fn();
-          resolve(result);
-        } catch (error) {
-          reject(error);
-        }
-      },
-      { timeout }
-    );
-  });
-}
