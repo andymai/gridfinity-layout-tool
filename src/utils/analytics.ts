@@ -2,6 +2,12 @@
  * Analytics utilities for tracking layout metrics via Posthog.
  * Derives all metrics from the existing Layout type - no parallel tracking needed.
  * Posthog is lazy-loaded to avoid impacting initial bundle size.
+ *
+ * Features:
+ * - Event tracking with layout context
+ * - Error tracking with automatic exception capture
+ * - Person properties for user identification
+ * - Session replay integration (configured via PostHog dashboard)
  */
 
 import type { PostHog } from 'posthog-js';
@@ -13,8 +19,54 @@ import {
   hasFractionalDimensions,
   BREAKPOINTS,
 } from '@/core/constants';
-import { useLabsStore, useInteractionStore } from '@/core/store';
+import { useLabsStore, useInteractionStore, useLayoutStore } from '@/core/store';
 import { getFeature } from '@/core/labs';
+import { generateUUID } from '@/shared/utils';
+
+// ============================================
+// STABLE USER IDENTITY
+// ============================================
+
+const USER_ID_KEY = 'gridfinity_user_id';
+const USER_FIRST_SEEN_KEY = 'gridfinity_first_seen';
+
+/**
+ * Get or create a stable user ID for anonymous users.
+ * This persists across sessions within the same browser.
+ * Falls back to a session-only UUID if localStorage is unavailable.
+ */
+function getStableUserId(): string {
+  try {
+    let id = localStorage.getItem(USER_ID_KEY);
+    if (!id) {
+      id = generateUUID();
+      localStorage.setItem(USER_ID_KEY, id);
+      localStorage.setItem(USER_FIRST_SEEN_KEY, new Date().toISOString());
+    }
+    return id;
+  } catch {
+    // localStorage unavailable (private browsing, storage full, etc.)
+    // Fall back to a session-only ID
+    return generateUUID();
+  }
+}
+
+/**
+ * Get the date this user was first seen.
+ * Persists a generated timestamp if missing, to keep it stable across sessions.
+ */
+function getFirstSeenDate(): string {
+  try {
+    let firstSeen = localStorage.getItem(USER_FIRST_SEEN_KEY);
+    if (!firstSeen) {
+      firstSeen = new Date().toISOString();
+      localStorage.setItem(USER_FIRST_SEEN_KEY, firstSeen);
+    }
+    return firstSeen;
+  } catch {
+    return new Date().toISOString();
+  }
+}
 
 // ============================================
 // INITIALIZATION (LAZY LOADED)
@@ -46,14 +98,21 @@ export function initAnalytics(): void {
         capture_pageleave: true,
         persistence: 'localStorage',
         autocapture: false, // We'll track specific events manually
+
+        // Error tracking - auto-capture exceptions
+        capture_exceptions: true,
+
+        // Performance monitoring - web vitals
+        capture_performance: true,
       });
       posthogInstance = posthog;
 
-      // Track app load for DAU metrics
-      posthog.capture('app_loaded', {
-        device_type: getDeviceType(),
-        is_returning: Boolean(localStorage.getItem('gridfinity-library-v1')),
-      });
+      // Identify user with stable ID for person properties & cohorts
+      const userId = getStableUserId();
+      posthog.identify(userId);
+
+      // Set person properties (these persist across sessions)
+      updatePersonProperties();
 
       // Flush queued events
       for (const event of eventQueue) {
@@ -427,4 +486,149 @@ export function getActivityContext(): ActivityContext {
   }
 
   return 'viewing';
+}
+
+// ============================================
+// PERSON PROPERTIES (for cohorts & targeting)
+// ============================================
+
+/**
+ * Compute the engagement tier based on usage patterns.
+ */
+function computeEngagementTier(layoutCount: number, totalBins: number): 'new' | 'active' | 'power' {
+  if (layoutCount >= 5 || totalBins >= 100) return 'power';
+  if (layoutCount >= 2 || totalBins >= 20) return 'active';
+  return 'new';
+}
+
+/**
+ * Update person properties in PostHog.
+ * Call this after significant actions to keep user profile up-to-date.
+ */
+export function updatePersonProperties(): void {
+  if (!posthogInstance) return;
+
+  try {
+    // Get library data for usage metrics
+    const libraryData = localStorage.getItem('gridfinity-library-v1');
+    const library = libraryData ? JSON.parse(libraryData) : null;
+    const layoutCount = library?.entries?.length ?? 0;
+
+    // Get current layout for feature detection
+    const layout = useLayoutStore.getState().layout;
+    const metrics = computeLayoutMetrics(layout);
+
+    // Compute cumulative bins (rough estimate from current + saved layouts)
+    const currentBins = layout.bins.length;
+    const savedBinsEstimate = layoutCount * 10; // Rough average
+    const totalBinsEstimate = currentBins + savedBinsEstimate;
+
+    // Properties that can change ($set)
+    posthogInstance.setPersonProperties({
+      // Usage metrics
+      layout_count: layoutCount,
+      total_bins_estimate: totalBinsEstimate,
+      last_active: new Date().toISOString(),
+
+      // Feature adoption (has ever used)
+      uses_multi_layer: metrics.feature_multi_layer || localStorage.getItem('has_used_multi_layer') === 'true',
+      uses_half_bins: metrics.feature_half_bins || localStorage.getItem('has_used_half_bins') === 'true',
+      uses_custom_categories: metrics.feature_custom_categories || localStorage.getItem('has_used_custom_categories') === 'true',
+      uses_labels: metrics.feature_labels || localStorage.getItem('has_used_labels') === 'true',
+      uses_3d_preview: localStorage.getItem('has_used_3d_preview') === 'true',
+      uses_cloud_share: localStorage.getItem('has_used_cloud_share') === 'true',
+      uses_fill_operations: localStorage.getItem('has_used_fill') === 'true',
+
+      // Engagement tier
+      engagement_tier: computeEngagementTier(layoutCount, totalBinsEstimate),
+
+      // Device preference
+      primary_device: getDeviceType(),
+    });
+
+    // Properties set only once ($set_once) - immutable user traits
+    posthogInstance.setPersonPropertiesForFlags({
+      first_seen: getFirstSeenDate(),
+      initial_referrer: document.referrer || 'direct',
+      initial_device: getDeviceType(),
+    });
+
+    // Track feature adoption in localStorage for persistence
+    if (metrics.feature_multi_layer) localStorage.setItem('has_used_multi_layer', 'true');
+    if (metrics.feature_half_bins) localStorage.setItem('has_used_half_bins', 'true');
+    if (metrics.feature_custom_categories) localStorage.setItem('has_used_custom_categories', 'true');
+    if (metrics.feature_labels) localStorage.setItem('has_used_labels', 'true');
+  } catch {
+    // Never break the app for analytics
+  }
+}
+
+/**
+ * Mark a feature as used (for adoption tracking).
+ */
+export function markFeatureUsed(feature: 'multi_layer' | 'half_bins' | 'custom_categories' | 'labels' | '3d_preview' | 'cloud_share' | 'fill'): void {
+  try {
+    localStorage.setItem(`has_used_${feature}`, 'true');
+  } catch {
+    // Ignore storage errors
+  }
+  updatePersonProperties();
+}
+
+// ============================================
+// ERROR CONTEXT (enriches error tracking)
+// ============================================
+
+/**
+ * Get current layout context for error enrichment.
+ * This helps debug errors by showing what the user was doing.
+ */
+export function getLayoutContext(): Record<string, unknown> {
+  try {
+    const layout = useLayoutStore.getState().layout;
+    const { interaction } = useInteractionStore.getState();
+
+    return {
+      drawer_size: `${layout.drawer.width}x${layout.drawer.depth}x${layout.drawer.height}`,
+      bin_count: layout.bins.length,
+      layer_count: layout.layers.length,
+      category_count: layout.categories.length,
+      active_interaction: interaction?.type ?? 'none',
+      device_type: getDeviceType(),
+    };
+  } catch {
+    return { context_error: 'Failed to get layout context' };
+  }
+}
+
+/**
+ * Capture an exception with layout context.
+ * Use this for caught errors that you want to track.
+ */
+export function captureException(error: Error, additionalContext?: Record<string, unknown>): void {
+  if (!posthogInstance) return;
+
+  try {
+    posthogInstance.capture('$exception', {
+      $exception_message: error.message,
+      $exception_type: error.name,
+      $exception_stack_trace_raw: error.stack,
+      ...getLayoutContext(),
+      ...additionalContext,
+    });
+  } catch {
+    // Never break the app for analytics
+  }
+}
+
+// ============================================
+// POSTHOG INSTANCE ACCESS (for advanced usage)
+// ============================================
+
+/**
+ * Get the PostHog instance for advanced operations.
+ * Returns null if PostHog isn't initialized.
+ */
+export function getPostHogInstance(): PostHog | null {
+  return posthogInstance;
 }
