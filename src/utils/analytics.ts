@@ -475,6 +475,34 @@ export function trackBinCreated(
     count,
     ...(size ? { size: `${size.width}x${size.depth}x${size.height}` } : {}),
   });
+  checkEngagementMilestones();
+}
+
+const MILESTONE_THRESHOLDS: Array<{ key: 'first_bin' | 'engaged' | 'substantial'; min: number }> = [
+  { key: 'first_bin', min: 1 },
+  { key: 'engaged', min: 5 },
+  { key: 'substantial', min: 15 },
+];
+
+/**
+ * Check if the current bin count crosses any engagement milestone thresholds.
+ * Uses localStorage to ensure each milestone fires only once per user.
+ */
+function checkEngagementMilestones(): void {
+  try {
+    const bins = useLayoutStore.getState().layout.bins;
+    const binsOnGrid = bins.filter((b) => b.layerId !== STAGING_ID).length;
+
+    for (const { key, min } of MILESTONE_THRESHOLDS) {
+      const storageKey = `gridfinity_milestone_${key}`;
+      if (binsOnGrid >= min && !localStorage.getItem(storageKey)) {
+        localStorage.setItem(storageKey, new Date().toISOString());
+        trackEngagementMilestone(key);
+      }
+    }
+  } catch {
+    // Silently ignore - analytics should never break the app
+  }
 }
 
 /**
