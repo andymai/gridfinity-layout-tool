@@ -20,7 +20,14 @@ import { useCollabMode } from '@/hooks/useCollabMode';
 export function SharedLayoutBanner() {
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
-  const { sharedLayoutPreview, sharedLayoutOriginalName, clearSharedLayoutPreview, setActiveLayer, setActiveCategory, clearSelection } = useUIStore(
+  const {
+    sharedLayoutPreview,
+    sharedLayoutOriginalName,
+    clearSharedLayoutPreview,
+    setActiveLayer,
+    setActiveCategory,
+    clearSelection,
+  } = useUIStore(
     useShallow((state) => ({
       sharedLayoutPreview: state.sharedLayoutPreview,
       sharedLayoutOriginalName: state.sharedLayoutOriginalName,
@@ -66,14 +73,10 @@ export function SharedLayoutBanner() {
     };
 
     // Use atomic createLayoutEntry API for storage + library entry in one operation
-    const result = await createLayoutEntry(
-      savedLayout,
-      useLibraryStore.getState().library,
-      {
-        name: savedLayout.name,
-        forkedFrom: { name: sharedLayoutOriginalName || layout.name },
-      }
-    );
+    const result = await createLayoutEntry(savedLayout, useLibraryStore.getState().library, {
+      name: savedLayout.name,
+      forkedFrom: { name: sharedLayoutOriginalName || layout.name },
+    });
 
     if (isErr(result)) {
       addToast(getUserMessage(result.error), 'error');
@@ -132,8 +135,18 @@ export function SharedLayoutBanner() {
       aria-live="polite"
     >
       <div className="flex items-center gap-3">
-        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        <svg
+          className="w-5 h-5 flex-shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+          />
         </svg>
         <span className="text-sm font-medium">
           Viewing shared layout: <strong>{sharedLayoutOriginalName || layout.name}</strong>

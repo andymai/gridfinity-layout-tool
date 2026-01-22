@@ -22,16 +22,26 @@ const createLocalStorageMock = () => {
   let store: Record<string, string> = {};
   return {
     getItem: vi.fn((key: string) => store[key] ?? null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
     removeItem: vi.fn((key: string) => {
       const { [key]: _, ...rest } = store;
       store = rest;
     }),
-    clear: vi.fn(() => { store = {}; }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
     key: vi.fn((i: number) => Object.keys(store)[i] ?? null),
-    get length() { return Object.keys(store).length; },
-    get _store() { return store; },
-    set _store(value: Record<string, string>) { store = value; },
+    get length() {
+      return Object.keys(store).length;
+    },
+    get _store() {
+      return store;
+    },
+    set _store(value: Record<string, string>) {
+      store = value;
+    },
   };
 };
 
@@ -69,10 +79,7 @@ describe('storage backend', () => {
       const layout = createTestLayout();
       backend.saveSync('test-key', layout);
 
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'test-key',
-        JSON.stringify(layout)
-      );
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('test-key', JSON.stringify(layout));
     });
 
     it('throws on storage full error', () => {
@@ -123,10 +130,7 @@ describe('storage backend', () => {
       await backend.saveAsync('test-key', layout);
 
       expect(indexedDB.saveLayout).toHaveBeenCalledWith('test-key', layout);
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'test-key',
-        JSON.stringify(layout)
-      );
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('test-key', JSON.stringify(layout));
     });
 
     it('continues if localStorage backup fails', async () => {
@@ -238,10 +242,7 @@ describe('storage backend', () => {
       await backend.saveAsync('test-key', layout);
 
       expect(indexedDB.saveLayout).not.toHaveBeenCalled();
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'test-key',
-        JSON.stringify(layout)
-      );
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('test-key', JSON.stringify(layout));
     });
 
     it('loadAsync uses localStorage when IndexedDB unavailable', async () => {
@@ -277,10 +278,7 @@ describe('localStorage backend', () => {
     it('saves JSON data', () => {
       localStorage.saveToLocalStorage('key', { foo: 'bar' });
 
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'key',
-        JSON.stringify({ foo: 'bar' })
-      );
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('key', JSON.stringify({ foo: 'bar' }));
     });
 
     it('throws on storage full', () => {
@@ -288,9 +286,7 @@ describe('localStorage backend', () => {
         throw new Error('QuotaExceededError');
       });
 
-      expect(() => localStorage.saveToLocalStorage('key', {})).toThrow(
-        'Storage full'
-      );
+      expect(() => localStorage.saveToLocalStorage('key', {})).toThrow('Storage full');
     });
   });
 
@@ -376,7 +372,9 @@ describe('localStorage backend', () => {
     it('handles errors gracefully', () => {
       // Override length to throw
       Object.defineProperty(localStorageMock, 'length', {
-        get: () => { throw new Error('Access denied'); },
+        get: () => {
+          throw new Error('Access denied');
+        },
       });
 
       const usage = localStorage.getStorageUsagePercent();

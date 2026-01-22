@@ -61,13 +61,21 @@ describe('useLayoutRouting with cloud share URLs', () => {
         version: '1.0',
         activeLayoutId: mockLocalLayoutId,
         settings: {},
-        entries: [{
-          id: mockLocalLayoutId,
-          name: mockLocalLayoutName,
-          createdAt: Date.now(),
-          modifiedAt: Date.now(),
-          preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
-        }],
+        entries: [
+          {
+            id: mockLocalLayoutId,
+            name: mockLocalLayoutName,
+            createdAt: Date.now(),
+            modifiedAt: Date.now(),
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
+          },
+        ],
       },
     });
 
@@ -105,13 +113,8 @@ describe('useLayoutRouting with cloud share URLs', () => {
       renderHook(() => useLayoutRouting());
 
       // Should set URL to local layout
-      expect(url.setLayoutURL).toHaveBeenCalledWith(
-        mockLocalLayoutId,
-        mockLocalLayoutName,
-        false
-      );
+      expect(url.setLayoutURL).toHaveBeenCalledWith(mockLocalLayoutId, mockLocalLayoutName, false);
     });
-
   });
 
   describe('URL update on active layout change', () => {

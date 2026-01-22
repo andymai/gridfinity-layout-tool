@@ -25,7 +25,7 @@ function createMatchMediaMock(matches: Record<string, boolean>) {
     dispatchEvent: vi.fn(),
     // Helper to trigger change events
     _triggerChange: () => {
-      listeners.get(query)?.forEach(cb => cb());
+      listeners.get(query)?.forEach((cb) => cb());
     },
   });
 }

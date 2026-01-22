@@ -241,7 +241,9 @@ export function Grid() {
                 fallback={
                   // Reserve minimum height to prevent CLS while loading
                   <div className="w-full h-full min-h-[200px] flex items-center justify-center bg-surface-secondary">
-                    <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
+                    <div className="animate-pulse text-content-tertiary text-sm">
+                      Loading 3D preview...
+                    </div>
                   </div>
                 }
               >
@@ -277,7 +279,11 @@ export function Grid() {
               // Bins call stopPropagation on pointerdown, so this only fires for empty space
               const target = e.target as HTMLElement;
               // Don't deselect if clicking on buttons, inputs, or bin elements
-              if (!target.closest('button') && !target.closest('input') && !target.closest('[data-bin-id]')) {
+              if (
+                !target.closest('button') &&
+                !target.closest('input') &&
+                !target.closest('[data-bin-id]')
+              ) {
                 clearSelection();
                 // Exit paint mode when clicking off the grid
                 if (paintSize) {
@@ -341,41 +347,46 @@ export function Grid() {
                   {isCollaborative && <CollabCursors />}
 
                   {/* Empty state overlay - hide while dragging or when grid is too small */}
-                  {isEmpty && !interaction && drawer.width * cellSize > 200 && drawer.depth * cellSize > 150 && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-[5]">
-                      <div
-                        className="flex flex-col items-center p-6 rounded-xl max-w-xs text-center bg-surface"
-                        style={{ opacity: 0.95, backdropFilter: 'blur(4px)' }}
-                      >
-                        <div className="w-12 h-12 mb-4 flex items-center justify-center rounded-lg bg-surface-hover">
-                          <svg
-                            className="w-6 h-6 text-content-tertiary"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                            />
-                          </svg>
+                  {isEmpty &&
+                    !interaction &&
+                    drawer.width * cellSize > 200 &&
+                    drawer.depth * cellSize > 150 && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-[5]">
+                        <div
+                          className="flex flex-col items-center p-6 rounded-xl max-w-xs text-center bg-surface"
+                          style={{ opacity: 0.95, backdropFilter: 'blur(4px)' }}
+                        >
+                          <div className="w-12 h-12 mb-4 flex items-center justify-center rounded-lg bg-surface-hover">
+                            <svg
+                              className="w-6 h-6 text-content-tertiary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                              />
+                            </svg>
+                          </div>
+                          <p className="font-medium mb-1 text-sm text-content-secondary">
+                            {isMobile
+                              ? 'Tap and drag to draw a bin'
+                              : 'Click and drag to draw a bin'}
+                          </p>
+                          <p className="text-xs text-content-disabled">
+                            {isFirstLayer
+                              ? isMobile
+                                ? 'Or use Layers tab to select a size'
+                                : 'Or select a size from the Bin Palette on the left'
+                              : 'Striped areas are blocked by bins below'}
+                          </p>
                         </div>
-                        <p className="font-medium mb-1 text-sm text-content-secondary">
-                          {isMobile ? 'Tap and drag to draw a bin' : 'Click and drag to draw a bin'}
-                        </p>
-                        <p className="text-xs text-content-disabled">
-                          {isFirstLayer
-                            ? isMobile
-                              ? 'Or use Layers tab to select a size'
-                              : 'Or select a size from the Bin Palette on the left'
-                            : 'Striped areas are blocked by bins below'}
-                        </p>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
 
                 {/* Grid resize handles - hidden on mobile (use Settings to change dimensions) */}
@@ -434,7 +445,9 @@ export function Grid() {
                 fallback={
                   // Reserve full space to prevent CLS while loading
                   <div className="w-full h-full min-h-[300px] flex items-center justify-center bg-surface-secondary">
-                    <div className="animate-pulse text-content-tertiary text-sm">Loading 3D preview...</div>
+                    <div className="animate-pulse text-content-tertiary text-sm">
+                      Loading 3D preview...
+                    </div>
                   </div>
                 }
               >

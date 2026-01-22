@@ -17,13 +17,7 @@ describe('StatCard', () => {
   const defaultIcon = <span data-testid="test-icon">Icon</span>;
 
   it('renders icon, label, and value', () => {
-    render(
-      <StatCard
-        icon={defaultIcon}
-        label="Total Bins"
-        value={42}
-      />
-    );
+    render(<StatCard icon={defaultIcon} label="Total Bins" value={42} />);
 
     expect(screen.getByTestId('test-icon')).toBeInTheDocument();
     expect(screen.getByText('Total Bins')).toBeInTheDocument();
@@ -31,14 +25,7 @@ describe('StatCard', () => {
   });
 
   it('renders unit when provided', () => {
-    render(
-      <StatCard
-        icon={defaultIcon}
-        label="Filament"
-        value={15.5}
-        unit="m"
-      />
-    );
+    render(<StatCard icon={defaultIcon} label="Filament" value={15.5} unit="m" />);
 
     expect(screen.getByText('m')).toBeInTheDocument();
   });
@@ -58,13 +45,7 @@ describe('StatCard', () => {
   });
 
   it('applies default variant styling', () => {
-    const { container } = render(
-      <StatCard
-        icon={defaultIcon}
-        label="Test"
-        value="100"
-      />
-    );
+    const { container } = render(<StatCard icon={defaultIcon} label="Test" value="100" />);
 
     const iconContainer = container.querySelector('.text-content-secondary');
     expect(iconContainer).toBeInTheDocument();
@@ -72,12 +53,7 @@ describe('StatCard', () => {
 
   it('applies success variant styling', () => {
     const { container } = render(
-      <StatCard
-        icon={defaultIcon}
-        label="Test"
-        value="100"
-        variant="success"
-      />
+      <StatCard icon={defaultIcon} label="Test" value="100" variant="success" />
     );
 
     const iconContainer = container.querySelector('[class*="text-[var(--color-success)]"]');
@@ -86,12 +62,7 @@ describe('StatCard', () => {
 
   it('applies warning variant styling', () => {
     const { container } = render(
-      <StatCard
-        icon={defaultIcon}
-        label="Test"
-        value="100"
-        variant="warning"
-      />
+      <StatCard icon={defaultIcon} label="Test" value="100" variant="warning" />
     );
 
     const iconContainer = container.querySelector('[class*="text-[var(--color-warning)]"]');
@@ -100,12 +71,7 @@ describe('StatCard', () => {
 
   it('applies info variant styling', () => {
     const { container } = render(
-      <StatCard
-        icon={defaultIcon}
-        label="Test"
-        value="100"
-        variant="info"
-      />
+      <StatCard icon={defaultIcon} label="Test" value="100" variant="info" />
     );
 
     const iconContainer = container.querySelector('[class*="text-[var(--color-info)]"]');
@@ -113,13 +79,7 @@ describe('StatCard', () => {
   });
 
   it('renders string values correctly', () => {
-    render(
-      <StatCard
-        icon={defaultIcon}
-        label="Time"
-        value="2h 30m"
-      />
-    );
+    render(<StatCard icon={defaultIcon} label="Time" value="2h 30m" />);
 
     expect(screen.getByText('2h 30m')).toBeInTheDocument();
   });
@@ -257,15 +217,17 @@ describe('CategoryBreakdownChart', () => {
   });
 
   it('groups excess categories as "Other" when exceeding maxCategories', () => {
-    const manyCategories: CategoryBreakdown[] = Array(10).fill(null).map((_, i) => ({
-      categoryId: `cat${i}`,
-      categoryName: `Category ${i}`,
-      categoryColor: `#${i}${i}${i}${i}${i}${i}`,
-      filament: 2.1,
-      cost: 0.16,
-      binCount: 1,
-      percentage: 10,
-    }));
+    const manyCategories: CategoryBreakdown[] = Array(10)
+      .fill(null)
+      .map((_, i) => ({
+        categoryId: `cat${i}`,
+        categoryName: `Category ${i}`,
+        categoryColor: `#${i}${i}${i}${i}${i}${i}`,
+        filament: 2.1,
+        cost: 0.16,
+        binCount: 1,
+        percentage: 10,
+      }));
 
     render(<CategoryBreakdownChart breakdown={manyCategories} maxCategories={6} />);
 
@@ -336,9 +298,7 @@ describe('CategoryStackedBar', () => {
   });
 
   it('applies custom height', () => {
-    const { container } = render(
-      <CategoryStackedBar breakdown={mockBreakdown} height="h-8" />
-    );
+    const { container } = render(<CategoryStackedBar breakdown={mockBreakdown} height="h-8" />);
 
     const bar = container.querySelector('.h-8');
     expect(bar).toBeInTheDocument();
@@ -408,18 +368,14 @@ describe('CategoryLegend', () => {
   });
 
   it('applies compact mode styling', () => {
-    const { container } = render(
-      <CategoryLegend breakdown={mockBreakdown} compact={true} />
-    );
+    const { container } = render(<CategoryLegend breakdown={mockBreakdown} compact={true} />);
 
     const compactDots = container.querySelectorAll('.w-2\\.5.h-2\\.5');
     expect(compactDots.length).toBe(2);
   });
 
   it('applies normal mode styling', () => {
-    const { container } = render(
-      <CategoryLegend breakdown={mockBreakdown} compact={false} />
-    );
+    const { container } = render(<CategoryLegend breakdown={mockBreakdown} compact={false} />);
 
     const normalDots = container.querySelectorAll('.w-3.h-3');
     expect(normalDots.length).toBe(2);

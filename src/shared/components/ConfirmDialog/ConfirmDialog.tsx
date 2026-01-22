@@ -88,25 +88,15 @@ export function ConfirmDialog({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2
-          id="dialog-title"
-          className="mb-2 text-xl font-semibold text-content"
-        >
+        <h2 id="dialog-title" className="mb-2 text-xl font-semibold text-content">
           {title}
         </h2>
-        <p
-          id="dialog-description"
-          className="mb-6 text-sm text-content-secondary leading-[1.5]"
-        >
+        <p id="dialog-description" className="mb-6 text-sm text-content-secondary leading-[1.5]">
           {message}
         </p>
 
         <div className="flex gap-3 justify-end">
-          <button
-            ref={cancelButtonRef}
-            onClick={onCancel}
-            className="btn btn-secondary"
-          >
+          <button ref={cancelButtonRef} onClick={onCancel} className="btn btn-secondary">
             {cancelText}
           </button>
           <button

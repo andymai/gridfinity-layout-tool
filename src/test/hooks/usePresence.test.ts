@@ -120,11 +120,7 @@ describe('usePresence integration (mock-based)', () => {
 
   describe('ConnectionStatus type', () => {
     it('should accept valid status values', () => {
-      type ConnectionStatus =
-        | 'connecting'
-        | 'connected'
-        | 'reconnecting'
-        | 'disconnected';
+      type ConnectionStatus = 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
 
       const statuses: ConnectionStatus[] = [
         'connecting',

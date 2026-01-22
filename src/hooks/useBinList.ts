@@ -110,16 +110,17 @@ export function useBinList(): UseBinListReturn {
   }, [filteredRows, printList.categories]);
 
   // Selection handlers
-  const toggleRowSelection = useCallback((index: number, shiftKey = false) => {
-    if (shiftKey && lastSelectedIndex !== null) {
-      setSelectedIndices((current) =>
-        calculateSelectionRange(current, index, lastSelectedIndex)
-      );
-    } else {
-      setSelectedIndices((current) => toggleSelection(current, index));
-    }
-    setLastSelectedIndex(index);
-  }, [lastSelectedIndex]);
+  const toggleRowSelection = useCallback(
+    (index: number, shiftKey = false) => {
+      if (shiftKey && lastSelectedIndex !== null) {
+        setSelectedIndices((current) => calculateSelectionRange(current, index, lastSelectedIndex));
+      } else {
+        setSelectedIndices((current) => toggleSelection(current, index));
+      }
+      setLastSelectedIndex(index);
+    },
+    [lastSelectedIndex]
+  );
 
   const selectAllRows = useCallback(() => {
     const allIndices = new Set(filteredRows.map((_, i) => i));
@@ -144,7 +145,7 @@ export function useBinList(): UseBinListReturn {
     // Track deletion BEFORE executing (need bin data)
     const binsToDelete = selectedBinIds
       .map((id) => layout.bins.find((b) => b.id === id))
-      .filter((bin): bin is typeof layout.bins[number] => bin !== undefined);
+      .filter((bin): bin is (typeof layout.bins)[number] => bin !== undefined);
     if (binsToDelete.length > 0) {
       mlTracking.trackDeletion(binsToDelete[0], 'bulk', binsToDelete.length);
 
@@ -165,98 +166,134 @@ export function useBinList(): UseBinListReturn {
     setSelectedBins([]);
     addToast(`Deleted ${count} bin${count !== 1 ? 's' : ''}`, 'success');
     announceToScreenReader(`Deleted ${count} bins`);
-  }, [selectedBinIds, layout, execute, deleteBin, clearSelection, setSelectedBins, addToast, announceToScreenReader]);
+  }, [
+    selectedBinIds,
+    layout,
+    execute,
+    deleteBin,
+    clearSelection,
+    setSelectedBins,
+    addToast,
+    announceToScreenReader,
+  ]);
 
-  const changeBulkCategory = useCallback((categoryId: string) => {
-    if (selectedBinIds.length === 0) return;
+  const changeBulkCategory = useCallback(
+    (categoryId: string) => {
+      if (selectedBinIds.length === 0) return;
 
-    // Filter to only bins that actually change
-    const binsToUpdate = selectedBinIds
-      .map((id) => layout.bins.find((b) => b.id === id))
-      .filter((bin): bin is typeof layout.bins[number] => !!bin && bin.category !== categoryId);
-    if (binsToUpdate.length === 0) return;
+      // Filter to only bins that actually change
+      const binsToUpdate = selectedBinIds
+        .map((id) => layout.bins.find((b) => b.id === id))
+        .filter((bin): bin is (typeof layout.bins)[number] => !!bin && bin.category !== categoryId);
+      if (binsToUpdate.length === 0) return;
 
-    const count = binsToUpdate.length;
-    const category = printList.categories.find((c) => c.id === categoryId);
+      const count = binsToUpdate.length;
+      const category = printList.categories.find((c) => c.id === categoryId);
 
-    execute(() => {
-      for (const bin of binsToUpdate) {
-        updateBin(bin.id, { category: categoryId });
-      }
-    });
-
-    // Track once per batch (not per bin)
-    if (category && binsToUpdate.length > 0) {
-      mlTracking.trackCategory(binsToUpdate[0], category.name, count);
-    }
-
-    clearSelection();
-    addToast(`Changed ${count} bin${count !== 1 ? 's' : ''} to ${category?.name || 'category'}`, 'success');
-    announceToScreenReader(`Changed category for ${count} bins`);
-  }, [selectedBinIds, layout, printList.categories, execute, updateBin, clearSelection, addToast, announceToScreenReader]);
-
-  const updateBulkLabel = useCallback((label: string) => {
-    if (selectedBinIds.length === 0) return;
-
-    const count = selectedBinIds.length;
-    execute(() => {
-      for (const binId of selectedBinIds) {
-        const bin = layout.bins.find((b) => b.id === binId);
-        if (bin) {
-          const oldLabel = bin.label;
-          updateBin(binId, { label });
-          mlTracking.trackLabel(bin, oldLabel, label);
+      execute(() => {
+        for (const bin of binsToUpdate) {
+          updateBin(bin.id, { category: categoryId });
         }
+      });
+
+      // Track once per batch (not per bin)
+      if (category && binsToUpdate.length > 0) {
+        mlTracking.trackCategory(binsToUpdate[0], category.name, count);
       }
-    });
 
-    addToast(`Updated label for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
-  }, [selectedBinIds, layout.bins, execute, updateBin, addToast]);
+      clearSelection();
+      addToast(
+        `Changed ${count} bin${count !== 1 ? 's' : ''} to ${category?.name || 'category'}`,
+        'success'
+      );
+      announceToScreenReader(`Changed category for ${count} bins`);
+    },
+    [
+      selectedBinIds,
+      layout,
+      printList.categories,
+      execute,
+      updateBin,
+      clearSelection,
+      addToast,
+      announceToScreenReader,
+    ]
+  );
 
-  const updateBulkNotes = useCallback((notes: string) => {
-    if (selectedBinIds.length === 0) return;
+  const updateBulkLabel = useCallback(
+    (label: string) => {
+      if (selectedBinIds.length === 0) return;
 
-    const count = selectedBinIds.length;
-    execute(() => {
-      for (const binId of selectedBinIds) {
-        updateBin(binId, { notes });
-      }
-    });
+      const count = selectedBinIds.length;
+      execute(() => {
+        for (const binId of selectedBinIds) {
+          const bin = layout.bins.find((b) => b.id === binId);
+          if (bin) {
+            const oldLabel = bin.label;
+            updateBin(binId, { label });
+            mlTracking.trackLabel(bin, oldLabel, label);
+          }
+        }
+      });
 
-    addToast(`Updated notes for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
-  }, [selectedBinIds, execute, updateBin, addToast]);
+      addToast(`Updated label for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
+    },
+    [selectedBinIds, layout.bins, execute, updateBin, addToast]
+  );
+
+  const updateBulkNotes = useCallback(
+    (notes: string) => {
+      if (selectedBinIds.length === 0) return;
+
+      const count = selectedBinIds.length;
+      execute(() => {
+        for (const binId of selectedBinIds) {
+          updateBin(binId, { notes });
+        }
+      });
+
+      addToast(`Updated notes for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
+    },
+    [selectedBinIds, execute, updateBin, addToast]
+  );
 
   // Inline editing handlers (for specific bin IDs, not selection-based)
-  const updateBinLabel = useCallback((binIds: string[], label: string) => {
-    if (binIds.length === 0) return;
+  const updateBinLabel = useCallback(
+    (binIds: string[], label: string) => {
+      if (binIds.length === 0) return;
 
-    const count = binIds.length;
-    execute(() => {
-      for (const binId of binIds) {
-        const bin = layout.bins.find((b) => b.id === binId);
-        if (bin) {
-          const oldLabel = bin.label;
-          updateBin(binId, { label });
-          mlTracking.trackLabel(bin, oldLabel, label);
+      const count = binIds.length;
+      execute(() => {
+        for (const binId of binIds) {
+          const bin = layout.bins.find((b) => b.id === binId);
+          if (bin) {
+            const oldLabel = bin.label;
+            updateBin(binId, { label });
+            mlTracking.trackLabel(bin, oldLabel, label);
+          }
         }
-      }
-    });
+      });
 
-    addToast(`Updated label for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
-  }, [layout.bins, execute, updateBin, addToast]);
+      addToast(`Updated label for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
+    },
+    [layout.bins, execute, updateBin, addToast]
+  );
 
-  const updateBinNotes = useCallback((binIds: string[], notes: string) => {
-    if (binIds.length === 0) return;
+  const updateBinNotes = useCallback(
+    (binIds: string[], notes: string) => {
+      if (binIds.length === 0) return;
 
-    const count = binIds.length;
-    execute(() => {
-      for (const binId of binIds) {
-        updateBin(binId, { notes });
-      }
-    });
+      const count = binIds.length;
+      execute(() => {
+        for (const binId of binIds) {
+          updateBin(binId, { notes });
+        }
+      });
 
-    addToast(`Updated notes for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
-  }, [execute, updateBin, addToast]);
+      addToast(`Updated notes for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
+    },
+    [execute, updateBin, addToast]
+  );
 
   // Export handlers
   const exportToTSV = useCallback(() => {
@@ -277,64 +314,71 @@ export function useBinList(): UseBinListReturn {
     return formatAsJSON(filteredRows, layout);
   }, [filteredRows, layout]);
 
-  const downloadExport = useCallback((format: 'tsv' | 'csv' | 'json', filename?: string) => {
-    const baseName = filename || layout.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'bin-list';
+  const downloadExport = useCallback(
+    (format: 'tsv' | 'csv' | 'json', filename?: string) => {
+      const baseName =
+        filename || layout.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'bin-list';
 
-    let content: string;
-    let extension: string;
-    let mimeType: string;
+      let content: string;
+      let extension: string;
+      let mimeType: string;
 
-    switch (format) {
-      case 'tsv':
-        content = exportToTSV();
-        extension = 'tsv';
-        mimeType = 'text/tab-separated-values';
-        mlTracking.trackSnapshot('export_tsv');
-        mlTracking.trackQuality('exported');
-        break;
-      case 'csv':
-        content = exportToCSV();
-        extension = 'csv';
-        mimeType = 'text/csv';
-        mlTracking.trackSnapshot('export_tsv'); // CSV is similar quality signal
-        mlTracking.trackQuality('exported');
-        break;
-      case 'json':
-        content = exportToJSON();
-        extension = 'json';
-        mimeType = 'application/json';
-        mlTracking.trackSnapshot('export_json');
-        mlTracking.trackQuality('exported');
-        break;
-    }
+      switch (format) {
+        case 'tsv':
+          content = exportToTSV();
+          extension = 'tsv';
+          mimeType = 'text/tab-separated-values';
+          mlTracking.trackSnapshot('export_tsv');
+          mlTracking.trackQuality('exported');
+          break;
+        case 'csv':
+          content = exportToCSV();
+          extension = 'csv';
+          mimeType = 'text/csv';
+          mlTracking.trackSnapshot('export_tsv'); // CSV is similar quality signal
+          mlTracking.trackQuality('exported');
+          break;
+        case 'json':
+          content = exportToJSON();
+          extension = 'json';
+          mimeType = 'application/json';
+          mlTracking.trackSnapshot('export_json');
+          mlTracking.trackQuality('exported');
+          break;
+      }
 
-    downloadAsFile(content, `${baseName}.${extension}`, mimeType);
-    addToast(`Downloaded ${extension.toUpperCase()} file`, 'success');
-  }, [exportToTSV, exportToCSV, exportToJSON, layout.name, addToast]);
+      downloadAsFile(content, `${baseName}.${extension}`, mimeType);
+      addToast(`Downloaded ${extension.toUpperCase()} file`, 'success');
+    },
+    [exportToTSV, exportToCSV, exportToJSON, layout.name, addToast]
+  );
 
-  const copyToClipboardFn = useCallback(async (format: 'tsv' | 'csv' | 'json'): Promise<boolean> => {
-    let content: string;
-    switch (format) {
-      case 'tsv':
-        content = exportToTSV();
-        break;
-      case 'csv':
-        content = exportToCSV();
-        break;
-      case 'json':
-        content = exportToJSON();
-        break;
-    }
+  const copyToClipboardFn = useCallback(
+    async (format: 'tsv' | 'csv' | 'json'): Promise<boolean> => {
+      let content: string;
+      switch (format) {
+        case 'tsv':
+          content = exportToTSV();
+          break;
+        case 'csv':
+          content = exportToCSV();
+          break;
+        case 'json':
+          content = exportToJSON();
+          break;
+      }
 
-    try {
-      await navigator.clipboard.writeText(content);
-      addToast(`Copied ${format.toUpperCase()} to clipboard`, 'success');
-      return true;
-    } catch {
-      addToast('Failed to copy to clipboard', 'error');
-      return false;
-    }
-  }, [exportToTSV, exportToCSV, exportToJSON, addToast]);
+      try {
+        await navigator.clipboard.writeText(content);
+        addToast(`Copied ${format.toUpperCase()} to clipboard`, 'success');
+        return true;
+      } catch {
+        addToast('Failed to copy to clipboard', 'error');
+        return false;
+      }
+    },
+    [exportToTSV, exportToCSV, exportToJSON, addToast]
+  );
 
   // Computed values
   const isAllSelected = filteredRows.length > 0 && selectedIndices.size === filteredRows.length;

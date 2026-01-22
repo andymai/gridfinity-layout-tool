@@ -68,10 +68,7 @@ describe('useBinInspector', () => {
     });
 
     it('returns multiple bins for multi-select', () => {
-      const bins = [
-        createBin('bin1', 'layer1', 0, 0),
-        createBin('bin2', 'layer1', 3, 0),
-      ];
+      const bins = [createBin('bin1', 'layer1', 0, 0), createBin('bin2', 'layer1', 3, 0)];
       const layout = useLayoutStore.getState().layout;
       layout.bins = bins;
       useLayoutStore.setState({ layout });
@@ -247,10 +244,7 @@ describe('useBinInspector', () => {
     it('updates category for multiple bins', () => {
       const layout = useLayoutStore.getState().layout;
       layout.categories.push({ id: 'green', name: 'Green', color: '#00ff00' });
-      layout.bins = [
-        createBin('bin1', 'layer1', 0, 0),
-        createBin('bin2', 'layer1', 3, 0),
-      ];
+      layout.bins = [createBin('bin1', 'layer1', 0, 0), createBin('bin2', 'layer1', 3, 0)];
       useLayoutStore.setState({ layout });
       useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
@@ -359,10 +353,7 @@ describe('useBinInspector', () => {
 
     it('requestDelete shows multi-delete title for multiple bins', () => {
       const layout = useLayoutStore.getState().layout;
-      layout.bins = [
-        createBin('bin1', 'layer1', 0, 0),
-        createBin('bin2', 'layer1', 3, 0),
-      ];
+      layout.bins = [createBin('bin1', 'layer1', 0, 0), createBin('bin2', 'layer1', 3, 0)];
       useLayoutStore.setState({ layout });
       useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
@@ -422,10 +413,7 @@ describe('useBinInspector', () => {
   describe('moveToStaging', () => {
     it('moves selected bins to staging', () => {
       const layout = useLayoutStore.getState().layout;
-      layout.bins = [
-        createBin('bin1', 'layer1', 0, 0),
-        createBin('bin2', 'layer1', 3, 0),
-      ];
+      layout.bins = [createBin('bin1', 'layer1', 0, 0), createBin('bin2', 'layer1', 3, 0)];
       useLayoutStore.setState({ layout });
       useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 
@@ -550,10 +538,7 @@ describe('useBinInspector', () => {
         { id: 'layer1', name: 'Layer 1', height: 3 },
         { id: 'layer2', name: 'Layer 2', height: 3 },
       ];
-      layout.bins = [
-        createBin('bin1', 'layer1', 0, 0),
-        createBin('bin2', 'layer1', 3, 0),
-      ];
+      layout.bins = [createBin('bin1', 'layer1', 0, 0), createBin('bin2', 'layer1', 3, 0)];
       useLayoutStore.setState({ layout });
       useUIStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
 

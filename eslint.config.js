@@ -31,7 +31,7 @@ export default defineConfig([
         prefer: 'type-imports',
         fixStyle: 'separate-type-imports',
       }],
-      '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/no-non-null-assertion': 'error',
 
       // React anti-patterns
       'react-hooks/rules-of-hooks': 'error',

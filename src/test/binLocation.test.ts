@@ -14,12 +14,8 @@ function createTestLayout(overrides: Partial<Layout> = {}): Layout {
   return {
     name: 'Test Layout',
     bins: [],
-    layers: [
-      { id: 'layer1', name: 'Layer 1', height: 3 },
-    ],
-    categories: [
-      { id: 'cat1', name: 'Category 1', color: '#3b82f6' },
-    ],
+    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+    categories: [{ id: 'cat1', name: 'Category 1', color: '#3b82f6' }],
     drawer: { width: 10, height: 12, depth: 8 },
     printBedSize: 256,
     gridUnitMm: 42,
@@ -133,11 +129,16 @@ describe('binLocation utility', () => {
 
       it('rejects rotation when it would collide with another bin', () => {
         const layout = createTestLayout({
-          bins: [
-            createTestBin({ id: 'bin2', x: 3, y: 0, width: 2, depth: 2, layerId: 'layer1' }),
-          ],
+          bins: [createTestBin({ id: 'bin2', x: 3, y: 0, width: 2, depth: 2, layerId: 'layer1' })],
         });
-        const bin = createTestBin({ id: 'bin1', x: 0, y: 0, width: 2, depth: 4, layerId: 'layer1' });
+        const bin = createTestBin({
+          id: 'bin1',
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 4,
+          layerId: 'layer1',
+        });
 
         const result = validateBinRotation(bin, layout);
 
@@ -151,11 +152,16 @@ describe('binLocation utility', () => {
             { id: 'layer1', name: 'Layer 1', height: 3 },
             { id: 'layer2', name: 'Layer 2', height: 3 },
           ],
-          bins: [
-            createTestBin({ id: 'bin2', x: 3, y: 0, width: 2, depth: 2, layerId: 'layer2' }),
-          ],
+          bins: [createTestBin({ id: 'bin2', x: 3, y: 0, width: 2, depth: 2, layerId: 'layer2' })],
         });
-        const bin = createTestBin({ id: 'bin1', x: 0, y: 0, width: 2, depth: 4, layerId: 'layer1' });
+        const bin = createTestBin({
+          id: 'bin1',
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 4,
+          layerId: 'layer1',
+        });
 
         const result = validateBinRotation(bin, layout);
 
@@ -170,10 +176,25 @@ describe('binLocation utility', () => {
           ],
           bins: [
             // Tall bin on layer1 that blocks layer2
-            createTestBin({ id: 'bin2', x: 3, y: 0, width: 2, depth: 2, layerId: 'layer1', height: 6 }),
+            createTestBin({
+              id: 'bin2',
+              x: 3,
+              y: 0,
+              width: 2,
+              depth: 2,
+              layerId: 'layer1',
+              height: 6,
+            }),
           ],
         });
-        const bin = createTestBin({ id: 'bin1', x: 0, y: 0, width: 2, depth: 4, layerId: 'layer2' });
+        const bin = createTestBin({
+          id: 'bin1',
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 4,
+          layerId: 'layer2',
+        });
 
         const result = validateBinRotation(bin, layout);
 

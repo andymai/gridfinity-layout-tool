@@ -13,10 +13,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import {
-  migrateAllLayoutsToIndexedDB,
-  isMigrationNeeded,
-} from '@/core/storage';
+import { migrateAllLayoutsToIndexedDB, isMigrationNeeded } from '@/core/storage';
 
 // Track if migration has been attempted this session
 let migrationAttempted = false;

@@ -158,12 +158,5 @@ export function useGridTemplate(options: UseGridTemplateOptions): GridTemplateSt
       getCssColForCell,
       getCssRowForCell,
     };
-  }, [
-    drawer.width,
-    drawer.depth,
-    drawer.fractionalEdgeX,
-    drawer.fractionalEdgeY,
-    cellSize,
-    gap,
-  ]);
+  }, [drawer.width, drawer.depth, drawer.fractionalEdgeX, drawer.fractionalEdgeY, cellSize, gap]);
 }

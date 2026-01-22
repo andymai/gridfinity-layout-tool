@@ -13,9 +13,9 @@ import {
 import { useGridTemplate } from '@/shared/hooks';
 
 // Page widths for print (in pixels at 96 DPI, accounting for 0.5" margins)
-const PORTRAIT_WIDTH_PX = 670;  // 8.5" - 1" margins = 7" ≈ 670px
+const PORTRAIT_WIDTH_PX = 670; // 8.5" - 1" margins = 7" ≈ 670px
 const LANDSCAPE_WIDTH_PX = 950; // 11" - 1" margins = 10" ≈ 950px
-const ROW_LABELS_WIDTH = 22;    // Width reserved for row labels
+const ROW_LABELS_WIDTH = 22; // Width reserved for row labels
 const MIN_CELL_SIZE = 20;
 const MAX_CELL_SIZE = 120;
 const DEFAULT_GAP = 1;
@@ -44,7 +44,8 @@ export function PrintLayout({
   const gridCols = Math.ceil(drawer.width);
 
   // Determine target width: use measured width if available, otherwise use orientation setting
-  const defaultWidth = settings.orientation === 'landscape' ? LANDSCAPE_WIDTH_PX : PORTRAIT_WIDTH_PX;
+  const defaultWidth =
+    settings.orientation === 'landscape' ? LANDSCAPE_WIDTH_PX : PORTRAIT_WIDTH_PX;
   const targetWidth = availableWidth ?? defaultWidth;
 
   // Calculate optimal cell size to fill available width
@@ -196,14 +197,22 @@ export function PrintLayout({
     // If fractional edge at start, add fractional column label first
     if (hasFractionalWidth && fractionalEdgeX === 'start') {
       labels.push(
-        <div key="col-frac" className="print-axis-label print-col-label" style={{ width: fractionalCellWidth }}>
+        <div
+          key="col-frac"
+          className="print-axis-label print-col-label"
+          style={{ width: fractionalCellWidth }}
+        >
           .5
         </div>
       );
     }
     for (let x = 0; x < integerWidth; x++) {
       labels.push(
-        <div key={`col-${x}`} className="print-axis-label print-col-label" style={{ width: cellSize }}>
+        <div
+          key={`col-${x}`}
+          className="print-axis-label print-col-label"
+          style={{ width: cellSize }}
+        >
           {x + 1}
         </div>
       );
@@ -211,7 +220,11 @@ export function PrintLayout({
     // If fractional edge at end (default), add fractional column label last
     if (hasFractionalWidth && fractionalEdgeX === 'end') {
       labels.push(
-        <div key="col-frac" className="print-axis-label print-col-label" style={{ width: fractionalCellWidth }}>
+        <div
+          key="col-frac"
+          className="print-axis-label print-col-label"
+          style={{ width: fractionalCellWidth }}
+        >
           .5
         </div>
       );
@@ -226,7 +239,11 @@ export function PrintLayout({
     // If fractional edge at end (top), add fractional row label first (at top)
     if (hasFractionalDepth && fractionalEdgeY === 'end') {
       labels.push(
-        <div key="row-frac" className="print-axis-label print-row-label" style={{ height: fractionalCellHeight }}>
+        <div
+          key="row-frac"
+          className="print-axis-label print-row-label"
+          style={{ height: fractionalCellHeight }}
+        >
           .5
         </div>
       );
@@ -234,7 +251,11 @@ export function PrintLayout({
     // Integer rows from top to bottom (y values from high to low)
     for (let y = integerDepth - 1; y >= 0; y--) {
       labels.push(
-        <div key={`row-${y}`} className="print-axis-label print-row-label" style={{ height: cellSize }}>
+        <div
+          key={`row-${y}`}
+          className="print-axis-label print-row-label"
+          style={{ height: cellSize }}
+        >
           {y + 1}
         </div>
       );
@@ -242,7 +263,11 @@ export function PrintLayout({
     // If fractional edge at start (bottom), add fractional row label last (at bottom)
     if (hasFractionalDepth && fractionalEdgeY === 'start') {
       labels.push(
-        <div key="row-frac" className="print-axis-label print-row-label" style={{ height: fractionalCellHeight }}>
+        <div
+          key="row-frac"
+          className="print-axis-label print-row-label"
+          style={{ height: fractionalCellHeight }}
+        >
           .5
         </div>
       );
@@ -331,7 +356,10 @@ export function PrintLayout({
         </div>
         {/* Column labels - at bottom like 2D grid */}
         {settings.showGridCoordinates && (
-          <div className="print-col-labels" style={{ marginLeft: ROW_LABELS_WIDTH, gap: `${gap}px` }}>
+          <div
+            className="print-col-labels"
+            style={{ marginLeft: ROW_LABELS_WIDTH, gap: `${gap}px` }}
+          >
             {columnLabels}
           </div>
         )}
@@ -346,19 +374,21 @@ export function PrintLayout({
         <div className="print-header">
           <div className="print-header-top">
             {settings.showLayoutName && <h1>{layout.name}</h1>}
-            {settings.showDate && (
-              <span className="print-header-date">{formatPrintDate()}</span>
-            )}
+            {settings.showDate && <span className="print-header-date">{formatPrintDate()}</span>}
           </div>
           {settings.showDrawerInfo && (
             <div className="print-header-info">
               <div className="print-header-group">
                 <span className="print-header-label">Drawer</span>
-                <span className="print-header-value">{formatDrawerDimensions(drawer, layout.gridUnitMm)}</span>
+                <span className="print-header-value">
+                  {formatDrawerDimensions(drawer, layout.gridUnitMm)}
+                </span>
               </div>
               <div className="print-header-group">
                 <span className="print-header-label">Height</span>
-                <span className="print-header-value">{drawer.height}u ({drawer.height * layout.heightUnitMm}mm)</span>
+                <span className="print-header-value">
+                  {drawer.height}u ({drawer.height * layout.heightUnitMm}mm)
+                </span>
               </div>
               <div className="print-header-group">
                 <span className="print-header-label">Bins</span>
@@ -379,9 +409,7 @@ export function PrintLayout({
 
       {/* Grid(s) - one per layer if multiple selected */}
       {visibleLayers.length === 1 ? (
-        <div className="print-grid-container">
-          {renderLayerGrid(visibleLayers[0])}
-        </div>
+        <div className="print-grid-container">{renderLayerGrid(visibleLayers[0])}</div>
       ) : (
         visibleLayers.map((layer) => (
           <div key={layer.id} className="print-grid-container">
@@ -400,10 +428,7 @@ export function PrintLayout({
               const count = binsByCategory.get(category.id) ?? 0;
               return (
                 <div key={category.id} className="print-legend-item">
-                  <div
-                    className="print-legend-color"
-                    style={{ backgroundColor: category.color }}
-                  />
+                  <div className="print-legend-color" style={{ backgroundColor: category.color }} />
                   <span>{category.name}</span>
                   <span className="print-legend-count">({count})</span>
                 </div>
@@ -414,80 +439,86 @@ export function PrintLayout({
       )}
 
       {/* Bin List Table */}
-      {settings.showBinList && sortedBins.length > 0 && (() => {
-        // Check if any bins have custom properties
-        const hasAnyCustomProps = sortedBins.some(
-          (bin) => bin.customProperties && Object.keys(bin.customProperties).length > 0
-        );
-        // Check if any bins have notes
-        const hasAnyNotes = sortedBins.some((bin) => bin.notes);
+      {settings.showBinList &&
+        sortedBins.length > 0 &&
+        (() => {
+          // Check if any bins have custom properties
+          const hasAnyCustomProps = sortedBins.some(
+            (bin) => bin.customProperties && Object.keys(bin.customProperties).length > 0
+          );
+          // Check if any bins have notes
+          const hasAnyNotes = sortedBins.some((bin) => bin.notes);
 
-        return (
-          <div className="print-bin-list">
-            <div className="print-bin-list-title">Bin Details</div>
-            <table className="print-bin-table">
-              <thead>
-                <tr>
-                  <th>Label</th>
-                  <th>Size</th>
-                  <th>Height</th>
-                  <th>Category</th>
-                  {visibleLayers.length > 1 && <th>Layer</th>}
-                  <th>Position</th>
-                  {hasAnyNotes && <th>Notes</th>}
-                  {hasAnyCustomProps && <th>Custom Properties</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {sortedBins.map((bin) => {
-                  const category = categories.find((c) => c.id === bin.category);
-                  const layer = layers.find((l) => l.id === bin.layerId);
-                  const customProps = bin.customProperties || {};
-                  const customPropEntries = Object.entries(customProps);
-                  return (
-                    <tr key={bin.id}>
-                      <td className="print-bin-table-label">
-                        {bin.label || <span className="print-bin-table-empty">—</span>}
-                      </td>
-                      <td>{bin.width}×{bin.depth}</td>
-                      <td>{bin.height}u</td>
-                      <td>
-                        {settings.showCategoryColor && category && (
-                          <span
-                            className="print-bin-table-category-dot"
-                            style={{ backgroundColor: category.color }}
-                          />
-                        )}
-                        {category?.name || '—'}
-                      </td>
-                      {visibleLayers.length > 1 && <td>{layer?.name || '—'}</td>}
-                      <td>({bin.x + 1}, {bin.y + 1})</td>
-                      {hasAnyNotes && (
-                        <td className="print-bin-table-notes">
-                          {bin.notes || <span className="print-bin-table-empty">—</span>}
+          return (
+            <div className="print-bin-list">
+              <div className="print-bin-list-title">Bin Details</div>
+              <table className="print-bin-table">
+                <thead>
+                  <tr>
+                    <th>Label</th>
+                    <th>Size</th>
+                    <th>Height</th>
+                    <th>Category</th>
+                    {visibleLayers.length > 1 && <th>Layer</th>}
+                    <th>Position</th>
+                    {hasAnyNotes && <th>Notes</th>}
+                    {hasAnyCustomProps && <th>Custom Properties</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedBins.map((bin) => {
+                    const category = categories.find((c) => c.id === bin.category);
+                    const layer = layers.find((l) => l.id === bin.layerId);
+                    const customProps = bin.customProperties || {};
+                    const customPropEntries = Object.entries(customProps);
+                    return (
+                      <tr key={bin.id}>
+                        <td className="print-bin-table-label">
+                          {bin.label || <span className="print-bin-table-empty">—</span>}
                         </td>
-                      )}
-                      {hasAnyCustomProps && (
-                        <td className="print-bin-table-custom-props">
-                          {customPropEntries.length > 0 ? (
-                            customPropEntries.map(([key, value]) => (
-                              <div key={key} className="print-bin-table-prop">
-                                <span className="print-bin-table-prop-key">{key}:</span> {value}
-                              </div>
-                            ))
-                          ) : (
-                            <span className="print-bin-table-empty">—</span>
+                        <td>
+                          {bin.width}×{bin.depth}
+                        </td>
+                        <td>{bin.height}u</td>
+                        <td>
+                          {settings.showCategoryColor && category && (
+                            <span
+                              className="print-bin-table-category-dot"
+                              style={{ backgroundColor: category.color }}
+                            />
                           )}
+                          {category?.name || '—'}
                         </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        );
-      })()}
+                        {visibleLayers.length > 1 && <td>{layer?.name || '—'}</td>}
+                        <td>
+                          ({bin.x + 1}, {bin.y + 1})
+                        </td>
+                        {hasAnyNotes && (
+                          <td className="print-bin-table-notes">
+                            {bin.notes || <span className="print-bin-table-empty">—</span>}
+                          </td>
+                        )}
+                        {hasAnyCustomProps && (
+                          <td className="print-bin-table-custom-props">
+                            {customPropEntries.length > 0 ? (
+                              customPropEntries.map(([key, value]) => (
+                                <div key={key} className="print-bin-table-prop">
+                                  <span className="print-bin-table-prop-key">{key}:</span> {value}
+                                </div>
+                              ))
+                            ) : (
+                              <span className="print-bin-table-empty">—</span>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
     </div>
   );
 }

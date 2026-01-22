@@ -35,24 +35,33 @@ vi.mock('../../core/storage', () => {
     getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
 
     // New atomic functions
-    saveLayoutWithMetadata: vi.fn().mockImplementation(
-      (layoutId: string, layout: unknown, library: { entries: Array<{ id: string }> }) => {
-        const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
-        if (!entry) {
-          return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+    saveLayoutWithMetadata: vi
+      .fn()
+      .mockImplementation(
+        (layoutId: string, layout: unknown, library: { entries: Array<{ id: string }> }) => {
+          const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
+          if (!entry) {
+            return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+          }
+          return Promise.resolve({
+            ok: true,
+            value: {
+              layoutId,
+              entry: { ...entry, modifiedAt: Date.now(), preview: mockPreview },
+              library,
+            },
+          });
         }
-        return Promise.resolve({
-          ok: true,
-          value: {
-            layoutId,
-            entry: { ...entry, modifiedAt: Date.now(), preview: mockPreview },
-            library,
-          },
-        });
-      }
-    ),
+      ),
     createLayoutEntry: vi.fn().mockImplementation(
-      (layout: { name: string; layers: Array<{ id: string }>; categories: Array<{ id: string }> }, library: { entries: unknown[] }) => {
+      (
+        layout: {
+          name: string;
+          layers: Array<{ id: string }>;
+          categories: Array<{ id: string }>;
+        },
+        library: { entries: unknown[] }
+      ) => {
         const layoutId = 'new-layout-id';
         const entry = {
           id: layoutId,
@@ -72,68 +81,90 @@ vi.mock('../../core/storage', () => {
         });
       }
     ),
-    deleteLayoutWithEntry: vi.fn().mockImplementation(
-      (layoutId: string, library: { entries: Array<{ id: string }>; activeLayoutId: string }) => {
-        const remainingEntries = library.entries.filter((e: { id: string }) => e.id !== layoutId);
-        const newActiveId = library.activeLayoutId === layoutId ? remainingEntries[0]?.id : undefined;
-        return Promise.resolve({
-          ok: true,
-          value: {
-            library: { ...library, entries: remainingEntries },
-            newActiveId,
-          },
-        });
-      }
-    ),
-    duplicateLayoutEntry: vi.fn().mockImplementation(
-      (sourceId: string, library: { entries: Array<{ id: string; name: string }> }) => {
-        const sourceEntry = library.entries.find((e: { id: string }) => e.id === sourceId);
-        if (!sourceEntry) {
-          return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+    deleteLayoutWithEntry: vi
+      .fn()
+      .mockImplementation(
+        (layoutId: string, library: { entries: Array<{ id: string }>; activeLayoutId: string }) => {
+          const remainingEntries = library.entries.filter((e: { id: string }) => e.id !== layoutId);
+          const newActiveId =
+            library.activeLayoutId === layoutId ? remainingEntries[0]?.id : undefined;
+          return Promise.resolve({
+            ok: true,
+            value: {
+              library: { ...library, entries: remainingEntries },
+              newActiveId,
+            },
+          });
         }
-        const layoutId = 'duplicated-layout-id';
-        const newEntry = {
-          id: layoutId,
-          name: `${sourceEntry.name} (copy)`,
-          createdAt: Date.now(),
-          modifiedAt: Date.now(),
-          preview: mockPreview,
-        };
-        return Promise.resolve({
-          ok: true,
-          value: {
-            layoutId,
-            entry: newEntry,
-            library: { ...library, entries: [...library.entries, newEntry] },
-            layout: { name: newEntry.name, layers: [], categories: [] },
-          },
-        });
-      }
-    ),
-    switchActiveLayout: vi.fn().mockImplementation(
-      (_fromId: string, _fromLayout: unknown, toId: string, library: { entries: Array<{ id: string }> }) => {
-        const targetEntry = library.entries.find((e: { id: string }) => e.id === toId);
-        if (!targetEntry) {
-          return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+      ),
+    duplicateLayoutEntry: vi
+      .fn()
+      .mockImplementation(
+        (sourceId: string, library: { entries: Array<{ id: string; name: string }> }) => {
+          const sourceEntry = library.entries.find((e: { id: string }) => e.id === sourceId);
+          if (!sourceEntry) {
+            return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+          }
+          const layoutId = 'duplicated-layout-id';
+          const newEntry = {
+            id: layoutId,
+            name: `${sourceEntry.name} (copy)`,
+            createdAt: Date.now(),
+            modifiedAt: Date.now(),
+            preview: mockPreview,
+          };
+          return Promise.resolve({
+            ok: true,
+            value: {
+              layoutId,
+              entry: newEntry,
+              library: { ...library, entries: [...library.entries, newEntry] },
+              layout: { name: newEntry.name, layers: [], categories: [] },
+            },
+          });
         }
-        return Promise.resolve({
-          ok: true,
-          value: {
-            library: { ...library, activeLayoutId: toId },
-            targetLayout: { name: 'Target Layout', layers: [{ id: 'layer-1' }], categories: [{ id: 'cat-1' }] },
-            targetEntry,
-          },
-        });
-      }
-    ),
-    renameLayoutEntry: vi.fn().mockImplementation(
-      (layoutId: string, newName: string, library: { entries: Array<{ id: string; name: string }> }) => {
-        const updatedEntries = library.entries.map((e: { id: string; name: string }) =>
-          e.id === layoutId ? { ...e, name: newName } : e
-        );
-        return { ok: true, value: { ...library, entries: updatedEntries } };
-      }
-    ),
+      ),
+    switchActiveLayout: vi
+      .fn()
+      .mockImplementation(
+        (
+          _fromId: string,
+          _fromLayout: unknown,
+          toId: string,
+          library: { entries: Array<{ id: string }> }
+        ) => {
+          const targetEntry = library.entries.find((e: { id: string }) => e.id === toId);
+          if (!targetEntry) {
+            return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+          }
+          return Promise.resolve({
+            ok: true,
+            value: {
+              library: { ...library, activeLayoutId: toId },
+              targetLayout: {
+                name: 'Target Layout',
+                layers: [{ id: 'layer-1' }],
+                categories: [{ id: 'cat-1' }],
+              },
+              targetEntry,
+            },
+          });
+        }
+      ),
+    renameLayoutEntry: vi
+      .fn()
+      .mockImplementation(
+        (
+          layoutId: string,
+          newName: string,
+          library: { entries: Array<{ id: string; name: string }> }
+        ) => {
+          const updatedEntries = library.entries.map((e: { id: string; name: string }) =>
+            e.id === layoutId ? { ...e, name: newName } : e
+          );
+          return { ok: true, value: { ...library, entries: updatedEntries } };
+        }
+      ),
     computePreview: vi.fn(() => mockPreview),
   };
 });
@@ -348,7 +379,19 @@ describe('useLayoutSwitcher', () => {
         value: {
           library: useLibraryStore.getState().library,
           targetLayout,
-          targetEntry: { id: SECOND_LAYOUT_ID, name: 'Second Layout', createdAt: Date.now(), modifiedAt: Date.now(), preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 } },
+          targetEntry: {
+            id: SECOND_LAYOUT_ID,
+            name: 'Second Layout',
+            createdAt: Date.now(),
+            modifiedAt: Date.now(),
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
+          },
         },
       });
 
@@ -448,7 +491,7 @@ describe('useLayoutSwitcher', () => {
       });
 
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message.includes('created'))).toBe(true);
+      expect(toasts.some((t) => t.message.includes('created'))).toBe(true);
     });
 
     it('uses default name if none provided', async () => {
@@ -537,7 +580,7 @@ describe('useLayoutSwitcher', () => {
       });
 
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message.includes('deleted'))).toBe(true);
+      expect(toasts.some((t) => t.message.includes('deleted'))).toBe(true);
     });
   });
 
@@ -598,10 +641,7 @@ describe('useLayoutSwitcher', () => {
       });
 
       // Uses atomic duplicate which handles naming
-      expect(storage.duplicateLayoutEntry).toHaveBeenCalledWith(
-        TEST_LAYOUT_ID,
-        expect.any(Object)
-      );
+      expect(storage.duplicateLayoutEntry).toHaveBeenCalledWith(TEST_LAYOUT_ID, expect.any(Object));
     });
   });
 
@@ -748,7 +788,7 @@ describe('useLayoutSwitcher', () => {
       });
 
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message.includes('Imported'))).toBe(true);
+      expect(toasts.some((t) => t.message.includes('Imported'))).toBe(true);
     });
   });
 
@@ -804,9 +844,7 @@ describe('useLayoutSwitcher', () => {
         expect.any(Object),
         SECOND_LAYOUT_ID,
         expect.objectContaining({
-          entries: expect.arrayContaining([
-            expect.objectContaining({ id: 'third-layout-id' }),
-          ]),
+          entries: expect.arrayContaining([expect.objectContaining({ id: 'third-layout-id' })]),
         })
       );
     });
@@ -860,9 +898,7 @@ describe('useLayoutSwitcher', () => {
       expect(storage.deleteLayoutWithEntry).toHaveBeenCalledWith(
         SECOND_LAYOUT_ID,
         expect.objectContaining({
-          entries: expect.arrayContaining([
-            expect.objectContaining({ id: 'third-layout-id' }),
-          ]),
+          entries: expect.arrayContaining([expect.objectContaining({ id: 'third-layout-id' })]),
         })
       );
     });
@@ -941,9 +977,7 @@ describe('useLayoutSwitcher', () => {
         'new-entry-id',
         'Renamed Entry',
         expect.objectContaining({
-          entries: expect.arrayContaining([
-            expect.objectContaining({ id: 'new-entry-id' }),
-          ]),
+          entries: expect.arrayContaining([expect.objectContaining({ id: 'new-entry-id' })]),
         })
       );
     });

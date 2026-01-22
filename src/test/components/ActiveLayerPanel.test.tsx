@@ -9,26 +9,29 @@ import { resetAllStores } from '@/test/testUtils';
 
 // Mock ConfirmDialog
 vi.mock('../../shared/components/ConfirmDialog', () => ({
-  ConfirmDialog: ({ isOpen, onConfirm, onCancel, message }: {
+  ConfirmDialog: ({
+    isOpen,
+    onConfirm,
+    onCancel,
+    message,
+  }: {
     isOpen: boolean;
     onConfirm: () => void;
     onCancel: () => void;
     message: string;
-  }) => isOpen ? (
-    <div data-testid="confirm-dialog">
-      <span>{message}</span>
-      <button onClick={onConfirm}>Confirm</button>
-      <button onClick={onCancel}>Cancel</button>
-    </div>
-  ) : null,
+  }) =>
+    isOpen ? (
+      <div data-testid="confirm-dialog">
+        <span>{message}</span>
+        <button onClick={onConfirm}>Confirm</button>
+        <button onClick={onCancel}>Cancel</button>
+      </div>
+    ) : null,
 }));
 
 // Mock CollapsibleSection
 vi.mock('../../shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({ children, title }: {
-    children: React.ReactNode;
-    title: string;
-  }) => (
+  CollapsibleSection: ({ children, title }: { children: React.ReactNode; title: string }) => (
     <div>
       <span>{title}</span>
       {children}

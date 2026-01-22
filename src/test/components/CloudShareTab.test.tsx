@@ -15,7 +15,12 @@ let mockCloudShareState = {
   status: 'idle' as 'idle' | 'sharing' | 'updating' | 'deleting' | 'success' | 'error',
   result: null as { url: string; deleteToken: string; permission: 'view' | 'edit' } | null,
   error: null as { message: string } | null,
-  existingShare: null as { id: string; sharedAt: number; permission: 'view' | 'edit'; deleteToken: string } | null,
+  existingShare: null as {
+    id: string;
+    sharedAt: number;
+    permission: 'view' | 'edit';
+    deleteToken: string;
+  } | null,
   hasActiveShare: false,
   share: mockShare,
   update: mockUpdate,

@@ -20,11 +20,7 @@ interface SingleBinInspectorProps {
  * Single bin property editor.
  * Matches original RightPanel design with separate inputs.
  */
-export function SingleBinInspector({
-  inspector,
-  variant,
-  onClose,
-}: SingleBinInspectorProps) {
+export function SingleBinInspector({ inspector, variant, onClose }: SingleBinInspectorProps) {
   const {
     bin,
     category,
@@ -42,7 +38,7 @@ export function SingleBinInspector({
     existingPropertyKeys,
   } = inspector;
 
-  const halfBinMode = useUIStore(state => state.halfBinMode);
+  const halfBinMode = useUIStore((state) => state.halfBinMode);
 
   if (!bin) return null;
 
@@ -51,7 +47,7 @@ export function SingleBinInspector({
   const canMoveToStaging = locationContext.canMoveToStash;
 
   // Format dimensions - show decimal if fractional (half-bin mode)
-  const formatDim = (val: number) => val % 1 === 0 ? val.toString() : val.toFixed(1);
+  const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
   const minSize = halfBinMode ? 0.5 : 1;
   const stepSize = halfBinMode ? 0.5 : 1;
 
@@ -79,7 +75,12 @@ export function SingleBinInspector({
             aria-label="Deselect bin"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         )}
@@ -90,9 +91,7 @@ export function SingleBinInspector({
         <div className="flex items-end gap-2">
           {/* Width control */}
           <div className="flex-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>
-              Width
-            </label>
+            <label className={`block ${labelSize} text-content-tertiary`}>Width</label>
             <StepperControl
               value={bin.width}
               onChange={(val) => updateField('width', val)}
@@ -109,23 +108,32 @@ export function SingleBinInspector({
           <button
             type="button"
             onClick={rotateBin}
-            className={isMobile
-              ? "btn btn-secondary w-12 h-12 p-0 flex-shrink-0"
-              : "flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+            className={
+              isMobile
+                ? 'btn btn-secondary w-12 h-12 p-0 flex-shrink-0'
+                : 'flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors'
             }
             title="Swap width ↔ depth (R)"
             aria-label="Swap width and depth"
           >
-            <svg className={isMobile ? "w-5 h-5" : "w-3 h-3"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isMobile ? 2 : 2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            <svg
+              className={isMobile ? 'w-5 h-5' : 'w-3 h-3'}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={isMobile ? 2 : 2.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+              />
             </svg>
           </button>
 
           {/* Depth control */}
           <div className="flex-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>
-              Depth
-            </label>
+            <label className={`block ${labelSize} text-content-tertiary`}>Depth</label>
             <StepperControl
               value={bin.depth}
               onChange={(val) => updateField('depth', val)}
@@ -141,21 +149,33 @@ export function SingleBinInspector({
 
         {/* Real-world dimensions */}
         <div className="flex items-center gap-1.5 text-sm text-content-tertiary">
-          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2" />
+          <svg
+            className="w-4 h-4 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
+            />
           </svg>
           <span className="tabular-nums">
-            {(bin.width * layout.gridUnitMm).toFixed(0)} × {(bin.depth * layout.gridUnitMm).toFixed(0)} × {(bin.height * layout.heightUnitMm).toFixed(0)} mm
+            {(bin.width * layout.gridUnitMm).toFixed(0)} ×{' '}
+            {(bin.depth * layout.gridUnitMm).toFixed(0)} ×{' '}
+            {(bin.height * layout.heightUnitMm).toFixed(0)} mm
           </span>
         </div>
 
         {/* Height and Clearance - compact inline controls */}
-        <div className={`grid gap-3 ${constraints.maxClearance > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        <div
+          className={`grid gap-3 ${constraints.maxClearance > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}
+        >
           {/* Height control */}
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>
-              Height
-            </label>
+            <label className={`block ${labelSize} text-content-tertiary`}>Height</label>
             <StepperControl
               value={bin.height}
               onStep={(delta) => updateField('height', bin.height + delta)}
@@ -181,7 +201,9 @@ export function SingleBinInspector({
               </label>
               <StepperControl
                 value={bin.clearanceHeight || 0}
-                onStep={(delta) => updateField('clearanceHeight', (bin.clearanceHeight || 0) + delta)}
+                onStep={(delta) =>
+                  updateField('clearanceHeight', (bin.clearanceHeight || 0) + delta)
+                }
                 min={0}
                 max={constraints.maxClearance}
                 variant={variant}
@@ -207,9 +229,7 @@ export function SingleBinInspector({
 
         {/* Category */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>
-            Category
-          </label>
+          <label className={`block ${labelSize} text-content-tertiary`}>Category</label>
           <SelectDropdown
             value={bin.category}
             onChange={(value) => updateField('category', value)}
@@ -223,9 +243,7 @@ export function SingleBinInspector({
         {/* Layer - only show for bins on grid (not in staging) */}
         {bin.layerId !== STAGING_ID && layout.layers.length > 1 && (
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>
-              Layer
-            </label>
+            <label className={`block ${labelSize} text-content-tertiary`}>Layer</label>
             <SelectDropdown
               value={bin.layerId}
               onChange={moveToLayer}
@@ -242,13 +260,13 @@ export function SingleBinInspector({
 
         {/* Label */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>
-            Label
-          </label>
+          <label className={`block ${labelSize} text-content-tertiary`}>Label</label>
           <input
             type="text"
             value={bin.label}
-            onChange={(e) => updateField('label', e.target.value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH))}
+            onChange={(e) =>
+              updateField('label', e.target.value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH))
+            }
             className={`input w-full ${inputHeight}`}
             placeholder="Optional label"
             aria-label="Bin label"
@@ -266,12 +284,12 @@ export function SingleBinInspector({
 
         {/* Notes */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>
-            Notes
-          </label>
+          <label className={`block ${labelSize} text-content-tertiary`}>Notes</label>
           <textarea
             value={bin.notes}
-            onChange={(e) => updateField('notes', e.target.value.slice(0, CONSTRAINTS.NOTES_MAX_LENGTH))}
+            onChange={(e) =>
+              updateField('notes', e.target.value.slice(0, CONSTRAINTS.NOTES_MAX_LENGTH))
+            }
             className="input w-full"
             placeholder="e.g., 2 dividers, STL link, contents"
             aria-label="Bin notes"

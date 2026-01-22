@@ -230,7 +230,9 @@ test.describe('Multi-Select Operations', () => {
     await expect(bins).toHaveCount(2);
   });
 
-  test('clicking unselected bin clears multi-selection and selects only clicked bin', async ({ page }) => {
+  test('clicking unselected bin clears multi-selection and selects only clicked bin', async ({
+    page,
+  }) => {
     // Create three bins with spacing
     await drawBinOnGrid(page, 50, 50, 80, 80);
     await drawBinOnGrid(page, 150, 50, 180, 80);

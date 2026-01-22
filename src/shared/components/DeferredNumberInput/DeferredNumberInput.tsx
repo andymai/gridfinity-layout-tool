@@ -39,7 +39,6 @@ export function DeferredNumberInput({
   // We intentionally call setState in useEffect here to keep the input synchronized with
   // the controlled value when it changes externally, not from user typing.
   useEffect(() => {
-     
     setLocalValue(formatValue(value));
   }, [value]);
 

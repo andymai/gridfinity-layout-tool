@@ -40,7 +40,9 @@ test.describe('Resize Bins Flow', () => {
 
     // Inspector should show bin details
     const inspector = getInspector(page);
-    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({ timeout: 3000 });
+    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({
+      timeout: 3000,
+    });
   });
 
   test('inspector shows bin size controls', async ({ page }) => {
@@ -60,7 +62,7 @@ test.describe('Resize Bins Flow', () => {
 
     // Find height increase button
     const increaseButton = inspector.getByRole('button', { name: /increase height|▲|\+/i });
-    if (await increaseButton.count() > 0) {
+    if ((await increaseButton.count()) > 0) {
       // Get initial height text
       const initialHeight = await inspector.getByText(/\du/).first().textContent();
 
@@ -81,7 +83,7 @@ test.describe('Resize Bins Flow', () => {
 
     // Find height increase button
     const increaseButton = inspector.getByRole('button', { name: /increase height|▲|\+/i });
-    if (await increaseButton.count() > 0) {
+    if ((await increaseButton.count()) > 0) {
       await increaseButton.first().click();
 
       // Undo
@@ -99,7 +101,9 @@ test.describe('Resize Bins Flow', () => {
     const inspector = getInspector(page);
 
     // Find label input
-    const labelInput = inspector.locator('input[placeholder*="label"], input[aria-label*="label"]').first();
+    const labelInput = inspector
+      .locator('input[placeholder*="label"], input[aria-label*="label"]')
+      .first();
     if (await labelInput.isVisible()) {
       await labelInput.fill('My Bin');
       await labelInput.press('Tab');

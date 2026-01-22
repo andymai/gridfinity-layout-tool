@@ -171,13 +171,11 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
 
   getEnabledCount: () => {
     const { preferences } = get();
-    return Object.entries(preferences.enabledFeatures).filter(
-      ([id, enabled]) => {
-        if (!enabled) return false;
-        const feature = getFeature(id);
-        return feature?.status === 'experimental' || feature?.status === 'preview';
-      }
-    ).length;
+    return Object.entries(preferences.enabledFeatures).filter(([id, enabled]) => {
+      if (!enabled) return false;
+      const feature = getFeature(id);
+      return feature?.status === 'experimental' || feature?.status === 'preview';
+    }).length;
   },
 
   syncFromStorage: (prefs) => {

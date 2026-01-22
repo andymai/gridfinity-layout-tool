@@ -45,7 +45,10 @@ export function PrintListSummary({
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stroke-subtle text-xs">
-          <div className="flex justify-between" title="Estimated 1.75mm PLA usage based on bin dimensions">
+          <div
+            className="flex justify-between"
+            title="Estimated 1.75mm PLA usage based on bin dimensions"
+          >
             <span className="text-content-tertiary">Filament</span>
             <span className="text-content">{totalFilament}m</span>
           </div>
@@ -53,7 +56,10 @@ export function PrintListSummary({
             <span className="text-content-tertiary">Cost</span>
             <span className="text-content">{formatCost(totalCost)}</span>
           </div>
-          <div className="flex justify-between" title="Based on 0.4mm nozzle, 0.2mm layer height, 15% infill">
+          <div
+            className="flex justify-between"
+            title="Based on 0.4mm nozzle, 0.2mm layer height, 15% infill"
+          >
             <span className="text-content-tertiary">Time</span>
             <span className="text-content">~{formatPrintTime(totalPrintTimeHours)}</span>
           </div>
@@ -76,19 +82,31 @@ export function PrintListSummary({
         </span>
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2 border-t border-stroke-subtle text-xs">
-        <div className="flex justify-between text-content-secondary" title="Estimated 1.75mm PLA usage based on bin dimensions">
+        <div
+          className="flex justify-between text-content-secondary"
+          title="Estimated 1.75mm PLA usage based on bin dimensions"
+        >
           <span className="text-content-tertiary">Filament</span>
           <span>{totalFilament}m</span>
         </div>
-        <div className="flex justify-between text-content-secondary" title="Based on $15/kg filament cost">
+        <div
+          className="flex justify-between text-content-secondary"
+          title="Based on $15/kg filament cost"
+        >
           <span className="text-content-tertiary">Est. Cost</span>
           <span>{formatCost(totalCost)}</span>
         </div>
-        <div className="flex justify-between text-content-secondary" title="Based on 0.4mm nozzle, 0.2mm layer height, 15% infill">
+        <div
+          className="flex justify-between text-content-secondary"
+          title="Based on 0.4mm nozzle, 0.2mm layer height, 15% infill"
+        >
           <span className="text-content-tertiary">Print Time</span>
           <span>~{formatPrintTime(totalPrintTimeHours)}</span>
         </div>
-        <div className="flex justify-between text-content-secondary" title="Based on 1kg spool (~330m of 1.75mm PLA)">
+        <div
+          className="flex justify-between text-content-secondary"
+          title="Based on 1kg spool (~330m of 1.75mm PLA)"
+        >
           <span className="text-content-tertiary">Spool</span>
           <span>{formatSpoolUsage(spoolPercentage)}</span>
         </div>

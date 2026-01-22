@@ -26,9 +26,7 @@ import type { Coord, Rect } from '@/core/types';
  * @param context - Shared interaction context from parent hook
  * @returns ModeHandlers for resize interactions
  */
-export function useResizeInteraction(
-  context: InteractionContext
-): ModeHandlers<ResizeStartArgs> {
+export function useResizeInteraction(context: InteractionContext): ModeHandlers<ResizeStartArgs> {
   const {
     layout,
     activeLayerId,
@@ -85,14 +83,7 @@ export function useResizeInteraction(
         valid: true,
       });
     },
-    [
-      layout,
-      selectedBinIds,
-      setSelectedBin,
-      setInteraction,
-      activePointerIdRef,
-      capturedPointerRef,
-    ]
+    [layout, selectedBinIds, setSelectedBin, setInteraction, activePointerIdRef, capturedPointerRef]
   );
 
   /**

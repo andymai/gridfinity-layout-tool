@@ -1,11 +1,7 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore, useLabsStore } from '@/core/store';
-import {
-  getToggleableFeatures,
-  getGraduatedFeatures,
-  type FeatureId,
-} from '@/core/labs';
+import { getToggleableFeatures, getGraduatedFeatures, type FeatureId } from '@/core/labs';
 import { FeatureCard } from '@/features/labs/components/FeatureCard';
 import { GraduatedSection } from '@/features/labs/components/GraduatedSection';
 import { SparklesIcon } from '@/features/labs/components/icons';
@@ -128,7 +124,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               aria-label="Close settings"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -147,7 +148,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <div className="flex justify-between">
                   <span>Drawer size</span>
                   <span className="text-content-tertiary">
-                    {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×{settings.defaultDrawerHeight}u
+                    {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×
+                    {settings.defaultDrawerHeight}u
                   </span>
                 </div>
                 <div className="flex justify-between">

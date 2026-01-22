@@ -96,10 +96,7 @@ export function useInterpolatedPresence(
       lastFrameTime = currentTime;
 
       // Adjust lerp factor based on frame time (normalize to 60fps)
-      const frameAdjustedSpeed = Math.min(
-        INTERPOLATION_SPEED * (deltaTime / 16.67),
-        1
-      );
+      const frameAdjustedSpeed = Math.min(INTERPOLATION_SPEED * (deltaTime / 16.67), 1);
 
       const state = stateRef.current;
       let hasChanges = false;

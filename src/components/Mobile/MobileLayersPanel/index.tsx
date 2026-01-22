@@ -27,11 +27,7 @@ export function MobileLayersPanel() {
 
   return (
     <div className="flex flex-col">
-      <TabBar
-        tabs={TABS}
-        activeTab={activeTab}
-        onChange={setActiveTab}
-      />
+      <TabBar tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
       <div className="flex-1 overflow-y-auto">
         {activeTab === 'layers' ? <LayersTab /> : <ToolsTab />}
       </div>

@@ -47,10 +47,14 @@ function MobilePrivacySection() {
         }}
       >
         <div>
-          <span className={`text-sm ${mlTelemetryEnabled ? 'text-content' : 'text-content-secondary'}`}>
+          <span
+            className={`text-sm ${mlTelemetryEnabled ? 'text-content' : 'text-content-secondary'}`}
+          >
             Help improve suggestions
           </span>
-          <p className="text-xs text-content-tertiary">Share bin sizes and placement patterns (no personal data)</p>
+          <p className="text-xs text-content-tertiary">
+            Share bin sizes and placement patterns (no personal data)
+          </p>
         </div>
         <Checkbox checked={mlTelemetryEnabled} variant="mobile" />
       </div>
@@ -94,8 +98,8 @@ export function MobileSettingsPanel() {
     halfBinViolation,
   } = useDrawerSettings();
 
-  const openLabsDrawer = useLabsStore(state => state.openDrawer);
-  const enabledFeatures = useLabsStore(state => state.preferences.enabledFeatures);
+  const openLabsDrawer = useLabsStore((state) => state.openDrawer);
+  const enabledFeatures = useLabsStore((state) => state.preferences.enabledFeatures);
 
   // Compute enabled count from raw state (only experimental/preview features)
   const labsEnabledCount = useMemo(() => {
@@ -115,9 +119,7 @@ export function MobileSettingsPanel() {
         <div className="grid grid-cols-2 gap-3 mb-3">
           {/* Width */}
           <div>
-            <label className="block text-sm mb-1 text-content-tertiary">
-              Width
-            </label>
+            <label className="block text-sm mb-1 text-content-tertiary">Width</label>
             <StepperControl
               value={drawer.width}
               onChange={handleDrawerWidthInput}
@@ -132,9 +134,7 @@ export function MobileSettingsPanel() {
 
           {/* Depth */}
           <div>
-            <label className="block text-sm mb-1 text-content-tertiary">
-              Depth
-            </label>
+            <label className="block text-sm mb-1 text-content-tertiary">Depth</label>
             <StepperControl
               value={drawer.depth}
               onChange={handleDrawerDepthInput}
@@ -150,9 +150,7 @@ export function MobileSettingsPanel() {
 
         {/* Height */}
         <div>
-          <label className="block text-sm mb-1 text-content-tertiary">
-            Height
-          </label>
+          <label className="block text-sm mb-1 text-content-tertiary">Height</label>
           <StepperControl
             value={drawer.height}
             onStep={handleDrawerHeightChange}
@@ -166,11 +164,22 @@ export function MobileSettingsPanel() {
 
         {/* Real-world drawer dimensions */}
         <div className="mt-3 flex items-center gap-1.5 text-sm text-content-tertiary">
-          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2" />
+          <svg
+            className="w-4 h-4 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
+            />
           </svg>
           <span className="tabular-nums">
-            {realWorldDimensions.width.toFixed(0)} × {realWorldDimensions.depth.toFixed(0)} × {realWorldDimensions.height.toFixed(0)} mm
+            {realWorldDimensions.width.toFixed(0)} × {realWorldDimensions.depth.toFixed(0)} ×{' '}
+            {realWorldDimensions.height.toFixed(0)} mm
           </span>
         </div>
       </section>
@@ -193,8 +202,14 @@ export function MobileSettingsPanel() {
         >
           <div>
             <div className="flex items-center gap-1.5">
-              <span className={`text-sm ${halfBinMode ? 'text-content' : 'text-content-secondary'}`}>Half-bin mode</span>
-              <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">experimental</span>
+              <span
+                className={`text-sm ${halfBinMode ? 'text-content' : 'text-content-secondary'}`}
+              >
+                Half-bin mode
+              </span>
+              <span className="text-[9px] text-amber-500/80 bg-amber-500/10 px-1 py-0.5 rounded">
+                experimental
+              </span>
             </div>
             <p className="text-xs text-content-tertiary">Allow 0.5 unit precision</p>
           </div>
@@ -264,7 +279,9 @@ export function MobileSettingsPanel() {
                 }
               }}
             >
-              <span className={`text-sm ${site.enabled ? 'text-content' : 'text-content-tertiary'}`}>
+              <span
+                className={`text-sm ${site.enabled ? 'text-content' : 'text-content-tertiary'}`}
+              >
                 {site.name}
               </span>
               <Checkbox checked={site.enabled} variant="mobile" />
@@ -278,11 +295,10 @@ export function MobileSettingsPanel() {
         <SectionHeader title="Default Preferences" />
 
         <div className="bg-surface-elevated rounded-lg p-3 space-y-2">
-          <div className="text-xs text-content-tertiary">
-            New layouts will use these defaults:
-          </div>
+          <div className="text-xs text-content-tertiary">New layouts will use these defaults:</div>
           <div className="text-sm text-content-secondary">
-            Drawer: {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×{settings.defaultDrawerHeight}u
+            Drawer: {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×
+            {settings.defaultDrawerHeight}u
           </div>
           <div className="text-sm text-content-secondary">
             Layer height: {settings.defaultLayerHeight}u
@@ -298,7 +314,12 @@ export function MobileSettingsPanel() {
             className="btn btn-secondary w-full mt-3"
           >
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+              />
             </svg>
             Save Current as Defaults
           </button>
@@ -343,8 +364,8 @@ export function MobileSettingsPanel() {
             className="hover:underline text-content-tertiary"
           >
             Gridfinity
-          </a>
-          {' '}by Zack Freedman
+          </a>{' '}
+          by Zack Freedman
           <br />
           Tool by{' '}
           <a

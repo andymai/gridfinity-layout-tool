@@ -106,19 +106,16 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
     };
   }, []);
 
-  const handleResizeStart = useCallback(
-    (direction: ResizeDirection, e: React.MouseEvent) => {
-      e.preventDefault();
-      setResizeDirection(direction);
-      setResizeStart({
-        x: e.clientX,
-        y: e.clientY,
-        width: drawerRef.current.width,
-        depth: drawerRef.current.depth,
-      });
-    },
-    []
-  );
+  const handleResizeStart = useCallback((direction: ResizeDirection, e: React.MouseEvent) => {
+    e.preventDefault();
+    setResizeDirection(direction);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: drawerRef.current.width,
+      depth: drawerRef.current.depth,
+    });
+  }, []);
 
   useEffect(() => {
     if (!resizeDirection || !resizeStart) return;

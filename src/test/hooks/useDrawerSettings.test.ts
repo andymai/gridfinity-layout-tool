@@ -212,7 +212,7 @@ describe('useDrawerSettings', () => {
 
       // Check bins were moved to staging
       const bins = useLayoutStore.getState().layout.bins;
-      const fractionalBin = bins.find(b => b.width === 1.5);
+      const fractionalBin = bins.find((b) => b.width === 1.5);
       expect(fractionalBin?.layerId).toBe(STAGING_ID);
       expect(result.current.halfBinMode).toBe(false);
       expect(result.current.showHalfBinBlockedModal).toBe(false);
@@ -358,7 +358,7 @@ describe('useDrawerSettings', () => {
       });
 
       const updatedSites = result.current.settings.stlSearchSites;
-      const updatedSite = updatedSites.find(s => s.id === firstSite.id);
+      const updatedSite = updatedSites.find((s) => s.id === firstSite.id);
       expect(updatedSite?.enabled).toBe(!initialEnabled);
     });
   });

@@ -26,9 +26,7 @@ export function PrintListEmpty({ compact = false }: PrintListEmptyProps) {
           </svg>
         </div>
         <p className="text-content-secondary">No bins to print</p>
-        <p className="text-sm mt-1 text-content-disabled">
-          Draw bins on the grid to see them here
-        </p>
+        <p className="text-sm mt-1 text-content-disabled">Draw bins on the grid to see them here</p>
       </div>
     );
   }

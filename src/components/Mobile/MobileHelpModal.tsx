@@ -93,18 +93,14 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           <h2 id="mobile-help-title" style={STYLES.title}>
             Touch Gestures
           </h2>
-          <button
-            onClick={onClose}
-            className="btn btn-ghost w-10 h-10 p-0"
-            aria-label="Close help"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <button onClick={onClose} className="btn btn-ghost w-10 h-10 p-0" aria-label="Close help">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -116,21 +112,13 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
               Drawing & Selection
             </h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-              <GestureRow
-                icon={<TapIcon />}
-                gesture="Tap bin"
-                description="Select bin"
-              />
+              <GestureRow icon={<TapIcon />} gesture="Tap bin" description="Select bin" />
               <GestureRow
                 icon={<DragIcon />}
                 gesture="Drag on empty grid"
                 description="Draw new bin"
               />
-              <GestureRow
-                icon={<DragIcon />}
-                gesture="Drag selected bin"
-                description="Move bin"
-              />
+              <GestureRow icon={<DragIcon />} gesture="Drag selected bin" description="Move bin" />
               <GestureRow
                 icon={<LongPressIcon />}
                 gesture="Long-press bin"
@@ -179,11 +167,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
                 gesture="Drag on grid"
                 description="Fill area with bins"
               />
-              <GestureRow
-                icon={<TapIcon />}
-                gesture="Tap × button"
-                description="Exit paint mode"
-              />
+              <GestureRow icon={<TapIcon />} gesture="Tap × button" description="Exit paint mode" />
             </div>
           </section>
 
@@ -227,7 +211,10 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>With keyboard: M to move bins, R to resize, V for 3D preview, arrows to navigate, 1-4 for camera views</span>
+                <span>
+                  With keyboard: M to move bins, R to resize, V for 3D preview, arrows to navigate,
+                  1-4 for camera views
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
@@ -272,7 +259,12 @@ function TapIcon() {
   return (
     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <circle cx="12" cy="12" r="3" strokeWidth={2} />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v4m0 12v4m10-10h-4M6 12H2" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 2v4m0 12v4m10-10h-4M6 12H2"
+      />
     </svg>
   );
 }
@@ -280,7 +272,12 @@ function TapIcon() {
 function DragIcon() {
   return (
     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M7 11l5-5m0 0l5 5m-5-5v12"
+      />
     </svg>
   );
 }
@@ -298,7 +295,12 @@ function DragEdgeIcon() {
   return (
     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <rect x="4" y="6" width="12" height="12" rx="1" strokeWidth={2} />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12h4m0 0l-2-2m2 2l-2 2" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M16 12h4m0 0l-2-2m2 2l-2 2"
+      />
     </svg>
   );
 }
@@ -307,7 +309,12 @@ function DragCornerIcon() {
   return (
     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <rect x="4" y="4" width="10" height="10" rx="1" strokeWidth={2} />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 14l6 6m0 0h-4m4 0v-4" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M14 14l6 6m0 0h-4m4 0v-4"
+      />
     </svg>
   );
 }
@@ -315,7 +322,12 @@ function DragCornerIcon() {
 function SwipeDownIcon() {
   return (
     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 14l-7 7m0 0l-7-7m7 7V3"
+      />
     </svg>
   );
 }

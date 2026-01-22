@@ -181,7 +181,9 @@ function SortFieldItem({
           }
         }}
       >
-        <span className={`text-sm flex-1 ${config.enabled ? 'text-content' : 'text-content-secondary'}`}>
+        <span
+          className={`text-sm flex-1 ${config.enabled ? 'text-content' : 'text-content-secondary'}`}
+        >
           {SORT_FIELD_LABELS[config.field]}
         </span>
         <Checkbox checked={config.enabled} variant="desktop" />
@@ -204,7 +206,13 @@ function SortFieldItem({
           title="Move up"
           aria-label={`Move ${SORT_FIELD_LABELS[config.field]} up`}
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path d="M18 15l-6-6-6 6" />
           </svg>
         </button>
@@ -216,7 +224,13 @@ function SortFieldItem({
           title="Move down"
           aria-label={`Move ${SORT_FIELD_LABELS[config.field]} down`}
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path d="M6 9l6 6 6-6" />
           </svg>
         </button>

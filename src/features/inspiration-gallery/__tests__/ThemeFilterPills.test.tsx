@@ -89,9 +89,7 @@ describe('ThemeFilterPills', () => {
       render(<ThemeFilterPills {...defaultProps} selectedTheme="kitchen" />);
 
       const tabs = screen.getAllByRole('tab');
-      const selectedTabs = tabs.filter(
-        (tab) => tab.getAttribute('aria-selected') === 'true'
-      );
+      const selectedTabs = tabs.filter((tab) => tab.getAttribute('aria-selected') === 'true');
 
       expect(selectedTabs).toHaveLength(1);
     });
@@ -100,9 +98,7 @@ describe('ThemeFilterPills', () => {
   describe('interactions', () => {
     it('calls onThemeChange when a theme is clicked', () => {
       const onThemeChange = vi.fn();
-      render(
-        <ThemeFilterPills {...defaultProps} onThemeChange={onThemeChange} />
-      );
+      render(<ThemeFilterPills {...defaultProps} onThemeChange={onThemeChange} />);
 
       fireEvent.click(screen.getByRole('tab', { name: /workshop/i }));
 
@@ -113,11 +109,7 @@ describe('ThemeFilterPills', () => {
     it('calls onThemeChange with "all" when All is clicked', () => {
       const onThemeChange = vi.fn();
       render(
-        <ThemeFilterPills
-          {...defaultProps}
-          selectedTheme="kitchen"
-          onThemeChange={onThemeChange}
-        />
+        <ThemeFilterPills {...defaultProps} selectedTheme="kitchen" onThemeChange={onThemeChange} />
       );
 
       fireEvent.click(screen.getByRole('tab', { name: /all/i }));
@@ -127,9 +119,7 @@ describe('ThemeFilterPills', () => {
 
     it('calls onThemeChange with each theme type', () => {
       const onThemeChange = vi.fn();
-      render(
-        <ThemeFilterPills {...defaultProps} onThemeChange={onThemeChange} />
-      );
+      render(<ThemeFilterPills {...defaultProps} onThemeChange={onThemeChange} />);
 
       const themes: Array<InspirationTheme | 'all'> = [
         'kitchen',
@@ -190,12 +180,7 @@ describe('ThemeFilterPills', () => {
         workshop: 10,
       };
 
-      rerender(
-        <ThemeFilterPills
-          {...defaultProps}
-          themeCounts={updatedCounts}
-        />
-      );
+      rerender(<ThemeFilterPills {...defaultProps} themeCounts={updatedCounts} />);
 
       expect(screen.getByText('30')).toBeInTheDocument();
       expect(screen.getByText('10')).toBeInTheDocument();
@@ -211,9 +196,7 @@ describe('ThemeFilterPills', () => {
         personal: 0,
       };
 
-      render(
-        <ThemeFilterPills {...defaultProps} themeCounts={zeroCounts} />
-      );
+      render(<ThemeFilterPills {...defaultProps} themeCounts={zeroCounts} />);
 
       const zeroElements = screen.getAllByText('0');
       expect(zeroElements).toHaveLength(6);

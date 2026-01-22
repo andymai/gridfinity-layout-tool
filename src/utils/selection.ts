@@ -10,10 +10,10 @@ export function getSelectionBounds(bins: Bin[]): Rect {
     return { x: 0, y: 0, width: 0, depth: 0 };
   }
 
-  const minX = Math.min(...bins.map(b => b.x));
-  const minY = Math.min(...bins.map(b => b.y));
-  const maxX = Math.max(...bins.map(b => b.x + b.width));
-  const maxY = Math.max(...bins.map(b => b.y + b.depth));
+  const minX = Math.min(...bins.map((b) => b.x));
+  const minY = Math.min(...bins.map((b) => b.y));
+  const maxX = Math.max(...bins.map((b) => b.x + b.width));
+  const maxY = Math.max(...bins.map((b) => b.y + b.depth));
 
   return {
     x: minX,

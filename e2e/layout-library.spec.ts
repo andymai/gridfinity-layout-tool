@@ -178,7 +178,9 @@ test.describe('Layout Library Management', () => {
       await expect(modal.getByRole('option')).toHaveCount(2);
 
       // Find the "More actions" button for this layout
-      const moreActionsBtn = modal.getByRole('button', { name: /more actions for Layout To Delete/i });
+      const moreActionsBtn = modal.getByRole('button', {
+        name: /more actions for Layout To Delete/i,
+      });
       await moreActionsBtn.click();
 
       // Click Delete in the dropdown (first click shows confirmation)
@@ -228,7 +230,9 @@ test.describe('Layout Library Management', () => {
       const modal = getActiveDialog(page);
 
       // Open overflow menu
-      const moreActionsBtn = modal.getByRole('button', { name: /more actions for Original Layout/i });
+      const moreActionsBtn = modal.getByRole('button', {
+        name: /more actions for Original Layout/i,
+      });
       await moreActionsBtn.click();
 
       // Click Duplicate
@@ -237,7 +241,9 @@ test.describe('Layout Library Management', () => {
 
       // Should create "Original Layout (copy)" and now have 2 layouts
       await expect(modal.getByRole('option')).toHaveCount(2, { timeout: 5000 });
-      await expect(modal.getByRole('option', { name: /Original Layout \(copy\)/i })).toBeVisible({ timeout: 5000 });
+      await expect(modal.getByRole('option', { name: /Original Layout \(copy\)/i })).toBeVisible({
+        timeout: 5000,
+      });
     });
   });
 
@@ -274,7 +280,9 @@ test.describe('Layout Library Management', () => {
       await waitForAppReady(page);
 
       // Should still show the layout name
-      await expect(page.getByRole('button', { name: 'Persisted Layout' })).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole('button', { name: 'Persisted Layout' })).toBeVisible({
+        timeout: 5000,
+      });
 
       // Should still have 1 bin
       await waitForBinCount(page, 1);
@@ -307,7 +315,9 @@ test.describe('Layout Library Management', () => {
       await waitForAppReady(page);
 
       // Should show the second layout (last active)
-      await expect(page.getByRole('button', { name: 'Second Layout' })).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole('button', { name: 'Second Layout' })).toBeVisible({
+        timeout: 5000,
+      });
 
       // Open layout manager and verify both layouts exist
       await page.getByRole('button', { name: 'Open layout manager' }).click();

@@ -49,16 +49,9 @@ function formatCustomProperties(props: Record<string, string> | undefined): stri
  * Simplified bin component for print view.
  * Renders bin with configurable properties based on settings.
  */
-export function PrintBin({
-  bin,
-  category,
-  drawer,
-  cellSize,
-  gap,
-  settings,
-}: PrintBinProps) {
+export function PrintBin({ bin, category, drawer, cellSize, gap, settings }: PrintBinProps) {
   const color = settings.showCategoryColor
-    ? category?.color ?? DEFAULT_CATEGORY_COLOR
+    ? (category?.color ?? DEFAULT_CATEGORY_COLOR)
     : '#e5e7eb'; // Light gray when color disabled
   const textColors = getPrintTextColors(color);
 
@@ -114,7 +107,8 @@ export function PrintBin({
   // Calculate pixel dimensions accounting for fractional drawer cells
   const hasFractionalBin =
     bin.x % 1 !== 0 || bin.y % 1 !== 0 || bin.width % 1 !== 0 || bin.depth % 1 !== 0;
-  const needsCustomSizing = hasFractionalBin || hasFractionalDrawerWidth || hasFractionalDrawerDepth;
+  const needsCustomSizing =
+    hasFractionalBin || hasFractionalDrawerWidth || hasFractionalDrawerDepth;
 
   // Calculate fractional cell sizes in pixels
   const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
@@ -203,7 +197,7 @@ export function PrintBin({
     // Y offset (from top of cell)
     if (hasFractionalDrawerDepth && fractionalEdgeY === 'start') {
       if (binEndY <= fractionalDepthPart) {
-        offsetY = (fractionalDepthPart - binEndY) / fractionalDepthPart * fractionalCellHeight;
+        offsetY = ((fractionalDepthPart - binEndY) / fractionalDepthPart) * fractionalCellHeight;
       } else {
         const integerY = binEndY - fractionalDepthPart;
         offsetY = (Math.ceil(integerY) - integerY) * (cellSize + gap);
@@ -211,7 +205,8 @@ export function PrintBin({
     } else if (hasFractionalDrawerDepth && fractionalEdgeY === 'end') {
       if (binEndY > integerDepth) {
         const fractionalY = binEndY - integerDepth;
-        offsetY = (fractionalDepthPart - fractionalY) / fractionalDepthPart * fractionalCellHeight;
+        offsetY =
+          ((fractionalDepthPart - fractionalY) / fractionalDepthPart) * fractionalCellHeight;
       } else {
         offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
       }
@@ -274,7 +269,7 @@ export function PrintBin({
 
   // Show label if it fits, otherwise show dimensions as primary
   const showLabel = wantsLabel && labelFits;
-  const primaryText = showLabel && bin.label ? bin.label : (showSize ? dimensionsText : null);
+  const primaryText = showLabel && bin.label ? bin.label : showSize ? dimensionsText : null;
   const secondaryText = showLabel && showSize && hasSpaceForSecondary ? dimensionsText : null;
 
   // Hide text on very small bins

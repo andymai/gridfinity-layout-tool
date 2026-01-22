@@ -99,9 +99,7 @@ export function validateUrlTemplate(template: string): string | null {
   }
 
   // Test URL validity by substituting test values
-  const testUrl = template
-    .replace(/\{width\}/g, '1')
-    .replace(/\{depth\}/g, '1');
+  const testUrl = template.replace(/\{width\}/g, '1').replace(/\{depth\}/g, '1');
 
   try {
     new URL(testUrl);

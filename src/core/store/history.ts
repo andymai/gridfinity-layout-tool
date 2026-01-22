@@ -37,7 +37,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   canRedo: false,
 
   push: (layout) => {
-    set(state => {
+    set((state) => {
       const newPast = [...state.past, layout];
       if (newPast.length > CONSTRAINTS.UNDO_LIMIT) {
         newPast.shift();
@@ -58,7 +58,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     const current = useLayoutStore.getState().layout;
     const previous = past[past.length - 1];
 
-    set(state => ({
+    set((state) => ({
       past: state.past.slice(0, -1),
       future: [current, ...state.future],
       canUndo: state.past.length > 1,
@@ -79,7 +79,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     const current = useLayoutStore.getState().layout;
     const next = future[0];
 
-    set(state => ({
+    set((state) => ({
       past: [...state.past, current],
       future: state.future.slice(1),
       canUndo: true,
@@ -99,8 +99,8 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
  * Use this instead of calling layout store directly for undoable actions.
  */
 export function useUndoableAction() {
-  const layout = useLayoutStore(state => state.layout);
-  const push = useHistoryStore(state => state.push);
+  const layout = useLayoutStore((state) => state.layout);
+  const push = useHistoryStore((state) => state.push);
 
   // Use ref to track current layout without causing callback to change
   const layoutRef = useRef(layout);
@@ -108,12 +108,15 @@ export function useUndoableAction() {
     layoutRef.current = layout;
   }, [layout]);
 
-  const execute = useCallback((action: () => void) => {
-    push(cloneLayout(layoutRef.current));
-    action();
-    // Record timestamp AFTER action executes for accurate undo timing
-    mlTracking.recordAction();
-  }, [push]); // Only depends on push, which is stable from Zustand
+  const execute = useCallback(
+    (action: () => void) => {
+      push(cloneLayout(layoutRef.current));
+      action();
+      // Record timestamp AFTER action executes for accurate undo timing
+      mlTracking.recordAction();
+    },
+    [push]
+  ); // Only depends on push, which is stable from Zustand
 
   return { execute };
 }

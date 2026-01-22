@@ -48,10 +48,7 @@ export interface VisibleBinsOptions {
  * // Get all bins including staging
  * const allBins = getVisibleBins(bins, { includeStaging: true });
  */
-export function getVisibleBins(
-  bins: Bin[],
-  options: VisibleBinsOptions = {}
-): Bin[] {
+export function getVisibleBins(bins: Bin[], options: VisibleBinsOptions = {}): Bin[] {
   const { layerIds, includeStaging = false } = options;
 
   return bins.filter((bin) => {
@@ -119,9 +116,7 @@ export function getStagingBins(bins: Bin[]): Bin[] {
  * const layerBins = getLayerBins(layout.bins, activeLayerId);
  */
 export function getLayerBins(bins: Bin[], layerId: string): Bin[] {
-  return bins.filter(
-    (bin) => bin.layerId === layerId && bin.layerId !== STAGING_ID
-  );
+  return bins.filter((bin) => bin.layerId === layerId && bin.layerId !== STAGING_ID);
 }
 
 /**

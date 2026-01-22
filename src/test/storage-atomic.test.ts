@@ -154,8 +154,8 @@ describe('computePreview', () => {
 
     // binMap should exclude staging bins
     expect(preview.binMap.length).toBe(2);
-    expect(preview.binMap.some(b => b.x === 0 && b.y === 0 && b.w === 2)).toBe(true);
-    expect(preview.binMap.some(b => b.x === 2 && b.y === 0 && b.w === 1)).toBe(true);
+    expect(preview.binMap.some((b) => b.x === 0 && b.y === 0 && b.w === 2)).toBe(true);
+    expect(preview.binMap.some((b) => b.x === 2 && b.y === 0 && b.w === 1)).toBe(true);
   });
 
   it('maps category colors to bins', () => {
@@ -164,7 +164,7 @@ describe('computePreview', () => {
 
     const preview = computePreview(layout);
 
-    const binWithColor = preview.binMap.find(b => b.x === 0 && b.y === 0);
+    const binWithColor = preview.binMap.find((b) => b.x === 0 && b.y === 0);
     expect(binWithColor?.c).toBe('#FF0000');
   });
 
@@ -175,7 +175,7 @@ describe('computePreview', () => {
 
     const preview = computePreview(layout);
 
-    const binWithFallback = preview.binMap.find(b => b.x === 0 && b.y === 0);
+    const binWithFallback = preview.binMap.find((b) => b.x === 0 && b.y === 0);
     expect(binWithFallback?.c).toBe('#6B7280'); // Gray fallback
   });
 
@@ -334,10 +334,7 @@ describe('saveLayoutWithMetadata', () => {
 
     await saveLayoutWithMetadata('my-layout-id', layout, library);
 
-    expect(backend.saveAsync).toHaveBeenCalledWith(
-      'gridfinity-layout-my-layout-id',
-      layout
-    );
+    expect(backend.saveAsync).toHaveBeenCalledWith('gridfinity-layout-my-layout-id', layout);
   });
 });
 
@@ -634,10 +631,7 @@ describe('switchActiveLayout', () => {
 
     await switchActiveLayout('from-id', fromLayout, 'to-id', library);
 
-    expect(backend.saveAsync).toHaveBeenCalledWith(
-      'gridfinity-layout-from-id',
-      fromLayout
-    );
+    expect(backend.saveAsync).toHaveBeenCalledWith('gridfinity-layout-from-id', fromLayout);
   });
 
   it('loads target layout', async () => {
@@ -696,8 +690,8 @@ describe('switchActiveLayout', () => {
     // Actually, saveAsync is for saving, loadAsync is for loading
     // So saveAsync should NOT have been called at all for the "from" layout
     const saveAsyncCalls = vi.mocked(backend.saveAsync).mock.calls;
-    const savingFromId = saveAsyncCalls.some(call =>
-      call[0] === 'gridfinity-layout-__shared_preview__'
+    const savingFromId = saveAsyncCalls.some(
+      (call) => call[0] === 'gridfinity-layout-__shared_preview__'
     );
     expect(savingFromId).toBe(false);
   });
@@ -786,7 +780,11 @@ describe('updateCloudShare', () => {
   it('saves library after update', () => {
     const library = createTestLibrary([createTestEntry('layout-1', 'Layout 1')]);
 
-    updateCloudShare('layout-1', { id: 'share', deleteToken: 'token', sharedAt: Date.now(), permission: 'view' }, library);
+    updateCloudShare(
+      'layout-1',
+      { id: 'share', deleteToken: 'token', sharedAt: Date.now(), permission: 'view' },
+      library
+    );
 
     expect(backend.saveSyncGeneric).toHaveBeenCalledWith(
       'gridfinity-library-v1',
@@ -863,9 +861,7 @@ describe('renameLayoutEntry', () => {
     expect(backend.saveSyncGeneric).toHaveBeenCalledWith(
       'gridfinity-library-v1',
       expect.objectContaining({
-        entries: expect.arrayContaining([
-          expect.objectContaining({ name: 'New' }),
-        ]),
+        entries: expect.arrayContaining([expect.objectContaining({ name: 'New' })]),
       })
     );
   });

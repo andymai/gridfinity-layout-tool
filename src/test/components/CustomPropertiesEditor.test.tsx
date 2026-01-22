@@ -281,8 +281,9 @@ describe('CustomPropertiesEditor', () => {
       const longKey = 'a'.repeat(100);
       fireEvent.change(getByPlaceholderText(/Property name/), { target: { value: longKey } });
 
-      expect((getByPlaceholderText(/Property name/) as HTMLInputElement).value.length)
-        .toBeLessThanOrEqual(CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH);
+      expect(
+        (getByPlaceholderText(/Property name/) as HTMLInputElement).value.length
+      ).toBeLessThanOrEqual(CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH);
     });
 
     it('limits value length on edit', () => {
@@ -297,8 +298,9 @@ describe('CustomPropertiesEditor', () => {
       fireEvent.change(getByLabelText('Value for SKU'), { target: { value: longValue } });
 
       // The input should truncate the value
-      expect((getByLabelText('Value for SKU') as HTMLInputElement).value.length)
-        .toBeLessThanOrEqual(CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH);
+      expect(
+        (getByLabelText('Value for SKU') as HTMLInputElement).value.length
+      ).toBeLessThanOrEqual(CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH);
     });
   });
 

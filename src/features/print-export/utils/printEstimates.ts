@@ -3,8 +3,8 @@
  */
 
 // Constants
-export const DEFAULT_METERS_PER_KG = 330;  // 1.75mm PLA
-export const DEFAULT_COST_PER_KG = 15;     // $15/kg baseline
+export const DEFAULT_METERS_PER_KG = 330; // 1.75mm PLA
+export const DEFAULT_COST_PER_KG = 15; // $15/kg baseline
 
 /**
  * Calculate cost estimate from filament meters.
@@ -48,7 +48,7 @@ export function calcSpoolPercentage(
 export function calcPrintTimeHours(filamentMeters: number, numPrintJobs: number = 1): number {
   const overheadMinutesPerJob = 16;
   const minutesPerMeter = 3.6;
-  const totalMinutes = (numPrintJobs * overheadMinutesPerJob) + (filamentMeters * minutesPerMeter);
+  const totalMinutes = numPrintJobs * overheadMinutesPerJob + filamentMeters * minutesPerMeter;
   return Math.round((totalMinutes / 60) * 10) / 10; // 1 decimal hour
 }
 

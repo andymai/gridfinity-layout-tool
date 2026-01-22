@@ -61,23 +61,29 @@ export function LayoutListItem({
     setIsEditing(false);
   }, [editingName, entry.name, onRename]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleFinishRename();
-    } else if (e.key === 'Escape') {
-      setIsEditing(false);
-      setEditingName(entry.name);
-    }
-  }, [handleFinishRename, entry.name]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleFinishRename();
+      } else if (e.key === 'Escape') {
+        setIsEditing(false);
+        setEditingName(entry.name);
+      }
+    },
+    [handleFinishRename, entry.name]
+  );
 
-  const handleItemKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (isEditing) return;
+  const handleItemKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (isEditing) return;
 
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onSelect();
-    }
-  }, [isEditing, onSelect]);
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onSelect();
+      }
+    },
+    [isEditing, onSelect]
+  );
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -106,9 +112,10 @@ export function LayoutListItem({
       className={`
         w-full text-left p-3 rounded-lg border transition-colors cursor-pointer
         focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-inset
-        ${isActive
-          ? 'bg-blue-900/30 border-blue-500'
-          : 'bg-surface-secondary border-transparent hover:border-stroke-subtle hover:bg-surface'
+        ${
+          isActive
+            ? 'bg-blue-900/30 border-blue-500'
+            : 'bg-surface-secondary border-transparent hover:border-stroke-subtle hover:bg-surface'
         }
       `}
       onClick={() => !isEditing && onSelect()}
@@ -138,11 +145,12 @@ export function LayoutListItem({
             />
           ) : (
             <div className="flex items-center gap-2">
-              <span className="font-medium text-content text-sm truncate">
-                {entry.name}
-              </span>
+              <span className="font-medium text-content text-sm truncate">{entry.name}</span>
               {isActive && (
-                <span className="text-xs px-1.5 py-0.5 bg-blue-600 text-white rounded flex-shrink-0" aria-label="Currently active layout">
+                <span
+                  className="text-xs px-1.5 py-0.5 bg-blue-600 text-white rounded flex-shrink-0"
+                  aria-label="Currently active layout"
+                >
                   Active
                 </span>
               )}
@@ -155,9 +163,7 @@ export function LayoutListItem({
               {entry.preview.drawerWidth}×{entry.preview.drawerDepth}×{entry.preview.drawerHeight}
             </span>
             <span>{entry.preview.binCount} bins</span>
-            <span className="text-content-tertiary">
-              {formatDate(entry.modifiedAt)}
-            </span>
+            <span className="text-content-tertiary">{formatDate(entry.modifiedAt)}</span>
           </div>
 
           {/* Forked From */}

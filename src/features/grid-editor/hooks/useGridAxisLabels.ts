@@ -82,7 +82,10 @@ export function useGridAxisLabels(options: UseGridAxisLabelsOptions): GridAxisLa
     // Bottom row = Y coordinate 1
     // Include fractional edge label when drawer has fractional depth
     // Position depends on fractionalEdgeY setting ('start' = bottom, 'end' = top)
-    const rowLabels: (number | string)[] = Array.from({ length: integerDepth }, (_, i) => integerDepth - i);
+    const rowLabels: (number | string)[] = Array.from(
+      { length: integerDepth },
+      (_, i) => integerDepth - i
+    );
     if (hasFractionalDepth) {
       if (fractionalEdgeY === 'end') {
         rowLabels.unshift('+.5'); // Fractional at top (CSS row 1)

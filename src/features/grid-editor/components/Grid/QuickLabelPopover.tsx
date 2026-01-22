@@ -9,7 +9,7 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
  * Triggered by L keyboard shortcut.
  */
 export function QuickLabelPopover() {
-  const quickLabelBinId = useUIStore(state => state.quickLabelBinId);
+  const quickLabelBinId = useUIStore((state) => state.quickLabelBinId);
 
   if (!quickLabelBinId) return null;
 
@@ -18,12 +18,12 @@ export function QuickLabelPopover() {
 }
 
 function QuickLabelPopoverInner({ binId }: { binId: string }) {
-  const hideQuickLabel = useUIStore(state => state.hideQuickLabel);
-  const bins = useLayoutStore(state => state.layout.bins);
+  const hideQuickLabel = useUIStore((state) => state.hideQuickLabel);
+  const bins = useLayoutStore((state) => state.layout.bins);
   const { updateBin } = useMutations();
   const { execute } = useUndoableAction();
 
-  const bin = bins.find(b => b.id === binId);
+  const bin = bins.find((b) => b.id === binId);
   const inputRef = useRef<HTMLInputElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -148,7 +148,12 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
                 aria-label="Clear"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             )}
@@ -157,11 +162,21 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
           {/* Keyboard hints */}
           <div className="flex items-center justify-center gap-3 mt-2 text-xs text-content-tertiary">
             <span>
-              <kbd className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle leading-none" style={{ fontSize: '10px' }}>Enter</kbd>
+              <kbd
+                className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle leading-none"
+                style={{ fontSize: '10px' }}
+              >
+                Enter
+              </kbd>
               <span className="ml-1">save</span>
             </span>
             <span>
-              <kbd className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle leading-none" style={{ fontSize: '10px' }}>Esc</kbd>
+              <kbd
+                className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle leading-none"
+                style={{ fontSize: '10px' }}
+              >
+                Esc
+              </kbd>
               <span className="ml-1">cancel</span>
             </span>
           </div>

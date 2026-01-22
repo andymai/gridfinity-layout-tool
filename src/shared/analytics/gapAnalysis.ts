@@ -25,11 +25,7 @@ export interface GapAnalysis {
 function hasFractionalCoordinates(bins: Bin[], drawerWidth: number, drawerDepth: number): boolean {
   if (isFractional(drawerWidth) || isFractional(drawerDepth)) return true;
   return bins.some(
-    (b) =>
-      isFractional(b.x) ||
-      isFractional(b.y) ||
-      isFractional(b.width) ||
-      isFractional(b.depth)
+    (b) => isFractional(b.x) || isFractional(b.y) || isFractional(b.width) || isFractional(b.depth)
   );
 }
 
@@ -146,9 +142,7 @@ export function analyzeGaps(
   const { drawer } = layout;
 
   // Get bins on this layer (excluding staging)
-  const layerBins = layout.bins.filter(
-    (b) => b.layerId === layerId && b.layerId !== STAGING_ID
-  );
+  const layerBins = layout.bins.filter((b) => b.layerId === layerId && b.layerId !== STAGING_ID);
 
   // Determine scale factor: 2x for half-bin mode, 1x otherwise
   const scale = hasFractionalCoordinates(layerBins, drawer.width, drawer.depth) ? 2 : 1;

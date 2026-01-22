@@ -116,12 +116,9 @@ export function useMLTracking() {
    * Track a category change on a bin.
    * Only tracks custom categories - default color-based categories are skipped.
    */
-  const trackCategory = useCallback(
-    (bin: Bin, categoryName: string, batchSize?: number) => {
-      trackCategoryChange(bin, categoryName, batchSize);
-    },
-    []
-  );
+  const trackCategory = useCallback((bin: Bin, categoryName: string, batchSize?: number) => {
+    trackCategoryChange(bin, categoryName, batchSize);
+  }, []);
 
   /**
    * Track a bin resize.
@@ -143,13 +140,10 @@ export function useMLTracking() {
    * Track a bin deletion.
    * Important negative signal for ML training.
    */
-  const trackDeletion = useCallback(
-    (bin: Bin, method: DeleteMethod, batchSize?: number) => {
-      const layout = useLayoutStore.getState().layout;
-      trackBinDeletion(bin, layout, method, batchSize);
-    },
-    []
-  );
+  const trackDeletion = useCallback((bin: Bin, method: DeleteMethod, batchSize?: number) => {
+    const layout = useLayoutStore.getState().layout;
+    trackBinDeletion(bin, layout, method, batchSize);
+  }, []);
 
   /**
    * Track a bin move.
@@ -251,7 +245,11 @@ export const mlTracking = {
   /**
    * Track a label update.
    */
-  trackLabel(bin: Bin, oldLabel: string | undefined | null, newLabel: string | undefined | null): void {
+  trackLabel(
+    bin: Bin,
+    oldLabel: string | undefined | null,
+    newLabel: string | undefined | null
+  ): void {
     trackLabelUpdate(bin, oldLabel, newLabel);
   },
 
@@ -320,7 +318,12 @@ export const mlTracking = {
   /**
    * Track a bin move.
    */
-  trackMove(bin: Bin, oldPosition: { x: number; y: number }, method: MoveMethod, batchSize?: number): void {
+  trackMove(
+    bin: Bin,
+    oldPosition: { x: number; y: number },
+    method: MoveMethod,
+    batchSize?: number
+  ): void {
     const layout = useLayoutStore.getState().layout;
     trackBinMove(bin, oldPosition, layout, method, batchSize);
   },

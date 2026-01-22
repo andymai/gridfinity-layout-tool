@@ -15,14 +15,21 @@ function createValidLayout() {
     printBedSize: 256,
     gridUnitMm: 42,
     heightUnitMm: 7,
-    categories: [
-      { id: 'cat1', name: 'Default', color: '#888888' },
-    ],
-    layers: [
-      { id: 'layer1', name: 'Layer 1', height: 3 },
-    ],
+    categories: [{ id: 'cat1', name: 'Default', color: '#888888' }],
+    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
     bins: [
-      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: 'Test', notes: '' },
+      {
+        id: 'bin1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'cat1',
+        label: 'Test',
+        notes: '',
+      },
     ],
   };
 }

@@ -71,7 +71,7 @@ describe('Accessibility - Critical Issues', () => {
         'color-contrast': { enabled: true },
         'button-name': { enabled: true },
         'image-alt': { enabled: true },
-        'label': { enabled: true },
+        label: { enabled: true },
         'link-name': { enabled: true },
       },
     });
@@ -91,7 +91,7 @@ describe('Accessibility - Critical Issues', () => {
         'color-contrast': { enabled: true },
         'button-name': { enabled: true },
         'image-alt': { enabled: true },
-        'label': { enabled: true },
+        label: { enabled: true },
         'link-name': { enabled: true },
       },
     });
@@ -110,7 +110,7 @@ describe('Accessibility - Critical Issues', () => {
         'color-contrast': { enabled: true },
         'button-name': { enabled: true },
         'image-alt': { enabled: true },
-        'label': { enabled: true },
+        label: { enabled: true },
         'link-name': { enabled: true },
       },
     });
@@ -129,7 +129,7 @@ describe('Accessibility - Critical Issues', () => {
         'color-contrast': { enabled: true },
         'button-name': { enabled: true },
         'image-alt': { enabled: true },
-        'label': { enabled: true },
+        label: { enabled: true },
         'link-name': { enabled: true },
       },
     });

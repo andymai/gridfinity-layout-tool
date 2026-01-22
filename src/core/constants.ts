@@ -3,7 +3,7 @@ import type { Layout, Category } from './types';
 // === Constraints (from PRD) ===
 
 export const CONSTRAINTS = {
-  GRID_MIN: 0.5,  // Minimum drawer dimension (supports half-unit increments)
+  GRID_MIN: 0.5, // Minimum drawer dimension (supports half-unit increments)
   GRID_MAX: 50,
   LAYERS_MIN: 1,
   LAYERS_MAX: 10,
@@ -19,21 +19,31 @@ export const CONSTRAINTS = {
   NAME_MAX_LENGTH: 64,
   QUICK_FILL_MAX_BINS: 2500,
   QUICK_FILL_CONFIRM_THRESHOLD: 100,
-  PRINT_GAP_MM: 10,  // Gap between bins on print bed
+  PRINT_GAP_MM: 10, // Gap between bins on print bed
   // Layout library constraints
-  LAYOUTS_MAX: 100,              // Max layouts in library (localStorage limit)
+  LAYOUTS_MAX: 100, // Max layouts in library (localStorage limit)
   LAYOUTS_WARNING_THRESHOLD: 80, // Show warning at this count
-  RECENT_LAYOUTS_COUNT: 5,       // Number of recent layouts to show
+  RECENT_LAYOUTS_COUNT: 5, // Number of recent layouts to show
   // Custom properties constraints
-  CUSTOM_PROPERTY_MAX_COUNT: 50,        // Max custom properties per bin
-  CUSTOM_PROPERTY_KEY_MAX_LENGTH: 32,   // Max length of property key
+  CUSTOM_PROPERTY_MAX_COUNT: 50, // Max custom properties per bin
+  CUSTOM_PROPERTY_KEY_MAX_LENGTH: 32, // Max length of property key
   CUSTOM_PROPERTY_VALUE_MAX_LENGTH: 256, // Max length of property value
 } as const;
 
 /** Reserved keys that cannot be used as custom property names */
 export const RESERVED_PROPERTY_KEYS = [
-  'id', 'layerId', 'x', 'y', 'width', 'depth', 'height',
-  'clearanceHeight', 'category', 'label', 'notes', 'customProperties',
+  'id',
+  'layerId',
+  'x',
+  'y',
+  'width',
+  'depth',
+  'height',
+  'clearanceHeight',
+  'category',
+  'label',
+  'notes',
+  'customProperties',
 ] as const;
 
 /**
@@ -91,8 +101,18 @@ export function isFractional(value: number): boolean {
  * @param rect - Object with x, y, width, depth properties
  * @returns True if any dimension is fractional
  */
-export function hasFractionalDimensions(rect: { x: number; y: number; width: number; depth: number }): boolean {
-  return isFractional(rect.x) || isFractional(rect.y) || isFractional(rect.width) || isFractional(rect.depth);
+export function hasFractionalDimensions(rect: {
+  x: number;
+  y: number;
+  width: number;
+  depth: number;
+}): boolean {
+  return (
+    isFractional(rect.x) ||
+    isFractional(rect.y) ||
+    isFractional(rect.width) ||
+    isFractional(rect.depth)
+  );
 }
 
 // === Default Colors ===
@@ -122,13 +142,11 @@ export const createDefaultLayout = (): Layout => ({
   version: '1.0',
   name: 'Untitled layout',
   drawer: { width: 10, depth: 8, height: 12 },
-  printBedSize: 256,  // mm - typical print bed size
+  printBedSize: 256, // mm - typical print bed size
   gridUnitMm: 42,
   heightUnitMm: 7,
   categories: [...DEFAULT_CATEGORIES],
-  layers: [
-    { id: generateId(), name: 'Layer 1', height: 3 },
-  ],
+  layers: [{ id: generateId(), name: 'Layer 1', height: 3 }],
   bins: [],
 });
 
@@ -159,7 +177,11 @@ export const createLayoutWithSettings = (settings: LayoutSettings): Layout => ({
   heightUnitMm: settings.defaultHeightUnitMm,
   categories: [...DEFAULT_CATEGORIES],
   layers: [
-    { id: generateId(), name: 'Layer 1', height: Math.min(settings.defaultDrawerHeight, settings.defaultLayerHeight) },
+    {
+      id: generateId(),
+      name: 'Layer 1',
+      height: Math.min(settings.defaultDrawerHeight, settings.defaultLayerHeight),
+    },
   ],
   bins: [],
 });
@@ -208,11 +230,11 @@ export function getBaseCellSize(viewportWidth: number): number {
 export const SHORTCUTS = {
   DELETE: ['Delete', 'Backspace'],
   ESCAPE: ['Escape'],
-  UNDO: 'z',        // with Ctrl/Cmd
-  REDO: 'y',        // with Ctrl/Cmd
-  REDO_ALT: 'Z',    // Shift+Ctrl/Cmd+Z
-  DUPLICATE: 'd',   // with Ctrl/Cmd
-  ROTATE: 'r',      // Rotate bin (swap width/depth) - standalone key, no Ctrl/Cmd
+  UNDO: 'z', // with Ctrl/Cmd
+  REDO: 'y', // with Ctrl/Cmd
+  REDO_ALT: 'Z', // Shift+Ctrl/Cmd+Z
+  DUPLICATE: 'd', // with Ctrl/Cmd
+  ROTATE: 'r', // Rotate bin (swap width/depth) - standalone key, no Ctrl/Cmd
   ZOOM_IN: ['+', '='],
   ZOOM_OUT: ['-'],
   HELP: ['?', '/'],
@@ -239,5 +261,5 @@ export const SHORTCUTS = {
   // Half-bin mode
   HALF_BIN_TOGGLE: 'h',
   // Layout management
-  LAYOUT_MANAGER: 'o',  // with Ctrl/Cmd - "Open" layouts
+  LAYOUT_MANAGER: 'o', // with Ctrl/Cmd - "Open" layouts
 } as const;

@@ -61,9 +61,7 @@ export function BinListFilters({
   }, [onSearchChange]);
 
   const hasActiveFilters =
-    searchQuery.length > 0 ||
-    filters.hiddenCategoryIds.size > 0 ||
-    filters.groupByCategory;
+    searchQuery.length > 0 || filters.hiddenCategoryIds.size > 0 || filters.groupByCategory;
 
   const hiddenCount = totalCount - visibleCount;
 
@@ -104,7 +102,12 @@ export function BinListFilters({
               aria-label="Clear search"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           )}
@@ -114,7 +117,8 @@ export function BinListFilters({
         <div className="text-sm text-content-secondary">
           {hiddenCount > 0 ? (
             <span>
-              Showing <span className="font-medium text-content">{visibleCount}</span> of {totalCount}
+              Showing <span className="font-medium text-content">{visibleCount}</span> of{' '}
+              {totalCount}
             </span>
           ) : (
             <span>
@@ -147,9 +151,10 @@ export function BinListFilters({
                 onClick={() => onToggleCategoryVisibility(category.id)}
                 className={`
                   flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-all
-                  ${isHidden
-                    ? 'bg-surface-hover text-content-disabled opacity-50'
-                    : 'bg-surface-elevated text-content hover:bg-surface-hover'
+                  ${
+                    isHidden
+                      ? 'bg-surface-hover text-content-disabled opacity-50'
+                      : 'bg-surface-elevated text-content hover:bg-surface-hover'
                   }
                 `}
                 title={isHidden ? `Show ${category.name}` : `Hide ${category.name}`}
@@ -193,7 +198,11 @@ export function BinListFilters({
             }
           }}
         >
-          <span className={`text-sm ${filters.groupByCategory ? 'text-content' : 'text-content-secondary'}`}>Group by category</span>
+          <span
+            className={`text-sm ${filters.groupByCategory ? 'text-content' : 'text-content-secondary'}`}
+          >
+            Group by category
+          </span>
           <Checkbox checked={filters.groupByCategory} variant="desktop" />
         </div>
       </div>

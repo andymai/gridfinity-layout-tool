@@ -31,7 +31,13 @@ function pressKey(key: string, options: Partial<KeyboardEventInit> = {}) {
 }
 
 // Helper to extract bin ID from Result
-function getBinId(result: ReturnType<typeof useLayoutStore.getState>['addBin'] extends (...args: unknown[]) => infer R ? R : never): string {
+function getBinId(
+  result: ReturnType<typeof useLayoutStore.getState>['addBin'] extends (
+    ...args: unknown[]
+  ) => infer R
+    ? R
+    : never
+): string {
   if (!isOk(result)) throw new Error('addBin failed');
   return result.value;
 }
@@ -96,17 +102,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       expect(binId).not.toBeNull();
       useUIStore.getState().setSelectedBins([binId]);
@@ -129,17 +137,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -156,29 +166,33 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 3,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 3,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
@@ -224,17 +238,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       expect(useUIStore.getState().selectedBinIds).toHaveLength(1);
@@ -378,17 +394,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: 'Original',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: 'Original',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -412,29 +430,33 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 5,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 5,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
@@ -500,17 +522,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 2,
+          y: 2,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -529,17 +553,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 2,
+          y: 2,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -558,17 +584,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 2,
+          y: 2,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -587,17 +615,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 2,
+          y: 2,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -617,17 +647,19 @@ describe('useKeyboard', () => {
       const categoryId = layout.categories[0].id;
 
       // Place bin at bottom edge
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -645,17 +677,19 @@ describe('useKeyboard', () => {
       const categoryId = layout.categories[0].id;
 
       // Add bin to staging
-      const binId = getBinId(addBin({
-        layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId: STAGING_ID,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -673,29 +707,33 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 2,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 3,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 3,
+          y: 2,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
@@ -716,17 +754,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 3,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 3,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -754,29 +794,33 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 3,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 3,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 5,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 5,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
@@ -860,29 +904,33 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 3,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 3,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId1]);
       renderHook(() => useKeyboard());
@@ -899,29 +947,33 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 3,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 3,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId2]);
       renderHook(() => useKeyboard());
@@ -938,29 +990,33 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 3,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 3,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId2]);
       renderHook(() => useKeyboard());
@@ -1022,17 +1078,19 @@ describe('useKeyboard', () => {
       addCategory({ name: 'Second', color: '#00FF00' });
       const categories = useLayoutStore.getState().layout.categories;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categories[1].id,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categories[1].id,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -1051,17 +1109,19 @@ describe('useKeyboard', () => {
       addCategory({ name: 'Second', color: '#00FF00' });
       const categories = useLayoutStore.getState().layout.categories;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categories[0].id,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categories[0].id,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -1080,17 +1140,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
 
@@ -1152,17 +1214,19 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
@@ -1239,29 +1303,33 @@ describe('useKeyboard', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 3,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 3,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       // Set focused bin but no selection
       useUIStore.setState({

@@ -54,26 +54,114 @@ describe('footprintsOverlap', () => {
 
 describe('binsCollide', () => {
   it('returns true for overlapping bins on same layer', () => {
-    const binA: Bin = { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
-    const binB: Bin = { id: '2', layerId: 'layer1', x: 1, y: 1, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    const binA: Bin = {
+      id: '1',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
+    const binB: Bin = {
+      id: '2',
+      layerId: 'layer1',
+      x: 1,
+      y: 1,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
     expect(binsCollide(binA, binB, layers)).toBe(true);
   });
 
   it('returns false for bins on different layers with no vertical overlap', () => {
-    const binA: Bin = { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
-    const binB: Bin = { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    const binA: Bin = {
+      id: '1',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
+    const binB: Bin = {
+      id: '2',
+      layerId: 'layer2',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
     expect(binsCollide(binA, binB, layers)).toBe(false);
   });
 
   it('returns true for tall bin protruding into upper layer', () => {
-    const binA: Bin = { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' }; // extends into layer2
-    const binB: Bin = { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    const binA: Bin = {
+      id: '1',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 6,
+      category: 'tools',
+      label: '',
+      notes: '',
+    }; // extends into layer2
+    const binB: Bin = {
+      id: '2',
+      layerId: 'layer2',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
     expect(binsCollide(binA, binB, layers)).toBe(true);
   });
 
   it('returns false for staging bins', () => {
-    const binA: Bin = { id: '1', layerId: STAGING_ID, x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
-    const binB: Bin = { id: '2', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    const binA: Bin = {
+      id: '1',
+      layerId: STAGING_ID,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
+    const binB: Bin = {
+      id: '2',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
     expect(binsCollide(binA, binB, layers)).toBe(false);
   });
 });
@@ -81,14 +169,36 @@ describe('binsCollide', () => {
 describe('getBlockedZones', () => {
   it('returns empty array when no protrusions', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     expect(getBlockedZones('layer2', bins, layers)).toEqual([]);
   });
 
   it('returns blocked zone for protruding bin', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' }, // protrudes 3u into layer2
+      {
+        id: '1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      }, // protrudes 3u into layer2
     ];
     const zones = getBlockedZones('layer2', bins, layers);
     expect(zones).toHaveLength(1);
@@ -97,29 +207,84 @@ describe('getBlockedZones', () => {
 
   it('returns empty array for empty targetLayerId', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     expect(getBlockedZones('', bins, layers)).toEqual([]);
   });
 
   it('returns empty array for invalid targetLayerId', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     expect(getBlockedZones('nonexistent', bins, layers)).toEqual([]);
   });
 
   it('ignores staging bins', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: STAGING_ID, x: 0, y: 0, width: 2, depth: 2, height: 20, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 20,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     expect(getBlockedZones('layer2', bins, layers)).toEqual([]);
   });
 
   it('ignores bins on same or higher layer', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
-      { id: '2', layerId: 'layer3', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'layer2',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'layer3',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     // Checking layer2 - bins on layer2 or layer3 should not create blocked zones
     expect(getBlockedZones('layer2', bins, layers)).toEqual([]);
@@ -184,8 +349,30 @@ describe('isInBlockedZone', () => {
 describe('checkLayerReorderCollisions', () => {
   it('returns empty array when no collisions', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' },
-      { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'layer2',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     // Swapping layers - bins still fit because they don't overlap vertically
     const newLayers: Layer[] = [
@@ -198,8 +385,30 @@ describe('checkLayerReorderCollisions', () => {
 
   it('detects collisions when bins overlap after reorder', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
-      { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'layer2',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     // With same positions and tall heights, they will collide
     const result = checkLayerReorderCollisions(bins, layers, layers);
@@ -210,16 +419,60 @@ describe('checkLayerReorderCollisions', () => {
 
   it('ignores staging bins', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: STAGING_ID, x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
-      { id: '2', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     expect(checkLayerReorderCollisions(bins, layers, layers)).toEqual([]);
   });
 
   it('returns empty when bins have no footprint overlap', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
-      { id: '2', layerId: 'layer1', x: 5, y: 5, width: 2, depth: 2, height: 6, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'layer1',
+        x: 5,
+        y: 5,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     expect(checkLayerReorderCollisions(bins, layers, layers)).toEqual([]);
   });
@@ -228,9 +481,32 @@ describe('checkLayerReorderCollisions', () => {
 describe('clearanceHeight', () => {
   it('causes collision when clearance extends into upper layer bin', () => {
     // Bin on layer1 with height 3 (fits exactly) but clearance 3 (extends into layer2)
-    const binA: Bin = { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, clearanceHeight: 3, category: 'tools', label: '', notes: '' };
+    const binA: Bin = {
+      id: '1',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      clearanceHeight: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
     // Bin on layer2 at same footprint
-    const binB: Bin = { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    const binB: Bin = {
+      id: '2',
+      layerId: 'layer2',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
     // Layer2 starts at z=3, binA extends to z=3+3=6 (height + clearance), binB is at z=3-6
     // They should collide because clearance from binA extends into binB's space
     expect(binsCollide(binA, binB, layers)).toBe(true);
@@ -238,9 +514,32 @@ describe('clearanceHeight', () => {
 
   it('does not cause collision when clearance does not reach upper layer', () => {
     // Bin on layer1 with height 2 and clearance 1 (total 3, exactly at layer boundary)
-    const binA: Bin = { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 2, clearanceHeight: 1, category: 'tools', label: '', notes: '' };
+    const binA: Bin = {
+      id: '1',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 2,
+      clearanceHeight: 1,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
     // Bin on layer2 at same footprint
-    const binB: Bin = { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    const binB: Bin = {
+      id: '2',
+      layerId: 'layer2',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
     // binA: z=0-3 (height 2 + clearance 1), binB: z=3-6
     // They touch but don't overlap (exclusive boundary)
     expect(binsCollide(binA, binB, layers)).toBe(false);
@@ -249,7 +548,19 @@ describe('clearanceHeight', () => {
   it('creates blocked zone when clearance extends into upper layer', () => {
     // Bin on layer1 with height 2 and clearance 2 (extends 1 unit into layer2)
     const bins: Bin[] = [
-      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 2, clearanceHeight: 2, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 2,
+        clearanceHeight: 2,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     // Layer2 starts at z=3, bin extends to z=4 (height 2 + clearance 2)
     const zones = getBlockedZones('layer2', bins, layers);
@@ -260,7 +571,19 @@ describe('clearanceHeight', () => {
   it('does not create blocked zone when clearance stays within layer', () => {
     // Bin on layer1 with height 2 and clearance 1 (total 3, exactly at layer boundary)
     const bins: Bin[] = [
-      { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 2, clearanceHeight: 1, category: 'tools', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 2,
+        clearanceHeight: 1,
+        category: 'tools',
+        label: '',
+        notes: '',
+      },
     ];
     // Layer2 starts at z=3, bin extends to z=3 exactly - no protrusion
     const zones = getBlockedZones('layer2', bins, layers);
@@ -269,8 +592,30 @@ describe('clearanceHeight', () => {
 
   it('defaults to 0 clearance when not specified', () => {
     // Bin without clearanceHeight should behave same as clearanceHeight: 0
-    const binA: Bin = { id: '1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
-    const binB: Bin = { id: '2', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'tools', label: '', notes: '' };
+    const binA: Bin = {
+      id: '1',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
+    const binB: Bin = {
+      id: '2',
+      layerId: 'layer2',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'tools',
+      label: '',
+      notes: '',
+    };
     // Without clearance, layer1 bin (z=0-3) doesn't overlap with layer2 bin (z=3-6)
     expect(binsCollide(binA, binB, layers)).toBe(false);
   });

@@ -145,8 +145,7 @@ export const useViewStore = create<ViewStore>((set) => ({
   hideContextMenu: () => set({ contextMenu: null }),
 
   // Highlighting actions
-  setHighlightedCategoryId: (categoryId) =>
-    set({ highlightedCategoryId: categoryId }),
+  setHighlightedCategoryId: (categoryId) => set({ highlightedCategoryId: categoryId }),
   setHighlightedRowLabel: (row) => set({ highlightedRowLabel: row }),
   setHighlightedColLabel: (col) => set({ highlightedColLabel: col }),
 

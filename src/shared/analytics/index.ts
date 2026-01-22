@@ -31,8 +31,4 @@ export {
 } from './labelVocabulary';
 
 // Gap analysis
-export {
-  analyzeGaps,
-  calculateFillPercentage,
-  type GapAnalysis,
-} from './gapAnalysis';
+export { analyzeGaps, calculateFillPercentage, type GapAnalysis } from './gapAnalysis';

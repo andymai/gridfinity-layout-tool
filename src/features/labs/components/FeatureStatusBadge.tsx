@@ -4,10 +4,7 @@ interface FeatureStatusBadgeProps {
   status: FeatureStatus;
 }
 
-const STATUS_CONFIG: Record<
-  FeatureStatus,
-  { label: string; className: string }
-> = {
+const STATUS_CONFIG: Record<FeatureStatus, { label: string; className: string }> = {
   experimental: {
     label: 'Experimental',
     className: 'bg-amber-500/15 text-amber-500',

@@ -41,7 +41,21 @@ describe('useCrossTabSync', () => {
       version: '1.0',
       activeLayoutId: 'new-layout',
       settings: {},
-      entries: [{ id: 'new-layout', name: 'New', createdAt: 1, modifiedAt: 1, preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 } }],
+      entries: [
+        {
+          id: 'new-layout',
+          name: 'New',
+          createdAt: 1,
+          modifiedAt: 1,
+          preview: {
+            drawerWidth: 10,
+            drawerDepth: 8,
+            drawerHeight: 12,
+            binCount: 0,
+            layerCount: 1,
+          },
+        },
+      ],
     };
     vi.mocked(storage.loadLibrary).mockReturnValue(mockLibrary);
 
@@ -50,11 +64,13 @@ describe('useCrossTabSync', () => {
     renderHook(() => useCrossTabSync());
 
     act(() => {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'gridfinity-library-v1',
-        newValue: JSON.stringify(mockLibrary),
-        oldValue: null,
-      }));
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'gridfinity-library-v1',
+          newValue: JSON.stringify(mockLibrary),
+          oldValue: null,
+        })
+      );
     });
 
     expect(storage.loadLibrary).toHaveBeenCalled();
@@ -81,11 +97,13 @@ describe('useCrossTabSync', () => {
     renderHook(() => useCrossTabSync());
 
     act(() => {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'gridfinity-layout-test-layout-id',
-        newValue: JSON.stringify(mockLayout),
-        oldValue: null,
-      }));
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'gridfinity-layout-test-layout-id',
+          newValue: JSON.stringify(mockLayout),
+          oldValue: null,
+        })
+      );
     });
 
     // loadLayoutAsync is called with .then(), so wait for async to complete
@@ -106,11 +124,13 @@ describe('useCrossTabSync', () => {
     renderHook(() => useCrossTabSync());
 
     act(() => {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'gridfinity-layout-other-layout-id',
-        newValue: '{}',
-        oldValue: null,
-      }));
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'gridfinity-layout-other-layout-id',
+          newValue: '{}',
+          oldValue: null,
+        })
+      );
     });
 
     expect(storage.loadLayoutAsync).not.toHaveBeenCalled();
@@ -120,18 +140,23 @@ describe('useCrossTabSync', () => {
   it('does not sync invalid layout data', () => {
     const mockLayout = { name: 'Invalid' };
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
-    vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: false, error: 'Invalid' });
+    vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({
+      valid: false,
+      error: 'Invalid',
+    });
 
     const importLayoutSpy = vi.spyOn(useLayoutStore.getState(), 'importLayout');
 
     renderHook(() => useCrossTabSync());
 
     act(() => {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'gridfinity-layout-test-layout-id',
-        newValue: '{}',
-        oldValue: null,
-      }));
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'gridfinity-layout-test-layout-id',
+          newValue: '{}',
+          oldValue: null,
+        })
+      );
     });
 
     expect(importLayoutSpy).not.toHaveBeenCalled();
@@ -141,11 +166,13 @@ describe('useCrossTabSync', () => {
     renderHook(() => useCrossTabSync());
 
     act(() => {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'some-other-app-key',
-        newValue: '{}',
-        oldValue: null,
-      }));
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'some-other-app-key',
+          newValue: '{}',
+          oldValue: null,
+        })
+      );
     });
 
     expect(storage.loadLibrary).not.toHaveBeenCalled();
@@ -181,11 +208,13 @@ describe('useCrossTabSync', () => {
     renderHook(() => useCrossTabSync());
 
     act(() => {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'gridfinity-layout-test-layout-id',
-        newValue: '{}',
-        oldValue: null,
-      }));
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'gridfinity-layout-test-layout-id',
+          newValue: '{}',
+          oldValue: null,
+        })
+      );
     });
 
     await vi.waitFor(() => {
@@ -213,11 +242,13 @@ describe('useCrossTabSync', () => {
     renderHook(() => useCrossTabSync());
 
     act(() => {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'gridfinity-layout-test-layout-id',
-        newValue: '{}',
-        oldValue: null,
-      }));
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'gridfinity-layout-test-layout-id',
+          newValue: '{}',
+          oldValue: null,
+        })
+      );
     });
 
     await vi.waitFor(() => {
@@ -236,11 +267,13 @@ describe('useCrossTabSync', () => {
       renderHook(() => useCrossTabSync());
 
       act(() => {
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: LABS_STORAGE_KEY,
-          newValue: JSON.stringify(newPrefs),
-          oldValue: null,
-        }));
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: LABS_STORAGE_KEY,
+            newValue: JSON.stringify(newPrefs),
+            oldValue: null,
+          })
+        );
       });
 
       expect(syncFromStorageSpy).toHaveBeenCalled();
@@ -252,11 +285,13 @@ describe('useCrossTabSync', () => {
       renderHook(() => useCrossTabSync());
 
       act(() => {
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: LABS_STORAGE_KEY,
-          newValue: null,
-          oldValue: '{}',
-        }));
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: LABS_STORAGE_KEY,
+            newValue: null,
+            oldValue: '{}',
+          })
+        );
       });
 
       expect(syncFromStorageSpy).toHaveBeenCalled();
@@ -269,11 +304,13 @@ describe('useCrossTabSync', () => {
 
       // Should not throw
       act(() => {
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: LABS_STORAGE_KEY,
-          newValue: 'invalid json {{{',
-          oldValue: null,
-        }));
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: LABS_STORAGE_KEY,
+            newValue: 'invalid json {{{',
+            oldValue: null,
+          })
+        );
       });
 
       // syncFromStorage should NOT be called since JSON.parse throws
@@ -289,11 +326,13 @@ describe('useCrossTabSync', () => {
       renderHook(() => useCrossTabSync());
 
       act(() => {
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: 'gridfinity-layout-test-layout-id',
-          newValue: '{}',
-          oldValue: null,
-        }));
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: 'gridfinity-layout-test-layout-id',
+            newValue: '{}',
+            oldValue: null,
+          })
+        );
       });
 
       await vi.waitFor(() => {
@@ -327,11 +366,13 @@ describe('useCrossTabSync', () => {
     renderHook(() => useCrossTabSync());
 
     act(() => {
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'gridfinity-layout-test-layout-id',
-        newValue: '{}',
-        oldValue: null,
-      }));
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'gridfinity-layout-test-layout-id',
+          newValue: '{}',
+          oldValue: null,
+        })
+      );
     });
 
     await vi.waitFor(() => {

@@ -38,7 +38,7 @@ describe('splitBinSize', () => {
     const pieces = splitBinSize(9, 3, maxSize);
     // 9×3 → 5×3 + 4×3 → 3×3 + 2×3 + 4×3
     expect(pieces).toHaveLength(3);
-    const sizes = pieces.map(p => `${p.width}×${p.depth}`).sort();
+    const sizes = pieces.map((p) => `${p.width}×${p.depth}`).sort();
     expect(sizes).toEqual(['2×3', '3×3', '4×3']);
   });
 
@@ -47,7 +47,7 @@ describe('splitBinSize', () => {
     // Should result in 4 pieces
     expect(pieces.length).toBeGreaterThanOrEqual(4);
     // All pieces should fit
-    pieces.forEach(p => {
+    pieces.forEach((p) => {
       expect(p.width).toBeLessThanOrEqual(maxSize);
       expect(p.depth).toBeLessThanOrEqual(maxSize);
     });
@@ -61,14 +61,14 @@ describe('splitBinSize', () => {
   it('splits width of 1 without creating zero-width pieces', () => {
     // 1×5 with max 4: splits depth only → 1×3 + 1×2
     const pieces = splitBinSize(1, 5, maxSize);
-    expect(pieces.every(p => p.width > 0 && p.depth > 0)).toBe(true);
+    expect(pieces.every((p) => p.width > 0 && p.depth > 0)).toBe(true);
     expect(pieces).toHaveLength(2);
   });
 
   it('splits depth of 1 without creating zero-depth pieces', () => {
     // 5×1 with max 4: splits width only → 3×1 + 2×1
     const pieces = splitBinSize(5, 1, maxSize);
-    expect(pieces.every(p => p.width > 0 && p.depth > 0)).toBe(true);
+    expect(pieces.every((p) => p.width > 0 && p.depth > 0)).toBe(true);
     expect(pieces).toHaveLength(2);
   });
 
@@ -83,28 +83,28 @@ describe('splitBinSize', () => {
     // Results in 2×2, 1×2, 2×1, 1×1
     const pieces = splitBinSize(3, 3, 2);
     expect(pieces.length).toBe(4);
-    expect(pieces.every(p => p.width <= 2 && p.depth <= 2)).toBe(true);
+    expect(pieces.every((p) => p.width <= 2 && p.depth <= 2)).toBe(true);
   });
 
   it('handles 8×2 with maxSize 4 (splits width only into equal halves)', () => {
     // 8×2 → 4×2 + 4×2 (right half is exactly 4, not 0)
     const pieces = splitBinSize(8, 2, 4);
     expect(pieces.length).toBe(2);
-    expect(pieces.every(p => p.width === 4 && p.depth === 2)).toBe(true);
+    expect(pieces.every((p) => p.width === 4 && p.depth === 2)).toBe(true);
   });
 
   it('handles 2×8 with maxSize 4 (splits depth only into equal halves)', () => {
     // 2×8 → 2×4 + 2×4 (bottom half is exactly 4, not 0)
     const pieces = splitBinSize(2, 8, 4);
     expect(pieces.length).toBe(2);
-    expect(pieces.every(p => p.width === 2 && p.depth === 4)).toBe(true);
+    expect(pieces.every((p) => p.width === 2 && p.depth === 4)).toBe(true);
   });
 
   it('handles 8×8 with maxSize 4 (splits both into equal halves)', () => {
     // 8×8 → 4 pieces of 4×4
     const pieces = splitBinSize(8, 8, 4);
     expect(pieces.length).toBe(4);
-    expect(pieces.every(p => p.width === 4 && p.depth === 4)).toBe(true);
+    expect(pieces.every((p) => p.width === 4 && p.depth === 4)).toBe(true);
   });
 
   it('handles 6×5 with maxSize 4 (both dimensions need splitting)', () => {
@@ -112,7 +112,7 @@ describe('splitBinSize', () => {
     // Results in: 3×3, 3×3, 3×2, 3×2
     const pieces = splitBinSize(6, 5, 4);
     expect(pieces.length).toBe(4);
-    expect(pieces.every(p => p.width <= 4 && p.depth <= 4)).toBe(true);
+    expect(pieces.every((p) => p.width <= 4 && p.depth <= 4)).toBe(true);
   });
 });
 
@@ -126,14 +126,14 @@ describe('splitBinSize with fractional dimensions (half-bin mode)', () => {
     const pieces = splitBinSize(1.5, 1.5, 1);
     // Should split to: 1×1, 0.5×1, 1×0.5, 0.5×0.5
     expect(pieces).toHaveLength(4);
-    expect(pieces.every(p => p.width <= 1 && p.depth <= 1)).toBe(true);
-    expect(pieces.every(p => p.width > 0 && p.depth > 0)).toBe(true);
+    expect(pieces.every((p) => p.width <= 1 && p.depth <= 1)).toBe(true);
+    expect(pieces.every((p) => p.width > 0 && p.depth > 0)).toBe(true);
   });
 
   it('handles 2.5×3 with maxSize 2', () => {
     const pieces = splitBinSize(2.5, 3, 2);
-    expect(pieces.every(p => p.width <= 2 && p.depth <= 2)).toBe(true);
-    expect(pieces.every(p => p.width > 0 && p.depth > 0)).toBe(true);
+    expect(pieces.every((p) => p.width <= 2 && p.depth <= 2)).toBe(true);
+    expect(pieces.every((p) => p.width > 0 && p.depth > 0)).toBe(true);
   });
 
   it('handles 0.5×0.5 without creating zero-dimension pieces', () => {
@@ -146,16 +146,38 @@ describe('splitBinSize with fractional dimensions (half-bin mode)', () => {
     // A 2.5×2 bin with max 2 should produce pieces with 0.5 dimensions
     const pieces = splitBinSize(2.5, 2, 2);
     // Should split width: 1.5 + 1 (uses 0.5-aware rounding for fractional input)
-    expect(pieces.some(p => p.width === 1.5 || p.width === 1)).toBe(true);
-    expect(pieces.every(p => p.width <= 2 && p.depth <= 2)).toBe(true);
+    expect(pieces.some((p) => p.width === 1.5 || p.width === 1)).toBe(true);
+    expect(pieces.every((p) => p.width <= 2 && p.depth <= 2)).toBe(true);
   });
 });
 
 describe('generatePrintList', () => {
   it('groups identical bins', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
-      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
     ];
     const rows = generatePrintList(bins, 4);
     expect(rows).toHaveLength(1);
@@ -165,8 +187,30 @@ describe('generatePrintList', () => {
 
   it('excludes staging bins', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
-      { id: '2', layerId: STAGING_ID, x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
     ];
     const rows = generatePrintList(bins, 4);
     expect(rows).toHaveLength(1);
@@ -175,8 +219,30 @@ describe('generatePrintList', () => {
 
   it('separates bins with different heights', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
-      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 6, category: 'c1', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 6,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
     ];
     const rows = generatePrintList(bins, 4);
     expect(rows).toHaveLength(2);
@@ -184,7 +250,18 @@ describe('generatePrintList', () => {
 
   it('calculates split pieces correctly', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 5, depth: 3, height: 3, category: 'c1', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 5,
+        depth: 3,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
     ];
     const rows = generatePrintList(bins, 4);
     expect(rows[0].needsSplit).toBe(true);
@@ -195,8 +272,30 @@ describe('generatePrintList', () => {
     // A 9x3 bin with maxSize 4 splits into: 3×3 + 2×3 + 4×3
     // Two identical 9x3 bins should result in merged piece counts
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 9, depth: 3, height: 3, category: 'c1', label: '', notes: '' },
-      { id: '2', layerId: 'l1', x: 0, y: 3, width: 9, depth: 3, height: 3, category: 'c1', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 9,
+        depth: 3,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 0,
+        y: 3,
+        width: 9,
+        depth: 3,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
     ];
     const rows = generatePrintList(bins, 4);
     // Both bins are identical, so they should be grouped into one row
@@ -209,7 +308,18 @@ describe('generatePrintList', () => {
   it('handles bins that split into identical pieces', () => {
     // A 6x6 bin splits into 4 identical 3x3 pieces (split both dimensions)
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 6, depth: 6, height: 3, category: 'c1', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 6,
+        depth: 6,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
     ];
     const rows = generatePrintList(bins, 4);
     expect(rows[0].needsSplit).toBe(true);
@@ -220,8 +330,30 @@ describe('generatePrintList', () => {
 
   it('keeps labeled bins separate even with same dimensions', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: 'Screws', notes: '' },
-      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: 'Bolts', notes: '' },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: 'Screws',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: 'Bolts',
+        notes: '',
+      },
     ];
     const rows = generatePrintList(bins, 4);
     // Each labeled bin gets its own row
@@ -232,9 +364,42 @@ describe('generatePrintList', () => {
 
   it('groups unlabeled bins with same dimensions', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
-      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
-      { id: '3', layerId: 'l1', x: 0, y: 2, width: 2, depth: 2, height: 3, category: 'c1', label: 'Special', notes: '' },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '3',
+        layerId: 'l1',
+        x: 0,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: 'Special',
+        notes: '',
+      },
     ];
     const rows = generatePrintList(bins, 4);
     // Two unlabeled bins grouped, one labeled bin separate
@@ -243,27 +408,85 @@ describe('generatePrintList', () => {
 
   it('keeps bins with custom properties separate even with same dimensions', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '', customProperties: { SKU: 'A1' } },
-      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '', customProperties: { SKU: 'B2' } },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+        customProperties: { SKU: 'A1' },
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+        customProperties: { SKU: 'B2' },
+      },
     ];
     const rows = generatePrintList(bins, 4);
     // Each bin with custom properties gets its own row
     expect(rows).toHaveLength(2);
-    expect(rows.some(r => r.customProperties?.SKU === 'A1')).toBe(true);
-    expect(rows.some(r => r.customProperties?.SKU === 'B2')).toBe(true);
+    expect(rows.some((r) => r.customProperties?.SKU === 'A1')).toBe(true);
+    expect(rows.some((r) => r.customProperties?.SKU === 'B2')).toBe(true);
   });
 
   it('groups bins without custom properties together', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
-      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
-      { id: '3', layerId: 'l1', x: 0, y: 2, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '', customProperties: { SKU: 'C3' } },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
+      {
+        id: '3',
+        layerId: 'l1',
+        x: 0,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+        customProperties: { SKU: 'C3' },
+      },
     ];
     const rows = generatePrintList(bins, 4);
     // Two bins without props grouped, one with props separate
     expect(rows).toHaveLength(2);
-    const groupedRow = rows.find(r => r.binCount === 2);
-    const individualRow = rows.find(r => r.binCount === 1);
+    const groupedRow = rows.find((r) => r.binCount === 2);
+    const individualRow = rows.find((r) => r.binCount === 1);
     expect(groupedRow).toBeDefined();
     expect(groupedRow?.customProperties).toBeUndefined();
     expect(individualRow).toBeDefined();
@@ -272,8 +495,31 @@ describe('generatePrintList', () => {
 
   it('treats empty customProperties object as no custom properties', () => {
     const bins: Bin[] = [
-      { id: '1', layerId: 'l1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '', customProperties: {} },
-      { id: '2', layerId: 'l1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'c1', label: '', notes: '' },
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+        customProperties: {},
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+      },
     ];
     const rows = generatePrintList(bins, 4);
     // Empty customProperties should not cause separation
@@ -285,8 +531,32 @@ describe('generatePrintList', () => {
 describe('getTotalPieces', () => {
   it('sums totalPieces across all rows', () => {
     const rows: PrintRow[] = [
-      { size: '2×2', height: 3, binCount: 2, pieces: [], totalPieces: 2, needsSplit: false, filament: 10, categoryIds: [], labels: [], notes: '', binIds: [] },
-      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 4, needsSplit: true, filament: 20, categoryIds: [], labels: [], notes: '', binIds: [] },
+      {
+        size: '2×2',
+        height: 3,
+        binCount: 2,
+        pieces: [],
+        totalPieces: 2,
+        needsSplit: false,
+        filament: 10,
+        categoryIds: [],
+        labels: [],
+        notes: '',
+        binIds: [],
+      },
+      {
+        size: '4×4',
+        height: 3,
+        binCount: 1,
+        pieces: [],
+        totalPieces: 4,
+        needsSplit: true,
+        filament: 20,
+        categoryIds: [],
+        labels: [],
+        notes: '',
+        binIds: [],
+      },
     ];
     expect(getTotalPieces(rows)).toBe(6);
   });
@@ -299,8 +569,32 @@ describe('getTotalPieces', () => {
 describe('getTotalBins', () => {
   it('sums binCount across all rows', () => {
     const rows: PrintRow[] = [
-      { size: '2×2', height: 3, binCount: 3, pieces: [], totalPieces: 3, needsSplit: false, filament: 10, categoryIds: [], labels: [], notes: '', binIds: [] },
-      { size: '4×4', height: 3, binCount: 5, pieces: [], totalPieces: 5, needsSplit: false, filament: 20, categoryIds: [], labels: [], notes: '', binIds: [] },
+      {
+        size: '2×2',
+        height: 3,
+        binCount: 3,
+        pieces: [],
+        totalPieces: 3,
+        needsSplit: false,
+        filament: 10,
+        categoryIds: [],
+        labels: [],
+        notes: '',
+        binIds: [],
+      },
+      {
+        size: '4×4',
+        height: 3,
+        binCount: 5,
+        pieces: [],
+        totalPieces: 5,
+        needsSplit: false,
+        filament: 20,
+        categoryIds: [],
+        labels: [],
+        notes: '',
+        binIds: [],
+      },
     ];
     expect(getTotalBins(rows)).toBe(8);
   });
@@ -313,16 +607,64 @@ describe('getTotalBins', () => {
 describe('getTotalFilament', () => {
   it('sums filament across all rows', () => {
     const rows: PrintRow[] = [
-      { size: '2×2', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 10.5, categoryIds: [], labels: [], notes: '', binIds: [] },
-      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 20.3, categoryIds: [], labels: [], notes: '', binIds: [] },
+      {
+        size: '2×2',
+        height: 3,
+        binCount: 1,
+        pieces: [],
+        totalPieces: 1,
+        needsSplit: false,
+        filament: 10.5,
+        categoryIds: [],
+        labels: [],
+        notes: '',
+        binIds: [],
+      },
+      {
+        size: '4×4',
+        height: 3,
+        binCount: 1,
+        pieces: [],
+        totalPieces: 1,
+        needsSplit: false,
+        filament: 20.3,
+        categoryIds: [],
+        labels: [],
+        notes: '',
+        binIds: [],
+      },
     ];
     expect(getTotalFilament(rows)).toBe(30.8);
   });
 
   it('rounds to one decimal place', () => {
     const rows: PrintRow[] = [
-      { size: '2×2', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 10.123, categoryIds: [], labels: [], notes: '', binIds: [] },
-      { size: '4×4', height: 3, binCount: 1, pieces: [], totalPieces: 1, needsSplit: false, filament: 20.456, categoryIds: [], labels: [], notes: '', binIds: [] },
+      {
+        size: '2×2',
+        height: 3,
+        binCount: 1,
+        pieces: [],
+        totalPieces: 1,
+        needsSplit: false,
+        filament: 10.123,
+        categoryIds: [],
+        labels: [],
+        notes: '',
+        binIds: [],
+      },
+      {
+        size: '4×4',
+        height: 3,
+        binCount: 1,
+        pieces: [],
+        totalPieces: 1,
+        needsSplit: false,
+        filament: 20.456,
+        categoryIds: [],
+        labels: [],
+        notes: '',
+        binIds: [],
+      },
     ];
     // 10.123 + 20.456 = 30.579 → 30.6
     expect(getTotalFilament(rows)).toBe(30.6);

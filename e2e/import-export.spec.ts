@@ -45,7 +45,9 @@ test.describe('Import/Export Workflows', () => {
       await copyLinkBtn.click();
 
       // Wait for share modal to appear (it stacks on top)
-      await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', { timeout: 5000 });
+      await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', {
+        timeout: 5000,
+      });
     }
 
     test('opens share modal via layout manager actions', async ({ page }) => {
@@ -63,7 +65,9 @@ test.describe('Import/Export Workflows', () => {
       await page.keyboard.press('Escape');
 
       // Share modal should close (layout manager may still be open)
-      await expect(page.locator('[aria-labelledby="share-modal-title"]')).not.toBeVisible({ timeout: 3000 });
+      await expect(page.locator('[aria-labelledby="share-modal-title"]')).not.toBeVisible({
+        timeout: 3000,
+      });
     });
 
     test('has Link, File, and JSON tabs', async ({ page }) => {
@@ -230,7 +234,9 @@ test.describe('Import/Export Workflows', () => {
       let layoutModal = getActiveDialog(page);
       const copyLinkBtn = layoutModal.getByRole('button', { name: /copy share link/i }).first();
       await copyLinkBtn.click();
-      await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', { timeout: 5000 });
+      await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', {
+        timeout: 5000,
+      });
 
       const shareModal = page.locator('[role="dialog"][aria-labelledby="share-modal-title"]');
       await shareModal.getByRole('tab', { name: 'Link' }).click();
@@ -267,7 +273,9 @@ test.describe('Import/Export Workflows', () => {
       const layoutModal = getActiveDialog(page);
       const copyLinkBtn = layoutModal.getByRole('button', { name: /copy share link/i }).first();
       await copyLinkBtn.click();
-      await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', { timeout: 5000 });
+      await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', {
+        timeout: 5000,
+      });
       return page.locator('[role="dialog"][aria-labelledby="share-modal-title"]');
     }
 
@@ -349,7 +357,10 @@ test.describe('Import/Export Workflows', () => {
       // Either we see an import dialog, or the layout was auto-imported
       // Check for the bin or import prompt
       const hasBin = await page.locator('[data-bin-id]').count();
-      const hasImportPrompt = await page.getByText(/import/i).isVisible().catch(() => false);
+      const hasImportPrompt = await page
+        .getByText(/import/i)
+        .isVisible()
+        .catch(() => false);
 
       expect(hasBin > 0 || hasImportPrompt).toBeTruthy();
     });
@@ -363,7 +374,9 @@ test.describe('Import/Export Workflows', () => {
       const layoutModal = getActiveDialog(page);
       const copyLinkBtn = layoutModal.getByRole('button', { name: /copy share link/i }).first();
       await copyLinkBtn.click();
-      await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', { timeout: 5000 });
+      await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', {
+        timeout: 5000,
+      });
       return page.locator('[role="dialog"][aria-labelledby="share-modal-title"]');
     }
 

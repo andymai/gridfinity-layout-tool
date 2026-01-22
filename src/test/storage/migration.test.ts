@@ -173,7 +173,11 @@ describe('migration.ts', () => {
 
     it('migrates all layouts and sets flag', async () => {
       vi.mocked(backend.isIndexedDBAvailable).mockResolvedValue(true);
-      vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2', 'layout-3']);
+      vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue([
+        'layout-1',
+        'layout-2',
+        'layout-3',
+      ]);
       vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue([]);
       vi.mocked(localStorageBackend.loadLayout).mockReturnValue(createTestLayout());
       vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
@@ -228,7 +232,9 @@ describe('migration.ts', () => {
 
     it('handles IndexedDB errors gracefully', async () => {
       vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['ls-1']);
-      vi.mocked(backend.getIndexedDBLayoutIds).mockRejectedValue(new Error('IndexedDB unavailable'));
+      vi.mocked(backend.getIndexedDBLayoutIds).mockRejectedValue(
+        new Error('IndexedDB unavailable')
+      );
 
       const status = await getMigrationStatus();
 

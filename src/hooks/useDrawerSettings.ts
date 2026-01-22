@@ -165,7 +165,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const addToast = useToastStore((state) => state.addToast);
 
   // Mutations (supports collaborative mode)
-  const { setGridUnitMm, setHeightUnitMm, setPrintBedSize, updateDrawer, updateBin } = useMutations();
+  const { setGridUnitMm, setHeightUnitMm, setPrintBedSize, updateDrawer, updateBin } =
+    useMutations();
 
   // Undo support
   const { execute } = useUndoableAction();
@@ -199,7 +200,10 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   // Stepper handlers (delta-based, respects step size)
   const handleDrawerWidthChange = useCallback(
     (delta: number) => {
-      const newWidth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, drawerWidth + delta * widthStep));
+      const newWidth = Math.max(
+        0.5,
+        Math.min(CONSTRAINTS.GRID_MAX, drawerWidth + delta * widthStep)
+      );
       execute(() => updateDrawer({ width: newWidth }));
     },
     [widthStep, drawerWidth, execute, updateDrawer]
@@ -207,7 +211,10 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
   const handleDrawerDepthChange = useCallback(
     (delta: number) => {
-      const newDepth = Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, drawerDepth + delta * depthStep));
+      const newDepth = Math.max(
+        0.5,
+        Math.min(CONSTRAINTS.GRID_MAX, drawerDepth + delta * depthStep)
+      );
       execute(() => updateDrawer({ depth: newDepth }));
     },
     [depthStep, drawerDepth, execute, updateDrawer]

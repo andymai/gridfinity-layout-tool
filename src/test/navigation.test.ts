@@ -328,8 +328,8 @@ describe('getOverlappingBins', () => {
       const result = getOverlappingBins(position, allBins);
 
       expect(result).toHaveLength(2);
-      expect(result.map(b => b.id)).toContain('overlap1');
-      expect(result.map(b => b.id)).toContain('overlap2');
+      expect(result.map((b) => b.id)).toContain('overlap1');
+      expect(result.map((b) => b.id)).toContain('overlap2');
     });
 
     it('returns empty array when no overlaps', () => {

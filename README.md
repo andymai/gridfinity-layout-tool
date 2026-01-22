@@ -35,6 +35,7 @@ e2e/                # Playwright e2e tests
 ## Documentation
 
 See **[CLAUDE.md](./CLAUDE.md)** for complete technical documentation:
+
 - Architecture and state management patterns
 - Component and hook reference
 - Data model and coordinate system

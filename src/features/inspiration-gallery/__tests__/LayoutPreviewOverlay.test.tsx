@@ -22,22 +22,67 @@ vi.mock('../data', () => ({
       id: 'related-1',
       name: 'Related Layout 1',
       theme: 'workshop',
-      metrics: { binCount: 10, layerCount: 1, categoryCount: 2, labeledBinCount: 5, drawerSize: { width: 8, depth: 6, height: 10 } },
-      layout: { name: 'R1', drawer: { width: 8, depth: 6, height: 10 }, layers: [], categories: [], bins: [], gridUnitMm: 42, heightUnitMm: 7, printBedSize: 256 },
+      metrics: {
+        binCount: 10,
+        layerCount: 1,
+        categoryCount: 2,
+        labeledBinCount: 5,
+        drawerSize: { width: 8, depth: 6, height: 10 },
+      },
+      layout: {
+        name: 'R1',
+        drawer: { width: 8, depth: 6, height: 10 },
+        layers: [],
+        categories: [],
+        bins: [],
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+        printBedSize: 256,
+      },
     },
     {
       id: 'related-2',
       name: 'Related Layout 2',
       theme: 'workshop',
-      metrics: { binCount: 15, layerCount: 2, categoryCount: 3, labeledBinCount: 8, drawerSize: { width: 10, depth: 8, height: 12 } },
-      layout: { name: 'R2', drawer: { width: 10, depth: 8, height: 12 }, layers: [], categories: [], bins: [], gridUnitMm: 42, heightUnitMm: 7, printBedSize: 256 },
+      metrics: {
+        binCount: 15,
+        layerCount: 2,
+        categoryCount: 3,
+        labeledBinCount: 8,
+        drawerSize: { width: 10, depth: 8, height: 12 },
+      },
+      layout: {
+        name: 'R2',
+        drawer: { width: 10, depth: 8, height: 12 },
+        layers: [],
+        categories: [],
+        bins: [],
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+        printBedSize: 256,
+      },
     },
     {
       id: 'kitchen-1',
       name: 'Kitchen Layout',
       theme: 'kitchen',
-      metrics: { binCount: 8, layerCount: 1, categoryCount: 2, labeledBinCount: 4, drawerSize: { width: 10, depth: 8, height: 10 } },
-      layout: { name: 'K1', drawer: { width: 10, depth: 8, height: 10 }, layers: [], categories: [], bins: [], gridUnitMm: 42, heightUnitMm: 7, printBedSize: 256 },
+      metrics: {
+        binCount: 8,
+        layerCount: 1,
+        categoryCount: 2,
+        labeledBinCount: 4,
+        drawerSize: { width: 10, depth: 8, height: 10 },
+      },
+      layout: {
+        name: 'K1',
+        drawer: { width: 10, depth: 8, height: 10 },
+        layers: [],
+        categories: [],
+        bins: [],
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+        printBedSize: 256,
+      },
     },
   ],
 }));
@@ -71,9 +116,42 @@ const createMockLayout = (overrides: Partial<InspirationLayout> = {}): Inspirati
     layers: [{ id: 'l1', name: 'Layer 1', height: 3 }],
     categories: [{ id: 'c1', name: 'Cat', color: '#ff0000' }],
     bins: [
-      { id: 'b1', x: 0, y: 0, width: 2, depth: 2, height: 3, layerId: 'l1', category: 'c1', label: 'Screws', notes: '' },
-      { id: 'b2', x: 2, y: 0, width: 2, depth: 2, height: 3, layerId: 'l1', category: 'c1', label: 'Nuts', notes: '' },
-      { id: 'b3', x: 4, y: 0, width: 2, depth: 2, height: 3, layerId: 'l1', category: 'c1', label: 'Bolts', notes: '' },
+      {
+        id: 'b1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        layerId: 'l1',
+        category: 'c1',
+        label: 'Screws',
+        notes: '',
+      },
+      {
+        id: 'b2',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        layerId: 'l1',
+        category: 'c1',
+        label: 'Nuts',
+        notes: '',
+      },
+      {
+        id: 'b3',
+        x: 4,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        layerId: 'l1',
+        category: 'c1',
+        label: 'Bolts',
+        notes: '',
+      },
     ],
     gridUnitMm: 42,
     heightUnitMm: 7,
@@ -111,7 +189,9 @@ describe('LayoutPreviewOverlay', () => {
     it('renders the description', () => {
       render(<LayoutPreviewOverlay {...defaultProps} />);
 
-      expect(screen.getByText('A detailed description of the test layout for organizing workshop items.')).toBeInTheDocument();
+      expect(
+        screen.getByText('A detailed description of the test layout for organizing workshop items.')
+      ).toBeInTheDocument();
     });
 
     it('renders the theme badge', () => {
@@ -235,7 +315,18 @@ describe('LayoutPreviewOverlay', () => {
         layout: {
           ...createMockLayout().layout,
           bins: [
-            { id: 'b1', x: 0, y: 0, width: 2, depth: 2, height: 3, layerId: 'l1', category: 'c1', label: '', notes: '' },
+            {
+              id: 'b1',
+              x: 0,
+              y: 0,
+              width: 2,
+              depth: 2,
+              height: 3,
+              layerId: 'l1',
+              category: 'c1',
+              label: '',
+              notes: '',
+            },
           ],
         },
       });
@@ -371,7 +462,9 @@ describe('LayoutPreviewOverlay', () => {
     it('displays helpful text', () => {
       render(<LayoutPreviewOverlay {...defaultProps} />);
 
-      expect(screen.getByText('Use as a starting point — customize to fit your items')).toBeInTheDocument();
+      expect(
+        screen.getByText('Use as a starting point — customize to fit your items')
+      ).toBeInTheDocument();
     });
   });
 });

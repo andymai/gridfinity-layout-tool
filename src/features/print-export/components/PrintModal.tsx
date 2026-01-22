@@ -2,7 +2,11 @@ import { useEffect, useState, useMemo, useCallback, useRef, type CSSProperties }
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store';
-import { useSettingsStore, type PrintViewSettings, type BinListSortOrder } from '@/core/store/settings';
+import {
+  useSettingsStore,
+  type PrintViewSettings,
+  type BinListSortOrder,
+} from '@/core/store/settings';
 import { PrintLayout } from './PrintLayout';
 import { SortOrderConfig } from './SortOrderConfig';
 import { Checkbox } from '@/shared/components/Checkbox';
@@ -216,7 +220,12 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
               aria-label="Close print dialog"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -259,7 +268,9 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                           }
                         }}
                       >
-                        <span className={`text-sm flex-1 ${isChecked ? 'text-content' : 'text-content-secondary'}`}>
+                        <span
+                          className={`text-sm flex-1 ${isChecked ? 'text-content' : 'text-content-secondary'}`}
+                        >
                           {layer.name}
                         </span>
                         <span className="text-xs text-content-tertiary">
@@ -280,7 +291,9 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
 
                 {/* Bin Display Options */}
                 <div className="mb-4">
-                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">On Bins</div>
+                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
+                    On Bins
+                  </div>
                   <div className="space-y-2">
                     <CheckboxOption
                       label="Labels"
@@ -317,7 +330,9 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
 
                 {/* Header Options */}
                 <div className="mb-4">
-                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">Header</div>
+                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
+                    Header
+                  </div>
                   <div className="space-y-2">
                     <CheckboxOption
                       label="Show Header"
@@ -348,7 +363,9 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
 
                 {/* Layout Options */}
                 <div>
-                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">Layout</div>
+                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
+                    Layout
+                  </div>
                   <div className="space-y-2">
                     <CheckboxOption
                       label="Grid Coordinates"
@@ -381,11 +398,13 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                   />
                 </div>
               )}
-
             </div>
 
             {/* Preview panel - grid fills available width */}
-            <div ref={previewRef} className="flex-1 p-4 overflow-y-auto overflow-x-hidden bg-surface">
+            <div
+              ref={previewRef}
+              className="flex-1 p-4 overflow-y-auto overflow-x-hidden bg-surface"
+            >
               <div className="print-preview">
                 <PrintLayout
                   layout={layout}
@@ -455,7 +474,9 @@ function CheckboxOption({
         }
       }}
     >
-      <span className={`text-sm ${checked ? 'text-content' : 'text-content-secondary'}`}>{label}</span>
+      <span className={`text-sm ${checked ? 'text-content' : 'text-content-secondary'}`}>
+        {label}
+      </span>
       <Checkbox checked={checked} variant="desktop" />
     </div>
   );

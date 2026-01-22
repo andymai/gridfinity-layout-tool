@@ -139,9 +139,7 @@ describe('SplitPreview', () => {
 
     it('handles pieces that fill exactly', () => {
       const pieces = [createPiece(2, 2, 4)]; // 4 pieces of 2x2 = 4x4 grid
-      const { container } = render(
-        <SplitPreview width={4} depth={4} pieces={pieces} />
-      );
+      const { container } = render(<SplitPreview width={4} depth={4} pieces={pieces} />);
 
       const placedPieces = container.querySelectorAll('[class*="absolute"]');
       expect(placedPieces).toHaveLength(4);

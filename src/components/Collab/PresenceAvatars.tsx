@@ -50,11 +50,5 @@ export function PresenceAvatars({ className = '' }: PresenceAvatarsProps) {
   }
 
   // Desktop/tablet: horizontal avatar bar with dropdown
-  return (
-    <PresenceAvatarBar
-      participants={participants}
-      status={status}
-      className={className}
-    />
-  );
+  return <PresenceAvatarBar participants={participants} status={status} className={className} />;
 }

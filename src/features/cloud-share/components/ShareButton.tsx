@@ -20,9 +20,7 @@ const POPOVER_WIDTH = 320;
  * Opens SharePopover on click to manage cloud shares.
  */
 export function ShareButton() {
-  const isFeatureEnabled = useLabsStore((state) =>
-    state.isFeatureEnabled('collaborative_editing')
-  );
+  const isFeatureEnabled = useLabsStore((state) => state.isFeatureEnabled('collaborative_editing'));
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -139,7 +137,9 @@ function SharePopover({
   const inputRef = useRef<HTMLInputElement>(null);
   const layoutName = useLayoutStore((state) => state.layout.name);
   const addToast = useToastStore((state) => state.addToast);
-  const [popoverPosition, setPopoverPosition] = useState<{ top: number; right: number } | null>(null);
+  const [popoverPosition, setPopoverPosition] = useState<{ top: number; right: number } | null>(
+    null
+  );
 
   // Calculate position with viewport boundary checking
   const calculatePosition = useCallback((): { top: number; right: number } | null => {
@@ -226,8 +226,8 @@ function SharePopover({
   // - If we have our own share, use that
   // - Otherwise default to 'view'
   const effectivePermission = isViewingSharedLayout
-    ? sharedLayoutPermission ?? 'view'
-    : existingShare?.permission ?? 'view';
+    ? (sharedLayoutPermission ?? 'view')
+    : (existingShare?.permission ?? 'view');
 
   // Track local permission override (only when user changes it before sharing)
   // Key tracks the "version" of effective permission - when it changes, we reset
@@ -316,9 +316,10 @@ function SharePopover({
         // Build appropriate message
         let message = `Permission updated to "${newPermission === 'edit' ? 'can edit' : 'view only'}"`;
         if (collabStateChanged) {
-          message = newPermission === 'edit'
-            ? 'Collaboration enabled. Anyone with the link can now edit.'
-            : 'Collaboration disabled. Link is now view-only.';
+          message =
+            newPermission === 'edit'
+              ? 'Collaboration enabled. Anyone with the link can now edit.'
+              : 'Collaboration disabled. Link is now view-only.';
         }
 
         // Show toast with undo option
@@ -390,16 +391,19 @@ function SharePopover({
     >
       {/* Header with layout name and close button */}
       <div className="flex items-center justify-between mb-3">
-        <div className="text-sm text-content-secondary truncate flex-1 mr-2">
-          {layoutName}
-        </div>
+        <div className="text-sm text-content-secondary truncate flex-1 mr-2">{layoutName}</div>
         <button
           onClick={onClose}
           className="text-content-tertiary hover:text-content transition-colors p-1 -m-1"
           aria-label="Close"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -482,7 +486,12 @@ function SharePopover({
               {urlCopied ? (
                 <span className="flex items-center gap-1">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   Copied
                 </span>
@@ -579,10 +588,7 @@ function SharePopover({
 
           {/* Done button */}
           <div className="pt-2">
-            <button
-              onClick={onClose}
-              className="btn btn-secondary w-full text-sm"
-            >
+            <button onClick={onClose} className="btn btn-secondary w-full text-sm">
               Done
             </button>
           </div>

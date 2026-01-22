@@ -49,7 +49,9 @@ describe('MultiBinInspector', () => {
     ],
   };
 
-  const createMockInspector = (overrides?: Partial<UseBinInspectorReturn>): UseBinInspectorReturn => ({
+  const createMockInspector = (
+    overrides?: Partial<UseBinInspectorReturn>
+  ): UseBinInspectorReturn => ({
     bin: null,
     selectedBins: mockBins,
     category: null,
@@ -330,11 +332,13 @@ describe('MultiBinInspector', () => {
 
   describe('many bins selected', () => {
     it('handles large selection', () => {
-      const manyBins = Array(20).fill(null).map((_, i) => ({
-        ...mockBins[0],
-        id: `bin${i}`,
-        category: i % 2 === 0 ? 'coral' : 'sky',
-      }));
+      const manyBins = Array(20)
+        .fill(null)
+        .map((_, i) => ({
+          ...mockBins[0],
+          id: `bin${i}`,
+          category: i % 2 === 0 ? 'coral' : 'sky',
+        }));
       const inspector = createMockInspector({ selectedBins: manyBins });
       render(<MultiBinInspector inspector={inspector} variant="desktop" />);
 

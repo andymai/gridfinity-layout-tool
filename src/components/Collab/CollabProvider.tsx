@@ -23,7 +23,11 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore } from '@/core/store/ui';
 import { generateId } from '@/core/constants';
 import { generateGuestName, generateGuestColor } from '@/utils/guestNames';
-import { PresenceContext, type CollabPresenceActions, LocalMutationsProvider } from '@/shared/contexts';
+import {
+  PresenceContext,
+  type CollabPresenceActions,
+  LocalMutationsProvider,
+} from '@/shared/contexts';
 import type { Coord } from '@/core/types';
 import { throttle } from '@/shared/utils';
 import { useCollabSync } from '@/hooks/useCollabSync';
@@ -137,11 +141,7 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
   );
 
   return (
-    <RoomProvider
-      id={roomId}
-      initialPresence={initialPresence}
-      initialStorage={initialStorage}
-    >
+    <RoomProvider id={roomId} initialPresence={initialPresence} initialStorage={initialStorage}>
       <PresenceProvider shareId={shareId}>{children}</PresenceProvider>
     </RoomProvider>
   );
@@ -246,14 +246,11 @@ function PresenceProvider({ shareId, children }: { shareId: string; children: Re
     return unsubscribe;
   }, []);
 
-  const updateCursor = useCallback(
-    (cursor: Coord | null) => {
-      if (throttledUpdateCursorRef.current) {
-        throttledUpdateCursorRef.current(cursor);
-      }
-    },
-    []
-  );
+  const updateCursor = useCallback((cursor: Coord | null) => {
+    if (throttledUpdateCursorRef.current) {
+      throttledUpdateCursorRef.current(cursor);
+    }
+  }, []);
 
   const updateInteraction = useCallback(
     (interaction: InteractionHint) => {
@@ -262,14 +259,11 @@ function PresenceProvider({ shareId, children }: { shareId: string; children: Re
     [updateMyPresence]
   );
 
-  const updateSelection = useCallback(
-    (binIds: string[]) => {
-      if (throttledUpdateSelectionRef.current) {
-        throttledUpdateSelectionRef.current(binIds);
-      }
-    },
-    []
-  );
+  const updateSelection = useCallback((binIds: string[]) => {
+    if (throttledUpdateSelectionRef.current) {
+      throttledUpdateSelectionRef.current(binIds);
+    }
+  }, []);
 
   const clearPresence = useCallback(() => {
     updateMyPresence({

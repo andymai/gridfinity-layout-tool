@@ -23,7 +23,9 @@ import {
  */
 function getStashBinCount(page: Page) {
   // The bin count badge is a span with "N bins" text inside the stash header area
-  return getStash(page).locator('span.text-xs').filter({ hasText: /^\d+ bins?$/ });
+  return getStash(page)
+    .locator('span.text-xs')
+    .filter({ hasText: /^\d+ bins?$/ });
 }
 
 test.describe('Staging Area (Stash)', () => {
@@ -227,7 +229,10 @@ test.describe('Staging Area (Stash)', () => {
     if (!stagingBounds) throw new Error('Staging bin not found');
     const gridBounds = await getGridBounds(page);
 
-    await page.mouse.move(stagingBounds.x + stagingBounds.width / 2, stagingBounds.y + stagingBounds.height / 2);
+    await page.mouse.move(
+      stagingBounds.x + stagingBounds.width / 2,
+      stagingBounds.y + stagingBounds.height / 2
+    );
     await page.mouse.down();
     await page.mouse.move(gridBounds.x + 100, gridBounds.y + 100, { steps: 10 });
     await page.mouse.up();
@@ -251,7 +256,9 @@ test.describe('Staging Area (Stash)', () => {
     await page.mouse.down();
 
     // Move slightly to trigger movement detection
-    await page.mouse.move(bounds.x + bounds.width / 2 + 50, bounds.y + bounds.height / 2, { steps: 5 });
+    await page.mouse.move(bounds.x + bounds.width / 2 + 50, bounds.y + bounds.height / 2, {
+      steps: 5,
+    });
 
     // Drop zone should appear (shows "Drop here to stash" or similar)
     await expect(page.getByText(/drop.*stash/i)).toBeVisible();
@@ -401,7 +408,9 @@ test.describe('Staging Area (Stash)', () => {
       await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
       await page.mouse.down();
       // Move slightly to trigger drag detection
-      await page.mouse.move(bounds.x + bounds.width / 2 + 50, bounds.y + bounds.height / 2, { steps: 5 });
+      await page.mouse.move(bounds.x + bounds.width / 2 + 50, bounds.y + bounds.height / 2, {
+        steps: 5,
+      });
 
       // Stash should auto-expand to show drop target
       await expect(toggleButton).toHaveAttribute('aria-expanded', 'true');

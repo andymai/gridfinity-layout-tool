@@ -193,7 +193,10 @@ describe('useLayoutRouting', () => {
     it('skips URL change when layout in URL does not exist locally (potential cloud share)', () => {
       // When URL has a layout ID that doesn't exist locally,
       // we assume it might be a cloud share and let SharedLayoutImporter handle it
-      vi.mocked(url.parseLayoutFromURL).mockReturnValue({ layoutId: 'cloudShare12', slug: 'shared-layout' });
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue({
+        layoutId: 'cloudShare12',
+        slug: 'shared-layout',
+      });
 
       renderHook(() => useLayoutRouting());
 
@@ -211,7 +214,10 @@ describe('useLayoutRouting', () => {
 
     it('navigates to layout specified in URL', () => {
       // Set up a different active layout so navigation is needed
-      vi.mocked(url.parseLayoutFromURL).mockReturnValue({ layoutId: 'layout123test', slug: 'test-layout' });
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue({
+        layoutId: 'layout123test',
+        slug: 'test-layout',
+      });
       useLayoutStore.setState({ activeLayoutId: 'other-layout' });
 
       // Add the other layout to library too
@@ -223,7 +229,13 @@ describe('useLayoutRouting', () => {
           settings: {},
           entries: [
             mockEntry,
-            { id: 'other-layout', name: 'Other', createdAt: Date.now(), updatedAt: Date.now(), preview: null },
+            {
+              id: 'other-layout',
+              name: 'Other',
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              preview: null,
+            },
           ],
         },
       });
@@ -283,7 +295,10 @@ describe('useLayoutRouting', () => {
 
     it('falls back to parsing URL when no state', () => {
       vi.mocked(url.getLayoutIdFromHistoryState).mockReturnValue(null);
-      vi.mocked(url.parseLayoutFromURL).mockReturnValue({ layoutId: 'layout123test', slug: 'test-layout' });
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue({
+        layoutId: 'layout123test',
+        slug: 'test-layout',
+      });
 
       renderHook(() => useLayoutRouting());
 

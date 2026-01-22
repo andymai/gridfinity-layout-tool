@@ -96,10 +96,7 @@ describe('storage error handling', () => {
 
     it('returns layout when valid data exists', () => {
       const layoutId = 'test-layout';
-      localStorageMock.setItem(
-        getLayoutStorageKey(layoutId),
-        JSON.stringify(defaultLayout)
-      );
+      localStorageMock.setItem(getLayoutStorageKey(layoutId), JSON.stringify(defaultLayout));
 
       const result = loadLayoutSync(layoutId);
       expect(result).not.toBeNull();
@@ -109,10 +106,7 @@ describe('storage error handling', () => {
     it('returns null and logs error for corrupted JSON', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const layoutId = 'corrupted-layout';
-      localStorageMock.setItem(
-        getLayoutStorageKey(layoutId),
-        'not valid json{{{[['
-      );
+      localStorageMock.setItem(getLayoutStorageKey(layoutId), 'not valid json{{{[[');
 
       const result = loadLayoutSync(layoutId);
       expect(result).toBeNull();
@@ -145,10 +139,7 @@ describe('storage error handling', () => {
       delete (oldLayout as Record<string, unknown>).gridUnitMm;
       delete (oldLayout as Record<string, unknown>).heightUnitMm;
 
-      localStorageMock.setItem(
-        getLayoutStorageKey(layoutId),
-        JSON.stringify(oldLayout)
-      );
+      localStorageMock.setItem(getLayoutStorageKey(layoutId), JSON.stringify(oldLayout));
 
       const result = loadLayoutSync(layoutId);
       expect(result).not.toBeNull();
@@ -161,16 +152,11 @@ describe('storage error handling', () => {
   describe('deleteLayoutSync', () => {
     it('removes layout from localStorage', () => {
       const layoutId = 'to-delete';
-      localStorageMock.setItem(
-        getLayoutStorageKey(layoutId),
-        JSON.stringify(defaultLayout)
-      );
+      localStorageMock.setItem(getLayoutStorageKey(layoutId), JSON.stringify(defaultLayout));
 
       deleteLayoutSync(layoutId);
 
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith(
-        'gridfinity-layout-to-delete'
-      );
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('gridfinity-layout-to-delete');
     });
 
     it('does not throw when deleting non-existent layout', () => {
@@ -223,10 +209,7 @@ describe('storage error handling', () => {
 
     it('returns null for invalid library structure', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      localStorageMock.setItem(
-        'gridfinity-library-v1',
-        JSON.stringify({ invalid: 'structure' })
-      );
+      localStorageMock.setItem('gridfinity-library-v1', JSON.stringify({ invalid: 'structure' }));
 
       const result = loadLibrary();
       expect(result).toBeNull();
@@ -247,24 +230,33 @@ describe('storage error handling', () => {
             name: 'Existing',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
-            preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
           },
           {
             id: 'orphaned-id',
             name: 'Orphaned',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
-            preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
           },
         ],
       };
 
       localStorageMock.setItem('gridfinity-library-v1', JSON.stringify(library));
       // Only create layout for 'existing-id'
-      localStorageMock.setItem(
-        'gridfinity-layout-existing-id',
-        JSON.stringify(defaultLayout)
-      );
+      localStorageMock.setItem('gridfinity-layout-existing-id', JSON.stringify(defaultLayout));
 
       const result = loadLibrary();
       expect(result).not.toBeNull();
@@ -286,24 +278,33 @@ describe('storage error handling', () => {
             name: 'Orphaned Active',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
-            preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
           },
           {
             id: 'valid-id',
             name: 'Valid',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
-            preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
           },
         ],
       };
 
       localStorageMock.setItem('gridfinity-library-v1', JSON.stringify(library));
       // Only create layout for 'valid-id'
-      localStorageMock.setItem(
-        'gridfinity-layout-valid-id',
-        JSON.stringify(defaultLayout)
-      );
+      localStorageMock.setItem('gridfinity-layout-valid-id', JSON.stringify(defaultLayout));
 
       vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -334,20 +335,25 @@ describe('storage error handling', () => {
         version: '1.0',
         activeLayoutId: layoutId,
         settings: {},
-        entries: [{
-          id: layoutId,
-          name: existingLayout.name,
-          createdAt: Date.now(),
-          modifiedAt: Date.now(),
-          preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
-        }],
+        entries: [
+          {
+            id: layoutId,
+            name: existingLayout.name,
+            createdAt: Date.now(),
+            modifiedAt: Date.now(),
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
+          },
+        ],
       };
 
       localStorageMock.setItem('gridfinity-library-v1', JSON.stringify(library));
-      localStorageMock.setItem(
-        getLayoutStorageKey(layoutId),
-        JSON.stringify(existingLayout)
-      );
+      localStorageMock.setItem(getLayoutStorageKey(layoutId), JSON.stringify(existingLayout));
 
       const result = initializeLayoutLibrary();
       expect(result.activeLayout.name).toBe('My Existing Layout');
@@ -366,14 +372,26 @@ describe('storage error handling', () => {
             name: 'Missing',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
-            preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
           },
           {
             id: 'backup-layout',
             name: 'Backup',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
-            preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
           },
         ],
       };
@@ -384,10 +402,7 @@ describe('storage error handling', () => {
       };
 
       localStorageMock.setItem('gridfinity-library-v1', JSON.stringify(library));
-      localStorageMock.setItem(
-        getLayoutStorageKey('backup-layout'),
-        JSON.stringify(backupLayout)
-      );
+      localStorageMock.setItem(getLayoutStorageKey('backup-layout'), JSON.stringify(backupLayout));
 
       const result = initializeLayoutLibrary();
 
@@ -412,17 +427,20 @@ describe('storage error handling', () => {
             name: 'Corrupted 1',
             createdAt: Date.now(),
             modifiedAt: Date.now(),
-            preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 0, layerCount: 1 },
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
           },
         ],
       };
 
       localStorageMock.setItem('gridfinity-library-v1', JSON.stringify(library));
       // Layout exists but is corrupted
-      localStorageMock.setItem(
-        getLayoutStorageKey('corrupted-1'),
-        'not valid json{{{['
-      );
+      localStorageMock.setItem(getLayoutStorageKey('corrupted-1'), 'not valid json{{{[');
 
       const result = initializeLayoutLibrary();
 
@@ -471,8 +489,30 @@ describe('storage error handling', () => {
           { id: 'l2', name: 'Layer 2', height: 6 },
         ],
         bins: [
-          { id: 'b1', x: 0, y: 0, width: 2, depth: 2, height: 3, layerId: 'l1', category: 'c1', label: '', notes: '' },
-          { id: 'b2', x: 3, y: 0, width: 1, depth: 1, height: 3, layerId: 'l1', category: 'c1', label: '', notes: '' },
+          {
+            id: 'b1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            layerId: 'l1',
+            category: 'c1',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'b2',
+            x: 3,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            layerId: 'l1',
+            category: 'c1',
+            label: '',
+            notes: '',
+          },
         ],
       };
 
@@ -489,8 +529,30 @@ describe('storage error handling', () => {
       const layout: Layout = {
         ...defaultLayout,
         bins: [
-          { id: 'b1', x: 0, y: 0, width: 2, depth: 2, height: 3, layerId: defaultLayout.layers[0].id, category: defaultLayout.categories[0].id, label: '', notes: '' },
-          { id: 'b2', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: STAGING_ID, category: defaultLayout.categories[0].id, label: '', notes: '' },
+          {
+            id: 'b1',
+            x: 0,
+            y: 0,
+            width: 2,
+            depth: 2,
+            height: 3,
+            layerId: defaultLayout.layers[0].id,
+            category: defaultLayout.categories[0].id,
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'b2',
+            x: 0,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            layerId: STAGING_ID,
+            category: defaultLayout.categories[0].id,
+            label: '',
+            notes: '',
+          },
         ],
       };
 
@@ -508,8 +570,30 @@ describe('storage error handling', () => {
           { id: 'cat2', name: 'Blue', color: '#0000ff' },
         ],
         bins: [
-          { id: 'b1', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: defaultLayout.layers[0].id, category: 'cat1', label: '', notes: '' },
-          { id: 'b2', x: 1, y: 0, width: 1, depth: 1, height: 3, layerId: defaultLayout.layers[0].id, category: 'cat2', label: '', notes: '' },
+          {
+            id: 'b1',
+            x: 0,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            layerId: defaultLayout.layers[0].id,
+            category: 'cat1',
+            label: '',
+            notes: '',
+          },
+          {
+            id: 'b2',
+            x: 1,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            layerId: defaultLayout.layers[0].id,
+            category: 'cat2',
+            label: '',
+            notes: '',
+          },
         ],
       };
 
@@ -523,7 +607,18 @@ describe('storage error handling', () => {
       const layout: Layout = {
         ...defaultLayout,
         bins: [
-          { id: 'b1', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: defaultLayout.layers[0].id, category: 'unknown-cat', label: '', notes: '' },
+          {
+            id: 'b1',
+            x: 0,
+            y: 0,
+            width: 1,
+            depth: 1,
+            height: 3,
+            layerId: defaultLayout.layers[0].id,
+            category: 'unknown-cat',
+            label: '',
+            notes: '',
+          },
         ],
       };
 

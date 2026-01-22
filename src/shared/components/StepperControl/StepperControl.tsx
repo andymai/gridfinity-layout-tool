@@ -44,7 +44,13 @@ function MinusIcon({ size }: { size: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'sm' ? 'w-2.5 h-2.5' : size === 'md' ? 'w-3 h-3' : 'w-5 h-5';
   const strokeWidth = size === 'lg' ? 2 : 2.5;
   return (
-    <svg className={sizeClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={strokeWidth}>
+    <svg
+      className={sizeClass}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+    >
       <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
     </svg>
   );
@@ -57,7 +63,13 @@ function PlusIcon({ size }: { size: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'sm' ? 'w-2.5 h-2.5' : size === 'md' ? 'w-3 h-3' : 'w-5 h-5';
   const strokeWidth = size === 'lg' ? 2 : 2.5;
   return (
-    <svg className={sizeClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={strokeWidth}>
+    <svg
+      className={sizeClass}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+    >
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
     </svg>
   );

@@ -6,7 +6,13 @@
 
 import type { PostHog } from 'posthog-js';
 import type { Layout } from '@/core/types';
-import { STAGING_ID, DEFAULT_CATEGORIES, calcMaxGridUnits, hasFractionalDimensions, BREAKPOINTS } from '@/core/constants';
+import {
+  STAGING_ID,
+  DEFAULT_CATEGORIES,
+  calcMaxGridUnits,
+  hasFractionalDimensions,
+  BREAKPOINTS,
+} from '@/core/constants';
 import { useLabsStore, useInteractionStore } from '@/core/store';
 import { getFeature } from '@/core/labs';
 
@@ -164,11 +170,11 @@ export interface LayoutMetrics {
 
 const DEFAULT_DRAWER = { width: 10, depth: 8, height: 12 };
 const DEFAULT_PRINT_BED = 256;
-const DEFAULT_CATEGORY_NAMES = new Set(DEFAULT_CATEGORIES.map(c => c.name.toLowerCase()));
+const DEFAULT_CATEGORY_NAMES = new Set(DEFAULT_CATEGORIES.map((c) => c.name.toLowerCase()));
 
 export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
-  const gridBins = layout.bins.filter(b => b.layerId !== STAGING_ID);
-  const stagingBins = layout.bins.filter(b => b.layerId === STAGING_ID);
+  const gridBins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const stagingBins = layout.bins.filter((b) => b.layerId === STAGING_ID);
 
   // Bin size distribution
   const sizeCount = new Map<string, number>();
@@ -221,7 +227,7 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     categoryCount.set(bin.category, (categoryCount.get(bin.category) || 0) + 1);
   }
 
-  const categoryIdToName = new Map(layout.categories.map(c => [c.id, c.name]));
+  const categoryIdToName = new Map(layout.categories.map((c) => [c.id, c.name]));
   const topCategories = [...categoryCount.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
@@ -229,7 +235,7 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
 
   // Custom categories (not matching default names)
   const customCategoryCount = layout.categories.filter(
-    c => !DEFAULT_CATEGORY_NAMES.has(c.name.toLowerCase())
+    (c) => !DEFAULT_CATEGORY_NAMES.has(c.name.toLowerCase())
   ).length;
 
   // Print bed check
@@ -260,13 +266,13 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     bins_with_notes: withNotes,
     bins_with_clearance: withClearance,
     bins_with_half_units: withHalfUnits,
-    bin_avg_area: gridBins.length > 0 ? Math.round(totalArea / gridBins.length * 10) / 10 : 0,
+    bin_avg_area: gridBins.length > 0 ? Math.round((totalArea / gridBins.length) * 10) / 10 : 0,
     bin_top_sizes: topSizes,
     bin_heights: heights,
 
     // Layers
     layer_count: layout.layers.length,
-    layer_heights: layout.layers.map(l => l.height),
+    layer_heights: layout.layers.map((l) => l.height),
     layer_total_height: layout.layers.reduce((sum, l) => sum + l.height, 0),
 
     // Categories
@@ -299,11 +305,7 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
 // TRACKING FUNCTIONS
 // ============================================
 
-export type AnalyticsTrigger =
-  | 'export_json'
-  | 'export_url'
-  | 'export_tsv'
-  | 'session_engaged';
+export type AnalyticsTrigger = 'export_json' | 'export_url' | 'export_tsv' | 'session_engaged';
 
 export function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
   if (typeof window === 'undefined') return 'desktop';
@@ -363,7 +365,10 @@ export function trackEvent(
 /**
  * Track 3D preview usage.
  */
-export function track3DPreview(action: 'opened' | 'expanded' | 'camera_preset', preset?: string): void {
+export function track3DPreview(
+  action: 'opened' | 'expanded' | 'camera_preset',
+  preset?: string
+): void {
   trackEvent('3d_preview', { action, preset: preset || '' });
 }
 

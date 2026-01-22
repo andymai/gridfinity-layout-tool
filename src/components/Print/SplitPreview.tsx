@@ -23,13 +23,7 @@ interface SplitPreviewProps {
  * Visual preview of how a bin will be split for printing.
  * Shows a grid diagram with the split pieces.
  */
-export function SplitPreview({
-  width,
-  depth,
-  pieces,
-  cellSize = 16,
-  gap = 2,
-}: SplitPreviewProps) {
+export function SplitPreview({ width, depth, pieces, cellSize = 16, gap = 2 }: SplitPreviewProps) {
   // Create a 2D grid to place pieces
   const grid: (PrintPiece | null)[][] = Array.from({ length: depth }, () =>
     Array.from({ length: width }, () => null)

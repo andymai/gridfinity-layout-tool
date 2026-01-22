@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BinListTable } from '@/components/Modals/BinListModal/BinListTable';
-import type { EnhancedPrintRow, Category, PrintListSortKey, PrintListSortOrder } from '@/core/types';
+import type {
+  EnhancedPrintRow,
+  Category,
+  PrintListSortKey,
+  PrintListSortOrder,
+} from '@/core/types';
 
 // Mock SplitPreview
 vi.mock('../../components/Print/SplitPreview', () => ({
@@ -41,9 +46,7 @@ describe('BinListTable', () => {
       totalPieces: 8,
       filament: 25.0,
       needsSplit: true,
-      pieces: [
-        { width: 2, depth: 2, count: 4 },
-      ],
+      pieces: [{ width: 2, depth: 2, count: 4 }],
       labels: ['Tools'],
       notes: 'Large items',
       binIds: ['bin6', 'bin7'],
@@ -231,7 +234,9 @@ describe('BinListTable', () => {
 
     it('selected rows have selection background', () => {
       const selectedIndices = new Set([0]);
-      const { container } = render(<BinListTable {...defaultProps} selectedIndices={selectedIndices} />);
+      const { container } = render(
+        <BinListTable {...defaultProps} selectedIndices={selectedIndices} />
+      );
 
       const rows = container.querySelectorAll('tbody tr');
       expect(rows[0].className).toContain('bg-selection-bg');
@@ -392,7 +397,10 @@ describe('BinListTable', () => {
       // Save by blur
       fireEvent.blur(input);
 
-      expect(mockOnEditLabel).toHaveBeenCalledWith(['bin1', 'bin2', 'bin3', 'bin4', 'bin5'], 'New Label');
+      expect(mockOnEditLabel).toHaveBeenCalledWith(
+        ['bin1', 'bin2', 'bin3', 'bin4', 'bin5'],
+        'New Label'
+      );
     });
 
     it('calls onEditNotes when notes edit saved', () => {
@@ -409,7 +417,10 @@ describe('BinListTable', () => {
       // Save by blur
       fireEvent.blur(input);
 
-      expect(mockOnEditNotes).toHaveBeenCalledWith(['bin1', 'bin2', 'bin3', 'bin4', 'bin5'], 'New Notes');
+      expect(mockOnEditNotes).toHaveBeenCalledWith(
+        ['bin1', 'bin2', 'bin3', 'bin4', 'bin5'],
+        'New Notes'
+      );
     });
 
     it('saves on Enter key', () => {

@@ -2,9 +2,9 @@
  * Text color options for bin labels based on background luminance.
  */
 export interface BinTextColors {
-  primary: string;    // Main text (label or dimensions)
-  secondary: string;  // Muted text (secondary info)
-  shadow: string;     // Subtle text-shadow for depth
+  primary: string; // Main text (label or dimensions)
+  secondary: string; // Muted text (secondary info)
+  shadow: string; // Subtle text-shadow for depth
 }
 
 /**

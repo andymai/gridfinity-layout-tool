@@ -56,24 +56,24 @@ export function importLayoutJSON(json: string): { layout: Layout | null; errors:
     const idMap = new Map<string, string>();
 
     // Regenerate layer IDs
-    layout.layers = layout.layers.map(layer => {
+    layout.layers = layout.layers.map((layer) => {
       const newId = generateId();
       idMap.set(layer.id, newId);
       return { ...layer, id: newId };
     });
 
     // Regenerate category IDs
-    layout.categories = layout.categories.map(cat => {
+    layout.categories = layout.categories.map((cat) => {
       const newId = generateId();
       idMap.set(cat.id, newId);
       return { ...cat, id: newId };
     });
 
     // Regenerate bin IDs and update references
-    layout.bins = layout.bins.map(bin => ({
+    layout.bins = layout.bins.map((bin) => ({
       ...bin,
       id: generateId(),
-      layerId: bin.layerId === STAGING_ID ? STAGING_ID : (idMap.get(bin.layerId) || bin.layerId),
+      layerId: bin.layerId === STAGING_ID ? STAGING_ID : idMap.get(bin.layerId) || bin.layerId,
       category: idMap.get(bin.category) || bin.category,
     }));
 
@@ -129,15 +129,18 @@ export interface PrintListTSVMeta {
  * Dynamically adds columns for custom properties that exist in any row.
  * Optionally includes layout name and grid size columns for context.
  */
-export function exportPrintListTSV(rows: Array<{
-  size: string;
-  height: number;
-  binCount: number;
-  totalPieces: number;
-  labels?: string[];
-  notes?: string;
-  customProperties?: Record<string, string>;
-}>, meta?: PrintListTSVMeta): string {
+export function exportPrintListTSV(
+  rows: Array<{
+    size: string;
+    height: number;
+    binCount: number;
+    totalPieces: number;
+    labels?: string[];
+    notes?: string;
+    customProperties?: Record<string, string>;
+  }>,
+  meta?: PrintListTSVMeta
+): string {
   // Collect all unique custom property keys across all rows
   const customKeys = new Set<string>();
   for (const r of rows) {
@@ -152,16 +155,14 @@ export function exportPrintListTSV(rows: Array<{
   // Build header with optional metadata and dynamic custom property columns
   const metaHeader = meta ? 'Layout\tGrid Size\t' : '';
   const baseHeader = `${metaHeader}Size\tHeight\tBins\tPieces\tLabel\tNotes`;
-  const header = sortedKeys.length > 0
-    ? `${baseHeader}\t${sortedKeys.join('\t')}`
-    : baseHeader;
+  const header = sortedKeys.length > 0 ? `${baseHeader}\t${sortedKeys.join('\t')}` : baseHeader;
 
   // Pre-compute metadata values if provided (with TSV escaping)
   const layoutName = meta ? escapeTSVValue(meta.layoutName || '') : '';
   const gridSize = meta ? escapeTSVValue(meta.gridSize || '') : '';
 
   // Build data rows
-  const lines = rows.map(r => {
+  const lines = rows.map((r) => {
     const label = escapeTSVValue(r.labels?.[0] || '');
     const notes = escapeTSVValue(r.notes || '');
     const metaValues = meta ? `${layoutName}\t${gridSize}\t` : '';
@@ -172,7 +173,7 @@ export function exportPrintListTSV(rows: Array<{
     }
 
     // Add custom property values in order (with TSV escaping)
-    const customValues = sortedKeys.map(key => escapeTSVValue(r.customProperties?.[key] || ''));
+    const customValues = sortedKeys.map((key) => escapeTSVValue(r.customProperties?.[key] || ''));
     return `${baseLine}\t${customValues.join('\t')}`;
   });
 
@@ -200,7 +201,7 @@ function compressString(str: string): string {
 function decompressString(compressed: string): string {
   try {
     const binary = atob(compressed);
-    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
     const decoder = new TextDecoder();
     return decoder.decode(bytes);
   } catch {
@@ -259,9 +260,8 @@ export function decodeLayoutResult(encoded: string): Result<Layout, ValidationEr
  */
 export function generateShareableURL(layout: Layout): string {
   const encoded = encodeLayoutForURL(layout);
-  const baseURL = typeof window !== 'undefined'
-    ? `${window.location.origin}${window.location.pathname}`
-    : '';
+  const baseURL =
+    typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '';
   return `${baseURL}#share=${encoded}`;
 }
 

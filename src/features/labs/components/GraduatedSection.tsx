@@ -18,9 +18,7 @@ export function GraduatedSection({ features }: GraduatedSectionProps) {
         aria-expanded={isExpanded}
       >
         <ChevronIcon
-          className={`w-4 h-4 transition-transform duration-200 ${
-            isExpanded ? 'rotate-90' : ''
-          }`}
+          className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
         />
         <span>What's New ({features.length})</span>
       </button>
@@ -34,12 +32,8 @@ export function GraduatedSection({ features }: GraduatedSectionProps) {
             >
               <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
               <div>
-                <div className="text-sm font-medium text-content">
-                  {feature.name}
-                </div>
-                <div className="text-xs text-green-400 mt-0.5">
-                  Now available to everyone!
-                </div>
+                <div className="text-sm font-medium text-content">{feature.name}</div>
+                <div className="text-xs text-green-400 mt-0.5">Now available to everyone!</div>
               </div>
             </div>
           ))}
@@ -52,12 +46,7 @@ export function GraduatedSection({ features }: GraduatedSectionProps) {
 function ChevronIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M9 5l7 7-7 7"
-      />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
     </svg>
   );
 }

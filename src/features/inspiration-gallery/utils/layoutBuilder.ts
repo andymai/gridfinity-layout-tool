@@ -133,10 +133,7 @@ interface BuilderOptions {
 /**
  * Build an InspirationLayout from a Layout and metadata.
  */
-export function buildInspirationLayout(
-  layout: Layout,
-  options: BuilderOptions
-): InspirationLayout {
+export function buildInspirationLayout(layout: Layout, options: BuilderOptions): InspirationLayout {
   return {
     id: options.id,
     name: options.name,

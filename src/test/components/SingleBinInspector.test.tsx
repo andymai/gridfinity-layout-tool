@@ -7,7 +7,15 @@ import { useUIStore } from '@/core/store';
 
 // Mock the DeferredNumberInput component to simplify testing
 vi.mock('../../shared/components/DeferredNumberInput', () => ({
-  DeferredNumberInput: ({ value, onChange, ...props }: { value: number; onChange: (v: number) => void; [key: string]: unknown }) => (
+  DeferredNumberInput: ({
+    value,
+    onChange,
+    ...props
+  }: {
+    value: number;
+    onChange: (v: number) => void;
+    [key: string]: unknown;
+  }) => (
     <input
       type="number"
       value={value}
@@ -44,7 +52,9 @@ describe('SingleBinInspector', () => {
     layers: [mockLayer, { id: 'layer2', name: 'Layer 2', height: 6 }],
   };
 
-  const createMockInspector = (overrides?: Partial<UseBinInspectorReturn>): UseBinInspectorReturn => ({
+  const createMockInspector = (
+    overrides?: Partial<UseBinInspectorReturn>
+  ): UseBinInspectorReturn => ({
     bin: mockBin,
     selectedBins: [mockBin],
     category: mockCategory,

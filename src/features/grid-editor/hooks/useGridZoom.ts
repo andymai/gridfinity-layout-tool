@@ -81,8 +81,10 @@ export function useGridZoom(options: UseGridZoomOptions): GridZoomState {
     // Grid dimensions at zoom=1
     const labelGutter = 28; // Space for row/column labels
     const resizeHandleSpace = isMobile ? 0 : 24; // pr-6/pb-6 for resize handles (hidden on mobile)
-    const gridWidth = drawerWidth * BASE_CELL_SIZE + (drawerWidth - 1) * gap + labelGutter + resizeHandleSpace;
-    const gridHeight = drawerDepth * BASE_CELL_SIZE + (drawerDepth - 1) * gap + labelGutter + resizeHandleSpace;
+    const gridWidth =
+      drawerWidth * BASE_CELL_SIZE + (drawerWidth - 1) * gap + labelGutter + resizeHandleSpace;
+    const gridHeight =
+      drawerDepth * BASE_CELL_SIZE + (drawerDepth - 1) * gap + labelGutter + resizeHandleSpace;
 
     // Calculate zoom to fit both dimensions
     const zoomToFitWidth = availableWidth / gridWidth;

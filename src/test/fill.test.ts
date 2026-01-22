@@ -6,7 +6,7 @@ const createTestLayout = (): Layout => ({
   version: '1.0',
   name: 'Test',
   drawer: { width: 6, depth: 6, height: 9 },
-  printBedSize: 168,  // 4 grid units * 42mm
+  printBedSize: 168, // 4 grid units * 42mm
   gridUnitMm: 42,
   heightUnitMm: 7,
   categories: [{ id: 'cat1', name: 'Test', color: '#000' }],
@@ -34,7 +34,18 @@ describe('fillAllWithSize', () => {
   it('skips cells occupied by existing bins', () => {
     const layout = createTestLayout();
     layout.bins = [
-      { id: 'existing', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+      {
+        id: 'existing',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'cat1',
+        label: '',
+        notes: '',
+      },
     ];
 
     const result = fillAllWithSize(layout, 'layer1', 2, 2, 'cat1');
@@ -67,7 +78,18 @@ describe('fillAllWithSize', () => {
     const layout = createTestLayout();
     // Place a bin that will cause overlap detection
     layout.bins = [
-      { id: 'existing', layerId: 'layer1', x: 1, y: 1, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+      {
+        id: 'existing',
+        layerId: 'layer1',
+        x: 1,
+        y: 1,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'cat1',
+        label: '',
+        notes: '',
+      },
     ];
     // Try to fill with 2x2 bins - some positions will be skipped
     const result = fillAllWithSize(layout, 'layer1', 2, 2, 'cat1');
@@ -105,7 +127,18 @@ describe('fillGaps', () => {
   it('fills gaps with optimal sizes', () => {
     const layout = createTestLayout();
     layout.bins = [
-      { id: 'existing', layerId: 'layer1', x: 0, y: 0, width: 4, depth: 4, height: 3, category: 'cat1', label: '', notes: '' },
+      {
+        id: 'existing',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 4,
+        depth: 4,
+        height: 3,
+        category: 'cat1',
+        label: '',
+        notes: '',
+      },
     ];
 
     const result = fillGaps(layout, 'layer1', 'cat1', 4);
@@ -119,7 +152,18 @@ describe('fillGaps', () => {
     layout.drawer.width = 2;
     layout.drawer.depth = 2;
     layout.bins = [
-      { id: 'full', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: '', notes: '' },
+      {
+        id: 'full',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'cat1',
+        label: '',
+        notes: '',
+      },
     ];
 
     const result = fillGaps(layout, 'layer1', 'cat1', 4);
@@ -145,7 +189,18 @@ describe('getLayerCoverage', () => {
     const layout = createTestLayout();
     // 6×6 = 36 cells, 3×3 = 9 cells = 25%
     layout.bins = [
-      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 3, depth: 3, height: 3, category: 'cat1', label: '', notes: '' },
+      {
+        id: 'bin1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 3,
+        height: 3,
+        category: 'cat1',
+        label: '',
+        notes: '',
+      },
     ];
     expect(getLayerCoverage(layout, 'layer1')).toBe(25);
   });
@@ -153,7 +208,18 @@ describe('getLayerCoverage', () => {
   it('returns 100 for full layer', () => {
     const layout = createTestLayout();
     layout.bins = [
-      { id: 'full', layerId: 'layer1', x: 0, y: 0, width: 6, depth: 6, height: 3, category: 'cat1', label: '', notes: '' },
+      {
+        id: 'full',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 6,
+        depth: 6,
+        height: 3,
+        category: 'cat1',
+        label: '',
+        notes: '',
+      },
     ];
     expect(getLayerCoverage(layout, 'layer1')).toBe(100);
   });
@@ -185,12 +251,15 @@ describe('fillAllWithSize with blocked zones', () => {
       {
         id: 'protruding',
         layerId: 'layer1',
-        x: 0, y: 0,
-        width: 2, depth: 2,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
         height: 3,
-        clearanceHeight: 2,  // Protrudes into layer 2
+        clearanceHeight: 2, // Protrudes into layer 2
         category: 'cat1',
-        label: '', notes: '',
+        label: '',
+        notes: '',
       },
     ];
 
@@ -204,10 +273,8 @@ describe('fillAllWithSize with blocked zones', () => {
 
     // Verify none of the bins overlap with the blocked zone (0,0 to 2,2)
     for (const bin of result.bins) {
-      const overlapsBlocked = (
-        bin.x < 2 && bin.x + bin.width > 0 &&
-        bin.y < 2 && bin.y + bin.depth > 0
-      );
+      const overlapsBlocked =
+        bin.x < 2 && bin.x + bin.width > 0 && bin.y < 2 && bin.y + bin.depth > 0;
       expect(overlapsBlocked).toBe(false);
     }
   });
@@ -219,22 +286,28 @@ describe('fillAllWithSize with blocked zones', () => {
       {
         id: 'protruding1',
         layerId: 'layer1',
-        x: 0, y: 0,
-        width: 2, depth: 2,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
         height: 3,
         clearanceHeight: 2,
         category: 'cat1',
-        label: '', notes: '',
+        label: '',
+        notes: '',
       },
       {
         id: 'protruding2',
         layerId: 'layer1',
-        x: 4, y: 4,
-        width: 2, depth: 2,
+        x: 4,
+        y: 4,
+        width: 2,
+        depth: 2,
         height: 3,
         clearanceHeight: 2,
         category: 'cat1',
-        label: '', notes: '',
+        label: '',
+        notes: '',
       },
     ];
 
@@ -251,12 +324,15 @@ describe('fillAllWithSize with blocked zones', () => {
       {
         id: 'nonprotruding',
         layerId: 'layer1',
-        x: 0, y: 0,
-        width: 2, depth: 2,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
         height: 3,
         // No clearanceHeight, so doesn't protrude
         category: 'cat1',
-        label: '', notes: '',
+        label: '',
+        notes: '',
       },
     ];
 
@@ -273,12 +349,15 @@ describe('fillAllWithSize with blocked zones', () => {
       {
         id: 'bigprotruding',
         layerId: 'layer1',
-        x: 0, y: 0,
-        width: 6, depth: 6,
+        x: 0,
+        y: 0,
+        width: 6,
+        depth: 6,
         height: 3,
         clearanceHeight: 2,
         category: 'cat1',
-        label: '', notes: '',
+        label: '',
+        notes: '',
       },
     ];
 
@@ -313,12 +392,15 @@ describe('fillGaps with blocked zones', () => {
       {
         id: 'protruding',
         layerId: 'layer1',
-        x: 0, y: 0,
-        width: 3, depth: 3,
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 3,
         height: 3,
         clearanceHeight: 2,
         category: 'cat1',
-        label: '', notes: '',
+        label: '',
+        notes: '',
       },
     ];
 
@@ -330,10 +412,8 @@ describe('fillGaps with blocked zones', () => {
 
     // Verify no bins overlap with blocked zone (0,0 to 3,3)
     for (const bin of result.bins) {
-      const overlapsBlocked = (
-        bin.x < 3 && bin.x + bin.width > 0 &&
-        bin.y < 3 && bin.y + bin.depth > 0
-      );
+      const overlapsBlocked =
+        bin.x < 3 && bin.x + bin.width > 0 && bin.y < 3 && bin.y + bin.depth > 0;
       expect(overlapsBlocked).toBe(false);
     }
   });
@@ -345,12 +425,15 @@ describe('fillGaps with blocked zones', () => {
       {
         id: 'cornerblock',
         layerId: 'layer1',
-        x: 0, y: 0,
-        width: 2, depth: 2,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
         height: 3,
         clearanceHeight: 2,
         category: 'cat1',
-        label: '', notes: '',
+        label: '',
+        notes: '',
       },
     ];
 
@@ -367,12 +450,15 @@ describe('fillGaps with blocked zones', () => {
       {
         id: 'fullblock',
         layerId: 'layer1',
-        x: 0, y: 0,
-        width: 6, depth: 6,
+        x: 0,
+        y: 0,
+        width: 6,
+        depth: 6,
         height: 3,
         clearanceHeight: 2,
         category: 'cat1',
-        label: '', notes: '',
+        label: '',
+        notes: '',
       },
     ];
 
@@ -389,22 +475,28 @@ describe('fillGaps with blocked zones', () => {
       {
         id: 'protruding',
         layerId: 'layer1',
-        x: 0, y: 0,
-        width: 2, depth: 2,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
         height: 3,
         clearanceHeight: 2,
         category: 'cat1',
-        label: '', notes: '',
+        label: '',
+        notes: '',
       },
       // Existing bin on layer 2 at (4,4)-(6,6)
       {
         id: 'existing',
         layerId: 'layer2',
-        x: 4, y: 4,
-        width: 2, depth: 2,
+        x: 4,
+        y: 4,
+        width: 2,
+        depth: 2,
         height: 3,
         category: 'cat1',
-        label: '', notes: '',
+        label: '',
+        notes: '',
       },
     ];
 

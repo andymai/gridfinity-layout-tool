@@ -38,9 +38,7 @@ export interface CollabModeState {
  * - Active layout's cloud share permission OR shared preview cloud share ID
  */
 export function useCollabMode(): CollabModeState {
-  const isFeatureEnabled = useLabsStore((state) =>
-    state.isFeatureEnabled('collaborative_editing')
-  );
+  const isFeatureEnabled = useLabsStore((state) => state.isFeatureEnabled('collaborative_editing'));
 
   // Direct subscription to the cloud share of the active layout
   // This ensures re-render when cloudShare changes

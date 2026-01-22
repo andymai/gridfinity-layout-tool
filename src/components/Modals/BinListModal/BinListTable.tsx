@@ -2,7 +2,12 @@ import { useState, useCallback } from 'react';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { SplitPreview } from '@/components/Print/SplitPreview';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
-import type { EnhancedPrintRow, Category, PrintListSortKey, PrintListSortOrder } from '@/core/types';
+import type {
+  EnhancedPrintRow,
+  Category,
+  PrintListSortKey,
+  PrintListSortOrder,
+} from '@/core/types';
 
 interface BinListTableProps {
   rows: EnhancedPrintRow[];
@@ -171,7 +176,12 @@ export function BinListTable({
   if (rows.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-content-tertiary">
-        <svg className="w-12 h-12 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg
+          className="w-12 h-12 mb-3 opacity-50"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -199,15 +209,41 @@ export function BinListTable({
               />
             </th>
             <th className="w-8 px-2 py-2 sticky top-0 bg-surface-elevated" />
-            <SortHeader label="Size" sortKeyValue="area" sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} title="Sort by size (area)" />
+            <SortHeader
+              label="Size"
+              sortKeyValue="area"
+              sortKey={sortKey}
+              sortOrder={sortOrder}
+              onSort={onSort}
+              title="Sort by size (area)"
+            />
             <th className="w-8 px-1 py-2 sticky top-0 bg-surface-elevated" title="Find STL" />
-            <SortHeader label="H" sortKeyValue="height" sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} title="Sort by height" className="w-12" />
-            <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">Label</th>
-            <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">Notes</th>
-            <th className="w-6 px-1 py-2 sticky top-0 bg-surface-elevated" title="Custom properties" />
-            <th className="px-3 py-2 text-right font-medium sticky top-0 bg-surface-elevated w-16">Qty</th>
+            <SortHeader
+              label="H"
+              sortKeyValue="height"
+              sortKey={sortKey}
+              sortOrder={sortOrder}
+              onSort={onSort}
+              title="Sort by height"
+              className="w-12"
+            />
+            <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">
+              Label
+            </th>
+            <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">
+              Notes
+            </th>
+            <th
+              className="w-6 px-1 py-2 sticky top-0 bg-surface-elevated"
+              title="Custom properties"
+            />
+            <th className="px-3 py-2 text-right font-medium sticky top-0 bg-surface-elevated w-16">
+              Qty
+            </th>
             {hasAnySplits && (
-              <th className="px-3 py-2 text-right font-medium sticky top-0 bg-surface-elevated w-16">Pcs</th>
+              <th className="px-3 py-2 text-right font-medium sticky top-0 bg-surface-elevated w-16">
+                Pcs
+              </th>
             )}
             <SortHeader
               label="~m"
@@ -249,7 +285,12 @@ export function BinListTable({
 
                 {/* Category color dots */}
                 <td className="px-2 py-2">
-                  <div className="flex gap-0.5" title={(row.categoryIds ?? []).map(catId => categories.find(c => c.id === catId)?.name || 'Unknown').join(', ')}>
+                  <div
+                    className="flex gap-0.5"
+                    title={(row.categoryIds ?? [])
+                      .map((catId) => categories.find((c) => c.id === catId)?.name || 'Unknown')
+                      .join(', ')}
+                  >
                     {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
                       const cat = categories.find((c) => c.id === catId);
                       return (
@@ -261,7 +302,9 @@ export function BinListTable({
                       );
                     })}
                     {(row.categoryIds ?? []).length > 3 && (
-                      <span className="text-[9px] text-content-disabled">+{(row.categoryIds ?? []).length - 3}</span>
+                      <span className="text-[9px] text-content-disabled">
+                        +{(row.categoryIds ?? []).length - 3}
+                      </span>
                     )}
                   </div>
                 </td>
@@ -278,7 +321,12 @@ export function BinListTable({
                         stroke="currentColor"
                         aria-label="Click to see split preview"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     )}
                   </span>
@@ -302,11 +350,21 @@ export function BinListTable({
                   role={onEditLabel ? 'gridcell' : undefined}
                   tabIndex={onEditLabel ? 0 : undefined}
                   className={`px-3 py-2 text-content-secondary max-w-[150px] ${
-                    onEditLabel ? 'cursor-text hover:bg-surface-hover focus:outline-none focus:ring-1 focus:ring-accent focus:ring-inset' : ''
+                    onEditLabel
+                      ? 'cursor-text hover:bg-surface-hover focus:outline-none focus:ring-1 focus:ring-accent focus:ring-inset'
+                      : ''
                   }`}
-                  onDoubleClick={() => handleDoubleClick(index, 'label', (row.labels ?? [])[0] || '')}
-                  onKeyDown={(e) => handleCellKeyDown(e, index, 'label', (row.labels ?? [])[0] || '')}
-                  aria-label={onEditLabel ? `Label: ${(row.labels ?? [])[0] || 'empty'}. Press Enter to edit.` : undefined}
+                  onDoubleClick={() =>
+                    handleDoubleClick(index, 'label', (row.labels ?? [])[0] || '')
+                  }
+                  onKeyDown={(e) =>
+                    handleCellKeyDown(e, index, 'label', (row.labels ?? [])[0] || '')
+                  }
+                  aria-label={
+                    onEditLabel
+                      ? `Label: ${(row.labels ?? [])[0] || 'empty'}. Press Enter to edit.`
+                      : undefined
+                  }
                 >
                   {editing?.rowIndex === index && editing.field === 'label' ? (
                     <input
@@ -321,7 +379,9 @@ export function BinListTable({
                     />
                   ) : (
                     <span className="truncate block" title={(row.labels ?? [])[0]}>
-                      {(row.labels ?? [])[0] || <span className="text-content-disabled italic">—</span>}
+                      {(row.labels ?? [])[0] || (
+                        <span className="text-content-disabled italic">—</span>
+                      )}
                     </span>
                   )}
                 </td>
@@ -331,11 +391,15 @@ export function BinListTable({
                   role={onEditNotes ? 'gridcell' : undefined}
                   tabIndex={onEditNotes ? 0 : undefined}
                   className={`px-3 py-2 text-content-tertiary max-w-[200px] ${
-                    onEditNotes ? 'cursor-text hover:bg-surface-hover focus:outline-none focus:ring-1 focus:ring-accent focus:ring-inset' : ''
+                    onEditNotes
+                      ? 'cursor-text hover:bg-surface-hover focus:outline-none focus:ring-1 focus:ring-accent focus:ring-inset'
+                      : ''
                   }`}
                   onDoubleClick={() => handleDoubleClick(index, 'notes', row.notes || '')}
                   onKeyDown={(e) => handleCellKeyDown(e, index, 'notes', row.notes || '')}
-                  aria-label={onEditNotes ? `Notes: ${row.notes || 'empty'}. Press Enter to edit.` : undefined}
+                  aria-label={
+                    onEditNotes ? `Notes: ${row.notes || 'empty'}. Press Enter to edit.` : undefined
+                  }
                 >
                   {editing?.rowIndex === index && editing.field === 'notes' ? (
                     <input
@@ -366,8 +430,15 @@ export function BinListTable({
                       strokeWidth={2}
                       aria-label={`${Object.keys(row.customProperties).length} custom properties`}
                     >
-                      <title>{Object.keys(row.customProperties).length} custom {Object.keys(row.customProperties).length === 1 ? 'property' : 'properties'}</title>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+                      <title>
+                        {Object.keys(row.customProperties).length} custom{' '}
+                        {Object.keys(row.customProperties).length === 1 ? 'property' : 'properties'}
+                      </title>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"
+                      />
                     </svg>
                   )}
                 </td>
@@ -377,11 +448,15 @@ export function BinListTable({
 
                 {/* Pieces (if any splits) */}
                 {hasAnySplits && (
-                  <td className="px-3 py-2 text-right text-content tabular-nums">{row.totalPieces}</td>
+                  <td className="px-3 py-2 text-right text-content tabular-nums">
+                    {row.totalPieces}
+                  </td>
                 )}
 
                 {/* Filament */}
-                <td className="px-3 py-2 text-right text-content-tertiary tabular-nums">{row.filament}</td>
+                <td className="px-3 py-2 text-right text-content-tertiary tabular-nums">
+                  {row.filament}
+                </td>
               </tr>
             );
           })}

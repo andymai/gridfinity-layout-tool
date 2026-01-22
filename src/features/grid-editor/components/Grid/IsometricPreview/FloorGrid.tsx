@@ -15,7 +15,12 @@ interface FloorGridProps {
  * Includes fractional edge lines when drawer has fractional dimensions.
  * Respects fractionalEdgeX/Y settings for line positioning.
  */
-export function FloorGrid({ width, depth, fractionalEdgeX = 'end', fractionalEdgeY = 'end' }: FloorGridProps) {
+export function FloorGrid({
+  width,
+  depth,
+  fractionalEdgeX = 'end',
+  fractionalEdgeY = 'end',
+}: FloorGridProps) {
   // Check for fractional dimensions
   const hasFractionalWidth = width % 1 !== 0;
   const hasFractionalDepth = depth % 1 !== 0;
@@ -49,7 +54,18 @@ export function FloorGrid({ width, depth, fractionalEdgeX = 'end', fractionalEdg
 
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     return geometry;
-  }, [width, depth, integerWidth, integerDepth, hasFractionalWidth, hasFractionalDepth, fractionalWidthPart, fractionalDepthPart, fractionalEdgeX, fractionalEdgeY]);
+  }, [
+    width,
+    depth,
+    integerWidth,
+    integerDepth,
+    hasFractionalWidth,
+    hasFractionalDepth,
+    fractionalWidthPart,
+    fractionalDepthPart,
+    fractionalEdgeX,
+    fractionalEdgeY,
+  ]);
 
   // Create separate geometry for fractional edge lines (drawer boundaries)
   const fractionalEdgeGeometry = useMemo(() => {
@@ -74,7 +90,16 @@ export function FloorGrid({ width, depth, fractionalEdgeX = 'end', fractionalEdg
 
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     return geometry;
-  }, [width, depth, hasFractionalWidth, hasFractionalDepth, fractionalWidthPart, fractionalDepthPart, fractionalEdgeX, fractionalEdgeY]);
+  }, [
+    width,
+    depth,
+    hasFractionalWidth,
+    hasFractionalDepth,
+    fractionalWidthPart,
+    fractionalDepthPart,
+    fractionalEdgeX,
+    fractionalEdgeY,
+  ]);
 
   return (
     <group>

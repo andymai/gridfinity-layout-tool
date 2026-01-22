@@ -1,7 +1,13 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useLibraryStore } from './core/store';
-import { useLayoutRouting, useAnalytics, useStorageMigration, useTabletPanels, useKeyboard } from './hooks';
+import {
+  useLayoutRouting,
+  useAnalytics,
+  useStorageMigration,
+  useTabletPanels,
+  useKeyboard,
+} from './hooks';
 import { useAutoSave, useResponsive, useCrossTabSync, usePWAUpdate } from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
@@ -26,7 +32,7 @@ import { SHORTCUTS } from './core/constants';
 
 // Legacy context menu state for backwards compatibility (has binId instead of binIds)
 interface LegacyContextMenuStateWithBinId {
-  binId: string;  // Non-optional when used with type guard
+  binId: string; // Non-optional when used with type guard
   position: { x: number; y: number };
 }
 
@@ -77,8 +83,8 @@ export default function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
   const { isMobile, isTablet } = useResponsive();
-  const contextMenu = useUIStore(state => state.contextMenu);
-  const hideContextMenu = useUIStore(state => state.hideContextMenu);
+  const contextMenu = useUIStore((state) => state.contextMenu);
+  const hideContextMenu = useUIStore((state) => state.hideContextMenu);
 
   // Collaborative mode detection
   const { isCollaborative, shareId } = useCollabMode();
@@ -103,20 +109,20 @@ export default function App() {
       categories: state.layout.categories,
     }))
   );
-  const activeLayerId = useUIStore(state => state.activeLayerId);
-  const activeCategoryId = useUIStore(state => state.activeCategoryId);
-  const setActiveLayer = useUIStore(state => state.setActiveLayer);
-  const setActiveCategory = useUIStore(state => state.setActiveCategory);
+  const activeLayerId = useUIStore((state) => state.activeLayerId);
+  const activeCategoryId = useUIStore((state) => state.activeCategoryId);
+  const setActiveLayer = useUIStore((state) => state.setActiveLayer);
+  const setActiveCategory = useUIStore((state) => state.setActiveCategory);
 
   // Initialize activeLayerId and activeCategoryId to valid values (sync before paint)
   useLayoutEffect(() => {
     // Check if current activeLayerId is valid for the current layout
-    const layerExists = layers.some(l => l.id === activeLayerId);
+    const layerExists = layers.some((l) => l.id === activeLayerId);
     if ((!activeLayerId || !layerExists) && layers.length > 0) {
       setActiveLayer(layers[0].id);
     }
     // Ensure activeCategoryId is valid for current layout
-    const categoryExists = categories.some(c => c.id === activeCategoryId);
+    const categoryExists = categories.some((c) => c.id === activeCategoryId);
     if (!categoryExists && categories.length > 0) {
       setActiveCategory(categories[0].id);
     }
@@ -150,7 +156,7 @@ export default function App() {
     }
     if ((SHORTCUTS.HELP as readonly string[]).includes(e.key)) {
       e.preventDefault();
-      setIsHelpOpen(prev => !prev);
+      setIsHelpOpen((prev) => !prev);
     }
   }, []);
 
@@ -166,17 +172,11 @@ export default function App() {
     if (isCollaborative && shareId) {
       return (
         <Suspense fallback={<div className="h-screen bg-surface" />}>
-          <CollabProvider shareId={shareId}>
-            {content}
-          </CollabProvider>
+          <CollabProvider shareId={shareId}>{content}</CollabProvider>
         </Suspense>
       );
     }
-    return (
-      <LocalMutationsProvider>
-        {content}
-      </LocalMutationsProvider>
-    );
+    return <LocalMutationsProvider>{content}</LocalMutationsProvider>;
   };
 
   if (initialLoadError) {
@@ -195,7 +195,11 @@ export default function App() {
     return wrapWithMutations(
       <div className="h-screen animate-fade-in">
         <Suspense fallback={<div className="h-screen bg-surface" />}>
-          <MobileLayout isMobileHelpOpen={isMobileHelpOpen} setIsMobileHelpOpen={setIsMobileHelpOpen} saveStatus={saveStatus} />
+          <MobileLayout
+            isMobileHelpOpen={isMobileHelpOpen}
+            setIsMobileHelpOpen={setIsMobileHelpOpen}
+            saveStatus={saveStatus}
+          />
         </Suspense>
       </div>
     );
@@ -220,22 +224,14 @@ export default function App() {
         </div>
 
         {/* Left sidebar as overlay */}
-        <TabletPanelOverlay
-          isOpen={tabletLeftPanelOpen}
-          onClose={closeLeftPanel}
-          side="left"
-        >
+        <TabletPanelOverlay isOpen={tabletLeftPanelOpen} onClose={closeLeftPanel} side="left">
           <PanelErrorBoundary panelName="Sidebar">
             <Sidebar />
           </PanelErrorBoundary>
         </TabletPanelOverlay>
 
         {/* Right panel as overlay */}
-        <TabletPanelOverlay
-          isOpen={tabletRightPanelOpen}
-          onClose={closeRightPanel}
-          side="right"
-        >
+        <TabletPanelOverlay isOpen={tabletRightPanelOpen} onClose={closeRightPanel} side="right">
           <PanelErrorBoundary panelName="Inspector">
             <RightPanel />
           </PanelErrorBoundary>
@@ -265,7 +261,8 @@ export default function App() {
         {/* Context menu (long-press on bin) */}
         {(() => {
           if (contextMenu) {
-            const binIds = contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : []);
+            const binIds =
+              contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : []);
             return (
               <BinContextMenuWrapper
                 binIds={binIds}
@@ -334,7 +331,8 @@ export default function App() {
       {/* Context menu (right-click on bin) */}
       {(() => {
         if (contextMenu) {
-          const binIds = contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : []);
+          const binIds =
+            contextMenu.binIds || (hasLegacyBinId(contextMenu) ? [contextMenu.binId] : []);
           return (
             <BinContextMenuWrapper
               binIds={binIds}

@@ -216,14 +216,26 @@ function LayoutManagerModalContent({
             onClick={() => setActiveTab('layouts')}
             className={`
               flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2
-              ${activeTab === 'layouts'
-                ? 'bg-accent text-white'
-                : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
+              ${
+                activeTab === 'layouts'
+                  ? 'bg-accent text-white'
+                  : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
               }
             `}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
             </svg>
             My Layouts
           </button>
@@ -236,21 +248,35 @@ function LayoutManagerModalContent({
             onClick={() => setActiveTab('shared')}
             className={`
               flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2
-              ${activeTab === 'shared'
-                ? 'bg-accent text-white'
-                : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
+              ${
+                activeTab === 'shared'
+                  ? 'bg-accent text-white'
+                  : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
               }
             `}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+              />
             </svg>
             Shared
             {sharedWithMeCount > 0 && (
-              <span className={`
+              <span
+                className={`
                 text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center
                 ${activeTab === 'shared' ? 'bg-white/20' : 'bg-surface-secondary'}
-              `}>
+              `}
+              >
                 {sharedWithMeCount}
               </span>
             )}
@@ -264,14 +290,26 @@ function LayoutManagerModalContent({
             onClick={() => setActiveTab('import')}
             className={`
               flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2
-              ${activeTab === 'import'
-                ? 'bg-accent text-white'
-                : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
+              ${
+                activeTab === 'import'
+                  ? 'bg-accent text-white'
+                  : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
               }
             `}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+              />
             </svg>
             Import
           </button>
@@ -281,7 +319,12 @@ function LayoutManagerModalContent({
         <div className="min-h-0 overflow-hidden flex flex-col">
           {/* My Layouts Tab */}
           {activeTab === 'layouts' && (
-            <div id="layouts-panel" role="tabpanel" aria-labelledby="layouts-tab" className="flex-1 min-h-0 overflow-auto">
+            <div
+              id="layouts-panel"
+              role="tabpanel"
+              aria-labelledby="layouts-tab"
+              className="flex-1 min-h-0 overflow-auto"
+            >
               <LayoutList
                 entries={library.entries}
                 activeLayoutId={activeLayoutId}
@@ -296,7 +339,12 @@ function LayoutManagerModalContent({
           )}
 
           {activeTab === 'shared' && (
-            <div id="shared-panel" role="tabpanel" aria-labelledby="shared-tab" className="flex-1 min-h-0 overflow-auto">
+            <div
+              id="shared-panel"
+              role="tabpanel"
+              aria-labelledby="shared-tab"
+              className="flex-1 min-h-0 overflow-auto"
+            >
               <SharedWithMeList onOpenLayout={onClose} />
             </div>
           )}

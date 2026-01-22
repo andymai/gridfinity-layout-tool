@@ -1,6 +1,10 @@
 import type { PointerEvent } from 'react';
 import { memo } from 'react';
-import type { ResizeHandle as ResizeHandleType, HandleVariant, HandlePlacement } from '@/core/types';
+import type {
+  ResizeHandle as ResizeHandleType,
+  HandleVariant,
+  HandlePlacement,
+} from '@/core/types';
 import { ResizeHandle } from './ResizeHandle';
 import { getAllHandles, shouldUseExternalHandles } from '@/utils/handlePositioning';
 
@@ -15,7 +19,12 @@ interface ResizeHandlesProps {
  * Container for all resize handles (8 total: 4 edges + 4 corners).
  * Automatically determines internal vs external placement based on bin dimensions.
  */
-function ResizeHandlesComponent({ binWidth, binDepth, variant, onResizePointerDown }: ResizeHandlesProps) {
+function ResizeHandlesComponent({
+  binWidth,
+  binDepth,
+  variant,
+  onResizePointerDown,
+}: ResizeHandlesProps) {
   // Determine placement mode based on bin dimensions
   const placement: HandlePlacement = shouldUseExternalHandles(binWidth, binDepth)
     ? 'external'

@@ -86,10 +86,7 @@ export function storageQuotaExceeded(
  * @param key - The storage key that was not found
  * @param cause - Original error that caused this
  */
-export function storageNotFound(
-  key: string,
-  cause?: unknown
-): StorageNotFoundError {
+export function storageNotFound(key: string, cause?: unknown): StorageNotFoundError {
   return {
     kind: 'StorageError',
     code: 'STORAGE_NOT_FOUND',
@@ -187,9 +184,7 @@ export function validationOutOfBounds(
  *
  * @param collidingBinIds - IDs of bins that would collide
  */
-export function validationCollision(
-  collidingBinIds?: string[]
-): ValidationCollisionError {
+export function validationCollision(collidingBinIds?: string[]): ValidationCollisionError {
   return {
     kind: 'ValidationError',
     code: 'VALIDATION_COLLISION',
@@ -204,9 +199,7 @@ export function validationCollision(
  *
  * @param layerId - The invalid layer ID
  */
-export function validationInvalidLayer(
-  layerId: string
-): ValidationInvalidLayerError {
+export function validationInvalidLayer(layerId: string): ValidationInvalidLayerError {
   return {
     kind: 'ValidationError',
     code: 'VALIDATION_INVALID_LAYER',
@@ -241,9 +234,7 @@ export function validationHeightExceeded(
  *
  * @param blockingBinIds - IDs of bins creating the blocked zone
  */
-export function validationBlockedZone(
-  blockingBinIds?: string[]
-): ValidationBlockedZoneError {
+export function validationBlockedZone(blockingBinIds?: string[]): ValidationBlockedZoneError {
   return {
     kind: 'ValidationError',
     code: 'VALIDATION_BLOCKED_ZONE',
@@ -278,10 +269,7 @@ export function validationImportFailed(errors: string[]): ValidationImportError 
  * @param currentCount - Current number of layers
  * @param maxCount - Maximum allowed layers
  */
-export function layoutLayerLimit(
-  currentCount: number,
-  maxCount: number
-): LayoutLayerLimitError {
+export function layoutLayerLimit(currentCount: number, maxCount: number): LayoutLayerLimitError {
   return {
     kind: 'LayoutError',
     code: 'LAYOUT_LAYER_LIMIT',
@@ -426,10 +414,7 @@ export function apiNotFound(resourceId?: string): ApiNotFoundError {
  * @param status - HTTP status code
  * @param cause - Original error that caused this
  */
-export function apiServerError(
-  status?: number,
-  cause?: unknown
-): ApiServerError {
+export function apiServerError(status?: number, cause?: unknown): ApiServerError {
   return {
     kind: 'ApiError',
     code: 'API_SERVER_ERROR',
@@ -461,10 +446,7 @@ export function apiNetworkError(cause?: unknown): ApiNetworkError {
  * @param fields - Fields that failed validation
  * @param cause - Original error that caused this
  */
-export function apiValidationError(
-  fields?: string[],
-  cause?: unknown
-): ApiValidationError {
+export function apiValidationError(fields?: string[], cause?: unknown): ApiValidationError {
   return {
     kind: 'ApiError',
     code: 'API_VALIDATION_ERROR',
@@ -480,9 +462,7 @@ export function apiValidationError(
  *
  * @param blockedFields - Fields that were blocked
  */
-export function apiContentBlocked(
-  blockedFields?: string[]
-): ApiContentBlockedError {
+export function apiContentBlocked(blockedFields?: string[]): ApiContentBlockedError {
   return {
     kind: 'ApiError',
     code: 'API_CONTENT_BLOCKED',
@@ -498,10 +478,7 @@ export function apiContentBlocked(
  * @param sizeBytes - Current size in bytes
  * @param maxBytes - Maximum allowed size in bytes
  */
-export function apiSizeLimit(
-  sizeBytes?: number,
-  maxBytes?: number
-): ApiSizeLimitError {
+export function apiSizeLimit(sizeBytes?: number, maxBytes?: number): ApiSizeLimitError {
   return {
     kind: 'ApiError',
     code: 'API_SIZE_LIMIT',
@@ -518,10 +495,7 @@ export function apiSizeLimit(
  * @param binCount - Current bin count
  * @param maxBins - Maximum allowed bins
  */
-export function apiBinLimit(
-  binCount?: number,
-  maxBins?: number
-): ApiBinLimitError {
+export function apiBinLimit(binCount?: number, maxBins?: number): ApiBinLimitError {
   return {
     kind: 'ApiError',
     code: 'API_BIN_LIMIT',
@@ -552,9 +526,7 @@ export function apiExpired(shareId?: string): ApiExpiredError {
  *
  * @param providedValue - The invalid value that was provided
  */
-export function apiInvalidExpiration(
-  providedValue?: number
-): ApiInvalidExpirationError {
+export function apiInvalidExpiration(providedValue?: number): ApiInvalidExpirationError {
   return {
     kind: 'ApiError',
     code: 'API_INVALID_EXPIRATION',

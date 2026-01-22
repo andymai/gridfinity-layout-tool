@@ -44,7 +44,9 @@ import {
 // Lazy store getter to avoid circular dependencies
 // The store is imported dynamically on first use after initialization
 let layoutStoreGetter: (() => { layout: Layout; lastEditSource: string | null }) | null = null;
-let layoutStoreSubscribe: ((callback: (state: { lastEditSource: string | null }) => void) => () => void) | null = null;
+let layoutStoreSubscribe:
+  | ((callback: (state: { lastEditSource: string | null }) => void) => () => void)
+  | null = null;
 
 /**
  * Set the layout store getter (call from App initialization).
@@ -251,10 +253,10 @@ export interface ConfidenceBreakdown {
  * Helps identify negative training signals.
  */
 export type AbandonmentType =
-  | 'incomplete'   // User stopped mid-layout (low fill, short session)
-  | 'deleted'      // Layout was explicitly deleted
-  | 'dormant'      // Layout untouched for extended period
-  | 'superseded';  // Layout replaced by a newer version
+  | 'incomplete' // User stopped mid-layout (low fill, short session)
+  | 'deleted' // Layout was explicitly deleted
+  | 'dormant' // Layout untouched for extended period
+  | 'superseded'; // Layout replaced by a newer version
 
 /**
  * Quality signal event - tracks what happens to layouts after creation.
@@ -389,7 +391,6 @@ export interface BinDeletedEvent {
   /** Delete method */
   method: DeleteMethod;
 }
-
 
 /**
  * Abandoned bin: unlabeled bin deleted shortly after creation.
@@ -724,20 +725,20 @@ export type FillMethod = 'uniform' | 'gaps';
 export type LayerMoveMethod = 'inspector' | 'drag' | 'keyboard' | 'context_menu';
 
 export type RejectionReason =
-  | 'cancelled'        // User pressed Escape or clicked away
-  | 'second_touch'     // Second finger arrived (two-finger pan)
-  | 'outside_bounds'   // Released outside grid bounds
-  | 'too_small';       // Rectangle too small to create bin
+  | 'cancelled' // User pressed Escape or clicked away
+  | 'second_touch' // Second finger arrived (two-finger pan)
+  | 'outside_bounds' // Released outside grid bounds
+  | 'too_small'; // Rectangle too small to create bin
 
 export type UndoActionType =
-  | 'placement'        // Undid bin placement
-  | 'deletion'         // Undid bin deletion
-  | 'move'             // Undid bin move
-  | 'resize'           // Undid bin resize
-  | 'fill'             // Undid fill operation
-  | 'layer_change'     // Undid layer assignment
-  | 'drawer_resize'    // Undid drawer resize
-  | 'other';           // Unknown/mixed action
+  | 'placement' // Undid bin placement
+  | 'deletion' // Undid bin deletion
+  | 'move' // Undid bin move
+  | 'resize' // Undid bin resize
+  | 'fill' // Undid fill operation
+  | 'layer_change' // Undid layer assignment
+  | 'drawer_resize' // Undid drawer resize
+  | 'other'; // Unknown/mixed action
 
 export type LayoutSnapshotTrigger =
   | 'save'
@@ -745,19 +746,19 @@ export type LayoutSnapshotTrigger =
   | 'export_tsv'
   | 'share'
   | 'print'
-  | 'session_end'      // Tab close / navigate away
-  | 'layout_switch'    // Switched to different layout
-  | 'idle'             // No edits for 5+ minutes
-  | 'print_preview';   // Opened print modal
+  | 'session_end' // Tab close / navigate away
+  | 'layout_switch' // Switched to different layout
+  | 'idle' // No edits for 5+ minutes
+  | 'print_preview'; // Opened print modal
 
 export type QualitySignal =
-  | 'shared'           // User shared publicly (high confidence)
-  | 'exported'         // User exported to print (high confidence)
-  | 'duplicated'       // Used as starting point
-  | 'deleted'          // Negative signal
+  | 'shared' // User shared publicly (high confidence)
+  | 'exported' // User exported to print (high confidence)
+  | 'duplicated' // Used as starting point
+  | 'deleted' // Negative signal
   | 'revisited_edited' // Came back and changed
-  | 'revisited_kept'   // Came back, no changes (validation)
-  | 'modified';        // Layout modified (for abandonment detection)
+  | 'revisited_kept' // Came back, no changes (validation)
+  | 'modified'; // Layout modified (for abandonment detection)
 
 // ============================================
 // DRAWER PURPOSE CONSTANTS
@@ -767,17 +768,17 @@ export type QualitySignal =
  * Predefined drawer purposes for categorization.
  */
 export const DRAWER_PURPOSES = [
-  'workshop',      // Tools, hardware, DIY
-  'electronics',   // Components, cables, dev boards
-  'office',        // Supplies, stationery
-  'craft',         // Art supplies, sewing, hobby
-  'kitchen',       // Utensils, spices, gadgets
-  'bathroom',      // Toiletries, medicine
-  'garage',        // Automotive, outdoor
-  'other',         // Custom entry
+  'workshop', // Tools, hardware, DIY
+  'electronics', // Components, cables, dev boards
+  'office', // Supplies, stationery
+  'craft', // Art supplies, sewing, hobby
+  'kitchen', // Utensils, spices, gadgets
+  'bathroom', // Toiletries, medicine
+  'garage', // Automotive, outdoor
+  'other', // Custom entry
 ] as const;
 
-export type DrawerPurpose = typeof DRAWER_PURPOSES[number];
+export type DrawerPurpose = (typeof DRAWER_PURPOSES)[number];
 
 // ============================================
 // SESSION STATE
@@ -1207,24 +1208,24 @@ export type LayoutQualityTier = 'high' | 'medium' | 'low' | 'skip';
  * Filters out "just trying it out" data.
  */
 function assessLayoutQuality(layout: Layout): LayoutQualityTier {
-  const bins = layout.bins.filter(b => b.layerId !== STAGING_ID);
+  const bins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
 
   // Skip if too few bins (probably just testing)
   if (bins.length < 3) return 'skip';
 
   const totalArea = layout.drawer.width * layout.drawer.depth;
-  const filledArea = bins.reduce((sum, bin) => sum + (bin.width * bin.depth), 0);
+  const filledArea = bins.reduce((sum, bin) => sum + bin.width * bin.depth, 0);
   const fillPct = totalArea > 0 ? (filledArea / totalArea) * 100 : 0;
 
   // Skip if very low fill (probably just placed a few test bins)
   if (fillPct < 15) return 'skip';
 
   // Check for variety in bin sizes (not all same size)
-  const uniqueSizes = new Set(bins.map(b => `${b.width}x${b.depth}x${b.height}`));
+  const uniqueSizes = new Set(bins.map((b) => `${b.width}x${b.depth}x${b.height}`));
   const hasSizeVariety = uniqueSizes.size >= 2;
 
   // Check if any bins have labels (shows intentional design)
-  const labeledCount = bins.filter(b => b.label?.trim()).length;
+  const labeledCount = bins.filter((b) => b.label?.trim()).length;
   const hasLabels = labeledCount > 0;
 
   // High quality: good fill, has labels, variety
@@ -1312,7 +1313,9 @@ export function initMLTelemetry(): () => void {
     }
   };
   window.addEventListener('visibilitychange', handleVisibilityChange);
-  cleanupFunctions.push(() => window.removeEventListener('visibilitychange', handleVisibilityChange));
+  cleanupFunctions.push(() =>
+    window.removeEventListener('visibilitychange', handleVisibilityChange)
+  );
 
   // Flush on page unload
   window.addEventListener('pagehide', flush);
@@ -1390,9 +1393,7 @@ function getAdjacentBinContext(
 ): { labelHashes: string[]; sizes: string[]; count: number } {
   // Find bins on the same layer (excluding the bin itself)
   // Note: b.layerId === bin.layerId already excludes staging since bin is never in staging
-  const sameLevelBins = layout.bins.filter(
-    (b) => b.layerId === bin.layerId && b.id !== bin.id
-  );
+  const sameLevelBins = layout.bins.filter((b) => b.layerId === bin.layerId && b.id !== bin.id);
 
   const adjacentLabelHashes: string[] = [];
   const adjacentSizes: string[] = [];
@@ -1418,17 +1419,14 @@ function getAdjacentBinContext(
   };
 }
 
-export function trackBinPlacement(
-  bin: Bin,
-  layout: Layout,
-  method: PlacementMethod
-): void {
+export function trackBinPlacement(bin: Bin, layout: Layout, method: PlacementMethod): void {
   if (!isEnabled()) return;
 
   // Apply sampling for high-volume sessions to reduce telemetry load
   // After SAMPLING_THRESHOLD bins, only track 25% of placements
   // Always track the first bin and any bin with a label (labels are high value)
-  const shouldSample = sessionState.sessionIndex >= SAMPLING_THRESHOLD &&
+  const shouldSample =
+    sessionState.sessionIndex >= SAMPLING_THRESHOLD &&
     !bin.label?.trim() &&
     Math.random() > SAMPLING_RATE;
 
@@ -1479,8 +1477,8 @@ export function trackBinPlacement(
   const timeSinceLastMs = lastPlacement ? now - lastPlacement.timestamp : null;
 
   // Check if this is the first bin with this label in the session
-  const isFirstOfLabel = labelHash !== null &&
-    !layoutSession.recentPlacements.some((p) => p.labelHash === labelHash);
+  const isFirstOfLabel =
+    labelHash !== null && !layoutSession.recentPlacements.some((p) => p.labelHash === labelHash);
 
   // Get recent sizes from the last 3 placements (before current)
   // Intentionally reads BEFORE pushing current placement to capture the context that led to this choice
@@ -1639,11 +1637,7 @@ export function trackLabelUpdate(
  * @param layout - Current layout state
  * @param method - How the bins were placed (usually 'fill' or 'duplicate')
  */
-export function trackBulkPlacement(
-  bins: Bin[],
-  layout: Layout,
-  method: PlacementMethod
-): void {
+export function trackBulkPlacement(bins: Bin[], layout: Layout, method: PlacementMethod): void {
   if (!isEnabled()) return;
   if (bins.length === 0) return;
 
@@ -1667,11 +1661,11 @@ export function trackBulkPlacement(
  * Uses bin composition, not positions (order-independent).
  */
 function computeLayoutHash(layout: Layout): string {
-  const bins = layout.bins.filter(b => b.layerId !== STAGING_ID);
+  const bins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
 
   // Create a deterministic representation of bin composition
   const binSignatures = bins
-    .map(b => `${b.width}x${b.depth}x${b.height}:${b.category || 'none'}`)
+    .map((b) => `${b.width}x${b.depth}x${b.height}:${b.category || 'none'}`)
     .sort()
     .join('|');
 
@@ -1680,7 +1674,7 @@ function computeLayoutHash(layout: Layout): string {
   // Simple hash (djb2)
   let hash = 5381;
   for (let i = 0; i < signature.length; i++) {
-    hash = ((hash << 5) + hash) + signature.charCodeAt(i);
+    hash = (hash << 5) + hash + signature.charCodeAt(i);
   }
   return (hash >>> 0).toString(16).padStart(8, '0');
 }
@@ -1751,11 +1745,11 @@ function computeTopLabelHashes(bins: Bin[], n: number): string[] {
  * Compute fill percentage of layout.
  */
 function computeFillPercentage(layout: Layout): number {
-  const bins = layout.bins.filter(b => b.layerId !== STAGING_ID);
+  const bins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
   const totalArea = layout.drawer.width * layout.drawer.depth;
   if (totalArea === 0) return 0;
 
-  const filledArea = bins.reduce((sum, bin) => sum + (bin.width * bin.depth), 0);
+  const filledArea = bins.reduce((sum, bin) => sum + bin.width * bin.depth, 0);
   return Math.round((filledArea / totalArea) * 100);
 }
 
@@ -1763,10 +1757,10 @@ function computeFillPercentage(layout: Layout): number {
  * Compute percentage of bins that have labels.
  */
 function computeLabeledPercentage(bins: Bin[]): number {
-  const gridBins = bins.filter(b => b.layerId !== STAGING_ID);
+  const gridBins = bins.filter((b) => b.layerId !== STAGING_ID);
   if (gridBins.length === 0) return 0;
 
-  const labeledCount = gridBins.filter(b => b.label?.trim()).length;
+  const labeledCount = gridBins.filter((b) => b.label?.trim()).length;
   return Math.round((labeledCount / gridBins.length) * 100);
 }
 
@@ -1776,10 +1770,7 @@ function computeLabeledPercentage(bins: Bin[]): number {
  * @param layout - Current layout state
  * @param trigger - What action triggered the snapshot
  */
-export function trackLayoutSnapshot(
-  layout: Layout,
-  trigger: LayoutSnapshotTrigger
-): void {
+export function trackLayoutSnapshot(layout: Layout, trigger: LayoutSnapshotTrigger): void {
   if (!isEnabled()) return;
 
   const layoutHash = computeLayoutHash(layout);
@@ -1799,7 +1790,7 @@ export function trackLayoutSnapshot(
   const snapshotIndex = (layoutSession.snapshotCounts.get(layoutHash) || 0) + 1;
   layoutSession.snapshotCounts.set(layoutHash, snapshotIndex);
 
-  const bins = layout.bins.filter(b => b.layerId !== STAGING_ID);
+  const bins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
 
   // Compute temporal fields
   const temporal = computeTemporalFields();
@@ -1931,7 +1922,11 @@ export function trackDrawerPurpose(
  * Default category names that we skip tracking (color-based, not meaningful).
  */
 const DEFAULT_CATEGORY_NAMES = new Set([
-  'coral', 'sky', 'green', 'cloud', 'charcoal',
+  'coral',
+  'sky',
+  'green',
+  'cloud',
+  'charcoal',
   'new category', // Default name when creating
 ]);
 
@@ -1950,7 +1945,7 @@ function hashCategoryName(name: string): string {
   let hash = 0;
   for (let i = 0; i < normalized.length; i++) {
     const char = normalized.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return Math.abs(hash).toString(16).padStart(8, '0');
@@ -1966,11 +1961,7 @@ function hashCategoryName(name: string): string {
  * @param categoryName - Name of the NEW category (for hashing)
  * @param batchSize - Number of bins changed in this batch (default 1)
  */
-export function trackCategoryChange(
-  bin: Bin,
-  categoryName: string,
-  batchSize: number = 1
-): void {
+export function trackCategoryChange(bin: Bin, categoryName: string, batchSize: number = 1): void {
   if (!isEnabled()) return;
 
   // Skip default/color-based category names - not useful signal
@@ -2103,11 +2094,12 @@ export function trackBinDeletion(
   const totalArea = layout.drawer.width * layout.drawer.depth;
   const binArea = bin.width * bin.depth;
   const subtractsFromFill = bin.layerId !== STAGING_ID;
-  const fillAfter = totalArea > 0
-    ? subtractsFromFill
-      ? Math.max(0, currentFill - Math.round((binArea / totalArea) * 100))
-      : currentFill
-    : 0;
+  const fillAfter =
+    totalArea > 0
+      ? subtractsFromFill
+        ? Math.max(0, currentFill - Math.round((binArea / totalArea) * 100))
+        : currentFill
+      : 0;
 
   // Look up bin creation record to calculate age
   // Use removeBinCreationRecord to also clean up the record since bin is being deleted
@@ -2239,7 +2231,8 @@ export function trackDrawerResize(
     oldDrawer.width === newDrawer.width &&
     oldDrawer.depth === newDrawer.depth &&
     oldDrawer.height === newDrawer.height
-  ) return;
+  )
+    return;
 
   const dimensionsChanged: ('width' | 'depth' | 'height')[] = [];
   if (oldDrawer.width !== newDrawer.width) dimensionsChanged.push('width');
@@ -2326,18 +2319,16 @@ export function trackLayerMove(
   if (fromLayerId === toLayerId) return;
 
   // Convert layer IDs to indices (-1 for staging)
-  const fromIndex = fromLayerId === STAGING_ID
-    ? -1
-    : layout.layers.findIndex((l) => l.id === fromLayerId);
-  const toIndex = toLayerId === STAGING_ID
-    ? -1
-    : layout.layers.findIndex((l) => l.id === toLayerId);
+  const fromIndex =
+    fromLayerId === STAGING_ID ? -1 : layout.layers.findIndex((l) => l.id === fromLayerId);
+  const toIndex =
+    toLayerId === STAGING_ID ? -1 : layout.layers.findIndex((l) => l.id === toLayerId);
 
   const event: LayerMoveEvent = {
     type: 'layer_move',
     bin_size: `${bin.width}x${bin.depth}x${bin.height}`,
-    from_layer_index: fromIndex >= 0 ? fromIndex : (fromLayerId === STAGING_ID ? -1 : 0),
-    to_layer_index: toIndex >= 0 ? toIndex : (toLayerId === STAGING_ID ? -1 : 0),
+    from_layer_index: fromIndex >= 0 ? fromIndex : fromLayerId === STAGING_ID ? -1 : 0,
+    to_layer_index: toIndex >= 0 ? toIndex : toLayerId === STAGING_ID ? -1 : 0,
     batch_size: batchSize,
     method,
   };
@@ -2358,10 +2349,7 @@ export function trackLayerMove(
  * @param bin - The bin before rotation
  * @param batchSize - Number of bins rotated together
  */
-export function trackBinRotation(
-  bin: Bin,
-  batchSize: number = 1
-): void {
+export function trackBinRotation(bin: Bin, batchSize: number = 1): void {
   if (!isEnabled()) return;
 
   const event: BinRotatedEvent = {
@@ -2444,22 +2432,19 @@ export function trackPlacementRejection(
  * @param previousLayout - Layout state before undo
  * @param currentLayout - Layout state after undo
  */
-export function trackUndo(
-  previousLayout: Layout,
-  currentLayout: Layout
-): void {
+export function trackUndo(previousLayout: Layout, currentLayout: Layout): void {
   if (!isEnabled()) return;
 
   // Determine what type of action was undone by comparing layouts
-  const prevBins = previousLayout.bins.filter(b => b.layerId !== STAGING_ID);
-  const currBins = currentLayout.bins.filter(b => b.layerId !== STAGING_ID);
+  const prevBins = previousLayout.bins.filter((b) => b.layerId !== STAGING_ID);
+  const currBins = currentLayout.bins.filter((b) => b.layerId !== STAGING_ID);
 
-  const prevBinIds = new Set(prevBins.map(b => b.id));
-  const currBinIds = new Set(currBins.map(b => b.id));
+  const prevBinIds = new Set(prevBins.map((b) => b.id));
+  const currBinIds = new Set(currBins.map((b) => b.id));
 
   // Count differences
-  const addedBins = currBins.filter(b => !prevBinIds.has(b.id));
-  const removedBins = prevBins.filter(b => !currBinIds.has(b.id));
+  const addedBins = currBins.filter((b) => !prevBinIds.has(b.id));
+  const removedBins = prevBins.filter((b) => !currBinIds.has(b.id));
 
   // Determine action type
   let actionUndone: UndoActionType = 'other';
@@ -2475,18 +2460,20 @@ export function trackUndo(
     binsAffected = addedBins.length;
   } else if (addedBins.length === 0 && removedBins.length === 0) {
     // Same bins, check for position/size changes
-    const changedBins = currBins.filter(currBin => {
-      const prevBin = prevBins.find(b => b.id === currBin.id);
+    const changedBins = currBins.filter((currBin) => {
+      const prevBin = prevBins.find((b) => b.id === currBin.id);
       if (!prevBin) return false;
-      return prevBin.x !== currBin.x ||
-             prevBin.y !== currBin.y ||
-             prevBin.width !== currBin.width ||
-             prevBin.depth !== currBin.depth ||
-             prevBin.layerId !== currBin.layerId;
+      return (
+        prevBin.x !== currBin.x ||
+        prevBin.y !== currBin.y ||
+        prevBin.width !== currBin.width ||
+        prevBin.depth !== currBin.depth ||
+        prevBin.layerId !== currBin.layerId
+      );
     });
 
     if (changedBins.length > 0) {
-      const prevBin = prevBins.find(b => b.id === changedBins[0].id);
+      const prevBin = prevBins.find((b) => b.id === changedBins[0].id);
       const currBin = changedBins[0];
       if (prevBin) {
         if (prevBin.width !== currBin.width || prevBin.depth !== currBin.depth) {
@@ -2555,9 +2542,8 @@ export function trackQuickCorrection(
   if (!isEnabled()) return;
 
   // Get creation record
-  const record = correctionType === 'delete'
-    ? removeBinCreationRecord(binId)
-    : getBinCreationRecord(binId);
+  const record =
+    correctionType === 'delete' ? removeBinCreationRecord(binId) : getBinCreationRecord(binId);
 
   if (!record) return; // Not a recent placement
 
@@ -2608,36 +2594,40 @@ function computeSessionConfidence(
 
   // Undo score: fewer undos = higher score
   // 0 undos = 1.0, 1-2 undos = 0.8, 3-5 undos = 0.6, 6+ undos = 0.4
-  const undoScore = undoCount === 0 ? 1.0 :
-    undoCount <= 2 ? 0.8 :
-    undoCount <= 5 ? 0.6 : 0.4;
+  const undoScore = undoCount === 0 ? 1.0 : undoCount <= 2 ? 0.8 : undoCount <= 5 ? 0.6 : 0.4;
 
   // Correction score: ratio of corrections to bins placed
   const totalCorrections = deletedCount + resizeCount + moveCount;
   const correctionRatio = totalCorrections / binsPlaced;
   // 0 corrections = 1.0, <0.3 ratio = 0.8, <0.6 = 0.6, >=0.6 = 0.4
-  const correctionScore = correctionRatio === 0 ? 1.0 :
-    correctionRatio < 0.3 ? 0.8 :
-    correctionRatio < 0.6 ? 0.6 : 0.4;
+  const correctionScore =
+    correctionRatio === 0 ? 1.0 : correctionRatio < 0.3 ? 0.8 : correctionRatio < 0.6 ? 0.6 : 0.4;
 
   // Session score: longer sessions with more bins are more deliberate
   // Short session with many bins = efficient (good)
   // Long session with few bins = exploratory (medium)
   // Guard against division by zero for very fast operations
-  const binsPerMinute = sessionDurationMs > 0
-    ? binsPlaced / (sessionDurationMs / 60_000)
-    : binsPlaced > 0 ? Infinity : 0;
-  const sessionScore = binsPerMinute > 2 ? 1.0 :  // >2 bins/min = efficient
-    binsPerMinute > 0.5 ? 0.8 :                    // 0.5-2 bins/min = normal
-    binsPerMinute > 0.1 ? 0.6 : 0.4;               // <0.1 = very slow/exploratory
+  const binsPerMinute =
+    sessionDurationMs > 0
+      ? binsPlaced / (sessionDurationMs / 60_000)
+      : binsPlaced > 0
+        ? Infinity
+        : 0;
+  const sessionScore =
+    binsPerMinute > 2
+      ? 1.0 // >2 bins/min = efficient
+      : binsPerMinute > 0.5
+        ? 0.8 // 0.5-2 bins/min = normal
+        : binsPerMinute > 0.1
+          ? 0.6
+          : 0.4; // <0.1 = very slow/exploratory
 
   // Weighted average: corrections matter most (user explicitly rejected)
-  const weights = { undo: 0.25, correction: 0.45, session: 0.30 };
-  const weighted = (
+  const weights = { undo: 0.25, correction: 0.45, session: 0.3 };
+  const weighted =
     undoScore * weights.undo +
     correctionScore * weights.correction +
-    sessionScore * weights.session
-  );
+    sessionScore * weights.session;
 
   // Round to 2 decimal places
   return Math.round(weighted * 100) / 100;
@@ -2677,13 +2667,11 @@ export function computeConfidenceBreakdown(layout: Layout): ConfidenceBreakdown 
 
   // Completion score: fill percentage + labeling rate
   const fillPct = computeFillPercentage(layout);
-  const labeledBins = layout.bins.filter(
-    (b) => b.layerId !== STAGING_ID && b.label?.trim()
-  ).length;
+  const labeledBins = layout.bins.filter((b) => b.layerId !== STAGING_ID && b.label?.trim()).length;
   const labelRate = binsPlaced > 0 ? labeledBins / binsPlaced : 0;
 
   // Weight fill at 70%, labels at 30%
-  const completionScore = Math.round((fillPct * 0.7 + labelRate * 100 * 0.3)) / 100;
+  const completionScore = Math.round(fillPct * 0.7 + labelRate * 100 * 0.3) / 100;
 
   // Session score: time spent indicates deliberate work
   const sessionDurationMs = Date.now() - layoutSession.startTime;
@@ -2703,13 +2691,7 @@ export function computeConfidenceBreakdown(layout: Layout): ConfidenceBreakdown 
   const correctionRatio = totalCorrections / binsPlaced;
   // 0 corrections = 1.0, <0.3 ratio = 0.8, <0.6 = 0.6, >=0.6 = 0.4
   const correctionScore =
-    correctionRatio === 0
-      ? 1.0
-      : correctionRatio < 0.3
-        ? 0.8
-        : correctionRatio < 0.6
-          ? 0.6
-          : 0.4;
+    correctionRatio === 0 ? 1.0 : correctionRatio < 0.3 ? 0.8 : correctionRatio < 0.6 ? 0.6 : 0.4;
 
   // Combined: weighted average (corrections matter most)
   const weights = { undo: 0.2, completion: 0.25, session: 0.25, correction: 0.3 };
@@ -2788,15 +2770,14 @@ export function trackSessionSummary(
   const sessionDurationMs = Date.now() - layoutSession.startTime;
 
   // Calculate time to first bin
-  const timeToFirstBinMs = sessionState.firstBinTime !== null
-    ? sessionState.firstBinTime - layoutSession.startTime
-    : null;
+  const timeToFirstBinMs =
+    sessionState.firstBinTime !== null ? sessionState.firstBinTime - layoutSession.startTime : null;
 
   // Calculate edit-to-done ratio
-  const totalCorrections = layoutSession.deletedCount + layoutSession.resizeCount + layoutSession.moveCount;
-  const editToDoneRatio = binsPlaced > 0
-    ? Math.round((totalCorrections / binsPlaced) * 100) / 100
-    : 0;
+  const totalCorrections =
+    layoutSession.deletedCount + layoutSession.resizeCount + layoutSession.moveCount;
+  const editToDoneRatio =
+    binsPlaced > 0 ? Math.round((totalCorrections / binsPlaced) * 100) / 100 : 0;
 
   // Compute confidence score
   const confidenceScore = computeSessionConfidence(
@@ -2873,10 +2854,11 @@ function getUserHash(): string {
     let hash = localStorage.getItem(USER_HASH_STORAGE_KEY);
     if (!hash) {
       // Use crypto.randomUUID for better randomness
-      hash = typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : Math.random().toString(36).substring(2, 10) +
-          Math.random().toString(36).substring(2, 10);
+      hash =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : Math.random().toString(36).substring(2, 10) +
+            Math.random().toString(36).substring(2, 10);
       localStorage.setItem(USER_HASH_STORAGE_KEY, hash);
     }
     return hash;
@@ -2896,10 +2878,10 @@ function getUserHash(): string {
 export function trackCrossLayoutPattern(layout: Layout): void {
   if (!isEnabled()) return;
 
-  const gridBins = layout.bins.filter(b => b.layerId !== STAGING_ID);
+  const gridBins = layout.bins.filter((b) => b.layerId !== STAGING_ID);
 
   // Skip if no labeled bins
-  const labeledBins = gridBins.filter(b => b.label?.trim());
+  const labeledBins = gridBins.filter((b) => b.label?.trim());
   if (labeledBins.length === 0) return;
 
   // Record current layout's label sizes for future comparisons
@@ -2919,7 +2901,7 @@ export function trackCrossLayoutPattern(layout: Layout): void {
   const event: CrossLayoutPatternEvent = {
     type: 'cross_layout_pattern',
     user_hash: getUserHash(),
-    label_size_consistency: consistency.map(c => ({
+    label_size_consistency: consistency.map((c) => ({
       label_hash: c.labelHash,
       sizes_used: c.sizesUsed,
       is_consistent: c.isConsistent,
