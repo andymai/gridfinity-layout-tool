@@ -134,7 +134,7 @@ export function generateGuestColor(id: string | number): string {
 
 /**
  * Get initials from a name.
- * Returns first letter + last letter for single word,
+ * Returns first two letters for single word,
  * or first letters of first and last words for multi-word names.
  *
  * @param name - The full name to extract initials from
