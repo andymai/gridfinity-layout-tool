@@ -1,16 +1,12 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useLibraryStore, computePreview } from '@/core/store/library';
+import { useLibraryStore } from '@/core/store/library';
 import { useUIStore } from '@/core/store/ui';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
-import {
-  saveLayoutById,
-  saveLibrary,
-  initializeLayoutLibrary,
-} from '@/core/storage';
-import { generateLayoutId } from '@/shared/utils';
+import { createLayoutEntry, initializeLayoutLibrary } from '@/core/storage';
+import { isErr, getUserMessage } from '@/core/result';
 import { ConfirmDialog } from '@/shared/components';
 import { useCollabMode } from '@/hooks/useCollabMode';
 
@@ -42,11 +38,10 @@ export function SharedLayoutBanner() {
     }))
   );
 
-  const { createEntry, setActiveLayoutId, updateEntry } = useLibraryStore(
+  const { setLibrary, setActiveLayoutId } = useLibraryStore(
     useShallow((state) => ({
-      createEntry: state.createEntry,
+      setLibrary: state.setLibrary,
       setActiveLayoutId: state.setActiveLayoutId,
-      updateEntry: state.updateEntry,
     }))
   );
 
@@ -63,37 +58,36 @@ export function SharedLayoutBanner() {
   // Don't render in collaborative mode - user is an active participant, not just a viewer
   if (isCollaborative) return null;
 
-  const handleSave = () => {
-    // Create a new layout entry in the library
-    const layoutId = generateLayoutId();
-
+  const handleSave = async () => {
     // Add suffix to indicate it was imported
     const savedLayout = {
       ...layout, // Use current layout state (user may have made edits)
       name: `${sharedLayoutOriginalName || layout.name} (imported)`,
     };
 
-    // Save the layout to storage
-    saveLayoutById(layoutId, savedLayout);
-
-    // Create entry in library store
-    createEntry(
-      savedLayout.name,
-      layoutId,
-      computePreview(savedLayout)
+    // Use atomic createLayoutEntry API for storage + library entry in one operation
+    const result = await createLayoutEntry(
+      savedLayout,
+      useLibraryStore.getState().library,
+      {
+        name: savedLayout.name,
+        forkedFrom: { name: sharedLayoutOriginalName || layout.name },
+      }
     );
 
-    // Add forkedFrom info
-    updateEntry(layoutId, {
-      forkedFrom: { name: sharedLayoutOriginalName || layout.name },
-    });
+    if (isErr(result)) {
+      addToast(getUserMessage(result.error), 'error');
+      return;
+    }
+
+    const { layoutId, library: updatedLibrary } = result.value;
 
     // Update the layout store with the proper ID (not __shared_preview__)
     importLayout(savedLayout, layoutId, 'init');
     setActiveLayoutId(layoutId);
 
-    // Save the library to storage (get fresh state after store updates)
-    saveLibrary(useLibraryStore.getState().library);
+    // Sync library store with updated library from atomic operation
+    setLibrary(updatedLibrary);
 
     // Clear the shared preview state
     clearSharedLayoutPreview();

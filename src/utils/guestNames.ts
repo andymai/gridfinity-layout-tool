@@ -131,3 +131,22 @@ export function generateGuestColor(id: string | number): string {
 
   return COLORS[colorIndex];
 }
+
+/**
+ * Get initials from a name.
+ * Returns first two letters for single word,
+ * or first letters of first and last words for multi-word names.
+ *
+ * @param name - The full name to extract initials from
+ * @returns 1-2 character initials, or '?' if name is empty
+ */
+export function getInitials(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return '?';
+
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}

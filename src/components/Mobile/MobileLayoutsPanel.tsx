@@ -8,7 +8,7 @@ import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LayoutThumbnail } from '@/components/LayoutThumbnail';
 import { InspirationGallery } from '@/features/inspiration-gallery';
-import { loadLayoutByIdAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '@/core/storage';
+import { loadLayoutAsync, generateShareableURL, copyToClipboard, downloadLayoutAsFile } from '@/core/storage';
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
 import type { LayoutEntry, SharePermission } from '@/core/types';
 import { isOk } from '@/core/result';
@@ -122,7 +122,7 @@ export function MobileLayoutsPanel() {
   const handleCopyLink = useCallback(async (layoutId: string) => {
     const entry = library.entries.find(e => e.id === layoutId);
     // For active layout use current state; otherwise load from IndexedDB
-    const layout = layoutId === activeLayoutId ? currentLayout : await loadLayoutByIdAsync(layoutId);
+    const layout = layoutId === activeLayoutId ? currentLayout : await loadLayoutAsync(layoutId);
     if (layout) {
       const url = generateShareableURL(layout);
       const success = await copyToClipboard(url);
@@ -136,7 +136,7 @@ export function MobileLayoutsPanel() {
   const handleDownload = useCallback(async (layoutId: string) => {
     const entry = library.entries.find(e => e.id === layoutId);
     // For active layout use current state; otherwise load from IndexedDB
-    const layout = layoutId === activeLayoutId ? currentLayout : await loadLayoutByIdAsync(layoutId);
+    const layout = layoutId === activeLayoutId ? currentLayout : await loadLayoutAsync(layoutId);
     if (layout && entry) {
       downloadLayoutAsFile(layout, `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`);
       announceToScreenReader('Layout downloaded');

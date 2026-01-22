@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-  saveLayoutById,
-  loadLayoutById,
-  deleteLayoutById,
+  saveLayoutSync,
+  loadLayoutSync,
+  deleteLayoutSync,
   saveLibrary,
   loadLibrary,
   initializeLayoutLibrary,
@@ -54,10 +54,10 @@ describe('storage error handling', () => {
     vi.restoreAllMocks();
   });
 
-  describe('saveLayoutById', () => {
+  describe('saveLayoutSync', () => {
     it('saves layout to localStorage with correct key', () => {
       const layoutId = 'test-uuid-123';
-      saveLayoutById(layoutId, defaultLayout);
+      saveLayoutSync(layoutId, defaultLayout);
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'gridfinity-layout-test-uuid-123',
@@ -72,7 +72,7 @@ describe('storage error handling', () => {
         throw error;
       });
 
-      expect(() => saveLayoutById('test-id', defaultLayout)).toThrow(
+      expect(() => saveLayoutSync('test-id', defaultLayout)).toThrow(
         'Storage full. Export your layout to save it.'
       );
     });
@@ -82,15 +82,15 @@ describe('storage error handling', () => {
         throw new Error('Storage unavailable');
       });
 
-      expect(() => saveLayoutById('test-id', defaultLayout)).toThrow(
+      expect(() => saveLayoutSync('test-id', defaultLayout)).toThrow(
         'Storage full. Export your layout to save it.'
       );
     });
   });
 
-  describe('loadLayoutById', () => {
+  describe('loadLayoutSync', () => {
     it('returns null for non-existent layout', () => {
-      const result = loadLayoutById('non-existent-id');
+      const result = loadLayoutSync('non-existent-id');
       expect(result).toBeNull();
     });
 
@@ -101,7 +101,7 @@ describe('storage error handling', () => {
         JSON.stringify(defaultLayout)
       );
 
-      const result = loadLayoutById(layoutId);
+      const result = loadLayoutSync(layoutId);
       expect(result).not.toBeNull();
       expect(result?.name).toBe(defaultLayout.name);
     });
@@ -114,7 +114,7 @@ describe('storage error handling', () => {
         'not valid json{{{[['
       );
 
-      const result = loadLayoutById(layoutId);
+      const result = loadLayoutSync(layoutId);
       expect(result).toBeNull();
       expect(consoleSpy).toHaveBeenCalled();
     });
@@ -127,7 +127,7 @@ describe('storage error handling', () => {
         JSON.stringify({ invalid: 'structure', missing: 'fields' })
       );
 
-      const result = loadLayoutById(layoutId);
+      const result = loadLayoutSync(layoutId);
       expect(result).toBeNull();
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('Layout invalid-layout failed validation'),
@@ -150,7 +150,7 @@ describe('storage error handling', () => {
         JSON.stringify(oldLayout)
       );
 
-      const result = loadLayoutById(layoutId);
+      const result = loadLayoutSync(layoutId);
       expect(result).not.toBeNull();
       expect(result?.gridUnitMm).toBe(42);
       expect(result?.heightUnitMm).toBe(7);
@@ -158,7 +158,7 @@ describe('storage error handling', () => {
     });
   });
 
-  describe('deleteLayoutById', () => {
+  describe('deleteLayoutSync', () => {
     it('removes layout from localStorage', () => {
       const layoutId = 'to-delete';
       localStorageMock.setItem(
@@ -166,7 +166,7 @@ describe('storage error handling', () => {
         JSON.stringify(defaultLayout)
       );
 
-      deleteLayoutById(layoutId);
+      deleteLayoutSync(layoutId);
 
       expect(localStorageMock.removeItem).toHaveBeenCalledWith(
         'gridfinity-layout-to-delete'
@@ -174,7 +174,7 @@ describe('storage error handling', () => {
     });
 
     it('does not throw when deleting non-existent layout', () => {
-      expect(() => deleteLayoutById('non-existent')).not.toThrow();
+      expect(() => deleteLayoutSync('non-existent')).not.toThrow();
     });
   });
 

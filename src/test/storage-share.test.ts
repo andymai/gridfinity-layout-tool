@@ -8,7 +8,6 @@ import {
   getSharedLayoutResult,
   clearSharedLayoutFromURL,
   copyToClipboard,
-  copyToClipboardResult,
   downloadLayoutAsFile,
   importLayoutResult,
   exportLayoutJSON,
@@ -619,58 +618,4 @@ describe('storage-share', () => {
     });
   });
 
-  describe('copyToClipboardResult', () => {
-    beforeEach(() => {
-      Object.defineProperty(global, 'navigator', {
-        value: {
-          clipboard: mockClipboard,
-        },
-        writable: true,
-      });
-      mockClipboard.writeText.mockReset();
-    });
-
-    afterEach(() => {
-      Object.defineProperty(global, 'navigator', {
-        value: originalNavigator,
-        writable: true,
-      });
-    });
-
-    it('returns Ok when clipboard succeeds', async () => {
-      mockClipboard.writeText.mockResolvedValue(undefined);
-
-      const result = await copyToClipboardResult('test text');
-
-      expect(isOk(result)).toBe(true);
-      expect(mockClipboard.writeText).toHaveBeenCalledWith('test text');
-    });
-
-    it('returns Err when clipboard fails', async () => {
-      mockClipboard.writeText.mockRejectedValue(new Error('Failed'));
-
-      // Mock document.createElement to fail as well
-      Object.defineProperty(global, 'document', {
-        value: {
-          createElement: vi.fn().mockImplementation(() => {
-            throw new Error('Failed');
-          }),
-        },
-        writable: true,
-      });
-
-      const result = await copyToClipboardResult('test text');
-
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('UNKNOWN_ERROR');
-        expect(result.error.kind).toBe('UnknownError');
-      }
-
-      Object.defineProperty(global, 'document', {
-        value: originalDocument,
-        writable: true,
-      });
-    });
-  });
 });
