@@ -15,6 +15,15 @@ export { throttleRAF, cancelThrottledRAF, throttle } from './throttle';
 export { scheduleIdleCallback, cancelIdleCallback } from './idle';
 
 export {
+  getVisibleBins,
+  getGridBins,
+  getStagingBins,
+  getLayerBins,
+  splitBinsByLocation,
+} from './bins';
+export type { VisibleBinsOptions } from './bins';
+
+export {
   isValidDrawer,
   isValidLayer,
   isValidBin,

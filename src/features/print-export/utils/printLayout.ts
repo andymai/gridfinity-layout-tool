@@ -1,15 +1,13 @@
 import type { Bin, Layer, Category, Drawer } from '@/core/types';
 import type { BinListSortOrder, BinSortField } from '@/core/store/settings';
-import { STAGING_ID } from '@/core/constants';
+import { getVisibleBins, getGridBins } from '@/shared/utils';
 
 /**
  * Filter bins to only include those on the specified layers.
  * Excludes staging bins.
  */
 export function getVisibleBinsForPrint(bins: Bin[], layerIds: string[]): Bin[] {
-  return bins.filter(
-    (bin) => bin.layerId !== STAGING_ID && layerIds.includes(bin.layerId)
-  );
+  return getVisibleBins(bins, { layerIds });
 }
 
 /**
@@ -66,11 +64,9 @@ export function getBinCountByLayer(
   }
 
   // Count bins per layer (excluding staging)
-  for (const bin of bins) {
-    if (bin.layerId !== STAGING_ID) {
-      const current = counts.get(bin.layerId) ?? 0;
-      counts.set(bin.layerId, current + 1);
-    }
+  for (const bin of getGridBins(bins)) {
+    const current = counts.get(bin.layerId) ?? 0;
+    counts.set(bin.layerId, current + 1);
   }
 
   return counts;
