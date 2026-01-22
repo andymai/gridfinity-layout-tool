@@ -1,4 +1,5 @@
 #!/usr/bin/env -S npx tsx
+/* eslint-disable no-console */
 /**
  * PostHog Dashboard Setup Script
  *
@@ -67,7 +68,7 @@ async function apiRequest<T>(
     const response = await fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
@@ -98,6 +99,7 @@ interface InsightDefinition {
 
 /**
  * Core engagement trends
+ * Note: DAU/WAU use $pageview (PostHog's automatic pageview capture)
  */
 const engagementInsights: InsightDefinition[] = [
   {
@@ -111,35 +113,13 @@ const engagementInsights: InsightDefinition[] = [
         series: [
           {
             kind: 'EventsNode',
-            event: 'app_loaded',
+            event: '$pageview',
             name: 'Daily Active Users',
             math: 'dau',
           },
         ],
         interval: 'day',
         dateRange: { date_from: '-30d' },
-        trendsFilter: { display: 'ActionsLineGraph' },
-      },
-    },
-  },
-  {
-    name: '📊 Weekly Active Users (WAU)',
-    description: 'Unique users who loaded the app each week',
-    tags: ['engagement', 'core'],
-    query: {
-      kind: 'InsightVizNode',
-      source: {
-        kind: 'TrendsQuery',
-        series: [
-          {
-            kind: 'EventsNode',
-            event: 'app_loaded',
-            name: 'Weekly Active Users',
-            math: 'weekly_active',
-          },
-        ],
-        interval: 'week',
-        dateRange: { date_from: '-12w' },
         trendsFilter: { display: 'ActionsLineGraph' },
       },
     },
@@ -165,32 +145,6 @@ const engagementInsights: InsightDefinition[] = [
         trendsFilter: { display: 'ActionsLineGraph' },
         breakdownFilter: {
           breakdown: 'trigger',
-          breakdown_type: 'event',
-        },
-      },
-    },
-  },
-  {
-    name: '📱 Device Type Distribution',
-    description: 'Breakdown of users by device type',
-    tags: ['engagement', 'device'],
-    query: {
-      kind: 'InsightVizNode',
-      source: {
-        kind: 'TrendsQuery',
-        series: [
-          {
-            kind: 'EventsNode',
-            event: 'app_loaded',
-            name: 'Users by Device',
-            math: 'dau',
-          },
-        ],
-        interval: 'week',
-        dateRange: { date_from: '-4w' },
-        trendsFilter: { display: 'ActionsBarValue' },
-        breakdownFilter: {
-          breakdown: 'device_type',
           breakdown_type: 'event',
         },
       },
@@ -360,7 +314,7 @@ const errorInsights: InsightDefinition[] = [
           },
           {
             kind: 'EventsNode',
-            event: 'app_loaded',
+            event: '$pageview',
             name: 'Total Sessions',
             math: 'unique_session',
           },
@@ -370,32 +324,6 @@ const errorInsights: InsightDefinition[] = [
         trendsFilter: {
           display: 'ActionsLineGraph',
           formula: 'A / B * 100',
-        },
-      },
-    },
-  },
-  {
-    name: '🔴 Errors by Device',
-    description: 'Which device types have the most errors',
-    tags: ['errors', 'monitoring'],
-    query: {
-      kind: 'InsightVizNode',
-      source: {
-        kind: 'TrendsQuery',
-        series: [
-          {
-            kind: 'EventsNode',
-            event: '$exception',
-            name: 'Exceptions by Device',
-            math: 'total',
-          },
-        ],
-        interval: 'week',
-        dateRange: { date_from: '-4w' },
-        trendsFilter: { display: 'ActionsBarValue' },
-        breakdownFilter: {
-          breakdown: 'device_type',
-          breakdown_type: 'event',
         },
       },
     },
@@ -443,7 +371,9 @@ const layoutInsights: InsightDefinition[] = [
             event: 'layout_snapshot',
             name: 'Multi-Layer Layouts',
             math: 'total',
-            properties: [{ key: 'feature_multi_layer', value: true, operator: 'exact', type: 'event' }],
+            properties: [
+              { key: 'feature_multi_layer', value: true, operator: 'exact', type: 'event' },
+            ],
           },
           {
             kind: 'EventsNode',
@@ -498,15 +428,14 @@ const layoutInsights: InsightDefinition[] = [
  */
 const funnelInsights: InsightDefinition[] = [
   {
-    name: '🔄 Activation Funnel',
-    description: 'From app load to first export',
+    name: '🔄 Export Funnel',
+    description: 'From layout action to export',
     tags: ['funnels', 'core'],
     query: {
       kind: 'InsightVizNode',
       source: {
         kind: 'FunnelsQuery',
         series: [
-          { kind: 'EventsNode', event: 'app_loaded', name: 'App Loaded' },
           { kind: 'EventsNode', event: 'layout_action', name: 'Layout Created/Switched' },
           { kind: 'EventsNode', event: 'layout_snapshot', name: 'Layout Exported' },
         ],
@@ -517,55 +446,6 @@ const funnelInsights: InsightDefinition[] = [
           funnelWindowInterval: 7,
           funnelWindowIntervalUnit: 'day',
         },
-      },
-    },
-  },
-  {
-    name: '🔄 Feature Discovery Funnel',
-    description: 'Do users discover advanced features?',
-    tags: ['funnels', 'features'],
-    query: {
-      kind: 'InsightVizNode',
-      source: {
-        kind: 'FunnelsQuery',
-        series: [
-          { kind: 'EventsNode', event: 'app_loaded', name: 'App Loaded' },
-          { kind: 'EventsNode', event: '3d_preview', name: '3D Preview Opened' },
-          { kind: 'EventsNode', event: 'fill_operation', name: 'Used Fill' },
-          { kind: 'EventsNode', event: 'layout_snapshot', name: 'Exported' },
-        ],
-        dateRange: { date_from: '-30d' },
-        funnelsFilter: {
-          funnelVizType: 'steps',
-          funnelOrderType: 'ordered',
-          funnelWindowInterval: 14,
-          funnelWindowIntervalUnit: 'day',
-        },
-      },
-    },
-  },
-];
-
-/**
- * Retention insight
- */
-const retentionInsights: InsightDefinition[] = [
-  {
-    name: '📅 Weekly Retention',
-    description: 'Do users come back week over week?',
-    tags: ['retention', 'core'],
-    query: {
-      kind: 'InsightVizNode',
-      source: {
-        kind: 'RetentionQuery',
-        retentionFilter: {
-          retentionType: 'retention_first_time',
-          totalIntervals: 8,
-          period: 'Week',
-          targetEntity: { id: 'app_loaded', type: 'events', name: 'app_loaded' },
-          returningEntity: { id: 'app_loaded', type: 'events', name: 'app_loaded' },
-        },
-        dateRange: { date_from: '-8w' },
       },
     },
   },
@@ -589,28 +469,16 @@ const dashboards: DashboardDefinition[] = [
     tags: ['overview'],
     insights: [
       engagementInsights[0], // DAU
-      engagementInsights[2], // Exports
-      errorInsights[1],      // Error Rate
-      funnelInsights[0],     // Activation Funnel
-    ],
-  },
-  {
-    name: '📊 Engagement & Retention',
-    description: 'User engagement and retention metrics',
-    tags: ['engagement'],
-    insights: [
-      ...engagementInsights,
-      ...retentionInsights,
+      engagementInsights[1], // Exports
+      errorInsights[1], // Error Rate
+      funnelInsights[0], // Export Funnel
     ],
   },
   {
     name: '🚀 Feature Adoption',
     description: 'How users adopt and use features',
     tags: ['features'],
-    insights: [
-      ...featureInsights,
-      funnelInsights[1], // Feature Discovery
-    ],
+    insights: featureInsights,
   },
   {
     name: '📐 Layout Analytics',
@@ -666,7 +534,7 @@ async function createDashboard(dashboard: DashboardDefinition): Promise<void> {
     }
 
     // Small delay to avoid rate limiting
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 }
 
@@ -697,14 +565,14 @@ async function main() {
   for (const dashboard of dashboards) {
     await createDashboard(dashboard);
     // Delay between dashboards
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
   console.log('\n✅ Setup complete!');
   console.log(`\n🔗 View your dashboards at: ${POSTHOG_HOST}/project/${PROJECT_ID}/dashboard`);
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
