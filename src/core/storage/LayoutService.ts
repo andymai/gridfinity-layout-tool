@@ -82,9 +82,7 @@ function migrateLayout(data: Record<string, unknown>): Record<string, unknown> {
 /**
  * Result of parsing storage data into a Layout.
  */
-type ParseResult =
-  | { success: true; layout: Layout }
-  | { success: false; errors: string[] };
+type ParseResult = { success: true; layout: Layout } | { success: false; errors: string[] };
 
 /**
  * Parse and validate raw storage data into a typed Layout.

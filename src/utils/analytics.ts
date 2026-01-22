@@ -531,9 +531,13 @@ export function updatePersonProperties(): void {
       last_active: new Date().toISOString(),
 
       // Feature adoption (has ever used)
-      uses_multi_layer: metrics.feature_multi_layer || localStorage.getItem('has_used_multi_layer') === 'true',
-      uses_half_bins: metrics.feature_half_bins || localStorage.getItem('has_used_half_bins') === 'true',
-      uses_custom_categories: metrics.feature_custom_categories || localStorage.getItem('has_used_custom_categories') === 'true',
+      uses_multi_layer:
+        metrics.feature_multi_layer || localStorage.getItem('has_used_multi_layer') === 'true',
+      uses_half_bins:
+        metrics.feature_half_bins || localStorage.getItem('has_used_half_bins') === 'true',
+      uses_custom_categories:
+        metrics.feature_custom_categories ||
+        localStorage.getItem('has_used_custom_categories') === 'true',
       uses_labels: metrics.feature_labels || localStorage.getItem('has_used_labels') === 'true',
       uses_3d_preview: localStorage.getItem('has_used_3d_preview') === 'true',
       uses_cloud_share: localStorage.getItem('has_used_cloud_share') === 'true',
@@ -556,7 +560,8 @@ export function updatePersonProperties(): void {
     // Track feature adoption in localStorage for persistence
     if (metrics.feature_multi_layer) localStorage.setItem('has_used_multi_layer', 'true');
     if (metrics.feature_half_bins) localStorage.setItem('has_used_half_bins', 'true');
-    if (metrics.feature_custom_categories) localStorage.setItem('has_used_custom_categories', 'true');
+    if (metrics.feature_custom_categories)
+      localStorage.setItem('has_used_custom_categories', 'true');
     if (metrics.feature_labels) localStorage.setItem('has_used_labels', 'true');
   } catch {
     // Never break the app for analytics
@@ -566,7 +571,16 @@ export function updatePersonProperties(): void {
 /**
  * Mark a feature as used (for adoption tracking).
  */
-export function markFeatureUsed(feature: 'multi_layer' | 'half_bins' | 'custom_categories' | 'labels' | '3d_preview' | 'cloud_share' | 'fill'): void {
+export function markFeatureUsed(
+  feature:
+    | 'multi_layer'
+    | 'half_bins'
+    | 'custom_categories'
+    | 'labels'
+    | '3d_preview'
+    | 'cloud_share'
+    | 'fill'
+): void {
   try {
     localStorage.setItem(`has_used_${feature}`, 'true');
   } catch {
