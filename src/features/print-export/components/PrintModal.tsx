@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback, useRef, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
 import {
   useSettingsStore,
   type PrintViewSettings,
