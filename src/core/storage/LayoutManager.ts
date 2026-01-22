@@ -398,8 +398,8 @@ export async function deleteLayoutWithEntry(
     return err(storageCorrupted('library', ['Cannot delete the last layout']));
   }
 
-  const entryIndex = library.entries.findIndex(e => e.id === layoutId);
-  if (entryIndex === -1) {
+  const found = findLibraryEntry(library, layoutId);
+  if (!found) {
     return err(storageNotFound(getLayoutKey(layoutId)));
   }
 

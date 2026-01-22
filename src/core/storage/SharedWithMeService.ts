@@ -14,7 +14,8 @@
 import type { SharedWithMeEntry } from '@/core/types';
 import type { Result } from '@/core/result';
 import type { StorageError } from '@/core/result/errors';
-import { ok, err, storageCorrupted, storageQuotaExceeded } from '@/core/result';
+import { ok, err, storageCorrupted } from '@/core/result';
+import { classifyStorageError } from './errorUtils';
 
 const SHARED_WITH_ME_KEY = 'gridfinity-shared-with-me-v1';
 
@@ -100,11 +101,7 @@ export function saveSharedWithMeResult(
     localStorage.setItem(SHARED_WITH_ME_KEY, JSON.stringify(data));
     return ok(undefined);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (message.toLowerCase().includes('quota')) {
-      return err(storageQuotaExceeded(undefined, undefined, error));
-    }
-    return err(storageCorrupted(SHARED_WITH_ME_KEY, [message], error));
+    return err(classifyStorageError(error, 'localStorage'));
   }
 }
 
