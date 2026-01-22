@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useContextMenu } from '@/hooks/useContextMenu';
 
+// Timing constants for context menu outside click handling
+// The hook uses a 100ms delay before attaching the outside click listener
+const AFTER_DELAY_MS = 150; // Time to advance past the 100ms delay
+const BEFORE_DELAY_MS = 50; // Time within the 100ms delay window
+
 describe('useContextMenu', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -105,11 +110,8 @@ describe('useContextMenu', () => {
       const menuElement = document.createElement('div');
       document.body.appendChild(menuElement);
 
-      // Manually set the ref
-      Object.defineProperty(result.current.menuRef, 'current', {
-        value: menuElement,
-        writable: true,
-      });
+      // Manually set the ref (same way React does)
+      result.current.menuRef.current = menuElement;
 
       // Open the menu
       act(() => {
@@ -117,9 +119,9 @@ describe('useContextMenu', () => {
       });
       expect(result.current.isOpen).toBe(true);
 
-      // Advance past the 100ms delay
+      // Advance past the delay
       act(() => {
-        vi.advanceTimersByTime(150);
+        vi.advanceTimersByTime(AFTER_DELAY_MS);
       });
 
       // Simulate a click outside (on document body, not the menu)
@@ -149,7 +151,7 @@ describe('useContextMenu', () => {
 
       // Fire event before delay elapses (simulates triggering right-click)
       act(() => {
-        vi.advanceTimersByTime(50); // Only 50ms
+        vi.advanceTimersByTime(BEFORE_DELAY_MS);
       });
 
       act(() => {
@@ -167,11 +169,8 @@ describe('useContextMenu', () => {
       const menuElement = document.createElement('div');
       document.body.appendChild(menuElement);
 
-      // Manually set the ref (simulate React's ref assignment)
-      Object.defineProperty(result.current.menuRef, 'current', {
-        value: menuElement,
-        writable: true,
-      });
+      // Manually set the ref (same way React does)
+      result.current.menuRef.current = menuElement;
 
       // Open the menu
       act(() => {
@@ -180,7 +179,7 @@ describe('useContextMenu', () => {
 
       // Advance past the delay
       act(() => {
-        vi.advanceTimersByTime(150);
+        vi.advanceTimersByTime(AFTER_DELAY_MS);
       });
 
       // Create and dispatch event from inside the menu
@@ -207,7 +206,7 @@ describe('useContextMenu', () => {
 
       // Advance time - no listener should be added since menu is closed
       act(() => {
-        vi.advanceTimersByTime(200);
+        vi.advanceTimersByTime(AFTER_DELAY_MS * 2);
       });
 
       // Check that pointerdown listener was not added
@@ -285,7 +284,7 @@ describe('useContextMenu', () => {
 
       // Advance past delay to add listener
       act(() => {
-        vi.advanceTimersByTime(150);
+        vi.advanceTimersByTime(AFTER_DELAY_MS);
       });
 
       // Close menu
@@ -313,7 +312,7 @@ describe('useContextMenu', () => {
 
       // Close before delay
       act(() => {
-        vi.advanceTimersByTime(50); // Only 50ms
+        vi.advanceTimersByTime(BEFORE_DELAY_MS);
         result.current.hide();
       });
 
@@ -334,7 +333,7 @@ describe('useContextMenu', () => {
 
       // Advance past delay
       act(() => {
-        vi.advanceTimersByTime(150);
+        vi.advanceTimersByTime(AFTER_DELAY_MS);
       });
 
       // Unmount

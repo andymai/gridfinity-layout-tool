@@ -67,7 +67,7 @@ describe('useBinGeometry', () => {
         // - 1 interior floor
         // - 4 interior walls
         // - 4 top rim segments
-        // Total: 18 quads × 2 triangles × 3 vertices = 108 vertices
+        // Total: 18 quads × 6 vertices per quad = 108 vertices
         const geometry = createBinGeometry({
           width: 1,
           depth: 1,

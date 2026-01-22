@@ -66,7 +66,23 @@ describe('SharedWithMeItem', () => {
       expect(screen.getByText(/Accessed Yesterday/)).toBeInTheDocument();
     });
 
-    it('displays "N days ago" for 2-6 day old timestamps', () => {
+    it('displays "2 days ago" for 2-day-old timestamps (lower boundary)', () => {
+      const twoDaysAgo = Date.now() - 2 * 24 * 60 * 60 * 1000;
+      const entry = { ...baseEntry, lastAccessedAt: twoDaysAgo };
+      render(
+        <SharedWithMeItem
+          entry={entry}
+          isFocused={false}
+          isLoading={false}
+          onOpen={mockOnOpen}
+          onRemove={mockOnRemove}
+          onFocus={mockOnFocus}
+        />
+      );
+      expect(screen.getByText(/Accessed 2 days ago/)).toBeInTheDocument();
+    });
+
+    it('displays "3 days ago" for 3-day-old timestamps (middle of range)', () => {
       const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
       const entry = { ...baseEntry, lastAccessedAt: threeDaysAgo };
       render(

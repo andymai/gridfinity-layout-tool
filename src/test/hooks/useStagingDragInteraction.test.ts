@@ -18,8 +18,11 @@ vi.mock('@/shared/analytics/useMLTracking', () => ({
   },
 }));
 
+// Helper type for addBin result
+type AddBinResult = ReturnType<ReturnType<typeof useLayoutStore.getState>['addBin']>;
+
 // Helper to extract bin ID from Result
-function getBinId(result: ReturnType<typeof useLayoutStore.getState>['addBin'] extends (...args: unknown[]) => infer R ? R : never): string {
+function getBinId(result: AddBinResult): string {
   if (!isOk(result)) throw new Error('addBin failed');
   return result.value;
 }
