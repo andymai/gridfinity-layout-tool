@@ -167,6 +167,64 @@ if (isOk(result)) {
 
 Error types: `LayoutError`, `ValidationError`, `StorageError`, `ApiError` with structured codes and user-friendly messages via `getUserMessage()`.
 
+**Result Handling Conventions:**
+
+1. **When to use throwing vs Result-based functions:**
+   - Use `Result<T, E>` for operations where failure is expected (storage, API, validation)
+   - Use throwing functions for internal errors that indicate programmer mistakes
+   - Provide both versions where appropriate (e.g., `getLayerZStart` throws, `getLayerZStartResult` returns Result)
+
+2. **Handling Results in UI components:**
+
+   ```typescript
+   // For operations that return values (use the returned value)
+   const result = addLayer();
+   if (isOk(result)) {
+     setActiveLayer(result.value);
+   }
+
+   // For operations that may fail (show error to user)
+   const result = updateLayer(id, updates);
+   if (isErr(result)) {
+     addToast(getUserMessage(result.error), 'error');
+   }
+   ```
+
+3. **Batch operations with `execute()` (undo wrapper):**
+   - Mutations inside `execute()` callbacks are batched for undo/redo
+   - Individual Result checking is optional since store validates inputs
+   - Check Results when the outcome affects subsequent logic (e.g., getting new IDs)
+
+   ```typescript
+   // Simple batch - no individual checks needed
+   execute(() => {
+     for (const binId of selectedBinIds) {
+       updateBin(binId, { category: newCategoryId });
+     }
+   });
+
+   // When you need the result value
+   execute(() => {
+     const result = addBin(binData);
+     if (isOk(result)) {
+       setSelectedBin(result.value); // Need the new bin ID
+     }
+   });
+   ```
+
+4. **Fire-and-forget async patterns (background sync):**
+   - Used in `useAutoSave`, `useOwnedShareSync`, `useCloudShareAutoSync`
+   - Check Results but silently ignore failures for non-critical background operations
+   - Track failure counts for escalating error display
+   ```typescript
+   const result = await saveLayoutWithMetadata(id, layout, library);
+   if (isErr(result)) {
+     handleSaveError(result.error); // Escalating toasts after 3 failures
+     return;
+   }
+   // Success path...
+   ```
+
 ### Component Architecture
 
 **Grid rendering:** CSS Grid-based (NOT HTML Canvas), despite `GridCanvas.tsx` naming. DOM overlay (`Overlay.tsx`) handles interactive bins with drag/resize handles.
