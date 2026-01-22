@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { Checkbox } from '@/shared/components/Checkbox';
-import { track3DPreview } from '@/utils/analytics';
+import { track3DPreview, markFeatureUsed } from '@/utils/analytics';
 import type { Layer } from '@/core/types';
 import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
 
@@ -359,6 +359,7 @@ export const GridToolbar = memo(function GridToolbar({
           onClick={() => {
             if (!showIsometricPreview) {
               track3DPreview('opened');
+              markFeatureUsed('3d_preview');
             }
             toggleIsometricPreview();
           }}
