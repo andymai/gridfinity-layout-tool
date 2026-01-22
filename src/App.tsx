@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useLibraryStore } from './core/store';
 import { useLayoutRouting, useAnalytics, useStorageMigration, useTabletPanels, useKeyboard } from './hooks';
 import { useAutoSave, useResponsive, useCrossTabSync, usePWAUpdate } from './shared/hooks';
@@ -95,7 +96,13 @@ export default function App() {
     closeRightPanel,
   } = useTabletPanels(isTablet);
 
-  const layout = useLayoutStore(state => state.layout);
+  // Performance: Only subscribe to the specific arrays we need, not the entire layout object
+  const { layers, categories } = useLayoutStore(
+    useShallow((state) => ({
+      layers: state.layout.layers,
+      categories: state.layout.categories,
+    }))
+  );
   const activeLayerId = useUIStore(state => state.activeLayerId);
   const activeCategoryId = useUIStore(state => state.activeCategoryId);
   const setActiveLayer = useUIStore(state => state.setActiveLayer);
@@ -104,16 +111,16 @@ export default function App() {
   // Initialize activeLayerId and activeCategoryId to valid values (sync before paint)
   useLayoutEffect(() => {
     // Check if current activeLayerId is valid for the current layout
-    const layerExists = layout.layers.some(l => l.id === activeLayerId);
-    if ((!activeLayerId || !layerExists) && layout.layers.length > 0) {
-      setActiveLayer(layout.layers[0].id);
+    const layerExists = layers.some(l => l.id === activeLayerId);
+    if ((!activeLayerId || !layerExists) && layers.length > 0) {
+      setActiveLayer(layers[0].id);
     }
     // Ensure activeCategoryId is valid for current layout
-    const categoryExists = layout.categories.some(c => c.id === activeCategoryId);
-    if (!categoryExists && layout.categories.length > 0) {
-      setActiveCategory(layout.categories[0].id);
+    const categoryExists = categories.some(c => c.id === activeCategoryId);
+    if (!categoryExists && categories.length > 0) {
+      setActiveCategory(categories[0].id);
     }
-  }, [activeLayerId, activeCategoryId, layout.layers, layout.categories, setActiveLayer, setActiveCategory]);
+  }, [activeLayerId, activeCategoryId, layers, categories, setActiveLayer, setActiveCategory]);
 
   // Global keyboard shortcuts
   useKeyboard();
