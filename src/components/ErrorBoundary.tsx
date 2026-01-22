@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
+import { captureException } from '@/utils/analytics';
 
 interface Props {
   children: ReactNode;
@@ -20,8 +21,12 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch() {
-    // Error already captured in state via getDerivedStateFromError
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Report error to PostHog for monitoring
+    captureException(error, {
+      boundary: 'root',
+      componentStack: errorInfo.componentStack,
+    });
   }
 
   handleReset = () => {

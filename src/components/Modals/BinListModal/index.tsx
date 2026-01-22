@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useBinList } from '@/hooks/useBinList';
 import { useUIStore } from '@/core/store/ui';
 import { useResponsive } from '@/shared/hooks';
+import { markFeatureUsed } from '@/utils/analytics';
 import { BinListTable } from './BinListTable';
 import { BinListFilters } from './BinListFilters';
 import { BinListDashboard } from './BinListDashboard';
@@ -154,6 +155,9 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
   const handleEditLabel = useCallback(
     (binIds: string[], label: string) => {
       updateBinLabel(binIds, label);
+      if (label.trim()) {
+        markFeatureUsed('labels');
+      }
     },
     [updateBinLabel]
   );

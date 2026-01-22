@@ -3,6 +3,7 @@ import { useUIStore, useLayoutStore, useUndoableAction } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { markFeatureUsed } from '@/utils/analytics';
 
 /**
  * Small popover that appears near a bin for quick label editing.
@@ -39,6 +40,10 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
       });
       // Track label change for ML telemetry
       mlTracking.trackLabel(bin, oldLabel, newLabel);
+      // Mark feature as used for cohort segmentation
+      if (newLabel) {
+        markFeatureUsed('labels');
+      }
     }
     hideQuickLabel();
   }, [bin, value, execute, updateBin, hideQuickLabel]);
