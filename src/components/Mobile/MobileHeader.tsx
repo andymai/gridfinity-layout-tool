@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { useLayoutStore, useHistoryStore, useUIStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
+import { useHistoryStore, useUIStore } from '@/core/store';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
 import { PresenceAvatars } from '@/components/Collab';

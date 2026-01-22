@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { useLayoutStore } from '@/core/store/layout';
 import {
-  useLayoutStore,
   useLibraryStore,
   useHistoryStore,
   useToastStore,
