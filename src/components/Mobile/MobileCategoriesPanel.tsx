@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUIStore, useUndoableAction } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';

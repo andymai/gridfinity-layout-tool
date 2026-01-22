@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/shallow';
-import { useUIStore, useLayoutStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUIStore } from '@/core/store';
 import { CONSTRAINTS } from '@/core/constants';
 
 interface MobileGridToolbarProps {
