@@ -94,17 +94,19 @@ describe('useStagingDragInteraction', () => {
     const { addBin, layout } = useLayoutStore.getState();
     const categoryId = layout.categories[0].id;
 
-    return getBinId(addBin({
-      layerId: STAGING_ID, // Staging area
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: 'Test bin',
-      notes: '',
-    }));
+    return getBinId(
+      addBin({
+        layerId: STAGING_ID, // Staging area
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Test bin',
+        notes: '',
+      })
+    );
   }
 
   // Helper to add a bin on the grid
@@ -113,17 +115,19 @@ describe('useStagingDragInteraction', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    return getBinId(addBin({
-      layerId,
-      x,
-      y,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    return getBinId(
+      addBin({
+        layerId,
+        x,
+        y,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
   }
 
   describe('start()', () => {

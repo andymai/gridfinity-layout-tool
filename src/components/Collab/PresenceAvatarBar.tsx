@@ -59,11 +59,7 @@ export function PresenceAvatarBar({
               className="ring-2 ring-surface-secondary rounded-full"
               role="listitem"
             >
-              <PresenceAvatar
-                participant={participant}
-                size="sm"
-                showName={false}
-              />
+              <PresenceAvatar participant={participant} size="sm" showName={false} />
             </div>
           ))}
         </div>
@@ -74,9 +70,10 @@ export function PresenceAvatarBar({
           className={`
             ml-1 px-2 py-1 rounded-md text-xs font-medium
             transition-colors
-            ${isDropdownOpen
-              ? 'bg-surface-hover text-content'
-              : 'text-content-secondary hover:text-content hover:bg-surface-hover'
+            ${
+              isDropdownOpen
+                ? 'bg-surface-hover text-content'
+                : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }
           `.trim()}
           aria-expanded={isDropdownOpen}

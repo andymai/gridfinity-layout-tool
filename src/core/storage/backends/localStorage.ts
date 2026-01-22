@@ -63,7 +63,7 @@ export function getAllKeysWithPrefix(prefix: string): string[] {
  * Get all layout IDs from localStorage keys.
  */
 export function getAllLayoutIds(prefix: string): string[] {
-  return getAllKeysWithPrefix(prefix).map(key => key.slice(prefix.length));
+  return getAllKeysWithPrefix(prefix).map((key) => key.slice(prefix.length));
 }
 
 /**

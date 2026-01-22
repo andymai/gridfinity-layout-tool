@@ -112,9 +112,18 @@ describe('generateGuestColor', () => {
 
   it('returns one of the predefined pleasant colors', () => {
     const KNOWN_COLORS = [
-      '#3B82F6', '#10B981', '#F59E0B', '#EF4444',
-      '#8B5CF6', '#EC4899', '#06B6D4', '#F97316',
-      '#84CC16', '#6366F1', '#14B8A6', '#A855F7',
+      '#3B82F6',
+      '#10B981',
+      '#F59E0B',
+      '#EF4444',
+      '#8B5CF6',
+      '#EC4899',
+      '#06B6D4',
+      '#F97316',
+      '#84CC16',
+      '#6366F1',
+      '#14B8A6',
+      '#A855F7',
     ];
 
     for (let i = 0; i < 30; i++) {

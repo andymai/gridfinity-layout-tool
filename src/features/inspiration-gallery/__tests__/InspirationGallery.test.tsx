@@ -31,9 +31,31 @@ vi.mock('../data', () => {
       shortDescription: 'Workshop desc',
       complexity: 'beginner',
       features: [],
-      metrics: { binCount: 10, layerCount: 1, categoryCount: 2, labeledBinCount: 5, drawerSize: { width: 10, depth: 8, height: 12 } },
-      preview: { drawerWidth: 10, drawerDepth: 8, drawerHeight: 12, binCount: 10, layerCount: 1, binMap: [] },
-      layout: { name: 'W1', drawer: { width: 10, depth: 8, height: 12 }, layers: [], categories: [], bins: [], gridUnitMm: 42, heightUnitMm: 7, printBedSize: 256 },
+      metrics: {
+        binCount: 10,
+        layerCount: 1,
+        categoryCount: 2,
+        labeledBinCount: 5,
+        drawerSize: { width: 10, depth: 8, height: 12 },
+      },
+      preview: {
+        drawerWidth: 10,
+        drawerDepth: 8,
+        drawerHeight: 12,
+        binCount: 10,
+        layerCount: 1,
+        binMap: [],
+      },
+      layout: {
+        name: 'W1',
+        drawer: { width: 10, depth: 8, height: 12 },
+        layers: [],
+        categories: [],
+        bins: [],
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+        printBedSize: 256,
+      },
       tags: [],
     },
     {
@@ -44,9 +66,31 @@ vi.mock('../data', () => {
       shortDescription: 'Workshop desc 2',
       complexity: 'intermediate',
       features: [],
-      metrics: { binCount: 15, layerCount: 2, categoryCount: 3, labeledBinCount: 8, drawerSize: { width: 12, depth: 10, height: 15 } },
-      preview: { drawerWidth: 12, drawerDepth: 10, drawerHeight: 15, binCount: 15, layerCount: 2, binMap: [] },
-      layout: { name: 'W2', drawer: { width: 12, depth: 10, height: 15 }, layers: [], categories: [], bins: [], gridUnitMm: 42, heightUnitMm: 7, printBedSize: 256 },
+      metrics: {
+        binCount: 15,
+        layerCount: 2,
+        categoryCount: 3,
+        labeledBinCount: 8,
+        drawerSize: { width: 12, depth: 10, height: 15 },
+      },
+      preview: {
+        drawerWidth: 12,
+        drawerDepth: 10,
+        drawerHeight: 15,
+        binCount: 15,
+        layerCount: 2,
+        binMap: [],
+      },
+      layout: {
+        name: 'W2',
+        drawer: { width: 12, depth: 10, height: 15 },
+        layers: [],
+        categories: [],
+        bins: [],
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+        printBedSize: 256,
+      },
       tags: [],
     },
     {
@@ -57,21 +101,48 @@ vi.mock('../data', () => {
       shortDescription: 'Kitchen desc',
       complexity: 'beginner',
       features: [],
-      metrics: { binCount: 8, layerCount: 1, categoryCount: 2, labeledBinCount: 4, drawerSize: { width: 8, depth: 6, height: 10 } },
-      preview: { drawerWidth: 8, drawerDepth: 6, drawerHeight: 10, binCount: 8, layerCount: 1, binMap: [] },
-      layout: { name: 'K1', drawer: { width: 8, depth: 6, height: 10 }, layers: [], categories: [], bins: [], gridUnitMm: 42, heightUnitMm: 7, printBedSize: 256 },
+      metrics: {
+        binCount: 8,
+        layerCount: 1,
+        categoryCount: 2,
+        labeledBinCount: 4,
+        drawerSize: { width: 8, depth: 6, height: 10 },
+      },
+      preview: {
+        drawerWidth: 8,
+        drawerDepth: 6,
+        drawerHeight: 10,
+        binCount: 8,
+        layerCount: 1,
+        binMap: [],
+      },
+      layout: {
+        name: 'K1',
+        drawer: { width: 8, depth: 6, height: 10 },
+        layers: [],
+        categories: [],
+        bins: [],
+        gridUnitMm: 42,
+        heightUnitMm: 7,
+        printBedSize: 256,
+      },
       tags: [],
     },
   ];
   return {
     INSPIRATION_LAYOUTS: mockLayouts,
-    getLayoutsByTheme: (theme: string) => mockLayouts.filter((l: { theme: string }) => l.theme === theme),
+    getLayoutsByTheme: (theme: string) =>
+      mockLayouts.filter((l: { theme: string }) => l.theme === theme),
   };
 });
 
 // Mock child components
 vi.mock('../components/ThemeFilterPills', () => ({
-  ThemeFilterPills: ({ selectedTheme, onThemeChange, themeCounts }: {
+  ThemeFilterPills: ({
+    selectedTheme,
+    onThemeChange,
+    themeCounts,
+  }: {
     selectedTheme: string;
     onThemeChange: (theme: string) => void;
     themeCounts: Record<string, number>;
@@ -80,7 +151,10 @@ vi.mock('../components/ThemeFilterPills', () => ({
       <button onClick={() => onThemeChange('all')} data-selected={selectedTheme === 'all'}>
         All ({themeCounts.all})
       </button>
-      <button onClick={() => onThemeChange('workshop')} data-selected={selectedTheme === 'workshop'}>
+      <button
+        onClick={() => onThemeChange('workshop')}
+        data-selected={selectedTheme === 'workshop'}
+      >
         Workshop ({themeCounts.workshop})
       </button>
       <button onClick={() => onThemeChange('kitchen')} data-selected={selectedTheme === 'kitchen'}>
@@ -91,7 +165,15 @@ vi.mock('../components/ThemeFilterPills', () => ({
 }));
 
 vi.mock('../components/LayoutCard', () => ({
-  LayoutCard: ({ layout, onClick, index }: { layout: InspirationLayout; onClick: () => void; index: number }) => (
+  LayoutCard: ({
+    layout,
+    onClick,
+    index,
+  }: {
+    layout: InspirationLayout;
+    onClick: () => void;
+    index: number;
+  }) => (
     <button
       data-testid={`layout-card-${layout.id}`}
       data-layout-card
@@ -104,7 +186,12 @@ vi.mock('../components/LayoutCard', () => ({
 }));
 
 vi.mock('../components/LayoutPreviewOverlay', () => ({
-  LayoutPreviewOverlay: ({ layout, onClose, onUseLayout, isImporting }: {
+  LayoutPreviewOverlay: ({
+    layout,
+    onClose,
+    onUseLayout,
+    isImporting,
+  }: {
     layout: InspirationLayout;
     onClose: () => void;
     onUseLayout: () => void;
@@ -112,7 +199,9 @@ vi.mock('../components/LayoutPreviewOverlay', () => ({
   }) => (
     <div data-testid="preview-overlay">
       <div data-testid="preview-layout-name">{layout.name}</div>
-      <button onClick={onClose} data-testid="preview-close">Close</button>
+      <button onClick={onClose} data-testid="preview-close">
+        Close
+      </button>
       <button onClick={onUseLayout} disabled={isImporting} data-testid="preview-use">
         {isImporting ? 'Importing...' : 'Use Layout'}
       </button>
@@ -139,7 +228,9 @@ describe('InspirationGallery', () => {
     document.body.style.overflow = '';
 
     // Spy on store methods
-    vi.spyOn(useUIStore.getState(), 'announceToScreenReader').mockImplementation(mockAnnounceToScreenReader);
+    vi.spyOn(useUIStore.getState(), 'announceToScreenReader').mockImplementation(
+      mockAnnounceToScreenReader
+    );
     vi.spyOn(useUIStore.getState(), 'closeMobilePanel').mockImplementation(mockCloseMobilePanel);
     vi.spyOn(useToastStore.getState(), 'addToast').mockImplementation(mockAddToast);
   });
@@ -249,9 +340,7 @@ describe('InspirationGallery', () => {
       fireEvent.click(screen.getByText('Kitchen (1)'));
 
       await waitFor(() => {
-        expect(mockAnnounceToScreenReader).toHaveBeenCalledWith(
-          expect.stringContaining('Kitchen')
-        );
+        expect(mockAnnounceToScreenReader).toHaveBeenCalledWith(expect.stringContaining('Kitchen'));
       });
     });
   });
@@ -391,10 +480,7 @@ describe('InspirationGallery', () => {
       fireEvent.click(screen.getByTestId('preview-use'));
 
       await waitFor(() => {
-        expect(mockAddToast).toHaveBeenCalledWith(
-          'Added "Workshop Layout 1"',
-          'success'
-        );
+        expect(mockAddToast).toHaveBeenCalledWith('Added "Workshop Layout 1"', 'success');
       });
     });
 

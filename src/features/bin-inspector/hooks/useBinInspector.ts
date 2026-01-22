@@ -8,7 +8,14 @@ import { validateBinRotation } from '@/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Bin, Category, Layer, Layout } from '@/core/types';
 
-export type BinField = 'width' | 'depth' | 'height' | 'clearanceHeight' | 'category' | 'label' | 'notes';
+export type BinField =
+  | 'width'
+  | 'depth'
+  | 'height'
+  | 'clearanceHeight'
+  | 'category'
+  | 'label'
+  | 'notes';
 
 export interface BinConstraints {
   minHeight: number;
@@ -100,8 +107,8 @@ export function useBinInspector(): UseBinInspectorReturn {
   );
   const isMultiSelect = selectedBins.length > 1;
   const bin = selectedBins.length === 1 ? selectedBins[0] : null;
-  const category = bin ? layout.categories.find((c) => c.id === bin.category) ?? null : null;
-  const layer = bin ? layout.layers.find((l) => l.id === bin.layerId) ?? null : null;
+  const category = bin ? (layout.categories.find((c) => c.id === bin.category) ?? null) : null;
+  const layer = bin ? (layout.layers.find((l) => l.id === bin.layerId) ?? null) : null;
 
   // Calculate constraints
   const constraints = useMemo<BinConstraints>(() => {
@@ -216,7 +223,15 @@ export function useBinInspector(): UseBinInspectorReturn {
         }
       });
     },
-    [bin, layer, constraints.maxHeight, constraints.maxClearance, execute, updateBin, layout.categories]
+    [
+      bin,
+      layer,
+      constraints.maxHeight,
+      constraints.maxClearance,
+      execute,
+      updateBin,
+      layout.categories,
+    ]
   );
 
   const updateCustomProperties = useCallback(
@@ -293,9 +308,10 @@ export function useBinInspector(): UseBinInspectorReturn {
           const binLayer = layout.layers.find((l) => l.id === b.layerId);
           const minHeight = binLayer?.height || 1;
           // For staging bins, use full drawer height; for placed bins, account for layer position
-          const binMaxHeight = b.layerId === STAGING_ID || !binLayer
-            ? layout.drawer.height
-            : layout.drawer.height - getLayerZStart(b.layerId, layout.layers);
+          const binMaxHeight =
+            b.layerId === STAGING_ID || !binLayer
+              ? layout.drawer.height
+              : layout.drawer.height - getLayerZStart(b.layerId, layout.layers);
           const newHeight = clamp(b.height + delta, minHeight, binMaxHeight);
           updateBin(b.id, { height: newHeight });
         }
@@ -312,9 +328,10 @@ export function useBinInspector(): UseBinInspectorReturn {
         for (const b of selectedBins) {
           const binLayer = layout.layers.find((l) => l.id === b.layerId);
           // For staging bins, use full drawer height; for placed bins, account for layer position
-          const binMaxHeight = b.layerId === STAGING_ID || !binLayer
-            ? layout.drawer.height
-            : layout.drawer.height - getLayerZStart(b.layerId, layout.layers);
+          const binMaxHeight =
+            b.layerId === STAGING_ID || !binLayer
+              ? layout.drawer.height
+              : layout.drawer.height - getLayerZStart(b.layerId, layout.layers);
           const maxClearance = binMaxHeight - b.height;
           const newClearance = clamp((b.clearanceHeight || 0) + delta, 0, maxClearance);
           updateBin(b.id, { clearanceHeight: newClearance });
@@ -333,7 +350,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         return;
       }
 
-      const targetLayer = layout.layers.find(l => l.id === targetLayerId);
+      const targetLayer = layout.layers.find((l) => l.id === targetLayerId);
       if (!targetLayer) return;
 
       // Validate placement on target layer using bin's actual height (no auto-adjustment)
@@ -377,12 +394,12 @@ export function useBinInspector(): UseBinInspectorReturn {
     (targetLayerId: string) => {
       if (selectedBins.length === 0) return;
 
-      const targetLayer = layout.layers.find(l => l.id === targetLayerId);
+      const targetLayer = layout.layers.find((l) => l.id === targetLayerId);
       if (!targetLayer) return;
 
       // Filter out staging bins and bins already on target layer
       const binsToMove = selectedBins.filter(
-        b => b.layerId !== STAGING_ID && b.layerId !== targetLayerId
+        (b) => b.layerId !== STAGING_ID && b.layerId !== targetLayerId
       );
 
       if (binsToMove.length === 0) return;
@@ -427,7 +444,10 @@ export function useBinInspector(): UseBinInspectorReturn {
       mlTracking.trackLayerMove(firstBin, fromLayerId, targetLayerId, 'inspector', movable.length);
 
       if (blocked.length > 0) {
-        addToast(`Moved ${movable.length} of ${binsToMove.length} bins (${blocked.length} blocked)`, 'info');
+        addToast(
+          `Moved ${movable.length} of ${binsToMove.length} bins (${blocked.length} blocked)`,
+          'info'
+        );
       } else {
         addToast(`Moved ${movable.length} bins to ${targetLayer.name}`, 'success');
       }

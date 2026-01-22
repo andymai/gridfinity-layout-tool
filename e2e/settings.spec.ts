@@ -46,7 +46,9 @@ test.describe('Settings Persistence', () => {
       await waitForAppReady(page);
 
       // Verify persisted
-      const toggleAfterReload = getSidebar(page).getByRole('checkbox', { name: /toggle half-bin mode/i });
+      const toggleAfterReload = getSidebar(page).getByRole('checkbox', {
+        name: /toggle half-bin mode/i,
+      });
       await toggleAfterReload.scrollIntoViewIfNeeded();
       await expect(toggleAfterReload).toBeChecked();
     });

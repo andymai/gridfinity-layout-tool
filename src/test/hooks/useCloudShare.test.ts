@@ -35,20 +35,22 @@ function createTestLibrary(cloudShare?: CloudShareInfo): LayoutLibrary {
     version: '1.0',
     activeLayoutId: TEST_LAYOUT_ID,
     settings: {},
-    entries: [{
-      id: TEST_LAYOUT_ID,
-      name: 'Test Layout',
-      createdAt: Date.now(),
-      modifiedAt: Date.now(),
-      preview: {
-        drawerWidth: 10,
-        drawerDepth: 8,
-        drawerHeight: 12,
-        binCount: 0,
-        layerCount: 1,
+    entries: [
+      {
+        id: TEST_LAYOUT_ID,
+        name: 'Test Layout',
+        createdAt: Date.now(),
+        modifiedAt: Date.now(),
+        preview: {
+          drawerWidth: 10,
+          drawerDepth: 8,
+          drawerHeight: 12,
+          binCount: 0,
+          layerCount: 1,
+        },
+        cloudShare,
       },
-      cloudShare,
-    }],
+    ],
   };
 }
 
@@ -155,18 +157,12 @@ describe('useCloudShare', () => {
       expect(result.current.result).not.toBeNull();
       expect(result.current.result?.id).toBe('new-share-id');
       expect(result.current.result?.url).toBe('https://example.com/s/new-share-id');
-      expect(mockAnnounce).toHaveBeenCalledWith(
-        expect.stringContaining('successfully')
-      );
-      expect(storage.copyToClipboard).toHaveBeenCalledWith(
-        'https://example.com/s/new-share-id'
-      );
+      expect(mockAnnounce).toHaveBeenCalledWith(expect.stringContaining('successfully'));
+      expect(storage.copyToClipboard).toHaveBeenCalledWith('https://example.com/s/new-share-id');
     });
 
     it('handles share failure', async () => {
-      vi.mocked(shareApi.createShare).mockResolvedValue(
-        err(apiRateLimited(60))
-      );
+      vi.mocked(shareApi.createShare).mockResolvedValue(err(apiRateLimited(60)));
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -179,9 +175,7 @@ describe('useCloudShare', () => {
       expect(result.current.status).toBe('error');
       expect(result.current.error).not.toBeNull();
       expect(result.current.error?.code).toBe('API_RATE_LIMITED');
-      expect(mockAnnounce).toHaveBeenCalledWith(
-        expect.stringContaining('failed')
-      );
+      expect(mockAnnounce).toHaveBeenCalledWith(expect.stringContaining('failed'));
     });
 
     it('handles offline state', async () => {
@@ -206,7 +200,9 @@ describe('useCloudShare', () => {
         resolvePromise = resolve;
       });
 
-      vi.mocked(shareApi.createShare).mockReturnValue(pendingPromise as ReturnType<typeof shareApi.createShare>);
+      vi.mocked(shareApi.createShare).mockReturnValue(
+        pendingPromise as ReturnType<typeof shareApi.createShare>
+      );
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -217,12 +213,14 @@ describe('useCloudShare', () => {
       expect(result.current.status).toBe('sharing');
 
       // Resolve to prevent hanging
-      resolvePromise!(ok({
-        id: 'id',
-        url: 'url',
-        deleteToken: 'token',
-        permission: 'view',
-      }));
+      resolvePromise!(
+        ok({
+          id: 'id',
+          url: 'url',
+          deleteToken: 'token',
+          permission: 'view',
+        })
+      );
 
       await waitFor(() => {
         expect(result.current.status).toBe('success');
@@ -292,9 +290,7 @@ describe('useCloudShare', () => {
         library: createTestLibrary(existingShare),
       });
 
-      vi.mocked(shareApi.updateShare).mockResolvedValue(
-        err(apiNotFound('deleted-on-server'))
-      );
+      vi.mocked(shareApi.updateShare).mockResolvedValue(err(apiNotFound('deleted-on-server')));
 
       const clearCloudShareSpy = vi.fn();
       useLibraryStore.setState({ clearCloudShare: clearCloudShareSpy });
@@ -339,9 +335,7 @@ describe('useCloudShare', () => {
       expect(success).toBe(true);
       expect(result.current.status).toBe('idle');
       expect(clearCloudShareSpy).toHaveBeenCalledWith(TEST_LAYOUT_ID);
-      expect(mockAnnounce).toHaveBeenCalledWith(
-        expect.stringContaining('deleted')
-      );
+      expect(mockAnnounce).toHaveBeenCalledWith(expect.stringContaining('deleted'));
     });
 
     it('returns false when no existing share', async () => {
@@ -367,9 +361,7 @@ describe('useCloudShare', () => {
         library: createTestLibrary(existingShare),
       });
 
-      vi.mocked(shareApi.deleteShare).mockResolvedValue(
-        err(apiNotFound('already-deleted'))
-      );
+      vi.mocked(shareApi.deleteShare).mockResolvedValue(err(apiNotFound('already-deleted')));
 
       const clearCloudShareSpy = vi.fn();
       useLibraryStore.setState({ clearCloudShare: clearCloudShareSpy });
@@ -490,9 +482,7 @@ describe('useCloudShare', () => {
 
       expect(success).toBe(true);
       expect(storage.copyToClipboard).toHaveBeenCalledWith('secret-token-123');
-      expect(mockAnnounce).toHaveBeenCalledWith(
-        expect.stringContaining('token copied')
-      );
+      expect(mockAnnounce).toHaveBeenCalledWith(expect.stringContaining('token copied'));
     });
 
     it('returns false when no token available', async () => {
@@ -510,9 +500,7 @@ describe('useCloudShare', () => {
   describe('reset', () => {
     it('resets state to idle', async () => {
       const { apiNetworkError } = await import('@/core/result');
-      vi.mocked(shareApi.createShare).mockResolvedValue(
-        err(apiNetworkError())
-      );
+      vi.mocked(shareApi.createShare).mockResolvedValue(err(apiNetworkError()));
 
       const { result } = renderHook(() => useCloudShare());
 
@@ -539,7 +527,9 @@ describe('useCloudShare', () => {
         resolvePromise = resolve;
       });
 
-      vi.mocked(shareApi.createShare).mockReturnValue(pendingPromise as ReturnType<typeof shareApi.createShare>);
+      vi.mocked(shareApi.createShare).mockReturnValue(
+        pendingPromise as ReturnType<typeof shareApi.createShare>
+      );
 
       const { result, unmount } = renderHook(() => useCloudShare());
 
@@ -551,15 +541,17 @@ describe('useCloudShare', () => {
       unmount();
 
       // Resolve after unmount
-      resolvePromise!(ok({
-        id: 'id',
-        url: 'url',
-        deleteToken: 'token',
-        permission: 'view',
-      }));
+      resolvePromise!(
+        ok({
+          id: 'id',
+          url: 'url',
+          deleteToken: 'token',
+          permission: 'view',
+        })
+      );
 
       // Should not throw or cause issues
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
     });
   });
 

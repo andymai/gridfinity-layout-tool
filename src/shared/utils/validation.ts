@@ -47,9 +47,7 @@ export function isValidDrawer(value: unknown): value is DrawerShape {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.width === 'number' &&
-    typeof obj.depth === 'number' &&
-    typeof obj.height === 'number'
+    typeof obj.width === 'number' && typeof obj.depth === 'number' && typeof obj.height === 'number'
   );
 }
 
@@ -62,9 +60,7 @@ export function isValidLayer(value: unknown): value is LayerShape {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.id === 'string' &&
-    typeof obj.name === 'string' &&
-    typeof obj.height === 'number'
+    typeof obj.id === 'string' && typeof obj.name === 'string' && typeof obj.height === 'number'
   );
 }
 
@@ -96,9 +92,7 @@ export function isValidCategory(value: unknown): value is CategoryShape {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.id === 'string' &&
-    typeof obj.name === 'string' &&
-    typeof obj.color === 'string'
+    typeof obj.id === 'string' && typeof obj.name === 'string' && typeof obj.color === 'string'
   );
 }
 
@@ -127,7 +121,7 @@ export function canPlaceBin(
     return { valid: false, reason: 'exceeds_depth' };
   }
 
-  const layer = layers.find(l => l.id === layerId);
+  const layer = layers.find((l) => l.id === layerId);
   if (!layer) {
     return { valid: false, reason: 'invalid_layer' };
   }
@@ -339,8 +333,8 @@ export function validateImport(data: unknown): { valid: boolean; errors: string[
  * This is a lighter check than full import validation, used before switching layouts.
  */
 export function validateLayoutIntegrity(layout: Layout): { valid: boolean; error?: string } {
-  const layerIds = new Set(layout.layers.map(l => l.id));
-  const categoryIds = new Set(layout.categories.map(c => c.id));
+  const layerIds = new Set(layout.layers.map((l) => l.id));
+  const categoryIds = new Set(layout.categories.map((c) => c.id));
 
   for (const bin of layout.bins) {
     // Check layer reference (staging is always valid)
@@ -409,7 +403,7 @@ export function validateCustomProperties(props: Record<string, string>): Operati
     }
 
     // Check reserved keys
-    if (RESERVED_PROPERTY_KEYS.includes(key as typeof RESERVED_PROPERTY_KEYS[number])) {
+    if (RESERVED_PROPERTY_KEYS.includes(key as (typeof RESERVED_PROPERTY_KEYS)[number])) {
       return {
         success: false,
         error: `"${key}" is a reserved field name and cannot be used as a custom property`,

@@ -18,9 +18,42 @@ const createTestLayout = (): Layout => ({
     { id: 'layer2', name: 'Layer 2', height: 3 },
   ],
   bins: [
-    { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: 'Bin 1', notes: '' },
-    { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'cat2', label: 'Bin 2', notes: '' },
-    { id: 'bin3', layerId: 'layer2', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'cat1', label: 'Bin 3', notes: '' },
+    {
+      id: 'bin1',
+      layerId: 'layer1',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'cat1',
+      label: 'Bin 1',
+      notes: '',
+    },
+    {
+      id: 'bin2',
+      layerId: 'layer1',
+      x: 2,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'cat2',
+      label: 'Bin 2',
+      notes: '',
+    },
+    {
+      id: 'bin3',
+      layerId: 'layer2',
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: 'cat1',
+      label: 'Bin 3',
+      notes: '',
+    },
   ],
 });
 
@@ -51,14 +84,14 @@ describe('findBinsByIds', () => {
     const layout = createTestLayout();
     const bins = findBinsByIds(layout, ['bin1', 'bin2']);
     expect(bins).toHaveLength(2);
-    expect(bins.map(b => b.id)).toEqual(['bin1', 'bin2']);
+    expect(bins.map((b) => b.id)).toEqual(['bin1', 'bin2']);
   });
 
   it('filters out nonexistent IDs', () => {
     const layout = createTestLayout();
     const bins = findBinsByIds(layout, ['bin1', 'nonexistent', 'bin3']);
     expect(bins).toHaveLength(2);
-    expect(bins.map(b => b.id)).toEqual(['bin1', 'bin3']);
+    expect(bins.map((b) => b.id)).toEqual(['bin1', 'bin3']);
   });
 
   it('returns empty array when no IDs match', () => {
@@ -76,6 +109,6 @@ describe('findBinsByIds', () => {
   it('preserves order of input IDs', () => {
     const layout = createTestLayout();
     const bins = findBinsByIds(layout, ['bin3', 'bin1', 'bin2']);
-    expect(bins.map(b => b.id)).toEqual(['bin3', 'bin1', 'bin2']);
+    expect(bins.map((b) => b.id)).toEqual(['bin3', 'bin1', 'bin2']);
   });
 });

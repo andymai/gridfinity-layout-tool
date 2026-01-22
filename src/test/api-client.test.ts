@@ -4,13 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-  createShare,
-  updateShare,
-  fetchShare,
-  deleteShare,
-  reportShare,
-} from '@/core/api/share';
+import { createShare, updateShare, fetchShare, deleteShare, reportShare } from '@/core/api/share';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import type { Layout } from '@/core/types';
 
@@ -61,11 +55,12 @@ describe('createShare', () => {
   it('returns Err with ApiRateLimitedError on rate limit', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Too many requests',
-        code: 'RATE_LIMITED',
-        retryAfter: 3600,
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Too many requests',
+          code: 'RATE_LIMITED',
+          retryAfter: 3600,
+        }),
     } as Response);
 
     const result = await createShare(mockLayout, 'view');
@@ -95,10 +90,11 @@ describe('createShare', () => {
   it('returns Err with ApiSizeLimitError on size limit', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Layout too large',
-        code: 'SIZE_LIMIT',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Layout too large',
+          code: 'SIZE_LIMIT',
+        }),
     } as Response);
 
     const result = await createShare(mockLayout, 'view');
@@ -112,10 +108,11 @@ describe('createShare', () => {
   it('returns Err with ApiBinLimitError on bin limit', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Too many bins',
-        code: 'BIN_LIMIT',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Too many bins',
+          code: 'BIN_LIMIT',
+        }),
     } as Response);
 
     const result = await createShare(mockLayout, 'view');
@@ -129,10 +126,11 @@ describe('createShare', () => {
   it('provides user-friendly message via getUserMessage', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Layout too large',
-        code: 'SIZE_LIMIT',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Layout too large',
+          code: 'SIZE_LIMIT',
+        }),
     } as Response);
 
     const result = await createShare(mockLayout, 'view');
@@ -178,10 +176,11 @@ describe('updateShare', () => {
   it('returns Err with ApiUnauthorizedError on unauthorized', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Invalid token',
-        code: 'UNAUTHORIZED',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Invalid token',
+          code: 'UNAUTHORIZED',
+        }),
     } as Response);
 
     const result = await updateShare('abc123xyz789', 'wrong-token', mockLayout, 'edit');
@@ -195,10 +194,11 @@ describe('updateShare', () => {
   it('returns Err with ApiNotFoundError on not found', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Share not found',
-        code: 'NOT_FOUND',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Share not found',
+          code: 'NOT_FOUND',
+        }),
     } as Response);
 
     const result = await updateShare('nonexistent', 'token', mockLayout, 'edit');
@@ -247,10 +247,11 @@ describe('fetchShare', () => {
   it('returns Err with ApiNotFoundError on 404', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Share not found',
-        code: 'NOT_FOUND',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Share not found',
+          code: 'NOT_FOUND',
+        }),
     } as Response);
 
     const result = await fetchShare('nonexistent');
@@ -264,10 +265,11 @@ describe('fetchShare', () => {
   it('returns Err with ApiExpiredError on expired share', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Share expired',
-        code: 'EXPIRED',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Share expired',
+          code: 'EXPIRED',
+        }),
     } as Response);
 
     const result = await fetchShare('expired123');
@@ -305,10 +307,11 @@ describe('deleteShare', () => {
   it('returns Err with ApiUnauthorizedError on invalid token', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Invalid token',
-        code: 'UNAUTHORIZED',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Invalid token',
+          code: 'UNAUTHORIZED',
+        }),
     } as Response);
 
     const result = await deleteShare('abc123xyz789', 'wrong-token');
@@ -346,10 +349,11 @@ describe('reportShare', () => {
   it('returns Err with ApiNotFoundError when share not found', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Share not found',
-        code: 'NOT_FOUND',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Share not found',
+          code: 'NOT_FOUND',
+        }),
     } as Response);
 
     const result = await reportShare('nonexistent');
@@ -373,10 +377,11 @@ describe('API error mapping', () => {
   it('maps CONTENT_BLOCKED to ApiContentBlockedError', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Content blocked',
-        code: 'CONTENT_BLOCKED',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Content blocked',
+          code: 'CONTENT_BLOCKED',
+        }),
     } as Response);
 
     const result = await createShare(mockLayout, 'view');
@@ -390,10 +395,11 @@ describe('API error mapping', () => {
   it('maps INVALID_PERMISSION to ApiValidationError', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Invalid permission',
-        code: 'INVALID_PERMISSION',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Invalid permission',
+          code: 'INVALID_PERMISSION',
+        }),
     } as Response);
 
     const result = await createShare(mockLayout, 'invalid' as 'view');
@@ -408,10 +414,11 @@ describe('API error mapping', () => {
   it('maps VALIDATION_ERROR to ApiValidationError', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Invalid layout structure',
-        code: 'VALIDATION_ERROR',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Invalid layout structure',
+          code: 'VALIDATION_ERROR',
+        }),
     } as Response);
 
     const result = await createShare(mockLayout, 'view');
@@ -425,10 +432,11 @@ describe('API error mapping', () => {
   it('errors have timestamp for debugging', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      json: () => Promise.resolve({
-        error: 'Too many requests',
-        code: 'RATE_LIMITED',
-      }),
+      json: () =>
+        Promise.resolve({
+          error: 'Too many requests',
+          code: 'RATE_LIMITED',
+        }),
     } as Response);
 
     const beforeTime = Date.now();

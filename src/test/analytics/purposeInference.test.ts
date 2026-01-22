@@ -114,7 +114,7 @@ describe('purposeInference', () => {
 
       // Size patterns alone provide weaker signals than domain-based inference
       // The confidence should be lower than when we have matching labeled bins
-      expect(result.signals.filter(s => s.type === 'domain_concentration')).toHaveLength(0);
+      expect(result.signals.filter((s) => s.type === 'domain_concentration')).toHaveLength(0);
     });
 
     it('infers workshop purpose from tool labels', () => {
@@ -129,7 +129,7 @@ describe('purposeInference', () => {
 
       expect(result.purpose).toBe('workshop');
       expect(result.confidence).toBeGreaterThan(0.4);
-      expect(result.signals.some(s => s.type === 'domain_concentration')).toBe(true);
+      expect(result.signals.some((s) => s.type === 'domain_concentration')).toBe(true);
     });
 
     it('infers electronics purpose from electronics labels', () => {
@@ -156,7 +156,9 @@ describe('purposeInference', () => {
       const result = inferDrawerPurpose(layout);
 
       // Should detect measurement pattern
-      expect(result.signals.some(s => s.type === 'label_pattern' && s.value === 'workshop')).toBe(true);
+      expect(result.signals.some((s) => s.type === 'label_pattern' && s.value === 'workshop')).toBe(
+        true
+      );
     });
 
     it('provides signals for all detected patterns', () => {
@@ -178,9 +180,9 @@ describe('purposeInference', () => {
       const result = inferDrawerPurpose(layout);
 
       // Should only consider the screwdriver (tools domain)
-      expect(result.signals.some(s =>
-        s.type === 'domain_concentration' && s.value === 'workshop'
-      )).toBe(true);
+      expect(
+        result.signals.some((s) => s.type === 'domain_concentration' && s.value === 'workshop')
+      ).toBe(true);
     });
   });
 
@@ -191,7 +193,7 @@ describe('purposeInference', () => {
     });
 
     it('returns stored data when available', () => {
-      const data = { 'abc12345': ['2x2x3', '3x3x6'] };
+      const data = { abc12345: ['2x2x3', '3x3x6'] };
       localStorageMock.setItem('gridfinity-ml-label-sizes-v1', JSON.stringify(data));
 
       const result = loadLabelSizes();
@@ -260,7 +262,8 @@ describe('purposeInference', () => {
       recordLayoutLabelSizes(layout);
 
       // Only one label recorded
-      const lastCall = localStorageMock.setItem.mock.calls[localStorageMock.setItem.mock.calls.length - 1];
+      const lastCall =
+        localStorageMock.setItem.mock.calls[localStorageMock.setItem.mock.calls.length - 1];
       const stored = JSON.parse(lastCall[1]);
       expect(Object.keys(stored).length).toBe(1);
     });
@@ -274,7 +277,8 @@ describe('purposeInference', () => {
       recordLayoutLabelSizes(layout);
 
       // Only non-staging bin recorded
-      const lastCall = localStorageMock.setItem.mock.calls[localStorageMock.setItem.mock.calls.length - 1];
+      const lastCall =
+        localStorageMock.setItem.mock.calls[localStorageMock.setItem.mock.calls.length - 1];
       const stored = JSON.parse(lastCall[1]);
       expect(Object.keys(stored).length).toBe(1);
     });
@@ -282,9 +286,7 @@ describe('purposeInference', () => {
 
   describe('getLabelSizeConsistency', () => {
     it('returns empty array for layout with no labeled bins', () => {
-      const layout = createTestLayout([
-        { x: 0, y: 0, width: 2, depth: 2 },
-      ]);
+      const layout = createTestLayout([{ x: 0, y: 0, width: 2, depth: 2 }]);
 
       const result = getLabelSizeConsistency(layout);
       expect(result).toHaveLength(0);
@@ -336,9 +338,7 @@ describe('purposeInference', () => {
 
   describe('calculateConsistencyRate', () => {
     it('returns null for layout with no labeled bins', () => {
-      const layout = createTestLayout([
-        { x: 0, y: 0, width: 2, depth: 2 },
-      ]);
+      const layout = createTestLayout([{ x: 0, y: 0, width: 2, depth: 2 }]);
 
       const result = calculateConsistencyRate(layout);
       expect(result).toBeNull();

@@ -155,7 +155,12 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
       {/* Destination note */}
       <p className="text-xs text-content-tertiary mb-3 flex items-center gap-1.5">
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
         Imported layouts are saved to My Layouts
       </p>
@@ -164,10 +169,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
       <div
         className={`
           relative border-2 border-dashed rounded-lg p-8 mb-4 text-center transition-colors
-          ${isDragging
-            ? 'border-accent bg-accent/10'
-            : 'border-stroke hover:border-stroke-subtle'
-          }
+          ${isDragging ? 'border-accent bg-accent/10' : 'border-stroke hover:border-stroke-subtle'}
         `}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -244,7 +246,12 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         <div className="bg-red-900/30 border border-red-500 rounded-lg p-3 mb-4">
           <div className="flex items-center gap-2 text-sm font-medium text-red-400 mb-1">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             Validation Errors
           </div>
@@ -261,7 +268,12 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         <div className="bg-green-900/30 border border-green-500 rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 text-sm font-medium text-green-400 mb-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             Ready to Import
           </div>

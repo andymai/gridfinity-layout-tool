@@ -18,13 +18,7 @@ describe('ImportModal', () => {
   });
 
   const renderModal = (isOpen = true) => {
-    return render(
-      <ImportModal
-        isOpen={isOpen}
-        onClose={mockOnClose}
-        onImport={mockOnImport}
-      />
-    );
+    return render(<ImportModal isOpen={isOpen} onClose={mockOnClose} onImport={mockOnImport} />);
   };
 
   describe('Rendering', () => {
@@ -242,10 +236,12 @@ describe('ImportModal', () => {
         fireEvent.click(getByText('Import'));
       });
 
-      expect(mockOnImport).toHaveBeenCalledWith(expect.objectContaining({
-        version: validLayout.version,
-        name: validLayout.name,
-      }));
+      expect(mockOnImport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          version: validLayout.version,
+          name: validLayout.name,
+        })
+      );
       expect(mockOnClose).toHaveBeenCalled();
     });
 
@@ -297,7 +293,7 @@ describe('ImportModal', () => {
       await act(async () => {
         fireEvent.change(fileInput, { target: { files: [file] } });
         // Wait for FileReader to complete
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise((resolve) => setTimeout(resolve, 50));
       });
 
       expect(await findByText('Preview:')).not.toBeNull();
@@ -351,8 +347,9 @@ describe('ImportModal', () => {
       // The share URL was detected (even if decoding fails)
       await waitFor(() => {
         // Either shows error or preview depending on decode success
-        const hasResponse = container.textContent?.includes('Validation Errors:') ||
-                           container.textContent?.includes('Preview:');
+        const hasResponse =
+          container.textContent?.includes('Validation Errors:') ||
+          container.textContent?.includes('Preview:');
         expect(hasResponse).toBe(true);
       });
     });
@@ -378,18 +375,20 @@ describe('ImportModal', () => {
       const textarea = getByLabelText(/paste JSON/i);
       const layout = createDefaultLayout();
       // Add a bin with invalid layer reference
-      layout.bins = [{
-        id: 'bin-1',
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        layerId: 'nonexistent-layer',
-        category: layout.categories[0].id,
-        label: '',
-        notes: '',
-      }];
+      layout.bins = [
+        {
+          id: 'bin-1',
+          x: 0,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 3,
+          layerId: 'nonexistent-layer',
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
+        },
+      ];
 
       await act(async () => {
         fireEvent.change(textarea, { target: { value: JSON.stringify(layout) } });
@@ -403,18 +402,20 @@ describe('ImportModal', () => {
 
       const textarea = getByLabelText(/paste JSON/i);
       const layout = createDefaultLayout();
-      layout.bins = [{
-        id: 'bin-1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: layout.layers[0].id,
-        category: layout.categories[0].id,
-        label: '',
-        notes: '',
-      }];
+      layout.bins = [
+        {
+          id: 'bin-1',
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          layerId: layout.layers[0].id,
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
+        },
+      ];
 
       await act(async () => {
         fireEvent.change(textarea, { target: { value: JSON.stringify(layout) } });

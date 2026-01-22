@@ -90,7 +90,13 @@
     { "source": "/s/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/l/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/l/:id([a-zA-Z0-9]{12})/:slug*", "destination": "/" },
-    { "source": "/l/:uuid([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})", "destination": "/" },
-    { "source": "/l/:uuid([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/:slug*", "destination": "/" }
+    {
+      "source": "/l/:uuid([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})",
+      "destination": "/"
+    },
+    {
+      "source": "/l/:uuid([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/:slug*",
+      "destination": "/"
+    }
   ]
 }

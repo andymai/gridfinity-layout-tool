@@ -330,7 +330,10 @@ test.describe('Drag Bins Flow', () => {
     if (!firstBinBox) throw new Error('First bin not found');
 
     // Alt+drag to duplicate both bins
-    await page.mouse.move(firstBinBox.x + firstBinBox.width / 2, firstBinBox.y + firstBinBox.height / 2);
+    await page.mouse.move(
+      firstBinBox.x + firstBinBox.width / 2,
+      firstBinBox.y + firstBinBox.height / 2
+    );
     await page.keyboard.down('Alt');
     await page.mouse.down();
     await page.mouse.move(bounds.x + 70, bounds.y + 50, { steps: 10 });

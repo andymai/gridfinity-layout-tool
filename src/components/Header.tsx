@@ -14,7 +14,9 @@ import type { ShareModalRenderProps } from '@/features/layout-library/components
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
 const LayoutManagerModal = lazyWithRetry(() =>
-  import('@/features/layout-library/components/LayoutManagerModal').then(namedExport('LayoutManagerModal'))
+  import('@/features/layout-library/components/LayoutManagerModal').then(
+    namedExport('LayoutManagerModal')
+  )
 );
 const PrintModal = lazyWithRetry(() =>
   import('@/features/print-export/components/PrintModal').then(namedExport('PrintModal'))
@@ -101,17 +103,15 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
     }
   };
 
-
   // Platform detection for keyboard shortcut hints
-  const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const isMac =
+    typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
   const modKey = isMac ? '⌘' : 'Ctrl';
 
   return (
     <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
       <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-content">
-          Gridfinity Layout Tool
-        </h1>
+        <h1 className="text-lg font-semibold text-content">Gridfinity Layout Tool</h1>
 
         {/* Divider */}
         <div className="w-px h-6 bg-stroke-subtle" />
@@ -128,7 +128,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             maxLength={CONSTRAINTS.NAME_MAX_LENGTH}
             className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content"
             style={{
-              boxShadow: '0 0 0 3px var(--color-primary-muted)'
+              boxShadow: '0 0 0 3px var(--color-primary-muted)',
             }}
           />
         ) : (
@@ -148,7 +148,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             title="Half-bin mode is active: 0.5 unit precision enabled (press H to toggle)"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 5a1 1 0 011-1h4a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5z"
+              />
             </svg>
             <span className="hidden sm:inline">Half-Bin Mode</span>
             <span className="sm:hidden">½-bin</span>
@@ -163,7 +168,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           aria-label="Open layout manager"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
           </svg>
           <span className="hidden sm:inline">Layouts</span>
         </button>
@@ -176,7 +186,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           aria-label="Print layout"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+            />
           </svg>
           <span className="hidden sm:inline">Print</span>
         </button>
@@ -194,7 +209,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
               aria-pressed={!leftPanelCollapsed}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h7"
+                />
               </svg>
             </button>
             <button
@@ -205,7 +225,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
               aria-pressed={!rightPanelCollapsed}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
               </svg>
             </button>
           </div>
@@ -223,7 +248,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             <span>Saved</span>
           </div>
@@ -239,7 +269,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             aria-label={`Undo (${modKey}+Z)`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+              />
             </svg>
           </button>
           <button
@@ -250,7 +285,12 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             aria-label={`Redo (${modKey}+Y)`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
+              />
             </svg>
           </button>
         </div>
@@ -275,7 +315,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           title="Discuss on Reddit"
         >
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+            <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
           </svg>
           <span>Discuss on Reddit</span>
         </a>
@@ -286,7 +326,29 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           title="Show keyboard shortcuts"
           aria-label="Show help and keyboard shortcuts"
         >
-          Press <kbd className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>?</kbd> or <kbd className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)' }}>/</kbd> for help
+          Press{' '}
+          <kbd
+            className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none"
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              border: '1px solid var(--border-default)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            ?
+          </kbd>{' '}
+          or{' '}
+          <kbd
+            className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none"
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              border: '1px solid var(--border-default)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            /
+          </kbd>{' '}
+          for help
         </button>
       </div>
 
@@ -297,11 +359,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             isOpen={showLayoutManager}
             onClose={() => setShowLayoutManager(false)}
             renderShareModal={(props: ShareModalRenderProps) => (
-              <ShareModal
-                isOpen={props.isOpen}
-                onClose={props.onClose}
-                layoutId={props.layoutId}
-              />
+              <ShareModal isOpen={props.isOpen} onClose={props.onClose} layoutId={props.layoutId} />
             )}
           />
         </Suspense>
@@ -312,10 +370,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           rules to work when user presses Cmd+P or Ctrl+P. The modal UI itself is only
           shown when printModalOpen is true. */}
       <Suspense fallback={null}>
-        <PrintModal
-          isOpen={printModalOpen}
-          onClose={() => setPrintModalOpen(false)}
-        />
+        <PrintModal isOpen={printModalOpen} onClose={() => setPrintModalOpen(false)} />
       </Suspense>
     </header>
   );

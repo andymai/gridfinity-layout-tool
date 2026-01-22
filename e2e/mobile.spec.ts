@@ -129,7 +129,9 @@ test.describe('Mobile Layout', () => {
     // Inspector should open in bottom sheet showing bin details
     await waitForDialog(page);
     const sheet = getActiveDialog(page);
-    await expect(sheet.getByRole('heading', { name: /^\d×\d Bin$/ })).toBeVisible({ timeout: 5000 });
+    await expect(sheet.getByRole('heading', { name: /^\d×\d Bin$/ })).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('switching panels via escape and reopen', async ({ page }) => {
@@ -173,7 +175,9 @@ test.describe('Mobile Layout', () => {
       await helpButton.click();
 
       // Help modal should be visible
-      await expect(page.getByText(/touch gestures|keyboard shortcuts/i)).toBeVisible({ timeout: 3000 });
+      await expect(page.getByText(/touch gestures|keyboard shortcuts/i)).toBeVisible({
+        timeout: 3000,
+      });
 
       // Close it
       await page.keyboard.press('Escape');

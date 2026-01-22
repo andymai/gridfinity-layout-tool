@@ -264,18 +264,28 @@ describe('history store', () => {
       // State 1: Add a bin
       useLayoutStore.getState().addBin({
         layerId: initial.layers[0].id,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
         category: initial.categories[0].id,
-        label: 'Bin 1', notes: '',
+        label: 'Bin 1',
+        notes: '',
       });
       push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)));
 
       // State 2: Add another bin
       useLayoutStore.getState().addBin({
         layerId: initial.layers[0].id,
-        x: 2, y: 0, width: 2, depth: 2, height: 3,
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
         category: initial.categories[0].id,
-        label: 'Bin 2', notes: '',
+        label: 'Bin 2',
+        notes: '',
       });
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(2);

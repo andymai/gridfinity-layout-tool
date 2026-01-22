@@ -6,9 +6,21 @@
 export { getContrastColor, getBinTextColors } from './color';
 export type { BinTextColors } from './color';
 
-export { compressString, decompressString, compressLayout, decompressLayout, getCompressionRatio } from './compression';
+export {
+  compressString,
+  decompressString,
+  compressLayout,
+  decompressLayout,
+  getCompressionRatio,
+} from './compression';
 
-export { generateUUID, generateLayoutId, isValidLayoutId, isLegacyUUID, LAYOUT_ID_LENGTH } from './uuid';
+export {
+  generateUUID,
+  generateLayoutId,
+  isValidLayoutId,
+  isLegacyUUID,
+  LAYOUT_ID_LENGTH,
+} from './uuid';
 
 export { throttleRAF, cancelThrottledRAF, throttle } from './throttle';
 

@@ -128,11 +128,14 @@ describe('storage-library', () => {
 
     it('returns null for invalid layout structure', () => {
       // Missing required fields
-      localStorage.setItem('gridfinity-layout-invalid', JSON.stringify({
-        version: '1.0',
-        name: 'Invalid',
-        // Missing drawer, layers, categories, bins
-      }));
+      localStorage.setItem(
+        'gridfinity-layout-invalid',
+        JSON.stringify({
+          version: '1.0',
+          name: 'Invalid',
+          // Missing drawer, layers, categories, bins
+        })
+      );
 
       const loaded = loadLayoutSync('invalid');
 
@@ -203,7 +206,7 @@ describe('storage-library', () => {
     it('loads and returns library', () => {
       const library = createTestLibrary(3);
       // Also save the layouts themselves so orphan cleanup doesn't remove them
-      library.entries.forEach(entry => {
+      library.entries.forEach((entry) => {
         saveLayoutSync(entry.id, createTestLayout(entry.name));
       });
       saveLibrary(library);
@@ -229,10 +232,13 @@ describe('storage-library', () => {
     });
 
     it('returns null for invalid library structure', () => {
-      localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify({
-        // Missing required fields
-        entries: [],
-      }));
+      localStorage.setItem(
+        LIBRARY_STORAGE_KEY,
+        JSON.stringify({
+          // Missing required fields
+          entries: [],
+        })
+      );
 
       const loaded = loadLibrary();
 
@@ -270,13 +276,44 @@ describe('storage-library', () => {
     it('computes correct preview with binMap', () => {
       const layout = createTestLayout();
       layout.drawer = { width: 15, depth: 12, height: 10 };
-      layout.categories = [
-        { id: 'cat1', name: 'Category 1', color: '#FF0000' },
-      ];
+      layout.categories = [{ id: 'cat1', name: 'Category 1', color: '#FF0000' }];
       layout.bins = [
-        { id: '1', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: 'l1', category: 'cat1', label: '', notes: '' },
-        { id: '2', x: 1, y: 0, width: 2, depth: 2, height: 3, layerId: 'l1', category: 'cat1', label: '', notes: '' },
-        { id: '3', x: 2, y: 0, width: 1, depth: 1, height: 3, layerId: 'l1', category: 'cat1', label: '', notes: '' },
+        {
+          id: '1',
+          x: 0,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 3,
+          layerId: 'l1',
+          category: 'cat1',
+          label: '',
+          notes: '',
+        },
+        {
+          id: '2',
+          x: 1,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          layerId: 'l1',
+          category: 'cat1',
+          label: '',
+          notes: '',
+        },
+        {
+          id: '3',
+          x: 2,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 3,
+          layerId: 'l1',
+          category: 'cat1',
+          label: '',
+          notes: '',
+        },
       ];
       layout.layers = [
         { id: 'l1', name: 'L1', height: 3 },
@@ -299,8 +336,30 @@ describe('storage-library', () => {
       const layout = createTestLayout();
       layout.categories = [{ id: 'cat1', name: 'Cat', color: '#00FF00' }];
       layout.bins = [
-        { id: '1', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: 'l1', category: 'cat1', label: '', notes: '' },
-        { id: '2', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: '__staging__', category: 'cat1', label: '', notes: '' },
+        {
+          id: '1',
+          x: 0,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 3,
+          layerId: 'l1',
+          category: 'cat1',
+          label: '',
+          notes: '',
+        },
+        {
+          id: '2',
+          x: 0,
+          y: 0,
+          width: 1,
+          depth: 1,
+          height: 3,
+          layerId: '__staging__',
+          category: 'cat1',
+          label: '',
+          notes: '',
+        },
       ];
 
       const preview = computeLayoutPreview(layout);
@@ -373,7 +432,7 @@ describe('storage-library', () => {
   describe('initializeLayoutLibrary', () => {
     it('returns existing library if present', () => {
       const library = createTestLibrary(2);
-      library.entries.forEach(entry => {
+      library.entries.forEach((entry) => {
         saveLayoutSync(entry.id, createTestLayout(entry.name));
       });
       saveLibrary(library);
@@ -549,7 +608,7 @@ describe('storage-library', () => {
     it('preserves library settings through save/load cycle', () => {
       const library = createTestLibrary(2);
       library.settings = { authorName: 'Test Author' };
-      library.entries.forEach(entry => {
+      library.entries.forEach((entry) => {
         saveLayoutSync(entry.id, createTestLayout(entry.name));
       });
       saveLibrary(library);
@@ -587,19 +646,21 @@ describe('storage-library', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      layout.bins = [{
-        id: 'bin-1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId,
-        category: categoryId,
-        label: '',
-        notes: '',
-        clearanceHeight: 5,
-      }];
+      layout.bins = [
+        {
+          id: 'bin-1',
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          layerId,
+          category: categoryId,
+          label: '',
+          notes: '',
+          clearanceHeight: 5,
+        },
+      ];
 
       saveLayoutSync('clearance', layout);
       const loaded = loadLayoutSync('clearance');

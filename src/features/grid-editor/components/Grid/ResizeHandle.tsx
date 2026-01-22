@@ -1,6 +1,10 @@
 import type { PointerEvent } from 'react';
 import { memo } from 'react';
-import type { ResizeHandle as ResizeHandleType, HandleVariant, HandlePlacement } from '@/core/types';
+import type {
+  ResizeHandle as ResizeHandleType,
+  HandleVariant,
+  HandlePlacement,
+} from '@/core/types';
 import { getHandlePosition, getHandleVisual, isCornerHandle } from '@/utils/handlePositioning';
 
 interface ResizeHandleProps {
@@ -58,9 +62,7 @@ function ResizeHandleComponent({ handle, placement, variant, onPointerDown }: Re
           // Ghost variant: no shadow, reduced opacity
           ...(isPrimary
             ? {
-                boxShadow: isCornerHandle(handle)
-                  ? 'var(--shadow-md)'
-                  : 'var(--shadow-sm)',
+                boxShadow: isCornerHandle(handle) ? 'var(--shadow-md)' : 'var(--shadow-sm)',
               }
             : {
                 opacity: 0.5,

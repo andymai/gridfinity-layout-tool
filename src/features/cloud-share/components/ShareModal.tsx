@@ -28,9 +28,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
 
   // When collaborative_editing is enabled, cloud sharing is handled by the ShareButton instead
-  const isCollabEnabled = useLabsStore((state) =>
-    state.isFeatureEnabled('collaborative_editing')
-  );
+  const isCollabEnabled = useLabsStore((state) => state.isFeatureEnabled('collaborative_editing'));
 
   // Use provided layoutId or fall back to active layout
   const targetLayoutId = layoutId ?? activeLayoutId;
@@ -205,10 +203,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                   onClick={() => urlInputRef.current?.select()}
                   className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                 />
-                <button
-                  onClick={handleCopyURL}
-                  className="btn btn-primary px-4"
-                >
+                <button onClick={handleCopyURL} className="btn btn-primary px-4">
                   {copied ? 'Copied!' : 'Copy'}
                 </button>
               </div>
@@ -221,25 +216,34 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
           {activeTab === 'file' && (
             <div className="space-y-4">
               <p className="text-sm text-content-secondary">
-                Download your layout as a JSON file. This file can be imported later or shared with others.
+                Download your layout as a JSON file. This file can be imported later or shared with
+                others.
               </p>
               <div className="bg-surface rounded-lg p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <svg
+                      className="w-6 h-6 text-accent"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
                     </svg>
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-content">{layout.name}.json</div>
                     <div className="text-sm text-content-secondary">
-                      {layout.drawer.width}×{layout.drawer.depth} grid • {layout.bins.length} bins • {layout.layers.length} layers
+                      {layout.drawer.width}×{layout.drawer.depth} grid • {layout.bins.length} bins •{' '}
+                      {layout.layers.length} layers
                     </div>
                   </div>
-                  <button
-                    onClick={handleDownload}
-                    className="btn btn-primary"
-                  >
+                  <button onClick={handleDownload} className="btn btn-primary">
                     Download
                   </button>
                 </div>
@@ -259,16 +263,12 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                 onClick={() => jsonTextareaRef.current?.select()}
                 className="flex-1 bg-surface text-content p-3 rounded font-mono text-xs resize-none focus:outline-none focus:ring-2 focus:ring-accent min-h-[200px]"
               />
-              <button
-                onClick={handleCopyJSON}
-                className="btn btn-primary self-start"
-              >
+              <button onClick={handleCopyJSON} className="btn btn-primary self-start">
                 {copied ? 'Copied!' : 'Copy JSON'}
               </button>
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

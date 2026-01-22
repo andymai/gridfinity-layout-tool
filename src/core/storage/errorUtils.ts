@@ -57,14 +57,9 @@ export function extractErrorMessage(error: unknown): string {
  * @param patterns - Array of patterns to match against
  * @returns true if any pattern matches
  */
-function matchesAnyPattern(
-  message: string,
-  patterns: readonly string[]
-): boolean {
+function matchesAnyPattern(message: string, patterns: readonly string[]): boolean {
   const lowerMessage = message.toLowerCase();
-  return patterns.some((pattern) =>
-    lowerMessage.includes(pattern.toLowerCase())
-  );
+  return patterns.some((pattern) => lowerMessage.includes(pattern.toLowerCase()));
 }
 
 /**

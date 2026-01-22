@@ -47,30 +47,22 @@ describe('hasFractionalBins', () => {
   });
 
   it('returns true when a bin has fractional x position', () => {
-    const bins: Bin[] = [
-      createBin({ id: 'bin1', layerId: 'layer1', x: 0.5, y: 0 }),
-    ];
+    const bins: Bin[] = [createBin({ id: 'bin1', layerId: 'layer1', x: 0.5, y: 0 })];
     expect(hasFractionalBins(bins)).toBe(true);
   });
 
   it('returns true when a bin has fractional y position', () => {
-    const bins: Bin[] = [
-      createBin({ id: 'bin1', layerId: 'layer1', x: 0, y: 1.5 }),
-    ];
+    const bins: Bin[] = [createBin({ id: 'bin1', layerId: 'layer1', x: 0, y: 1.5 })];
     expect(hasFractionalBins(bins)).toBe(true);
   });
 
   it('returns true when a bin has fractional width', () => {
-    const bins: Bin[] = [
-      createBin({ id: 'bin1', layerId: 'layer1', width: 1.5 }),
-    ];
+    const bins: Bin[] = [createBin({ id: 'bin1', layerId: 'layer1', width: 1.5 })];
     expect(hasFractionalBins(bins)).toBe(true);
   });
 
   it('returns true when a bin has fractional depth', () => {
-    const bins: Bin[] = [
-      createBin({ id: 'bin1', layerId: 'layer1', depth: 2.5 }),
-    ];
+    const bins: Bin[] = [createBin({ id: 'bin1', layerId: 'layer1', depth: 2.5 })];
     expect(hasFractionalBins(bins)).toBe(true);
   });
 
@@ -144,9 +136,7 @@ describe('validateHalfBinModeToggle', () => {
     });
 
     it('allows enabling even when fractional bins exist', () => {
-      const layout = createLayout([
-        createBin({ id: 'bin1', layerId: 'layer1', x: 0.5, y: 0.5 }),
-      ]);
+      const layout = createLayout([createBin({ id: 'bin1', layerId: 'layer1', x: 0.5, y: 0.5 })]);
       const result = validateHalfBinModeToggle(layout, true);
       expect(result).toEqual({ canDisable: true });
     });
@@ -198,7 +188,14 @@ describe('validateHalfBinModeToggle', () => {
 
     it('ignores fractional bins in staging when validating', () => {
       const layout = createLayout([
-        createBin({ id: 'staging-bin', layerId: STAGING_ID, x: 0.5, y: 0.5, width: 1.5, depth: 1.5 }),
+        createBin({
+          id: 'staging-bin',
+          layerId: STAGING_ID,
+          x: 0.5,
+          y: 0.5,
+          width: 1.5,
+          depth: 1.5,
+        }),
         createBin({ id: 'grid-bin', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
       ]);
       const result = validateHalfBinModeToggle(layout, false);

@@ -24,8 +24,16 @@ function createBathroomMakeup(): InspirationLayout {
   // - Nail polish bottles: 50-60mm tall → 1.5-2 units
   const bins = [
     // Brushes - 5 units deep (210mm) for 150-180mm brushes
-    createBin(0, 0, 2, 5, { layerId: layer.id, categoryId: categories[0].id, label: 'Face Brushes' }),
-    createBin(2, 0, 2, 5, { layerId: layer.id, categoryId: categories[0].id, label: 'Eye Brushes' }),
+    createBin(0, 0, 2, 5, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Face Brushes',
+    }),
+    createBin(2, 0, 2, 5, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Eye Brushes',
+    }),
     // Mascara/eyeliner - 3 units deep (126mm) for 100-120mm
     createBin(4, 0, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Mascara' }),
     createBin(4, 3, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Eyeliner' }),
@@ -138,14 +146,22 @@ function createFirstAidKit(): InspirationLayout {
     createBin(5, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Tape' }),
     createBin(0, 2, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Wraps' }),
     // Medications
-    createBin(2, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Pain Relief' }),
+    createBin(2, 2, 2, 2, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Pain Relief',
+    }),
     createBin(4, 2, 2, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Allergy' }),
     createBin(6, 2, 1, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Antacid' }),
     // Ointments and tools
     createBin(0, 4, 2, 3, { layerId: layer.id, categoryId: categories[1].id, label: 'Ointments' }),
     createBin(2, 4, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Scissors' }),
     createBin(4, 4, 2, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Tweezers' }),
-    createBin(6, 4, 1, 3, { layerId: layer.id, categoryId: categories[2].id, label: 'Thermometer' }),
+    createBin(6, 4, 1, 3, {
+      layerId: layer.id,
+      categoryId: categories[2].id,
+      label: 'Thermometer',
+    }),
   ];
 
   const layout: Layout = {
@@ -248,7 +264,11 @@ function createEDCDrawer(): InspirationLayout {
     // Front row - quick grab items
     createBin(0, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Keys' }),
     createBin(2, 0, 2, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Coins' }),
-    createBin(4, 0, 3, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Pocket Knife' }),
+    createBin(4, 0, 3, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Pocket Knife',
+    }),
     // Middle row - watch, flashlight, earbuds
     createBin(0, 2, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Watch' }),
     createBin(2, 2, 2, 3, { layerId: layer.id, categoryId: categories[0].id, label: 'Flashlight' }),

@@ -59,13 +59,7 @@ export const useSharedPreviewStore = create<SharedPreviewStore>((set) => ({
   sharedLayoutPermission: null,
 
   // Actions
-  setSharedLayoutPreview: (
-    layout,
-    originalName,
-    authorName,
-    cloudShareId,
-    permission
-  ) =>
+  setSharedLayoutPreview: (layout, originalName, authorName, cloudShareId, permission) =>
     set({
       sharedLayoutPreview: layout,
       sharedLayoutOriginalName: originalName ?? layout?.name ?? null,

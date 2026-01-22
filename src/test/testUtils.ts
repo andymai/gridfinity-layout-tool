@@ -176,7 +176,9 @@ export function createTestLayout(overrides?: Partial<Layout>): Layout {
     ...defaultLayout,
     ...overrides,
     // Ensure arrays and objects are properly merged
-    drawer: overrides.drawer ? { ...defaultLayout.drawer, ...overrides.drawer } : defaultLayout.drawer,
+    drawer: overrides.drawer
+      ? { ...defaultLayout.drawer, ...overrides.drawer }
+      : defaultLayout.drawer,
     categories: overrides.categories || [...defaultLayout.categories],
     layers: overrides.layers || [...defaultLayout.layers],
     bins: overrides.bins || [],
@@ -351,24 +353,33 @@ export function createStorageMock() {
     downloadLayoutAsFile: vi.fn(),
 
     // New atomic functions from LayoutManager
-    saveLayoutWithMetadata: vi.fn().mockImplementation(
-      (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
-        const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
-        if (!entry) {
-          return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+    saveLayoutWithMetadata: vi
+      .fn()
+      .mockImplementation(
+        (layoutId: string, _layout: unknown, library: { entries: Array<{ id: string }> }) => {
+          const entry = library.entries.find((e: { id: string }) => e.id === layoutId);
+          if (!entry) {
+            return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+          }
+          return Promise.resolve({
+            ok: true,
+            value: {
+              layoutId,
+              entry: { ...entry, modifiedAt: Date.now(), preview: mockPreview },
+              library,
+            },
+          });
         }
-        return Promise.resolve({
-          ok: true,
-          value: {
-            layoutId,
-            entry: { ...entry, modifiedAt: Date.now(), preview: mockPreview },
-            library,
-          },
-        });
-      }
-    ),
+      ),
     createLayoutEntry: vi.fn().mockImplementation(
-      (layout: { name: string; layers: Array<{ id: string }>; categories: Array<{ id: string }> }, library: { entries: unknown[] }) => {
+      (
+        layout: {
+          name: string;
+          layers: Array<{ id: string }>;
+          categories: Array<{ id: string }>;
+        },
+        library: { entries: unknown[] }
+      ) => {
         const layoutId = 'new-layout-id';
         const entry = {
           id: layoutId,
@@ -388,76 +399,104 @@ export function createStorageMock() {
         });
       }
     ),
-    deleteLayoutWithEntry: vi.fn().mockImplementation(
-      (layoutId: string, library: { entries: Array<{ id: string }>; activeLayoutId: string }) => {
-        const remainingEntries = library.entries.filter((e: { id: string }) => e.id !== layoutId);
-        const newActiveId = library.activeLayoutId === layoutId ? remainingEntries[0]?.id : undefined;
-        return Promise.resolve({
-          ok: true,
-          value: {
-            library: { ...library, entries: remainingEntries },
-            newActiveId,
-          },
-        });
-      }
-    ),
-    duplicateLayoutEntry: vi.fn().mockImplementation(
-      (sourceId: string, library: { entries: Array<{ id: string; name: string }> }) => {
-        const sourceEntry = library.entries.find((e: { id: string }) => e.id === sourceId);
-        if (!sourceEntry) {
-          return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+    deleteLayoutWithEntry: vi
+      .fn()
+      .mockImplementation(
+        (layoutId: string, library: { entries: Array<{ id: string }>; activeLayoutId: string }) => {
+          const remainingEntries = library.entries.filter((e: { id: string }) => e.id !== layoutId);
+          const newActiveId =
+            library.activeLayoutId === layoutId ? remainingEntries[0]?.id : undefined;
+          return Promise.resolve({
+            ok: true,
+            value: {
+              library: { ...library, entries: remainingEntries },
+              newActiveId,
+            },
+          });
         }
-        const layoutId = 'duplicated-layout-id';
-        const newEntry = {
-          id: layoutId,
-          name: `${sourceEntry.name} (copy)`,
-          createdAt: Date.now(),
-          modifiedAt: Date.now(),
-          preview: mockPreview,
-        };
-        return Promise.resolve({
-          ok: true,
-          value: {
-            layoutId,
-            entry: newEntry,
-            library: { ...library, entries: [...library.entries, newEntry] },
-            layout: { name: newEntry.name, layers: [{ id: 'layer-1' }], categories: [{ id: 'cat-1' }] },
-          },
-        });
-      }
-    ),
-    switchActiveLayout: vi.fn().mockImplementation(
-      (_fromId: string, _fromLayout: unknown, toId: string, library: { entries: Array<{ id: string }> }) => {
-        const targetEntry = library.entries.find((e: { id: string }) => e.id === toId);
-        if (!targetEntry) {
-          return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+      ),
+    duplicateLayoutEntry: vi
+      .fn()
+      .mockImplementation(
+        (sourceId: string, library: { entries: Array<{ id: string; name: string }> }) => {
+          const sourceEntry = library.entries.find((e: { id: string }) => e.id === sourceId);
+          if (!sourceEntry) {
+            return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+          }
+          const layoutId = 'duplicated-layout-id';
+          const newEntry = {
+            id: layoutId,
+            name: `${sourceEntry.name} (copy)`,
+            createdAt: Date.now(),
+            modifiedAt: Date.now(),
+            preview: mockPreview,
+          };
+          return Promise.resolve({
+            ok: true,
+            value: {
+              layoutId,
+              entry: newEntry,
+              library: { ...library, entries: [...library.entries, newEntry] },
+              layout: {
+                name: newEntry.name,
+                layers: [{ id: 'layer-1' }],
+                categories: [{ id: 'cat-1' }],
+              },
+            },
+          });
         }
-        return Promise.resolve({
-          ok: true,
-          value: {
-            library: { ...library, activeLayoutId: toId },
-            targetLayout: { name: 'Target Layout', layers: [{ id: 'layer-1' }], categories: [{ id: 'cat-1' }] },
-            targetEntry,
-          },
-        });
-      }
-    ),
-    renameLayoutEntry: vi.fn().mockImplementation(
-      (layoutId: string, newName: string, library: { entries: Array<{ id: string; name: string }> }) => {
-        const updatedEntries = library.entries.map((e: { id: string; name: string }) =>
-          e.id === layoutId ? { ...e, name: newName, modifiedAt: Date.now() } : e
-        );
-        return { ok: true, value: { ...library, entries: updatedEntries } };
-      }
-    ),
-    updateCloudShare: vi.fn().mockImplementation(
-      (layoutId: string, cloudShare: unknown, library: { entries: Array<{ id: string }> }) => {
-        const updatedEntries = library.entries.map((e: { id: string }) =>
-          e.id === layoutId ? { ...e, cloudShare } : e
-        );
-        return { ok: true, value: { ...library, entries: updatedEntries } };
-      }
-    ),
+      ),
+    switchActiveLayout: vi
+      .fn()
+      .mockImplementation(
+        (
+          _fromId: string,
+          _fromLayout: unknown,
+          toId: string,
+          library: { entries: Array<{ id: string }> }
+        ) => {
+          const targetEntry = library.entries.find((e: { id: string }) => e.id === toId);
+          if (!targetEntry) {
+            return Promise.resolve({ ok: false, error: { code: 'STORAGE_NOT_FOUND' } });
+          }
+          return Promise.resolve({
+            ok: true,
+            value: {
+              library: { ...library, activeLayoutId: toId },
+              targetLayout: {
+                name: 'Target Layout',
+                layers: [{ id: 'layer-1' }],
+                categories: [{ id: 'cat-1' }],
+              },
+              targetEntry,
+            },
+          });
+        }
+      ),
+    renameLayoutEntry: vi
+      .fn()
+      .mockImplementation(
+        (
+          layoutId: string,
+          newName: string,
+          library: { entries: Array<{ id: string; name: string }> }
+        ) => {
+          const updatedEntries = library.entries.map((e: { id: string; name: string }) =>
+            e.id === layoutId ? { ...e, name: newName, modifiedAt: Date.now() } : e
+          );
+          return { ok: true, value: { ...library, entries: updatedEntries } };
+        }
+      ),
+    updateCloudShare: vi
+      .fn()
+      .mockImplementation(
+        (layoutId: string, cloudShare: unknown, library: { entries: Array<{ id: string }> }) => {
+          const updatedEntries = library.entries.map((e: { id: string }) =>
+            e.id === layoutId ? { ...e, cloudShare } : e
+          );
+          return { ok: true, value: { ...library, entries: updatedEntries } };
+        }
+      ),
     computePreview: vi.fn(() => mockPreview),
   };
 }

@@ -55,9 +55,7 @@ export function Checkbox({
         <div className={`relative ${size} flex-shrink-0`}>
           <div
             className={`${size} rounded border-2 transition-colors ${
-              checked
-                ? 'bg-accent border-accent'
-                : 'bg-surface border-stroke'
+              checked ? 'bg-accent border-accent' : 'bg-surface border-stroke'
             }`}
           />
           {checked && (
@@ -73,7 +71,9 @@ export function Checkbox({
           )}
         </div>
         {label && (
-          <span className={`${isMobile ? 'text-sm' : 'text-xs'} ${checked ? 'text-content' : 'text-content-secondary'} select-none`}>
+          <span
+            className={`${isMobile ? 'text-sm' : 'text-xs'} ${checked ? 'text-content' : 'text-content-secondary'} select-none`}
+          >
             {label}
           </span>
         )}
@@ -96,9 +96,7 @@ export function Checkbox({
       <div className={`relative ${size} flex-shrink-0 pointer-events-none`} aria-hidden="true">
         <div
           className={`${size} rounded border-2 transition-colors ${
-            checked
-              ? 'bg-accent border-accent'
-              : 'bg-surface border-stroke'
+            checked ? 'bg-accent border-accent' : 'bg-surface border-stroke'
           }`}
         />
         {checked && (
@@ -116,7 +114,9 @@ export function Checkbox({
 
       {/* Optional label */}
       {label && (
-        <span className={`${isMobile ? 'text-sm' : 'text-xs'} ${checked ? 'text-content' : 'text-content-secondary'} select-none`}>
+        <span
+          className={`${isMobile ? 'text-sm' : 'text-xs'} ${checked ? 'text-content' : 'text-content-secondary'} select-none`}
+        >
           {label}
         </span>
       )}

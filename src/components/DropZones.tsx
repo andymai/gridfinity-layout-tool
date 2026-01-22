@@ -55,7 +55,8 @@ export function DropZones() {
     const handlePointerMove = (e: PointerEvent) => {
       const trashRect = trashRef.current?.getBoundingClientRect();
 
-      const isOverTrash = trashRect &&
+      const isOverTrash =
+        trashRect &&
         e.clientX >= trashRect.left &&
         e.clientX <= trashRect.right &&
         e.clientY >= trashRect.top &&
@@ -92,31 +93,32 @@ export function DropZones() {
         ref={trashRef}
         className="pointer-events-auto flex items-center gap-3 px-6 py-3 rounded-xl transition-all duration-200"
         style={{
-          backgroundColor: dropTarget === 'trash'
-            ? 'var(--color-error)'
-            : 'var(--bg-elevated)',
+          backgroundColor: dropTarget === 'trash' ? 'var(--color-error)' : 'var(--bg-elevated)',
           border: `2px dashed ${dropTarget === 'trash' ? 'var(--color-error)' : 'var(--border-default)'}`,
-          boxShadow: dropTarget === 'trash'
-            ? 'var(--glow-red)'
-            : 'var(--shadow-lg)',
+          boxShadow: dropTarget === 'trash' ? 'var(--glow-red)' : 'var(--shadow-lg)',
           transform: dropTarget === 'trash' ? 'scale(1.05)' : 'scale(1)',
         }}
       >
         <svg
           className="w-5 h-5 transition-colors"
           style={{
-            color: dropTarget === 'trash' ? 'white' : 'var(--text-tertiary)'
+            color: dropTarget === 'trash' ? 'white' : 'var(--text-tertiary)',
           }}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
         </svg>
         <div
           className="font-medium transition-colors text-sm"
           style={{
-            color: dropTarget === 'trash' ? 'white' : 'var(--text-primary)'
+            color: dropTarget === 'trash' ? 'white' : 'var(--text-primary)',
           }}
         >
           Delete {binLabel}

@@ -58,10 +58,7 @@ export function STLSearchDropdown({
 
   // Get all sites and filter in useMemo to avoid infinite re-renders
   const stlSearchSites = useSettingsStore((state) => state.settings.stlSearchSites);
-  const enabledSites = useMemo(
-    () => stlSearchSites.filter((s) => s.enabled),
-    [stlSearchSites]
-  );
+  const enabledSites = useMemo(() => stlSearchSites.filter((s) => s.enabled), [stlSearchSites]);
 
   // Single site mode - no dropdown needed
   const isSingleSite = enabledSites.length === 1;
@@ -184,42 +181,45 @@ export function STLSearchDropdown({
           aria-haspopup={isSingleSite ? undefined : 'menu'}
         >
           <SearchIcon className="w-5 h-5 text-content-tertiary flex-shrink-0" />
-          <span className="flex-1 text-left">{isSingleSite ? `Search ${enabledSites[0].name}` : 'Find STL'}</span>
-          {!isSingleSite && <ChevronRightIcon className="w-4 h-4 text-content-tertiary flex-shrink-0" />}
+          <span className="flex-1 text-left">
+            {isSingleSite ? `Search ${enabledSites[0].name}` : 'Find STL'}
+          </span>
+          {!isSingleSite && (
+            <ChevronRightIcon className="w-4 h-4 text-content-tertiary flex-shrink-0" />
+          )}
         </button>
       )}
 
       {/* Dropdown menu - portaled to escape BottomSheet transforms on mobile */}
-      {!isSingleSite && createPortal(
-        <ContextMenuContainer
-          isOpen={isOpen}
-          position={position}
-          onClose={handleClose}
-          menuRef={menuRef}
-        >
-          {/* Header */}
-          <div className="px-4 py-2 border-b border-stroke-subtle">
-            <div className="text-xs text-content-tertiary">
-              {needsSplit
-                ? 'Search for split bin generators'
-                : `Search for ${sizeLabel} bins`}
+      {!isSingleSite &&
+        createPortal(
+          <ContextMenuContainer
+            isOpen={isOpen}
+            position={position}
+            onClose={handleClose}
+            menuRef={menuRef}
+          >
+            {/* Header */}
+            <div className="px-4 py-2 border-b border-stroke-subtle">
+              <div className="text-xs text-content-tertiary">
+                {needsSplit ? 'Search for split bin generators' : `Search for ${sizeLabel} bins`}
+              </div>
             </div>
-          </div>
 
-          {/* Site options */}
-          <div className="py-1">
-            {enabledSites.map((site) => (
-              <ContextMenuItem
-                key={site.id}
-                icon={<ExternalLinkIcon className="w-4 h-4" />}
-                label={site.name}
-                onClick={() => handleSiteClick(site)}
-              />
-            ))}
-          </div>
-        </ContextMenuContainer>,
-        document.body
-      )}
+            {/* Site options */}
+            <div className="py-1">
+              {enabledSites.map((site) => (
+                <ContextMenuItem
+                  key={site.id}
+                  icon={<ExternalLinkIcon className="w-4 h-4" />}
+                  label={site.name}
+                  onClick={() => handleSiteClick(site)}
+                />
+              ))}
+            </div>
+          </ContextMenuContainer>,
+          document.body
+        )}
     </>
   );
 }
@@ -256,12 +256,7 @@ function ChevronIcon({ className, isOpen }: { className?: string; isOpen: boolea
       stroke="currentColor"
       aria-hidden="true"
     >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M19 9l-7 7-7-7"
-      />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
     </svg>
   );
 }
@@ -275,19 +270,20 @@ function ChevronRightIcon({ className }: { className?: string }) {
       stroke="currentColor"
       aria-hidden="true"
     >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M9 5l7 7-7 7"
-      />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
     </svg>
   );
 }
 
 function ExternalLinkIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"

@@ -46,7 +46,9 @@ export function parseLayoutFromURL(): { layoutId: string; slug: string | null } 
   }
 
   // Check for legacy UUID format: /l/{uuid}/{slug} or /l/{uuid}
-  const uuidMatch = pathname.match(/^\/l\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})(?:\/(.*))?$/i);
+  const uuidMatch = pathname.match(
+    /^\/l\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})(?:\/(.*))?$/i
+  );
   if (uuidMatch) {
     const [, layoutId, slug] = uuidMatch;
     return { layoutId, slug: slug || null };
@@ -141,4 +143,3 @@ export function getLayoutIdFromHistoryState(state: unknown): string | null {
 export function hasLegacyShareHash(): boolean {
   return window.location.hash.startsWith(LEGACY_SHARE_HASH_PREFIX);
 }
-

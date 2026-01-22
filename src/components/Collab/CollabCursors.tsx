@@ -72,13 +72,7 @@ export function CollabCursors({ className }: CollabCursorsProps) {
         const position = interpolatedPositions.get(connectionId);
         if (!position) return null;
 
-        return (
-          <CollabCursor
-            key={connectionId}
-            presence={presence}
-            position={position}
-          />
-        );
+        return <CollabCursor key={connectionId} presence={presence} position={position} />;
       })}
     </div>
   );

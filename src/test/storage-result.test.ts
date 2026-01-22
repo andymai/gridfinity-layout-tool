@@ -19,12 +19,7 @@ import {
   getLayoutStorageKey,
 } from '@/core/storage';
 import { createDefaultLayout } from '@/core/constants';
-import {
-  isOk,
-  isErr,
-  getUserMessage,
-  isRetryable,
-} from '@/core/result';
+import { isOk, isErr, getUserMessage, isRetryable } from '@/core/result';
 import type { Layout, LayoutLibrary } from '@/core/types';
 
 // Mock the backend module
@@ -77,16 +72,11 @@ describe('Result-based storage functions', () => {
       const result = await saveLayoutResult('test-id', defaultLayout);
 
       expect(isOk(result)).toBe(true);
-      expect(backend.saveAsync).toHaveBeenCalledWith(
-        getLayoutStorageKey('test-id'),
-        defaultLayout
-      );
+      expect(backend.saveAsync).toHaveBeenCalledWith(getLayoutStorageKey('test-id'), defaultLayout);
     });
 
     it('returns Err with quota exceeded error', async () => {
-      vi.mocked(backend.saveAsync).mockRejectedValue(
-        new Error('QuotaExceededError: Storage full')
-      );
+      vi.mocked(backend.saveAsync).mockRejectedValue(new Error('QuotaExceededError: Storage full'));
 
       const result = await saveLayoutResult('test-id', defaultLayout);
 
@@ -100,9 +90,7 @@ describe('Result-based storage functions', () => {
     });
 
     it('returns Err with unavailable error for generic failures', async () => {
-      vi.mocked(backend.saveAsync).mockRejectedValue(
-        new Error('Unknown storage error')
-      );
+      vi.mocked(backend.saveAsync).mockRejectedValue(new Error('Unknown storage error'));
 
       const result = await saveLayoutResult('test-id', defaultLayout);
 
@@ -218,9 +206,7 @@ describe('Result-based storage functions', () => {
       const result = await deleteLayoutResult('test-id');
 
       expect(isOk(result)).toBe(true);
-      expect(backend.deleteAsync).toHaveBeenCalledWith(
-        getLayoutStorageKey('test-id')
-      );
+      expect(backend.deleteAsync).toHaveBeenCalledWith(getLayoutStorageKey('test-id'));
     });
 
     it('returns Ok even when layout does not exist', async () => {
@@ -233,9 +219,7 @@ describe('Result-based storage functions', () => {
     });
 
     it('returns Err with unavailable error on backend failure', async () => {
-      vi.mocked(backend.deleteAsync).mockRejectedValue(
-        new Error('Storage error')
-      );
+      vi.mocked(backend.deleteAsync).mockRejectedValue(new Error('Storage error'));
 
       const result = await deleteLayoutResult('test-id');
 
@@ -340,19 +324,21 @@ describe('Result-based storage functions', () => {
         version: '1.0',
         activeLayoutId: 'test-id',
         settings: {},
-        entries: [{
-          id: 'test-id',
-          name: 'Test Layout',
-          createdAt: Date.now(),
-          modifiedAt: Date.now(),
-          preview: {
-            drawerWidth: 10,
-            drawerDepth: 8,
-            drawerHeight: 12,
-            binCount: 0,
-            layerCount: 1,
+        entries: [
+          {
+            id: 'test-id',
+            name: 'Test Layout',
+            createdAt: Date.now(),
+            modifiedAt: Date.now(),
+            preview: {
+              drawerWidth: 10,
+              drawerDepth: 8,
+              drawerHeight: 12,
+              binCount: 0,
+              layerCount: 1,
+            },
           },
-        }],
+        ],
       };
       vi.mocked(backend.loadSyncGeneric).mockReturnValue(testLibrary);
       vi.mocked(backend.loadSync).mockReturnValue({}); // Layout exists

@@ -17,7 +17,14 @@ import * as localStorage from './backends/localStorage';
 import * as indexedDB from './backends/indexedDB';
 import type { Layout } from '@/core/types';
 import type { Result, Unit, StorageError } from '@/core/result';
-import { ok, err, OK, storageNotFound, storageUnavailable, storageNetworkError } from '@/core/result';
+import {
+  ok,
+  err,
+  OK,
+  storageNotFound,
+  storageUnavailable,
+  storageNetworkError,
+} from '@/core/result';
 
 // Storage keys
 const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
@@ -300,9 +307,7 @@ export async function migrateAllLayoutsToIndexedDBResult(): Promise<
  * Get the current migration status with Result-based error handling.
  * This function doesn't fail, but uses Result for consistency with other migration APIs.
  */
-export async function getMigrationStatusResult(): Promise<
-  Result<MigrationStatus, StorageError>
-> {
+export async function getMigrationStatusResult(): Promise<Result<MigrationStatus, StorageError>> {
   const localStorageIds = getLocalStorageLayoutIds();
 
   let indexedDBIds: string[] = [];

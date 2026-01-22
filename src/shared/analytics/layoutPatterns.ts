@@ -16,21 +16,21 @@ import { STAGING_ID } from '@/core/constants';
  * High-level layout archetype classification.
  */
 export type LayoutArchetype =
-  | 'uniform'           // >80% bins same size
-  | 'mixed'             // Default - variety of sizes
-  | 'border_fill'       // Bins on 3+ edges + center bins
+  | 'uniform' // >80% bins same size
+  | 'mixed' // Default - variety of sizes
+  | 'border_fill' // Bins on 3+ edges + center bins
   | 'compartmentalized' // Distinct category clusters
-  | 'layered';          // Different patterns per layer
+  | 'layered'; // Different patterns per layer
 
 /**
  * Spatial patterns detected in bin placement.
  */
 export type SpatialPattern =
-  | 'corner_start'      // Earliest bins near a corner
-  | 'large_first'       // Avg size decreases over placement order
-  | 'category_grouped'  // Same categories adjacent
-  | 'edge_aligned'      // >60% bins touch edge
-  | 'center_out';       // Bins start from center
+  | 'corner_start' // Earliest bins near a corner
+  | 'large_first' // Avg size decreases over placement order
+  | 'category_grouped' // Same categories adjacent
+  | 'edge_aligned' // >60% bins touch edge
+  | 'center_out'; // Bins start from center
 
 /**
  * Edge usage tracking for layout analysis.
@@ -257,7 +257,9 @@ export function detectSpatialPatterns(layout: Layout): SpatialPattern[] {
     for (const bin of earlyBins) {
       const binCenter = { x: bin.x + bin.width / 2, y: bin.y + bin.depth / 2 };
       const nearCorner = corners.some((corner) => {
-        const dist = Math.sqrt(Math.pow(binCenter.x - corner.x, 2) + Math.pow(binCenter.y - corner.y, 2));
+        const dist = Math.sqrt(
+          Math.pow(binCenter.x - corner.x, 2) + Math.pow(binCenter.y - corner.y, 2)
+        );
         const maxDist = Math.sqrt(
           Math.pow(layout.drawer.width, 2) + Math.pow(layout.drawer.depth, 2)
         );
@@ -282,7 +284,9 @@ export function detectSpatialPatterns(layout: Layout): SpatialPattern[] {
     let centerBinCount = 0;
     for (const bin of earlyBins) {
       const binCenter = { x: bin.x + bin.width / 2, y: bin.y + bin.depth / 2 };
-      const dist = Math.sqrt(Math.pow(binCenter.x - centerX, 2) + Math.pow(binCenter.y - centerY, 2));
+      const dist = Math.sqrt(
+        Math.pow(binCenter.x - centerX, 2) + Math.pow(binCenter.y - centerY, 2)
+      );
       const maxDist = Math.sqrt(Math.pow(centerX, 2) + Math.pow(centerY, 2));
       if (dist < maxDist * 0.4) centerBinCount++;
     }

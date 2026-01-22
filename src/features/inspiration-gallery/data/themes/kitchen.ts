@@ -9,10 +9,7 @@ import {
 
 function createCutleryDrawer(): InspirationLayout {
   // Standard kitchen cutlery drawer: ~450mm wide x 400mm deep (11x10 units)
-  const categories = [
-    createCategory('Silverware', '#94a3b8'),
-    createCategory('Small', '#38bdf8'),
-  ];
+  const categories = [createCategory('Silverware', '#94a3b8'), createCategory('Small', '#38bdf8')];
   // Height 5 (35mm) for stacked flatware - fits 12-17 pieces per slot
   // (single fork/spoon ~2-3mm thick, households typically have 8-12+ of each)
   const layer = createLayer('Layer 1', 5);
@@ -77,7 +74,11 @@ function createCookingUtensils(): InspirationLayout {
   const bins = [
     // Long tools row - 8 units wide
     createBin(0, 0, 8, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Ladles' }),
-    createBin(0, 2, 8, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Wooden Spoons' }),
+    createBin(0, 2, 8, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Wooden Spoons',
+    }),
     // Medium tools row - 7 units wide
     createBin(0, 4, 7, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Spatulas' }),
     createBin(7, 4, 6, 2, { layerId: layer.id, categoryId: categories[1].id, label: 'Whisks' }),
@@ -130,9 +131,21 @@ function createKnifeDrawer(): InspirationLayout {
   // Kitchen shears: 200-250mm → 5 units (210mm)
   const bins = [
     // Large knives - 6 units wide to leave room for shears column
-    createBin(0, 0, 6, 2, { layerId: layer.id, categoryId: categories[0].id, label: "Chef's Knife" }),
-    createBin(0, 2, 6, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Bread Knife' }),
-    createBin(0, 4, 6, 2, { layerId: layer.id, categoryId: categories[0].id, label: 'Carving Knife' }),
+    createBin(0, 0, 6, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: "Chef's Knife",
+    }),
+    createBin(0, 2, 6, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Bread Knife',
+    }),
+    createBin(0, 4, 6, 2, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Carving Knife',
+    }),
     // Kitchen shears - 5 units deep (210mm) for 200mm shears
     createBin(6, 0, 2, 5, { layerId: layer.id, categoryId: categories[2].id, label: 'Shears' }),
     // Small accessories
@@ -186,19 +199,59 @@ function createSpiceDrawer(): InspirationLayout {
   const bins = [
     // Everyday spices - front row (1.5×1.5 bins for standard jars)
     createBin(0, 0, 1.5, 1.5, { layerId: layer.id, categoryId: categories[0].id, label: 'Salt' }),
-    createBin(1.5, 0, 1.5, 1.5, { layerId: layer.id, categoryId: categories[0].id, label: 'Pepper' }),
+    createBin(1.5, 0, 1.5, 1.5, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Pepper',
+    }),
     createBin(3, 0, 1.5, 1.5, { layerId: layer.id, categoryId: categories[0].id, label: 'Garlic' }),
-    createBin(4.5, 0, 1.5, 1.5, { layerId: layer.id, categoryId: categories[0].id, label: 'Onion' }),
-    createBin(6, 0, 1.5, 1.5, { layerId: layer.id, categoryId: categories[0].id, label: 'Paprika' }),
-    createBin(7.5, 0, 1.5, 1.5, { layerId: layer.id, categoryId: categories[0].id, label: 'Cumin' }),
+    createBin(4.5, 0, 1.5, 1.5, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Onion',
+    }),
+    createBin(6, 0, 1.5, 1.5, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Paprika',
+    }),
+    createBin(7.5, 0, 1.5, 1.5, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Cumin',
+    }),
     createBin(9, 0, 1, 1.5, { layerId: layer.id, categoryId: categories[0].id, label: 'Chili' }),
     // Second row
-    createBin(0, 1.5, 1.5, 1.5, { layerId: layer.id, categoryId: categories[0].id, label: 'Oregano' }),
-    createBin(1.5, 1.5, 1.5, 1.5, { layerId: layer.id, categoryId: categories[1].id, label: 'Basil' }),
-    createBin(3, 1.5, 1.5, 1.5, { layerId: layer.id, categoryId: categories[1].id, label: 'Thyme' }),
-    createBin(4.5, 1.5, 1.5, 1.5, { layerId: layer.id, categoryId: categories[1].id, label: 'Rosemary' }),
-    createBin(6, 1.5, 1.5, 1.5, { layerId: layer.id, categoryId: categories[1].id, label: 'Parsley' }),
-    createBin(7.5, 1.5, 1.5, 1.5, { layerId: layer.id, categoryId: categories[1].id, label: 'Dill' }),
+    createBin(0, 1.5, 1.5, 1.5, {
+      layerId: layer.id,
+      categoryId: categories[0].id,
+      label: 'Oregano',
+    }),
+    createBin(1.5, 1.5, 1.5, 1.5, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Basil',
+    }),
+    createBin(3, 1.5, 1.5, 1.5, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Thyme',
+    }),
+    createBin(4.5, 1.5, 1.5, 1.5, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Rosemary',
+    }),
+    createBin(6, 1.5, 1.5, 1.5, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Parsley',
+    }),
+    createBin(7.5, 1.5, 1.5, 1.5, {
+      layerId: layer.id,
+      categoryId: categories[1].id,
+      label: 'Dill',
+    }),
     createBin(9, 1.5, 1, 1.5, { layerId: layer.id, categoryId: categories[1].id, label: 'Bay' }),
     // Third row - specialty spices (2×2 for larger containers)
     createBin(0, 3, 2, 2, { layerId: layer.id, categoryId: categories[2].id, label: 'Cinnamon' }),

@@ -96,8 +96,7 @@ export const useInteractionStore = create<InteractionStore>((set) => ({
   togglePaintSize: (size) =>
     set((state) => ({
       paintSize:
-        state.paintSize?.width === size.width &&
-        state.paintSize?.depth === size.depth
+        state.paintSize?.width === size.width && state.paintSize?.depth === size.depth
           ? null
           : size,
     })),

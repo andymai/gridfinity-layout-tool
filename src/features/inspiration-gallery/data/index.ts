@@ -15,19 +15,14 @@ import {
  * Select layouts from a source array in a specific order, with validation.
  * Throws an error if any expected ID is missing from the source.
  */
-function pickLayouts(
-  layouts: InspirationLayout[],
-  orderedIds: string[],
-): InspirationLayout[] {
+function pickLayouts(layouts: InspirationLayout[], orderedIds: string[]): InspirationLayout[] {
   const byId = new Map(layouts.map((layout) => [layout.id, layout]));
   const result: InspirationLayout[] = [];
 
   for (const id of orderedIds) {
     const layout = byId.get(id);
     if (!layout) {
-      throw new Error(
-        `Inspiration layout with id "${id}" is missing from its theme source.`,
-      );
+      throw new Error(`Inspiration layout with id "${id}" is missing from its theme source.`);
     }
     result.push(layout);
   }
@@ -64,15 +59,9 @@ export const INSPIRATION_LAYOUTS: InspirationLayout[] = [
     'garage-drawer',
   ]),
   // Hobby - Maker/3D Printing (core gridfinity user base)
-  ...pickLayouts(HOBBY_LAYOUTS, [
-    '3d-printing-supplies',
-    'maker-station',
-  ]),
+  ...pickLayouts(HOBBY_LAYOUTS, ['3d-printing-supplies', 'maker-station']),
   // Office (USB cables, pens, clips tracked)
-  ...pickLayouts(OFFICE_LAYOUTS, [
-    'cable-drawer',
-    'desk-drawer',
-  ]),
+  ...pickLayouts(OFFICE_LAYOUTS, ['cable-drawer', 'desk-drawer']),
   // Kitchen (common household use)
   ...pickLayouts(KITCHEN_LAYOUTS, [
     'cutlery-drawer',
@@ -81,11 +70,7 @@ export const INSPIRATION_LAYOUTS: InspirationLayout[] = [
     'spice-drawer',
   ]),
   // Hobby - Craft (paint, brush, glue tracked)
-  ...pickLayouts(HOBBY_LAYOUTS, [
-    'craft-supplies',
-    'art-station',
-    'sewing-kit',
-  ]),
+  ...pickLayouts(HOBBY_LAYOUTS, ['craft-supplies', 'art-station', 'sewing-kit']),
   // Personal (key, coin, flashlight, glasses, watch, medication, jewelry tracked)
   ...pickLayouts(PERSONAL_LAYOUTS, [
     'edc-drawer',

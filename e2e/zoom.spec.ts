@@ -18,7 +18,11 @@ function getZoomDisplay(page: Page) {
 }
 
 // Helper to wait for zoom to change
-async function waitForZoomChange(page: Page, previousZoom: number, direction: 'increase' | 'decrease') {
+async function waitForZoomChange(
+  page: Page,
+  previousZoom: number,
+  direction: 'increase' | 'decrease'
+) {
   const zoomDisplay = getZoomDisplay(page);
   await expect(async () => {
     const text = await zoomDisplay.textContent();
@@ -92,7 +96,7 @@ test.describe('Zoom Controls Flow', () => {
       expect(parseInt(text || '0')).toBeGreaterThan(100);
     }).toPass({ timeout: 2000 });
 
-    const beforeZoom = parseInt(await zoomDisplay.textContent() || '0');
+    const beforeZoom = parseInt((await zoomDisplay.textContent()) || '0');
 
     // Click zoom out button
     const zoomOutButton = page.getByRole('button', { name: /zoom out/i });
@@ -131,7 +135,7 @@ test.describe('Zoom Controls Flow', () => {
       expect(parseInt(text || '0')).toBeGreaterThan(100);
     }).toPass({ timeout: 2000 });
 
-    const beforeZoom = parseInt(await zoomDisplay.textContent() || '0');
+    const beforeZoom = parseInt((await zoomDisplay.textContent()) || '0');
 
     // Press - to zoom out
     await page.keyboard.press('Minus');
@@ -188,7 +192,9 @@ test.describe('Zoom Controls Flow', () => {
 
     // Inspector should show bin details
     const inspector = getInspector(page);
-    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({ timeout: 3000 });
+    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({
+      timeout: 3000,
+    });
   });
 
   test('+ key (with shift) also zooms in', async ({ page }) => {

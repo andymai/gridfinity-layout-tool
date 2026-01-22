@@ -98,7 +98,8 @@ describe('slug utilities', () => {
       });
 
       it('truncates long slugs to max length', () => {
-        const longName = 'this is a very long layout name that exceeds the maximum allowed slug length';
+        const longName =
+          'this is a very long layout name that exceeds the maximum allowed slug length';
         const result = slugify(longName);
         expect(result.length).toBeLessThanOrEqual(MAX_LENGTH);
       });

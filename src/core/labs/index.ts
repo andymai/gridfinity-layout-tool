@@ -9,12 +9,7 @@
  */
 
 // Types
-export type {
-  FeatureStatus,
-  RiskLevel,
-  FeatureFlag,
-  LabsPreferences,
-} from './types';
+export type { FeatureStatus, RiskLevel, FeatureFlag, LabsPreferences } from './types';
 export { createDefaultLabsPreferences } from './types';
 
 // Feature definitions

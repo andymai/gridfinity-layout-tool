@@ -284,10 +284,7 @@ describe('useStorageMigration', () => {
 
       await vi.runAllTimersAsync();
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        '[Storage] Migration error:',
-        expect.any(Error)
-      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[Storage] Migration error:', expect.any(Error));
     });
 
     it('does not throw when migration itself fails with exception', async () => {
@@ -307,10 +304,7 @@ describe('useStorageMigration', () => {
 
       await vi.runAllTimersAsync();
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        '[Storage] Migration error:',
-        expect.any(Error)
-      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[Storage] Migration error:', expect.any(Error));
     });
 
     it('app continues to work after migration error', async () => {

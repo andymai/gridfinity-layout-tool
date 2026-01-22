@@ -53,7 +53,7 @@ export function LayersTab() {
   const { execute } = useUndoableAction();
 
   const handleRenameRequest = (layerId: string) => {
-    const layer = layers.find(l => l.id === layerId);
+    const layer = layers.find((l) => l.id === layerId);
     setRenameValue(layer?.name || '');
     setRenameLayerId(layerId);
   };
@@ -79,19 +79,21 @@ export function LayersTab() {
   const totalCells = drawer.width * drawer.depth;
 
   // Multi-layer stats
-  const allPlacedBins = bins.filter(b => b.layerId !== STAGING_ID);
+  const allPlacedBins = bins.filter((b) => b.layerId !== STAGING_ID);
   const totalBinCount = allPlacedBins.length;
   const totalCoveredCells = allPlacedBins.reduce((sum, b) => sum + b.width * b.depth, 0);
   const totalAvailableCells = totalCells * layers.length;
-  const totalCoverage = totalAvailableCells > 0
-    ? Math.round((totalCoveredCells / totalAvailableCells) * 100)
-    : 0;
+  const totalCoverage =
+    totalAvailableCells > 0 ? Math.round((totalCoveredCells / totalAvailableCells) * 100) : 0;
 
   // Single layer stats
-  const activeLayerBins = bins.filter(b => b.layerId === activeLayerId);
-  const activeCoverage = totalCells > 0
-    ? Math.round((activeLayerBins.reduce((sum, b) => sum + b.width * b.depth, 0) / totalCells) * 100)
-    : 0;
+  const activeLayerBins = bins.filter((b) => b.layerId === activeLayerId);
+  const activeCoverage =
+    totalCells > 0
+      ? Math.round(
+          (activeLayerBins.reduce((sum, b) => sum + b.width * b.depth, 0) / totalCells) * 100
+        )
+      : 0;
 
   // Display is reversed: index 0 in display = last in array (top layer)
   const displayToArrayIndex = (displayIndex: number) => layers.length - 1 - displayIndex;
@@ -120,7 +122,7 @@ export function LayersTab() {
     execute(() => {
       const result = deleteLayer(deleteLayerId);
       if (isOk(result) && activeLayerId === deleteLayerId && layers.length > 0) {
-        const remaining = layers.filter(l => l.id !== deleteLayerId);
+        const remaining = layers.filter((l) => l.id !== deleteLayerId);
         if (remaining.length > 0) {
           setActiveLayer(remaining[0].id);
         }
@@ -130,7 +132,7 @@ export function LayersTab() {
   };
 
   const handleHeightChange = (id: string, delta: number) => {
-    const layer = layers.find(l => l.id === id);
+    const layer = layers.find((l) => l.id === id);
     if (!layer) return;
     const newHeight = Math.max(1, layer.height + delta);
     execute(() => {
@@ -154,8 +156,8 @@ export function LayersTab() {
     });
   };
 
-  const layerToDelete = deleteLayerId ? layers.find(l => l.id === deleteLayerId) : null;
-  const binsInLayer = deleteLayerId ? bins.filter(b => b.layerId === deleteLayerId).length : 0;
+  const layerToDelete = deleteLayerId ? layers.find((l) => l.id === deleteLayerId) : null;
+  const binsInLayer = deleteLayerId ? bins.filter((b) => b.layerId === deleteLayerId).length : 0;
   const canAddLayer = totalLayerHeight < drawer.height;
 
   const cancelDeleteLayer = () => {
@@ -172,7 +174,8 @@ export function LayersTab() {
               className="h-full rounded-full transition-all"
               style={{
                 width: `${Math.min(100, (totalLayerHeight / drawer.height) * 100)}%`,
-                backgroundColor: totalLayerHeight >= drawer.height ? 'var(--color-warning)' : 'var(--color-info)',
+                backgroundColor:
+                  totalLayerHeight >= drawer.height ? 'var(--color-warning)' : 'var(--color-info)',
               }}
             />
           </div>
@@ -187,8 +190,18 @@ export function LayersTab() {
       {/* Reorder error message */}
       {reorderError && (
         <div className="mb-3 p-3 rounded-lg flex items-center gap-2 bg-error-muted border border-error text-error text-sm">
-          <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <svg
+            className="w-5 h-5 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
           </svg>
           {reorderError}
         </div>
@@ -198,10 +211,11 @@ export function LayersTab() {
       <div className="space-y-1.5">
         {displayLayers.map((layer, displayIndex) => {
           const isActive = layer.id === activeLayerId;
-          const layerBins = bins.filter(b => b.layerId === layer.id);
+          const layerBins = bins.filter((b) => b.layerId === layer.id);
           const binCount = layerBins.length;
           const layerCoveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
-          const layerCoverage = totalCells > 0 ? Math.round((layerCoveredCells / totalCells) * 100) : 0;
+          const layerCoverage =
+            totalCells > 0 ? Math.round((layerCoveredCells / totalCells) * 100) : 0;
 
           return (
             <div
@@ -229,7 +243,8 @@ export function LayersTab() {
                   {layer.name}
                 </span>
                 <span className="text-xs text-content-tertiary">
-                  {binCount} bin{binCount !== 1 ? 's' : ''}{hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
+                  {binCount} bin{binCount !== 1 ? 's' : ''}
+                  {hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
                 </span>
               </button>
 
@@ -242,10 +257,18 @@ export function LayersTab() {
                   aria-label="Decrease new bin height"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M20 12H4"
+                    />
                   </svg>
                 </button>
-                <span className="text-center text-xs font-medium text-content-secondary tabular-nums whitespace-nowrap" title="Height for new bins placed on this layer">
+                <span
+                  className="text-center text-xs font-medium text-content-secondary tabular-nums whitespace-nowrap"
+                  title="Height for new bins placed on this layer"
+                >
                   {layer.height}u
                 </span>
                 <button
@@ -254,7 +277,12 @@ export function LayersTab() {
                   aria-label="Increase new bin height"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
                   </svg>
                 </button>
               </div>
@@ -269,7 +297,12 @@ export function LayersTab() {
                     aria-label="Move layer up"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 15l7-7 7 7"
+                      />
                     </svg>
                   </button>
                   <button
@@ -279,7 +312,12 @@ export function LayersTab() {
                     aria-label="Move layer down"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -293,7 +331,12 @@ export function LayersTab() {
                   aria-label="Delete layer"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
                   </svg>
                 </button>
               )}
@@ -306,8 +349,7 @@ export function LayersTab() {
       <div className="text-sm text-content-tertiary mb-2 mt-4">
         {hasMultipleLayers
           ? `${totalCoverage}% filled · ${totalBinCount} bin${totalBinCount !== 1 ? 's' : ''} total`
-          : `${activeCoverage}% filled · ${activeLayerBins.length} bin${activeLayerBins.length !== 1 ? 's' : ''}`
-        }
+          : `${activeCoverage}% filled · ${activeLayerBins.length} bin${activeLayerBins.length !== 1 ? 's' : ''}`}
       </div>
 
       {/* Coverage bar */}
@@ -316,19 +358,16 @@ export function LayersTab() {
           className="h-full rounded-full transition-all"
           style={{
             width: `${hasMultipleLayers ? totalCoverage : activeCoverage}%`,
-            backgroundColor: (hasMultipleLayers ? totalCoverage : activeCoverage) === 100
-              ? 'var(--color-success)'
-              : 'var(--text-tertiary)',
+            backgroundColor:
+              (hasMultipleLayers ? totalCoverage : activeCoverage) === 100
+                ? 'var(--color-success)'
+                : 'var(--text-tertiary)',
           }}
         />
       </div>
 
       {/* Add layer button */}
-      <button
-        onClick={handleAddLayer}
-        disabled={!canAddLayer}
-        className="btn btn-primary w-full"
-      >
+      <button onClick={handleAddLayer} disabled={!canAddLayer} className="btn btn-primary w-full">
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
@@ -346,60 +385,61 @@ export function LayersTab() {
       />
 
       {/* Rename action sheet - portaled to escape BottomSheet's scrollable container */}
-      {renameLayerId && createPortal(
-        <div
-          className="fixed inset-0 bg-black/50 z-[60] flex items-end"
-          onClick={() => {
-            setRenameLayerId(null);
-            setRenameValue('');
-          }}
-        >
+      {renameLayerId &&
+        createPortal(
           <div
-            className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-black/50 z-[60] flex items-end"
+            onClick={() => {
+              setRenameLayerId(null);
+              setRenameValue('');
+            }}
           >
-            <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-content mb-4">Rename Layer</h3>
-            <input
-              ref={renameInputRef}
-              type="text"
-              value={renameValue}
-              onChange={(e) => setRenameValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleRenameConfirm();
-                } else if (e.key === 'Escape') {
-                  setRenameLayerId(null);
-                  setRenameValue('');
-                }
-              }}
-              className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
-              placeholder="Layer name"
-              maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
-              autoFocus
-            />
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() => {
-                  setRenameLayerId(null);
-                  setRenameValue('');
+            <div
+              className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-content mb-4">Rename Layer</h3>
+              <input
+                ref={renameInputRef}
+                type="text"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleRenameConfirm();
+                  } else if (e.key === 'Escape') {
+                    setRenameLayerId(null);
+                    setRenameValue('');
+                  }
                 }}
-                className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRenameConfirm}
-                disabled={!renameValue.trim()}
-                className="flex-1 py-3 text-white font-medium bg-accent rounded-lg disabled:opacity-50"
-              >
-                Rename
-              </button>
+                className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
+                placeholder="Layer name"
+                maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
+                autoFocus
+              />
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => {
+                    setRenameLayerId(null);
+                    setRenameValue('');
+                  }}
+                  className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleRenameConfirm}
+                  disabled={!renameValue.trim()}
+                  className="flex-1 py-3 text-white font-medium bg-accent rounded-lg disabled:opacity-50"
+                >
+                  Rename
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

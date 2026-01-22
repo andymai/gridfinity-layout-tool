@@ -27,8 +27,30 @@ describe('ImportView', () => {
     categories: [{ id: 'coral', name: 'Coral', color: '#FF6B6B' }],
     layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
     bins: [
-      { id: 'bin1', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
-      { id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 2, depth: 2, height: 3, category: 'coral', label: '', notes: '' },
+      {
+        id: 'bin1',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      },
+      {
+        id: 'bin2',
+        layerId: 'layer1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'coral',
+        label: '',
+        notes: '',
+      },
     ],
   };
 
@@ -213,7 +235,9 @@ describe('ImportView', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      const file = new File([JSON.stringify(validLayout)], 'layout.json', { type: 'application/json' });
+      const file = new File([JSON.stringify(validLayout)], 'layout.json', {
+        type: 'application/json',
+      });
 
       Object.defineProperty(fileInput, 'files', {
         value: [file],
@@ -254,7 +278,9 @@ describe('ImportView', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
       const dropZone = screen.getByText('Drag and drop a JSON file here').closest('div');
-      const file = new File([JSON.stringify(validLayout)], 'layout.json', { type: 'application/json' });
+      const file = new File([JSON.stringify(validLayout)], 'layout.json', {
+        type: 'application/json',
+      });
 
       const dataTransfer = {
         files: [file],

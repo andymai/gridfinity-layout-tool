@@ -107,9 +107,7 @@ describe('useBinList', () => {
     });
 
     it('search is case-insensitive', () => {
-      const layout = createTestLayout([
-        createTestBin({ label: 'TOOLS' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ label: 'TOOLS' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -291,9 +289,7 @@ describe('useBinList', () => {
     });
 
     it('shows toast after bulk delete', () => {
-      const layout = createTestLayout([
-        createTestBin({ id: 'bin1' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ id: 'bin1' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -312,9 +308,7 @@ describe('useBinList', () => {
     });
 
     it('changes category for selected bins', () => {
-      const layout = createTestLayout([
-        createTestBin({ id: 'bin1', category: 'cat1' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ id: 'bin1', category: 'cat1' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -327,15 +321,13 @@ describe('useBinList', () => {
         result.current.changeBulkCategory('cat2');
       });
 
-      const bin = useLayoutStore.getState().layout.bins.find(b => b.id === 'bin1');
+      const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === 'bin1');
       expect(bin?.category).toBe('cat2');
       expect(result.current.selectionCount).toBe(0); // Selection cleared
     });
 
     it('updates label for selected bins', () => {
-      const layout = createTestLayout([
-        createTestBin({ id: 'bin1', label: 'Old label' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ id: 'bin1', label: 'Old label' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -348,14 +340,12 @@ describe('useBinList', () => {
         result.current.updateBulkLabel('New label');
       });
 
-      const bin = useLayoutStore.getState().layout.bins.find(b => b.id === 'bin1');
+      const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === 'bin1');
       expect(bin?.label).toBe('New label');
     });
 
     it('updates notes for selected bins', () => {
-      const layout = createTestLayout([
-        createTestBin({ id: 'bin1', notes: 'Old notes' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ id: 'bin1', notes: 'Old notes' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -368,14 +358,12 @@ describe('useBinList', () => {
         result.current.updateBulkNotes('New notes');
       });
 
-      const bin = useLayoutStore.getState().layout.bins.find(b => b.id === 'bin1');
+      const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === 'bin1');
       expect(bin?.notes).toBe('New notes');
     });
 
     it('does nothing when no selection for bulk actions', () => {
-      const layout = createTestLayout([
-        createTestBin({ id: 'bin1' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ id: 'bin1' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -436,9 +424,7 @@ describe('useBinList', () => {
     });
 
     it('copies TSV to clipboard', async () => {
-      const layout = createTestLayout([
-        createTestBin({ label: 'Test Bin' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ label: 'Test Bin' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -453,9 +439,7 @@ describe('useBinList', () => {
     });
 
     it('copies CSV to clipboard', async () => {
-      const layout = createTestLayout([
-        createTestBin({ label: 'Test Bin' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ label: 'Test Bin' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -470,9 +454,7 @@ describe('useBinList', () => {
     });
 
     it('copies JSON to clipboard', async () => {
-      const layout = createTestLayout([
-        createTestBin({ label: 'Test Bin' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ label: 'Test Bin' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -487,9 +469,7 @@ describe('useBinList', () => {
     });
 
     it('handles clipboard error gracefully', async () => {
-      const layout = createTestLayout([
-        createTestBin({ label: 'Test Bin' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ label: 'Test Bin' })]);
       useLayoutStore.setState({ layout });
 
       // Mock clipboard to fail
@@ -508,14 +488,14 @@ describe('useBinList', () => {
 
       expect(success).toBe(false);
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message.includes('Failed to copy'))).toBe(true);
+      expect(toasts.some((t) => t.message.includes('Failed to copy'))).toBe(true);
     });
 
     it('downloads TSV file', () => {
-      const downloadAsFileSpy = vi.spyOn(binListOperations, 'downloadAsFile').mockImplementation(() => {});
-      const layout = createTestLayout([
-        createTestBin({ label: 'Test Bin' }),
-      ]);
+      const downloadAsFileSpy = vi
+        .spyOn(binListOperations, 'downloadAsFile')
+        .mockImplementation(() => {});
+      const layout = createTestLayout([createTestBin({ label: 'Test Bin' })]);
       layout.name = 'My Test Layout';
       useLayoutStore.setState({ layout });
 
@@ -531,15 +511,15 @@ describe('useBinList', () => {
         'text/tab-separated-values'
       );
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message.includes('Downloaded TSV'))).toBe(true);
+      expect(toasts.some((t) => t.message.includes('Downloaded TSV'))).toBe(true);
       downloadAsFileSpy.mockRestore();
     });
 
     it('downloads CSV file', () => {
-      const downloadAsFileSpy = vi.spyOn(binListOperations, 'downloadAsFile').mockImplementation(() => {});
-      const layout = createTestLayout([
-        createTestBin({ label: 'Test Bin' }),
-      ]);
+      const downloadAsFileSpy = vi
+        .spyOn(binListOperations, 'downloadAsFile')
+        .mockImplementation(() => {});
+      const layout = createTestLayout([createTestBin({ label: 'Test Bin' })]);
       layout.name = 'Test Layout 2';
       useLayoutStore.setState({ layout });
 
@@ -555,15 +535,15 @@ describe('useBinList', () => {
         'text/csv'
       );
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message.includes('Downloaded CSV'))).toBe(true);
+      expect(toasts.some((t) => t.message.includes('Downloaded CSV'))).toBe(true);
       downloadAsFileSpy.mockRestore();
     });
 
     it('downloads JSON file', () => {
-      const downloadAsFileSpy = vi.spyOn(binListOperations, 'downloadAsFile').mockImplementation(() => {});
-      const layout = createTestLayout([
-        createTestBin({ label: 'Test Bin' }),
-      ]);
+      const downloadAsFileSpy = vi
+        .spyOn(binListOperations, 'downloadAsFile')
+        .mockImplementation(() => {});
+      const layout = createTestLayout([createTestBin({ label: 'Test Bin' })]);
       layout.name = 'JSON Test';
       useLayoutStore.setState({ layout });
 
@@ -579,15 +559,15 @@ describe('useBinList', () => {
         'application/json'
       );
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message.includes('Downloaded JSON'))).toBe(true);
+      expect(toasts.some((t) => t.message.includes('Downloaded JSON'))).toBe(true);
       downloadAsFileSpy.mockRestore();
     });
 
     it('uses custom filename when provided', () => {
-      const downloadAsFileSpy = vi.spyOn(binListOperations, 'downloadAsFile').mockImplementation(() => {});
-      const layout = createTestLayout([
-        createTestBin({ label: 'Test Bin' }),
-      ]);
+      const downloadAsFileSpy = vi
+        .spyOn(binListOperations, 'downloadAsFile')
+        .mockImplementation(() => {});
+      const layout = createTestLayout([createTestBin({ label: 'Test Bin' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -605,10 +585,10 @@ describe('useBinList', () => {
     });
 
     it('sanitizes layout name for filename', () => {
-      const downloadAsFileSpy = vi.spyOn(binListOperations, 'downloadAsFile').mockImplementation(() => {});
-      const layout = createTestLayout([
-        createTestBin({ label: 'Test Bin' }),
-      ]);
+      const downloadAsFileSpy = vi
+        .spyOn(binListOperations, 'downloadAsFile')
+        .mockImplementation(() => {});
+      const layout = createTestLayout([createTestBin({ label: 'Test Bin' })]);
       layout.name = 'My Layout!@#$%^&*()';
       useLayoutStore.setState({ layout });
 
@@ -640,8 +620,8 @@ describe('useBinList', () => {
 
       expect(result.current.categoryBreakdown.length).toBeGreaterThan(0);
 
-      const cat1 = result.current.categoryBreakdown.find(b => b.categoryId === 'cat1');
-      const cat2 = result.current.categoryBreakdown.find(b => b.categoryId === 'cat2');
+      const cat1 = result.current.categoryBreakdown.find((b) => b.categoryId === 'cat1');
+      const cat2 = result.current.categoryBreakdown.find((b) => b.categoryId === 'cat2');
 
       expect(cat1).toBeDefined();
       expect(cat2).toBeDefined();
@@ -720,9 +700,7 @@ describe('useBinList', () => {
     });
 
     it('has aggregate calculations', () => {
-      const layout = createTestLayout([
-        createTestBin({ width: 2, depth: 2, height: 3 }),
-      ]);
+      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 3 })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -748,8 +726,8 @@ describe('useBinList', () => {
       });
 
       const bins = useLayoutStore.getState().layout.bins;
-      expect(bins.find(b => b.id === 'bin1')?.label).toBe('New label');
-      expect(bins.find(b => b.id === 'bin2')?.label).toBe('New label');
+      expect(bins.find((b) => b.id === 'bin1')?.label).toBe('New label');
+      expect(bins.find((b) => b.id === 'bin2')?.label).toBe('New label');
     });
 
     it('updates notes for specific bin IDs', () => {
@@ -766,14 +744,12 @@ describe('useBinList', () => {
       });
 
       const bins = useLayoutStore.getState().layout.bins;
-      expect(bins.find(b => b.id === 'bin1')?.notes).toBe('New notes');
-      expect(bins.find(b => b.id === 'bin2')?.notes).toBe('New notes');
+      expect(bins.find((b) => b.id === 'bin1')?.notes).toBe('New notes');
+      expect(bins.find((b) => b.id === 'bin2')?.notes).toBe('New notes');
     });
 
     it('shows toast when updating label for single bin', () => {
-      const layout = createTestLayout([
-        createTestBin({ id: 'bin1', label: '' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ id: 'bin1', label: '' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -783,7 +759,7 @@ describe('useBinList', () => {
       });
 
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message.includes('Updated label'))).toBe(true);
+      expect(toasts.some((t) => t.message.includes('Updated label'))).toBe(true);
     });
 
     it('shows toast when updating notes for multiple bins', () => {
@@ -800,13 +776,11 @@ describe('useBinList', () => {
       });
 
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message.includes('2 bins'))).toBe(true);
+      expect(toasts.some((t) => t.message.includes('2 bins'))).toBe(true);
     });
 
     it('does nothing when bin IDs array is empty', () => {
-      const layout = createTestLayout([
-        createTestBin({ id: 'bin1', label: 'Keep this' }),
-      ]);
+      const layout = createTestLayout([createTestBin({ id: 'bin1', label: 'Keep this' })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => useBinList());
@@ -823,5 +797,4 @@ describe('useBinList', () => {
       expect(useToastStore.getState().toasts.length).toBe(initialToastCount);
     });
   });
-
 });

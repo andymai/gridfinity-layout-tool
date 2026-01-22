@@ -41,21 +41,20 @@ export function getBin3DRect(bin: Bin, layers: Layer[]): Rect3D {
 /**
  * Check if two 2D rectangles overlap (footprint).
  */
-export function footprintsOverlap(a: { x: number; y: number; width: number; depth: number },
-                                   b: { x: number; y: number; width: number; depth: number }): boolean {
-  return (
-    a.x < b.x + b.width &&
-    b.x < a.x + a.width &&
-    a.y < b.y + b.depth &&
-    b.y < a.y + a.depth
-  );
+export function footprintsOverlap(
+  a: { x: number; y: number; width: number; depth: number },
+  b: { x: number; y: number; width: number; depth: number }
+): boolean {
+  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.depth && b.y < a.y + a.depth;
 }
 
 /**
  * Check if two vertical ranges overlap.
  */
-export function verticalRangesOverlap(a: { zStart: number; zEnd: number },
-                                       b: { zStart: number; zEnd: number }): boolean {
+export function verticalRangesOverlap(
+  a: { zStart: number; zEnd: number },
+  b: { zStart: number; zEnd: number }
+): boolean {
   return a.zStart < b.zEnd && b.zStart < a.zEnd;
 }
 
@@ -111,7 +110,7 @@ export function getBlockedZones(
     return blockedZonesCache.result;
   }
 
-  const targetLayerIndex = layers.findIndex(l => l.id === targetLayerId);
+  const targetLayerIndex = layers.findIndex((l) => l.id === targetLayerId);
   if (targetLayerIndex === -1) return [];
 
   const targetZStart = getLayerZStart(targetLayerId, layers);
@@ -121,7 +120,7 @@ export function getBlockedZones(
   for (const bin of bins) {
     if (bin.layerId === STAGING_ID) continue;
 
-    const binLayerIndex = layers.findIndex(l => l.id === bin.layerId);
+    const binLayerIndex = layers.findIndex((l) => l.id === bin.layerId);
     if (binLayerIndex >= targetLayerIndex) continue;
 
     const binRect = getBin3DRect(bin, layers);
@@ -152,12 +151,7 @@ export function isInBlockedZone(
   blockedZones: BlockedZone[]
 ): BlockedZone | null {
   for (const zone of blockedZones) {
-    if (
-      x >= zone.x &&
-      x < zone.x + zone.width &&
-      y >= zone.y &&
-      y < zone.y + zone.depth
-    ) {
+    if (x >= zone.x && x < zone.x + zone.width && y >= zone.y && y < zone.y + zone.depth) {
       return zone;
     }
   }
@@ -174,7 +168,7 @@ export function checkLayerReorderCollisions(
   newLayers: Layer[]
 ): Array<{ binA: Bin; binB: Bin }> {
   const collisions: Array<{ binA: Bin; binB: Bin }> = [];
-  const placedBins = bins.filter(b => b.layerId !== STAGING_ID);
+  const placedBins = bins.filter((b) => b.layerId !== STAGING_ID);
 
   for (let i = 0; i < placedBins.length; i++) {
     for (let j = i + 1; j < placedBins.length; j++) {

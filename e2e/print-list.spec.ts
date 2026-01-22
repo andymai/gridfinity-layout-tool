@@ -99,7 +99,7 @@ test.describe('Print List', () => {
 
     // Find Bin List header button (contains the heading)
     const binListButton = page.locator('button').filter({
-      has: page.getByRole('heading', { name: /bin list/i })
+      has: page.getByRole('heading', { name: /bin list/i }),
     });
     await expect(binListButton).toBeVisible();
 
@@ -135,7 +135,7 @@ test.describe('Print List', () => {
 
   test('different sized bins create separate rows', async ({ page }) => {
     // Create bins of different sizes
-    await drawBinOnGrid(page, 50, 50, 80, 80);    // 1×1
+    await drawBinOnGrid(page, 50, 50, 80, 80); // 1×1
     await drawBinOnGrid(page, 150, 50, 210, 110); // 2×2 (roughly)
 
     // Should see multiple size notations (e.g., "1×1" and "2×2")
@@ -213,7 +213,7 @@ test.describe('Print List', () => {
     // Bin list table should have rows with category indicators
     // The table shows size, height, qty, and filament columns
     const binTable = page.locator('table').filter({
-      has: page.locator('th', { hasText: 'Size' })
+      has: page.locator('th', { hasText: 'Size' }),
     });
     await expect(binTable).toBeVisible();
 

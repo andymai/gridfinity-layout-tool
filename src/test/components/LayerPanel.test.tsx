@@ -7,7 +7,15 @@ import type { Layer } from '@/core/types';
 
 // Mock CollapsibleSection to simplify testing
 vi.mock('../../shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({ children, title, actions }: { children: React.ReactNode; title: string; actions?: React.ReactNode }) => (
+  CollapsibleSection: ({
+    children,
+    title,
+    actions,
+  }: {
+    children: React.ReactNode;
+    title: string;
+    actions?: React.ReactNode;
+  }) => (
     <div data-testid="collapsible-section">
       <div data-testid="section-header">
         <span>{title}</span>
@@ -20,22 +28,31 @@ vi.mock('../../shared/components/CollapsibleSection', () => ({
 
 // Mock ConfirmDialog
 vi.mock('../../shared/components/ConfirmDialog', () => ({
-  ConfirmDialog: ({ isOpen, onConfirm, onCancel, message, title }: {
+  ConfirmDialog: ({
+    isOpen,
+    onConfirm,
+    onCancel,
+    message,
+    title,
+  }: {
     isOpen: boolean;
     onConfirm: () => void;
     onCancel: () => void;
     message: string;
     title: string;
-  }) => (
+  }) =>
     isOpen ? (
       <div data-testid="confirm-dialog">
         <span data-testid="dialog-title">{title}</span>
         <span data-testid="confirm-message">{message}</span>
-        <button data-testid="confirm-button" onClick={onConfirm}>Confirm</button>
-        <button data-testid="cancel-button" onClick={onCancel}>Cancel</button>
+        <button data-testid="confirm-button" onClick={onConfirm}>
+          Confirm
+        </button>
+        <button data-testid="cancel-button" onClick={onCancel}>
+          Cancel
+        </button>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 describe('LayerPanel', () => {
@@ -131,9 +148,7 @@ describe('LayerPanel', () => {
         layout: {
           ...layout,
           drawer: { ...layout.drawer, height: 3 },
-          layers: [
-            { id: 'layer-1', name: 'Layer 1', height: 3 },
-          ],
+          layers: [{ id: 'layer-1', name: 'Layer 1', height: 3 }],
         },
       });
       useUIStore.setState({ activeLayerId: 'layer-1' });

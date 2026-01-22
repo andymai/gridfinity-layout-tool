@@ -97,7 +97,7 @@ describe('storage', () => {
 
     it('migrates old data without gridUnitMm', () => {
       const oldLayout = { ...defaultLayout };
-       
+
       delete (oldLayout as any).gridUnitMm;
       localStorageMock.setItem('gridfinity-layout-v1', JSON.stringify(oldLayout));
 
@@ -108,7 +108,7 @@ describe('storage', () => {
 
     it('migrates old data without heightUnitMm', () => {
       const oldLayout = { ...defaultLayout };
-       
+
       delete (oldLayout as any).heightUnitMm;
       localStorageMock.setItem('gridfinity-layout-v1', JSON.stringify(oldLayout));
 
@@ -123,7 +123,7 @@ describe('storage', () => {
         maxPrintSize: 6, // 6 grid units
         gridUnitMm: 42,
       };
-       
+
       delete (oldLayout as any).printBedSize;
       localStorageMock.setItem('gridfinity-layout-v1', JSON.stringify(oldLayout));
 
@@ -147,7 +147,7 @@ describe('storage', () => {
 
     it('sets default printBedSize when missing', () => {
       const oldLayout = { ...defaultLayout };
-       
+
       delete (oldLayout as any).printBedSize;
       localStorageMock.setItem('gridfinity-layout-v1', JSON.stringify(oldLayout));
 
@@ -272,10 +272,10 @@ describe('storage', () => {
         bins: [
           {
             id: 'half-bin-1',
-            x: 0.5,           // Half-unit offset
-            y: 1.5,           // Half-unit offset
-            width: 1.5,       // Half-unit width
-            depth: 2.5,       // Half-unit depth
+            x: 0.5, // Half-unit offset
+            y: 1.5, // Half-unit offset
+            width: 1.5, // Half-unit width
+            depth: 2.5, // Half-unit depth
             height: 3,
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
@@ -286,7 +286,7 @@ describe('storage', () => {
             id: 'half-bin-2',
             x: 3,
             y: 0,
-            width: 0.5,       // Minimum half-unit size
+            width: 0.5, // Minimum half-unit size
             depth: 0.5,
             height: 3,
             layerId: defaultLayout.layers[0].id,
@@ -331,7 +331,7 @@ describe('storage', () => {
             width: 2,
             depth: 2,
             height: 3,
-            clearanceHeight: 5,  // Extra blocked space above
+            clearanceHeight: 5, // Extra blocked space above
             layerId: defaultLayout.layers[0].id,
             category: defaultLayout.categories[0].id,
             label: '',
@@ -355,9 +355,7 @@ describe('storage', () => {
     });
 
     it('exports single row correctly', () => {
-      const rows = [
-        { size: '1x1', height: 3, binCount: 5, totalPieces: 5 },
-      ];
+      const rows = [{ size: '1x1', height: 3, binCount: 5, totalPieces: 5 }];
       const tsv = exportPrintListTSV(rows);
       const lines = tsv.split('\n');
       expect(lines).toHaveLength(2);
@@ -366,7 +364,14 @@ describe('storage', () => {
 
     it('exports row with labels and notes', () => {
       const rows = [
-        { size: '2x3', height: 6, binCount: 2, totalPieces: 4, labels: ['Screws', 'Nails'], notes: 'Small parts' },
+        {
+          size: '2x3',
+          height: 6,
+          binCount: 2,
+          totalPieces: 4,
+          labels: ['Screws', 'Nails'],
+          notes: 'Small parts',
+        },
       ];
       const tsv = exportPrintListTSV(rows);
       const lines = tsv.split('\n');
@@ -424,9 +429,7 @@ describe('storage', () => {
     });
 
     it('exports with layout metadata when provided', () => {
-      const rows = [
-        { size: '1x1', height: 3, binCount: 5, totalPieces: 5 },
-      ];
+      const rows = [{ size: '1x1', height: 3, binCount: 5, totalPieces: 5 }];
       const tsv = exportPrintListTSV(rows, {
         layoutName: 'My Drawer',
         gridSize: '10×8',
@@ -461,9 +464,7 @@ describe('storage', () => {
     });
 
     it('exports without metadata columns when meta is undefined', () => {
-      const rows = [
-        { size: '1x1', height: 3, binCount: 1, totalPieces: 1 },
-      ];
+      const rows = [{ size: '1x1', height: 3, binCount: 1, totalPieces: 1 }];
       const tsv = exportPrintListTSV(rows);
       const lines = tsv.split('\n');
       // Should be the original format without Layout/Grid Size
@@ -472,9 +473,7 @@ describe('storage', () => {
     });
 
     it('escapes tabs and newlines in metadata values', () => {
-      const rows = [
-        { size: '1x1', height: 3, binCount: 1, totalPieces: 1 },
-      ];
+      const rows = [{ size: '1x1', height: 3, binCount: 1, totalPieces: 1 }];
       const tsv = exportPrintListTSV(rows, {
         layoutName: 'Drawer\twith\ttabs',
         gridSize: '10×8',
@@ -521,8 +520,12 @@ describe('storage', () => {
       const originalLocalStorage = window.localStorage;
       Object.defineProperty(window, 'localStorage', {
         value: {
-          getItem: () => { throw new Error('Access denied'); },
-          setItem: () => { throw new Error('Access denied'); },
+          getItem: () => {
+            throw new Error('Access denied');
+          },
+          setItem: () => {
+            throw new Error('Access denied');
+          },
         },
         configurable: true,
       });

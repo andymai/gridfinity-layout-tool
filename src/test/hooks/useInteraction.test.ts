@@ -13,7 +13,13 @@ import { isOk } from '@/core/result';
 import type { RefObject } from 'react';
 
 // Helper to extract bin ID from Result
-function getBinId(result: ReturnType<typeof useLayoutStore.getState>['addBin'] extends (...args: unknown[]) => infer R ? R : never): string {
+function getBinId(
+  result: ReturnType<typeof useLayoutStore.getState>['addBin'] extends (
+    ...args: unknown[]
+  ) => infer R
+    ? R
+    : never
+): string {
   if (!isOk(result)) throw new Error('addBin failed');
   return result.value;
 }
@@ -129,17 +135,19 @@ describe('useInteraction', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 2,
+          y: 2,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       const gridRef = createMockGridRef();
       const { result } = renderHook(() => useInteraction(gridRef));
@@ -165,29 +173,33 @@ describe('useInteraction', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 3,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 3,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       // Select both bins
       useUIStore.getState().setSelectedBins([binId1!, binId2!]);
@@ -214,29 +226,33 @@ describe('useInteraction', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 3,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 3,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       // Select only first bin
       useUIStore.getState().setSelectedBins([binId1!]);
@@ -275,17 +291,19 @@ describe('useInteraction', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       const gridRef = createMockGridRef();
       const { result } = renderHook(() => useInteraction(gridRef));
@@ -315,29 +333,33 @@ describe('useInteraction', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId1 = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId1 = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
-      const binId2 = getBinId(addBin({
-        layerId,
-        x: 5,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId2 = getBinId(
+        addBin({
+          layerId,
+          x: 5,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       useUIStore.getState().setSelectedBins([binId1!, binId2!]);
 
@@ -362,17 +384,19 @@ describe('useInteraction', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      const binId = getBinId(addBin({
-        layerId,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: categoryId,
-        label: '',
-        notes: '',
-      }));
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
 
       const gridRef = createMockGridRef();
 
@@ -490,17 +514,19 @@ describe('resize rect calculation (integration)', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -522,17 +548,19 @@ describe('resize rect calculation (integration)', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 2,
-      y: 2,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 2,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -663,17 +691,19 @@ describe('pointer events', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 2,
-      y: 2,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 2,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -703,17 +733,19 @@ describe('pointer events', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 2,
-      y: 2,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 2,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -737,17 +769,19 @@ describe('pointer events', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -777,17 +811,19 @@ describe('pointer events', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -811,17 +847,19 @@ describe('pointer events', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 2,
-      y: 2,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 2,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
@@ -852,17 +890,19 @@ describe('pointer events', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 2,
-      y: 2,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 2,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -883,7 +923,7 @@ describe('pointer events', () => {
     });
 
     // Bin should be in staging
-    const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
     expect(bin?.layerId).toBe(STAGING_ID);
   });
 
@@ -998,17 +1038,19 @@ describe('stagingDrag interaction', () => {
     const categoryId = layout.categories[0].id;
 
     // Add bin to staging
-    const binId = getBinId(addBin({
-      layerId: STAGING_ID,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     // Manually set up stagingDrag interaction
     useInteractionStore.setState({
@@ -1044,20 +1086,24 @@ describe('stagingDrag interaction', () => {
     const layerId = layout.layers[0].id;
 
     // Add bin to staging
-    const binId = getBinId(addBin({
-      layerId: STAGING_ID,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     // Verify bin is in staging
-    expect(useLayoutStore.getState().layout.bins.find(b => b.id === binId)?.layerId).toBe(STAGING_ID);
+    expect(useLayoutStore.getState().layout.bins.find((b) => b.id === binId)?.layerId).toBe(
+      STAGING_ID
+    );
 
     // Set active layer and interaction
     useSelectionStore.setState({
@@ -1084,7 +1130,7 @@ describe('stagingDrag interaction', () => {
     });
 
     // Bin should now be on the grid (not in staging)
-    const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
     expect(bin?.layerId).toBe(layerId);
     expect(bin?.x).toBe(2);
     expect(bin?.y).toBe(2);
@@ -1095,17 +1141,19 @@ describe('stagingDrag interaction', () => {
     const categoryId = layout.categories[0].id;
 
     // Add bin to staging
-    const binId = getBinId(addBin({
-      layerId: STAGING_ID,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
@@ -1139,17 +1187,19 @@ describe('stagingDrag interaction', () => {
     const categoryId = layout.categories[0].id;
 
     // Add bin to staging
-    const binId = getBinId(addBin({
-      layerId: STAGING_ID,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     // Set up stagingDrag interaction with invalid position
     useInteractionStore.setState({
@@ -1172,7 +1222,7 @@ describe('stagingDrag interaction', () => {
     });
 
     // Bin should still be in staging
-    const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
     expect(bin?.layerId).toBe(STAGING_ID);
   });
 
@@ -1186,20 +1236,22 @@ describe('stagingDrag interaction', () => {
     updateLayer(tallLayerId, { height: 5 });
 
     // Add a shorter bin (3u) to staging
-    const binId = getBinId(addBin({
-      layerId: STAGING_ID,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3, // Shorter than the layer's "default" height of 5
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3, // Shorter than the layer's "default" height of 5
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     // Verify bin is in staging with height 3
-    const stagedBin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    const stagedBin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
     expect(stagedBin?.layerId).toBe(STAGING_ID);
     expect(stagedBin?.height).toBe(3);
 
@@ -1232,7 +1284,7 @@ describe('stagingDrag interaction', () => {
 
     // Bin should now be on the grid with its ORIGINAL height preserved
     // (no auto-adjustment to layer minimum - user may have specific STL dimensions)
-    const placedBin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    const placedBin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
     expect(placedBin?.layerId).toBe(tallLayerId);
     expect(placedBin?.x).toBe(2);
     expect(placedBin?.y).toBe(2);
@@ -1293,17 +1345,19 @@ describe('duplicate drag (Alt+drag)', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 2,
-      y: 2,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: 'Original',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 2,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Original',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -1327,17 +1381,19 @@ describe('duplicate drag (Alt+drag)', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: 'Original',
-      notes: 'Test notes',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Original',
+        notes: 'Test notes',
+      })
+    );
 
     expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
@@ -1376,12 +1432,12 @@ describe('duplicate drag (Alt+drag)', () => {
     expect(bins).toHaveLength(2);
 
     // Original should still be at original position
-    const original = bins.find(b => b.id === binId);
+    const original = bins.find((b) => b.id === binId);
     expect(original?.x).toBe(0);
     expect(original?.y).toBe(0);
 
     // New bin should be at new position with same properties
-    const duplicate = bins.find(b => b.id !== binId);
+    const duplicate = bins.find((b) => b.id !== binId);
     expect(duplicate?.x).toBe(3);
     expect(duplicate?.y).toBe(0);
     expect(duplicate?.width).toBe(2);
@@ -1396,29 +1452,33 @@ describe('duplicate drag (Alt+drag)', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId1 = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: 'Bin 1',
-      notes: '',
-    }));
+    const binId1 = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Bin 1',
+        notes: '',
+      })
+    );
 
-    const binId2 = getBinId(addBin({
-      layerId,
-      x: 2,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: 'Bin 2',
-      notes: '',
-    }));
+    const binId2 = getBinId(
+      addBin({
+        layerId,
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Bin 2',
+        notes: '',
+      })
+    );
 
     expect(useLayoutStore.getState().layout.bins).toHaveLength(2);
 
@@ -1460,20 +1520,20 @@ describe('duplicate drag (Alt+drag)', () => {
     expect(bins).toHaveLength(4);
 
     // Originals should still be at original positions
-    const original1 = bins.find(b => b.id === binId1);
-    const original2 = bins.find(b => b.id === binId2);
+    const original1 = bins.find((b) => b.id === binId1);
+    const original2 = bins.find((b) => b.id === binId2);
     expect(original1?.x).toBe(0);
     expect(original1?.y).toBe(0);
     expect(original2?.x).toBe(2);
     expect(original2?.y).toBe(0);
 
     // Duplicates should be at new positions preserving relative arrangement
-    const duplicates = bins.filter(b => b.id !== binId1 && b.id !== binId2);
+    const duplicates = bins.filter((b) => b.id !== binId1 && b.id !== binId2);
     expect(duplicates).toHaveLength(2);
 
     // Find duplicates by their labels
-    const dup1 = duplicates.find(b => b.label === 'Bin 1');
-    const dup2 = duplicates.find(b => b.label === 'Bin 2');
+    const dup1 = duplicates.find((b) => b.label === 'Bin 1');
+    const dup2 = duplicates.find((b) => b.label === 'Bin 2');
     expect(dup1?.x).toBe(0);
     expect(dup1?.y).toBe(3);
     expect(dup2?.x).toBe(2);
@@ -1485,17 +1545,19 @@ describe('duplicate drag (Alt+drag)', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
@@ -1533,17 +1595,19 @@ describe('duplicate drag (Alt+drag)', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 2,
-      y: 2,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 2,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
@@ -1581,17 +1645,19 @@ describe('duplicate drag (Alt+drag)', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 2,
-      y: 2,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 2,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
 
@@ -1630,17 +1696,19 @@ describe('duplicate drag (Alt+drag)', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     renderHook(() => useInteraction(gridRef));
@@ -1727,17 +1795,19 @@ describe('drag completion with movement', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     renderHook(() => useInteraction(gridRef));
@@ -1764,7 +1834,7 @@ describe('drag completion with movement', () => {
     });
 
     // Bin should now be at new position
-    const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
     expect(bin?.x).toBe(3);
     expect(bin?.y).toBe(2);
   });
@@ -1774,29 +1844,33 @@ describe('drag completion with movement', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId1 = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId1 = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
-    const binId2 = getBinId(addBin({
-      layerId,
-      x: 2,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId2 = getBinId(
+      addBin({
+        layerId,
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     renderHook(() => useInteraction(gridRef));
@@ -1824,8 +1898,8 @@ describe('drag completion with movement', () => {
 
     // Both bins should be moved preserving arrangement
     const bins = useLayoutStore.getState().layout.bins;
-    const bin1 = bins.find(b => b.id === binId1);
-    const bin2 = bins.find(b => b.id === binId2);
+    const bin1 = bins.find((b) => b.id === binId1);
+    const bin2 = bins.find((b) => b.id === binId2);
     expect(bin1?.x).toBe(0);
     expect(bin1?.y).toBe(3);
     expect(bin2?.x).toBe(2);
@@ -1886,17 +1960,19 @@ describe('resize completion with changes', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     renderHook(() => useInteraction(gridRef));
@@ -1923,7 +1999,7 @@ describe('resize completion with changes', () => {
     });
 
     // Bin should have new dimensions
-    const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
     expect(bin?.width).toBe(4);
     expect(bin?.depth).toBe(2);
   });
@@ -1933,29 +2009,33 @@ describe('resize completion with changes', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId1 = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId1 = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
-    const binId2 = getBinId(addBin({
-      layerId,
-      x: 5,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId2 = getBinId(
+      addBin({
+        layerId,
+        x: 5,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     renderHook(() => useInteraction(gridRef));
@@ -1989,8 +2069,8 @@ describe('resize completion with changes', () => {
 
     // Both bins should have new depth
     const bins = useLayoutStore.getState().layout.bins;
-    const bin1 = bins.find(b => b.id === binId1);
-    const bin2 = bins.find(b => b.id === binId2);
+    const bin1 = bins.find((b) => b.id === binId1);
+    const bin2 = bins.find((b) => b.id === binId2);
     expect(bin1?.depth).toBe(4);
     expect(bin2?.depth).toBe(4);
   });
@@ -2000,17 +2080,19 @@ describe('resize completion with changes', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     renderHook(() => useInteraction(gridRef));
@@ -2037,7 +2119,7 @@ describe('resize completion with changes', () => {
     });
 
     // Bin should still have original dimensions
-    const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
     expect(bin?.width).toBe(2);
     expect(bin?.depth).toBe(2);
   });
@@ -2096,20 +2178,22 @@ describe('staging drag', () => {
     const categoryId = layout.categories[0].id;
 
     // Add bin to staging
-    const binId = getBinId(addBin({
-      layerId: STAGING_ID,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: 'Staged bin',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Staged bin',
+        notes: '',
+      })
+    );
 
     expect(binId).not.toBeNull();
-    const bin = useLayoutStore.getState().layout.bins.find(b => b.id === binId);
+    const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
     expect(bin?.layerId).toBe(STAGING_ID);
   });
 });
@@ -2167,17 +2251,19 @@ describe('resize via pointer movement', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -2209,17 +2295,19 @@ describe('resize via pointer movement', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 3,
-      y: 3,
-      width: 3,
-      depth: 3,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 3,
+        y: 3,
+        width: 3,
+        depth: 3,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -2253,17 +2341,19 @@ describe('resize via pointer movement', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 3,
-      y: 3,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 3,
+        y: 3,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -2295,17 +2385,19 @@ describe('resize via pointer movement', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 3,
-      y: 3,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 3,
+        y: 3,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result } = renderHook(() => useInteraction(gridRef));
@@ -2401,17 +2493,19 @@ describe('cleanup on unmount', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result, unmount } = renderHook(() => useInteraction(gridRef));
@@ -2430,17 +2524,19 @@ describe('cleanup on unmount', () => {
     const layerId = layout.layers[0].id;
     const categoryId = layout.categories[0].id;
 
-    const binId = getBinId(addBin({
-      layerId,
-      x: 0,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: categoryId,
-      label: '',
-      notes: '',
-    }));
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
 
     const gridRef = createMockGridRef();
     const { result, unmount } = renderHook(() => useInteraction(gridRef));

@@ -181,9 +181,7 @@ describe('StepperControl', () => {
 
   describe('className prop', () => {
     it('applies additional className to container', () => {
-      const { container } = render(
-        <StepperControl {...defaultProps} className="custom-class" />
-      );
+      const { container } = render(<StepperControl {...defaultProps} className="custom-class" />);
 
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toHaveClass('custom-class');

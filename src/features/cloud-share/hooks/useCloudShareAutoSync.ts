@@ -61,11 +61,7 @@ export function useCloudShareAutoSync(shareId: string | null, enabled: boolean):
     }
 
     try {
-      const result = await updateShare(
-        shareId,
-        deleteToken,
-        layout
-      );
+      const result = await updateShare(shareId, deleteToken, layout);
 
       if (isOk(result)) {
         lastSyncedRef.current = layoutFingerprint;

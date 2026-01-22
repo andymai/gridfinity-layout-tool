@@ -9,10 +9,20 @@ const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];
 
 // Rectangle sizes (width × depth where width < depth)
 const RECTANGLE_SIZES = [
-  { w: 1, d: 2 }, { w: 1, d: 3 }, { w: 1, d: 4 }, { w: 1, d: 5 }, { w: 1, d: 6 },
-  { w: 2, d: 3 }, { w: 2, d: 4 }, { w: 2, d: 5 }, { w: 2, d: 6 },
-  { w: 3, d: 4 }, { w: 3, d: 5 }, { w: 3, d: 6 },
-  { w: 4, d: 5 }, { w: 4, d: 6 },
+  { w: 1, d: 2 },
+  { w: 1, d: 3 },
+  { w: 1, d: 4 },
+  { w: 1, d: 5 },
+  { w: 1, d: 6 },
+  { w: 2, d: 3 },
+  { w: 2, d: 4 },
+  { w: 2, d: 5 },
+  { w: 2, d: 6 },
+  { w: 3, d: 4 },
+  { w: 3, d: 5 },
+  { w: 3, d: 6 },
+  { w: 4, d: 5 },
+  { w: 4, d: 6 },
   { w: 5, d: 6 },
 ];
 
@@ -55,19 +65,18 @@ export function ToolsTab() {
     }))
   );
 
-  const addToast = useToastStore(state => state.addToast);
+  const addToast = useToastStore((state) => state.addToast);
   const { execute } = useUndoableAction();
 
-  const activeLayer = layout.layers.find(l => l.id === activeLayerId);
-  const layerBins = layout.bins.filter(b => b.layerId === activeLayerId);
+  const activeLayer = layout.layers.find((l) => l.id === activeLayerId);
+  const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
 
   // Calculate empty cells for Fill Gaps button
   const totalCells = layout.drawer.width * layout.drawer.depth;
   const coveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
   const emptyCells = totalCells - coveredCells;
 
-  const isPaintActive = (w: number, d: number) =>
-    paintSize?.width === w && paintSize?.depth === d;
+  const isPaintActive = (w: number, d: number) => paintSize?.width === w && paintSize?.depth === d;
 
   const handleFillGaps = () => {
     if (!activeLayerId) return;
@@ -77,7 +86,9 @@ export function ToolsTab() {
     });
     closeMobilePanel();
     setTimeout(() => {
-      const afterCount = useLayoutStore.getState().layout.bins.filter(b => b.layerId === activeLayerId).length;
+      const afterCount = useLayoutStore
+        .getState()
+        .layout.bins.filter((b) => b.layerId === activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
         addToast(`Added ${added} bin${added !== 1 ? 's' : ''} to fill gaps`, 'success');
@@ -107,7 +118,9 @@ export function ToolsTab() {
     setPaintSize(null);
     closeMobilePanel();
     setTimeout(() => {
-      const afterCount = useLayoutStore.getState().layout.bins.filter(b => b.layerId === activeLayerId).length;
+      const afterCount = useLayoutStore
+        .getState()
+        .layout.bins.filter((b) => b.layerId === activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
         addToast(`Added ${added} ${width}×${depth} bins`, 'success');
@@ -118,7 +131,7 @@ export function ToolsTab() {
   if (!activeLayer) return null;
 
   // Get rectangle dimensions based on rotation state
-  const getRectDims = (w: number, d: number) => rotated ? { w: d, d: w } : { w, d };
+  const getRectDims = (w: number, d: number) => (rotated ? { w: d, d: w } : { w, d });
 
   // Mobile-optimized size button with larger touch targets
   const SizeButton = ({ w, d }: { w: number; d: number }) => {
@@ -131,7 +144,9 @@ export function ToolsTab() {
       <button
         onClick={() => togglePaintSize({ width: w, depth: d })}
         className={`flex flex-col items-center justify-end gap-1 min-h-[56px] p-2 rounded transition-colors ${
-          isActive ? 'bg-accent/20 ring-2 ring-accent' : 'bg-surface-elevated hover:bg-surface-hover'
+          isActive
+            ? 'bg-accent/20 ring-2 ring-accent'
+            : 'bg-surface-elevated hover:bg-surface-hover'
         }`}
         aria-label={`${isActive ? 'Deselect' : 'Select'} ${w}×${d} for painting`}
       >
@@ -143,7 +158,9 @@ export function ToolsTab() {
             backgroundColor: isActive ? 'var(--color-accent)' : 'var(--text-tertiary)',
           }}
         />
-        <span className={`text-xs ${isActive ? 'text-accent font-medium' : 'text-content-tertiary'}`}>
+        <span
+          className={`text-xs ${isActive ? 'text-accent font-medium' : 'text-content-tertiary'}`}
+        >
           {w}×{d}
         </span>
       </button>
@@ -160,7 +177,7 @@ export function ToolsTab() {
       {/* Squares section */}
       <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">Squares</div>
       <div className="grid grid-cols-6 gap-2">
-        {SQUARE_SIZES.map(size => (
+        {SQUARE_SIZES.map((size) => (
           <SizeButton key={`${size}×${size}`} w={size} d={size} />
         ))}
       </div>
@@ -174,7 +191,12 @@ export function ToolsTab() {
           aria-label={rotated ? 'Switch to wide rectangles' : 'Switch to tall rectangles'}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
           </svg>
           {rotated ? 'Tall' : 'Wide'}
         </button>
@@ -205,7 +227,12 @@ export function ToolsTab() {
           className="btn btn-secondary w-full h-11 justify-center"
         >
           <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+            />
           </svg>
           {emptyCells > 0 ? `Fill ${emptyCells} Gaps` : 'No Gaps'}
         </button>
@@ -217,7 +244,12 @@ export function ToolsTab() {
           className="btn btn-ghost w-full h-11 justify-center text-error hover:bg-error/10"
         >
           <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
           </svg>
           {layerBins.length > 0 ? `Clear ${layerBins.length} Bins` : 'No Bins'}
         </button>

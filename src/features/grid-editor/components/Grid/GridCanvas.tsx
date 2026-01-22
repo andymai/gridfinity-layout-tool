@@ -21,7 +21,14 @@ interface GridCanvasProps {
  * Cell rendering and mouse handling.
  * Uses CSS Grid to render cells and bins.
  */
-export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, onStartResize }: GridCanvasProps) {
+export function GridCanvas({
+  gridRef,
+  cellSize,
+  gap,
+  onStartDraw,
+  onStartDrag,
+  onStartResize,
+}: GridCanvasProps) {
   const { drawer, bins, layers, categories } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
@@ -74,18 +81,9 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
   );
 
   // Performance: Create O(1) lookup maps to avoid O(n²) .find() calls in render loops
-  const categoryMap = useMemo(
-    () => new Map(categories.map((c) => [c.id, c])),
-    [categories]
-  );
-  const layerMap = useMemo(
-    () => new Map(layers.map((l) => [l.id, l])),
-    [layers]
-  );
-  const binMap = useMemo(
-    () => new Map(bins.map((b) => [b.id, b])),
-    [bins]
-  );
+  const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
+  const layerMap = useMemo(() => new Map(layers.map((l) => [l.id, l])), [layers]);
+  const binMap = useMemo(() => new Map(bins.map((b) => [b.id, b])), [bins]);
 
   // Capture phase handler for paint mode - runs before Bin components can stop propagation
   const handlePointerDownCapture = (e: PointerEvent<HTMLDivElement>) => {
@@ -284,19 +282,21 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
 
           // Calculate grid position (always use standard grid, no scaling)
           // Apply same fractional edge positioning as bins
-          const gridCol = hasFractionalWidth && fractionalEdgeX === 'start'
-            ? Math.floor(zone.x) + 2  // +1 for 1-based, +1 to skip fractional column
-            : Math.floor(zone.x) + 1;
+          const gridCol =
+            hasFractionalWidth && fractionalEdgeX === 'start'
+              ? Math.floor(zone.x) + 2 // +1 for 1-based, +1 to skip fractional column
+              : Math.floor(zone.x) + 1;
           const gridColSpan = Math.ceil(zone.x + zone.width) - Math.floor(zone.x);
           const zoneGridRowStart = hasFractionalDepth
             ? fractionalEdgeY === 'end'
-              ? integerDepth - Math.ceil(zone.y + zone.depth) + 2  // +2: +1 for 1-based, +1 to skip fractional row at top
-              : integerDepth - Math.ceil(zone.y + zone.depth) + 1  // Fractional at bottom, integers from 1
+              ? integerDepth - Math.ceil(zone.y + zone.depth) + 2 // +2: +1 for 1-based, +1 to skip fractional row at top
+              : integerDepth - Math.ceil(zone.y + zone.depth) + 1 // Fractional at bottom, integers from 1
             : integerDepth - Math.ceil(zone.y + zone.depth) + 1;
           const gridRowSpan = Math.ceil(zone.y + zone.depth) - Math.floor(zone.y);
 
           // Check if zone has fractional dimensions (from half-bin mode bins)
-          const hasFractionalDims = zone.x % 1 !== 0 || zone.y % 1 !== 0 || zone.width % 1 !== 0 || zone.depth % 1 !== 0;
+          const hasFractionalDims =
+            zone.x % 1 !== 0 || zone.y % 1 !== 0 || zone.width % 1 !== 0 || zone.depth % 1 !== 0;
           // Calculate true pixel size for fractional zones
           const toPixels = (units: number) => units * cellSize + Math.max(0, units - 1) * gap;
           const zonePixelWidth = hasFractionalDims ? toPixels(zone.width) : undefined;
@@ -315,20 +315,30 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
                 gridColumn: `${gridCol} / span ${gridColSpan}`,
                 gridRow: `${zoneGridRowStart} / span ${gridRowSpan}`,
                 // Override size and position for fractional zones
-                ...(hasFractionalDims ? {
-                  width: zonePixelWidth,
-                  height: zonePixelHeight,
-                  marginLeft: offsetX,
-                  marginTop: offsetY,
-                } : {}),
+                ...(hasFractionalDims
+                  ? {
+                      width: zonePixelWidth,
+                      height: zonePixelHeight,
+                      marginLeft: offsetX,
+                      marginTop: offsetY,
+                    }
+                  : {}),
                 backgroundColor: category?.color || DEFAULT_CATEGORY_COLOR,
                 opacity: 0.3,
                 zIndex: 8,
               }}
               onClick={() => sourceBin && handleBlockedZoneClick(sourceBin.id, sourceBin.layerId)}
-              title={sourceLayer ? `Blocked by bin from ${sourceLayer.name} extending upward. Click to switch to ${sourceLayer.name}.` : undefined}
+              title={
+                sourceLayer
+                  ? `Blocked by bin from ${sourceLayer.name} extending upward. Click to switch to ${sourceLayer.name}.`
+                  : undefined
+              }
               role="button"
-              aria-label={sourceLayer ? `Blocked by bin from ${sourceLayer.name}. Click to switch layer.` : 'Blocked zone'}
+              aria-label={
+                sourceLayer
+                  ? `Blocked by bin from ${sourceLayer.name}. Click to switch layer.`
+                  : 'Blocked zone'
+              }
             >
               {/* Diagonal hatching pattern */}
               <svg
@@ -350,11 +360,7 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
                     />
                   </pattern>
                 </defs>
-                <rect
-                  width="100%"
-                  height="100%"
-                  fill={`url(#hatch-${zone.sourceBinId})`}
-                />
+                <rect width="100%" height="100%" fill={`url(#hatch-${zone.sourceBinId})`} />
               </svg>
             </div>
           );

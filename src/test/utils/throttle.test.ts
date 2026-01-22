@@ -119,7 +119,7 @@ describe('throttleRAF', () => {
   it('maintains this context', () => {
     const obj = {
       value: 42,
-      fn: vi.fn(function(this: { value: number }) {
+      fn: vi.fn(function (this: { value: number }) {
         return this.value;
       }),
     };
@@ -143,9 +143,12 @@ describe('cancelThrottledRAF', () => {
       return rafId;
     });
 
-    vi.stubGlobal('cancelAnimationFrame', vi.fn((id: number) => {
-      rafCallbacks.delete(id);
-    }));
+    vi.stubGlobal(
+      'cancelAnimationFrame',
+      vi.fn((id: number) => {
+        rafCallbacks.delete(id);
+      })
+    );
   });
 
   afterEach(() => {
@@ -283,7 +286,7 @@ describe('throttle (time-based)', () => {
   it('maintains this context', () => {
     const obj = {
       value: 42,
-      fn: vi.fn(function(this: { value: number }) {
+      fn: vi.fn(function (this: { value: number }) {
         return this.value;
       }),
     };
@@ -298,7 +301,7 @@ describe('throttle (time-based)', () => {
   it('maintains this context for trailing calls', () => {
     const obj = {
       value: 42,
-      fn: vi.fn(function(this: { value: number }) {
+      fn: vi.fn(function (this: { value: number }) {
         return this.value;
       }),
     };

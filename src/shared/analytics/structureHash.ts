@@ -103,9 +103,12 @@ function computeSizeFingerprint(bins: Bin[]): number {
     const area = bin.width * bin.depth;
     totalArea += area;
 
-    if (area <= 2) sizeCounts[0]++; // 1x1, 1x2, 2x1
-    else if (area <= 6) sizeCounts[1]++; // 2x2, 2x3, 3x2, 1x3-6
-    else if (area <= 12) sizeCounts[2]++; // 3x3, 3x4, 4x3, etc
+    if (area <= 2)
+      sizeCounts[0]++; // 1x1, 1x2, 2x1
+    else if (area <= 6)
+      sizeCounts[1]++; // 2x2, 2x3, 3x2, 1x3-6
+    else if (area <= 12)
+      sizeCounts[2]++; // 3x3, 3x4, 4x3, etc
     else sizeCounts[3]++; // Large bins
   }
 
@@ -125,8 +128,7 @@ function computeSizeFingerprint(bins: Bin[]): number {
 
   // Average size bucket (0-3)
   const avgArea = totalArea / bins.length;
-  const avgBucket =
-    avgArea <= 2 ? 0 : avgArea <= 6 ? 1 : avgArea <= 12 ? 2 : 3;
+  const avgBucket = avgArea <= 2 ? 0 : avgArea <= 6 ? 1 : avgArea <= 12 ? 2 : 3;
 
   return (avgBucket << 6) | (variety << 3) | mostCommon;
 }
@@ -136,10 +138,7 @@ function computeSizeFingerprint(bins: Bin[]): number {
  * Returns a 4-bit value where each bit represents a quadrant:
  * bit 0 = top-left, bit 1 = top-right, bit 2 = bottom-left, bit 3 = bottom-right
  */
-function computeQuadrantOccupancy(
-  bins: Bin[],
-  drawer: { width: number; depth: number }
-): number {
+function computeQuadrantOccupancy(bins: Bin[], drawer: { width: number; depth: number }): number {
   if (bins.length === 0) return 0;
 
   const midX = drawer.width / 2;
@@ -153,9 +152,12 @@ function computeQuadrantOccupancy(
 
     // Determine quadrant (grid origin is bottom-left)
     // bit 0 = top-left, bit 1 = top-right, bit 2 = bottom-left, bit 3 = bottom-right
-    if (centerX < midX && centerY >= midY) occupancy |= 1; // top-left
-    else if (centerX >= midX && centerY >= midY) occupancy |= 2; // top-right
-    else if (centerX < midX && centerY < midY) occupancy |= 4; // bottom-left
+    if (centerX < midX && centerY >= midY)
+      occupancy |= 1; // top-left
+    else if (centerX >= midX && centerY >= midY)
+      occupancy |= 2; // top-right
+    else if (centerX < midX && centerY < midY)
+      occupancy |= 4; // bottom-left
     else occupancy |= 8; // bottom-right
   }
 
@@ -172,10 +174,7 @@ function computeQuadrantOccupancy(
  * @param bins - Array of bins
  * @param layers - Array of layers (index 0 = bottom layer)
  */
-function computeLayerPattern(
-  bins: Bin[],
-  layers: Array<{ id: string }>
-): number {
+function computeLayerPattern(bins: Bin[], layers: Array<{ id: string }>): number {
   if (bins.length === 0 || layers.length === 0) return 0;
 
   // Count bins per layer using layer index order (deterministic)

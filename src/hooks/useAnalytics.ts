@@ -62,7 +62,7 @@ export function useAnalytics(): void {
       if (hasTrackedRef.current) return;
 
       const layout = useLayoutStore.getState().layout;
-      const binCount = layout.bins.filter(b => b.layerId !== STAGING_ID).length;
+      const binCount = layout.bins.filter((b) => b.layerId !== STAGING_ID).length;
 
       // Only track engaged sessions (5+ bins)
       if (binCount < 5) return;

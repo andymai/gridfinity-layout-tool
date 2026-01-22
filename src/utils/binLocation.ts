@@ -49,9 +49,9 @@ export function getBinLocationContext(bin: Bin): BinLocationContext {
   if (bin.layerId === STAGING_ID) {
     return {
       location: 'stash',
-      canRotate: true,          // No collision checks needed
-      canMoveToStash: false,    // Already in stash
-      canEdit: true,            // All properties editable
+      canRotate: true, // No collision checks needed
+      canMoveToStash: false, // Already in stash
+      canEdit: true, // All properties editable
       requiresPlacementValidation: false, // No bounds/collision constraints
       label: 'Stash',
     };
@@ -59,9 +59,9 @@ export function getBinLocationContext(bin: Bin): BinLocationContext {
 
   return {
     location: 'grid',
-    canRotate: true,            // Requires validation
-    canMoveToStash: true,       // Can be moved to stash
-    canEdit: true,              // All properties editable
+    canRotate: true, // Requires validation
+    canMoveToStash: true, // Can be moved to stash
+    canEdit: true, // All properties editable
     requiresPlacementValidation: true, // Must check bounds/collisions
     label: 'Grid',
   };

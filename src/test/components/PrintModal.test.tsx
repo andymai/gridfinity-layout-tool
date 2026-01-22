@@ -34,12 +34,14 @@ vi.mock('react-dom', async () => {
 
 // Mock PrintLayout component to simplify testing
 vi.mock('@/features/print-export/components/PrintLayout', () => ({
-  PrintLayout: vi.fn(({ layout, selectedLayerIds }: { layout: Layout; selectedLayerIds: string[] }) => (
-    <div data-testid="print-layout">
-      <span data-testid="layout-name">{layout.name}</span>
-      <span data-testid="selected-layers">{selectedLayerIds.join(',')}</span>
-    </div>
-  )),
+  PrintLayout: vi.fn(
+    ({ layout, selectedLayerIds }: { layout: Layout; selectedLayerIds: string[] }) => (
+      <div data-testid="print-layout">
+        <span data-testid="layout-name">{layout.name}</span>
+        <span data-testid="selected-layers">{selectedLayerIds.join(',')}</span>
+      </div>
+    )
+  ),
 }));
 
 // Helper to create test layout
@@ -254,9 +256,7 @@ describe('PrintModal', () => {
       render(<PrintModal isOpen={true} onClose={onClose} />);
 
       // Click the overlay (outer div)
-      const overlay = screen
-        .getByRole('dialog')
-        .closest('.animate-fade-in');
+      const overlay = screen.getByRole('dialog').closest('.animate-fade-in');
       fireEvent.click(overlay!);
 
       expect(onClose).toHaveBeenCalled();
@@ -403,7 +403,6 @@ describe('PrintModal', () => {
       expect(screen.queryByText('Drawer Info')).not.toBeInTheDocument();
       expect(screen.queryByText('Date')).not.toBeInTheDocument();
     });
-
   });
 
   describe('reset on open', () => {

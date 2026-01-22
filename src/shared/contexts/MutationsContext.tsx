@@ -32,7 +32,12 @@ export interface Mutations {
   deleteBins: (ids: string[]) => Result<void, LayoutError>;
   duplicateBin: (id: string) => Result<string, ValidationError | LayoutError>;
   moveBinToStaging: (id: string) => Result<void, LayoutError>;
-  moveBinFromStaging: (id: string, layerId: string, x: number, y: number) => Result<void, ValidationError | LayoutError>;
+  moveBinFromStaging: (
+    id: string,
+    layerId: string,
+    x: number,
+    y: number
+  ) => Result<void, ValidationError | LayoutError>;
 
   // Layer operations
   addLayer: () => Result<string, LayoutError>;
@@ -49,7 +54,13 @@ export interface Mutations {
   deleteCategory: (id: string) => Result<void, LayoutError>;
 
   // Bulk operations
-  fillLayer: (layerId: string, width: number, depth: number, categoryId: string, halfBinMode?: boolean) => number;
+  fillLayer: (
+    layerId: string,
+    width: number,
+    depth: number,
+    categoryId: string,
+    halfBinMode?: boolean
+  ) => number;
   clearLayer: (layerId: string) => number;
 
   // Layout metadata
@@ -130,11 +141,7 @@ function useStoreMutations(): Mutations {
 export function LocalMutationsProvider({ children }: { children: ReactNode }) {
   const mutations = useStoreMutations();
 
-  return (
-    <MutationsContext.Provider value={mutations}>
-      {children}
-    </MutationsContext.Provider>
-  );
+  return <MutationsContext.Provider value={mutations}>{children}</MutationsContext.Provider>;
 }
 
 export { MutationsContext };

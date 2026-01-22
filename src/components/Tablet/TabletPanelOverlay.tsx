@@ -35,9 +35,14 @@ export function TabletPanelOverlay({ isOpen, onClose, side, children }: TabletPa
     };
   }, [isOpen]);
 
-  const translateX = side === 'left'
-    ? (isOpen ? 'translateX(0)' : 'translateX(-100%)')
-    : (isOpen ? 'translateX(0)' : 'translateX(100%)');
+  const translateX =
+    side === 'left'
+      ? isOpen
+        ? 'translateX(0)'
+        : 'translateX(-100%)'
+      : isOpen
+        ? 'translateX(0)'
+        : 'translateX(100%)';
 
   return (
     <>

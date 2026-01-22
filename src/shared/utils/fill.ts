@@ -7,7 +7,12 @@ import { getBlockedZones } from './collision';
  * Key format: "x,y"
  * @param step - Iteration step size (0.5 for half-bin mode, 1 for normal)
  */
-function createOccupiedCellSet(bins: Bin[], layerId: string, layout: Layout, step: number = 1): Set<string> {
+function createOccupiedCellSet(
+  bins: Bin[],
+  layerId: string,
+  layout: Layout,
+  step: number = 1
+): Set<string> {
   const occupied = new Set<string>();
 
   // Add cells from existing bins on this layer
@@ -88,7 +93,7 @@ export function fillAllWithSize(
   categoryId: string,
   halfBinMode: boolean = false
 ): { bins: Bin[]; skippedCells: number } {
-  const layer = layout.layers.find(l => l.id === layerId);
+  const layer = layout.layers.find((l) => l.id === layerId);
   if (!layer) {
     return { bins: [], skippedCells: 0 };
   }
@@ -153,7 +158,7 @@ export function fillGaps(
   maxPrintSize: number,
   halfBinMode: boolean = false
 ): { bins: Bin[]; addedCount: number } {
-  const layer = layout.layers.find(l => l.id === layerId);
+  const layer = layout.layers.find((l) => l.id === layerId);
   if (!layer) {
     return { bins: [], addedCount: 0 };
   }
@@ -175,14 +180,22 @@ export function fillGaps(
       sizes.push({ w, d });
     }
   }
-  sizes.sort((a, b) => (b.w * b.d) - (a.w * a.d));
+  sizes.sort((a, b) => b.w * b.d - a.w * a.d);
 
   let changed = true;
   while (changed && newBins.length < CONSTRAINTS.QUICK_FILL_MAX_BINS) {
     changed = false;
 
-    for (let y = 0; y < layout.drawer.depth && newBins.length < CONSTRAINTS.QUICK_FILL_MAX_BINS; y += step) {
-      for (let x = 0; x < layout.drawer.width && newBins.length < CONSTRAINTS.QUICK_FILL_MAX_BINS; x += step) {
+    for (
+      let y = 0;
+      y < layout.drawer.depth && newBins.length < CONSTRAINTS.QUICK_FILL_MAX_BINS;
+      y += step
+    ) {
+      for (
+        let x = 0;
+        x < layout.drawer.width && newBins.length < CONSTRAINTS.QUICK_FILL_MAX_BINS;
+        x += step
+      ) {
         for (const size of sizes) {
           // Bounds check
           if (x + size.w > layout.drawer.width || y + size.d > layout.drawer.depth) {

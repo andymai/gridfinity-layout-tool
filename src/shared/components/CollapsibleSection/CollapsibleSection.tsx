@@ -32,9 +32,10 @@ export function CollapsibleSection({
   const [hasToggled, setHasToggled] = useState(false);
   const contentId = useId();
 
-  const headerClass = variant === 'small'
-    ? 'text-xs font-semibold text-content-tertiary uppercase tracking-wider'
-    : 'text-sm font-semibold text-content-secondary tracking-wide';
+  const headerClass =
+    variant === 'small'
+      ? 'text-xs font-semibold text-content-tertiary uppercase tracking-wider'
+      : 'text-sm font-semibold text-content-secondary tracking-wide';
 
   return (
     <div>
@@ -64,9 +65,7 @@ export function CollapsibleSection({
       </div>
       <div
         id={contentId}
-        className={`overflow-hidden ${
-          hasToggled ? 'transition-all duration-200' : ''
-        } ${
+        className={`overflow-hidden ${hasToggled ? 'transition-all duration-200' : ''} ${
           expanded ? 'opacity-100 max-h-[2000px] mt-3' : 'opacity-0 max-h-0'
         }`}
       >

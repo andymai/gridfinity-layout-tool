@@ -36,18 +36,13 @@ export interface BinListExportData {
  * Filter rows by search query matching labels or notes.
  * Case-insensitive substring matching.
  */
-export function filterBySearch(
-  rows: EnhancedPrintRow[],
-  query: string
-): EnhancedPrintRow[] {
+export function filterBySearch(rows: EnhancedPrintRow[], query: string): EnhancedPrintRow[] {
   const trimmed = query.trim().toLowerCase();
   if (!trimmed) return rows;
 
-  return rows.filter(row => {
+  return rows.filter((row) => {
     // Check labels
-    const labelMatch = row.labels.some(label =>
-      label.toLowerCase().includes(trimmed)
-    );
+    const labelMatch = row.labels.some((label) => label.toLowerCase().includes(trimmed));
     if (labelMatch) return true;
 
     // Check notes
@@ -90,10 +85,7 @@ export function calculateSelectionRange(
 /**
  * Toggle a single index in the selection.
  */
-export function toggleSelection(
-  currentSelection: Set<number>,
-  index: number
-): Set<number> {
+export function toggleSelection(currentSelection: Set<number>, index: number): Set<number> {
   const next = new Set(currentSelection);
   if (next.has(index)) {
     next.delete(index);
@@ -130,7 +122,7 @@ function escapeCSVValue(value: string): string {
   // Prevent formula injection (Excel/Sheets)
   const formulaChars = ['=', '+', '-', '@', '\t', '\r'];
   let escaped = value;
-  if (formulaChars.some(char => escaped.startsWith(char))) {
+  if (formulaChars.some((char) => escaped.startsWith(char))) {
     escaped = `'${escaped}`;
   }
 
@@ -174,16 +166,14 @@ export function formatAsCSV(rows: EnhancedPrintRow[], meta?: CSVExportMeta): str
   // Build header with optional metadata and dynamic custom property columns
   const metaHeader = meta ? 'Layout,Grid Size,' : '';
   const baseHeader = `${metaHeader}Size,Height,Bins,Pieces,Filament (m),Label,Notes`;
-  const header = sortedKeys.length > 0
-    ? `${baseHeader},${sortedKeys.join(',')}`
-    : baseHeader;
+  const header = sortedKeys.length > 0 ? `${baseHeader},${sortedKeys.join(',')}` : baseHeader;
 
   // Pre-compute metadata values if provided (with CSV escaping)
   const layoutName = meta ? escapeCSVValue(meta.layoutName || '') : '';
   const gridSize = meta ? escapeCSVValue(meta.gridSize || '') : '';
 
   // Build data rows
-  const lines = rows.map(row => {
+  const lines = rows.map((row) => {
     const label = escapeCSVValue((row.labels ?? [])[0] || '');
     const notes = escapeCSVValue(row.notes || '');
     const metaValues = meta ? `${layoutName},${gridSize},` : '';
@@ -194,9 +184,7 @@ export function formatAsCSV(rows: EnhancedPrintRow[], meta?: CSVExportMeta): str
     }
 
     // Add custom property values in order (with CSV escaping)
-    const customValues = sortedKeys.map(key =>
-      escapeCSVValue(row.customProperties?.[key] || '')
-    );
+    const customValues = sortedKeys.map((key) => escapeCSVValue(row.customProperties?.[key] || ''));
     return `${baseLine},${customValues.join(',')}`;
   });
 
@@ -207,11 +195,8 @@ export function formatAsCSV(rows: EnhancedPrintRow[], meta?: CSVExportMeta): str
  * Format rows as JSON for programmatic use.
  * Includes layout metadata for context.
  */
-export function formatAsJSON(
-  rows: EnhancedPrintRow[],
-  layout: Layout
-): string {
-  const data: BinListExportData[] = rows.map(row => {
+export function formatAsJSON(rows: EnhancedPrintRow[], layout: Layout): string {
+  const data: BinListExportData[] = rows.map((row) => {
     const item: BinListExportData = {
       size: row.size,
       height: `${row.height}u`,
@@ -220,8 +205,8 @@ export function formatAsJSON(
       filament: row.filament,
       label: (row.labels ?? [])[0] || '',
       notes: row.notes || '',
-      categories: (row.categoryIds ?? []).map(id => {
-        const cat = layout.categories.find(c => c.id === id);
+      categories: (row.categoryIds ?? []).map((id) => {
+        const cat = layout.categories.find((c) => c.id === id);
         return cat?.name || 'Unknown';
       }),
     };
@@ -248,11 +233,7 @@ export function formatAsJSON(
 /**
  * Trigger a file download in the browser.
  */
-export function downloadAsFile(
-  content: string,
-  filename: string,
-  mimeType: string
-): void {
+export function downloadAsFile(content: string, filename: string, mimeType: string): void {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
 
@@ -288,15 +269,12 @@ export function calculateCategoryBreakdown(
   }
 
   // Calculate total for percentages
-  const totalFilament = Array.from(breakdown.values()).reduce(
-    (sum, v) => sum + v.filament,
-    0
-  );
+  const totalFilament = Array.from(breakdown.values()).reduce((sum, v) => sum + v.filament, 0);
 
   // Convert to array with category info
   const result: CategoryBreakdown[] = [];
   for (const [catId, data] of breakdown) {
-    const category = categories.find(c => c.id === catId);
+    const category = categories.find((c) => c.id === catId);
     result.push({
       categoryId: catId,
       categoryName: category?.name || 'Uncategorized',
@@ -304,9 +282,7 @@ export function calculateCategoryBreakdown(
       filament: Math.round(data.filament * 10) / 10,
       cost: Math.round(data.cost * 100) / 100,
       binCount: data.binCount,
-      percentage: totalFilament > 0
-        ? Math.round((data.filament / totalFilament) * 1000) / 10
-        : 0,
+      percentage: totalFilament > 0 ? Math.round((data.filament / totalFilament) * 1000) / 10 : 0,
     });
   }
 

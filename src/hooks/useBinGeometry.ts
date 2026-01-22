@@ -100,237 +100,267 @@ interface BinGeometryProps {
  * Generates exterior walls, interior cavity, and top rim with per-face vertex colors.
  * This is the standalone function - use useBinGeometry hook for React components.
  */
-export function createBinGeometry({ width, depth, height, baseColor }: BinGeometryProps): THREE.BufferGeometry {
-    const geometry = new THREE.BufferGeometry();
-    const positions: number[] = [];
-    const colors: number[] = [];
+export function createBinGeometry({
+  width,
+  depth,
+  height,
+  baseColor,
+}: BinGeometryProps): THREE.BufferGeometry {
+  const geometry = new THREE.BufferGeometry();
+  const positions: number[] = [];
+  const colors: number[] = [];
 
-    const color = new THREE.Color(baseColor);
-    const zGap = 0.03; // Small lift off floor
-    const BEVEL = 0.04; // Bevel size for rounded top edges
+  const color = new THREE.Color(baseColor);
+  const zGap = 0.03; // Small lift off floor
+  const BEVEL = 0.04; // Bevel size for rounded top edges
 
-    // Outer corners
-    const x0 = 0, x1 = width;
-    const y0 = 0, y1 = depth;
-    const z0 = zGap, z1 = height;
+  // Outer corners
+  const x0 = 0,
+    x1 = width;
+  const y0 = 0,
+    y1 = depth;
+  const z0 = zGap,
+    z1 = height;
 
-    // Beveled top edge positions (inset from outer edges)
-    const bx0 = BEVEL, bx1 = width - BEVEL;
-    const by0 = BEVEL, by1 = depth - BEVEL;
-    const bz = z1 - BEVEL; // Start of bevel in Z
+  // Beveled top edge positions (inset from outer edges)
+  const bx0 = BEVEL,
+    bx1 = width - BEVEL;
+  const by0 = BEVEL,
+    by1 = depth - BEVEL;
+  const bz = z1 - BEVEL; // Start of bevel in Z
 
-    // Inner corners (cavity)
-    const ix0 = WALL_THICKNESS, ix1 = width - WALL_THICKNESS;
-    const iy0 = WALL_THICKNESS, iy1 = depth - WALL_THICKNESS;
+  // Inner corners (cavity)
+  const ix0 = WALL_THICKNESS,
+    ix1 = width - WALL_THICKNESS;
+  const iy0 = WALL_THICKNESS,
+    iy1 = depth - WALL_THICKNESS;
 
-    // === OUTER WALLS ===
-    // Use base color for outer walls - let PBR materials handle lighting
-    // This preserves category colors more accurately
-    const outerWallColor = color;
+  // === OUTER WALLS ===
+  // Use base color for outer walls - let PBR materials handle lighting
+  // This preserves category colors more accurately
+  const outerWallColor = color;
 
-    // Walls go from bottom (z0) to bevel start (bz)
-    // Front wall (y=0)
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x0, y0, z0),
-      new THREE.Vector3(x1, y0, z0),
-      new THREE.Vector3(x1, y0, bz),
-      new THREE.Vector3(x0, y0, bz),
-      outerWallColor
-    );
+  // Walls go from bottom (z0) to bevel start (bz)
+  // Front wall (y=0)
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x0, y0, z0),
+    new THREE.Vector3(x1, y0, z0),
+    new THREE.Vector3(x1, y0, bz),
+    new THREE.Vector3(x0, y0, bz),
+    outerWallColor
+  );
 
-    // Right wall (x=width)
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x1, y0, z0),
-      new THREE.Vector3(x1, y1, z0),
-      new THREE.Vector3(x1, y1, bz),
-      new THREE.Vector3(x1, y0, bz),
-      outerWallColor
-    );
+  // Right wall (x=width)
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x1, y0, z0),
+    new THREE.Vector3(x1, y1, z0),
+    new THREE.Vector3(x1, y1, bz),
+    new THREE.Vector3(x1, y0, bz),
+    outerWallColor
+  );
 
-    // Back wall (y=depth)
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x1, y1, z0),
-      new THREE.Vector3(x0, y1, z0),
-      new THREE.Vector3(x0, y1, bz),
-      new THREE.Vector3(x1, y1, bz),
-      outerWallColor
-    );
+  // Back wall (y=depth)
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x1, y1, z0),
+    new THREE.Vector3(x0, y1, z0),
+    new THREE.Vector3(x0, y1, bz),
+    new THREE.Vector3(x1, y1, bz),
+    outerWallColor
+  );
 
-    // Left wall (x=0)
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x0, y1, z0),
-      new THREE.Vector3(x0, y0, z0),
-      new THREE.Vector3(x0, y0, bz),
-      new THREE.Vector3(x0, y1, bz),
-      outerWallColor
-    );
+  // Left wall (x=0)
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x0, y1, z0),
+    new THREE.Vector3(x0, y0, z0),
+    new THREE.Vector3(x0, y0, bz),
+    new THREE.Vector3(x0, y1, bz),
+    outerWallColor
+  );
 
-    // === TOP EDGE BEVELS ===
-    // Chamfered edges from bz to z1, angling inward
-    const bevelColor = color;
+  // === TOP EDGE BEVELS ===
+  // Chamfered edges from bz to z1, angling inward
+  const bevelColor = color;
 
-    // Front bevel (y=0 to by0)
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x0, y0, bz),
-      new THREE.Vector3(x1, y0, bz),
-      new THREE.Vector3(bx1, by0, z1),
-      new THREE.Vector3(bx0, by0, z1),
-      bevelColor
-    );
+  // Front bevel (y=0 to by0)
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x0, y0, bz),
+    new THREE.Vector3(x1, y0, bz),
+    new THREE.Vector3(bx1, by0, z1),
+    new THREE.Vector3(bx0, by0, z1),
+    bevelColor
+  );
 
-    // Right bevel (x=width to bx1)
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x1, y0, bz),
-      new THREE.Vector3(x1, y1, bz),
-      new THREE.Vector3(bx1, by1, z1),
-      new THREE.Vector3(bx1, by0, z1),
-      bevelColor
-    );
+  // Right bevel (x=width to bx1)
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x1, y0, bz),
+    new THREE.Vector3(x1, y1, bz),
+    new THREE.Vector3(bx1, by1, z1),
+    new THREE.Vector3(bx1, by0, z1),
+    bevelColor
+  );
 
-    // Back bevel (y=depth to by1)
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x1, y1, bz),
-      new THREE.Vector3(x0, y1, bz),
-      new THREE.Vector3(bx0, by1, z1),
-      new THREE.Vector3(bx1, by1, z1),
-      bevelColor
-    );
+  // Back bevel (y=depth to by1)
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x1, y1, bz),
+    new THREE.Vector3(x0, y1, bz),
+    new THREE.Vector3(bx0, by1, z1),
+    new THREE.Vector3(bx1, by1, z1),
+    bevelColor
+  );
 
-    // Left bevel (x=0 to bx0)
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x0, y1, bz),
-      new THREE.Vector3(x0, y0, bz),
-      new THREE.Vector3(bx0, by0, z1),
-      new THREE.Vector3(bx0, by1, z1),
-      bevelColor
-    );
+  // Left bevel (x=0 to bx0)
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x0, y1, bz),
+    new THREE.Vector3(x0, y0, bz),
+    new THREE.Vector3(bx0, by0, z1),
+    new THREE.Vector3(bx0, by1, z1),
+    bevelColor
+  );
 
-    // === EXTERIOR FLOOR ===
-    // Bottom face (slightly darkened) - winding order for upward-facing normal
-    const exteriorFloorColor = adjustColor(color, -0.08);
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x0, y0, z0),
-      new THREE.Vector3(x1, y0, z0),
-      new THREE.Vector3(x1, y1, z0),
-      new THREE.Vector3(x0, y1, z0),
-      exteriorFloorColor
-    );
+  // === EXTERIOR FLOOR ===
+  // Bottom face (slightly darkened) - winding order for upward-facing normal
+  const exteriorFloorColor = adjustColor(color, -0.08);
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x0, y0, z0),
+    new THREE.Vector3(x1, y0, z0),
+    new THREE.Vector3(x1, y1, z0),
+    new THREE.Vector3(x0, y1, z0),
+    exteriorFloorColor
+  );
 
-    // === INTERIOR CAVITY ===
-    // Interior surfaces use offset Z positions to prevent Z-fighting with exterior surfaces
-    const interiorFloorZ = z0 + INTERIOR_OFFSET;
-    const interiorCeilingZ = z1 - INTERIOR_OFFSET;
+  // === INTERIOR CAVITY ===
+  // Interior surfaces use offset Z positions to prevent Z-fighting with exterior surfaces
+  const interiorFloorZ = z0 + INTERIOR_OFFSET;
+  const interiorCeilingZ = z1 - INTERIOR_OFFSET;
 
-    // Interior floor (30% darkened - HSL-based for proper shadow hue)
-    const interiorFloorColor = adjustColor(color, -0.30);
+  // Interior floor (30% darkened - HSL-based for proper shadow hue)
+  const interiorFloorColor = adjustColor(color, -0.3);
 
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(ix0, iy0, interiorFloorZ),
-      new THREE.Vector3(ix0, iy1, interiorFloorZ),
-      new THREE.Vector3(ix1, iy1, interiorFloorZ),
-      new THREE.Vector3(ix1, iy0, interiorFloorZ),
-      interiorFloorColor
-    );
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(ix0, iy0, interiorFloorZ),
+    new THREE.Vector3(ix0, iy1, interiorFloorZ),
+    new THREE.Vector3(ix1, iy1, interiorFloorZ),
+    new THREE.Vector3(ix1, iy0, interiorFloorZ),
+    interiorFloorColor
+  );
 
-    // Interior walls (20% darkened - HSL-based for proper shadow hue)
-    // Note: Only 2 inner walls are visible from any given angle
-    // For simplicity, we'll render all 4 and let z-buffer handle visibility
-    const interiorWallColor = adjustColor(color, -0.20);
+  // Interior walls (20% darkened - HSL-based for proper shadow hue)
+  // Note: Only 2 inner walls are visible from any given angle
+  // For simplicity, we'll render all 4 and let z-buffer handle visibility
+  const interiorWallColor = adjustColor(color, -0.2);
 
-    // Inner front wall
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(ix0, iy0, interiorFloorZ),
-      new THREE.Vector3(ix1, iy0, interiorFloorZ),
-      new THREE.Vector3(ix1, iy0, interiorCeilingZ),
-      new THREE.Vector3(ix0, iy0, interiorCeilingZ),
-      interiorWallColor
-    );
+  // Inner front wall
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(ix0, iy0, interiorFloorZ),
+    new THREE.Vector3(ix1, iy0, interiorFloorZ),
+    new THREE.Vector3(ix1, iy0, interiorCeilingZ),
+    new THREE.Vector3(ix0, iy0, interiorCeilingZ),
+    interiorWallColor
+  );
 
-    // Inner right wall
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(ix1, iy0, interiorFloorZ),
-      new THREE.Vector3(ix1, iy1, interiorFloorZ),
-      new THREE.Vector3(ix1, iy1, interiorCeilingZ),
-      new THREE.Vector3(ix1, iy0, interiorCeilingZ),
-      interiorWallColor
-    );
+  // Inner right wall
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(ix1, iy0, interiorFloorZ),
+    new THREE.Vector3(ix1, iy1, interiorFloorZ),
+    new THREE.Vector3(ix1, iy1, interiorCeilingZ),
+    new THREE.Vector3(ix1, iy0, interiorCeilingZ),
+    interiorWallColor
+  );
 
-    // Inner back wall
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(ix1, iy1, interiorFloorZ),
-      new THREE.Vector3(ix0, iy1, interiorFloorZ),
-      new THREE.Vector3(ix0, iy1, interiorCeilingZ),
-      new THREE.Vector3(ix1, iy1, interiorCeilingZ),
-      interiorWallColor
-    );
+  // Inner back wall
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(ix1, iy1, interiorFloorZ),
+    new THREE.Vector3(ix0, iy1, interiorFloorZ),
+    new THREE.Vector3(ix0, iy1, interiorCeilingZ),
+    new THREE.Vector3(ix1, iy1, interiorCeilingZ),
+    interiorWallColor
+  );
 
-    // Inner left wall
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(ix0, iy1, interiorFloorZ),
-      new THREE.Vector3(ix0, iy0, interiorFloorZ),
-      new THREE.Vector3(ix0, iy0, interiorCeilingZ),
-      new THREE.Vector3(ix0, iy1, interiorCeilingZ),
-      interiorWallColor
-    );
+  // Inner left wall
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(ix0, iy1, interiorFloorZ),
+    new THREE.Vector3(ix0, iy0, interiorFloorZ),
+    new THREE.Vector3(ix0, iy0, interiorCeilingZ),
+    new THREE.Vector3(ix0, iy1, interiorCeilingZ),
+    interiorWallColor
+  );
 
-    // === TOP RIM ===
-    // Use base color for top rim - let PBR handle lighting
-    const topColor = color;
+  // === TOP RIM ===
+  // Use base color for top rim - let PBR handle lighting
+  const topColor = color;
 
-    // Top rim is a frame connecting outer edge to inner edge
-    // Front rim
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x0, y0, z1),
-      new THREE.Vector3(x1, y0, z1),
-      new THREE.Vector3(ix1, iy0, z1),
-      new THREE.Vector3(ix0, iy0, z1),
-      topColor
-    );
+  // Top rim is a frame connecting outer edge to inner edge
+  // Front rim
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x0, y0, z1),
+    new THREE.Vector3(x1, y0, z1),
+    new THREE.Vector3(ix1, iy0, z1),
+    new THREE.Vector3(ix0, iy0, z1),
+    topColor
+  );
 
-    // Right rim
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x1, y0, z1),
-      new THREE.Vector3(x1, y1, z1),
-      new THREE.Vector3(ix1, iy1, z1),
-      new THREE.Vector3(ix1, iy0, z1),
-      topColor
-    );
+  // Right rim
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x1, y0, z1),
+    new THREE.Vector3(x1, y1, z1),
+    new THREE.Vector3(ix1, iy1, z1),
+    new THREE.Vector3(ix1, iy0, z1),
+    topColor
+  );
 
-    // Back rim
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x1, y1, z1),
-      new THREE.Vector3(x0, y1, z1),
-      new THREE.Vector3(ix0, iy1, z1),
-      new THREE.Vector3(ix1, iy1, z1),
-      topColor
-    );
+  // Back rim
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x1, y1, z1),
+    new THREE.Vector3(x0, y1, z1),
+    new THREE.Vector3(ix0, iy1, z1),
+    new THREE.Vector3(ix1, iy1, z1),
+    topColor
+  );
 
-    // Left rim
-    addQuad(
-      positions, colors,
-      new THREE.Vector3(x0, y1, z1),
-      new THREE.Vector3(x0, y0, z1),
-      new THREE.Vector3(ix0, iy0, z1),
-      new THREE.Vector3(ix0, iy1, z1),
-      topColor
-    );
+  // Left rim
+  addQuad(
+    positions,
+    colors,
+    new THREE.Vector3(x0, y1, z1),
+    new THREE.Vector3(x0, y0, z1),
+    new THREE.Vector3(ix0, iy0, z1),
+    new THREE.Vector3(ix0, iy1, z1),
+    topColor
+  );
 
   // Set geometry attributes
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -345,7 +375,12 @@ export function createBinGeometry({ width, depth, height, baseColor }: BinGeomet
  * Use this in React components for automatic caching.
  * Properly disposes of geometry when dependencies change or on unmount.
  */
-export function useBinGeometry({ width, depth, height, baseColor }: BinGeometryProps): THREE.BufferGeometry {
+export function useBinGeometry({
+  width,
+  depth,
+  height,
+  baseColor,
+}: BinGeometryProps): THREE.BufferGeometry {
   const geometry = useMemo(
     () => createBinGeometry({ width, depth, height, baseColor }),
     [width, depth, height, baseColor]

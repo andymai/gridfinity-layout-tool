@@ -121,7 +121,7 @@ const StubRoomProvider: React.ComponentType<{
 const createUnconfiguredHook = (hookName: string) => () => {
   throw new Error(
     `${hookName} called but Liveblocks is not configured. ` +
-    `Check isLiveblocksConfigured before using collaborative features.`
+      `Check isLiveblocksConfigured before using collaborative features.`
   );
 };
 
@@ -133,7 +133,7 @@ const safeStubHooks = {
   useOthers: () => [] as readonly { connectionId: number; presence: UserPresence }[],
   useSelf: () => null as { connectionId: number; presence: UserPresence } | null,
   useStatus: () => 'initial' as string,
-  useStorage: <T,>(_selector: (root: LiveblocksStorage) => T) => null as T | null,
+  useStorage: <T>(_selector: (root: LiveblocksStorage) => T) => null as T | null,
 };
 
 /**
@@ -146,7 +146,7 @@ const safeStubHooks = {
  */
 function createSafeHook<TArgs extends unknown[], TReturn>(
   realHook: ((...args: TArgs) => TReturn) | null | undefined,
-  stubHook: (...args: TArgs) => TReturn,
+  stubHook: (...args: TArgs) => TReturn
 ): (...args: TArgs) => TReturn {
   if (!realHook) return stubHook;
 
@@ -173,22 +173,26 @@ export const RoomProvider = (context?.RoomProvider ?? StubRoomProvider) as React
   initialStorage?: LiveblocksStorage;
   children: React.ReactNode;
 }>;
-export const useMyPresence = (context?.useMyPresence ?? createUnconfiguredHook('useMyPresence')) as () => [
+export const useMyPresence = (context?.useMyPresence ??
+  createUnconfiguredHook('useMyPresence')) as () => [
   UserPresence,
   (patch: Partial<UserPresence>) => void,
 ];
-export const useUpdateMyPresence = (context?.useUpdateMyPresence ?? createUnconfiguredHook('useUpdateMyPresence')) as () => (
-  patch: Partial<UserPresence>
-) => void;
+export const useUpdateMyPresence = (context?.useUpdateMyPresence ??
+  createUnconfiguredHook('useUpdateMyPresence')) as () => (patch: Partial<UserPresence>) => void;
 // Safe hooks that return defaults when not configured OR when called outside RoomProvider
 // These can be called unconditionally - they catch RoomProvider errors and return safe defaults
 export const useOthers = createSafeHook(
-  context?.useOthers as (() => readonly { connectionId: number; presence: UserPresence }[]) | undefined,
+  context?.useOthers as
+    | (() => readonly { connectionId: number; presence: UserPresence }[])
+    | undefined,
   safeStubHooks.useOthers
 ) as () => readonly { connectionId: number; presence: UserPresence }[];
 
-export const useOthersMapped = context?.useOthersMapped ?? createUnconfiguredHook('useOthersMapped');
-export const useOthersConnectionIds = context?.useOthersConnectionIds ?? createUnconfiguredHook('useOthersConnectionIds');
+export const useOthersMapped =
+  context?.useOthersMapped ?? createUnconfiguredHook('useOthersMapped');
+export const useOthersConnectionIds =
+  context?.useOthersConnectionIds ?? createUnconfiguredHook('useOthersConnectionIds');
 export const useOther = context?.useOther ?? createUnconfiguredHook('useOther');
 
 export const useSelf = createSafeHook(
@@ -202,8 +206,10 @@ export const useStorage = createSafeHook(
 ) as <T>(selector: (root: LiveblocksStorage) => T) => T | null;
 export const useMutation = context?.useMutation ?? createUnconfiguredHook('useMutation');
 export const useRoom = context?.useRoom ?? createUnconfiguredHook('useRoom');
-export const useBroadcastEvent = context?.useBroadcastEvent ?? createUnconfiguredHook('useBroadcastEvent');
-export const useEventListener = context?.useEventListener ?? createUnconfiguredHook('useEventListener');
+export const useBroadcastEvent =
+  context?.useBroadcastEvent ?? createUnconfiguredHook('useBroadcastEvent');
+export const useEventListener =
+  context?.useEventListener ?? createUnconfiguredHook('useEventListener');
 
 export const useStatus = createSafeHook(
   context?.useStatus as (() => string) | undefined,

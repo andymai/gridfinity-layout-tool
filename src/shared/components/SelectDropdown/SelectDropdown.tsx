@@ -49,8 +49,8 @@ export function SelectDropdown({
   return (
     <div className={`relative ${className}`}>
       {/* Color swatch indicator */}
-      {hasColorSwatch && (
-        colorSwatch ? (
+      {hasColorSwatch &&
+        (colorSwatch ? (
           <div
             className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded pointer-events-none"
             style={{ backgroundColor: colorSwatch }}
@@ -58,8 +58,7 @@ export function SelectDropdown({
         ) : (
           // Mixed/null state indicator
           <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded pointer-events-none bg-surface-hover border border-stroke-subtle" />
-        )
-      )}
+        ))}
 
       <select
         value={value}
@@ -74,7 +73,8 @@ export function SelectDropdown({
         )}
         {options.map((opt) => (
           <option key={opt.id} value={opt.id}>
-            {opt.name}{opt.suffix || ''}
+            {opt.name}
+            {opt.suffix || ''}
           </option>
         ))}
       </select>

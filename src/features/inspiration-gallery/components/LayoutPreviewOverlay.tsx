@@ -40,19 +40,11 @@ export function LayoutPreviewOverlay({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  const {
-    name,
-    description,
-    theme,
-    metrics,
-    layout: layoutData,
-  } = layout;
+  const { name, description, theme, metrics, layout: layoutData } = layout;
 
   // Find related layouts (same theme, excluding current)
   const relatedLayouts = useMemo(() => {
-    return INSPIRATION_LAYOUTS
-      .filter((l) => l.theme === theme && l.id !== layout.id)
-      .slice(0, 3);
+    return INSPIRATION_LAYOUTS.filter((l) => l.theme === theme && l.id !== layout.id).slice(0, 3);
   }, [theme, layout.id]);
 
   // Get current drawer size for comparison
@@ -101,7 +93,12 @@ export function LayoutPreviewOverlay({
               aria-label="Back to gallery"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
               </svg>
             </button>
             <h2 id="preview-title" className="text-lg md:text-xl font-bold text-content">
@@ -114,9 +111,13 @@ export function LayoutPreviewOverlay({
         </div>
 
         {/* Content */}
-        <div className={`flex-1 overflow-y-auto scrollbar-thin ${isMobile ? 'flex flex-col' : 'flex'}`}>
+        <div
+          className={`flex-1 overflow-y-auto scrollbar-thin ${isMobile ? 'flex flex-col' : 'flex'}`}
+        >
           {/* Large preview - fills available space */}
-          <div className={`${isMobile ? 'p-4' : 'flex-1 p-6'} flex items-center justify-center bg-surface`}>
+          <div
+            className={`${isMobile ? 'p-4' : 'flex-1 p-6'} flex items-center justify-center bg-surface`}
+          >
             <div className="bg-surface-secondary rounded-xl p-6 md:p-8 w-full h-full max-h-[60vh] flex items-center justify-center">
               <LayoutThumbnailWithLabels
                 layout={layoutData}
@@ -127,7 +128,9 @@ export function LayoutPreviewOverlay({
           </div>
 
           {/* Details panel - wider on desktop */}
-          <div className={`${isMobile ? 'p-4' : 'w-96 p-6 border-l border-stroke-subtle'} space-y-5`}>
+          <div
+            className={`${isMobile ? 'p-4' : 'w-96 p-6 border-l border-stroke-subtle'} space-y-5`}
+          >
             {/* Description */}
             <div>
               <h3 className="text-sm font-medium text-content mb-2">Description</h3>
@@ -178,7 +181,9 @@ export function LayoutPreviewOverlay({
             {/* Related layouts */}
             {relatedLayouts.length > 0 && onSelectRelated && (
               <div>
-                <h3 className="text-sm font-medium text-content mb-2">More {THEME_CONFIG[theme].label}</h3>
+                <h3 className="text-sm font-medium text-content mb-2">
+                  More {THEME_CONFIG[theme].label}
+                </h3>
                 <div className="flex gap-2">
                   {relatedLayouts.map((related) => (
                     <button
@@ -193,8 +198,12 @@ export function LayoutPreviewOverlay({
                           className="max-w-full max-h-full"
                         />
                       </div>
-                      <div className="text-xs font-medium text-content truncate">{related.name}</div>
-                      <div className="text-[10px] text-content-tertiary">{related.metrics.binCount} bins</div>
+                      <div className="text-xs font-medium text-content truncate">
+                        {related.name}
+                      </div>
+                      <div className="text-[10px] text-content-tertiary">
+                        {related.metrics.binCount} bins
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -217,8 +226,19 @@ export function LayoutPreviewOverlay({
               {isImporting ? (
                 <>
                   <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
                   Adding...
                 </>
@@ -264,7 +284,12 @@ function DrawerSizeInfo({
   if (matchesCurrent) {
     return (
       <div className="flex items-start gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-        <svg className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg
+          className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
         <div>
@@ -280,8 +305,18 @@ function DrawerSizeInfo({
   // Different size - just show info, no warning needed since it creates a copy
   return (
     <div className="flex items-start gap-2 p-3 rounded-lg bg-surface border border-stroke-subtle">
-      <svg className="w-5 h-5 text-content-tertiary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+      <svg
+        className="w-5 h-5 text-content-tertiary shrink-0 mt-0.5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+        />
       </svg>
       <div>
         <div className="text-sm font-medium text-content-secondary">
@@ -289,7 +324,8 @@ function DrawerSizeInfo({
         </div>
         <div className="text-xs text-content-tertiary">
           {realWidth}×{realDepth}mm
-          {(templateSize.width !== currentSize.width || templateSize.depth !== currentSize.depth) && (
+          {(templateSize.width !== currentSize.width ||
+            templateSize.depth !== currentSize.depth) && (
             <span className="ml-1 text-content-disabled">
               (yours: {currentSize.width}×{currentSize.depth})
             </span>

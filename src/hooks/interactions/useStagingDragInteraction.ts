@@ -144,10 +144,7 @@ export function useStagingDragInteraction(
         });
         setSelectedBin(interaction.binId);
         // Track for ML telemetry (bin moved from staging to grid)
-        mlTracking.trackPlacement(
-          { ...bin, x, y, layerId: activeLayerId },
-          'staging'
-        );
+        mlTracking.trackPlacement({ ...bin, x, y, layerId: activeLayerId }, 'staging');
         // Also track layer movement (from staging to active layer)
         mlTracking.trackLayerMove(bin, fromLayerId, activeLayerId, 'drag', 1);
       }

@@ -12,7 +12,6 @@ import { ThemeFilterPills } from './ThemeFilterPills';
 import { LayoutCard } from './LayoutCard';
 import { LayoutPreviewOverlay } from './LayoutPreviewOverlay';
 
-
 interface InspirationGalleryProps {
   isOpen: boolean;
   onClose: () => void;
@@ -56,19 +55,23 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
   const addToast = useToastStore((state) => state.addToast);
 
   // Filter by theme
-  const filteredLayouts = selectedTheme === 'all'
-    ? INSPIRATION_LAYOUTS
-    : INSPIRATION_LAYOUTS.filter((l) => l.theme === selectedTheme);
+  const filteredLayouts =
+    selectedTheme === 'all'
+      ? INSPIRATION_LAYOUTS
+      : INSPIRATION_LAYOUTS.filter((l) => l.theme === selectedTheme);
 
   // Count layouts per theme (memoized since INSPIRATION_LAYOUTS is static)
-  const themeCounts = useMemo(() => ({
-    all: INSPIRATION_LAYOUTS.length,
-    kitchen: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'kitchen').length,
-    workshop: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'workshop').length,
-    office: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'office').length,
-    hobby: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'hobby').length,
-    personal: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'personal').length,
-  }), []);
+  const themeCounts = useMemo(
+    () => ({
+      all: INSPIRATION_LAYOUTS.length,
+      kitchen: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'kitchen').length,
+      workshop: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'workshop').length,
+      office: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'office').length,
+      hobby: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'hobby').length,
+      personal: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'personal').length,
+    }),
+    []
+  );
 
   // Handle escape key
   useEffect(() => {
@@ -167,48 +170,60 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     } finally {
       setIsImporting(false);
     }
-  }, [previewLayout, isImporting, importLayoutFromJSON, switchLayout, addToast, announceToScreenReader, closeMobilePanel, onClose]);
+  }, [
+    previewLayout,
+    isImporting,
+    importLayoutFromJSON,
+    switchLayout,
+    addToast,
+    announceToScreenReader,
+    closeMobilePanel,
+    onClose,
+  ]);
 
   // Keyboard navigation for grid
-  const handleGridKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!gridRef.current) return;
+  const handleGridKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!gridRef.current) return;
 
-    const cards = gridRef.current.querySelectorAll('[data-layout-card]');
-    const cardCount = cards.length;
-    if (cardCount === 0) return;
+      const cards = gridRef.current.querySelectorAll('[data-layout-card]');
+      const cardCount = cards.length;
+      if (cardCount === 0) return;
 
-    // Calculate grid columns based on viewport
-    const gridComputedStyle = window.getComputedStyle(gridRef.current);
-    const cols = gridComputedStyle.gridTemplateColumns.split(' ').length;
+      // Calculate grid columns based on viewport
+      const gridComputedStyle = window.getComputedStyle(gridRef.current);
+      const cols = gridComputedStyle.gridTemplateColumns.split(' ').length;
 
-    let newIndex = focusedCardIndex;
+      let newIndex = focusedCardIndex;
 
-    switch (e.key) {
-      case 'ArrowRight':
-        e.preventDefault();
-        newIndex = Math.min(focusedCardIndex + 1, cardCount - 1);
-        break;
-      case 'ArrowLeft':
-        e.preventDefault();
-        newIndex = Math.max(focusedCardIndex - 1, 0);
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        newIndex = Math.min(focusedCardIndex + cols, cardCount - 1);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        newIndex = Math.max(focusedCardIndex - cols, 0);
-        break;
-      default:
-        return;
-    }
+      switch (e.key) {
+        case 'ArrowRight':
+          e.preventDefault();
+          newIndex = Math.min(focusedCardIndex + 1, cardCount - 1);
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          newIndex = Math.max(focusedCardIndex - 1, 0);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          newIndex = Math.min(focusedCardIndex + cols, cardCount - 1);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          newIndex = Math.max(focusedCardIndex - cols, 0);
+          break;
+        default:
+          return;
+      }
 
-    if (newIndex !== focusedCardIndex && newIndex >= 0) {
-      setFocusedCardIndex(newIndex);
-      (cards[newIndex] as HTMLElement)?.focus();
-    }
-  }, [focusedCardIndex]);
+      if (newIndex !== focusedCardIndex && newIndex >= 0) {
+        setFocusedCardIndex(newIndex);
+        (cards[newIndex] as HTMLElement)?.focus();
+      }
+    },
+    [focusedCardIndex]
+  );
 
   // Grid column style - fixed 2 cols on mobile, user-controlled on desktop
   const gridStyle = isMobile
@@ -232,9 +247,10 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
         aria-labelledby="inspiration-gallery-title"
         className={`
           fixed z-50 bg-surface-elevated flex flex-col animate-scale-in
-          ${isMobile
-            ? 'inset-x-0 bottom-0 rounded-t-2xl max-h-[85dvh]'
-            : 'inset-4 md:inset-8 lg:inset-12 xl:inset-16 rounded-xl max-h-[90vh]'
+          ${
+            isMobile
+              ? 'inset-x-0 bottom-0 rounded-t-2xl max-h-[85dvh]'
+              : 'inset-4 md:inset-8 lg:inset-12 xl:inset-16 rounded-xl max-h-[90vh]'
           }
         `}
         onClick={(e) => e.stopPropagation()}
@@ -247,10 +263,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
           {/* Title row */}
           <div className="flex items-center justify-between px-4 pt-3 pb-2">
             <div>
-              <h2
-                id="inspiration-gallery-title"
-                className="text-lg font-semibold text-content"
-              >
+              <h2 id="inspiration-gallery-title" className="text-lg font-semibold text-content">
                 Inspiration Gallery
               </h2>
               <p className="text-sm text-content-secondary">
@@ -261,8 +274,18 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
               {/* Grid size slider (desktop only) */}
               {!isMobile && (
                 <div className="flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  <svg
+                    className="w-4 h-4 text-content-tertiary"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                    />
                   </svg>
                   <input
                     type="range"
@@ -282,7 +305,12 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
                 aria-label="Close gallery"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -313,7 +341,9 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
                 layout={layout}
                 onClick={() => handleSelectLayout(layout)}
                 index={index}
-                tabIndex={(focusedCardIndex === -1 && index === 0) || focusedCardIndex === index ? 0 : -1}
+                tabIndex={
+                  (focusedCardIndex === -1 && index === 0) || focusedCardIndex === index ? 0 : -1
+                }
                 onFocus={() => setFocusedCardIndex(index)}
               />
             ))}
@@ -322,8 +352,18 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
           {/* Empty state */}
           {filteredLayouts.length === 0 && (
             <div className="text-center py-12">
-              <svg className="w-12 h-12 mx-auto text-content-disabled mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+              <svg
+                className="w-12 h-12 mx-auto text-content-disabled mb-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                />
               </svg>
               <p className="text-content-secondary">No layouts found for this theme</p>
             </div>

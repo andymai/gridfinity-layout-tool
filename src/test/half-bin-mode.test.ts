@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { snapToHalf, snapToGrid, isFractional, hasFractionalDimensions, HALF_BIN_SCALE } from '@/core/constants';
+import {
+  snapToHalf,
+  snapToGrid,
+  isFractional,
+  hasFractionalDimensions,
+  HALF_BIN_SCALE,
+} from '@/core/constants';
 import { useUIStore } from '@/core/store';
 
 /**
@@ -668,8 +674,8 @@ describe('Half-bin mode', () => {
       // With step=0.5, sizes from 2 down to 0.5: 2, 1.5, 1, 0.5 = 4 values each dimension
       // Total: 4 * 4 = 16 sizes
       expect(sizes.length).toBe(16);
-      expect(sizes.some(s => s.w === 0.5 && s.d === 0.5)).toBe(true);
-      expect(sizes.some(s => s.w === 1.5 && s.d === 1)).toBe(true);
+      expect(sizes.some((s) => s.w === 0.5 && s.d === 0.5)).toBe(true);
+      expect(sizes.some((s) => s.w === 1.5 && s.d === 1)).toBe(true);
     });
 
     it('generates whole-unit sizes for gap fill in normal mode', () => {
@@ -688,8 +694,8 @@ describe('Half-bin mode', () => {
       // With step=1, sizes 2 and 1 = 2 values each dimension
       // Total: 2 * 2 = 4 sizes
       expect(sizes.length).toBe(4);
-      expect(sizes.some(s => s.w === 2 && s.d === 2)).toBe(true);
-      expect(sizes.some(s => s.w === 1 && s.d === 1)).toBe(true);
+      expect(sizes.some((s) => s.w === 2 && s.d === 2)).toBe(true);
+      expect(sizes.some((s) => s.w === 1 && s.d === 1)).toBe(true);
     });
 
     it('correctly detects occupied fractional cells', () => {

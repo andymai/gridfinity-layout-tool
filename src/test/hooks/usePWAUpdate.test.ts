@@ -16,7 +16,9 @@ const MAX_IDLE_WAIT_MS = 2 * 60 * 1000;
 // Track mock functions from the virtual module
 let mockNeedRefresh = false;
 let mockUpdateServiceWorker: Mock;
-let mockOnRegisteredSW: ((swUrl: string, registration: ServiceWorkerRegistration) => void) | undefined;
+let mockOnRegisteredSW:
+  | ((swUrl: string, registration: ServiceWorkerRegistration) => void)
+  | undefined;
 let mockOnRegisterError: ((error: Error) => void) | undefined;
 
 // Mock the virtual:pwa-register/react module
@@ -90,7 +92,16 @@ describe('usePWAUpdate', () => {
       mockNeedRefresh = true;
 
       // Set up an active interaction
-      useUIStore.setState({ interaction: { type: 'drag', binIds: ['bin1'], startX: 0, startY: 0, currentX: 0, currentY: 0 } });
+      useUIStore.setState({
+        interaction: {
+          type: 'drag',
+          binIds: ['bin1'],
+          startX: 0,
+          startY: 0,
+          currentX: 0,
+          currentY: 0,
+        },
+      });
 
       renderHook(() => usePWAUpdate());
 
@@ -359,7 +370,10 @@ describe('usePWAUpdate', () => {
 
       // Now trigger visibility change
       act(() => {
-        Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+        Object.defineProperty(document, 'visibilityState', {
+          value: 'visible',
+          configurable: true,
+        });
         document.dispatchEvent(new Event('visibilitychange'));
       });
 
@@ -524,7 +538,7 @@ describe('usePWAUpdate', () => {
       });
 
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message.includes('Updating'))).toBe(true);
+      expect(toasts.some((t) => t.message.includes('Updating'))).toBe(true);
     });
 
     it('waits for toast duration before updating', async () => {
@@ -558,7 +572,16 @@ describe('usePWAUpdate', () => {
       mockNeedRefresh = true;
 
       // Keep interaction active
-      useUIStore.setState({ interaction: { type: 'drag', binIds: ['bin1'], startX: 0, startY: 0, currentX: 0, currentY: 0 } });
+      useUIStore.setState({
+        interaction: {
+          type: 'drag',
+          binIds: ['bin1'],
+          startX: 0,
+          startY: 0,
+          currentX: 0,
+          currentY: 0,
+        },
+      });
 
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -690,7 +713,7 @@ describe('usePWAUpdate', () => {
 
       // Check toast was shown
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message === 'Session restored')).toBe(true);
+      expect(toasts.some((t) => t.message === 'Session restored')).toBe(true);
     });
 
     it('does not show toast when no ephemeral state exists', async () => {
@@ -711,7 +734,7 @@ describe('usePWAUpdate', () => {
 
       // No "Session restored" toast should appear
       const toasts = useToastStore.getState().toasts;
-      expect(toasts.some(t => t.message === 'Session restored')).toBe(false);
+      expect(toasts.some((t) => t.message === 'Session restored')).toBe(false);
     });
 
     it('filters out selected bins that no longer exist', async () => {

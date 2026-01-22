@@ -25,7 +25,12 @@ const TICK_OPACITY = 0.3;
  * Includes fractional edge labels when drawer has fractional dimensions.
  * Respects fractionalEdgeX/Y settings for label positioning.
  */
-export function AxisLabels({ width, depth, fractionalEdgeX = 'end', fractionalEdgeY = 'end' }: AxisLabelsProps) {
+export function AxisLabels({
+  width,
+  depth,
+  fractionalEdgeX = 'end',
+  fractionalEdgeY = 'end',
+}: AxisLabelsProps) {
   const integerWidth = Math.floor(width);
   const integerDepth = Math.floor(depth);
   const hasFractionalWidth = width % 1 !== 0;
@@ -98,7 +103,20 @@ export function AxisLabels({ width, depth, fractionalEdgeX = 'end', fractionalEd
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     return geo;
-  }, [width, depth, integerWidth, integerDepth, hasFractionalWidth, hasFractionalDepth, fractionalWidthPart, fractionalDepthPart, xOffset, yOffset, fractionalEdgeX, fractionalEdgeY]);
+  }, [
+    width,
+    depth,
+    integerWidth,
+    integerDepth,
+    hasFractionalWidth,
+    hasFractionalDepth,
+    fractionalWidthPart,
+    fractionalDepthPart,
+    xOffset,
+    yOffset,
+    fractionalEdgeX,
+    fractionalEdgeY,
+  ]);
 
   // Cleanup geometry on unmount or when dependencies change
   useEffect(() => {

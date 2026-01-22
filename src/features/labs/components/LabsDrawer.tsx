@@ -7,15 +7,14 @@ import { GraduatedSection } from './GraduatedSection';
 import { SparklesIcon, CloseIcon } from './icons';
 
 export function LabsDrawer() {
-  const { isOpen, closeDrawer, toggleFeature, isFeatureEnabled } =
-    useLabsStore(
-      useShallow((state) => ({
-        isOpen: state.isDrawerOpen,
-        closeDrawer: state.closeDrawer,
-        toggleFeature: state.toggleFeature,
-        isFeatureEnabled: state.isFeatureEnabled,
-      }))
-    );
+  const { isOpen, closeDrawer, toggleFeature, isFeatureEnabled } = useLabsStore(
+    useShallow((state) => ({
+      isOpen: state.isDrawerOpen,
+      closeDrawer: state.closeDrawer,
+      toggleFeature: state.toggleFeature,
+      isFeatureEnabled: state.isFeatureEnabled,
+    }))
+  );
 
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -93,8 +92,8 @@ export function LabsDrawer() {
           <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
             {/* Description */}
             <p className="text-sm text-content-secondary leading-relaxed mb-6" data-nosnippet>
-              Try new features before they're released to everyone. Features may
-              change based on feedback.
+              Try new features before they're released to everyone. Features may change based on
+              feedback.
             </p>
 
             {/* Feature Cards */}

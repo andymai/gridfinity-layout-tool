@@ -15,12 +15,12 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
   const isToggleable = !isGraduated && !isDeprecated && !isComingSoon;
 
   return (
-    <article className={`rounded-lg border border-stroke-subtle bg-surface p-4 ${isComingSoon ? 'opacity-75' : ''}`}>
+    <article
+      className={`rounded-lg border border-stroke-subtle bg-surface p-4 ${isComingSoon ? 'opacity-75' : ''}`}
+    >
       {/* Header: Title + Status */}
       <div className="flex items-start justify-between gap-3 mb-2">
-        <h3 className="text-[15px] font-semibold text-content leading-tight">
-          {feature.name}
-        </h3>
+        <h3 className="text-[15px] font-semibold text-content leading-tight">{feature.name}</h3>
         {isComingSoon ? (
           <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded bg-purple-500/15 text-purple-400">
             Coming Soon
@@ -36,18 +36,20 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
       </p>
 
       {/* Warning (for medium/high risk) - hide for coming soon */}
-      {!isComingSoon && feature.warning && (feature.risk === 'medium' || feature.risk === 'high') && (
-        <div
-          className={`flex items-start gap-2 text-xs p-2.5 rounded mb-3 ${
-            feature.risk === 'high'
-              ? 'bg-red-500/10 text-red-400'
-              : 'bg-amber-500/10 text-amber-400'
-          }`}
-        >
-          <WarningIcon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-          <span className="leading-relaxed">{feature.warning}</span>
-        </div>
-      )}
+      {!isComingSoon &&
+        feature.warning &&
+        (feature.risk === 'medium' || feature.risk === 'high') && (
+          <div
+            className={`flex items-start gap-2 text-xs p-2.5 rounded mb-3 ${
+              feature.risk === 'high'
+                ? 'bg-red-500/10 text-red-400'
+                : 'bg-amber-500/10 text-amber-400'
+            }`}
+          >
+            <WarningIcon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span className="leading-relaxed">{feature.warning}</span>
+          </div>
+        )}
 
       {/* Footer: Learn more + Toggle */}
       <div className="flex items-center justify-between">
@@ -128,12 +130,7 @@ function ExternalLinkIcon({ className }: { className?: string }) {
 function CheckIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M5 13l4 4L19 7"
-      />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
     </svg>
   );
 }

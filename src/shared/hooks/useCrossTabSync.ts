@@ -1,5 +1,12 @@
 import { useEffect } from 'react';
-import { useLayoutStore, useLibraryStore, useHistoryStore, useUIStore, useLabsStore, LABS_STORAGE_KEY } from '@/core/store';
+import {
+  useLayoutStore,
+  useLibraryStore,
+  useHistoryStore,
+  useUIStore,
+  useLabsStore,
+  LABS_STORAGE_KEY,
+} from '@/core/store';
 import { loadLayoutAsync, loadLibrary } from '@/core/storage';
 import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import { createDefaultLabsPreferences } from '@/core/labs';
@@ -14,9 +21,7 @@ export function useCrossTabSync() {
       // Labs preferences changed - sync them
       if (e.key === LABS_STORAGE_KEY) {
         try {
-          const newPrefs = e.newValue
-            ? JSON.parse(e.newValue)
-            : createDefaultLabsPreferences();
+          const newPrefs = e.newValue ? JSON.parse(e.newValue) : createDefaultLabsPreferences();
           useLabsStore.getState().syncFromStorage({
             ...createDefaultLabsPreferences(),
             ...newPrefs,
@@ -63,10 +68,13 @@ export function useCrossTabSync() {
                   const activeLayer = uiState.activeLayerId;
                   const activeCategory = uiState.activeCategoryId;
 
-                  if (activeLayer && !newLayout.layers.find(l => l.id === activeLayer)) {
+                  if (activeLayer && !newLayout.layers.find((l) => l.id === activeLayer)) {
                     uiState.setActiveLayer(newLayout.layers[0]?.id ?? '');
                   }
-                  if (activeCategory && !newLayout.categories.find(c => c.id === activeCategory)) {
+                  if (
+                    activeCategory &&
+                    !newLayout.categories.find((c) => c.id === activeCategory)
+                  ) {
                     uiState.setActiveCategory(newLayout.categories[0]?.id ?? '');
                   }
 

@@ -96,10 +96,7 @@ describe('LayoutCard', () => {
 
       themes.forEach(({ theme, label }) => {
         const { unmount } = render(
-          <LayoutCard
-            {...defaultProps}
-            layout={createMockLayout({ theme })}
-          />
+          <LayoutCard {...defaultProps} layout={createMockLayout({ theme })} />
         );
 
         expect(screen.getByText(label)).toBeInTheDocument();

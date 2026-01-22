@@ -17,8 +17,14 @@ describe('bin displacement logic', () => {
       // Add bin at far right edge of 10-wide drawer
       addBin({
         layerId,
-        x: 8, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: 'Edge bin', notes: '',
+        x: 8,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Edge bin',
+        notes: '',
       });
 
       // Verify bin is on layer
@@ -40,8 +46,14 @@ describe('bin displacement logic', () => {
       // Add bin at far top of 8-deep drawer
       addBin({
         layerId,
-        x: 0, y: 6, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 6,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(layerId);
@@ -61,8 +73,14 @@ describe('bin displacement logic', () => {
       // Add bin at origin
       addBin({
         layerId,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       // Shrink drawer but bin still fits
@@ -82,8 +100,14 @@ describe('bin displacement logic', () => {
       // Add bin at origin (will survive resize)
       const result1 = addBin({
         layerId,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: 'Survivor', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Survivor',
+        notes: '',
       });
       expect(isOk(result1)).toBe(true);
       if (!isOk(result1)) return;
@@ -91,8 +115,14 @@ describe('bin displacement logic', () => {
       // Add bin at edge (will be displaced)
       const result2 = addBin({
         layerId,
-        x: 8, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: 'Displaced', notes: '',
+        x: 8,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Displaced',
+        notes: '',
       });
       expect(isOk(result2)).toBe(true);
       if (!isOk(result2)) return;
@@ -101,8 +131,8 @@ describe('bin displacement logic', () => {
       updateDrawer({ width: 5 });
 
       const bins = useLayoutStore.getState().layout.bins;
-      const survivorBin = bins.find(b => b.id === result1.value);
-      const displacedBin = bins.find(b => b.id === result2.value);
+      const survivorBin = bins.find((b) => b.id === result1.value);
+      const displacedBin = bins.find((b) => b.id === result2.value);
 
       expect(survivorBin?.layerId).toBe(layerId);
       expect(displacedBin?.layerId).toBe(STAGING_ID);
@@ -117,8 +147,14 @@ describe('bin displacement logic', () => {
       // Bin occupies x: 3, 4, 5 (ends at 6)
       addBin({
         layerId,
-        x: 3, y: 0, width: 3, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 3,
+        y: 0,
+        width: 3,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       // Shrink to width 5 - bin at x=3 with width=3 needs x+width <= 5
@@ -165,15 +201,27 @@ describe('bin displacement logic', () => {
       // Add first bin
       addBin({
         layerId,
-        x: 0, y: 0, width: 3, depth: 3, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 3,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       // Try to add overlapping bin
       const result = addBin({
         layerId,
-        x: 2, y: 2, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 2,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       expect(isErr(result)).toBe(true);
@@ -187,15 +235,27 @@ describe('bin displacement logic', () => {
 
       addBin({
         layerId,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       // Add adjacent bin (touching but not overlapping)
       const adjacentResult = addBin({
         layerId,
-        x: 2, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       expect(isOk(adjacentResult)).toBe(true);
@@ -211,8 +271,14 @@ describe('bin displacement logic', () => {
       // Layer 1 default height is 3, so bin height must be >= 3
       addBin({
         layerId: layer1Id,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       // Add layer 2 (stacks on top of layer 1)
@@ -225,8 +291,14 @@ describe('bin displacement logic', () => {
       // Layer 2 also has height 3, so bin must be >= 3
       const layer2BinResult = addBin({
         layerId: layer2Result.value,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       expect(isOk(layer2BinResult)).toBe(true);
@@ -243,8 +315,14 @@ describe('bin displacement logic', () => {
       // Add bin to staging
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
       expect(isOk(addResult)).toBe(true);
       if (!isOk(addResult)) return;
@@ -267,15 +345,27 @@ describe('bin displacement logic', () => {
       // Add bin to grid
       addBin({
         layerId,
-        x: 0, y: 0, width: 3, depth: 3, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 3,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
 
       // Add bin to staging
       const stagingResult = addBin({
         layerId: STAGING_ID,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
       expect(isOk(stagingResult)).toBe(true);
       if (!isOk(stagingResult)) return;
@@ -286,7 +376,7 @@ describe('bin displacement logic', () => {
       expect(isErr(moveResult)).toBe(true);
 
       // Bin should still be in staging
-      const bin = useLayoutStore.getState().layout.bins.find(b => b.id === stagingResult.value);
+      const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === stagingResult.value);
       expect(bin?.layerId).toBe(STAGING_ID);
     });
 
@@ -298,8 +388,14 @@ describe('bin displacement logic', () => {
       // Add bin to staging
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0, y: 0, width: 3, depth: 3, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 3,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
       expect(isOk(addResult)).toBe(true);
       if (!isOk(addResult)) return;
@@ -315,7 +411,8 @@ describe('bin displacement logic', () => {
     });
 
     it('updates bin height to match target layer height', () => {
-      const { addBin, addLayer, updateLayer, moveBinFromStaging, layout } = useLayoutStore.getState();
+      const { addBin, addLayer, updateLayer, moveBinFromStaging, layout } =
+        useLayoutStore.getState();
       const categoryId = layout.categories[0].id;
 
       // Add second layer with different height
@@ -327,8 +424,14 @@ describe('bin displacement logic', () => {
       // Add bin to staging with original height
       const addResult = addBin({
         layerId: STAGING_ID,
-        x: 0, y: 0, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
       expect(isOk(addResult)).toBe(true);
       if (!isOk(addResult)) return;
@@ -353,14 +456,14 @@ describe('bin displacement logic', () => {
 
       // Try to duplicate a bin - no adjacent space
       const bins = useLayoutStore.getState().layout.bins;
-      const someBin = bins.find(b => b.layerId === layerId);
+      const someBin = bins.find((b) => b.layerId === layerId);
 
       const dupResult = duplicateBin(someBin!.id);
 
       // Duplicate should go to staging
       expect(isOk(dupResult)).toBe(true);
       if (!isOk(dupResult)) return;
-      const dupBin = useLayoutStore.getState().layout.bins.find(b => b.id === dupResult.value);
+      const dupBin = useLayoutStore.getState().layout.bins.find((b) => b.id === dupResult.value);
       expect(dupBin?.layerId).toBe(STAGING_ID);
     });
 
@@ -372,8 +475,14 @@ describe('bin displacement logic', () => {
       // Add single bin with space around it
       const addResult = addBin({
         layerId,
-        x: 2, y: 2, width: 2, depth: 2, height: 3,
-        category: categoryId, label: '', notes: '',
+        x: 2,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
       });
       expect(isOk(addResult)).toBe(true);
       if (!isOk(addResult)) return;
@@ -382,7 +491,7 @@ describe('bin displacement logic', () => {
 
       expect(isOk(dupResult)).toBe(true);
       if (!isOk(dupResult)) return;
-      const dupBin = useLayoutStore.getState().layout.bins.find(b => b.id === dupResult.value);
+      const dupBin = useLayoutStore.getState().layout.bins.find((b) => b.id === dupResult.value);
 
       // Should be on the same layer, adjacent to original
       expect(dupBin?.layerId).toBe(layerId);
@@ -391,7 +500,7 @@ describe('bin displacement logic', () => {
         (dupBin?.x === 4 && dupBin?.y === 2) || // right
         (dupBin?.x === 2 && dupBin?.y === 0) || // below
         (dupBin?.x === 0 && dupBin?.y === 2) || // left
-        (dupBin?.x === 2 && dupBin?.y === 4);   // above
+        (dupBin?.x === 2 && dupBin?.y === 4); // above
       expect(isAdjacent).toBe(true);
     });
   });

@@ -31,11 +31,21 @@ vi.mock('../../features/layout-library/components/LayoutManagerModal/LayoutActio
     onDelete: () => void;
   }) => (
     <div data-testid="layout-actions" data-only-layout={isOnlyLayout}>
-      <button data-testid="copy-link-btn" onClick={onCopyLink}>Copy</button>
-      <button data-testid="download-btn" onClick={onDownload}>Download</button>
-      <button data-testid="rename-btn" onClick={onRename}>Rename</button>
-      <button data-testid="duplicate-btn" onClick={onDuplicate}>Duplicate</button>
-      <button data-testid="delete-btn" onClick={onDelete}>Delete</button>
+      <button data-testid="copy-link-btn" onClick={onCopyLink}>
+        Copy
+      </button>
+      <button data-testid="download-btn" onClick={onDownload}>
+        Download
+      </button>
+      <button data-testid="rename-btn" onClick={onRename}>
+        Rename
+      </button>
+      <button data-testid="duplicate-btn" onClick={onDuplicate}>
+        Duplicate
+      </button>
+      <button data-testid="delete-btn" onClick={onDelete}>
+        Delete
+      </button>
     </div>
   ),
 }));

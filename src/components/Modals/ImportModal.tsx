@@ -146,7 +146,9 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 id="import-modal-title" className="text-2xl font-bold text-content">Import Layout</h2>
+          <h2 id="import-modal-title" className="text-2xl font-bold text-content">
+            Import Layout
+          </h2>
           <button
             onClick={onClose}
             className="text-content-tertiary hover:text-content transition-colors"
@@ -206,9 +208,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               aria-live="assertive"
               className="bg-error/10 border border-error rounded p-3 max-h-32 overflow-y-auto"
             >
-              <div className="text-sm font-semibold text-error mb-1">
-                Validation Errors:
-              </div>
+              <div className="text-sm font-semibold text-error mb-1">Validation Errors:</div>
               <ul className="text-sm text-error/80 space-y-1">
                 {errors.map((error) => (
                   <li key={error}>• {error}</li>
@@ -219,13 +219,8 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
 
           {/* Preview */}
           {preview && (
-            <div
-              aria-live="polite"
-              className="bg-success/10 border border-success rounded p-3"
-            >
-              <div className="text-sm font-semibold text-success mb-2">
-                Preview:
-              </div>
+            <div aria-live="polite" className="bg-success/10 border border-success rounded p-3">
+              <div className="text-sm font-semibold text-success mb-2">Preview:</div>
               <div className="text-sm text-success/80 space-y-1">
                 <div>Drawer size: {preview.drawerSize}</div>
                 <div>Layers: {preview.layerCount}</div>
@@ -244,10 +239,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
           >
             Import
           </button>
-          <button
-            onClick={onClose}
-            className="btn btn-secondary"
-          >
+          <button onClick={onClose} className="btn btn-secondary">
             Cancel
           </button>
         </div>

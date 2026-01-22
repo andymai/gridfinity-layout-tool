@@ -76,9 +76,7 @@ describe('usePrintList', () => {
     });
 
     it('calculates total filament', () => {
-      const layout = createTestLayout([
-        createTestBin({ width: 1, depth: 1, height: 3 }),
-      ]);
+      const layout = createTestLayout([createTestBin({ width: 1, depth: 1, height: 3 })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -87,9 +85,7 @@ describe('usePrintList', () => {
     });
 
     it('calculates total cost based on filament', () => {
-      const layout = createTestLayout([
-        createTestBin({ width: 2, depth: 2, height: 3 }),
-      ]);
+      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 3 })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -98,9 +94,7 @@ describe('usePrintList', () => {
     });
 
     it('calculates spool percentage', () => {
-      const layout = createTestLayout([
-        createTestBin({ width: 2, depth: 2, height: 3 }),
-      ]);
+      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 3 })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -110,9 +104,7 @@ describe('usePrintList', () => {
     });
 
     it('calculates print time', () => {
-      const layout = createTestLayout([
-        createTestBin({ width: 2, depth: 2, height: 3 }),
-      ]);
+      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 3 })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -275,8 +267,8 @@ describe('usePrintList', () => {
       });
 
       const groups = result.current.groupedRows!;
-      expect(groups.some(g => g.categoryId === 'cat1')).toBe(true);
-      expect(groups.some(g => g.categoryId === 'cat2')).toBe(true);
+      expect(groups.some((g) => g.categoryId === 'cat1')).toBe(true);
+      expect(groups.some((g) => g.categoryId === 'cat2')).toBe(true);
     });
   });
 
@@ -304,9 +296,7 @@ describe('usePrintList', () => {
     });
 
     it('updates total cost when config changes', () => {
-      const layout = createTestLayout([
-        createTestBin({ width: 2, depth: 2, height: 3 }),
-      ]);
+      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 3 })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -362,9 +352,7 @@ describe('usePrintList', () => {
     });
 
     it('reports no splits for small bins', () => {
-      const layout = createTestLayout([
-        createTestBin({ width: 1, depth: 1, height: 3 }),
-      ]);
+      const layout = createTestLayout([createTestBin({ width: 1, depth: 1, height: 3 })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());
@@ -412,9 +400,7 @@ describe('usePrintList', () => {
     });
 
     it('calculates spool estimate correctly', () => {
-      const layout = createTestLayout([
-        createTestBin({ width: 2, depth: 2, height: 6 }),
-      ]);
+      const layout = createTestLayout([createTestBin({ width: 2, depth: 2, height: 6 })]);
       useLayoutStore.setState({ layout });
 
       const { result } = renderHook(() => usePrintList());

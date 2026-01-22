@@ -26,11 +26,7 @@ export function use3DPreviewKeyboard({
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't handle shortcuts when typing in input fields
       const target = e.target as HTMLElement;
-      if (
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.isContentEditable
-      ) {
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
         return;
       }
 

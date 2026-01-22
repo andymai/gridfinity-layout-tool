@@ -3,7 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { HalfBinModeBlockedModal } from '@/components/Modals/HalfBinModeBlockedModal';
 import type { HalfBinConstraintViolation } from '@/utils/halfBinConstraints';
 
-function createViolation(count: number = 3, binIds: string[] = ['bin-1', 'bin-2', 'bin-3']): HalfBinConstraintViolation {
+function createViolation(
+  count: number = 3,
+  binIds: string[] = ['bin-1', 'bin-2', 'bin-3']
+): HalfBinConstraintViolation {
   return {
     type: 'fractional_bins',
     count,
@@ -34,9 +37,7 @@ describe('HalfBinModeBlockedModal', () => {
 
   describe('rendering when closed', () => {
     it('returns null when not open', () => {
-      const { container } = render(
-        <HalfBinModeBlockedModal {...defaultProps} isOpen={false} />
-      );
+      const { container } = render(<HalfBinModeBlockedModal {...defaultProps} isOpen={false} />);
 
       expect(container.firstChild).toBeNull();
     });
@@ -69,10 +70,7 @@ describe('HalfBinModeBlockedModal', () => {
 
     it('shows bin count (singular)', () => {
       render(
-        <HalfBinModeBlockedModal
-          {...defaultProps}
-          violation={createViolation(1, ['bin-1'])}
-        />
+        <HalfBinModeBlockedModal {...defaultProps} violation={createViolation(1, ['bin-1'])} />
       );
 
       expect(screen.getByText('1 bin')).toBeInTheDocument();
@@ -122,9 +120,7 @@ describe('HalfBinModeBlockedModal', () => {
     it('cancel button has accessible label', () => {
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      expect(
-        screen.getByLabelText('Cancel and keep half-bin mode enabled')
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText('Cancel and keep half-bin mode enabled')).toBeInTheDocument();
     });
 
     it('remediate button has accessible label with bin count', () => {
@@ -137,10 +133,7 @@ describe('HalfBinModeBlockedModal', () => {
 
     it('remediate button label uses singular when 1 bin', () => {
       render(
-        <HalfBinModeBlockedModal
-          {...defaultProps}
-          violation={createViolation(1, ['bin-1'])}
-        />
+        <HalfBinModeBlockedModal {...defaultProps} violation={createViolation(1, ['bin-1'])} />
       );
 
       expect(
@@ -190,9 +183,7 @@ describe('HalfBinModeBlockedModal', () => {
 
     it('shows loading state while remediating', async () => {
       // Make remediation hang
-      mockOnRemediate.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 1000))
-      );
+      mockOnRemediate.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)));
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
@@ -204,9 +195,7 @@ describe('HalfBinModeBlockedModal', () => {
     });
 
     it('disables buttons while remediating', async () => {
-      mockOnRemediate.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 1000))
-      );
+      mockOnRemediate.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)));
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
@@ -219,9 +208,7 @@ describe('HalfBinModeBlockedModal', () => {
     });
 
     it('does not call onClose when clicking backdrop while remediating', async () => {
-      mockOnRemediate.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 1000))
-      );
+      mockOnRemediate.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)));
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
@@ -289,9 +276,7 @@ describe('HalfBinModeBlockedModal', () => {
     });
 
     it('does not close on Escape while remediating', async () => {
-      mockOnRemediate.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 1000))
-      );
+      mockOnRemediate.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)));
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 

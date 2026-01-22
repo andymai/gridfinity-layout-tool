@@ -35,9 +35,7 @@ export function CustomPropertiesEditor({
   const atMaxProperties = properties.length >= CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT;
 
   // Keys that exist in other bins but not this one
-  const availableSuggestions = suggestedKeys.filter(
-    (key) => !(key in customProperties)
-  );
+  const availableSuggestions = suggestedKeys.filter((key) => !(key in customProperties));
 
   const handleAdd = () => {
     const trimmedKey = newKey.trim();
@@ -54,7 +52,7 @@ export function CustomPropertiesEditor({
       return;
     }
 
-    if (RESERVED_PROPERTY_KEYS.includes(trimmedKey as typeof RESERVED_PROPERTY_KEYS[number])) {
+    if (RESERVED_PROPERTY_KEYS.includes(trimmedKey as (typeof RESERVED_PROPERTY_KEYS)[number])) {
       setError(`"${trimmedKey}" is a reserved field name`);
       return;
     }
@@ -91,9 +89,7 @@ export function CustomPropertiesEditor({
 
   const handleDelete = (key: string) => {
     // Use object destructuring to avoid dynamic delete (ESLint rule)
-    const updated = Object.fromEntries(
-      Object.entries(customProperties).filter(([k]) => k !== key)
-    );
+    const updated = Object.fromEntries(Object.entries(customProperties).filter(([k]) => k !== key));
     onChange(updated);
   };
 
@@ -126,7 +122,8 @@ export function CustomPropertiesEditor({
     <div>
       <div className="flex items-center justify-between mb-2">
         <label className={`block ${labelSize} text-content-tertiary`}>
-          Custom Properties {hasProperties && <span className="text-content-disabled">({properties.length})</span>}
+          Custom Properties{' '}
+          {hasProperties && <span className="text-content-disabled">({properties.length})</span>}
         </label>
         {!isAdding && (
           <button
@@ -135,7 +132,11 @@ export function CustomPropertiesEditor({
             disabled={atMaxProperties}
             className="text-xs text-accent hover:text-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Add custom property"
-            title={atMaxProperties ? `Maximum ${CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT} properties reached` : 'Add custom property'}
+            title={
+              atMaxProperties
+                ? `Maximum ${CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT} properties reached`
+                : 'Add custom property'
+            }
           >
             + Add
           </button>
@@ -148,9 +149,7 @@ export function CustomPropertiesEditor({
           {properties.map(([key, value]) => (
             <div key={key}>
               <div className="flex items-center gap-2 mb-1">
-                <label className="text-xs text-content-secondary flex-shrink-0">
-                  {key}
-                </label>
+                <label className="text-xs text-content-secondary flex-shrink-0">{key}</label>
                 <button
                   type="button"
                   onClick={() => handleDelete(key)}
@@ -158,15 +157,30 @@ export function CustomPropertiesEditor({
                   title="Delete property"
                   aria-label={`Delete ${key}`}
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
               <input
                 type="text"
                 value={value}
-                onChange={(e) => handleUpdate(key, e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH))}
+                onChange={(e) =>
+                  handleUpdate(
+                    key,
+                    e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH)
+                  )
+                }
                 className={`input w-full ${inputHeight}`}
                 placeholder="Value"
                 aria-label={`Value for ${key}`}
@@ -204,11 +218,7 @@ export function CustomPropertiesEditor({
             placeholder="Value"
             aria-label="New property value"
           />
-          {error && (
-            <div className="text-xs text-error">
-              {error}
-            </div>
-          )}
+          {error && <div className="text-xs text-error">{error}</div>}
           <div className="flex gap-2">
             <button
               type="button"
@@ -230,17 +240,13 @@ export function CustomPropertiesEditor({
       )}
 
       {!hasProperties && !isAdding && (
-        <div className="text-sm text-content-disabled italic">
-          No custom properties
-        </div>
+        <div className="text-sm text-content-disabled italic">No custom properties</div>
       )}
 
       {/* Quick add suggestions - show keys used by other bins */}
       {!isAdding && availableSuggestions.length > 0 && !atMaxProperties && (
         <div className="mt-2 pt-2 border-t border-stroke-subtle">
-          <div className="text-xs text-content-tertiary mb-1.5">
-            Quick add from other bins:
-          </div>
+          <div className="text-xs text-content-tertiary mb-1.5">Quick add from other bins:</div>
           <div className="flex flex-wrap gap-1.5">
             {availableSuggestions.slice(0, 6).map((key) => (
               <button

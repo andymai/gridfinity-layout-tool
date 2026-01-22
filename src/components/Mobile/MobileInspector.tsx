@@ -12,14 +12,8 @@ import {
  */
 export function MobileInspector() {
   const inspector = useBinInspector();
-  const {
-    selectedBins,
-    isMultiSelect,
-    bin,
-    deleteConfirmState,
-    confirmDelete,
-    cancelDelete,
-  } = inspector;
+  const { selectedBins, isMultiSelect, bin, deleteConfirmState, confirmDelete, cancelDelete } =
+    inspector;
 
   // Empty state
   if (selectedBins.length === 0) {
@@ -30,10 +24,7 @@ export function MobileInspector() {
   if (isMultiSelect) {
     return (
       <div className="pb-4">
-        <MultiBinInspector
-          inspector={inspector}
-          variant="mobile"
-        />
+        <MultiBinInspector inspector={inspector} variant="mobile" />
 
         <ConfirmDialog
           isOpen={deleteConfirmState !== null}
@@ -53,10 +44,7 @@ export function MobileInspector() {
 
   return (
     <div className="pb-4">
-      <SingleBinInspector
-        inspector={inspector}
-        variant="mobile"
-      />
+      <SingleBinInspector inspector={inspector} variant="mobile" />
 
       <ConfirmDialog
         isOpen={deleteConfirmState !== null}

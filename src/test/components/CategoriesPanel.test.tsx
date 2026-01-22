@@ -6,23 +6,33 @@ import { resetAllStores } from '@/test/testUtils';
 
 // Mock ConfirmDialog to simplify testing
 vi.mock('../../shared/components/ConfirmDialog', () => ({
-  ConfirmDialog: ({ isOpen, onConfirm, onCancel, title }: {
+  ConfirmDialog: ({
+    isOpen,
+    onConfirm,
+    onCancel,
+    title,
+  }: {
     isOpen: boolean;
     onConfirm: () => void;
     onCancel: () => void;
     title: string;
-  }) => isOpen ? (
-    <div data-testid="confirm-dialog">
-      <span>{title}</span>
-      <button onClick={onConfirm}>Confirm</button>
-      <button onClick={onCancel}>Cancel</button>
-    </div>
-  ) : null,
+  }) =>
+    isOpen ? (
+      <div data-testid="confirm-dialog">
+        <span>{title}</span>
+        <button onClick={onConfirm}>Confirm</button>
+        <button onClick={onCancel}>Cancel</button>
+      </div>
+    ) : null,
 }));
 
 // Mock CollapsibleSection to show content directly
 vi.mock('../../shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({ children, title, actions }: {
+  CollapsibleSection: ({
+    children,
+    title,
+    actions,
+  }: {
     children: React.ReactNode;
     title: string;
     actions?: React.ReactNode;
@@ -154,7 +164,9 @@ describe('CategoriesPanel', () => {
       render(<CategoriesPanel />);
 
       // Double-click the category name button (not the edit icon)
-      const categoryButton = screen.getByRole('button', { name: /Coral \(selected for new bins\)/i });
+      const categoryButton = screen.getByRole('button', {
+        name: /Coral \(selected for new bins\)/i,
+      });
       fireEvent.doubleClick(categoryButton);
 
       // Should show input field
@@ -212,7 +224,9 @@ describe('CategoriesPanel', () => {
       fireEvent.click(screen.getByText('Done'));
 
       // Should exit edit mode
-      expect(screen.queryByRole('button', { name: 'Finish editing category' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Finish editing category' })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -335,7 +349,7 @@ describe('CategoriesPanel', () => {
       // Both categories have no bins, badges should be empty
       const emptyBadges = screen.getAllByTitle('No bins use this category');
       expect(emptyBadges).toHaveLength(2);
-      emptyBadges.forEach(badge => {
+      emptyBadges.forEach((badge) => {
         expect(badge).toHaveTextContent('');
       });
     });

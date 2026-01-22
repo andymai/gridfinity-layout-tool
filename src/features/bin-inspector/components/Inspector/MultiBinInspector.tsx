@@ -17,11 +17,7 @@ interface MultiBinInspectorProps {
  * Multi-selection bin editor.
  * Shows aggregate info and bulk edit controls.
  */
-export function MultiBinInspector({
-  inspector,
-  variant,
-  onClose,
-}: MultiBinInspectorProps) {
+export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspectorProps) {
   const {
     selectedBins,
     categories,
@@ -86,9 +82,10 @@ export function MultiBinInspector({
 
   // Check if all bins are on the same layer
   const gridBins = selectedBins.filter((b) => b.layerId !== STAGING_ID);
-  const commonLayer: Layer | null = gridBins.length > 0 && gridBins.every((b) => b.layerId === gridBins[0]?.layerId)
-    ? layout.layers.find((l) => l.id === gridBins[0]?.layerId) ?? null
-    : null;
+  const commonLayer: Layer | null =
+    gridBins.length > 0 && gridBins.every((b) => b.layerId === gridBins[0]?.layerId)
+      ? (layout.layers.find((l) => l.id === gridBins[0]?.layerId) ?? null)
+      : null;
 
   // Get layer breakdown for mixed label
   const getMixedLayerLabel = () => {
@@ -119,9 +116,7 @@ export function MultiBinInspector({
         >
           <span className="text-[10px] font-bold text-black">{selectedBins.length}</span>
         </div>
-        <h2 className="flex-1 text-lg font-semibold text-content">
-          Bins Selected
-        </h2>
+        <h2 className="flex-1 text-lg font-semibold text-content">Bins Selected</h2>
         {onClose && (
           <button
             type="button"
@@ -130,7 +125,12 @@ export function MultiBinInspector({
             aria-label="Deselect all bins"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         )}
@@ -143,14 +143,14 @@ export function MultiBinInspector({
       <div className="space-y-3">
         {/* Category */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>
-            Category
-          </label>
+          <label className={`block ${labelSize} text-content-tertiary`}>Category</label>
           <SelectDropdown
             value={commonCategory || ''}
             onChange={updateMultiCategory}
             options={categories.map((c) => ({ id: c.id, name: c.name }))}
-            placeholder={!commonCategory ? { value: '', label: getMixedLabel(), disabled: true } : undefined}
+            placeholder={
+              !commonCategory ? { value: '', label: getMixedLabel(), disabled: true } : undefined
+            }
             colorSwatch={categoryColor}
             ariaLabel="Category for selected bins"
             variant={variant}
@@ -160,9 +160,7 @@ export function MultiBinInspector({
         {/* Layer - only show when there are bins on grid and multiple layers */}
         {gridBins.length > 0 && layout.layers.length > 1 && (
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>
-              Layer
-            </label>
+            <label className={`block ${labelSize} text-content-tertiary`}>Layer</label>
             <SelectDropdown
               value={commonLayer?.id || ''}
               onChange={updateMultiLayer}
@@ -171,7 +169,11 @@ export function MultiBinInspector({
                 name: l.name,
                 suffix: l.id === commonLayer?.id ? ' (current)' : '',
               }))}
-              placeholder={!commonLayer ? { value: '', label: getMixedLayerLabel(), disabled: true } : undefined}
+              placeholder={
+                !commonLayer
+                  ? { value: '', label: getMixedLayerLabel(), disabled: true }
+                  : undefined
+              }
               ariaLabel="Layer for selected bins"
               variant={variant}
             />
@@ -180,9 +182,7 @@ export function MultiBinInspector({
 
         {/* Height control */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>
-            Height
-          </label>
+          <label className={`block ${labelSize} text-content-tertiary`}>Height</label>
           <BulkIncrementControl
             displayValue={sameHeight ? `${minHeight}u` : `${minHeight}–${maxHeight}u`}
             onStep={updateMultiHeight}
@@ -213,9 +213,7 @@ export function MultiBinInspector({
         {/* Custom Properties - Set same property on all bins */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>
-              Custom Properties
-            </label>
+            <label className={`block ${labelSize} text-content-tertiary`}>Custom Properties</label>
             {!showPropertyForm && (
               <button
                 type="button"
@@ -231,7 +229,11 @@ export function MultiBinInspector({
               <input
                 type="text"
                 value={propertyKey}
-                onChange={(e) => setPropertyKey(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH))}
+                onChange={(e) =>
+                  setPropertyKey(
+                    e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH)
+                  )
+                }
                 className={`input w-full ${inputHeight}`}
                 placeholder="Property name"
                 aria-label="Property name"
@@ -246,7 +248,11 @@ export function MultiBinInspector({
               <input
                 type="text"
                 value={propertyValue}
-                onChange={(e) => setPropertyValue(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH))}
+                onChange={(e) =>
+                  setPropertyValue(
+                    e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH)
+                  )
+                }
                 className={`input w-full ${inputHeight}`}
                 placeholder="Value"
                 aria-label="Property value"

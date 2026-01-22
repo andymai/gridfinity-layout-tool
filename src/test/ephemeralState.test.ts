@@ -70,9 +70,7 @@ describe('ephemeralState', () => {
       saveEphemeralState(validState);
 
       expect(sessionStorageMock.setItem).toHaveBeenCalledTimes(1);
-      const savedData = JSON.parse(
-        sessionStorageMock._store['gridfinity-ephemeral-state-v1']
-      );
+      const savedData = JSON.parse(sessionStorageMock._store['gridfinity-ephemeral-state-v1']);
       expect(savedData.selectedBinIds).toEqual(['bin-1', 'bin-2']);
       expect(savedData.zoom).toBe(1.5);
       expect(savedData.savedAt).toBe(Date.now());
@@ -95,9 +93,7 @@ describe('ephemeralState', () => {
     it('includes all expected fields', () => {
       saveEphemeralState(validState);
 
-      const savedData = JSON.parse(
-        sessionStorageMock._store['gridfinity-ephemeral-state-v1']
-      );
+      const savedData = JSON.parse(sessionStorageMock._store['gridfinity-ephemeral-state-v1']);
 
       // Verify all fields are present
       expect(savedData).toHaveProperty('selectedBinIds');
@@ -131,9 +127,7 @@ describe('ephemeralState', () => {
       expect(loaded).not.toBeNull();
       expect(loaded?.selectedBinIds).toEqual(['bin-1', 'bin-2']);
       expect(loaded?.zoom).toBe(1.5);
-      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(
-        'gridfinity-ephemeral-state-v1'
-      );
+      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith('gridfinity-ephemeral-state-v1');
     });
 
     it('returns null and clears if state is older than 30 seconds', () => {
@@ -146,9 +140,7 @@ describe('ephemeralState', () => {
       const loaded = loadEphemeralState();
 
       expect(loaded).toBeNull();
-      expect(consoleWarn).toHaveBeenCalledWith(
-        'Ephemeral state too old, discarding'
-      );
+      expect(consoleWarn).toHaveBeenCalledWith('Ephemeral state too old, discarding');
     });
 
     it('returns state if within 30 second window', () => {
@@ -182,16 +174,13 @@ describe('ephemeralState', () => {
         zoom: 1.0,
         savedAt: Date.now(),
       };
-      sessionStorageMock._store['gridfinity-ephemeral-state-v1'] =
-        JSON.stringify(invalidState);
+      sessionStorageMock._store['gridfinity-ephemeral-state-v1'] = JSON.stringify(invalidState);
 
       const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const loaded = loadEphemeralState();
 
       expect(loaded).toBeNull();
-      expect(consoleWarn).toHaveBeenCalledWith(
-        'Ephemeral state validation failed, discarding'
-      );
+      expect(consoleWarn).toHaveBeenCalledWith('Ephemeral state validation failed, discarding');
     });
 
     it('clears corrupted data on error', () => {
@@ -200,9 +189,7 @@ describe('ephemeralState', () => {
 
       loadEphemeralState();
 
-      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(
-        'gridfinity-ephemeral-state-v1'
-      );
+      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith('gridfinity-ephemeral-state-v1');
     });
   });
 
@@ -232,9 +219,7 @@ describe('ephemeralState', () => {
 
       clearEphemeralState();
 
-      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(
-        'gridfinity-ephemeral-state-v1'
-      );
+      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith('gridfinity-ephemeral-state-v1');
     });
 
     it('handles storage errors gracefully', () => {

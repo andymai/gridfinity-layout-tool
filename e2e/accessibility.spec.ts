@@ -31,7 +31,7 @@ function filterKnownIssues(violations: Awaited<ReturnType<AxeBuilder['analyze']>
     'color-contrast',
   ];
 
-  return violations.filter(v => {
+  return violations.filter((v) => {
     if (knownIssueIds.includes(v.id)) return false;
 
     // Only keep critical and serious
@@ -88,7 +88,9 @@ test.describe('Accessibility', () => {
 
     // Verify inspector is visible
     const inspector = getInspector(page);
-    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({ timeout: 3000 });
+    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({
+      timeout: 3000,
+    });
 
     // Run axe on the inspector panel
     const results = await new AxeBuilder({ page })
@@ -176,7 +178,7 @@ test.describe('Accessibility', () => {
     for (let i = 0; i < Math.min(count, 20); i++) {
       const button = buttons.nth(i);
       if (await button.isVisible()) {
-        const name = await button.getAttribute('aria-label') || await button.textContent();
+        const name = (await button.getAttribute('aria-label')) || (await button.textContent());
         expect(name?.trim()).not.toBe('');
       }
     }
@@ -199,7 +201,9 @@ test.describe('Accessibility', () => {
 
     // Wait for inspector to show
     const inspector = getInspector(page);
-    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({ timeout: 3000 });
+    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({
+      timeout: 3000,
+    });
 
     // Check inputs have labels (aria-label or associated label element)
     const inputs = inspector.locator('input');
@@ -214,7 +218,7 @@ test.describe('Accessibility', () => {
         if (!ariaLabel && id) {
           // Check for associated label
           const label = page.locator(`label[for="${id}"]`);
-          const hasLabel = await label.count() > 0;
+          const hasLabel = (await label.count()) > 0;
           expect(ariaLabel || hasLabel).toBeTruthy();
         } else {
           // Has aria-label or placeholder

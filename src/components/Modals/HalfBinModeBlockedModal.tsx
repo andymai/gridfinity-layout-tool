@@ -148,10 +148,7 @@ export function HalfBinModeBlockedModal({
 
           <div className="flex-1 min-w-0">
             {/* Title */}
-            <h2
-              id="half-bin-blocked-title"
-              className="text-lg font-semibold text-content mb-2"
-            >
+            <h2 id="half-bin-blocked-title" className="text-lg font-semibold text-content mb-2">
               Cannot Disable Half-Bin Mode
             </h2>
 
@@ -166,8 +163,8 @@ export function HalfBinModeBlockedModal({
               </p>
 
               <p className="text-sm text-content-secondary leading-relaxed">
-                To disable half-bin mode, these bins must be removed from the grid.
-                You can move them to the staging area now.
+                To disable half-bin mode, these bins must be removed from the grid. You can move
+                them to the staging area now.
               </p>
             </div>
 

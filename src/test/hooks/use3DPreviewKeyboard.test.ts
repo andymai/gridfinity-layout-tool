@@ -14,7 +14,11 @@ function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = 
 }
 
 // Helper to dispatch keyboard event
-function pressKey(key: string, target: EventTarget = document, options: Partial<KeyboardEventInit> = {}) {
+function pressKey(
+  key: string,
+  target: EventTarget = document,
+  options: Partial<KeyboardEventInit> = {}
+) {
   const event = createKeyboardEvent(key, options);
   Object.defineProperty(event, 'target', { value: target, enumerable: true });
   document.dispatchEvent(event);

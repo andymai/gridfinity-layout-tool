@@ -57,9 +57,7 @@ export class PanelErrorBoundary extends Component<Props, State> {
               />
             </svg>
           </div>
-          <h3 className="text-sm font-medium text-content mb-1">
-            {this.props.panelName} Error
-          </h3>
+          <h3 className="text-sm font-medium text-content mb-1">{this.props.panelName} Error</h3>
           <p className="text-xs text-content-secondary mb-3 max-w-[200px]">
             Something went wrong loading this panel.
           </p>

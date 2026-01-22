@@ -25,14 +25,17 @@ export function SharedWithMeItem({
   onFocus,
   itemRef,
 }: SharedWithMeItemProps) {
-  const handleItemKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      if (!isLoading && entry.status !== 'deleted') {
-        onOpen();
+  const handleItemKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (!isLoading && entry.status !== 'deleted') {
+          onOpen();
+        }
       }
-    }
-  }, [isLoading, entry.status, onOpen]);
+    },
+    [isLoading, entry.status, onOpen]
+  );
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -62,9 +65,10 @@ export function SharedWithMeItem({
       className={`
         w-full text-left p-3 rounded-lg border transition-colors cursor-pointer
         focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-inset
-        ${isDeleted
-          ? 'bg-surface-secondary border-transparent opacity-60'
-          : 'bg-surface-secondary border-transparent hover:border-stroke-subtle hover:bg-surface'
+        ${
+          isDeleted
+            ? 'bg-surface-secondary border-transparent opacity-60'
+            : 'bg-surface-secondary border-transparent hover:border-stroke-subtle hover:bg-surface'
         }
       `}
       onClick={() => !isLoading && !isDeleted && onOpen()}
@@ -82,7 +86,12 @@ export function SharedWithMeItem({
               style={{ width: 56, height: 56 }}
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                />
               </svg>
             </div>
           )}
@@ -91,18 +100,23 @@ export function SharedWithMeItem({
         {/* Name and Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className={`font-medium text-sm truncate ${isDeleted ? 'text-content-secondary line-through' : 'text-content'}`}>
+            <span
+              className={`font-medium text-sm truncate ${isDeleted ? 'text-content-secondary line-through' : 'text-content'}`}
+            >
               {entry.name}
             </span>
 
             {/* Permission badge */}
-            <span className={`
+            <span
+              className={`
               text-xs px-1.5 py-0.5 rounded flex-shrink-0
-              ${entry.permission === 'edit'
-                ? 'bg-green-600/20 text-green-400'
-                : 'bg-surface text-content-secondary'
+              ${
+                entry.permission === 'edit'
+                  ? 'bg-green-600/20 text-green-400'
+                  : 'bg-surface text-content-secondary'
               }
-            `}>
+            `}
+            >
               {entry.permission === 'edit' ? 'Can edit' : 'View only'}
             </span>
 
@@ -116,9 +130,7 @@ export function SharedWithMeItem({
 
           {/* Metadata */}
           <div className="mt-0.5 text-xs text-content-secondary flex flex-wrap gap-x-3 gap-y-0.5">
-            {entry.authorName && (
-              <span>Shared by {entry.authorName}</span>
-            )}
+            {entry.authorName && <span>Shared by {entry.authorName}</span>}
             {entry.preview && (
               <span>
                 {entry.preview.drawerWidth}×{entry.preview.drawerDepth}×{entry.preview.drawerHeight}
@@ -141,9 +153,10 @@ export function SharedWithMeItem({
             disabled={isLoading || isDeleted}
             className={`
               p-2 rounded transition-colors
-              ${isLoading || isDeleted
-                ? 'text-content-tertiary cursor-not-allowed'
-                : 'text-content-secondary hover:text-content hover:bg-surface'
+              ${
+                isLoading || isDeleted
+                  ? 'text-content-tertiary cursor-not-allowed'
+                  : 'text-content-secondary hover:text-content hover:bg-surface'
               }
             `}
             title={isDeleted ? 'Layout has been deleted' : 'Open layout'}
@@ -151,12 +164,28 @@ export function SharedWithMeItem({
           >
             {isLoading ? (
               <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
             ) : (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
               </svg>
             )}
           </button>
@@ -172,7 +201,12 @@ export function SharedWithMeItem({
             aria-label="Remove from list"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>

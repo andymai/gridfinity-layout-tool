@@ -26,13 +26,25 @@ import type { Interaction, Layout, OperationResult } from '@/core/types';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { useSelectionStore } from './selection';
 import { useViewStore, type ContextMenuState } from './view';
-import { useInteractionStore, type DropTarget, type PaintSize, type LayerViewMode } from './interaction';
+import {
+  useInteractionStore,
+  type DropTarget,
+  type PaintSize,
+  type LayerViewMode,
+} from './interaction';
 import { useMobileStore, type MobilePanel, type MobileLayersTab } from './mobile';
 import { useHalfBinModeStore } from './halfBinMode';
 import { useSharedPreviewStore } from './sharedPreview';
 
 // Re-export types for backwards compatibility
-export type { DropTarget, MobilePanel, MobileLayersTab, LayerViewMode, PaintSize, ContextMenuState };
+export type {
+  DropTarget,
+  MobilePanel,
+  MobileLayersTab,
+  LayerViewMode,
+  PaintSize,
+  ContextMenuState,
+};
 
 interface UIState {
   // Selection (delegated to useSelectionStore)
@@ -101,7 +113,11 @@ interface UIState {
   toggleShowLabels: () => void;
   toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
-  showContextMenu: (binIdsOrId: string | string[], position: { x: number; y: number }, source?: 'grid' | 'staging') => void;
+  showContextMenu: (
+    binIdsOrId: string | string[],
+    position: { x: number; y: number },
+    source?: 'grid' | 'staging'
+  ) => void;
   hideContextMenu: () => void;
   setHighlightedCategoryId: (categoryId: string | null) => void;
   setHighlightedRowLabel: (row: number | null) => void;
@@ -135,25 +151,67 @@ interface UIState {
   setHalfBinMode: (enabled: boolean) => void;
 
   // Shared preview actions
-  setSharedLayoutPreview: (layout: Layout | null, originalName?: string, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => void;
+  setSharedLayoutPreview: (
+    layout: Layout | null,
+    originalName?: string,
+    authorName?: string,
+    cloudShareId?: string,
+    permission?: 'view' | 'edit'
+  ) => void;
   clearSharedLayoutPreview: () => void;
 }
 
 /**
  * Helper to get current combined state from all stores
  */
-function getCombinedState(): Omit<UIState,
-  'setActiveLayer' | 'setSelectedBin' | 'setSelectedBins' | 'addToSelection' |
-  'removeFromSelection' | 'toggleSelection' | 'setActiveCategory' | 'clearSelection' |
-  'setFocusedBin' | 'showQuickLabel' | 'hideQuickLabel' | 'setZoom' | 'zoomIn' | 'zoomOut' |
-  'toggleShowOtherLayers' | 'toggleShowLabels' | 'toggleLeftPanel' | 'toggleRightPanel' |
-  'showContextMenu' | 'hideContextMenu' | 'setHighlightedCategoryId' | 'setHighlightedRowLabel' |
-  'setHighlightedColLabel' | 'setPrintModalOpen' | 'setInteraction' | 'setDropTarget' |
-  'setPaintSize' | 'togglePaintSize' | 'setKeyboardDragMode' | 'setKeyboardResizeMode' |
-  'announceToScreenReader' | 'toggleIsometricPreview' | 'setIsometricRotation' | 'setLayerViewMode' |
-  'snapToIsometric' | 'togglePreviewExpanded' | 'setPreviewExpanded' | 'setActiveMobilePanel' |
-  'closeMobilePanel' | 'toggleMobilePanel' | 'setMobileLayersTab' | 'toggleHalfBinMode' |
-  'toggleHalfBinModeResult' | 'setHalfBinMode' | 'setSharedLayoutPreview' | 'clearSharedLayoutPreview'
+function getCombinedState(): Omit<
+  UIState,
+  | 'setActiveLayer'
+  | 'setSelectedBin'
+  | 'setSelectedBins'
+  | 'addToSelection'
+  | 'removeFromSelection'
+  | 'toggleSelection'
+  | 'setActiveCategory'
+  | 'clearSelection'
+  | 'setFocusedBin'
+  | 'showQuickLabel'
+  | 'hideQuickLabel'
+  | 'setZoom'
+  | 'zoomIn'
+  | 'zoomOut'
+  | 'toggleShowOtherLayers'
+  | 'toggleShowLabels'
+  | 'toggleLeftPanel'
+  | 'toggleRightPanel'
+  | 'showContextMenu'
+  | 'hideContextMenu'
+  | 'setHighlightedCategoryId'
+  | 'setHighlightedRowLabel'
+  | 'setHighlightedColLabel'
+  | 'setPrintModalOpen'
+  | 'setInteraction'
+  | 'setDropTarget'
+  | 'setPaintSize'
+  | 'togglePaintSize'
+  | 'setKeyboardDragMode'
+  | 'setKeyboardResizeMode'
+  | 'announceToScreenReader'
+  | 'toggleIsometricPreview'
+  | 'setIsometricRotation'
+  | 'setLayerViewMode'
+  | 'snapToIsometric'
+  | 'togglePreviewExpanded'
+  | 'setPreviewExpanded'
+  | 'setActiveMobilePanel'
+  | 'closeMobilePanel'
+  | 'toggleMobilePanel'
+  | 'setMobileLayersTab'
+  | 'toggleHalfBinMode'
+  | 'toggleHalfBinModeResult'
+  | 'setHalfBinMode'
+  | 'setSharedLayoutPreview'
+  | 'clearSharedLayoutPreview'
 > {
   const selection = useSelectionStore.getState();
   const view = useViewStore.getState();
@@ -362,7 +420,9 @@ export const useUIStore = create<UIState>((_set) => ({
 
   // Shared preview actions (delegate to useSharedPreviewStore)
   setSharedLayoutPreview: (layout, originalName, authorName, cloudShareId, permission) => {
-    useSharedPreviewStore.getState().setSharedLayoutPreview(layout, originalName, authorName, cloudShareId, permission);
+    useSharedPreviewStore
+      .getState()
+      .setSharedLayoutPreview(layout, originalName, authorName, cloudShareId, permission);
   },
   clearSharedLayoutPreview: () => {
     useSharedPreviewStore.getState().clearSharedLayoutPreview();

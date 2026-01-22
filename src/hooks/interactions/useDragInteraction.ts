@@ -30,9 +30,7 @@ import type { Coord } from '@/core/types';
  * @param context - Shared interaction context from parent hook
  * @returns ModeHandlers for drag interactions
  */
-export function useDragInteraction(
-  context: InteractionContext
-): ModeHandlers<DragStartArgs> {
+export function useDragInteraction(context: InteractionContext): ModeHandlers<DragStartArgs> {
   const {
     layout,
     activeLayerId,
@@ -61,13 +59,7 @@ export function useDragInteraction(
    * @param duplicate - If true, duplicate bins instead of moving (Alt+drag)
    */
   const start = useCallback(
-    (
-      binId: string,
-      clientX: number,
-      clientY: number,
-      pointerId?: number,
-      duplicate?: boolean
-    ) => {
+    (binId: string, clientX: number, clientY: number, pointerId?: number, duplicate?: boolean) => {
       const bin = findBinById(layout, binId);
       if (!bin) return;
 
@@ -84,16 +76,14 @@ export function useDragInteraction(
       if (gridRef.current) {
         const rect = gridRef.current.getBoundingClientRect();
         const zoom = useViewStore.getState().zoom;
-        const viewportWidth =
-          typeof window !== 'undefined' ? window.innerWidth : 1280;
+        const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1280;
         const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
         const gap = 1;
 
         // Calculate the pixel position of the bin's visual top-left corner
         // Note: Y is inverted - bin.y is from bottom, but visual top is at drawer.depth - bin.y - bin.depth
         const binVisualLeft = gap + bin.x * (cellSize + gap);
-        const binVisualTop =
-          gap + (layout.drawer.depth - bin.y - bin.depth) * (cellSize + gap);
+        const binVisualTop = gap + (layout.drawer.depth - bin.y - bin.depth) * (cellSize + gap);
 
         // Calculate click position relative to grid
         const clickRelX = clientX - rect.left;
@@ -309,7 +299,11 @@ export function useDragInteraction(
               mlTracking.trackBulk(newBins, 'duplicate');
               // Record creation for quick-correction detection
               for (const bin of newBins) {
-                mlTracking.recordCreation(bin.id, 'duplicate', `${bin.width}x${bin.depth}x${bin.height}`);
+                mlTracking.recordCreation(
+                  bin.id,
+                  'duplicate',
+                  `${bin.width}x${bin.depth}x${bin.height}`
+                );
               }
             }
           }

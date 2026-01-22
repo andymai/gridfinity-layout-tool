@@ -361,7 +361,11 @@ describe('PrintBin', () => {
     });
 
     it('shows dimensions when label is too long to fit', () => {
-      const bin = createBin({ label: 'This is a very long label that will not fit', width: 1, depth: 1 });
+      const bin = createBin({
+        label: 'This is a very long label that will not fit',
+        width: 1,
+        depth: 1,
+      });
       const drawer = createDrawer();
 
       const { container } = render(

@@ -90,9 +90,7 @@ export function clearSharedWithMe(): void {
  * }
  * ```
  */
-export function saveSharedWithMeResult(
-  entries: SharedWithMeEntry[]
-): Result<void, StorageError> {
+export function saveSharedWithMeResult(entries: SharedWithMeEntry[]): Result<void, StorageError> {
   try {
     const data: SharedWithMeIndex = {
       version: '1.0',

@@ -22,11 +22,7 @@ export function CategoryBreakdownChart({
   compact = false,
 }: CategoryBreakdownChartProps) {
   if (breakdown.length === 0) {
-    return (
-      <div className="text-center py-4 text-content-tertiary text-sm">
-        No data to display
-      </div>
-    );
+    return <div className="text-center py-4 text-content-tertiary text-sm">No data to display</div>;
   }
 
   // Limit categories and group the rest as "Other"
@@ -86,7 +82,9 @@ export function CategoryBreakdownChart({
           </div>
 
           {/* Value */}
-          <div className={`w-12 ${fontSize} text-content-tertiary text-right tabular-nums flex-shrink-0`}>
+          <div
+            className={`w-12 ${fontSize} text-content-tertiary text-right tabular-nums flex-shrink-0`}
+          >
             {category.percentage}%
           </div>
         </div>
@@ -154,9 +152,7 @@ export function CategoryLegend({
             className={`${dotSize} rounded-full flex-shrink-0`}
             style={{ backgroundColor: category.categoryColor }}
           />
-          <span className={`${fontSize} text-content-secondary`}>
-            {category.categoryName}
-          </span>
+          <span className={`${fontSize} text-content-secondary`}>{category.categoryName}</span>
         </div>
       ))}
     </div>

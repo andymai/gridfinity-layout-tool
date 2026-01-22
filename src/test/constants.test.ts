@@ -1,5 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { calcMaxGridUnits, generateId, createDefaultLayout, createLayoutWithSettings, DEFAULT_CATEGORIES, STAGING_ID, DEFAULT_CATEGORY_COLOR, getBaseCellSize, BREAKPOINTS } from '@/core/constants';
+import {
+  calcMaxGridUnits,
+  generateId,
+  createDefaultLayout,
+  createLayoutWithSettings,
+  DEFAULT_CATEGORIES,
+  STAGING_ID,
+  DEFAULT_CATEGORY_COLOR,
+  getBaseCellSize,
+  BREAKPOINTS,
+} from '@/core/constants';
 
 describe('calcMaxGridUnits', () => {
   it('calculates max units for typical print bed', () => {
@@ -159,8 +169,8 @@ describe('createLayoutWithSettings', () => {
     const settings = {
       defaultDrawerWidth: 20,
       defaultDrawerDepth: 15,
-      defaultDrawerHeight: 4,  // Drawer height is 4
-      defaultLayerHeight: 10,  // But default is 10
+      defaultDrawerHeight: 4, // Drawer height is 4
+      defaultLayerHeight: 10, // But default is 10
       defaultPrintBedSize: 300,
       defaultGridUnitMm: 50,
       defaultHeightUnitMm: 10,
@@ -200,7 +210,7 @@ describe('constants', () => {
 
   it('exports DEFAULT_CATEGORIES with correct colors', () => {
     expect(DEFAULT_CATEGORIES).toHaveLength(5);
-    expect(DEFAULT_CATEGORIES.find(c => c.id === 'coral')?.color).toBe('#f87171');
+    expect(DEFAULT_CATEGORIES.find((c) => c.id === 'coral')?.color).toBe('#f87171');
   });
 });
 

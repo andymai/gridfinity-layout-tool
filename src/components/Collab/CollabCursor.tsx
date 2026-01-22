@@ -64,13 +64,7 @@ export function CollabCursor({ presence, position }: CollabCursorProps) {
       aria-hidden="true"
     >
       {/* Cursor SVG - points down-right like a typical mouse cursor */}
-      <svg
-        width="16"
-        height="20"
-        viewBox="0 0 16 20"
-        fill="none"
-        className="drop-shadow-md"
-      >
+      <svg width="16" height="20" viewBox="0 0 16 20" fill="none" className="drop-shadow-md">
         <path
           d="M1 1L1 14L5 10L8 17L10 16L7 9L13 9L1 1Z"
           fill="currentColor"

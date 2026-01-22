@@ -211,7 +211,7 @@ describe('useContextMenu', () => {
 
       // Check that pointerdown listener was not added
       const pointerdownCalls = addEventListenerSpy.mock.calls.filter(
-        call => call[0] === 'pointerdown'
+        (call) => call[0] === 'pointerdown'
       );
       expect(pointerdownCalls.length).toBe(0);
 
@@ -263,9 +263,7 @@ describe('useContextMenu', () => {
       renderHook(() => useContextMenu());
 
       // Check that keydown listener was not added (menu starts closed)
-      const keydownCalls = addEventListenerSpy.mock.calls.filter(
-        call => call[0] === 'keydown'
-      );
+      const keydownCalls = addEventListenerSpy.mock.calls.filter((call) => call[0] === 'keydown');
       expect(keydownCalls.length).toBe(0);
 
       addEventListenerSpy.mockRestore();
@@ -294,7 +292,7 @@ describe('useContextMenu', () => {
 
       // Should have removed the pointerdown listener
       const pointerdownCalls = removeEventListenerSpy.mock.calls.filter(
-        call => call[0] === 'pointerdown'
+        (call) => call[0] === 'pointerdown'
       );
       expect(pointerdownCalls.length).toBeGreaterThan(0);
 
@@ -341,7 +339,7 @@ describe('useContextMenu', () => {
 
       // Should have removed keydown listener
       const keydownCalls = removeEventListenerSpy.mock.calls.filter(
-        call => call[0] === 'keydown'
+        (call) => call[0] === 'keydown'
       );
       expect(keydownCalls.length).toBeGreaterThan(0);
 

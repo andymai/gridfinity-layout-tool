@@ -30,9 +30,7 @@ describe('useFeatureFlag', () => {
         status: 'experimental',
       });
 
-      const { result } = renderHook(() =>
-        useFeatureFlag('test_feature' as features.FeatureId)
-      );
+      const { result } = renderHook(() => useFeatureFlag('test_feature' as features.FeatureId));
 
       expect(result.current).toBe(false);
     });
@@ -52,9 +50,7 @@ describe('useFeatureFlag', () => {
         },
       });
 
-      const { result } = renderHook(() =>
-        useFeatureFlag('test_feature' as features.FeatureId)
-      );
+      const { result } = renderHook(() => useFeatureFlag('test_feature' as features.FeatureId));
 
       expect(result.current).toBe(true);
     });
@@ -121,9 +117,7 @@ describe('useFeatureFlag', () => {
     it('returns false for non-existent features', () => {
       mockGetFeature.mockReturnValue(undefined);
 
-      const { result } = renderHook(() =>
-        useFeatureFlag('nonexistent' as features.FeatureId)
-      );
+      const { result } = renderHook(() => useFeatureFlag('nonexistent' as features.FeatureId));
 
       expect(result.current).toBe(false);
     });
@@ -137,9 +131,7 @@ describe('useFeatureFlag', () => {
         status: 'experimental',
       });
 
-      expect(isFeatureEnabled('test_feature' as features.FeatureId)).toBe(
-        false
-      );
+      expect(isFeatureEnabled('test_feature' as features.FeatureId)).toBe(false);
     });
 
     it('returns true when feature is enabled', () => {
@@ -167,9 +159,7 @@ describe('useFeatureFlag', () => {
         status: 'graduated',
       });
 
-      expect(isFeatureEnabled('graduated_feature' as features.FeatureId)).toBe(
-        true
-      );
+      expect(isFeatureEnabled('graduated_feature' as features.FeatureId)).toBe(true);
     });
 
     it('returns false for deprecated features', () => {
@@ -187,9 +177,7 @@ describe('useFeatureFlag', () => {
         },
       });
 
-      expect(isFeatureEnabled('deprecated_feature' as features.FeatureId)).toBe(
-        false
-      );
+      expect(isFeatureEnabled('deprecated_feature' as features.FeatureId)).toBe(false);
     });
 
     it('returns false for Coming Soon features', () => {
@@ -208,9 +196,7 @@ describe('useFeatureFlag', () => {
         },
       });
 
-      expect(
-        isFeatureEnabled('coming_soon_feature' as features.FeatureId)
-      ).toBe(false);
+      expect(isFeatureEnabled('coming_soon_feature' as features.FeatureId)).toBe(false);
     });
   });
 });

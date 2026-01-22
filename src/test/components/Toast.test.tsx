@@ -267,9 +267,7 @@ describe('ToastContainer', () => {
     });
 
     it('auto-dismisses after duration', () => {
-      useToastStore
-        .getState()
-        .addToast({ message: 'Auto dismiss', type: 'info', duration: 3000 });
+      useToastStore.getState().addToast({ message: 'Auto dismiss', type: 'info', duration: 3000 });
 
       render(<ToastContainer />);
 
@@ -285,9 +283,7 @@ describe('ToastContainer', () => {
     });
 
     it('does not auto-dismiss when duration is 0', () => {
-      useToastStore
-        .getState()
-        .addToast({ message: 'Persistent', type: 'info', duration: 0 });
+      useToastStore.getState().addToast({ message: 'Persistent', type: 'info', duration: 0 });
 
       render(<ToastContainer />);
 
@@ -304,9 +300,7 @@ describe('ToastContainer', () => {
 
   describe('hover behavior', () => {
     it('pauses timer on mouse enter', () => {
-      useToastStore
-        .getState()
-        .addToast({ message: 'Pausable', type: 'info', duration: 2000 });
+      useToastStore.getState().addToast({ message: 'Pausable', type: 'info', duration: 2000 });
 
       render(<ToastContainer />);
 
@@ -330,9 +324,7 @@ describe('ToastContainer', () => {
     });
 
     it('resumes timer on mouse leave', () => {
-      useToastStore
-        .getState()
-        .addToast({ message: 'Resumable', type: 'info', duration: 2000 });
+      useToastStore.getState().addToast({ message: 'Resumable', type: 'info', duration: 2000 });
 
       render(<ToastContainer />);
 
@@ -498,9 +490,7 @@ describe('ToastContainer', () => {
 
   describe('progress bar', () => {
     it('shows progress bar when duration > 0', () => {
-      useToastStore
-        .getState()
-        .addToast({ message: 'With progress', type: 'info', duration: 5000 });
+      useToastStore.getState().addToast({ message: 'With progress', type: 'info', duration: 5000 });
 
       render(<ToastContainer />);
 
@@ -511,9 +501,7 @@ describe('ToastContainer', () => {
     });
 
     it('hides progress bar when duration is 0', () => {
-      useToastStore
-        .getState()
-        .addToast({ message: 'No progress', type: 'info', duration: 0 });
+      useToastStore.getState().addToast({ message: 'No progress', type: 'info', duration: 0 });
 
       render(<ToastContainer />);
 

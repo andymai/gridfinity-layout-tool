@@ -1,9 +1,7 @@
 import { canPlaceBin } from '@/shared/utils/validation';
 import type { Bin, Layout } from '@/core/types';
 
-export type RotationResult =
-  | { valid: true }
-  | { valid: false; message: string };
+export type RotationResult = { valid: true } | { valid: false; message: string };
 
 /**
  * Validate whether a bin can be rotated (swap width and depth).

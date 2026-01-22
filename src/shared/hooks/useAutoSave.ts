@@ -21,19 +21,19 @@ export type SaveStatus = 'idle' | 'saving' | 'saved';
  */
 export function useAutoSave(): SaveStatus {
   const { layout, activeLayoutId } = useLayoutStore(
-    useShallow(state => ({
+    useShallow((state) => ({
       layout: state.layout,
       activeLayoutId: state.activeLayoutId,
     }))
   );
 
   const { library, setLibrary } = useLibraryStore(
-    useShallow(state => ({
+    useShallow((state) => ({
       library: state.library,
       setLibrary: state.setLibrary,
     }))
   );
-  const addToast = useToastStore(state => state.addToast);
+  const addToast = useToastStore((state) => state.addToast);
 
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
@@ -83,11 +83,7 @@ export function useAutoSave(): SaveStatus {
           const currentLibrary = useLibraryStore.getState().library;
 
           // Atomic save: layout + library entry in one operation
-          const result = await saveLayoutWithMetadata(
-            savingLayoutId,
-            layout,
-            currentLibrary
-          );
+          const result = await saveLayoutWithMetadata(savingLayoutId, layout, currentLibrary);
 
           if (isErr(result)) {
             handleSaveError(result.error);

@@ -69,7 +69,9 @@ test.describe('Categories Management Flow', () => {
 
     // Inspector should show the bin - the category is shown in a dropdown
     const inspector = getInspector(page);
-    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({ timeout: 3000 });
+    await expect(inspector.getByRole('heading', { name: /^\d×\d Bin$/i })).toBeVisible({
+      timeout: 3000,
+    });
   });
 
   test('category colors are displayed on bins', async ({ page }) => {

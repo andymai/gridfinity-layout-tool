@@ -1,5 +1,12 @@
 import { useState, useCallback, useId } from 'react';
-import { StatCard, BinIcon, FilamentIcon, CostIcon, TimeIcon, SpoolIcon } from '@/components/BinList';
+import {
+  StatCard,
+  BinIcon,
+  FilamentIcon,
+  CostIcon,
+  TimeIcon,
+  SpoolIcon,
+} from '@/components/BinList';
 import { CategoryBreakdownChart, CategoryStackedBar, CategoryLegend } from '@/components/BinList';
 import type { CategoryBreakdown } from '@/utils/binListOperations';
 

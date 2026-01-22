@@ -148,9 +148,10 @@ describe('GridCanvas', () => {
       };
 
       // Add second layer if it doesn't exist
-      const layers = defaultLayout.layers.length > 1
-        ? defaultLayout.layers
-        : [...defaultLayout.layers, { id: 'layer-2', name: 'Layer 2', height: 3 }];
+      const layers =
+        defaultLayout.layers.length > 1
+          ? defaultLayout.layers
+          : [...defaultLayout.layers, { id: 'layer-2', name: 'Layer 2', height: 3 }];
 
       useLayoutStore.setState({
         layout: {
@@ -175,10 +176,7 @@ describe('GridCanvas', () => {
 
     it('renders ghost bins from lower layers when showOtherLayers is true', () => {
       // Create a second layer
-      const layers = [
-        defaultLayout.layers[0],
-        { id: 'layer-2', name: 'Layer 2', height: 6 },
-      ];
+      const layers = [defaultLayout.layers[0], { id: 'layer-2', name: 'Layer 2', height: 6 }];
 
       // Add a bin to the first layer
       const ghostBin: Bin = {
@@ -401,7 +399,12 @@ describe('GridCanvas', () => {
 
       // Click on the bin element
       const binElement = container.querySelector('[data-bin-id="test-bin-click"]');
-      fireEvent.pointerDown(binElement!, { button: 0, clientX: 100, clientY: 100, isPrimary: true });
+      fireEvent.pointerDown(binElement!, {
+        button: 0,
+        clientX: 100,
+        clientY: 100,
+        isPrimary: true,
+      });
 
       // onStartDraw should not be called when clicking on a bin
       expect(mockStartDraw).not.toHaveBeenCalled();

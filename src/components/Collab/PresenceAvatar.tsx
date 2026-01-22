@@ -25,35 +25,31 @@ interface PresenceAvatarProps {
 }
 
 /** Size-specific dimensions */
-const SIZE_CONFIG: Record<'sm' | 'md' | 'lg', { container: string; text: string; crown: string }> = {
-  sm: {
-    container: 'w-6 h-6',
-    text: 'text-[10px]',
-    crown: 'w-2.5 h-2.5 -top-0.5 -right-0.5',
-  },
-  md: {
-    container: 'w-8 h-8',
-    text: 'text-xs',
-    crown: 'w-3 h-3 -top-0.5 -right-0.5',
-  },
-  lg: {
-    container: 'w-10 h-10',
-    text: 'text-sm',
-    crown: 'w-3.5 h-3.5 -top-1 -right-1',
-  },
-};
+const SIZE_CONFIG: Record<'sm' | 'md' | 'lg', { container: string; text: string; crown: string }> =
+  {
+    sm: {
+      container: 'w-6 h-6',
+      text: 'text-[10px]',
+      crown: 'w-2.5 h-2.5 -top-0.5 -right-0.5',
+    },
+    md: {
+      container: 'w-8 h-8',
+      text: 'text-xs',
+      crown: 'w-3 h-3 -top-0.5 -right-0.5',
+    },
+    lg: {
+      container: 'w-10 h-10',
+      text: 'text-sm',
+      crown: 'w-3.5 h-3.5 -top-1 -right-1',
+    },
+  };
 
 /**
  * Crown SVG icon for owner badge.
  */
 function CrownIcon({ className }: { className: string }) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-label="Owner"
-    >
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-label="Owner">
       <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
     </svg>
   );
@@ -106,9 +102,7 @@ export const PresenceAvatar = memo(function PresenceAvatar({
       {showName && (
         <span className="text-sm text-content truncate max-w-[120px]">
           {name}
-          {isSelf && (
-            <span className="text-content-tertiary ml-1">(you)</span>
-          )}
+          {isSelf && <span className="text-content-tertiary ml-1">(you)</span>}
         </span>
       )}
     </div>

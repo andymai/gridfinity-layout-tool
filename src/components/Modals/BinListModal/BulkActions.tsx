@@ -76,26 +76,21 @@ export function BulkActions({
     }
   }, [onUpdateNotes, notesValue]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent, submitFn: () => void) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        submitFn();
-      } else if (e.key === 'Escape') {
-        setOpenDropdown(null);
-      }
-    },
-    []
-  );
+  const handleKeyDown = useCallback((e: React.KeyboardEvent, submitFn: () => void) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitFn();
+    } else if (e.key === 'Escape') {
+      setOpenDropdown(null);
+    }
+  }, []);
 
   if (selectionCount === 0) return null;
 
   return (
     <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 border-y border-accent/20">
       {/* Selection count */}
-      <span className="text-sm font-medium text-content">
-        {selectionCount} selected
-      </span>
+      <span className="text-sm font-medium text-content">{selectionCount} selected</span>
 
       {/* Clear selection */}
       <button
@@ -104,7 +99,12 @@ export function BulkActions({
         aria-label="Clear selection"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
 
@@ -130,7 +130,12 @@ export function BulkActions({
             </svg>
             Category
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
 

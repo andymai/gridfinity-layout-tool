@@ -45,9 +45,7 @@ const pendingThis = new WeakMap<ThrottledFunction, unknown>();
  * });
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Generic constraint for any callable function type
-export function throttleRAF<T extends (...args: any[]) => void>(
-  fn: T
-): T {
+export function throttleRAF<T extends (...args: any[]) => void>(fn: T): T {
   let isScheduled = false;
   let canExecuteImmediately = true;
 
@@ -119,10 +117,7 @@ export function cancelThrottledRAF(throttledFn: ThrottledFunction): void {
  * }, 50); // Max 20 calls per second
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Generic constraint for any callable function type
-export function throttle<T extends (...args: any[]) => void>(
-  fn: T,
-  delay: number
-): T {
+export function throttle<T extends (...args: any[]) => void>(fn: T, delay: number): T {
   let lastCall = 0;
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let lastArgs: Parameters<T> | null = null;

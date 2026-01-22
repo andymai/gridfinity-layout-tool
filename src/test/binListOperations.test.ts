@@ -96,26 +96,20 @@ describe('binListOperations', () => {
     });
 
     it('matches partial strings', () => {
-      const rows = [
-        createTestRow({ labels: ['Screwdriver set'] }),
-      ];
+      const rows = [createTestRow({ labels: ['Screwdriver set'] })];
       expect(filterBySearch(rows, 'screw')).toHaveLength(1);
       expect(filterBySearch(rows, 'driver')).toHaveLength(1);
       expect(filterBySearch(rows, 'set')).toHaveLength(1);
     });
 
     it('searches across multiple labels', () => {
-      const rows = [
-        createTestRow({ labels: ['First label', 'Second label'] }),
-      ];
+      const rows = [createTestRow({ labels: ['First label', 'Second label'] })];
       expect(filterBySearch(rows, 'First')).toHaveLength(1);
       expect(filterBySearch(rows, 'Second')).toHaveLength(1);
     });
 
     it('handles rows with empty labels array', () => {
-      const rows = [
-        createTestRow({ labels: [], notes: 'Has notes' }),
-      ];
+      const rows = [createTestRow({ labels: [], notes: 'Has notes' })];
       expect(filterBySearch(rows, 'notes')).toHaveLength(1);
       expect(filterBySearch(rows, 'label')).toHaveLength(0);
     });
@@ -256,25 +250,19 @@ describe('binListOperations', () => {
     });
 
     it('escapes commas in values', () => {
-      const rows = [
-        createTestRow({ labels: ['Label, with comma'] }),
-      ];
+      const rows = [createTestRow({ labels: ['Label, with comma'] })];
       const csv = formatAsCSV(rows);
       expect(csv).toContain('"Label, with comma"');
     });
 
     it('escapes double quotes in values', () => {
-      const rows = [
-        createTestRow({ labels: ['Label with "quotes"'] }),
-      ];
+      const rows = [createTestRow({ labels: ['Label with "quotes"'] })];
       const csv = formatAsCSV(rows);
       expect(csv).toContain('"Label with ""quotes"""');
     });
 
     it('escapes newlines in values', () => {
-      const rows = [
-        createTestRow({ notes: 'Line 1\nLine 2' }),
-      ];
+      const rows = [createTestRow({ notes: 'Line 1\nLine 2' })];
       const csv = formatAsCSV(rows);
       expect(csv).toContain('"Line 1\nLine 2"');
     });
@@ -295,9 +283,7 @@ describe('binListOperations', () => {
     });
 
     it('handles empty labels and notes', () => {
-      const rows = [
-        createTestRow({ labels: [], notes: '' }),
-      ];
+      const rows = [createTestRow({ labels: [], notes: '' })];
       const csv = formatAsCSV(rows);
       const lines = csv.split('\n');
       expect(lines[1]).toBe('2×2,3u,1,1,4.5,,');
@@ -313,14 +299,14 @@ describe('binListOperations', () => {
         createTestRow({
           labels: ['Bin 1'],
           customProperties: {
-            'Color': 'Red',
-            'Material': 'PETG',
+            Color: 'Red',
+            Material: 'PETG',
           },
         }),
         createTestRow({
           labels: ['Bin 2'],
           customProperties: {
-            'Color': 'Blue',
+            Color: 'Blue',
           },
         }),
       ];
@@ -341,7 +327,7 @@ describe('binListOperations', () => {
       const rows = [
         createTestRow({
           customProperties: {
-            'Notes': 'Value, with comma',
+            Notes: 'Value, with comma',
           },
         }),
       ];
@@ -394,7 +380,7 @@ describe('binListOperations', () => {
       const rows = [
         createTestRow({
           labels: ['Bin 1'],
-          customProperties: { 'SKU': 'ABC123' },
+          customProperties: { SKU: 'ABC123' },
         }),
       ];
       const csv = formatAsCSV(rows, {
@@ -404,7 +390,9 @@ describe('binListOperations', () => {
       const lines = csv.split('\n');
 
       // Header should have metadata first, then base columns, then custom properties
-      expect(lines[0]).toBe('Layout,Grid Size,Size,Height,Bins,Pieces,Filament (m),Label,Notes,SKU');
+      expect(lines[0]).toBe(
+        'Layout,Grid Size,Size,Height,Bins,Pieces,Filament (m),Label,Notes,SKU'
+      );
       expect(lines[1].startsWith('Tool Drawer,12×10,')).toBe(true);
       expect(lines[1]).toContain('ABC123');
     });
@@ -466,9 +454,7 @@ describe('binListOperations', () => {
     });
 
     it('resolves category names from IDs', () => {
-      const rows = [
-        createTestRow({ categoryIds: ['cat1', 'cat2'] }),
-      ];
+      const rows = [createTestRow({ categoryIds: ['cat1', 'cat2'] })];
       const json = formatAsJSON(rows, testLayout);
       const parsed = JSON.parse(json);
 
@@ -476,9 +462,7 @@ describe('binListOperations', () => {
     });
 
     it('handles unknown category IDs', () => {
-      const rows = [
-        createTestRow({ categoryIds: ['unknown-id'] }),
-      ];
+      const rows = [createTestRow({ categoryIds: ['unknown-id'] })];
       const json = formatAsJSON(rows, testLayout);
       const parsed = JSON.parse(json);
 
@@ -494,9 +478,7 @@ describe('binListOperations', () => {
     });
 
     it('produces valid JSON (parseable)', () => {
-      const rows = [
-        createTestRow({ labels: ['Special chars: "quotes" & <tags>'] }),
-      ];
+      const rows = [createTestRow({ labels: ['Special chars: "quotes" & <tags>'] })];
       expect(() => JSON.parse(formatAsJSON(rows, testLayout))).not.toThrow();
     });
 
@@ -505,8 +487,8 @@ describe('binListOperations', () => {
         createTestRow({
           labels: ['Bin with props'],
           customProperties: {
-            'Color': 'Red',
-            'Material': 'PETG',
+            Color: 'Red',
+            Material: 'PETG',
           },
         }),
       ];
@@ -514,8 +496,8 @@ describe('binListOperations', () => {
       const parsed = JSON.parse(json);
 
       expect(parsed.bins[0].customProperties).toEqual({
-        'Color': 'Red',
-        'Material': 'PETG',
+        Color: 'Red',
+        Material: 'PETG',
       });
     });
 
@@ -557,14 +539,14 @@ describe('binListOperations', () => {
 
       expect(breakdown).toHaveLength(2);
 
-      const cat1 = breakdown.find(b => b.categoryId === 'cat1')!;
+      const cat1 = breakdown.find((b) => b.categoryId === 'cat1')!;
       expect(cat1.categoryName).toBe('Tools');
       expect(cat1.categoryColor).toBe('#ff0000');
       expect(cat1.filament).toBe(15);
       expect(cat1.cost).toBe(0.75);
       expect(cat1.binCount).toBe(3);
 
-      const cat2 = breakdown.find(b => b.categoryId === 'cat2')!;
+      const cat2 = breakdown.find((b) => b.categoryId === 'cat2')!;
       expect(cat2.filament).toBe(8);
       expect(cat2.binCount).toBe(3);
     });
@@ -576,8 +558,8 @@ describe('binListOperations', () => {
       ];
       const breakdown = calculateCategoryBreakdown(rows, testCategories);
 
-      const cat1 = breakdown.find(b => b.categoryId === 'cat1')!;
-      const cat2 = breakdown.find(b => b.categoryId === 'cat2')!;
+      const cat1 = breakdown.find((b) => b.categoryId === 'cat1')!;
+      const cat2 = breakdown.find((b) => b.categoryId === 'cat2')!;
 
       expect(cat1.percentage).toBe(75);
       expect(cat2.percentage).toBe(25);
@@ -597,9 +579,7 @@ describe('binListOperations', () => {
     });
 
     it('handles uncategorized rows', () => {
-      const rows = [
-        createTestRow({ categoryIds: ['unknown-cat'], filament: 10 }),
-      ];
+      const rows = [createTestRow({ categoryIds: ['unknown-cat'], filament: 10 })];
       const breakdown = calculateCategoryBreakdown(rows, testCategories);
 
       expect(breakdown).toHaveLength(1);
@@ -608,9 +588,7 @@ describe('binListOperations', () => {
     });
 
     it('handles rows with empty categoryIds', () => {
-      const rows = [
-        createTestRow({ categoryIds: [], filament: 10 }),
-      ];
+      const rows = [createTestRow({ categoryIds: [], filament: 10 })];
       const breakdown = calculateCategoryBreakdown(rows, testCategories);
 
       expect(breakdown).toHaveLength(1);
@@ -623,9 +601,7 @@ describe('binListOperations', () => {
     });
 
     it('handles zero total filament (no division by zero)', () => {
-      const rows = [
-        createTestRow({ categoryIds: ['cat1'], filament: 0 }),
-      ];
+      const rows = [createTestRow({ categoryIds: ['cat1'], filament: 0 })];
       const breakdown = calculateCategoryBreakdown(rows, testCategories);
 
       expect(breakdown).toHaveLength(1);
@@ -669,8 +645,12 @@ describe('binListOperations', () => {
 
       // Mock document methods
       vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor as HTMLAnchorElement);
-      mockAppendChild = vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnchor as Node);
-      mockRemoveChild = vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnchor as Node);
+      mockAppendChild = vi
+        .spyOn(document.body, 'appendChild')
+        .mockImplementation(() => mockAnchor as Node);
+      mockRemoveChild = vi
+        .spyOn(document.body, 'removeChild')
+        .mockImplementation(() => mockAnchor as Node);
     });
 
     afterEach(() => {

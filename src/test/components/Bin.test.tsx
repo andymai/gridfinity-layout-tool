@@ -1,12 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { Bin } from '@/features/grid-editor/components/Grid/Bin';
-import {
-  useLayoutStore,
-  useSelectionStore,
-  useViewStore,
-  useInteractionStore,
-} from '@/core/store';
+import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { resetAllStores } from '@/test/testUtils';
 import type { Bin as BinType, Category, Layer, Drawer } from '@/core/types';
@@ -25,11 +20,19 @@ vi.mock('../../hooks/useResponsive', () => ({
 
 // Mock ResizeHandles to simplify testing
 vi.mock('../../features/grid-editor/components/Grid/ResizeHandles', () => ({
-  ResizeHandles: ({ variant, onResizePointerDown }: { variant: string; onResizePointerDown: (e: React.PointerEvent, handle: string) => void }) => (
+  ResizeHandles: ({
+    variant,
+    onResizePointerDown,
+  }: {
+    variant: string;
+    onResizePointerDown: (e: React.PointerEvent, handle: string) => void;
+  }) => (
     <div data-testid={`resize-handles-${variant}`}>
       <button
         data-testid="resize-handle-se"
-        onPointerDown={(e) => onResizePointerDown(e as unknown as React.PointerEvent<HTMLDivElement>, 'se')}
+        onPointerDown={(e) =>
+          onResizePointerDown(e as unknown as React.PointerEvent<HTMLDivElement>, 'se')
+        }
       >
         SE Handle
       </button>
@@ -189,9 +192,7 @@ describe('Bin', () => {
 
     it('hides label text on very small bins', () => {
       const tinyBin = { ...defaultBin, width: 1, depth: 1 };
-      const { container } = render(
-        <Bin {...defaultProps} bin={tinyBin} cellSize={16} />
-      );
+      const { container } = render(<Bin {...defaultProps} bin={tinyBin} cellSize={16} />);
       // Bin should render but text may not be visible
       expect(container.querySelector('[data-bin-id="test-bin-1"]')).not.toBeNull();
     });
@@ -294,7 +295,12 @@ describe('Bin', () => {
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
 
-      fireEvent.pointerDown(binElement!, { button: 0, clientX: 100, clientY: 100, isPrimary: true });
+      fireEvent.pointerDown(binElement!, {
+        button: 0,
+        clientX: 100,
+        clientY: 100,
+        isPrimary: true,
+      });
 
       expect(mockOnStartDrag).toHaveBeenCalledWith(
         'test-bin-1',
@@ -309,7 +315,12 @@ describe('Bin', () => {
       const { container } = render(<Bin {...defaultProps} isGhost={true} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
 
-      fireEvent.pointerDown(binElement!, { button: 0, clientX: 100, clientY: 100, isPrimary: true });
+      fireEvent.pointerDown(binElement!, {
+        button: 0,
+        clientX: 100,
+        clientY: 100,
+        isPrimary: true,
+      });
 
       expect(mockOnStartDrag).not.toHaveBeenCalled();
     });
@@ -339,7 +350,12 @@ describe('Bin', () => {
       const { container } = render(<Bin {...defaultProps} isSelected={false} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
 
-      fireEvent.pointerDown(binElement!, { button: 0, clientX: 100, clientY: 100, isPrimary: true });
+      fireEvent.pointerDown(binElement!, {
+        button: 0,
+        clientX: 100,
+        clientY: 100,
+        isPrimary: true,
+      });
 
       expect(setSelectedBinSpy).toHaveBeenCalledWith('test-bin-1');
     });
@@ -435,11 +451,7 @@ describe('Bin', () => {
 
       fireEvent.contextMenu(binElement!, { clientX: 100, clientY: 100 });
 
-      expect(showContextMenuSpy).toHaveBeenCalledWith(
-        ['test-bin-1'],
-        { x: 100, y: 100 },
-        'grid'
-      );
+      expect(showContextMenuSpy).toHaveBeenCalledWith(['test-bin-1'], { x: 100, y: 100 }, 'grid');
     });
 
     it('selects bin before showing context menu if not selected', () => {
@@ -545,7 +557,12 @@ describe('Bin', () => {
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
 
-      fireEvent.pointerDown(binElement!, { button: 0, clientX: 100, clientY: 100, isPrimary: true });
+      fireEvent.pointerDown(binElement!, {
+        button: 0,
+        clientX: 100,
+        clientY: 100,
+        isPrimary: true,
+      });
 
       expect(setPaintSizeSpy).toHaveBeenCalledWith(null);
     });
@@ -652,10 +669,7 @@ describe('Bin', () => {
       const { container } = render(<Bin {...defaultProps} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
 
-      expect(binElement).toHaveAttribute(
-        'aria-label',
-        'Bin 2 by 2, category Test Category'
-      );
+      expect(binElement).toHaveAttribute('aria-label', 'Bin 2 by 2, category Test Category');
     });
 
     it('includes label in aria-label when present', () => {
@@ -680,36 +694,28 @@ describe('Bin', () => {
   describe('fractional drawer positioning', () => {
     it('handles fractional drawer width', () => {
       const fractionalDrawer = { ...defaultDrawer, width: 10.5 };
-      const { container } = render(
-        <Bin {...defaultProps} drawer={fractionalDrawer} />
-      );
+      const { container } = render(<Bin {...defaultProps} drawer={fractionalDrawer} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
       expect(binElement).not.toBeNull();
     });
 
     it('handles fractional drawer depth', () => {
       const fractionalDrawer = { ...defaultDrawer, depth: 8.5 };
-      const { container } = render(
-        <Bin {...defaultProps} drawer={fractionalDrawer} />
-      );
+      const { container } = render(<Bin {...defaultProps} drawer={fractionalDrawer} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
       expect(binElement).not.toBeNull();
     });
 
     it('handles fractionalEdgeX start position', () => {
       const fractionalDrawer = { ...defaultDrawer, width: 10.5, fractionalEdgeX: 'start' as const };
-      const { container } = render(
-        <Bin {...defaultProps} drawer={fractionalDrawer} />
-      );
+      const { container } = render(<Bin {...defaultProps} drawer={fractionalDrawer} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
       expect(binElement).not.toBeNull();
     });
 
     it('handles fractionalEdgeY start position', () => {
       const fractionalDrawer = { ...defaultDrawer, depth: 8.5, fractionalEdgeY: 'start' as const };
-      const { container } = render(
-        <Bin {...defaultProps} drawer={fractionalDrawer} />
-      );
+      const { container } = render(<Bin {...defaultProps} drawer={fractionalDrawer} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
       expect(binElement).not.toBeNull();
     });
@@ -726,7 +732,12 @@ describe('Bin', () => {
       const { container } = render(<Bin {...defaultProps} isSelected={false} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
 
-      fireEvent.pointerDown(binElement!, { button: 0, clientX: 100, clientY: 100, isPrimary: true });
+      fireEvent.pointerDown(binElement!, {
+        button: 0,
+        clientX: 100,
+        clientY: 100,
+        isPrimary: true,
+      });
 
       expect(addToastSpy).toHaveBeenCalledWith('Tip: Drag the handles to resize', 'info');
     });
@@ -741,7 +752,12 @@ describe('Bin', () => {
       const { container } = render(<Bin {...defaultProps} isSelected={false} />);
       const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
 
-      fireEvent.pointerDown(binElement!, { button: 0, clientX: 100, clientY: 100, isPrimary: true });
+      fireEvent.pointerDown(binElement!, {
+        button: 0,
+        clientX: 100,
+        clientY: 100,
+        isPrimary: true,
+      });
 
       expect(addToastSpy).not.toHaveBeenCalled();
 

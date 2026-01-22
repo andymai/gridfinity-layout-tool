@@ -313,7 +313,9 @@ test.describe('Inspiration Gallery', () => {
       await preview.locator('button', { hasText: 'Use as Starting Point' }).click();
 
       // Should show success toast (the toast contains "Added" text)
-      await expect(page.locator('[role="alert"]', { hasText: /added/i })).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('[role="alert"]', { hasText: /added/i })).toBeVisible({
+        timeout: 5000,
+      });
     });
   });
 
@@ -420,7 +422,9 @@ test.describe('Inspiration Gallery - Mobile', () => {
 
   test('opens gallery from mobile header menu', async ({ page }) => {
     // On mobile, look for the settings/menu button in the header
-    const headerMenuButton = page.locator('header button[aria-label*="settings"], header button[aria-label*="menu"]').first();
+    const headerMenuButton = page
+      .locator('header button[aria-label*="settings"], header button[aria-label*="menu"]')
+      .first();
 
     if (await headerMenuButton.isVisible()) {
       await headerMenuButton.click();

@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  computeStructureHash,
-  computeTemporalFields,
-} from '@/shared/analytics/structureHash';
+import { computeStructureHash, computeTemporalFields } from '@/shared/analytics/structureHash';
 import { createDefaultLayout } from '@/core/constants';
 import type { Layout, Bin } from '@/core/types';
 
@@ -26,11 +23,7 @@ function createTestLayoutWithBins(binCount: number): Layout {
 }
 
 // Helper to create a layout with specific drawer dimensions
-function createLayoutWithDrawer(
-  width: number,
-  depth: number,
-  height: number
-): Layout {
+function createLayoutWithDrawer(width: number, depth: number, height: number): Layout {
   const layout = createDefaultLayout();
   layout.drawer = { width, depth, height };
   layout.bins = [];

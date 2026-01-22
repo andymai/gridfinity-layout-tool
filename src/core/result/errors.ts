@@ -419,9 +419,4 @@ export interface UnknownError extends AppError {
 /**
  * Union of all domain errors in the application.
  */
-export type DomainError =
-  | StorageError
-  | ValidationError
-  | LayoutError
-  | ApiError
-  | UnknownError;
+export type DomainError = StorageError | ValidationError | LayoutError | ApiError | UnknownError;

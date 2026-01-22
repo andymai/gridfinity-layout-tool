@@ -1,7 +1,12 @@
 import { useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import type { RefObject } from 'react';
 import type { Coord, ResizeHandle } from '@/core/types';
-import { useLayoutStore, useUndoableAction, useSelectionStore, useInteractionStore } from '@/core/store';
+import {
+  useLayoutStore,
+  useUndoableAction,
+  useSelectionStore,
+  useInteractionStore,
+} from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useGridCoords } from './useGridCoords';
 import { useCollabPresence } from '@/hooks/useCollabPresence';
@@ -12,7 +17,14 @@ import { useDragInteraction } from '@/hooks/interactions/useDragInteraction';
 import { useResizeInteraction } from '@/hooks/interactions/useResizeInteraction';
 import { useStagingDragInteraction } from '@/hooks/interactions/useStagingDragInteraction';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import type { InteractionContext, ModeHandlers, DrawStartArgs, DragStartArgs, ResizeStartArgs, StagingDragStartArgs } from '@/hooks/interactions/types';
+import type {
+  InteractionContext,
+  ModeHandlers,
+  DrawStartArgs,
+  DragStartArgs,
+  ResizeStartArgs,
+  StagingDragStartArgs,
+} from '@/hooks/interactions/types';
 
 /**
  * Hook for managing all grid interactions including bin creation, movement, and resizing.
@@ -86,18 +98,18 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const { getGridCoords, clampCoords, isInBounds } = useGridCoords(gridRef);
   const { updateInteraction } = useCollabPresence();
   // Interaction state
-  const interaction = useInteractionStore(state => state.interaction);
-  const setInteraction = useInteractionStore(state => state.setInteraction);
-  const setDropTarget = useInteractionStore(state => state.setDropTarget);
-  const paintSize = useInteractionStore(state => state.paintSize);
+  const interaction = useInteractionStore((state) => state.interaction);
+  const setInteraction = useInteractionStore((state) => state.setInteraction);
+  const setDropTarget = useInteractionStore((state) => state.setDropTarget);
+  const paintSize = useInteractionStore((state) => state.paintSize);
   // Selection state
-  const selectedBinIds = useSelectionStore(state => state.selectedBinIds);
-  const setSelectedBin = useSelectionStore(state => state.setSelectedBin);
-  const setSelectedBins = useSelectionStore(state => state.setSelectedBins);
-  const activeLayerId = useSelectionStore(state => state.activeLayerId);
-  const activeCategoryId = useSelectionStore(state => state.activeCategoryId);
+  const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
+  const setSelectedBin = useSelectionStore((state) => state.setSelectedBin);
+  const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
+  const activeLayerId = useSelectionStore((state) => state.activeLayerId);
+  const activeCategoryId = useSelectionStore((state) => state.activeCategoryId);
   // Layout state
-  const layout = useLayoutStore(state => state.layout);
+  const layout = useLayoutStore((state) => state.layout);
   const { addBin, updateBin, deleteBin } = useMutations();
   const { execute } = useUndoableAction();
 
@@ -168,12 +180,9 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
   // Start drawing a new bin (or start paint drag if paint mode active)
   // Uses ref to always access current drawMode handlers
-  const startDraw = useCallback(
-    (coord: Coord, pointerId?: number) => {
-      drawModeRef.current.start(coord, pointerId);
-    },
-    []
-  );
+  const startDraw = useCallback((coord: Coord, pointerId?: number) => {
+    drawModeRef.current.start(coord, pointerId);
+  }, []);
 
   // Start dragging bins (single or multiple)
   // Set duplicate=true for Alt+drag to duplicate bins instead of moving them
@@ -187,23 +196,19 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
   // Start resizing bins (single or multiple)
   // Uses ref to always access current resizeMode handlers
-  const startResize = useCallback(
-    (binId: string, handle: ResizeHandle, pointerId?: number) => {
-      resizeModeRef.current.start(binId, handle, pointerId);
-    },
-    []
-  );
+  const startResize = useCallback((binId: string, handle: ResizeHandle, pointerId?: number) => {
+    resizeModeRef.current.start(binId, handle, pointerId);
+  }, []);
 
   // Cancel current interaction
   const cancel = useCallback(() => {
     // Track rejection for draw/paint interactions (ML negative signal)
     const currentInteraction = useInteractionStore.getState().interaction;
     if (currentInteraction?.type === 'draw' || currentInteraction?.type === 'paint') {
-      mlTracking.trackRejection(
-        'cancelled',
-        currentInteraction.type,
-        { start: currentInteraction.start, current: currentInteraction.current }
-      );
+      mlTracking.trackRejection('cancelled', currentInteraction.type, {
+        start: currentInteraction.start,
+        current: currentInteraction.current,
+      });
     }
     setInteraction(null);
   }, [setInteraction]);
@@ -222,11 +227,10 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         // Second finger - cancel current interaction to allow pan
         if (interaction.type === 'draw' || interaction.type === 'paint') {
           // Track rejection (ML negative signal)
-          mlTracking.trackRejection(
-            'second_touch',
-            interaction.type,
-            { start: interaction.start, current: interaction.current }
-          );
+          mlTracking.trackRejection('second_touch', interaction.type, {
+            start: interaction.start,
+            current: interaction.current,
+          });
           setInteraction(null);
           activePointerIdRef.current = null;
         }
@@ -237,21 +241,19 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     // Draw and paint interactions are NOT throttled for instant visual feedback
     // Drag, resize, and stagingDrag ARE throttled because they involve heavy validation
     // Uses refs to always access current handlers (avoids stale closures)
-    const processHeavyMove = throttleRAF((
-      coords: Coord,
-      clamped: Coord,
-      currentInteraction: typeof interaction
-    ) => {
-      if (!currentInteraction) return;
+    const processHeavyMove = throttleRAF(
+      (coords: Coord, clamped: Coord, currentInteraction: typeof interaction) => {
+        if (!currentInteraction) return;
 
-      if (currentInteraction.type === 'drag') {
-        dragModeRef.current.handleMove(coords, clamped);
-      } else if (currentInteraction.type === 'resize') {
-        resizeModeRef.current.handleMove(coords, clamped);
-      } else if (currentInteraction.type === 'stagingDrag') {
-        stagingDragModeRef.current.handleMove(coords, clamped);
+        if (currentInteraction.type === 'drag') {
+          dragModeRef.current.handleMove(coords, clamped);
+        } else if (currentInteraction.type === 'resize') {
+          resizeModeRef.current.handleMove(coords, clamped);
+        } else if (currentInteraction.type === 'stagingDrag') {
+          stagingDragModeRef.current.handleMove(coords, clamped);
+        }
       }
-    });
+    );
 
     const handlePointerMove = (e: PointerEvent) => {
       // Ignore secondary touches (allow two-finger pan)
@@ -285,7 +287,9 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       // Release pointer capture
       if (capturedPointerRef.current) {
         try {
-          capturedPointerRef.current.element.releasePointerCapture(capturedPointerRef.current.pointerId);
+          capturedPointerRef.current.element.releasePointerCapture(
+            capturedPointerRef.current.pointerId
+          );
         } catch {
           // Ignore if release fails
         }
@@ -321,17 +325,18 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       // Release pointer capture on cleanup
       if (capturedPointerRef.current) {
         try {
-          capturedPointerRef.current.element.releasePointerCapture(capturedPointerRef.current.pointerId);
+          capturedPointerRef.current.element.releasePointerCapture(
+            capturedPointerRef.current.pointerId
+          );
         } catch {
           // Ignore
         }
         capturedPointerRef.current = null;
       }
     };
-  // Mode handlers are accessed via refs (drawModeRef, dragModeRef, etc.) so they're
-  // always current. The refs are updated on every render, allowing this effect to
-  // have minimal deps while still using current handler implementations.
-   
+    // Mode handlers are accessed via refs (drawModeRef, dragModeRef, etc.) so they're
+    // always current. The refs are updated on every render, allowing this effect to
+    // have minimal deps while still using current handler implementations.
   }, [interaction, setInteraction, getGridCoords, clampCoords]);
 
   // Broadcast interaction state to remote users for collaborative previews
@@ -348,4 +353,3 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     cancel,
   };
 }
-

@@ -25,7 +25,8 @@ export function DragPreview() {
 
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
 
-  const isDragging = interaction && (interaction.type === 'drag' || interaction.type === 'stagingDrag');
+  const isDragging =
+    interaction && (interaction.type === 'drag' || interaction.type === 'stagingDrag');
 
   useEffect(() => {
     if (!isDragging) {
@@ -53,19 +54,19 @@ export function DragPreview() {
 
   let draggedBins: typeof bins = [];
   if (interaction.type === 'drag') {
-    draggedBins = bins.filter(b => interaction.binIds.includes(b.id));
+    draggedBins = bins.filter((b) => interaction.binIds.includes(b.id));
   } else if (interaction.type === 'stagingDrag') {
-    const bin = bins.find(b => b.id === interaction.binId);
+    const bin = bins.find((b) => b.id === interaction.binId);
     if (bin) draggedBins = [bin];
   }
 
   if (draggedBins.length === 0) return null;
 
   // Calculate bounding box of all dragged bins
-  const minX = Math.min(...draggedBins.map(b => b.x));
+  const minX = Math.min(...draggedBins.map((b) => b.x));
   // Use TOP of bins (y + depth) for Y alignment, since bins may have different depths
   // but share the same visual top edge
-  const maxYTop = Math.max(...draggedBins.map(b => b.y + b.depth));
+  const maxYTop = Math.max(...draggedBins.map((b) => b.y + b.depth));
 
   // Use clickOffset from interaction if available for smooth dragging
   // Otherwise fall back to centering on cursor
@@ -86,7 +87,7 @@ export function DragPreview() {
       }}
     >
       {draggedBins.map((bin) => {
-        const category = categories.find(c => c.id === bin.category);
+        const category = categories.find((c) => c.id === bin.category);
         const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
         const textColor = getContrastColor(bgColor);
 
@@ -114,23 +115,24 @@ export function DragPreview() {
               transform: 'scale(1.02)',
             }}
           >
-            {bin.label && (() => {
-              // Smart rotation: match Bin.tsx logic - rotate if significantly taller than wide
-              const shouldRotate = bin.depth > bin.width * 1.5;
-              return (
-                <div
-                  className="text-center pointer-events-none select-none text-xs truncate px-1"
-                  style={{
-                    color: textColor,
-                    opacity: 0.85,
-                    transform: shouldRotate ? 'rotate(-90deg)' : 'none',
-                    width: shouldRotate ? `${(bin.depth / bin.width) * 90}%` : 'auto',
-                  }}
-                >
-                  {bin.label}
-                </div>
-              );
-            })()}
+            {bin.label &&
+              (() => {
+                // Smart rotation: match Bin.tsx logic - rotate if significantly taller than wide
+                const shouldRotate = bin.depth > bin.width * 1.5;
+                return (
+                  <div
+                    className="text-center pointer-events-none select-none text-xs truncate px-1"
+                    style={{
+                      color: textColor,
+                      opacity: 0.85,
+                      transform: shouldRotate ? 'rotate(-90deg)' : 'none',
+                      width: shouldRotate ? `${(bin.depth / bin.width) * 90}%` : 'auto',
+                    }}
+                  >
+                    {bin.label}
+                  </div>
+                );
+              })()}
           </div>
         );
       })}

@@ -106,7 +106,8 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         </button>
 
         <div className="text-xs text-content-tertiary border-t border-stroke-subtle pt-3 mt-3">
-          Note: Cloud shares are snapshots. Changes you make locally won't affect the shared version.
+          Note: Cloud shares are snapshots. Changes you make locally won't affect the shared
+          version.
         </div>
       </div>
     );
@@ -161,10 +162,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
               >
                 Delete
               </button>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="btn btn-secondary"
-              >
+              <button onClick={() => setShowDeleteConfirm(false)} className="btn btn-secondary">
                 Cancel
               </button>
             </div>
@@ -216,12 +214,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
       <div className="space-y-4">
         <div className="flex items-center gap-2 text-success">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
           <span className="font-medium">Layout shared successfully!</span>
         </div>

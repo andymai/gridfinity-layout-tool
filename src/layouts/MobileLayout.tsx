@@ -29,7 +29,7 @@ import type { SaveStatus } from '@/shared/hooks';
 
 // Legacy context menu state for backwards compatibility (has binId instead of binIds)
 interface LegacyContextMenuStateWithBinId {
-  binId: string;  // Non-optional when used with type guard
+  binId: string; // Non-optional when used with type guard
   position: { x: number; y: number };
 }
 
@@ -57,11 +57,15 @@ export interface MobileLayoutProps {
   saveStatus: SaveStatus;
 }
 
-export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen, saveStatus }: MobileLayoutProps) {
-  const activeMobilePanel = useUIStore(state => state.activeMobilePanel);
-  const setActiveMobilePanel = useUIStore(state => state.setActiveMobilePanel);
-  const contextMenu = useUIStore(state => state.contextMenu);
-  const hideContextMenu = useUIStore(state => state.hideContextMenu);
+export function MobileLayout({
+  isMobileHelpOpen,
+  setIsMobileHelpOpen,
+  saveStatus,
+}: MobileLayoutProps) {
+  const activeMobilePanel = useUIStore((state) => state.activeMobilePanel);
+  const setActiveMobilePanel = useUIStore((state) => state.setActiveMobilePanel);
+  const contextMenu = useUIStore((state) => state.contextMenu);
+  const hideContextMenu = useUIStore((state) => state.hideContextMenu);
 
   return (
     <div className="h-screen-safe flex flex-col overflow-hidden bg-surface text-content">
@@ -69,7 +73,11 @@ export function MobileLayout({ isMobileHelpOpen, setIsMobileHelpOpen, saveStatus
       <SharedLayoutBanner />
 
       {/* Mobile Header */}
-      <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} onHelpClick={() => setIsMobileHelpOpen(true)} saveStatus={saveStatus} />
+      <MobileHeader
+        onMenuClick={() => setActiveMobilePanel('settings')}
+        onHelpClick={() => setIsMobileHelpOpen(true)}
+        saveStatus={saveStatus}
+      />
 
       {/* Main content area - Grid takes full width */}
       <main className="flex-1 flex flex-col overflow-hidden bg-surface">
@@ -182,8 +190,6 @@ function MobilePanelContent({ panel }: { panel: string }) {
   };
 
   return (
-    <PanelErrorBoundary panelName={panelNames[panel] || 'Panel'}>
-      {content}
-    </PanelErrorBoundary>
+    <PanelErrorBoundary panelName={panelNames[panel] || 'Panel'}>{content}</PanelErrorBoundary>
   );
 }
