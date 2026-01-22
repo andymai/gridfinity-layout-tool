@@ -1,6 +1,13 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useLibraryStore, useSelectionStore, useViewStore } from './core/store';
+import {
+  useLayoutStore,
+  useLibraryStore,
+  useSelectionStore,
+  useViewStore,
+  useLabsStore,
+  useUIStore,
+} from './core/store';
 import {
   useLayoutRouting,
   useAnalytics,
@@ -22,12 +29,28 @@ import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
 import { ToastContainer } from './shared/components/Toast';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
-import { BinContextMenuWrapper } from './components/Mobile';
+// Import directly to avoid pulling in entire Mobile barrel (67 KB MobileLayoutsPanel etc.)
+import { BinContextMenuWrapper } from './components/Mobile/BinContextMenuWrapper';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
-import { SharedLayoutImporter, SharedLayoutBanner } from './features/cloud-share/components';
-import { LabsDrawer } from './features/labs/components';
 import { LocalMutationsProvider } from './shared/contexts';
+
+// Lazy load cloud-share components - only needed when viewing/sharing layouts
+const SharedLayoutImporter = lazyWithRetry(() =>
+  import('./features/cloud-share/components/SharedLayoutImporter').then(
+    namedExport('SharedLayoutImporter')
+  )
+);
+const SharedLayoutBanner = lazyWithRetry(() =>
+  import('./features/cloud-share/components/SharedLayoutBanner').then(
+    namedExport('SharedLayoutBanner')
+  )
+);
+
+// Lazy load LabsDrawer - experimental feature most users won't use
+const LabsDrawer = lazyWithRetry(() =>
+  import('./features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
+);
 import { SHORTCUTS } from './core/constants';
 
 // Legacy context menu state for backwards compatibility (has binId instead of binIds)
@@ -88,6 +111,19 @@ export default function App() {
 
   // Collaborative mode detection
   const { isCollaborative, shareId } = useCollabMode();
+
+  // Lazy loading conditions - only load chunks when actually needed
+  const isLabsDrawerOpen = useLabsStore((state) => state.isDrawerOpen);
+  const hasSharedLayoutPreview = useUIStore((state) => state.sharedLayoutPreview !== null);
+
+  // Check if URL contains share parameters (determines if SharedLayoutImporter is needed)
+  // This is checked once at component mount and doesn't re-run on URL changes
+  // (SharedLayoutImporter handles subsequent URL changes internally)
+  const [hasShareUrl] = useState(() => {
+    const hash = window.location.hash;
+    const pathname = window.location.pathname;
+    return hash.includes('share=') || /^\/l\/[a-zA-Z0-9]{12}$/.test(pathname);
+  });
 
   // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
   useOwnedShareSync();
@@ -210,7 +246,11 @@ export default function App() {
     return wrapWithMutations(
       <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
         {/* Shared layout banner (shown when viewing unsaved shared layout) */}
-        <SharedLayoutBanner />
+        {hasSharedLayoutPreview && (
+          <Suspense fallback={null}>
+            <SharedLayoutBanner />
+          </Suspense>
+        )}
 
         {/* Header */}
         <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
@@ -278,11 +318,19 @@ export default function App() {
         {/* Toast notifications */}
         <ToastContainer />
 
-        {/* Shared layout URL importer */}
-        <SharedLayoutImporter />
+        {/* Shared layout URL importer - only load when URL has share params */}
+        {hasShareUrl && (
+          <Suspense fallback={null}>
+            <SharedLayoutImporter />
+          </Suspense>
+        )}
 
-        {/* Labs drawer */}
-        <LabsDrawer />
+        {/* Labs drawer - only load when drawer is open */}
+        {isLabsDrawerOpen && (
+          <Suspense fallback={null}>
+            <LabsDrawer />
+          </Suspense>
+        )}
       </div>
     );
   }
@@ -291,7 +339,11 @@ export default function App() {
   return wrapWithMutations(
     <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
-      <SharedLayoutBanner />
+      {hasSharedLayoutPreview && (
+        <Suspense fallback={null}>
+          <SharedLayoutBanner />
+        </Suspense>
+      )}
 
       {/* Header */}
       <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
@@ -351,11 +403,19 @@ export default function App() {
       {/* ARIA live region for screen reader announcements */}
       <LiveRegion />
 
-      {/* Shared layout URL importer */}
-      <SharedLayoutImporter />
+      {/* Shared layout URL importer - only load when URL has share params */}
+      {hasShareUrl && (
+        <Suspense fallback={null}>
+          <SharedLayoutImporter />
+        </Suspense>
+      )}
 
-      {/* Labs drawer */}
-      <LabsDrawer />
+      {/* Labs drawer - only load when drawer is open */}
+      {isLabsDrawerOpen && (
+        <Suspense fallback={null}>
+          <LabsDrawer />
+        </Suspense>
+      )}
     </div>
   );
 }

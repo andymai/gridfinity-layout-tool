@@ -411,19 +411,21 @@ describe('Sidebar', () => {
       expect(screen.getByLabelText('Open settings')).toBeInTheDocument();
     });
 
-    it('opens settings modal when settings button clicked', () => {
+    it('opens settings modal when settings button clicked', async () => {
       render(<Sidebar />);
 
       fireEvent.click(screen.getByLabelText('Open settings'));
 
-      expect(screen.getByTestId('settings-modal')).toBeInTheDocument();
+      // SettingsModal is lazy-loaded, so use findBy which waits
+      expect(await screen.findByTestId('settings-modal')).toBeInTheDocument();
     });
 
-    it('closes settings modal when close button clicked', () => {
+    it('closes settings modal when close button clicked', async () => {
       render(<Sidebar />);
 
       fireEvent.click(screen.getByLabelText('Open settings'));
-      expect(screen.getByTestId('settings-modal')).toBeInTheDocument();
+      // Wait for lazy-loaded modal to appear
+      expect(await screen.findByTestId('settings-modal')).toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId('close-settings'));
 
