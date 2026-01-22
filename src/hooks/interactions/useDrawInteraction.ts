@@ -4,6 +4,7 @@ import { canPlaceBin } from '@/shared/utils/validation';
 import { capturePointer } from '@/utils/interaction';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { trackBinCreated, trackPaintMode } from '@/utils/analytics';
 import type { InteractionContext, ModeHandlers, DrawStartArgs } from './types';
 import type { Coord, Bin } from '@/core/types';
 
@@ -144,6 +145,8 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
             mlTracking.trackPlacement(placedBin, 'draw');
             // Record creation for quick-correction detection
             mlTracking.recordCreation(result.value, 'draw', `${width}x${depth}x${layer.height}`);
+            // Track for PostHog analytics
+            trackBinCreated('draw', 1, { width, depth, height: layer.height });
           }
         });
       }
@@ -224,6 +227,14 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
             for (const bin of placedBins) {
               mlTracking.recordCreation(bin.id, 'paint', `${bin.width}x${bin.depth}x${bin.height}`);
             }
+            // Track for PostHog analytics (with count of bins created)
+            trackBinCreated('paint', placedBinIds.length, {
+              width: ps.width,
+              depth: ps.depth,
+              height: layer.height,
+            });
+            // Track paint mode exit with bins created count
+            trackPaintMode('exited', placedBinIds.length);
           }
         }
       }
