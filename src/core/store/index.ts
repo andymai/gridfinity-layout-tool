@@ -25,6 +25,7 @@ export type { HalfBinModeStore } from './halfBinMode';
 export { useSharedPreviewStore } from './sharedPreview';
 export type { SharedPreviewStore } from './sharedPreview';
 
-// Legacy re-export for backwards compatibility during migration
-// TODO: Remove after all consumers are updated
+// Legacy re-export for backwards compatibility
+// Production code has been migrated to specific stores.
+// Test files still use this facade for convenience.
 export { useUIStore } from './ui';
