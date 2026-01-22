@@ -97,6 +97,19 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 /**
  * Hook to wrap layout actions with history tracking.
  * Use this instead of calling layout store directly for undoable actions.
+ *
+ * The execute function returns whatever the action returns, allowing callers
+ * to check Result types from store actions:
+ *
+ * @example
+ * ```ts
+ * const result = execute(() => addBin({ ... }));
+ * if (isOk(result)) {
+ *   // handle success
+ * } else {
+ *   addToast(getUserMessage(result.error), 'error');
+ * }
+ * ```
  */
 export function useUndoableAction() {
   const layout = useLayoutStore((state) => state.layout);
@@ -109,11 +122,12 @@ export function useUndoableAction() {
   }, [layout]);
 
   const execute = useCallback(
-    (action: () => void) => {
+    <T>(action: () => T): T => {
       push(cloneLayout(layoutRef.current));
-      action();
+      const result = action();
       // Record timestamp AFTER action executes for accurate undo timing
       mlTracking.recordAction();
+      return result;
     },
     [push]
   ); // Only depends on push, which is stable from Zustand

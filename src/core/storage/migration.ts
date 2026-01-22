@@ -21,6 +21,7 @@ import {
   ok,
   err,
   OK,
+  isOk,
   storageNotFound,
   storageUnavailable,
   storageNetworkError,
@@ -291,7 +292,7 @@ export async function migrateAllLayoutsToIndexedDBResult(): Promise<
 
     const migrationResult = await migrateLayoutToIndexedDBResult(layoutId);
 
-    if (migrationResult.ok) {
+    if (isOk(migrationResult)) {
       stats.migratedCount++;
     }
     // Note: Individual failures are silently skipped - use legacy API for error details

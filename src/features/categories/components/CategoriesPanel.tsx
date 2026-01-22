@@ -6,7 +6,7 @@ import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useToastStore } from '@/core/store/toast';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
-import { isOk } from '@/core/result';
+import { isOk, isErr, getUserMessage } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 
 // Curated color palette optimized for dark UI backgrounds
@@ -110,11 +110,14 @@ export function CategoriesPanel() {
   };
 
   const handleUpdateCategory = (id: string, field: 'name' | 'color', value: string) => {
-    execute(() => {
+    const result = execute(() =>
       updateCategory(id, {
         [field]: field === 'name' ? value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) : value,
-      });
-    });
+      })
+    );
+    if (isErr(result)) {
+      addToast(getUserMessage(result.error), 'error');
+    }
   };
 
   const handleDeleteCategory = (id: string, name: string, e: React.MouseEvent) => {
@@ -142,15 +145,21 @@ export function CategoriesPanel() {
   const confirmDeleteCategory = () => {
     if (!deleteConfirm) return;
     const { id } = deleteConfirm;
-    execute(() => {
-      deleteCategory(id);
-      // Access fresh state to avoid stale closure issues
-      const currentCategories = useLayoutStore.getState().layout.categories;
-      const currentActiveCategoryId = useUIStore.getState().activeCategoryId;
-      if (currentActiveCategoryId === id && currentCategories.length > 0) {
-        setActiveCategory(currentCategories[0].id);
+    const result = execute(() => {
+      const deleteResult = deleteCategory(id);
+      if (isOk(deleteResult)) {
+        // Access fresh state to avoid stale closure issues
+        const currentCategories = useLayoutStore.getState().layout.categories;
+        const currentActiveCategoryId = useUIStore.getState().activeCategoryId;
+        if (currentActiveCategoryId === id && currentCategories.length > 0) {
+          setActiveCategory(currentCategories[0].id);
+        }
       }
+      return deleteResult;
     });
+    if (isErr(result)) {
+      addToast(getUserMessage(result.error), 'error');
+    }
     setEditingId(null);
     setDeleteConfirm(null);
   };

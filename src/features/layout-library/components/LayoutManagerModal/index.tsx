@@ -122,14 +122,18 @@ function LayoutManagerModalContent({
 
   const handleDelete = useCallback(
     async (id: string) => {
-      await deleteLayout(id);
+      const result = await deleteLayout(id);
+      // Result error is already shown via toast internally
+      return isOk(result);
     },
     [deleteLayout]
   );
 
   const handleDuplicate = useCallback(
     async (id: string) => {
-      await duplicateLayout(id);
+      const result = await duplicateLayout(id);
+      // Result error is already shown via toast internally
+      return isOk(result);
     },
     [duplicateLayout]
   );
