@@ -37,17 +37,15 @@ jobs:
         run: npm run size:check
 
       # Upload source maps to PostHog for error tracking (main branch only)
+      # Requires POSTHOG_CLI_TOKEN and POSTHOG_ENV_ID secrets
+      # Get these from PostHog: Settings > Environment > Source Maps
       - name: Upload source maps to PostHog
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
-          POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
-        run: |
-          if [ -n "$POSTHOG_PERSONAL_API_KEY" ] && [ -n "$POSTHOG_PROJECT_ID" ]; then
-            npm run sourcemaps:upload
-          else
-            echo "Skipping source map upload - PostHog credentials not configured"
-          fi
+        uses: PostHog/upload-source-maps@v0.5.7.0
+        with:
+          directory: dist
+          env-id: ${{ secrets.POSTHOG_ENV_ID }}
+          cli-token: ${{ secrets.POSTHOG_CLI_TOKEN }}
 
   # Main branch only: Full test suite with coverage (safety net)
   test:

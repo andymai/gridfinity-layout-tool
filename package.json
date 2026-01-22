@@ -21,8 +21,7 @@
     "size": "size-limit",
     "size:check": "size-limit --limit",
     "check:boundaries": "./scripts/check-module-boundaries.sh",
-    "check:boundaries:staged": "./scripts/check-module-boundaries.sh --staged",
-    "sourcemaps:upload": "tsx scripts/upload-sourcemaps.ts"
+    "check:boundaries:staged": "./scripts/check-module-boundaries.sh --staged"
   },
   "size-limit": [
     {
