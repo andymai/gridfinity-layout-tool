@@ -1,8 +1,7 @@
-import type { RedisOptions } from 'ioredis';
+import type { RedisOptions, Redis as RedisInstance } from 'ioredis';
 import Redis from 'ioredis';
 
-export type RateLimitAction =
-  | 'create' | 'update' | 'view' | 'delete' | 'report' | 'telemetry';
+export type RateLimitAction = 'create' | 'update' | 'view' | 'delete' | 'report' | 'telemetry';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -26,12 +25,12 @@ interface RateLimitConfig {
 }
 
 const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
-  create: { limit: 100, windowSeconds: 60 },       // 100/minute (dev friendly)
-  update: { limit: 100, windowSeconds: 60 },       // 100/minute (dev friendly)
-  view: { limit: 100, windowSeconds: 60 },         // 100/minute
-  delete: { limit: 100, windowSeconds: 60 },       // 100/minute (dev friendly)
-  report: { limit: 10, windowSeconds: 3600 },      // 10/hour
-  telemetry: { limit: 100, windowSeconds: 60 },    // 100/minute (ML telemetry)
+  create: { limit: 100, windowSeconds: 60 }, // 100/minute (dev friendly)
+  update: { limit: 100, windowSeconds: 60 }, // 100/minute (dev friendly)
+  view: { limit: 100, windowSeconds: 60 }, // 100/minute
+  delete: { limit: 100, windowSeconds: 60 }, // 100/minute (dev friendly)
+  report: { limit: 10, windowSeconds: 3600 }, // 10/hour
+  telemetry: { limit: 100, windowSeconds: 60 }, // 100/minute (ML telemetry)
 };
 
 interface RateLimitResult {
@@ -42,9 +41,9 @@ interface RateLimitResult {
 }
 
 // Lazy-initialize Redis connection
-let redis: Redis | null = null;
+let redis: RedisInstance | null = null;
 
-function getRedis(): Redis | null {
+function getRedis(): RedisInstance | null {
   if (!process.env.REDIS_URL) {
     return null;
   }
@@ -91,9 +90,10 @@ export async function checkRateLimit(
     if (count >= config.limit) {
       // Get oldest entry to calculate reset time
       const oldest = await client.zrange(key, 0, 0, 'WITHSCORES');
-      const resetAt = oldest.length > 1
-        ? Math.ceil(Number(oldest[1]) + config.windowSeconds)
-        : now + config.windowSeconds;
+      const resetAt =
+        oldest.length > 1
+          ? Math.ceil(Number(oldest[1]) + config.windowSeconds)
+          : now + config.windowSeconds;
 
       return {
         allowed: false,
@@ -135,7 +135,7 @@ function hashIP(ip: string): string {
   let hash = 0;
   for (let i = 0; i < ip.length; i++) {
     const char = ip.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit int
   }
   return Math.abs(hash).toString(36);
@@ -146,7 +146,9 @@ function hashIP(ip: string): string {
  * Vercel sets x-forwarded-for header.
  * Supports both Fetch API Request and Node.js IncomingHttpHeaders.
  */
-export function getClientIP(request: Request | { headers: Record<string, string | string[] | undefined> }): string {
+export function getClientIP(
+  request: Request | { headers: Record<string, string | string[] | undefined> }
+): string {
   // Handle Fetch API Request
   if ('get' in request.headers && typeof request.headers.get === 'function') {
     const forwarded = request.headers.get('x-forwarded-for');

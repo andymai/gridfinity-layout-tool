@@ -3,12 +3,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from '../lib/rateLimit.js';
 import { validateShareLayout } from '../lib/validation.js';
 import { filterLayoutContent } from '../lib/contentFilter.js';
-import {
-  isValidShareId,
-  hashToken,
-  ErrorCode,
-  type ShareData,
-} from '../lib/shared.js';
+import { isValidShareId, hashToken, ErrorCode, type ShareData } from '../lib/shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = req.query;
@@ -31,19 +26,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return handleDelete(req, res, id, blobPath);
     default:
       res.setHeader('Allow', 'GET, PUT, DELETE');
-      return res.status(405).json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
+      return res
+        .status(405)
+        .json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
   }
 }
 
 /**
  * GET /api/share/[id] - Fetch a shared layout
  */
-async function handleGet(
-  req: VercelRequest,
-  res: VercelResponse,
-  id: string,
-  blobPath: string
-) {
+async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, blobPath: string) {
   try {
     // Rate limiting
     const clientIP = getClientIP(req);
@@ -75,7 +67,7 @@ async function handleGet(
       });
     }
 
-    const shareData: ShareData = await response.json();
+    const shareData = (await response.json()) as ShareData;
 
     // Update lastAccessedAt timestamp (fire-and-forget, don't block response)
     const now = new Date().toISOString();
@@ -114,12 +106,7 @@ async function handleGet(
 /**
  * PUT /api/share/[id] - Update an existing share
  */
-async function handlePut(
-  req: VercelRequest,
-  res: VercelResponse,
-  id: string,
-  blobPath: string
-) {
+async function handlePut(req: VercelRequest, res: VercelResponse, id: string, blobPath: string) {
   try {
     // Rate limiting
     const clientIP = getClientIP(req);
@@ -159,7 +146,7 @@ async function handlePut(
       });
     }
 
-    const existingData: ShareData = await response.json();
+    const existingData = (await response.json()) as ShareData;
 
     // Verify delete token
     const tokenHash = await hashToken(deleteToken);
@@ -213,9 +200,10 @@ async function handlePut(
     const validationResult = validateShareLayout(layout, layoutJson.length);
 
     if (!validationResult.valid) {
+      const { error } = validationResult;
       return res.status(400).json({
-        error: validationResult.error.message,
-        code: validationResult.error.code,
+        error: error.message,
+        code: error.code,
       });
     }
 
@@ -267,7 +255,7 @@ async function handlePut(
 async function handleDelete(
   req: VercelRequest,
   res: VercelResponse,
-  id: string,
+  _id: string,
   blobPath: string
 ) {
   try {
@@ -284,8 +272,8 @@ async function handleDelete(
     }
 
     // Get delete token from header or body
-    const deleteToken = req.headers['x-delete-token'] as string ||
-      (req.body && req.body.deleteToken);
+    const deleteToken =
+      (req.headers['x-delete-token'] as string) || (req.body && req.body.deleteToken);
 
     if (!deleteToken) {
       return res.status(401).json({
@@ -311,7 +299,7 @@ async function handleDelete(
       });
     }
 
-    const existingData: ShareData = await response.json();
+    const existingData = (await response.json()) as ShareData;
 
     // Verify delete token
     const tokenHash = await hashToken(deleteToken);
