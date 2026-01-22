@@ -30,11 +30,11 @@ import {
   ok,
   err,
   tryCatchAsync,
-  storageQuotaExceeded,
   storageNotFound,
   storageCorrupted,
   storageUnavailable,
 } from '@/core/result';
+import { createStorageErrorClassifier, classifyStorageError } from './errorUtils';
 
 // Storage keys
 const LEGACY_STORAGE_KEY = 'gridfinity-layout-v1';
@@ -148,30 +148,7 @@ export async function saveLayoutResult(
 
   return tryCatchAsync(
     () => backend.saveAsync(key, layout),
-    (error): StorageError => {
-      const message = error instanceof Error ? error.message : String(error);
-
-      // Detect quota exceeded errors
-      if (
-        message.includes('quota') ||
-        message.includes('QuotaExceeded') ||
-        message.includes('Storage full')
-      ) {
-        return storageQuotaExceeded(undefined, undefined, error);
-      }
-
-      // Detect storage unavailable errors
-      if (
-        message.includes('unavailable') ||
-        message.includes('SecurityError') ||
-        message.includes('access')
-      ) {
-        return storageUnavailable('indexedDB', error);
-      }
-
-      // Default to unavailable for unknown errors
-      return storageUnavailable('indexedDB', error);
-    }
+    createStorageErrorClassifier('indexedDB')
   );
 }
 
@@ -317,17 +294,7 @@ export function saveLibraryResult(
     backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, library);
     return ok(undefined);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-
-    if (
-      message.includes('quota') ||
-      message.includes('QuotaExceeded') ||
-      message.includes('Storage full')
-    ) {
-      return err(storageQuotaExceeded(undefined, undefined, error));
-    }
-
-    return err(storageUnavailable('localStorage', error));
+    return err(classifyStorageError(error, 'localStorage'));
   }
 }
 
@@ -575,11 +542,7 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
     saveLibrary(library);
     backend.deleteSync(LEGACY_STORAGE_KEY);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (message.includes('quota') || message.includes('QuotaExceeded')) {
-      return err(storageQuotaExceeded(undefined, undefined, error));
-    }
-    return err(storageUnavailable('localStorage', error));
+    return err(classifyStorageError(error, 'localStorage'));
   }
 
   return ok(library);

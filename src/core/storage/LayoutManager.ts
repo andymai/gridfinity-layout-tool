@@ -38,11 +38,18 @@ import {
   err,
   isErr,
   tryCatchAsync,
-  storageQuotaExceeded,
   storageNotFound,
   storageCorrupted,
   storageUnavailable,
 } from '@/core/result';
+import {
+  classifyStorageError,
+  createStorageErrorClassifier,
+} from './errorUtils';
+import {
+  findLibraryEntry,
+  updateLibraryEntryAtIndex,
+} from './libraryUtils';
 
 // === Storage Keys ===
 
@@ -149,11 +156,7 @@ function saveLibraryInternal(library: LayoutLibrary): Result<void, StorageError>
     backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, library);
     return ok(undefined);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (message.includes('quota') || message.includes('QuotaExceeded')) {
-      return err(storageQuotaExceeded(undefined, undefined, error));
-    }
-    return err(storageUnavailable('localStorage', error));
+    return err(classifyStorageError(error, 'localStorage'));
   }
 }
 
@@ -168,16 +171,7 @@ async function saveLayoutInternal(
 
   return tryCatchAsync(
     () => backend.saveAsync(key, layout),
-    (error): StorageError => {
-      const message = error instanceof Error ? error.message : String(error);
-      if (message.includes('quota') || message.includes('QuotaExceeded')) {
-        return storageQuotaExceeded(undefined, undefined, error);
-      }
-      if (message.includes('unavailable') || message.includes('SecurityError')) {
-        return storageUnavailable('indexedDB', error);
-      }
-      return storageUnavailable('indexedDB', error);
-    }
+    createStorageErrorClassifier('indexedDB')
   );
 }
 
@@ -258,8 +252,8 @@ export async function saveLayoutWithMetadata(
   options: SaveLayoutOptions = {}
 ): Promise<Result<SaveResult, StorageError>> {
   // 1. Validate entry exists
-  const entryIndex = library.entries.findIndex(e => e.id === layoutId);
-  if (entryIndex === -1) {
+  const found = findLibraryEntry(library, layoutId);
+  if (!found) {
     return err(storageNotFound(getLayoutKey(layoutId)));
   }
 
@@ -269,29 +263,19 @@ export async function saveLayoutWithMetadata(
     return saveResult;
   }
 
-  // 3. Update entry metadata
+  // 3. Compute updates
   const now = Date.now();
-  const existingEntry = library.entries[entryIndex];
   const preview = options.skipPreview
-    ? (options.preview ?? existingEntry.preview)
+    ? (options.preview ?? found.entry.preview)
     : computePreview(layout);
 
-  const updatedEntry: LayoutEntry = {
-    ...existingEntry,
+  // 4. Build updated library using helper
+  const updatedLibrary = updateLibraryEntryAtIndex(library, found.index, {
     name: (options.name ?? layout.name).slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
     modifiedAt: now,
     preview,
-  };
-
-  // 4. Build updated library
-  const updatedLibrary: LayoutLibrary = {
-    ...library,
-    entries: [
-      ...library.entries.slice(0, entryIndex),
-      updatedEntry,
-      ...library.entries.slice(entryIndex + 1),
-    ],
-  };
+  });
+  const updatedEntry = updatedLibrary.entries[found.index];
 
   // 5. Save library
   const librarySaveResult = saveLibraryInternal(updatedLibrary);
@@ -414,8 +398,8 @@ export async function deleteLayoutWithEntry(
     return err(storageCorrupted('library', ['Cannot delete the last layout']));
   }
 
-  const entryIndex = library.entries.findIndex(e => e.id === layoutId);
-  if (entryIndex === -1) {
+  const found = findLibraryEntry(library, layoutId);
+  if (!found) {
     return err(storageNotFound(getLayoutKey(layoutId)));
   }
 
@@ -594,24 +578,14 @@ export function updateCloudShare(
   cloudShare: CloudShareInfo | undefined,
   library: LayoutLibrary
 ): Result<LayoutLibrary, StorageError> {
-  const entryIndex = library.entries.findIndex(e => e.id === layoutId);
-  if (entryIndex === -1) {
+  const found = findLibraryEntry(library, layoutId);
+  if (!found) {
     return err(storageNotFound(getLayoutKey(layoutId)));
   }
 
-  const updatedEntry: LayoutEntry = {
-    ...library.entries[entryIndex],
+  const updatedLibrary = updateLibraryEntryAtIndex(library, found.index, {
     cloudShare,
-  };
-
-  const updatedLibrary: LayoutLibrary = {
-    ...library,
-    entries: [
-      ...library.entries.slice(0, entryIndex),
-      updatedEntry,
-      ...library.entries.slice(entryIndex + 1),
-    ],
-  };
+  });
 
   const saveResult = saveLibraryInternal(updatedLibrary);
   if (isErr(saveResult)) {
@@ -633,25 +607,15 @@ export function renameLayoutEntry(
   newName: string,
   library: LayoutLibrary
 ): Result<LayoutLibrary, StorageError> {
-  const entryIndex = library.entries.findIndex(e => e.id === layoutId);
-  if (entryIndex === -1) {
+  const found = findLibraryEntry(library, layoutId);
+  if (!found) {
     return err(storageNotFound(getLayoutKey(layoutId)));
   }
 
-  const updatedEntry: LayoutEntry = {
-    ...library.entries[entryIndex],
+  const updatedLibrary = updateLibraryEntryAtIndex(library, found.index, {
     name: newName.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
     modifiedAt: Date.now(),
-  };
-
-  const updatedLibrary: LayoutLibrary = {
-    ...library,
-    entries: [
-      ...library.entries.slice(0, entryIndex),
-      updatedEntry,
-      ...library.entries.slice(entryIndex + 1),
-    ],
-  };
+  });
 
   const saveResult = saveLibraryInternal(updatedLibrary);
   if (isErr(saveResult)) {
