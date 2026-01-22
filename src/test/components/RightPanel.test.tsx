@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { RightPanel } from '@/components/RightPanel';
 import { useUIStore, useLayoutStore, useViewStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
@@ -478,21 +478,23 @@ describe('RightPanel', () => {
       expect(screen.getByLabelText('Expand bin list to full view')).toBeInTheDocument();
     });
 
-    it('opens BinListModal when expand button clicked', () => {
+    it('opens BinListModal when expand button clicked', async () => {
       render(<RightPanel />);
 
       fireEvent.click(screen.getByLabelText('Expand bin list to full view'));
 
-      expect(screen.getByTestId('bin-list-modal')).toBeInTheDocument();
+      expect(await screen.findByTestId('bin-list-modal')).toBeInTheDocument();
     });
 
-    it('closes BinListModal when close clicked', () => {
+    it('closes BinListModal when close clicked', async () => {
       render(<RightPanel />);
 
       fireEvent.click(screen.getByLabelText('Expand bin list to full view'));
-      fireEvent.click(screen.getByText('Close Modal'));
+      fireEvent.click(await screen.findByText('Close Modal'));
 
-      expect(screen.queryByTestId('bin-list-modal')).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByTestId('bin-list-modal')).not.toBeInTheDocument();
+      });
     });
   });
 

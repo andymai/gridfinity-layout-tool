@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath, URL } from 'node:url';
 
 // https://vite.dev/config/
@@ -108,6 +109,17 @@ export default defineConfig({
         ],
       },
     }),
+    ...(process.env.ANALYZE
+      ? [
+          visualizer({
+            open: false,
+            filename: 'bundle-analysis.html',
+            gzipSize: true,
+            template: 'treemap',
+          }),
+          visualizer({ open: false, filename: 'bundle-analysis.json', template: 'raw-data' }),
+        ]
+      : []),
   ],
   build: {
     // Generate source maps for error tracking (PostHog)

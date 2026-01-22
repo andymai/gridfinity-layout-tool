@@ -1,11 +1,15 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '@/core/store';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { exportPrintListTSV } from '@/core/storage';
 import { trackLayoutSnapshot } from '@/utils/analytics';
 import { ConfirmDialog, CollapsibleSection } from '@/shared/components';
-import { BinListModal } from './Modals/BinListModal';
+import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
+
+const BinListModal = lazyWithRetry(() =>
+  import('./Modals/BinListModal').then(namedExport('BinListModal'))
+);
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from './Print/SplitPreview';
@@ -471,7 +475,11 @@ export function RightPanel() {
       />
 
       {/* Expanded Bin List Modal */}
-      <BinListModal isOpen={binListModalOpen} onClose={() => setBinListModalOpen(false)} />
+      {binListModalOpen && (
+        <Suspense fallback={null}>
+          <BinListModal isOpen={binListModalOpen} onClose={() => setBinListModalOpen(false)} />
+        </Suspense>
+      )}
     </aside>
   );
 }
