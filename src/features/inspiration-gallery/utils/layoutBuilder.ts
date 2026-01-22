@@ -1,10 +1,11 @@
-import type { Layout, Bin, Layer, Category, LayoutPreview, ThumbnailBin } from '@/core/types';
+import type { Layout, Bin, Layer, Category } from '@/core/types';
 import type {
   InspirationLayout,
   InspirationTheme,
   LayoutComplexity,
   LayoutFeature,
 } from '../types';
+import { computePreview } from '@/core/storage';
 
 let idCounter = 0;
 function genId(): string {
@@ -65,34 +66,8 @@ export function createCategory(name: string, color: string): Category {
   };
 }
 
-/**
- * Compute preview from layout (same algorithm as library store).
- */
-export function computePreview(layout: Layout): LayoutPreview {
-  const binMap: ThumbnailBin[] = [];
-  const categoryColorMap = new Map(layout.categories.map((c) => [c.id, c.color]));
-
-  // Merge all layers into a single top-down view
-  for (const bin of layout.bins) {
-    if (bin.layerId === '__staging__') continue;
-    binMap.push({
-      x: bin.x,
-      y: bin.y,
-      w: bin.width,
-      d: bin.depth,
-      c: categoryColorMap.get(bin.category) ?? '#6b7280',
-    });
-  }
-
-  return {
-    drawerWidth: layout.drawer.width,
-    drawerDepth: layout.drawer.depth,
-    drawerHeight: layout.drawer.height,
-    binCount: binMap.length,
-    layerCount: layout.layers.length,
-    binMap,
-  };
-}
+// Re-export canonical computePreview from storage
+export { computePreview };
 
 /**
  * Detect features from a layout.

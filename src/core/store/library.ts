@@ -1,44 +1,15 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { LayoutLibrary, LayoutEntry, LayoutPreview, Layout, ThumbnailBin, CloudShareInfo, SharedWithMeEntry, SharePermission } from '@/core/types';
-import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import type { LayoutLibrary, LayoutEntry, LayoutPreview, CloudShareInfo, SharedWithMeEntry, SharePermission } from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
 import { generateUUID, generateLayoutId } from '@/shared/utils';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { err, layoutLastEntity, OK } from '@/core/result';
 import { saveSharedWithMe } from '@/core/storage/SharedWithMeService';
 import { saveLibrary } from '@/core/storage';
 
-/**
- * Compute preview data from a layout for display in the library.
- * Includes a binMap for thumbnail rendering (top-down view of all bins).
- */
-export function computePreview(layout: Layout): LayoutPreview {
-  // Build category color lookup
-  const categoryColors = new Map<string, string>();
-  for (const cat of layout.categories) {
-    categoryColors.set(cat.id, cat.color);
-  }
-
-  // Generate bin map for thumbnail (exclude staged bins)
-  const binMap: ThumbnailBin[] = layout.bins
-    .filter(bin => bin.layerId !== STAGING_ID)
-    .map(bin => ({
-      x: bin.x,
-      y: bin.y,
-      w: bin.width,
-      d: bin.depth,
-      c: categoryColors.get(bin.category) || '#6B7280', // fallback gray
-    }));
-
-  return {
-    drawerWidth: layout.drawer.width,
-    drawerDepth: layout.drawer.depth,
-    drawerHeight: layout.drawer.height,
-    binCount: layout.bins.length,
-    layerCount: layout.layers.length,
-    binMap,
-  };
-}
+// Re-export computePreview for backward compatibility with existing imports
+export { computePreview } from '@/core/storage';
 
 /**
  * Create a default empty library with one default layout entry.

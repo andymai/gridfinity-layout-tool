@@ -170,7 +170,9 @@ describe('layoutBuilder', () => {
       expect(preview.drawerHeight).toBe(15);
     });
 
-    it('counts bins excluding staging area', () => {
+    it('counts all bins including staging area for binCount', () => {
+      // binCount represents total bins in the layout (including staged)
+      // binMap excludes staged bins (for visual thumbnail only)
       const layout = createTestLayout({
         bins: [
           { id: 'b1', x: 0, y: 0, width: 1, depth: 1, height: 3, layerId: 'layer-1', category: 'cat-1', label: '', notes: '' },
@@ -181,7 +183,8 @@ describe('layoutBuilder', () => {
 
       const preview = computePreview(layout);
 
-      expect(preview.binCount).toBe(2);
+      expect(preview.binCount).toBe(3); // All bins counted
+      expect(preview.binMap).toHaveLength(2); // Staged bins excluded from visual
     });
 
     it('counts layers correctly', () => {
@@ -227,7 +230,7 @@ describe('layoutBuilder', () => {
 
       const preview = computePreview(layout);
 
-      expect(preview.binMap![0].c).toBe('#6b7280'); // fallback gray
+      expect(preview.binMap![0].c).toBe('#6B7280'); // fallback gray
     });
 
     it('excludes staging bins from binMap', () => {
@@ -241,6 +244,7 @@ describe('layoutBuilder', () => {
       const preview = computePreview(layout);
 
       expect(preview.binMap).toHaveLength(1);
+      // Color comes from default category 'cat-1' which has color '#6b7280'
       expect(preview.binMap![0]).toEqual({ x: 0, y: 0, w: 1, d: 1, c: '#6b7280' });
     });
   });
