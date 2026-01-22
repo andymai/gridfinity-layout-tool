@@ -13,7 +13,7 @@ import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
 import { checkLayerReorderCollisions } from '@/shared/utils/collision';
 import { useSettingsStore } from './settings';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import { markFeatureUsed } from '@/utils/analytics';
+import { markFeatureUsed, trackFillOperation, trackBinCreated } from '@/utils/analytics';
 import type { Result, LayoutError, ValidationError } from '@/core/result';
 import {
   ok,
@@ -537,6 +537,7 @@ export const useLayoutStore = create<LayoutState>()(
       const result = fillAllWithSize(layout, layerId, width, depth, categoryId, halfBinMode);
 
       if (result.bins.length > 0) {
+        const layer = layout.layers.find((l) => l.id === layerId);
         set((state) => {
           state.layout.bins.push(...result.bins);
           state.lastEditSource = 'local';
@@ -545,6 +546,13 @@ export const useLayoutStore = create<LayoutState>()(
         // Track fill operation after bins are added
         mlTracking.trackFill('uniform', result.bins.length, layerId, { width, depth });
         markFeatureUsed('fill');
+        // Track for PostHog analytics
+        trackFillOperation('fill_layer', result.bins.length);
+        trackBinCreated('fill_layer', result.bins.length, {
+          width,
+          depth,
+          height: layer?.height ?? 1,
+        });
       }
 
       return result.bins.length;
@@ -565,6 +573,9 @@ export const useLayoutStore = create<LayoutState>()(
         // Track fill operation after bins are added
         mlTracking.trackFill('gaps', result.bins.length, layerId);
         markFeatureUsed('fill');
+        // Track for PostHog analytics
+        trackFillOperation('fill_gaps', result.bins.length);
+        trackBinCreated('fill_gaps', result.bins.length);
       }
 
       return result.addedCount;

@@ -110,6 +110,11 @@ export default defineConfig({
     }),
   ],
   build: {
+    // Generate source maps for error tracking (PostHog)
+    // Use 'hidden' to generate .map files without adding sourceMappingURL comments
+    // This prevents browsers from exposing source maps publicly while still allowing
+    // manual upload to PostHog for error stack trace resolution
+    sourcemap: 'hidden',
     // Three.js is ~720KB minified, which is expected for a 3D library
     chunkSizeWarningLimit: 750,
     rollupOptions: {
