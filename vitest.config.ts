@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -9,6 +9,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     exclude: ['e2e/**', 'node_modules/**'],
+    // Optimized for high-core-count CPUs (Ryzen 9 7950X3D: 16c/32t)
+    pool: 'threads', // Worker threads are faster than forks for jsdom tests
+    maxWorkers: 32, // Use all available threads
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'html'],
@@ -42,4 +45,4 @@ export default defineConfig({
       'virtual:pwa-register/react': path.resolve(__dirname, 'src/test/mocks/pwa-register.ts'),
     },
   },
-})
+});
