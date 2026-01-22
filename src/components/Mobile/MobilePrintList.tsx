@@ -1,11 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, Suspense } from 'react';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { exportPrintListTSV } from '@/core/storage';
 import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { useUIStore } from '@/core/store/ui';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from '@/components/Print/SplitPreview';
-import { BinListModal } from '@/components/Modals';
+import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
+
+const BinListModal = lazyWithRetry(() =>
+  import('@/components/Modals/BinListModal').then(namedExport('BinListModal'))
+);
 
 /**
  * Mobile-optimized print list matching desktop functionality.
@@ -258,7 +262,14 @@ export function MobilePrintList() {
       </div>
 
       {/* Expanded bin list modal */}
-      <BinListModal isOpen={isExpandedModalOpen} onClose={() => setIsExpandedModalOpen(false)} />
+      {isExpandedModalOpen && (
+        <Suspense fallback={null}>
+          <BinListModal
+            isOpen={isExpandedModalOpen}
+            onClose={() => setIsExpandedModalOpen(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

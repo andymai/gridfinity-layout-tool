@@ -5,13 +5,11 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import {
-  useLayoutStore,
-  useUndoableAction,
-  useToastStore,
-  useSelectionStore,
-  useInteractionStore,
-} from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
+import { useUndoableAction } from '@/core/store/history';
+import { useToastStore } from '@/core/store/toast';
+import { useSelectionStore } from '@/core/store/selection';
+import { useInteractionStore } from '@/core/store/interaction';
 import type { LayoutError } from '@/core/result';
 import { markFeatureUsed } from '@/utils/analytics';
 import { isErr, getUserMessage } from '@/core/result';
