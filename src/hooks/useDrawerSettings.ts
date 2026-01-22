@@ -1,6 +1,12 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useSettingsStore, useToastStore, useSelectionStore, useHalfBinModeStore } from '@/core/store';
+import {
+  useLayoutStore,
+  useSettingsStore,
+  useToastStore,
+  useSelectionStore,
+  useHalfBinModeStore,
+} from '@/core/store';
 import { useUndoableAction } from '@/core/store/history';
 import { useMutations } from '@/shared/contexts';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';

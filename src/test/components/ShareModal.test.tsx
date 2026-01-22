@@ -28,6 +28,7 @@ vi.mock('../../core/storage', () => ({
 // Mock analytics
 vi.mock('../../utils/analytics', () => ({
   trackLayoutSnapshot: vi.fn(),
+  trackEvent: vi.fn(),
 }));
 
 describe('ShareModal', () => {
@@ -412,6 +413,50 @@ describe('ShareModal', () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(screen.queryByText('Copied!')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('analytics tracking', () => {
+    it('tracks share_modal_opened on mount', () => {
+      render(<ShareModal isOpen={true} onClose={mockOnClose} />);
+
+      expect(analytics.trackEvent).toHaveBeenCalledWith('share_modal_opened', {
+        default_tab: 'cloud',
+        bin_count: 1,
+      });
+    });
+
+    it('tracks share_tab_selected when switching tabs', () => {
+      render(<ShareModal isOpen={true} onClose={mockOnClose} />);
+      vi.mocked(analytics.trackEvent).mockClear();
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
+
+      expect(analytics.trackEvent).toHaveBeenCalledWith('share_tab_selected', { tab: 'url' });
+    });
+
+    it('tracks share_tab_selected for all tab types', () => {
+      render(<ShareModal isOpen={true} onClose={mockOnClose} />);
+      vi.mocked(analytics.trackEvent).mockClear();
+
+      fireEvent.click(screen.getByRole('tab', { name: 'File' }));
+      expect(analytics.trackEvent).toHaveBeenCalledWith('share_tab_selected', { tab: 'file' });
+
+      fireEvent.click(screen.getByRole('tab', { name: 'JSON' }));
+      expect(analytics.trackEvent).toHaveBeenCalledWith('share_tab_selected', { tab: 'json' });
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Cloud' }));
+      expect(analytics.trackEvent).toHaveBeenCalledWith('share_tab_selected', { tab: 'cloud' });
+    });
+
+    it('tracks share_tab_selected when CloudShareTab triggers URL switch', () => {
+      render(<ShareModal isOpen={true} onClose={mockOnClose} />);
+      vi.mocked(analytics.trackEvent).mockClear();
+
+      // Click the switch button in the mocked CloudShareTab
+      fireEvent.click(screen.getByText('Switch to URL'));
+
+      expect(analytics.trackEvent).toHaveBeenCalledWith('share_tab_selected', { tab: 'url' });
     });
   });
 });
