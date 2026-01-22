@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { PrintModal } from '@/features/print-export/components/PrintModal';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore, DEFAULT_PRINT_VIEW_SETTINGS } from '@/core/store/settings';
