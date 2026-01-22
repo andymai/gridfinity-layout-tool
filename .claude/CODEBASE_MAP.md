@@ -392,3 +392,43 @@ const visibleBins = getVisibleBins(bins, activeLayerId);
 const { addToast } = useToastStore.getState();
 addToast({ message: 'Saved!', type: 'success' });
 ```
+
+---
+
+## Analytics & Scripts
+
+### PostHog Integration
+
+See **`.claude/POSTHOG_API_GUIDE.md`** for comprehensive PostHog API documentation including:
+- Authentication setup
+- HogQL query examples
+- Dashboard/insight creation
+- Preset queries for common analyses
+
+### Useful Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/posthog-query.ts` | Query PostHog data, list dashboards/insights |
+| `scripts/setup-posthog-dashboards.ts` | Create standard dashboards (run once) |
+| `scripts/audit-ml-telemetry.sh` | Audit ML telemetry data in Redis |
+
+```bash
+# Query PostHog (requires POSTHOG_PERSONAL_API_KEY, POSTHOG_PROJECT_ID)
+npx tsx scripts/posthog-query.ts --preset errors
+npx tsx scripts/posthog-query.ts --dashboards
+npx tsx scripts/posthog-query.ts "SELECT event, count() FROM events GROUP BY event"
+```
+
+### Feature Tracking
+
+Track feature adoption with `markFeatureUsed()`:
+```typescript
+import { markFeatureUsed } from '@/utils/analytics';
+
+// Called automatically at feature trigger points:
+// - 'half_bins', 'multi_layer', 'fill', '3d_preview', 'cloud_share', 'custom_categories', 'labels'
+markFeatureUsed('feature_name');
+```
+
+Error tracking via `captureException()` in error boundaries.
