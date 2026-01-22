@@ -7,6 +7,7 @@ import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { isOk, isErr, getUserMessage } from '@/core/result';
+import { useToastStore } from '@/core/store';
 
 // Drop position indicator for drag-and-drop reordering
 type DropPosition = { index: number; position: 'above' | 'below' } | null;
@@ -29,6 +30,7 @@ export function LayerPanel() {
   );
 
   const { execute } = useUndoableAction();
+  const addToast = useToastStore((state) => state.addToast);
 
   const layers = layout.layers;
   const activeLayer = layers.find((l) => l.id === activeLayerId);
@@ -85,7 +87,10 @@ export function LayerPanel() {
 
   const handleNameChange = (layerId: string, name: string) => {
     execute(() => {
-      updateLayer(layerId, { name: name.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) });
+      const result = updateLayer(layerId, { name: name.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) });
+      if (isErr(result)) {
+        addToast(getUserMessage(result.error), 'error');
+      }
     });
   };
 
@@ -94,7 +99,10 @@ export function LayerPanel() {
     if (!layer) return;
     const newHeight = Math.max(1, layer.height + delta);
     execute(() => {
-      updateLayer(layerId, { height: newHeight });
+      const result = updateLayer(layerId, { height: newHeight });
+      if (isErr(result)) {
+        addToast(getUserMessage(result.error), 'error');
+      }
     });
   };
 
