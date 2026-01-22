@@ -2,17 +2,15 @@ import { put, head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from '../lib/rateLimit.js';
 import { REPORT_THRESHOLD } from '../lib/contentFilter.js';
-import {
-  isValidShareId,
-  ErrorCode,
-  type ShareData,
-} from '../lib/shared.js';
+import { isValidShareId, ErrorCode, type ShareData } from '../lib/shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST for reports
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
+    return res
+      .status(405)
+      .json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
   }
 
   const { id } = req.query;
@@ -61,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const shareData: ShareData = await response.json();
+    const shareData = (await response.json()) as ShareData;
 
     // Increment report count
     const newReportCount = shareData.metadata.reportCount + 1;
