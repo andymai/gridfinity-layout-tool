@@ -136,9 +136,8 @@ test.describe('Accessibility', () => {
     await saveDefaultsButton.scrollIntoViewIfNeeded();
     await saveDefaultsButton.click();
 
-    // Verify dialog is visible (excluding Labs drawer)
-    await waitForDialog(page);
-    const dialog = getActiveDialog(page);
+    // Verify confirm dialog is visible (targeting the specific confirm dialog, not Settings)
+    const dialog = page.getByRole('dialog', { name: 'Save as Defaults' });
     await expect(dialog).toBeVisible();
 
     // Run axe on the dialog

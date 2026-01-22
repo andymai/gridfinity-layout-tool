@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGridZoom } from '@/features/grid-editor/hooks/useGridZoom';
 import { useViewStore } from '@/core/store/view';
-import { CONSTRAINTS, BASE_CELL_SIZE } from '@/core/constants';
+import { CONSTRAINTS } from '@/core/constants';
 import type { RefObject } from 'react';
 
 // Mock scroll container ref
@@ -447,7 +447,7 @@ describe('useGridZoom', () => {
       );
 
       // Record initial state
-      const initialZoom = result.current.zoom;
+      const _initialZoom = result.current.zoom;
 
       // Toggle preview
       rerender({ showPreview: true });
