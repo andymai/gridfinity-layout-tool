@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, Suspense, lazy } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '@/core/store';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
@@ -8,12 +8,19 @@ import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { StepperControl } from '@/shared/components/StepperControl';
-import { HalfBinModeBlockedModal, SettingsModal } from '@/components/Modals';
+import { HalfBinModeBlockedModal } from '@/components/Modals';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { useResponsive } from '@/shared/hooks';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
-import { InspirationGallery } from '@/features/inspiration-gallery';
+
+// Lazy load modals/galleries - only loaded when opened
+const InspirationGallery = lazy(() =>
+  import('@/features/inspiration-gallery').then((m) => ({ default: m.InspirationGallery }))
+);
+const SettingsModal = lazy(() =>
+  import('@/components/Modals/SettingsModal').then((m) => ({ default: m.SettingsModal }))
+);
 
 export function Sidebar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -487,12 +494,20 @@ export function Sidebar() {
         />
       )}
 
-      <InspirationGallery
-        isOpen={showInspirationGallery}
-        onClose={() => setShowInspirationGallery(false)}
-      />
+      {showInspirationGallery && (
+        <Suspense fallback={null}>
+          <InspirationGallery
+            isOpen={showInspirationGallery}
+            onClose={() => setShowInspirationGallery(false)}
+          />
+        </Suspense>
+      )}
 
-      <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+      {showSettingsModal && (
+        <Suspense fallback={null}>
+          <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+        </Suspense>
+      )}
     </aside>
   );
 }

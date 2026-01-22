@@ -22,12 +22,28 @@ import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
 import { ToastContainer } from './shared/components/Toast';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
-import { BinContextMenuWrapper } from './components/Mobile';
+// Import directly to avoid pulling in entire Mobile barrel (67 KB MobileLayoutsPanel etc.)
+import { BinContextMenuWrapper } from './components/Mobile/BinContextMenuWrapper';
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
-import { SharedLayoutImporter, SharedLayoutBanner } from './features/cloud-share/components';
-import { LabsDrawer } from './features/labs/components';
 import { LocalMutationsProvider } from './shared/contexts';
+
+// Lazy load cloud-share components - only needed when viewing/sharing layouts
+const SharedLayoutImporter = lazyWithRetry(() =>
+  import('./features/cloud-share/components/SharedLayoutImporter').then(
+    namedExport('SharedLayoutImporter')
+  )
+);
+const SharedLayoutBanner = lazyWithRetry(() =>
+  import('./features/cloud-share/components/SharedLayoutBanner').then(
+    namedExport('SharedLayoutBanner')
+  )
+);
+
+// Lazy load LabsDrawer - experimental feature most users won't use
+const LabsDrawer = lazyWithRetry(() =>
+  import('./features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
+);
 import { SHORTCUTS } from './core/constants';
 
 // Legacy context menu state for backwards compatibility (has binId instead of binIds)
@@ -210,7 +226,9 @@ export default function App() {
     return wrapWithMutations(
       <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
         {/* Shared layout banner (shown when viewing unsaved shared layout) */}
-        <SharedLayoutBanner />
+        <Suspense fallback={null}>
+          <SharedLayoutBanner />
+        </Suspense>
 
         {/* Header */}
         <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
@@ -279,10 +297,14 @@ export default function App() {
         <ToastContainer />
 
         {/* Shared layout URL importer */}
-        <SharedLayoutImporter />
+        <Suspense fallback={null}>
+          <SharedLayoutImporter />
+        </Suspense>
 
         {/* Labs drawer */}
-        <LabsDrawer />
+        <Suspense fallback={null}>
+          <LabsDrawer />
+        </Suspense>
       </div>
     );
   }
@@ -291,7 +313,9 @@ export default function App() {
   return wrapWithMutations(
     <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
-      <SharedLayoutBanner />
+      <Suspense fallback={null}>
+        <SharedLayoutBanner />
+      </Suspense>
 
       {/* Header */}
       <Header onHelpClick={() => setIsHelpOpen(true)} saveStatus={saveStatus} />
@@ -352,10 +376,14 @@ export default function App() {
       <LiveRegion />
 
       {/* Shared layout URL importer */}
-      <SharedLayoutImporter />
+      <Suspense fallback={null}>
+        <SharedLayoutImporter />
+      </Suspense>
 
       {/* Labs drawer */}
-      <LabsDrawer />
+      <Suspense fallback={null}>
+        <LabsDrawer />
+      </Suspense>
     </div>
   );
 }
