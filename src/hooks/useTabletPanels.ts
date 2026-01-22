@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useUIStore } from '@/core/store/ui';
+import { useViewStore } from '@/core/store/view';
 
 export interface TabletPanelsState {
   leftPanelOpen: boolean;
@@ -23,10 +23,10 @@ export interface TabletPanelsState {
  */
 export function useTabletPanels(isTablet: boolean): TabletPanelsState {
   // Read collapsed state from store (collapsed=true means hidden overlay)
-  const leftPanelCollapsed = useUIStore((state) => state.leftPanelCollapsed);
-  const rightPanelCollapsed = useUIStore((state) => state.rightPanelCollapsed);
-  const toggleLeftPanel = useUIStore((state) => state.toggleLeftPanel);
-  const toggleRightPanel = useUIStore((state) => state.toggleRightPanel);
+  const leftPanelCollapsed = useViewStore((state) => state.leftPanelCollapsed);
+  const rightPanelCollapsed = useViewStore((state) => state.rightPanelCollapsed);
+  const toggleLeftPanel = useViewStore((state) => state.toggleLeftPanel);
+  const toggleRightPanel = useViewStore((state) => state.toggleRightPanel);
 
   // Track previous tablet state to detect mode entry
   const wasTabletRef = useRef(isTablet);

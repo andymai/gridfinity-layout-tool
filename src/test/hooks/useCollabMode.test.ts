@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useCollabMode, getCollabMode } from '@/hooks/useCollabMode';
-import { useLabsStore, useLibraryStore, useUIStore } from '@/core/store';
+import { useLabsStore, useLibraryStore } from '@/core/store';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import type { CloudShareInfo, LayoutLibrary, LayoutEntry } from '@/core/types';
 
 const TEST_LAYOUT_ID = 'test-layout-123';
@@ -59,7 +60,7 @@ describe('useCollabMode', () => {
       isLoaded: true,
     });
 
-    useUIStore.setState({
+    useSharedPreviewStore.setState({
       sharedLayoutCloudShareId: null,
       sharedLayoutPermission: undefined,
       sharedLayoutPreview: null,
@@ -112,7 +113,7 @@ describe('useCollabMode', () => {
     });
 
     it('returns collaborative mode when viewing shared layout with edit permission', () => {
-      useUIStore.setState({
+      useSharedPreviewStore.setState({
         sharedLayoutCloudShareId: TEST_SHARE_ID,
         sharedLayoutPermission: 'edit',
       });
@@ -127,7 +128,7 @@ describe('useCollabMode', () => {
     });
 
     it('returns non-collaborative mode when viewing shared layout with view permission', () => {
-      useUIStore.setState({
+      useSharedPreviewStore.setState({
         sharedLayoutCloudShareId: TEST_SHARE_ID,
         sharedLayoutPermission: 'view',
       });
@@ -148,7 +149,7 @@ describe('useCollabMode', () => {
       });
 
       // But shared preview has edit permission
-      useUIStore.setState({
+      useSharedPreviewStore.setState({
         sharedLayoutCloudShareId: 'different-share-id',
         sharedLayoutPermission: 'edit',
       });
@@ -243,7 +244,7 @@ describe('useCollabMode', () => {
       expect(result.current.isCollaborative).toBe(false);
 
       // Enter shared preview mode
-      useUIStore.setState({
+      useSharedPreviewStore.setState({
         sharedLayoutCloudShareId: TEST_SHARE_ID,
         sharedLayoutPermission: 'edit',
       });
@@ -268,7 +269,7 @@ describe('getCollabMode', () => {
       isLoaded: true,
     });
 
-    useUIStore.setState({
+    useSharedPreviewStore.setState({
       sharedLayoutCloudShareId: null,
       sharedLayoutPermission: undefined,
     });
@@ -307,7 +308,7 @@ describe('getCollabMode', () => {
       isFeatureEnabled: () => true,
     });
 
-    useUIStore.setState({
+    useSharedPreviewStore.setState({
       sharedLayoutCloudShareId: 'preview-share-id',
       sharedLayoutPermission: 'edit',
     });

@@ -4,10 +4,11 @@ import {
   useLayoutStore,
   useLibraryStore,
   useHistoryStore,
-  useUIStore,
   useToastStore,
   useSettingsStore,
+  useSelectionStore,
 } from '@/core/store';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import type { Layout } from '@/core/types';
 import { isErr, isOk } from '@/core/result';
 import {
@@ -53,16 +54,17 @@ export function useLayoutSwitcher() {
   // History store
   const clearHistory = useHistoryStore((state) => state.clear);
 
-  // UI store
-  const { clearSelection, setActiveLayer, setActiveCategory, clearSharedLayoutPreview } =
-    useUIStore(
-      useShallow((state) => ({
-        clearSelection: state.clearSelection,
-        setActiveLayer: state.setActiveLayer,
-        setActiveCategory: state.setActiveCategory,
-        clearSharedLayoutPreview: state.clearSharedLayoutPreview,
-      }))
-    );
+  // Selection store
+  const { clearSelection, setActiveLayer, setActiveCategory } = useSelectionStore(
+    useShallow((state) => ({
+      clearSelection: state.clearSelection,
+      setActiveLayer: state.setActiveLayer,
+      setActiveCategory: state.setActiveCategory,
+    }))
+  );
+
+  // Shared preview store
+  const clearSharedLayoutPreview = useSharedPreviewStore((state) => state.clearSharedLayoutPreview);
 
   // Toast store
   const addToast = useToastStore((state) => state.addToast);

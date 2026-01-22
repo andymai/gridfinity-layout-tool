@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
-import { useUIStore } from '@/core/store';
+import { useMobileStore } from '@/core/store/mobile';
+import { useViewStore } from '@/core/store/view';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { Grid } from '@/features/grid-editor/components/Grid';
 import { Staging } from '@/features/staging/components/Staging';
@@ -62,10 +63,10 @@ export function MobileLayout({
   setIsMobileHelpOpen,
   saveStatus,
 }: MobileLayoutProps) {
-  const activeMobilePanel = useUIStore((state) => state.activeMobilePanel);
-  const setActiveMobilePanel = useUIStore((state) => state.setActiveMobilePanel);
-  const contextMenu = useUIStore((state) => state.contextMenu);
-  const hideContextMenu = useUIStore((state) => state.hideContextMenu);
+  const activeMobilePanel = useMobileStore((state) => state.activeMobilePanel);
+  const setActiveMobilePanel = useMobileStore((state) => state.setActiveMobilePanel);
+  const contextMenu = useViewStore((state) => state.contextMenu);
+  const hideContextMenu = useViewStore((state) => state.hideContextMenu);
 
   return (
     <div className="h-screen-safe flex flex-col overflow-hidden bg-surface text-content">

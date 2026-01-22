@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useLibraryStore } from './core/store';
+import { useLayoutStore, useLibraryStore, useSelectionStore, useViewStore } from './core/store';
 import {
   useLayoutRouting,
   useAnalytics,
@@ -83,8 +83,8 @@ export default function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
   const { isMobile, isTablet } = useResponsive();
-  const contextMenu = useUIStore((state) => state.contextMenu);
-  const hideContextMenu = useUIStore((state) => state.hideContextMenu);
+  const contextMenu = useViewStore((state) => state.contextMenu);
+  const hideContextMenu = useViewStore((state) => state.hideContextMenu);
 
   // Collaborative mode detection
   const { isCollaborative, shareId } = useCollabMode();
@@ -109,10 +109,10 @@ export default function App() {
       categories: state.layout.categories,
     }))
   );
-  const activeLayerId = useUIStore((state) => state.activeLayerId);
-  const activeCategoryId = useUIStore((state) => state.activeCategoryId);
-  const setActiveLayer = useUIStore((state) => state.setActiveLayer);
-  const setActiveCategory = useUIStore((state) => state.setActiveCategory);
+  const activeLayerId = useSelectionStore((state) => state.activeLayerId);
+  const activeCategoryId = useSelectionStore((state) => state.activeCategoryId);
+  const setActiveLayer = useSelectionStore((state) => state.setActiveLayer);
+  const setActiveCategory = useSelectionStore((state) => state.setActiveCategory);
 
   // Initialize activeLayerId and activeCategoryId to valid values (sync before paint)
   useLayoutEffect(() => {

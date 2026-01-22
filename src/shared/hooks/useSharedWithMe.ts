@@ -7,7 +7,9 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLibraryStore, computePreview } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
-import { useUIStore } from '@/core/store/ui';
+import { useSelectionStore } from '@/core/store/selection';
+import { useInteractionStore } from '@/core/store/interaction';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useHistoryStore } from '@/core/store/history';
 import { useToastStore } from '@/core/store/toast';
 import type { SharedWithMeEntry } from '@/core/types';
@@ -57,22 +59,20 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
   // Layout store
   const importLayout = useLayoutStore((state) => state.importLayout);
 
-  // UI store
-  const {
-    setSharedLayoutPreview,
-    setActiveLayer,
-    setActiveCategory,
-    clearSelection,
-    announceToScreenReader,
-  } = useUIStore(
+  // Selection store
+  const { setActiveLayer, setActiveCategory, clearSelection } = useSelectionStore(
     useShallow((state) => ({
-      setSharedLayoutPreview: state.setSharedLayoutPreview,
       setActiveLayer: state.setActiveLayer,
       setActiveCategory: state.setActiveCategory,
       clearSelection: state.clearSelection,
-      announceToScreenReader: state.announceToScreenReader,
     }))
   );
+
+  // Interaction store
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
+
+  // Shared preview store
+  const setSharedLayoutPreview = useSharedPreviewStore((state) => state.setSharedLayoutPreview);
 
   // History store
   const clearHistory = useHistoryStore((state) => state.clear);

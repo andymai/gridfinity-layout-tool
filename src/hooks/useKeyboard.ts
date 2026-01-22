@@ -1,11 +1,14 @@
 import { useEffect, useCallback } from 'react';
 import {
-  useUIStore,
   useLayoutStore,
   useHistoryStore,
   useLibraryStore,
   useUndoableAction,
   useToastStore,
+  useSelectionStore,
+  useInteractionStore,
+  useViewStore,
+  useHalfBinModeStore,
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { canPlaceBin } from '@/shared/utils/validation';
@@ -60,19 +63,26 @@ function isShortcut(key: string, shortcuts: readonly string[]): boolean {
  * ```
  */
 export function useKeyboard() {
-  const selectedBinIds = useUIStore((state) => state.selectedBinIds);
-  const focusedBinId = useUIStore((state) => state.focusedBinId);
-  const setSelectedBins = useUIStore((state) => state.setSelectedBins);
-  const setInteraction = useUIStore((state) => state.setInteraction);
-  const setPaintSize = useUIStore((state) => state.setPaintSize);
-  const zoomIn = useUIStore((state) => state.zoomIn);
-  const zoomOut = useUIStore((state) => state.zoomOut);
-  const activeLayerId = useUIStore((state) => state.activeLayerId);
-  const setActiveLayer = useUIStore((state) => state.setActiveLayer);
-  const showQuickLabel = useUIStore((state) => state.showQuickLabel);
-  const activeCategoryId = useUIStore((state) => state.activeCategoryId);
-  const setActiveCategory = useUIStore((state) => state.setActiveCategory);
-  const toggleHalfBinMode = useUIStore((state) => state.toggleHalfBinMode);
+  // Selection store
+  const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
+  const focusedBinId = useSelectionStore((state) => state.focusedBinId);
+  const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
+  const activeLayerId = useSelectionStore((state) => state.activeLayerId);
+  const setActiveLayer = useSelectionStore((state) => state.setActiveLayer);
+  const showQuickLabel = useSelectionStore((state) => state.showQuickLabel);
+  const activeCategoryId = useSelectionStore((state) => state.activeCategoryId);
+  const setActiveCategory = useSelectionStore((state) => state.setActiveCategory);
+
+  // Interaction store
+  const setInteraction = useInteractionStore((state) => state.setInteraction);
+  const setPaintSize = useInteractionStore((state) => state.setPaintSize);
+
+  // View store
+  const zoomIn = useViewStore((state) => state.zoomIn);
+  const zoomOut = useViewStore((state) => state.zoomOut);
+
+  // Half-bin mode store
+  const toggleHalfBinMode = useHalfBinModeStore((state) => state.toggleHalfBinMode);
 
   const setShowLayoutManager = useLibraryStore((state) => state.setShowLayoutManager);
   const addToast = useToastStore((state) => state.addToast);

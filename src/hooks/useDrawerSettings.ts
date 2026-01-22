@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useSettingsStore, useToastStore } from '@/core/store';
+import { useLayoutStore, useSettingsStore, useToastStore, useSelectionStore, useHalfBinModeStore } from '@/core/store';
 import { useUndoableAction } from '@/core/store/history';
 import { useMutations } from '@/shared/contexts';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
@@ -146,15 +146,17 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     }))
   );
 
-  // UI store selectors
-  const { halfBinMode, toggleHalfBinMode, setHalfBinMode, activeLayerId } = useUIStore(
+  // Half-bin mode store selectors
+  const { halfBinMode, toggleHalfBinMode, setHalfBinMode } = useHalfBinModeStore(
     useShallow((state) => ({
       halfBinMode: state.halfBinMode,
       toggleHalfBinMode: state.toggleHalfBinMode,
       setHalfBinMode: state.setHalfBinMode,
-      activeLayerId: state.activeLayerId,
     }))
   );
+
+  // Selection store selectors
+  const activeLayerId = useSelectionStore((state) => state.activeLayerId);
 
   // Settings store
   const settings = useSettingsStore((state) => state.settings);
