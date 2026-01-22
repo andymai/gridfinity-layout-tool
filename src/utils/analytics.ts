@@ -443,16 +443,48 @@ export function trackLayoutAction(
 
 /**
  * Track fill operations.
+ * Updates person properties to track feature adoption.
  */
 export function trackFillOperation(type: 'fill_layer' | 'fill_gaps', binCount: number): void {
   trackEvent('fill_operation', { type, bin_count: binCount });
+  markFeatureUsed('fill');
 }
 
 /**
  * Track paint mode usage.
+ * Updates person properties to track feature adoption.
  */
 export function trackPaintMode(action: 'entered' | 'exited', binsCreated?: number): void {
   trackEvent('paint_mode', { action, bins_created: binsCreated || 0 });
+  if (action === 'entered') {
+    markFeatureUsed('paint_mode');
+  }
+}
+
+/**
+ * Track bin creation events.
+ * Called when bins are created via draw, paint, or fill operations.
+ */
+export function trackBinCreated(
+  method: 'draw' | 'paint' | 'fill_layer' | 'fill_gaps' | 'import' | 'duplicate',
+  count: number = 1,
+  size?: { width: number; depth: number; height: number }
+): void {
+  trackEvent('bin_created', {
+    method,
+    count,
+    ...(size ? { size: `${size.width}x${size.depth}x${size.height}` } : {}),
+  });
+}
+
+/**
+ * Track when a user reaches an engagement milestone.
+ * Called automatically when bin count thresholds are crossed.
+ */
+export function trackEngagementMilestone(milestone: 'first_bin' | 'engaged' | 'substantial'): void {
+  trackEvent('engagement_milestone', { milestone });
+  // Also update person properties when milestones are reached
+  updatePersonProperties();
 }
 
 // ============================================
@@ -542,6 +574,7 @@ export function updatePersonProperties(): void {
       uses_3d_preview: localStorage.getItem('has_used_3d_preview') === 'true',
       uses_cloud_share: localStorage.getItem('has_used_cloud_share') === 'true',
       uses_fill_operations: localStorage.getItem('has_used_fill') === 'true',
+      uses_paint_mode: localStorage.getItem('has_used_paint_mode') === 'true',
 
       // Engagement tier
       engagement_tier: computeEngagementTier(layoutCount, totalBinsEstimate),
@@ -580,6 +613,7 @@ export function markFeatureUsed(
     | '3d_preview'
     | 'cloud_share'
     | 'fill'
+    | 'paint_mode'
 ): void {
   try {
     localStorage.setItem(`has_used_${feature}`, 'true');

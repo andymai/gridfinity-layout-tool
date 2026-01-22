@@ -36,6 +36,19 @@ jobs:
       - name: Check bundle size
         run: npm run size:check
 
+      # Upload source maps to PostHog for error tracking (main branch only)
+      - name: Upload source maps to PostHog
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
+        run: |
+          if [ -n "$POSTHOG_PERSONAL_API_KEY" ] && [ -n "$POSTHOG_PROJECT_ID" ]; then
+            npm run sourcemaps:upload
+          else
+            echo "Skipping source map upload - PostHog credentials not configured"
+          fi
+
   # Main branch only: Full test suite with coverage (safety net)
   test:
     name: Unit Tests
