@@ -25,8 +25,18 @@ const SHARE_CONSTRAINTS = {
 
 /** Reserved keys that cannot be used as custom property names */
 const RESERVED_PROPERTY_KEYS = [
-  'id', 'layerId', 'x', 'y', 'width', 'depth', 'height',
-  'clearanceHeight', 'category', 'label', 'notes', 'customProperties',
+  'id',
+  'layerId',
+  'x',
+  'y',
+  'width',
+  'depth',
+  'height',
+  'clearanceHeight',
+  'category',
+  'label',
+  'notes',
+  'customProperties',
 ];
 
 export type ValidExpiration = (typeof SHARE_CONSTRAINTS.VALID_EXPIRATIONS)[number];
@@ -85,13 +95,20 @@ export type ValidationResult =
   | { valid: false; error: ValidationError };
 
 /**
+ * Type guard for validation failure.
+ * Helps TypeScript narrow the type in environments where control flow analysis is limited.
+ */
+export function isValidationError(
+  result: ValidationResult
+): result is { valid: false; error: ValidationError } {
+  return !result.valid;
+}
+
+/**
  * Validate a layout for cloud sharing.
  * Returns sanitized layout on success.
  */
-export function validateShareLayout(
-  data: unknown,
-  jsonSize: number
-): ValidationResult {
+export function validateShareLayout(data: unknown, jsonSize: number): ValidationResult {
   // Size check first
   if (jsonSize > SHARE_CONSTRAINTS.MAX_SIZE_BYTES) {
     return {
@@ -163,8 +180,10 @@ export function validateShareLayout(
   }
 
   // Validate drawer dimensions
-  if (!isInRange(drawer.width, SHARE_CONSTRAINTS.GRID_MIN, SHARE_CONSTRAINTS.GRID_MAX) ||
-      !isInRange(drawer.depth, SHARE_CONSTRAINTS.GRID_MIN, SHARE_CONSTRAINTS.GRID_MAX)) {
+  if (
+    !isInRange(drawer.width, SHARE_CONSTRAINTS.GRID_MIN, SHARE_CONSTRAINTS.GRID_MAX) ||
+    !isInRange(drawer.depth, SHARE_CONSTRAINTS.GRID_MIN, SHARE_CONSTRAINTS.GRID_MAX)
+  ) {
     return {
       valid: false,
       error: {
@@ -230,7 +249,11 @@ export function validateShareLayout(
 
     // Validate and sanitize custom properties if present
     let validatedCustomProperties: Record<string, string> | undefined;
-    if (bin.customProperties && typeof bin.customProperties === 'object' && !Array.isArray(bin.customProperties)) {
+    if (
+      bin.customProperties &&
+      typeof bin.customProperties === 'object' &&
+      !Array.isArray(bin.customProperties)
+    ) {
       const props = bin.customProperties as Record<string, unknown>;
       const keys = Object.keys(props);
 
@@ -256,8 +279,14 @@ export function validateShareLayout(
         if (typeof value !== 'string') continue;
 
         // Sanitize key and value
-        const cleanKey = sanitizeString(String(key), SHARE_CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH);
-        const cleanValue = sanitizeString(value, SHARE_CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH);
+        const cleanKey = sanitizeString(
+          String(key),
+          SHARE_CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH
+        );
+        const cleanValue = sanitizeString(
+          value,
+          SHARE_CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH
+        );
 
         // Skip empty keys
         if (!cleanKey) continue;
@@ -355,7 +384,9 @@ function isValidDrawer(value: unknown): value is DrawerShape {
     typeof obj.width === 'number' &&
     typeof obj.depth === 'number' &&
     typeof obj.height === 'number' &&
-    obj.width > 0 && obj.depth > 0 && obj.height > 0
+    obj.width > 0 &&
+    obj.depth > 0 &&
+    obj.height > 0
   );
 }
 
@@ -363,9 +394,7 @@ function isValidLayer(value: unknown): value is LayerShape {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.id === 'string' &&
-    typeof obj.name === 'string' &&
-    typeof obj.height === 'number'
+    typeof obj.id === 'string' && typeof obj.name === 'string' && typeof obj.height === 'number'
   );
 }
 
@@ -387,9 +416,7 @@ function isValidCategory(value: unknown): value is CategoryShape {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.id === 'string' &&
-    typeof obj.name === 'string' &&
-    typeof obj.color === 'string'
+    typeof obj.id === 'string' && typeof obj.name === 'string' && typeof obj.color === 'string'
   );
 }
 
@@ -416,7 +443,10 @@ function sanitizeColor(color: string): string {
     let hex = match[1].toLowerCase();
     // Expand 3-char to 6-char (#abc -> #aabbcc)
     if (hex.length === 3) {
-      hex = hex.split('').map((c) => c + c).join('');
+      hex = hex
+        .split('')
+        .map((c) => c + c)
+        .join('');
     }
     return '#' + hex;
   }
