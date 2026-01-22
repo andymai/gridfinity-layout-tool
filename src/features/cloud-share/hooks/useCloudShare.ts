@@ -18,6 +18,7 @@ import {
 import { isOk, getUserMessage } from '@/core/result';
 import type { ApiError } from '@/core/result';
 import { copyToClipboard } from '@/core/storage';
+import { markFeatureUsed } from '@/utils/analytics';
 import { slugify } from '@/utils/slug';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 
@@ -173,6 +174,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
 
       if (isOk(result)) {
         handleSuccess(result.value, false);
+        markFeatureUsed('cloud_share');
         return true;
       } else {
         handleError(result.error);

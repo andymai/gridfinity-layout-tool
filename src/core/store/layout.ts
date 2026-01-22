@@ -13,6 +13,7 @@ import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
 import { checkLayerReorderCollisions } from '@/shared/utils/collision';
 import { useSettingsStore } from './settings';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { markFeatureUsed } from '@/utils/analytics';
 import type { Result, LayoutError, ValidationError } from '@/core/result';
 import {
   ok,
@@ -348,6 +349,11 @@ export const useLayoutStore = create<LayoutState>()(
         state.lastEditSource = 'local';
       });
 
+      // Track multi-layer usage when adding a 2nd+ layer
+      if (layout.layers.length >= 1) {
+        markFeatureUsed('multi_layer');
+      }
+
       return ok(id);
     },
 
@@ -474,6 +480,7 @@ export const useLayoutStore = create<LayoutState>()(
         state.layout.categories.push({ ...categoryData, id });
         state.lastEditSource = 'local';
       });
+      markFeatureUsed('custom_categories');
       return ok(id);
     },
 
@@ -537,6 +544,7 @@ export const useLayoutStore = create<LayoutState>()(
 
         // Track fill operation after bins are added
         mlTracking.trackFill('uniform', result.bins.length, layerId, { width, depth });
+        markFeatureUsed('fill');
       }
 
       return result.bins.length;
@@ -556,6 +564,7 @@ export const useLayoutStore = create<LayoutState>()(
 
         // Track fill operation after bins are added
         mlTracking.trackFill('gaps', result.bins.length, layerId);
+        markFeatureUsed('fill');
       }
 
       return result.addedCount;

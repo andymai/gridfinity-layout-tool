@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
+import { captureException } from '@/utils/analytics';
 
 interface Props {
   children: ReactNode;
@@ -29,7 +30,13 @@ export class PanelErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Report error to PostHog for monitoring
+    captureException(error, {
+      boundary: 'panel',
+      panelName: this.props.panelName,
+      componentStack: errorInfo.componentStack,
+    });
     this.props.onError?.(error);
   }
 

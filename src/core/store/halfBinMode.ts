@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
+import { markFeatureUsed } from '@/utils/analytics';
 import { useLayoutStore } from './layout';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { err, layoutInvalidOperation, OK } from '@/core/result';
@@ -86,6 +87,7 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
     if (targetState === true) {
       saveToStorage(true);
       set({ halfBinMode: true });
+      markFeatureUsed('half_bins');
       return { success: true };
     }
 
@@ -113,6 +115,7 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
     if (targetState === true) {
       saveToStorage(true);
       set({ halfBinMode: true });
+      markFeatureUsed('half_bins');
       return OK;
     }
 

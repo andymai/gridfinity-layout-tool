@@ -13,6 +13,7 @@ import {
   useInteractionStore,
 } from '@/core/store';
 import type { LayoutError } from '@/core/result';
+import { markFeatureUsed } from '@/utils/analytics';
 import { isErr, getUserMessage } from '@/core/result';
 import { usePrintList, type UsePrintListReturn } from '@/features/print-export/hooks/usePrintList';
 import {
@@ -277,6 +278,9 @@ export function useBinList(): UseBinListReturn {
           `Updated label for ${successCount} bin${successCount !== 1 ? 's' : ''}`,
           'success'
         );
+        if (label.trim()) {
+          markFeatureUsed('labels');
+        }
       }
       if (lastError) {
         addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
