@@ -1,4 +1,4 @@
 npx lint-staged
 npm run check:boundaries:staged
 npm run build
-npm run test:coverage
+npm run test:affected
