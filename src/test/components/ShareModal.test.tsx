@@ -28,6 +28,7 @@ vi.mock('../../core/storage', () => ({
 // Mock analytics
 vi.mock('../../utils/analytics', () => ({
   trackLayoutSnapshot: vi.fn(),
+  trackEvent: vi.fn(),
 }));
 
 describe('ShareModal', () => {

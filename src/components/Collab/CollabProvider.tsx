@@ -23,6 +23,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore } from '@/core/store/ui';
 import { generateId } from '@/core/constants';
 import { generateGuestName, generateGuestColor } from '@/utils/guestNames';
+import { trackEvent } from '@/utils/analytics';
 import {
   PresenceContext,
   type CollabPresenceActions,
@@ -102,6 +103,16 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
   const userId = useMemo(() => getUserId(), []);
   const userName = useUserName(userId);
   const layout = useLayoutStore((state) => state.layout);
+
+  // Track collab session start
+  useEffect(() => {
+    trackEvent('collab_session_started', {
+      share_id: shareId,
+      room_id: roomId,
+      bin_count: layout.bins.length,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only track on mount
+  }, []);
 
   // Check if user is owner (layout exists in their library with matching ID)
   // Since share IDs equal layout UUIDs, we check entry.id directly
