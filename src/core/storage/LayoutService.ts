@@ -15,14 +15,13 @@
 
 import * as backend from './backend';
 import { validateImport } from '@/shared/utils/validation';
-import { generateId, STAGING_ID } from '@/core/constants';
+import { generateId } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
+import { computePreview } from './LayoutManager';
 import type {
   Layout,
   LayoutLibrary,
   LayoutEntry,
-  LayoutPreview,
-  ThumbnailBin,
 } from '@/core/types';
 import type { Result } from '@/core/result';
 import type { StorageError } from '@/core/result';
@@ -406,35 +405,9 @@ export function loadLibraryResult(): Result<LayoutLibrary, StorageError> {
 
 /**
  * Compute preview data from a layout.
- * Includes binMap for thumbnail rendering (top-down view of all bins).
+ * @deprecated Use computePreview from LayoutManager instead
  */
-export function computeLayoutPreview(layout: Layout): LayoutPreview {
-  // Build category color lookup
-  const categoryColors = new Map<string, string>();
-  for (const cat of layout.categories) {
-    categoryColors.set(cat.id, cat.color);
-  }
-
-  // Generate bin map for thumbnail (exclude staged bins)
-  const binMap: ThumbnailBin[] = layout.bins
-    .filter(bin => bin.layerId !== STAGING_ID)
-    .map(bin => ({
-      x: bin.x,
-      y: bin.y,
-      w: bin.width,
-      d: bin.depth,
-      c: categoryColors.get(bin.category) || '#6B7280', // fallback gray
-    }));
-
-  return {
-    drawerWidth: layout.drawer.width,
-    drawerDepth: layout.drawer.depth,
-    drawerHeight: layout.drawer.height,
-    binCount: layout.bins.length,
-    layerCount: layout.layers.length,
-    binMap,
-  };
-}
+export const computeLayoutPreview = computePreview;
 
 /**
  * Check if legacy single-layout storage exists.

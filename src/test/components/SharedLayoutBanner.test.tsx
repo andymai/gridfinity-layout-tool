@@ -7,6 +7,18 @@ import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
 import type { Layout } from '@/core/types';
 
+// Hoisted mock for computePreview - used by both storage and library store re-export
+const { mockComputePreview } = vi.hoisted(() => ({
+  mockComputePreview: vi.fn((layout: { drawer: { width: number; depth: number; height: number }; bins: unknown[]; layers: unknown[] }) => ({
+    drawerWidth: layout.drawer.width,
+    drawerDepth: layout.drawer.depth,
+    drawerHeight: layout.drawer.height,
+    binCount: layout.bins.length,
+    layerCount: layout.layers.length,
+    binMap: [],
+  })),
+}));
+
 // Mock storage functions
 vi.mock('../../core/storage', () => ({
   createLayoutEntry: vi.fn(() => Promise.resolve({
@@ -48,6 +60,7 @@ vi.mock('../../core/storage', () => ({
       },
     },
   })),
+  computePreview: mockComputePreview,
   initializeLayoutLibrary: vi.fn(() => ({
     library: {
       version: '1.0',
@@ -73,6 +86,15 @@ vi.mock('../../core/storage', () => ({
   getCloudShareIdFromURL: vi.fn(() => null),
   loadSharedWithMe: vi.fn(() => []),
 }));
+
+// Mock the library store's computePreview re-export
+vi.mock('../../core/store/library', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    computePreview: mockComputePreview,
+  };
+});
 
 // Mock uuid
 vi.mock('../../shared/utils/uuid', () => ({
