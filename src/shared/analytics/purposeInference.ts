@@ -60,9 +60,7 @@ interface SizePatternDef {
 const SIZE_PATTERNS: Record<string, SizePatternDef> = {
   small_uniform: {
     description: 'Many small uniform bins (1x1, 1x2)',
-    typicalSizes: [
-      { minW: 1, maxW: 2, minD: 1, maxD: 2 },
-    ],
+    typicalSizes: [{ minW: 1, maxW: 2, minD: 1, maxD: 2 }],
     suggestedPurpose: 'electronics', // Small components, resistors, etc.
   },
   long_thin: {
@@ -75,9 +73,7 @@ const SIZE_PATTERNS: Record<string, SizePatternDef> = {
   },
   medium_mixed: {
     description: 'Medium-sized mixed bins',
-    typicalSizes: [
-      { minW: 2, maxW: 4, minD: 2, maxD: 4 },
-    ],
+    typicalSizes: [{ minW: 2, maxW: 4, minD: 2, maxD: 4 }],
     suggestedPurpose: 'general',
   },
 };
@@ -391,7 +387,9 @@ export function recordLayoutLabelSizes(layout: Layout): void {
   const data = loadLabelSizes();
 
   for (const bin of labeledBins) {
-    const labelData = processLabel(bin.label!);
+    // bin.label is guaranteed non-null by the filter above
+    const label = bin.label ?? '';
+    const labelData = processLabel(label);
     const size = `${bin.width}x${bin.depth}x${bin.height}`;
 
     if (!data[labelData.hash]) {
