@@ -5,7 +5,7 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction, useToastStore } from '@/core/store';
+import { useLayoutStore, useUndoableAction, useToastStore, useSelectionStore, useInteractionStore } from '@/core/store';
 import { usePrintList, type UsePrintListReturn } from '@/features/print-export/hooks/usePrintList';
 import {
   filterBySearch,
@@ -84,12 +84,8 @@ export function useBinList(): UseBinListReturn {
 
   const layout = useLayoutStore((state) => state.layout);
 
-  const { setSelectedBins, announceToScreenReader } = useUIStore(
-    useShallow((state) => ({
-      setSelectedBins: state.setSelectedBins,
-      announceToScreenReader: state.announceToScreenReader,
-    }))
-  );
+  const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
+  const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
 
   const { execute } = useUndoableAction();
   const addToast = useToastStore((state) => state.addToast);

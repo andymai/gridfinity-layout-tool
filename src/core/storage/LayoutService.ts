@@ -79,6 +79,36 @@ function migrateLayout(data: Record<string, unknown>): Record<string, unknown> {
   return data;
 }
 
+/**
+ * Result of parsing storage data into a Layout.
+ */
+type ParseResult =
+  | { success: true; layout: Layout }
+  | { success: false; errors: string[] };
+
+/**
+ * Parse and validate raw storage data into a typed Layout.
+ * Migrates the schema and validates the data structure.
+ *
+ * The type assertion is justified by the validateImport check which
+ * verifies all required Layout properties are present and valid.
+ */
+function parseLayoutData(data: unknown): ParseResult {
+  if (!data || typeof data !== 'object') {
+    return { success: false, errors: ['No data or invalid type'] };
+  }
+
+  const migrated = migrateLayout(data as Record<string, unknown>);
+  const validation = validateImport(migrated);
+
+  if (!validation.valid) {
+    return { success: false, errors: validation.errors };
+  }
+
+  // Type assertion is safe after validation confirms Layout structure
+  return { success: true, layout: migrated as unknown as Layout };
+}
+
 // === Async Layout Operations (Primary API) ===
 
 /**
@@ -100,15 +130,13 @@ export async function loadLayoutAsync(layoutId: string): Promise<Layout | null> 
 
   if (!data) return null;
 
-  const migrated = migrateLayout(data as unknown as Record<string, unknown>);
-  const validation = validateImport(migrated);
-
-  if (!validation.valid) {
-    console.warn(`Layout ${layoutId} failed validation:`, validation.errors);
+  const result = parseLayoutData(data);
+  if (!result.success) {
+    console.warn(`Layout ${layoutId} failed validation:`, result.errors);
     return null;
   }
 
-  return migrated as unknown as Layout;
+  return result.layout;
 }
 
 /**
@@ -189,14 +217,12 @@ export async function loadLayoutResult(layoutId: string): Promise<Result<Layout,
     return err(storageNotFound(key));
   }
 
-  const migrated = migrateLayout(data as unknown as Record<string, unknown>);
-  const validation = validateImport(migrated);
-
-  if (!validation.valid) {
-    return err(storageCorrupted(key, validation.errors));
+  const result = parseLayoutData(data);
+  if (!result.success) {
+    return err(storageCorrupted(key, result.errors));
   }
 
-  return ok(migrated as unknown as Layout);
+  return ok(result.layout);
 }
 
 /**
@@ -237,15 +263,13 @@ export function loadLayoutSync(layoutId: string): Layout | null {
 
     if (!data) return null;
 
-    const migrated = migrateLayout(data as unknown as Record<string, unknown>);
-    const validation = validateImport(migrated);
-
-    if (!validation.valid) {
-      console.warn(`Layout ${layoutId} failed validation:`, validation.errors);
+    const result = parseLayoutData(data);
+    if (!result.success) {
+      console.warn(`Layout ${layoutId} failed validation:`, result.errors);
       return null;
     }
 
-    return migrated as unknown as Layout;
+    return result.layout;
   } catch (error) {
     console.error(`Failed to load layout ${layoutId}:`, error);
     return null;
@@ -469,19 +493,17 @@ export function migrateFromLegacyStorage(): LayoutLibrary | null {
  */
 export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, StorageError> {
   // Try to load legacy layout
-  let legacyData: Layout | null;
+  let legacyData: Layout;
   try {
     const data = backend.loadSync(LEGACY_STORAGE_KEY);
     if (!data) return ok(null); // No legacy layout exists
 
-    const migrated = migrateLayout(data as unknown as Record<string, unknown>);
-    const validation = validateImport(migrated);
-
-    if (!validation.valid) {
-      return err(storageCorrupted(LEGACY_STORAGE_KEY, validation.errors));
+    const result = parseLayoutData(data);
+    if (!result.success) {
+      return err(storageCorrupted(LEGACY_STORAGE_KEY, result.errors));
     }
 
-    legacyData = migrated as unknown as Layout;
+    legacyData = result.layout;
   } catch (error) {
     return err(storageUnavailable('localStorage', error));
   }
@@ -648,14 +670,12 @@ function loadLegacyLayout(): Layout | null {
     const data = backend.loadSync(LEGACY_STORAGE_KEY);
     if (!data) return null;
 
-    const migrated = migrateLayout(data as unknown as Record<string, unknown>);
-    const validation = validateImport(migrated);
-
-    if (!validation.valid) {
+    const result = parseLayoutData(data);
+    if (!result.success) {
       return null;
     }
 
-    return migrated as unknown as Layout;
+    return result.layout;
   } catch (error) {
     console.error('Failed to load legacy layout:', error);
     return null;
