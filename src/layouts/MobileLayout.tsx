@@ -22,8 +22,12 @@ import {
   MobileLayoutsPanel,
   BinContextMenuWrapper,
 } from '@/components/Mobile';
-import { LabsDrawer } from '@/features/labs/components';
 import { PresenceAvatarList } from '@/components/Collab';
+
+// Lazy load LabsDrawer - experimental feature most users won't use
+const LabsDrawer = lazyWithRetry(() =>
+  import('@/features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
+);
 import { usePresence } from '@/hooks/usePresence';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import type { SaveStatus } from '@/shared/hooks';
@@ -127,7 +131,9 @@ export function MobileLayout({
       <SharedLayoutImporter />
 
       {/* Labs drawer */}
-      <LabsDrawer />
+      <Suspense fallback={null}>
+        <LabsDrawer />
+      </Suspense>
     </div>
   );
 }

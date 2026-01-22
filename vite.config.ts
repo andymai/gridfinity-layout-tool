@@ -1,15 +1,15 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import { VitePWA } from 'vite-plugin-pwa'
-import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
+import { fileURLToPath, URL } from 'node:url';
 
 // https://vite.dev/config/
 export default defineConfig({
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
   },
   plugins: [
     react(),
@@ -114,18 +114,44 @@ export default defineConfig({
     chunkSizeWarningLimit: 750,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Separate three.js ecosystem into its own chunk (only loaded when 3D preview is used)
-          'three': ['three'],
-          'react-three': ['@react-three/fiber', '@react-three/drei'],
-          // Core React runtime
-          'react-vendor': ['react', 'react-dom'],
-          // State management
-          'state': ['zustand', 'immer'],
+        // Name the main entry consistently so we can measure it with size-limit
+        entryFileNames: 'assets/main-[hash].js',
+        // Name lazy-loaded feature chunks to avoid confusion with main bundle
+        chunkFileNames(chunkInfo) {
+          // Feature chunks from lazy imports get descriptive names
+          if (chunkInfo.facadeModuleId?.includes('inspiration-gallery')) {
+            return 'assets/inspiration-gallery-[hash].js';
+          }
+          // Default Vite chunk naming
+          return 'assets/[name]-[hash].js';
+        },
+        // Use function-based manualChunks for more reliable splitting
+        manualChunks(id) {
+          // Three.js ecosystem - only loaded when 3D preview is used
+          if (id.includes('node_modules/three/')) {
+            return 'three';
+          }
+          if (id.includes('node_modules/@react-three/')) {
+            return 'react-three';
+          }
           // Liveblocks - only loaded when collaborative editing is used (Labs feature)
-          'liveblocks': ['@liveblocks/client', '@liveblocks/react'],
+          if (id.includes('node_modules/@liveblocks/')) {
+            return 'liveblocks';
+          }
+          // State management
+          if (id.includes('node_modules/zustand/') || id.includes('node_modules/immer/')) {
+            return 'state';
+          }
+          // Core React runtime - split out for better caching
+          if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) {
+            return 'react-vendor';
+          }
+          // Analytics - lazy loaded, keep separate
+          if (id.includes('node_modules/posthog-js/')) {
+            return 'analytics';
+          }
         },
       },
     },
   },
-})
+});
