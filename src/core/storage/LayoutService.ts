@@ -719,17 +719,3 @@ export function clearStorage(): void {
   backend.deleteSync(LEGACY_STORAGE_KEY);
 }
 
-// === Backward Compatibility Aliases ===
-
-/** @deprecated Use saveLayoutSync */
-export const saveLayoutById = saveLayoutSync;
-/** @deprecated Use loadLayoutSync */
-export const loadLayoutById = loadLayoutSync;
-/** @deprecated Use deleteLayoutSync */
-export const deleteLayoutById = deleteLayoutSync;
-/** @deprecated Use saveLayoutAsync */
-export const saveLayoutByIdAsync = saveLayoutAsync;
-/** @deprecated Use loadLayoutAsync */
-export const loadLayoutByIdAsync = loadLayoutAsync;
-/** @deprecated Use deleteLayoutAsync */
-export const deleteLayoutByIdAsync = deleteLayoutAsync;

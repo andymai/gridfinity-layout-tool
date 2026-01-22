@@ -9,7 +9,7 @@ import * as validation from '@/shared/utils/validation';
 
 // Mock storage module
 vi.mock('../../core/storage', () => ({
-  loadLayoutByIdAsync: vi.fn(),
+  loadLayoutAsync: vi.fn(),
 }));
 
 // Mock url module - using the new URL API
@@ -56,7 +56,7 @@ describe('useLayoutRouting', () => {
     vi.mocked(url.parseLayoutFromURL).mockReturnValue(null);
     vi.mocked(url.hasLegacyShareHash).mockReturnValue(false);
     vi.mocked(url.getCanonicalRedirect).mockReturnValue(null);
-    vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(mockLayout);
+    vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
     // Set up library with an entry
@@ -103,7 +103,7 @@ describe('useLayoutRouting', () => {
     });
 
     it('returns false when layout data cannot be loaded', async () => {
-      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(null);
+      vi.mocked(storage.loadLayoutAsync).mockResolvedValue(null);
 
       const { result } = renderHook(() => useLayoutRouting());
 
@@ -231,7 +231,7 @@ describe('useLayoutRouting', () => {
       renderHook(() => useLayoutRouting());
 
       // Should have attempted to navigate to the URL layout
-      expect(storage.loadLayoutByIdAsync).toHaveBeenCalledWith('layout123test');
+      expect(storage.loadLayoutAsync).toHaveBeenCalledWith('layout123test');
     });
 
     it('does not redirect when URL layout not found locally (potential cloud share)', () => {
@@ -278,7 +278,7 @@ describe('useLayoutRouting', () => {
       });
 
       // Should not navigate during shared preview
-      expect(storage.loadLayoutByIdAsync).not.toHaveBeenCalled();
+      expect(storage.loadLayoutAsync).not.toHaveBeenCalled();
     });
 
     it('falls back to parsing URL when no state', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { scheduleIdleCallback, cancelIdleCallback, runWhenIdle } from '@/shared/utils';
+import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';
 
 describe('scheduleIdleCallback', () => {
   const originalRIC = globalThis.requestIdleCallback;
@@ -127,61 +127,3 @@ describe('scheduleIdleCallback', () => {
   });
 });
 
-describe('runWhenIdle', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    // Remove requestIdleCallback to use fallback (easier to test)
-    delete (globalThis as Record<string, unknown>).requestIdleCallback;
-    delete (globalThis as Record<string, unknown>).cancelIdleCallback;
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('runs function and resolves with result', async () => {
-    const fn = vi.fn(() => 'result');
-    const promise = runWhenIdle(fn);
-
-    vi.advanceTimersByTime(1000);
-
-    await expect(promise).resolves.toBe('result');
-    expect(fn).toHaveBeenCalledTimes(1);
-  });
-
-  it('handles async functions', async () => {
-    const fn = vi.fn(async () => {
-      return 'async result';
-    });
-
-    const promise = runWhenIdle(fn);
-
-    vi.advanceTimersByTime(1000);
-
-    await expect(promise).resolves.toBe('async result');
-  });
-
-  it('rejects on error', async () => {
-    const error = new Error('test error');
-    const fn = vi.fn(() => {
-      throw error;
-    });
-
-    const promise = runWhenIdle(fn);
-
-    vi.advanceTimersByTime(1000);
-
-    await expect(promise).rejects.toThrow('test error');
-  });
-
-  it('uses provided timeout', async () => {
-    const fn = vi.fn(() => 'result');
-    const promise = runWhenIdle(fn, 200);
-
-    vi.advanceTimersByTime(100);
-    expect(fn).not.toHaveBeenCalled();
-
-    vi.advanceTimersByTime(100);
-    await expect(promise).resolves.toBe('result');
-  });
-});

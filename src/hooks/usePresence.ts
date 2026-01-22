@@ -226,18 +226,5 @@ export function usePresence(): PresenceState {
   };
 }
 
-/**
- * Get initials from a name.
- * - Single word: first two characters
- * - Multiple words: first letter of first and last words
- */
-export function getInitials(name: string): string {
-  const trimmed = name.trim();
-  if (!trimmed) return '?';
-
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
+// Re-export getInitials from its proper location
+export { getInitials } from '@/utils/guestNames';

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useLibraryStore, useUIStore, useToastStore, useHistoryStore } from '@/core/store';
-import { loadLayoutByIdAsync } from '@/core/storage';
+import { loadLayoutAsync } from '@/core/storage';
 import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import {
   parseLayoutFromURL,
@@ -71,7 +71,7 @@ export function useLayoutRouting() {
     }
 
     // Load layout data from IndexedDB (with localStorage fallback)
-    const loadedLayout = await loadLayoutByIdAsync(layoutId);
+    const loadedLayout = await loadLayoutAsync(layoutId);
     if (!loadedLayout) {
       return false;
     }

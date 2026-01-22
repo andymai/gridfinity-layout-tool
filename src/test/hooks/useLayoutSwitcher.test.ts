@@ -23,13 +23,13 @@ vi.mock('../../core/storage', () => {
   };
 
   return {
-    // Legacy functions (still needed for some tests)
-    saveLayoutById: vi.fn(),
-    saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
-    loadLayoutById: vi.fn(),
-    loadLayoutByIdAsync: vi.fn(),
-    deleteLayoutById: vi.fn(),
-    deleteLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
+    // Storage functions
+    saveLayoutSync: vi.fn(),
+    saveLayoutAsync: vi.fn().mockResolvedValue(undefined),
+    loadLayoutSync: vi.fn(),
+    loadLayoutAsync: vi.fn(),
+    deleteLayoutSync: vi.fn(),
+    deleteLayoutAsync: vi.fn().mockResolvedValue(undefined),
     saveLibrary: vi.fn(),
     computeLayoutPreview: vi.fn(() => mockPreview),
     getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
@@ -236,7 +236,7 @@ describe('useLayoutSwitcher', () => {
   describe('switchLayout', () => {
     it('switches to target layout successfully', async () => {
       const targetLayout = createTestLayout('Second Layout');
-      vi.mocked(storage.loadLayoutByIdAsync).mockResolvedValue(targetLayout);
+      vi.mocked(storage.loadLayoutAsync).mockResolvedValue(targetLayout);
 
       const { result } = renderHook(() => useLayoutSwitcher());
 

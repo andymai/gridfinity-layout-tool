@@ -21,13 +21,13 @@ vi.mock('../../core/storage', () => {
   };
 
   return {
-    // Legacy functions
-    saveLayoutById: vi.fn(),
-    saveLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
-    loadLayoutById: vi.fn(),
-    loadLayoutByIdAsync: vi.fn(),
-    deleteLayoutById: vi.fn(),
-    deleteLayoutByIdAsync: vi.fn().mockResolvedValue(undefined),
+    // Storage functions
+    saveLayoutSync: vi.fn(),
+    saveLayoutAsync: vi.fn().mockResolvedValue(undefined),
+    loadLayoutSync: vi.fn(),
+    loadLayoutAsync: vi.fn(),
+    deleteLayoutSync: vi.fn(),
+    deleteLayoutAsync: vi.fn().mockResolvedValue(undefined),
     saveLibrary: vi.fn(),
     computeLayoutPreview: vi.fn(() => mockPreview),
     getLayoutStorageKey: vi.fn((id: string) => `gridfinity-layout-${id}`),
