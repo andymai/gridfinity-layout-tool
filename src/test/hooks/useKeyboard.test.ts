@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useKeyboard } from '@/hooks';
-import { useUIStore } from '@/core/store/ui';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/store/history';
 import { useLibraryStore } from '@/core/store/library';
@@ -117,7 +116,7 @@ describe('useKeyboard', () => {
       );
 
       expect(binId).not.toBeNull();
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
 
       // Mount the hook
       renderHook(() => useKeyboard());
@@ -129,7 +128,7 @@ describe('useKeyboard', () => {
 
       // Verify bin is deleted
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
-      expect(useUIStore.getState().selectedBinIds).toHaveLength(0);
+      expect(useSelectionStore.getState().selectedBinIds).toHaveLength(0);
     });
 
     it('deletes selected bins on Backspace key', () => {
@@ -151,7 +150,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -194,7 +193,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId1, binId2]);
+      useSelectionStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -252,8 +251,8 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
-      expect(useUIStore.getState().selectedBinIds).toHaveLength(1);
+      useSelectionStore.getState().setSelectedBins([binId]);
+      expect(useSelectionStore.getState().selectedBinIds).toHaveLength(1);
 
       renderHook(() => useKeyboard());
 
@@ -261,12 +260,12 @@ describe('useKeyboard', () => {
         pressKey('Escape');
       });
 
-      expect(useUIStore.getState().selectedBinIds).toHaveLength(0);
+      expect(useSelectionStore.getState().selectedBinIds).toHaveLength(0);
     });
 
     it('clears paint mode on Escape', () => {
-      useUIStore.getState().setPaintSize({ width: 2, depth: 2 });
-      expect(useUIStore.getState().paintSize).not.toBeNull();
+      useInteractionStore.getState().setPaintSize({ width: 2, depth: 2 });
+      expect(useInteractionStore.getState().paintSize).not.toBeNull();
 
       renderHook(() => useKeyboard());
 
@@ -274,11 +273,11 @@ describe('useKeyboard', () => {
         pressKey('Escape');
       });
 
-      expect(useUIStore.getState().paintSize).toBeNull();
+      expect(useInteractionStore.getState().paintSize).toBeNull();
     });
 
     it('clears interaction on Escape', () => {
-      useUIStore.getState().setInteraction({
+      useInteractionStore.getState().setInteraction({
         type: 'draw',
         start: { x: 0, y: 0 },
         current: { x: 1, y: 1 },
@@ -290,7 +289,7 @@ describe('useKeyboard', () => {
         pressKey('Escape');
       });
 
-      expect(useUIStore.getState().interaction).toBeNull();
+      expect(useInteractionStore.getState().interaction).toBeNull();
     });
   });
 
@@ -408,7 +407,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -420,7 +419,7 @@ describe('useKeyboard', () => {
       expect(bins).toHaveLength(2);
 
       // Selection should be the new bin
-      const selectedIds = useUIStore.getState().selectedBinIds;
+      const selectedIds = useSelectionStore.getState().selectedBinIds;
       expect(selectedIds).toHaveLength(1);
       expect(selectedIds[0]).not.toBe(binId);
     });
@@ -458,7 +457,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId1, binId2]);
+      useSelectionStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -483,36 +482,36 @@ describe('useKeyboard', () => {
 
   describe('zoom shortcuts', () => {
     it('zooms in on + key', () => {
-      const initialZoom = useUIStore.getState().zoom;
+      const initialZoom = useViewStore.getState().zoom;
       renderHook(() => useKeyboard());
 
       act(() => {
         pressKey('+');
       });
 
-      expect(useUIStore.getState().zoom).toBeGreaterThan(initialZoom);
+      expect(useViewStore.getState().zoom).toBeGreaterThan(initialZoom);
     });
 
     it('zooms in on = key', () => {
-      const initialZoom = useUIStore.getState().zoom;
+      const initialZoom = useViewStore.getState().zoom;
       renderHook(() => useKeyboard());
 
       act(() => {
         pressKey('=');
       });
 
-      expect(useUIStore.getState().zoom).toBeGreaterThan(initialZoom);
+      expect(useViewStore.getState().zoom).toBeGreaterThan(initialZoom);
     });
 
     it('zooms out on - key', () => {
-      const initialZoom = useUIStore.getState().zoom;
+      const initialZoom = useViewStore.getState().zoom;
       renderHook(() => useKeyboard());
 
       act(() => {
         pressKey('-');
       });
 
-      expect(useUIStore.getState().zoom).toBeLessThan(initialZoom);
+      expect(useViewStore.getState().zoom).toBeLessThan(initialZoom);
     });
   });
 
@@ -536,7 +535,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       const originalY = useLayoutStore.getState().layout.bins[0].y;
@@ -567,7 +566,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       const originalY = useLayoutStore.getState().layout.bins[0].y;
@@ -598,7 +597,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       const originalX = useLayoutStore.getState().layout.bins[0].x;
@@ -629,7 +628,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       const originalX = useLayoutStore.getState().layout.bins[0].x;
@@ -661,7 +660,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -691,7 +690,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -735,7 +734,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId1, binId2]);
+      useSelectionStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -768,7 +767,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -822,7 +821,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId1, binId2]);
+      useSelectionStore.getState().setSelectedBins([binId1, binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -843,7 +842,7 @@ describe('useKeyboard', () => {
       addLayer({ name: 'Layer 2', height: 4 });
 
       const layers = useLayoutStore.getState().layout.layers;
-      useUIStore.setState({ activeLayerId: layers[0].id });
+      useSelectionStore.setState({ activeLayerId: layers[0].id });
 
       renderHook(() => useKeyboard());
 
@@ -851,7 +850,7 @@ describe('useKeyboard', () => {
         pressKey('w');
       });
 
-      expect(useUIStore.getState().activeLayerId).toBe(layers[1].id);
+      expect(useSelectionStore.getState().activeLayerId).toBe(layers[1].id);
     });
 
     it('moves to previous layer on S key', () => {
@@ -860,7 +859,7 @@ describe('useKeyboard', () => {
       addLayer({ name: 'Layer 2', height: 4 });
 
       const layers = useLayoutStore.getState().layout.layers;
-      useUIStore.setState({ activeLayerId: layers[1].id });
+      useSelectionStore.setState({ activeLayerId: layers[1].id });
 
       renderHook(() => useKeyboard());
 
@@ -868,12 +867,12 @@ describe('useKeyboard', () => {
         pressKey('s');
       });
 
-      expect(useUIStore.getState().activeLayerId).toBe(layers[0].id);
+      expect(useSelectionStore.getState().activeLayerId).toBe(layers[0].id);
     });
 
     it('does not go below first layer', () => {
       const layers = useLayoutStore.getState().layout.layers;
-      useUIStore.setState({ activeLayerId: layers[0].id });
+      useSelectionStore.setState({ activeLayerId: layers[0].id });
 
       renderHook(() => useKeyboard());
 
@@ -881,12 +880,12 @@ describe('useKeyboard', () => {
         pressKey('s');
       });
 
-      expect(useUIStore.getState().activeLayerId).toBe(layers[0].id);
+      expect(useSelectionStore.getState().activeLayerId).toBe(layers[0].id);
     });
 
     it('does not go above last layer', () => {
       const layers = useLayoutStore.getState().layout.layers;
-      useUIStore.setState({ activeLayerId: layers[layers.length - 1].id });
+      useSelectionStore.setState({ activeLayerId: layers[layers.length - 1].id });
 
       renderHook(() => useKeyboard());
 
@@ -894,7 +893,7 @@ describe('useKeyboard', () => {
         pressKey('w');
       });
 
-      expect(useUIStore.getState().activeLayerId).toBe(layers[layers.length - 1].id);
+      expect(useSelectionStore.getState().activeLayerId).toBe(layers[layers.length - 1].id);
     });
   });
 
@@ -932,14 +931,14 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId1]);
+      useSelectionStore.getState().setSelectedBins([binId1]);
       renderHook(() => useKeyboard());
 
       act(() => {
         pressKey('d');
       });
 
-      expect(useUIStore.getState().selectedBinIds).toEqual([binId2]);
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([binId2]);
     });
 
     it('selects previous bin on A key', () => {
@@ -975,14 +974,14 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId2]);
+      useSelectionStore.getState().setSelectedBins([binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
         pressKey('a');
       });
 
-      expect(useUIStore.getState().selectedBinIds).toEqual([binId1]);
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([binId1]);
     });
 
     it('wraps to first bin when at end', () => {
@@ -1018,14 +1017,14 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId2]);
+      useSelectionStore.getState().setSelectedBins([binId2]);
       renderHook(() => useKeyboard());
 
       act(() => {
         pressKey('d');
       });
 
-      expect(useUIStore.getState().selectedBinIds).toEqual([binId1]);
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([binId1]);
     });
 
     it('does nothing when no bins on layer', () => {
@@ -1035,7 +1034,7 @@ describe('useKeyboard', () => {
         pressKey('d');
       });
 
-      expect(useUIStore.getState().selectedBinIds).toEqual([]);
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
     });
   });
 
@@ -1045,7 +1044,7 @@ describe('useKeyboard', () => {
       useLayoutStore.getState().addCategory({ name: 'Second', color: '#00FF00' });
 
       const updatedCategories = useLayoutStore.getState().layout.categories;
-      useUIStore.setState({ activeCategoryId: updatedCategories[1].id });
+      useSelectionStore.setState({ activeCategoryId: updatedCategories[1].id });
 
       renderHook(() => useKeyboard());
 
@@ -1053,14 +1052,14 @@ describe('useKeyboard', () => {
         pressKey('[');
       });
 
-      expect(useUIStore.getState().activeCategoryId).toBe(updatedCategories[0].id);
+      expect(useSelectionStore.getState().activeCategoryId).toBe(updatedCategories[0].id);
     });
 
     it('cycles active category on ] key when no bin selected', () => {
       useLayoutStore.getState().addCategory({ name: 'Second', color: '#00FF00' });
 
       const updatedCategories = useLayoutStore.getState().layout.categories;
-      useUIStore.setState({ activeCategoryId: updatedCategories[0].id });
+      useSelectionStore.setState({ activeCategoryId: updatedCategories[0].id });
 
       renderHook(() => useKeyboard());
 
@@ -1068,7 +1067,7 @@ describe('useKeyboard', () => {
         pressKey(']');
       });
 
-      expect(useUIStore.getState().activeCategoryId).toBe(updatedCategories[1].id);
+      expect(useSelectionStore.getState().activeCategoryId).toBe(updatedCategories[1].id);
     });
 
     it('changes bin category on [ key when bin selected', () => {
@@ -1092,7 +1091,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -1123,7 +1122,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       act(() => {
@@ -1154,7 +1153,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
 
       renderHook(() => useKeyboard());
 
@@ -1163,12 +1162,12 @@ describe('useKeyboard', () => {
       });
 
       // showQuickLabel should have been called (through UIStore)
-      expect(useUIStore.getState().quickLabelBinId).toBe(binId);
+      expect(useSelectionStore.getState().quickLabelBinId).toBe(binId);
     });
 
     it('does nothing on L key with no selection', () => {
       // Reset quickLabelBinId from previous test
-      useUIStore.setState({ quickLabelBinId: null });
+      useSelectionStore.setState({ quickLabelBinId: null });
 
       renderHook(() => useKeyboard());
 
@@ -1176,13 +1175,13 @@ describe('useKeyboard', () => {
         pressKey('l');
       });
 
-      expect(useUIStore.getState().quickLabelBinId).toBeNull();
+      expect(useSelectionStore.getState().quickLabelBinId).toBeNull();
     });
   });
 
   describe('half-bin mode toggle', () => {
     it('toggles half-bin mode on H key', () => {
-      const initialMode = useUIStore.getState().halfBinMode;
+      const initialMode = useHalfBinModeStore.getState().halfBinMode;
 
       renderHook(() => useKeyboard());
 
@@ -1190,7 +1189,7 @@ describe('useKeyboard', () => {
         pressKey('h');
       });
 
-      expect(useUIStore.getState().halfBinMode).toBe(!initialMode);
+      expect(useHalfBinModeStore.getState().halfBinMode).toBe(!initialMode);
     });
   });
 
@@ -1228,7 +1227,7 @@ describe('useKeyboard', () => {
         })
       );
 
-      useUIStore.getState().setSelectedBins([binId]);
+      useSelectionStore.getState().setSelectedBins([binId]);
       renderHook(() => useKeyboard());
 
       // Simulate event from input
@@ -1253,7 +1252,7 @@ describe('useKeyboard', () => {
 
   describe('half-bin mode toggle', () => {
     it('toggles half-bin mode on H key', () => {
-      expect(useUIStore.getState().halfBinMode).toBe(false);
+      expect(useHalfBinModeStore.getState().halfBinMode).toBe(false);
 
       renderHook(() => useKeyboard());
 
@@ -1261,12 +1260,12 @@ describe('useKeyboard', () => {
         pressKey('h');
       });
 
-      expect(useUIStore.getState().halfBinMode).toBe(true);
+      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
     });
 
     it('shows error toast when toggle fails due to fractional bins', () => {
       // First enable half-bin mode
-      useUIStore.setState({ halfBinMode: true });
+      useHalfBinModeStore.setState({ halfBinMode: true });
 
       // Add a bin with fractional dimensions
       const { addBin, layout } = useLayoutStore.getState();
@@ -1293,7 +1292,7 @@ describe('useKeyboard', () => {
       });
 
       // Half-bin mode should still be enabled
-      expect(useUIStore.getState().halfBinMode).toBe(true);
+      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
     });
   });
 
@@ -1332,7 +1331,7 @@ describe('useKeyboard', () => {
       );
 
       // Set focused bin but no selection
-      useUIStore.setState({
+      useSelectionStore.setState({
         focusedBinId: binId1,
         selectedBinIds: [],
       });
@@ -1345,7 +1344,7 @@ describe('useKeyboard', () => {
       });
 
       // Focus should move to the bin to the right
-      expect(useUIStore.getState().focusedBinId).toBe(binId2);
+      expect(useSelectionStore.getState().focusedBinId).toBe(binId2);
     });
   });
 });
