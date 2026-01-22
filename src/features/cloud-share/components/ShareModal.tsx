@@ -197,7 +197,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
             <CloudShareTab
               layoutId={targetLayoutId}
               onClose={onClose}
-              onSwitchToUrlTab={() => setActiveTab('url')}
+              onSwitchToUrlTab={() => handleTabChange('url')}
             />
           )}
 
