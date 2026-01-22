@@ -67,7 +67,7 @@ export function createCategory(name: string, color: string): Category {
 }
 
 // Re-export canonical computePreview from storage
-export { computePreview } from '@/core/storage';
+export { computePreview };
 
 /**
  * Detect features from a layout.
