@@ -1,5 +1,5 @@
-import type { RedisOptions, Redis as RedisInstance } from 'ioredis';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
+import type { RedisOptions } from 'ioredis';
 
 export type RateLimitAction = 'create' | 'update' | 'view' | 'delete' | 'report' | 'telemetry';
 
@@ -41,9 +41,9 @@ interface RateLimitResult {
 }
 
 // Lazy-initialize Redis connection
-let redis: RedisInstance | null = null;
+let redis: Redis | null = null;
 
-function getRedis(): RedisInstance | null {
+function getRedis(): Redis | null {
   if (!process.env.REDIS_URL) {
     return null;
   }
