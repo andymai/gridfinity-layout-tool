@@ -5,7 +5,15 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUndoableAction, useToastStore, useSelectionStore, useInteractionStore } from '@/core/store';
+import {
+  useLayoutStore,
+  useUndoableAction,
+  useToastStore,
+  useSelectionStore,
+  useInteractionStore,
+} from '@/core/store';
+import type { LayoutError } from '@/core/result';
+import { isErr, getUserMessage } from '@/core/result';
 import { usePrintList, type UsePrintListReturn } from '@/features/print-export/hooks/usePrintList';
 import {
   filterBySearch,
@@ -151,17 +159,30 @@ export function useBinList(): UseBinListReturn {
       }
     }
 
-    const count = selectedBinIds.length;
+    let successCount = 0;
+    let lastError: LayoutError | null = null;
+
     execute(() => {
       for (const binId of selectedBinIds) {
-        deleteBin(binId);
+        const result = deleteBin(binId);
+        if (isErr(result)) {
+          lastError = result.error;
+        } else {
+          successCount++;
+        }
       }
     });
 
     clearSelection();
     setSelectedBins([]);
-    addToast(`Deleted ${count} bin${count !== 1 ? 's' : ''}`, 'success');
-    announceToScreenReader(`Deleted ${count} bins`);
+
+    if (successCount > 0) {
+      addToast(`Deleted ${successCount} bin${successCount !== 1 ? 's' : ''}`, 'success');
+      announceToScreenReader(`Deleted ${successCount} bins`);
+    }
+    if (lastError) {
+      addToast(`Some bins could not be deleted: ${getUserMessage(lastError)}`, 'error');
+    }
   }, [
     selectedBinIds,
     layout,
@@ -183,26 +204,38 @@ export function useBinList(): UseBinListReturn {
         .filter((bin): bin is (typeof layout.bins)[number] => !!bin && bin.category !== categoryId);
       if (binsToUpdate.length === 0) return;
 
-      const count = binsToUpdate.length;
       const category = printList.categories.find((c) => c.id === categoryId);
+
+      let successCount = 0;
+      let lastError: LayoutError | null = null;
 
       execute(() => {
         for (const bin of binsToUpdate) {
-          updateBin(bin.id, { category: categoryId });
+          const result = updateBin(bin.id, { category: categoryId });
+          if (isErr(result)) {
+            lastError = result.error;
+          } else {
+            successCount++;
+          }
         }
       });
 
       // Track once per batch (not per bin)
-      if (category && binsToUpdate.length > 0) {
-        mlTracking.trackCategory(binsToUpdate[0], category.name, count);
+      if (category && successCount > 0) {
+        mlTracking.trackCategory(binsToUpdate[0], category.name, successCount);
       }
 
       clearSelection();
-      addToast(
-        `Changed ${count} bin${count !== 1 ? 's' : ''} to ${category?.name || 'category'}`,
-        'success'
-      );
-      announceToScreenReader(`Changed category for ${count} bins`);
+      if (successCount > 0) {
+        addToast(
+          `Changed ${successCount} bin${successCount !== 1 ? 's' : ''} to ${category?.name || 'category'}`,
+          'success'
+        );
+        announceToScreenReader(`Changed category for ${successCount} bins`);
+      }
+      if (lastError) {
+        addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
+      }
     },
     [
       selectedBinIds,
@@ -220,19 +253,34 @@ export function useBinList(): UseBinListReturn {
     (label: string) => {
       if (selectedBinIds.length === 0) return;
 
-      const count = selectedBinIds.length;
+      let successCount = 0;
+      let lastError: LayoutError | null = null;
+
       execute(() => {
         for (const binId of selectedBinIds) {
           const bin = layout.bins.find((b) => b.id === binId);
           if (bin) {
             const oldLabel = bin.label;
-            updateBin(binId, { label });
-            mlTracking.trackLabel(bin, oldLabel, label);
+            const result = updateBin(binId, { label });
+            if (isErr(result)) {
+              lastError = result.error;
+            } else {
+              successCount++;
+              mlTracking.trackLabel(bin, oldLabel, label);
+            }
           }
         }
       });
 
-      addToast(`Updated label for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
+      if (successCount > 0) {
+        addToast(
+          `Updated label for ${successCount} bin${successCount !== 1 ? 's' : ''}`,
+          'success'
+        );
+      }
+      if (lastError) {
+        addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
+      }
     },
     [selectedBinIds, layout.bins, execute, updateBin, addToast]
   );
@@ -241,14 +289,29 @@ export function useBinList(): UseBinListReturn {
     (notes: string) => {
       if (selectedBinIds.length === 0) return;
 
-      const count = selectedBinIds.length;
+      let successCount = 0;
+      let lastError: LayoutError | null = null;
+
       execute(() => {
         for (const binId of selectedBinIds) {
-          updateBin(binId, { notes });
+          const result = updateBin(binId, { notes });
+          if (isErr(result)) {
+            lastError = result.error;
+          } else {
+            successCount++;
+          }
         }
       });
 
-      addToast(`Updated notes for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
+      if (successCount > 0) {
+        addToast(
+          `Updated notes for ${successCount} bin${successCount !== 1 ? 's' : ''}`,
+          'success'
+        );
+      }
+      if (lastError) {
+        addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
+      }
     },
     [selectedBinIds, execute, updateBin, addToast]
   );
@@ -258,19 +321,34 @@ export function useBinList(): UseBinListReturn {
     (binIds: string[], label: string) => {
       if (binIds.length === 0) return;
 
-      const count = binIds.length;
+      let successCount = 0;
+      let lastError: LayoutError | null = null;
+
       execute(() => {
         for (const binId of binIds) {
           const bin = layout.bins.find((b) => b.id === binId);
           if (bin) {
             const oldLabel = bin.label;
-            updateBin(binId, { label });
-            mlTracking.trackLabel(bin, oldLabel, label);
+            const result = updateBin(binId, { label });
+            if (isErr(result)) {
+              lastError = result.error;
+            } else {
+              successCount++;
+              mlTracking.trackLabel(bin, oldLabel, label);
+            }
           }
         }
       });
 
-      addToast(`Updated label for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
+      if (successCount > 0) {
+        addToast(
+          `Updated label for ${successCount} bin${successCount !== 1 ? 's' : ''}`,
+          'success'
+        );
+      }
+      if (lastError) {
+        addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
+      }
     },
     [layout.bins, execute, updateBin, addToast]
   );
@@ -279,14 +357,29 @@ export function useBinList(): UseBinListReturn {
     (binIds: string[], notes: string) => {
       if (binIds.length === 0) return;
 
-      const count = binIds.length;
+      let successCount = 0;
+      let lastError: LayoutError | null = null;
+
       execute(() => {
         for (const binId of binIds) {
-          updateBin(binId, { notes });
+          const result = updateBin(binId, { notes });
+          if (isErr(result)) {
+            lastError = result.error;
+          } else {
+            successCount++;
+          }
         }
       });
 
-      addToast(`Updated notes for ${count} bin${count !== 1 ? 's' : ''}`, 'success');
+      if (successCount > 0) {
+        addToast(
+          `Updated notes for ${successCount} bin${successCount !== 1 ? 's' : ''}`,
+          'success'
+        );
+      }
+      if (lastError) {
+        addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
+      }
     },
     [execute, updateBin, addToast]
   );

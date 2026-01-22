@@ -43,7 +43,7 @@ describe('createShare', () => {
       json: () => Promise.resolve(mockResponse),
     } as Response);
 
-    const result = await createShare(mockLayout, 'view');
+    const result = await createShare('test-layout-id', mockLayout, 'view');
 
     expect(isOk(result)).toBe(true);
     if (isOk(result)) {
@@ -63,7 +63,7 @@ describe('createShare', () => {
         }),
     } as Response);
 
-    const result = await createShare(mockLayout, 'view');
+    const result = await createShare('test-layout-id', mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -78,7 +78,7 @@ describe('createShare', () => {
   it('returns Err with ApiNetworkError on fetch failure', async () => {
     vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
-    const result = await createShare(mockLayout, 'view');
+    const result = await createShare('test-layout-id', mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -97,7 +97,7 @@ describe('createShare', () => {
         }),
     } as Response);
 
-    const result = await createShare(mockLayout, 'view');
+    const result = await createShare('test-layout-id', mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -115,7 +115,7 @@ describe('createShare', () => {
         }),
     } as Response);
 
-    const result = await createShare(mockLayout, 'view');
+    const result = await createShare('test-layout-id', mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -133,7 +133,7 @@ describe('createShare', () => {
         }),
     } as Response);
 
-    const result = await createShare(mockLayout, 'view');
+    const result = await createShare('test-layout-id', mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -384,7 +384,7 @@ describe('API error mapping', () => {
         }),
     } as Response);
 
-    const result = await createShare(mockLayout, 'view');
+    const result = await createShare('test-layout-id', mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -402,7 +402,7 @@ describe('API error mapping', () => {
         }),
     } as Response);
 
-    const result = await createShare(mockLayout, 'invalid' as 'view');
+    const result = await createShare('test-layout-id', mockLayout, 'invalid' as 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -421,7 +421,7 @@ describe('API error mapping', () => {
         }),
     } as Response);
 
-    const result = await createShare(mockLayout, 'view');
+    const result = await createShare('test-layout-id', mockLayout, 'view');
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {
@@ -440,7 +440,7 @@ describe('API error mapping', () => {
     } as Response);
 
     const beforeTime = Date.now();
-    const result = await createShare(mockLayout, 'view');
+    const result = await createShare('test-layout-id', mockLayout, 'view');
     const afterTime = Date.now();
 
     expect(isErr(result)).toBe(true);
