@@ -6,7 +6,7 @@
  */
 
 import type { Layout, SharePermission } from '@/core/types';
-import type { Result, ApiError } from '@/core/result';
+import type { Result, ApiError, ValidationError } from '@/core/result';
 import {
   ok,
   err,
@@ -20,7 +20,9 @@ import {
   apiSizeLimit,
   apiBinLimit,
   apiExpired,
+  validationImportFailed,
 } from '@/core/result';
+import { validateImport } from '@/shared/utils/validation';
 
 // API Response types
 export interface ShareResponse {
@@ -80,31 +82,38 @@ function isShareErrorResponse(data: unknown): data is ShareErrorResponse {
 }
 
 function isShareResponse(data: unknown): data is ShareResponse {
+  if (typeof data !== 'object' || data === null) return false;
+  const obj = data as Record<string, unknown>;
   return (
-    typeof data === 'object' &&
-    data !== null &&
     'id' in data &&
     'url' in data &&
     'deleteToken' in data &&
     'permission' in data &&
-    typeof (data as Record<string, unknown>).id === 'string' &&
-    typeof (data as Record<string, unknown>).url === 'string'
+    typeof obj.id === 'string' &&
+    typeof obj.url === 'string' &&
+    typeof obj.deleteToken === 'string' &&
+    (obj.permission === 'view' || obj.permission === 'edit')
   );
 }
 
 function isUpdateShareResponse(data: unknown): data is UpdateShareResponse {
+  if (typeof data !== 'object' || data === null) return false;
+  const obj = data as Record<string, unknown>;
   return (
-    typeof data === 'object' &&
-    data !== null &&
     'id' in data &&
     'url' in data &&
     'permission' in data &&
-    typeof (data as Record<string, unknown>).id === 'string' &&
-    typeof (data as Record<string, unknown>).url === 'string'
+    typeof obj.id === 'string' &&
+    typeof obj.url === 'string' &&
+    (obj.permission === 'view' || obj.permission === 'edit')
   );
 }
 
-function isFetchShareResponse(data: unknown): data is FetchShareResponse {
+/**
+ * Basic structural check for FetchShareResponse.
+ * Does not validate Layout contents - use validateFetchShareResponse for full validation.
+ */
+function isFetchShareResponseStructure(data: unknown): data is FetchShareResponse {
   return (
     typeof data === 'object' &&
     data !== null &&
@@ -113,6 +122,26 @@ function isFetchShareResponse(data: unknown): data is FetchShareResponse {
     typeof (data as Record<string, unknown>).layout === 'object' &&
     typeof (data as Record<string, unknown>).metadata === 'object'
   );
+}
+
+/**
+ * Validate a FetchShareResponse including Layout contents.
+ * Returns validation errors if the layout structure is invalid.
+ */
+function validateFetchShareResponse(
+  data: unknown
+): { valid: true; data: FetchShareResponse } | { valid: false; errors: string[] } {
+  if (!isFetchShareResponseStructure(data)) {
+    return { valid: false, errors: ['Invalid response structure'] };
+  }
+
+  // Validate the Layout using the import validator
+  const layoutValidation = validateImport(data.layout);
+  if (!layoutValidation.valid) {
+    return { valid: false, errors: layoutValidation.errors };
+  }
+
+  return { valid: true, data };
 }
 
 /**
@@ -268,8 +297,11 @@ export async function updatePermission(
 
 /**
  * Fetch a shared layout by ID.
+ * Validates the layout structure after deserialization to ensure data integrity.
  */
-export async function fetchShare(id: string): Promise<Result<FetchShareResponse, ApiError>> {
+export async function fetchShare(
+  id: string
+): Promise<Result<FetchShareResponse, ApiError | ValidationError>> {
   try {
     const response = await fetch(`/api/share/${id}`);
     const data: unknown = await response.json();
@@ -281,10 +313,13 @@ export async function fetchShare(id: string): Promise<Result<FetchShareResponse,
       return err(apiServerError());
     }
 
-    if (isFetchShareResponse(data)) {
-      return ok(data);
+    // Validate both structure and layout contents
+    const validation = validateFetchShareResponse(data);
+    if (!validation.valid) {
+      return err(validationImportFailed(validation.errors));
     }
-    return err(apiServerError());
+
+    return ok(validation.data);
   } catch (error) {
     return err(apiNetworkError(error));
   }

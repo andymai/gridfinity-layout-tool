@@ -1,4 +1,6 @@
 import type { Bin, Layer, Rect3D, BlockedZone } from '@/core/types';
+import type { Result, ValidationError } from '@/core/result';
+import { ok, err, isOk, validationInvalidLayer } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
 
 /**
@@ -10,21 +12,60 @@ export function getDisplayLayers<T>(layers: T[]): T[] {
 }
 
 /**
- * Calculate the Z-axis start position for a layer.
- * Layers stack from bottom (index 0) upward.
+ * Calculate the Z-axis start position for a layer with Result-based error handling.
+ * Use this when layer existence is not guaranteed (e.g., during user interactions).
  */
-export function getLayerZStart(layerId: string, layers: Layer[]): number {
+export function getLayerZStartResult(
+  layerId: string,
+  layers: Layer[]
+): Result<number, ValidationError> {
   let z = 0;
   for (const layer of layers) {
-    if (layer.id === layerId) return z;
+    if (layer.id === layerId) return ok(z);
     z += layer.height;
+  }
+  return err(validationInvalidLayer(layerId));
+}
+
+/**
+ * Calculate the Z-axis start position for a layer.
+ * Layers stack from bottom (index 0) upward.
+ *
+ * @throws Error if layer not found - use getLayerZStartResult for safe error handling
+ */
+export function getLayerZStart(layerId: string, layers: Layer[]): number {
+  const result = getLayerZStartResult(layerId, layers);
+  if (isOk(result)) {
+    return result.value;
   }
   throw new Error(`Layer not found: ${layerId}`);
 }
 
 /**
+ * Get the 3D bounding box for a bin with Result-based error handling.
+ * Use this when layer existence is not guaranteed.
+ */
+export function getBin3DRectResult(bin: Bin, layers: Layer[]): Result<Rect3D, ValidationError> {
+  const zStartResult = getLayerZStartResult(bin.layerId, layers);
+  if (!isOk(zStartResult)) {
+    return zStartResult;
+  }
+  const zStart = zStartResult.value;
+  return ok({
+    x: bin.x,
+    y: bin.y,
+    width: bin.width,
+    depth: bin.depth,
+    zStart,
+    zEnd: zStart + bin.height + (bin.clearanceHeight || 0),
+  });
+}
+
+/**
  * Get the 3D bounding box for a bin.
  * Includes clearanceHeight in the vertical extent for collision detection.
+ *
+ * @throws Error if bin's layer not found - use getBin3DRectResult for safe error handling
  */
 export function getBin3DRect(bin: Bin, layers: Layer[]): Rect3D {
   const zStart = getLayerZStart(bin.layerId, layers);
@@ -59,8 +100,43 @@ export function verticalRangesOverlap(
 }
 
 /**
+ * Check if two bins collide in 3D space with Result-based error handling.
+ * Returns Ok(false) for staging bins or non-overlapping footprints.
+ * Returns Err if either bin's layer is invalid.
+ */
+export function binsCollideResult(
+  binA: Bin,
+  binB: Bin,
+  layers: Layer[]
+): Result<boolean, ValidationError> {
+  // Staging bins don't collide with anything
+  if (binA.layerId === STAGING_ID || binB.layerId === STAGING_ID) {
+    return ok(false);
+  }
+
+  // Check footprint overlap first (cheaper)
+  if (!footprintsOverlap(binA, binB)) {
+    return ok(false);
+  }
+
+  const rectAResult = getBin3DRectResult(binA, layers);
+  if (!isOk(rectAResult)) {
+    return rectAResult;
+  }
+
+  const rectBResult = getBin3DRectResult(binB, layers);
+  if (!isOk(rectBResult)) {
+    return rectBResult;
+  }
+
+  return ok(verticalRangesOverlap(rectAResult.value, rectBResult.value));
+}
+
+/**
  * Check if two bins collide in 3D space.
  * Bins must overlap in both footprint AND vertical range to collide.
+ *
+ * @throws Error if either bin's layer not found - use binsCollideResult for safe error handling
  */
 export function binsCollide(binA: Bin, binB: Bin, layers: Layer[]): boolean {
   // Staging bins don't collide with anything
