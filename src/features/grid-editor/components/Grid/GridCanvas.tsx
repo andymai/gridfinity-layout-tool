@@ -73,6 +73,20 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
     [activeLayerId, bins, layers]
   );
 
+  // Performance: Create O(1) lookup maps to avoid O(n²) .find() calls in render loops
+  const categoryMap = useMemo(
+    () => new Map(categories.map((c) => [c.id, c])),
+    [categories]
+  );
+  const layerMap = useMemo(
+    () => new Map(layers.map((l) => [l.id, l])),
+    [layers]
+  );
+  const binMap = useMemo(
+    () => new Map(bins.map((b) => [b.id, b])),
+    [bins]
+  );
+
   // Capture phase handler for paint mode - runs before Bin components can stop propagation
   const handlePointerDownCapture = (e: PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
@@ -245,34 +259,28 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
         {fractionalCells}
 
         {/* Ghost bins (other layers) */}
-        {ghostBins.map((bin) => {
-          const category = categories.find((c) => c.id === bin.category);
-          const layer = layers.find((l) => l.id === bin.layerId);
-          return (
-            <Bin
-              key={bin.id}
-              bin={bin}
-              category={category}
-              layer={layer}
-              drawer={drawer}
-              cellSize={cellSize}
-              gap={gap}
-              halfBinMode={halfBinMode}
-              isGhost
-              isSelected={false}
-              onStartDrag={onStartDrag}
-              onStartResize={onStartResize}
-            />
-          );
-        })}
+        {ghostBins.map((bin) => (
+          <Bin
+            key={bin.id}
+            bin={bin}
+            category={categoryMap.get(bin.category)}
+            layer={layerMap.get(bin.layerId)}
+            drawer={drawer}
+            cellSize={cellSize}
+            gap={gap}
+            halfBinMode={halfBinMode}
+            isGhost
+            isSelected={false}
+            onStartDrag={onStartDrag}
+            onStartResize={onStartResize}
+          />
+        ))}
 
         {/* Blocked zones - bins from lower layers extending into this layer */}
         {blockedZones.map((zone) => {
-          const sourceBin = bins.find((b) => b.id === zone.sourceBinId);
-          const category = sourceBin
-            ? categories.find((c) => c.id === sourceBin.category)
-            : undefined;
-          const sourceLayer = sourceBin ? layers.find(l => l.id === sourceBin.layerId) : undefined;
+          const sourceBin = binMap.get(zone.sourceBinId);
+          const category = sourceBin ? categoryMap.get(sourceBin.category) : undefined;
+          const sourceLayer = sourceBin ? layerMap.get(sourceBin.layerId) : undefined;
 
           // Calculate grid position (always use standard grid, no scaling)
           // Apply same fractional edge positioning as bins
@@ -353,26 +361,22 @@ export function GridCanvas({ gridRef, cellSize, gap, onStartDraw, onStartDrag, o
         })}
 
         {/* Active layer bins */}
-        {activeBins.map((bin) => {
-          const category = categories.find((c) => c.id === bin.category);
-          const layer = layers.find((l) => l.id === bin.layerId);
-          return (
-            <Bin
-              key={bin.id}
-              bin={bin}
-              category={category}
-              layer={layer}
-              drawer={drawer}
-              cellSize={cellSize}
-              gap={gap}
-              halfBinMode={halfBinMode}
-              isGhost={false}
-              isSelected={selectedBinIds.includes(bin.id)}
-              onStartDrag={onStartDrag}
-              onStartResize={onStartResize}
-            />
-          );
-        })}
+        {activeBins.map((bin) => (
+          <Bin
+            key={bin.id}
+            bin={bin}
+            category={categoryMap.get(bin.category)}
+            layer={layerMap.get(bin.layerId)}
+            drawer={drawer}
+            cellSize={cellSize}
+            gap={gap}
+            halfBinMode={halfBinMode}
+            isGhost={false}
+            isSelected={selectedBinIds.includes(bin.id)}
+            onStartDrag={onStartDrag}
+            onStartResize={onStartResize}
+          />
+        ))}
       </div>
     </div>
   );

@@ -143,6 +143,16 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     [printBedSize, gridUnitMm]
   )
 
+  // Performance: Create O(1) lookup maps to avoid O(n²) .findIndex()/.find() calls in render loop
+  const layerIndexMap = useMemo(
+    () => new Map(layers.map((l, idx) => [l.id, idx])),
+    [layers]
+  )
+  const categoryMap = useMemo(
+    () => new Map(categories.map((c) => [c.id, c])),
+    [categories]
+  )
+
   // Convert layout bins to renderable format with layer filtering
   // Dependencies are specific properties (bins, layers, categories) not entire layout object
   const binsToRender = useMemo(() => {
@@ -160,11 +170,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     for (const bin of bins) {
       if (bin.layerId === STAGING_ID) continue
 
-      // Filter bins based on layer view mode
+      // Filter bins based on layer view mode (O(1) lookup instead of O(n) findIndex)
       if (activeLayerIndex >= 0) {
-        const binLayerIndex = layers.findIndex(
-          (l) => l.id === bin.layerId
-        )
+        const binLayerIndex = layerIndexMap.get(bin.layerId) ?? -1
 
         switch (layerViewMode) {
           case 'focus':
@@ -183,7 +191,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
 
       const zStart =
         getLayerZStart(bin.layerId, layers) * heightToGridScale
-      const category = categories.find((c) => c.id === bin.category)
+      const category = categoryMap.get(bin.category)
       const baseColor = category?.color || DEFAULT_CATEGORY_COLOR
 
       // No dimming needed since focus mode now hides other layers entirely
@@ -233,7 +241,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   }, [
     bins,
     layers,
-    categories,
+    categoryMap,
+    layerIndexMap,
     activeLayerIndex,
     layerViewMode,
     heightToGridScale,
