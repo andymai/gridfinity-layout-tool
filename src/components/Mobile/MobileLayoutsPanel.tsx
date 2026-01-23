@@ -8,8 +8,6 @@ import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { LayoutThumbnail } from '@/components/LayoutThumbnail';
 import { InspirationGallery } from '@/features/inspiration-gallery';
-import { useDesignerRouting } from '@/features/bin-designer/hooks/useDesignerRouting';
-import { useLabsStore } from '@/core/store';
 import {
   loadLayoutAsync,
   generateShareableURL,
@@ -33,8 +31,6 @@ export function MobileLayoutsPanel() {
   const [renameLayoutId, setRenameLayoutId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
-  const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
-  const { navigateToDesigner } = useDesignerRouting();
   const renameInputRef = useRef<HTMLInputElement>(null);
 
   // Scroll rename input into view when keyboard appears on mobile
@@ -498,43 +494,6 @@ export function MobileLayoutsPanel() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>
-
-      {/* Bin Designer button - behind feature flag */}
-      {isDesignerEnabled && (
-        <button
-          onClick={navigateToDesigner}
-          className="w-full flex items-center gap-3 mt-3 p-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 active:scale-[0.98] transition-transform"
-          aria-label="Open Bin Designer"
-        >
-          <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center shrink-0">
-            <svg
-              className="w-5 h-5 text-blue-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-              />
-            </svg>
-          </div>
-          <div className="flex-1 text-left">
-            <div className="text-sm font-medium text-content">Bin Designer</div>
-            <div className="text-xs text-content-tertiary">Create custom bins for 3D printing</div>
-          </div>
-          <svg
-            className="w-4 h-4 text-content-tertiary"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      )}
 
       {/* Create new button */}
       <button onClick={handleCreateNew} className="btn btn-secondary w-full mt-3 h-12">
