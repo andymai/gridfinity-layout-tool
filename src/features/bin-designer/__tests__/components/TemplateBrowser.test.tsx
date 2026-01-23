@@ -119,8 +119,7 @@ describe('TemplateBrowser', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Hardware' }));
 
     // Should show hardware templates
-    expect(screen.getByLabelText('Add M3 Screw')).toBeInTheDocument();
-    expect(screen.getByLabelText('Add M3 Hex Nut')).toBeInTheDocument();
+    expect(screen.getByLabelText('Add Hex Key (2.5mm)')).toBeInTheDocument();
     expect(screen.getByLabelText('Add ¼" Driver Bit')).toBeInTheDocument();
 
     // Should NOT show electronics
@@ -137,7 +136,7 @@ describe('TemplateBrowser', () => {
     expect(screen.getByLabelText('Add Needle-Nose Pliers')).toBeInTheDocument();
 
     // Should NOT show hardware
-    expect(screen.queryByLabelText('Add M3 Screw')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Add Hex Key (2.5mm)')).not.toBeInTheDocument();
   });
 
   describe('search', () => {
@@ -150,11 +149,11 @@ describe('TemplateBrowser', () => {
       render(<TemplateBrowser />);
 
       const searchInput = screen.getByLabelText('Search templates');
-      fireEvent.change(searchInput, { target: { value: 'screw' } });
+      fireEvent.change(searchInput, { target: { value: 'hex key' } });
 
-      // Should show screw-related templates
-      expect(screen.getByLabelText('Add M3 Screw')).toBeInTheDocument();
-      expect(screen.getByLabelText('Add M4 Screw')).toBeInTheDocument();
+      // Should show hex key templates
+      expect(screen.getByLabelText('Add Hex Key (2.5mm)')).toBeInTheDocument();
+      expect(screen.getByLabelText('Add Hex Key (4mm)')).toBeInTheDocument();
 
       // Should NOT show unrelated templates
       expect(screen.queryByLabelText('Add AA Battery')).not.toBeInTheDocument();
@@ -168,8 +167,8 @@ describe('TemplateBrowser', () => {
       fireEvent.change(searchInput, { target: { value: 'HEX' } });
 
       // Should find hex-related templates
-      expect(screen.getByLabelText('Add M3 Hex Nut')).toBeInTheDocument();
       expect(screen.getByLabelText('Add Hex Key (2.5mm)')).toBeInTheDocument();
+      expect(screen.getByLabelText('Add Hex Key (4mm)')).toBeInTheDocument();
     });
 
     it('combines search with category filter', () => {
@@ -178,12 +177,12 @@ describe('TemplateBrowser', () => {
       // Filter to hardware first
       fireEvent.click(screen.getByRole('tab', { name: 'Hardware' }));
 
-      // Then search for "nut"
+      // Then search for "driver"
       const searchInput = screen.getByLabelText('Search templates');
-      fireEvent.change(searchInput, { target: { value: 'nut' } });
+      fireEvent.change(searchInput, { target: { value: 'driver' } });
 
-      // Should show hardware nuts only
-      expect(screen.getByLabelText('Add M3 Hex Nut')).toBeInTheDocument();
+      // Should show hardware driver bits only
+      expect(screen.getByLabelText('Add ¼" Driver Bit')).toBeInTheDocument();
 
       // Tools/electronics should be hidden even if they'd match
       expect(screen.queryByLabelText('Add AA Battery')).not.toBeInTheDocument();
@@ -222,13 +221,13 @@ describe('TemplateBrowser', () => {
     render(<TemplateBrowser />);
 
     fireEvent.click(screen.getByRole('tab', { name: 'Hardware' }));
-    fireEvent.click(screen.getByLabelText('Add M3 Hex Nut'));
+    fireEvent.click(screen.getByLabelText('Add ¼" Driver Bit'));
 
     const inserts = useDesignerStore.getState().params.inserts;
     expect(inserts).toHaveLength(1);
     expect(inserts[0].shape).toBe('hexagon');
-    expect(inserts[0].width).toBe(6); // 5.5 + 0.5 clearance
-    expect(inserts[0].label).toBe('M3 nut');
+    expect(inserts[0].width).toBe(6.85); // 6.35 + 0.5 clearance
+    expect(inserts[0].label).toBe('Bit');
   });
 
   it('adds tools template with correct dimensions', () => {
