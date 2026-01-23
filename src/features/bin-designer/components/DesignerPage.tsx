@@ -101,11 +101,12 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
   const [cartDialogOpen, setCartDialogOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const cartItemCount = useCartStore((s) => s.items.length);
   const addToCart = useCartStore((s) => s.addToCart);
   const addToast = useToastStore((s) => s.addToast);
 
-  // Close mobile menu on outside click
+  // Close mobile menu on outside click or Escape
   useEffect(() => {
     if (!mobileMenuOpen) return;
     const handleClick = (e: MouseEvent) => {
@@ -113,8 +114,19 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
         setMobileMenuOpen(false);
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setMobileMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
     document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [mobileMenuOpen]);
 
   const handleAddToCart = useCallback(() => {
@@ -266,6 +278,7 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
           {/* Mobile overflow menu (visible only on small screens) */}
           <div className="relative sm:hidden" ref={mobileMenuRef}>
             <button
+              ref={menuButtonRef}
               onClick={() => setMobileMenuOpen((v) => !v)}
               className="flex h-9 w-9 items-center justify-center rounded-md text-content-secondary hover:bg-surface-hover hover:text-content"
               aria-label="More actions"
