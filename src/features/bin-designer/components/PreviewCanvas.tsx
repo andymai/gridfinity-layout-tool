@@ -96,6 +96,17 @@ export function PreviewCanvas() {
     setHighContrast((hc) => !hc);
   }, []);
 
+  const handleRetry = useCallback(() => {
+    if (wasmStatus === 'error') {
+      // WASM engine failed catastrophically — reload to re-initialize
+      window.location.reload();
+    } else {
+      // Generation error — re-trigger by nudging params
+      const currentParams = useDesignerStore.getState().params;
+      useDesignerStore.getState().setParams({ ...currentParams });
+    }
+  }, [wasmStatus]);
+
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';
   const showOverlay = generationStatus === 'generating' && hasMesh;
 
@@ -115,7 +126,7 @@ export function PreviewCanvas() {
       </div>
 
       {showSkeleton ? (
-        <PreviewSkeleton wasmStatus={wasmStatus} generationStatus={generationStatus} />
+        <PreviewSkeleton wasmStatus={wasmStatus} generationStatus={generationStatus} onRetry={handleRetry} />
       ) : (
         <>
           <Canvas
@@ -170,9 +181,13 @@ export function PreviewCanvas() {
 
           {/* Generating overlay */}
           {showOverlay && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
-              <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-gray-600 shadow-sm">
-                Updating...
+            <div className="absolute inset-0 flex items-center justify-center bg-black/5 backdrop-blur-[2px] transition-opacity">
+              <span className="flex items-center gap-2 rounded-full bg-surface-elevated/95 px-3.5 py-1.5 text-xs font-medium text-content-secondary shadow-md">
+                <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Updating…
               </span>
             </div>
           )}

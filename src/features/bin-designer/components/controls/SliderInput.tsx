@@ -1,9 +1,13 @@
 /**
  * Combined slider + number input control for the bin designer.
  * Provides both coarse (slider drag) and fine (type a value) input.
+ *
+ * The number input uses "commit-on-blur" semantics: the user can freely
+ * type without triggering intermediate state changes. The value is only
+ * committed (clamped + snapped) on blur or Enter.
  */
 
-import { useId } from 'react';
+import { useId, useState, useEffect, useCallback } from 'react';
 
 interface SliderInputProps {
   /** Display label */
@@ -39,17 +43,60 @@ export function SliderInput({
 }: SliderInputProps) {
   const id = useId();
 
+  // Local draft for the number input — allows free typing without
+  // triggering intermediate onChange calls (e.g. typing "12" won't
+  // flash through "1" first).
+  const [draft, setDraft] = useState(String(value));
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Sync draft from external value changes (slider, undo, preset clicks)
+  useEffect(() => {
+    if (!isEditing) {
+      setDraft(String(value));
+    }
+  }, [value, isEditing]);
+
+  const commitValue = useCallback(() => {
+    setIsEditing(false);
+    const raw = Number(draft);
+    if (isNaN(raw) || draft.trim() === '') {
+      // Revert to current value on invalid input
+      setDraft(String(value));
+      return;
+    }
+    const clamped = Math.min(max, Math.max(min, raw));
+    const snapped = Math.round(clamped / step) * step;
+    const final = Number(snapped.toFixed(3));
+    setDraft(String(final));
+    if (final !== value) {
+      onChange(final);
+    }
+  }, [draft, value, min, max, step, onChange]);
+
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(Number(e.target.value));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = Number(e.target.value);
-    if (!isNaN(raw)) {
-      const clamped = Math.min(max, Math.max(min, raw));
-      // Round to step precision
-      const snapped = Math.round(clamped / step) * step;
-      onChange(Number(snapped.toFixed(3)));
+    setDraft(e.target.value);
+  };
+
+  const handleInputFocus = () => {
+    setIsEditing(true);
+  };
+
+  const handleInputBlur = () => {
+    commitValue();
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      commitValue();
+      (e.target as HTMLInputElement).blur();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setDraft(String(value));
+      (e.target as HTMLInputElement).blur();
     }
   };
 
@@ -63,8 +110,11 @@ export function SliderInput({
           <input
             id={id}
             type="number"
-            value={value}
+            value={draft}
             onChange={handleInputChange}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            onKeyDown={handleInputKeyDown}
             min={min}
             max={max}
             step={step}

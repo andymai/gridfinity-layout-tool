@@ -64,30 +64,36 @@ describe('DimensionsSection', () => {
     expect(useDesignerStore.getState().params.width).toBe(4);
   });
 
-  it('changing the number input updates the store', () => {
+  it('changing the number input updates the store on blur', () => {
     render(<DimensionsSection />);
 
     const input = screen.getByLabelText('Width');
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '5' } });
+    fireEvent.blur(input);
 
     expect(useDesignerStore.getState().params.width).toBe(5);
   });
 
-  it('clamps input value to valid range', () => {
+  it('clamps input value to valid range on blur', () => {
     render(<DimensionsSection />);
 
     const input = screen.getByLabelText('Width');
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '10' } });
+    fireEvent.blur(input);
 
     // Max is 6
     expect(useDesignerStore.getState().params.width).toBe(6);
   });
 
-  it('snaps width to 0.5 step increments', () => {
+  it('snaps width to 0.5 step increments on blur', () => {
     render(<DimensionsSection />);
 
     const input = screen.getByLabelText('Width');
+    fireEvent.focus(input);
     fireEvent.change(input, { target: { value: '2.7' } });
+    fireEvent.blur(input);
 
     // Should snap to 2.5
     expect(useDesignerStore.getState().params.width).toBe(2.5);

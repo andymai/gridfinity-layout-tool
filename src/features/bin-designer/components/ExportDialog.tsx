@@ -17,6 +17,7 @@ import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize } from '@/features/generation/export/stlExporter';
 import { estimate3MFFileSize } from '@/features/generation/export/threemfExporter';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
+import { useToastStore } from '@/core/store/toast';
 
 export function ExportDialog() {
   const { exportDialogOpen, params, triangleCount } = useDesignerStore(
@@ -31,6 +32,7 @@ export function ExportDialog() {
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
 
   const { canExport, estimates, isExporting, downloadSTL, download3MF } = useExport();
+  const addToast = useToastStore((s) => s.addToast);
   const [nameStyle, setNameStyle] = useState<FileNameStyle>('descriptive');
   const [format, setFormat] = useState<ExportFormat>('stl');
 
@@ -125,7 +127,19 @@ export function ExportDialog() {
 
         {/* Download Button */}
         <button
-          onClick={() => format === '3mf' ? download3MF(nameStyle) : downloadSTL(nameStyle)}
+          onClick={async () => {
+            try {
+              if (format === '3mf') {
+                await download3MF(nameStyle);
+              } else {
+                downloadSTL(nameStyle);
+              }
+              addToast({ message: `${format.toUpperCase()} exported successfully`, type: 'success', duration: 3000 });
+              closeDialog();
+            } catch {
+              addToast({ message: 'Export failed — please try again', type: 'error', duration: 5000 });
+            }
+          }}
           disabled={!canExport || isExporting}
           className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
         >
