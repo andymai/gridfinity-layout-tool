@@ -5,7 +5,7 @@
  * Touch-friendly with 44px minimum tap targets.
  */
 
-import { useState, type JSX } from 'react';
+import { useState, useCallback, useRef, type JSX } from 'react';
 import {
   DimensionsSection,
   BaseSection,
@@ -74,23 +74,54 @@ const TABS: readonly TabConfig[] = [
  */
 export function MobileParameterTabs() {
   const [activeTab, setActiveTab] = useState<DesignerTab>('shape');
+  const tablistRef = useRef<HTMLDivElement>(null);
+
+  // ARIA tab pattern: arrow keys navigate between tabs
+  const handleTabKeyDown = useCallback((e: React.KeyboardEvent, currentIndex: number) => {
+    let nextIndex: number | null = null;
+
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      nextIndex = (currentIndex + 1) % TABS.length;
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      nextIndex = (currentIndex - 1 + TABS.length) % TABS.length;
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      nextIndex = TABS.length - 1;
+    }
+
+    if (nextIndex !== null) {
+      const nextTab = TABS[nextIndex];
+      setActiveTab(nextTab.id);
+      // Move focus to the newly activated tab
+      const tabEl = tablistRef.current?.querySelector<HTMLButtonElement>(`#tab-${nextTab.id}`);
+      tabEl?.focus();
+    }
+  }, []);
 
   return (
     <div className="flex h-full flex-col">
       {/* Tab bar */}
       <div
+        ref={tablistRef}
         className="flex border-b border-stroke-subtle bg-surface-secondary"
         role="tablist"
         aria-label="Parameter sections"
       >
-        {TABS.map((tab) => (
+        {TABS.map((tab, index) => (
           <button
             key={tab.id}
             id={`tab-${tab.id}`}
             role="tab"
             aria-selected={activeTab === tab.id}
             aria-controls={`panel-${tab.id}`}
+            tabIndex={activeTab === tab.id ? 0 : -1}
             onClick={() => setActiveTab(tab.id)}
+            onKeyDown={(e) => handleTabKeyDown(e, index)}
             className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
               activeTab === tab.id
                 ? 'border-b-2 border-accent text-accent'

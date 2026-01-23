@@ -138,11 +138,14 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
         {/* Cart items */}
         <div className="flex-1 overflow-y-auto px-5 py-3">
           {items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-content-secondary">
-              <svg className="mx-auto mb-2 h-10 w-10 text-content-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <div className="py-8 text-center">
+              <svg className="mx-auto mb-3 h-12 w-12 text-content-disabled" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
-              No designs in cart. Add designs from the design list.
+              <p className="text-sm font-medium text-content-secondary">Cart is empty</p>
+              <p className="mt-1 text-xs text-content-tertiary">
+                Use the &ldquo;Add to Cart&rdquo; button to queue designs for batch export.
+              </p>
             </div>
           ) : (
             <ul className="space-y-2" aria-label="Cart items">
@@ -275,11 +278,11 @@ function CartItemRow({
         </div>
       </div>
 
-      {/* Remove button */}
+      {/* Remove button — always visible on touch, hover/focus on desktop */}
       <button
         onClick={onRemove}
         disabled={disabled}
-        className="rounded p-1 text-content-tertiary opacity-0 transition-opacity hover:bg-surface-hover hover:text-content group-hover:opacity-100 disabled:opacity-50"
+        className="rounded p-1.5 text-content-tertiary transition-opacity hover:bg-surface-hover hover:text-content sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 disabled:opacity-50"
         aria-label={`Remove ${item.name} from cart`}
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

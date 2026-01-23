@@ -99,9 +99,11 @@ describe('ParameterPanel', () => {
   it('adding dividers shows thickness slider', () => {
     render(<ParameterPanel />);
 
-    // Increase dividers X
+    // Increase dividers X (commit-on-blur pattern)
     const divXInput = screen.getByLabelText('Dividers X');
+    fireEvent.focus(divXInput);
     fireEvent.change(divXInput, { target: { value: '2' } });
+    fireEvent.blur(divXInput);
 
     expect(screen.getByLabelText('Divider Thickness')).toBeInTheDocument();
   });
