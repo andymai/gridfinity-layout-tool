@@ -9,7 +9,7 @@
  * The useGeneration hook auto-generates mesh when parameters change.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { ParameterPanel } from '@/features/bin-designer/components/ParameterPanel';
 import { MobileParameterTabs } from '@/features/bin-designer/components/MobileParameterTabs';
 import { PreviewCanvas } from '@/features/bin-designer/components/PreviewCanvas';
@@ -26,6 +26,7 @@ import { fetchDesignerShare } from '@/features/bin-designer/hooks/useDesignerSha
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useResponsive } from '@/shared/hooks/useResponsive';
+import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 import type { SaveStatus } from '@/features/bin-designer/types';
 
@@ -98,11 +99,38 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [cartDialogOpen, setCartDialogOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const cartItemCount = useCartStore((s) => s.items.length);
   const addToCart = useCartStore((s) => s.addToCart);
+  const addToast = useToastStore((s) => s.addToast);
+
+  // Close mobile menu on outside click
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [mobileMenuOpen]);
+
+  const handleAddToCart = useCallback(() => {
+    addToCart({
+      id: currentDesignId ?? `unsaved-${Date.now()}`,
+      name: designName,
+      params,
+      thumbnail: null,
+    });
+    addToast({ message: `"${designName}" added to cart`, type: 'success', duration: 2500 });
+    setMobileMenuOpen(false);
+  }, [addToCart, addToast, currentDesignId, designName, params]);
 
   // Handle ?share= URL parameter on mount
   const shareHandled = useRef(false);
+  const [shareLoading, setShareLoading] = useState(false);
   useEffect(() => {
     if (shareHandled.current) return;
     shareHandled.current = true;
@@ -116,13 +144,18 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
     url.searchParams.delete('share');
     window.history.replaceState({}, '', url.pathname + url.search);
 
-    // Load shared design
+    // Load shared design with loading indicator
+    setShareLoading(true);
     void fetchDesignerShare(shareId).then((result) => {
       if (isOk(result)) {
         setParams(migrateParams(result.value));
+        addToast({ message: 'Shared design loaded', type: 'success', duration: 3000 });
+      } else {
+        addToast({ message: 'Failed to load shared design', type: 'error', duration: 5000 });
       }
+      setShareLoading(false);
     });
-  }, [setParams]);
+  }, [setParams, addToast]);
 
   return (
     <div className="flex h-screen flex-col bg-surface">
@@ -193,12 +226,7 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
           </button>
           {/* Add to Cart button */}
           <button
-            onClick={() => addToCart({
-              id: currentDesignId ?? `unsaved-${Date.now()}`,
-              name: designName,
-              params,
-              thumbnail: null,
-            })}
+            onClick={handleAddToCart}
             className="hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content sm:flex"
             aria-label="Add to export cart"
           >
@@ -234,8 +262,95 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
             </svg>
             Export
           </button>
+
+          {/* Mobile overflow menu (visible only on small screens) */}
+          <div className="relative sm:hidden" ref={mobileMenuRef}>
+            <button
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="flex h-9 w-9 items-center justify-center rounded-md text-content-secondary hover:bg-surface-hover hover:text-content"
+              aria-label="More actions"
+              aria-expanded={mobileMenuOpen}
+              aria-haspopup="menu"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01" />
+              </svg>
+            </button>
+            {mobileMenuOpen && (
+              <div
+                className="absolute right-0 top-full z-40 mt-1 w-48 rounded-lg border border-stroke-subtle bg-surface-elevated py-1 shadow-xl"
+                role="menu"
+                aria-label="Actions"
+              >
+                <button
+                  onClick={() => { setDesignListOpen(true); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
+                  role="menuitem"
+                >
+                  <svg className="h-4 w-4 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                  My Designs
+                </button>
+                <button
+                  onClick={() => { setShareDialogOpen(true); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
+                  role="menuitem"
+                >
+                  <svg className="h-4 w-4 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                  Share
+                </button>
+                <button
+                  onClick={() => { navigateToPlaceInLayout(params.width, params.depth, params.height, designName); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
+                  role="menuitem"
+                >
+                  <svg className="h-4 w-4 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  </svg>
+                  Use in Layout
+                </button>
+                <div className="my-1 border-t border-stroke-subtle" />
+                <button
+                  onClick={handleAddToCart}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
+                  role="menuitem"
+                >
+                  <svg className="h-4 w-4 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add to Cart
+                </button>
+                {cartItemCount > 0 && (
+                  <button
+                    onClick={() => { setCartDialogOpen(true); setMobileMenuOpen(false); }}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
+                    role="menuitem"
+                  >
+                    <svg className="h-4 w-4 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    View Cart ({cartItemCount})
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </header>
+
+      {/* Share loading banner */}
+      {shareLoading && (
+        <div className="flex items-center justify-center gap-2 bg-accent-muted px-3 py-1.5 text-xs font-medium text-accent">
+          <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Loading shared design…
+        </div>
+      )}
 
       {/* Main content - responsive layout */}
       {isDesktop ? (

@@ -149,7 +149,17 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         {/* Design list */}
         <div className="max-h-[50vh] overflow-y-auto px-5 py-3">
           {loading ? (
-            <div className="py-8 text-center text-sm text-content-secondary">Loading designs…</div>
+            <div className="space-y-2 py-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex animate-pulse items-center gap-3 rounded-lg border border-stroke-subtle px-3 py-2.5">
+                  <div className="h-10 w-10 flex-shrink-0 rounded-md bg-surface-elevated" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3.5 w-24 rounded bg-surface-elevated" />
+                    <div className="h-3 w-16 rounded bg-surface-elevated" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : designs.length === 0 ? (
             <div className="py-8 text-center">
               <p className="text-sm text-content-secondary">No saved designs yet</p>
@@ -206,8 +216,8 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                     </p>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  {/* Actions — always visible on touch, hover/focus on desktop */}
+                  <div className="flex items-center gap-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                     {design.id !== currentDesignId && (
                       <button
                         onClick={() => handleLoad(design)}

@@ -42,7 +42,7 @@ describe('CartDialog', () => {
 
   it('shows empty state when no items', () => {
     render(<CartDialog open={true} onClose={onClose} />);
-    expect(screen.getByText(/no designs in cart/i)).toBeInTheDocument();
+    expect(screen.getByText(/cart is empty/i)).toBeInTheDocument();
   });
 
   it('shows item count badge', () => {

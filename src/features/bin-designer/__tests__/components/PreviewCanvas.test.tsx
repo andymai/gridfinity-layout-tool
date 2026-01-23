@@ -135,7 +135,7 @@ describe('PreviewCanvas', () => {
     render(<PreviewCanvas />);
 
     expect(screen.getByTestId('r3f-canvas')).toBeInTheDocument();
-    expect(screen.getByText('Updating...')).toBeInTheDocument();
+    expect(screen.getByText('Updating…')).toBeInTheDocument();
   });
 
   it('does not show updating overlay when generation is complete', () => {
