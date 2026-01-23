@@ -21,6 +21,7 @@ import { useCartStore } from '@/features/bin-designer/store/cart';
 import { navigateToPlaceInLayout } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useAutoSave } from '@/features/bin-designer/hooks/useAutoSave';
+import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
 import { fetchDesignerShare } from '@/features/bin-designer/hooks/useDesignerSharing';
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
@@ -76,6 +77,9 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
 
   // Auto-save params to IndexedDB (debounced 1s)
   useAutoSave();
+
+  // Sync URL ↔ store (deep linking, back/forward navigation)
+  useDesignerUrlSync();
 
   const { isDesktop, isMobile } = useResponsive();
   const saveStatus = useDesignerStore((s) => s.saveStatus);

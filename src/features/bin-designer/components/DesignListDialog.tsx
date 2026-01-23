@@ -10,6 +10,7 @@ import { isOk } from '@/core/result';
 import { listDesigns, deleteDesign } from '@/core/storage/DesignerStorage';
 import { removeRegistryEntry } from '../store/customBinRegistry';
 import { useDesignerStore } from '../store';
+import { useDesignerRouting } from '../hooks/useDesignerRouting';
 import type { SavedDesign } from '../types';
 
 interface DesignListDialogProps {
@@ -33,6 +34,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const loadDesign = useDesignerStore((s) => s.loadDesign);
   const newDesign = useDesignerStore((s) => s.newDesign);
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
+  const { navigateToDesign, syncUrlToDesign } = useDesignerRouting();
 
   const refreshDesigns = useCallback(async () => {
     setLoading(true);
@@ -52,15 +54,17 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const handleLoad = useCallback(
     (design: SavedDesign) => {
       loadDesign(design);
+      navigateToDesign(design.id);
       onClose();
     },
-    [loadDesign, onClose]
+    [loadDesign, navigateToDesign, onClose]
   );
 
   const handleNewDesign = useCallback(() => {
     newDesign();
+    syncUrlToDesign(null);
     onClose();
-  }, [newDesign, onClose]);
+  }, [newDesign, syncUrlToDesign, onClose]);
 
   const handleDelete = useCallback(
     async (id: string) => {
