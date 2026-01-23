@@ -33,7 +33,12 @@ interface DesignerSharePayload {
   readonly params: BinParams;
 }
 
-/** Create a designer share by calling the POST /api/share endpoint */
+/**
+ * Create a shared designer payload and register it via the backend.
+ *
+ * @param params - Designer configuration to store in the share payload
+ * @returns The share metadata (`id`, `url`, `deleteToken`) on success; otherwise a `DesignerShareError` with `code` and `message`.
+ */
 export async function createDesignerShare(
   params: BinParams
 ): Promise<Result<DesignerShareResponse, DesignerShareError>> {
@@ -74,7 +79,17 @@ export async function createDesignerShare(
   }
 }
 
-/** Fetch a designer share by ID */
+/**
+ * Retrieve the designer's bin parameters stored under a share ID.
+ *
+ * @param id - The share identifier to retrieve
+ * @returns `ok` with the retrieved `BinParams` on success; `err` with a `DesignerShareError` on failure.
+ * Error codes returned can include:
+ * - `NOT_FOUND`: no share found for the given id
+ * - `WRONG_TYPE`: the share exists but is not a designer payload
+ * - `INVALID_DATA`: the share payload is missing required parameters
+ * - `NETWORK_ERROR`: a network or fetch failure occurred
+ */
 export async function fetchDesignerShare(
   id: string
 ): Promise<Result<BinParams, DesignerShareError>> {
@@ -114,7 +129,17 @@ export async function fetchDesignerShare(
   }
 }
 
-/** Hook for designer sharing UI state */
+/**
+ * Manage designer-sharing state and actions for creating and retrieving shared bin configurations.
+ *
+ * @returns An object with:
+ *  - `status` — current UI state: 'idle' | 'sharing' | 'loading' | 'success' | 'error'.
+ *  - `shareUrl` — the created share URL, or `null` if none.
+ *  - `error` — a human-readable error message, or `null` if none.
+ *  - `share` — async function that accepts `BinParams`, creates a share, updates state, and sets `shareUrl` on success.
+ *  - `loadShared` — async function that accepts a share `id`, loads and validates shared `BinParams`, updates state, and returns the params on success or `null` on failure.
+ *  - `reset` — function that resets state to the initial values.
+ */
 export function useDesignerSharing() {
   const [status, setStatus] = useState<ShareStatus>('idle');
   const [shareUrl, setShareUrl] = useState<string | null>(null);

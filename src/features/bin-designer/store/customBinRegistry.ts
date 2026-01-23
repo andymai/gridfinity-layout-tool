@@ -26,7 +26,9 @@ export interface CustomBinRef {
 }
 
 /**
- * Load the custom bin registry from localStorage.
+ * Retrieve the saved custom bin registry from localStorage.
+ *
+ * @returns The array of saved `CustomBinRef` entries; returns an empty array if no registry is stored, the stored value is not a valid array, or reading/parsing fails.
  */
 export function loadRegistry(): CustomBinRef[] {
   try {
@@ -41,7 +43,11 @@ export function loadRegistry(): CustomBinRef[] {
 }
 
 /**
- * Save the registry to localStorage.
+ * Persist the provided registry array to localStorage, replacing any previously stored registry.
+ *
+ * This operation swallows storage errors (e.g., quota exceeded or unavailable storage) and does not throw.
+ *
+ * @param refs - The list of `CustomBinRef` objects to store as the full registry
  */
 function saveRegistry(refs: CustomBinRef[]): void {
   try {
@@ -52,7 +58,9 @@ function saveRegistry(refs: CustomBinRef[]): void {
 }
 
 /**
- * Add or update a design in the registry.
+ * Inserts a custom bin reference into the local registry or replaces an existing entry with the same `id`.
+ *
+ * @param ref - The CustomBinRef to add or update in the registry
  */
 export function upsertRegistryEntry(ref: CustomBinRef): void {
   const refs = loadRegistry();
@@ -66,7 +74,11 @@ export function upsertRegistryEntry(ref: CustomBinRef): void {
 }
 
 /**
- * Remove a design from the registry by ID.
+ * Removes the registry entry with the given id.
+ *
+ * If no entry matches `id`, the registry is unchanged.
+ *
+ * @param id - The identifier of the design to remove
  */
 export function removeRegistryEntry(id: string): void {
   const refs = loadRegistry().filter((r) => r.id !== id);
@@ -74,8 +86,9 @@ export function removeRegistryEntry(id: string): void {
 }
 
 /**
- * Rebuild the entire registry from a list of designs.
- * Used during initialization or sync.
+ * Replace the stored custom bin registry with the provided list of references.
+ *
+ * @param refs - Array of CustomBinRef objects to persist as the new registry
  */
 export function rebuildRegistry(refs: CustomBinRef[]): void {
   saveRegistry(refs);

@@ -60,6 +60,13 @@ const USER_PRESET_ICON = (
   </svg>
 );
 
+/**
+ * Renders a preset selector UI that lets the user apply built-in presets, manage user-created presets, and save the current settings as a new preset.
+ *
+ * Applying a preset updates the shared designer parameters. Saving or deleting a user preset persists the change to storage and refreshes the in-memory list. The component also provides a save form for entering a preset name and optional description and enforces the maximum user preset count.
+ *
+ * @returns The component's JSX element.
+ */
 export function PresetSelector() {
   const setParams = useDesignerStore((s) => s.setParams);
   const params = useDesignerStore((s) => s.params);

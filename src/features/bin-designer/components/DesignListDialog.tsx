@@ -17,6 +17,13 @@ interface DesignListDialogProps {
   onClose: () => void;
 }
 
+/**
+ * Renders a modal dialog listing saved designs and providing load, rename, delete, and create actions.
+ *
+ * @param open - Whether the dialog is visible
+ * @param onClose - Callback invoked to close the dialog
+ * @returns The dialog's JSX element when open, otherwise `null`
+ */
 export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -227,6 +234,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   );
 }
 
+/**
+ * Format an ISO date string into a human-friendly relative label.
+ *
+ * @param isoString - An ISO 8601 timestamp or date string to format
+ * @returns `Just now`, `Xm ago`, `Xh ago`, `Xd ago` for recent times, or the locale-formatted date for older timestamps
+ */
 function formatRelativeDate(isoString: string): string {
   const date = new Date(isoString);
   const now = new Date();

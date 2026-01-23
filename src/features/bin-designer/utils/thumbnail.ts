@@ -10,19 +10,30 @@ const THUMBNAIL_SIZE = 96;
 /** Module-level ref to the preview canvas element, set by PreviewCanvas */
 let previewCanvasEl: HTMLCanvasElement | null = null;
 
-/** Register the preview canvas element (called from PreviewCanvas onCreated) */
+/**
+ * Register the provided canvas as the module-level preview canvas used for thumbnail generation.
+ *
+ * @param canvas - The HTMLCanvasElement to use as the preview source when capturing thumbnails
+ */
 export function setPreviewCanvas(canvas: HTMLCanvasElement): void {
   previewCanvasEl = canvas;
 }
 
-/** Clear the preview canvas ref (called on unmount) */
+/**
+ * Clear the stored preview canvas reference.
+ *
+ * After calling this, no preview canvas is registered and thumbnail capture will treat the preview as unavailable.
+ */
 export function clearPreviewCanvas(): void {
   previewCanvasEl = null;
 }
 
 /**
- * Capture a thumbnail from the current 3D preview.
- * Returns a small JPEG data URL, or null if the canvas isn't available.
+ * Capture a centered square thumbnail of the current 3D preview canvas.
+ *
+ * Produces a JPEG image scaled to THUMBNAIL_SIZE × THUMBNAIL_SIZE by center-cropping the preview canvas and exporting it at quality 0.7.
+ *
+ * @returns A JPEG data URL for the generated thumbnail, or `null` if the preview canvas or 2D context is unavailable or if an error occurs (e.g., canvas is tainted).
  */
 export function captureThumbnail(): string | null {
   if (!previewCanvasEl) return null;

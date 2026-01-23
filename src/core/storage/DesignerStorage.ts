@@ -148,7 +148,12 @@ export function closeDesignerDb(): void {
 }
 
 /**
- * Update the params (and optionally thumbnail) of an existing design (for auto-save).
+ * Update an existing design's bin parameters and optionally its thumbnail.
+ *
+ * If `thumbnail` is `undefined` the design's thumbnail is left unchanged; if `null` the thumbnail is cleared.
+ *
+ * @param thumbnail - The new thumbnail data, `null` to remove it, or `undefined` to keep the current thumbnail
+ * @returns A `Result` with the updated `SavedDesign` on success, or a `StorageError` on failure
  */
 export async function updateDesignParams(
   id: string,

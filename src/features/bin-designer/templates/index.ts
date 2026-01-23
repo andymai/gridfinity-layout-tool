@@ -17,19 +17,31 @@ export const ALL_TEMPLATES: readonly InsertTemplate[] = [
   ...TOOLS_TEMPLATES,
 ] as const;
 
-/** Get templates filtered by category */
+/**
+ * Returns templates that belong to the specified category.
+ *
+ * @param category - The template category to filter by
+ * @returns A readonly array of templates whose category equals `category`
+ */
 export function getTemplatesByCategory(category: TemplateCategory): readonly InsertTemplate[] {
   return ALL_TEMPLATES.filter((t) => t.category === category);
 }
 
-/** Get a single template by ID */
+/**
+ * Retrieve the template matching the given id.
+ *
+ * @param id - The template's unique identifier
+ * @returns The InsertTemplate with the matching id, or `undefined` if no template has that id
+ */
 export function getTemplateById(id: string): InsertTemplate | undefined {
   return ALL_TEMPLATES.find((t) => t.id === id);
 }
 
 /**
- * Search templates by name or description (case-insensitive).
- * Returns all matches across all categories.
+ * Find templates whose name, description, or defaults.label contains the query string (case-insensitive).
+ *
+ * @param query - The substring to search for; if empty or only whitespace, all templates are returned.
+ * @returns A readonly array of templates whose `name`, `description`, or `defaults.label` includes `query` (case-insensitive).
  */
 export function searchTemplates(query: string): readonly InsertTemplate[] {
   if (!query.trim()) return ALL_TEMPLATES;

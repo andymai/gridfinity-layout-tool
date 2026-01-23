@@ -49,12 +49,15 @@ interface ManifestEntry {
 }
 
 /**
- * Generate a ZIP archive containing STL files for all cart items.
+ * Generates a ZIP archive containing STL files for the provided cart items and a manifest.
+ *
+ * Processes items sequentially using a single generation bridge, building binary STL buffers for successful items, collecting per-item metadata into a manifest, and packaging everything into a ZIP.
  *
  * @param items - Cart items to export
- * @param onProgress - Optional progress callback
- * @param signal - Optional AbortSignal for cancellation
- * @returns ZIP blob with manifest
+ * @param onProgress - Optional callback invoked with progress updates during generation and packaging
+ * @param signal - Optional AbortSignal to cancel the export; cancellation causes the function to throw
+ * @returns An object containing the ZIP `Blob`, the archive size in bytes, the number of manifested files, and a list of failed items with error messages
+ * @throws If `items` is empty or if the operation is cancelled via `signal`
  */
 export async function batchExport(
   items: readonly CartItem[],

@@ -32,6 +32,12 @@ interface DesignerPageProps {
   onNavigateBack: () => void;
 }
 
+/**
+ * Render a compact status label that reflects the current save state.
+ *
+ * @param status - The current save state; one of `'idle'`, `'saving'`, `'saved'`, or `'error'`.
+ * @returns A small text <span> showing `"Saving…"`, `"Saved"`, or `"Save failed"` depending on `status`, or `null` when `status` is `'idle'`.
+ */
 function SaveStatusIndicator({ status }: { status: SaveStatus }) {
   if (status === 'idle') return null;
 
@@ -54,6 +60,16 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
   );
 }
 
+/**
+ * Designer page for creating, previewing, sharing, and exporting bin designs.
+ *
+ * Renders a responsive layout (desktop: side panel + preview; tablet/mobile: stacked preview + tabbed controls)
+ * and the header actions and dialogs required to edit parameters, auto-generate meshes, autosave, share/load designs,
+ * add designs to an export cart, and open the export flow.
+ *
+ * @param onNavigateBack - Callback invoked when the user requests navigation back to the layout planner.
+ * @returns The rendered Designer page element.
+ */
 export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
   // Initialize generation bridge - auto-generates mesh when params change
   useGeneration();

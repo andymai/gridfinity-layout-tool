@@ -20,7 +20,12 @@ import {
 import { getStyleConstraints } from '@/features/bin-designer/utils/styleConstraints';
 import { generateInserts } from './insertGenerator';
 
-/** Converts grid units to mm (width/depth) */
+/**
+ * Convert horizontal grid units to millimeters.
+ *
+ * @param units - Number of grid units (horizontal units used for width/depth)
+ * @returns The length in millimeters corresponding to `units`
+ */
 function gridToMm(units: number): number {
   return units * GRIDFINITY.GRID_SIZE;
 }

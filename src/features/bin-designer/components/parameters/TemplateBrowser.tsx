@@ -18,14 +18,26 @@ const CATEGORY_LABELS: Record<TemplateCategory, string> = {
   tools: 'Tools',
 };
 
-/** Generate a unique ID for new inserts */
+/**
+ * Create a unique identifier string for a new Insert.
+ *
+ * @returns A unique identifier string (prefixed with `ins-`) that includes a timestamp and a short random suffix.
+ */
 function generateInsertId(): string {
   return `ins-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 /**
- * Find the next available position for a new insert.
- * Places inserts in a grid pattern, offsetting to avoid overlap.
+ * Compute the next top-left position for a new insert within the layout grid.
+ *
+ * Starts at (2, 2) when there are no existing inserts. Otherwise places the new
+ * insert to the right of the last insert with a 2-unit gap and wraps to the
+ * next row (reset x to 2 and advance y by the last insert's depth plus gap)
+ * when the computed x plus the new insert's width would exceed 60 units.
+ *
+ * @param existingInserts - Array of existing inserts in insertion order
+ * @param width - Width of the new insert in the same units used by inserts
+ * @returns The `{ x, y }` coordinates for the new insert's top-left position
  */
 function getNextPosition(
   existingInserts: readonly Insert[],
@@ -51,6 +63,13 @@ function getNextPosition(
   return { x, y };
 }
 
+/**
+ * Render the Templates browser UI that lets users browse, search, and filter insert templates and add them to the designer.
+ *
+ * The component shows a searchable list of templates with category tabs and a grid of template cards. When a template is selected, it is inserted into the designer store at the next available grid position.
+ *
+ * @returns The rendered Templates browser UI as a React element.
+ */
 export function TemplateBrowser() {
   const [activeCategory, setActiveCategory] = useState<TemplateCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -161,6 +180,14 @@ export function TemplateBrowser() {
   );
 }
 
+/**
+ * Renders a category tab button used to select a template category.
+ *
+ * @param label - Visible text shown on the tab
+ * @param isActive - Whether the tab is currently selected; controls ARIA state and styling
+ * @param onClick - Callback invoked when the tab is activated
+ * @returns The tab button element with proper ARIA attributes and active/inactive styling
+ */
 function CategoryTab({
   label,
   isActive,
@@ -186,6 +213,16 @@ function CategoryTab({
   );
 }
 
+/**
+ * Renders an interactive card for a template that can be added to the bin.
+ *
+ * The card displays the template name and its default dimensions, exposes the template description as a title,
+ * and invokes `onAdd` when activated (clicked).
+ *
+ * @param template - The template data to display (name, description, and `defaults` for dimensions).
+ * @param onAdd - Callback invoked when the card is activated to add the template.
+ * @returns The rendered template card element.
+ */
 function TemplateCard({
   template,
   onAdd,

@@ -13,8 +13,12 @@ import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 
 /**
- * Navigate to the Layout Planner with a bin to place.
- * Called from the Designer UI.
+ * Open the Layout Planner with a preselected bin described by dimensions and an optional name.
+ *
+ * @param width - The bin width
+ * @param depth - The bin depth
+ * @param height - The bin height
+ * @param name - Optional display name for the bin
  */
 export function navigateToPlaceInLayout(
   width: number,
@@ -32,10 +36,9 @@ export function navigateToPlaceInLayout(
 }
 
 /**
- * Hook that checks for `?placeBin=` param on mount and places
- * the bin in the current layout at the first available position.
+ * Detects a ?placeBin=WxDxH query on mount, places that bin into the current layout, and removes the query from the URL.
  *
- * Should be called from the Layout Planner (not the Designer).
+ * If a valid `placeBin` value is present, this hook removes `placeBin` (and optional `binName`) from the URL immediately, parses the dimensions (width×depth×height) as numbers greater than zero, determines a target layer (the active layer or the first layout layer), and attempts to add the bin at position (0,0). If placement on the target layer succeeds the new bin is selected and a success toast is shown; if placement fails the hook attempts to add the bin to the staging layer (`'__staging__'`), selects it if successful, and shows an informational toast. The hook performs no action for missing or invalid `placeBin` values.
  */
 export function usePlaceBinFromURL(): void {
   const handled = useRef(false);

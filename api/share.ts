@@ -12,6 +12,15 @@ import {
   type ShareData,
 } from './lib/shared.js';
 
+/**
+ * HTTP POST handler that creates a share (designer or layout) and stores its data in Vercel Blob.
+ *
+ * Validates request method and rate limits the client; validates the provided `layoutId`, permission, and
+ * payload (designer params or layout structure); for layout shares runs content filtering; generates a
+ * delete token (stored as a hash), persists the share metadata and payload, and returns the share ID,
+ * public URL, delete token, and permission on success. Responds with appropriate 4xx errors for validation,
+ * rate limiting, or content blocking, and 500 on unexpected failures.
+ */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST for creating shares
   if (req.method !== 'POST') {

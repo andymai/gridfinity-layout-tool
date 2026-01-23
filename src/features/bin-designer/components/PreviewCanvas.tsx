@@ -25,6 +25,17 @@ const CAMERA_POSITIONS: Record<CameraPreset, [number, number, number]> = {
 
 const DEFAULT_CAMERA: [number, number, number] = CAMERA_POSITIONS.isometric;
 
+/**
+ * Render the 3D preview canvas for the bin designer, including scene, controls, UI overlays, and input handlers.
+ *
+ * The component:
+ * - Renders lighting, the bin mesh, a subtle floor grid, and OrbitControls configured for a Z-up workflow.
+ * - Exposes camera presets and a reset view, a wireframe toggle, and undo/redo integration via keyboard shortcuts.
+ * - Registers the WebGL canvas for thumbnail capture on creation and clears that registration on unmount.
+ * - Shows a skeleton placeholder when no mesh is available or WASM is not ready, and a translucent "Updating..." overlay while generation is in progress.
+ *
+ * @returns The React element containing the preview canvas and its associated controls and overlays.
+ */
 export function PreviewCanvas() {
   const controlsRef = useRef<OrbitControlsType>(null);
   const [wireframe, setWireframe] = useState(false);
@@ -156,6 +167,14 @@ export function PreviewCanvas() {
 
 const TOUCH_HINT_KEY = 'gridfinity-designer-touch-hint-dismissed';
 
+/**
+ * Displays a one-time, dismissible touch-gesture hint bar for touch-enabled, non-desktop devices.
+ *
+ * The hint appears on first visit when a touch device is detected and no prior dismissal is recorded.
+ * Dismissing the hint hides it and persists the dismissal in localStorage so it does not reappear.
+ *
+ * @returns A React element rendering the touch hint bar, or `null` when the hint is not visible.
+ */
 function TouchHint() {
   const { isTouchDevice, isDesktop } = useResponsive();
   const [visible, setVisible] = useState(false);
