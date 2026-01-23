@@ -145,7 +145,7 @@ export default function App() {
 
   // Bin Designer route detection (behind feature flag)
   const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
-  const { isDesignerRoute, navigateToPlanner } = useDesignerRouting();
+  const { isDesignerRoute } = useDesignerRouting();
 
   // Handle ?placeBin= param from Designer's "Use in Layout" button
   usePlaceBinFromURL();
@@ -291,7 +291,7 @@ export default function App() {
   if (isDesignerRoute && isDesignerEnabled) {
     return (
       <Suspense fallback={<LoadingFallback label="Loading designer" />}>
-        <DesignerPage onNavigateBack={navigateToPlanner} />
+        <DesignerPage />
       </Suspense>
     );
   }
