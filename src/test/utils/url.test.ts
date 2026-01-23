@@ -3,7 +3,6 @@ import {
   parseLayoutFromURL,
   setLayoutURL,
   clearLayoutURL,
-  hasLegacyShareHash,
   getLayoutIdFromHistoryState,
   getCanonicalRedirect,
 } from '@/utils/url';
@@ -169,23 +168,6 @@ describe('url utilities', () => {
     });
   });
 
-  describe('hasLegacyShareHash', () => {
-    it('returns false when no hash', () => {
-      window.location.hash = '';
-      expect(hasLegacyShareHash()).toBe(false);
-    });
-
-    it('returns true for share hash', () => {
-      window.location.hash = '#share=eyJuYW1lIjoiVGVzdCJ9';
-      expect(hasLegacyShareHash()).toBe(true);
-    });
-
-    it('returns false for other hashes', () => {
-      window.location.hash = '#local/abc';
-      expect(hasLegacyShareHash()).toBe(false);
-    });
-  });
-
   describe('getLayoutIdFromHistoryState', () => {
     it('returns null for null state', () => {
       expect(getLayoutIdFromHistoryState(null)).toBeNull();
@@ -234,6 +216,5 @@ describe('url edge cases', () => {
 
     // Should return null because share takes precedence
     expect(parseLayoutFromURL()).toBeNull();
-    expect(hasLegacyShareHash()).toBe(true);
   });
 });
