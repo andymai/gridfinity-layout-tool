@@ -128,10 +128,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 /**
- * Get base URL from request headers.
+ * Get base URL from environment (not request headers, to prevent open redirects).
  */
-function getBaseUrl(req: VercelRequest): string {
-  const protocol = req.headers['x-forwarded-proto'] || 'https';
-  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:3000';
-  return `${protocol}://${host}`;
+function getBaseUrl(_req: VercelRequest): string {
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'https://localhost:3000';
 }

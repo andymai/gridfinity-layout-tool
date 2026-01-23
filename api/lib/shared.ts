@@ -43,6 +43,20 @@ export async function hashToken(token: string): Promise<string> {
 }
 
 /**
+ * Constant-time comparison for hash strings.
+ * Prevents timing attacks by always comparing all characters
+ * regardless of where the first difference occurs.
+ */
+export function timingSafeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
+/**
  * Generate a 32-character hex delete token (128-bit entropy).
  */
 export function generateDeleteToken(): string {

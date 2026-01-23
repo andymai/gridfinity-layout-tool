@@ -44,6 +44,10 @@ export const RESERVED_PROPERTY_KEYS = [
   'label',
   'notes',
   'customProperties',
+  // Prevent prototype pollution
+  '__proto__',
+  'constructor',
+  'prototype',
 ] as const;
 
 /**

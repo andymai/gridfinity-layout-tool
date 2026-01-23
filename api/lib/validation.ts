@@ -37,6 +37,10 @@ const RESERVED_PROPERTY_KEYS = [
   'label',
   'notes',
   'customProperties',
+  // Prevent prototype pollution
+  '__proto__',
+  'constructor',
+  'prototype',
 ];
 
 export type ValidExpiration = (typeof SHARE_CONSTRAINTS.VALID_EXPIRATIONS)[number];

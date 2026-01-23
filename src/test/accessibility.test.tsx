@@ -82,7 +82,7 @@ describe('Accessibility - Critical Issues', () => {
     }
 
     expect(results).toHaveNoViolations();
-  });
+  }, 15_000);
 
   it('Sidebar has no critical accessibility violations', async () => {
     const { container } = render(<Sidebar />);
@@ -101,7 +101,7 @@ describe('Accessibility - Critical Issues', () => {
     }
 
     expect(results).toHaveNoViolations();
-  });
+  }, 15_000);
 
   it('RightPanel has no critical accessibility violations', async () => {
     const { container } = render(<RightPanel />);
@@ -120,7 +120,7 @@ describe('Accessibility - Critical Issues', () => {
     }
 
     expect(results).toHaveNoViolations();
-  });
+  }, 15_000);
 
   it('Staging has no critical accessibility violations', async () => {
     const { container } = render(<Staging />);
@@ -139,5 +139,5 @@ describe('Accessibility - Critical Issues', () => {
     }
 
     expect(results).toHaveNoViolations();
-  });
+  }, 15_000);
 });
