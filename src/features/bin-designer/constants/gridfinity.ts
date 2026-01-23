@@ -44,9 +44,20 @@ export const GRIDFINITY = {
   WALL_THICKNESS: 0.95, // mm (d_wall from spec: outer_fillet - inner_fillet)
   BOTTOM_THICKNESS: 0.7, // mm floor within base (not used in height calc)
 
-  // Fillets (used for future BREP generation, not Alpha boxes)
+  // Base socket (per-cell interface that slides onto baseplate grid)
+  SOCKET_HEIGHT: 5, // mm total socket depth below bin floor
+  SOCKET_SMALL_TAPER: 0.8, // mm bottom 45° chamfer (matches BASE_BOTTOM_FILLET)
+  SOCKET_BIG_TAPER: 2.4, // mm upper 45° chamfer
+  // Derived: SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SMALL_TAPER - BIG_TAPER = 1.8mm
+  // Derived: SOCKET_TAPER_WIDTH = SMALL_TAPER + BIG_TAPER = 3.2mm (inset from outer edge)
+
+  // Corner radius for socket profile
+  SOCKET_CORNER_RADIUS: 4, // mm (r_base from spec)
+
+  // Fillets (used for BREP generation)
   OUTER_FILLET: 3.75, // mm on outer vertical edges (r_fo1 = 7.5/2)
   INNER_FILLET: 2.8, // mm on inner vertical edges (r_f2)
+  TOP_FILLET: 0.6, // mm fillet at stacking lip junction
 } as const;
 
 /** Wall thickness per bin style (mm) */
@@ -54,8 +65,6 @@ export const STYLE_WALL_THICKNESS: Record<string, number> = {
   standard: 0.95,
   lite: 0.65,
   solid: 1.6,
-  vase: 0.4,
-  rugged: 2.0,
 } as const;
 
 /** Dimension constraints for bin parameters */

@@ -55,6 +55,8 @@
     "posthog-js": "^1.334.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "replicad": "^0.20.5",
+    "replicad-opencascadejs": "^0.20.2",
     "three": "^0.182.0",
     "zustand": "^5.0.9"
   },

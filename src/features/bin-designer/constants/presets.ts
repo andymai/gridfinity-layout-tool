@@ -12,7 +12,7 @@ export interface DesignPreset {
   readonly id: string;
   readonly name: string;
   readonly description: string;
-  readonly icon: 'heavy' | 'fast' | 'workshop' | 'vase' | 'divider';
+  readonly icon: 'heavy' | 'fast' | 'workshop' | 'divider';
   readonly overrides: Partial<BinParams>;
 }
 
@@ -26,10 +26,10 @@ export const BUILT_IN_PRESETS: readonly DesignPreset[] = [
   {
     id: 'heavy-duty',
     name: 'Heavy Duty',
-    description: 'Rugged bin with magnet base and thick walls. Ideal for heavy tools.',
+    description: 'Solid bin with magnet base and thick walls. Ideal for heavy tools.',
     icon: 'heavy',
     overrides: {
-      style: 'rugged',
+      style: 'solid',
       base: {
         style: 'magnet',
         magnetDiameter: 6,
@@ -78,26 +78,6 @@ export const BUILT_IN_PRESETS: readonly DesignPreset[] = [
       },
       scoop: { enabled: true, radius: 'auto', allRows: false },
       label: { enabled: true, text: '', fontSize: 'auto' },
-    },
-  },
-  {
-    id: 'vase-mode',
-    name: 'Vase Mode',
-    description: 'Single-wall print (vase/spiral mode). Ultra-fast, no interior features.',
-    icon: 'vase',
-    overrides: {
-      style: 'vase',
-      base: {
-        style: 'standard',
-        magnetDiameter: 6,
-        magnetDepth: 2.4,
-        screwDiameter: 3,
-        stackingLip: false,
-      },
-      scoop: { enabled: false, radius: 'auto', allRows: false },
-      dividers: { x: 0, y: 0, thickness: 1.2 },
-      label: { enabled: false, text: '', fontSize: 'auto' },
-      inserts: [],
     },
   },
   {

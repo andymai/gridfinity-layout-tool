@@ -1,9 +1,8 @@
 /**
  * Style constraint logic for the bin designer.
  *
- * Different bin styles disable certain interior features.
- * For example, vase mode (thin single wall) cannot support
- * dividers, scoops, or labels.
+ * Different bin styles may disable certain interior features
+ * or show warnings about structural limitations.
  */
 
 import type { BinStyle } from '../types';
@@ -33,16 +32,6 @@ const STYLE_CONSTRAINTS: Record<BinStyle, StyleConstraints> = {
     hasGussets: false,
   },
   solid: {
-    disabledFeatures: [],
-    warnings: [],
-    hasGussets: true,
-  },
-  vase: {
-    disabledFeatures: ['dividers', 'scoop', 'label', 'walls'],
-    warnings: ['Vase mode: single thin wall with no interior features'],
-    hasGussets: false,
-  },
-  rugged: {
     disabledFeatures: [],
     warnings: [],
     hasGussets: true,

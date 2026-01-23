@@ -13,7 +13,7 @@
 export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'magnet_and_screw' | 'weighted';
 
 /** Bin wall/style variant affecting thickness and reinforcement */
-export type BinStyle = 'standard' | 'lite' | 'solid' | 'vase' | 'rugged';
+export type BinStyle = 'standard' | 'lite' | 'solid';
 
 /** Base configuration for bin attachment */
 export interface BaseConfig {

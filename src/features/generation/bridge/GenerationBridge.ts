@@ -11,6 +11,7 @@ import type {
   WorkerResponse,
   MeshData,
   GenerationStage,
+  ExportFormat,
 } from './types';
 
 /** Debounce delay before sending a generation request (ms) */
@@ -23,6 +24,13 @@ export type ProgressCallback = (stage: GenerationStage, progress: number) => voi
 export interface GenerationResult {
   readonly mesh: MeshData;
   readonly timingMs: number;
+}
+
+/** Result from a successful BREP export */
+export interface ExportResult {
+  readonly data: ArrayBuffer;
+  readonly fileName: string;
+  readonly format: ExportFormat;
 }
 
 /**
@@ -43,6 +51,9 @@ export class GenerationBridge {
   private onProgress: ProgressCallback | null = null;
   private requestCounter = 0;
   private destroyed = false;
+  private pendingExportResolve: ((result: ExportResult) => void) | null = null;
+  private pendingExportReject: ((error: Error) => void) | null = null;
+  private exportRequestId: string | null = null;
 
   /**
    * Initialize the worker. Resolves when the worker signals INIT_READY.
@@ -162,6 +173,14 @@ export class GenerationBridge {
 
     this.cancel();
 
+    // Reject pending export
+    if (this.pendingExportReject) {
+      this.pendingExportReject(new Error('Bridge destroyed'));
+      this.pendingExportResolve = null;
+      this.pendingExportReject = null;
+      this.exportRequestId = null;
+    }
+
     if (this.worker) {
       this.worker.terminate();
       this.worker = null;
@@ -169,6 +188,51 @@ export class GenerationBridge {
 
     this.initPromise = null;
     this.onProgress = null;
+  }
+
+  /**
+   * Export the current (or regenerated) bin solid in the specified format.
+   * Returns a Promise that resolves with the binary file data.
+   *
+   * If the worker has a cached solid from a previous generate() call,
+   * it exports directly. Otherwise, it regenerates the solid first.
+   */
+  async exportBin(
+    params: BinParams,
+    format: ExportFormat,
+    options?: { tolerance?: number; angularTolerance?: number }
+  ): Promise<ExportResult> {
+    if (this.destroyed) {
+      throw new Error('Bridge has been destroyed');
+    }
+
+    // Ensure worker is initialized
+    await this.init();
+
+    // Reject any pending export (only one at a time)
+    if (this.pendingExportReject) {
+      this.pendingExportReject(new Error('Export superseded'));
+      this.pendingExportResolve = null;
+      this.pendingExportReject = null;
+    }
+
+    const requestId = this.nextRequestId();
+    this.exportRequestId = requestId;
+
+    return new Promise<ExportResult>((resolve, reject) => {
+      this.pendingExportResolve = resolve;
+      this.pendingExportReject = reject;
+      this.postMessage({
+        type: 'EXPORT',
+        payload: {
+          params,
+          requestId,
+          format,
+          tolerance: options?.tolerance,
+          angularTolerance: options?.angularTolerance,
+        },
+      });
+    });
   }
 
   /** Whether the bridge has been destroyed */
@@ -221,6 +285,26 @@ export class GenerationBridge {
             const reject = this.pendingReject;
             this.clearPending();
             reject(new Error(response.error));
+          } else if (response.requestId === this.exportRequestId && this.pendingExportReject) {
+            const reject = this.pendingExportReject;
+            this.pendingExportResolve = null;
+            this.pendingExportReject = null;
+            this.exportRequestId = null;
+            reject(new Error(response.error));
+          }
+          break;
+
+        case 'EXPORT_RESULT':
+          if (response.requestId === this.exportRequestId && this.pendingExportResolve) {
+            const resolve = this.pendingExportResolve;
+            this.pendingExportResolve = null;
+            this.pendingExportReject = null;
+            this.exportRequestId = null;
+            resolve({
+              data: response.data,
+              fileName: response.fileName,
+              format: response.format,
+            });
           }
           break;
 

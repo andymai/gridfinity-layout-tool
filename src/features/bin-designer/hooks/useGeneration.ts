@@ -13,7 +13,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useDesignerStore } from '../store';
-import { GenerationBridge } from '@/features/generation/bridge';
+import { GenerationBridge, setActiveBridge } from '@/features/generation/bridge';
 import type { BinParams } from '../types';
 
 /**
@@ -76,6 +76,7 @@ export function useGeneration(): void {
   useEffect(() => {
     const bridge = new GenerationBridge();
     bridgeRef.current = bridge;
+    setActiveBridge(bridge);
 
     setWasmStatus('loading');
 
@@ -95,6 +96,7 @@ export function useGeneration(): void {
       bridge.destroy();
       bridgeRef.current = null;
       initializedRef.current = false;
+      setActiveBridge(null);
     };
   }, [setWasmStatus, runGeneration]);
 

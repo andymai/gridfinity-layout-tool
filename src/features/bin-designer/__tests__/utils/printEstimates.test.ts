@@ -26,22 +26,10 @@ describe('printEstimates', () => {
       expect(tall.gramsFilament).toBeGreaterThan(short.gramsFilament);
     });
 
-    it('vase mode uses less material than standard', () => {
-      const standard = estimatePrint({ ...DEFAULT_BIN_PARAMS, style: 'standard' });
-      const vase = estimatePrint({ ...DEFAULT_BIN_PARAMS, style: 'vase' });
-      expect(vase.volumeMm3).toBeLessThan(standard.volumeMm3);
-    });
-
     it('solid style uses more material (thicker walls)', () => {
       const standard = estimatePrint({ ...DEFAULT_BIN_PARAMS, style: 'standard' });
       const solid = estimatePrint({ ...DEFAULT_BIN_PARAMS, style: 'solid' });
       expect(solid.volumeMm3).toBeGreaterThan(standard.volumeMm3);
-    });
-
-    it('rugged style uses more material (thick walls + gussets)', () => {
-      const standard = estimatePrint({ ...DEFAULT_BIN_PARAMS, style: 'standard' });
-      const rugged = estimatePrint({ ...DEFAULT_BIN_PARAMS, style: 'rugged' });
-      expect(rugged.volumeMm3).toBeGreaterThan(standard.volumeMm3);
     });
 
     it('dividers add volume', () => {
@@ -84,21 +72,6 @@ describe('printEstimates', () => {
       const small = estimatePrint({ ...DEFAULT_BIN_PARAMS, width: 1, depth: 1, height: 1 });
       const large = estimatePrint({ ...DEFAULT_BIN_PARAMS, width: 4, depth: 4, height: 8 });
       expect(large.printTimeMinutes).toBeGreaterThan(small.printTimeMinutes);
-    });
-
-    it('vase mode ignores dividers', () => {
-      const vaseNoDividers = estimatePrint({
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        dividers: { x: 0, y: 0, thickness: 1.2 },
-      });
-      const vaseWithDividers = estimatePrint({
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        dividers: { x: 3, y: 3, thickness: 1.2 },
-      });
-      // Vase ignores dividers, so volumes should be equal
-      expect(vaseWithDividers.volumeMm3).toBe(vaseNoDividers.volumeMm3);
     });
 
     it('volume is reasonable for a 2x2x3 standard bin', () => {

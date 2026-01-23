@@ -1,8 +1,13 @@
 /**
  * Export hook for the bin designer.
  *
- * Manages the STL export lifecycle: generates blob from mesh data,
+ * Manages export lifecycle: generates file from mesh or BREP solid,
  * triggers browser download, and computes live print estimates.
+ *
+ * Formats:
+ * - STL: Binary mesh from tessellated preview (fast, main-thread)
+ * - 3MF: XML container with mesh + metadata (main-thread)
+ * - STEP: Exact BREP geometry via worker (lossless CAD interchange)
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -10,6 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { exportSTL } from '@/features/generation/export/stlExporter';
 import { export3MF } from '@/features/generation/export/threemfExporter';
+import { getActiveBridge } from '@/features/generation/bridge';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import { captureThumbnailPNG } from '@/features/bin-designer/utils/thumbnail';
@@ -17,21 +23,25 @@ import type { FileNameStyle } from '@/features/bin-designer/utils/fileNaming';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 
 /** Supported export formats */
-export type ExportFormat = 'stl' | '3mf';
+export type ExportFormat = 'stl' | '3mf' | 'step';
 
 interface UseExportReturn {
   /** Whether an export is currently being generated */
   readonly isExporting: boolean;
   /** Whether mesh data is available for export */
   readonly canExport: boolean;
+  /** Whether BREP export (STEP) is available */
+  readonly canExportBREP: boolean;
   /** Current print estimates based on params */
   readonly estimates: PrintEstimate;
   /** Preview of the generated file name */
   readonly fileName: string;
-  /** Trigger STL download */
+  /** Trigger STL download (from tessellated mesh, fast) */
   readonly downloadSTL: (nameStyle?: FileNameStyle) => void;
   /** Trigger 3MF download (with thumbnail & print settings) */
   readonly download3MF: (nameStyle?: FileNameStyle) => Promise<void>;
+  /** Trigger STEP download (exact BREP via worker, lossless) */
+  readonly downloadSTEP: () => Promise<void>;
 }
 
 export function useExport(): UseExportReturn {
@@ -48,6 +58,9 @@ export function useExport(): UseExportReturn {
     mesh.vertices !== null &&
     mesh.normals !== null &&
     mesh.error === null;
+
+  // BREP export requires the generation worker to be active
+  const canExportBREP = canExport && getActiveBridge() !== null;
 
   const estimates = useMemo(() => estimatePrint(params), [params]);
 
@@ -126,5 +139,33 @@ export function useExport(): UseExportReturn {
     [canExport, mesh, params, estimates]
   );
 
-  return { isExporting, canExport, estimates, fileName, downloadSTL, download3MF };
+  const downloadSTEP = useCallback(
+    async () => {
+      const bridge = getActiveBridge();
+      if (!bridge) return;
+
+      setIsExporting(true);
+
+      let url: string | null = null;
+      let anchor: HTMLAnchorElement | null = null;
+      try {
+        const result = await bridge.exportBin(params, 'step');
+
+        const blob = new Blob([result.data], { type: 'application/step' });
+        url = URL.createObjectURL(blob);
+        anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = result.fileName;
+        document.body.appendChild(anchor);
+        anchor.click();
+      } finally {
+        if (anchor?.parentNode) anchor.parentNode.removeChild(anchor);
+        if (url) URL.revokeObjectURL(url);
+        setIsExporting(false);
+      }
+    },
+    [params]
+  );
+
+  return { isExporting, canExport, canExportBREP, estimates, fileName, downloadSTL, download3MF, downloadSTEP };
 }
