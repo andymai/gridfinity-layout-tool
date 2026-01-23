@@ -48,7 +48,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
         roughness={0.45}
         metalness={0}
         wireframe={wireframe}
-        side={THREE.FrontSide}
+        side={THREE.DoubleSide}
         emissive={color}
         emissiveIntensity={0.08}
       />

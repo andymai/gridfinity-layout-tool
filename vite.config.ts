@@ -12,6 +12,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  optimizeDeps: {
+    // Exclude WASM module from Vite's dependency pre-bundling
+    exclude: ['replicad-opencascadejs'],
+  },
+  worker: {
+    format: 'es',
+  },
   plugins: [
     react(),
     tailwindcss(),
