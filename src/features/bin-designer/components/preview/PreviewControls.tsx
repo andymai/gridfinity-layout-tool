@@ -33,7 +33,7 @@ export function PreviewControls({
           key={key}
           type="button"
           onClick={() => onCameraPreset(key)}
-          className="rounded bg-white/80 px-2 py-1 text-[10px] font-medium text-gray-700 shadow-sm backdrop-blur hover:bg-white"
+          className="rounded bg-surface-elevated/80 px-2 py-1 text-[10px] font-medium text-content-secondary shadow-sm backdrop-blur hover:bg-surface-elevated hover:text-content"
           title={`${label} view (${shortcut})`}
           aria-label={`${label} camera view`}
         >
@@ -41,13 +41,13 @@ export function PreviewControls({
         </button>
       ))}
 
-      <div className="my-1 h-px bg-gray-300" />
+      <div className="my-1 h-px bg-stroke-subtle" />
 
       {/* Reset view */}
       <button
         type="button"
         onClick={onResetView}
-        className="rounded bg-white/80 px-2 py-1 text-[10px] font-medium text-gray-700 shadow-sm backdrop-blur hover:bg-white"
+        className="rounded bg-surface-elevated/80 px-2 py-1 text-[10px] font-medium text-content-secondary shadow-sm backdrop-blur hover:bg-surface-elevated hover:text-content"
         title="Reset view (R)"
         aria-label="Reset camera view"
       >
@@ -61,7 +61,7 @@ export function PreviewControls({
         className={`rounded px-2 py-1 text-[10px] font-medium shadow-sm backdrop-blur ${
           wireframe
             ? 'bg-accent text-white'
-            : 'bg-white/80 text-gray-700 hover:bg-white'
+            : 'bg-surface-elevated/80 text-content-secondary hover:bg-surface-elevated hover:text-content'
         }`}
         title="Toggle wireframe (W)"
         aria-label="Toggle wireframe mode"

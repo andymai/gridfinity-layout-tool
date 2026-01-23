@@ -184,7 +184,8 @@ export default function App() {
   useCrossTabSync();
 
   // URL-based layout routing (bookmarkable URLs)
-  useLayoutRouting();
+  // Skip URL manipulation when on the designer route (it owns its own URL)
+  useLayoutRouting({ skip: isDesignerRoute });
 
   // PWA update detection and auto-reload
   usePWAUpdate();

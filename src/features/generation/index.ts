@@ -8,3 +8,4 @@ export type {
   MeshData,
   GenerationStage,
 } from './bridge';
+export { exportSTL, buildSTLBuffer, getSTLFileSize } from './export';
