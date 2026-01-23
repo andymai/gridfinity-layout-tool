@@ -8,6 +8,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
+import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { PresenceAvatars } from './Collab';
 import type { SaveStatus } from '@/shared/hooks';
 import type { ShareModalRenderProps } from '@/features/layout-library/components/LayoutManagerModal';
@@ -112,7 +113,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   return (
     <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
       <div className="flex items-center gap-4 min-w-0">
-        <h1 className="text-lg font-semibold text-content">Gridfinity Layout Tool</h1>
+        <ToolSwitcher />
 
         {/* Divider */}
         <div className="w-px h-6 bg-stroke-subtle" />
