@@ -112,7 +112,7 @@ export function SharedWithMeItem({
               text-xs px-1.5 py-0.5 rounded flex-shrink-0
               ${
                 entry.permission === 'edit'
-                  ? 'bg-green-600/20 text-green-400'
+                  ? 'bg-success-muted text-success'
                   : 'bg-surface text-content-secondary'
               }
             `}

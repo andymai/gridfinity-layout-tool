@@ -243,8 +243,8 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
 
       {/* Validation Errors */}
       {errors.length > 0 && (
-        <div className="bg-red-900/30 border border-red-500 rounded-lg p-3 mb-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-red-400 mb-1">
+        <div className="bg-danger-muted border border-danger rounded-lg p-3 mb-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-danger mb-1">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -255,7 +255,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
             </svg>
             Validation Errors
           </div>
-          <ul className="text-sm text-red-300 space-y-1 ml-6">
+          <ul className="text-sm text-danger/80 space-y-1 ml-6">
             {errors.map((error, index) => (
               <li key={index}>• {error}</li>
             ))}
@@ -265,8 +265,8 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
 
       {/* Preview */}
       {preview && (
-        <div className="bg-green-900/30 border border-green-500 rounded-lg p-4 mb-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-green-400 mb-2">
+        <div className="bg-success-muted border border-success rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -277,7 +277,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
             </svg>
             Ready to Import
           </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-green-300">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-success/80">
             <div>Name:</div>
             <div className="font-medium">{preview.name}</div>
             <div>Drawer size:</div>
