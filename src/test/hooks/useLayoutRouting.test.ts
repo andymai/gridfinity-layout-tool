@@ -19,7 +19,6 @@ vi.mock('../../utils/url', () => ({
   clearLayoutURL: vi.fn(),
   getLayoutIdFromHistoryState: vi.fn(),
   getCanonicalRedirect: vi.fn(),
-  hasLegacyShareHash: vi.fn(),
 }));
 
 // Mock validation module
@@ -54,7 +53,6 @@ describe('useLayoutRouting', () => {
 
     // Set up default mocks
     vi.mocked(url.parseLayoutFromURL).mockReturnValue(null);
-    vi.mocked(url.hasLegacyShareHash).mockReturnValue(false);
     vi.mocked(url.getCanonicalRedirect).mockReturnValue(null);
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { memo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import type { Bin } from '@/core/types';
@@ -20,7 +20,7 @@ interface BinMeshProps {
  * Uses world-space lighting for realistic shadows and highlights.
  * Includes rounded corners for polished appearance.
  */
-export function BinMesh({
+export const BinMesh = memo(function BinMesh({
   x,
   y,
   z,
@@ -65,4 +65,4 @@ export function BinMesh({
       />
     </mesh>
   );
-}
+});

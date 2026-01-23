@@ -20,6 +20,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
+  const dragYRef = useRef(0);
 
   // Adaptive dismiss threshold: 15% of viewport height, capped at 80px
   // Smaller screens get smaller thresholds for easier dismissal
@@ -47,7 +48,9 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
 
       const deltaY = e.clientY - dragStartY.current;
       // Only allow dragging down
-      setDragY(Math.max(0, deltaY));
+      const clamped = Math.max(0, deltaY);
+      dragYRef.current = clamped;
+      setDragY(clamped);
     },
     [isDragging]
   );
@@ -57,11 +60,12 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
 
     setIsDragging(false);
     // If dragged more than threshold, close the sheet
-    if (dragY > dismissThreshold) {
+    if (dragYRef.current > dismissThreshold) {
       closeMobilePanel();
     }
+    dragYRef.current = 0;
     setDragY(0);
-  }, [isDragging, dragY, dismissThreshold, closeMobilePanel]);
+  }, [isDragging, dismissThreshold, closeMobilePanel]);
 
   // Close on escape key
   useEffect(() => {

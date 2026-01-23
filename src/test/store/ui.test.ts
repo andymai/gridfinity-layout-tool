@@ -30,6 +30,7 @@ describe('ui store', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   describe('selection', () => {
@@ -630,8 +631,6 @@ describe('ui store', () => {
       // Message should clear after 1 second
       vi.advanceTimersByTime(1000);
       expect(getInteractionState().liveMessage).toBeNull();
-
-      vi.useRealTimers();
     });
   });
 

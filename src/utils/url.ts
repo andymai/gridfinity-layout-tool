@@ -136,10 +136,3 @@ export function getLayoutIdFromHistoryState(state: unknown): string | null {
   }
   return null;
 }
-
-/**
- * Check if the current URL has a legacy URL-encoded share.
- */
-export function hasLegacyShareHash(): boolean {
-  return window.location.hash.startsWith(LEGACY_SHARE_HASH_PREFIX);
-}
