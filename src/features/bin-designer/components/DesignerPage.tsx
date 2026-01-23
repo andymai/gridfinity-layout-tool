@@ -174,7 +174,7 @@ export function DesignerPage(_props: DesignerPageProps) {
   }, [setParams, addToast]);
 
   return (
-    <div className="flex h-screen flex-col bg-surface animate-fade-in">
+    <div className="flex h-screen flex-col bg-surface">
       {/* Header */}
       <header className="h-12 flex items-center justify-between border-b border-stroke-subtle bg-surface-secondary px-3 lg:px-4">
         <div className="flex items-center gap-2 lg:gap-3">
