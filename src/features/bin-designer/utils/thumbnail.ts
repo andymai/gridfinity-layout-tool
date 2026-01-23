@@ -28,6 +28,55 @@ export function clearPreviewCanvas(): void {
   previewCanvasEl = null;
 }
 
+/** Thumbnail size for 3MF package (larger than IndexedDB thumbnails for better quality) */
+const THREEMF_THUMBNAIL_SIZE = 256;
+
+/**
+ * Capture a thumbnail from the 3D preview as PNG Uint8Array.
+ * Used for embedding in 3MF packages.
+ * Returns null if canvas isn't available.
+ */
+export function captureThumbnailPNG(): Promise<Uint8Array | null> {
+  if (!previewCanvasEl) return Promise.resolve(null);
+
+  try {
+    const offscreen = document.createElement('canvas');
+    offscreen.width = THREEMF_THUMBNAIL_SIZE;
+    offscreen.height = THREEMF_THUMBNAIL_SIZE;
+    const ctx = offscreen.getContext('2d');
+    if (!ctx) return Promise.resolve(null);
+
+    const src = previewCanvasEl;
+    const srcSize = Math.min(src.width, src.height);
+    const srcX = (src.width - srcSize) / 2;
+    const srcY = (src.height - srcSize) / 2;
+
+    ctx.drawImage(
+      src,
+      srcX, srcY, srcSize, srcSize,
+      0, 0, THREEMF_THUMBNAIL_SIZE, THREEMF_THUMBNAIL_SIZE
+    );
+
+    return new Promise((resolve) => {
+      offscreen.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(null);
+            return;
+          }
+          blob.arrayBuffer().then(
+            (buf) => resolve(new Uint8Array(buf)),
+            () => resolve(null)
+          );
+        },
+        'image/png'
+      );
+    });
+  } catch {
+    return Promise.resolve(null);
+  }
+}
+
 /**
  * Capture a centered square thumbnail of the current 3D preview canvas.
  *
