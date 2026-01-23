@@ -183,12 +183,12 @@ export const GridToolbar = memo(function GridToolbar({
         {/* Keyboard drag mode indicator */}
         {keyboardDragMode && (
           <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-info-muted border border-info"
             role="status"
             aria-live="polite"
           >
             <svg
-              className="w-4 h-4 text-blue-500"
+              className="w-4 h-4 text-info"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -200,17 +200,17 @@ export const GridToolbar = memo(function GridToolbar({
                 d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
               />
             </svg>
-            <span className="text-sm text-blue-500 font-medium">Move Mode</span>
+            <span className="text-sm text-info font-medium">Move Mode</span>
             <div className="flex items-center gap-1 ml-1">
-              <span className="text-xs text-blue-500/80">↑↓←→</span>
-              <span className="text-xs text-blue-500/60">to move</span>
-              <kbd className="px-1.5 py-0.5 text-xs rounded bg-blue-500/20 border border-blue-500/30 text-blue-500/70 leading-none">
+              <span className="text-xs text-info/80">↑↓←→</span>
+              <span className="text-xs text-info/60">to move</span>
+              <kbd className="px-1.5 py-0.5 text-xs rounded bg-info/20 border border-info/30 text-info/70 leading-none">
                 Enter
               </kbd>
-              <span className="text-xs text-blue-500/60">to place</span>
+              <span className="text-xs text-info/60">to place</span>
               <button
                 onClick={() => setKeyboardDragMode(false)}
-                className="text-blue-500 hover:text-blue-500/70 transition-colors p-0.5 ml-1"
+                className="text-info hover:text-info/70 transition-colors p-1.5 ml-1 rounded hover:bg-info/10"
                 aria-label="Exit move mode"
                 title="Exit move mode (Esc)"
               >
@@ -231,12 +231,12 @@ export const GridToolbar = memo(function GridToolbar({
         {/* Keyboard resize mode indicator */}
         {keyboardResizeMode && (
           <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-purple-500/10 border border-purple-500"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-info-muted border border-info"
             role="status"
             aria-live="polite"
           >
             <svg
-              className="w-4 h-4 text-purple-500"
+              className="w-4 h-4 text-info"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -248,17 +248,17 @@ export const GridToolbar = memo(function GridToolbar({
                 d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
               />
             </svg>
-            <span className="text-sm text-purple-500 font-medium">Resize Mode</span>
+            <span className="text-sm text-info font-medium">Resize Mode</span>
             <div className="flex items-center gap-1 ml-1">
-              <span className="text-xs text-purple-500/80">↑↓←→</span>
-              <span className="text-xs text-purple-500/60">to resize</span>
-              <kbd className="px-1.5 py-0.5 text-xs rounded bg-purple-500/20 border border-purple-500/30 text-purple-500/70 leading-none">
+              <span className="text-xs text-info/80">↑↓←→</span>
+              <span className="text-xs text-info/60">to resize</span>
+              <kbd className="px-1.5 py-0.5 text-xs rounded bg-info/20 border border-info/30 text-info/70 leading-none">
                 Enter
               </kbd>
-              <span className="text-xs text-purple-500/60">to apply</span>
+              <span className="text-xs text-info/60">to apply</span>
               <button
                 onClick={() => setKeyboardResizeMode(false)}
-                className="text-purple-500 hover:text-purple-500/70 transition-colors p-0.5 ml-1"
+                className="text-info hover:text-info/70 transition-colors p-1.5 ml-1 rounded hover:bg-info/10"
                 aria-label="Exit resize mode"
                 title="Exit resize mode (Esc)"
               >

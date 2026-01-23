@@ -226,7 +226,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
           top,
           width: rectWidth,
           height: rectHeight,
-          border: '2px dashed #f59e0b',
+          border: '2px dashed var(--color-warning)',
           pointerEvents: 'none',
           backgroundColor: 'var(--color-amber-10)',
         }}
@@ -242,7 +242,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const primaryBin = bins.find((b) => b.id === binIds[0]);
       if (!primaryBin) return null;
 
-      const color = valid ? '#10b981' : '#ef4444'; // green or red
+      const borderColor = valid ? 'var(--color-success)' : 'var(--color-error)';
+      const bgColor = valid ? 'var(--color-success-muted)' : 'var(--color-error-muted)';
 
       // currentCoord now stores the constrained delta (not absolute position)
       const deltaX = currentCoord.x;
@@ -277,9 +278,9 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
               top,
               width: rectWidth,
               height: rectHeight,
-              border: `2px solid ${color}`,
+              border: `2px solid ${borderColor}`,
               pointerEvents: 'none',
-              backgroundColor: `${color}20`,
+              backgroundColor: bgColor,
             }}
           />
         );
@@ -287,7 +288,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     }
   } else if (interaction.type === 'resize') {
     const { binIds, currentRects, valid } = interaction;
-    const color = valid ? '#10b981' : '#ef4444'; // green or red
+    const borderColor = valid ? 'var(--color-success)' : 'var(--color-error)';
+    const bgColor = valid ? 'var(--color-success-muted)' : 'var(--color-error-muted)';
 
     // Draw preview for each bin being resized
     for (const binId of binIds) {
@@ -352,9 +354,9 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
             top,
             width: rectWidth,
             height: rectHeight,
-            border: `2px solid ${color}`,
+            border: `2px solid ${borderColor}`,
             pointerEvents: 'none',
-            backgroundColor: `${color}20`,
+            backgroundColor: bgColor,
             zIndex: 51,
           }}
         />
@@ -366,7 +368,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
     // Only show preview if we have a valid coordinate (mouse is over grid)
     if (bin && currentCoord) {
-      const color = valid ? '#10b981' : '#ef4444'; // green or red
+      const borderColor = valid ? 'var(--color-success)' : 'var(--color-error)';
+      const bgColor = valid ? 'var(--color-success-muted)' : 'var(--color-error-muted)';
 
       // Scale for half-bin mode
       const vCoordX = currentCoord.x * scale;
@@ -387,10 +390,9 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
             top,
             width: rectWidth,
             height: rectHeight,
-            border: `2px solid ${color}`,
-            borderStyle: 'dashed',
+            border: `2px dashed ${borderColor}`,
             pointerEvents: 'none',
-            backgroundColor: `${color}20`,
+            backgroundColor: bgColor,
           }}
         />
       );
@@ -437,7 +439,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
           top: areaTop,
           width: areaPixelWidth,
           height: areaPixelHeight,
-          border: `2px dashed ${hasRemainder ? '#f59e0b' : '#10b981'}`,
+          border: `2px dashed ${hasRemainder ? 'var(--color-warning)' : 'var(--color-success)'}`,
           pointerEvents: 'none',
           backgroundColor: hasRemainder ? 'var(--color-amber-5)' : 'var(--color-green-5)',
         }}
@@ -472,7 +474,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
                 top,
                 width: rectWidth,
                 height: rectHeight,
-                border: '1px solid #10b981',
+                border: '1px solid var(--color-success)',
                 pointerEvents: 'none',
                 backgroundColor: 'var(--color-green-15)',
               }}
