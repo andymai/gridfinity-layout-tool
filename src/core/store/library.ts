@@ -220,7 +220,11 @@ export const useLibraryStore = create<LibraryState>()(
         }
       });
       // Persist library immediately so cloudShare survives refresh
-      saveLibrary(get().library);
+      try {
+        saveLibrary(get().library);
+      } catch {
+        // Storage full - state is updated in memory but won't persist on refresh
+      }
     },
 
     clearCloudShare: (layoutId) => {
@@ -231,7 +235,11 @@ export const useLibraryStore = create<LibraryState>()(
         }
       });
       // Persist library immediately
-      saveLibrary(get().library);
+      try {
+        saveLibrary(get().library);
+      } catch {
+        // Storage full - state is updated in memory but won't persist on refresh
+      }
     },
 
     setShowLayoutManager: (show) => {

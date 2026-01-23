@@ -183,7 +183,7 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
       .catch((error) => {
         console.error('[LayoutRouting] Navigation failed:', error);
       });
-  }, [isLoaded, activeLayoutId, navigateToLayout, getEntry, sharedLayoutPreview]);
+  }, [isLoaded, activeLayoutId, navigateToLayout, getEntry, sharedLayoutPreview, options.skip]);
 
   // Handle browser back/forward navigation
   useEffect(() => {
@@ -232,7 +232,7 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [activeLayoutId, sharedLayoutPreview, navigateToLayout, addToast, getEntry]);
+  }, [activeLayoutId, sharedLayoutPreview, navigateToLayout, addToast, getEntry, options.skip]);
 
   // Update URL when active layout changes (from UI interactions)
   useEffect(() => {
@@ -266,7 +266,7 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
 
     // Update URL with layout ID and slug
     setLayoutURL(activeLayoutId, entry.name, false);
-  }, [activeLayoutId, layout.name, sharedLayoutPreview, isLoaded, getEntry]);
+  }, [activeLayoutId, layout.name, sharedLayoutPreview, isLoaded, getEntry, options.skip]);
 
   // Handle layout name changes (update slug in URL)
   useEffect(() => {
@@ -291,7 +291,7 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
     if (redirect) {
       window.history.replaceState({ layoutId: activeLayoutId }, '', redirect);
     }
-  }, [activeLayoutId, sharedLayoutPreview, getEntry]);
+  }, [activeLayoutId, sharedLayoutPreview, getEntry, options.skip]);
 
   return {
     navigateToLayout,

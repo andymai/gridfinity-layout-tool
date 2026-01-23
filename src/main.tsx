@@ -5,7 +5,7 @@ import './index.css';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { initAnalytics } from './utils/analytics.ts';
-import { initMLTelemetry, setLayoutStoreRef } from './shared/analytics/mlTelemetry.ts';
+import { initMLTelemetry, setLayoutStoreRef } from './shared/analytics/mlTelemetry';
 import { useLayoutStore } from './core/store/layout.ts';
 
 // Initialize Posthog analytics (no-op in dev)
