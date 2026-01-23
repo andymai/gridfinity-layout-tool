@@ -232,6 +232,7 @@ export function CategoriesPanel() {
                           }}
                           title={name}
                           aria-label={`Set color to ${name}`}
+                          aria-pressed={category.color === color}
                         />
                       ))}
                     </div>

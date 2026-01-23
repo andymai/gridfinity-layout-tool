@@ -88,7 +88,7 @@ export const GridToolbar = memo(function GridToolbar({
   const overflowMenuRef = useRef<HTMLDivElement>(null);
   const [overflowMenuOpen, setOverflowMenuOpen] = useState(false);
 
-  // Close overflow menu when clicking outside
+  // Close overflow menu when clicking outside or pressing Escape
   useEffect(() => {
     if (!overflowMenuOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
@@ -96,8 +96,17 @@ export const GridToolbar = memo(function GridToolbar({
         setOverflowMenuOpen(false);
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOverflowMenuOpen(false);
+      }
+    };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [overflowMenuOpen]);
 
   return (

@@ -177,6 +177,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               accept=".json"
               onChange={handleFileUpload}
               className="hidden"
+              aria-label="Select JSON file to import"
             />
             <button
               onClick={() => fileInputRef.current?.click()}
