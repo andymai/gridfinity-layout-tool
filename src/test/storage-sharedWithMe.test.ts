@@ -32,16 +32,22 @@ describe('SharedWithMeService', () => {
 
   const mockEntries: SharedWithMeEntry[] = [
     {
+      id: 'local-1',
       sourceShareId: 'share-1',
       name: 'Shared Layout 1',
       permission: 'view',
-      status: 'active',
+      addedAt: 1700000000000,
+      lastAccessedAt: 1700000100000,
+      status: 'available',
     },
     {
+      id: 'local-2',
       sourceShareId: 'share-2',
       name: 'Shared Layout 2',
       permission: 'edit',
-      status: 'active',
+      addedAt: 1700000200000,
+      lastAccessedAt: 1700000300000,
+      status: 'available',
     },
   ];
 

@@ -313,8 +313,13 @@ export function useKeyboard() {
         } else {
           // Cycle active drawing category (no "no category" option for drawing)
           const currentIndex = categories.findIndex((c) => c.id === activeCategoryId);
-          const nextIndex = (currentIndex + direction + categories.length) % categories.length;
-          setActiveCategory(categories[nextIndex].id);
+          const baseIndex =
+            currentIndex === -1
+              ? direction === 1
+                ? 0
+                : categories.length - 1
+              : (currentIndex + direction + categories.length) % categories.length;
+          setActiveCategory(categories[baseIndex].id);
         }
         return;
       }
