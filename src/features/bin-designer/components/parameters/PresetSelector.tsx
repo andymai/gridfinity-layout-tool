@@ -108,9 +108,11 @@ export function PresetSelector() {
     addToast({ message: `Saved "${trimmedName}" preset`, type: 'success', duration: 2000 });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, name: string) => {
+    if (!window.confirm(`Delete "${name}" preset? This cannot be undone.`)) return;
     deleteUserPreset(id);
     refreshPresets();
+    addToast({ message: `Deleted "${name}" preset`, type: 'success', duration: 2000 });
   };
 
   const canSave = userPresets.length < MAX_USER_PRESETS;
@@ -173,7 +175,7 @@ export function PresetSelector() {
                   </div>
                 </button>
                 <button
-                  onClick={() => handleDelete(preset.id)}
+                  onClick={() => handleDelete(preset.id, preset.name)}
                   className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface-error text-[10px] text-content-on-error transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 sm:focus:opacity-100"
                   aria-label={`Delete ${preset.name} preset`}
                   title="Delete preset"
