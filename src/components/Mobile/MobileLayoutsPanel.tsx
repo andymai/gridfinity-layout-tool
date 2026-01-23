@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '@/core/store/ui';
@@ -64,11 +64,15 @@ export function MobileLayoutsPanel() {
   );
 
   // Sort entries: active first, then by modifiedAt descending
-  const sortedEntries = [...library.entries].sort((a, b) => {
-    if (a.id === activeLayoutId) return -1;
-    if (b.id === activeLayoutId) return 1;
-    return b.modifiedAt - a.modifiedAt;
-  });
+  const sortedEntries = useMemo(
+    () =>
+      [...library.entries].sort((a, b) => {
+        if (a.id === activeLayoutId) return -1;
+        if (b.id === activeLayoutId) return 1;
+        return b.modifiedAt - a.modifiedAt;
+      }),
+    [library.entries, activeLayoutId]
+  );
 
   const handleSelectLayout = useCallback(
     async (layoutId: string) => {

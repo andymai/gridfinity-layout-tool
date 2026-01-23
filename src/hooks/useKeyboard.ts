@@ -267,26 +267,25 @@ export function useKeyboard() {
       }
 
       // Category cycling ([ / ]) - cycles category of selected bins, or active drawing category if none selected
-      if (key === SHORTCUTS.CATEGORY_PREV) {
+      if (key === SHORTCUTS.CATEGORY_PREV || key === SHORTCUTS.CATEGORY_NEXT) {
         e.preventDefault();
         const categories = layout.categories;
         if (categories.length === 0) return;
+
+        const direction = key === SHORTCUTS.CATEGORY_NEXT ? 1 : -1;
 
         if (selectedBinIds.length > 0) {
           // Change category of selected bins
           const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
           if (!firstBin) return;
 
-          const currentIndex = firstBin.category
-            ? categories.findIndex((c) => c.id === firstBin.category)
-            : -1;
-
-          let newCategoryId: string | undefined;
-          if (currentIndex <= 0) {
-            newCategoryId = currentIndex === 0 ? undefined : categories[categories.length - 1].id;
-          } else {
-            newCategoryId = categories[currentIndex - 1].id;
-          }
+          // Ring: [undefined, cat[0], cat[1], ..., cat[n-1]] — position 0 = no category
+          const ringSize = categories.length + 1;
+          const currentPos = firstBin.category
+            ? categories.findIndex((c) => c.id === firstBin.category) + 1
+            : 0;
+          const nextPos = (currentPos + direction + ringSize) % ringSize;
+          const newCategoryId = nextPos === 0 ? undefined : categories[nextPos - 1].id;
 
           // Filter to only bins that actually change
           const binsToUpdate = selectedBinIds
@@ -314,62 +313,13 @@ export function useKeyboard() {
         } else {
           // Cycle active drawing category (no "no category" option for drawing)
           const currentIndex = categories.findIndex((c) => c.id === activeCategoryId);
-          const prevIndex = currentIndex <= 0 ? categories.length - 1 : currentIndex - 1;
-          setActiveCategory(categories[prevIndex].id);
-        }
-        return;
-      }
-      if (key === SHORTCUTS.CATEGORY_NEXT) {
-        e.preventDefault();
-        const categories = layout.categories;
-        if (categories.length === 0) return;
-
-        if (selectedBinIds.length > 0) {
-          // Change category of selected bins
-          const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
-          if (!firstBin) return;
-
-          const currentIndex = firstBin.category
-            ? categories.findIndex((c) => c.id === firstBin.category)
-            : -1;
-
-          let newCategoryId: string | undefined;
-          if (currentIndex === -1) {
-            newCategoryId = categories[0].id;
-          } else if (currentIndex >= categories.length - 1) {
-            newCategoryId = undefined;
-          } else {
-            newCategoryId = categories[currentIndex + 1].id;
-          }
-
-          // Filter to only bins that actually change
-          const binsToUpdate = selectedBinIds
-            .map((id) => layout.bins.find((b) => b.id === id))
-            .filter(
-              (bin): bin is (typeof layout.bins)[number] => !!bin && bin.category !== newCategoryId
-            );
-          if (binsToUpdate.length === 0) return;
-
-          const batchSize = binsToUpdate.length;
-          const newCategory = newCategoryId
-            ? categories.find((c) => c.id === newCategoryId)
-            : undefined;
-
-          execute(() => {
-            for (const bin of binsToUpdate) {
-              updateBin(bin.id, { category: newCategoryId });
-            }
-          });
-
-          // Track once per batch (not per bin)
-          if (newCategory && binsToUpdate.length > 0) {
-            mlTracking.trackCategory(binsToUpdate[0], newCategory.name, batchSize);
-          }
-        } else {
-          // Cycle active drawing category (no "no category" option for drawing)
-          const currentIndex = categories.findIndex((c) => c.id === activeCategoryId);
-          const nextIndex = currentIndex >= categories.length - 1 ? 0 : currentIndex + 1;
-          setActiveCategory(categories[nextIndex].id);
+          const baseIndex =
+            currentIndex === -1
+              ? direction === 1
+                ? 0
+                : categories.length - 1
+              : (currentIndex + direction + categories.length) % categories.length;
+          setActiveCategory(categories[baseIndex].id);
         }
         return;
       }
