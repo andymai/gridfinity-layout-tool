@@ -109,10 +109,11 @@ function computeBinVolume(params: BinParams): number {
   // Outer dimensions in mm
   const outerW = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const totalH = params.height * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT;
+  // Height units INCLUDE the base (first unit = base, no cavity)
+  const totalH = params.height * GRIDFINITY.HEIGHT_UNIT;
 
-  // Bottom thickness
-  const bottomH = GRIDFINITY.BASE_HEIGHT + GRIDFINITY.BOTTOM_THICKNESS;
+  // Base height (7mm dead space: profile + bridge + floor, no cavity here)
+  const bottomH = GRIDFINITY.BASE_HEIGHT;
 
   // For vase mode: thin outer shell only
   if (params.style === 'vase') {
@@ -121,8 +122,15 @@ function computeBinVolume(params: BinParams): number {
 
   let volume = 0;
 
-  // Shell volume (outer walls + bottom)
-  volume += computeHollowBoxVolume(outerW, outerD, totalH, wallThickness, bottomH);
+  // Shell volume (outer walls + bottom), accounting for wall cutouts
+  const hasWallCutouts = !constraints.disabledFeatures.includes('walls') &&
+    (params.walls.front > 0 || params.walls.back > 0 || params.walls.left > 0 || params.walls.right > 0);
+
+  if (hasWallCutouts) {
+    volume += computeWallCutoutVolume(outerW, outerD, totalH, wallThickness, bottomH, params.walls);
+  } else {
+    volume += computeHollowBoxVolume(outerW, outerD, totalH, wallThickness, bottomH);
+  }
 
   // Divider volumes
   if (!constraints.disabledFeatures.includes('dividers')) {
@@ -157,6 +165,48 @@ function computeHollowBoxVolume(
   }
 
   return outerVol - innerW * innerD * innerH;
+}
+
+/**
+ * Volume of a bin shell with per-wall height reductions (cutouts).
+ *
+ * Each wall is independently reduced in height based on its cutout percentage.
+ * Front/back walls span the full outer width; left/right span the inner depth
+ * (avoiding corner overlap, matching the geometry generator).
+ */
+function computeWallCutoutVolume(
+  outerW: number, outerD: number, totalH: number,
+  wall: number, bottomH: number,
+  cutouts: { front: number; back: number; left: number; right: number }
+): number {
+  const innerD = outerD - 2 * wall;
+  const fullWallH = totalH - bottomH;
+
+  if (fullWallH <= 0 || innerD <= 0) {
+    // Solid block (walls too thick or no cavity height)
+    return outerW * outerD * totalH;
+  }
+
+  // Bottom plate (always full)
+  let volume = outerW * outerD * bottomH;
+
+  // Front wall: spans full outer width
+  const frontH = fullWallH * (1 - cutouts.front / 100);
+  if (frontH > 0) volume += outerW * wall * frontH;
+
+  // Back wall: spans full outer width
+  const backH = fullWallH * (1 - cutouts.back / 100);
+  if (backH > 0) volume += outerW * wall * backH;
+
+  // Left wall: spans inner depth (between front/back walls)
+  const leftH = fullWallH * (1 - cutouts.left / 100);
+  if (leftH > 0) volume += innerD * wall * leftH;
+
+  // Right wall: spans inner depth
+  const rightH = fullWallH * (1 - cutouts.right / 100);
+  if (rightH > 0) volume += innerD * wall * rightH;
+
+  return volume;
 }
 
 /**

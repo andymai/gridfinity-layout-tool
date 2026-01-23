@@ -38,8 +38,8 @@ export function WallsSection() {
 
   if (isVase) {
     return (
-      <div className="rounded-md bg-amber-50 px-3 py-2">
-        <p className="text-xs text-amber-800">
+      <div className="rounded-md bg-amber-500/10 border border-amber-500/20 px-3 py-2">
+        <p className="text-xs text-amber-400">
           Wall cutouts are not available for vase mode bins.
         </p>
       </div>

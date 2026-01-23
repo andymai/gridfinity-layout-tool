@@ -74,7 +74,7 @@ export function DimensionsSection() {
           max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
           step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
           unit="u"
-          info={`${(height * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT).toFixed(0)}mm total`}
+          info={`${(height * GRIDFINITY.HEIGHT_UNIT).toFixed(0)}mm body + ${GRIDFINITY.LIP_HEIGHT}mm lip`}
         />
         <QuickSelect
           value={height}

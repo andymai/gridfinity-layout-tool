@@ -24,8 +24,9 @@ describe('StyleSection', () => {
   it('shows wall thickness for each style', () => {
     render(<StyleSection />);
 
-    expect(screen.getByText('1.2mm wall')).toBeInTheDocument();
-    expect(screen.getByText('0.8mm wall')).toBeInTheDocument();
+    // Wall thicknesses per spec: d_wall=0.95mm (standard), 0.65mm (lite)
+    expect(screen.getByText('0.95mm wall')).toBeInTheDocument();
+    expect(screen.getByText('0.65mm wall')).toBeInTheDocument();
     expect(screen.getByText('1.6mm wall')).toBeInTheDocument();
     expect(screen.getByText('0.4mm wall')).toBeInTheDocument();
     expect(screen.getByText('2mm wall')).toBeInTheDocument();
