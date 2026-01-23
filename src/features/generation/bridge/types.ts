@@ -9,7 +9,7 @@ import type { BinParams } from '@/features/bin-designer/types';
 
 // ─── Main → Worker Messages ──────────────────────────────────────────────────
 
-export type WorkerMessage = InitMessage | GenerateMessage | CancelMessage;
+export type WorkerMessage = InitMessage | GenerateMessage | CancelMessage | ExportMessage;
 
 export interface InitMessage {
   readonly type: 'INIT';
@@ -30,12 +30,31 @@ export interface GeneratePayload {
   readonly requestId: string;
 }
 
+export interface ExportMessage {
+  readonly type: 'EXPORT';
+  readonly payload: ExportPayload;
+}
+
+export interface ExportPayload {
+  readonly params: BinParams;
+  readonly requestId: string;
+  readonly format: ExportFormat;
+  /** STL tessellation tolerance in mm (lower = smoother, default 0.01) */
+  readonly tolerance?: number;
+  /** STL angular tolerance in degrees (default 5) */
+  readonly angularTolerance?: number;
+}
+
+/** Export file formats supported by the BREP worker */
+export type ExportFormat = 'stl' | 'step';
+
 // ─── Worker → Main Responses ─────────────────────────────────────────────────
 
 export type WorkerResponse =
   | InitReadyResponse
   | ProgressResponse
   | MeshResultResponse
+  | ExportResultResponse
   | ErrorResponse;
 
 export interface InitReadyResponse {
@@ -56,6 +75,14 @@ export interface MeshResultResponse {
   readonly normals: Float32Array;
   readonly triangleCount: number;
   readonly timingMs: number;
+}
+
+export interface ExportResultResponse {
+  readonly type: 'EXPORT_RESULT';
+  readonly requestId: string;
+  readonly data: ArrayBuffer;
+  readonly format: ExportFormat;
+  readonly fileName: string;
 }
 
 export interface ErrorResponse {

@@ -1,23 +1,30 @@
 /**
- * Web Worker entry point for bin geometry generation.
+ * Web Worker entry point for bin geometry generation using Replicad (OpenCascade WASM).
  *
- * Receives messages from GenerationBridge, runs geometry generation,
- * and posts results back. Runs off the main thread to avoid blocking UI.
+ * Receives messages from GenerationBridge, initializes the OCCT kernel,
+ * runs BREP geometry generation, and posts tessellated mesh results back.
  *
  * Protocol:
- * - INIT → INIT_READY (future: load WASM here)
+ * - INIT → (load WASM) → INIT_READY
  * - GENERATE → PROGRESS* → MESH_RESULT | ERROR
+ * - EXPORT → EXPORT_RESULT | ERROR (uses cached solid or regenerates)
  * - CANCEL → (silently aborts current generation)
  */
 
-import type { WorkerMessage, WorkerResponse, MeshData } from '../bridge/types';
+import { setOC } from 'replicad';
+import type { WorkerMessage, WorkerResponse } from '../bridge/types';
 import type { BinParams } from '@/features/bin-designer/types';
-import { generateBinGeometry } from './generators/binGenerator';
-import { generateBaseGeometry } from './generators/baseGenerator';
-import { mergeMeshes } from './generators/geometry';
+import type { ExportPayload } from '../bridge/types';
+import { generateBin, exportBin } from './generators/replicadBin';
+
+import opencascade from 'replicad-opencascadejs/src/replicad_single.js';
+import opencascadeWasm from 'replicad-opencascadejs/src/replicad_single.wasm?url';
 
 /** Currently active generation request ID (for cancellation) */
 let activeRequestId: string | null = null;
+
+/** Whether OCCT has been initialized */
+let ocInitialized = false;
 
 /** Post a typed response to the main thread */
 function respond(response: WorkerResponse): void {
@@ -25,61 +32,76 @@ function respond(response: WorkerResponse): void {
 }
 
 /** Post a progress update */
-function reportProgress(requestId: string, stage: WorkerResponse extends { type: 'PROGRESS' } ? WorkerResponse['stage'] : string, progress: number): void {
+function reportProgress(
+  requestId: string,
+  stage: 'base' | 'shell' | 'features' | 'merge',
+  progress: number
+): void {
   respond({
     type: 'PROGRESS',
     requestId,
-    stage: stage as 'base' | 'shell' | 'features' | 'merge',
+    stage,
     progress,
   });
 }
 
 /**
- * Main generation pipeline.
- * Produces geometry in stages: base → shell → features → merge.
+ * Initialize OpenCascade WASM kernel.
+ * This loads ~11MB of WASM and takes 2-4 seconds.
+ */
+async function initOpenCascade(): Promise<void> {
+  // The Emscripten factory accepts a config object with locateFile
+  // to resolve the WASM binary URL relative to the worker
+  const OC = await opencascade({
+    locateFile: (fileName: string) => {
+      if (fileName.endsWith('.wasm')) {
+        return opencascadeWasm;
+      }
+      return fileName;
+    },
+  });
+
+  setOC(OC);
+  ocInitialized = true;
+}
+
+/**
+ * Main generation pipeline using Replicad BREP operations.
  */
 function generate(params: BinParams, requestId: string): void {
+  if (!ocInitialized) {
+    respond({
+      type: 'ERROR',
+      requestId,
+      error: 'OpenCascade not initialized',
+    });
+    return;
+  }
+
   activeRequestId = requestId;
   const startTime = performance.now();
 
   try {
-    // Stage 1: Generate base
-    reportProgress(requestId, 'base', 0.1);
-    if (activeRequestId !== requestId) return; // Cancelled
+    const meshData = generateBin(params, (stage, progress) => {
+      if (activeRequestId !== requestId) return; // Cancelled
+      reportProgress(requestId, stage as 'base' | 'shell' | 'features' | 'merge', progress);
+    });
 
-    const baseMesh = generateBaseGeometry(params);
-
-    // Stage 2: Generate shell
-    reportProgress(requestId, 'shell', 0.4);
+    // Check for cancellation before posting result
     if (activeRequestId !== requestId) return;
-
-    const binMesh = generateBinGeometry(params);
-
-    // Stage 3: Features already included in binMesh (dividers etc.)
-    reportProgress(requestId, 'features', 0.7);
-    if (activeRequestId !== requestId) return;
-
-    // Stage 4: Merge all geometry
-    reportProgress(requestId, 'merge', 0.9);
-    if (activeRequestId !== requestId) return;
-
-    const meshes: MeshData[] = [binMesh];
-    if (baseMesh.triangleCount > 0) {
-      meshes.push(baseMesh);
-    }
-    const finalMesh = meshes.length === 1 ? meshes[0] : mergeMeshes(meshes);
 
     const timingMs = performance.now() - startTime;
 
     respond({
       type: 'MESH_RESULT',
       requestId,
-      vertices: finalMesh.vertices,
-      normals: finalMesh.normals,
-      triangleCount: finalMesh.triangleCount,
+      vertices: meshData.vertices,
+      normals: meshData.normals,
+      triangleCount: meshData.triangleCount,
       timingMs,
     });
   } catch (e) {
+    if (activeRequestId !== requestId) return; // Cancelled during generation
     respond({
       type: 'ERROR',
       requestId,
@@ -92,19 +114,71 @@ function generate(params: BinParams, requestId: string): void {
   }
 }
 
+/**
+ * Export pipeline — generates file (STL/STEP) from BREP solid.
+ * Uses the cached solid from the last GENERATE call if available.
+ */
+async function handleExport(payload: ExportPayload): Promise<void> {
+  if (!ocInitialized) {
+    respond({
+      type: 'ERROR',
+      requestId: payload.requestId,
+      error: 'OpenCascade not initialized',
+    });
+    return;
+  }
+
+  try {
+    const result = await exportBin(
+      payload.params,
+      payload.format,
+      payload.tolerance,
+      payload.angularTolerance
+    );
+
+    // Transfer the ArrayBuffer (zero-copy to main thread)
+    const response = {
+      type: 'EXPORT_RESULT' as const,
+      requestId: payload.requestId,
+      data: result.data,
+      format: payload.format,
+      fileName: result.fileName,
+    };
+    self.postMessage(response, { transfer: [result.data] });
+  } catch (e) {
+    respond({
+      type: 'ERROR',
+      requestId: payload.requestId,
+      error: `Export failed: ${e instanceof Error ? e.message : String(e)}`,
+    });
+  }
+}
+
 // ─── Message Handler ─────────────────────────────────────────────────────────
 
-self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
+self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
   const message = event.data;
 
   switch (message.type) {
     case 'INIT':
-      // In future: load WASM module here
-      respond({ type: 'INIT_READY' });
+      try {
+        await initOpenCascade();
+        respond({ type: 'INIT_READY' });
+      } catch (e) {
+        respond({
+          type: 'ERROR',
+          requestId: '__init__',
+          error: `OpenCascade init failed: ${e instanceof Error ? e.message : String(e)}`,
+        });
+      }
       break;
 
     case 'GENERATE':
       generate(message.payload.params, message.payload.requestId);
+      break;
+
+    case 'EXPORT':
+      await handleExport(message.payload);
       break;
 
     case 'CANCEL':

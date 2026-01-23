@@ -181,31 +181,6 @@ export function validateBinParams(
     }
   }
 
-  // Vase mode incompatibilities
-  if (params.style === 'vase') {
-    if (params.dividers.x > 0 || params.dividers.y > 0) {
-      return err({
-        code: 'VASE_INCOMPATIBLE',
-        message: 'Vase mode does not support dividers',
-        field: 'dividers',
-      });
-    }
-    if (params.scoop.enabled) {
-      return err({
-        code: 'VASE_INCOMPATIBLE',
-        message: 'Vase mode does not support scoops',
-        field: 'scoop',
-      });
-    }
-    if (params.label.enabled) {
-      return err({
-        code: 'VASE_INCOMPATIBLE',
-        message: 'Vase mode does not support label embossing',
-        field: 'label',
-      });
-    }
-  }
-
   // Magnet depth range (applies to both magnet and magnet_and_screw styles)
   if (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw') {
     if (

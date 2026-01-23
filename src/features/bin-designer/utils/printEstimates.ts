@@ -97,7 +97,7 @@ export function formatFilament(meters: number): string {
  * Components:
  * 1. Outer shell (walls + bottom)
  * 2. Divider walls
- * 3. Corner gussets (solid/rugged styles)
+ * 3. Corner gussets (solid style)
  *
  * Scoops and label tabs are small relative to the bin volume
  * and are included as minor additions rather than subtractions.
@@ -114,11 +114,6 @@ function computeBinVolume(params: BinParams): number {
 
   // Base height (7mm dead space: profile + bridge + floor, no cavity here)
   const bottomH = GRIDFINITY.BASE_HEIGHT;
-
-  // For vase mode: thin outer shell only
-  if (params.style === 'vase') {
-    return computeHollowBoxVolume(outerW, outerD, totalH, wallThickness, bottomH);
-  }
 
   let volume = 0;
 

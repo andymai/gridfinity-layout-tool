@@ -11,14 +11,11 @@ describe('ParameterPanel', () => {
     });
   });
 
-  it('renders all section headings', () => {
+  it('renders section headings', () => {
     render(<ParameterPanel />);
 
     expect(screen.getByText('Dimensions')).toBeInTheDocument();
-    expect(screen.getByText('Style')).toBeInTheDocument();
     expect(screen.getByText('Base')).toBeInTheDocument();
-    expect(screen.getByText('Features')).toBeInTheDocument();
-    expect(screen.getByText('Walls')).toBeInTheDocument();
   });
 
   it('renders dimension sliders', () => {
@@ -29,107 +26,75 @@ describe('ParameterPanel', () => {
     expect(screen.getByLabelText('Height')).toBeInTheDocument();
   });
 
-  it('renders base style options', () => {
+  it('renders base feature toggles', () => {
     render(<ParameterPanel />);
 
-    // 'Standard' appears in both Style and Base sections
-    expect(screen.getAllByText('Standard').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText('Magnet')).toBeInTheDocument();
-    expect(screen.getByText('Screw')).toBeInTheDocument();
-    expect(screen.getByText('Weighted')).toBeInTheDocument();
+    expect(screen.getByText('Magnet holes')).toBeInTheDocument();
+    expect(screen.getByText('Screw holes')).toBeInTheDocument();
+    expect(screen.getByText('Stacking lip')).toBeInTheDocument();
   });
 
-  it('renders feature controls', () => {
+  it('shows mm info for dimensions', () => {
     render(<ParameterPanel />);
 
-    expect(screen.getByLabelText('Dividers X')).toBeInTheDocument();
-    expect(screen.getByLabelText('Dividers Y')).toBeInTheDocument();
-    expect(screen.getByLabelText('Enable finger scoop')).toBeInTheDocument();
-    expect(screen.getByLabelText('Enable label tab')).toBeInTheDocument();
+    // Default width=2 and depth=2 both show 84mm
+    const mmLabels = screen.getAllByText('84mm');
+    expect(mmLabels.length).toBe(2);
   });
 
-  it('shows vase mode warning in Features section when vase selected', () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, style: 'vase' },
-    });
-
+  it('toggling magnet holes updates base style', () => {
     render(<ParameterPanel />);
 
-    expect(screen.getByText(/interior features are disabled/i)).toBeInTheDocument();
+    const magnetToggle = screen.getByText('Magnet holes').closest('label')!.querySelector('button')!;
+    fireEvent.click(magnetToggle);
+
+    expect(useDesignerStore.getState().params.base.style).toBe('magnet');
   });
 
-  it('shows vase mode warning in Walls section when vase selected', () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, style: 'vase' },
-    });
-
+  it('toggling screw holes updates base style', () => {
     render(<ParameterPanel />);
 
-    expect(screen.getByText(/wall cutouts are not available/i)).toBeInTheDocument();
+    const screwToggle = screen.getByText('Screw holes').closest('label')!.querySelector('button')!;
+    fireEvent.click(screwToggle);
+
+    expect(useDesignerStore.getState().params.base.style).toBe('screw');
   });
 
-  it('selecting magnet base style shows magnet depth slider', () => {
+  it('toggling both magnet and screw sets magnet_and_screw style', () => {
     render(<ParameterPanel />);
 
-    // Click magnet button (unique text in base section)
-    const magnetButtons = screen.getAllByText('Magnet');
-    fireEvent.click(magnetButtons[0].closest('button')!);
+    const magnetToggle = screen.getByText('Magnet holes').closest('label')!.querySelector('button')!;
+    const screwToggle = screen.getByText('Screw holes').closest('label')!.querySelector('button')!;
 
-    expect(screen.getByLabelText('Magnet Depth')).toBeInTheDocument();
+    fireEvent.click(magnetToggle);
+    fireEvent.click(screwToggle);
+
+    expect(useDesignerStore.getState().params.base.style).toBe('magnet_and_screw');
   });
 
-  it('selecting screw base style shows screw info', () => {
+  it('toggling stacking lip updates base config', () => {
     render(<ParameterPanel />);
 
-    const screwButtons = screen.getAllByText('Screw');
-    fireEvent.click(screwButtons[0].closest('button')!);
+    // Default is stacking lip ON
+    expect(useDesignerStore.getState().params.base.stackingLip).toBe(true);
 
-    expect(screen.getByText(/M3 screw holes/)).toBeInTheDocument();
+    const lipToggle = screen.getByText('Stacking lip').closest('label')!.querySelector('button')!;
+    fireEvent.click(lipToggle);
+
+    expect(useDesignerStore.getState().params.base.stackingLip).toBe(false);
   });
 
-  it('enabling label shows text input', () => {
+  it('dimension sliders respect constraints', () => {
     render(<ParameterPanel />);
 
-    const labelCheckbox = screen.getByLabelText('Enable label tab');
-    fireEvent.click(labelCheckbox);
+    const widthSlider = screen.getByLabelText('Width slider');
+    expect(widthSlider).toHaveAttribute('min', '0.5');
+    expect(widthSlider).toHaveAttribute('max', '8');
+    expect(widthSlider).toHaveAttribute('step', '0.5');
 
-    expect(screen.getByLabelText('Label text')).toBeInTheDocument();
-  });
-
-  it('adding dividers shows thickness slider', () => {
-    render(<ParameterPanel />);
-
-    // Increase dividers X (commit-on-blur pattern)
-    const divXInput = screen.getByLabelText('Dividers X');
-    fireEvent.focus(divXInput);
-    fireEvent.change(divXInput, { target: { value: '2' } });
-    fireEvent.blur(divXInput);
-
-    expect(screen.getByLabelText('Divider Thickness')).toBeInTheDocument();
-  });
-
-  it('wall sliders update the store', () => {
-    render(<ParameterPanel />);
-
-    // Walls section is collapsed by default, expand it
-    fireEvent.click(screen.getByText('Walls'));
-
-    const frontSlider = screen.getByLabelText('Front slider');
-    fireEvent.change(frontSlider, { target: { value: '50' } });
-
-    expect(useDesignerStore.getState().params.walls.front).toBe(50);
-  });
-
-  it('wall values snap to minimum 20% when between 1-19%', () => {
-    render(<ParameterPanel />);
-
-    // Expand walls section
-    fireEvent.click(screen.getByText('Walls'));
-
-    const frontSlider = screen.getByLabelText('Front slider');
-    fireEvent.change(frontSlider, { target: { value: '15' } });
-
-    // Should snap to 20%
-    expect(useDesignerStore.getState().params.walls.front).toBe(20);
+    const heightSlider = screen.getByLabelText('Height slider');
+    expect(heightSlider).toHaveAttribute('min', '2');
+    expect(heightSlider).toHaveAttribute('max', '20');
+    expect(heightSlider).toHaveAttribute('step', '1');
   });
 });

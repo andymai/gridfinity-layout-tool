@@ -188,47 +188,6 @@ describe('validateBinParams', () => {
     });
   });
 
-  describe('vase mode constraints', () => {
-    it('should reject dividers in vase mode', () => {
-      const result = validateBinParams(
-        makeParams({ style: 'vase', dividers: { x: 1, y: 0, thickness: 1.2 } })
-      );
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VASE_INCOMPATIBLE');
-      }
-    });
-
-    it('should reject scoop in vase mode', () => {
-      const result = validateBinParams(makeParams({ style: 'vase', scoop: { enabled: true, radius: 'auto', allRows: false } }));
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VASE_INCOMPATIBLE');
-      }
-    });
-
-    it('should reject label in vase mode', () => {
-      const result = validateBinParams(
-        makeParams({ style: 'vase', label: { enabled: true, text: 'test', fontSize: 'auto' } })
-      );
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('VASE_INCOMPATIBLE');
-      }
-    });
-
-    it('should accept vase mode with no features', () => {
-      const result = validateBinParams(
-        makeParams({
-          style: 'vase',
-          dividers: { x: 0, y: 0, thickness: 1.2 },
-          scoop: { enabled: false, radius: 'auto', allRows: false },
-          label: { enabled: false, text: '', fontSize: 'auto' },
-        })
-      );
-      expect(isOk(result)).toBe(true);
-    });
-  });
 
   describe('magnet depth constraints', () => {
     it('should reject magnet depth below minimum', () => {

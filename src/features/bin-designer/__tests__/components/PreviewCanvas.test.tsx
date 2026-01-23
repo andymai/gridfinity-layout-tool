@@ -85,6 +85,7 @@ vi.mock('three', () => {
     Float32BufferAttribute,
     Color,
     ShaderMaterial,
+    FrontSide: 0,
     DoubleSide: 2,
   };
 });

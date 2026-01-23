@@ -84,7 +84,7 @@ describe('generateFileName', () => {
     it('should combine multiple features', () => {
       const name = generateFileName(
         makeParams({
-          style: 'rugged',
+          style: 'solid',
           dividers: { x: 1, y: 2, thickness: 1.2 },
           scoop: { enabled: true, radius: 'auto', allRows: false },
           label: { enabled: true, text: 'Tools', fontSize: 'auto' },
@@ -93,7 +93,7 @@ describe('generateFileName', () => {
         'stl',
         'descriptive'
       );
-      expect(name).toBe('gridfinity_2x2x3_rugged_dividers_scoop_label_magnets.stl');
+      expect(name).toBe('gridfinity_2x2x3_solid_dividers_scoop_label_magnets.stl');
     });
 
     it('should include magnets+screws for magnet_and_screw base style', () => {
