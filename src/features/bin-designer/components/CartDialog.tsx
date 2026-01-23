@@ -184,7 +184,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
             {/* Progress bar */}
             {exporting && progress && (
               <div className="mb-3 space-y-1">
-                <div className="flex justify-between text-xs text-content-secondary">
+                <div className="flex justify-between text-xs text-content-secondary" aria-live="polite">
                   <span>
                     {progress.phase === 'generating'
                       ? `Generating: ${progress.currentName}`
@@ -192,7 +192,14 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
                   </span>
                   <span>{progress.current + 1}/{progress.total}</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-surface-secondary">
+                <div
+                  className="h-1.5 overflow-hidden rounded-full bg-surface-secondary"
+                  role="progressbar"
+                  aria-valuenow={progress.current + 1}
+                  aria-valuemin={0}
+                  aria-valuemax={progress.total}
+                  aria-label="Export progress"
+                >
                   <div
                     className="h-full rounded-full bg-blue-500 transition-all"
                     style={{ width: `${((progress.current + 1) / progress.total) * 100}%` }}
