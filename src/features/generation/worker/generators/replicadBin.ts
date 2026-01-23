@@ -41,7 +41,9 @@ const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
 const SOCKET_SMALL_TAPER = GRIDFINITY.SOCKET_SMALL_TAPER;
 const SOCKET_BIG_TAPER = GRIDFINITY.SOCKET_BIG_TAPER;
 const SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SOCKET_SMALL_TAPER - SOCKET_BIG_TAPER;
+const SOCKET_TAPER_WIDTH = SOCKET_SMALL_TAPER + SOCKET_BIG_TAPER;
 const AXIS_CLEARANCE = (CLEARANCE * Math.sqrt(2)) / 4;
+const TOP_FILLET = GRIDFINITY.TOP_FILLET;
 
 // ─── Socket Builder ───────────────────────────────────────────────────────────
 
@@ -97,9 +99,9 @@ function buildSingleSocket(
     ),
   ]) as Shape3D;
 
-  // Cut magnet/screw holes at 4 corners
+  // Cut magnet/screw holes at 4 corners (13mm from socket center per Gridfinity spec)
   if (withScrew || withMagnet) {
-    const holeInset = SIZE / 2 - GRIDFINITY.MAGNET_INSET;
+    const HOLE_OFFSET = 13; // mm from socket center to hole center
     const magnetCutout = withMagnet
       ? (drawCircle(magnetRadius).sketchOnPlane() as unknown as Sketch)
           .extrude(magnetDepth) as Shape3D
@@ -109,23 +111,15 @@ function buildSingleSocket(
           .extrude(SOCKET_HEIGHT) as Shape3D
       : null;
 
-    // At least one is non-null since we're inside the if (withScrew || withMagnet) block
-    let cutout: Shape3D;
-    if (magnetCutout && screwCutout) {
-      cutout = magnetCutout.fuse(screwCutout);
-    } else if (magnetCutout) {
-      cutout = magnetCutout;
-    } else {
-      cutout = screwCutout as Shape3D;
-    }
+    const cutout: Shape3D = magnetCutout && screwCutout
+      ? magnetCutout.fuse(screwCutout)
+      : (magnetCutout || screwCutout) as Shape3D;
 
-    for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
-      const hx = dx * holeInset;
-      const hy = dy * holeInset;
-      slot = slot.cut(
-        cutout.clone().translate([hx, hy, -SOCKET_HEIGHT])
-      );
-    }
+    slot = slot
+      .cut(cutout.clone().translate([-HOLE_OFFSET, -HOLE_OFFSET, -SOCKET_HEIGHT]))
+      .cut(cutout.clone().translate([-HOLE_OFFSET, HOLE_OFFSET, -SOCKET_HEIGHT]))
+      .cut(cutout.clone().translate([HOLE_OFFSET, HOLE_OFFSET, -SOCKET_HEIGHT]))
+      .cut(cutout.clone().translate([HOLE_OFFSET, -HOLE_OFFSET, -SOCKET_HEIGHT]));
   }
 
   return slot;
@@ -200,7 +194,7 @@ function buildBinBox(
     .extrude(wallHeight) as Shape3D;
 
   if (!keepFull) {
-    box = box.shell(-wallThickness, (f) => f.inPlane('XY', wallHeight));
+    box = box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight));
   }
 
   return box;
@@ -208,52 +202,80 @@ function buildBinBox(
 
 // ─── Top Shape (Stacking Lip) Builder ─────────────────────────────────────────
 
-/** Gridfinity stacking lip dimensions */
-const LIP_HEIGHT = GRIDFINITY.LIP_HEIGHT;
-const LIP_FILLET = GRIDFINITY.LIP_FILLET;
-
 /**
  * Build the stacking lip at the top of the bin.
  *
- * The lip is a closed cross-section swept around the bin perimeter.
- * It allows bins to stack by providing the receiving socket interface.
+ * The lip is the inverse of the socket profile — it provides the mating
+ * interface that allows bins to stack. The profile sweeps around the bin
+ * perimeter, then gets filleted at the peak for a smooth junction.
  *
- * Profile (relative to path at wallHeight):
- *   Start at outer edge [0, 0], go up for lip height,
- *   small notch (stacking interface), back down inner wall,
- *   horizontal to wall thickness, close.
+ * Profile traces (in XZ plane, X=outward, Z=up):
+ *   Socket taper shape upward (matching socket cavity when stacked)
+ *   + wall extension downward (if includeLip, replaces top wall section)
  *
- * Important: Profile coordinates must be relative to [0,0] — the path
- * sketch handles absolute positioning via sketchOnPlane('XY', wallHeight).
+ * Built at Z=0 locally, caller translates to wallHeight.
  */
 function buildTopShape(
   gridW: number,
   gridD: number,
-  wallHeight: number,
-  _includeLip: boolean,
+  includeLip: boolean,
   wallThickness: number
 ): Shape3D {
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
-  const lipProfile = (_plane: Plane, origin: Point): Sketch => {
-    return draw([0, 0])
-      .vLine(LIP_HEIGHT - AXIS_CLEARANCE * 2)
-      .line(-AXIS_CLEARANCE, AXIS_CLEARANCE)
-      .vLine(-LIP_FILLET)
-      .line(AXIS_CLEARANCE, AXIS_CLEARANCE)
-      .vLine(-(LIP_HEIGHT - LIP_FILLET))
-      .hLineTo(-wallThickness)
-      .vLineTo(0)
-      .close()
-      .sketchOnPlane('XZ', origin) as unknown as Sketch;
+  const topProfile = (_plane: Plane, _startPoint: Point): Sketch => {
+    // Draw the socket profile inverted (going upward from the sweep path)
+    let sketcher = draw([-SOCKET_TAPER_WIDTH, 0])
+      .line(SOCKET_SMALL_TAPER, SOCKET_SMALL_TAPER)
+      .vLine(SOCKET_VERTICAL_PART)
+      .line(SOCKET_BIG_TAPER, SOCKET_BIG_TAPER);
+
+    if (includeLip) {
+      // Extend wall downward to replace top wall section
+      sketcher = sketcher
+        .vLineTo(-(SOCKET_TAPER_WIDTH + wallThickness))
+        .lineTo([-SOCKET_TAPER_WIDTH, -wallThickness]);
+    } else {
+      sketcher = sketcher.vLineTo(0);
+    }
+
+    let basicShape = sketcher.close();
+
+    // Apply clearance shifts and clip to valid region
+    let shiftedShape = basicShape
+      .translate(AXIS_CLEARANCE, -AXIS_CLEARANCE)
+      .intersect(
+        drawRoundedRectangle(10, 10).translate(-5, includeLip ? 0 : 5)
+      );
+
+    // Shave off the clearance
+    let topProfileShape = shiftedShape
+      .translate(CLEARANCE / 2, 0)
+      .intersect(drawRoundedRectangle(10, 10).translate(-5, 0));
+
+    if (includeLip) {
+      // Remove the wall portion that the lip replaces
+      topProfileShape = topProfileShape.cut(
+        drawRoundedRectangle(wallThickness, 10).translate(-wallThickness / 2, -5)
+      );
+    }
+
+    return topProfileShape.sketchOnPlane('XZ', _startPoint) as unknown as Sketch;
   };
 
-  // Path sketch positioned at wallHeight — the sweep happens at the bin top
-  const pathSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)
-    .sketchOnPlane('XY', wallHeight) as unknown as Sketch;
+  // Sweep around the bin perimeter (built at Z=0, caller translates)
+  const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)
+    .sketchOnPlane() as unknown as Sketch;
 
-  return pathSketch.sweepSketch(lipProfile, { withContact: true });
+  return boxSketch
+    .sweepSketch(topProfile, { withContact: true })
+    .fillet(TOP_FILLET, (e) =>
+      e.inBox(
+        [-gridW * SIZE, -gridD * SIZE, SOCKET_HEIGHT],
+        [gridW * SIZE, gridD * SIZE, SOCKET_HEIGHT - 1]
+      )
+    );
 }
 
 // ─── Feature Builders ─────────────────────────────────────────────────────────
@@ -541,20 +563,19 @@ export function generateBin(
       const top = buildTopShape(
         params.width,
         params.depth,
-        wallHeight,
         true, // includeLip
         wallThickness
-      );
+      ).translateZ(wallHeight);
       // Assemble: socket + box + top
       bin = base
-        .fuse(box)
-        .fuse(top);
+        .fuse(box, { optimisation: 'commonFace' })
+        .fuse(top, { optimisation: 'commonFace' });
     } catch {
       // Top shape may fail — assemble without it
-      bin = base.fuse(box);
+      bin = base.fuse(box, { optimisation: 'commonFace' });
     }
   } else {
-    bin = base.fuse(box);
+    bin = base.fuse(box, { optimisation: 'commonFace' });
   }
 
   // Stage 4: Features (dividers, scoops, inserts)
