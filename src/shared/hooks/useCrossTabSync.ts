@@ -54,6 +54,9 @@ export function useCrossTabSync() {
           loadLayoutAsync(layoutId)
             .then((newLayout) => {
               if (newLayout) {
+                // Re-check active layout hasn't changed during async load
+                if (useLayoutStore.getState().activeLayoutId !== layoutId) return;
+
                 // Validate before applying
                 const validation = validateLayoutIntegrity(newLayout);
                 if (validation.valid) {

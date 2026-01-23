@@ -318,6 +318,49 @@ describe('useCrossTabSync', () => {
     });
   });
 
+  it('does not apply layout if active layout changed during async load', async () => {
+    const mockLayout = {
+      name: 'Stale Layout',
+      drawer: { width: 10, depth: 8, height: 12 },
+      bins: [],
+      layers: [{ id: 'layer-1', name: 'Base', height: 1 }],
+      categories: [{ id: 'cat-1', name: 'Default', color: '#3B82F6' }],
+      printBedSize: 256,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+    };
+
+    // Simulate async load that resolves after layout switch
+    vi.mocked(storage.loadLayoutAsync).mockImplementation(async () => {
+      // Simulate user switching to a different layout during the async load
+      useLayoutStore.setState({ activeLayoutId: 'different-layout-id' });
+      return mockLayout;
+    });
+    vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
+
+    const importLayoutSpy = vi.spyOn(useLayoutStore.getState(), 'importLayout');
+
+    renderHook(() => useCrossTabSync());
+
+    act(() => {
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'gridfinity-layout-test-layout-id',
+          newValue: '{}',
+          oldValue: null,
+        })
+      );
+    });
+
+    // Wait for async load to complete
+    await vi.waitFor(() => {
+      expect(storage.loadLayoutAsync).toHaveBeenCalledWith('test-layout-id');
+    });
+
+    // importLayout should NOT be called since active layout changed
+    expect(importLayoutSpy).not.toHaveBeenCalled();
+  });
+
   describe('Layout load error handling', () => {
     it('handles layout load errors gracefully', async () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
