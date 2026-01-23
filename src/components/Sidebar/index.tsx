@@ -175,7 +175,7 @@ export function Sidebar() {
             <div className="px-4 py-4 border-b border-stroke-subtle">
               <button
                 onClick={() => setShowInspirationGallery(true)}
-                className="w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-accent/10 to-purple-500/10 hover:from-accent/20 hover:to-purple-500/20 border border-accent/20 transition-all group"
+                className="w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 transition-all group"
               >
                 <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center group-hover:scale-105 transition-transform">
                   <svg
@@ -237,7 +237,9 @@ export function Sidebar() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-content">Bin Designer</div>
-                    <div className="text-xs text-content-tertiary">Create custom bins for 3D printing</div>
+                    <div className="text-xs text-content-tertiary">
+                      Create custom bins for 3D printing
+                    </div>
                   </div>
                   <svg
                     className="w-4 h-4 text-content-tertiary group-hover:translate-x-0.5 transition-transform"
@@ -383,9 +385,9 @@ export function Sidebar() {
                           <div className="flex rounded overflow-hidden border border-stroke-subtle">
                             <button
                               onClick={() => handleFractionalEdgeChange('x', 'start')}
-                              className={`px-2 py-0.5 text-[10px] transition-colors ${
+                              className={`px-2.5 py-1 text-[10px] transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
                                 fractionalEdges.x === 'start'
-                                  ? 'bg-accent text-white'
+                                  ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title="Place half-unit column on the left"
@@ -394,9 +396,9 @@ export function Sidebar() {
                             </button>
                             <button
                               onClick={() => handleFractionalEdgeChange('x', 'end')}
-                              className={`px-2 py-0.5 text-[10px] border-l border-stroke-subtle transition-colors ${
+                              className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
                                 fractionalEdges.x === 'end'
-                                  ? 'bg-accent text-white'
+                                  ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title="Place half-unit column on the right"
@@ -412,9 +414,9 @@ export function Sidebar() {
                           <div className="flex rounded overflow-hidden border border-stroke-subtle">
                             <button
                               onClick={() => handleFractionalEdgeChange('y', 'start')}
-                              className={`px-2 py-0.5 text-[10px] transition-colors ${
+                              className={`px-2.5 py-1 text-[10px] transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
                                 fractionalEdges.y === 'start'
-                                  ? 'bg-accent text-white'
+                                  ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title="Place half-unit row at the bottom"
@@ -423,9 +425,9 @@ export function Sidebar() {
                             </button>
                             <button
                               onClick={() => handleFractionalEdgeChange('y', 'end')}
-                              className={`px-2 py-0.5 text-[10px] border-l border-stroke-subtle transition-colors ${
+                              className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
                                 fractionalEdges.y === 'end'
-                                  ? 'bg-accent text-white'
+                                  ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title="Place half-unit row at the top"

@@ -35,7 +35,7 @@ export function ContextMenuItem({
       role="menuitem"
       onClick={onClick}
       disabled={disabled}
-      className={`w-full px-4 py-3 flex items-center gap-3 transition-colors ${
+      className={`w-full px-4 py-3 flex items-center gap-3 transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
         destructive ? 'text-error hover:bg-surface-hover' : 'text-content hover:bg-surface-hover'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >

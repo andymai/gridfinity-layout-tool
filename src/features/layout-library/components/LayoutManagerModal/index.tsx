@@ -222,7 +222,7 @@ function LayoutManagerModalContent({
               flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2
               ${
                 activeTab === 'layouts'
-                  ? 'bg-accent text-white'
+                  ? 'bg-accent text-on-dark'
                   : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
               }
             `}
@@ -254,7 +254,7 @@ function LayoutManagerModalContent({
               flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2
               ${
                 activeTab === 'shared'
-                  ? 'bg-accent text-white'
+                  ? 'bg-accent text-on-dark'
                   : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
               }
             `}
@@ -296,7 +296,7 @@ function LayoutManagerModalContent({
               flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2
               ${
                 activeTab === 'import'
-                  ? 'bg-accent text-white'
+                  ? 'bg-accent text-on-dark'
                   : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
               }
             `}

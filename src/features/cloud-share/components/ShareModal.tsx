@@ -145,7 +145,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
               onClick={() => handleTabChange('cloud')}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'cloud'
-                  ? 'bg-accent text-white'
+                  ? 'bg-accent text-on-dark'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
             >
@@ -158,7 +158,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
             onClick={() => handleTabChange('url')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
               activeTab === 'url'
-                ? 'bg-accent text-white'
+                ? 'bg-accent text-on-dark'
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
@@ -170,7 +170,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
             onClick={() => handleTabChange('file')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
               activeTab === 'file'
-                ? 'bg-accent text-white'
+                ? 'bg-accent text-on-dark'
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
@@ -182,7 +182,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
             onClick={() => handleTabChange('json')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
               activeTab === 'json'
-                ? 'bg-accent text-white'
+                ? 'bg-accent text-on-dark'
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >

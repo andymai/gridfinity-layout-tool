@@ -528,7 +528,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
                 ? `btn ${layerViewMode === 'focus' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                : `w-7 h-7 ${layerViewMode === 'focus' ? 'bg-accent text-white' : 'hover:bg-surface-elevated'}`
+                : `w-7 h-7 ${layerViewMode === 'focus' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
             }`}
             title="Focus: Show only active layer"
           >
@@ -555,7 +555,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
                 ? `btn ${layerViewMode === 'stack' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                : `w-7 h-7 ${layerViewMode === 'stack' ? 'bg-accent text-white' : 'hover:bg-surface-elevated'}`
+                : `w-7 h-7 ${layerViewMode === 'stack' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
             }`}
             title="Stack: Show active layer and below"
           >
@@ -583,7 +583,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
                 ? `btn ${layerViewMode === 'all' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                : `w-7 h-7 ${layerViewMode === 'all' ? 'bg-accent text-white' : 'hover:bg-surface-elevated'}`
+                : `w-7 h-7 ${layerViewMode === 'all' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
             }`}
             title="All: Show all layers"
           >

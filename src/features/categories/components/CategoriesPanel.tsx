@@ -222,7 +222,7 @@ export function CategoriesPanel() {
                         <button
                           key={color}
                           onClick={() => handleUpdateCategory(category.id, 'color', color)}
-                          className="w-6 h-6 rounded transition-transform hover:scale-110"
+                          className="w-7 h-7 rounded transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-accent"
                           style={{
                             backgroundColor: color,
                             boxShadow:
@@ -332,7 +332,7 @@ export function CategoriesPanel() {
                         e.stopPropagation();
                         setEditingId(category.id);
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1 -my-1 rounded hover:bg-surface-elevated transition-opacity flex-shrink-0"
+                      className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1.5 -my-1 rounded hover:bg-surface-elevated transition-opacity flex-shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
                       title="Edit category"
                       aria-label={`Edit ${category.name}`}
                     >
