@@ -46,7 +46,7 @@ describe('presetStorage', () => {
       expect(preset.overrides.style).toBe(DEFAULT_BIN_PARAMS.style);
       expect(preset.overrides.base).toEqual(DEFAULT_BIN_PARAMS.base);
       expect(preset.overrides.dividers).toEqual(DEFAULT_BIN_PARAMS.dividers);
-      expect(preset.overrides.scoop).toBe(DEFAULT_BIN_PARAMS.scoop);
+      expect(preset.overrides.scoop).toEqual(DEFAULT_BIN_PARAMS.scoop);
       expect(preset.overrides.label).toEqual(DEFAULT_BIN_PARAMS.label);
       expect(preset.overrides.walls).toEqual(DEFAULT_BIN_PARAMS.walls);
 

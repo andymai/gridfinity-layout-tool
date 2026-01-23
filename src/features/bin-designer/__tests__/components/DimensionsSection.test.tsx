@@ -83,8 +83,8 @@ describe('DimensionsSection', () => {
     fireEvent.change(input, { target: { value: '10' } });
     fireEvent.blur(input);
 
-    // Max is 6
-    expect(useDesignerStore.getState().params.width).toBe(6);
+    // Max is 8
+    expect(useDesignerStore.getState().params.width).toBe(8);
   });
 
   it('snaps width to 0.5 step increments on blur', () => {
@@ -106,7 +106,7 @@ describe('DimensionsSection', () => {
     expect(slider).toHaveAttribute('step', '1');
     // MIN_HEIGHT is 2 (1U = base only, no usable cavity)
     expect(slider).toHaveAttribute('min', '2');
-    expect(slider).toHaveAttribute('max', '12');
+    expect(slider).toHaveAttribute('max', '20');
   });
 
   it('height quick-select buttons are 3, 6, 9, 12', () => {

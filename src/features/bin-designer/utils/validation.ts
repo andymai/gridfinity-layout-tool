@@ -7,7 +7,7 @@
 import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
 import type { BinParams } from '../types';
-import { DESIGNER_CONSTRAINTS } from '../constants';
+import { DESIGNER_CONSTRAINTS, GRIDFINITY, STYLE_WALL_THICKNESS } from '../constants';
 
 /** Tolerance for floating-point step comparisons */
 const EPSILON = 1e-10;
@@ -137,6 +137,50 @@ export function validateBinParams(
     });
   }
 
+  // Scoop radius check (when not 'auto')
+  if (params.scoop.enabled && typeof params.scoop.radius === 'number') {
+    if (
+      params.scoop.radius < DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS ||
+      params.scoop.radius > DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS
+    ) {
+      return err({
+        code: 'SCOOP_RADIUS_OUT_OF_RANGE',
+        message: `Scoop radius must be between ${DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS}mm and ${DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS}mm`,
+        field: 'scoop.radius',
+      });
+    }
+  }
+
+  // Compartment size validation (ensures dividers don't create impossibly thin sections)
+  if (params.dividers.x > 0 || params.dividers.y > 0) {
+    const wallThickness = STYLE_WALL_THICKNESS[params.style] ?? GRIDFINITY.WALL_THICKNESS;
+    const innerWidth = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+    const innerDepth = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+
+    if (params.dividers.x > 0) {
+      const totalDividerWidth = params.dividers.x * params.dividers.thickness;
+      const compartmentWidth = (innerWidth - totalDividerWidth) / (params.dividers.x + 1);
+      if (compartmentWidth < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
+        return err({
+          code: 'COMPARTMENT_TOO_SMALL',
+          message: `Too many X dividers: compartments would be ${compartmentWidth.toFixed(1)}mm wide (min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm)`,
+          field: 'dividers.x',
+        });
+      }
+    }
+    if (params.dividers.y > 0) {
+      const totalDividerDepth = params.dividers.y * params.dividers.thickness;
+      const compartmentDepth = (innerDepth - totalDividerDepth) / (params.dividers.y + 1);
+      if (compartmentDepth < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
+        return err({
+          code: 'COMPARTMENT_TOO_SMALL',
+          message: `Too many Y dividers: compartments would be ${compartmentDepth.toFixed(1)}mm deep (min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm)`,
+          field: 'dividers.y',
+        });
+      }
+    }
+  }
+
   // Vase mode incompatibilities
   if (params.style === 'vase') {
     if (params.dividers.x > 0 || params.dividers.y > 0) {
@@ -146,7 +190,7 @@ export function validateBinParams(
         field: 'dividers',
       });
     }
-    if (params.scoop) {
+    if (params.scoop.enabled) {
       return err({
         code: 'VASE_INCOMPATIBLE',
         message: 'Vase mode does not support scoops',
@@ -162,8 +206,8 @@ export function validateBinParams(
     }
   }
 
-  // Magnet depth range
-  if (params.base.style === 'magnet') {
+  // Magnet depth range (applies to both magnet and magnet_and_screw styles)
+  if (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw') {
     if (
       params.base.magnetDepth < DESIGNER_CONSTRAINTS.MAGNET_MIN_DEPTH ||
       params.base.magnetDepth > DESIGNER_CONSTRAINTS.MAGNET_MAX_DEPTH

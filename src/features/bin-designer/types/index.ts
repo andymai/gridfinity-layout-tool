@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Base attachment style for bin-to-baseplate connection */
-export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'weighted';
+export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'magnet_and_screw' | 'weighted';
 
 /** Bin wall/style variant affecting thickness and reinforcement */
 export type BinStyle = 'standard' | 'lite' | 'solid' | 'vase' | 'rugged';
@@ -29,6 +29,15 @@ export interface DividerConfig {
   readonly x: number;
   readonly y: number;
   readonly thickness: number;
+}
+
+/** Scoop ramp configuration for compartment accessibility */
+export interface ScoopConfig {
+  readonly enabled: boolean;
+  /** Scoop radius in mm. 'auto' = min(compartmentSize/3, 15mm) */
+  readonly radius: number | 'auto';
+  /** Whether to add scoops to all compartment rows (true) or only front row (false) */
+  readonly allRows: boolean;
 }
 
 /** Label configuration for front-face text embossing */
@@ -54,7 +63,7 @@ export interface BinParams {
   readonly base: BaseConfig;
   readonly style: BinStyle;
   readonly dividers: DividerConfig;
-  readonly scoop: boolean;
+  readonly scoop: ScoopConfig;
   readonly label: LabelConfig;
   readonly walls: WallConfig;
   readonly inserts: Insert[];

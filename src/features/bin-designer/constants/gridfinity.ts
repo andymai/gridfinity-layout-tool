@@ -61,18 +61,21 @@ export const STYLE_WALL_THICKNESS: Record<string, number> = {
 /** Dimension constraints for bin parameters */
 export const DESIGNER_CONSTRAINTS = {
   MIN_DIMENSION: 0.5, // grid units
-  MAX_DIMENSION: 6, // grid units
+  MAX_DIMENSION: 8, // grid units (expanded: standard Gridfinity supports large bins)
   DIMENSION_STEP: 0.5, // grid units
   MIN_HEIGHT: 2, // height units (1U = base only, no cavity)
-  MAX_HEIGHT: 12, // height units
+  MAX_HEIGHT: 20, // height units (expanded: tall bins for tools/bottles)
   HEIGHT_STEP: 1, // height units
   MAX_DIVIDERS: 10, // per axis
   MIN_DIVIDER_THICKNESS: 0.8, // mm
   MAX_DIVIDER_THICKNESS: 2.0, // mm
+  MIN_COMPARTMENT_SIZE: 5, // mm (minimum viable compartment after dividers)
   MIN_WALL_CUTOUT: 20, // % (minimum when > 0)
   MAX_WALL_CUTOUT: 100, // %
   MAX_LABEL_LENGTH: 20, // characters
   MAX_HISTORY: 50, // undo/redo states
   MAGNET_MIN_DEPTH: 2.0, // mm
   MAGNET_MAX_DEPTH: 4.0, // mm
+  MIN_SCOOP_RADIUS: 2.0, // mm (minimum useful scoop)
+  MAX_SCOOP_RADIUS: 30.0, // mm (large scoops for deep bins)
 } as const;

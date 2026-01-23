@@ -8,7 +8,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SliderInput } from '../controls/SliderInput';
-import type { DividerConfig, LabelConfig } from '@/features/bin-designer/types';
+import type { DividerConfig, LabelConfig, ScoopConfig } from '@/features/bin-designer/types';
 
 export function FeaturesSection() {
   const { dividers, scoop, label, style, setParam } = useDesignerStore(
@@ -25,6 +25,10 @@ export function FeaturesSection() {
 
   const updateDividers = (partial: Partial<DividerConfig>) => {
     setParam('dividers', { ...dividers, ...partial });
+  };
+
+  const updateScoop = (partial: Partial<ScoopConfig>) => {
+    setParam('scoop', { ...scoop, ...partial });
   };
 
   const updateLabel = (partial: Partial<LabelConfig>) => {
@@ -80,11 +84,35 @@ export function FeaturesSection() {
 
       {/* Scoop */}
       <Checkbox
-        checked={scoop}
-        onChange={(checked) => setParam('scoop', checked)}
+        checked={scoop.enabled}
+        onChange={(checked) => updateScoop({ enabled: checked })}
         label="Finger scoop"
         ariaLabel="Enable finger scoop"
       />
+      {scoop.enabled && (
+        <div className="ml-4 space-y-2">
+          <Checkbox
+            checked={scoop.allRows}
+            onChange={(checked) => updateScoop({ allRows: checked })}
+            label="All rows"
+            ariaLabel="Add scoops to all compartment rows"
+          />
+          <SliderInput
+            label="Scoop radius"
+            value={scoop.radius === 'auto' ? 0 : scoop.radius}
+            onChange={(v) =>
+              updateScoop({
+                radius: v === 0 ? 'auto' : Math.max(v, DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS),
+              })
+            }
+            min={0}
+            max={DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS}
+            step={0.5}
+            unit="mm"
+            info={scoop.radius === 'auto' ? 'Auto' : undefined}
+          />
+        </div>
+      )}
 
       {/* Label */}
       <div className="space-y-2">

@@ -41,7 +41,7 @@ describe('PresetSelector', () => {
     const params = useDesignerStore.getState().params;
     expect(params.style).toBe('rugged');
     expect(params.base.style).toBe('magnet');
-    expect(params.scoop).toBe(true);
+    expect(params.scoop.enabled).toBe(true);
   });
 
   it('clicking Quick Print preset sets lite style', () => {
@@ -182,7 +182,7 @@ describe('PresetSelector', () => {
         id: 'user-1',
         name: 'Thick Walls',
         description: '',
-        overrides: { style: 'rugged' as const, scoop: false },
+        overrides: { style: 'rugged' as const, scoop: { enabled: false, radius: 'auto' as const, allRows: false } },
         createdAt: Date.now(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify([preset]));
@@ -193,7 +193,7 @@ describe('PresetSelector', () => {
 
       const params = useDesignerStore.getState().params;
       expect(params.style).toBe('rugged');
-      expect(params.scoop).toBe(false);
+      expect(params.scoop.enabled).toBe(false);
     });
 
     it('delete button removes user preset', () => {

@@ -64,13 +64,15 @@ function collectFeatures(params: BinParams): string[] {
   if (params.dividers.x > 0 || params.dividers.y > 0) {
     features.push('dividers');
   }
-  if (params.scoop) {
+  if (params.scoop.enabled) {
     features.push('scoop');
   }
   if (params.label.enabled) {
     features.push('label');
   }
-  if (params.base.style === 'magnet') {
+  if (params.base.style === 'magnet_and_screw') {
+    features.push('magnets+screws');
+  } else if (params.base.style === 'magnet') {
     features.push('magnets');
   } else if (params.base.style === 'screw') {
     features.push('screws');

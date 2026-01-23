@@ -56,7 +56,7 @@ describe('a11y utilities', () => {
     it('includes scoop when enabled', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
-        scoop: true,
+        scoop: { enabled: true, radius: 'auto', allRows: false },
       };
       expect(describeBin(params)).toContain('front scoop');
     });
@@ -95,7 +95,7 @@ describe('a11y utilities', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
-        scoop: true,
+        scoop: { enabled: true, radius: 'auto', allRows: false },
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
       };
       const result = describeBin(params);
@@ -111,7 +111,7 @@ describe('a11y utilities', () => {
         style: 'standard',
         dividers: { x: 0, y: 0, thickness: 1.2 },
         label: { enabled: false, text: '', fontSize: 'auto' },
-        scoop: false,
+        scoop: { enabled: false, radius: 'auto', allRows: false },
         walls: { front: 0, back: 0, left: 0, right: 0 },
         inserts: [],
       };
