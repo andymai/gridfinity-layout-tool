@@ -347,7 +347,7 @@ export function MobileSettingsPanel() {
           </div>
           <div className="flex items-center gap-2">
             {labsEnabledCount > 0 && (
-              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[11px] font-semibold text-white bg-accent rounded-full">
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[11px] font-semibold text-on-dark bg-accent rounded-full">
                 {labsEnabledCount > 9 ? '9+' : labsEnabledCount}
               </span>
             )}

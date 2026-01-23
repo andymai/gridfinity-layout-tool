@@ -270,7 +270,7 @@ export function MobileLayoutsPanel() {
               <div className="absolute right-0 top-0 bottom-0 flex items-stretch">
                 <button
                   onClick={() => handleRenameRequest(entry.id)}
-                  className="w-15 flex items-center justify-center bg-amber-600 text-white"
+                  className="w-15 flex items-center justify-center bg-warning text-on-dark"
                   aria-label={`Rename ${entry.name}`}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -284,7 +284,7 @@ export function MobileLayoutsPanel() {
                 </button>
                 <button
                   onClick={() => handleShare(entry.id)}
-                  className="w-15 flex items-center justify-center bg-green-600 text-white"
+                  className="w-15 flex items-center justify-center bg-success text-on-dark"
                   aria-label={`Share ${entry.name}`}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -312,7 +312,7 @@ export function MobileLayoutsPanel() {
                 </button>
                 <button
                   onClick={() => handleDeleteRequest(entry.id)}
-                  className="w-15 flex items-center justify-center bg-red-600 text-white"
+                  className="w-15 flex items-center justify-center bg-danger text-on-dark"
                   aria-label={`Delete ${entry.name}`}
                   disabled={library.entries.length <= 1}
                 >
@@ -359,7 +359,7 @@ export function MobileLayoutsPanel() {
                           {entry.name}
                         </span>
                         {isActive && (
-                          <span className="text-xs px-2 py-0.5 bg-accent text-white rounded flex-shrink-0">
+                          <span className="text-xs px-2 py-0.5 bg-accent text-on-dark rounded flex-shrink-0">
                             Active
                           </span>
                         )}
@@ -700,7 +700,7 @@ export function MobileLayoutsPanel() {
                 <button
                   onClick={handleRenameConfirm}
                   disabled={!renameValue.trim()}
-                  className="flex-1 py-3 text-white font-medium bg-accent rounded-lg disabled:opacity-50"
+                  className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
                 >
                   Rename
                 </button>
@@ -890,7 +890,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             <p className="text-sm text-content-secondary">{error.message}</p>
             <button
               onClick={reset}
-              className="w-full py-3 bg-accent text-white font-medium rounded-lg"
+              className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
             >
               Try Again
             </button>
@@ -926,7 +926,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             <div className="flex gap-2">
               <button
                 onClick={handleCopyUrl}
-                className="flex-1 py-3 bg-accent text-white font-medium rounded-lg"
+                className="flex-1 py-3 bg-accent text-on-dark font-medium rounded-lg"
               >
                 {urlCopied ? 'Copied!' : 'Copy Link Again'}
               </button>
@@ -967,7 +967,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
 
             <button
               onClick={handleShare}
-              className="w-full py-3 bg-accent text-white font-medium rounded-lg"
+              className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
             >
               Share to Cloud
             </button>
@@ -990,7 +990,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
 
             <button
               onClick={handleCopyUrl}
-              className="w-full py-3 bg-accent text-white font-medium rounded-lg"
+              className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
             >
               {urlCopied ? 'Copied!' : 'Copy Link'}
             </button>

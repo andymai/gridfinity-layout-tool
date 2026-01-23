@@ -43,7 +43,7 @@ export function ThemeFilterPills({
               transition-all duration-150 whitespace-nowrap
               ${
                 isSelected
-                  ? 'bg-accent text-white shadow-sm'
+                  ? 'bg-accent text-on-dark shadow-sm'
                   : 'bg-surface text-content-secondary hover:text-content hover:bg-surface-hover'
               }
             `}

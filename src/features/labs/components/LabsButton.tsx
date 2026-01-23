@@ -27,7 +27,7 @@ export function LabsButton() {
         <div className="text-[11px] text-content-tertiary">Try experimental features</div>
       </div>
       {enabledCount > 0 && (
-        <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[11px] font-semibold text-white bg-accent rounded-full">
+        <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[11px] font-semibold text-on-dark bg-accent rounded-full">
           {enabledCount > 9 ? '9+' : enabledCount}
         </span>
       )}

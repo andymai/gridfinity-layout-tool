@@ -295,7 +295,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         <button
           onClick={handleImport}
           disabled={!validLayout}
-          className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
+          className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-on-dark rounded-lg transition-colors text-sm font-medium"
         >
           Import Layout
         </button>

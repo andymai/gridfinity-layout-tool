@@ -387,7 +387,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
             onClick={toggleGroupByCategory}
             className={`
               flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-all
-              ${filters.groupByCategory ? 'bg-accent text-white' : 'bg-surface-elevated text-content border border-stroke'}
+              ${filters.groupByCategory ? 'bg-accent text-on-dark' : 'bg-surface-elevated text-content border border-stroke'}
             `}
           >
             Group
@@ -622,7 +622,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
             <button
               onClick={handleEditSubmit}
               disabled={!editValue.trim()}
-              className="w-full py-3 rounded-lg bg-accent text-white font-medium disabled:opacity-50"
+              className="w-full py-3 rounded-lg bg-accent text-on-dark font-medium disabled:opacity-50"
             >
               Apply
             </button>
@@ -649,7 +649,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
             <button
               onClick={handleEditSubmit}
               disabled={!editValue.trim()}
-              className="w-full py-3 rounded-lg bg-accent text-white font-medium disabled:opacity-50"
+              className="w-full py-3 rounded-lg bg-accent text-on-dark font-medium disabled:opacity-50"
             >
               Apply
             </button>
