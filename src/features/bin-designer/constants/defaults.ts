@@ -9,10 +9,11 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   width: 2,
   depth: 2,
   height: 3,
+  wallThickness: 1.2,
   base: {
     style: 'standard',
-    magnetDiameter: 6,
-    magnetDepth: 2.4,
+    magnetDiameter: 6.5,
+    magnetDepth: 2,
     screwDiameter: 3,
     stackingLip: true,
   },
