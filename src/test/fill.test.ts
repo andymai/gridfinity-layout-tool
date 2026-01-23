@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fillAllWithSize, fillGaps, getLayerCoverage } from '@/shared/utils/fill';
+import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
 import type { Layout } from '@/core/types';
 
 const createTestLayout = (): Layout => ({
@@ -176,52 +176,6 @@ describe('fillGaps', () => {
     const result = fillGaps(layout, 'nonexistent', 'cat1', 4);
     expect(result.bins).toHaveLength(0);
     expect(result.addedCount).toBe(0);
-  });
-});
-
-describe('getLayerCoverage', () => {
-  it('returns 0 for empty layer', () => {
-    const layout = createTestLayout();
-    expect(getLayerCoverage(layout, 'layer1')).toBe(0);
-  });
-
-  it('calculates correct percentage', () => {
-    const layout = createTestLayout();
-    // 6×6 = 36 cells, 3×3 = 9 cells = 25%
-    layout.bins = [
-      {
-        id: 'bin1',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 3,
-        depth: 3,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
-    expect(getLayerCoverage(layout, 'layer1')).toBe(25);
-  });
-
-  it('returns 100 for full layer', () => {
-    const layout = createTestLayout();
-    layout.bins = [
-      {
-        id: 'full',
-        layerId: 'layer1',
-        x: 0,
-        y: 0,
-        width: 6,
-        depth: 6,
-        height: 3,
-        category: 'cat1',
-        label: '',
-        notes: '',
-      },
-    ];
-    expect(getLayerCoverage(layout, 'layer1')).toBe(100);
   });
 });
 

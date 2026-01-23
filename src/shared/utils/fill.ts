@@ -228,20 +228,3 @@ export function fillGaps(
 
   return { bins: newBins, addedCount: newBins.length };
 }
-
-/**
- * Get coverage percentage for a layer.
- */
-export function getLayerCoverage(layout: Layout, layerId: string): number {
-  const totalCells = layout.drawer.width * layout.drawer.depth;
-  if (totalCells === 0) return 0;
-
-  let coveredCells = 0;
-  for (const bin of layout.bins) {
-    if (bin.layerId === layerId) {
-      coveredCells += bin.width * bin.depth;
-    }
-  }
-
-  return Math.round((coveredCells / totalCells) * 100);
-}

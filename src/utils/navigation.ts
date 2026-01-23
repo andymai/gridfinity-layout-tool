@@ -2,13 +2,6 @@ import type { Bin } from '@/core/types';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
-interface BinPosition {
-  x: number;
-  y: number;
-  width: number;
-  depth: number;
-}
-
 /**
  * Find the nearest bin in a given direction using spatial navigation.
  * Uses hybrid alignment + distance scoring for intuitive navigation.
@@ -92,37 +85,4 @@ export function findNearestBinInDirection(
   // Sort by score (highest first) and return the best match
   scored.sort((a, b) => b.score - a.score);
   return scored[0].bin;
-}
-
-/**
- * Check if a bin overlaps with a given position/size.
- * Used for collision detection during keyboard drag/resize.
- */
-export function doesBinOverlap(bin1: BinPosition, bin2: BinPosition): boolean {
-  return !(
-    bin1.x >= bin2.x + bin2.width ||
-    bin1.x + bin1.width <= bin2.x ||
-    bin1.y >= bin2.y + bin2.depth ||
-    bin1.y + bin1.depth <= bin2.y
-  );
-}
-
-/**
- * Get all bins that would overlap with a bin at a given position.
- * Used to validate keyboard drag/resize moves.
- */
-export function getOverlappingBins(
-  position: BinPosition,
-  allBins: Bin[],
-  excludeBinId?: string
-): Bin[] {
-  return allBins.filter((bin) => {
-    if (bin.id === excludeBinId) return false;
-    return doesBinOverlap(position, {
-      x: bin.x,
-      y: bin.y,
-      width: bin.width,
-      depth: bin.depth,
-    });
-  });
 }
