@@ -12,6 +12,7 @@ import { removeRegistryEntry } from '../store/customBinRegistry';
 import { useDesignerStore } from '../store';
 import { useDesignerRouting } from '../hooks/useDesignerRouting';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
+import { useToastStore } from '@/core/store/toast';
 import type { SavedDesign } from '../types';
 
 interface DesignListDialogProps {
@@ -41,6 +42,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const newDesign = useDesignerStore((s) => s.newDesign);
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
   const { navigateToDesign, syncUrlToDesign } = useDesignerRouting();
+  const addToast = useToastStore((s) => s.addToast);
 
   const refreshDesigns = useCallback(async () => {
     setLoading(true);
@@ -61,16 +63,18 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     (design: SavedDesign) => {
       loadDesign(design);
       navigateToDesign(design.id);
+      addToast({ message: `Loaded "${design.name}"`, type: 'success', duration: 2000 });
       onClose();
     },
-    [loadDesign, navigateToDesign, onClose]
+    [loadDesign, navigateToDesign, addToast, onClose]
   );
 
   const handleNewDesign = useCallback(() => {
     newDesign();
     syncUrlToDesign(null);
+    addToast({ message: 'New design created', type: 'success', duration: 2000 });
     onClose();
-  }, [newDesign, syncUrlToDesign, onClose]);
+  }, [newDesign, syncUrlToDesign, addToast, onClose]);
 
   const handleDelete = useCallback(
     async (id: string, name: string) => {
@@ -79,9 +83,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       if (isOk(result)) {
         setDesigns((prev) => prev.filter((d) => d.id !== id));
         removeRegistryEntry(id);
+        addToast({ message: `Deleted "${name}"`, type: 'success', duration: 2000 });
+      } else {
+        addToast({ message: 'Failed to delete design', type: 'error', duration: 4000 });
       }
     },
-    []
+    [addToast]
   );
 
   const handleRenameStart = useCallback((design: SavedDesign) => {
