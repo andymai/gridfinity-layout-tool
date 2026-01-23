@@ -31,6 +31,19 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
     comingSoon: true,
   },
+  {
+    id: 'bin_designer',
+    name: 'Bin Designer',
+    description:
+      'Create custom parametric Gridfinity bins with a visual designer. Configure dimensions, dividers, scoops, labels, and export STL files for 3D printing.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'This feature is experimental. The CAD engine runs in a Web Worker and may use significant memory.',
+    addedAt: '2026-01',
+    requiresRefresh: false,
+    comingSoon: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

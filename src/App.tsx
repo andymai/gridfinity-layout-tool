@@ -51,6 +51,11 @@ const SharedLayoutBanner = lazyWithRetry(() =>
 const LabsDrawer = lazyWithRetry(() =>
   import('./features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
 );
+
+// Lazy load Bin Designer page - only loaded when navigating to /designer
+const DesignerPage = lazyWithRetry(() =>
+  import('./features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
+);
 import { SHORTCUTS } from './core/constants';
 
 // Legacy context menu state for backwards compatibility (has binId instead of binIds)
@@ -124,6 +129,23 @@ export default function App() {
     const pathname = window.location.pathname;
     return hash.includes('share=') || /^\/l\/[a-zA-Z0-9]{12}$/.test(pathname);
   });
+
+  // Bin Designer route detection (behind feature flag)
+  const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
+  const [isDesignerRoute, setIsDesignerRoute] = useState(() => {
+    const pathname = window.location.pathname;
+    return pathname === '/designer' || pathname === '/designer/';
+  });
+
+  // Listen for popstate to handle back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const pathname = window.location.pathname;
+      setIsDesignerRoute(pathname === '/designer' || pathname === '/designer/');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
   useOwnedShareSync();
@@ -223,6 +245,20 @@ export default function App() {
           <pre>{initialLoadError.message}</pre>
         </div>
       </div>
+    );
+  }
+
+  // Bin Designer route - lazy loaded, behind feature flag
+  if (isDesignerRoute && isDesignerEnabled) {
+    return (
+      <Suspense fallback={<div className="h-screen bg-gray-50" />}>
+        <DesignerPage
+          onNavigateBack={() => {
+            window.history.pushState(null, '', '/');
+            setIsDesignerRoute(false);
+          }}
+        />
+      </Suspense>
     );
   }
 
