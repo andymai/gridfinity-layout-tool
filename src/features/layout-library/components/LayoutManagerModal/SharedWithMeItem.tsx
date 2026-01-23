@@ -163,7 +163,7 @@ export function SharedWithMeItem({
             aria-label={isDeleted ? 'Layout has been deleted' : 'Open layout'}
           >
             {isLoading ? (
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <svg className="w-4 h-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none">
                 <circle
                   className="opacity-25"
                   cx="12"
