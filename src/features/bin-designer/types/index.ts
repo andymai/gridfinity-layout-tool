@@ -60,6 +60,8 @@ export interface BinParams {
   readonly width: number;
   readonly depth: number;
   readonly height: number;
+  /** Wall thickness in mm (default 1.2). Ignored when style is 'solid'. */
+  readonly wallThickness: number;
   readonly base: BaseConfig;
   readonly style: BinStyle;
   readonly dividers: DividerConfig;

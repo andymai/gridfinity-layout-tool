@@ -1,7 +1,7 @@
 /**
- * Simplified parameter panel for replicad-based bin generation.
- * Contains dimension sliders (width, depth, height) and base feature toggles
- * (magnet holes, screw holes, stacking lip).
+ * Parameter panel for replicad-based bin generation.
+ * Contains dimension sliders, base feature toggles with conditional
+ * sub-parameter sliders, and wall/style options.
  */
 
 import { useCallback } from 'react';
@@ -9,7 +9,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { SliderInput } from './controls/SliderInput';
-import type { BaseConfig, BaseStyle } from '@/features/bin-designer/types';
+import type { BaseConfig, BaseStyle, BinStyle } from '@/features/bin-designer/types';
 
 /** Derive base style from individual magnet/screw booleans */
 function computeBaseStyle(magnet: boolean, screw: boolean): BaseStyle {
@@ -20,18 +20,21 @@ function computeBaseStyle(magnet: boolean, screw: boolean): BaseStyle {
 }
 
 export function ParameterPanel() {
-  const { width, depth, height, base, setParam } = useDesignerStore(
+  const { width, depth, height, wallThickness, base, style, setParam } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
       depth: s.params.depth,
       height: s.params.height,
+      wallThickness: s.params.wallThickness,
       base: s.params.base,
+      style: s.params.style,
       setParam: s.setParam,
     }))
   );
 
   const hasMagnet = base.style === 'magnet' || base.style === 'magnet_and_screw';
   const hasScrew = base.style === 'screw' || base.style === 'magnet_and_screw';
+  const keepFull = style === 'solid';
 
   const toggleMagnet = useCallback(() => {
     const newMagnet = !hasMagnet;
@@ -58,6 +61,35 @@ export function ParameterPanel() {
     };
     setParam('base', newBase);
   }, [base, setParam]);
+
+  const toggleKeepFull = useCallback(() => {
+    const newStyle: BinStyle = keepFull ? 'standard' : 'solid';
+    setParam('style', newStyle);
+  }, [keepFull, setParam]);
+
+  const setMagnetRadius = useCallback(
+    (radius: number) => {
+      const newBase: BaseConfig = { ...base, magnetDiameter: radius * 2 };
+      setParam('base', newBase);
+    },
+    [base, setParam]
+  );
+
+  const setMagnetHeight = useCallback(
+    (depth: number) => {
+      const newBase: BaseConfig = { ...base, magnetDepth: depth };
+      setParam('base', newBase);
+    },
+    [base, setParam]
+  );
+
+  const setScrewRadius = useCallback(
+    (radius: number) => {
+      const newBase: BaseConfig = { ...base, screwDiameter: radius * 2 };
+      setParam('base', newBase);
+    },
+    [base, setParam]
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -113,16 +145,78 @@ export function ParameterPanel() {
                 checked={hasMagnet}
                 onChange={toggleMagnet}
               />
+              {hasMagnet && (
+                <div className="ml-4 space-y-3 border-l border-stroke-subtle pl-3 pt-1">
+                  <SliderInput
+                    label="Magnet radius"
+                    value={base.magnetDiameter / 2}
+                    onChange={setMagnetRadius}
+                    min={DESIGNER_CONSTRAINTS.MIN_MAGNET_RADIUS}
+                    max={DESIGNER_CONSTRAINTS.MAX_MAGNET_RADIUS}
+                    step={DESIGNER_CONSTRAINTS.MAGNET_RADIUS_STEP}
+                    unit="mm"
+                  />
+                  <SliderInput
+                    label="Magnet height"
+                    value={base.magnetDepth}
+                    onChange={setMagnetHeight}
+                    min={DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT}
+                    max={DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT}
+                    step={DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP}
+                    unit="mm"
+                  />
+                </div>
+              )}
               <ToggleRow
                 label="Screw holes"
                 checked={hasScrew}
                 onChange={toggleScrew}
               />
+              {hasScrew && (
+                <div className="ml-4 space-y-3 border-l border-stroke-subtle pl-3 pt-1">
+                  <SliderInput
+                    label="Screw radius"
+                    value={base.screwDiameter / 2}
+                    onChange={setScrewRadius}
+                    min={DESIGNER_CONSTRAINTS.MIN_SCREW_RADIUS}
+                    max={DESIGNER_CONSTRAINTS.MAX_SCREW_RADIUS}
+                    step={DESIGNER_CONSTRAINTS.SCREW_RADIUS_STEP}
+                    unit="mm"
+                  />
+                </div>
+              )}
               <ToggleRow
                 label="Stacking lip"
                 checked={base.stackingLip}
                 onChange={toggleStackingLip}
               />
+            </div>
+          </section>
+
+          {/* Walls */}
+          <section>
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
+              Walls
+            </h3>
+            <div className="space-y-2">
+              <ToggleRow
+                label="Keep full (solid)"
+                checked={keepFull}
+                onChange={toggleKeepFull}
+              />
+              {!keepFull && (
+                <div className="ml-4 space-y-3 border-l border-stroke-subtle pl-3 pt-1">
+                  <SliderInput
+                    label="Wall thickness"
+                    value={wallThickness}
+                    onChange={(v) => setParam('wallThickness', v)}
+                    min={DESIGNER_CONSTRAINTS.MIN_WALL_THICKNESS}
+                    max={DESIGNER_CONSTRAINTS.MAX_WALL_THICKNESS}
+                    step={DESIGNER_CONSTRAINTS.WALL_THICKNESS_STEP}
+                    unit="mm"
+                  />
+                </div>
+              )}
             </div>
           </section>
         </div>

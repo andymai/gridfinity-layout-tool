@@ -7,7 +7,7 @@
 import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
 import type { BinParams } from '../types';
-import { DESIGNER_CONSTRAINTS, GRIDFINITY, STYLE_WALL_THICKNESS } from '../constants';
+import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '../constants';
 
 /** Tolerance for floating-point step comparisons */
 const EPSILON = 1e-10;
@@ -82,6 +82,58 @@ export function validateBinParams(
     });
   }
 
+  // Wall thickness check
+  if (
+    params.wallThickness < DESIGNER_CONSTRAINTS.MIN_WALL_THICKNESS ||
+    params.wallThickness > DESIGNER_CONSTRAINTS.MAX_WALL_THICKNESS
+  ) {
+    return err({
+      code: 'WALL_THICKNESS_OUT_OF_RANGE',
+      message: `Wall thickness must be between ${DESIGNER_CONSTRAINTS.MIN_WALL_THICKNESS}mm and ${DESIGNER_CONSTRAINTS.MAX_WALL_THICKNESS}mm`,
+      field: 'wallThickness',
+    });
+  }
+
+  // Magnet dimension checks (only when magnet is enabled)
+  if (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw') {
+    const magnetRadius = params.base.magnetDiameter / 2;
+    if (
+      magnetRadius < DESIGNER_CONSTRAINTS.MIN_MAGNET_RADIUS ||
+      magnetRadius > DESIGNER_CONSTRAINTS.MAX_MAGNET_RADIUS
+    ) {
+      return err({
+        code: 'MAGNET_RADIUS_OUT_OF_RANGE',
+        message: `Magnet radius must be between ${DESIGNER_CONSTRAINTS.MIN_MAGNET_RADIUS}mm and ${DESIGNER_CONSTRAINTS.MAX_MAGNET_RADIUS}mm`,
+        field: 'base.magnetDiameter',
+      });
+    }
+    if (
+      params.base.magnetDepth < DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT ||
+      params.base.magnetDepth > DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT
+    ) {
+      return err({
+        code: 'MAGNET_HEIGHT_OUT_OF_RANGE',
+        message: `Magnet height must be between ${DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT}mm and ${DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT}mm`,
+        field: 'base.magnetDepth',
+      });
+    }
+  }
+
+  // Screw dimension check (only when screw is enabled)
+  if (params.base.style === 'screw' || params.base.style === 'magnet_and_screw') {
+    const screwRadius = params.base.screwDiameter / 2;
+    if (
+      screwRadius < DESIGNER_CONSTRAINTS.MIN_SCREW_RADIUS ||
+      screwRadius > DESIGNER_CONSTRAINTS.MAX_SCREW_RADIUS
+    ) {
+      return err({
+        code: 'SCREW_RADIUS_OUT_OF_RANGE',
+        message: `Screw radius must be between ${DESIGNER_CONSTRAINTS.MIN_SCREW_RADIUS}mm and ${DESIGNER_CONSTRAINTS.MAX_SCREW_RADIUS}mm`,
+        field: 'base.screwDiameter',
+      });
+    }
+  }
+
   // Divider checks
   if (params.dividers.x < 0 || params.dividers.x > DESIGNER_CONSTRAINTS.MAX_DIVIDERS) {
     return err({
@@ -153,9 +205,8 @@ export function validateBinParams(
 
   // Compartment size validation (ensures dividers don't create impossibly thin sections)
   if (params.dividers.x > 0 || params.dividers.y > 0) {
-    const wallThickness = STYLE_WALL_THICKNESS[params.style] ?? GRIDFINITY.WALL_THICKNESS;
-    const innerWidth = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
-    const innerDepth = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+    const innerWidth = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
+    const innerDepth = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
 
     if (params.dividers.x > 0) {
       const totalDividerWidth = params.dividers.x * params.dividers.thickness;
