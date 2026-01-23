@@ -242,7 +242,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
           <div className="flex gap-1">
             <button
               onClick={() => setActiveTab('shortcuts')}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
                 activeTab === 'shortcuts'
                   ? 'bg-accent/20 text-accent'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
@@ -252,7 +252,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
             </button>
             <button
               onClick={() => setActiveTab('tips')}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
                 activeTab === 'tips'
                   ? 'bg-accent/20 text-accent'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
@@ -288,7 +288,8 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-content-tertiary hover:text-content"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-content-tertiary hover:text-content focus-visible:ring-2 focus-visible:ring-accent"
+                    aria-label="Clear search"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path

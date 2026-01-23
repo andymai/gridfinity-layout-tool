@@ -30,10 +30,10 @@ export function GraduatedSection({ features }: GraduatedSectionProps) {
               key={feature.id}
               className="flex items-start gap-2 p-3 rounded-lg bg-surface border border-stroke-subtle"
             >
-              <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+              <CheckCircleIcon className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
               <div>
                 <div className="text-sm font-medium text-content">{feature.name}</div>
-                <div className="text-xs text-green-400 mt-0.5">Now available to everyone!</div>
+                <div className="text-xs text-success mt-0.5">Now available to everyone!</div>
               </div>
             </div>
           ))}
