@@ -1,5 +1,9 @@
+import { memo } from 'react';
 import { Line } from '@react-three/drei';
 import * as THREE from 'three';
+
+// Hoisted constant to avoid allocation on every render
+const AMBER_COLOR = new THREE.Color(0xfbbf24); // rgb(251, 191, 36)
 
 /**
  * Calculate split line positions along an axis using greedy halving.
@@ -33,7 +37,7 @@ interface SplitLineOverlayProps {
  * Renders dashed amber split lines on the top face of oversized bins.
  * Uses the same greedy halving algorithm as the original Canvas implementation.
  */
-export function SplitLineOverlay({
+export const SplitLineOverlay = memo(function SplitLineOverlay({
   x,
   y,
   z,
@@ -56,7 +60,6 @@ export function SplitLineOverlay({
 
   // Amber color matching UI warning, with opacity for dimmed bins
   const lineOpacity = opacity < 1 ? 0.4 : 0.9;
-  const amberColor = new THREE.Color(0xfbbf24); // rgb(251, 191, 36)
 
   return (
     <group>
@@ -68,7 +71,7 @@ export function SplitLineOverlay({
             [x + splitX, y, topZ],
             [x + splitX, y + depth, topZ],
           ]}
-          color={amberColor}
+          color={AMBER_COLOR}
           lineWidth={1.5}
           dashed
           dashScale={10}
@@ -87,7 +90,7 @@ export function SplitLineOverlay({
             [x, y + splitY, topZ],
             [x + width, y + splitY, topZ],
           ]}
-          color={amberColor}
+          color={AMBER_COLOR}
           lineWidth={1.5}
           dashed
           dashScale={10}
@@ -99,4 +102,4 @@ export function SplitLineOverlay({
       ))}
     </group>
   );
-}
+});

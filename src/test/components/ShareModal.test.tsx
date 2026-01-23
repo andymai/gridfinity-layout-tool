@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { useLayoutStore, useLibraryStore, useUIStore, useLabsStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
@@ -409,8 +409,10 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
       fireEvent.click(screen.getByText('Copy'));
 
-      // Wait a bit to ensure state would have updated if successful
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Wait for the async copy operation to complete
+      await waitFor(() => {
+        expect(storage.copyToClipboard).toHaveBeenCalled();
+      });
 
       expect(screen.queryByText('Copied!')).not.toBeInTheDocument();
     });
