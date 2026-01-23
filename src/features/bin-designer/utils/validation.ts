@@ -9,6 +9,15 @@ import { ok, err } from '@/core/result';
 import type { BinParams } from '../types';
 import { DESIGNER_CONSTRAINTS } from '../constants';
 
+/** Tolerance for floating-point step comparisons */
+const EPSILON = 1e-10;
+
+/** Check if a value is a valid multiple of step, accounting for float precision */
+function isValidStep(value: number, step: number): boolean {
+  const remainder = Math.abs(value % step);
+  return remainder < EPSILON || Math.abs(remainder - step) < EPSILON;
+}
+
 /** Designer-specific validation error */
 export interface DesignerValidationError {
   readonly code: string;
@@ -48,15 +57,15 @@ export function validateBinParams(
     });
   }
 
-  // Dimension step check (0.5 increments for width/depth)
-  if (params.width % DESIGNER_CONSTRAINTS.DIMENSION_STEP !== 0) {
+  // Dimension step check (0.5 increments for width/depth, tolerance-based for float safety)
+  if (!isValidStep(params.width, DESIGNER_CONSTRAINTS.DIMENSION_STEP)) {
     return err({
       code: 'INVALID_STEP',
       message: `Width must be in ${DESIGNER_CONSTRAINTS.DIMENSION_STEP} unit increments`,
       field: 'width',
     });
   }
-  if (params.depth % DESIGNER_CONSTRAINTS.DIMENSION_STEP !== 0) {
+  if (!isValidStep(params.depth, DESIGNER_CONSTRAINTS.DIMENSION_STEP)) {
     return err({
       code: 'INVALID_STEP',
       message: `Depth must be in ${DESIGNER_CONSTRAINTS.DIMENSION_STEP} unit increments`,

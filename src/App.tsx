@@ -56,6 +56,7 @@ const LabsDrawer = lazyWithRetry(() =>
 const DesignerPage = lazyWithRetry(() =>
   import('./features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );
+import { useDesignerRouting } from './features/bin-designer/hooks/useDesignerRouting';
 import { SHORTCUTS } from './core/constants';
 
 // Legacy context menu state for backwards compatibility (has binId instead of binIds)
@@ -132,20 +133,14 @@ export default function App() {
 
   // Bin Designer route detection (behind feature flag)
   const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
-  const [isDesignerRoute, setIsDesignerRoute] = useState(() => {
-    const pathname = window.location.pathname;
-    return pathname === '/designer' || pathname === '/designer/';
-  });
+  const { isDesignerRoute, navigateToPlanner } = useDesignerRouting();
 
-  // Listen for popstate to handle back/forward navigation
+  // Redirect away from /designer when feature flag is disabled
   useEffect(() => {
-    const handlePopState = () => {
-      const pathname = window.location.pathname;
-      setIsDesignerRoute(pathname === '/designer' || pathname === '/designer/');
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+    if (isDesignerRoute && !isDesignerEnabled) {
+      navigateToPlanner();
+    }
+  }, [isDesignerRoute, isDesignerEnabled, navigateToPlanner]);
 
   // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
   useOwnedShareSync();
@@ -252,15 +247,11 @@ export default function App() {
   if (isDesignerRoute && isDesignerEnabled) {
     return (
       <Suspense fallback={<div className="h-screen bg-gray-50" />}>
-        <DesignerPage
-          onNavigateBack={() => {
-            window.history.pushState(null, '', '/');
-            setIsDesignerRoute(false);
-          }}
-        />
+        <DesignerPage onNavigateBack={navigateToPlanner} />
       </Suspense>
     );
   }
+
 
   // Mobile layout - lazy loaded
   if (isMobile) {

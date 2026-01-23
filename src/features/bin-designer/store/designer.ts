@@ -7,6 +7,7 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { current } from 'immer';
 import type {
   DesignerState,
   BinParams,
@@ -35,10 +36,10 @@ export const useDesignerStore = create<DesignerState>()(
     // Param actions
     setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => {
       set((state) => {
-        // Push current params to history before modifying
+        // Push current params to history before modifying (deep snapshot via current())
         state.history.past = [
           ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          { ...state.params },
+          current(state.params),
         ];
         state.history.future = [];
         state.params[key] = value;
@@ -49,7 +50,7 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         state.history.past = [
           ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          { ...state.params },
+          current(state.params),
         ];
         state.history.future = [];
         Object.assign(state.params, partial);
@@ -60,7 +61,7 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         state.history.past = [
           ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          { ...state.params },
+          current(state.params),
         ];
         state.history.future = [];
         state.params = { ...DEFAULT_BIN_PARAMS };
@@ -72,7 +73,7 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         state.history.past = [
           ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          { ...state.params },
+          current(state.params),
         ];
         state.history.future = [];
       });
@@ -85,8 +86,8 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         const previous = state.history.past[state.history.past.length - 1];
         state.history.past = state.history.past.slice(0, -1);
-        state.history.future = [{ ...state.params }, ...state.history.future];
-        state.params = { ...previous } as BinParams;
+        state.history.future = [current(state.params), ...state.history.future];
+        state.params = previous;
       });
     },
 
@@ -97,8 +98,8 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         const next = state.history.future[0];
         state.history.future = state.history.future.slice(1);
-        state.history.past = [...state.history.past, { ...state.params }];
-        state.params = { ...next } as BinParams;
+        state.history.past = [...state.history.past, current(state.params)];
+        state.params = next;
       });
     },
 

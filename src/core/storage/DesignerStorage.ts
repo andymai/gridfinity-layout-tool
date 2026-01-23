@@ -54,12 +54,21 @@ export async function saveDesign(
     const db = await getDb();
     const now = new Date().toISOString();
 
+    // Only check for existing createdAt when updating (id provided)
+    let createdAt = now;
+    if (design.id) {
+      const existing = (await db.get(DESIGNS_STORE, design.id)) as SavedDesign | undefined;
+      if (existing) {
+        createdAt = existing.createdAt;
+      }
+    }
+
     const savedDesign: SavedDesign = {
       id: design.id ?? generateDesignId(),
       name: design.name,
       params: design.params,
       thumbnail: design.thumbnail ?? null,
-      createdAt: design.id ? ((await db.get(DESIGNS_STORE, design.id)) as SavedDesign)?.createdAt ?? now : now,
+      createdAt,
       updatedAt: now,
     };
 
