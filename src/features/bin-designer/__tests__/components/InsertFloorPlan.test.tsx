@@ -55,7 +55,7 @@ describe('InsertFloorPlan', () => {
     });
 
     render(<InsertFloorPlan />);
-    const shape = screen.getByLabelText('My Rect');
+    const shape = screen.getByLabelText('My Rect insert');
     expect(shape.tagName.toLowerCase()).toBe('rect');
   });
 
@@ -68,7 +68,7 @@ describe('InsertFloorPlan', () => {
     });
 
     render(<InsertFloorPlan />);
-    const shape = screen.getByLabelText('My Circle');
+    const shape = screen.getByLabelText('My Circle insert');
     expect(shape.tagName.toLowerCase()).toBe('ellipse');
   });
 
@@ -81,7 +81,7 @@ describe('InsertFloorPlan', () => {
     });
 
     render(<InsertFloorPlan />);
-    const shape = screen.getByLabelText('My Hex');
+    const shape = screen.getByLabelText('My Hex insert');
     expect(shape.tagName.toLowerCase()).toBe('polygon');
   });
 
@@ -94,7 +94,7 @@ describe('InsertFloorPlan', () => {
     });
 
     render(<InsertFloorPlan />);
-    const shape = screen.getByLabelText('Rounded');
+    const shape = screen.getByLabelText('Rounded insert');
     expect(shape.tagName.toLowerCase()).toBe('rect');
     // rx should be > 0 (corner radius scaled)
     const rx = parseFloat(shape.getAttribute('rx') ?? '0');
@@ -112,11 +112,11 @@ describe('InsertFloorPlan', () => {
     render(<InsertFloorPlan />);
 
     // Click the insert to select it
-    const shape = screen.getByLabelText('Selectable');
+    const shape = screen.getByLabelText('Selectable insert');
     fireEvent.mouseDown(shape);
     fireEvent.mouseUp(screen.getByLabelText('Insert floor plan'));
 
-    expect(screen.getByText(/Drag to reposition/)).toBeInTheDocument();
+    expect(screen.getByText(/Drag to move/)).toBeInTheDocument();
   });
 
   it('deselects when clicking background', () => {
@@ -130,15 +130,17 @@ describe('InsertFloorPlan', () => {
     render(<InsertFloorPlan />);
 
     // Select the insert
-    const shape = screen.getByLabelText('Clickable');
+    const shape = screen.getByLabelText('Clickable insert');
     fireEvent.mouseDown(shape);
     fireEvent.mouseUp(screen.getByLabelText('Insert floor plan'));
 
-    expect(screen.getByText(/Drag to reposition/)).toBeInTheDocument();
+    expect(screen.getByText(/Drag to move/)).toBeInTheDocument();
 
-    // Click background to deselect
-    fireEvent.click(screen.getByLabelText('Insert floor plan'));
-    expect(screen.queryByText(/Drag to reposition/)).not.toBeInTheDocument();
+    // MouseDown on background to start box selection (clears selection)
+    const svg = screen.getByLabelText('Insert floor plan');
+    fireEvent.mouseDown(svg, { target: svg });
+    fireEvent.mouseUp(svg);
+    expect(screen.queryByText(/Drag to move/)).not.toBeInTheDocument();
   });
 
   it('updates insert position on drag', () => {
@@ -151,7 +153,7 @@ describe('InsertFloorPlan', () => {
 
     render(<InsertFloorPlan />);
 
-    const shape = screen.getByLabelText('Draggable');
+    const shape = screen.getByLabelText('Draggable insert');
     const svg = screen.getByLabelText('Insert floor plan');
 
     // Simulate drag: mouse down, move, up
@@ -178,8 +180,8 @@ describe('InsertFloorPlan', () => {
 
     render(<InsertFloorPlan />);
 
-    expect(screen.getByLabelText('First')).toBeInTheDocument();
-    expect(screen.getByLabelText('Second')).toBeInTheDocument();
+    expect(screen.getByLabelText('First insert')).toBeInTheDocument();
+    expect(screen.getByLabelText('Second insert')).toBeInTheDocument();
   });
 
   it('uses shape name as label fallback', () => {
