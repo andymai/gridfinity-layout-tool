@@ -222,8 +222,8 @@ export function LayoutActions({
                       w-full px-3 py-2 text-left text-sm flex flex-col gap-0.5
                       ${
                         isConfirmingDelete
-                          ? 'bg-red-600 text-white'
-                          : 'text-red-400 hover:bg-surface'
+                          ? 'bg-danger text-on-dark'
+                          : 'text-danger hover:bg-surface'
                       }
                     `}
                   >
