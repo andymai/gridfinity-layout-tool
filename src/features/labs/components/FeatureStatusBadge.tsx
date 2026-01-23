@@ -7,15 +7,15 @@ interface FeatureStatusBadgeProps {
 const STATUS_CONFIG: Record<FeatureStatus, { label: string; className: string }> = {
   experimental: {
     label: 'Experimental',
-    className: 'bg-amber-500/15 text-amber-500',
+    className: 'bg-warning-muted text-warning',
   },
   preview: {
     label: 'Preview',
-    className: 'bg-blue-500/15 text-blue-500',
+    className: 'bg-info-muted text-info',
   },
   graduated: {
     label: 'Graduated',
-    className: 'bg-green-500/15 text-green-500',
+    className: 'bg-success-muted text-success',
   },
   deprecated: {
     label: 'Deprecated',
