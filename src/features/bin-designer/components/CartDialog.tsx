@@ -203,7 +203,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
 
             {/* Error */}
             {error && (
-              <div className="mb-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-300">
+              <div role="alert" className="mb-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-300">
                 {error}
               </div>
             )}
