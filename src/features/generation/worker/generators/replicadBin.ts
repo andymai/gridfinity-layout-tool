@@ -2,7 +2,7 @@
  * Gridfinity bin generator using Replicad (OpenCascade WASM).
  *
  * Architecture follows the official Replicad Gridfinity example:
- * 1. buildBaseSocket() — Swept profile per grid cell (baseplate interface)
+ * 1. buildBaseSocket() — Per-cell segmented sockets (full 42mm + half 21mm cells)
  * 2. buildBinBox() — Rounded rect extruded + shelled (walls + floor)
  * 3. buildTopShape() — Swept stacking lip profile around perimeter
  * 4. Features: dividers, scoops, inserts, magnet/screw holes via booleans
@@ -19,12 +19,8 @@ import {
   drawRoundedRectangle,
   drawCircle,
   drawRectangle,
-  makeSolid,
-  assembleWire,
-  makeFace,
-  EdgeFinder,
 } from 'replicad';
-import type { Solid, Shape3D, Sketch, Plane, Point, Edge, Wire } from 'replicad';
+import type { Solid, Shape3D, Sketch, Plane, Point } from 'replicad';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
@@ -48,60 +44,138 @@ const TOP_FILLET = GRIDFINITY.TOP_FILLET;
 // ─── Socket Builder ───────────────────────────────────────────────────────────
 
 /**
- * Socket profile callback for sweepSketch.
- * Draws the Gridfinity base socket cross-section in the XZ plane.
- * The profile traces the inner wall of the socket from Z=0 downward.
+ * Decompose a grid dimension (in units) into an array of cell sizes (in units).
+ * Full cells are 1.0 unit; a trailing half-cell is 0.5 unit.
+ *
+ * Examples:
+ *   2.0 → [1, 1]
+ *   1.5 → [1, 0.5]
+ *   0.5 → [0.5]
+ *   3.0 → [1, 1, 1]
  */
-function socketProfile(_plane: Plane, startPoint: Point): Sketch {
-  const full = draw([-CLEARANCE / 2, 0])
-    .vLine(-CLEARANCE / 2)
-    .lineTo([-SOCKET_BIG_TAPER, -SOCKET_BIG_TAPER])
-    .vLine(-SOCKET_VERTICAL_PART)
-    .line(-SOCKET_SMALL_TAPER, -SOCKET_SMALL_TAPER)
-    .done()
-    .translate(CLEARANCE / 2, 0);
-
-  return full.sketchOnPlane('XZ', startPoint) as unknown as Sketch;
+function decomposeCells(gridUnits: number): number[] {
+  const fullCells = Math.floor(gridUnits);
+  const hasHalf = gridUnits - fullCells >= 0.5 - 1e-10;
+  const cells: number[] = Array(fullCells).fill(1);
+  if (hasHalf) cells.push(0.5);
+  return cells;
 }
 
 /**
- * Build a single grid-cell base socket.
- * The socket is a swept profile around a rounded rectangle, closed into a solid.
- * Optional magnet/screw holes are cut at the four corners.
+ * Build a single socket cell solid at the origin using multi-section loft.
+ *
+ * The socket is a frustum-like solid whose cross-section shrinks with depth,
+ * following the standard Gridfinity tapered profile. Built as a ruled loft
+ * through 5 sections corresponding to the profile breakpoints:
+ *   Z=0:     outer boundary (top face, mates with bin body)
+ *   Z=-0.25: same as top (vertical clearance step)
+ *   Z=-2.4:  inset by 2.15mm (end of big taper)
+ *   Z=-4.2:  same inset (vertical wall section)
+ *   Z=-5.0:  inset by 2.95mm (end of small taper, bottom face)
+ *
+ * This approach avoids EdgeFinder limitations with non-square cells.
+ *
+ * @param cellW_mm Physical width of this cell in mm (after clearance)
+ * @param cellD_mm Physical depth of this cell in mm (after clearance)
  */
-function buildSingleSocket(
+function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
+  // Clamp corner radius to fit within cell dimensions
+  const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
+  const cornerR = Math.min(CORNER_RADIUS, maxRadius);
+
+  // Profile insets from outer boundary at each Z breakpoint
+  // (derived from socketProfile after translate(CLEARANCE/2, 0))
+  const INSET_TOP = 0;
+  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2;    // 2.15mm
+  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2;  // 2.95mm
+
+  // Z positions of profile breakpoints
+  const Z1 = 0;
+  const Z2 = -(CLEARANCE / 2);                           // -0.25
+  const Z3 = -SOCKET_BIG_TAPER;                          // -2.4
+  const Z4 = -(SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART); // -4.2
+  const Z5 = -SOCKET_HEIGHT;                             // -5.0
+
+  // Helper to create a rounded rect sketch at a given Z with a given inset
+  const sectionAt = (z: number, inset: number): Sketch => {
+    const w = cellW_mm - 2 * inset;
+    const d = cellD_mm - 2 * inset;
+    const r = Math.max(cornerR - inset, 0.1);
+    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as unknown as Sketch;
+  };
+
+  // Build 5 cross-sections matching the socket profile breakpoints
+  const s1 = sectionAt(Z1, INSET_TOP);
+  const s2 = sectionAt(Z2, INSET_TOP);
+  const s3 = sectionAt(Z3, INSET_MID);
+  const s4 = sectionAt(Z4, INSET_MID);
+  const s5 = sectionAt(Z5, INSET_BOT);
+
+  // Ruled loft through all sections — straight-line connections between
+  // corresponding points, matching the angular profile exactly
+  return s1.loftWith([s2, s3, s4, s5], { ruled: true }) as Shape3D;
+}
+
+/**
+ * Build the segmented base socket grid for the bin.
+ *
+ * Decomposes the bin footprint into per-cell sockets (full 42mm or half 21mm cells),
+ * each with the standard Gridfinity tapered profile. This ensures proper baseplate
+ * interface for any half-bin dimension.
+ *
+ * Magnet/screw holes are placed only in full-size (1.0 × 1.0 unit) cells where
+ * they physically fit.
+ */
+function buildBaseSocket(
+  gridW: number,
+  gridD: number,
   withMagnet: boolean,
   withScrew: boolean,
   magnetRadius: number,
   magnetDepth: number,
   screwRadius: number
 ): Shape3D {
-  const baseSketch = drawRoundedRectangle(
-    SIZE - CLEARANCE,
-    SIZE - CLEARANCE,
-    CORNER_RADIUS
-  ).sketchOnPlane() as unknown as Sketch;
+  const cellsW = decomposeCells(gridW);
+  const cellsD = decomposeCells(gridD);
 
-  const slotSide = baseSketch.sweepSketch(socketProfile, { withContact: true });
+  // Total bin footprint in mm (for computing cell positions relative to center)
+  const totalW_mm = gridW * SIZE;
+  const totalD_mm = gridD * SIZE;
 
-  // Close the solid by adding top and bottom faces
-  let slot = makeSolid([
-    slotSide,
-    makeFace(
-      assembleWire(
-        new EdgeFinder().inPlane('XY', -SOCKET_HEIGHT).find(slotSide) as unknown as (Edge | Wire)[]
-      )
-    ),
-    makeFace(
-      assembleWire(
-        new EdgeFinder().inPlane('XY', 0).find(slotSide) as unknown as (Edge | Wire)[]
-      )
-    ),
-  ]) as Shape3D;
+  // Build and position each cell socket
+  let baseSocket: Shape3D | null = null;
 
-  // Cut magnet/screw holes at 4 corners (13mm from socket center per Gridfinity spec)
+  // Track X position as we iterate cells
+  let xOffset = 0; // mm from left edge
+  for (let ix = 0; ix < cellsW.length; ix++) {
+    const cellW_units = cellsW[ix];
+    const cellW_mm = cellW_units * SIZE - CLEARANCE;
+    const cellCenterX = xOffset + (cellW_units * SIZE) / 2 - totalW_mm / 2;
+
+    let yOffset = 0;
+    for (let iy = 0; iy < cellsD.length; iy++) {
+      const cellD_units = cellsD[iy];
+      const cellD_mm = cellD_units * SIZE - CLEARANCE;
+      const cellCenterY = yOffset + (cellD_units * SIZE) / 2 - totalD_mm / 2;
+
+      const cellSocket = buildSingleCellSocket(cellW_mm, cellD_mm)
+        .translate([cellCenterX, cellCenterY, 0]);
+
+      baseSocket = baseSocket
+        ? baseSocket.fuse(cellSocket)
+        : cellSocket;
+
+      yOffset += cellD_units * SIZE;
+    }
+    xOffset += cellW_units * SIZE;
+  }
+
+  let result = baseSocket as Shape3D;
+
+  // Cut magnet/screw holes only in full-size (1.0 × 1.0 unit) cells
   if (withScrew || withMagnet) {
-    const HOLE_OFFSET = 13; // mm from socket center to hole center
+    const HOLE_OFFSET = 13; // mm from cell center to hole center
+
     const magnetCutout = withMagnet
       ? (drawCircle(magnetRadius).sketchOnPlane() as unknown as Sketch)
           .extrude(magnetDepth) as Shape3D
@@ -115,61 +189,33 @@ function buildSingleSocket(
       ? magnetCutout.fuse(screwCutout)
       : (magnetCutout || screwCutout) as Shape3D;
 
-    slot = slot
-      .cut(cutout.clone().translate([-HOLE_OFFSET, -HOLE_OFFSET, -SOCKET_HEIGHT]))
-      .cut(cutout.clone().translate([-HOLE_OFFSET, HOLE_OFFSET, -SOCKET_HEIGHT]))
-      .cut(cutout.clone().translate([HOLE_OFFSET, HOLE_OFFSET, -SOCKET_HEIGHT]))
-      .cut(cutout.clone().translate([HOLE_OFFSET, -HOLE_OFFSET, -SOCKET_HEIGHT]));
-  }
+    // Iterate cells again and cut holes only where both axes are full-unit
+    xOffset = 0;
+    for (let ix = 0; ix < cellsW.length; ix++) {
+      const cellW_units = cellsW[ix];
+      if (cellW_units < 1) { xOffset += cellW_units * SIZE; continue; }
+      const cellCenterX = xOffset + (cellW_units * SIZE) / 2 - totalW_mm / 2;
 
-  return slot;
-}
+      let yOffset2 = 0;
+      for (let iy = 0; iy < cellsD.length; iy++) {
+        const cellD_units = cellsD[iy];
+        if (cellD_units < 1) { yOffset2 += cellD_units * SIZE; continue; }
+        const cellCenterY = yOffset2 + (cellD_units * SIZE) / 2 - totalD_mm / 2;
 
-/**
- * Build the complete base socket for all grid cells.
- * Clones the single-cell socket and fuses them at grid positions.
- */
-function buildBaseSocket(
-  gridW: number,
-  gridD: number,
-  withMagnet: boolean,
-  withScrew: boolean,
-  magnetRadius: number,
-  magnetDepth: number,
-  screwRadius: number
-): Shape3D {
-  const socket = buildSingleSocket(
-    withMagnet,
-    withScrew,
-    magnetRadius,
-    magnetDepth,
-    screwRadius
-  );
+        // 4 holes per full cell at ±HOLE_OFFSET from center
+        result = result
+          .cut(cutout.clone().translate([cellCenterX - HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT]))
+          .cut(cutout.clone().translate([cellCenterX - HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT]))
+          .cut(cutout.clone().translate([cellCenterX + HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT]))
+          .cut(cutout.clone().translate([cellCenterX + HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT]));
 
-  // Position sockets on grid (centered around origin)
-  const xCorr = ((gridW - 1) * SIZE) / 2;
-  const yCorr = ((gridD - 1) * SIZE) / 2;
-
-  // First cell becomes the initial base, then fuse remaining cells
-  let base: Shape3D = socket.clone().translate([
-    0 * SIZE - xCorr,
-    0 * SIZE - yCorr,
-    0,
-  ]);
-
-  for (let gx = 0; gx < gridW; gx++) {
-    for (let gy = 0; gy < gridD; gy++) {
-      if (gx === 0 && gy === 0) continue; // Already used as initial
-      const movedSocket = socket.clone().translate([
-        gx * SIZE - xCorr,
-        gy * SIZE - yCorr,
-        0,
-      ]);
-      base = base.fuse(movedSocket);
+        yOffset2 += cellD_units * SIZE;
+      }
+      xOffset += cellW_units * SIZE;
     }
   }
 
-  return base;
+  return result;
 }
 
 // ─── Box Body Builder ─────────────────────────────────────────────────────────
@@ -600,7 +646,7 @@ export function generateBin(
   const withMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
   const withScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
 
-  // Stage 1: Build base socket (per-cell, with optional holes)
+  // Stage 1: Build base socket (per-cell segmented sockets for baseplate fit)
   onProgress?.('base', 0.1);
   const base = buildBaseSocket(
     params.width,
