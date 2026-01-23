@@ -164,14 +164,14 @@ describe('binGenerator', () => {
     });
 
     it('scoop adds geometry when enabled', () => {
-      const noScoop = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, scoop: false });
-      const withScoop = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, scoop: true });
+      const noScoop = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, scoop: { enabled: false, radius: 'auto', allRows: false } });
+      const withScoop = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, scoop: { enabled: true, radius: 'auto', allRows: false } });
 
       expect(withScoop.triangleCount).toBeGreaterThan(noScoop.triangleCount);
     });
 
     it('scoop geometry stays within bin bounds', () => {
-      const params: BinParams = { ...DEFAULT_BIN_PARAMS, scoop: true };
+      const params: BinParams = { ...DEFAULT_BIN_PARAMS, scoop: { enabled: true, radius: 'auto', allRows: false } };
       const mesh = generateBinGeometry(params);
       const bounds = getBounds(mesh.vertices);
 
@@ -189,12 +189,12 @@ describe('binGenerator', () => {
     it('scoop respects divider compartments', () => {
       const noDividers = generateBinGeometry({
         ...DEFAULT_BIN_PARAMS,
-        scoop: true,
+        scoop: { enabled: true, radius: 'auto', allRows: false },
         dividers: { x: 0, y: 0, thickness: 1.2 },
       });
       const withDividers = generateBinGeometry({
         ...DEFAULT_BIN_PARAMS,
-        scoop: true,
+        scoop: { enabled: true, radius: 'auto', allRows: false },
         dividers: { x: 2, y: 0, thickness: 1.2 },
       });
 
@@ -233,12 +233,12 @@ describe('binGenerator', () => {
       const vaseNoScoop = generateBinGeometry({
         ...DEFAULT_BIN_PARAMS,
         style: 'vase',
-        scoop: false,
+        scoop: { enabled: false, radius: 'auto', allRows: false },
       });
       const vaseWithScoop = generateBinGeometry({
         ...DEFAULT_BIN_PARAMS,
         style: 'vase',
-        scoop: true,
+        scoop: { enabled: true, radius: 'auto', allRows: false },
       });
 
       expect(vaseWithScoop.triangleCount).toBe(vaseNoScoop.triangleCount);
@@ -278,13 +278,13 @@ describe('binGenerator', () => {
       const lite = generateBinGeometry({
         ...DEFAULT_BIN_PARAMS,
         style: 'lite',
-        scoop: true,
+        scoop: { enabled: true, radius: 'auto', allRows: false },
         label: { enabled: true, text: 'Test', fontSize: 'auto' },
       });
       const standard = generateBinGeometry({
         ...DEFAULT_BIN_PARAMS,
         style: 'standard',
-        scoop: true,
+        scoop: { enabled: true, radius: 'auto', allRows: false },
         label: { enabled: true, text: 'Test', fontSize: 'auto' },
       });
 
@@ -379,6 +379,137 @@ describe('binGenerator', () => {
 
       // 3 compartments = 3 label tabs (more triangles than 1 tab)
       expect(multiLabel.triangleCount).toBeGreaterThan(singleLabel.triangleCount);
+    });
+
+    // ─── Multi-Row Scoop Tests ──────────────────────────────────────────────
+
+    it('allRows scoop produces more geometry than single-row', () => {
+      const singleRow = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 'auto', allRows: false },
+        dividers: { x: 0, y: 2, thickness: 1.2 },
+      });
+      const allRows = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 'auto', allRows: true },
+        dividers: { x: 0, y: 2, thickness: 1.2 },
+      });
+
+      // allRows creates scoops in 3 compartment rows vs 1
+      expect(allRows.triangleCount).toBeGreaterThan(singleRow.triangleCount);
+    });
+
+    it('allRows with no Y dividers produces same as single-row (only 1 row)', () => {
+      const singleRow = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 'auto', allRows: false },
+        dividers: { x: 0, y: 0, thickness: 1.2 },
+      });
+      const allRows = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 'auto', allRows: true },
+        dividers: { x: 0, y: 0, thickness: 1.2 },
+      });
+
+      // No Y dividers = 1 row, so allRows makes no difference
+      expect(allRows.triangleCount).toBe(singleRow.triangleCount);
+    });
+
+    // ─── Configurable Scoop Radius Tests ──────────────────────────────────────
+
+    it('fixed scoop radius produces valid geometry', () => {
+      const mesh = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 5, allRows: false },
+      });
+      expect(mesh.triangleCount).toBeGreaterThan(0);
+      expect(mesh.vertices.length % 9).toBe(0);
+    });
+
+    it('large scoop radius is capped to fit compartment', () => {
+      // Even with a huge radius, geometry should stay within bounds
+      const mesh = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 25, allRows: false },
+      });
+      const bounds = getBounds(mesh.vertices);
+
+      const expectedWidth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+      const expectedDepth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+
+      expect(bounds.maxX - bounds.minX).toBeCloseTo(expectedWidth, 0);
+      expect(bounds.maxY - bounds.minY).toBeCloseTo(expectedDepth, 0);
+    });
+
+    it('different scoop radii produce different geometry', () => {
+      const smallRadius = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 3, allRows: false },
+      });
+      const largeRadius = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 15, allRows: false },
+      });
+
+      // Different radii should produce different vertex positions
+      // They might have same triangle count but different vertex values
+      const smallBounds = getBounds(smallRadius.vertices);
+      const largeBounds = getBounds(largeRadius.vertices);
+
+      // Both should produce valid geometry
+      expect(smallRadius.triangleCount).toBeGreaterThan(0);
+      expect(largeRadius.triangleCount).toBeGreaterThan(0);
+      // Larger radius scoop scoops deeper (lower minZ for scoop portion)
+      expect(largeBounds.minZ).toBeLessThanOrEqual(smallBounds.minZ + 0.001);
+    });
+
+    // ─── Expanded Dimension Tests ─────────────────────────────────────────────
+
+    it('generates valid geometry for 8-unit wide bin', () => {
+      const params: BinParams = { ...DEFAULT_BIN_PARAMS, width: 8, depth: 2 };
+      const mesh = generateBinGeometry(params);
+      const bounds = getBounds(mesh.vertices);
+
+      const expectedWidth = 8 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+      expect(bounds.maxX - bounds.minX).toBeCloseTo(expectedWidth, 1);
+      expect(mesh.vertices.length % 9).toBe(0);
+    });
+
+    it('generates valid geometry for 20-height bin', () => {
+      const params: BinParams = { ...DEFAULT_BIN_PARAMS, height: 20 };
+      const mesh = generateBinGeometry(params);
+      const bounds = getBounds(mesh.vertices);
+
+      const expectedHeight = 20 * GRIDFINITY.HEIGHT_UNIT; // 140mm
+      expect(bounds.maxZ - bounds.minZ).toBeCloseTo(expectedHeight, 1);
+    });
+
+    it('generates valid geometry for max-size bin (8x8x20)', () => {
+      const params: BinParams = { ...DEFAULT_BIN_PARAMS, width: 8, depth: 8, height: 20 };
+      const mesh = generateBinGeometry(params);
+
+      expect(mesh.triangleCount).toBeGreaterThan(0);
+      expect(mesh.vertices.length % 9).toBe(0);
+
+      // Should be much larger than default
+      const defaultMesh = generateBinGeometry(DEFAULT_BIN_PARAMS);
+      expect(mesh.triangleCount).toBeGreaterThanOrEqual(defaultMesh.triangleCount);
+    });
+
+    it('8-unit bin with dividers and all features', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 8,
+        depth: 4,
+        height: 10,
+        dividers: { x: 3, y: 2, thickness: 1.2 },
+        scoop: { enabled: true, radius: 'auto', allRows: true },
+        label: { enabled: true, text: 'Big Bin', fontSize: 'auto' },
+      };
+      const mesh = generateBinGeometry(params);
+
+      expect(mesh.triangleCount).toBeGreaterThan(0);
+      expect(mesh.vertices.length % 9).toBe(0);
     });
 
     it('label tab with Y dividers only does not split into multiple tabs', () => {

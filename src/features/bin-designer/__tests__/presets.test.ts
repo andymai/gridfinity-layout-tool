@@ -25,7 +25,8 @@ describe('built-in presets', () => {
   it('getPresetById finds existing presets', () => {
     const heavyDuty = getPresetById('heavy-duty');
     expect(heavyDuty).toBeDefined();
-    expect(heavyDuty!.name).toBe('Heavy Duty');
+    if (!heavyDuty) return;
+    expect(heavyDuty.name).toBe('Heavy Duty');
   });
 
   it('getPresetById returns undefined for unknown ID', () => {
@@ -33,37 +34,47 @@ describe('built-in presets', () => {
   });
 
   it('heavy-duty preset sets rugged style and magnet base', () => {
-    const preset = getPresetById('heavy-duty')!;
+    const preset = getPresetById('heavy-duty');
+    expect(preset).toBeDefined();
+    if (!preset) return;
     expect(preset.overrides.style).toBe('rugged');
     expect(preset.overrides.base?.style).toBe('magnet');
-    expect(preset.overrides.scoop).toBe(true);
+    expect(preset.overrides.scoop?.enabled).toBe(true);
   });
 
   it('quick-print preset sets lite style and no stacking lip', () => {
-    const preset = getPresetById('quick-print')!;
+    const preset = getPresetById('quick-print');
+    expect(preset).toBeDefined();
+    if (!preset) return;
     expect(preset.overrides.style).toBe('lite');
     expect(preset.overrides.base?.stackingLip).toBe(false);
-    expect(preset.overrides.scoop).toBe(false);
+    expect(preset.overrides.scoop?.enabled).toBe(false);
   });
 
   it('workshop preset sets screw base and label enabled', () => {
-    const preset = getPresetById('workshop')!;
+    const preset = getPresetById('workshop');
+    expect(preset).toBeDefined();
+    if (!preset) return;
     expect(preset.overrides.base?.style).toBe('screw');
     expect(preset.overrides.label?.enabled).toBe(true);
-    expect(preset.overrides.scoop).toBe(true);
+    expect(preset.overrides.scoop?.enabled).toBe(true);
   });
 
   it('vase-mode preset disables all interior features', () => {
-    const preset = getPresetById('vase-mode')!;
+    const preset = getPresetById('vase-mode');
+    expect(preset).toBeDefined();
+    if (!preset) return;
     expect(preset.overrides.style).toBe('vase');
     expect(preset.overrides.dividers?.x).toBe(0);
     expect(preset.overrides.dividers?.y).toBe(0);
-    expect(preset.overrides.scoop).toBe(false);
+    expect(preset.overrides.scoop?.enabled).toBe(false);
     expect(preset.overrides.inserts).toEqual([]);
   });
 
   it('divider-grid preset sets 2×2 dividers', () => {
-    const preset = getPresetById('divider-grid')!;
+    const preset = getPresetById('divider-grid');
+    expect(preset).toBeDefined();
+    if (!preset) return;
     expect(preset.overrides.dividers?.x).toBe(1);
     expect(preset.overrides.dividers?.y).toBe(1);
   });

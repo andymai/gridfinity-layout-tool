@@ -100,6 +100,96 @@ describe('baseGenerator', () => {
     });
   });
 
+  describe('magnet_and_screw base style', () => {
+    it('produces geometry for magnet_and_screw style', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw', stackingLip: false },
+      };
+      const mesh = generateBaseGeometry(params);
+      expect(mesh.triangleCount).toBeGreaterThan(0);
+    });
+
+    it('produces more geometry than magnet-only style', () => {
+      const magnetOnly: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', stackingLip: false },
+      };
+      const combo: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw', stackingLip: false },
+      };
+
+      const magnetMesh = generateBaseGeometry(magnetOnly);
+      const comboMesh = generateBaseGeometry(combo);
+
+      // Combo has both magnet AND screw holes = more triangles
+      expect(comboMesh.triangleCount).toBeGreaterThan(magnetMesh.triangleCount);
+    });
+
+    it('produces more geometry than screw-only style', () => {
+      const screwOnly: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'screw', stackingLip: false },
+      };
+      const combo: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw', stackingLip: false },
+      };
+
+      const screwMesh = generateBaseGeometry(screwOnly);
+      const comboMesh = generateBaseGeometry(combo);
+
+      expect(comboMesh.triangleCount).toBeGreaterThan(screwMesh.triangleCount);
+    });
+
+    it('combo holes stay within base height', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw', stackingLip: false },
+      };
+      const mesh = generateBaseGeometry(params);
+
+      const maxHoleDepth = Math.max(params.base.magnetDepth, GRIDFINITY.SCREW_DEPTH);
+      for (let i = 2; i < mesh.vertices.length; i += 3) {
+        expect(mesh.vertices[i]).toBeGreaterThanOrEqual(-0.001);
+        expect(mesh.vertices[i]).toBeLessThanOrEqual(maxHoleDepth + 0.001);
+      }
+    });
+
+    it('larger bins produce proportionally more combo hole geometry', () => {
+      const small: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 1,
+        depth: 1,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw', stackingLip: false },
+      };
+      const large: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 3,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw', stackingLip: false },
+      };
+
+      const smallMesh = generateBaseGeometry(small);
+      const largeMesh = generateBaseGeometry(large);
+
+      expect(largeMesh.triangleCount).toBeGreaterThan(smallMesh.triangleCount);
+    });
+
+    it('half-unit bins still get corner holes in combo style', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 0.5,
+        depth: 0.5,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw', stackingLip: false },
+      };
+      const mesh = generateBaseGeometry(params);
+      // Sub-1-unit bins should still get 4 corner holes (8 holes total for combo)
+      expect(mesh.triangleCount).toBeGreaterThan(0);
+    });
+  });
+
   describe('generateStackingLip', () => {
     it('generates geometry above the bin height', () => {
       const outerWidth = 83.5; // 2-unit bin

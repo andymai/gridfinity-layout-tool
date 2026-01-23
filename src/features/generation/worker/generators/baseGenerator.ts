@@ -14,11 +14,15 @@
 import type { BinParams } from '@/features/bin-designer/types';
 import type { MeshData } from '../../bridge/types';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { createBox, createCylinder, mergeMeshes } from './geometry';
+import { createBox, createCylinder, createQuarterCylinderShell, mergeMeshes } from './geometry';
 
 /**
  * Generates the stacking lip geometry at the top of the bin.
- * This is a small raised rim that allows bins to stack.
+ *
+ * The lip is a raised rim that allows bins to stack. It uses the same
+ * rounded corner profile as the bin body (quarter-cylinder shells at
+ * OUTER_FILLET radius) for proper geometric continuity and stacking fit.
+ *
  * The lip wall thickness matches the bin wall thickness (0.95mm per spec).
  */
 export function generateStackingLip(
@@ -27,23 +31,48 @@ export function generateStackingLip(
   totalHeight: number
 ): MeshData {
   const lipHeight = GRIDFINITY.LIP_HEIGHT;
-  const lipInset = GRIDFINITY.WALL_THICKNESS; // mm inset from outer wall (lip wall = bin wall per spec)
+  const lipInset = GRIDFINITY.WALL_THICKNESS;
+  const outerR = GRIDFINITY.OUTER_FILLET; // 3.75mm - matches bin body corners
+  const innerR = outerR - lipInset;
 
   const halfW = outerWidth / 2;
   const halfD = outerDepth / 2;
-  const innerHalfD = halfD - lipInset;
 
   const meshes: MeshData[] = [];
   const z = totalHeight;
 
-  // Front lip
-  meshes.push(createBox(-halfW, -halfD, z, outerWidth, lipInset, lipHeight));
+  // Flat wall segments (between corners)
+  const flatFB = outerWidth - 2 * outerR; // Front/back flat length
+  const flatLR = outerDepth - 2 * outerR; // Left/right flat length
+
+  // Front lip (flat section between corners)
+  if (flatFB > 0) {
+    meshes.push(createBox(-halfW + outerR, -halfD, z, flatFB, lipInset, lipHeight));
+  }
   // Back lip
-  meshes.push(createBox(-halfW, halfD - lipInset, z, outerWidth, lipInset, lipHeight));
-  // Left lip (between front and back)
-  meshes.push(createBox(-halfW, -innerHalfD, z, lipInset, outerDepth - 2 * lipInset, lipHeight));
+  if (flatFB > 0) {
+    meshes.push(createBox(-halfW + outerR, halfD - lipInset, z, flatFB, lipInset, lipHeight));
+  }
+  // Left lip
+  if (flatLR > 0) {
+    meshes.push(createBox(-halfW, -halfD + outerR, z, lipInset, flatLR, lipHeight));
+  }
   // Right lip
-  meshes.push(createBox(halfW - lipInset, -innerHalfD, z, lipInset, outerDepth - 2 * lipInset, lipHeight));
+  if (flatLR > 0) {
+    meshes.push(createBox(halfW - lipInset, -halfD + outerR, z, lipInset, flatLR, lipHeight));
+  }
+
+  // Rounded corners (quarter-cylinder shells matching the bin body)
+  if (innerR > 0) {
+    // Front-left
+    meshes.push(createQuarterCylinderShell(-halfW + outerR, -halfD + outerR, z, lipHeight, outerR, innerR, Math.PI));
+    // Front-right
+    meshes.push(createQuarterCylinderShell(halfW - outerR, -halfD + outerR, z, lipHeight, outerR, innerR, 3 * Math.PI / 2));
+    // Back-left
+    meshes.push(createQuarterCylinderShell(-halfW + outerR, halfD - outerR, z, lipHeight, outerR, innerR, Math.PI / 2));
+    // Back-right
+    meshes.push(createQuarterCylinderShell(halfW - outerR, halfD - outerR, z, lipHeight, outerR, innerR, 0));
+  }
 
   return mergeMeshes(meshes);
 }
@@ -65,7 +94,7 @@ export function generateBaseGeometry(params: BinParams): MeshData {
   const meshes: MeshData[] = [];
 
   // Magnet/screw hole features (one at each grid corner)
-  if (params.base.style === 'magnet' || params.base.style === 'screw') {
+  if (params.base.style === 'magnet' || params.base.style === 'screw' || params.base.style === 'magnet_and_screw') {
     const holes = generateCornerHoles(params);
     meshes.push(holes);
   }
@@ -89,8 +118,26 @@ export function generateBaseGeometry(params: BinParams): MeshData {
  *
  * In the Gridfinity spec, holes are placed MAGNET_INSET mm from each corner.
  * For multi-unit bins, holes appear at every grid intersection.
+ *
+ * The 'magnet_and_screw' style generates both hole types at each position:
+ * a wider shallow magnet hole with a narrower deeper screw hole concentric.
  */
 function generateCornerHoles(params: BinParams): MeshData {
+  if (params.base.style === 'magnet_and_screw') {
+    // Both: magnet counterbore + screw through-hole at each position
+    const magnetHoles = generateAllCornerHoles(
+      params,
+      GRIDFINITY.MAGNET_DIAMETER / 2,
+      params.base.magnetDepth
+    );
+    const screwHoles = generateAllCornerHoles(
+      params,
+      GRIDFINITY.SCREW_DIAMETER / 2,
+      GRIDFINITY.SCREW_DEPTH
+    );
+    return mergeMeshes([magnetHoles, screwHoles]);
+  }
+
   const isMagnet = params.base.style === 'magnet';
   const radius = isMagnet
     ? GRIDFINITY.MAGNET_DIAMETER / 2
@@ -101,8 +148,17 @@ function generateCornerHoles(params: BinParams): MeshData {
 }
 
 /**
- * Simplified corner hole generation: 4 holes at each grid unit's corners.
- * Duplicates at shared corners are acceptable for Alpha (visual-only geometry).
+ * Corner hole generation: places holes at grid unit corners.
+ *
+ * Uses 24 segments for smooth circles (vs 12 in Alpha). The extra geometry
+ * is negligible (~2KB per hole) but dramatically improves print quality for
+ * magnet fit tolerance.
+ *
+ * Hole placement rules:
+ * - Bins smaller than 1 unit in either dimension get 4 corner holes at the bin's own corners.
+ * - Bins 1 unit or larger get holes at each full grid cell intersection (using floored cell counts).
+ * - Fractional portions beyond the last full grid cell (e.g., the 0.5 in a 1.5-unit bin)
+ *   do not receive additional holes beyond the standard grid pattern.
  */
 function generateAllCornerHoles(params: BinParams, radius: number, depth: number): MeshData {
   const meshes: MeshData[] = [];
@@ -110,9 +166,24 @@ function generateAllCornerHoles(params: BinParams, radius: number, depth: number
   const halfW = (params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE) / 2;
   const halfD = (params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE) / 2;
 
-  // For each integer grid unit, place holes at the 4 corners
-  for (let gx = 0; gx < params.width; gx++) {
-    for (let gy = 0; gy < params.depth; gy++) {
+  // Only iterate over full grid cells (fractional edges don't get holes)
+  const cellsX = Math.floor(params.width);
+  const cellsY = Math.floor(params.depth);
+
+  // If bin is smaller than 1 full unit, place 4 corner holes at the bin's own corners
+  if (cellsX === 0 || cellsY === 0) {
+    const segments = 24;
+    meshes.push(createCylinder(-halfW + inset, -halfD + inset, 0, radius, depth, segments));
+    meshes.push(createCylinder(halfW - inset, -halfD + inset, 0, radius, depth, segments));
+    meshes.push(createCylinder(-halfW + inset, halfD - inset, 0, radius, depth, segments));
+    meshes.push(createCylinder(halfW - inset, halfD - inset, 0, radius, depth, segments));
+    return mergeMeshes(meshes);
+  }
+
+  const segments = 24; // Smoother circles for better print quality
+
+  for (let gx = 0; gx < cellsX; gx++) {
+    for (let gy = 0; gy < cellsY; gy++) {
       const cellMinX = -halfW + gx * GRIDFINITY.GRID_SIZE;
       const cellMinY = -halfD + gy * GRIDFINITY.GRID_SIZE;
       const cellMaxX = cellMinX + GRIDFINITY.GRID_SIZE;
@@ -121,25 +192,25 @@ function generateAllCornerHoles(params: BinParams, radius: number, depth: number
       // Only generate holes for the outermost corners of each cell
       // to avoid excessive duplicates at internal grid intersections
       const isLeftEdge = gx === 0;
-      const isRightEdge = gx === Math.ceil(params.width) - 1;
+      const isRightEdge = gx === cellsX - 1;
       const isFrontEdge = gy === 0;
-      const isBackEdge = gy === Math.ceil(params.depth) - 1;
+      const isBackEdge = gy === cellsY - 1;
 
       // Bottom-left corner
       if (isLeftEdge || isFrontEdge) {
-        meshes.push(createCylinder(cellMinX + inset, cellMinY + inset, 0, radius, depth, 12));
+        meshes.push(createCylinder(cellMinX + inset, cellMinY + inset, 0, radius, depth, segments));
       }
       // Bottom-right corner
       if (isRightEdge || isFrontEdge) {
-        meshes.push(createCylinder(cellMaxX - inset, cellMinY + inset, 0, radius, depth, 12));
+        meshes.push(createCylinder(cellMaxX - inset, cellMinY + inset, 0, radius, depth, segments));
       }
       // Top-left corner
       if (isLeftEdge || isBackEdge) {
-        meshes.push(createCylinder(cellMinX + inset, cellMaxY - inset, 0, radius, depth, 12));
+        meshes.push(createCylinder(cellMinX + inset, cellMaxY - inset, 0, radius, depth, segments));
       }
       // Top-right corner
       if (isRightEdge || isBackEdge) {
-        meshes.push(createCylinder(cellMaxX - inset, cellMaxY - inset, 0, radius, depth, 12));
+        meshes.push(createCylinder(cellMaxX - inset, cellMaxY - inset, 0, radius, depth, segments));
       }
     }
   }

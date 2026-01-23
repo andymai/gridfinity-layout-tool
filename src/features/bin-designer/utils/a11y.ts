@@ -42,8 +42,8 @@ export function describeBin(params: BinParams): string {
   }
 
   // Scoop
-  if (params.scoop) {
-    features.push('front scoop');
+  if (params.scoop.enabled) {
+    features.push(params.scoop.allRows ? 'all-row scoops' : 'front scoop');
   }
 
   // Wall cutouts

@@ -203,7 +203,7 @@ export function generateBinGeometry(params: BinParams): MeshData {
   }
 
   // 4. Scoops (if enabled and not constrained)
-  if (params.scoop && !constraints.disabledFeatures.includes('scoop')) {
+  if (params.scoop.enabled && !constraints.disabledFeatures.includes('scoop')) {
     const scoopMesh = generateScoops(params, innerWidth, innerDepth, wallThickness, baseHeight);
     meshes.push(scoopMesh);
   }
@@ -356,8 +356,14 @@ function generateDividers(
 }
 
 /**
- * Generates scoop ramps at the front of each compartment.
- * Scoop radius is proportional to the compartment size, capped at 20mm.
+ * Generates scoop ramps at compartment fronts.
+ *
+ * Scoop radius can be:
+ * - 'auto': min(compartmentSize/3, 15mm) (per Gridfinity convention)
+ * - A fixed number in mm (user-specified)
+ *
+ * When `allRows` is true, scoops are added to every compartment row,
+ * not just the front row. This is useful for bins accessed from multiple sides.
  */
 function generateScoops(
   params: BinParams,
@@ -368,31 +374,49 @@ function generateScoops(
 ): MeshData {
   const meshes: MeshData[] = [];
   const divX = params.dividers.x;
+  const divY = params.dividers.y;
 
-  // Number of compartments along X axis
+  // Number of compartments along each axis
   const compCountX = divX + 1;
-  const compCountY = params.dividers.y + 1;
+  const compCountY = divY + 1;
 
-  const compWidth = innerWidth / compCountX;
-  const compDepth = innerDepth / compCountY;
+  // Account for divider thickness when computing compartment sizes
+  const dividerThickness = params.dividers.thickness;
+  const availableWidth = innerWidth - divX * dividerThickness;
+  const availableDepth = innerDepth - divY * dividerThickness;
+  const compWidth = availableWidth / compCountX;
+  const compDepth = availableDepth / compCountY;
+  const startX = -innerWidth / 2;
+  const startY = -innerDepth / 2;
 
-  // Scoop radius: 1/3 of smaller compartment dimension, max 15mm (per spec)
-  const radius = Math.min(compWidth / 3, compDepth / 3, 15);
+  // Determine scoop radius
+  let radius: number;
+  if (params.scoop.radius === 'auto') {
+    // Auto: 1/3 of smaller compartment dimension, capped at 15mm
+    radius = Math.min(compWidth / 3, compDepth / 3, 15);
+  } else {
+    // Fixed radius, but still capped to fit within compartment
+    radius = Math.min(params.scoop.radius, compDepth * 0.8, compWidth * 0.8);
+  }
 
-  // Front row inner Y coordinate
-  const frontInnerY = -innerDepth / 2;
+  // Determine which rows get scoops
+  const rowCount = params.scoop.allRows ? compCountY : 1;
 
-  // Add scoops to the front row of compartments
-  for (let ix = 0; ix < compCountX; ix++) {
-    const cx = -innerWidth / 2 + (ix + 0.5) * compWidth;
+  for (let iy = 0; iy < rowCount; iy++) {
+    // Y coordinate of the front edge of this compartment row (skip over dividers)
+    const rowFrontY = startY + iy * (compDepth + dividerThickness);
 
-    meshes.push(createScoop(
-      cx,
-      frontInnerY,
-      bottomThickness,
-      compWidth - wallThickness,
-      radius
-    ));
+    for (let ix = 0; ix < compCountX; ix++) {
+      const cx = startX + ix * (compWidth + dividerThickness) + compWidth / 2;
+
+      meshes.push(createScoop(
+        cx,
+        rowFrontY,
+        bottomThickness,
+        compWidth - wallThickness,
+        radius
+      ));
+    }
   }
 
   return mergeMeshes(meshes);
