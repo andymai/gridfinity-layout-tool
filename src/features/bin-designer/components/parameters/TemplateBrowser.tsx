@@ -5,9 +5,10 @@
  * Clicking a template adds an insert at the next available position.
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useShallow } from 'zustand/react/shallow';
+import { useToastStore } from '@/core/store/toast';
 import { ALL_TEMPLATES, AVAILABLE_CATEGORIES, searchTemplates } from '@/features/bin-designer/templates';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
 import type { InsertTemplate, TemplateCategory, Insert, BinStyle } from '@/features/bin-designer/types';
@@ -74,6 +75,7 @@ function getInnerWidth(widthUnits: number, style: BinStyle): number {
 export function TemplateBrowser() {
   const [activeCategory, setActiveCategory] = useState<TemplateCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const tablistRef = useRef<HTMLDivElement>(null);
   const { inserts, addInsert, binWidth, style } = useDesignerStore(
     useShallow((s) => ({
       inserts: s.params.inserts,
@@ -92,7 +94,9 @@ export function TemplateBrowser() {
     return searched.filter((t) => t.category === activeCategory);
   }, [searchQuery, activeCategory]);
 
-  const handleAddTemplate = (template: InsertTemplate) => {
+  const addToast = useToastStore((s) => s.addToast);
+
+  const handleAddTemplate = useCallback((template: InsertTemplate) => {
     const pos = getNextPosition(inserts, template.defaults.width, template.defaults.depth, innerWidth);
     const insert: Insert = {
       id: generateInsertId(),
@@ -108,7 +112,8 @@ export function TemplateBrowser() {
       label: template.defaults.label,
     };
     addInsert(insert);
-  };
+    addToast({ message: `Added "${template.name}" insert`, type: 'success', duration: 2000 });
+  }, [inserts, innerWidth, addInsert, addToast]);
 
   return (
     <div className="space-y-2">
@@ -136,7 +141,37 @@ export function TemplateBrowser() {
       </div>
 
       {/* Category tabs */}
-      <div className="flex gap-1" role="tablist" aria-label="Template categories">
+      <div
+        ref={tablistRef}
+        className="flex gap-1"
+        role="tablist"
+        aria-label="Template categories"
+        onKeyDown={(e) => {
+          const allCategories: (TemplateCategory | 'all')[] = ['all', ...AVAILABLE_CATEGORIES];
+          const currentIdx = allCategories.indexOf(activeCategory);
+          let nextIdx: number | null = null;
+
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            nextIdx = (currentIdx + 1) % allCategories.length;
+          } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            nextIdx = (currentIdx - 1 + allCategories.length) % allCategories.length;
+          } else if (e.key === 'Home') {
+            e.preventDefault();
+            nextIdx = 0;
+          } else if (e.key === 'End') {
+            e.preventDefault();
+            nextIdx = allCategories.length - 1;
+          }
+
+          if (nextIdx !== null) {
+            setActiveCategory(allCategories[nextIdx]);
+            const buttons = tablistRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+            buttons?.[nextIdx]?.focus();
+          }
+        }}
+      >
         <CategoryTab
           label="All"
           isActive={activeCategory === 'all'}
@@ -206,6 +241,7 @@ function CategoryTab({
     <button
       role="tab"
       aria-selected={isActive}
+      tabIndex={isActive ? 0 : -1}
       onClick={onClick}
       className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
         isActive
