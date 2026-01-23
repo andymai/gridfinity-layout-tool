@@ -221,8 +221,16 @@ describe('ToastContainer', () => {
   });
 
   describe('toast types', () => {
-    it('renders success toast with correct role', () => {
+    it('renders success toast with status role', () => {
       useToastStore.getState().addToast('Success!', 'success');
+
+      render(<ToastContainer />);
+
+      expect(screen.getByRole('status')).toBeInTheDocument();
+    });
+
+    it('renders error toast with alert role', () => {
+      useToastStore.getState().addToast('Error!', 'error');
 
       render(<ToastContainer />);
 
@@ -304,7 +312,7 @@ describe('ToastContainer', () => {
 
       render(<ToastContainer />);
 
-      const toast = screen.getByRole('alert');
+      const toast = screen.getByRole('status');
 
       // Advance halfway through duration
       act(() => {
@@ -328,7 +336,7 @@ describe('ToastContainer', () => {
 
       render(<ToastContainer />);
 
-      const toast = screen.getByRole('alert');
+      const toast = screen.getByRole('status');
 
       // Advance halfway
       act(() => {
@@ -464,7 +472,7 @@ describe('ToastContainer', () => {
 
       render(<ToastContainer />);
 
-      const toast = screen.getByRole('alert');
+      const toast = screen.getByRole('status');
       expect(toast.className).toContain('toast-enter-bottom');
 
       fireEvent.click(screen.getByLabelText('Dismiss notification'));
@@ -479,7 +487,7 @@ describe('ToastContainer', () => {
 
       render(<ToastContainer />);
 
-      const toast = screen.getByRole('alert');
+      const toast = screen.getByRole('status');
       expect(toast.className).toContain('toast-enter-top');
 
       fireEvent.click(screen.getByLabelText('Dismiss notification'));
@@ -495,7 +503,7 @@ describe('ToastContainer', () => {
       render(<ToastContainer />);
 
       // Progress bar container has bg-black/20
-      const toast = screen.getByRole('alert');
+      const toast = screen.getByRole('status');
       const progressContainer = toast.querySelector('.bg-black\\/20');
       expect(progressContainer).toBeInTheDocument();
     });
@@ -505,7 +513,7 @@ describe('ToastContainer', () => {
 
       render(<ToastContainer />);
 
-      const toast = screen.getByRole('alert');
+      const toast = screen.getByRole('status');
       const progressContainer = toast.querySelector('.bg-black\\/20');
       expect(progressContainer).not.toBeInTheDocument();
     });

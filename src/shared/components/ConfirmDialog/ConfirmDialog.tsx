@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -23,9 +23,21 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // Restore focus to the element that was focused before the dialog opened
+  const restoreFocus = useCallback(() => {
+    if (previousFocusRef.current && previousFocusRef.current.isConnected) {
+      previousFocusRef.current.focus();
+      previousFocusRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
+
+    // Save the currently focused element before opening
+    previousFocusRef.current = document.activeElement as HTMLElement;
 
     // Focus the cancel button when dialog opens
     cancelButtonRef.current?.focus();
@@ -65,8 +77,9 @@ export function ConfirmDialog({
       document.body.style.overflow = '';
       document.removeEventListener('keydown', handleEscape);
       document.removeEventListener('keydown', handleTab);
+      restoreFocus();
     };
-  }, [isOpen, onCancel]);
+  }, [isOpen, onCancel, restoreFocus]);
 
   if (!isOpen) return null;
 

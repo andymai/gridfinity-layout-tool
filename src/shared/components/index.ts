@@ -10,6 +10,8 @@ export { StepperControl } from './StepperControl';
 export type { StepperVariant } from './StepperControl';
 export { ToastContainer } from './Toast';
 
+export { LoadingFallback } from './LoadingFallback';
+
 // Layout primitives
 export { SectionHeader } from './SectionHeader';
 export { SettingsRow } from './SettingsRow';

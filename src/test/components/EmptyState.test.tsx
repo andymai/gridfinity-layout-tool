@@ -8,7 +8,7 @@ describe('EmptyState', () => {
       render(<EmptyState variant="desktop" />);
 
       expect(screen.getByText('No bin selected')).toBeInTheDocument();
-      expect(screen.getByText('Click a bin to edit its properties')).toBeInTheDocument();
+      expect(screen.getByText('Click a bin or drag to create one')).toBeInTheDocument();
     });
 
     it('renders desktop icon', () => {
