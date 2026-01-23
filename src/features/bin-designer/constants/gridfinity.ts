@@ -87,4 +87,19 @@ export const DESIGNER_CONSTRAINTS = {
   MAGNET_MAX_DEPTH: 4.0, // mm
   MIN_SCOOP_RADIUS: 2.0, // mm (minimum useful scoop)
   MAX_SCOOP_RADIUS: 30.0, // mm (large scoops for deep bins)
+  // Wall thickness
+  MIN_WALL_THICKNESS: 0.8, // mm (single-wall FDM minimum)
+  MAX_WALL_THICKNESS: 2.4, // mm (3 standard 0.4mm nozzle lines × 2)
+  WALL_THICKNESS_STEP: 0.1, // mm
+  // Magnet holes (radius in UI, diameter in store)
+  MIN_MAGNET_RADIUS: 2.0, // mm (diameter 4mm)
+  MAX_MAGNET_RADIUS: 5.0, // mm (diameter 10mm)
+  MAGNET_RADIUS_STEP: 0.25, // mm
+  MIN_MAGNET_HEIGHT: 1.0, // mm
+  MAX_MAGNET_HEIGHT: 4.0, // mm
+  MAGNET_HEIGHT_STEP: 0.5, // mm
+  // Screw holes (radius in UI, diameter in store)
+  MIN_SCREW_RADIUS: 1.0, // mm (diameter 2mm)
+  MAX_SCREW_RADIUS: 3.0, // mm (diameter 6mm)
+  SCREW_RADIUS_STEP: 0.25, // mm
 } as const;

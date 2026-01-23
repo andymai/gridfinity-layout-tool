@@ -27,7 +27,7 @@ import {
 import type { Solid, Shape3D, Sketch, Plane, Point, Edge, Wire } from 'replicad';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { MeshData, ExportFormat } from '../../bridge/types';
-import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
+import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -516,7 +516,7 @@ export function generateBin(
   params: BinParams,
   onProgress?: ProgressFn
 ): MeshData {
-  const wallThickness = STYLE_WALL_THICKNESS[params.style] ?? GRIDFINITY.WALL_THICKNESS;
+  const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   // Wall height = total minus base height (first unit is base)
   // But in our coordinate system, the box floor is at Z=0 and socket is below.
@@ -540,9 +540,9 @@ export function generateBin(
     params.depth,
     withMagnet,
     withScrew,
-    GRIDFINITY.MAGNET_DIAMETER / 2,
-    GRIDFINITY.MAGNET_DEPTH,
-    GRIDFINITY.SCREW_DIAMETER / 2
+    params.base.magnetDiameter / 2,
+    params.base.magnetDepth,
+    params.base.screwDiameter / 2
   );
 
   // Stage 2: Build bin box (walls + floor)
