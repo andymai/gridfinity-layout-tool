@@ -24,11 +24,38 @@ export interface BaseConfig {
   readonly stackingLip: boolean;
 }
 
-/** Divider configuration for compartment splitting */
+/** Divider configuration for compartment splitting (legacy — use CompartmentConfig) */
 export interface DividerConfig {
   readonly x: number;
   readonly y: number;
   readonly thickness: number;
+}
+
+/**
+ * Non-uniform compartment layout using a grid-based cell ownership model.
+ *
+ * The bin interior is divided into a `cols × rows` grid. Each cell is assigned
+ * a compartment ID. Adjacent cells sharing the same ID form one rectangular
+ * compartment. Divider walls are derived from boundaries between cells with
+ * different IDs.
+ *
+ * Example: 3×2 grid with one 2-wide compartment on top row:
+ *   cells: [0, 0, 1, 2, 3, 4]  →  row 0: [0,0,1], row 1: [2,3,4]
+ *   Compartment 0 spans columns 0-1 of row 0.
+ */
+export interface CompartmentConfig {
+  /** Number of columns along width axis (1-8) */
+  readonly cols: number;
+  /** Number of rows along depth axis (1-8) */
+  readonly rows: number;
+  /** Divider wall thickness in mm */
+  readonly thickness: number;
+  /**
+   * Cell-to-compartment mapping, stored row-major (length = rows * cols).
+   * cells[row * cols + col] = compartment ID for that cell.
+   * Cells with the same ID must form a rectangle.
+   */
+  readonly cells: number[];
 }
 
 /** Scoop ramp configuration for compartment accessibility */
@@ -64,7 +91,7 @@ export interface BinParams {
   readonly wallThickness: number;
   readonly base: BaseConfig;
   readonly style: BinStyle;
-  readonly dividers: DividerConfig;
+  readonly compartments: CompartmentConfig;
   readonly scoop: ScoopConfig;
   readonly label: LabelConfig;
   readonly walls: WallConfig;
@@ -131,7 +158,7 @@ export interface GenerationState {
 // =============================================================================
 
 /** Active tab in the parameter panel */
-export type DesignerTab = 'dimensions' | 'base' | 'features' | 'walls' | 'style';
+export type DesignerTab = 'dimensions' | 'base' | 'compartments' | 'walls' | 'style';
 
 /** Auto-save status indicator */
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -198,6 +225,12 @@ export interface DesignerState {
   setSaveStatus: (status: SaveStatus) => void;
   newDesign: () => void;
   loadDesign: (design: SavedDesign) => void;
+
+  // Compartment actions
+  setCompartmentGrid: (cols: number, rows: number) => void;
+  mergeCells: (cellIndices: readonly number[]) => void;
+  splitCompartment: (compartmentId: number) => void;
+  resetCompartments: () => void;
 
   // Insert actions
   addInsert: (insert: Insert) => void;

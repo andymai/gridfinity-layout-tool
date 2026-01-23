@@ -20,6 +20,10 @@ const CONSTRAINTS = {
   MAX_DIVIDERS: 10,
   MIN_DIVIDER_THICKNESS: 0.8,
   MAX_DIVIDER_THICKNESS: 2.0,
+  MIN_COMPARTMENT_GRID: 1,
+  MAX_COMPARTMENT_GRID: 8,
+  MIN_COMPARTMENT_THICKNESS: 0.8,
+  MAX_COMPARTMENT_THICKNESS: 2.4,
   MAX_WALL_CUTOUT: 100,
   MAX_LABEL_LENGTH: 20,
   MAGNET_MIN_DEPTH: 2.0,
@@ -119,7 +123,7 @@ function validateBase(base: unknown): string | null {
 }
 
 /**
- * Validates a dividers object ensuring x and y counts and thickness fall within allowed ranges.
+ * Validates a dividers object (legacy format) ensuring x and y counts and thickness fall within allowed ranges.
  *
  * @param dividers - The value to validate as a dividers object (expected to have `x`, `y`, and `thickness`).
  * @returns A `string` with a human-readable error message for the first failed check, or `null` if `dividers` is valid.
@@ -135,6 +139,31 @@ function validateDividers(dividers: unknown): string | null {
   if (!isNumber(dividers.thickness) ||
     !inRange(dividers.thickness, CONSTRAINTS.MIN_DIVIDER_THICKNESS, CONSTRAINTS.MAX_DIVIDER_THICKNESS)) {
     return `dividers.thickness must be ${CONSTRAINTS.MIN_DIVIDER_THICKNESS}-${CONSTRAINTS.MAX_DIVIDER_THICKNESS}`;
+  }
+  return null;
+}
+
+/**
+ * Validates a compartments object (new format) ensuring cols, rows, thickness, and cells array are valid.
+ *
+ * @param compartments - The value to validate as a compartments object (expected to have `cols`, `rows`, `thickness`, and `cells`).
+ * @returns A `string` with a human-readable error message for the first failed check, or `null` if `compartments` is valid.
+ */
+function validateCompartments(compartments: unknown): string | null {
+  if (!isObject(compartments)) return 'compartments must be an object';
+  if (!isNumber(compartments.cols) || !inRange(compartments.cols, CONSTRAINTS.MIN_COMPARTMENT_GRID, CONSTRAINTS.MAX_COMPARTMENT_GRID)) {
+    return `compartments.cols must be ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
+  }
+  if (!isNumber(compartments.rows) || !inRange(compartments.rows, CONSTRAINTS.MIN_COMPARTMENT_GRID, CONSTRAINTS.MAX_COMPARTMENT_GRID)) {
+    return `compartments.rows must be ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
+  }
+  if (!isNumber(compartments.thickness) || !inRange(compartments.thickness, CONSTRAINTS.MIN_COMPARTMENT_THICKNESS, CONSTRAINTS.MAX_COMPARTMENT_THICKNESS)) {
+    return `compartments.thickness must be ${CONSTRAINTS.MIN_COMPARTMENT_THICKNESS}-${CONSTRAINTS.MAX_COMPARTMENT_THICKNESS}`;
+  }
+  if (!Array.isArray(compartments.cells)) return 'compartments.cells must be an array';
+  const expectedLength = (compartments.cols as number) * (compartments.rows as number);
+  if (compartments.cells.length !== expectedLength) {
+    return `compartments.cells length must be cols × rows (${expectedLength})`;
   }
   return null;
 }
@@ -282,8 +311,15 @@ export function validateDesignerShare(
   const baseErr = validateBase(params.base);
   if (baseErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: baseErr } };
 
-  const divErr = validateDividers(params.dividers);
-  if (divErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: divErr } };
+  // Accept either legacy dividers or new compartments format
+  if (params.compartments !== undefined) {
+    const compErr = validateCompartments(params.compartments);
+    if (compErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: compErr } };
+  } else if (params.dividers !== undefined) {
+    const divErr = validateDividers(params.dividers);
+    if (divErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: divErr } };
+  }
+  // If neither is present, that's fine (no compartments = single cell)
 
   const labelErr = validateLabel(params.label);
   if (labelErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: labelErr } };

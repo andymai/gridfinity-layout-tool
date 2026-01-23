@@ -61,8 +61,9 @@ function collectFeatures(params: BinParams): string[] {
   if (params.style !== 'standard') {
     features.push(params.style);
   }
-  if (params.dividers.x > 0 || params.dividers.y > 0) {
-    features.push('dividers');
+  if (params.compartments.cols > 1 || params.compartments.rows > 1) {
+    const count = new Set(params.compartments.cells).size;
+    features.push(`${count}comp`);
   }
   if (params.scoop.enabled) {
     features.push('scoop');

@@ -1,7 +1,6 @@
 /**
  * Parameter panel for replicad-based bin generation.
- * Contains dimension sliders, base feature toggles with conditional
- * sub-parameter sliders, and wall/style options.
+ * Contains tabbed sections: Dimensions, Base, Compartments, Walls.
  */
 
 import { useCallback } from 'react';
@@ -9,7 +8,9 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { SliderInput } from './controls/SliderInput';
-import type { BaseConfig, BaseStyle, BinStyle } from '@/features/bin-designer/types';
+import { ThicknessSelector } from './controls/ThicknessSelector';
+import { CompartmentEditor } from './CompartmentEditor';
+import type { BaseConfig, BaseStyle, BinStyle, DesignerTab } from '@/features/bin-designer/types';
 
 /** Derive base style from individual magnet/screw booleans */
 function computeBaseStyle(magnet: boolean, screw: boolean): BaseStyle {
@@ -19,8 +20,18 @@ function computeBaseStyle(magnet: boolean, screw: boolean): BaseStyle {
   return 'standard';
 }
 
+const TAB_LABELS: Record<DesignerTab, string> = {
+  dimensions: 'Size',
+  base: 'Base',
+  compartments: 'Compartments',
+  walls: 'Walls',
+  style: 'Style',
+};
+
+const ACTIVE_TABS: DesignerTab[] = ['dimensions', 'base', 'compartments', 'walls'];
+
 export function ParameterPanel() {
-  const { width, depth, height, wallThickness, base, style, setParam } = useDesignerStore(
+  const { width, depth, height, wallThickness, base, style, activeTab, setParam, setActiveTab } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
       depth: s.params.depth,
@@ -28,7 +39,9 @@ export function ParameterPanel() {
       wallThickness: s.params.wallThickness,
       base: s.params.base,
       style: s.params.style,
+      activeTab: s.ui.activeTab,
       setParam: s.setParam,
+      setActiveTab: s.setActiveTab,
     }))
   );
 
@@ -93,134 +106,141 @@ export function ParameterPanel() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto px-4 py-3">
-        <div className="space-y-6">
-          {/* Dimensions */}
-          <section>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
-              Dimensions
-            </h3>
-            <div className="space-y-4">
-              <SliderInput
-                label="Width"
-                value={width}
-                onChange={(v) => setParam('width', v)}
-                min={DESIGNER_CONSTRAINTS.MIN_DIMENSION}
-                max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
-                step={DESIGNER_CONSTRAINTS.DIMENSION_STEP}
-                unit="u"
-                info={`${(width * GRIDFINITY.GRID_SIZE).toFixed(0)}mm`}
-              />
-              <SliderInput
-                label="Depth"
-                value={depth}
-                onChange={(v) => setParam('depth', v)}
-                min={DESIGNER_CONSTRAINTS.MIN_DIMENSION}
-                max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
-                step={DESIGNER_CONSTRAINTS.DIMENSION_STEP}
-                unit="u"
-                info={`${(depth * GRIDFINITY.GRID_SIZE).toFixed(0)}mm`}
-              />
-              <SliderInput
-                label="Height"
-                value={height}
-                onChange={(v) => setParam('height', v)}
-                min={DESIGNER_CONSTRAINTS.MIN_HEIGHT}
-                max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
-                step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
-                unit="u"
-                info={`${(height * GRIDFINITY.HEIGHT_UNIT).toFixed(0)}mm body + ${GRIDFINITY.LIP_HEIGHT}mm lip`}
-              />
-            </div>
-          </section>
-
-          {/* Base Features */}
-          <section>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
-              Base
-            </h3>
-            <div className="space-y-2">
-              <ToggleRow
-                label="Magnet holes"
-                checked={hasMagnet}
-                onChange={toggleMagnet}
-              />
-              {hasMagnet && (
-                <div className="ml-4 space-y-3 border-l border-stroke-subtle pl-3 pt-1">
-                  <SliderInput
-                    label="Magnet radius"
-                    value={base.magnetDiameter / 2}
-                    onChange={setMagnetRadius}
-                    min={DESIGNER_CONSTRAINTS.MIN_MAGNET_RADIUS}
-                    max={DESIGNER_CONSTRAINTS.MAX_MAGNET_RADIUS}
-                    step={DESIGNER_CONSTRAINTS.MAGNET_RADIUS_STEP}
-                    unit="mm"
-                  />
-                  <SliderInput
-                    label="Magnet height"
-                    value={base.magnetDepth}
-                    onChange={setMagnetHeight}
-                    min={DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT}
-                    max={DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT}
-                    step={DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP}
-                    unit="mm"
-                  />
-                </div>
-              )}
-              <ToggleRow
-                label="Screw holes"
-                checked={hasScrew}
-                onChange={toggleScrew}
-              />
-              {hasScrew && (
-                <div className="ml-4 space-y-3 border-l border-stroke-subtle pl-3 pt-1">
-                  <SliderInput
-                    label="Screw radius"
-                    value={base.screwDiameter / 2}
-                    onChange={setScrewRadius}
-                    min={DESIGNER_CONSTRAINTS.MIN_SCREW_RADIUS}
-                    max={DESIGNER_CONSTRAINTS.MAX_SCREW_RADIUS}
-                    step={DESIGNER_CONSTRAINTS.SCREW_RADIUS_STEP}
-                    unit="mm"
-                  />
-                </div>
-              )}
-              <ToggleRow
-                label="Stacking lip"
-                checked={base.stackingLip}
-                onChange={toggleStackingLip}
-              />
-            </div>
-          </section>
-
-          {/* Walls */}
-          <section>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
-              Walls
-            </h3>
-            <div className="space-y-2">
-              <ToggleRow
-                label="Keep full (solid)"
-                checked={keepFull}
-                onChange={toggleKeepFull}
-              />
-              {!keepFull && (
-                <div className="ml-4 space-y-3 border-l border-stroke-subtle pl-3 pt-1">
-                  <SliderInput
-                    label="Wall thickness"
-                    value={wallThickness}
-                    onChange={(v) => setParam('wallThickness', v)}
-                    min={DESIGNER_CONSTRAINTS.MIN_WALL_THICKNESS}
-                    max={DESIGNER_CONSTRAINTS.MAX_WALL_THICKNESS}
-                    step={DESIGNER_CONSTRAINTS.WALL_THICKNESS_STEP}
-                    unit="mm"
-                  />
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
+      {/* Tab bar */}
+      <div className="flex border-b border-stroke-subtle bg-surface-tertiary">
+        {ACTIVE_TABS.map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 px-2 py-2 text-xs font-medium transition-colors ${
+              activeTab === tab
+                ? 'border-b-2 border-accent text-accent'
+                : 'text-content-tertiary hover:text-content-secondary'
+            }`}
+          >
+            {TAB_LABELS[tab]}
+          </button>
+        ))}
       </div>
+
+      {/* Tab content */}
+      {activeTab === 'dimensions' && (
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          <div className="space-y-4">
+            <SliderInput
+              label="Width"
+              value={width}
+              onChange={(v) => setParam('width', v)}
+              min={DESIGNER_CONSTRAINTS.MIN_DIMENSION}
+              max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
+              step={DESIGNER_CONSTRAINTS.DIMENSION_STEP}
+              unit="u"
+              info={`${(width * GRIDFINITY.GRID_SIZE).toFixed(0)}mm`}
+            />
+            <SliderInput
+              label="Depth"
+              value={depth}
+              onChange={(v) => setParam('depth', v)}
+              min={DESIGNER_CONSTRAINTS.MIN_DIMENSION}
+              max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
+              step={DESIGNER_CONSTRAINTS.DIMENSION_STEP}
+              unit="u"
+              info={`${(depth * GRIDFINITY.GRID_SIZE).toFixed(0)}mm`}
+            />
+            <SliderInput
+              label="Height"
+              value={height}
+              onChange={(v) => setParam('height', v)}
+              min={DESIGNER_CONSTRAINTS.MIN_HEIGHT}
+              max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
+              step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
+              unit="u"
+              info={`${(height * GRIDFINITY.HEIGHT_UNIT).toFixed(0)}mm body + ${GRIDFINITY.LIP_HEIGHT}mm lip`}
+            />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'base' && (
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          <div className="space-y-2">
+            <ToggleRow
+              label="Magnet holes"
+              checked={hasMagnet}
+              onChange={toggleMagnet}
+            />
+            {hasMagnet && (
+              <div className="ml-4 space-y-3 border-l border-stroke-subtle pl-3 pt-1">
+                <SliderInput
+                  label="Magnet radius"
+                  value={base.magnetDiameter / 2}
+                  onChange={setMagnetRadius}
+                  min={DESIGNER_CONSTRAINTS.MIN_MAGNET_RADIUS}
+                  max={DESIGNER_CONSTRAINTS.MAX_MAGNET_RADIUS}
+                  step={DESIGNER_CONSTRAINTS.MAGNET_RADIUS_STEP}
+                  unit="mm"
+                />
+                <SliderInput
+                  label="Magnet height"
+                  value={base.magnetDepth}
+                  onChange={setMagnetHeight}
+                  min={DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT}
+                  max={DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT}
+                  step={DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP}
+                  unit="mm"
+                />
+              </div>
+            )}
+            <ToggleRow
+              label="Screw holes"
+              checked={hasScrew}
+              onChange={toggleScrew}
+            />
+            {hasScrew && (
+              <div className="ml-4 space-y-3 border-l border-stroke-subtle pl-3 pt-1">
+                <SliderInput
+                  label="Screw radius"
+                  value={base.screwDiameter / 2}
+                  onChange={setScrewRadius}
+                  min={DESIGNER_CONSTRAINTS.MIN_SCREW_RADIUS}
+                  max={DESIGNER_CONSTRAINTS.MAX_SCREW_RADIUS}
+                  step={DESIGNER_CONSTRAINTS.SCREW_RADIUS_STEP}
+                  unit="mm"
+                />
+              </div>
+            )}
+            <ToggleRow
+              label="Stacking lip"
+              checked={base.stackingLip}
+              onChange={toggleStackingLip}
+            />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'compartments' && <CompartmentEditor />}
+
+      {activeTab === 'walls' && (
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          <div className="space-y-2">
+            <ToggleRow
+              label="Keep full (solid)"
+              checked={keepFull}
+              onChange={toggleKeepFull}
+            />
+            {!keepFull && (
+              <div className="ml-4 space-y-3 border-l border-stroke-subtle pl-3 pt-1">
+                <ThicknessSelector
+                  label="Wall thickness"
+                  value={wallThickness}
+                  onChange={(v) => setParam('wallThickness', v)}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

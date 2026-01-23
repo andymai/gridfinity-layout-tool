@@ -27,6 +27,7 @@ import {
   DESIGNER_CONSTRAINTS,
   migrateParams,
 } from '../constants';
+import { isRectangularSelection, normalizeIds } from '../utils/compartments';
 
 export const useDesignerStore = create<DesignerState>()(
   immer((set, get) => ({
@@ -151,6 +152,94 @@ export const useDesignerStore = create<DesignerState>()(
         state.history.future = state.history.future.slice(1);
         state.history.past = [...state.history.past, current(state.params)];
         state.params = next;
+      });
+    },
+
+    // Compartment actions
+    setCompartmentGrid: (cols: number, rows: number) => {
+      set((state) => {
+        state.history.past = [
+          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+          current(state.params),
+        ];
+        state.history.future = [];
+        // Create a uniform grid with each cell as its own compartment
+        const cells: number[] = [];
+        for (let i = 0; i < rows * cols; i++) {
+          cells.push(i);
+        }
+        state.params.compartments = {
+          ...state.params.compartments,
+          cols,
+          rows,
+          cells,
+        };
+      });
+    },
+
+    mergeCells: (cellIndices: readonly number[]) => {
+      if (cellIndices.length < 2) return;
+      const { params } = get();
+      const { cols } = params.compartments;
+
+      // Validate rectangular selection
+      if (!isRectangularSelection(cols, cellIndices)) return;
+
+      // Find target ID (lowest existing in selection)
+      const existingIds = cellIndices.map((i) => params.compartments.cells[i]);
+      const targetId = Math.min(...existingIds);
+
+      set((state) => {
+        state.history.past = [
+          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+          current(state.params),
+        ];
+        state.history.future = [];
+        const newCells = [...state.params.compartments.cells];
+        for (const idx of cellIndices) {
+          newCells[idx] = targetId;
+        }
+        state.params.compartments = {
+          ...state.params.compartments,
+          cells: normalizeIds(newCells),
+        };
+      });
+    },
+
+    splitCompartment: (compartmentId: number) => {
+      set((state) => {
+        state.history.past = [
+          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+          current(state.params),
+        ];
+        state.history.future = [];
+        const newCells = [...state.params.compartments.cells];
+        let nextId = Math.max(...newCells) + 1;
+        let first = true;
+        for (let i = 0; i < newCells.length; i++) {
+          if (newCells[i] === compartmentId) {
+            if (first) {
+              first = false;
+            } else {
+              newCells[i] = nextId++;
+            }
+          }
+        }
+        state.params.compartments = {
+          ...state.params.compartments,
+          cells: normalizeIds(newCells),
+        };
+      });
+    },
+
+    resetCompartments: () => {
+      set((state) => {
+        state.history.past = [
+          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+          current(state.params),
+        ];
+        state.history.future = [];
+        state.params.compartments = { ...DEFAULT_BIN_PARAMS.compartments };
       });
     },
 

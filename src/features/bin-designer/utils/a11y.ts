@@ -29,11 +29,10 @@ export function describeBin(params: BinParams): string {
     features.push(`${params.style} walls`);
   }
 
-  // Dividers
-  if (params.dividers.x > 0 || params.dividers.y > 0) {
-    const dx = params.dividers.x + 1;
-    const dy = params.dividers.y + 1;
-    features.push(`${dx}×${dy} compartments`);
+  // Compartments
+  if (params.compartments.cols > 1 || params.compartments.rows > 1) {
+    const count = new Set(params.compartments.cells).size;
+    features.push(`${count} compartment${count > 1 ? 's' : ''}`);
   }
 
   // Label

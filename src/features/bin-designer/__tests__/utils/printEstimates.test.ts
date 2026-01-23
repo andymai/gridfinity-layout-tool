@@ -32,23 +32,38 @@ describe('printEstimates', () => {
       expect(solid.volumeMm3).toBeGreaterThan(standard.volumeMm3);
     });
 
-    it('dividers add volume', () => {
-      const noDividers = estimatePrint(DEFAULT_BIN_PARAMS);
-      const withDividers = estimatePrint({
+    it('compartments add volume', () => {
+      const noCompartments = estimatePrint(DEFAULT_BIN_PARAMS);
+      const withCompartments = estimatePrint({
         ...DEFAULT_BIN_PARAMS,
-        dividers: { x: 2, y: 2, thickness: 1.2 },
+        compartments: {
+          cols: 3,
+          rows: 3,
+          thickness: 1.2,
+          cells: Array(9).fill(0).map((_, i) => i),
+        },
       });
-      expect(withDividers.volumeMm3).toBeGreaterThan(noDividers.volumeMm3);
+      expect(withCompartments.volumeMm3).toBeGreaterThan(noCompartments.volumeMm3);
     });
 
-    it('thicker dividers use more material', () => {
+    it('thicker compartment walls use more material', () => {
       const thin = estimatePrint({
         ...DEFAULT_BIN_PARAMS,
-        dividers: { x: 1, y: 1, thickness: 0.8 },
+        compartments: {
+          cols: 2,
+          rows: 2,
+          thickness: 0.8,
+          cells: [0, 1, 2, 3],
+        },
       });
       const thick = estimatePrint({
         ...DEFAULT_BIN_PARAMS,
-        dividers: { x: 1, y: 1, thickness: 2.0 },
+        compartments: {
+          cols: 2,
+          rows: 2,
+          thickness: 2.0,
+          cells: [0, 1, 2, 3],
+        },
       });
       expect(thick.volumeMm3).toBeGreaterThan(thin.volumeMm3);
     });

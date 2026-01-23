@@ -35,13 +35,13 @@ describe('generateFileName', () => {
       expect(name).toBe('gridfinity_2x2x3.stl');
     });
 
-    it('should include dividers', () => {
+    it('should include compartment count', () => {
       const name = generateFileName(
-        makeParams({ dividers: { x: 2, y: 1, thickness: 1.2 } }),
+        makeParams({ compartments: { cols: 3, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5] } }),
         'stl',
         'descriptive'
       );
-      expect(name).toBe('gridfinity_2x2x3_dividers.stl');
+      expect(name).toBe('gridfinity_2x2x3_6comp.stl');
     });
 
     it('should include scoop', () => {
@@ -85,7 +85,7 @@ describe('generateFileName', () => {
       const name = generateFileName(
         makeParams({
           style: 'solid',
-          dividers: { x: 1, y: 2, thickness: 1.2 },
+          compartments: { cols: 2, rows: 3, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5] },
           scoop: { enabled: true, radius: 'auto', allRows: false },
           label: { enabled: true, text: 'Tools', fontSize: 'auto' },
           base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
@@ -93,7 +93,7 @@ describe('generateFileName', () => {
         'stl',
         'descriptive'
       );
-      expect(name).toBe('gridfinity_2x2x3_solid_dividers_scoop_label_magnets.stl');
+      expect(name).toBe('gridfinity_2x2x3_solid_6comp_scoop_label_magnets.stl');
     });
 
     it('should include magnets+screws for magnet_and_screw base style', () => {

@@ -1,6 +1,7 @@
 /**
- * Mobile parameter panel — re-uses the simplified ParameterPanel directly.
- * With only dimension sliders and base toggles, tabs are unnecessary.
+ * Mobile parameter panel — re-uses the tabbed ParameterPanel.
+ * Now that we have multiple tabs (Size, Base, Compartments, Walls),
+ * the panel handles its own tab switching.
  */
 
 import { ParameterPanel } from './ParameterPanel';
