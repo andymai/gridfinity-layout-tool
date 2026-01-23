@@ -49,11 +49,12 @@ describe('binGenerator', () => {
       expect(actualDepth).toBeCloseTo(expectedDepth, 1);
     });
 
-    it('produces correct total height (height units + base)', () => {
+    it('produces correct total height (height units include base)', () => {
       const mesh = generateBinGeometry(DEFAULT_BIN_PARAMS);
       const bounds = getBounds(mesh.vertices);
 
-      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT; // 26mm
+      // Height units INCLUDE the base: 3U = 3*7 = 21mm
+      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT; // 21mm
       const actualHeight = bounds.maxZ - bounds.minZ;
       expect(actualHeight).toBeCloseTo(expectedHeight, 1);
     });
@@ -84,7 +85,8 @@ describe('binGenerator', () => {
       const mesh = generateBinGeometry(params);
       const bounds = getBounds(mesh.vertices);
 
-      const expectedHeight = 6 * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT; // 47mm
+      // Height units INCLUDE the base: 6U = 6*7 = 42mm
+      const expectedHeight = 6 * GRIDFINITY.HEIGHT_UNIT; // 42mm
       expect(bounds.maxZ - bounds.minZ).toBeCloseTo(expectedHeight, 1);
     });
 
@@ -147,7 +149,8 @@ describe('binGenerator', () => {
 
       const expectedWidth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
       const expectedDepth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT;
+      // Height units INCLUDE the base: 3U = 3*7 = 21mm
+      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT;
 
       expect(bounds.maxX - bounds.minX).toBeCloseTo(expectedWidth, 1);
       expect(bounds.maxY - bounds.minY).toBeCloseTo(expectedDepth, 1);
@@ -174,7 +177,8 @@ describe('binGenerator', () => {
 
       const expectedWidth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
       const expectedDepth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT;
+      // Height units INCLUDE the base: 3U = 3*7 = 21mm
+      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT;
 
       expect(bounds.maxX - bounds.minX).toBeCloseTo(expectedWidth, 0);
       expect(bounds.maxY - bounds.minY).toBeCloseTo(expectedDepth, 0);
@@ -286,6 +290,114 @@ describe('binGenerator', () => {
 
       // Same feature set (same triangle count), different geometry positions
       expect(lite.triangleCount).toBe(standard.triangleCount);
+    });
+
+    // ─── Wall Cutout Tests ────────────────────────────────────────────────────
+
+    it('wall cutouts reduce geometry (100% removes wall entirely)', () => {
+      const fullWalls = generateBinGeometry(DEFAULT_BIN_PARAMS);
+      const frontRemoved = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        walls: { front: 100, back: 0, left: 0, right: 0 },
+      });
+
+      // Removing a wall removes one box (12 triangles)
+      expect(frontRemoved.triangleCount).toBeLessThan(fullWalls.triangleCount);
+    });
+
+    it('partial wall cutout produces same triangle count as full walls', () => {
+      // 50% cutout still creates a wall box, just shorter
+      const fullWalls = generateBinGeometry(DEFAULT_BIN_PARAMS);
+      const partialCut = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        walls: { front: 50, back: 0, left: 0, right: 0 },
+      });
+
+      // Same number of boxes, just shorter wall
+      expect(partialCut.triangleCount).toBe(fullWalls.triangleCount);
+    });
+
+    it('50% wall cutout reduces wall height by half', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { front: 50, back: 50, left: 50, right: 50 },
+      };
+      const mesh = generateBinGeometry(params);
+      const bounds = getBounds(mesh.vertices);
+
+      // Height units INCLUDE the base: 3U = 21mm, base = 7mm
+      const baseHeight = GRIDFINITY.BASE_HEIGHT; // 7mm
+      const totalHeight = 3 * GRIDFINITY.HEIGHT_UNIT; // 21mm
+      const fullWallHeight = totalHeight - baseHeight; // 14mm
+      const halfWallHeight = fullWallHeight * 0.5; // 7mm
+      const expectedMaxZ = baseHeight + halfWallHeight; // 14mm
+
+      // Max Z should be approximately base + half wall (not full height)
+      expect(bounds.maxZ).toBeCloseTo(expectedMaxZ, 0);
+    });
+
+    it('all walls removed still produces bottom plate', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { front: 100, back: 100, left: 100, right: 100 },
+      };
+      const mesh = generateBinGeometry(params);
+
+      // Should still have geometry (the bottom plate at minimum)
+      expect(mesh.triangleCount).toBeGreaterThan(0);
+      expect(mesh.vertices.length).toBeGreaterThan(0);
+    });
+
+    it('vase mode ignores wall cutouts', () => {
+      const vaseNoWalls = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'vase',
+        walls: { front: 0, back: 0, left: 0, right: 0 },
+      });
+      const vaseWithWalls = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'vase',
+        walls: { front: 100, back: 100, left: 100, right: 100 },
+      });
+
+      expect(vaseWithWalls.triangleCount).toBe(vaseNoWalls.triangleCount);
+    });
+
+    // ─── Per-Compartment Label Tab Tests ──────────────────────────────────────
+
+    it('label tab creates more geometry with X dividers (per-column tabs)', () => {
+      const singleLabel = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        label: { enabled: true, text: 'Test', fontSize: 'auto' },
+        dividers: { x: 0, y: 0, thickness: 1.2 },
+      });
+      const multiLabel = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        label: { enabled: true, text: 'Test', fontSize: 'auto' },
+        dividers: { x: 2, y: 0, thickness: 1.2 },
+      });
+
+      // 3 compartments = 3 label tabs (more triangles than 1 tab)
+      expect(multiLabel.triangleCount).toBeGreaterThan(singleLabel.triangleCount);
+    });
+
+    it('label tab with Y dividers only does not split into multiple tabs', () => {
+      const noDiv = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        label: { enabled: true, text: 'Test', fontSize: 'auto' },
+        dividers: { x: 0, y: 0, thickness: 1.2 },
+      });
+      const yDivs = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        label: { enabled: true, text: 'Test', fontSize: 'auto' },
+        dividers: { x: 0, y: 2, thickness: 1.2 },
+      });
+
+      // Y dividers add divider walls but the label stays as one tab
+      // So the triangle difference is only from divider geometry
+      const dividerTriangles = yDivs.triangleCount - noDiv.triangleCount;
+      // Each Y divider = 1 box = 12 triangles
+      expect(dividerTriangles).toBe(2 * 12);
     });
   });
 });

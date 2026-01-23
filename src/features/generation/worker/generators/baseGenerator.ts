@@ -19,6 +19,7 @@ import { createBox, createCylinder, mergeMeshes } from './geometry';
 /**
  * Generates the stacking lip geometry at the top of the bin.
  * This is a small raised rim that allows bins to stack.
+ * The lip wall thickness matches the bin wall thickness (0.95mm per spec).
  */
 export function generateStackingLip(
   outerWidth: number,
@@ -26,7 +27,7 @@ export function generateStackingLip(
   totalHeight: number
 ): MeshData {
   const lipHeight = GRIDFINITY.LIP_HEIGHT;
-  const lipInset = 0.5; // mm inset from outer wall
+  const lipInset = GRIDFINITY.WALL_THICKNESS; // mm inset from outer wall (lip wall = bin wall per spec)
 
   const halfW = outerWidth / 2;
   const halfD = outerDepth / 2;
@@ -49,7 +50,7 @@ export function generateStackingLip(
 
 /**
  * Generates base geometry including optional attachment features.
- * The base occupies Z = 0 to BASE_HEIGHT (5mm).
+ * The base occupies Z = 0 to BASE_HEIGHT (7mm per spec).
  *
  * For magnet/screw styles, holes are subtracted from corners.
  * In Alpha (no boolean ops), we represent holes as separate cylinders
@@ -58,7 +59,8 @@ export function generateStackingLip(
 export function generateBaseGeometry(params: BinParams): MeshData {
   const outerWidth = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerDepth = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT;
+  // Height units INCLUDE the base (first unit = base, no cavity)
+  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
 
   const meshes: MeshData[] = [];
 

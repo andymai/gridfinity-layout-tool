@@ -40,6 +40,7 @@ export function PreviewCanvas() {
     if (!controls) return;
 
     const pos = CAMERA_POSITIONS[preset];
+    controls.object.up.set(0, 0, 1); // Maintain Z-up after orbit manipulation
     controls.object.position.set(pos[0], pos[1], pos[2]);
     controls.target.set(0, 0, 20);
     controls.update();
@@ -76,6 +77,12 @@ export function PreviewCanvas() {
               near: 0.1,
               far: 1000,
             }}
+            onCreated={({ camera }) => {
+              // Must set up vector imperatively before OrbitControls reads it.
+              // The camera config 'up' prop doesn't apply early enough.
+              camera.up.set(0, 0, 1);
+              camera.lookAt(0, 0, 20);
+            }}
             gl={{ antialias: true }}
           >
             {/* Lighting */}
@@ -93,14 +100,18 @@ export function PreviewCanvas() {
               position={[0, 0, 0]}
             />
 
-            {/* Controls */}
+            {/* Controls - Z-up orbit with polar limits to prevent flipping */}
             <OrbitControls
               ref={controlsRef}
+              makeDefault
               target={[0, 0, 20]}
               enableDamping
-              dampingFactor={0.1}
+              dampingFactor={0.12}
+              rotateSpeed={0.8}
               minDistance={20}
               maxDistance={400}
+              maxPolarAngle={Math.PI * 0.85}
+              minPolarAngle={Math.PI * 0.05}
             />
           </Canvas>
 
