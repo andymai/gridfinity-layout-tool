@@ -17,23 +17,23 @@ describe('searchTemplates', () => {
   });
 
   it('searches by partial name', () => {
-    const results = searchTemplates('Screw');
-    // Should find screwdriver templates (tools) and screw templates (hardware)
-    expect(results.length).toBeGreaterThan(2);
+    const results = searchTemplates('Hex Key');
+    // Should find hex key templates (hardware)
+    expect(results.length).toBeGreaterThanOrEqual(3);
   });
 
   it('searches case-insensitively', () => {
-    const lower = searchTemplates('hex nut');
-    const upper = searchTemplates('HEX NUT');
-    const mixed = searchTemplates('Hex Nut');
+    const lower = searchTemplates('driver bit');
+    const upper = searchTemplates('DRIVER BIT');
+    const mixed = searchTemplates('Driver Bit');
 
     expect(lower.length).toBe(upper.length);
     expect(lower.length).toBe(mixed.length);
   });
 
   it('searches template descriptions', () => {
-    // "socket head cap" appears only in hardware screw descriptions
-    const results = searchTemplates('socket head cap');
+    // "hexagonal pocket" appears in hardware hex key descriptions
+    const results = searchTemplates('hexagonal pocket');
     expect(results.length).toBeGreaterThan(0);
     for (const result of results) {
       expect(result.category).toBe('hardware');
@@ -41,9 +41,9 @@ describe('searchTemplates', () => {
   });
 
   it('searches template labels', () => {
-    // "M3 nut" is the label for M3 hex nut
-    const results = searchTemplates('M3 nut');
-    expect(results.some((t) => t.id === 'nut-m3')).toBe(true);
+    // "Bit" is the label for quarter-inch driver bit
+    const results = searchTemplates('Bit');
+    expect(results.some((t) => t.id === 'bit-quarter-inch')).toBe(true);
   });
 
   it('returns empty array for non-matching query', () => {
