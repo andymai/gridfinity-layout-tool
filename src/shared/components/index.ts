@@ -17,3 +17,4 @@ export { SectionHeader } from './SectionHeader';
 export { SettingsRow } from './SettingsRow';
 export { SelectDropdown } from './SelectDropdown';
 export { BulkIncrementControl } from './BulkIncrementControl';
+export { ToolSwitcher } from './ToolSwitcher';

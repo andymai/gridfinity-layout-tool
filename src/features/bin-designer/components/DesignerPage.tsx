@@ -17,6 +17,7 @@ import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
 import { ShareDialog } from '@/features/bin-designer/components/ShareDialog';
 import { CartDialog } from '@/features/bin-designer/components/CartDialog';
+import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { useCartStore } from '@/features/bin-designer/store/cart';
 import { navigateToPlaceInLayout } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
@@ -31,7 +32,8 @@ import { isOk } from '@/core/result';
 import type { SaveStatus } from '@/features/bin-designer/types';
 
 interface DesignerPageProps {
-  onNavigateBack: () => void;
+  /** Unused - navigation is handled by ToolSwitcher */
+  onNavigateBack?: () => void;
 }
 
 /**
@@ -72,7 +74,7 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
  * @param onNavigateBack - Callback invoked when the user requests navigation back to the layout planner.
  * @returns The rendered Designer page element.
  */
-export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
+export function DesignerPage(_props: DesignerPageProps) {
   // Initialize generation bridge - auto-generates mesh when params change
   useGeneration();
 
@@ -91,7 +93,8 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
   const params = useDesignerStore((s) => s.params);
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
   const canExport = useDesignerStore(
-    (s) => s.generation.mesh !== null &&
+    (s) =>
+      s.generation.mesh !== null &&
       s.generation.mesh.error === null &&
       s.generation.mesh.vertices !== null &&
       s.generation.mesh.normals !== null
@@ -142,7 +145,9 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
 
   // Handle ?share= URL parameter on mount
   const shareHandled = useRef(false);
-  const [shareLoading, setShareLoading] = useState(false);
+  const [shareLoading, setShareLoading] = useState(() =>
+    new URLSearchParams(window.location.search).has('share')
+  );
   useEffect(() => {
     if (shareHandled.current) return;
     shareHandled.current = true;
@@ -156,8 +161,7 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
     url.searchParams.delete('share');
     window.history.replaceState({}, '', url.pathname + url.search);
 
-    // Load shared design with loading indicator
-    setShareLoading(true);
+    // Load shared design
     void fetchDesignerShare(shareId).then((result) => {
       if (isOk(result)) {
         setParams(migrateParams(result.value));
@@ -170,14 +174,43 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
   }, [setParams, addToast]);
 
   return (
-    <div className="flex h-screen flex-col bg-surface">
+    <div className="flex h-screen flex-col bg-surface animate-fade-in">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-stroke-subtle bg-surface-secondary px-3 py-2 lg:px-4 lg:py-3">
         <div className="flex items-center gap-2 lg:gap-3">
+          <ToolSwitcher compact={!isDesktop} />
+          <div className="hidden h-5 w-px bg-stroke-subtle sm:block" />
           <button
-            onClick={onNavigateBack}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-content-secondary hover:bg-surface-hover hover:text-content"
-            aria-label="Back to Layout Planner"
+            onClick={() => setDesignListOpen(true)}
+            className="hidden items-center gap-1 rounded-md px-2 py-1 text-sm text-content hover:bg-surface-hover sm:flex"
+            aria-label="Open design list"
+          >
+            <span className="max-w-[120px] truncate font-medium lg:max-w-[160px]">
+              {designName}
+            </span>
+            <svg
+              className="h-3.5 w-3.5 text-content-secondary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+          <SaveStatusIndicator status={saveStatus} />
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Share button */}
+          <button
+            onClick={() => setShareDialogOpen(true)}
+            className="hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content sm:flex"
+            aria-label="Share design"
           >
             <svg
               className="h-4 w-4"
@@ -190,49 +223,32 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M15 19l-7-7 7-7"
+                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
               />
-            </svg>
-            <span className="hidden sm:inline">Back</span>
-          </button>
-          <div className="h-5 w-px bg-stroke-subtle" />
-          <h1 className="text-base font-semibold text-content lg:text-lg">Bin Designer</h1>
-          <span className="hidden rounded-full bg-accent-muted px-2 py-0.5 text-xs font-medium text-accent sm:inline-block">
-            Experimental
-          </span>
-          <div className="hidden h-5 w-px bg-stroke-subtle sm:block" />
-          <button
-            onClick={() => setDesignListOpen(true)}
-            className="hidden items-center gap-1 rounded-md px-2 py-1 text-sm text-content hover:bg-surface-hover sm:flex"
-            aria-label="Open design list"
-          >
-            <span className="max-w-[120px] truncate font-medium lg:max-w-[160px]">{designName}</span>
-            <svg className="h-3.5 w-3.5 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <SaveStatusIndicator status={saveStatus} />
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Share button */}
-          <button
-            onClick={() => setShareDialogOpen(true)}
-            className="hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content sm:flex"
-            aria-label="Share design"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
             Share
           </button>
           {/* Use in Layout button */}
           <button
-            onClick={() => navigateToPlaceInLayout(params.width, params.depth, params.height, designName)}
+            onClick={() =>
+              navigateToPlaceInLayout(params.width, params.depth, params.height, designName)
+            }
             className="hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content sm:flex"
             aria-label="Use this bin in Layout Planner"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+              />
             </svg>
             Use in Layout
           </button>
@@ -242,8 +258,19 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
             className="hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content sm:flex"
             aria-label="Add to export cart"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
             </svg>
             Cart
           </button>
@@ -254,8 +281,19 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
               className="relative hidden items-center gap-1 rounded-md px-2.5 py-1.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content sm:flex"
               aria-label={`Export cart: ${cartItemCount} items`}
             >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
               </svg>
               <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
                 {cartItemCount > 9 ? '9+' : cartItemCount}
@@ -269,8 +307,19 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
             className="hidden items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled sm:flex"
             aria-label="Export bin as STL"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
             </svg>
             Export
           </button>
@@ -285,8 +334,19 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
               aria-expanded={mobileMenuOpen}
               aria-haspopup="menu"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 5v.01M12 12v.01M12 19v.01"
+                />
               </svg>
             </button>
             {mobileMenuOpen && (
@@ -296,32 +356,74 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
                 aria-label="Actions"
               >
                 <button
-                  onClick={() => { setDesignListOpen(true); setMobileMenuOpen(false); }}
+                  onClick={() => {
+                    setDesignListOpen(true);
+                    setMobileMenuOpen(false);
+                  }}
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
                   role="menuitem"
                 >
-                  <svg className="h-4 w-4 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <svg
+                    className="h-4 w-4 text-content-secondary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   </svg>
                   My Designs
                 </button>
                 <button
-                  onClick={() => { setShareDialogOpen(true); setMobileMenuOpen(false); }}
+                  onClick={() => {
+                    setShareDialogOpen(true);
+                    setMobileMenuOpen(false);
+                  }}
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
                   role="menuitem"
                 >
-                  <svg className="h-4 w-4 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  <svg
+                    className="h-4 w-4 text-content-secondary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
                   </svg>
                   Share
                 </button>
                 <button
-                  onClick={() => { navigateToPlaceInLayout(params.width, params.depth, params.height, designName); setMobileMenuOpen(false); }}
+                  onClick={() => {
+                    navigateToPlaceInLayout(params.width, params.depth, params.height, designName);
+                    setMobileMenuOpen(false);
+                  }}
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
                   role="menuitem"
                 >
-                  <svg className="h-4 w-4 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  <svg
+                    className="h-4 w-4 text-content-secondary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                    />
                   </svg>
                   Use in Layout
                 </button>
@@ -331,19 +433,44 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
                   role="menuitem"
                 >
-                  <svg className="h-4 w-4 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  <svg
+                    className="h-4 w-4 text-content-secondary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
                   </svg>
                   Add to Cart
                 </button>
                 {cartItemCount > 0 && (
                   <button
-                    onClick={() => { setCartDialogOpen(true); setMobileMenuOpen(false); }}
+                    onClick={() => {
+                      setCartDialogOpen(true);
+                      setMobileMenuOpen(false);
+                    }}
                     className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
                     role="menuitem"
                   >
-                    <svg className="h-4 w-4 text-content-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    <svg
+                      className="h-4 w-4 text-content-secondary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                      />
                     </svg>
                     View Cart ({cartItemCount})
                   </button>
@@ -357,9 +484,25 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
       {/* Share loading banner */}
       {shareLoading && (
         <div className="flex items-center justify-center gap-2 bg-accent-muted px-3 py-1.5 text-xs font-medium text-accent">
-          <svg className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          <svg
+            className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"
+            fill="none"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
           </svg>
           Loading shared design…
         </div>
@@ -403,26 +546,28 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
           style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
           aria-label="Export bin as STL"
         >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+            />
           </svg>
         </button>
       )}
 
       {/* Modals */}
       <ExportDialog />
-      <DesignListDialog
-        open={designListOpen}
-        onClose={() => setDesignListOpen(false)}
-      />
-      <ShareDialog
-        open={shareDialogOpen}
-        onClose={() => setShareDialogOpen(false)}
-      />
-      <CartDialog
-        open={cartDialogOpen}
-        onClose={() => setCartDialogOpen(false)}
-      />
+      <DesignListDialog open={designListOpen} onClose={() => setDesignListOpen(false)} />
+      <ShareDialog open={shareDialogOpen} onClose={() => setShareDialogOpen(false)} />
+      <CartDialog open={cartDialogOpen} onClose={() => setCartDialogOpen(false)} />
     </div>
   );
 }
