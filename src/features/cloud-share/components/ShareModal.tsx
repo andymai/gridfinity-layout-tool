@@ -118,11 +118,11 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
           </h2>
           <button
             onClick={onClose}
-            className="text-content-tertiary hover:text-content transition-colors"
-            aria-label="Close"
+            className="p-2 -m-2 rounded-md text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+            aria-label="Close share dialog"
           >
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"

@@ -64,7 +64,7 @@ export function SharedWithMeItem({
       tabIndex={isFocused ? 0 : -1}
       className={`
         w-full text-left p-3 rounded-lg border transition-colors cursor-pointer
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-inset
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset
         ${
           isDeleted
             ? 'bg-surface-secondary border-transparent opacity-60'

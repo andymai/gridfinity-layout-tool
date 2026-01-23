@@ -83,7 +83,7 @@ export function Checkbox({
 
   return (
     <div
-      className={`flex items-center gap-2 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
+      className={`flex items-center gap-2 rounded focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface outline-none ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       role="checkbox"

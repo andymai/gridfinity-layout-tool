@@ -181,6 +181,7 @@ export function CustomPropertiesEditor({
                     e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH)
                   )
                 }
+                maxLength={CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH}
                 className={`input w-full ${inputHeight}`}
                 placeholder="Value"
                 aria-label={`Value for ${key}`}
@@ -201,6 +202,7 @@ export function CustomPropertiesEditor({
               setError(null);
             }}
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
+            maxLength={CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH}
             className={`input w-full ${inputHeight} ${error ? 'border-error' : ''}`}
             placeholder="Property name (e.g., SKU, Quantity)"
             aria-label="New property name"
@@ -214,11 +216,16 @@ export function CustomPropertiesEditor({
               setError(null);
             }}
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
+            maxLength={CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH}
             className={`input w-full ${inputHeight}`}
             placeholder="Value"
             aria-label="New property value"
           />
-          {error && <div className="text-xs text-error">{error}</div>}
+          {error && (
+            <div className="text-xs text-error" role="alert" aria-live="assertive">
+              {error}
+            </div>
+          )}
           <div className="flex gap-2">
             <button
               type="button"

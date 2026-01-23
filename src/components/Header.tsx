@@ -127,6 +127,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             onBlur={handleNameSubmit}
             onKeyDown={handleNameKeyDown}
             maxLength={CONSTRAINTS.NAME_MAX_LENGTH}
+            aria-label="Layout name"
             className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content"
             style={{
               boxShadow: '0 0 0 3px var(--color-primary-muted)',
