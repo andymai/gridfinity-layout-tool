@@ -98,9 +98,11 @@ describe('InsertsSection', () => {
 
     render(<InsertsSection />);
 
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
     const clearBtn = screen.getByLabelText('Remove all inserts');
     fireEvent.click(clearBtn);
 
+    expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('Remove all 3 inserts'));
     expect(useDesignerStore.getState().params.inserts).toHaveLength(0);
   });
 

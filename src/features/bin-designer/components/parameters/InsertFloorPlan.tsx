@@ -220,10 +220,13 @@ export function InsertFloorPlan() {
 
   // -- Multi-select handlers --
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent, insert: Insert) => {
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent, insert: Insert) => {
       e.preventDefault();
       e.stopPropagation();
+
+      // Capture pointer to receive move/up events even outside the SVG
+      (e.target as Element).setPointerCapture(e.pointerId);
 
       let newSelection: Set<string>;
       if (e.shiftKey) {
@@ -263,8 +266,8 @@ export function InsertFloorPlan() {
     [selectedIds, inserts]
   );
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
       if (selectionBox) {
         // Update selection box
         const rect = svgRef.current?.getBoundingClientRect();
@@ -290,7 +293,7 @@ export function InsertFloorPlan() {
     [dragState, selectionBox, fromSvgDelta, inserts]
   );
 
-  const handleMouseUp = useCallback(() => {
+  const handlePointerUp = useCallback(() => {
     // Handle selection box completion
     if (selectionBox) {
       const rect = svgRef.current?.getBoundingClientRect();
@@ -344,8 +347,8 @@ export function InsertFloorPlan() {
     setSnapGuides([]);
   }, [dragState, dragOffset, selectionBox, inserts, innerWidth, innerDepth, updateInsert, fromSvgPosition]);
 
-  const handleBackgroundMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  const handleBackgroundPointerDown = useCallback(
+    (e: React.PointerEvent) => {
       // Start drag-box selection on background
       if (e.target === svgRef.current || (e.target as Element).getAttribute('data-floor') === 'true') {
         const rect = svgRef.current?.getBoundingClientRect();
@@ -500,13 +503,13 @@ export function InsertFloorPlan() {
         ref={svgRef}
         width={svgWidth}
         height={svgHeight}
-        className="rounded-md border border-stroke-subtle bg-surface-tertiary"
+        className="rounded-md border border-stroke-subtle bg-surface-tertiary touch-none"
         aria-label="Insert floor plan"
         role="img"
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onMouseDown={handleBackgroundMouseDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        onPointerDown={handleBackgroundPointerDown}
       >
         {/* Bin floor background */}
         <rect
@@ -567,7 +570,7 @@ export function InsertFloorPlan() {
               scale={scale}
               innerDepth={innerDepth}
               isSelected={isSelected}
-              onMouseDown={(e) => handleMouseDown(e, insert)}
+              onPointerDown={(e) => handlePointerDown(e, insert)}
             />
           );
         })}
@@ -590,7 +593,7 @@ export function InsertFloorPlan() {
       <p className="text-[10px] text-content-tertiary">
         {selectedIds.size > 0
           ? 'Drag to move. R: rotate. Del: remove. Ctrl+C/V: copy/paste.'
-          : 'Click to select. Shift+click for multi-select. Drag background for box select.'}
+          : 'Tap or click to select. Shift+click for multi-select. Drag background for box select.'}
       </p>
     </div>
   );
@@ -609,7 +612,7 @@ export function InsertFloorPlan() {
  * @param scale - Scale factor converting millimeters to SVG units (pixels)
  * @param innerDepth - Inner floor depth in millimeters used to flip Y into SVG space
  * @param isSelected - If true, render selected visual styling
- * @param onMouseDown - Mouse-down handler attached to the rendered SVG shape
+ * @param onPointerDown - Pointer-down handler attached to the rendered SVG shape
  * @returns An SVG element (`<rect>`, `<ellipse>`, or `<polygon>`) representing the insert
  */
 function InsertShape({
@@ -619,7 +622,7 @@ function InsertShape({
   scale,
   innerDepth,
   isSelected,
-  onMouseDown,
+  onPointerDown,
 }: {
   insert: Insert;
   x: number;
@@ -627,7 +630,7 @@ function InsertShape({
   scale: number;
   innerDepth: number;
   isSelected: boolean;
-  onMouseDown: (e: React.MouseEvent) => void;
+  onPointerDown: (e: React.PointerEvent) => void;
 }) {
   const fill = isSelected ? SELECTED_FILL : SHAPE_FILL;
   const stroke = isSelected ? SELECTED_STROKE : SHAPE_STROKE;
@@ -654,7 +657,7 @@ function InsertShape({
     fill,
     stroke,
     strokeWidth: isSelected ? 2 : 1,
-    onMouseDown,
+    onPointerDown,
     style: { cursor: 'move' } as React.CSSProperties,
     'aria-label': `${insert.label || insert.shape} insert${rotation ? ` rotated ${rotation} degrees` : ''}`,
   };

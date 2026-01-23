@@ -115,8 +115,8 @@ describe('InsertFloorPlan', () => {
 
     // Click the insert to select it
     const shape = screen.getByLabelText('Selectable insert');
-    fireEvent.mouseDown(shape);
-    fireEvent.mouseUp(screen.getByLabelText('Insert floor plan'));
+    fireEvent.pointerDown(shape);
+    fireEvent.pointerUp(screen.getByLabelText('Insert floor plan'));
 
     expect(screen.getByText(/Drag to move/)).toBeInTheDocument();
   });
@@ -133,15 +133,15 @@ describe('InsertFloorPlan', () => {
 
     // Select the insert
     const shape = screen.getByLabelText('Clickable insert');
-    fireEvent.mouseDown(shape);
-    fireEvent.mouseUp(screen.getByLabelText('Insert floor plan'));
+    fireEvent.pointerDown(shape);
+    fireEvent.pointerUp(screen.getByLabelText('Insert floor plan'));
 
     expect(screen.getByText(/Drag to move/)).toBeInTheDocument();
 
     // MouseDown on background to start box selection (clears selection)
     const svg = screen.getByLabelText('Insert floor plan');
-    fireEvent.mouseDown(svg, { target: svg });
-    fireEvent.mouseUp(svg);
+    fireEvent.pointerDown(svg, { target: svg });
+    fireEvent.pointerUp(svg);
     expect(screen.queryByText(/Drag to move/)).not.toBeInTheDocument();
   });
 
@@ -159,9 +159,9 @@ describe('InsertFloorPlan', () => {
     const svg = screen.getByLabelText('Insert floor plan');
 
     // Simulate drag: mouse down, move, up
-    fireEvent.mouseDown(shape, { clientX: 100, clientY: 100 });
-    fireEvent.mouseMove(svg, { clientX: 120, clientY: 80 });
-    fireEvent.mouseUp(svg);
+    fireEvent.pointerDown(shape, { clientX: 100, clientY: 100 });
+    fireEvent.pointerMove(svg, { clientX: 120, clientY: 80 });
+    fireEvent.pointerUp(svg);
 
     // Position should have changed
     const insert = useDesignerStore.getState().params.inserts[0];
