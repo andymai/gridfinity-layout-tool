@@ -11,7 +11,7 @@
 import type { BinParams } from '@/features/bin-designer/types';
 import type { MeshData } from '../../bridge/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
-import { createHollowBox, createDividerWall, createScoop, createLabelTab, createCornerGusset, mergeMeshes } from './geometry';
+import { createHollowBox, createHollowBoxWithCutouts, createDividerWall, createScoop, createLabelTab, createCornerGusset, mergeMeshes } from './geometry';
 import { getStyleConstraints } from '@/features/bin-designer/utils/styleConstraints';
 
 /** Converts grid units to mm (width/depth) */
@@ -47,6 +47,10 @@ export function generateBinGeometry(params: BinParams): MeshData {
   // Base + shell
   const bottomThickness = GRIDFINITY.BASE_HEIGHT + GRIDFINITY.BOTTOM_THICKNESS;
 
+  // Check if any wall cutouts are active
+  const hasWallCutouts = !constraints.disabledFeatures.includes('walls') &&
+    (params.walls.front > 0 || params.walls.back > 0 || params.walls.left > 0 || params.walls.right > 0);
+
   // For vase mode: just the outer shell, no interior features
   if (params.style === 'vase') {
     return createHollowBox(outerWidth, outerDepth, totalHeight, wallThickness, bottomThickness);
@@ -54,13 +58,19 @@ export function generateBinGeometry(params: BinParams): MeshData {
 
   const meshes: MeshData[] = [];
 
-  // Main shell (outer walls + bottom)
-  meshes.push(createHollowBox(outerWidth, outerDepth, totalHeight, wallThickness, bottomThickness));
+  // Main shell (outer walls + bottom), with optional per-wall height reduction
+  if (hasWallCutouts) {
+    meshes.push(createHollowBoxWithCutouts(
+      outerWidth, outerDepth, totalHeight, wallThickness, bottomThickness,
+      params.walls
+    ));
+  } else {
+    meshes.push(createHollowBox(outerWidth, outerDepth, totalHeight, wallThickness, bottomThickness));
+  }
 
   // Inner cavity dimensions (used by multiple features)
   const innerWidth = outerWidth - 2 * wallThickness;
   const innerDepth = outerDepth - 2 * wallThickness;
-  const halfDepth = outerDepth / 2;
 
   // Dividers (if any and not constrained)
   const hasDividers = !constraints.disabledFeatures.includes('dividers') &&
@@ -78,7 +88,8 @@ export function generateBinGeometry(params: BinParams): MeshData {
 
   // Label tab (if enabled and not constrained)
   if (params.label.enabled && !constraints.disabledFeatures.includes('label')) {
-    meshes.push(createLabelTab(outerWidth, wallThickness, halfDepth, totalHeight));
+    const labelMesh = generateLabelTabs(params, outerWidth, outerDepth, wallThickness, totalHeight);
+    meshes.push(labelMesh);
   }
 
   // Corner gussets for reinforced styles (solid, rugged)
@@ -171,6 +182,52 @@ function generateScoops(
       bottomThickness,
       compWidth - wallThickness,
       radius
+    ));
+  }
+
+  return mergeMeshes(meshes);
+}
+
+/**
+ * Generates label tabs for the front face of each column.
+ * When X dividers exist, each compartment column gets its own tab.
+ * Otherwise, a single tab spans the full bin width.
+ */
+function generateLabelTabs(
+  params: BinParams,
+  outerWidth: number,
+  outerDepth: number,
+  wallThickness: number,
+  totalHeight: number
+): MeshData {
+  const halfDepth = outerDepth / 2;
+  const divX = params.dividers.x;
+
+  // No X dividers: single full-width tab
+  if (divX === 0) {
+    return createLabelTab(outerWidth, wallThickness, halfDepth, totalHeight);
+  }
+
+  // With X dividers: one tab per column
+  const meshes: MeshData[] = [];
+  const innerWidth = outerWidth - 2 * wallThickness;
+  const columnCount = divX + 1;
+  const columnWidth = innerWidth / columnCount;
+
+  for (let col = 0; col < columnCount; col++) {
+    // Each column tab: centered within its compartment
+    const colCenterX = -innerWidth / 2 + (col + 0.5) * columnWidth;
+    const tabWidth = columnWidth - params.dividers.thickness; // Account for divider wall
+    if (tabWidth <= 2) continue; // Too small for a tab
+
+    meshes.push(createLabelTab(
+      tabWidth + 2 * wallThickness, // Pass as if it were the "outer width" for this column
+      wallThickness,
+      halfDepth,
+      totalHeight,
+      12, // tabHeight
+      12, // tabDepth
+      colCenterX // offsetX - center of this column
     ));
   }
 

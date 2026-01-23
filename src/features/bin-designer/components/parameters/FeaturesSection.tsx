@@ -33,8 +33,8 @@ export function FeaturesSection() {
 
   if (isVase) {
     return (
-      <div className="rounded-md bg-amber-50 px-3 py-2">
-        <p className="text-xs text-amber-800">
+      <div className="rounded-md bg-amber-500/10 border border-amber-500/20 px-3 py-2">
+        <p className="text-xs text-amber-400">
           Interior features are disabled for vase mode bins (single-wall construction).
         </p>
       </div>

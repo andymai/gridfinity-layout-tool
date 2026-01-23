@@ -297,7 +297,8 @@ export function createLabelTab(
   halfDepth: number,
   totalHeight: number,
   tabHeight: number = 12,
-  tabDepth: number = 12
+  tabDepth: number = 12,
+  offsetX: number = 0
 ): MeshData {
   // Tab spans most of the front face width (minus wall insets)
   const tabWidth = outerWidth - 2 * wallThickness - 2; // 1mm inset on each side
@@ -332,23 +333,27 @@ export function createLabelTab(
     vi += 3;
   };
 
-  // Front face (visible)
-  setVertex(-halfTabW, topY, topZ, 0, ny, nz);
-  setVertex(halfTabW, topY, topZ, 0, ny, nz);
-  setVertex(halfTabW, bottomY, bottomZ, 0, ny, nz);
+  // Apply X offset for per-column tabs
+  const left = offsetX - halfTabW;
+  const right = offsetX + halfTabW;
 
-  setVertex(-halfTabW, topY, topZ, 0, ny, nz);
-  setVertex(halfTabW, bottomY, bottomZ, 0, ny, nz);
-  setVertex(-halfTabW, bottomY, bottomZ, 0, ny, nz);
+  // Front face (visible)
+  setVertex(left, topY, topZ, 0, ny, nz);
+  setVertex(right, topY, topZ, 0, ny, nz);
+  setVertex(right, bottomY, bottomZ, 0, ny, nz);
+
+  setVertex(left, topY, topZ, 0, ny, nz);
+  setVertex(right, bottomY, bottomZ, 0, ny, nz);
+  setVertex(left, bottomY, bottomZ, 0, ny, nz);
 
   // Back face (inside, reversed normal)
-  setVertex(halfTabW, topY, topZ, 0, -ny, -nz);
-  setVertex(-halfTabW, topY, topZ, 0, -ny, -nz);
-  setVertex(-halfTabW, bottomY, bottomZ, 0, -ny, -nz);
+  setVertex(right, topY, topZ, 0, -ny, -nz);
+  setVertex(left, topY, topZ, 0, -ny, -nz);
+  setVertex(left, bottomY, bottomZ, 0, -ny, -nz);
 
-  setVertex(halfTabW, topY, topZ, 0, -ny, -nz);
-  setVertex(-halfTabW, bottomY, bottomZ, 0, -ny, -nz);
-  setVertex(halfTabW, bottomY, bottomZ, 0, -ny, -nz);
+  setVertex(right, topY, topZ, 0, -ny, -nz);
+  setVertex(left, bottomY, bottomZ, 0, -ny, -nz);
+  setVertex(right, bottomY, bottomZ, 0, -ny, -nz);
 
   return { vertices, normals, triangleCount };
 }
@@ -441,6 +446,68 @@ export function createCornerGusset(
   setVertex(bx, by, z2, hnx, hny, 0);
 
   return { vertices, normals, triangleCount };
+}
+
+/**
+ * Creates a hollow box with individually-reduced wall heights.
+ * Wall cutout percentages determine how much of each wall is removed from the top.
+ * 0% = full height wall, 100% = wall completely removed.
+ *
+ * Used when any wall cutout percentage is non-zero.
+ */
+export function createHollowBoxWithCutouts(
+  outerWidth: number,
+  outerDepth: number,
+  outerHeight: number,
+  wallThickness: number,
+  bottomThickness: number,
+  wallCutouts: { front: number; back: number; left: number; right: number }
+): MeshData {
+  const meshes: MeshData[] = [];
+
+  const halfW = outerWidth / 2;
+  const halfD = outerDepth / 2;
+
+  // Bottom plate (always full)
+  meshes.push(createBox(-halfW, -halfD, 0, outerWidth, outerDepth, bottomThickness));
+
+  const innerW = outerWidth - 2 * wallThickness;
+  const innerD = outerDepth - 2 * wallThickness;
+  const fullWallHeight = outerHeight - bottomThickness;
+
+  if (innerW <= 0 || innerD <= 0 || fullWallHeight <= 0) {
+    return createBox(-halfW, -halfD, 0, outerWidth, outerDepth, outerHeight);
+  }
+
+  const innerHalfD = innerD / 2;
+
+  // Each wall's effective height: fullWallHeight * (1 - cutout/100)
+  const frontH = fullWallHeight * (1 - wallCutouts.front / 100);
+  const backH = fullWallHeight * (1 - wallCutouts.back / 100);
+  const leftH = fullWallHeight * (1 - wallCutouts.left / 100);
+  const rightH = fullWallHeight * (1 - wallCutouts.right / 100);
+
+  // Front wall (full width, reduced height)
+  if (frontH > 0) {
+    meshes.push(createBox(-halfW, -halfD, bottomThickness, outerWidth, wallThickness, frontH));
+  }
+
+  // Back wall (full width, reduced height)
+  if (backH > 0) {
+    meshes.push(createBox(-halfW, halfD - wallThickness, bottomThickness, outerWidth, wallThickness, backH));
+  }
+
+  // Left wall (inner depth, reduced height)
+  if (leftH > 0) {
+    meshes.push(createBox(-halfW, -innerHalfD, bottomThickness, wallThickness, innerD, leftH));
+  }
+
+  // Right wall (inner depth, reduced height)
+  if (rightH > 0) {
+    meshes.push(createBox(halfW - wallThickness, -innerHalfD, bottomThickness, wallThickness, innerD, rightH));
+  }
+
+  return mergeMeshes(meshes);
 }
 
 /**

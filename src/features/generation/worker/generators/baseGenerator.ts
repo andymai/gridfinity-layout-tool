@@ -26,7 +26,7 @@ export function generateStackingLip(
   totalHeight: number
 ): MeshData {
   const lipHeight = GRIDFINITY.LIP_HEIGHT;
-  const lipInset = 0.5; // mm inset from outer wall
+  const lipInset = GRIDFINITY.LIP_FILLET; // mm inset from outer wall (matches lip fillet radius)
 
   const halfW = outerWidth / 2;
   const halfD = outerDepth / 2;
