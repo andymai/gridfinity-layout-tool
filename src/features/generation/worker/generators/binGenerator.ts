@@ -71,8 +71,8 @@ export function generateBinGeometry(params: BinParams): MeshData {
   const halfW = outerWidth / 2;
   const halfD = outerDepth / 2;
 
-  // 1. Base profile (stepped: narrow at bottom for baseplate fit)
-  meshes.push(generateBaseProfileMesh(outerWidth, outerDepth, baseHeight));
+  // 1. Per-cell base profiles (stepped: narrow at bottom for baseplate fit)
+  meshes.push(generateBaseProfileMesh(outerWidth, outerDepth, baseHeight, params.width, params.depth));
 
   // 2. Walls (from z=baseHeight to z=totalHeight)
   if (wallHeight > 0) {
@@ -138,37 +138,82 @@ export function generateBinGeometry(params: BinParams): MeshData {
 }
 
 /**
- * Generates the stepped base profile geometry.
+ * Generates per-cell stepped base profiles.
  *
- * Real Gridfinity bins have a profiled base that locks into baseplates:
- * - Lower step (z=0 to BASE_TOP_FILLET): narrower by OUTER_FILLET per side
- * - Upper step (z=BASE_TOP_FILLET to BASE_HEIGHT): full outer width (bridge/floor)
+ * Each grid cell gets its OWN profile (narrow at bottom, wider at top),
+ * with gaps between adjacent cells where baseplate ridges sit.
+ * This is what makes bins lock into Gridfinity baseplates.
  *
- * Alpha: simplified as two stacked boxes (no per-cell profiles or fillets).
+ * Per cell:
+ * - Lower step (z=0 to 2.15mm): narrow (~34.5mm for 1U cell)
+ * - Upper step (z=2.15 to 7mm): wider (~41.5mm for 1U cell)
+ * - Gap between cells: ~0.5mm (baseplate ridge slot)
+ *
+ * Fractional cells (e.g., 0.5U edge) get proportionally smaller profiles.
  */
 function generateBaseProfileMesh(
   outerWidth: number,
   outerDepth: number,
-  baseHeight: number
+  baseHeight: number,
+  gridWidth: number,
+  gridDepth: number
 ): MeshData {
   const meshes: MeshData[] = [];
 
   const profileStep = GRIDFINITY.BASE_TOP_FILLET; // 2.15mm transition height
+  const upperH = baseHeight - profileStep; // 4.85mm upper bridge height
   const inset = GRIDFINITY.OUTER_FILLET; // 3.75mm inset per side for lower step
+  const cellGap = GRIDFINITY.TOLERANCE; // 0.5mm gap between adjacent profiles
 
-  // Lower step: narrower profile for baseplate groove fit
-  const lowerW = outerWidth - 2 * inset;
-  const lowerD = outerDepth - 2 * inset;
-  if (lowerW > 0 && lowerD > 0 && profileStep > 0) {
-    meshes.push(createBox(-lowerW / 2, -lowerD / 2, 0, lowerW, lowerD, profileStep));
-  }
+  // Cell pitch: evenly distribute cells across bin dimensions
+  const cellPitchX = outerWidth / gridWidth;
+  const cellPitchY = outerDepth / gridDepth;
 
-  // Upper step: full width bridge/floor
-  const upperH = baseHeight - profileStep;
-  if (upperH > 0) {
-    const halfW = outerWidth / 2;
-    const halfD = outerDepth / 2;
-    meshes.push(createBox(-halfW, -halfD, profileStep, outerWidth, outerDepth, upperH));
+  const halfW = outerWidth / 2;
+  const halfD = outerDepth / 2;
+
+  // Number of cells (ceil to handle fractional grid dimensions like 1.5)
+  const cellsX = Math.ceil(gridWidth);
+  const cellsY = Math.ceil(gridDepth);
+
+  for (let gx = 0; gx < cellsX; gx++) {
+    for (let gy = 0; gy < cellsY; gy++) {
+      // Fractional factor for edge cells (1.0 for full, <1 for partial)
+      const fracX = Math.min(1.0, gridWidth - gx);
+      const fracY = Math.min(1.0, gridDepth - gy);
+
+      // Cell span in mm
+      const spanX = fracX * cellPitchX;
+      const spanY = fracY * cellPitchY;
+
+      // Cell center position
+      const cx = -halfW + gx * cellPitchX + spanX / 2;
+      const cy = -halfD + gy * cellPitchY + spanY / 2;
+
+      // Upper step: cell span minus gap (leaves room for baseplate ridges)
+      const topW = spanX - cellGap;
+      const topD = spanY - cellGap;
+
+      // Lower step: further inset by OUTER_FILLET for stacking interface
+      const bottomW = spanX - 2 * inset;
+      const bottomD = spanY - 2 * inset;
+
+      // Lower step (narrow, baseplate groove fit)
+      if (bottomW > 0 && bottomD > 0 && profileStep > 0) {
+        meshes.push(createBox(
+          cx - bottomW / 2, cy - bottomD / 2, 0,
+          bottomW, bottomD, profileStep
+        ));
+      }
+
+      // Upper step (wider, bridge to cavity floor)
+      if (topW > 0 && topD > 0 && upperH > 0) {
+        meshes.push(createBox(
+          cx - topW / 2, cy - topD / 2, profileStep,
+          topW, topD, upperH
+        ));
+      }
+    }
   }
 
   return mergeMeshes(meshes);
