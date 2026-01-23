@@ -9,10 +9,15 @@ import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { exportSTL } from '@/features/generation/export/stlExporter';
+import { export3MF } from '@/features/generation/export/threemfExporter';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
+import { captureThumbnailPNG } from '@/features/bin-designer/utils/thumbnail';
 import type { FileNameStyle } from '@/features/bin-designer/utils/fileNaming';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
+
+/** Supported export formats */
+export type ExportFormat = 'stl' | '3mf';
 
 interface UseExportReturn {
   /** Whether an export is currently being generated */
@@ -25,6 +30,8 @@ interface UseExportReturn {
   readonly fileName: string;
   /** Trigger STL download */
   readonly downloadSTL: (nameStyle?: FileNameStyle) => void;
+  /** Trigger 3MF download (with thumbnail & print settings) */
+  readonly download3MF: (nameStyle?: FileNameStyle) => Promise<void>;
 }
 
 export function useExport(): UseExportReturn {
@@ -77,5 +84,47 @@ export function useExport(): UseExportReturn {
     [canExport, mesh, params]
   );
 
-  return { isExporting, canExport, estimates, fileName, downloadSTL };
+  const download3MF = useCallback(
+    async (nameStyle: FileNameStyle = 'descriptive') => {
+      if (!canExport || !mesh?.vertices || !mesh?.normals) return;
+
+      setIsExporting(true);
+
+      let url: string | null = null;
+      let anchor: HTMLAnchorElement | null = null;
+      try {
+        const name = generateFileName(params, '3mf', nameStyle);
+
+        // Capture thumbnail from 3D preview (async canvas → PNG)
+        const thumbnail = await captureThumbnailPNG() ?? undefined;
+
+        const blob = export3MF(mesh.vertices, mesh.normals, {
+          name: name.replace(/\.3mf$/, ''),
+          thumbnail,
+          printSettings: {
+            layerHeight: 0.2,
+            infillPercent: 15,
+            material: 'PLA',
+            supportRequired: false,
+            estimatedMinutes: Math.round(estimates.printTimeMinutes),
+            estimatedGrams: Math.round(estimates.gramsFilament),
+          },
+        });
+
+        url = URL.createObjectURL(blob);
+        anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = name;
+        document.body.appendChild(anchor);
+        anchor.click();
+      } finally {
+        if (anchor?.parentNode) anchor.parentNode.removeChild(anchor);
+        if (url) URL.revokeObjectURL(url);
+        setIsExporting(false);
+      }
+    },
+    [canExport, mesh, params, estimates]
+  );
+
+  return { isExporting, canExport, estimates, fileName, downloadSTL, download3MF };
 }

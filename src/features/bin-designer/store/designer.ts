@@ -11,10 +11,13 @@ import { current } from 'immer';
 import type {
   DesignerState,
   BinParams,
+  Insert,
   GenerationStatus,
   GenerationResult,
   WasmStatus,
   DesignerTab,
+  SaveStatus,
+  SavedDesign,
 } from '../types';
 import {
   DEFAULT_BIN_PARAMS,
@@ -22,6 +25,7 @@ import {
   DEFAULT_UI_STATE,
   DEFAULT_HISTORY,
   DESIGNER_CONSTRAINTS,
+  migrateParams,
 } from '../constants';
 
 export const useDesignerStore = create<DesignerState>()(
@@ -32,6 +36,11 @@ export const useDesignerStore = create<DesignerState>()(
     history: { ...DEFAULT_HISTORY },
     wasmStatus: 'unloaded' as WasmStatus,
     ui: { ...DEFAULT_UI_STATE },
+
+    // Persistence state
+    currentDesignId: null as string | null,
+    designName: 'Untitled Bin',
+    saveStatus: 'idle' as SaveStatus,
 
     // Param actions
     setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => {
@@ -65,6 +74,48 @@ export const useDesignerStore = create<DesignerState>()(
         ];
         state.history.future = [];
         state.params = { ...DEFAULT_BIN_PARAMS };
+      });
+    },
+
+    // Persistence actions
+    setCurrentDesignId: (id: string | null) => {
+      set((state) => {
+        state.currentDesignId = id;
+      });
+    },
+
+    setDesignName: (name: string) => {
+      set((state) => {
+        state.designName = name;
+      });
+    },
+
+    setSaveStatus: (status: SaveStatus) => {
+      set((state) => {
+        state.saveStatus = status;
+      });
+    },
+
+    newDesign: () => {
+      set((state) => {
+        // Clear history — undoing to a previous design's params
+        // while in a new design context is semantically incorrect
+        state.history.past = [];
+        state.history.future = [];
+        state.params = { ...DEFAULT_BIN_PARAMS };
+        state.currentDesignId = null;
+        state.designName = 'Untitled Bin';
+        state.saveStatus = 'idle';
+      });
+    },
+
+    loadDesign: (design: SavedDesign) => {
+      set((state) => {
+        state.params = migrateParams(design.params);
+        state.currentDesignId = design.id;
+        state.designName = design.name;
+        state.history = { past: [], future: [] };
+        state.saveStatus = 'saved';
       });
     },
 
@@ -103,6 +154,53 @@ export const useDesignerStore = create<DesignerState>()(
       });
     },
 
+    // Insert actions
+    addInsert: (insert: Insert) => {
+      set((state) => {
+        state.history.past = [
+          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+          current(state.params),
+        ];
+        state.history.future = [];
+        state.params.inserts = [...state.params.inserts, insert];
+      });
+    },
+
+    removeInsert: (id: string) => {
+      set((state) => {
+        state.history.past = [
+          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+          current(state.params),
+        ];
+        state.history.future = [];
+        state.params.inserts = state.params.inserts.filter((i) => i.id !== id);
+      });
+    },
+
+    updateInsert: (id: string, updates: Partial<Insert>) => {
+      set((state) => {
+        state.history.past = [
+          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+          current(state.params),
+        ];
+        state.history.future = [];
+        state.params.inserts = state.params.inserts.map((i) =>
+          i.id === id ? { ...i, ...updates } : i
+        );
+      });
+    },
+
+    clearInserts: () => {
+      set((state) => {
+        state.history.past = [
+          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+          current(state.params),
+        ];
+        state.history.future = [];
+        state.params.inserts = [];
+      });
+    },
+
     // Generation actions
     setGenerationStatus: (status: GenerationStatus) => {
       set((state) => {
@@ -133,6 +231,12 @@ export const useDesignerStore = create<DesignerState>()(
     setExportDialogOpen: (open: boolean) => {
       set((state) => {
         state.ui.exportDialogOpen = open;
+      });
+    },
+
+    setDesignListOpen: (open: boolean) => {
+      set((state) => {
+        state.ui.designListOpen = open;
       });
     },
 

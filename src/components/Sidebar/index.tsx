@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useUIStore } from '@/core/store';
+import { useUIStore, useLabsStore } from '@/core/store';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
@@ -13,6 +13,7 @@ import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { useResponsive } from '@/shared/hooks';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { useDesignerRouting } from '@/features/bin-designer/hooks/useDesignerRouting';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
@@ -23,12 +24,21 @@ const SettingsModal = lazyWithRetry(() =>
   import('@/components/Modals/SettingsModal').then(namedExport('SettingsModal'))
 );
 
+/**
+ * Renders the left-hand Tools sidebar with collapsed and expanded states, user controls for drawer/grid settings, and access to auxiliary panels.
+ *
+ * The component displays panels for active layer, layers, categories, an Inspiration Gallery entry, and physical/grid unit settings. It shows a Bin Designer entry when the bin_designer feature flag is enabled, supports a half-bin mode and fractional-edge controls when applicable, and conditionally mounts lazy-loaded modals for the Inspiration Gallery and Settings.
+ *
+ * @returns The sidebar element as JSX to be mounted in the application layout.
+ */
 export function Sidebar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { isDesktop } = useResponsive();
+  const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
+  const { navigateToDesigner } = useDesignerRouting();
 
   const handleScroll = useCallback(() => {
     if (scrollRef.current) {
@@ -200,6 +210,50 @@ export function Sidebar() {
                 </svg>
               </button>
             </div>
+
+            {/* Bin Designer - behind feature flag */}
+            {isDesignerEnabled && (
+              <div className="px-4 py-4 border-b border-stroke-subtle">
+                <button
+                  onClick={navigateToDesigner}
+                  className="w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-blue-500/10 to-cyan-500/10 hover:from-blue-500/20 hover:to-cyan-500/20 border border-blue-500/20 transition-all group"
+                  aria-label="Open Bin Designer"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <svg
+                      className="w-5 h-5 text-blue-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-content">Bin Designer</div>
+                    <div className="text-xs text-content-tertiary">Create custom bins for 3D printing</div>
+                  </div>
+                  <svg
+                    className="w-4 h-4 text-content-tertiary group-hover:translate-x-0.5 transition-transform"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
 
             {/* Grid Size */}
             <div data-grid-size-panel className="mt-auto px-4 py-4">

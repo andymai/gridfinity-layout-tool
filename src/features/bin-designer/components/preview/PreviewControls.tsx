@@ -7,7 +7,9 @@ export type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
 
 interface PreviewControlsProps {
   wireframe: boolean;
+  highContrast: boolean;
   onWireframeToggle: () => void;
+  onHighContrastToggle: () => void;
   onCameraPreset: (preset: CameraPreset) => void;
   onResetView: () => void;
 }
@@ -21,7 +23,9 @@ const PRESETS: Array<{ key: CameraPreset; label: string; shortcut: string }> = [
 
 export function PreviewControls({
   wireframe,
+  highContrast,
   onWireframeToggle,
+  onHighContrastToggle,
   onCameraPreset,
   onResetView,
 }: PreviewControlsProps) {
@@ -68,6 +72,22 @@ export function PreviewControls({
         aria-pressed={wireframe}
       >
         Wire
+      </button>
+
+      {/* High contrast toggle */}
+      <button
+        type="button"
+        onClick={onHighContrastToggle}
+        className={`rounded px-2 py-1 text-[10px] font-medium shadow-sm backdrop-blur ${
+          highContrast
+            ? 'bg-yellow-500 text-black'
+            : 'bg-surface-elevated/80 text-content-secondary hover:bg-surface-elevated hover:text-content'
+        }`}
+        title="Toggle high contrast"
+        aria-label="Toggle high contrast preview"
+        aria-pressed={highContrast}
+      >
+        HC
       </button>
     </div>
   );

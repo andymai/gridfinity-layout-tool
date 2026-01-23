@@ -22,7 +22,7 @@ export function PreviewSkeleton({ wasmStatus, generationStatus }: PreviewSkeleto
   const isError = wasmStatus === 'error' || generationStatus === 'error';
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-surface">
+    <div className="flex h-full w-full items-center justify-center bg-surface" role="status" aria-live="polite" aria-label={getMessage()}>
       <div className="text-center">
         <div className={`mx-auto mb-3 h-16 w-16 rounded-xl ${isError ? 'bg-red-500/10' : 'bg-surface-elevated animate-pulse'} flex items-center justify-center`}>
           {isError ? (
