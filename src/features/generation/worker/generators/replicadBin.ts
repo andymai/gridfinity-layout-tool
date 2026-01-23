@@ -281,38 +281,105 @@ function buildTopShape(
 // ─── Feature Builders ─────────────────────────────────────────────────────────
 
 /**
- * Build divider walls inside the bin compartment.
+ * Build compartment divider walls inside the bin.
+ *
+ * Uses the compartment grid to derive wall segments: walls appear at
+ * boundaries between cells with different compartment IDs. This supports
+ * non-uniform compartment layouts (merged cells have no wall between them).
+ *
  * Positioned from Z=0 (floor) to Z=wallHeight.
  */
-function buildDividers(
+function buildCompartmentWalls(
   params: BinParams,
   innerW: number,
   innerD: number,
   wallHeight: number
 ): Shape3D | null {
-  const { x: xCount, y: yCount, thickness } = params.dividers;
-  if (xCount === 0 && yCount === 0) return null;
+  const { cols, rows, thickness, cells } = params.compartments;
 
+  // Single compartment = no walls needed
+  if (cols <= 1 && rows <= 1) return null;
+  if (new Set(cells).size <= 1) return null;
+
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
   let dividers: Shape3D | null = null;
 
-  // X dividers run front-to-back (parallel to depth axis)
-  for (let i = 1; i <= xCount; i++) {
-    const xPos = -innerW / 2 + (innerW / (xCount + 1)) * i;
-    const wall = (drawRectangle(thickness, innerD)
-      .sketchOnPlane('XY') as unknown as Sketch)
-      .extrude(wallHeight) as Shape3D;
-    const positioned = wall.translate([xPos, 0, 0]);
-    dividers = dividers ? dividers.fuse(positioned) : positioned;
+  // Derive wall segments from cell boundaries
+
+  // Vertical walls: between column boundaries
+  for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
+    const xPos = -innerW / 2 + colBoundary * cellW;
+
+    // Find consecutive row spans where left cell != right cell
+    let segStart: number | null = null;
+
+    for (let row = 0; row < rows; row++) {
+      const leftId = cells[row * cols + (colBoundary - 1)];
+      const rightId = cells[row * cols + colBoundary];
+
+      if (leftId !== rightId) {
+        if (segStart === null) segStart = row;
+      } else {
+        if (segStart !== null) {
+          // Create wall segment from segStart to row (exclusive)
+          const segLength = (row - segStart) * cellD;
+          const yCenter = -innerD / 2 + (segStart + (row - segStart) / 2) * cellD;
+          const wall = (drawRectangle(thickness, segLength)
+            .sketchOnPlane('XY') as unknown as Sketch)
+            .extrude(wallHeight) as Shape3D;
+          const positioned = wall.translate([xPos, yCenter, 0]);
+          dividers = dividers ? dividers.fuse(positioned) : positioned;
+          segStart = null;
+        }
+      }
+    }
+    // Close trailing segment
+    if (segStart !== null) {
+      const segLength = (rows - segStart) * cellD;
+      const yCenter = -innerD / 2 + (segStart + (rows - segStart) / 2) * cellD;
+      const wall = (drawRectangle(thickness, segLength)
+        .sketchOnPlane('XY') as unknown as Sketch)
+        .extrude(wallHeight) as Shape3D;
+      const positioned = wall.translate([xPos, yCenter, 0]);
+      dividers = dividers ? dividers.fuse(positioned) : positioned;
+    }
   }
 
-  // Y dividers run left-to-right (parallel to width axis)
-  for (let i = 1; i <= yCount; i++) {
-    const yPos = -innerD / 2 + (innerD / (yCount + 1)) * i;
-    const wall = (drawRectangle(innerW, thickness)
-      .sketchOnPlane('XY') as unknown as Sketch)
-      .extrude(wallHeight) as Shape3D;
-    const positioned = wall.translate([0, yPos, 0]);
-    dividers = dividers ? dividers.fuse(positioned) : positioned;
+  // Horizontal walls: between row boundaries
+  for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
+    const yPos = -innerD / 2 + rowBoundary * cellD;
+
+    let segStart: number | null = null;
+
+    for (let col = 0; col < cols; col++) {
+      const topId = cells[(rowBoundary - 1) * cols + col];
+      const bottomId = cells[rowBoundary * cols + col];
+
+      if (topId !== bottomId) {
+        if (segStart === null) segStart = col;
+      } else {
+        if (segStart !== null) {
+          const segLength = (col - segStart) * cellW;
+          const xCenter = -innerW / 2 + (segStart + (col - segStart) / 2) * cellW;
+          const wall = (drawRectangle(segLength, thickness)
+            .sketchOnPlane('XY') as unknown as Sketch)
+            .extrude(wallHeight) as Shape3D;
+          const positioned = wall.translate([xCenter, yPos, 0]);
+          dividers = dividers ? dividers.fuse(positioned) : positioned;
+          segStart = null;
+        }
+      }
+    }
+    if (segStart !== null) {
+      const segLength = (cols - segStart) * cellW;
+      const xCenter = -innerW / 2 + (segStart + (cols - segStart) / 2) * cellW;
+      const wall = (drawRectangle(segLength, thickness)
+        .sketchOnPlane('XY') as unknown as Sketch)
+        .extrude(wallHeight) as Shape3D;
+      const positioned = wall.translate([xCenter, yPos, 0]);
+      dividers = dividers ? dividers.fuse(positioned) : positioned;
+    }
   }
 
   return dividers;
@@ -331,7 +398,7 @@ function buildScoops(
   if (!params.scoop.enabled) return null;
 
   const compartmentW = innerW / (xDividers + 1);
-  const compartmentD = innerD / (params.dividers.y + 1);
+  const compartmentD = innerD / params.compartments.rows;
   const autoRadius = Math.min(compartmentW / 3, compartmentD / 3, 15);
   const maxRadius = wallHeight * 0.75;
   const radius = Math.min(
@@ -343,7 +410,7 @@ function buildScoops(
 
   let scoops: Shape3D | null = null;
   const cols = xDividers + 1;
-  const rows = params.dividers.y + 1;
+  const rows = params.compartments.rows;
   const rowCount = params.scoop.allRows ? rows : 1;
 
   for (let row = 0; row < rowCount; row++) {
@@ -582,18 +649,19 @@ export function generateBin(
   onProgress?.('features', 0.5);
 
   if (!keepFull) {
-    // Dividers (positioned from Z=0 = bin floor)
-    const dividers = buildDividers(params, innerW, innerD, wallHeight);
-    if (dividers) {
+    // Compartment divider walls (positioned from Z=0 = bin floor)
+    const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, wallHeight);
+    if (compartmentWalls) {
       try {
-        bin = bin.fuse(dividers);
+        bin = bin.fuse(compartmentWalls);
       } catch {
         // Boolean fusion may fail — continue without dividers
       }
     }
 
     // Scoops (boolean cut from interior)
-    const scoopCut = buildScoops(params, innerW, innerD, wallHeight, params.dividers.x);
+    const xDividers = params.compartments.cols - 1;
+    const scoopCut = buildScoops(params, innerW, innerD, wallHeight, xDividers);
     if (scoopCut) {
       try {
         bin = bin.cut(scoopCut);

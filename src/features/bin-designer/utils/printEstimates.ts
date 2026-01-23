@@ -215,24 +215,36 @@ function computeDividerVolume(
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const dividerH = totalH - bottomH;
-  const { x: divX, y: divY, thickness } = params.dividers;
+  const { cols, rows, thickness, cells } = params.compartments;
 
-  let volume = 0;
+  if (cols <= 1 && rows <= 1) return 0;
 
-  // Y dividers (walls parallel to Y axis, splitting width)
-  if (divX > 0) {
-    volume += divX * thickness * innerD * dividerH;
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
+  let totalLength = 0;
+
+  // Count vertical wall segment lengths
+  for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
+    for (let row = 0; row < rows; row++) {
+      const leftId = cells[row * cols + (colBoundary - 1)];
+      const rightId = cells[row * cols + colBoundary];
+      if (leftId !== rightId) {
+        totalLength += cellD;
+      }
+    }
   }
 
-  // X dividers (walls parallel to X axis, splitting depth)
-  if (divY > 0) {
-    volume += divY * thickness * innerW * dividerH;
+  // Count horizontal wall segment lengths
+  for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
+    for (let col = 0; col < cols; col++) {
+      const topId = cells[(rowBoundary - 1) * cols + col];
+      const bottomId = cells[rowBoundary * cols + col];
+      if (topId !== bottomId) {
+        totalLength += cellW;
+      }
+    }
   }
 
-  // Subtract double-counted intersections where X and Y dividers cross
-  if (divX > 0 && divY > 0) {
-    volume -= divX * divY * thickness * thickness * dividerH;
-  }
-
-  return volume;
+  // Volume = total wall length × thickness × height
+  return totalLength * thickness * dividerH;
 }

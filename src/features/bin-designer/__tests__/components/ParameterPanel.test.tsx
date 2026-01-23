@@ -8,14 +8,21 @@ describe('ParameterPanel', () => {
   beforeEach(() => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
+      ui: {
+        activeTab: 'dimensions',
+        exportDialogOpen: false,
+        designListOpen: false,
+        wireframeMode: false,
+      },
     });
   });
 
-  it('renders section headings', () => {
+  it('renders tab buttons', () => {
     render(<ParameterPanel />);
 
-    expect(screen.getByText('Dimensions')).toBeInTheDocument();
+    expect(screen.getByText('Size')).toBeInTheDocument();
     expect(screen.getByText('Base')).toBeInTheDocument();
+    expect(screen.getByText('Compartments')).toBeInTheDocument();
     expect(screen.getByText('Walls')).toBeInTheDocument();
   });
 
@@ -30,6 +37,9 @@ describe('ParameterPanel', () => {
   it('renders base feature toggles', () => {
     render(<ParameterPanel />);
 
+    // Click on the Base tab to reveal base toggles
+    fireEvent.click(screen.getByText('Base'));
+
     expect(screen.getByText('Magnet holes')).toBeInTheDocument();
     expect(screen.getByText('Screw holes')).toBeInTheDocument();
     expect(screen.getByText('Stacking lip')).toBeInTheDocument();
@@ -38,13 +48,16 @@ describe('ParameterPanel', () => {
   it('shows mm info for dimensions', () => {
     render(<ParameterPanel />);
 
-    // Default width=2 and depth=2 both show 84mm
+    // Default tab is 'dimensions' (Size), width=2 and depth=2 both show 84mm
     const mmLabels = screen.getAllByText('84mm');
     expect(mmLabels.length).toBe(2);
   });
 
   it('toggling magnet holes updates base style', () => {
     render(<ParameterPanel />);
+
+    // Click on the Base tab first
+    fireEvent.click(screen.getByText('Base'));
 
     const magnetToggle = screen.getByText('Magnet holes').closest('label')!.querySelector('button')!;
     fireEvent.click(magnetToggle);
@@ -55,6 +68,9 @@ describe('ParameterPanel', () => {
   it('toggling screw holes updates base style', () => {
     render(<ParameterPanel />);
 
+    // Click on the Base tab first
+    fireEvent.click(screen.getByText('Base'));
+
     const screwToggle = screen.getByText('Screw holes').closest('label')!.querySelector('button')!;
     fireEvent.click(screwToggle);
 
@@ -63,6 +79,9 @@ describe('ParameterPanel', () => {
 
   it('toggling both magnet and screw sets magnet_and_screw style', () => {
     render(<ParameterPanel />);
+
+    // Click on the Base tab first
+    fireEvent.click(screen.getByText('Base'));
 
     const magnetToggle = screen.getByText('Magnet holes').closest('label')!.querySelector('button')!;
     const screwToggle = screen.getByText('Screw holes').closest('label')!.querySelector('button')!;
@@ -75,6 +94,9 @@ describe('ParameterPanel', () => {
 
   it('toggling stacking lip updates base config', () => {
     render(<ParameterPanel />);
+
+    // Click on the Base tab first
+    fireEvent.click(screen.getByText('Base'));
 
     // Default is stacking lip ON
     expect(useDesignerStore.getState().params.base.stackingLip).toBe(true);
@@ -103,12 +125,18 @@ describe('ParameterPanel', () => {
     it('does not show magnet sliders when magnet is off', () => {
       render(<ParameterPanel />);
 
+      // Click on the Base tab first
+      fireEvent.click(screen.getByText('Base'));
+
       expect(screen.queryByLabelText('Magnet radius')).not.toBeInTheDocument();
       expect(screen.queryByLabelText('Magnet height')).not.toBeInTheDocument();
     });
 
     it('shows magnet sliders when magnet is toggled on', () => {
       render(<ParameterPanel />);
+
+      // Click on the Base tab first
+      fireEvent.click(screen.getByText('Base'));
 
       const magnetToggle = screen.getByText('Magnet holes').closest('label')!.querySelector('button')!;
       fireEvent.click(magnetToggle);
@@ -120,11 +148,17 @@ describe('ParameterPanel', () => {
     it('does not show screw slider when screw is off', () => {
       render(<ParameterPanel />);
 
+      // Click on the Base tab first
+      fireEvent.click(screen.getByText('Base'));
+
       expect(screen.queryByLabelText('Screw radius')).not.toBeInTheDocument();
     });
 
     it('shows screw slider when screw is toggled on', () => {
       render(<ParameterPanel />);
+
+      // Click on the Base tab first
+      fireEvent.click(screen.getByText('Base'));
 
       const screwToggle = screen.getByText('Screw holes').closest('label')!.querySelector('button')!;
       fireEvent.click(screwToggle);
@@ -142,6 +176,9 @@ describe('ParameterPanel', () => {
 
       render(<ParameterPanel />);
 
+      // Click on the Base tab first
+      fireEvent.click(screen.getByText('Base'));
+
       const radiusSlider = screen.getByLabelText('Magnet radius slider');
       fireEvent.change(radiusSlider, { target: { value: '4.0' } });
 
@@ -157,6 +194,9 @@ describe('ParameterPanel', () => {
       });
 
       render(<ParameterPanel />);
+
+      // Click on the Base tab first
+      fireEvent.click(screen.getByText('Base'));
 
       const heightSlider = screen.getByLabelText('Magnet height slider');
       fireEvent.change(heightSlider, { target: { value: '3.0' } });
@@ -174,6 +214,9 @@ describe('ParameterPanel', () => {
 
       render(<ParameterPanel />);
 
+      // Click on the Base tab first
+      fireEvent.click(screen.getByText('Base'));
+
       const radiusSlider = screen.getByLabelText('Screw radius slider');
       fireEvent.change(radiusSlider, { target: { value: '2.0' } });
 
@@ -185,17 +228,26 @@ describe('ParameterPanel', () => {
     it('renders keepFull toggle', () => {
       render(<ParameterPanel />);
 
+      // Click on the Walls tab first
+      fireEvent.click(screen.getByText('Walls'));
+
       expect(screen.getByText('Keep full (solid)')).toBeInTheDocument();
     });
 
     it('shows wall thickness slider when keepFull is off (default)', () => {
       render(<ParameterPanel />);
 
+      // Click on the Walls tab first
+      fireEvent.click(screen.getByText('Walls'));
+
       expect(screen.getByLabelText('Wall thickness')).toBeInTheDocument();
     });
 
     it('hides wall thickness slider when keepFull is toggled on', () => {
       render(<ParameterPanel />);
+
+      // Click on the Walls tab first
+      fireEvent.click(screen.getByText('Walls'));
 
       const keepFullToggle = screen
         .getByText('Keep full (solid)')
@@ -208,6 +260,9 @@ describe('ParameterPanel', () => {
 
     it('toggling keepFull sets style to solid', () => {
       render(<ParameterPanel />);
+
+      // Click on the Walls tab first
+      fireEvent.click(screen.getByText('Walls'));
 
       const keepFullToggle = screen
         .getByText('Keep full (solid)')
@@ -225,6 +280,9 @@ describe('ParameterPanel', () => {
 
       render(<ParameterPanel />);
 
+      // Click on the Walls tab first
+      fireEvent.click(screen.getByText('Walls'));
+
       const keepFullToggle = screen
         .getByText('Keep full (solid)')
         .closest('label')!
@@ -234,13 +292,32 @@ describe('ParameterPanel', () => {
       expect(useDesignerStore.getState().params.style).toBe('standard');
     });
 
-    it('wall thickness slider respects constraints', () => {
+    it('wall thickness selector shows discrete options', () => {
       render(<ParameterPanel />);
 
-      const wallSlider = screen.getByLabelText('Wall thickness slider');
-      expect(wallSlider).toHaveAttribute('min', '0.8');
-      expect(wallSlider).toHaveAttribute('max', '2.4');
-      expect(wallSlider).toHaveAttribute('step', '0.1');
+      // Click on the Walls tab first
+      fireEvent.click(screen.getByText('Walls'));
+
+      // Verify all discrete thickness options are present as radio buttons
+      const options = screen.getAllByRole('radio');
+      expect(options).toHaveLength(8);
+      expect(screen.getByLabelText('0.4mm')).toBeInTheDocument();
+      expect(screen.getByLabelText('0.6mm')).toBeInTheDocument();
+      expect(screen.getByLabelText('0.8mm')).toBeInTheDocument();
+      expect(screen.getByLabelText('1.2mm')).toBeInTheDocument();
+      expect(screen.getByLabelText('1.6mm')).toBeInTheDocument();
+      expect(screen.getByLabelText('1.8mm')).toBeInTheDocument();
+      expect(screen.getByLabelText('2mm')).toBeInTheDocument();
+      expect(screen.getByLabelText('2.4mm')).toBeInTheDocument();
+    });
+
+    it('clicking a thickness option updates the store', () => {
+      render(<ParameterPanel />);
+
+      fireEvent.click(screen.getByText('Walls'));
+      fireEvent.click(screen.getByLabelText('1.6mm'));
+
+      expect(useDesignerStore.getState().params.wallThickness).toBe(1.6);
     });
   });
 });

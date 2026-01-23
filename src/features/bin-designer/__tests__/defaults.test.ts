@@ -24,8 +24,8 @@ describe('DEFAULT_BIN_PARAMS', () => {
   });
 
   it('should have no features enabled by default', () => {
-    expect(DEFAULT_BIN_PARAMS.dividers.x).toBe(0);
-    expect(DEFAULT_BIN_PARAMS.dividers.y).toBe(0);
+    expect(DEFAULT_BIN_PARAMS.compartments.cols).toBe(1);
+    expect(DEFAULT_BIN_PARAMS.compartments.rows).toBe(1);
     expect(DEFAULT_BIN_PARAMS.scoop.enabled).toBe(false);
     expect(DEFAULT_BIN_PARAMS.label.enabled).toBe(false);
   });
@@ -106,6 +106,14 @@ describe('migrateParams', () => {
     expect(result.depth).toBe(5);
     expect(result.height).toBe(8);
     expect(result.style).toBe('solid');
+  });
+
+  it('should migrate legacy dividers to compartments', () => {
+    const result = migrateParams({ dividers: { x: 2, y: 1, thickness: 1.5 } } as any);
+    expect(result.compartments.cols).toBe(3);
+    expect(result.compartments.rows).toBe(2);
+    expect(result.compartments.thickness).toBe(1.5);
+    expect(result.compartments.cells).toEqual([0, 1, 2, 3, 4, 5]);
   });
 });
 

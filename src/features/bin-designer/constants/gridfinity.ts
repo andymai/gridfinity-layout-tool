@@ -67,10 +67,13 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_HEIGHT: 2, // height units (1U = base only, no cavity)
   MAX_HEIGHT: 20, // height units (expanded: tall bins for tools/bottles)
   HEIGHT_STEP: 1, // height units
-  MAX_DIVIDERS: 10, // per axis
-  MIN_DIVIDER_THICKNESS: 0.8, // mm
-  MAX_DIVIDER_THICKNESS: 2.0, // mm
-  MIN_COMPARTMENT_SIZE: 5, // mm (minimum viable compartment after dividers)
+  // Compartment grid
+  MIN_COMPARTMENT_GRID: 1, // min rows/cols
+  MAX_COMPARTMENT_GRID: 8, // max rows/cols
+  MIN_COMPARTMENT_THICKNESS: 0.4, // mm divider wall thickness
+  MAX_COMPARTMENT_THICKNESS: 2.4, // mm divider wall thickness
+  COMPARTMENT_THICKNESS_STEP: 0.1, // mm (legacy — use WALL_THICKNESS_OPTIONS)
+  MIN_COMPARTMENT_SIZE: 5, // mm (minimum viable compartment dimension)
   MIN_WALL_CUTOUT: 20, // % (minimum when > 0)
   MAX_WALL_CUTOUT: 100, // %
   MAX_LABEL_LENGTH: 20, // characters
@@ -78,9 +81,9 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_SCOOP_RADIUS: 2.0, // mm (minimum useful scoop)
   MAX_SCOOP_RADIUS: 30.0, // mm (large scoops for deep bins)
   // Wall thickness
-  MIN_WALL_THICKNESS: 0.8, // mm (single-wall FDM minimum)
-  MAX_WALL_THICKNESS: 2.4, // mm (3 standard 0.4mm nozzle lines × 2)
-  WALL_THICKNESS_STEP: 0.1, // mm
+  MIN_WALL_THICKNESS: 0.4, // mm (1-wall for 0.4mm nozzle)
+  MAX_WALL_THICKNESS: 2.4, // mm (3-wall for 0.8mm nozzle)
+  WALL_THICKNESS_STEP: 0.1, // mm (legacy — use WALL_THICKNESS_OPTIONS)
   // Magnet holes (radius in UI, diameter in store)
   MIN_MAGNET_RADIUS: 2.0, // mm (diameter 4mm)
   MAX_MAGNET_RADIUS: 5.0, // mm (diameter 10mm)
@@ -93,3 +96,9 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_SCREW_RADIUS: 3.0, // mm (diameter 6mm)
   SCREW_RADIUS_STEP: 0.25, // mm
 } as const;
+
+/**
+ * Valid wall thickness options — multiples of common FDM nozzle sizes (0.4, 0.6, 0.8mm).
+ * Used for both exterior wall thickness and interior divider walls.
+ */
+export const WALL_THICKNESS_OPTIONS = [0.4, 0.6, 0.8, 1.2, 1.6, 1.8, 2.0, 2.4] as const;

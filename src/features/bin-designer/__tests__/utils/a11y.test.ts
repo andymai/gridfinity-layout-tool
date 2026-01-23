@@ -36,13 +36,13 @@ describe('a11y utilities', () => {
       expect(describeBin(params)).toContain('solid walls');
     });
 
-    it('describes dividers as compartments', () => {
+    it('describes compartments count', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
-        dividers: { ...DEFAULT_BIN_PARAMS.dividers, x: 1, y: 2 },
+        compartments: { cols: 2, rows: 3, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5] },
       };
-      // 1 divider x = 2 compartments, 2 dividers y = 3 compartments
-      expect(describeBin(params)).toContain('2×3 compartments');
+      // 2 cols × 3 rows = 6 compartments
+      expect(describeBin(params)).toContain('6 compartments');
     });
 
     it('includes label when enabled', () => {
@@ -73,8 +73,8 @@ describe('a11y utilities', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         inserts: [
-          { id: '1', type: 'cylinder', x: 10, y: 10, width: 5, depth: 5, height: 5, rotation: 0 },
-          { id: '2', type: 'cylinder', x: 20, y: 20, width: 5, depth: 5, height: 5, rotation: 0 },
+          { id: '1', templateId: null, shape: 'circle' as const, x: 10, y: 10, width: 5, depth: 5, cutDepth: 5, rotation: 0, cornerRadius: 0, label: '' },
+          { id: '2', templateId: null, shape: 'circle' as const, x: 20, y: 20, width: 5, depth: 5, cutDepth: 5, rotation: 0, cornerRadius: 0, label: '' },
         ],
       };
       expect(describeBin(params)).toContain('2 inserts');
@@ -84,7 +84,7 @@ describe('a11y utilities', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         inserts: [
-          { id: '1', type: 'cylinder', x: 10, y: 10, width: 5, depth: 5, height: 5, rotation: 0 },
+          { id: '1', templateId: null, shape: 'circle' as const, x: 10, y: 10, width: 5, depth: 5, cutDepth: 5, rotation: 0, cornerRadius: 0, label: '' },
         ],
       };
       expect(describeBin(params)).toContain('1 insert');
@@ -109,7 +109,7 @@ describe('a11y utilities', () => {
         ...DEFAULT_BIN_PARAMS,
         base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: false },
         style: 'standard',
-        dividers: { x: 0, y: 0, thickness: 1.2 },
+        compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
         label: { enabled: false, text: '', fontSize: 'auto' },
         scoop: { enabled: false, radius: 'auto', allRows: false },
         walls: { front: 0, back: 0, left: 0, right: 0 },

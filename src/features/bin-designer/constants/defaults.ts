@@ -4,7 +4,7 @@
 
 import type { BinParams, DesignerUIState, GenerationState, DesignerHistory } from '../types';
 
-/** Default bin parameters: 2x2x3 standard bin with no features */
+/** Default bin parameters: 2x2x3 standard bin with no compartments */
 export const DEFAULT_BIN_PARAMS: BinParams = {
   width: 2,
   depth: 2,
@@ -18,10 +18,11 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     stackingLip: true,
   },
   style: 'standard',
-  dividers: {
-    x: 0,
-    y: 0,
+  compartments: {
+    cols: 1,
+    rows: 1,
     thickness: 1.2,
+    cells: [0],
   },
   scoop: {
     enabled: false,
@@ -65,12 +66,14 @@ export const DEFAULT_HISTORY: DesignerHistory = {
 
 /**
  * Populate missing bin parameters with default values.
- * Handles backward compatibility for old designs (e.g., scoop was boolean).
+ * Handles backward compatibility for old designs:
+ * - scoop was boolean in earlier versions
+ * - dividers (DividerConfig) migrates to compartments (CompartmentConfig)
  *
  * @param params - Partial bin parameters to migrate; any fields not provided will be filled from `DEFAULT_BIN_PARAMS`.
  * @returns A complete `BinParams` object with unspecified fields taken from `DEFAULT_BIN_PARAMS`.
  */
-export function migrateParams(params: Partial<BinParams>): BinParams {
+export function migrateParams(params: Partial<BinParams> & { dividers?: { x: number; y: number; thickness: number } }): BinParams {
   // Migrate old boolean scoop format to ScoopConfig
   let scoopConfig = DEFAULT_BIN_PARAMS.scoop;
   if (params.scoop !== undefined) {
@@ -82,14 +85,33 @@ export function migrateParams(params: Partial<BinParams>): BinParams {
     }
   }
 
+  // Migrate old DividerConfig to CompartmentConfig
+  let compartmentsConfig = DEFAULT_BIN_PARAMS.compartments;
+  if (params.compartments !== undefined) {
+    compartmentsConfig = { ...DEFAULT_BIN_PARAMS.compartments, ...params.compartments };
+  } else if (params.dividers !== undefined) {
+    // Legacy format: DividerConfig → CompartmentConfig
+    const { x, y, thickness } = params.dividers;
+    const cols = x + 1;
+    const rows = y + 1;
+    const cells: number[] = [];
+    for (let i = 0; i < rows * cols; i++) {
+      cells.push(i);
+    }
+    compartmentsConfig = { cols, rows, thickness, cells };
+  }
+
+  // Remove legacy dividers field from spread
+  const { dividers: _legacyDividers, ...rest } = params as Record<string, unknown>;
+
   return {
     ...DEFAULT_BIN_PARAMS,
-    ...params,
+    ...rest,
     base: { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) },
-    dividers: { ...DEFAULT_BIN_PARAMS.dividers, ...(params.dividers ?? {}) },
+    compartments: compartmentsConfig,
     scoop: scoopConfig,
     label: { ...DEFAULT_BIN_PARAMS.label, ...(params.label ?? {}) },
     walls: { ...DEFAULT_BIN_PARAMS.walls, ...(params.walls ?? {}) },
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
-  };
+  } as BinParams;
 }
