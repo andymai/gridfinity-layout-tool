@@ -94,7 +94,7 @@ export function initAnalytics(): void {
       posthog.init(key, {
         api_host: '/ph',
         ui_host: 'https://us.posthog.com',
-        capture_pageview: true,
+        capture_pageview: false, // Manual pageview - auto mode fires on every replaceState
         capture_pageleave: true,
         persistence: 'localStorage',
         autocapture: false, // We'll track specific events manually
@@ -106,6 +106,9 @@ export function initAnalytics(): void {
         capture_performance: true,
       });
       posthogInstance = posthog;
+
+      // Fire a single pageview on app load
+      posthog.capture('$pageview');
 
       // Identify user with stable ID for person properties & cohorts
       const userId = getStableUserId();
