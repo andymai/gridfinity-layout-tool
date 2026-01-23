@@ -6,6 +6,8 @@ describe('useDesignerKeyboard', () => {
   const onCameraPreset = vi.fn();
   const onResetView = vi.fn();
   const onToggleWireframe = vi.fn();
+  const onUndo = vi.fn();
+  const onRedo = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -13,7 +15,7 @@ describe('useDesignerKeyboard', () => {
 
   function renderKeyboardHook() {
     return renderHook(() =>
-      useDesignerKeyboard({ onCameraPreset, onResetView, onToggleWireframe })
+      useDesignerKeyboard({ onCameraPreset, onResetView, onToggleWireframe, onUndo, onRedo })
     );
   }
 
@@ -70,13 +72,39 @@ describe('useDesignerKeyboard', () => {
     expect(onToggleWireframe).toHaveBeenCalledOnce();
   });
 
-  it('ignores keys with Ctrl modifier', () => {
+  it('maps Ctrl+Z to undo', () => {
+    renderKeyboardHook();
+    pressKey('z', { ctrlKey: true });
+    expect(onUndo).toHaveBeenCalledOnce();
+  });
+
+  it('maps Ctrl+Y to redo', () => {
+    renderKeyboardHook();
+    pressKey('y', { ctrlKey: true });
+    expect(onRedo).toHaveBeenCalledOnce();
+  });
+
+  it('maps Ctrl+Shift+Z to redo', () => {
+    renderKeyboardHook();
+    pressKey('z', { ctrlKey: true, shiftKey: true });
+    expect(onRedo).toHaveBeenCalledOnce();
+  });
+
+  it('maps Meta+Z to undo (macOS)', () => {
+    renderKeyboardHook();
+    pressKey('z', { metaKey: true });
+    expect(onUndo).toHaveBeenCalledOnce();
+  });
+
+  it('ignores Ctrl+other keys (no undo/redo)', () => {
     renderKeyboardHook();
     pressKey('1', { ctrlKey: true });
     expect(onCameraPreset).not.toHaveBeenCalled();
+    expect(onUndo).not.toHaveBeenCalled();
+    expect(onRedo).not.toHaveBeenCalled();
   });
 
-  it('ignores keys with Meta modifier', () => {
+  it('ignores Meta+other keys (no undo/redo)', () => {
     renderKeyboardHook();
     pressKey('r', { metaKey: true });
     expect(onResetView).not.toHaveBeenCalled();

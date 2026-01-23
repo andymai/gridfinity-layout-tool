@@ -31,12 +31,13 @@ export function useDesignerRouting() {
 
   const navigateToDesigner = useCallback(() => {
     window.history.pushState(null, '', '/designer');
-    setIsDesignerRoute(true);
+    // Dispatch popstate so all hook instances re-check the URL
+    window.dispatchEvent(new PopStateEvent('popstate'));
   }, []);
 
   const navigateToPlanner = useCallback(() => {
     window.history.pushState(null, '', '/');
-    setIsDesignerRoute(false);
+    window.dispatchEvent(new PopStateEvent('popstate'));
   }, []);
 
   return {

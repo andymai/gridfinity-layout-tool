@@ -148,11 +148,12 @@ export function closeDesignerDb(): void {
 }
 
 /**
- * Update just the params of an existing design (for auto-save).
+ * Update the params (and optionally thumbnail) of an existing design (for auto-save).
  */
 export async function updateDesignParams(
   id: string,
-  params: BinParams
+  params: BinParams,
+  thumbnail?: string | null
 ): Promise<Result<SavedDesign, StorageError>> {
   const loadResult = await loadDesign(id);
   if (isErr(loadResult)) {
@@ -162,5 +163,6 @@ export async function updateDesignParams(
   return saveDesign({
     ...loadResult.value,
     params,
+    ...(thumbnail !== undefined ? { thumbnail } : {}),
   });
 }

@@ -57,6 +57,63 @@ export interface BinParams {
   readonly scoop: boolean;
   readonly label: LabelConfig;
   readonly walls: WallConfig;
+  readonly inserts: Insert[];
+}
+
+// =============================================================================
+// Insert Types
+// =============================================================================
+
+/** Shape of a cavity cut into the bin floor */
+export type InsertShape = 'rectangle' | 'circle' | 'hexagon' | 'rounded-rect' | 'slot';
+
+/** Template category for grouping */
+export type TemplateCategory = 'electronics' | 'hardware' | 'tools';
+
+/** A placed insert instance on the bin floor */
+export interface Insert {
+  readonly id: string;
+  readonly templateId: string | null;
+  readonly shape: InsertShape;
+  /** X position in mm from bin interior left edge */
+  readonly x: number;
+  /** Y position in mm from bin interior front edge */
+  readonly y: number;
+  /** Width in mm (or diameter for circle/hexagon) */
+  readonly width: number;
+  /** Depth in mm (ignored for circle/hexagon) */
+  readonly depth: number;
+  /** Cavity depth in mm (how deep the cut goes) */
+  readonly cutDepth: number;
+  /** Rotation in degrees (0, 90, 180, 270) */
+  readonly rotation: 0 | 90 | 180 | 270;
+  /** Corner radius for rounded-rect shape (mm) */
+  readonly cornerRadius: number;
+  /** Optional label for the insert */
+  readonly label: string;
+}
+
+/** A configurable parameter on a template */
+export interface ConfigurableParam {
+  readonly key: keyof Insert;
+  readonly label: string;
+  readonly min: number;
+  readonly max: number;
+  readonly step: number;
+  readonly unit: string;
+}
+
+/** A pre-built insert template definition */
+export interface InsertTemplate {
+  readonly id: string;
+  readonly name: string;
+  readonly category: TemplateCategory;
+  readonly description: string;
+  readonly shape: InsertShape;
+  /** Default insert values (position excluded — set on placement) */
+  readonly defaults: Omit<Insert, 'id' | 'templateId' | 'x' | 'y'>;
+  /** Which parameters users can adjust after placing */
+  readonly configurableParams: readonly ConfigurableParam[];
 }
 
 // =============================================================================
@@ -91,10 +148,14 @@ export interface GenerationState {
 /** Active tab in the parameter panel */
 export type DesignerTab = 'dimensions' | 'base' | 'features' | 'walls' | 'style';
 
+/** Auto-save status indicator */
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
 /** UI state for the designer page */
 export interface DesignerUIState {
   readonly activeTab: DesignerTab;
   readonly exportDialogOpen: boolean;
+  readonly designListOpen: boolean;
   readonly wireframeMode: boolean;
 }
 
@@ -131,6 +192,11 @@ export interface DesignerState {
   wasmStatus: WasmStatus;
   ui: DesignerUIState;
 
+  // Persistence
+  currentDesignId: string | null;
+  designName: string;
+  saveStatus: SaveStatus;
+
   // Param actions
   setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => void;
   setParams: (partial: Partial<BinParams>) => void;
@@ -141,6 +207,19 @@ export interface DesignerState {
   redo: () => void;
   pushHistory: () => void;
 
+  // Persistence actions
+  setCurrentDesignId: (id: string | null) => void;
+  setDesignName: (name: string) => void;
+  setSaveStatus: (status: SaveStatus) => void;
+  newDesign: () => void;
+  loadDesign: (design: SavedDesign) => void;
+
+  // Insert actions
+  addInsert: (insert: Insert) => void;
+  removeInsert: (id: string) => void;
+  updateInsert: (id: string, updates: Partial<Insert>) => void;
+  clearInserts: () => void;
+
   // Generation actions
   setGenerationStatus: (status: GenerationStatus) => void;
   setGenerationResult: (result: GenerationResult) => void;
@@ -149,5 +228,27 @@ export interface DesignerState {
   // UI actions
   setActiveTab: (tab: DesignerTab) => void;
   setExportDialogOpen: (open: boolean) => void;
+  setDesignListOpen: (open: boolean) => void;
   setWireframeMode: (enabled: boolean) => void;
+}
+
+// =============================================================================
+// Export Cart Types
+// =============================================================================
+
+/** A snapshot of a design queued for batch export */
+export interface CartItem {
+  readonly id: string;
+  readonly name: string;
+  readonly params: BinParams;
+  readonly thumbnail: string | null;
+  readonly addedAt: string;
+}
+
+/** Batch export cart store state */
+export interface CartState {
+  items: CartItem[];
+  addToCart: (item: Omit<CartItem, 'addedAt'>) => void;
+  removeFromCart: (id: string) => void;
+  clearCart: () => void;
 }

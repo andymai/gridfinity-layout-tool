@@ -6,3 +6,4 @@ export { estimatePrint, formatPrintTime, formatFilament } from './printEstimates
 export type { PrintEstimate } from './printEstimates';
 export { getStyleConstraints, isFeatureDisabled } from './styleConstraints';
 export type { StyleConstraints, ConstrainedFeature } from './styleConstraints';
+export { captureThumbnail, setPreviewCanvas, clearPreviewCanvas } from './thumbnail';

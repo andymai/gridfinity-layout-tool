@@ -4,4 +4,5 @@ export {
   DEFAULT_GENERATION_STATE,
   DEFAULT_UI_STATE,
   DEFAULT_HISTORY,
+  migrateParams,
 } from './defaults';

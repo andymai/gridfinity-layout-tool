@@ -3,7 +3,7 @@
  * Renders the generated mesh with orbit controls and camera presets.
  */
 
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
@@ -12,6 +12,8 @@ import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { BinMesh, PreviewControls, PreviewSkeleton, type CameraPreset } from './preview';
 import { useDesignerKeyboard } from '../hooks/useDesignerKeyboard';
+import { setPreviewCanvas, clearPreviewCanvas } from '../utils/thumbnail';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 
 /** Camera positions for each preset (eye position looking at origin) */
 const CAMERA_POSITIONS: Record<CameraPreset, [number, number, number]> = {
@@ -27,6 +29,11 @@ export function PreviewCanvas() {
   const controlsRef = useRef<OrbitControlsType>(null);
   const [wireframe, setWireframe] = useState(false);
 
+  // Clean up canvas ref on unmount
+  useEffect(() => {
+    return () => clearPreviewCanvas();
+  }, []);
+
   const { wasmStatus, generationStatus, hasMesh } = useDesignerStore(
     useShallow((s) => ({
       wasmStatus: s.wasmStatus,
@@ -34,6 +41,9 @@ export function PreviewCanvas() {
       hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
     }))
   );
+
+  const undo = useDesignerStore((s) => s.undo);
+  const redo = useDesignerStore((s) => s.redo);
 
   const setCameraPreset = useCallback((preset: CameraPreset) => {
     const controls = controlsRef.current;
@@ -59,6 +69,8 @@ export function PreviewCanvas() {
     onCameraPreset: setCameraPreset,
     onResetView: resetView,
     onToggleWireframe: toggleWireframe,
+    onUndo: undo,
+    onRedo: redo,
   });
 
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';
@@ -77,13 +89,15 @@ export function PreviewCanvas() {
               near: 0.1,
               far: 1000,
             }}
-            onCreated={({ camera }) => {
+            onCreated={({ camera, gl }) => {
               // Must set up vector imperatively before OrbitControls reads it.
               // The camera config 'up' prop doesn't apply early enough.
               camera.up.set(0, 0, 1);
               camera.lookAt(0, 0, 20);
+              // Register canvas for thumbnail capture
+              setPreviewCanvas(gl.domElement);
             }}
-            gl={{ antialias: true }}
+            gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
             {/* Lighting */}
             <ambientLight intensity={0.4} />
@@ -131,8 +145,56 @@ export function PreviewCanvas() {
             onCameraPreset={setCameraPreset}
             onResetView={resetView}
           />
+
+          {/* Touch gesture hint (mobile/tablet first visit) */}
+          <TouchHint />
         </>
       )}
+    </div>
+  );
+}
+
+const TOUCH_HINT_KEY = 'gridfinity-designer-touch-hint-dismissed';
+
+function TouchHint() {
+  const { isTouchDevice, isDesktop } = useResponsive();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (isTouchDevice && !isDesktop && !localStorage.getItem(TOUCH_HINT_KEY)) {
+      setVisible(true);
+    }
+  }, [isTouchDevice, isDesktop]);
+
+  const dismiss = useCallback(() => {
+    setVisible(false);
+    localStorage.setItem(TOUCH_HINT_KEY, '1');
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      className="absolute inset-x-0 bottom-3 flex justify-center"
+      role="status"
+      aria-label="Touch gesture hints"
+    >
+      <div className="flex items-center gap-3 rounded-full bg-black/70 px-4 py-2 text-[11px] text-white shadow-lg backdrop-blur-sm">
+        <span>Drag to orbit</span>
+        <span className="h-3 w-px bg-white/30" />
+        <span>Pinch to zoom</span>
+        <span className="h-3 w-px bg-white/30" />
+        <span>2 fingers to pan</span>
+        <button
+          onClick={dismiss}
+          className="ml-1 rounded-full p-0.5 hover:bg-white/20"
+          aria-label="Dismiss touch hints"
+        >
+          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M3 3l6 6M9 3l-6 6" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
