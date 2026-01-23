@@ -7,12 +7,24 @@
 // This is a minimal set - in production, use a more comprehensive list or external service
 const BLOCKLIST = new Set([
   // Slurs and hate speech (abbreviated list)
-  'nigger', 'nigga', 'faggot', 'fag', 'retard', 'spic', 'chink', 'kike',
-  'tranny', 'dyke', 'cunt', 'twat',
+  'nigger',
+  'nigga',
+  'faggot',
+  'fag',
+  'retard',
+  'spic',
+  'chink',
+  'kike',
+  'tranny',
+  'dyke',
+  'cunt',
+  'twat',
   // Violence
-  'kill yourself', 'kys',
+  'kill yourself',
+  'kys',
   // Other harmful content
-  'cp ', 'child porn',
+  'cp ',
+  'child porn',
 ]);
 
 // Patterns that suggest harmful content
@@ -39,7 +51,7 @@ export interface ContentFilterResult {
  */
 export function filterLayoutContent(layout: {
   name: string;
-  bins: Array<{ label?: string; notes?: string }>;
+  bins: Array<{ label?: string; notes?: string; customProperties?: Record<string, string> }>;
   categories: Array<{ name: string }>;
 }): ContentFilterResult {
   // Check layout name
@@ -68,6 +80,18 @@ export function filterLayoutContent(layout: {
       const notesResult = checkText(bin.notes);
       if (!notesResult.passed) {
         return { passed: false, reason: `Bin notes: ${notesResult.reason}` };
+      }
+    }
+    if (bin.customProperties) {
+      for (const [key, value] of Object.entries(bin.customProperties)) {
+        const keyResult = checkText(key);
+        if (!keyResult.passed) {
+          return { passed: false, reason: `Custom property key: ${keyResult.reason}` };
+        }
+        const valueResult = checkText(value);
+        if (!valueResult.passed) {
+          return { passed: false, reason: `Custom property value: ${valueResult.reason}` };
+        }
       }
     }
   }
