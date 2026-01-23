@@ -207,6 +207,243 @@ export function createCylinder(
 }
 
 /**
+ * Creates a scoop ramp (quarter-circle approximation) for a compartment.
+ *
+ * The scoop is a concave curve at the front (min Y side) of a compartment,
+ * spanning the full width of the compartment. It makes items easier to pick up.
+ *
+ * @param cx - Center X of the compartment
+ * @param frontY - Y coordinate of the compartment front wall (inner edge)
+ * @param z - Z coordinate of the compartment floor (top of bottom plate)
+ * @param compartmentWidth - Width of the compartment
+ * @param radius - Scoop radius (quarter-circle)
+ * @param segments - Number of arc segments (default 8)
+ */
+export function createScoop(
+  cx: number,
+  frontY: number,
+  z: number,
+  compartmentWidth: number,
+  radius: number,
+  segments: number = 8
+): MeshData {
+  // Scoop is a quarter-circle arc from floor going up, starting at front wall
+  // Profile: from (frontY, z) curving up to (frontY + radius, z + radius)
+  // The arc sweeps the full compartment width along X
+
+  const halfWidth = compartmentWidth / 2;
+  const x1 = cx - halfWidth;
+  const x2 = cx + halfWidth;
+
+  // Each segment produces 2 triangles (quad), total segments * 2 triangles
+  const triangleCount = segments * 2;
+  const vertices = new Float32Array(triangleCount * 9);
+  const normals = new Float32Array(triangleCount * 9);
+  let vi = 0;
+
+  const setVertex = (vx: number, vy: number, vz: number, nx: number, ny: number, nz: number) => {
+    vertices[vi] = vx; vertices[vi + 1] = vy; vertices[vi + 2] = vz;
+    normals[vi] = nx; normals[vi + 1] = ny; normals[vi + 2] = nz;
+    vi += 3;
+  };
+
+  for (let i = 0; i < segments; i++) {
+    // Angle goes from 0 (horizontal) to PI/2 (vertical)
+    const angle1 = (i / segments) * (Math.PI / 2);
+    const angle2 = ((i + 1) / segments) * (Math.PI / 2);
+
+    // Points on the quarter circle (Y offset from front, Z offset from floor)
+    const y1 = frontY + radius * (1 - Math.cos(angle1));
+    const z1 = z + radius * Math.sin(angle1);
+    const y2 = frontY + radius * (1 - Math.cos(angle2));
+    const z2 = z + radius * Math.sin(angle2);
+
+    // Normal points inward (toward center of curvature)
+    const ny1 = -Math.cos(angle1);
+    const nz1 = Math.sin(angle1);
+    const ny2 = -Math.cos(angle2);
+    const nz2 = Math.sin(angle2);
+
+    // Quad as 2 triangles (left edge to right edge)
+    // Triangle 1
+    setVertex(x1, y1, z1, 0, ny1, nz1);
+    setVertex(x2, y1, z1, 0, ny1, nz1);
+    setVertex(x2, y2, z2, 0, ny2, nz2);
+
+    // Triangle 2
+    setVertex(x1, y1, z1, 0, ny1, nz1);
+    setVertex(x2, y2, z2, 0, ny2, nz2);
+    setVertex(x1, y2, z2, 0, ny2, nz2);
+  }
+
+  return { vertices, normals, triangleCount };
+}
+
+/**
+ * Creates a label tab at the top of the front wall.
+ *
+ * Gridfinity label tabs are angled ~45° inward from the top of the front wall.
+ * Modeled as a thin angled plate (two triangles forming a quad).
+ *
+ * @param outerWidth - Full bin outer width
+ * @param wallThickness - Wall thickness
+ * @param totalHeight - Total bin height
+ * @param tabHeight - Height of the label tab (default 12mm)
+ * @param tabDepth - How far the tab extends inward (default 12mm for 45°)
+ */
+export function createLabelTab(
+  outerWidth: number,
+  wallThickness: number,
+  halfDepth: number,
+  totalHeight: number,
+  tabHeight: number = 12,
+  tabDepth: number = 12
+): MeshData {
+  // Tab spans most of the front face width (minus wall insets)
+  const tabWidth = outerWidth - 2 * wallThickness - 2; // 1mm inset on each side
+  if (tabWidth <= 0 || tabHeight <= 0) {
+    return { vertices: new Float32Array(0), normals: new Float32Array(0), triangleCount: 0 };
+  }
+
+  const halfTabW = tabWidth / 2;
+
+  // Tab top edge: at the top of the front wall, on the inner surface
+  const topZ = totalHeight;
+  const topY = -halfDepth + wallThickness;
+
+  // Tab bottom edge: angled inward and downward
+  const bottomZ = topZ - tabHeight;
+  const bottomY = topY + tabDepth;
+
+  // Normal for the angled surface (points up-and-forward at 45°)
+  const nLen = Math.sqrt(tabDepth * tabDepth + tabHeight * tabHeight);
+  const ny = -tabHeight / nLen;
+  const nz = tabDepth / nLen;
+
+  // 2 triangles for the tab face, 2 for thickness (back side)
+  const triangleCount = 4;
+  const vertices = new Float32Array(triangleCount * 9);
+  const normals = new Float32Array(triangleCount * 9);
+  let vi = 0;
+
+  const setVertex = (vx: number, vy: number, vz: number, vnx: number, vny: number, vnz: number) => {
+    vertices[vi] = vx; vertices[vi + 1] = vy; vertices[vi + 2] = vz;
+    normals[vi] = vnx; normals[vi + 1] = vny; normals[vi + 2] = vnz;
+    vi += 3;
+  };
+
+  // Front face (visible)
+  setVertex(-halfTabW, topY, topZ, 0, ny, nz);
+  setVertex(halfTabW, topY, topZ, 0, ny, nz);
+  setVertex(halfTabW, bottomY, bottomZ, 0, ny, nz);
+
+  setVertex(-halfTabW, topY, topZ, 0, ny, nz);
+  setVertex(halfTabW, bottomY, bottomZ, 0, ny, nz);
+  setVertex(-halfTabW, bottomY, bottomZ, 0, ny, nz);
+
+  // Back face (inside, reversed normal)
+  setVertex(halfTabW, topY, topZ, 0, -ny, -nz);
+  setVertex(-halfTabW, topY, topZ, 0, -ny, -nz);
+  setVertex(-halfTabW, bottomY, bottomZ, 0, -ny, -nz);
+
+  setVertex(halfTabW, topY, topZ, 0, -ny, -nz);
+  setVertex(-halfTabW, bottomY, bottomZ, 0, -ny, -nz);
+  setVertex(halfTabW, bottomY, bottomZ, 0, -ny, -nz);
+
+  return { vertices, normals, triangleCount };
+}
+
+/**
+ * Creates a triangular corner gusset for structural reinforcement.
+ *
+ * A gusset is a right-triangle prism at the inner corner of the bin,
+ * providing extra material at stress points.
+ *
+ * @param cornerX - X position of the corner
+ * @param cornerY - Y position of the corner
+ * @param z - Z start (bottom of gusset)
+ * @param size - Size of the gusset triangle legs
+ * @param height - Height of the gusset
+ * @param xSign - Direction on X axis (+1 or -1)
+ * @param ySign - Direction on Y axis (+1 or -1)
+ */
+export function createCornerGusset(
+  cornerX: number,
+  cornerY: number,
+  z: number,
+  size: number,
+  height: number,
+  xSign: number,
+  ySign: number
+): MeshData {
+  // Triangle prism: right triangle in XY plane, extruded along Z
+  // Vertices of the triangle base (at z)
+  const ax = cornerX;
+  const ay = cornerY;
+  const bx = cornerX + xSign * size;
+  const by = cornerY;
+  const cx = cornerX;
+  const cy = cornerY + ySign * size;
+
+  const z2 = z + height;
+
+  // 8 triangles: 2 triangle caps + 3 rectangular sides (2 tris each)
+  const triangleCount = 8;
+  const vertices = new Float32Array(triangleCount * 9);
+  const normals = new Float32Array(triangleCount * 9);
+  let vi = 0;
+
+  const setVertex = (vx: number, vy: number, vz: number, nx: number, ny: number, nz: number) => {
+    vertices[vi] = vx; vertices[vi + 1] = vy; vertices[vi + 2] = vz;
+    normals[vi] = nx; normals[vi + 1] = ny; normals[vi + 2] = nz;
+    vi += 3;
+  };
+
+  // Bottom cap (normal -Z)
+  setVertex(ax, ay, z, 0, 0, -1);
+  setVertex(cx, cy, z, 0, 0, -1);
+  setVertex(bx, by, z, 0, 0, -1);
+
+  // Top cap (normal +Z)
+  setVertex(ax, ay, z2, 0, 0, 1);
+  setVertex(bx, by, z2, 0, 0, 1);
+  setVertex(cx, cy, z2, 0, 0, 1);
+
+  // Side 1: edge A-B (wall along Y direction, normal = -ySign on Y)
+  setVertex(ax, ay, z, 0, -ySign, 0);
+  setVertex(bx, by, z, 0, -ySign, 0);
+  setVertex(bx, by, z2, 0, -ySign, 0);
+  setVertex(ax, ay, z, 0, -ySign, 0);
+  setVertex(bx, by, z2, 0, -ySign, 0);
+  setVertex(ax, ay, z2, 0, -ySign, 0);
+
+  // Side 2: edge A-C (wall along X direction, normal = -xSign on X)
+  setVertex(cx, cy, z, -xSign, 0, 0);
+  setVertex(ax, ay, z, -xSign, 0, 0);
+  setVertex(ax, ay, z2, -xSign, 0, 0);
+  setVertex(cx, cy, z, -xSign, 0, 0);
+  setVertex(ax, ay, z2, -xSign, 0, 0);
+  setVertex(cx, cy, z2, -xSign, 0, 0);
+
+  // Side 3: hypotenuse B-C (diagonal face)
+  // Normal of hypotenuse: perpendicular to B-C in XY plane
+  const hx = cx - bx;
+  const hy = cy - by;
+  const hLen = Math.sqrt(hx * hx + hy * hy);
+  const hnx = -hy / hLen; // perpendicular
+  const hny = hx / hLen;
+
+  setVertex(bx, by, z, hnx, hny, 0);
+  setVertex(cx, cy, z, hnx, hny, 0);
+  setVertex(cx, cy, z2, hnx, hny, 0);
+  setVertex(bx, by, z, hnx, hny, 0);
+  setVertex(cx, cy, z2, hnx, hny, 0);
+  setVertex(bx, by, z2, hnx, hny, 0);
+
+  return { vertices, normals, triangleCount };
+}
+
+/**
  * Merges multiple meshes into a single buffer.
  * Simple concatenation of vertex/normal arrays.
  */
