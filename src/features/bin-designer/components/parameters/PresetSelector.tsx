@@ -41,11 +41,6 @@ const PRESET_ICONS: Record<DesignPreset['icon'], JSX.Element> = {
       <path d="M3 8h10" strokeWidth="1" opacity="0.5" />
     </svg>
   ),
-  vase: (
-    <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true">
-      <path d="M6 14c-1-2-2-4-1-7 .5-1.5 1-2 2-3h2c1 1 1.5 1.5 2 3 1 3 0 5-1 7H6z" strokeWidth="1.5" />
-    </svg>
-  ),
   divider: (
     <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true">
       <rect x="3" y="4" width="10" height="8" strokeWidth="1.5" />

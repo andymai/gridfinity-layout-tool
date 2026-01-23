@@ -54,8 +54,6 @@ export const STYLE_WALL_THICKNESS: Record<string, number> = {
   standard: 0.95,
   lite: 0.65,
   solid: 1.6,
-  vase: 0.4,
-  rugged: 2.0,
 } as const;
 
 /** Dimension constraints for bin parameters */

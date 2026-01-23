@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { BUILT_IN_PRESETS, getPresetById } from '../constants/presets';
 
 describe('built-in presets', () => {
-  it('has 5 built-in presets', () => {
-    expect(BUILT_IN_PRESETS).toHaveLength(5);
+  it('has 4 built-in presets', () => {
+    expect(BUILT_IN_PRESETS).toHaveLength(4);
   });
 
   it('all presets have unique IDs', () => {
@@ -33,11 +33,11 @@ describe('built-in presets', () => {
     expect(getPresetById('nonexistent')).toBeUndefined();
   });
 
-  it('heavy-duty preset sets rugged style and magnet base', () => {
+  it('heavy-duty preset sets solid style and magnet base', () => {
     const preset = getPresetById('heavy-duty');
     expect(preset).toBeDefined();
     if (!preset) return;
-    expect(preset.overrides.style).toBe('rugged');
+    expect(preset.overrides.style).toBe('solid');
     expect(preset.overrides.base?.style).toBe('magnet');
     expect(preset.overrides.scoop?.enabled).toBe(true);
   });
@@ -58,17 +58,6 @@ describe('built-in presets', () => {
     expect(preset.overrides.base?.style).toBe('screw');
     expect(preset.overrides.label?.enabled).toBe(true);
     expect(preset.overrides.scoop?.enabled).toBe(true);
-  });
-
-  it('vase-mode preset disables all interior features', () => {
-    const preset = getPresetById('vase-mode');
-    expect(preset).toBeDefined();
-    if (!preset) return;
-    expect(preset.overrides.style).toBe('vase');
-    expect(preset.overrides.dividers?.x).toBe(0);
-    expect(preset.overrides.dividers?.y).toBe(0);
-    expect(preset.overrides.scoop?.enabled).toBe(false);
-    expect(preset.overrides.inserts).toEqual([]);
   });
 
   it('divider-grid preset sets 2×2 dividers', () => {

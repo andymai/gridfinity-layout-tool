@@ -75,40 +75,6 @@ export function generateBinGeometry(params: BinParams): MeshData {
   const hasWallCutouts = !constraints.disabledFeatures.includes('walls') &&
     (params.walls.front > 0 || params.walls.back > 0 || params.walls.left > 0 || params.walls.right > 0);
 
-  // For vase mode: rounded outer shell, no base profile or interior features
-  if (params.style === 'vase') {
-    const vaseMeshes: MeshData[] = [];
-    const outerR = GRIDFINITY.OUTER_FILLET;
-    const innerR = outerR - wallThickness;
-    const vaseWallH = totalHeight - baseHeight;
-
-    // Bottom plate
-    vaseMeshes.push(createBox(-halfW, -halfD, 0, outerWidth, outerDepth, baseHeight));
-
-    if (vaseWallH > 0 && innerR > 0) {
-      const flatFB = outerWidth - 2 * outerR;
-      const flatLR = outerDepth - 2 * outerR;
-
-      // Flat walls (between corners)
-      if (flatFB > 0) {
-        vaseMeshes.push(createBox(-halfW + outerR, -halfD, baseHeight, flatFB, wallThickness, vaseWallH));
-        vaseMeshes.push(createBox(-halfW + outerR, halfD - wallThickness, baseHeight, flatFB, wallThickness, vaseWallH));
-      }
-      if (flatLR > 0) {
-        vaseMeshes.push(createBox(-halfW, -halfD + outerR, baseHeight, wallThickness, flatLR, vaseWallH));
-        vaseMeshes.push(createBox(halfW - wallThickness, -halfD + outerR, baseHeight, wallThickness, flatLR, vaseWallH));
-      }
-
-      // Rounded corners
-      vaseMeshes.push(createQuarterCylinderShell(-halfW + outerR, -halfD + outerR, baseHeight, vaseWallH, outerR, innerR, Math.PI));
-      vaseMeshes.push(createQuarterCylinderShell(halfW - outerR, -halfD + outerR, baseHeight, vaseWallH, outerR, innerR, 3 * Math.PI / 2));
-      vaseMeshes.push(createQuarterCylinderShell(-halfW + outerR, halfD - outerR, baseHeight, vaseWallH, outerR, innerR, Math.PI / 2));
-      vaseMeshes.push(createQuarterCylinderShell(halfW - outerR, halfD - outerR, baseHeight, vaseWallH, outerR, innerR, 0));
-    }
-
-    return mergeMeshes(vaseMeshes);
-  }
-
   const meshes: MeshData[] = [];
 
   // 1. Per-cell base profiles (stepped: narrow at bottom for baseplate fit)
@@ -204,7 +170,7 @@ export function generateBinGeometry(params: BinParams): MeshData {
 
   // 4. Scoops (if enabled and not constrained)
   if (params.scoop.enabled && !constraints.disabledFeatures.includes('scoop')) {
-    const scoopMesh = generateScoops(params, innerWidth, innerDepth, wallThickness, baseHeight);
+    const scoopMesh = generateScoops(params, innerWidth, innerDepth, wallThickness, baseHeight, wallHeight);
     meshes.push(scoopMesh);
   }
 
@@ -214,7 +180,7 @@ export function generateBinGeometry(params: BinParams): MeshData {
     meshes.push(labelMesh);
   }
 
-  // 6. Corner gussets for reinforced styles (solid, rugged)
+  // 6. Corner gussets for reinforced styles (solid)
   if (constraints.hasGussets) {
     const gussetMesh = generateCornerGussets(outerWidth, outerDepth, wallThickness, baseHeight, totalHeight);
     meshes.push(gussetMesh);
@@ -370,7 +336,8 @@ function generateScoops(
   innerWidth: number,
   innerDepth: number,
   wallThickness: number,
-  bottomThickness: number
+  bottomThickness: number,
+  wallHeight: number
 ): MeshData {
   const meshes: MeshData[] = [];
   const divX = params.dividers.x;
@@ -389,18 +356,25 @@ function generateScoops(
   const startX = -innerWidth / 2;
   const startY = -innerDepth / 2;
 
-  // Determine scoop radius
+  // Determine scoop radius (clamped to 75% of wall height to leave straight wall visible)
+  const maxScoopHeight = wallHeight * 0.75;
   let radius: number;
   if (params.scoop.radius === 'auto') {
-    // Auto: 1/3 of smaller compartment dimension, capped at 15mm
-    radius = Math.min(compWidth / 3, compDepth / 3, 15);
+    // Auto: 1/3 of smaller compartment dimension, capped at 15mm and wall height
+    radius = Math.min(compWidth / 3, compDepth / 3, 15, maxScoopHeight);
   } else {
-    // Fixed radius, but still capped to fit within compartment
-    radius = Math.min(params.scoop.radius, compDepth * 0.8, compWidth * 0.8);
+    // Fixed radius, capped to fit within compartment and not exceed wall height
+    radius = Math.min(params.scoop.radius, compDepth * 0.8, compWidth * 0.8, maxScoopHeight);
   }
 
   // Determine which rows get scoops
   const rowCount = params.scoop.allRows ? compCountY : 1;
+
+  // Clamp scoop X bounds to the flat wall region (between corner fillets)
+  const outerR = GRIDFINITY.OUTER_FILLET;
+  const innerR = Math.max(outerR - wallThickness, 0);
+  const flatLeft = -innerWidth / 2 + innerR;
+  const flatRight = innerWidth / 2 - innerR;
 
   for (let iy = 0; iy < rowCount; iy++) {
     // Y coordinate of the front edge of this compartment row (skip over dividers)
@@ -408,12 +382,21 @@ function generateScoops(
 
     for (let ix = 0; ix < compCountX; ix++) {
       const cx = startX + ix * (compWidth + dividerThickness) + compWidth / 2;
+      const rawHalf = (compWidth - wallThickness) / 2;
+
+      // Clamp scoop to flat wall bounds (prevent extending into corner fillets)
+      const scoopLeft = Math.max(cx - rawHalf, flatLeft);
+      const scoopRight = Math.min(cx + rawHalf, flatRight);
+      if (scoopRight <= scoopLeft) continue;
+
+      const scoopWidth = scoopRight - scoopLeft;
+      const scoopCx = (scoopLeft + scoopRight) / 2;
 
       meshes.push(createScoop(
-        cx,
+        scoopCx,
         rowFrontY,
         bottomThickness,
-        compWidth - wallThickness,
+        scoopWidth,
         radius
       ));
     }

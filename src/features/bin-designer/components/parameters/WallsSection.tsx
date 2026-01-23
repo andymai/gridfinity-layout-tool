@@ -17,15 +17,12 @@ const WALL_SIDES: Array<{ key: keyof WallConfig; label: string }> = [
 ];
 
 export function WallsSection() {
-  const { walls, style, setParam } = useDesignerStore(
+  const { walls, setParam } = useDesignerStore(
     useShallow((s) => ({
       walls: s.params.walls,
-      style: s.params.style,
       setParam: s.setParam,
     }))
   );
-
-  const isVase = style === 'vase';
 
   const updateWall = (side: keyof WallConfig, rawValue: number) => {
     // Snap: if between 1-19%, snap to minimum 20%
@@ -35,16 +32,6 @@ export function WallsSection() {
     }
     setParam('walls', { ...walls, [side]: value });
   };
-
-  if (isVase) {
-    return (
-      <div className="rounded-md bg-amber-500/10 border border-amber-500/20 px-3 py-2">
-        <p className="text-xs text-amber-400">
-          Wall cutouts are not available for vase mode bins.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-3">

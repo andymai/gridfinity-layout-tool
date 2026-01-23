@@ -48,26 +48,6 @@ describe('ParameterPanel', () => {
     expect(screen.getByLabelText('Enable label tab')).toBeInTheDocument();
   });
 
-  it('shows vase mode warning in Features section when vase selected', () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, style: 'vase' },
-    });
-
-    render(<ParameterPanel />);
-
-    expect(screen.getByText(/interior features are disabled/i)).toBeInTheDocument();
-  });
-
-  it('shows vase mode warning in Walls section when vase selected', () => {
-    useDesignerStore.setState({
-      params: { ...DEFAULT_BIN_PARAMS, style: 'vase' },
-    });
-
-    render(<ParameterPanel />);
-
-    expect(screen.getByText(/wall cutouts are not available/i)).toBeInTheDocument();
-  });
-
   it('selecting magnet base style shows magnet depth slider', () => {
     render(<ParameterPanel />);
 

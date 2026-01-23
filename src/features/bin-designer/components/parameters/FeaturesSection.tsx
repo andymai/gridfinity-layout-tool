@@ -11,17 +11,14 @@ import { SliderInput } from '../controls/SliderInput';
 import type { DividerConfig, LabelConfig, ScoopConfig } from '@/features/bin-designer/types';
 
 export function FeaturesSection() {
-  const { dividers, scoop, label, style, setParam } = useDesignerStore(
+  const { dividers, scoop, label, setParam } = useDesignerStore(
     useShallow((s) => ({
       dividers: s.params.dividers,
       scoop: s.params.scoop,
       label: s.params.label,
-      style: s.params.style,
       setParam: s.setParam,
     }))
   );
-
-  const isVase = style === 'vase';
 
   const updateDividers = (partial: Partial<DividerConfig>) => {
     setParam('dividers', { ...dividers, ...partial });
@@ -34,16 +31,6 @@ export function FeaturesSection() {
   const updateLabel = (partial: Partial<LabelConfig>) => {
     setParam('label', { ...label, ...partial });
   };
-
-  if (isVase) {
-    return (
-      <div className="rounded-md bg-amber-500/10 border border-amber-500/20 px-3 py-2">
-        <p className="text-xs text-amber-400">
-          Interior features are disabled for vase mode bins (single-wall construction).
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">

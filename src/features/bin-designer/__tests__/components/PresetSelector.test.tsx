@@ -29,17 +29,16 @@ describe('PresetSelector', () => {
     expect(screen.getByText('Heavy Duty')).toBeInTheDocument();
     expect(screen.getByText('Quick Print')).toBeInTheDocument();
     expect(screen.getByText('Workshop Bin')).toBeInTheDocument();
-    expect(screen.getByText('Vase Mode')).toBeInTheDocument();
     expect(screen.getByText('Divider Grid')).toBeInTheDocument();
   });
 
-  it('clicking Heavy Duty preset updates store to rugged style', () => {
+  it('clicking Heavy Duty preset updates store to solid style', () => {
     render(<PresetSelector />);
 
     fireEvent.click(screen.getByLabelText('Apply Heavy Duty preset'));
 
     const params = useDesignerStore.getState().params;
-    expect(params.style).toBe('rugged');
+    expect(params.style).toBe('solid');
     expect(params.base.style).toBe('magnet');
     expect(params.scoop.enabled).toBe(true);
   });
@@ -79,13 +78,9 @@ describe('PresetSelector', () => {
 
     render(<PresetSelector />);
 
-    // Heavy Duty doesn't override inserts
+    // Heavy Duty doesn't override inserts, so they should be preserved
     fireEvent.click(screen.getByLabelText('Apply Heavy Duty preset'));
     expect(useDesignerStore.getState().params.inserts).toHaveLength(1);
-
-    // Vase Mode clears inserts
-    fireEvent.click(screen.getByLabelText('Apply Vase Mode preset'));
-    expect(useDesignerStore.getState().params.inserts).toHaveLength(0);
   });
 
   it('applying preset adds to undo history', () => {
@@ -182,7 +177,7 @@ describe('PresetSelector', () => {
         id: 'user-1',
         name: 'Thick Walls',
         description: '',
-        overrides: { style: 'rugged' as const, scoop: { enabled: false, radius: 'auto' as const, allRows: false } },
+        overrides: { style: 'solid' as const, scoop: { enabled: false, radius: 'auto' as const, allRows: false } },
         createdAt: Date.now(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify([preset]));
@@ -192,7 +187,7 @@ describe('PresetSelector', () => {
       fireEvent.click(screen.getByLabelText('Apply Thick Walls preset'));
 
       const params = useDesignerStore.getState().params;
-      expect(params.style).toBe('rugged');
+      expect(params.style).toBe('solid');
       expect(params.scoop.enabled).toBe(false);
     });
 

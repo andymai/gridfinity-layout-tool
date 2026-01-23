@@ -17,8 +17,6 @@ const STYLES: Array<{
   { value: 'standard', label: 'Standard', description: 'Default balance of strength and material', wallMm: STYLE_WALL_THICKNESS.standard },
   { value: 'lite', label: 'Lite', description: 'Thin walls, less material', wallMm: STYLE_WALL_THICKNESS.lite },
   { value: 'solid', label: 'Solid', description: 'Thick walls, maximum strength', wallMm: STYLE_WALL_THICKNESS.solid },
-  { value: 'vase', label: 'Vase', description: 'Single wall, no interior features', wallMm: STYLE_WALL_THICKNESS.vase },
-  { value: 'rugged', label: 'Rugged', description: 'Extra thick with corner reinforcement', wallMm: STYLE_WALL_THICKNESS.rugged },
 ];
 
 export function StyleSection() {

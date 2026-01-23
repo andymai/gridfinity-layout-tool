@@ -11,25 +11,21 @@ describe('StyleSection', () => {
     });
   });
 
-  it('renders all 5 style options', () => {
+  it('renders all 3 style options', () => {
     render(<StyleSection />);
 
     expect(screen.getByText('Standard')).toBeInTheDocument();
     expect(screen.getByText('Lite')).toBeInTheDocument();
     expect(screen.getByText('Solid')).toBeInTheDocument();
-    expect(screen.getByText('Vase')).toBeInTheDocument();
-    expect(screen.getByText('Rugged')).toBeInTheDocument();
   });
 
   it('shows wall thickness for each style', () => {
     render(<StyleSection />);
 
-    // Wall thicknesses per spec: d_wall=0.95mm (standard), 0.65mm (lite)
+    // Wall thicknesses per spec: d_wall=0.95mm (standard), 0.65mm (lite), 1.6mm (solid)
     expect(screen.getByText('0.95mm wall')).toBeInTheDocument();
     expect(screen.getByText('0.65mm wall')).toBeInTheDocument();
     expect(screen.getByText('1.6mm wall')).toBeInTheDocument();
-    expect(screen.getByText('0.4mm wall')).toBeInTheDocument();
-    expect(screen.getByText('2mm wall')).toBeInTheDocument();
   });
 
   it('highlights the currently selected style', () => {
@@ -45,15 +41,15 @@ describe('StyleSection', () => {
   it('clicking a style updates the store', () => {
     render(<StyleSection />);
 
-    fireEvent.click(screen.getByText('Rugged').closest('button')!);
+    fireEvent.click(screen.getByText('Solid').closest('button')!);
 
-    expect(useDesignerStore.getState().params.style).toBe('rugged');
+    expect(useDesignerStore.getState().params.style).toBe('solid');
   });
 
   it('shows description for each style', () => {
     render(<StyleSection />);
 
     expect(screen.getByText('Default balance of strength and material')).toBeInTheDocument();
-    expect(screen.getByText('Single wall, no interior features')).toBeInTheDocument();
+    expect(screen.getByText('Thick walls, maximum strength')).toBeInTheDocument();
   });
 });

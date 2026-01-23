@@ -99,23 +99,6 @@ describe('binGenerator', () => {
       expect(bounds.maxX - bounds.minX).toBeCloseTo(expectedWidth, 1);
     });
 
-    it('vase mode produces fewer triangles than standard (no dividers possible)', () => {
-      const standardParams: BinParams = {
-        ...DEFAULT_BIN_PARAMS,
-        dividers: { x: 2, y: 2, thickness: 1.2 },
-      };
-      const vaseParams: BinParams = {
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        dividers: { x: 0, y: 0, thickness: 1.2 },
-      };
-
-      const standardMesh = generateBinGeometry(standardParams);
-      const vaseMesh = generateBinGeometry(vaseParams);
-
-      expect(vaseMesh.triangleCount).toBeLessThan(standardMesh.triangleCount);
-    });
-
     it('dividers increase triangle count', () => {
       const noDividers = generateBinGeometry(DEFAULT_BIN_PARAMS);
       const withDividers = generateBinGeometry({
@@ -215,63 +198,11 @@ describe('binGenerator', () => {
       expect(withLabel.triangleCount).toBeGreaterThan(noLabel.triangleCount);
     });
 
-    it('rugged style adds corner gussets', () => {
-      const standard = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, style: 'standard' });
-      const rugged = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, style: 'rugged' });
-
-      expect(rugged.triangleCount).toBeGreaterThan(standard.triangleCount);
-    });
-
     it('solid style adds corner gussets', () => {
       const standard = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, style: 'standard' });
       const solid = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, style: 'solid' });
 
       expect(solid.triangleCount).toBeGreaterThan(standard.triangleCount);
-    });
-
-    it('vase mode ignores scoop even when enabled', () => {
-      const vaseNoScoop = generateBinGeometry({
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        scoop: { enabled: false, radius: 'auto', allRows: false },
-      });
-      const vaseWithScoop = generateBinGeometry({
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        scoop: { enabled: true, radius: 'auto', allRows: false },
-      });
-
-      expect(vaseWithScoop.triangleCount).toBe(vaseNoScoop.triangleCount);
-    });
-
-    it('vase mode ignores label even when enabled', () => {
-      const vaseNoLabel = generateBinGeometry({
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        label: { enabled: false, text: '', fontSize: 'auto' },
-      });
-      const vaseWithLabel = generateBinGeometry({
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        label: { enabled: true, text: 'Test', fontSize: 'auto' },
-      });
-
-      expect(vaseWithLabel.triangleCount).toBe(vaseNoLabel.triangleCount);
-    });
-
-    it('vase mode ignores dividers even when specified', () => {
-      const vaseNoDividers = generateBinGeometry({
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        dividers: { x: 0, y: 0, thickness: 1.2 },
-      });
-      const vaseWithDividers = generateBinGeometry({
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        dividers: { x: 2, y: 2, thickness: 1.2 },
-      });
-
-      expect(vaseWithDividers.triangleCount).toBe(vaseNoDividers.triangleCount);
     });
 
     it('lite style produces same features as standard but thinner walls', () => {
@@ -346,21 +277,6 @@ describe('binGenerator', () => {
       // Should still have geometry (the bottom plate at minimum)
       expect(mesh.triangleCount).toBeGreaterThan(0);
       expect(mesh.vertices.length).toBeGreaterThan(0);
-    });
-
-    it('vase mode ignores wall cutouts', () => {
-      const vaseNoWalls = generateBinGeometry({
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        walls: { front: 0, back: 0, left: 0, right: 0 },
-      });
-      const vaseWithWalls = generateBinGeometry({
-        ...DEFAULT_BIN_PARAMS,
-        style: 'vase',
-        walls: { front: 100, back: 100, left: 100, right: 100 },
-      });
-
-      expect(vaseWithWalls.triangleCount).toBe(vaseNoWalls.triangleCount);
     });
 
     // ─── Per-Compartment Label Tab Tests ──────────────────────────────────────
