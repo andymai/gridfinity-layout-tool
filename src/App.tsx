@@ -109,6 +109,16 @@ try {
   initialLoadError = e as Error;
 }
 
+/**
+ * Root application component that composes and renders the responsive app UI, providers, and feature-gated lazy modules.
+ *
+ * Renders mobile, tablet, or desktop layouts as appropriate; initializes app-level effects (routing, autosave,
+ * cross-tab sync, analytics, storage migration, PWA updates, keyboard shortcuts); and wraps content with either
+ * collaborative or local mutations providers. Conditionally mounts lazy features such as Designer, LabsDrawer,
+ * SharedLayoutImporter, and collaboration provider.
+ *
+ * @returns The top-level React element for the application UI, including layout, panels, modals, and global providers.
+ */
 export default function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);

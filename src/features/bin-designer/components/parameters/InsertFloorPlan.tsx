@@ -11,7 +11,14 @@ import { useShallow } from 'zustand/react/shallow';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
 import type { Insert, BinStyle } from '@/features/bin-designer/types';
 
-/** Compute the inner floor dimensions in mm */
+/**
+ * Compute the usable inner floor dimensions and wall thickness for a bin style.
+ *
+ * @param widthUnits - Floor width measured in grid units
+ * @param depthUnits - Floor depth measured in grid units
+ * @param style - Bin style used to determine wall thickness (falls back to default if unspecified)
+ * @returns An object with `innerWidth` and `innerDepth` in millimeters and the applied `wallThickness` in millimeters
+ */
 function getInnerDimensions(widthUnits: number, depthUnits: number, style: BinStyle) {
   const wallThickness = STYLE_WALL_THICKNESS[style] ?? GRIDFINITY.WALL_THICKNESS;
   const outerWidth = widthUnits * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
@@ -40,6 +47,15 @@ interface DragState {
   origY: number;
 }
 
+/**
+ * Renders an interactive SVG floor plan for bin inserts and lets the user select and reposition inserts.
+ *
+ * The component displays the interior floor area scaled to fit, shows each insert as a shape, and allows
+ * click-to-select and click-and-drag to move an insert. Drag movements are converted from screen pixels
+ * to millimeters, clamped to the interior bounds, rounded to 0.1 mm, and persisted via the designer store.
+ *
+ * @returns The floor plan JSX element, or `null` when there are no inserts to display.
+ */
 export function InsertFloorPlan() {
   const { width, depth, style, inserts, updateInsert } = useDesignerStore(
     useShallow((s) => ({
@@ -181,6 +197,22 @@ export function InsertFloorPlan() {
   );
 }
 
+/**
+ * Render an SVG shape for a floor-plan insert at the given position and scale.
+ *
+ * The rendered shape is chosen from `insert.shape` and positioned using `x`/`y`
+ * in millimeters; `innerDepth` is used to convert the floor-plan Y coordinate
+ * to SVG coordinates. Selection state modifies fill/stroke and stroke width.
+ *
+ * @param insert - Insert metadata (uses `width`, `depth`, `shape`, optional `cornerRadius` and `label`)
+ * @param x - Insert X position in millimeters from the interior left edge
+ * @param y - Insert Y position in millimeters from the interior bottom edge
+ * @param scale - Scale factor converting millimeters to SVG units (pixels)
+ * @param innerDepth - Inner floor depth in millimeters used to flip Y into SVG space
+ * @param isSelected - If true, render selected visual styling
+ * @param onMouseDown - Mouse-down handler attached to the rendered SVG shape
+ * @returns An SVG element (`<rect>`, `<ellipse>`, or `<polygon>`) representing the insert
+ */
 function InsertShape({
   insert,
   x,

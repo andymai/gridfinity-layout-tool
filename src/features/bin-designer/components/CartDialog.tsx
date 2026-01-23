@@ -17,6 +17,18 @@ interface CartDialogProps {
   onClose: () => void;
 }
 
+/**
+ * Renders a modal dialog for reviewing carted designs and exporting them as a ZIP.
+ *
+ * Shows cart items with per-item estimates, aggregated totals (filament, time, cost),
+ * and controls to remove items or clear the cart. Provides a "Download ZIP" action
+ * that performs a batch export with real-time progress updates and an option to cancel;
+ * successful export triggers a client-side ZIP download and any generation failures are reported.
+ *
+ * @param open - Whether the dialog is visible
+ * @param onClose - Callback invoked when the dialog should be closed
+ * @returns The dialog element when `open` is true, otherwise `null`
+ */
 export function CartDialog({ open, onClose }: CartDialogProps) {
   const items = useCartStore((s) => s.items);
   const removeFromCart = useCartStore((s) => s.removeFromCart);
@@ -214,6 +226,14 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
   );
 }
 
+/**
+ * Render a list row for a cart item showing thumbnail, name, dimensions, style, filament estimate, and a remove action.
+ *
+ * @param item - The cart item to display
+ * @param onRemove - Callback invoked when the remove button is clicked
+ * @param disabled - If `true`, disables the remove button and applies disabled styling
+ * @returns A list item element containing the item's thumbnail, info, and remove button
+ */
 function CartItemRow({
   item,
   onRemove,
@@ -264,6 +284,11 @@ function CartItemRow({
   );
 }
 
+/**
+ * Format a duration in minutes into a short human-readable string.
+ *
+ * @returns A short string representing the duration: `Xmin` when less than 60 minutes, `Hh Mmin` when hours and remaining minutes are present, or `Hh` when minutes are zero.
+ */
 function formatTime(minutes: number): string {
   if (minutes < 60) return `${Math.round(minutes)}min`;
   const h = Math.floor(minutes / 60);

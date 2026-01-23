@@ -16,6 +16,11 @@ import type { BinParams } from '../types';
 
 const AUTO_SAVE_DELAY_MS = 1000;
 
+/**
+ * Automatically saves designer parameters to IndexedDB after a short debounce when they change.
+ *
+ * Watches the designer's parameters and, after 1000ms of inactivity, either updates the current design or creates a new one; captures a 3D-preview thumbnail if available, updates a lightweight registry entry with design metadata, and updates save status and current design id as appropriate. Skips saving on initial mount and avoids redundant saves when parameters are unchanged.
+ */
 export function useAutoSave(): void {
   const { params, currentDesignId, designName } = useDesignerStore(
     useShallow((s) => ({

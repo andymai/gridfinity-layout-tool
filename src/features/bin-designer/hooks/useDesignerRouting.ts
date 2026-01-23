@@ -15,7 +15,14 @@ function isDesignerPath(): boolean {
 }
 
 /**
- * Hook that manages designer route detection and navigation.
+ * Provides state and callbacks to detect whether the current URL is the designer route and to navigate between the planner (/) and designer (/designer) routes.
+ *
+ * The returned state updates in response to browser navigation events so multiple hook instances remain synchronized.
+ *
+ * @returns An object with:
+ * - `isDesignerRoute` — `true` if the current path is `/designer` or `/designer/`, `false` otherwise.
+ * - `navigateToDesigner` — navigates to `/designer` and triggers route re-evaluation for all hook instances.
+ * - `navigateToPlanner` — navigates to `/` and triggers route re-evaluation for all hook instances.
  */
 export function useDesignerRouting() {
   const [isDesignerRoute, setIsDesignerRoute] = useState(isDesignerPath);

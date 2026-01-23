@@ -16,6 +16,13 @@ interface ShareDialogProps {
   onClose: () => void;
 }
 
+/**
+ * Modal dialog that lets the user create a permanent share link for the current bin design or load a design from a share URL/ID.
+ *
+ * @param open - Controls whether the dialog is visible.
+ * @param onClose - Callback invoked to close the dialog.
+ * @returns A React element rendering the share dialog when `open` is true, or `null` when closed.
+ */
 export function ShareDialog({ open, onClose }: ShareDialogProps) {
   const params = useDesignerStore((s) => s.params);
   const setParams = useDesignerStore((s) => s.setParams);
@@ -201,7 +208,15 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
   );
 }
 
-/** Extract a share ID from a URL or raw ID string */
+/**
+ * Derives a share identifier from a URL or a raw input string.
+ *
+ * Tries to extract an ID from known URL path patterns (`/d/{id}`, `/l/{id}`, `/share/{id}`).
+ * If the input is not a URL, validates common raw ID formats (UUID, `prefix-xxxxxxx`, or a 12‑character alphanumeric token).
+ *
+ * @param input - A URL or raw share identifier provided by the user
+ * @returns The extracted or validated share ID, the input trimmed when non-empty, or `null` if no ID can be derived
+ */
 function extractShareId(input: string): string | null {
   // Try to parse as URL first
   try {

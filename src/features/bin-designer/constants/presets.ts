@@ -120,7 +120,12 @@ export const BUILT_IN_PRESETS: readonly DesignPreset[] = [
   },
 ] as const;
 
-/** Get a preset by ID */
+/**
+ * Retrieve a design preset by its identifier.
+ *
+ * @param id - The preset identifier to look up
+ * @returns The matching `DesignPreset`, or `undefined` if no preset has the given id
+ */
 export function getPresetById(id: string): DesignPreset | undefined {
   return BUILT_IN_PRESETS.find((p) => p.id === id);
 }

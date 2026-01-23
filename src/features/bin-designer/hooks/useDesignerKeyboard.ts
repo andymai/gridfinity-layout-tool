@@ -21,6 +21,22 @@ const PRESET_KEYS: Record<string, CameraPreset> = {
   '4': 'isometric',
 };
 
+/**
+ * Register global keyboard shortcuts for designer controls.
+ *
+ * Supported shortcuts:
+ * - Number keys 1–4: switch camera preset (front, side, top, isometric)
+ * - R / r: reset the view
+ * - W / w: toggle wireframe
+ * - Ctrl/Cmd+Z: undo
+ * - Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z: redo
+ *
+ * @param onCameraPreset - Called with the selected camera preset when a preset key is pressed
+ * @param onResetView - Called when the reset view shortcut is pressed
+ * @param onToggleWireframe - Called when the wireframe toggle shortcut is pressed
+ * @param onUndo - Called when the undo shortcut is pressed
+ * @param onRedo - Called when the redo shortcut is pressed
+ */
 export function useDesignerKeyboard({
   onCameraPreset,
   onResetView,

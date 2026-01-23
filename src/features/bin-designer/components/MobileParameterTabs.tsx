@@ -66,6 +66,12 @@ const TABS: readonly TabConfig[] = [
   },
 ];
 
+/**
+ * Render a mobile-friendly tabbed parameter panel with four tabs: Shape, Base, Features, and Presets.
+ *
+ * Displays a touch-optimized tab bar and corresponding scrollable panels, and manages which panel is visible.
+ * Panels and tabs include ARIA roles and attributes to support keyboard and assistive-technology navigation.
+ */
 export function MobileParameterTabs() {
   const [activeTab, setActiveTab] = useState<DesignerTab>('shape');
 

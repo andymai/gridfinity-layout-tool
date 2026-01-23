@@ -20,16 +20,17 @@ const CIRCLE_SEGMENTS = 24;
 const HEX_SEGMENTS = 6;
 
 /**
- * Generate all insert pocket geometries for the bin.
+ * Generate mesh geometry for all insert pockets placed on a bin floor.
  *
- * @param inserts - Array of placed inserts
- * @param innerWidth - Bin interior width (mm)
- * @param innerDepth - Bin interior depth (mm)
- * @param wallThickness - Bin wall thickness (mm)
- * @param baseHeight - Z height of bin floor (mm)
- * @param maxPocketHeight - Maximum pocket height (bin cavity height, mm)
- * @param halfW - Half outer width (for coordinate offset)
- * @param halfD - Half outer depth (for coordinate offset)
+ * @param inserts - Array of placed inserts with shape, position, and cut depth
+ * @param innerWidth - Bin interior width in millimeters
+ * @param innerDepth - Bin interior depth in millimeters
+ * @param wallThickness - Bin wall thickness in millimeters (used when converting insert positions to world coordinates)
+ * @param baseHeight - Z height of the bin floor in millimeters
+ * @param maxPocketHeight - Maximum pocket height to use (in millimeters); each insert's cut depth is clamped to this value
+ * @param halfW - Half of the bin's outer width used for coordinate offset
+ * @param halfD - Half of the bin's outer depth used for coordinate offset
+ * @returns The merged MeshData containing geometry for all generated insert pockets; an empty mesh when no pockets are created
  */
 export function generateInserts(
   inserts: readonly Insert[],
@@ -65,6 +66,16 @@ export function generateInserts(
   return mergeMeshes(meshes);
 }
 
+/**
+ * Create the mesh for a single insert pocket placed at the given world coordinates.
+ *
+ * @param insert - Insert descriptor; used fields depend on `insert.shape` (e.g., `width`, `depth`, `rotation`, `cornerRadius`)
+ * @param worldX - World-space X coordinate of the pocket origin
+ * @param worldY - World-space Y coordinate of the pocket origin
+ * @param baseZ - Z coordinate of the pocket bottom (base)
+ * @param height - Height of the pocket walls
+ * @returns MeshData for the generated pocket, or `null` if the insert shape is not supported
+ */
 function generateSingleInsert(
   insert: Insert,
   worldX: number,
@@ -88,8 +99,17 @@ function generateSingleInsert(
 }
 
 /**
- * Generate a rectangular pocket (4 thin walls, no floor).
- * Position is the bottom-left corner of the pocket.
+ * Generate a rectangular pocket perimeter composed of four thin walls with no floor.
+ *
+ * @param x - X coordinate of the pocket's bottom-left outer corner
+ * @param y - Y coordinate of the pocket's bottom-left outer corner
+ * @param width - Outer width of the pocket along the X axis (before rotation)
+ * @param depth - Outer depth of the pocket along the Y axis (before rotation)
+ * @param z - Base Z coordinate for the pocket walls
+ * @param height - Height of the pocket walls
+ * @param rotation - Rotation of the pocket in degrees; valid values: `0`, `90`, `180`, `270`
+ * @returns A merged MeshData containing four thin wall meshes forming the pocket perimeter;
+ *          wall thickness equals `POCKET_WALL_THICKNESS`
  */
 function generateRectPocket(
   x: number,
@@ -119,7 +139,14 @@ function generateRectPocket(
 }
 
 /**
- * Generate a circular pocket (hollow cylinder ring).
+ * Generate a circular pocket centered at (cx + outerRadius, cy + outerRadius).
+ *
+ * @param cx - X coordinate of the pocket's bounding square top-left corner
+ * @param cy - Y coordinate of the pocket's bounding square top-left corner
+ * @param outerRadius - Outer radius of the pocket
+ * @param z - Z position (base) of the pocket
+ * @param height - Vertical height of the pocket walls
+ * @returns A MeshData representing a hollow ring with outer radius `outerRadius` and inner radius `outerRadius - POCKET_WALL_THICKNESS`; if the inner radius is less than or equal to zero, returns a solid cylinder with radius `outerRadius`
  */
 function generateCirclePocket(
   cx: number,
@@ -142,7 +169,9 @@ function generateCirclePocket(
 }
 
 /**
- * Generate a hexagonal pocket (6 thin walls).
+ * Create a hexagonal pocket (six thin walls) positioned at the specified coordinates.
+ *
+ * @returns MeshData containing the pocket geometry. If `outerRadius - POCKET_WALL_THICKNESS` is greater than zero the mesh is a hollow hexagonal ring; otherwise it is a solid hexagonal prism.
  */
 function generateHexPocket(
   cx: number,
@@ -163,7 +192,17 @@ function generateHexPocket(
 }
 
 /**
- * Generate a rounded-rectangle pocket (4 walls + 4 quarter-cylinder corners).
+ * Generate geometry for a rounded-rectangle pocket composed of four thin walls and four quarter-ring corners.
+ *
+ * @param x - X coordinate of the pocket's minimum (left) edge
+ * @param y - Y coordinate of the pocket's minimum (bottom) edge
+ * @param width - Outer width of the pocket (before rotation)
+ * @param depth - Outer depth of the pocket (before rotation)
+ * @param cornerRadius - Requested corner radius; clamped to half the pocket dimensions
+ * @param z - Base Z coordinate for the pocket walls
+ * @param height - Vertical height of the pocket walls
+ * @param rotation - Rotation of the pocket in degrees (0, 90, 180, or 270); width/depth are swapped for 90/270
+ * @returns MeshData containing the merged wall and corner-ring geometry defining the pocket perimeter
  */
 function generateRoundedRectPocket(
   x: number,
@@ -225,8 +264,16 @@ function generateRoundedRectPocket(
 }
 
 /**
- * Create a ring (hollow cylinder) - outer minus inner cylinder.
- * Generates side faces for both inner and outer surfaces, plus top and bottom annulus caps.
+ * Generate a hollow cylindrical ring mesh (outer cylinder minus inner cylinder).
+ *
+ * @param cx - X coordinate of the ring center
+ * @param cy - Y coordinate of the ring center
+ * @param z - Z coordinate of the ring base (bottom)
+ * @param outerR - Outer radius of the ring
+ * @param innerR - Inner radius of the hollow section
+ * @param height - Height of the ring measured upward from `z`
+ * @param segments - Number of radial segments used to approximate the circular profile
+ * @returns MeshData containing `vertices`, `normals`, and `triangleCount` for the generated ring
  */
 function createRing(
   cx: number,
@@ -306,7 +353,20 @@ function createRing(
 }
 
 /**
- * Create a quarter of a ring (for rounded-rect corners).
+ * Generates geometry for a quarter of a hollow ring used as a rounded corner.
+ *
+ * Constructs vertex and normal arrays for the outer side, inner side, top annulus, and bottom annulus
+ * for a 90-degree arc starting at `startAngle`.
+ *
+ * @param cx - X coordinate of the ring's center
+ * @param cy - Y coordinate of the ring's center
+ * @param z - Base Z coordinate (bottom) of the ring
+ * @param outerR - Outer radius of the ring
+ * @param innerR - Inner radius of the ring (must be < outerR for a hollow ring)
+ * @param height - Vertical thickness of the ring (top Z = z + height)
+ * @param segments - Number of segments to subdivide the quarter arc into
+ * @param startAngle - Start angle in radians for the quarter arc
+ * @returns MeshData containing `vertices`, `normals`, and `triangleCount` for the quarter-ring geometry
  */
 function createQuarterRing(
   cx: number,

@@ -40,26 +40,66 @@ export type DesignerValidationResult =
   | { valid: true; payload: DesignerSharePayload }
   | { valid: false; error: { code: string; message: string } };
 
+/**
+ * Determines whether a value is a finite, non-NaN number.
+ *
+ * @param val - The value to test
+ * @returns `true` if `val` is a number, not `NaN`, and finite; `false` otherwise.
+ */
 function isNumber(val: unknown): val is number {
   return typeof val === 'number' && !Number.isNaN(val) && Number.isFinite(val);
 }
 
+/**
+ * Determine whether a numeric value falls within an inclusive range.
+ *
+ * @param val - The value to test
+ * @param min - The lower bound (inclusive)
+ * @param max - The upper bound (inclusive)
+ * @returns `true` if `val` is greater than or equal to `min` and less than or equal to `max`, `false` otherwise.
+ */
 function inRange(val: number, min: number, max: number): boolean {
   return val >= min && val <= max;
 }
 
+/**
+ * Determines whether a value is a string.
+ *
+ * @returns `true` if `val` is a string, `false` otherwise.
+ */
 function isString(val: unknown): val is string {
   return typeof val === 'string';
 }
 
+/**
+ * Determines whether a value is a boolean.
+ *
+ * @param val - The value to test
+ * @returns `true` if `val` is a boolean, `false` otherwise.
+ */
 function isBoolean(val: unknown): val is boolean {
   return typeof val === 'boolean';
 }
 
+/**
+ * Determines whether a value is a plain object (an object that is not null and not an array).
+ *
+ * @param val - The value to test
+ * @returns `true` if `val` is a plain object (not null or an array), `false` otherwise.
+ */
 function isObject(val: unknown): val is Record<string, unknown> {
   return typeof val === 'object' && val !== null && !Array.isArray(val);
 }
 
+/**
+ * Validate the `base` object of a designer payload.
+ *
+ * Checks that `base` is an object and that it contains a valid `style`, numeric `magnetDiameter` (1–20),
+ * numeric `magnetDepth` (0.5–10), numeric `screwDiameter` (1–10), and boolean `stackingLip`.
+ *
+ * @param base - The value to validate as a designer `base` object (expected keys: `style`, `magnetDiameter`, `magnetDepth`, `screwDiameter`, `stackingLip`).
+ * @returns A string describing the first validation error encountered, or `null` if `base` is valid.
+ */
 function validateBase(base: unknown): string | null {
   if (!isObject(base)) return 'base must be an object';
   if (!VALID_BASE_STYLES.includes(base.style as typeof VALID_BASE_STYLES[number])) {
@@ -78,6 +118,12 @@ function validateBase(base: unknown): string | null {
   return null;
 }
 
+/**
+ * Validates a dividers object ensuring x and y counts and thickness fall within allowed ranges.
+ *
+ * @param dividers - The value to validate as a dividers object (expected to have `x`, `y`, and `thickness`).
+ * @returns A `string` with a human-readable error message for the first failed check, or `null` if `dividers` is valid.
+ */
 function validateDividers(dividers: unknown): string | null {
   if (!isObject(dividers)) return 'dividers must be an object';
   if (!isNumber(dividers.x) || !inRange(dividers.x, 0, CONSTRAINTS.MAX_DIVIDERS)) {
@@ -93,6 +139,12 @@ function validateDividers(dividers: unknown): string | null {
   return null;
 }
 
+/**
+ * Validates a label object from the designer payload.
+ *
+ * @param label - The value to validate as a label object (expected shape: `{ enabled, text, fontSize }`)
+ * @returns `null` if `label` satisfies required structure and constraints; otherwise an error message describing the first validation failure
+ */
 function validateLabel(label: unknown): string | null {
   if (!isObject(label)) return 'label must be an object';
   if (!isBoolean(label.enabled)) return 'label.enabled must be boolean';
@@ -106,6 +158,12 @@ function validateLabel(label: unknown): string | null {
   return null;
 }
 
+/**
+ * Validate wall cutout sizes for the four sides of a bin.
+ *
+ * @param walls - Expected to be an object containing numeric cutout values for `front`, `back`, `left`, and `right`.
+ * @returns `null` if `walls` is valid; otherwise a string describing the first validation failure (e.g., missing object or a side outside 0–CONSTRAINTS.MAX_WALL_CUTOUT).
+ */
 function validateWalls(walls: unknown): string | null {
   if (!isObject(walls)) return 'walls must be an object';
   for (const side of ['front', 'back', 'left', 'right'] as const) {
@@ -116,6 +174,13 @@ function validateWalls(walls: unknown): string | null {
   return null;
 }
 
+/**
+ * Validates a single insert object from the payload and returns a descriptive error message when invalid.
+ *
+ * @param insert - The insert value to validate (expected object with id, shape, x, y, width, depth, cutDepth, rotation, cornerRadius, and label)
+ * @param index - The index of the insert in the inserts array (used to build precise error messages)
+ * @returns A validation error message describing the first detected problem, or `null` if the insert is valid
+ */
 function validateInsert(insert: unknown, index: number): string | null {
   if (!isObject(insert)) return `inserts[${index}] must be an object`;
   if (!isString(insert.id)) return `inserts[${index}].id must be a string`;
@@ -149,7 +214,13 @@ function validateInsert(insert: unknown, index: number): string | null {
   return null;
 }
 
-/** Validate a designer share payload */
+/**
+ * Validate and normalize a designer share payload according to server-side constraints.
+ *
+ * @param body - The parsed request payload to validate; expected shape: `{ type: 'designer', version: 1, params: { ... } }`.
+ * @param sizeBytes - The size of the raw payload in bytes (used to enforce the maximum payload size).
+ * @returns A result object: on success `{ valid: true, payload }` where `payload` contains the validated `type`, `version`, and `params`; on failure `{ valid: false, error }` where `error` includes a `code` and human-readable `message` describing the validation failure.
+ */
 export function validateDesignerShare(
   body: unknown,
   sizeBytes: number

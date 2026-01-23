@@ -24,6 +24,13 @@ const SettingsModal = lazyWithRetry(() =>
   import('@/components/Modals/SettingsModal').then(namedExport('SettingsModal'))
 );
 
+/**
+ * Renders the left-hand Tools sidebar with collapsed and expanded states, user controls for drawer/grid settings, and access to auxiliary panels.
+ *
+ * The component displays panels for active layer, layers, categories, an Inspiration Gallery entry, and physical/grid unit settings. It shows a Bin Designer entry when the bin_designer feature flag is enabled, supports a half-bin mode and fractional-edge controls when applicable, and conditionally mounts lazy-loaded modals for the Inspiration Gallery and Settings.
+ *
+ * @returns The sidebar element as JSX to be mounted in the application layout.
+ */
 export function Sidebar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);

@@ -14,6 +14,11 @@ import {
 } from './parameters';
 import { PresetSelector } from './parameters/PresetSelector';
 
+/**
+ * Renders the parameter panel UI composed of vertically stacked collapsible sections for configuring presets, dimensions, style, base, features, inserts, and walls.
+ *
+ * @returns The panel's root React element containing the scrollable, sectioned controls.
+ */
 export function ParameterPanel() {
   return (
     <div className="flex h-full flex-col">

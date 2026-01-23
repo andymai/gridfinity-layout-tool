@@ -58,7 +58,12 @@ export const DEFAULT_HISTORY: DesignerHistory = {
   future: [],
 } as const;
 
-/** Fill in any missing fields from DEFAULT_BIN_PARAMS (forward migration) */
+/**
+ * Populate missing bin parameters with default values.
+ *
+ * @param params - Partial bin parameters to migrate; any fields not provided will be filled from `DEFAULT_BIN_PARAMS`.
+ * @returns A complete `BinParams` object with unspecified fields taken from `DEFAULT_BIN_PARAMS`.
+ */
 export function migrateParams(params: Partial<BinParams>): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...params };
 }

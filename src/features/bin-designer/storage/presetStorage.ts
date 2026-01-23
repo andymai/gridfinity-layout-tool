@@ -18,12 +18,22 @@ export interface UserPreset {
   readonly createdAt: number;
 }
 
-/** Generate a unique ID for new presets */
+/**
+ * Create a unique identifier for a user preset.
+ *
+ * @returns A string identifier for the preset that includes a timestamp and a short random segment.
+ */
 function generatePresetId(): string {
   return `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
-/** Load all user presets from localStorage */
+/**
+ * Retrieve the list of user-created design presets from localStorage.
+ *
+ * Returns an empty array if no presets are stored or if the stored data is missing or invalid.
+ *
+ * @returns An array of `UserPreset` objects; empty if none are available or on parse/storage errors.
+ */
 export function loadUserPresets(): UserPreset[] {
   try {
     const json = localStorage.getItem(STORAGE_KEY);
@@ -34,12 +44,26 @@ export function loadUserPresets(): UserPreset[] {
   }
 }
 
-/** Save the full preset list to localStorage */
+/**
+ * Persist an array of user presets to browser storage, replacing any previously stored presets.
+ *
+ * @param presets - The list of UserPreset objects to save
+ */
 function saveUserPresets(presets: UserPreset[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
 }
 
-/** Create a new user preset from the current bin params */
+/**
+ * Create a user preset from the provided bin parameters and persist it with a generated id and timestamp.
+ *
+ * The saved preset contains a trimmed name and description, a timestamp, and a selective `overrides` object
+ * copied from `params` (only `style`, `base`, `dividers`, `scoop`, `label`, and `walls`).
+ *
+ * @param name - Preset display name
+ * @param description - Preset description or notes
+ * @param params - Current `BinParams` used to derive the preset's portable `overrides` (only `style`, `base`, `dividers`, `scoop`, `label`, and `walls` are stored)
+ * @returns The newly created `UserPreset`
+ */
 export function createUserPreset(
   name: string,
   description: string,
@@ -66,7 +90,13 @@ export function createUserPreset(
   return preset;
 }
 
-/** Delete a user preset by ID */
+/**
+ * Remove the user preset with the given identifier from persistent storage.
+ *
+ * If no preset has the provided `id`, the stored presets remain unchanged.
+ *
+ * @param id - The identifier of the preset to remove
+ */
 export function deleteUserPreset(id: string): void {
   const existing = loadUserPresets();
   saveUserPresets(existing.filter((p) => p.id !== id));

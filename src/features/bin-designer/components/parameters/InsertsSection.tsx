@@ -20,6 +20,16 @@ const SHAPE_LABELS: Record<Insert['shape'], string> = {
   slot: 'Slot',
 };
 
+/**
+ * Render the Inserts panel containing placed inserts, a 2D floor plan, and a template browser.
+ *
+ * Reads placed inserts and the remove/clear actions from the designer store and exposes:
+ * - A placed inserts list showing count, per-item remove controls, and a "Clear all" action (rendered only when inserts exist).
+ * - An InsertFloorPlan for 2D positioning of inserts.
+ * - A TemplateBrowser for adding new inserts from templates.
+ *
+ * @returns The UI for managing inserts, including the placed inserts list (with per-item remove and "Clear all"), the 2D floor plan, and the template browser.
+ */
 export function InsertsSection() {
   const { inserts, removeInsert, clearInserts } = useDesignerStore(
     useShallow((s) => ({
@@ -67,6 +77,15 @@ export function InsertsSection() {
   );
 }
 
+/**
+ * Renders a single insert as a list item showing its shape icon, display label, dimensions, and a remove button.
+ *
+ * The displayed label is `insert.label` if present; otherwise it combines the shape label and dimensions.
+ *
+ * @param insert - The insert to display (shape, dimensions, and optional label).
+ * @param onRemove - Callback invoked when the item's remove button is clicked.
+ * @returns A list item element representing the insert with an interactive remove control.
+ */
 function InsertListItem({
   insert,
   onRemove,
@@ -100,6 +119,12 @@ function InsertListItem({
   );
 }
 
+/**
+ * Render a small inline SVG icon that visually represents the provided insert shape.
+ *
+ * @param shape - The insert shape to render; expected values include `"rectangle"`, `"circle"`, `"hexagon"`, `"rounded-rect"`, and `"slot"`.
+ * @returns An inline SVG element styled to match surrounding text (uses `currentColor` and a shared sizing class).
+ */
 function ShapeIcon({ shape }: { shape: Insert['shape'] }) {
   const className = "h-3.5 w-3.5 text-content-secondary";
 
