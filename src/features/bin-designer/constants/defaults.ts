@@ -34,6 +34,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     left: 0,
     right: 0,
   },
+  inserts: [],
 } as const;
 
 /** Default generation state */
@@ -47,6 +48,7 @@ export const DEFAULT_GENERATION_STATE: GenerationState = {
 export const DEFAULT_UI_STATE: DesignerUIState = {
   activeTab: 'dimensions',
   exportDialogOpen: false,
+  designListOpen: false,
   wireframeMode: false,
 } as const;
 
@@ -55,3 +57,8 @@ export const DEFAULT_HISTORY: DesignerHistory = {
   past: [],
   future: [],
 } as const;
+
+/** Fill in any missing fields from DEFAULT_BIN_PARAMS (forward migration) */
+export function migrateParams(params: Partial<BinParams>): BinParams {
+  return { ...DEFAULT_BIN_PARAMS, ...params };
+}

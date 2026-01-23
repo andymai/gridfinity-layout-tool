@@ -10,6 +10,8 @@ interface UseDesignerKeyboardOptions {
   onCameraPreset: (preset: CameraPreset) => void;
   onResetView: () => void;
   onToggleWireframe: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
 }
 
 const PRESET_KEYS: Record<string, CameraPreset> = {
@@ -23,6 +25,8 @@ export function useDesignerKeyboard({
   onCameraPreset,
   onResetView,
   onToggleWireframe,
+  onUndo,
+  onRedo,
 }: UseDesignerKeyboardOptions): void {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,8 +36,22 @@ export function useDesignerKeyboard({
         return;
       }
 
-      // Ignore with modifiers (except for undo/redo which are handled elsewhere)
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // Handle undo/redo (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z)
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z' && !e.shiftKey) {
+          e.preventDefault();
+          onUndo();
+          return;
+        }
+        if (e.key === 'y' || (e.key === 'z' && e.shiftKey) || (e.key === 'Z' && e.shiftKey)) {
+          e.preventDefault();
+          onRedo();
+          return;
+        }
+        return;
+      }
+
+      if (e.altKey) return;
 
       const preset = PRESET_KEYS[e.key];
       if (preset) {
@@ -56,5 +74,5 @@ export function useDesignerKeyboard({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onCameraPreset, onResetView, onToggleWireframe]);
+  }, [onCameraPreset, onResetView, onToggleWireframe, onUndo, onRedo]);
 }

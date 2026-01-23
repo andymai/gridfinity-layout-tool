@@ -57,6 +57,7 @@ const DesignerPage = lazyWithRetry(() =>
   import('./features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );
 import { useDesignerRouting } from './features/bin-designer/hooks/useDesignerRouting';
+import { usePlaceBinFromURL } from './features/bin-designer/hooks/usePlaceBinInLayout';
 import { SHORTCUTS } from './core/constants';
 
 // Legacy context menu state for backwards compatibility (has binId instead of binIds)
@@ -134,6 +135,9 @@ export default function App() {
   // Bin Designer route detection (behind feature flag)
   const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
   const { isDesignerRoute, navigateToPlanner } = useDesignerRouting();
+
+  // Handle ?placeBin= param from Designer's "Use in Layout" button
+  usePlaceBinFromURL();
 
   // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
   useOwnedShareSync();

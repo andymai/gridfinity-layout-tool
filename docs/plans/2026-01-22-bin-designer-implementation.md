@@ -19,8 +19,9 @@ The Bin Designer alpha is fully functional with:
 - **Parameter UI:** Full `ParameterPanel` with sections: Dimensions, Base, Style, Features (dividers/scoop/label), Walls
 - **STL export:** Binary STL download with descriptive/compact naming, print estimates
 - **Keyboard shortcuts:** `useDesignerKeyboard.ts` — view presets, wireframe, escape
-- **All 302 tests passing** across 20 test files (unit + component)
-- **Responsive:** Basic responsive layout in `DesignerPage.tsx`
+- **439 bin-designer tests passing** across 35 test files
+- **Responsive:** Full mobile/tablet/desktop layouts with tabbed UI, touch hints, and export FAB
+- **Presets:** 5 built-in + user-created presets (save/delete, localStorage)
 
 ### Architecture Decisions
 
@@ -51,11 +52,23 @@ src/features/bin-designer/          # UI layer
   utils/fileNaming.ts               # Export filename generation
   utils/printEstimates.ts           # Filament/time estimates
 
+src/features/bin-designer/
+  templates/electronics.ts          # 8 electronics insert templates
+  templates/index.ts                # Template registry (ALL_TEMPLATES, getById, byCategory)
+  components/parameters/InsertsSection.tsx    # Placed inserts list + controls
+  components/parameters/TemplateBrowser.tsx   # Category-filtered template grid
+  components/parameters/InsertFloorPlan.tsx   # 2D SVG drag-to-position editor
+  components/parameters/PresetSelector.tsx    # Built-in + user presets with save/delete
+  components/MobileParameterTabs.tsx          # Tabbed UI for mobile/tablet (4 tabs)
+  constants/presets.ts              # 5 built-in DesignPresets
+  storage/presetStorage.ts          # localStorage CRUD for user presets
+
 src/features/generation/            # CAD engine layer
   bridge/GenerationBridge.ts        # Main thread ↔ Worker
   worker/generation.worker.ts       # Web Worker entry
   worker/generators/binGenerator.ts # Orchestrates mesh generation
   worker/generators/baseGenerator.ts # Base profile geometry
+  worker/generators/insertGenerator.ts # Insert pocket wall geometry
   worker/generators/geometry.ts     # Primitives (box, cylinder, etc.)
   export/stlExporter.ts             # Binary STL output
 ```
@@ -64,218 +77,241 @@ src/features/generation/            # CAD engine layer
 
 ## Implementation Phases
 
-### Phase 2A: Save/Load & History (Foundation)
+### Phase 2A: Save/Load & History (Foundation) ✅
 
 Prerequisite for all later features. Enables persistent designs and undo.
 
-- [ ] **2A.1** Add IndexedDB storage for designs (`gridfinity-designer-v1`)
+- [x] **2A.1** Add IndexedDB storage for designs (`gridfinity-designer-v1`)
   - Create `src/features/bin-designer/storage/designerStorage.ts`
   - Store interface: `SavedDesign { id, name, params, thumbnail, createdAt, updatedAt }`
   - Use `idb` library (already in project) or raw IndexedDB
   - Operations: `saveDesign()`, `loadDesign()`, `listDesigns()`, `deleteDesign()`
   - Tests: Mock IndexedDB (fake-indexeddb already in test setup)
 
-- [ ] **2A.2** Implement auto-save (debounced 1s after param change)
+- [x] **2A.2** Implement auto-save (debounced 1s after param change)
   - Create `src/features/bin-designer/hooks/useAutoSave.ts`
   - Debounce params changes, save to IndexedDB
   - Add save status indicator to UI (`saved` / `saving` / `error`)
   - First save creates new design, subsequent saves update
 
-- [ ] **2A.3** Implement design list / management UI
+- [x] **2A.3** Implement design list / management UI
   - Add "My Designs" panel or dialog accessible from header
   - List saved designs with thumbnails, names, dates
   - Load, rename, duplicate, delete operations
   - "New Design" creates fresh params with defaults
 
-- [ ] **2A.4** Wire up undo/redo (store already has `history` field)
+- [x] **2A.4** Wire up undo/redo (store already has `history` field)
   - Store already has `DesignerHistory { past, future }` and `undo()`/`redo()`
   - Wire `pushHistory()` calls before each param change
   - Connect to Ctrl+Z / Ctrl+Shift+Z shortcuts (already registered)
   - Add undo/redo buttons to header bar
   - Max 50 history states (match Layout Planner)
 
-- [ ] **2A.5** Generate thumbnails from 3D preview
-  - Create `src/features/bin-designer/utils/thumbnailRenderer.ts`
-  - Capture OffscreenCanvas render or use existing Three.js renderer
-  - 128x128 PNG data URL for storage
-  - Generate on save (debounced with auto-save)
+- [x] **2A.5** Generate thumbnails from 3D preview
+  - Created `src/features/bin-designer/utils/thumbnail.ts`
+  - Uses `preserveDrawingBuffer` on the existing Three.js canvas
+  - 96x96 JPEG data URL (center-cropped, 0.7 quality) for compact storage
+  - Captured on each auto-save via `captureThumbnail()` utility
 
-### Phase 2B: Insert Templates (Electronics)
+### Phase 2B: Insert Templates (Electronics) ✅
 
 Add parametric insert cavities to bins for organizing small items.
 
-- [ ] **2B.1** Define insert types and template data structure
-  - Add to `types/index.ts`: `Insert`, `InsertTemplate`, `InsertShape`, `ConfigurableParam`
-  - Add `inserts: Insert[]` field to `BinParams` (currently not present)
-  - Migration: existing saved designs get `inserts: []` default
+- [x] **2B.1** Define insert types and template data structure
+  - Added `Insert`, `InsertTemplate`, `InsertShape`, `ConfigurableParam`, `TemplateCategory` to types
+  - Added `inserts: Insert[]` to `BinParams` with `migrateParams()` for forward compatibility
+  - Store actions: `addInsert`, `removeInsert`, `updateInsert`, `clearInserts` (all with undo)
 
-- [ ] **2B.2** Implement insert geometry generation
-  - Add `src/features/generation/worker/generators/insertGenerator.ts`
-  - Support cavity types: rectangle, circle, hexagon, rounded-rect
-  - Integrate into `binGenerator.ts` pipeline (subtract from interior)
-  - Each insert becomes a subtracted cavity in the bin floor
+- [x] **2B.2** Implement insert geometry generation
+  - `src/features/generation/worker/generators/insertGenerator.ts`
+  - Shapes: rectangle (4 box walls), circle (ring), hexagon (6-seg ring), rounded-rect (walls + quarter rings), slot
+  - Additive geometry approach: pocket walls on bin floor, no CSG needed
+  - POCKET_WALL_THICKNESS = 1.2mm, CIRCLE_SEGMENTS = 24
+  - 12 tests covering all shapes, positioning, clamping, rotation
 
-- [ ] **2B.3** Create electronics template definitions
-  - Add `src/features/bin-designer/templates/electronics.ts`
-  - Templates: AA, AAA, 9V, CR2032, SD Card, MicroSD, USB-A
-  - Each has configurable params (count, orientation)
-  - Dimensions from PRD appendix (with clearances)
+- [x] **2B.3** Create electronics template definitions
+  - `src/features/bin-designer/templates/electronics.ts` (8 templates)
+  - AA, AAA, 9V, CR2032, SD Card, MicroSD, USB-A, USB-C Cable Coil
+  - 0.5mm clearance applied to component dimensions
+  - Each has configurable params (depth, rotation, coil diameter)
+  - 10 tests covering IDs, categories, shapes, dimensions, clearances
 
-- [ ] **2B.4** Build template browser UI
-  - Add `src/features/bin-designer/components/TemplateLibrary.tsx`
-  - Grid of template cards with icons/thumbnails
-  - Category filter tabs
-  - Click to select → show configurable params below
-  - "Add to Bin" button
+- [x] **2B.4** Build template browser UI
+  - `InsertsSection` component in ParameterPanel with placed inserts list + remove/clear controls
+  - `TemplateBrowser` component with category tabs (All/Electronics) and template card grid
+  - Auto-positioning: places new inserts left-to-right with 2mm gap, wraps rows
+  - 16 tests covering add/remove/filter/position/dimensions
 
-- [ ] **2B.5** Build insert placement UI (2D floor plan view)
-  - Add `src/features/bin-designer/components/InsertEditor.tsx`
-  - 2D top-down view of bin interior
-  - Show placed inserts as shapes
-  - Drag to reposition, handles to resize
-  - Grid snapping (0.5mm increments)
-  - Delete selected inserts
+- [x] **2B.5** Build insert placement UI (2D floor plan view)
+  - `InsertFloorPlan` SVG component showing bin interior with draggable shapes
+  - Shape rendering: rect, ellipse, polygon (hex), rounded rect with proper SVG elements
+  - Click-to-select, drag-to-reposition with boundary clamping (0.1mm precision)
+  - Coordinate system: Y-flipped (SVG Y-down → bin Y-up), auto-scaled to sidebar width
+  - 11 tests covering shapes, selection, drag, multi-insert
 
-- [ ] **2B.6** Integrate inserts into 3D preview
-  - Show insert cavities in the 3D mesh
-  - Update generation to include insert subtraction
-  - Real-time preview updates on insert changes
+- [x] **2B.6** Integrate inserts into 3D preview
+  - Wired into `binGenerator.ts` step 3b: generates insert walls when `params.inserts.length > 0`
+  - Full pipeline: store params → useGeneration → bridge → worker → mesh → Three.js renderer
+  - Real-time preview: adding/moving inserts triggers automatic regeneration
 
-### Phase 2C: Design Presets
+### Phase 2C: Design Presets ✅
 
 Quick-start configurations for common use cases.
 
-- [ ] **2C.1** Define built-in presets
-  - Add `src/features/bin-designer/constants/presets.ts`
-  - Built-in: "Heavy Duty Base", "Quick Print", "Workshop Bin", "Vase Mode Light"
-  - Each is a `Partial<BinParams>` with description
+- [x] **2C.1** Define built-in presets
+  - `src/features/bin-designer/constants/presets.ts` - 5 presets: Heavy Duty, Quick Print, Workshop Bin, Vase Mode, Divider Grid
+  - `DesignPreset` interface with id, name, description, icon, `Partial<BinParams>` overrides
+  - `getPresetById()` utility, non-destructive merge via `Object.assign`
 
-- [ ] **2C.2** Build preset selector UI
-  - Dropdown or card selector in ParameterPanel header
-  - Shows preset name, description, affected parameters
-  - Applying preset merges with current params (non-destructive)
+- [x] **2C.2** Build preset selector UI
+  - `components/parameters/PresetSelector.tsx` - grid of preset buttons with SVG icons
+  - Added as CollapsibleSection in ParameterPanel (defaultExpanded=false)
+  - Shows preset name + tooltip description, applies via `setParams()`
 
-- [ ] **2C.3** User-created presets (save current as preset)
-  - "Save as Preset" action in preset dropdown
-  - Name + description input
-  - Stored in IndexedDB alongside designs
-  - List user presets in selector with edit/delete
+- [x] **2C.3** User-created presets (save current as preset)
+  - `storage/presetStorage.ts` - localStorage-based CRUD for user presets
+  - Save form in PresetSelector with name/description inputs
+  - User presets shown in "My Presets" section with delete buttons
+  - MAX_USER_PRESETS = 20, saves style params only (not dimensions/inserts)
 
-### Phase 2D: Mobile & Tablet Polish
+### Phase 2D: Mobile & Tablet Polish ✅
 
 Make the designer fully usable on touch devices.
 
-- [ ] **2D.1** Tablet layout (768-899px)
-  - Preview takes top 50vh
-  - Tabbed parameter panel below
-  - Touch-friendly slider targets (min 44px)
+- [x] **2D.1** Tablet layout (768-899px)
+  - Stacked: 3D preview top (50vh) + tabbed parameter panel below
+  - `MobileParameterTabs.tsx` - 4 tabs: Shape, Base, Features, Presets
+  - Touch-friendly tab targets (min-height 44px)
 
-- [ ] **2D.2** Mobile layout (<768px)
-  - Stacked layout: preview 40vh, bottom tabs
-  - Category tabs: Dims, Base, Features, Export
-  - "Show Advanced" toggle for less-common options
-  - Floating action button for export
+- [x] **2D.2** Mobile layout (<768px)
+  - Stacked: 3D preview (40vh) + same tabbed panel below
+  - Floating action button (FAB) for export with safe-area-inset-bottom
+  - Header condensed: hidden labels on mobile, design name on sm+
 
-- [ ] **2D.3** Touch interactions for 3D preview
-  - Single-finger orbit, two-finger pan, pinch zoom
-  - Verify these work with @react-three/drei OrbitControls
-  - Add touch-specific help overlay on first visit
+- [x] **2D.3** Touch interactions for 3D preview
+  - OrbitControls already handles: single-finger orbit, two-finger pan, pinch zoom
+  - Added `TouchHint` component: dismissible help overlay on first visit
+  - Stored in localStorage (`gridfinity-designer-touch-hint-dismissed`)
 
-### Phase 3A: Sharing
+### Phase 3A: Sharing ✅
 
-Share designs via short codes (reuses existing backend).
+Share designs via short codes (reuses existing Vercel Blob backend with type discriminator).
 
-- [ ] **3A.1** Create share payload type
-  - Extend `api/share.ts` validation to accept `type: 'designer'`
+- [x] **3A.1** Create share payload type + server validation
+  - Created `api/lib/designerValidation.ts` - full BinParams validation (dimensions, styles, inserts, etc.)
+  - Extended `api/share.ts` to branch on `type === 'designer'` with separate validation path
   - `DesignerSharePayload { type: 'designer', version: 1, params: BinParams }`
-  - Validate BinParams schema server-side
+  - Share URLs use `/d/{id}` for designer (vs `/l/{id}` for layouts)
 
-- [ ] **3A.2** Create client-side sharing hook
-  - Add `src/features/bin-designer/hooks/useDesignerSharing.ts`
-  - `createShareCode(params)` → 8-char code
-  - `loadFromShareCode(code)` → BinParams
-  - Error handling for expired/invalid codes
+- [x] **3A.2** Create client-side sharing hook
+  - Created `src/features/bin-designer/hooks/useDesignerSharing.ts`
+  - `createDesignerShare(params)` → Result<DesignerShareResponse, DesignerShareError>
+  - `fetchDesignerShare(id)` → Result<BinParams, DesignerShareError>
+  - `useDesignerSharing()` hook with status/shareUrl/error state
 
-- [ ] **3A.3** Build share dialog UI
-  - Share button in header bar
-  - Shows generated URL + copy button
-  - "Load from code" input field
-  - Success/error states
+- [x] **3A.3** Build share dialog UI + wire into page
+  - Created `ShareDialog.tsx` with two sections: Create Share Link + Load Shared Design
+  - Added Share button to DesignerPage header (next to Export)
+  - Copy-to-clipboard with fallback, URL/ID extraction from load input
+  - Error/loading/success states
 
-- [ ] **3A.4** Handle `?share=` URL param
-  - On page load, check for `share` query param
-  - Load shared design params into store
-  - Show toast: "Loaded shared design"
-  - Clear URL param after loading
+- [x] **3A.4** Handle `?share=` URL param
+  - On page load, checks for `share` query param in DesignerPage
+  - Loads shared design params via `fetchDesignerShare` + `migrateParams`
+  - Cleans URL immediately (replaces history state)
+  - Extracted `migrateParams` to `constants/defaults.ts` for shared use
 
-### Phase 3B: Batch Export
+### Phase 3B: Batch Export ✅
 
 Queue multiple designs for single ZIP download.
 
-- [ ] **3B.1** Add cart state to store
-  - `cart: SavedDesign[]` already in types but not wired
-  - Add cart actions: `addToCart()`, `removeFromCart()`, `clearCart()`
-  - Cart persists in localStorage (lightweight metadata only)
+- [x] **3B.1** Add cart state to store
+  - Created `src/features/bin-designer/store/cart.ts` - Zustand store with localStorage persistence
+  - `CartItem` type with params snapshot, thumbnail, addedAt
+  - `addToCart()`, `removeFromCart()`, `clearCart()` with duplicate prevention
+  - MAX_CART_ITEMS = 50
 
-- [ ] **3B.2** Build cart UI
-  - Slide-out panel or dialog
-  - Shows design thumbnails, names, estimates
-  - Remove individual items
-  - Total estimates (filament, time, cost)
+- [x] **3B.2** Build cart UI
+  - Created `CartDialog.tsx` - modal with scrollable item list
+  - Shows thumbnails, names, dimensions, style, filament estimates per item
+  - Remove individual items (group-hover X button), clear cart button
+  - Footer with total estimates (filament, time, cost)
 
-- [ ] **3B.3** Implement ZIP generation
-  - Add `src/features/generation/export/zipExporter.ts`
-  - Use `fflate` or `jszip` library for ZIP creation
-  - Generate STL for each design in sequence
-  - Include `manifest.json` with design details
-  - Progress indicator during generation
+- [x] **3B.3** Implement ZIP generation
+  - Created `src/features/bin-designer/utils/batchExport.ts`
+  - Uses `fflate` (zipSync) for synchronous ZIP creation
+  - Sequential GenerationBridge.generateImmediate() per item (no debounce)
+  - Includes `manifest.json` with file details and aggregate estimates
+  - AbortSignal support for cancellation
 
-- [ ] **3B.4** Batch export flow
-  - "Download ZIP" button in cart
-  - Sequential STL generation with progress
-  - ZIP file auto-downloads on completion
-  - Option to clear cart after successful export
+- [x] **3B.4** Batch export flow
+  - "Download ZIP" button in cart dialog
+  - Progress bar with item name and count during generation
+  - Cancel button shown during export
+  - "Add to Cart" button in DesignerPage header
+  - Cart badge shows item count (hidden when empty)
+  - Skips failed items with error summary
 
-### Phase 3C: Layout Planner Integration
+### Phase 3C: Layout Planner Integration ✅
 
 Connect Designer to the main Layout Planner workflow.
 
-- [ ] **3C.1** Navigation between tools
-  - "Create Custom Bin" button in Layout Planner sidebar
-  - "Back to Planner" button in Designer header
-  - Navigation preserves both tools' state
-  - Optional: pass selected bin dimensions as starting point
+- [x] **3C.1** Navigation between tools
+  - "Bin Designer" button in Layout Planner sidebar (desktop) and MobileLayoutsPanel (mobile)
+  - Button gated behind `bin_designer` feature flag
+  - Fixed `useDesignerRouting` to dispatch `PopStateEvent` after `pushState` — ensures all hook instances sync
+  - "Back to Planner" button in Designer header (already existed)
+  - Tests: 8 tests in `useDesignerRouting.test.ts`
 
-- [ ] **3C.2** Custom bin library sync
-  - When design is saved, create lightweight ref in Layout Planner storage
-  - Ref: `{ id, name, width, depth, height, thumbnail, designerId }`
-  - Layout Planner shows Designer bins in bin palette
-  - Stored in `localStorage` as `gridfinity-custom-bin-{id}`
+- [x] **3C.2** Custom bin library sync
+  - `store/customBinRegistry.ts` — localStorage registry at key `gridfinity-custom-bins-v1`
+  - `CustomBinRef: { id, name, width, depth, height, thumbnail, updatedAt }`
+  - `upsertRegistryEntry()` called on every auto-save success
+  - `removeRegistryEntry()` called on design deletion
+  - `useCustomBins()` hook for planner to read available designs
+  - Tests: 14 registry tests + 4 hook tests
 
-- [ ] **3C.3** Place designer bin in layout
-  - "Use in Layout" button in Designer
-  - Navigates to Planner with `?place={binId}` param
-  - Planner enters draw mode with custom bin dimensions
-  - Bin metadata links back to Designer design
+- [x] **3C.3** Place designer bin in layout
+  - "Use in Layout" button in Designer header
+  - `navigateToPlaceInLayout(w, d, h, name)` — sets `?placeBin=WxDxH&binName=...` URL params
+  - `usePlaceBinFromURL()` hook in App.tsx — reads params, creates bin at (0,0) on active layer
+  - Fallback: if grid placement fails (collision/size), adds to staging area instead
+  - Cleans URL params after processing, shows toast with placement result
+  - Tests: 13 tests (4 navigation + 9 placement)
 
-### Phase 3D: Hardware & Tools Templates
+### Phase 3D: Hardware & Tools Templates ✅
 
 Expand template library beyond electronics.
 
-- [ ] **3D.1** Hardware templates
-  - Add `src/features/bin-designer/templates/hardware.ts`
-  - M2-M8 screw slots, hex nut pockets, washer stacks
-  - Hex key holder (angled slots), bit holder
+- [x] **3D.1** Hardware templates (18 templates)
+  - `src/features/bin-designer/templates/hardware.ts`
+  - M3-M8 socket head cap screws (circle shape, ISO 4762 head diameters)
+  - M3-M8 hex nut pockets (hexagon shape, ISO 4032 across-flats)
+  - M4-M6 washer stacks (circle shape, ISO 7089 outer diameter)
+  - Hex key holders: 2.5mm, 4mm, 6mm (hexagon shape, upright)
+  - ¼" driver bit holders: standard 25mm + long 50mm (hexagon shape)
+  - 0.5mm clearance for snug FDM fit
 
-- [ ] **3D.2** Tools templates
-  - Add `src/features/bin-designer/templates/tools.ts`
-  - Screwdriver slot, pliers cradle, marker holder
-  - Tape measure pocket, utility knife slot
+- [x] **3D.2** Tools templates (13 templates)
+  - `src/features/bin-designer/templates/tools.ts`
+  - Screwdrivers: small (6mm), medium (8mm) upright + lying flat (slot shape)
+  - Pliers: needle-nose (25mm) + standard (35mm) in rounded-rect
+  - Markers: fine (10mm), Sharpie (12mm), thick (18mm) upright circles
+  - Tape measures: compact 3m (65mm) + standard 5m (80mm) in rounded-rect
+  - Utility knives: standard (18×150mm) + compact (12×100mm)
+  - Scissors: standard (25×180mm)
+  - 1.0mm clearance for easy tool extraction
 
-- [ ] **3D.3** Template search & filter
-  - Search input in template browser
-  - Filter by category, sort by popularity (later)
-  - Show result count
+- [x] **3D.3** Template search & filter
+  - Search input with magnifying glass icon in TemplateBrowser
+  - `searchTemplates(query)` searches name, description, and label (case-insensitive)
+  - Search combines with category filter (AND logic)
+  - Result count shown when filtering ("X of Y templates")
+  - Empty state shows descriptive "No templates matching" message
+  - Tests: 64 template data tests + 20 TemplateBrowser UI tests
+
+  Total templates: 8 electronics + 18 hardware + 13 tools = 39 templates
+  Total tests: 4843 across 196 test files
 
 ### Phase 4: Polish & Enhancement
 

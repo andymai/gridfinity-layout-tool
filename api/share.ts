@@ -2,6 +2,7 @@ import { put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
 import { validateShareLayout, isValidationError } from './lib/validation.js';
+import { validateDesignerShare } from './lib/designerValidation.js';
 import { filterLayoutContent } from './lib/contentFilter.js';
 import {
   isValidShareId,
@@ -34,14 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Parse and validate request body
-    const { layout, layoutId, permission = 'view', authorName } = req.body || {};
-
-    if (!layout) {
-      return res.status(400).json({
-        error: 'Missing layout data',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
-    }
+    const { layout, layoutId, permission = 'view', authorName, type, params } = req.body || {};
 
     // Validate layoutId - must be provided by client
     if (!isValidShareId(layoutId)) {
@@ -59,28 +53,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Validate layout structure and size
-    const layoutJson = JSON.stringify(layout);
-    const validationResult = validateShareLayout(layout, layoutJson.length);
+    let sharePayload: unknown;
 
-    if (isValidationError(validationResult)) {
-      return res.status(400).json({
-        error: validationResult.error.message,
-        code: validationResult.error.code,
-      });
-    }
+    if (type === 'designer') {
+      // Designer share: validate BinParams
+      const designerPayload = { type, version: (req.body || {}).version, params };
+      const payloadJson = JSON.stringify(designerPayload);
+      const result = validateDesignerShare(designerPayload, payloadJson.length);
 
-    // Content filtering
-    const contentResult = filterLayoutContent(validationResult.layout);
-    if (!contentResult.passed) {
-      return res.status(400).json({
-        error: `Content blocked: ${contentResult.reason}`,
-        code: 'CONTENT_BLOCKED',
-      });
+      if (!result.valid) {
+        return res.status(400).json({
+          error: result.error.message,
+          code: result.error.code,
+        });
+      }
+
+      sharePayload = result.payload;
+    } else {
+      // Layout share: validate layout structure
+      if (!layout) {
+        return res.status(400).json({
+          error: 'Missing layout data',
+          code: ErrorCode.VALIDATION_ERROR,
+        });
+      }
+
+      const layoutJson = JSON.stringify(layout);
+      const validationResult = validateShareLayout(layout, layoutJson.length);
+
+      if (isValidationError(validationResult)) {
+        return res.status(400).json({
+          error: validationResult.error.message,
+          code: validationResult.error.code,
+        });
+      }
+
+      // Content filtering (layout shares only)
+      const contentResult = filterLayoutContent(validationResult.layout);
+      if (!contentResult.passed) {
+        return res.status(400).json({
+          error: `Content blocked: ${contentResult.reason}`,
+          code: 'CONTENT_BLOCKED',
+        });
+      }
+
+      sharePayload = validationResult.layout;
     }
 
     // Use client-provided layoutId as the share ID
-    // This ensures share URLs match the owner's local layout ID
     const shareId = layoutId;
     const deleteToken = generateDeleteToken();
     const deleteTokenHash = await hashToken(deleteToken);
@@ -90,7 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Prepare data to store (shares are permanent, no expiration)
     const shareData: ShareData = {
-      layout: validationResult.layout,
+      layout: sharePayload,
       metadata: {
         deleteTokenHash,
         createdAt: nowIso,
@@ -109,8 +129,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       addRandomSuffix: false,
     });
 
-    // Return success response - use unified /l/{id} format
-    const shareUrl = `${getBaseUrl(req)}/l/${shareId}`;
+    // Return success response
+    const shareUrl = `${getBaseUrl(req)}/${type === 'designer' ? 'd' : 'l'}/${shareId}`;
 
     return res.status(201).json({
       id: shareId,
