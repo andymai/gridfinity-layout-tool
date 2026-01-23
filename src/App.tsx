@@ -135,13 +135,6 @@ export default function App() {
   const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
   const { isDesignerRoute, navigateToPlanner } = useDesignerRouting();
 
-  // Redirect away from /designer when feature flag is disabled
-  useEffect(() => {
-    if (isDesignerRoute && !isDesignerEnabled) {
-      navigateToPlanner();
-    }
-  }, [isDesignerRoute, isDesignerEnabled, navigateToPlanner]);
-
   // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
   useOwnedShareSync();
 
