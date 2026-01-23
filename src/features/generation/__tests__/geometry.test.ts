@@ -4,6 +4,9 @@ import {
   createHollowBox,
   createCylinder,
   createDividerWall,
+  createScoop,
+  createLabelTab,
+  createCornerGusset,
   mergeMeshes,
 } from '../worker/generators/geometry';
 import type { MeshData } from '../bridge/types';
@@ -172,6 +175,171 @@ describe('geometry utilities', () => {
       for (let i = 0; i < meshes[1].vertices.length; i++) {
         expect(result.vertices[offset + i]).toBe(meshes[1].vertices[i]);
       }
+    });
+  });
+
+  describe('createScoop', () => {
+    it('produces non-empty mesh', () => {
+      const mesh = createScoop(0, -30, 5, 40, 15);
+      expect(mesh.vertices.length).toBeGreaterThan(0);
+      expect(mesh.normals.length).toBe(mesh.vertices.length);
+      expect(mesh.triangleCount).toBeGreaterThan(0);
+    });
+
+    it('spans the correct width', () => {
+      const width = 40;
+      const mesh = createScoop(0, -30, 5, width, 15);
+
+      let minX = Infinity, maxX = -Infinity;
+      for (let i = 0; i < mesh.vertices.length; i += 3) {
+        minX = Math.min(minX, mesh.vertices[i]);
+        maxX = Math.max(maxX, mesh.vertices[i]);
+      }
+      expect(maxX - minX).toBeCloseTo(width, 1);
+    });
+
+    it('starts at the given Z coordinate', () => {
+      const floorZ = 5.7;
+      const mesh = createScoop(0, -30, floorZ, 40, 15);
+
+      let minZ = Infinity;
+      for (let i = 2; i < mesh.vertices.length; i += 3) {
+        minZ = Math.min(minZ, mesh.vertices[i]);
+      }
+      expect(minZ).toBeCloseTo(floorZ, 3);
+    });
+
+    it('scoop height equals radius', () => {
+      const radius = 15;
+      const floorZ = 5;
+      const mesh = createScoop(0, -30, floorZ, 40, radius);
+
+      let minZ = Infinity, maxZ = -Infinity;
+      for (let i = 2; i < mesh.vertices.length; i += 3) {
+        minZ = Math.min(minZ, mesh.vertices[i]);
+        maxZ = Math.max(maxZ, mesh.vertices[i]);
+      }
+      expect(maxZ - minZ).toBeCloseTo(radius, 1);
+    });
+
+    it('more segments produce more triangles', () => {
+      const mesh4 = createScoop(0, 0, 5, 40, 15, 4);
+      const mesh16 = createScoop(0, 0, 5, 40, 15, 16);
+      expect(mesh16.triangleCount).toBeGreaterThan(mesh4.triangleCount);
+    });
+
+    it('vertex count matches triangle count * 9', () => {
+      const mesh = createScoop(0, 0, 5, 40, 15);
+      expect(mesh.vertices.length).toBe(mesh.triangleCount * 9);
+    });
+  });
+
+  describe('createLabelTab', () => {
+    it('produces 4 triangles for valid dimensions', () => {
+      const mesh = createLabelTab(84, 1.2, 42, 26);
+      expect(mesh.triangleCount).toBe(4);
+      expect(mesh.vertices.length).toBe(36); // 4 * 9
+    });
+
+    it('returns empty mesh when tab width is zero or negative', () => {
+      const mesh = createLabelTab(4, 3, 2, 26);
+      expect(mesh.vertices.length).toBe(0);
+      expect(mesh.triangleCount).toBe(0);
+    });
+
+    it('tab top edge is at total height', () => {
+      const totalHeight = 26;
+      const mesh = createLabelTab(84, 1.2, 42, totalHeight);
+
+      let maxZ = -Infinity;
+      for (let i = 2; i < mesh.vertices.length; i += 3) {
+        maxZ = Math.max(maxZ, mesh.vertices[i]);
+      }
+      expect(maxZ).toBeCloseTo(totalHeight, 1);
+    });
+
+    it('tab height span matches tabHeight parameter', () => {
+      const totalHeight = 26;
+      const tabHeight = 10;
+      const mesh = createLabelTab(84, 1.2, 42, totalHeight, tabHeight);
+
+      let minZ = Infinity, maxZ = -Infinity;
+      for (let i = 2; i < mesh.vertices.length; i += 3) {
+        minZ = Math.min(minZ, mesh.vertices[i]);
+        maxZ = Math.max(maxZ, mesh.vertices[i]);
+      }
+      expect(maxZ - minZ).toBeCloseTo(tabHeight, 1);
+    });
+
+    it('normals have non-zero Y and Z components (angled surface)', () => {
+      const mesh = createLabelTab(84, 1.2, 42, 26);
+      // Front face normals should have negative Y and positive Z (angled 45°)
+      const ny = mesh.normals[1];
+      const nz = mesh.normals[2];
+      expect(ny).toBeLessThan(0);
+      expect(nz).toBeGreaterThan(0);
+    });
+  });
+
+  describe('createCornerGusset', () => {
+    it('produces 8 triangles', () => {
+      const mesh = createCornerGusset(0, 0, 5, 3, 20, 1, 1);
+      expect(mesh.triangleCount).toBe(8);
+      expect(mesh.vertices.length).toBe(72); // 8 * 9
+    });
+
+    it('gusset Z range matches z + height', () => {
+      const z = 5.7;
+      const height = 20;
+      const mesh = createCornerGusset(0, 0, z, 3, height, 1, 1);
+
+      let minZ = Infinity, maxZ = -Infinity;
+      for (let i = 2; i < mesh.vertices.length; i += 3) {
+        minZ = Math.min(minZ, mesh.vertices[i]);
+        maxZ = Math.max(maxZ, mesh.vertices[i]);
+      }
+      expect(minZ).toBeCloseTo(z, 3);
+      expect(maxZ).toBeCloseTo(z + height, 3);
+    });
+
+    it('positive signs extend in +X +Y from corner', () => {
+      const mesh = createCornerGusset(10, 10, 0, 5, 10, 1, 1);
+
+      let minX = Infinity, maxX = -Infinity;
+      let minY = Infinity, maxY = -Infinity;
+      for (let i = 0; i < mesh.vertices.length; i += 3) {
+        minX = Math.min(minX, mesh.vertices[i]);
+        maxX = Math.max(maxX, mesh.vertices[i]);
+        minY = Math.min(minY, mesh.vertices[i + 1]);
+        maxY = Math.max(maxY, mesh.vertices[i + 1]);
+      }
+      expect(minX).toBeCloseTo(10, 3);
+      expect(maxX).toBeCloseTo(15, 3);
+      expect(minY).toBeCloseTo(10, 3);
+      expect(maxY).toBeCloseTo(15, 3);
+    });
+
+    it('negative signs extend in -X -Y from corner', () => {
+      const mesh = createCornerGusset(10, 10, 0, 5, 10, -1, -1);
+
+      let minX = Infinity, maxX = -Infinity;
+      let minY = Infinity, maxY = -Infinity;
+      for (let i = 0; i < mesh.vertices.length; i += 3) {
+        minX = Math.min(minX, mesh.vertices[i]);
+        maxX = Math.max(maxX, mesh.vertices[i]);
+        minY = Math.min(minY, mesh.vertices[i + 1]);
+        maxY = Math.max(maxY, mesh.vertices[i + 1]);
+      }
+      expect(minX).toBeCloseTo(5, 3);
+      expect(maxX).toBeCloseTo(10, 3);
+      expect(minY).toBeCloseTo(5, 3);
+      expect(maxY).toBeCloseTo(10, 3);
+    });
+
+    it('vertex count is consistent', () => {
+      const mesh = createCornerGusset(0, 0, 0, 3, 20, 1, 1);
+      expect(mesh.vertices.length).toBe(mesh.triangleCount * 9);
+      expect(mesh.normals.length).toBe(mesh.vertices.length);
     });
   });
 });

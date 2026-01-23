@@ -11,7 +11,8 @@
 import type { BinParams } from '@/features/bin-designer/types';
 import type { MeshData } from '../../bridge/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
-import { createHollowBox, createDividerWall, mergeMeshes } from './geometry';
+import { createHollowBox, createDividerWall, createScoop, createLabelTab, createCornerGusset, mergeMeshes } from './geometry';
+import { getStyleConstraints } from '@/features/bin-designer/utils/styleConstraints';
 
 /** Converts grid units to mm (width/depth) */
 function gridToMm(units: number): number {
@@ -32,10 +33,11 @@ function getWallThickness(style: string): number {
  * Generates complete bin geometry from parameters.
  *
  * Geometry is centered on X/Y axes, with Z=0 at the bottom of the bin.
- * Includes outer shell, inner cavity, and optional dividers.
+ * Includes outer shell, inner cavity, dividers, scoops, label tab, and style reinforcements.
  */
 export function generateBinGeometry(params: BinParams): MeshData {
   const wallThickness = getWallThickness(params.style);
+  const constraints = getStyleConstraints(params.style);
 
   // Outer dimensions in mm (subtract tolerance for baseplate fit)
   const outerWidth = gridToMm(params.width) - GRIDFINITY.TOLERANCE;
@@ -55,10 +57,34 @@ export function generateBinGeometry(params: BinParams): MeshData {
   // Main shell (outer walls + bottom)
   meshes.push(createHollowBox(outerWidth, outerDepth, totalHeight, wallThickness, bottomThickness));
 
-  // Dividers (if any)
-  if (params.dividers.x > 0 || params.dividers.y > 0) {
+  // Inner cavity dimensions (used by multiple features)
+  const innerWidth = outerWidth - 2 * wallThickness;
+  const innerDepth = outerDepth - 2 * wallThickness;
+  const halfDepth = outerDepth / 2;
+
+  // Dividers (if any and not constrained)
+  const hasDividers = !constraints.disabledFeatures.includes('dividers') &&
+    (params.dividers.x > 0 || params.dividers.y > 0);
+  if (hasDividers) {
     const dividerMesh = generateDividers(params, outerWidth, outerDepth, totalHeight, wallThickness, bottomThickness);
     meshes.push(dividerMesh);
+  }
+
+  // Scoops (if enabled and not constrained)
+  if (params.scoop && !constraints.disabledFeatures.includes('scoop')) {
+    const scoopMesh = generateScoops(params, innerWidth, innerDepth, wallThickness, bottomThickness);
+    meshes.push(scoopMesh);
+  }
+
+  // Label tab (if enabled and not constrained)
+  if (params.label.enabled && !constraints.disabledFeatures.includes('label')) {
+    meshes.push(createLabelTab(outerWidth, wallThickness, halfDepth, totalHeight));
+  }
+
+  // Corner gussets for reinforced styles (solid, rugged)
+  if (constraints.hasGussets) {
+    const gussetMesh = generateCornerGussets(outerWidth, outerDepth, wallThickness, bottomThickness, totalHeight);
+    meshes.push(gussetMesh);
   }
 
   return mergeMeshes(meshes);
@@ -104,6 +130,83 @@ function generateDividers(
       meshes.push(createDividerWall(x, startY, bottomThickness, thickness, innerDepth, dividerHeight));
     }
   }
+
+  return mergeMeshes(meshes);
+}
+
+/**
+ * Generates scoop ramps at the front of each compartment.
+ * Scoop radius is proportional to the compartment size, capped at 20mm.
+ */
+function generateScoops(
+  params: BinParams,
+  innerWidth: number,
+  innerDepth: number,
+  wallThickness: number,
+  bottomThickness: number
+): MeshData {
+  const meshes: MeshData[] = [];
+  const divX = params.dividers.x;
+
+  // Number of compartments along X axis
+  const compCountX = divX + 1;
+  const compCountY = params.dividers.y + 1;
+
+  const compWidth = innerWidth / compCountX;
+  const compDepth = innerDepth / compCountY;
+
+  // Scoop radius: 40% of smaller compartment dimension, max 20mm
+  const radius = Math.min(compWidth * 0.4, compDepth * 0.4, 20);
+
+  // Front row inner Y coordinate
+  const frontInnerY = -innerDepth / 2;
+
+  // Add scoops to the front row of compartments
+  for (let ix = 0; ix < compCountX; ix++) {
+    const cx = -innerWidth / 2 + (ix + 0.5) * compWidth;
+
+    meshes.push(createScoop(
+      cx,
+      frontInnerY,
+      bottomThickness,
+      compWidth - wallThickness,
+      radius
+    ));
+  }
+
+  return mergeMeshes(meshes);
+}
+
+/**
+ * Generates corner gussets at all 4 inner corners of the bin.
+ * Gusset size is proportional to wall thickness.
+ */
+function generateCornerGussets(
+  outerWidth: number,
+  outerDepth: number,
+  wallThickness: number,
+  bottomThickness: number,
+  totalHeight: number
+): MeshData {
+  const meshes: MeshData[] = [];
+  const halfW = outerWidth / 2;
+  const halfD = outerDepth / 2;
+
+  // Gusset size: 2x wall thickness
+  const gussetSize = wallThickness * 2;
+  const gussetHeight = totalHeight - bottomThickness;
+
+  // Inner corner positions
+  const innerLeft = -halfW + wallThickness;
+  const innerRight = halfW - wallThickness;
+  const innerFront = -halfD + wallThickness;
+  const innerBack = halfD - wallThickness;
+
+  // 4 corners with appropriate directions
+  meshes.push(createCornerGusset(innerLeft, innerFront, bottomThickness, gussetSize, gussetHeight, 1, 1));
+  meshes.push(createCornerGusset(innerRight, innerFront, bottomThickness, gussetSize, gussetHeight, -1, 1));
+  meshes.push(createCornerGusset(innerLeft, innerBack, bottomThickness, gussetSize, gussetHeight, 1, -1));
+  meshes.push(createCornerGusset(innerRight, innerBack, bottomThickness, gussetSize, gussetHeight, -1, -1));
 
   return mergeMeshes(meshes);
 }

@@ -159,5 +159,133 @@ describe('binGenerator', () => {
       expect(mesh.vertices.length % 9).toBe(0);
       expect(mesh.vertices.length / 9).toBe(mesh.triangleCount);
     });
+
+    it('scoop adds geometry when enabled', () => {
+      const noScoop = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, scoop: false });
+      const withScoop = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, scoop: true });
+
+      expect(withScoop.triangleCount).toBeGreaterThan(noScoop.triangleCount);
+    });
+
+    it('scoop geometry stays within bin bounds', () => {
+      const params: BinParams = { ...DEFAULT_BIN_PARAMS, scoop: true };
+      const mesh = generateBinGeometry(params);
+      const bounds = getBounds(mesh.vertices);
+
+      const expectedWidth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+      const expectedDepth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT;
+
+      expect(bounds.maxX - bounds.minX).toBeCloseTo(expectedWidth, 0);
+      expect(bounds.maxY - bounds.minY).toBeCloseTo(expectedDepth, 0);
+      // Scoop may add slight height due to arc, but within bounds
+      expect(bounds.maxZ).toBeLessThanOrEqual(expectedHeight + 1);
+    });
+
+    it('scoop respects divider compartments', () => {
+      const noDividers = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: true,
+        dividers: { x: 0, y: 0, thickness: 1.2 },
+      });
+      const withDividers = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        scoop: true,
+        dividers: { x: 2, y: 0, thickness: 1.2 },
+      });
+
+      // More compartments = more scoops = more triangles
+      expect(withDividers.triangleCount).toBeGreaterThan(noDividers.triangleCount);
+    });
+
+    it('label tab adds geometry when enabled', () => {
+      const noLabel = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        label: { enabled: false, text: '', fontSize: 'auto' },
+      });
+      const withLabel = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        label: { enabled: true, text: 'Test', fontSize: 'auto' },
+      });
+
+      expect(withLabel.triangleCount).toBeGreaterThan(noLabel.triangleCount);
+    });
+
+    it('rugged style adds corner gussets', () => {
+      const standard = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, style: 'standard' });
+      const rugged = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, style: 'rugged' });
+
+      expect(rugged.triangleCount).toBeGreaterThan(standard.triangleCount);
+    });
+
+    it('solid style adds corner gussets', () => {
+      const standard = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, style: 'standard' });
+      const solid = generateBinGeometry({ ...DEFAULT_BIN_PARAMS, style: 'solid' });
+
+      expect(solid.triangleCount).toBeGreaterThan(standard.triangleCount);
+    });
+
+    it('vase mode ignores scoop even when enabled', () => {
+      const vaseNoScoop = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'vase',
+        scoop: false,
+      });
+      const vaseWithScoop = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'vase',
+        scoop: true,
+      });
+
+      expect(vaseWithScoop.triangleCount).toBe(vaseNoScoop.triangleCount);
+    });
+
+    it('vase mode ignores label even when enabled', () => {
+      const vaseNoLabel = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'vase',
+        label: { enabled: false, text: '', fontSize: 'auto' },
+      });
+      const vaseWithLabel = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'vase',
+        label: { enabled: true, text: 'Test', fontSize: 'auto' },
+      });
+
+      expect(vaseWithLabel.triangleCount).toBe(vaseNoLabel.triangleCount);
+    });
+
+    it('vase mode ignores dividers even when specified', () => {
+      const vaseNoDividers = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'vase',
+        dividers: { x: 0, y: 0, thickness: 1.2 },
+      });
+      const vaseWithDividers = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'vase',
+        dividers: { x: 2, y: 2, thickness: 1.2 },
+      });
+
+      expect(vaseWithDividers.triangleCount).toBe(vaseNoDividers.triangleCount);
+    });
+
+    it('lite style produces same features as standard but thinner walls', () => {
+      const lite = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'lite',
+        scoop: true,
+        label: { enabled: true, text: 'Test', fontSize: 'auto' },
+      });
+      const standard = generateBinGeometry({
+        ...DEFAULT_BIN_PARAMS,
+        style: 'standard',
+        scoop: true,
+        label: { enabled: true, text: 'Test', fontSize: 'auto' },
+      });
+
+      // Same feature set (same triangle count), different geometry positions
+      expect(lite.triangleCount).toBe(standard.triangleCount);
+    });
   });
 });
