@@ -9,10 +9,21 @@ vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => (
     <div data-testid="r3f-canvas">{children}</div>
   ),
+  useThree: () => ({
+    camera: {
+      position: { clone: () => ({ x: 0, y: 0, z: 0, sub: () => ({ x: 0, y: 0, z: 0 }), normalize: () => ({ x: 0, y: 0, z: 1 }) }), copy: vi.fn(), set: vi.fn(), lerpVectors: vi.fn() },
+      up: { set: vi.fn() },
+      lookAt: vi.fn(),
+    },
+  }),
+  useFrame: () => { /* noop */ },
 }));
 
 vi.mock('@react-three/drei', () => ({
   OrbitControls: () => <div data-testid="orbit-controls" />,
+  ContactShadows: () => <div data-testid="contact-shadows" />,
+  Line: () => <div data-testid="line" />,
+  Text: ({ children }: { children: ReactNode }) => <div data-testid="text">{children}</div>,
 }));
 
 vi.mock('three', () => {
@@ -25,10 +36,57 @@ vi.mock('three', () => {
   }
 
   function Vector3(x = 0, y = 0, z = 0) {
-    return { x, y, z };
+    return {
+      x, y, z,
+      normalize: function () { return this; },
+      multiplyScalar: function () { return this; },
+      add: function () { return this; },
+      clone: function () { return { x, y, z, sub: () => ({ x: 0, y: 0, z: 0 }), normalize: () => ({ x: 0, y: 0, z: 1 }) }; },
+      copy: function () { return this; },
+      sub: function () { return this; },
+      set: function () { return this; },
+      setFromSpherical: function () { return this; },
+      lerpVectors: function () { return this; },
+    };
   }
 
-  return { Vector3, BufferGeometry, Float32BufferAttribute, DoubleSide: 2 };
+  function Spherical(_r = 0, _phi = 0, _theta = 0) {
+    return {
+      radius: _r, phi: _phi, theta: _theta,
+      setFromVector3: function () { return this; },
+    };
+  }
+
+  function Color(hex?: string) {
+    return {
+      r: 0.8, g: 0.8, b: 0.8,
+      getHSL: function (target: { h: number; s: number; l: number }) {
+        target.h = 0; target.s = 0; target.l = 0.8;
+        return target;
+      },
+      setHSL: function () { return this; },
+      _hex: hex,
+    };
+  }
+
+  function ShaderMaterial() {
+    return { uniforms: {}, dispose: vi.fn() };
+  }
+
+  function Vector2(x = 0, y = 0) {
+    return { x, y };
+  }
+
+  return {
+    Vector2,
+    Vector3,
+    Spherical,
+    BufferGeometry,
+    Float32BufferAttribute,
+    Color,
+    ShaderMaterial,
+    DoubleSide: 2,
+  };
 });
 
 vi.mock('three-stdlib', () => ({
@@ -174,5 +232,6 @@ describe('PreviewCanvas', () => {
     expect(screen.getByLabelText('Front camera view')).toBeInTheDocument();
     expect(screen.getByLabelText('Reset camera view')).toBeInTheDocument();
     expect(screen.getByLabelText('Toggle wireframe mode')).toBeInTheDocument();
+    expect(screen.getByLabelText('Change preview color')).toBeInTheDocument();
   });
 });

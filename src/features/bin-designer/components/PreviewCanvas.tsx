@@ -1,45 +1,283 @@
 /**
  * Three.js 3D preview canvas for the bin designer.
- * Renders the generated mesh with orbit controls and camera presets.
+ * Renders the generated mesh with enhanced lighting, contact shadows,
+ * smooth camera transitions, auto-framing, dimension lines, and a footprint grid.
  */
 
-import { useRef, useCallback, useState, useEffect } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
-import { Vector3 } from 'three';
+import { Vector3, Spherical } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { BinMesh, PreviewControls, PreviewSkeleton, type CameraPreset } from './preview';
+import { GradientBackground } from './preview/GradientBackground';
+import { FootprintGrid } from './preview/FootprintGrid';
 import { useDesignerKeyboard } from '../hooks/useDesignerKeyboard';
 import { setPreviewCanvas, clearPreviewCanvas } from '../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 
-/** Camera positions for each preset (eye position looking at origin) */
-const CAMERA_POSITIONS: Record<CameraPreset, [number, number, number]> = {
-  front: [0, -120, 30],
-  side: [120, 0, 30],
-  top: [0, -1, 150],
-  isometric: [80, -80, 60],
+/** localStorage key for persisting the user's preview color preference */
+const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
+const DEFAULT_COLOR = '#d4d8dc';
+
+/** Camera positions for each preset (eye position looking toward center) */
+const CAMERA_PRESETS: Record<CameraPreset, [number, number, number]> = {
+  front: [0, -1, 0.3],    // Normalized direction — scaled by distance
+  side: [1, 0, 0.3],
+  top: [0, -0.01, 1],
+  isometric: [0.6, -0.6, 0.5],
 };
 
-const DEFAULT_CAMERA: [number, number, number] = CAMERA_POSITIONS.isometric;
+/** Animation duration for camera transitions (ms) */
+const TRANSITION_DURATION = 500;
+/** Animation duration for auto-framing (ms) */
+const AUTO_FRAME_DURATION = 300;
+/** Margin factor: how much of the viewport the bin should fill */
+const FRAME_FILL = 0.65;
+/** Minimum change in distance to trigger auto-frame animation */
+const REFRAME_THRESHOLD = 0.1; // 10% change
 
 /**
- * Render the 3D preview canvas for the bin designer, including scene, controls, UI overlays, and input handlers.
+ * Calculate ideal camera distance to frame a bin of the given dimensions.
+ * Uses perspective camera FOV geometry to ensure the bin fills ~65% of viewport.
+ */
+function calculateIdealDistance(
+  width: number,
+  depth: number,
+  height: number,
+  fov: number
+): number {
+  const outerW = width * GRIDFINITY.GRID_SIZE;
+  const outerD = depth * GRIDFINITY.GRID_SIZE;
+  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+
+  // Bounding sphere radius (from center of bin)
+  const halfW = outerW / 2;
+  const halfD = outerD / 2;
+  const halfH = totalH / 2;
+  const boundingRadius = Math.sqrt(halfW * halfW + halfD * halfD + halfH * halfH);
+
+  // Distance = radius / sin(halfFov) * marginFactor
+  const halfFovRad = (fov / 2) * (Math.PI / 180);
+  return (boundingRadius / Math.sin(halfFovRad)) * (1 / FRAME_FILL);
+}
+
+/**
+ * Calculate the bin's center point in 3D space (for camera target).
+ * Mesh is centered at (0, 0) in XY, base at Z=0 — only height affects the target.
+ */
+function calculateBinCenter(_width: number, _depth: number, height: number): Vector3 {
+  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  return new Vector3(0, 0, totalH / 2);
+}
+
+/**
+ * Inner scene component that handles camera animation via useFrame.
+ * Must be inside the Canvas to access Three.js context.
+ */
+function CameraController({
+  controlsRef,
+  width,
+  depth,
+  height,
+}: {
+  controlsRef: React.RefObject<OrbitControlsType | null>;
+  width: number;
+  depth: number;
+  height: number;
+}) {
+  const { camera } = useThree();
+  const animRef = useRef<{
+    startPos: Vector3;
+    targetPos: Vector3;
+    startTime: number;
+    duration: number;
+  } | null>(null);
+  const prevDistanceRef = useRef<number | null>(null);
+  const initializedRef = useRef(false);
+
+  const fov = 45;
+  const binCenter = useMemo(() => calculateBinCenter(width, depth, height), [width, depth, height]);
+  const idealDistance = useMemo(() => calculateIdealDistance(width, depth, height, fov), [width, depth, height, fov]);
+
+  // Auto-frame: when bin dimensions change, smoothly adjust camera distance
+  useEffect(() => {
+    if (!initializedRef.current) {
+      // First render: set camera immediately
+      const direction = new Vector3(...CAMERA_PRESETS.isometric).normalize();
+      camera.position.copy(direction.multiplyScalar(idealDistance).add(binCenter));
+      camera.up.set(0, 0, 1);
+      camera.lookAt(binCenter);
+      if (controlsRef.current) {
+        controlsRef.current.target.copy(binCenter);
+        controlsRef.current.update();
+      }
+      prevDistanceRef.current = idealDistance;
+      initializedRef.current = true;
+      return;
+    }
+
+    const prevDistance = prevDistanceRef.current ?? idealDistance;
+    const distanceChange = Math.abs(idealDistance - prevDistance) / prevDistance;
+
+    if (distanceChange > REFRAME_THRESHOLD) {
+      // Significant size change: animate to new framing
+      const currentPos = camera.position.clone();
+      const currentDir = currentPos.clone().sub(binCenter).normalize();
+      const targetPos = currentDir.multiplyScalar(idealDistance).add(binCenter);
+
+      animRef.current = {
+        startPos: currentPos,
+        targetPos,
+        startTime: performance.now(),
+        duration: AUTO_FRAME_DURATION,
+      };
+    }
+
+    prevDistanceRef.current = idealDistance;
+  }, [idealDistance, binCenter, camera, controlsRef]);
+
+  // Update target when bin center changes
+  useEffect(() => {
+    if (controlsRef.current && initializedRef.current) {
+      controlsRef.current.target.copy(binCenter);
+      controlsRef.current.update();
+    }
+  }, [binCenter, controlsRef]);
+
+  // Animate camera position each frame
+  useFrame(() => {
+    const anim = animRef.current;
+    if (!anim) return;
+
+    const elapsed = performance.now() - anim.startTime;
+    const progress = Math.min(elapsed / anim.duration, 1);
+    // Ease-out cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+
+    camera.position.lerpVectors(anim.startPos, anim.targetPos, eased);
+    camera.lookAt(binCenter);
+
+    if (progress >= 1) {
+      animRef.current = null;
+      controlsRef.current?.update();
+    }
+  });
+
+  return null;
+}
+
+/**
+ * Manages smooth camera preset transitions using spherical coordinate interpolation.
+ */
+function usePresetTransition(
+  controlsRef: React.RefObject<OrbitControlsType | null>,
+  width: number,
+  depth: number,
+  height: number
+) {
+  const animFrameRef = useRef<number | null>(null);
+
+  const setCameraPreset = useCallback((preset: CameraPreset) => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    const camera = controls.object;
+    const fov = 45;
+    const binCenter = calculateBinCenter(width, depth, height);
+    const idealDistance = calculateIdealDistance(width, depth, height, fov);
+
+    // Calculate target position from preset direction
+    const direction = new Vector3(...CAMERA_PRESETS[preset]).normalize();
+    const targetPosition = direction.multiplyScalar(idealDistance).add(binCenter);
+
+    // Current camera state
+    const startPosition = camera.position.clone();
+    const target = binCenter.clone();
+
+    // Convert to spherical for smooth arc interpolation
+    const startSpherical = new Spherical().setFromVector3(startPosition.clone().sub(target));
+    const targetSpherical = new Spherical().setFromVector3(targetPosition.clone().sub(target));
+
+    const startTime = performance.now();
+
+    // Cancel existing animation
+    if (animFrameRef.current !== null) {
+      cancelAnimationFrame(animFrameRef.current);
+    }
+
+    const animate = () => {
+      const elapsed = performance.now() - startTime;
+      const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
+      // Ease-out cubic for natural deceleration
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      // Interpolate in spherical coordinates for smooth arc
+      const currentSpherical = new Spherical(
+        startSpherical.radius + (targetSpherical.radius - startSpherical.radius) * eased,
+        startSpherical.phi + (targetSpherical.phi - startSpherical.phi) * eased,
+        startSpherical.theta + (targetSpherical.theta - startSpherical.theta) * eased
+      );
+
+      const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
+      camera.position.copy(newPosition);
+      camera.up.set(0, 0, 1);
+      camera.lookAt(target);
+
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      } else {
+        animFrameRef.current = null;
+        controls.target.copy(target);
+        controls.update();
+      }
+    };
+
+    animate();
+  }, [controlsRef, width, depth, height]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (animFrameRef.current !== null) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, []);
+
+  return setCameraPreset;
+}
+
+/**
+ * Render the 3D preview canvas for the bin designer.
  *
- * The component:
- * - Renders lighting, the bin mesh, a subtle floor grid, and OrbitControls configured for a Z-up workflow.
- * - Exposes camera presets and a reset view, a wireframe toggle, and undo/redo integration via keyboard shortcuts.
- * - Registers the WebGL canvas for thumbnail capture on creation and clears that registration on unmount.
- * - Shows a skeleton placeholder when no mesh is available or WASM is not ready, and a translucent "Updating..." overlay while generation is in progress.
- *
- * @returns The React element containing the preview canvas and its associated controls and overlays.
+ * Features:
+ * - 3-point lighting (hemisphere + key + fill) with contact shadows
+ * - Gradient background for studio photography feel
+ * - Normal-based vertex coloring with user-selectable base color
+ * - Smooth camera preset transitions (spherical interpolation)
+ * - Auto-framing that adjusts when bin dimensions change
+ * - Dimension lines showing W×D×H + interior height in mm
+ * - Footprint grid matching the bin's unit dimensions
  */
 export function PreviewCanvas() {
   const controlsRef = useRef<OrbitControlsType>(null);
   const [wireframe, setWireframe] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
+
+  // Preview color persisted in localStorage
+  const [previewColor, setPreviewColor] = useState(() => {
+    return localStorage.getItem(PREVIEW_COLOR_KEY) ?? DEFAULT_COLOR;
+  });
+
+  const handleColorChange = useCallback((color: string) => {
+    setPreviewColor(color);
+    localStorage.setItem(PREVIEW_COLOR_KEY, color);
+  }, []);
 
   // Clean up canvas ref on unmount
   useEffect(() => {
@@ -55,23 +293,20 @@ export function PreviewCanvas() {
     }))
   );
 
-  // Screen reader description of the current bin
+  // Screen reader description
   const binDescription = describeBin(params);
   const statusAnnouncement = getStatusAnnouncement(wasmStatus, generationStatus, hasMesh);
 
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
 
-  const setCameraPreset = useCallback((preset: CameraPreset) => {
-    const controls = controlsRef.current;
-    if (!controls) return;
-
-    const pos = CAMERA_POSITIONS[preset];
-    controls.object.up.set(0, 0, 1); // Maintain Z-up after orbit manipulation
-    controls.object.position.set(pos[0], pos[1], pos[2]);
-    controls.target.set(0, 0, 20);
-    controls.update();
-  }, []);
+  // Smooth camera preset transitions
+  const setCameraPreset = usePresetTransition(
+    controlsRef,
+    params.width,
+    params.depth,
+    params.height
+  );
 
   const resetView = useCallback(() => {
     setCameraPreset('isometric');
@@ -90,22 +325,21 @@ export function PreviewCanvas() {
     onRedo: redo,
   });
 
-  const [highContrast, setHighContrast] = useState(false);
-
-  const toggleHighContrast = useCallback(() => {
-    setHighContrast((hc) => !hc);
-  }, []);
-
   const handleRetry = useCallback(() => {
     if (wasmStatus === 'error') {
-      // WASM engine failed catastrophically — reload to re-initialize
       window.location.reload();
     } else {
-      // Generation error — re-trigger by nudging params
       const currentParams = useDesignerStore.getState().params;
       useDesignerStore.getState().setParams({ ...currentParams });
     }
   }, [wasmStatus]);
+
+  // Bin dimensions for scene elements
+  const { width, depth, height } = params;
+  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  const outerW = width * GRIDFINITY.GRID_SIZE;
+  const outerD = depth * GRIDFINITY.GRID_SIZE;
+  const shadowScale = Math.max(outerW, outerD) * 1.3;
 
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';
   const showOverlay = generationStatus === 'generating' && hasMesh;
@@ -116,12 +350,8 @@ export function PreviewCanvas() {
       role="img"
       aria-label={binDescription}
     >
-      {/* ARIA live region for status announcements (visually hidden) */}
-      <div
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
+      {/* ARIA live region for status announcements */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
         {statusAnnouncement}
       </div>
 
@@ -131,51 +361,66 @@ export function PreviewCanvas() {
         <>
           <Canvas
             camera={{
-              position: new Vector3(...DEFAULT_CAMERA),
+              position: new Vector3(100, -100, 80),
               fov: 45,
               near: 0.1,
-              far: 1000,
+              far: 2000,
             }}
             onCreated={({ camera, gl }) => {
-              // Must set up vector imperatively before OrbitControls reads it.
-              // The camera config 'up' prop doesn't apply early enough.
               camera.up.set(0, 0, 1);
-              camera.lookAt(0, 0, 20);
-              // Register canvas for thumbnail capture
+              camera.lookAt(0, 0, totalH / 2);
               setPreviewCanvas(gl.domElement);
             }}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
-            {/* Scene background (high contrast = dark) */}
-            <color attach="background" args={[highContrast ? '#1a1a2e' : '#f8f9fa']} />
+            {/* Gradient background */}
+            <GradientBackground />
 
-            {/* Lighting - boosted for high contrast */}
-            <ambientLight intensity={highContrast ? 0.6 : 0.4} />
-            <directionalLight position={[50, -50, 100]} intensity={highContrast ? 1.0 : 0.8} />
-            <directionalLight position={[-30, 40, 60]} intensity={highContrast ? 0.5 : 0.3} />
+            {/* 3-point lighting (matching main grid preview) */}
+            <hemisphereLight args={['#ffffff', '#1a1a2e', 0.65]} />
+            <directionalLight position={[-50, 60, 80]} intensity={0.85} color="#fff8f0" />
+            <directionalLight position={[40, -40, 30]} intensity={0.15} color="#e0e8ff" />
 
-            {/* Mesh */}
-            <BinMesh wireframe={wireframe} highContrast={highContrast} />
-
-            {/* Floor grid */}
-            <gridHelper
-              args={[200, 20, highContrast ? '#4a5568' : '#d1d5db', highContrast ? '#2d3748' : '#e5e7eb']}
-              rotation={[Math.PI / 2, 0, 0]}
-              position={[0, 0, 0]}
+            {/* Camera controller for auto-framing */}
+            <CameraController
+              controlsRef={controlsRef}
+              width={width}
+              depth={depth}
+              height={height}
             />
 
-            {/* Controls - Z-up orbit with polar limits to prevent flipping */}
+            {/* Bin mesh with vertex coloring */}
+            <BinMesh wireframe={wireframe} color={previewColor} />
+
+            {/* Contact shadows for grounding */}
+            <ContactShadows
+              position={[0, 0, 0.01]}
+              opacity={0.25}
+              scale={shadowScale}
+              blur={3}
+              far={totalH * 1.5}
+              resolution={128}
+              color="#000000"
+              frames={isInteracting ? 0 : Infinity}
+            />
+
+            {/* Footprint grid */}
+            <FootprintGrid width={width} depth={depth} />
+
+{/* Orbit controls - Z-up with polar limits */}
             <OrbitControls
               ref={controlsRef}
               makeDefault
-              target={[0, 0, 20]}
+              target={[0, 0, totalH / 2]}
               enableDamping
               dampingFactor={0.12}
               rotateSpeed={0.8}
               minDistance={20}
-              maxDistance={400}
+              maxDistance={800}
               maxPolarAngle={Math.PI * 0.85}
               minPolarAngle={Math.PI * 0.05}
+              onStart={() => setIsInteracting(true)}
+              onEnd={() => setIsInteracting(false)}
             />
           </Canvas>
 
@@ -195,9 +440,9 @@ export function PreviewCanvas() {
           {/* Control buttons */}
           <PreviewControls
             wireframe={wireframe}
-            highContrast={highContrast}
+            previewColor={previewColor}
             onWireframeToggle={toggleWireframe}
-            onHighContrastToggle={toggleHighContrast}
+            onColorChange={handleColorChange}
             onCameraPreset={setCameraPreset}
             onResetView={resetView}
           />
@@ -212,14 +457,6 @@ export function PreviewCanvas() {
 
 const TOUCH_HINT_KEY = 'gridfinity-designer-touch-hint-dismissed';
 
-/**
- * Displays a one-time, dismissible touch-gesture hint bar for touch-enabled, non-desktop devices.
- *
- * The hint appears on first visit when a touch device is detected and no prior dismissal is recorded.
- * Dismissing the hint hides it and persists the dismissal in localStorage so it does not reappear.
- *
- * @returns A React element rendering the touch hint bar, or `null` when the hint is not visible.
- */
 function TouchHint() {
   const { isTouchDevice, isDesktop } = useResponsive();
   const [visible, setVisible] = useState(false);
