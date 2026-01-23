@@ -137,18 +137,6 @@ export function validateBinParams(
     });
   }
 
-  // Floor thickness check
-  if (
-    params.floorThickness < DESIGNER_CONSTRAINTS.MIN_FLOOR_THICKNESS ||
-    params.floorThickness > DESIGNER_CONSTRAINTS.MAX_FLOOR_THICKNESS
-  ) {
-    return err({
-      code: 'FLOOR_THICKNESS_OUT_OF_RANGE',
-      message: `Floor thickness must be between ${DESIGNER_CONSTRAINTS.MIN_FLOOR_THICKNESS}mm and ${DESIGNER_CONSTRAINTS.MAX_FLOOR_THICKNESS}mm`,
-      field: 'floorThickness',
-    });
-  }
-
   // Scoop radius check (when not 'auto')
   if (params.scoop.enabled && typeof params.scoop.radius === 'number') {
     if (

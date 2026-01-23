@@ -67,8 +67,6 @@ export interface BinParams {
   readonly label: LabelConfig;
   readonly walls: WallConfig;
   readonly inserts: Insert[];
-  /** Floor thickness in mm (above base profile). Defaults to BOTTOM_THICKNESS (0.7mm) if omitted. */
-  readonly floorThickness: number;
 }
 
 // =============================================================================

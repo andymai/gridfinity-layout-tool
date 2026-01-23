@@ -374,13 +374,20 @@ function generateScoops(
 ): MeshData {
   const meshes: MeshData[] = [];
   const divX = params.dividers.x;
+  const divY = params.dividers.y;
 
   // Number of compartments along each axis
   const compCountX = divX + 1;
-  const compCountY = params.dividers.y + 1;
+  const compCountY = divY + 1;
 
-  const compWidth = innerWidth / compCountX;
-  const compDepth = innerDepth / compCountY;
+  // Account for divider thickness when computing compartment sizes
+  const dividerThickness = params.dividers.thickness;
+  const availableWidth = innerWidth - divX * dividerThickness;
+  const availableDepth = innerDepth - divY * dividerThickness;
+  const compWidth = availableWidth / compCountX;
+  const compDepth = availableDepth / compCountY;
+  const startX = -innerWidth / 2;
+  const startY = -innerDepth / 2;
 
   // Determine scoop radius
   let radius: number;
@@ -396,11 +403,11 @@ function generateScoops(
   const rowCount = params.scoop.allRows ? compCountY : 1;
 
   for (let iy = 0; iy < rowCount; iy++) {
-    // Y coordinate of the front edge of this compartment row
-    const rowFrontY = -innerDepth / 2 + iy * compDepth;
+    // Y coordinate of the front edge of this compartment row (skip over dividers)
+    const rowFrontY = startY + iy * (compDepth + dividerThickness);
 
     for (let ix = 0; ix < compCountX; ix++) {
-      const cx = -innerWidth / 2 + (ix + 0.5) * compWidth;
+      const cx = startX + ix * (compWidth + dividerThickness) + compWidth / 2;
 
       meshes.push(createScoop(
         cx,

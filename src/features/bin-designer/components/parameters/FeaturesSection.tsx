@@ -100,7 +100,11 @@ export function FeaturesSection() {
           <SliderInput
             label="Scoop radius"
             value={scoop.radius === 'auto' ? 0 : scoop.radius}
-            onChange={(v) => updateScoop({ radius: v === 0 ? 'auto' : v })}
+            onChange={(v) =>
+              updateScoop({
+                radius: v === 0 ? 'auto' : Math.max(v, DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS),
+              })
+            }
             min={0}
             max={DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS}
             step={0.5}

@@ -154,8 +154,11 @@ function generateCornerHoles(params: BinParams): MeshData {
  * is negligible (~2KB per hole) but dramatically improves print quality for
  * magnet fit tolerance.
  *
- * For fractional dimensions (e.g., 1.5 units), only full grid cells get holes
- * since partial cells don't have proper baseplate alignment points.
+ * Hole placement rules:
+ * - Bins smaller than 1 unit in either dimension get 4 corner holes at the bin's own corners.
+ * - Bins 1 unit or larger get holes at each full grid cell intersection (using floored cell counts).
+ * - Fractional portions beyond the last full grid cell (e.g., the 0.5 in a 1.5-unit bin)
+ *   do not receive additional holes beyond the standard grid pattern.
  */
 function generateAllCornerHoles(params: BinParams, radius: number, depth: number): MeshData {
   const meshes: MeshData[] = [];

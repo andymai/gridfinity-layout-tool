@@ -292,33 +292,6 @@ describe('validateBinParams', () => {
     });
   });
 
-  describe('floor thickness constraints', () => {
-    it('should reject floor thickness below minimum', () => {
-      const result = validateBinParams(makeParams({ floorThickness: 0.2 }));
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('FLOOR_THICKNESS_OUT_OF_RANGE');
-      }
-    });
-
-    it('should reject floor thickness above maximum', () => {
-      const result = validateBinParams(makeParams({ floorThickness: 6.0 }));
-      expect(isErr(result)).toBe(true);
-      if (isErr(result)) {
-        expect(result.error.code).toBe('FLOOR_THICKNESS_OUT_OF_RANGE');
-      }
-    });
-
-    it('should accept floor thickness at boundaries', () => {
-      expect(isOk(validateBinParams(makeParams({ floorThickness: 0.4 })))).toBe(true);
-      expect(isOk(validateBinParams(makeParams({ floorThickness: 5.0 })))).toBe(true);
-    });
-
-    it('should accept default floor thickness', () => {
-      expect(isOk(validateBinParams(makeParams({ floorThickness: 0.7 })))).toBe(true);
-    });
-  });
-
   describe('scoop radius constraints', () => {
     it('should accept auto radius', () => {
       const result = validateBinParams(

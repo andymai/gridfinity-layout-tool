@@ -48,9 +48,6 @@ describe('DEFAULT_BIN_PARAMS', () => {
     expect(DEFAULT_BIN_PARAMS.scoop.allRows).toBe(false);
   });
 
-  it('should have floor thickness', () => {
-    expect(DEFAULT_BIN_PARAMS.floorThickness).toBe(0.7);
-  });
 });
 
 describe('migrateParams', () => {
@@ -78,16 +75,6 @@ describe('migrateParams', () => {
     const result = migrateParams({ scoop: { enabled: true } as any });
     expect(result.scoop.radius).toBe('auto');
     expect(result.scoop.allRows).toBe(false);
-  });
-
-  it('should add floorThickness when missing', () => {
-    const result = migrateParams({ width: 3 });
-    expect(result.floorThickness).toBe(DEFAULT_BIN_PARAMS.floorThickness);
-  });
-
-  it('should preserve provided floorThickness', () => {
-    const result = migrateParams({ floorThickness: 1.5 });
-    expect(result.floorThickness).toBe(1.5);
   });
 
   it('should produce valid params from empty input', () => {

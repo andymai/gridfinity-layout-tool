@@ -117,7 +117,7 @@ describe('validateDesignerShare', () => {
     it('accepts boundary dimensions', () => {
       const payload = validPayload();
       payload.params.width = 0.5;
-      payload.params.depth = 6;
+      payload.params.depth = 8;
       payload.params.height = 2;
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(true);

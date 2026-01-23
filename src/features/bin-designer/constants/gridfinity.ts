@@ -76,8 +76,6 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_HISTORY: 50, // undo/redo states
   MAGNET_MIN_DEPTH: 2.0, // mm
   MAGNET_MAX_DEPTH: 4.0, // mm
-  MIN_FLOOR_THICKNESS: 0.4, // mm (minimum printable floor)
-  MAX_FLOOR_THICKNESS: 5.0, // mm (thick floors for heavy items)
   MIN_SCOOP_RADIUS: 2.0, // mm (minimum useful scoop)
   MAX_SCOOP_RADIUS: 30.0, // mm (large scoops for deep bins)
 } as const;

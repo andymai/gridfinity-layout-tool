@@ -96,6 +96,17 @@ describe('generateFileName', () => {
       expect(name).toBe('gridfinity_2x2x3_rugged_dividers_scoop_label_magnets.stl');
     });
 
+    it('should include magnets+screws for magnet_and_screw base style', () => {
+      const name = generateFileName(
+        makeParams({
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw' },
+        }),
+        'stl',
+        'descriptive'
+      );
+      expect(name).toBe('gridfinity_2x2x3_magnets+screws.stl');
+    });
+
     it('should default to descriptive style', () => {
       const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl');
       expect(name).toBe('gridfinity_2x2x3.stl');

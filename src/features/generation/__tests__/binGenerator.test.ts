@@ -512,8 +512,6 @@ describe('binGenerator', () => {
       expect(mesh.vertices.length % 9).toBe(0);
     });
 
-    // ─── Per-Compartment Label Tab Tests ──────────────────────────────────────
-
     it('label tab with Y dividers only does not split into multiple tabs', () => {
       const noDiv = generateBinGeometry({
         ...DEFAULT_BIN_PARAMS,

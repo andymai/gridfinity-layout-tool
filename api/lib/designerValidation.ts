@@ -264,8 +264,15 @@ export function validateDesignerShare(
 
   // Scoop (accept both legacy boolean and new ScoopConfig format)
   if (isObject(params.scoop)) {
-    if (!isBoolean((params.scoop as Record<string, unknown>).enabled)) {
+    const scoopObj = params.scoop as Record<string, unknown>;
+    if (!isBoolean(scoopObj.enabled)) {
       return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop.enabled must be boolean' } };
+    }
+    if (scoopObj.radius !== undefined && scoopObj.radius !== 'auto' && !isNumber(scoopObj.radius)) {
+      return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop.radius must be "auto" or a number' } };
+    }
+    if (scoopObj.allRows !== undefined && !isBoolean(scoopObj.allRows)) {
+      return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop.allRows must be boolean' } };
     }
   } else if (!isBoolean(params.scoop)) {
     return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop must be boolean or object with enabled field' } };

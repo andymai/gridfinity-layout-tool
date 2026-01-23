@@ -39,7 +39,6 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     right: 0,
   },
   inserts: [],
-  floorThickness: 0.7,
 } as const;
 
 /** Default generation state */
@@ -91,6 +90,5 @@ export function migrateParams(params: Partial<BinParams>): BinParams {
     label: { ...DEFAULT_BIN_PARAMS.label, ...(params.label ?? {}) },
     walls: { ...DEFAULT_BIN_PARAMS.walls, ...(params.walls ?? {}) },
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
-    floorThickness: params.floorThickness ?? DEFAULT_BIN_PARAMS.floorThickness,
   };
 }
