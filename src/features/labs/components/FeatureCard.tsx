@@ -42,8 +42,8 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
           <div
             className={`flex items-start gap-2 text-xs p-2.5 rounded mb-3 ${
               feature.risk === 'high'
-                ? 'bg-red-500/10 text-red-400'
-                : 'bg-amber-500/10 text-amber-400'
+                ? 'bg-danger-muted text-danger'
+                : 'bg-warning-muted text-warning'
             }`}
           >
             <WarningIcon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />

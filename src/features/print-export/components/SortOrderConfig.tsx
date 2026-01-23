@@ -202,7 +202,7 @@ function SortFieldItem({
           type="button"
           onClick={onMoveUp}
           disabled={isFirst}
-          className="p-0.5 text-content-tertiary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title="Move up"
           aria-label={`Move ${SORT_FIELD_LABELS[config.field]} up`}
         >
@@ -220,7 +220,7 @@ function SortFieldItem({
           type="button"
           onClick={onMoveDown}
           disabled={isLast}
-          className="p-0.5 text-content-tertiary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title="Move down"
           aria-label={`Move ${SORT_FIELD_LABELS[config.field]} down`}
         >
