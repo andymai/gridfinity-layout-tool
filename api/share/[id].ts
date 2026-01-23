@@ -3,7 +3,13 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from '../lib/rateLimit.js';
 import { validateShareLayout, isValidationError } from '../lib/validation.js';
 import { filterLayoutContent } from '../lib/contentFilter.js';
-import { isValidShareId, hashToken, ErrorCode, type ShareData } from '../lib/shared.js';
+import {
+  isValidShareId,
+  hashToken,
+  timingSafeCompare,
+  ErrorCode,
+  type ShareData,
+} from '../lib/shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = req.query;
@@ -148,9 +154,9 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
 
     const existingData = (await response.json()) as ShareData;
 
-    // Verify delete token
+    // Verify delete token (constant-time comparison prevents timing attacks)
     const tokenHash = await hashToken(deleteToken);
-    if (tokenHash !== existingData.metadata.deleteTokenHash) {
+    if (!timingSafeCompare(tokenHash, existingData.metadata.deleteTokenHash)) {
       return res.status(401).json({
         error: 'Invalid delete token',
         code: ErrorCode.UNAUTHORIZED,
@@ -300,9 +306,9 @@ async function handleDelete(
 
     const existingData = (await response.json()) as ShareData;
 
-    // Verify delete token
+    // Verify delete token (constant-time comparison prevents timing attacks)
     const tokenHash = await hashToken(deleteToken);
-    if (tokenHash !== existingData.metadata.deleteTokenHash) {
+    if (!timingSafeCompare(tokenHash, existingData.metadata.deleteTokenHash)) {
       return res.status(401).json({
         error: 'Invalid delete token',
         code: ErrorCode.UNAUTHORIZED,
@@ -326,10 +332,14 @@ async function handleDelete(
 }
 
 /**
- * Get base URL from request headers.
+ * Get base URL from environment (not request headers, to prevent open redirects).
  */
-function getBaseUrl(req: VercelRequest): string {
-  const protocol = req.headers['x-forwarded-proto'] || 'https';
-  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:3000';
-  return `${protocol}://${host}`;
+function getBaseUrl(_req: VercelRequest): string {
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'https://localhost:3000';
 }
