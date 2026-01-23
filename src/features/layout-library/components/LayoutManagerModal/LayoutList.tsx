@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import type { LayoutEntry, Layout } from '@/core/types';
 import { LayoutListItem } from './LayoutListItem';
 import { useLayoutStore } from '@/core/store/layout';
@@ -44,17 +44,21 @@ export function LayoutList({
   const showSearch = entries.length >= SEARCH_THRESHOLD;
 
   // Filter and sort entries: active first, then by modifiedAt descending
-  const sortedEntries = [...entries]
-    .filter((entry) => {
-      if (!searchQuery.trim()) return true;
-      const query = searchQuery.toLowerCase();
-      return entry.name.toLowerCase().includes(query);
-    })
-    .sort((a, b) => {
-      if (a.id === activeLayoutId) return -1;
-      if (b.id === activeLayoutId) return 1;
-      return b.modifiedAt - a.modifiedAt;
-    });
+  const sortedEntries = useMemo(
+    () =>
+      [...entries]
+        .filter((entry) => {
+          if (!searchQuery.trim()) return true;
+          const query = searchQuery.toLowerCase();
+          return entry.name.toLowerCase().includes(query);
+        })
+        .sort((a, b) => {
+          if (a.id === activeLayoutId) return -1;
+          if (b.id === activeLayoutId) return 1;
+          return b.modifiedAt - a.modifiedAt;
+        }),
+    [entries, searchQuery, activeLayoutId]
+  );
 
   // Handle search input change - reset focus to first item
   const handleSearchChange = useCallback((value: string) => {
