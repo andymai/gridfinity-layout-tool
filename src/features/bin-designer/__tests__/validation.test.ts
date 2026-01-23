@@ -83,46 +83,62 @@ describe('validateBinParams', () => {
     });
   });
 
-  describe('divider constraints', () => {
-    it('should reject negative dividers', () => {
+  describe('compartment constraints', () => {
+    it('should reject cols below minimum', () => {
       const result = validateBinParams(
-        makeParams({ dividers: { x: -1, y: 0, thickness: 1.2 } })
+        makeParams({ compartments: { cols: 0, rows: 1, thickness: 1.2, cells: [] } })
       );
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
-        expect(result.error.code).toBe('DIVIDER_OUT_OF_RANGE');
+        expect(result.error.code).toBe('COMPARTMENT_GRID_OUT_OF_RANGE');
       }
     });
 
-    it('should reject too many dividers', () => {
+    it('should reject cols above maximum', () => {
       const result = validateBinParams(
-        makeParams({ dividers: { x: 11, y: 0, thickness: 1.2 } })
+        makeParams({ compartments: { cols: 9, rows: 1, thickness: 1.2, cells: Array(9).fill(0).map((_, i) => i) } })
       );
       expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('COMPARTMENT_GRID_OUT_OF_RANGE');
+      }
     });
 
     it('should reject thickness below minimum', () => {
       const result = validateBinParams(
-        makeParams({ dividers: { x: 1, y: 1, thickness: 0.5 } })
+        makeParams({ compartments: { cols: 2, rows: 1, thickness: 0.5, cells: [0, 1] } })
       );
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
-        expect(result.error.code).toBe('DIVIDER_THICKNESS_OUT_OF_RANGE');
+        expect(result.error.code).toBe('COMPARTMENT_THICKNESS_OUT_OF_RANGE');
       }
     });
 
     it('should reject thickness above maximum', () => {
       const result = validateBinParams(
-        makeParams({ dividers: { x: 1, y: 1, thickness: 3.0 } })
+        makeParams({ compartments: { cols: 2, rows: 1, thickness: 3.0, cells: [0, 1] } })
       );
       expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('COMPARTMENT_THICKNESS_OUT_OF_RANGE');
+      }
     });
 
-    it('should accept valid divider config', () => {
+    it('should accept valid compartment config', () => {
       const result = validateBinParams(
-        makeParams({ dividers: { x: 3, y: 2, thickness: 1.2 } })
+        makeParams({ compartments: { cols: 4, rows: 3, thickness: 1.2, cells: Array(12).fill(0).map((_, i) => i) } })
       );
       expect(isOk(result)).toBe(true);
+    });
+
+    it('should reject cells array length mismatch', () => {
+      const result = validateBinParams(
+        makeParams({ compartments: { cols: 3, rows: 2, thickness: 1.2, cells: [0, 1, 2] } })
+      );
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('COMPARTMENT_CELLS_MISMATCH');
+      }
     });
   });
 
@@ -304,14 +320,14 @@ describe('validateBinParams', () => {
   });
 
   describe('compartment size validation', () => {
-    it('should reject dividers that create too-small compartments', () => {
+    it('should reject cols that create too-small compartments', () => {
       // 1-unit bin = 42mm outer, ~39.6mm inner after walls
-      // 8 X dividers = 9 compartments of ~4mm each = too small (< 5mm)
+      // 8 columns = 7 dividers consuming thickness, remaining/8 < 5mm each
       const result = validateBinParams(
         makeParams({
           width: 1,
           depth: 1,
-          dividers: { x: 8, y: 0, thickness: 1.2 },
+          compartments: { cols: 8, rows: 1, thickness: 1.2, cells: Array(8).fill(0).map((_, i) => i) },
         })
       );
       expect(isErr(result)).toBe(true);
@@ -320,12 +336,12 @@ describe('validateBinParams', () => {
       }
     });
 
-    it('should reject Y dividers that create too-small compartments', () => {
+    it('should reject rows that create too-small compartments', () => {
       const result = validateBinParams(
         makeParams({
           width: 1,
           depth: 1,
-          dividers: { x: 0, y: 8, thickness: 1.2 },
+          compartments: { cols: 1, rows: 8, thickness: 1.2, cells: Array(8).fill(0).map((_, i) => i) },
         })
       );
       expect(isErr(result)).toBe(true);
@@ -334,47 +350,47 @@ describe('validateBinParams', () => {
       }
     });
 
-    it('should accept reasonable divider count for bin size', () => {
+    it('should accept reasonable compartment count for bin size', () => {
       // 2-unit bin = 84mm outer, ~81.6mm inner
-      // 2 dividers = 3 compartments of ~26mm each = fine
+      // 3 columns of ~26mm each = fine
       const result = validateBinParams(
         makeParams({
           width: 2,
           depth: 2,
-          dividers: { x: 2, y: 2, thickness: 1.2 },
+          compartments: { cols: 3, rows: 3, thickness: 1.2, cells: Array(9).fill(0).map((_, i) => i) },
         })
       );
       expect(isOk(result)).toBe(true);
     });
 
-    it('should accept zero dividers', () => {
+    it('should accept single-cell compartment', () => {
       const result = validateBinParams(
-        makeParams({ dividers: { x: 0, y: 0, thickness: 1.2 } })
+        makeParams({ compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] } })
       );
       expect(isOk(result)).toBe(true);
     });
 
     it('should account for divider thickness in compartment size', () => {
-      // Thick dividers leave less room for compartments
-      // 1-unit bin (inner ~39.6mm), 6 dividers at 2.0mm = 12mm divider space
-      // Remaining: 27.6mm / 7 compartments = 3.94mm each < 5mm min
+      // Thick dividers leave less room
+      // 1-unit bin (inner ~39.6mm), 7 cols with 6 dividers at 2.0mm = 12mm divider space
+      // Remaining: 27.6mm / 7 = ~3.9mm < 5mm min
       const result = validateBinParams(
         makeParams({
           width: 1,
           depth: 1,
-          dividers: { x: 6, y: 0, thickness: 2.0 },
+          compartments: { cols: 7, rows: 1, thickness: 2.0, cells: Array(7).fill(0).map((_, i) => i) },
         })
       );
       expect(isErr(result)).toBe(true);
     });
 
-    it('should allow maximum dividers on large bins', () => {
-      // 8-unit bin can handle many dividers
+    it('should allow maximum cols on large bins', () => {
+      // 8-unit bin can handle many columns
       const result = validateBinParams(
         makeParams({
           width: 8,
           depth: 8,
-          dividers: { x: 10, y: 10, thickness: 1.2 },
+          compartments: { cols: 8, rows: 8, thickness: 1.2, cells: Array(64).fill(0).map((_, i) => i) },
         })
       );
       expect(isOk(result)).toBe(true);

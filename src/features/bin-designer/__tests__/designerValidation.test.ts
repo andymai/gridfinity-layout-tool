@@ -25,7 +25,7 @@ function validPayload() {
         screwDiameter: 3,
         stackingLip: true,
       },
-      dividers: { x: 0, y: 0, thickness: 1.2 },
+      compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
       label: { enabled: false, text: '', fontSize: 'auto' },
       walls: { front: 0, back: 0, left: 0, right: 0 },
       inserts: [],
@@ -158,19 +158,35 @@ describe('validateDesignerShare', () => {
     });
   });
 
-  describe('dividers validation', () => {
-    it('rejects dividers exceeding max', () => {
+  describe('compartments validation', () => {
+    it('rejects cols exceeding max', () => {
       const payload = validPayload();
-      payload.params.dividers.x = 15;
+      payload.params.compartments.cols = 15;
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
     });
 
-    it('rejects divider thickness out of range', () => {
+    it('rejects compartment thickness out of range', () => {
       const payload = validPayload();
-      payload.params.dividers.thickness = 5;
+      payload.params.compartments.thickness = 5;
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
+    });
+
+    it('accepts legacy dividers format', () => {
+      const payload = validPayload();
+      // Remove compartments, add legacy dividers
+      delete (payload.params as Record<string, unknown>).compartments;
+      (payload.params as Record<string, unknown>).dividers = { x: 0, y: 0, thickness: 1.2 };
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+    });
+
+    it('accepts payload with no compartments or dividers', () => {
+      const payload = validPayload();
+      delete (payload.params as Record<string, unknown>).compartments;
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
     });
   });
 

@@ -7,7 +7,7 @@
 import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
 import type { BinParams } from '../types';
-import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '../constants';
+import { DESIGNER_CONSTRAINTS, GRIDFINITY, WALL_THICKNESS_OPTIONS } from '../constants';
 
 /** Tolerance for floating-point step comparisons */
 const EPSILON = 1e-10;
@@ -16,6 +16,11 @@ const EPSILON = 1e-10;
 function isValidStep(value: number, step: number): boolean {
   const remainder = Math.abs(value % step);
   return remainder < EPSILON || Math.abs(remainder - step) < EPSILON;
+}
+
+/** Check if a value matches one of the allowed wall thickness options */
+function isValidThickness(value: number): boolean {
+  return WALL_THICKNESS_OPTIONS.some((opt) => Math.abs(opt - value) < EPSILON);
 }
 
 /** Designer-specific validation error */
@@ -82,14 +87,11 @@ export function validateBinParams(
     });
   }
 
-  // Wall thickness check
-  if (
-    params.wallThickness < DESIGNER_CONSTRAINTS.MIN_WALL_THICKNESS ||
-    params.wallThickness > DESIGNER_CONSTRAINTS.MAX_WALL_THICKNESS
-  ) {
+  // Wall thickness check (must be a nozzle-size multiple)
+  if (!isValidThickness(params.wallThickness)) {
     return err({
       code: 'WALL_THICKNESS_OUT_OF_RANGE',
-      message: `Wall thickness must be between ${DESIGNER_CONSTRAINTS.MIN_WALL_THICKNESS}mm and ${DESIGNER_CONSTRAINTS.MAX_WALL_THICKNESS}mm`,
+      message: `Wall thickness must be one of: ${WALL_THICKNESS_OPTIONS.join(', ')}mm`,
       field: 'wallThickness',
     });
   }
@@ -134,29 +136,39 @@ export function validateBinParams(
     }
   }
 
-  // Divider checks
-  if (params.dividers.x < 0 || params.dividers.x > DESIGNER_CONSTRAINTS.MAX_DIVIDERS) {
+  // Compartment grid checks
+  if (
+    params.compartments.cols < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID ||
+    params.compartments.cols > DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID
+  ) {
     return err({
-      code: 'DIVIDER_OUT_OF_RANGE',
-      message: `X dividers must be between 0 and ${DESIGNER_CONSTRAINTS.MAX_DIVIDERS}`,
-      field: 'dividers.x',
-    });
-  }
-  if (params.dividers.y < 0 || params.dividers.y > DESIGNER_CONSTRAINTS.MAX_DIVIDERS) {
-    return err({
-      code: 'DIVIDER_OUT_OF_RANGE',
-      message: `Y dividers must be between 0 and ${DESIGNER_CONSTRAINTS.MAX_DIVIDERS}`,
-      field: 'dividers.y',
+      code: 'COMPARTMENT_GRID_OUT_OF_RANGE',
+      message: `Columns must be between ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID} and ${DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}`,
+      field: 'compartments.cols',
     });
   }
   if (
-    params.dividers.thickness < DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS ||
-    params.dividers.thickness > DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS
+    params.compartments.rows < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID ||
+    params.compartments.rows > DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID
   ) {
     return err({
-      code: 'DIVIDER_THICKNESS_OUT_OF_RANGE',
-      message: `Divider thickness must be between ${DESIGNER_CONSTRAINTS.MIN_DIVIDER_THICKNESS}mm and ${DESIGNER_CONSTRAINTS.MAX_DIVIDER_THICKNESS}mm`,
-      field: 'dividers.thickness',
+      code: 'COMPARTMENT_GRID_OUT_OF_RANGE',
+      message: `Rows must be between ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID} and ${DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}`,
+      field: 'compartments.rows',
+    });
+  }
+  if (!isValidThickness(params.compartments.thickness)) {
+    return err({
+      code: 'COMPARTMENT_THICKNESS_OUT_OF_RANGE',
+      message: `Divider thickness must be one of: ${WALL_THICKNESS_OPTIONS.join(', ')}mm`,
+      field: 'compartments.thickness',
+    });
+  }
+  if (params.compartments.cells.length !== params.compartments.cols * params.compartments.rows) {
+    return err({
+      code: 'COMPARTMENT_CELLS_MISMATCH',
+      message: 'Compartment cells array length must equal cols × rows',
+      field: 'compartments.cells',
     });
   }
 
@@ -203,30 +215,32 @@ export function validateBinParams(
     }
   }
 
-  // Compartment size validation (ensures dividers don't create impossibly thin sections)
-  if (params.dividers.x > 0 || params.dividers.y > 0) {
+  // Compartment size validation (ensures grid cells aren't impossibly thin)
+  if (params.compartments.cols > 1 || params.compartments.rows > 1) {
     const innerWidth = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
     const innerDepth = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
 
-    if (params.dividers.x > 0) {
-      const totalDividerWidth = params.dividers.x * params.dividers.thickness;
-      const compartmentWidth = (innerWidth - totalDividerWidth) / (params.dividers.x + 1);
-      if (compartmentWidth < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
+    if (params.compartments.cols > 1) {
+      const maxDividers = params.compartments.cols - 1;
+      const totalDividerWidth = maxDividers * params.compartments.thickness;
+      const cellWidth = (innerWidth - totalDividerWidth) / params.compartments.cols;
+      if (cellWidth < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
         return err({
           code: 'COMPARTMENT_TOO_SMALL',
-          message: `Too many X dividers: compartments would be ${compartmentWidth.toFixed(1)}mm wide (min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm)`,
-          field: 'dividers.x',
+          message: `Too many columns: cells would be ${cellWidth.toFixed(1)}mm wide (min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm)`,
+          field: 'compartments.cols',
         });
       }
     }
-    if (params.dividers.y > 0) {
-      const totalDividerDepth = params.dividers.y * params.dividers.thickness;
-      const compartmentDepth = (innerDepth - totalDividerDepth) / (params.dividers.y + 1);
-      if (compartmentDepth < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
+    if (params.compartments.rows > 1) {
+      const maxDividers = params.compartments.rows - 1;
+      const totalDividerDepth = maxDividers * params.compartments.thickness;
+      const cellDepth = (innerDepth - totalDividerDepth) / params.compartments.rows;
+      if (cellDepth < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
         return err({
           code: 'COMPARTMENT_TOO_SMALL',
-          message: `Too many Y dividers: compartments would be ${compartmentDepth.toFixed(1)}mm deep (min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm)`,
-          field: 'dividers.y',
+          message: `Too many rows: cells would be ${cellDepth.toFixed(1)}mm deep (min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm)`,
+          field: 'compartments.rows',
         });
       }
     }
