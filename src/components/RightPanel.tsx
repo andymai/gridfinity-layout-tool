@@ -4,7 +4,7 @@ import { useUIStore, useLayoutStore } from '@/core/store';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { exportPrintListTSV } from '@/core/storage';
 import { trackLayoutSnapshot } from '@/utils/analytics';
-import { ConfirmDialog, CollapsibleSection } from '@/shared/components';
+import { ConfirmDialog, CollapsibleSection, LoadingFallback } from '@/shared/components';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 
 const BinListModal = lazyWithRetry(() =>
@@ -61,12 +61,12 @@ export function RightPanel() {
       <aside
         data-inspector
         className="flex-shrink-0 flex flex-col transition-all duration-200 ease-in-out bg-surface-secondary border-l border-stroke-subtle"
-        style={{ width: '40px' }}
+        style={{ width: '48px' }}
       >
-        <div className="flex flex-col items-center py-3">
+        <div className="flex flex-col items-center py-2">
           <button
             onClick={toggle}
-            className="p-1 rounded transition-colors text-content-secondary hover:bg-surface-hover hover:text-content"
+            className="btn btn-ghost btn-icon"
             title="Expand panel"
             aria-label="Expand right panel"
           >
@@ -87,7 +87,7 @@ export function RightPanel() {
   const collapseButton = (
     <button
       onClick={toggle}
-      className="flex-shrink-0 p-1 rounded transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
+      className="flex-shrink-0 p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
       title="Collapse panel"
       aria-label="Collapse right panel"
     >
@@ -105,7 +105,7 @@ export function RightPanel() {
   return (
     <aside
       data-inspector
-      className="flex-shrink-0 flex flex-col h-full overflow-hidden transition-all duration-200 ease-in-out bg-surface-secondary border-l border-stroke-subtle"
+      className="flex-shrink-0 flex flex-col h-full overflow-hidden transition-all duration-200 ease-in-out bg-surface-secondary border-l border-stroke-subtle animate-fade-in"
       style={{ width: '288px' }}
     >
       {/* Header */}
@@ -476,7 +476,7 @@ export function RightPanel() {
 
       {/* Expanded Bin List Modal */}
       {binListModalOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading bin list" />}>
           <BinListModal isOpen={binListModalOpen} onClose={() => setBinListModalOpen(false)} />
         </Suspense>
       )}

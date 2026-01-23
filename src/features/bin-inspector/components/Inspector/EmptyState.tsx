@@ -67,7 +67,27 @@ export function EmptyState({ variant }: EmptyStateProps) {
         </svg>
       </div>
       <p className="text-sm text-content-secondary mb-1">No bin selected</p>
-      <p className="text-xs text-content-disabled">Click a bin to edit its properties</p>
+      <p className="text-xs text-content-disabled mb-3">Click a bin or drag to create one</p>
+      <div className="text-left text-xs space-y-1.5 text-content-tertiary w-full">
+        <div className="flex items-center gap-2">
+          <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
+            Drag
+          </kbd>
+          <span>Draw a new bin</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
+            Ctrl+D
+          </kbd>
+          <span>Duplicate selected</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
+            L
+          </kbd>
+          <span>Quick label</span>
+        </div>
+      </div>
     </div>
   );
 }

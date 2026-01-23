@@ -10,6 +10,7 @@ import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { HalfBinModeBlockedModal } from '@/components/Modals';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useResponsive } from '@/shared/hooks';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
@@ -90,10 +91,10 @@ export function Sidebar() {
     >
       {collapsed ? (
         // Collapsed state - just show expand button
-        <div className="flex flex-col items-center py-3">
+        <div className="flex flex-col items-center py-2">
           <button
             onClick={toggle}
-            className="p-1 rounded transition-colors text-content-secondary hover:bg-surface-hover hover:text-content"
+            className="btn btn-ghost btn-icon"
             title="Expand panel"
             aria-label="Expand left panel"
           >
@@ -109,7 +110,7 @@ export function Sidebar() {
         </div>
       ) : (
         // Expanded state
-        <>
+        <div className="flex flex-col h-full animate-fade-in">
           <div
             className={`flex items-center gap-3 px-4 py-3 border-b border-stroke-subtle transition-shadow duration-200 ${
               isScrolled ? 'shadow-[0_2px_8px_rgba(0,0,0,0.5)]' : ''
@@ -120,7 +121,7 @@ export function Sidebar() {
             </h2>
             <button
               onClick={() => setShowSettingsModal(true)}
-              className="p-1 rounded transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
+              className="p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
               title="Settings"
               aria-label="Open settings"
             >
@@ -141,7 +142,7 @@ export function Sidebar() {
             </button>
             <button
               onClick={toggle}
-              className="p-1 rounded transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
+              className="p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
               title="Collapse panel"
               aria-label="Collapse left panel"
             >
@@ -537,7 +538,7 @@ export function Sidebar() {
               </a>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {halfBinViolation && (
@@ -550,7 +551,7 @@ export function Sidebar() {
       )}
 
       {showInspirationGallery && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading gallery" />}>
           <InspirationGallery
             isOpen={showInspirationGallery}
             onClose={() => setShowInspirationGallery(false)}
@@ -559,7 +560,7 @@ export function Sidebar() {
       )}
 
       {showSettingsModal && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading settings" />}>
           <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
         </Suspense>
       )}

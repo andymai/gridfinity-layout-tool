@@ -28,6 +28,7 @@ import { RightPanel } from './components/RightPanel';
 import { DropZones } from './components/DropZones';
 import { DragPreview } from './components/DragPreview';
 import { ToastContainer } from './shared/components/Toast';
+import { LoadingFallback } from './shared/components/LoadingFallback';
 import { PanelErrorBoundary } from './components/PanelErrorBoundary';
 // Import directly to avoid pulling in entire Mobile barrel (67 KB MobileLayoutsPanel etc.)
 import { BinContextMenuWrapper } from './components/Mobile/BinContextMenuWrapper';
@@ -232,7 +233,7 @@ export default function App() {
   const wrapWithMutations = (content: React.ReactNode) => {
     if (isCollaborative && shareId) {
       return (
-        <Suspense fallback={<div className="h-screen bg-surface" />}>
+        <Suspense fallback={<LoadingFallback label="Loading collaboration" />}>
           <CollabProvider shareId={shareId}>{content}</CollabProvider>
         </Suspense>
       );
@@ -242,10 +243,45 @@ export default function App() {
 
   if (initialLoadError) {
     return (
-      <div className="h-screen flex items-center justify-center bg-red-900 text-white">
-        <div>
-          <h1>Error loading app</h1>
-          <pre>{initialLoadError.message}</pre>
+      <div className="h-screen flex items-center justify-center bg-surface p-8" role="alert">
+        <div className="max-w-md text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-error-muted flex items-center justify-center">
+            <svg
+              className="w-7 h-7 text-error"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-lg font-semibold mb-2 text-content">Unable to load app</h1>
+          <p className="text-sm text-content-secondary mb-4">
+            There was a problem loading your saved data. This is usually caused by corrupted
+            storage. Try clearing your browser data for this site.
+          </p>
+          <pre className="text-left text-xs rounded-lg p-3 mb-4 overflow-auto max-h-24 text-error bg-surface-elevated border border-stroke-subtle">
+            {initialLoadError.message}
+          </pre>
+          <button
+            onClick={() => {
+              try {
+                localStorage.clear();
+              } catch {
+                /* ignore */
+              }
+              window.location.reload();
+            }}
+            className="btn btn-primary"
+          >
+            Clear Data & Reload
+          </button>
         </div>
       </div>
     );
@@ -254,18 +290,17 @@ export default function App() {
   // Bin Designer route - lazy loaded, behind feature flag
   if (isDesignerRoute && isDesignerEnabled) {
     return (
-      <Suspense fallback={<div className="h-screen bg-gray-50" />}>
+      <Suspense fallback={<LoadingFallback label="Loading designer" />}>
         <DesignerPage onNavigateBack={navigateToPlanner} />
       </Suspense>
     );
   }
 
-
   // Mobile layout - lazy loaded
   if (isMobile) {
     return wrapWithMutations(
       <div className="h-screen animate-fade-in">
-        <Suspense fallback={<div className="h-screen bg-surface" />}>
+        <Suspense fallback={<LoadingFallback label="Loading mobile layout" />}>
           <MobileLayout
             isMobileHelpOpen={isMobileHelpOpen}
             setIsMobileHelpOpen={setIsMobileHelpOpen}
@@ -328,7 +363,7 @@ export default function App() {
 
         {/* Modals */}
         {isHelpOpen && (
-          <Suspense fallback={null}>
+          <Suspense fallback={<LoadingFallback variant="overlay" label="Loading help" />}>
             <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet />
           </Suspense>
         )}
@@ -373,6 +408,11 @@ export default function App() {
   // Desktop layout
   return wrapWithMutations(
     <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
+      {/* Skip to content link for keyboard navigation */}
+      <a href="#main-grid" className="skip-to-content">
+        Skip to grid editor
+      </a>
+
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
       {hasSharedLayoutPreview && (
         <Suspense fallback={null}>
@@ -391,7 +431,11 @@ export default function App() {
         </PanelErrorBoundary>
 
         {/* Grid area */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-surface">
+        <main
+          id="main-grid"
+          className="flex-1 flex flex-col overflow-hidden bg-surface"
+          tabIndex={-1}
+        >
           <Grid />
           <Staging />
         </main>
@@ -410,7 +454,7 @@ export default function App() {
 
       {/* Modals */}
       {isHelpOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading help" />}>
           <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
         </Suspense>
       )}

@@ -198,7 +198,10 @@ export function LayoutPreviewOverlay({
                           className="max-w-full max-h-full"
                         />
                       </div>
-                      <div className="text-xs font-medium text-content truncate">
+                      <div
+                        className="text-xs font-medium text-content truncate"
+                        title={related.name}
+                      >
                         {related.name}
                       </div>
                       <div className="text-[10px] text-content-tertiary">
@@ -283,9 +286,9 @@ function DrawerSizeInfo({
 }) {
   if (matchesCurrent) {
     return (
-      <div className="flex items-start gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+      <div className="flex items-start gap-2 p-3 rounded-lg bg-success-muted border border-success/20">
         <svg
-          className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5"
+          className="w-5 h-5 text-success shrink-0 mt-0.5"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -293,8 +296,8 @@ function DrawerSizeInfo({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
         <div>
-          <div className="text-sm font-medium text-emerald-600">Matches your drawer</div>
-          <div className="text-xs text-emerald-600/70">
+          <div className="text-sm font-medium text-success">Matches your drawer</div>
+          <div className="text-xs text-success/70">
             Same size as your current {currentSize.width}×{currentSize.depth} drawer
           </div>
         </div>

@@ -54,7 +54,7 @@ describe('ImportModal', () => {
       const { getByLabelText } = renderModal();
 
       act(() => {
-        fireEvent.click(getByLabelText('Close'));
+        fireEvent.click(getByLabelText('Close import dialog'));
       });
 
       expect(mockOnClose).toHaveBeenCalled();

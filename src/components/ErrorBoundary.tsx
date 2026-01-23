@@ -45,14 +45,15 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="h-screen flex items-center justify-center bg-zinc-900 text-zinc-100 p-8">
+        <div className="h-screen flex items-center justify-center bg-surface p-8" role="alert">
           <div className="max-w-lg text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-900/50 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-error-muted flex items-center justify-center">
               <svg
-                className="w-8 h-8 text-red-400"
+                className="w-8 h-8 text-error"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -62,26 +63,24 @@ export class ErrorBoundary extends Component<Props, State> {
                 />
               </svg>
             </div>
-            <h1 className="text-xl font-semibold mb-2">Something went wrong</h1>
-            <p className="text-zinc-400 mb-6">
-              An unexpected error occurred. You can try again or reset the app data.
+            <h1 className="text-xl font-semibold mb-2 text-content">Something went wrong</h1>
+            <p className="text-content-secondary mb-2">
+              The app encountered an unexpected error. Your layout data is safe.
+            </p>
+            <p className="text-sm text-content-tertiary mb-6">
+              Try refreshing the page. If the problem persists, resetting app data will restore
+              defaults while your browser may still have cached data.
             </p>
             {this.state.error && (
-              <pre className="text-left text-xs bg-zinc-800 rounded p-3 mb-6 overflow-auto max-h-32 text-red-300">
+              <pre className="text-left text-xs rounded-lg p-3 mb-6 overflow-auto max-h-32 text-error bg-surface-elevated border border-stroke-subtle">
                 {this.state.error.message}
               </pre>
             )}
             <div className="flex gap-3 justify-center">
-              <button
-                onClick={this.handleReset}
-                className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded text-sm font-medium transition-colors"
-              >
+              <button onClick={this.handleReset} className="btn btn-secondary">
                 Try Again
               </button>
-              <button
-                onClick={this.handleClearStorage}
-                className="px-4 py-2 bg-red-900/50 hover:bg-red-800 rounded text-sm font-medium text-red-200 transition-colors"
-              >
+              <button onClick={this.handleClearStorage} className="btn btn-danger">
                 Reset App Data
               </button>
             </div>

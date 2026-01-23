@@ -260,7 +260,7 @@ describe('RightPanel', () => {
       const { container } = render(<RightPanel />);
 
       const aside = container.querySelector('aside');
-      expect(aside).toHaveStyle({ width: '40px' });
+      expect(aside).toHaveStyle({ width: '48px' });
     });
   });
 

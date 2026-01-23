@@ -189,7 +189,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {settings.stlSearchSites.map((site: STLSearchSite) => (
                   <div
                     key={site.id}
-                    className="flex items-center justify-between text-sm cursor-pointer group"
+                    className="flex items-center justify-between text-sm cursor-pointer group rounded-md p-1 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
                     onClick={() => toggleSTLSite(site.id)}
                     role="checkbox"
                     aria-checked={site.enabled}
@@ -222,7 +222,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 Privacy
               </h3>
               <div
-                className="flex items-center justify-between text-sm cursor-pointer group"
+                className="flex items-center justify-between text-sm cursor-pointer group rounded-md p-1 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
                 onClick={handlePrivacyToggle}
                 role="checkbox"
                 aria-checked={mlTelemetryEnabled}

@@ -116,7 +116,7 @@ describe('ShareModal', () => {
 
     it('has close button', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      expect(screen.getByLabelText('Close')).toBeInTheDocument();
+      expect(screen.getByLabelText('Close share dialog')).toBeInTheDocument();
     });
   });
 
@@ -318,7 +318,7 @@ describe('ShareModal', () => {
     it('calls onClose when close button clicked', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
 
-      fireEvent.click(screen.getByLabelText('Close'));
+      fireEvent.click(screen.getByLabelText('Close share dialog'));
 
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });

@@ -239,13 +239,22 @@ export function CategoriesPanel() {
                     <div className="flex gap-2 mt-1">
                       <button
                         onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
-                        className={`btn btn-sm flex-1 justify-center ${canDelete ? 'btn-danger' : 'btn-secondary opacity-50 cursor-not-allowed'}`}
+                        disabled={!canDelete}
+                        className="btn btn-danger btn-sm flex-1 justify-center"
                         aria-label={
                           canDelete
                             ? `Delete ${category.name} category`
-                            : `Cannot delete: ${binCount} bins use this category`
+                            : binCount > 0
+                              ? `Cannot delete: ${binCount} bin${binCount > 1 ? 's' : ''} use this category`
+                              : 'Cannot delete the last category'
                         }
-                        title={canDelete ? 'Delete category' : `${binCount} bins use this category`}
+                        title={
+                          canDelete
+                            ? 'Delete category'
+                            : binCount > 0
+                              ? `${binCount} bin${binCount > 1 ? 's' : ''} use this category`
+                              : 'At least one category is required'
+                        }
                       >
                         Delete
                       </button>

@@ -11,6 +11,7 @@ import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { PresenceAvatars } from './Collab';
 import type { SaveStatus } from '@/shared/hooks';
 import type { ShareModalRenderProps } from '@/features/layout-library/components/LayoutManagerModal';
+import { LoadingFallback } from '@/shared/components/LoadingFallback';
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
 const LayoutManagerModal = lazyWithRetry(() =>
@@ -109,8 +110,8 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   const modKey = isMac ? '⌘' : 'Ctrl';
 
   return (
-    <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
-      <div className="flex items-center gap-4">
+    <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+      <div className="flex items-center gap-4 min-w-0">
         <h1 className="text-lg font-semibold text-content">Gridfinity Layout Tool</h1>
 
         {/* Divider */}
@@ -126,6 +127,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             onBlur={handleNameSubmit}
             onKeyDown={handleNameKeyDown}
             maxLength={CONSTRAINTS.NAME_MAX_LENGTH}
+            aria-label="Layout name"
             className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content"
             style={{
               boxShadow: '0 0 0 3px var(--color-primary-muted)',
@@ -134,7 +136,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         ) : (
           <button
             onClick={handleNameClick}
-            className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content"
+            className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
             title="Click to edit layout name"
           >
             {layout.name}
@@ -197,7 +199,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         </button>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-shrink-0">
         {/* Tablet panel toggle buttons */}
         {isTablet && (
           <div className="flex items-center mr-2 border-r border-stroke-subtle pr-2">
@@ -237,16 +239,47 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
         )}
 
         {/* Save status indicator */}
-        {saveStatus !== 'idle' && (
+        {saveStatus === 'saving' && (
           <div
-            className="flex items-center gap-1 px-2 py-1 text-[11px] mr-2 text-content-secondary"
+            className="flex items-center gap-1.5 px-2 py-1 text-[11px] mr-2 text-content-tertiary"
             aria-live="polite"
+            role="status"
+          >
+            <svg
+              className="w-3 h-3 animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                className="opacity-20"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="3"
+              />
+              <path
+                className="opacity-70"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+            <span>Saving...</span>
+          </div>
+        )}
+        {saveStatus === 'saved' && (
+          <div
+            className="flex items-center gap-1 px-2 py-1 text-[11px] mr-2 text-content-secondary animate-fade-in"
+            aria-live="polite"
+            role="status"
           >
             <svg
               className="w-3 h-3 text-success"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -317,44 +350,46 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
           </svg>
-          <span>Discuss on Reddit</span>
+          <span className="hidden xl:inline">Discuss on Reddit</span>
         </a>
 
         <button
           onClick={onHelpClick}
           className="btn btn-ghost px-2.5 py-1.5 text-sm text-content-secondary"
-          title="Show keyboard shortcuts"
+          title="Show keyboard shortcuts (? or /)"
           aria-label="Show help and keyboard shortcuts"
         >
-          Press{' '}
-          <kbd
-            className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none"
-            style={{
-              backgroundColor: 'var(--bg-primary)',
-              border: '1px solid var(--border-default)',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            ?
-          </kbd>{' '}
-          or{' '}
-          <kbd
-            className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none"
-            style={{
-              backgroundColor: 'var(--bg-primary)',
-              border: '1px solid var(--border-default)',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            /
-          </kbd>{' '}
-          for help
+          <span className="hidden xl:inline">
+            Press{' '}
+            <kbd
+              className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none"
+              style={{
+                backgroundColor: 'var(--bg-primary)',
+                border: '1px solid var(--border-default)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              ?
+            </kbd>{' '}
+            for help
+          </span>
+          <span className="xl:hidden flex items-center gap-1">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span className="hidden lg:inline">Help</span>
+          </span>
         </button>
       </div>
 
       {/* Lazy-loaded modals - only load chunks when modal is opened */}
       {showLayoutManager && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading layouts" />}>
           <LayoutManagerModal
             isOpen={showLayoutManager}
             onClose={() => setShowLayoutManager(false)}
