@@ -96,6 +96,10 @@ const CollabProvider = lazyWithRetry(() =>
   import('./components/Collab/CollabProvider').then(namedExport('CollabProvider'))
 );
 
+// Track whether the initial layout has rendered, so we only play the fade-in
+// animation on first app load (not when switching between tools).
+let hasRenderedInitialLayout = false;
+
 // Initialize layout library once at module level to avoid effect setState issues
 let initialLoadError: Error | null = null;
 try {
@@ -211,6 +215,12 @@ export default function App() {
   // Storage migration (localStorage → IndexedDB)
   useStorageMigration();
 
+  // Only fade in on initial app load, not when switching between tools
+  const entranceClass = hasRenderedInitialLayout ? '' : 'animate-fade-in';
+  useEffect(() => {
+    hasRenderedInitialLayout = true;
+  }, []);
+
   // Help modal keyboard shortcut
   const handleHelpKeyboard = useCallback((e: KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
@@ -299,7 +309,7 @@ export default function App() {
   // Mobile layout - lazy loaded
   if (isMobile) {
     return wrapWithMutations(
-      <div className="h-screen animate-fade-in">
+      <div className={`h-screen ${entranceClass}`}>
         <Suspense fallback={<LoadingFallback label="Loading mobile layout" />}>
           <MobileLayout
             isMobileHelpOpen={isMobileHelpOpen}
@@ -314,7 +324,9 @@ export default function App() {
   // Tablet layout - full width grid with overlay panels
   if (isTablet) {
     return wrapWithMutations(
-      <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
+      <div
+        className={`h-screen flex flex-col overflow-hidden bg-surface text-content ${entranceClass}`}
+      >
         {/* Shared layout banner (shown when viewing unsaved shared layout) */}
         {hasSharedLayoutPreview && (
           <Suspense fallback={null}>
@@ -407,7 +419,9 @@ export default function App() {
 
   // Desktop layout
   return wrapWithMutations(
-    <div className="h-screen flex flex-col overflow-hidden bg-surface text-content animate-fade-in">
+    <div
+      className={`h-screen flex flex-col overflow-hidden bg-surface text-content ${entranceClass}`}
+    >
       {/* Skip to content link for keyboard navigation */}
       <a href="#main-grid" className="skip-to-content">
         Skip to grid editor
