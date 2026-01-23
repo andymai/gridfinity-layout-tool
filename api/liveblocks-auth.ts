@@ -1,15 +1,17 @@
 import { Liveblocks } from '@liveblocks/node';
+import { head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
-import { ErrorCode } from './lib/shared.js';
+import { ErrorCode, isValidShareId } from './lib/shared.js';
+import type { ShareData } from './lib/shared.js';
 
 /**
  * Liveblocks authentication endpoint.
  *
  * This endpoint authenticates users for Liveblocks room access.
- * For MVP, we use trust-based authentication:
- * - Anyone with the share ID can join the room
- * - Permission level (view/edit) will be enforced in Phase 3
+ * Permission is enforced by fetching share metadata from Vercel Blob:
+ * - 'edit' permission grants FULL_ACCESS (read + write)
+ * - 'view' permission grants READ_ACCESS (read only)
  *
  * @see https://liveblocks.io/docs/authentication
  */
@@ -65,7 +67,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
+    return res
+      .status(405)
+      .json({ error: 'Method not allowed', code: ErrorCode.METHOD_NOT_ALLOWED });
   }
 
   try {
@@ -108,9 +112,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Extract share ID for future permission checking
+    // Extract share ID and validate format
     const shareId = room.replace('gridfinity-', '');
-    if (shareId.length !== 12) {
+    if (!isValidShareId(shareId)) {
       return res.status(400).json({
         error: 'Invalid share ID',
         code: ErrorCode.VALIDATION_ERROR,
@@ -125,10 +129,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // TODO Phase 3: Fetch share metadata from Vercel Blob and check permission
-    // For MVP, grant full access to everyone (trust-based)
-    // This will be updated to check share.metadata.permission and grant
-    // either READ_ACCESS or FULL_ACCESS accordingly
+    // Fetch share metadata from Vercel Blob to check permission
+    const blobPath = `shares/${shareId}.json`;
+    const blobInfo = await head(blobPath).catch(() => null);
+
+    if (!blobInfo) {
+      return res.status(404).json({
+        error: 'Share not found',
+        code: ErrorCode.NOT_FOUND,
+      });
+    }
+
+    const blobResponse = await fetch(blobInfo.url);
+    if (!blobResponse.ok) {
+      return res.status(404).json({
+        error: 'Share not found',
+        code: ErrorCode.NOT_FOUND,
+      });
+    }
+
+    const shareData = (await blobResponse.json()) as ShareData;
+    const permission = shareData.metadata.permission;
 
     // Prepare Liveblocks session
     const session = getLiveblocks().prepareSession(userId, {
@@ -138,9 +159,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     });
 
-    // Grant full access for MVP (trust-based)
-    // Phase 3: This will check permission and grant READ_ACCESS for view-only
-    session.allow(room, session.FULL_ACCESS);
+    // Grant access based on share permission level
+    const accessLevel = permission === 'edit' ? session.FULL_ACCESS : session.READ_ACCESS;
+    session.allow(room, accessLevel);
 
     // Authorize and return session token
     const { body, status } = await session.authorize();
