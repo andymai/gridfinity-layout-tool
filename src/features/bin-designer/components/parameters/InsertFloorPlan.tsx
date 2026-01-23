@@ -463,7 +463,22 @@ export function InsertFloorPlan() {
     });
   }, [inserts]);
 
-  if (inserts.length === 0) return null;
+  if (inserts.length === 0) {
+    return (
+      <div className="space-y-1.5">
+        <span className="text-xs font-medium text-content-secondary">Floor Plan</span>
+        <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-stroke-subtle bg-surface-tertiary px-4 py-5">
+          <svg className="mb-1.5 h-5 w-5 text-content-tertiary" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true">
+            <rect x="3" y="3" width="14" height="14" strokeWidth="1.5" rx="2" strokeDasharray="3 2" />
+            <path d="M10 7v6M7 10h6" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+          <p className="text-center text-[10px] text-content-tertiary">
+            Add a template below to see inserts here
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
