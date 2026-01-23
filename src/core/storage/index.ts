@@ -119,6 +119,16 @@ export type { MigrationStats } from './migration';
 // === Backend (Internal - for useStorageMigration hook) ===
 export { getStorageBackend, resetStorageBackendCache } from './backend';
 
+// === Designer Storage ===
+export {
+  saveDesign,
+  loadDesign,
+  listDesigns,
+  deleteDesign,
+  updateDesignParams,
+  closeDesignerDb,
+} from './DesignerStorage';
+
 // === Legacy API (Deprecated) ===
 // These are kept for backward compatibility only
 export { saveLayout, loadLayout, clearStorage } from './LayoutService';
