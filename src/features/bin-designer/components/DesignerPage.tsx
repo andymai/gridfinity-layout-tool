@@ -1,11 +1,11 @@
 /**
- * Bin Designer page shell.
+ * Bin Designer page layout.
  *
- * Top-level component for the /designer route. Displays a placeholder
- * layout that will be populated with parameter panel and 3D preview
- * in subsequent PRs.
+ * Two-column layout: left panel (parameter controls, 320px) + main area (3D preview placeholder).
+ * On mobile (<768px), the parameter panel is shown as a full-width bottom area.
  */
 
+import { ParameterPanel } from './ParameterPanel';
 
 interface DesignerPageProps {
   onNavigateBack: () => void;
@@ -46,14 +46,14 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
         </div>
       </header>
 
-      {/* Main content area - to be populated in subsequent PRs */}
+      {/* Main content area */}
       <main className="flex flex-1 overflow-hidden">
-        {/* Left panel placeholder (parameter panel) */}
-        <div className="hidden w-80 flex-shrink-0 border-r border-gray-200 bg-white p-4 md:block">
-          <p className="text-sm text-gray-500">Parameter panel coming soon...</p>
+        {/* Left panel: Parameter controls (hidden on mobile, shown on md+) */}
+        <div className="hidden w-80 flex-shrink-0 border-r border-gray-200 bg-white md:block">
+          <ParameterPanel />
         </div>
 
-        {/* Center area (3D preview) */}
+        {/* Center area: 3D preview placeholder */}
         <div className="flex flex-1 items-center justify-center bg-gray-100">
           <div className="text-center">
             <div className="mx-auto mb-4 h-24 w-24 rounded-xl bg-gray-200 p-6">
@@ -77,6 +77,14 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
               Parametric bin preview will appear here
             </p>
           </div>
+        </div>
+
+        {/* Mobile: Bottom parameter panel (shown on mobile, hidden on md+) */}
+        <div
+          className="fixed inset-x-0 bottom-0 max-h-[70vh] overflow-y-auto border-t border-gray-200 bg-white md:hidden"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
+          <ParameterPanel />
         </div>
       </main>
     </div>
