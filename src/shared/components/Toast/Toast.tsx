@@ -151,7 +151,7 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
         ${style.bg} ${style.border} text-on-dark
         ${animationClass}
       `}
-      role="alert"
+      role={toast.type === 'error' ? 'alert' : 'status'}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >

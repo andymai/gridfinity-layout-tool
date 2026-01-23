@@ -111,10 +111,10 @@ export function LayoutListItem({
       tabIndex={isFocused ? 0 : -1}
       className={`
         w-full text-left p-3 rounded-lg border transition-colors cursor-pointer
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-inset
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset
         ${
           isActive
-            ? 'bg-blue-900/30 border-blue-500'
+            ? 'bg-accent-muted border-accent'
             : 'bg-surface-secondary border-transparent hover:border-stroke-subtle hover:bg-surface'
         }
       `}
@@ -139,7 +139,7 @@ export function LayoutListItem({
               onBlur={handleFinishRename}
               onKeyDown={handleKeyDown}
               onClick={(e) => e.stopPropagation()}
-              className="w-full bg-surface px-2 py-1 rounded border border-stroke focus:border-blue-500 focus:outline-none text-content text-sm"
+              className="w-full bg-surface px-2 py-1 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm"
               maxLength={64}
               aria-label="Layout name"
             />
@@ -148,7 +148,7 @@ export function LayoutListItem({
               <span className="font-medium text-content text-sm truncate">{entry.name}</span>
               {isActive && (
                 <span
-                  className="text-xs px-1.5 py-0.5 bg-blue-600 text-white rounded flex-shrink-0"
+                  className="text-xs px-1.5 py-0.5 bg-accent text-on-dark rounded flex-shrink-0 font-medium"
                   aria-label="Currently active layout"
                 >
                   Active

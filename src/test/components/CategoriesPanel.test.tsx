@@ -285,9 +285,9 @@ describe('CategoriesPanel', () => {
       const editButton = screen.getByRole('button', { name: /Edit Coral/i });
       fireEvent.click(editButton);
 
-      // Delete button should show disabled state
+      // Delete button should be disabled
       const deleteButton = screen.getByText('Delete');
-      expect(deleteButton.className).toContain('opacity-50');
+      expect(deleteButton).toBeDisabled();
     });
 
     it('prevents deleting last category', () => {
@@ -305,9 +305,9 @@ describe('CategoriesPanel', () => {
       const editButton = screen.getByRole('button', { name: /Edit Coral/i });
       fireEvent.click(editButton);
 
-      // Delete button should show disabled state
+      // Delete button should be disabled
       const deleteButton = screen.getByText('Delete');
-      expect(deleteButton.className).toContain('opacity-50');
+      expect(deleteButton).toBeDisabled();
     });
   });
 

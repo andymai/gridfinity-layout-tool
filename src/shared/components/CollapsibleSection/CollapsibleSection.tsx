@@ -65,6 +65,9 @@ export function CollapsibleSection({
       </div>
       <div
         id={contentId}
+        role="region"
+        aria-label={title}
+        aria-hidden={!expanded}
         className={`overflow-hidden ${hasToggled ? 'transition-all duration-200' : ''} ${
           expanded ? 'opacity-100 max-h-[2000px] mt-3' : 'opacity-0 max-h-0'
         }`}

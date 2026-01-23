@@ -452,6 +452,30 @@ body {
 }
 
 /* ===========================================
+   SKIP TO CONTENT (keyboard navigation)
+   =========================================== */
+.skip-to-content {
+  position: fixed;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 12px 24px;
+  background: var(--color-primary);
+  color: #000;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  transition: top 0.15s ease-out;
+}
+
+.skip-to-content:focus {
+  top: 0;
+  outline: none;
+}
+
+/* ===========================================
    FOCUS STATES
    =========================================== */
 :focus-visible {
@@ -850,8 +874,11 @@ input[type='range']:hover::-moz-range-thumb {
   }
 
   .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    filter: grayscale(0.2);
   }
 
   /* Button variants */

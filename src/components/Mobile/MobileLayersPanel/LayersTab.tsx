@@ -234,6 +234,7 @@ export function LayersTab() {
               >
                 <span
                   className={`truncate block text-sm ${isActive ? 'text-content font-semibold' : 'text-content font-medium'}`}
+                  title={layer.name}
                   onClick={(e) => {
                     if (isActive) {
                       e.stopPropagation();
@@ -250,12 +251,12 @@ export function LayersTab() {
               </button>
 
               {/* Height control - compact */}
-              <div className="flex items-center">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleHeightChange(layer.id, -1)}
                   disabled={layer.height <= 1}
-                  className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
-                  aria-label="Decrease new bin height"
+                  className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover disabled:opacity-30 transition-colors"
+                  aria-label={`Decrease ${layer.name} height`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -267,15 +268,15 @@ export function LayersTab() {
                   </svg>
                 </button>
                 <span
-                  className="text-center text-xs font-medium text-content-secondary tabular-nums whitespace-nowrap"
+                  className="text-center text-xs font-medium text-content-secondary tabular-nums whitespace-nowrap min-w-[2ch]"
                   title="Height for new bins placed on this layer"
                 >
                   {layer.height}u
                 </span>
                 <button
                   onClick={() => handleHeightChange(layer.id, 1)}
-                  className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content transition-colors"
-                  aria-label="Increase new bin height"
+                  className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover transition-colors"
+                  aria-label={`Increase ${layer.name} height`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path

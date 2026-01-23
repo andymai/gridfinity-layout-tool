@@ -244,10 +244,10 @@ describe('Header', () => {
       expect(screen.getByText('Saved')).toBeInTheDocument();
     });
 
-    it('shows Saved status when saving', () => {
+    it('shows Saving status when saving', () => {
       render(<Header {...defaultProps} saveStatus="saving" />);
 
-      expect(screen.getByText('Saved')).toBeInTheDocument();
+      expect(screen.getByText('Saving...')).toBeInTheDocument();
     });
   });
 

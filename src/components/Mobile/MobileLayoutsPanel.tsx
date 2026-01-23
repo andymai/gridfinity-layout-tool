@@ -298,7 +298,7 @@ export function MobileLayoutsPanel() {
                 </button>
                 <button
                   onClick={() => handleDuplicate(entry.id)}
-                  className="w-15 flex items-center justify-center bg-blue-600 text-white"
+                  className="w-15 flex items-center justify-center bg-accent text-on-dark"
                   aria-label={`Duplicate ${entry.name}`}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -621,9 +621,9 @@ export function MobileLayoutsPanel() {
                   onClick={() => handleDownload(shareMenuId)}
                   className="w-full flex items-center gap-3 p-4 bg-surface rounded-lg active:bg-surface-hover"
                 >
-                  <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-accent-muted rounded-full flex items-center justify-center">
                     <svg
-                      className="w-5 h-5 text-blue-500"
+                      className="w-5 h-5 text-accent"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
