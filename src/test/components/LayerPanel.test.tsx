@@ -334,15 +334,15 @@ describe('LayerPanel', () => {
     it('shows height controls for active layer', () => {
       render(<LayerPanel />);
 
-      expect(screen.getByLabelText('Increase new bin height')).toBeInTheDocument();
-      expect(screen.getByLabelText('Decrease new bin height')).toBeInTheDocument();
+      expect(screen.getByLabelText('Increase Layer 1 height')).toBeInTheDocument();
+      expect(screen.getByLabelText('Decrease Layer 1 height')).toBeInTheDocument();
     });
 
     it('increases height when plus clicked', () => {
       render(<LayerPanel />);
 
       const initialHeight = useLayoutStore.getState().layout.layers[0].height;
-      fireEvent.click(screen.getByLabelText('Increase new bin height'));
+      fireEvent.click(screen.getByLabelText('Increase Layer 1 height'));
 
       expect(useLayoutStore.getState().layout.layers[0].height).toBe(initialHeight + 1);
     });
@@ -360,7 +360,7 @@ describe('LayerPanel', () => {
 
       render(<LayerPanel />);
 
-      fireEvent.click(screen.getByLabelText('Decrease new bin height'));
+      fireEvent.click(screen.getByLabelText('Decrease Layer 1 height'));
 
       expect(useLayoutStore.getState().layout.layers[0].height).toBe(4);
     });
@@ -377,7 +377,7 @@ describe('LayerPanel', () => {
 
       render(<LayerPanel />);
 
-      expect(screen.getByLabelText('Decrease new bin height')).toBeDisabled();
+      expect(screen.getByLabelText('Decrease Layer 1 height')).toBeDisabled();
     });
   });
 
@@ -549,7 +549,7 @@ describe('LayerPanel', () => {
     it('layers have aria-pressed attribute', () => {
       render(<LayerPanel />);
 
-      const layerButton = screen.getByRole('button', { name: /Layer 1/ });
+      const layerButton = screen.getByRole('button', { name: /Layer 1.*height units/ });
       expect(layerButton).toHaveAttribute('aria-pressed');
     });
 
@@ -563,8 +563,8 @@ describe('LayerPanel', () => {
     it('height controls have aria-labels', () => {
       render(<LayerPanel />);
 
-      expect(screen.getByLabelText('Increase new bin height')).toBeInTheDocument();
-      expect(screen.getByLabelText('Decrease new bin height')).toBeInTheDocument();
+      expect(screen.getByLabelText('Increase Layer 1 height')).toBeInTheDocument();
+      expect(screen.getByLabelText('Decrease Layer 1 height')).toBeInTheDocument();
     });
   });
 });
