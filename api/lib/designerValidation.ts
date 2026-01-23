@@ -7,16 +7,16 @@
 
 // Type-safe enum validation
 const VALID_BIN_STYLES = ['standard', 'lite', 'solid', 'vase', 'rugged'] as const;
-const VALID_BASE_STYLES = ['standard', 'magnet', 'screw', 'weighted'] as const;
+const VALID_BASE_STYLES = ['standard', 'magnet', 'screw', 'magnet_and_screw', 'weighted'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 
 // Constraints (server-side copies of client DESIGNER_CONSTRAINTS)
 const CONSTRAINTS = {
   MIN_DIMENSION: 0.5,
-  MAX_DIMENSION: 6,
+  MAX_DIMENSION: 8,
   MIN_HEIGHT: 2,
-  MAX_HEIGHT: 12,
+  MAX_HEIGHT: 20,
   MAX_DIVIDERS: 10,
   MIN_DIVIDER_THICKNESS: 0.8,
   MAX_DIVIDER_THICKNESS: 2.0,
@@ -262,9 +262,13 @@ export function validateDesignerShare(
     return { valid: false, error: { code: 'INVALID_PARAMS', message: `style must be one of: ${VALID_BIN_STYLES.join(', ')}` } };
   }
 
-  // Scoop
-  if (!isBoolean(params.scoop)) {
-    return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop must be boolean' } };
+  // Scoop (accept both legacy boolean and new ScoopConfig format)
+  if (isObject(params.scoop)) {
+    if (!isBoolean((params.scoop as Record<string, unknown>).enabled)) {
+      return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop.enabled must be boolean' } };
+    }
+  } else if (!isBoolean(params.scoop)) {
+    return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop must be boolean or object with enabled field' } };
   }
 
   // Sub-objects

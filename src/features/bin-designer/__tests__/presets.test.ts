@@ -36,21 +36,21 @@ describe('built-in presets', () => {
     const preset = getPresetById('heavy-duty')!;
     expect(preset.overrides.style).toBe('rugged');
     expect(preset.overrides.base?.style).toBe('magnet');
-    expect(preset.overrides.scoop).toBe(true);
+    expect(preset.overrides.scoop?.enabled).toBe(true);
   });
 
   it('quick-print preset sets lite style and no stacking lip', () => {
     const preset = getPresetById('quick-print')!;
     expect(preset.overrides.style).toBe('lite');
     expect(preset.overrides.base?.stackingLip).toBe(false);
-    expect(preset.overrides.scoop).toBe(false);
+    expect(preset.overrides.scoop?.enabled).toBe(false);
   });
 
   it('workshop preset sets screw base and label enabled', () => {
     const preset = getPresetById('workshop')!;
     expect(preset.overrides.base?.style).toBe('screw');
     expect(preset.overrides.label?.enabled).toBe(true);
-    expect(preset.overrides.scoop).toBe(true);
+    expect(preset.overrides.scoop?.enabled).toBe(true);
   });
 
   it('vase-mode preset disables all interior features', () => {
@@ -58,7 +58,7 @@ describe('built-in presets', () => {
     expect(preset.overrides.style).toBe('vase');
     expect(preset.overrides.dividers?.x).toBe(0);
     expect(preset.overrides.dividers?.y).toBe(0);
-    expect(preset.overrides.scoop).toBe(false);
+    expect(preset.overrides.scoop?.enabled).toBe(false);
     expect(preset.overrides.inserts).toEqual([]);
   });
 

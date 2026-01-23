@@ -45,7 +45,7 @@ describe('generateFileName', () => {
     });
 
     it('should include scoop', () => {
-      const name = generateFileName(makeParams({ scoop: true }), 'stl', 'descriptive');
+      const name = generateFileName(makeParams({ scoop: { enabled: true, radius: 'auto', allRows: false } }), 'stl', 'descriptive');
       expect(name).toBe('gridfinity_2x2x3_scoop.stl');
     });
 
@@ -86,7 +86,7 @@ describe('generateFileName', () => {
         makeParams({
           style: 'rugged',
           dividers: { x: 1, y: 2, thickness: 1.2 },
-          scoop: true,
+          scoop: { enabled: true, radius: 'auto', allRows: false },
           label: { enabled: true, text: 'Tools', fontSize: 'auto' },
           base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
         }),

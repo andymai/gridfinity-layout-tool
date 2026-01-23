@@ -22,7 +22,11 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     y: 0,
     thickness: 1.2,
   },
-  scoop: false,
+  scoop: {
+    enabled: false,
+    radius: 'auto',
+    allRows: false,
+  },
   label: {
     enabled: false,
     text: '',
@@ -35,6 +39,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     right: 0,
   },
   inserts: [],
+  floorThickness: 0.7,
 } as const;
 
 /** Default generation state */
@@ -60,18 +65,32 @@ export const DEFAULT_HISTORY: DesignerHistory = {
 
 /**
  * Populate missing bin parameters with default values.
+ * Handles backward compatibility for old designs (e.g., scoop was boolean).
  *
  * @param params - Partial bin parameters to migrate; any fields not provided will be filled from `DEFAULT_BIN_PARAMS`.
  * @returns A complete `BinParams` object with unspecified fields taken from `DEFAULT_BIN_PARAMS`.
  */
 export function migrateParams(params: Partial<BinParams>): BinParams {
+  // Migrate old boolean scoop format to ScoopConfig
+  let scoopConfig = DEFAULT_BIN_PARAMS.scoop;
+  if (params.scoop !== undefined) {
+    if (typeof params.scoop === 'boolean') {
+      // Legacy format: boolean → ScoopConfig
+      scoopConfig = { ...DEFAULT_BIN_PARAMS.scoop, enabled: params.scoop };
+    } else {
+      scoopConfig = { ...DEFAULT_BIN_PARAMS.scoop, ...params.scoop };
+    }
+  }
+
   return {
     ...DEFAULT_BIN_PARAMS,
     ...params,
     base: { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) },
     dividers: { ...DEFAULT_BIN_PARAMS.dividers, ...(params.dividers ?? {}) },
+    scoop: scoopConfig,
     label: { ...DEFAULT_BIN_PARAMS.label, ...(params.label ?? {}) },
     walls: { ...DEFAULT_BIN_PARAMS.walls, ...(params.walls ?? {}) },
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
+    floorThickness: params.floorThickness ?? DEFAULT_BIN_PARAMS.floorThickness,
   };
 }
