@@ -42,7 +42,7 @@ export function CollapsibleSection({
       <div className="flex items-center justify-between">
         <button
           type="button"
-          className="flex items-center gap-2 bg-transparent hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 bg-transparent rounded hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-accent"
           onClick={() => {
             setHasToggled(true);
             setExpanded(!expanded);
