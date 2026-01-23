@@ -176,7 +176,7 @@ export function DesignerPage(_props: DesignerPageProps) {
   return (
     <div className="flex h-screen flex-col bg-surface animate-fade-in">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-stroke-subtle bg-surface-secondary px-3 py-2 lg:px-4 lg:py-3">
+      <header className="h-12 flex items-center justify-between border-b border-stroke-subtle bg-surface-secondary px-3 lg:px-4">
         <div className="flex items-center gap-2 lg:gap-3">
           <ToolSwitcher compact={!isDesktop} />
           <div className="hidden h-5 w-px bg-stroke-subtle sm:block" />
