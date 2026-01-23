@@ -433,7 +433,7 @@ export function LayersTab() {
                 <button
                   onClick={handleRenameConfirm}
                   disabled={!renameValue.trim()}
-                  className="flex-1 py-3 text-white font-medium bg-accent rounded-lg disabled:opacity-50"
+                  className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
                 >
                   Rename
                 </button>

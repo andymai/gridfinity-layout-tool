@@ -358,8 +358,8 @@ export function LayerPanel() {
                       <button
                         onClick={() => handleHeightChange(layer.id, -1)}
                         disabled={layer.height <= 1}
-                        className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        aria-label="Decrease new bin height"
+                        className="w-6 h-6 flex items-center justify-center rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        aria-label={`Decrease ${layer.name} height`}
                       >
                         <svg
                           className="w-3 h-3"
@@ -383,8 +383,8 @@ export function LayerPanel() {
                       </span>
                       <button
                         onClick={() => handleHeightChange(layer.id, 1)}
-                        className="w-5 h-5 flex items-center justify-center text-content-tertiary hover:text-content transition-colors"
-                        aria-label="Increase new bin height"
+                        className="w-6 h-6 flex items-center justify-center rounded text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+                        aria-label={`Increase ${layer.name} height`}
                       >
                         <svg
                           className="w-3 h-3"
@@ -417,7 +417,7 @@ export function LayerPanel() {
                         e.stopPropagation();
                         setDeleteLayerId(layer.id);
                       }}
-                      className="p-0.5 rounded text-content-disabled hover:text-error transition-colors"
+                      className="p-1.5 rounded text-content-disabled hover:text-error hover:bg-surface-hover transition-colors"
                       title="Delete this layer"
                       aria-label={`Delete ${layer.name} layer`}
                     >

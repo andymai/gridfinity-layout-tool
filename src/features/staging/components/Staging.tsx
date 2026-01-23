@@ -544,7 +544,7 @@ export function Staging() {
 
         <button
           onClick={() => setShowClearConfirm(true)}
-          className="btn btn-ghost flex items-center gap-1.5 p-[4px_8px] text-xs text-content-tertiary"
+          className="btn btn-ghost flex items-center gap-1.5 px-2 py-1.5 text-xs text-content-tertiary"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -560,6 +560,7 @@ export function Staging() {
 
       {/* Collapsible staging grid content */}
       <div
+        id="staging-stash-panel"
         className={`overflow-hidden ${hasToggled ? 'transition-all duration-200' : ''} ${
           isExpanded ? 'opacity-100 max-h-[2000px]' : 'opacity-0 max-h-0'
         }`}

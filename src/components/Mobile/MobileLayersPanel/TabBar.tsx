@@ -27,7 +27,7 @@ export function TabBar<T extends TabId>({ tabs, activeTab, onChange }: TabBarPro
           onClick={() => onChange(tab.id as T)}
           className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors min-h-[44px] ${
             activeTab === tab.id
-              ? 'bg-accent text-white'
+              ? 'bg-accent text-on-dark'
               : 'text-content-secondary hover:text-content hover:bg-surface-hover'
           }`}
         >

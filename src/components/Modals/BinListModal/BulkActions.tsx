@@ -200,7 +200,7 @@ export function BulkActions({
                   <button
                     onClick={handleLabelSubmit}
                     disabled={!labelValue.trim()}
-                    className="px-3 py-1.5 text-sm bg-accent text-white rounded hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-3 py-1.5 text-sm bg-accent text-on-dark rounded hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Apply
                   </button>
@@ -256,7 +256,7 @@ export function BulkActions({
                   <button
                     onClick={handleNotesSubmit}
                     disabled={!notesValue.trim()}
-                    className="self-end px-3 py-1.5 text-sm bg-accent text-white rounded hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="self-end px-3 py-1.5 text-sm bg-accent text-on-dark rounded hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Apply
                   </button>

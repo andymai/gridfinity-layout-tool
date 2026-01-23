@@ -254,7 +254,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
             onClick={undo}
             disabled={!canUndo}
             className="btn btn-ghost btn-icon"
-            aria-label="Undo"
+            aria-label={canUndo ? 'Undo' : 'Nothing to undo'}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -269,7 +269,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
             onClick={redo}
             disabled={!canRedo}
             className="btn btn-ghost btn-icon"
-            aria-label="Redo"
+            aria-label={canRedo ? 'Redo' : 'Nothing to redo'}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
