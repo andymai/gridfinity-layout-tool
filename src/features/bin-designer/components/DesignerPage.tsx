@@ -107,8 +107,8 @@ export function DesignerPage({ onNavigateBack }: DesignerPageProps) {
     if (shareHandled.current) return;
     shareHandled.current = true;
 
-    const params = new URLSearchParams(window.location.search);
-    const shareId = params.get('share');
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareId = urlParams.get('share');
     if (!shareId) return;
 
     // Clean URL immediately (remove ?share= param)

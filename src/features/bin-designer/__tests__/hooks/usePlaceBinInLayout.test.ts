@@ -130,7 +130,6 @@ describe('usePlaceBinFromURL', () => {
   it('falls back to staging when grid placement fails', () => {
     // Fill the grid position (0,0) to force collision
     const state = useLayoutStore.getState();
-    const layerId = state.layout.layers[0]?.id ?? 'layer-1';
 
     // Set drawer to tiny so bin won't fit on grid
     useLayoutStore.setState({
@@ -146,9 +145,8 @@ describe('usePlaceBinFromURL', () => {
     // Should be in staging
     const bins = useLayoutStore.getState().layout.bins;
     const placed = bins.find((b) => b.label === 'Big Bin');
-    if (placed) {
-      expect(placed.layerId).toBe('__staging__');
-    }
+    expect(placed).toBeDefined();
+    expect(placed?.layerId).toBe('__staging__');
 
     // Restore drawer
     useLayoutStore.setState({

@@ -65,5 +65,13 @@ export const DEFAULT_HISTORY: DesignerHistory = {
  * @returns A complete `BinParams` object with unspecified fields taken from `DEFAULT_BIN_PARAMS`.
  */
 export function migrateParams(params: Partial<BinParams>): BinParams {
-  return { ...DEFAULT_BIN_PARAMS, ...params };
+  return {
+    ...DEFAULT_BIN_PARAMS,
+    ...params,
+    base: { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) },
+    dividers: { ...DEFAULT_BIN_PARAMS.dividers, ...(params.dividers ?? {}) },
+    label: { ...DEFAULT_BIN_PARAMS.label, ...(params.label ?? {}) },
+    walls: { ...DEFAULT_BIN_PARAMS.walls, ...(params.walls ?? {}) },
+    inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
+  };
 }

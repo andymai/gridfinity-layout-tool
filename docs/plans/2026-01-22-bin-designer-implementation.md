@@ -36,7 +36,7 @@ The Bin Designer alpha is fully functional with:
 
 ### Key Files
 
-```
+```text
 src/features/bin-designer/          # UI layer
   components/DesignerPage.tsx       # Main page, responsive layout
   components/ParameterPanel.tsx     # Left sidebar controls
@@ -355,7 +355,7 @@ Ongoing improvements after public launch.
 
 ## Task Dependencies
 
-```
+```text
 Phase 2A (Foundation) ─────────────────────────────┐
   ├── 2A.1 Storage ──→ 2A.2 Auto-save ──→ 2A.5 Thumbnails
   │                        └──→ 2A.3 Design list

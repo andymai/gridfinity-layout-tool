@@ -98,10 +98,9 @@ export const useDesignerStore = create<DesignerState>()(
 
     newDesign: () => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
+        // Clear history — undoing to a previous design's params
+        // while in a new design context is semantically incorrect
+        state.history.past = [];
         state.history.future = [];
         state.params = { ...DEFAULT_BIN_PARAMS };
         state.currentDesignId = null;

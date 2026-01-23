@@ -36,6 +36,7 @@ export function useAutoSave(): void {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
   const lastSavedParams = useRef<BinParams | null>(null);
+  const abortRef = useRef(false);
 
   useEffect(() => {
     // Skip first render (initial mount shouldn't trigger save)
@@ -50,16 +51,22 @@ export function useAutoSave(): void {
       return;
     }
 
-    // Clear any pending save
+    // Abort any in-flight save and clear pending timer
+    abortRef.current = true;
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
 
+    // Reset abort flag for the new save
+    abortRef.current = false;
+    const abortToken = abortRef;
+
     timerRef.current = setTimeout(() => {
-      void performSave(params, currentDesignId, designName);
+      void performSave(params, currentDesignId, designName, abortToken);
     }, AUTO_SAVE_DELAY_MS);
 
     return () => {
+      abortRef.current = true;
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
@@ -69,7 +76,8 @@ export function useAutoSave(): void {
   async function performSave(
     paramsToSave: BinParams,
     designId: string | null,
-    name: string
+    name: string,
+    abortToken: { current: boolean }
   ): Promise<void> {
     setSaveStatus('saving');
 
@@ -79,6 +87,7 @@ export function useAutoSave(): void {
     if (designId) {
       // Update existing design
       const result = await updateDesignParams(designId, paramsToSave, thumbnail);
+      if (abortToken.current) return; // Superseded by newer save
       if (isOk(result)) {
         lastSavedParams.current = paramsToSave;
         setSaveStatus('saved');
@@ -102,6 +111,7 @@ export function useAutoSave(): void {
         params: paramsToSave,
         thumbnail,
       });
+      if (abortToken.current) return; // Superseded by newer save
       if (isOk(result)) {
         lastSavedParams.current = paramsToSave;
         setCurrentDesignId(result.value.id);

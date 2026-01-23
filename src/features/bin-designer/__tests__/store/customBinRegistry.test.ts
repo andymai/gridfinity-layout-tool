@@ -125,7 +125,7 @@ describe('customBinRegistry', () => {
       upsertRegistryEntry(makeRef('bin-1'));
       const raw = localStorage.getItem('gridfinity-custom-bins-v1');
       expect(raw).not.toBeNull();
-      const parsed = JSON.parse(raw!);
+      const parsed = JSON.parse(raw ?? '[]') as Array<{ id: string }>;
       expect(parsed[0].id).toBe('bin-1');
     });
   });

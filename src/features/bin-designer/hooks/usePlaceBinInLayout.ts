@@ -66,7 +66,7 @@ export function usePlaceBinFromURL(): void {
     }
     const [w, d, h] = parts;
 
-    // Place bin at (0,0) on active layer
+    // Try to place bin on grid, scanning positions
     const { addBin, layout } = useLayoutStore.getState();
     const { activeLayerId } = useSelectionStore.getState();
     const addToast = useToastStore.getState().addToast;
@@ -74,27 +74,36 @@ export function usePlaceBinFromURL(): void {
     const layerId = activeLayerId || layout.layers[0]?.id;
     if (!layerId) return;
 
-    const result = addBin({
-      x: 0,
-      y: 0,
-      width: w,
-      depth: d,
-      height: h,
-      layerId,
-      category: '',
-      label: binName ?? '',
-      notes: '',
-    });
+    // Scan for a valid position (top-left to bottom-right)
+    const { drawer } = layout;
+    let placed = false;
+    for (let y = 0; y <= drawer.depth - d && !placed; y++) {
+      for (let x = 0; x <= drawer.width - w && !placed; x++) {
+        const result = addBin({
+          x,
+          y,
+          width: w,
+          depth: d,
+          height: h,
+          layerId,
+          category: '',
+          label: binName ?? '',
+          notes: '',
+        });
 
-    if (isOk(result)) {
-      // Select the newly placed bin
-      useSelectionStore.getState().setSelectedBins([result.value]);
-      addToast(
-        `Placed "${binName ?? 'custom bin'}" (${w}×${d}×${h}) — drag to reposition`,
-        'success'
-      );
-    } else {
-      // Placement failed (likely collision at 0,0) - add to staging instead
+        if (isOk(result)) {
+          useSelectionStore.getState().setSelectedBins([result.value]);
+          addToast(
+            `Placed "${binName ?? 'custom bin'}" (${w}×${d}×${h}) — drag to reposition`,
+            'success'
+          );
+          placed = true;
+        }
+      }
+    }
+
+    if (!placed) {
+      // No valid grid position found — add to staging
       const stagingResult = addBin({
         x: 0,
         y: 0,

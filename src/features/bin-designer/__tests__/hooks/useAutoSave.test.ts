@@ -189,8 +189,9 @@ describe('useAutoSave', () => {
     expect(useDesignerStore.getState().saveStatus).toBe('saving');
 
     // Resolve the save
+    expect(resolvePromise).not.toBeNull();
     await act(async () => {
-      resolvePromise!(ok({
+      resolvePromise?.(ok({
         id: 'test-id',
         name: 'Test',
         params: DEFAULT_BIN_PARAMS,

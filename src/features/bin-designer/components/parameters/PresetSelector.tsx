@@ -92,7 +92,8 @@ export function PresetSelector() {
     const trimmedName = presetName.trim();
     if (!trimmedName) return;
 
-    createUserPreset(trimmedName, presetDescription, params);
+    const result = createUserPreset(trimmedName, presetDescription, params);
+    if (!result) return; // Limit reached
     refreshPresets();
     setShowSaveForm(false);
     setPresetName('');
@@ -165,7 +166,7 @@ export function PresetSelector() {
                 </button>
                 <button
                   onClick={() => handleDelete(preset.id)}
-                  className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-surface-error text-[10px] text-content-on-error group-hover:flex"
+                  className="absolute -right-1 -top-1 h-4 w-4 items-center justify-center rounded-full bg-surface-error text-[10px] text-content-on-error opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 flex"
                   aria-label={`Delete ${preset.name} preset`}
                   title="Delete preset"
                 >

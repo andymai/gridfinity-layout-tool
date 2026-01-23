@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
-import { ok, err, storageUnavailable } from '@/core/result';
+import { ok } from '@/core/result';
 import type { SavedDesign } from '@/features/bin-designer/types';
 
 vi.mock('@/core/storage/DesignerStorage');
@@ -126,6 +126,7 @@ describe('DesignListDialog', () => {
 
   it('deletes a design from the list', async () => {
     const DesignerStorage = await import('@/core/storage/DesignerStorage');
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {

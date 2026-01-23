@@ -195,7 +195,9 @@ export function InsertFloorPlan() {
 
   // Scale factor: fit the floor plan into ~240px wide area
   const maxDisplayWidth = 240;
-  const scale = Math.min(maxDisplayWidth / innerWidth, maxDisplayWidth / innerDepth);
+  const scale = (innerWidth > 0 && innerDepth > 0)
+    ? Math.min(maxDisplayWidth / innerWidth, maxDisplayWidth / innerDepth)
+    : 1;
   const svgWidth = innerWidth * scale + 2 * PADDING;
   const svgHeight = innerDepth * scale + 2 * PADDING;
 
@@ -652,17 +654,20 @@ function InsertShape({
   const renderH = rotation ? origH : h;
 
   switch (insert.shape) {
-    case 'circle':
+    case 'circle': {
+      // Circle uses min(width, depth) as diameter (matches 3D generator)
+      const diameter = Math.min(renderW, renderH);
       return (
         <ellipse
           cx={cx}
           cy={cy}
-          rx={renderW / 2}
-          ry={renderH / 2}
+          rx={diameter / 2}
+          ry={diameter / 2}
           transform={transform}
           {...sharedProps}
         />
       );
+    }
     case 'hexagon': {
       const r = Math.min(renderW, renderH) / 2;
       const points = Array.from({ length: 6 }, (_, i) => {

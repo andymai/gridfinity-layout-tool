@@ -9,7 +9,8 @@ import { useState, useMemo } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useShallow } from 'zustand/react/shallow';
 import { ALL_TEMPLATES, AVAILABLE_CATEGORIES, searchTemplates } from '@/features/bin-designer/templates';
-import type { InsertTemplate, TemplateCategory, Insert } from '@/features/bin-designer/types';
+import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
+import type { InsertTemplate, TemplateCategory, Insert, BinStyle } from '@/features/bin-designer/types';
 
 /** Category display labels */
 const CATEGORY_LABELS: Record<TemplateCategory, string> = {
@@ -42,7 +43,8 @@ function generateInsertId(): string {
 function getNextPosition(
   existingInserts: readonly Insert[],
   width: number,
-  _depth: number
+  _depth: number,
+  innerWidth: number
 ): { x: number; y: number } {
   if (existingInserts.length === 0) {
     return { x: 2, y: 2 }; // Small margin from edge
@@ -54,8 +56,8 @@ function getNextPosition(
   let x = lastInsert.x + lastInsert.width + gap;
   let y = lastInsert.y;
 
-  // Wrap to next row if exceeding a reasonable width (60mm inner area)
-  if (x + width > 60) {
+  // Wrap to next row if exceeding bin interior width
+  if (x + width > innerWidth) {
     x = 2;
     y = lastInsert.y + lastInsert.depth + gap;
   }
@@ -63,22 +65,25 @@ function getNextPosition(
   return { x, y };
 }
 
-/**
- * Render the Templates browser UI that lets users browse, search, and filter insert templates and add them to the designer.
- *
- * The component shows a searchable list of templates with category tabs and a grid of template cards. When a template is selected, it is inserted into the designer store at the next available grid position.
- *
- * @returns The rendered Templates browser UI as a React element.
- */
+function getInnerWidth(widthUnits: number, style: BinStyle): number {
+  const wallThickness = STYLE_WALL_THICKNESS[style] ?? GRIDFINITY.WALL_THICKNESS;
+  return widthUnits * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+}
+
+
 export function TemplateBrowser() {
   const [activeCategory, setActiveCategory] = useState<TemplateCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const { inserts, addInsert } = useDesignerStore(
+  const { inserts, addInsert, binWidth, style } = useDesignerStore(
     useShallow((s) => ({
       inserts: s.params.inserts,
       addInsert: s.addInsert,
+      binWidth: s.params.width,
+      style: s.params.style,
     }))
   );
+
+  const innerWidth = getInnerWidth(binWidth, style);
 
   const filteredTemplates = useMemo(() => {
     // Apply search first, then category filter
@@ -88,7 +93,7 @@ export function TemplateBrowser() {
   }, [searchQuery, activeCategory]);
 
   const handleAddTemplate = (template: InsertTemplate) => {
-    const pos = getNextPosition(inserts, template.defaults.width, template.defaults.depth);
+    const pos = getNextPosition(inserts, template.defaults.width, template.defaults.depth, innerWidth);
     const insert: Insert = {
       id: generateInsertId(),
       templateId: template.id,

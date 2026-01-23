@@ -73,7 +73,8 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   }, [newDesign, syncUrlToDesign, onClose]);
 
   const handleDelete = useCallback(
-    async (id: string) => {
+    async (id: string, name: string) => {
+      if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
       const result = await deleteDesign(id);
       if (isOk(result)) {
         setDesigns((prev) => prev.filter((d) => d.id !== id));
@@ -226,7 +227,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                       </svg>
                     </button>
                     <button
-                      onClick={() => void handleDelete(design.id)}
+                      onClick={() => void handleDelete(design.id, design.name)}
                       className="rounded p-1 text-content-secondary hover:bg-red-500/10 hover:text-red-400"
                       aria-label={`Delete ${design.name}`}
                     >

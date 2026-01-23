@@ -86,6 +86,7 @@ export function MobileParameterTabs() {
         {TABS.map((tab) => (
           <button
             key={tab.id}
+            id={`tab-${tab.id}`}
             role="tab"
             aria-selected={activeTab === tab.id}
             aria-controls={`panel-${tab.id}`}
@@ -108,7 +109,7 @@ export function MobileParameterTabs() {
         <div
           id="panel-shape"
           role="tabpanel"
-          aria-labelledby="shape"
+          aria-labelledby="tab-shape"
           hidden={activeTab !== 'shape'}
         >
           {activeTab === 'shape' && (
@@ -124,7 +125,7 @@ export function MobileParameterTabs() {
         <div
           id="panel-base"
           role="tabpanel"
-          aria-labelledby="base"
+          aria-labelledby="tab-base"
           hidden={activeTab !== 'base'}
         >
           {activeTab === 'base' && (
@@ -140,7 +141,7 @@ export function MobileParameterTabs() {
         <div
           id="panel-features"
           role="tabpanel"
-          aria-labelledby="features"
+          aria-labelledby="tab-features"
           hidden={activeTab !== 'features'}
         >
           {activeTab === 'features' && (
@@ -156,7 +157,7 @@ export function MobileParameterTabs() {
         <div
           id="panel-presets"
           role="tabpanel"
-          aria-labelledby="presets"
+          aria-labelledby="tab-presets"
           hidden={activeTab !== 'presets'}
         >
           {activeTab === 'presets' && <PresetSelector />}

@@ -6,7 +6,7 @@
  * The bin floor acts as the pocket bottom (no separate floor is generated).
  */
 
-import type { MeshData } from '../../bridge/types';
+import type { MeshData } from '@/features/generation/bridge/types';
 import type { Insert } from '@/features/bin-designer/types';
 import { createBox, createCylinder, mergeMeshes } from './geometry';
 
@@ -88,9 +88,9 @@ function generateSingleInsert(
     case 'slot':
       return generateRectPocket(worldX, worldY, insert.width, insert.depth, baseZ, height, insert.rotation);
     case 'circle':
-      return generateCirclePocket(worldX, worldY, insert.width / 2, baseZ, height);
+      return generateCirclePocket(worldX, worldY, Math.min(insert.width, insert.depth) / 2, baseZ, height);
     case 'hexagon':
-      return generateHexPocket(worldX, worldY, insert.width / 2, baseZ, height);
+      return generateHexPocket(worldX, worldY, Math.min(insert.width, insert.depth) / 2, baseZ, height);
     case 'rounded-rect':
       return generateRoundedRectPocket(worldX, worldY, insert.width, insert.depth, insert.cornerRadius, baseZ, height, insert.rotation);
     default:
@@ -218,8 +218,8 @@ function generateRoundedRectPocket(
   const t = POCKET_WALL_THICKNESS;
   const r = Math.min(cornerRadius, w / 2, d / 2);
 
-  if (r <= 0) {
-    // No corner radius, fall back to rectangle
+  if (r <= POCKET_WALL_THICKNESS) {
+    // Corner radius too small for pocket walls — fall back to rectangle
     return generateRectPocket(x, y, w, d, z, height, 0);
   }
 

@@ -50,7 +50,11 @@ export function loadUserPresets(): UserPreset[] {
  * @param presets - The list of UserPreset objects to save
  */
 function saveUserPresets(presets: UserPreset[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
+  } catch {
+    // Quota exceeded or localStorage unavailable — silently fail
+  }
 }
 
 /**
@@ -68,7 +72,12 @@ export function createUserPreset(
   name: string,
   description: string,
   params: BinParams
-): UserPreset {
+): UserPreset | null {
+  const existing = loadUserPresets();
+  if (existing.length >= MAX_USER_PRESETS) {
+    return null;
+  }
+
   const preset: UserPreset = {
     id: generatePresetId(),
     name: name.trim(),
@@ -85,7 +94,6 @@ export function createUserPreset(
     createdAt: Date.now(),
   };
 
-  const existing = loadUserPresets();
   saveUserPresets([...existing, preset]);
   return preset;
 }
