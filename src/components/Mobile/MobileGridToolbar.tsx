@@ -43,7 +43,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
   const canZoomIn = zoom < CONSTRAINTS.ZOOM_MAX;
 
   return (
-    <div className="flex items-center justify-between px-3 py-2 flex-shrink-0 bg-surface-secondary border-b border-stroke-subtle">
+    <div className="flex items-center justify-between px-3 py-2 flex-shrink-0 bg-surface-secondary border-b border-stroke-subtle gap-2 overflow-x-auto">
       {/* Left: Layer indicator (tappable) */}
       <button
         onClick={() => toggleMobilePanel('layers')}
@@ -92,7 +92,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
       )}
 
       {/* Right: 3D preview + Zoom controls */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-shrink-0">
         {/* 3D Preview toggle */}
         <button
           onClick={toggleIsometricPreview}
