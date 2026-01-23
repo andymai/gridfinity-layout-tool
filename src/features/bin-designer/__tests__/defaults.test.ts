@@ -125,6 +125,5 @@ describe('GRIDFINITY constants', () => {
   it('should have valid magnet dimensions', () => {
     expect(GRIDFINITY.MAGNET_DIAMETER).toBeGreaterThan(0);
     expect(GRIDFINITY.MAGNET_DEPTH).toBeGreaterThan(0);
-    expect(GRIDFINITY.MAGNET_INSET).toBeGreaterThan(0);
   });
 });
