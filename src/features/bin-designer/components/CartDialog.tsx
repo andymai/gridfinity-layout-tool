@@ -9,6 +9,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useCartStore } from '@/features/bin-designer/store/cart';
 import { batchExport } from '@/features/bin-designer/utils/batchExport';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import type { BatchProgress } from '@/features/bin-designer/utils/batchExport';
 import type { CartItem } from '@/features/bin-designer/types';
 
@@ -38,6 +39,11 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
   const [progress, setProgress] = useState<BatchProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  const dialogRef = useFocusTrap<HTMLDivElement>({
+    active: open,
+    onEscape: onClose,
+  });
 
   const handleExport = useCallback(async () => {
     if (items.length === 0) return;
@@ -101,7 +107,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div ref={dialogRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div
         className="mx-4 flex w-full max-w-lg flex-col rounded-lg border border-stroke-subtle bg-surface shadow-xl"
         style={{ maxHeight: '80vh' }}

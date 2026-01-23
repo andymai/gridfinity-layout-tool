@@ -10,6 +10,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useDesignerSharing } from '@/features/bin-designer/hooks/useDesignerSharing';
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 
 interface ShareDialogProps {
   open: boolean;
@@ -31,6 +32,11 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
   const [loadInput, setLoadInput] = useState('');
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const dialogRef = useFocusTrap<HTMLDivElement>({
+    active: open,
+    onEscape: onClose,
+  });
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -75,7 +81,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div ref={dialogRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div
         className="mx-4 w-full max-w-md rounded-lg border border-stroke-subtle bg-surface p-6 shadow-xl"
         role="dialog"

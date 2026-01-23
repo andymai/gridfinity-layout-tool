@@ -6,7 +6,7 @@
  * are shown as "coming soon" placeholders.
  */
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
@@ -16,6 +16,7 @@ import type { FileNameStyle } from '@/features/bin-designer/utils/fileNaming';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize } from '@/features/generation/export/stlExporter';
 import { estimate3MFFileSize } from '@/features/generation/export/threemfExporter';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 
 export function ExportDialog() {
   const { exportDialogOpen, params, triangleCount } = useDesignerStore(
@@ -33,6 +34,12 @@ export function ExportDialog() {
   const [nameStyle, setNameStyle] = useState<FileNameStyle>('descriptive');
   const [format, setFormat] = useState<ExportFormat>('stl');
 
+  const closeDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
+  const dialogRef = useFocusTrap<HTMLDivElement>({
+    active: exportDialogOpen,
+    onEscape: closeDialog,
+  });
+
   if (!exportDialogOpen) return null;
 
   const fileName = generateFileName(params, format, nameStyle);
@@ -45,9 +52,10 @@ export function ExportDialog() {
 
   return (
     <div
+      ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={(e) => {
-        if (e.target === e.currentTarget) setExportDialogOpen(false);
+        if (e.target === e.currentTarget) closeDialog();
       }}
       role="dialog"
       aria-modal="true"

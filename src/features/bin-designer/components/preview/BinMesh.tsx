@@ -10,9 +10,10 @@ import { useShallow } from 'zustand/react/shallow';
 
 interface BinMeshProps {
   wireframe: boolean;
+  highContrast?: boolean;
 }
 
-export function BinMesh({ wireframe }: BinMeshProps) {
+export function BinMesh({ wireframe, highContrast = false }: BinMeshProps) {
   const meshRef = useRef<THREE.Mesh>(null);
 
   const { vertices, normals } = useDesignerStore(
@@ -43,9 +44,9 @@ export function BinMesh({ wireframe }: BinMeshProps) {
   return (
     <mesh ref={meshRef} geometry={geometry}>
       <meshStandardMaterial
-        color="#e5e7eb"
-        roughness={0.5}
-        metalness={0}
+        color={highContrast ? '#ffffff' : '#e5e7eb'}
+        roughness={highContrast ? 0.3 : 0.5}
+        metalness={highContrast ? 0.1 : 0}
         wireframe={wireframe}
         side={THREE.DoubleSide}
       />

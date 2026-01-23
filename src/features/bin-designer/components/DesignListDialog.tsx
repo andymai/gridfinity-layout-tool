@@ -11,6 +11,7 @@ import { listDesigns, deleteDesign } from '@/core/storage/DesignerStorage';
 import { removeRegistryEntry } from '../store/customBinRegistry';
 import { useDesignerStore } from '../store';
 import { useDesignerRouting } from '../hooks/useDesignerRouting';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import type { SavedDesign } from '../types';
 
 interface DesignListDialogProps {
@@ -30,6 +31,11 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+
+  const dialogRef = useFocusTrap<HTMLDivElement>({
+    active: open,
+    onEscape: onClose,
+  });
 
   const loadDesign = useDesignerStore((s) => s.loadDesign);
   const newDesign = useDesignerStore((s) => s.newDesign);
@@ -106,6 +112,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
   return (
     <div
+      ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={onClose}
       role="dialog"

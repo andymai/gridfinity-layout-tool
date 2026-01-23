@@ -13,6 +13,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { BinMesh, PreviewControls, PreviewSkeleton, type CameraPreset } from './preview';
 import { useDesignerKeyboard } from '../hooks/useDesignerKeyboard';
 import { setPreviewCanvas, clearPreviewCanvas } from '../utils/thumbnail';
+import { describeBin, getStatusAnnouncement } from '../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 
 /** Camera positions for each preset (eye position looking at origin) */
@@ -45,13 +46,18 @@ export function PreviewCanvas() {
     return () => clearPreviewCanvas();
   }, []);
 
-  const { wasmStatus, generationStatus, hasMesh } = useDesignerStore(
+  const { wasmStatus, generationStatus, hasMesh, params } = useDesignerStore(
     useShallow((s) => ({
       wasmStatus: s.wasmStatus,
       generationStatus: s.generation.status,
       hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
+      params: s.params,
     }))
   );
+
+  // Screen reader description of the current bin
+  const binDescription = describeBin(params);
+  const statusAnnouncement = getStatusAnnouncement(wasmStatus, generationStatus, hasMesh);
 
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
@@ -84,11 +90,30 @@ export function PreviewCanvas() {
     onRedo: redo,
   });
 
+  const [highContrast, setHighContrast] = useState(false);
+
+  const toggleHighContrast = useCallback(() => {
+    setHighContrast((hc) => !hc);
+  }, []);
+
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';
   const showOverlay = generationStatus === 'generating' && hasMesh;
 
   return (
-    <div className="relative h-full w-full">
+    <div
+      className="relative h-full w-full"
+      role="img"
+      aria-label={binDescription}
+    >
+      {/* ARIA live region for status announcements (visually hidden) */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {statusAnnouncement}
+      </div>
+
       {showSkeleton ? (
         <PreviewSkeleton wasmStatus={wasmStatus} generationStatus={generationStatus} />
       ) : (
@@ -110,17 +135,20 @@ export function PreviewCanvas() {
             }}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
-            {/* Lighting */}
-            <ambientLight intensity={0.4} />
-            <directionalLight position={[50, -50, 100]} intensity={0.8} />
-            <directionalLight position={[-30, 40, 60]} intensity={0.3} />
+            {/* Scene background (high contrast = dark) */}
+            <color attach="background" args={[highContrast ? '#1a1a2e' : '#f8f9fa']} />
+
+            {/* Lighting - boosted for high contrast */}
+            <ambientLight intensity={highContrast ? 0.6 : 0.4} />
+            <directionalLight position={[50, -50, 100]} intensity={highContrast ? 1.0 : 0.8} />
+            <directionalLight position={[-30, 40, 60]} intensity={highContrast ? 0.5 : 0.3} />
 
             {/* Mesh */}
-            <BinMesh wireframe={wireframe} />
+            <BinMesh wireframe={wireframe} highContrast={highContrast} />
 
-            {/* Floor grid (subtle) */}
+            {/* Floor grid */}
             <gridHelper
-              args={[200, 20, '#d1d5db', '#e5e7eb']}
+              args={[200, 20, highContrast ? '#4a5568' : '#d1d5db', highContrast ? '#2d3748' : '#e5e7eb']}
               rotation={[Math.PI / 2, 0, 0]}
               position={[0, 0, 0]}
             />
@@ -152,7 +180,9 @@ export function PreviewCanvas() {
           {/* Control buttons */}
           <PreviewControls
             wireframe={wireframe}
+            highContrast={highContrast}
             onWireframeToggle={toggleWireframe}
+            onHighContrastToggle={toggleHighContrast}
             onCameraPreset={setCameraPreset}
             onResetView={resetView}
           />
