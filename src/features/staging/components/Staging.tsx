@@ -509,7 +509,7 @@ export function Staging() {
       <div className="flex items-center justify-between mb-2">
         <button
           type="button"
-          className="flex items-center gap-2 bg-transparent hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 bg-transparent rounded hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-accent"
           onClick={handleToggleExpand}
           aria-expanded={isExpanded}
           aria-controls="staging-stash-panel"
