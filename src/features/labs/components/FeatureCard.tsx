@@ -91,7 +91,7 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
             />
           </button>
         ) : isGraduated ? (
-          <div className="flex items-center gap-2 text-xs text-green-400">
+          <div className="flex items-center gap-2 text-xs text-success">
             <CheckIcon className="w-4 h-4" />
             <span>Always on</span>
           </div>

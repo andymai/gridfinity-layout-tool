@@ -245,7 +245,7 @@ export function LayoutActions({
                       {isConfirmingDelete ? 'Click to confirm' : 'Delete'}
                     </span>
                     {isConfirmingDelete && entry.preview.binCount > 0 && (
-                      <span className="text-xs text-red-200 ml-6">
+                      <span className="text-xs text-danger/60 ml-6">
                         {entry.preview.binCount} bin{entry.preview.binCount === 1 ? '' : 's'} will
                         be deleted
                       </span>
