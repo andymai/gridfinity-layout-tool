@@ -4,14 +4,19 @@
  * Produces a Gridfinity bin mesh from BinParams using pure TypeScript math.
  * Geometry is represented as triangle mesh (vertices + normals).
  *
- * Alpha implementation: simple box geometry without fillets.
- * Future: swap with replicad BREP for proper fillets and boolean ops.
+ * Features proper Gridfinity rounded geometry:
+ * - Outer vertical corners: quarter-cylinder shells (R=3.75mm)
+ * - Inner cavity corners: concave fills (R=2.8mm)
+ * - Base profile: smooth arc transitions per cell
  */
 
 import type { BinParams } from '@/features/bin-designer/types';
 import type { MeshData } from '../../bridge/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
-import { createBox, createHollowBox, createDividerWall, createScoop, createLabelTab, createCornerGusset, mergeMeshes } from './geometry';
+import {
+  createBox, createDividerWall, createScoop, createLabelTab,
+  createCornerGusset, createQuarterCylinderShell, createBaseArc, mergeMeshes
+} from './geometry';
 import { getStyleConstraints } from '@/features/bin-designer/utils/styleConstraints';
 
 /** Converts grid units to mm (width/depth) */
@@ -57,24 +62,54 @@ export function generateBinGeometry(params: BinParams): MeshData {
   // Wall/cavity height above the base
   const wallHeight = totalHeight - baseHeight;
 
+  const halfW = outerWidth / 2;
+  const halfD = outerDepth / 2;
+
   // Check if any wall cutouts are active
   const hasWallCutouts = !constraints.disabledFeatures.includes('walls') &&
     (params.walls.front > 0 || params.walls.back > 0 || params.walls.left > 0 || params.walls.right > 0);
 
-  // For vase mode: just the outer shell, no base profile or interior features
+  // For vase mode: rounded outer shell, no base profile or interior features
   if (params.style === 'vase') {
-    return createHollowBox(outerWidth, outerDepth, totalHeight, wallThickness, baseHeight);
+    const vaseMeshes: MeshData[] = [];
+    const outerR = GRIDFINITY.OUTER_FILLET;
+    const innerR = outerR - wallThickness;
+    const vaseWallH = totalHeight - baseHeight;
+
+    // Bottom plate
+    vaseMeshes.push(createBox(-halfW, -halfD, 0, outerWidth, outerDepth, baseHeight));
+
+    if (vaseWallH > 0 && innerR > 0) {
+      const flatFB = outerWidth - 2 * outerR;
+      const flatLR = outerDepth - 2 * outerR;
+
+      // Flat walls (between corners)
+      if (flatFB > 0) {
+        vaseMeshes.push(createBox(-halfW + outerR, -halfD, baseHeight, flatFB, wallThickness, vaseWallH));
+        vaseMeshes.push(createBox(-halfW + outerR, halfD - wallThickness, baseHeight, flatFB, wallThickness, vaseWallH));
+      }
+      if (flatLR > 0) {
+        vaseMeshes.push(createBox(-halfW, -halfD + outerR, baseHeight, wallThickness, flatLR, vaseWallH));
+        vaseMeshes.push(createBox(halfW - wallThickness, -halfD + outerR, baseHeight, wallThickness, flatLR, vaseWallH));
+      }
+
+      // Rounded corners
+      vaseMeshes.push(createQuarterCylinderShell(-halfW + outerR, -halfD + outerR, baseHeight, vaseWallH, outerR, innerR, Math.PI));
+      vaseMeshes.push(createQuarterCylinderShell(halfW - outerR, -halfD + outerR, baseHeight, vaseWallH, outerR, innerR, 3 * Math.PI / 2));
+      vaseMeshes.push(createQuarterCylinderShell(-halfW + outerR, halfD - outerR, baseHeight, vaseWallH, outerR, innerR, Math.PI / 2));
+      vaseMeshes.push(createQuarterCylinderShell(halfW - outerR, halfD - outerR, baseHeight, vaseWallH, outerR, innerR, 0));
+    }
+
+    return mergeMeshes(vaseMeshes);
   }
 
   const meshes: MeshData[] = [];
 
-  const halfW = outerWidth / 2;
-  const halfD = outerDepth / 2;
-
   // 1. Per-cell base profiles (stepped: narrow at bottom for baseplate fit)
   meshes.push(generateBaseProfileMesh(outerWidth, outerDepth, baseHeight, params.width, params.depth));
 
-  // 2. Walls (from z=baseHeight to z=totalHeight)
+  // 2. Walls with rounded corners (from z=baseHeight to z=totalHeight)
+  // Outer corners use OUTER_FILLET radius; inner corners adapt to wall thickness.
   if (wallHeight > 0) {
     const innerWidth = outerWidth - 2 * wallThickness;
     const innerDepth = outerDepth - 2 * wallThickness;
@@ -82,25 +117,54 @@ export function generateBinGeometry(params: BinParams): MeshData {
     if (innerWidth <= 0 || innerDepth <= 0) {
       // Solid block above base (walls too thick for cavity)
       meshes.push(createBox(-halfW, -halfD, baseHeight, outerWidth, outerDepth, wallHeight));
-    } else if (hasWallCutouts) {
-      // Per-wall height reduction from cutout percentages
-      const innerHalfD = innerDepth / 2;
-      const frontH = wallHeight * (1 - params.walls.front / 100);
-      const backH = wallHeight * (1 - params.walls.back / 100);
-      const leftH = wallHeight * (1 - params.walls.left / 100);
-      const rightH = wallHeight * (1 - params.walls.right / 100);
-
-      if (frontH > 0) meshes.push(createBox(-halfW, -halfD, baseHeight, outerWidth, wallThickness, frontH));
-      if (backH > 0) meshes.push(createBox(-halfW, halfD - wallThickness, baseHeight, outerWidth, wallThickness, backH));
-      if (leftH > 0) meshes.push(createBox(-halfW, -innerHalfD, baseHeight, wallThickness, innerDepth, leftH));
-      if (rightH > 0) meshes.push(createBox(halfW - wallThickness, -innerHalfD, baseHeight, wallThickness, innerDepth, rightH));
     } else {
-      // Full-height walls
-      const innerHalfD = innerDepth / 2;
-      meshes.push(createBox(-halfW, -halfD, baseHeight, outerWidth, wallThickness, wallHeight));
-      meshes.push(createBox(-halfW, halfD - wallThickness, baseHeight, outerWidth, wallThickness, wallHeight));
-      meshes.push(createBox(-halfW, -innerHalfD, baseHeight, wallThickness, innerDepth, wallHeight));
-      meshes.push(createBox(halfW - wallThickness, -innerHalfD, baseHeight, wallThickness, innerDepth, wallHeight));
+      const outerR = GRIDFINITY.OUTER_FILLET; // 3.75mm
+      const innerR = outerR - wallThickness;   // Adapts per style (e.g., 2.8mm for standard)
+
+      // Flat wall lengths (between corner arcs)
+      const flatFrontBackLen = outerWidth - 2 * outerR;
+      const flatLeftRightLen = outerDepth - 2 * outerR;
+
+      // Per-wall heights (affected by cutouts)
+      const frontH = hasWallCutouts ? wallHeight * (1 - params.walls.front / 100) : wallHeight;
+      const backH = hasWallCutouts ? wallHeight * (1 - params.walls.back / 100) : wallHeight;
+      const leftH = hasWallCutouts ? wallHeight * (1 - params.walls.left / 100) : wallHeight;
+      const rightH = hasWallCutouts ? wallHeight * (1 - params.walls.right / 100) : wallHeight;
+
+      // Front flat wall (shortened, between corner arcs)
+      if (frontH > 0 && flatFrontBackLen > 0) {
+        meshes.push(createBox(-halfW + outerR, -halfD, baseHeight, flatFrontBackLen, wallThickness, frontH));
+      }
+      // Back flat wall
+      if (backH > 0 && flatFrontBackLen > 0) {
+        meshes.push(createBox(-halfW + outerR, halfD - wallThickness, baseHeight, flatFrontBackLen, wallThickness, backH));
+      }
+      // Left flat wall
+      if (leftH > 0 && flatLeftRightLen > 0) {
+        meshes.push(createBox(-halfW, -halfD + outerR, baseHeight, wallThickness, flatLeftRightLen, leftH));
+      }
+      // Right flat wall
+      if (rightH > 0 && flatLeftRightLen > 0) {
+        meshes.push(createBox(halfW - wallThickness, -halfD + outerR, baseHeight, wallThickness, flatLeftRightLen, rightH));
+      }
+
+      // 4 rounded outer corners (quarter-cylinder shells)
+      // Corner height = minimum of the two adjacent walls
+      if (innerR > 0) {
+        const flH = Math.min(frontH, leftH);
+        const frH = Math.min(frontH, rightH);
+        const blH = Math.min(backH, leftH);
+        const brH = Math.min(backH, rightH);
+
+        // Front-left corner: center at (-halfW+outerR, -halfD+outerR), arc from PI to 3PI/2
+        if (flH > 0) meshes.push(createQuarterCylinderShell(-halfW + outerR, -halfD + outerR, baseHeight, flH, outerR, innerR, Math.PI));
+        // Front-right corner: center at (+halfW-outerR, -halfD+outerR), arc from 3PI/2 to 2PI
+        if (frH > 0) meshes.push(createQuarterCylinderShell(halfW - outerR, -halfD + outerR, baseHeight, frH, outerR, innerR, 3 * Math.PI / 2));
+        // Back-left corner: center at (-halfW+outerR, +halfD-outerR), arc from PI/2 to PI
+        if (blH > 0) meshes.push(createQuarterCylinderShell(-halfW + outerR, halfD - outerR, baseHeight, blH, outerR, innerR, Math.PI / 2));
+        // Back-right corner: center at (+halfW-outerR, +halfD-outerR), arc from 0 to PI/2
+        if (brH > 0) meshes.push(createQuarterCylinderShell(halfW - outerR, halfD - outerR, baseHeight, brH, outerR, innerR, 0));
+      }
     }
   }
 
@@ -138,16 +202,19 @@ export function generateBinGeometry(params: BinParams): MeshData {
 }
 
 /**
- * Generates per-cell stepped base profiles.
+ * Generates per-cell base profiles with smooth arc transitions.
  *
  * Each grid cell gets its OWN profile (narrow at bottom, wider at top),
  * with gaps between adjacent cells where baseplate ridges sit.
  * This is what makes bins lock into Gridfinity baseplates.
  *
  * Per cell:
- * - Lower step (z=0 to 2.15mm): narrow (~34.5mm for 1U cell)
- * - Upper step (z=2.15 to 7mm): wider (~41.5mm for 1U cell)
+ * - Arc transition (z=0 to 2.15mm): smooth curve from narrow (~34.5mm) to wide (~41.5mm)
+ * - Upper step (z=2.15 to 7mm): full width flat (bridge/floor)
  * - Gap between cells: ~0.5mm (baseplate ridge slot)
+ *
+ * The arc replaces the old sharp step, matching real Gridfinity's smooth
+ * stacking profile that slides into baseplates.
  *
  * Fractional cells (e.g., 0.5U edge) get proportionally smaller profiles.
  */
@@ -160,9 +227,9 @@ function generateBaseProfileMesh(
 ): MeshData {
   const meshes: MeshData[] = [];
 
-  const profileStep = GRIDFINITY.BASE_TOP_FILLET; // 2.15mm transition height
-  const upperH = baseHeight - profileStep; // 4.85mm upper bridge height
-  const inset = GRIDFINITY.OUTER_FILLET; // 3.75mm inset per side for lower step
+  const arcRadius = GRIDFINITY.BASE_TOP_FILLET; // 2.15mm arc height
+  const upperH = baseHeight - arcRadius; // 4.85mm flat upper section
+  const inset = GRIDFINITY.OUTER_FILLET; // 3.75mm inset per side for narrow base
   const cellGap = GRIDFINITY.TOLERANCE; // 0.5mm gap between adjacent profiles
 
   // Cell pitch: evenly distribute cells across bin dimensions
@@ -198,18 +265,21 @@ function generateBaseProfileMesh(
       const bottomW = spanX - 2 * inset;
       const bottomD = spanY - 2 * inset;
 
-      // Lower step (narrow, baseplate groove fit)
-      if (bottomW > 0 && bottomD > 0 && profileStep > 0) {
-        meshes.push(createBox(
-          cx - bottomW / 2, cy - bottomD / 2, 0,
-          bottomW, bottomD, profileStep
+      // Smooth arc transition from narrow bottom to wide top (replaces sharp step)
+      if (bottomW > 0 && bottomD > 0 && arcRadius > 0) {
+        meshes.push(createBaseArc(
+          cx, cy,
+          bottomW, bottomD,
+          topW, topD,
+          arcRadius,
+          0 // arc starts at z=0
         ));
       }
 
-      // Upper step (wider, bridge to cavity floor)
+      // Upper flat section (bridge to cavity floor)
       if (topW > 0 && topD > 0 && upperH > 0) {
         meshes.push(createBox(
-          cx - topW / 2, cy - topD / 2, profileStep,
+          cx - topW / 2, cy - topD / 2, arcRadius,
           topW, topD, upperH
         ));
       }
