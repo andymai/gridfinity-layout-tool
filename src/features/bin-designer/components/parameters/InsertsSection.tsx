@@ -5,8 +5,10 @@
  * for adding new inserts from predefined templates.
  */
 
+import { useCallback } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useShallow } from 'zustand/react/shallow';
+import { useToastStore } from '@/core/store/toast';
 import { InsertFloorPlan } from './InsertFloorPlan';
 import { TemplateBrowser } from './TemplateBrowser';
 import type { Insert } from '@/features/bin-designer/types';
@@ -38,6 +40,13 @@ export function InsertsSection() {
       clearInserts: s.clearInserts,
     }))
   );
+  const addToast = useToastStore((s) => s.addToast);
+
+  const handleClearAll = useCallback(() => {
+    if (!window.confirm(`Remove all ${inserts.length} inserts? This cannot be undone.`)) return;
+    clearInserts();
+    addToast({ message: 'All inserts removed', type: 'success', duration: 2000 });
+  }, [inserts.length, clearInserts, addToast]);
 
   return (
     <div className="space-y-3">
@@ -49,7 +58,7 @@ export function InsertsSection() {
               Placed ({inserts.length})
             </span>
             <button
-              onClick={clearInserts}
+              onClick={handleClearAll}
               className="text-xs text-content-tertiary hover:text-red-400"
               aria-label="Remove all inserts"
             >

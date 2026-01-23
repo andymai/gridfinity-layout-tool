@@ -210,8 +210,10 @@ describe('PresetSelector', () => {
 
       expect(screen.getByLabelText('Apply To Delete preset')).toBeInTheDocument();
 
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
       fireEvent.click(screen.getByLabelText('Delete To Delete preset'));
 
+      expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('Delete "To Delete"'));
       expect(screen.queryByLabelText('Apply To Delete preset')).not.toBeInTheDocument();
       expect(loadStoredPresets()).toHaveLength(0);
     });
