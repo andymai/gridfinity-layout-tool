@@ -246,7 +246,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             role="status"
           >
             <svg
-              className="w-3 h-3 animate-spin"
+              className="w-3 h-3 animate-spin motion-reduce:animate-none"
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden="true"

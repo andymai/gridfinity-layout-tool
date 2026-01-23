@@ -148,7 +148,7 @@ export const GridToolbar = memo(function GridToolbar({
         {paintSize && (
           <button
             onClick={() => setPaintSize(null)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary-muted border border-accent hover:bg-accent/20 transition-colors cursor-pointer ${shouldPulsePaintHint ? 'animate-pulse' : ''}`}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary-muted border border-accent hover:bg-accent/20 transition-colors cursor-pointer ${shouldPulsePaintHint ? 'animate-pulse motion-reduce:animate-none' : ''}`}
             aria-label="Exit paint mode"
             title="Click to exit paint mode"
           >
