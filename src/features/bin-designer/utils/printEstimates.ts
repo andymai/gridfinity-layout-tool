@@ -109,10 +109,11 @@ function computeBinVolume(params: BinParams): number {
   // Outer dimensions in mm
   const outerW = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const totalH = params.height * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT;
+  // Height units INCLUDE the base (first unit = base, no cavity)
+  const totalH = params.height * GRIDFINITY.HEIGHT_UNIT;
 
-  // Bottom thickness
-  const bottomH = GRIDFINITY.BASE_HEIGHT + GRIDFINITY.BOTTOM_THICKNESS;
+  // Base height (7mm dead space: profile + bridge + floor, no cavity here)
+  const bottomH = GRIDFINITY.BASE_HEIGHT;
 
   // For vase mode: thin outer shell only
   if (params.style === 'vase') {

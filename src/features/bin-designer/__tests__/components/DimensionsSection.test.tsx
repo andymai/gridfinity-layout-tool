@@ -27,11 +27,11 @@ describe('DimensionsSection', () => {
     expect(mmLabels.length).toBe(2);
   });
 
-  it('displays total mm for height (including base)', () => {
+  it('displays body height and lip height for height', () => {
     render(<DimensionsSection />);
 
-    // Default height is 3 units = 3*7 + 5 = 26mm total
-    expect(screen.getByText('26mm total')).toBeInTheDocument();
+    // Default height is 3 units = 3*7 = 21mm body + 4.4mm lip
+    expect(screen.getByText('21mm body + 4.4mm lip')).toBeInTheDocument();
   });
 
   it('renders quick-select buttons for width', () => {
@@ -98,7 +98,8 @@ describe('DimensionsSection', () => {
 
     const slider = screen.getByLabelText('Height slider');
     expect(slider).toHaveAttribute('step', '1');
-    expect(slider).toHaveAttribute('min', '1');
+    // MIN_HEIGHT is 2 (1U = base only, no usable cavity)
+    expect(slider).toHaveAttribute('min', '2');
     expect(slider).toHaveAttribute('max', '12');
   });
 

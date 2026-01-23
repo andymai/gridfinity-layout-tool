@@ -11,7 +11,7 @@
 import type { BinParams } from '@/features/bin-designer/types';
 import type { MeshData } from '../../bridge/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
-import { createHollowBox, createHollowBoxWithCutouts, createDividerWall, createScoop, createLabelTab, createCornerGusset, mergeMeshes } from './geometry';
+import { createBox, createHollowBox, createDividerWall, createScoop, createLabelTab, createCornerGusset, mergeMeshes } from './geometry';
 import { getStyleConstraints } from '@/features/bin-designer/utils/styleConstraints';
 
 /** Converts grid units to mm (width/depth) */
@@ -33,7 +33,13 @@ function getWallThickness(style: string): number {
  * Generates complete bin geometry from parameters.
  *
  * Geometry is centered on X/Y axes, with Z=0 at the bottom of the bin.
- * Includes outer shell, inner cavity, dividers, scoops, label tab, and style reinforcements.
+ * Height units INCLUDE the base: a 3U bin is 3×7=21mm tall (body).
+ * The base occupies the first 7mm (no cavity there).
+ * Cavity height = (height - 1) × 7mm.
+ *
+ * Base profile: stepped per Gridfinity spec so bins lock into baseplates.
+ * Lower step (~2.15mm): narrower for baseplate groove fit.
+ * Upper step (to 7mm): full outer width (bridge/floor).
  */
 export function generateBinGeometry(params: BinParams): MeshData {
   const wallThickness = getWallThickness(params.style);
@@ -42,60 +48,127 @@ export function generateBinGeometry(params: BinParams): MeshData {
   // Outer dimensions in mm (subtract tolerance for baseplate fit)
   const outerWidth = gridToMm(params.width) - GRIDFINITY.TOLERANCE;
   const outerDepth = gridToMm(params.depth) - GRIDFINITY.TOLERANCE;
-  const totalHeight = heightToMm(params.height) + GRIDFINITY.BASE_HEIGHT;
 
-  // Base + shell
-  const bottomThickness = GRIDFINITY.BASE_HEIGHT + GRIDFINITY.BOTTOM_THICKNESS;
+  // Height units INCLUDE the base. 3U = 3*7 = 21mm body height.
+  const totalHeight = heightToMm(params.height);
+
+  // Base = first height unit (7mm dead space: profile + bridge + floor)
+  const baseHeight = GRIDFINITY.BASE_HEIGHT;
+  // Wall/cavity height above the base
+  const wallHeight = totalHeight - baseHeight;
 
   // Check if any wall cutouts are active
   const hasWallCutouts = !constraints.disabledFeatures.includes('walls') &&
     (params.walls.front > 0 || params.walls.back > 0 || params.walls.left > 0 || params.walls.right > 0);
 
-  // For vase mode: just the outer shell, no interior features
+  // For vase mode: just the outer shell, no base profile or interior features
   if (params.style === 'vase') {
-    return createHollowBox(outerWidth, outerDepth, totalHeight, wallThickness, bottomThickness);
+    return createHollowBox(outerWidth, outerDepth, totalHeight, wallThickness, baseHeight);
   }
 
   const meshes: MeshData[] = [];
 
-  // Main shell (outer walls + bottom), with optional per-wall height reduction
-  if (hasWallCutouts) {
-    meshes.push(createHollowBoxWithCutouts(
-      outerWidth, outerDepth, totalHeight, wallThickness, bottomThickness,
-      params.walls
-    ));
-  } else {
-    meshes.push(createHollowBox(outerWidth, outerDepth, totalHeight, wallThickness, bottomThickness));
+  const halfW = outerWidth / 2;
+  const halfD = outerDepth / 2;
+
+  // 1. Base profile (stepped: narrow at bottom for baseplate fit)
+  meshes.push(generateBaseProfileMesh(outerWidth, outerDepth, baseHeight));
+
+  // 2. Walls (from z=baseHeight to z=totalHeight)
+  if (wallHeight > 0) {
+    const innerWidth = outerWidth - 2 * wallThickness;
+    const innerDepth = outerDepth - 2 * wallThickness;
+
+    if (innerWidth <= 0 || innerDepth <= 0) {
+      // Solid block above base (walls too thick for cavity)
+      meshes.push(createBox(-halfW, -halfD, baseHeight, outerWidth, outerDepth, wallHeight));
+    } else if (hasWallCutouts) {
+      // Per-wall height reduction from cutout percentages
+      const innerHalfD = innerDepth / 2;
+      const frontH = wallHeight * (1 - params.walls.front / 100);
+      const backH = wallHeight * (1 - params.walls.back / 100);
+      const leftH = wallHeight * (1 - params.walls.left / 100);
+      const rightH = wallHeight * (1 - params.walls.right / 100);
+
+      if (frontH > 0) meshes.push(createBox(-halfW, -halfD, baseHeight, outerWidth, wallThickness, frontH));
+      if (backH > 0) meshes.push(createBox(-halfW, halfD - wallThickness, baseHeight, outerWidth, wallThickness, backH));
+      if (leftH > 0) meshes.push(createBox(-halfW, -innerHalfD, baseHeight, wallThickness, innerDepth, leftH));
+      if (rightH > 0) meshes.push(createBox(halfW - wallThickness, -innerHalfD, baseHeight, wallThickness, innerDepth, rightH));
+    } else {
+      // Full-height walls
+      const innerHalfD = innerDepth / 2;
+      meshes.push(createBox(-halfW, -halfD, baseHeight, outerWidth, wallThickness, wallHeight));
+      meshes.push(createBox(-halfW, halfD - wallThickness, baseHeight, outerWidth, wallThickness, wallHeight));
+      meshes.push(createBox(-halfW, -innerHalfD, baseHeight, wallThickness, innerDepth, wallHeight));
+      meshes.push(createBox(halfW - wallThickness, -innerHalfD, baseHeight, wallThickness, innerDepth, wallHeight));
+    }
   }
 
   // Inner cavity dimensions (used by multiple features)
   const innerWidth = outerWidth - 2 * wallThickness;
   const innerDepth = outerDepth - 2 * wallThickness;
 
-  // Dividers (if any and not constrained)
+  // 3. Dividers (if any and not constrained)
   const hasDividers = !constraints.disabledFeatures.includes('dividers') &&
     (params.dividers.x > 0 || params.dividers.y > 0);
   if (hasDividers) {
-    const dividerMesh = generateDividers(params, outerWidth, outerDepth, totalHeight, wallThickness, bottomThickness);
+    const dividerMesh = generateDividers(params, outerWidth, outerDepth, totalHeight, wallThickness, baseHeight);
     meshes.push(dividerMesh);
   }
 
-  // Scoops (if enabled and not constrained)
+  // 4. Scoops (if enabled and not constrained)
   if (params.scoop && !constraints.disabledFeatures.includes('scoop')) {
-    const scoopMesh = generateScoops(params, innerWidth, innerDepth, wallThickness, bottomThickness);
+    const scoopMesh = generateScoops(params, innerWidth, innerDepth, wallThickness, baseHeight);
     meshes.push(scoopMesh);
   }
 
-  // Label tab (if enabled and not constrained)
+  // 5. Label tab (if enabled and not constrained)
   if (params.label.enabled && !constraints.disabledFeatures.includes('label')) {
     const labelMesh = generateLabelTabs(params, outerWidth, outerDepth, wallThickness, totalHeight);
     meshes.push(labelMesh);
   }
 
-  // Corner gussets for reinforced styles (solid, rugged)
+  // 6. Corner gussets for reinforced styles (solid, rugged)
   if (constraints.hasGussets) {
-    const gussetMesh = generateCornerGussets(outerWidth, outerDepth, wallThickness, bottomThickness, totalHeight);
+    const gussetMesh = generateCornerGussets(outerWidth, outerDepth, wallThickness, baseHeight, totalHeight);
     meshes.push(gussetMesh);
+  }
+
+  return mergeMeshes(meshes);
+}
+
+/**
+ * Generates the stepped base profile geometry.
+ *
+ * Real Gridfinity bins have a profiled base that locks into baseplates:
+ * - Lower step (z=0 to BASE_TOP_FILLET): narrower by OUTER_FILLET per side
+ * - Upper step (z=BASE_TOP_FILLET to BASE_HEIGHT): full outer width (bridge/floor)
+ *
+ * Alpha: simplified as two stacked boxes (no per-cell profiles or fillets).
+ */
+function generateBaseProfileMesh(
+  outerWidth: number,
+  outerDepth: number,
+  baseHeight: number
+): MeshData {
+  const meshes: MeshData[] = [];
+
+  const profileStep = GRIDFINITY.BASE_TOP_FILLET; // 2.15mm transition height
+  const inset = GRIDFINITY.OUTER_FILLET; // 3.75mm inset per side for lower step
+
+  // Lower step: narrower profile for baseplate groove fit
+  const lowerW = outerWidth - 2 * inset;
+  const lowerD = outerDepth - 2 * inset;
+  if (lowerW > 0 && lowerD > 0 && profileStep > 0) {
+    meshes.push(createBox(-lowerW / 2, -lowerD / 2, 0, lowerW, lowerD, profileStep));
+  }
+
+  // Upper step: full width bridge/floor
+  const upperH = baseHeight - profileStep;
+  if (upperH > 0) {
+    const halfW = outerWidth / 2;
+    const halfD = outerDepth / 2;
+    meshes.push(createBox(-halfW, -halfD, profileStep, outerWidth, outerDepth, upperH));
   }
 
   return mergeMeshes(meshes);
@@ -166,8 +239,8 @@ function generateScoops(
   const compWidth = innerWidth / compCountX;
   const compDepth = innerDepth / compCountY;
 
-  // Scoop radius: 40% of smaller compartment dimension, max 20mm
-  const radius = Math.min(compWidth * 0.4, compDepth * 0.4, 20);
+  // Scoop radius: 1/3 of smaller compartment dimension, max 15mm (per spec)
+  const radius = Math.min(compWidth / 3, compDepth / 3, 15);
 
   // Front row inner Y coordinate
   const frontInnerY = -innerDepth / 2;
@@ -220,13 +293,15 @@ function generateLabelTabs(
     const tabWidth = columnWidth - params.dividers.thickness; // Account for divider wall
     if (tabWidth <= 2) continue; // Too small for a tab
 
+    const specTabDepth = 15.85;
+    const specTabHeight = specTabDepth * Math.tan(36 * Math.PI / 180); // ~11.52mm
     meshes.push(createLabelTab(
       tabWidth + 2 * wallThickness, // Pass as if it were the "outer width" for this column
       wallThickness,
       halfDepth,
       totalHeight,
-      12, // tabHeight
-      12, // tabDepth
+      specTabHeight,
+      specTabDepth,
       colCenterX // offsetX - center of this column
     ));
   }

@@ -49,11 +49,12 @@ describe('binGenerator', () => {
       expect(actualDepth).toBeCloseTo(expectedDepth, 1);
     });
 
-    it('produces correct total height (height units + base)', () => {
+    it('produces correct total height (height units include base)', () => {
       const mesh = generateBinGeometry(DEFAULT_BIN_PARAMS);
       const bounds = getBounds(mesh.vertices);
 
-      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT; // 26mm
+      // Height units INCLUDE the base: 3U = 3*7 = 21mm
+      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT; // 21mm
       const actualHeight = bounds.maxZ - bounds.minZ;
       expect(actualHeight).toBeCloseTo(expectedHeight, 1);
     });
@@ -84,7 +85,8 @@ describe('binGenerator', () => {
       const mesh = generateBinGeometry(params);
       const bounds = getBounds(mesh.vertices);
 
-      const expectedHeight = 6 * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT; // 47mm
+      // Height units INCLUDE the base: 6U = 6*7 = 42mm
+      const expectedHeight = 6 * GRIDFINITY.HEIGHT_UNIT; // 42mm
       expect(bounds.maxZ - bounds.minZ).toBeCloseTo(expectedHeight, 1);
     });
 
@@ -147,7 +149,8 @@ describe('binGenerator', () => {
 
       const expectedWidth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
       const expectedDepth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT;
+      // Height units INCLUDE the base: 3U = 3*7 = 21mm
+      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT;
 
       expect(bounds.maxX - bounds.minX).toBeCloseTo(expectedWidth, 1);
       expect(bounds.maxY - bounds.minY).toBeCloseTo(expectedDepth, 1);
@@ -174,7 +177,8 @@ describe('binGenerator', () => {
 
       const expectedWidth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
       const expectedDepth = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT;
+      // Height units INCLUDE the base: 3U = 3*7 = 21mm
+      const expectedHeight = 3 * GRIDFINITY.HEIGHT_UNIT;
 
       expect(bounds.maxX - bounds.minX).toBeCloseTo(expectedWidth, 0);
       expect(bounds.maxY - bounds.minY).toBeCloseTo(expectedDepth, 0);
@@ -321,13 +325,14 @@ describe('binGenerator', () => {
       const mesh = generateBinGeometry(params);
       const bounds = getBounds(mesh.vertices);
 
-      const bottomThickness = GRIDFINITY.BASE_HEIGHT + GRIDFINITY.BOTTOM_THICKNESS;
-      const totalHeight = 3 * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.BASE_HEIGHT;
-      const fullWallHeight = totalHeight - bottomThickness;
-      const halfWallHeight = fullWallHeight * 0.5;
-      const expectedMaxZ = bottomThickness + halfWallHeight;
+      // Height units INCLUDE the base: 3U = 21mm, base = 7mm
+      const baseHeight = GRIDFINITY.BASE_HEIGHT; // 7mm
+      const totalHeight = 3 * GRIDFINITY.HEIGHT_UNIT; // 21mm
+      const fullWallHeight = totalHeight - baseHeight; // 14mm
+      const halfWallHeight = fullWallHeight * 0.5; // 7mm
+      const expectedMaxZ = baseHeight + halfWallHeight; // 14mm
 
-      // Max Z should be approximately bottom + half wall (not full height)
+      // Max Z should be approximately base + half wall (not full height)
       expect(bounds.maxZ).toBeCloseTo(expectedMaxZ, 0);
     });
 

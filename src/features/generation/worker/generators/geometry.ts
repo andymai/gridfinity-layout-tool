@@ -282,22 +282,24 @@ export function createScoop(
 /**
  * Creates a label tab at the top of the front wall.
  *
- * Gridfinity label tabs are angled ~45° inward from the top of the front wall.
+ * Gridfinity label tabs are angled 36° from horizontal (per spec: _tab_support_angle).
+ * Tab depth (into bin) = 15.85mm, height = depth * tan(36°) ≈ 11.52mm.
  * Modeled as a thin angled plate (two triangles forming a quad).
  *
  * @param outerWidth - Full bin outer width
  * @param wallThickness - Wall thickness
+ * @param halfDepth - Half the bin outer depth
  * @param totalHeight - Total bin height
- * @param tabHeight - Height of the label tab (default 12mm)
- * @param tabDepth - How far the tab extends inward (default 12mm for 45°)
+ * @param tabHeight - Vertical extent of the tab (default ~11.52mm for 36° angle)
+ * @param tabDepth - How far the tab extends inward (default 15.85mm per spec)
  */
 export function createLabelTab(
   outerWidth: number,
   wallThickness: number,
   halfDepth: number,
   totalHeight: number,
-  tabHeight: number = 12,
-  tabDepth: number = 12,
+  tabHeight: number = 15.85 * Math.tan(36 * Math.PI / 180), // ~11.52mm
+  tabDepth: number = 15.85,
   offsetX: number = 0
 ): MeshData {
   // Tab spans most of the front face width (minus wall insets)
