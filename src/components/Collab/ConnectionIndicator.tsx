@@ -66,7 +66,7 @@ export function ConnectionIndicator({
         inline-block rounded-full
         ${sizeClass}
         ${bg}
-        ${animate ? 'animate-pulse' : ''}
+        ${animate ? 'animate-pulse motion-reduce:animate-none' : ''}
         ${className}
       `.trim()}
       role="status"

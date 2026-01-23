@@ -16,7 +16,7 @@ export function LoadingFallback({
   const spinner = (
     <div className="flex flex-col items-center gap-3" role="status" aria-label={label}>
       <svg
-        className="w-6 h-6 text-accent animate-spin"
+        className="w-6 h-6 text-accent animate-spin motion-reduce:animate-none"
         viewBox="0 0 24 24"
         fill="none"
         aria-hidden="true"

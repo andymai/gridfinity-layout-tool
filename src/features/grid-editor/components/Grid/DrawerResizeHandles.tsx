@@ -35,7 +35,7 @@ export const DrawerResizeHandles = memo(function DrawerResizeHandles({
   shouldPulse,
   onResizeStart,
 }: DrawerResizeHandlesProps) {
-  const pulseClass = shouldPulse ? 'animate-pulse' : '';
+  const pulseClass = shouldPulse ? 'animate-pulse motion-reduce:animate-none' : '';
 
   return (
     <>

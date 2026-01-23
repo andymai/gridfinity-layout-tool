@@ -312,7 +312,7 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
           aria-hidden="true"
         >
           <span
-            className="animate-pulse"
+            className="animate-pulse motion-reduce:animate-none"
             style={{
               fontSize: 18,
               color,

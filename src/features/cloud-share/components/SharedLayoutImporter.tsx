@@ -283,7 +283,7 @@ export function SharedLayoutImporter() {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-surface-elevated rounded-lg p-6 flex items-center gap-3">
-          <svg className="w-5 h-5 animate-spin text-accent" viewBox="0 0 24 24" fill="none">
+          <svg className="w-5 h-5 animate-spin motion-reduce:animate-none text-accent" viewBox="0 0 24 24" fill="none">
             <circle
               className="opacity-25"
               cx="12"
