@@ -176,6 +176,7 @@ function FormatOption({
       type="button"
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
+      aria-pressed={active}
       className={`rounded-lg border px-3 py-2 text-center transition-colors ${
         active
           ? 'border-accent bg-accent-muted text-accent'

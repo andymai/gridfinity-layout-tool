@@ -11,6 +11,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useDesignerSharing } from '@/features/bin-designer/hooks/useDesignerSharing';
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
+import { useToastStore } from '@/core/store/toast';
 
 interface ShareDialogProps {
   open: boolean;
@@ -47,6 +48,8 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
     }
   }, [open, reset]);
 
+  const addToast = useToastStore((s) => s.addToast);
+
   const handleShare = useCallback(() => {
     share(params);
   }, [share, params]);
@@ -56,12 +59,13 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
+      addToast({ message: 'Share link copied to clipboard', type: 'success', duration: 2000 });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback: select the input text
       inputRef.current?.select();
     }
-  }, [shareUrl]);
+  }, [shareUrl, addToast]);
 
   const handleLoad = useCallback(async () => {
     const input = loadInput.trim();
@@ -74,9 +78,10 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
     const loadedParams = await loadShared(id);
     if (loadedParams) {
       setParams(migrateParams(loadedParams));
+      addToast({ message: 'Shared design loaded', type: 'success', duration: 3000 });
       onClose();
     }
-  }, [loadInput, loadShared, setParams, onClose]);
+  }, [loadInput, loadShared, setParams, onClose, addToast]);
 
   if (!open) return null;
 

@@ -29,9 +29,11 @@ describe('InsertFloorPlan', () => {
     });
   });
 
-  it('renders nothing when no inserts exist', () => {
-    const { container } = render(<InsertFloorPlan />);
-    expect(container.querySelector('svg')).toBeNull();
+  it('shows empty state when no inserts exist', () => {
+    render(<InsertFloorPlan />);
+    expect(screen.getByText(/add a template below/i)).toBeInTheDocument();
+    // Should not render the interactive floor plan SVG
+    expect(screen.queryByRole('img', { name: /floor plan/i })).not.toBeInTheDocument();
   });
 
   it('renders SVG floor plan when inserts exist', () => {

@@ -8,6 +8,7 @@
 
 import { useState, useCallback, type JSX } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import { useToastStore } from '@/core/store/toast';
 import { BUILT_IN_PRESETS, type DesignPreset } from '@/features/bin-designer/constants/presets';
 import {
   loadUserPresets,
@@ -70,6 +71,7 @@ const USER_PRESET_ICON = (
 export function PresetSelector() {
   const setParams = useDesignerStore((s) => s.setParams);
   const params = useDesignerStore((s) => s.params);
+  const addToast = useToastStore((s) => s.addToast);
 
   const [userPresets, setUserPresets] = useState<UserPreset[]>(() => loadUserPresets());
   const [showSaveForm, setShowSaveForm] = useState(false);
@@ -82,10 +84,12 @@ export function PresetSelector() {
 
   const handleApplyBuiltIn = (preset: DesignPreset) => {
     setParams(preset.overrides);
+    addToast({ message: `Applied "${preset.name}" preset`, type: 'success', duration: 2000 });
   };
 
   const handleApplyUser = (preset: UserPreset) => {
     setParams(preset.overrides as Partial<BinParams>);
+    addToast({ message: `Applied "${preset.name}" preset`, type: 'success', duration: 2000 });
   };
 
   const handleSave = () => {
@@ -93,11 +97,15 @@ export function PresetSelector() {
     if (!trimmedName) return;
 
     const result = createUserPreset(trimmedName, presetDescription, params);
-    if (!result) return; // Limit reached
+    if (!result) {
+      addToast({ message: `Maximum ${MAX_USER_PRESETS} presets reached`, type: 'error', duration: 3000 });
+      return;
+    }
     refreshPresets();
     setShowSaveForm(false);
     setPresetName('');
     setPresetDescription('');
+    addToast({ message: `Saved "${trimmedName}" preset`, type: 'success', duration: 2000 });
   };
 
   const handleDelete = (id: string) => {
@@ -166,11 +174,13 @@ export function PresetSelector() {
                 </button>
                 <button
                   onClick={() => handleDelete(preset.id)}
-                  className="absolute -right-1 -top-1 h-4 w-4 items-center justify-center rounded-full bg-surface-error text-[10px] text-content-on-error opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 flex"
+                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface-error text-[10px] text-content-on-error transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 sm:focus:opacity-100"
                   aria-label={`Delete ${preset.name} preset`}
                   title="Delete preset"
                 >
-                  &times;
+                  <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 12 12" aria-hidden="true">
+                    <path d="M3 3l6 6M9 3l-6 6" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
                 </button>
               </div>
             ))}
