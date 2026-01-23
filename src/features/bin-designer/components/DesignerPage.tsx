@@ -9,17 +9,13 @@
  * The useGeneration hook auto-generates mesh when parameters change.
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ParameterPanel } from '@/features/bin-designer/components/ParameterPanel';
 import { MobileParameterTabs } from '@/features/bin-designer/components/MobileParameterTabs';
 import { PreviewCanvas } from '@/features/bin-designer/components/PreviewCanvas';
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
-import { ShareDialog } from '@/features/bin-designer/components/ShareDialog';
-import { CartDialog } from '@/features/bin-designer/components/CartDialog';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
-import { useCartStore } from '@/features/bin-designer/store/cart';
-import { navigateToPlaceInLayout } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useAutoSave } from '@/features/bin-designer/hooks/useAutoSave';
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
@@ -90,8 +86,6 @@ export function DesignerPage(_props: DesignerPageProps) {
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
   const setParams = useDesignerStore((s) => s.setParams);
-  const params = useDesignerStore((s) => s.params);
-  const currentDesignId = useDesignerStore((s) => s.currentDesignId);
   const canExport = useDesignerStore(
     (s) =>
       s.generation.mesh !== null &&
@@ -100,13 +94,9 @@ export function DesignerPage(_props: DesignerPageProps) {
       s.generation.mesh.normals !== null
   );
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [cartDialogOpen, setCartDialogOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const cartItemCount = useCartStore((s) => s.items.length);
-  const addToCart = useCartStore((s) => s.addToCart);
   const addToast = useToastStore((s) => s.addToast);
 
   // Close mobile menu on outside click or Escape
@@ -131,17 +121,6 @@ export function DesignerPage(_props: DesignerPageProps) {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [mobileMenuOpen]);
-
-  const handleAddToCart = useCallback(() => {
-    addToCart({
-      id: currentDesignId ?? `unsaved-${Date.now()}`,
-      name: designName,
-      params,
-      thumbnail: null,
-    });
-    addToast({ message: `"${designName}" added to cart`, type: 'success', duration: 2500 });
-    setMobileMenuOpen(false);
-  }, [addToCart, addToast, currentDesignId, designName, params]);
 
   // Handle ?share= URL parameter on mount
   const shareHandled = useRef(false);
@@ -206,35 +185,12 @@ export function DesignerPage(_props: DesignerPageProps) {
           <SaveStatusIndicator status={saveStatus} />
         </div>
         <div className="flex items-center gap-2">
-          {/* Share button */}
+          {/* Use in Layout button (coming soon) */}
           <button
-            onClick={() => setShareDialogOpen(true)}
-            className="hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content sm:flex"
-            aria-label="Share design"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-              />
-            </svg>
-            Share
-          </button>
-          {/* Use in Layout button */}
-          <button
-            onClick={() =>
-              navigateToPlaceInLayout(params.width, params.depth, params.height, designName)
-            }
-            className="hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content sm:flex"
-            aria-label="Use this bin in Layout Planner"
+            disabled
+            className="hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-content-disabled cursor-not-allowed sm:flex"
+            aria-label="Use in Layout (coming soon)"
+            title="Coming soon"
           >
             <svg
               className="h-4 w-4"
@@ -251,55 +207,10 @@ export function DesignerPage(_props: DesignerPageProps) {
               />
             </svg>
             Use in Layout
+            <span className="rounded bg-surface-elevated px-1.5 py-0.5 text-[10px] text-content-tertiary">
+              Soon
+            </span>
           </button>
-          {/* Add to Cart button */}
-          <button
-            onClick={handleAddToCart}
-            className="hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content sm:flex"
-            aria-label="Add to export cart"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-            Cart
-          </button>
-          {/* View Cart button (shows badge when items present) */}
-          {cartItemCount > 0 && (
-            <button
-              onClick={() => setCartDialogOpen(true)}
-              className="relative hidden items-center gap-1 rounded-md px-2.5 py-1.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content sm:flex"
-              aria-label={`Export cart: ${cartItemCount} items`}
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
-              </svg>
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
-                {cartItemCount > 9 ? '9+' : cartItemCount}
-              </span>
-            </button>
-          )}
           {/* Export button (hidden on mobile, replaced by FAB) */}
           <button
             onClick={() => setExportDialogOpen(true)}
@@ -380,39 +291,13 @@ export function DesignerPage(_props: DesignerPageProps) {
                   My Designs
                 </button>
                 <button
-                  onClick={() => {
-                    setShareDialogOpen(true);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
+                  disabled
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content-disabled cursor-not-allowed"
                   role="menuitem"
+                  aria-disabled="true"
                 >
                   <svg
-                    className="h-4 w-4 text-content-secondary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                    />
-                  </svg>
-                  Share
-                </button>
-                <button
-                  onClick={() => {
-                    navigateToPlaceInLayout(params.width, params.depth, params.height, designName);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
-                  role="menuitem"
-                >
-                  <svg
-                    className="h-4 w-4 text-content-secondary"
+                    className="h-4 w-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -426,55 +311,8 @@ export function DesignerPage(_props: DesignerPageProps) {
                     />
                   </svg>
                   Use in Layout
+                  <span className="ml-auto text-[10px] text-content-tertiary">Soon</span>
                 </button>
-                <div className="my-1 border-t border-stroke-subtle" />
-                <button
-                  onClick={handleAddToCart}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
-                  role="menuitem"
-                >
-                  <svg
-                    className="h-4 w-4 text-content-secondary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  Add to Cart
-                </button>
-                {cartItemCount > 0 && (
-                  <button
-                    onClick={() => {
-                      setCartDialogOpen(true);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
-                    role="menuitem"
-                  >
-                    <svg
-                      className="h-4 w-4 text-content-secondary"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                      />
-                    </svg>
-                    View Cart ({cartItemCount})
-                  </button>
-                )}
               </div>
             )}
           </div>
@@ -566,8 +404,6 @@ export function DesignerPage(_props: DesignerPageProps) {
       {/* Modals */}
       <ExportDialog />
       <DesignListDialog open={designListOpen} onClose={() => setDesignListOpen(false)} />
-      <ShareDialog open={shareDialogOpen} onClose={() => setShareDialogOpen(false)} />
-      <CartDialog open={cartDialogOpen} onClose={() => setCartDialogOpen(false)} />
     </div>
   );
 }
