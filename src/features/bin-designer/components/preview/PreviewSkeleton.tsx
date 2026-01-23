@@ -33,7 +33,7 @@ export function PreviewSkeleton({ wasmStatus, generationStatus, onRetry }: Previ
   return (
     <div className="flex h-full w-full items-center justify-center bg-surface" role="status" aria-live="polite" aria-label={getMessage()}>
       <div className="text-center max-w-[240px]">
-        <div className={`mx-auto mb-3 h-16 w-16 rounded-xl ${isError ? 'bg-red-500/10' : 'bg-surface-elevated animate-pulse'} flex items-center justify-center`}>
+        <div className={`mx-auto mb-3 h-16 w-16 rounded-xl ${isError ? 'bg-red-500/10' : 'bg-surface-elevated animate-pulse motion-reduce:animate-none'} flex items-center justify-center`}>
           {isError ? (
             <svg className="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

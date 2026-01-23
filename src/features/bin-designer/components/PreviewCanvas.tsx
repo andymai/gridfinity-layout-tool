@@ -183,7 +183,7 @@ export function PreviewCanvas() {
           {showOverlay && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/5 backdrop-blur-[2px] transition-opacity">
               <span className="flex items-center gap-2 rounded-full bg-surface-elevated/95 px-3.5 py-1.5 text-xs font-medium text-content-secondary shadow-md">
-                <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <svg className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
