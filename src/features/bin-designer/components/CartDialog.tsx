@@ -10,6 +10,7 @@ import { useCartStore } from '@/features/bin-designer/store/cart';
 import { batchExport } from '@/features/bin-designer/utils/batchExport';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
+import { useToastStore } from '@/core/store/toast';
 import type { BatchProgress } from '@/features/bin-designer/utils/batchExport';
 import type { CartItem } from '@/features/bin-designer/types';
 
@@ -34,6 +35,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
   const items = useCartStore((s) => s.items);
   const removeFromCart = useCartStore((s) => s.removeFromCart);
   const clearCart = useCartStore((s) => s.clearCart);
+  const addToast = useToastStore((s) => s.addToast);
 
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState<BatchProgress | null>(null);
@@ -74,6 +76,8 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
 
       if (result.failed.length > 0) {
         setError(`${result.failed.length} design(s) failed to generate and were skipped.`);
+      } else {
+        addToast({ message: `Exported ${items.length} design(s) as ZIP`, type: 'success', duration: 3000 });
       }
     } catch (e) {
       if (e instanceof Error && e.message === 'Export cancelled') {
@@ -87,6 +91,12 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
       abortRef.current = null;
     }
   }, [items]);
+
+  const handleClearCart = useCallback(() => {
+    if (!window.confirm(`Remove all ${items.length} items from cart?`)) return;
+    clearCart();
+    addToast({ message: 'Cart cleared', type: 'success', duration: 2000 });
+  }, [items.length, clearCart, addToast]);
 
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();
@@ -201,7 +211,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
             {/* Actions */}
             <div className="flex items-center justify-between">
               <button
-                onClick={clearCart}
+                onClick={handleClearCart}
                 disabled={exporting}
                 className="text-xs text-content-secondary hover:text-content disabled:opacity-50"
               >

@@ -73,7 +73,9 @@ describe('CartDialog', () => {
     });
     render(<CartDialog open={true} onClose={onClose} />);
 
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
     fireEvent.click(screen.getByText('Clear cart'));
+    expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('Remove all 3 items'));
     expect(useCartStore.getState().items).toHaveLength(0);
   });
 
