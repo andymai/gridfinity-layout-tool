@@ -193,12 +193,12 @@ describe('validateBinParams', () => {
     it('should reject magnet depth below minimum', () => {
       const result = validateBinParams(
         makeParams({
-          base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', magnetDepth: 1.5 },
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', magnetDepth: 0.5 },
         })
       );
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
-        expect(result.error.code).toBe('MAGNET_DEPTH_OUT_OF_RANGE');
+        expect(result.error.code).toBe('MAGNET_HEIGHT_OUT_OF_RANGE');
       }
     });
 
@@ -232,12 +232,12 @@ describe('validateBinParams', () => {
     it('should validate magnet depth for magnet_and_screw style', () => {
       const result = validateBinParams(
         makeParams({
-          base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw', magnetDepth: 1.5 },
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet_and_screw', magnetDepth: 0.5 },
         })
       );
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
-        expect(result.error.code).toBe('MAGNET_DEPTH_OUT_OF_RANGE');
+        expect(result.error.code).toBe('MAGNET_HEIGHT_OUT_OF_RANGE');
       }
     });
 

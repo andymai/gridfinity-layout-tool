@@ -78,9 +78,6 @@ export interface BinParams {
 /** Shape of a cavity cut into the bin floor */
 export type InsertShape = 'rectangle' | 'circle' | 'hexagon' | 'rounded-rect' | 'slot';
 
-/** Template category for grouping */
-export type TemplateCategory = 'electronics' | 'hardware' | 'tools';
-
 /** A placed insert instance on the bin floor */
 export interface Insert {
   readonly id: string;
@@ -102,29 +99,6 @@ export interface Insert {
   readonly cornerRadius: number;
   /** Optional label for the insert */
   readonly label: string;
-}
-
-/** A configurable parameter on a template */
-export interface ConfigurableParam {
-  readonly key: keyof Insert;
-  readonly label: string;
-  readonly min: number;
-  readonly max: number;
-  readonly step: number;
-  readonly unit: string;
-}
-
-/** A pre-built insert template definition */
-export interface InsertTemplate {
-  readonly id: string;
-  readonly name: string;
-  readonly category: TemplateCategory;
-  readonly description: string;
-  readonly shape: InsertShape;
-  /** Default insert values (position excluded — set on placement) */
-  readonly defaults: Omit<Insert, 'id' | 'templateId' | 'x' | 'y'>;
-  /** Which parameters users can adjust after placing */
-  readonly configurableParams: readonly ConfigurableParam[];
 }
 
 // =============================================================================

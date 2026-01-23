@@ -232,19 +232,6 @@ export function validateBinParams(
     }
   }
 
-  // Magnet depth range (applies to both magnet and magnet_and_screw styles)
-  if (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw') {
-    if (
-      params.base.magnetDepth < DESIGNER_CONSTRAINTS.MAGNET_MIN_DEPTH ||
-      params.base.magnetDepth > DESIGNER_CONSTRAINTS.MAGNET_MAX_DEPTH
-    ) {
-      return err({
-        code: 'MAGNET_DEPTH_OUT_OF_RANGE',
-        message: `Magnet depth must be between ${DESIGNER_CONSTRAINTS.MAGNET_MIN_DEPTH}mm and ${DESIGNER_CONSTRAINTS.MAGNET_MAX_DEPTH}mm`,
-        field: 'base.magnetDepth',
-      });
-    }
-  }
 
   return ok(params);
 }

@@ -24,25 +24,19 @@ export const GRIDFINITY = {
 
   // Base profile (total dead space from bottom to cavity floor)
   BASE_HEIGHT: 7, // mm total (profile + bridge structure per spec)
-  BASE_BOTTOM_FILLET: 0.8, // mm bottom edge radius (r_c1)
-  BASE_TOP_FILLET: 2.15, // mm top edge radius (stacking interface)
 
   // Stacking lip (sits on top of bin body)
   LIP_HEIGHT: 4.4, // mm nominal (actual ~3.55mm with fillet)
-  LIP_FILLET: 0.6, // mm fillet radius (STACKING_LIP_FILLET_RADIUS)
 
-  // Magnet holes
+  // Magnet holes (spec defaults; configurable via BinParams.base)
   MAGNET_DIAMETER: 6.5, // mm (6mm magnet + tolerance)
   MAGNET_DEPTH: 2.4, // mm (MAGNET_HEIGHT + 2*LAYER_HEIGHT)
-  MAGNET_INSET: 4.8, // mm from corner (HOLE_DISTANCE_FROM_BOTTOM_EDGE)
 
-  // Screw holes
+  // Screw holes (spec defaults; configurable via BinParams.base)
   SCREW_DIAMETER: 3, // mm (M3)
-  SCREW_DEPTH: 6, // mm
 
   // Walls
   WALL_THICKNESS: 0.95, // mm (d_wall from spec: outer_fillet - inner_fillet)
-  BOTTOM_THICKNESS: 0.7, // mm floor within base (not used in height calc)
 
   // Base socket (per-cell interface that slides onto baseplate grid)
   SOCKET_HEIGHT: 5, // mm total socket depth below bin floor
@@ -55,8 +49,6 @@ export const GRIDFINITY = {
   SOCKET_CORNER_RADIUS: 4, // mm (r_base from spec)
 
   // Fillets (used for BREP generation)
-  OUTER_FILLET: 3.75, // mm on outer vertical edges (r_fo1 = 7.5/2)
-  INNER_FILLET: 2.8, // mm on inner vertical edges (r_f2)
   TOP_FILLET: 0.6, // mm fillet at stacking lip junction
 } as const;
 
@@ -83,8 +75,6 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_WALL_CUTOUT: 100, // %
   MAX_LABEL_LENGTH: 20, // characters
   MAX_HISTORY: 50, // undo/redo states
-  MAGNET_MIN_DEPTH: 2.0, // mm
-  MAGNET_MAX_DEPTH: 4.0, // mm
   MIN_SCOOP_RADIUS: 2.0, // mm (minimum useful scoop)
   MAX_SCOOP_RADIUS: 30.0, // mm (large scoops for deep bins)
   // Wall thickness
