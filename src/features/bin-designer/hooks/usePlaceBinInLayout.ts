@@ -93,10 +93,11 @@ export function usePlaceBinFromURL(): void {
 
         if (isOk(result)) {
           useSelectionStore.getState().setSelectedBins([result.value]);
-          addToast(
-            `Placed "${binName ?? 'custom bin'}" (${w}×${d}×${h}) — drag to reposition`,
-            'success'
-          );
+          addToast({
+            message: `Placed "${binName ?? 'custom bin'}" (${w}×${d}×${h}) — drag to reposition`,
+            type: 'success',
+            duration: 3000,
+          });
           placed = true;
         }
       }
@@ -118,10 +119,11 @@ export function usePlaceBinFromURL(): void {
 
       if (isOk(stagingResult)) {
         useSelectionStore.getState().setSelectedBins([stagingResult.value]);
-        addToast(
-          `"${binName ?? 'custom bin'}" added to staging — drag it to the grid`,
-          'info'
-        );
+        addToast({
+          message: `"${binName ?? 'custom bin'}" added to staging — drag it to the grid`,
+          type: 'info',
+          duration: 4000,
+        });
       }
     }
   }, []);

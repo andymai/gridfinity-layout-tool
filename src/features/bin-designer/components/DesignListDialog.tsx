@@ -154,7 +154,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         </div>
 
         {/* Design list */}
-        <div className="max-h-[50vh] overflow-y-auto px-5 py-3">
+        <div className="max-h-[50vh] overflow-y-auto px-5 py-3" aria-busy={loading} aria-label="Saved designs">
           {loading ? (
             <div className="space-y-2 py-2">
               {[1, 2, 3].map((i) => (
