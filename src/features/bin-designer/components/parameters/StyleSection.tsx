@@ -38,7 +38,7 @@ export function StyleSection() {
           onClick={() => setParam('style', value)}
           className={`w-full rounded-md border px-3 py-2 text-left transition-colors ${
             style === value
-              ? 'border-accent bg-accent/5'
+              ? 'border-accent bg-surface ring-1 ring-accent/30'
               : 'border-stroke-subtle bg-surface hover:border-stroke hover:bg-surface-hover'
           }`}
           aria-pressed={style === value}

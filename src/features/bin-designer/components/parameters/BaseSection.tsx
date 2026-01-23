@@ -44,7 +44,7 @@ export function BaseSection() {
               onClick={() => updateBase({ style: value })}
               className={`rounded-md border px-2 py-1.5 text-left transition-colors ${
                 base.style === value
-                  ? 'border-accent bg-accent/5 text-content'
+                  ? 'border-accent bg-surface text-content ring-1 ring-accent/30'
                   : 'border-stroke-subtle bg-surface text-content-secondary hover:border-stroke hover:bg-surface-hover'
               }`}
               aria-pressed={base.style === value}

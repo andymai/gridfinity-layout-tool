@@ -34,7 +34,7 @@ import {
  * - Invalid/missing layout IDs show friendly error
  * - Shared preview mode skips URL updates
  */
-export function useLayoutRouting() {
+export function useLayoutRouting(options: { skip?: boolean } = {}) {
   const hasInitialized = useRef(false);
 
   const { layout, activeLayoutId, importLayout } = useLayoutStore(
@@ -125,6 +125,9 @@ export function useLayoutRouting() {
     // Skip during shared preview - keep the share URL visible
     if (sharedLayoutPreview) return;
 
+    // Skip when another route (e.g. /designer) owns the URL
+    if (options.skip) return;
+
     const urlInfo = parseLayoutFromURL();
     if (!urlInfo) {
       // No layout in URL - set URL to current active layout
@@ -188,6 +191,9 @@ export function useLayoutRouting() {
       // Don't handle during shared preview
       if (sharedLayoutPreview) return;
 
+      // Skip when another route (e.g. /designer) owns the URL
+      if (options.skip) return;
+
       // Try to get layout ID from history state first
       let layoutId = getLayoutIdFromHistoryState(event.state);
 
@@ -230,6 +236,9 @@ export function useLayoutRouting() {
 
   // Update URL when active layout changes (from UI interactions)
   useEffect(() => {
+    // Skip when another route (e.g. /designer) owns the URL
+    if (options.skip) return;
+
     // Skip during shared preview - keep the share URL visible
     if (sharedLayoutPreview) {
       return;
@@ -261,6 +270,9 @@ export function useLayoutRouting() {
 
   // Handle layout name changes (update slug in URL)
   useEffect(() => {
+    // Skip when another route (e.g. /designer) owns the URL
+    if (options.skip) return;
+
     if (sharedLayoutPreview || !activeLayoutId || activeLayoutId === '__shared_preview__') {
       return;
     }
