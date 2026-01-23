@@ -6,14 +6,17 @@
  * are shown as "coming soon" placeholders.
  */
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
+import type { ExportFormat } from '@/features/bin-designer/hooks/useExport';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import type { FileNameStyle } from '@/features/bin-designer/utils/fileNaming';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize } from '@/features/generation/export/stlExporter';
+import { estimate3MFFileSize } from '@/features/generation/export/threemfExporter';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 
 export function ExportDialog() {
   const { exportDialogOpen, params, triangleCount } = useDesignerStore(
@@ -27,22 +30,32 @@ export function ExportDialog() {
   );
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
 
-  const { canExport, estimates, isExporting, downloadSTL } = useExport();
+  const { canExport, estimates, isExporting, downloadSTL, download3MF } = useExport();
   const [nameStyle, setNameStyle] = useState<FileNameStyle>('descriptive');
+  const [format, setFormat] = useState<ExportFormat>('stl');
+
+  const closeDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
+  const dialogRef = useFocusTrap<HTMLDivElement>({
+    active: exportDialogOpen,
+    onEscape: closeDialog,
+  });
 
   if (!exportDialogOpen) return null;
 
-  const fileName = generateFileName(params, 'stl', nameStyle);
-  const fileSizeBytes = getSTLFileSize(triangleCount);
+  const fileName = generateFileName(params, format, nameStyle);
+  const fileSizeBytes = format === 'stl'
+    ? getSTLFileSize(triangleCount)
+    : estimate3MFFileSize(triangleCount);
   const fileSizeLabel = fileSizeBytes < 1024
     ? `${fileSizeBytes} B`
     : `${Math.round(fileSizeBytes / 1024)} KB`;
 
   return (
     <div
+      ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={(e) => {
-        if (e.target === e.currentTarget) setExportDialogOpen(false);
+        if (e.target === e.currentTarget) closeDialog();
       }}
       role="dialog"
       aria-modal="true"
@@ -69,9 +82,9 @@ export function ExportDialog() {
         <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-content-secondary">Format</label>
           <div className="grid grid-cols-3 gap-2">
-            <FormatOption label="STL" active description="Binary STL mesh" />
+            <FormatOption label="STL" active={format === 'stl'} onClick={() => setFormat('stl')} description="Binary STL mesh" />
+            <FormatOption label="3MF" active={format === '3mf'} onClick={() => setFormat('3mf')} description="Mesh + metadata" />
             <FormatOption label="STEP" disabled description="Coming soon" />
-            <FormatOption label="3MF" disabled description="Coming soon" />
           </div>
         </div>
 
@@ -112,11 +125,11 @@ export function ExportDialog() {
 
         {/* Download Button */}
         <button
-          onClick={() => downloadSTL(nameStyle)}
+          onClick={() => format === '3mf' ? download3MF(nameStyle) : downloadSTL(nameStyle)}
           disabled={!canExport || isExporting}
           className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
         >
-          {isExporting ? 'Exporting…' : 'Download STL'}
+          {isExporting ? 'Exporting…' : `Download ${format.toUpperCase()}`}
         </button>
 
         {!canExport && (
@@ -136,25 +149,30 @@ function FormatOption({
   active,
   disabled,
   description,
+  onClick,
 }: {
   label: string;
   active?: boolean;
   disabled?: boolean;
   description: string;
+  onClick?: () => void;
 }) {
   return (
-    <div
-      className={`rounded-lg border px-3 py-2 text-center ${
+    <button
+      type="button"
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`rounded-lg border px-3 py-2 text-center transition-colors ${
         active
           ? 'border-accent bg-accent-muted text-accent'
           : disabled
             ? 'cursor-not-allowed border-stroke-subtle bg-surface text-content-disabled'
-            : 'border-stroke-subtle text-content-secondary'
+            : 'cursor-pointer border-stroke-subtle text-content-secondary hover:border-accent/50 hover:bg-surface-hover'
       }`}
     >
       <div className="text-sm font-medium">{label}</div>
       <div className="text-xs">{description}</div>
-    </div>
+    </button>
   );
 }
 

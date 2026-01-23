@@ -18,8 +18,14 @@ import {
   createCornerGusset, createQuarterCylinderShell, createBaseArc, mergeMeshes
 } from './geometry';
 import { getStyleConstraints } from '@/features/bin-designer/utils/styleConstraints';
+import { generateInserts } from './insertGenerator';
 
-/** Converts grid units to mm (width/depth) */
+/**
+ * Convert horizontal grid units to millimeters.
+ *
+ * @param units - Number of grid units (horizontal units used for width/depth)
+ * @returns The length in millimeters corresponding to `units`
+ */
 function gridToMm(units: number): number {
   return units * GRIDFINITY.GRID_SIZE;
 }
@@ -178,6 +184,22 @@ export function generateBinGeometry(params: BinParams): MeshData {
   if (hasDividers) {
     const dividerMesh = generateDividers(params, outerWidth, outerDepth, totalHeight, wallThickness, baseHeight);
     meshes.push(dividerMesh);
+  }
+
+  // 3b. Inserts (pocket walls on the bin floor)
+  if (params.inserts.length > 0) {
+    const wallHeight = totalHeight - baseHeight;
+    const insertMesh = generateInserts(
+      params.inserts,
+      innerWidth,
+      innerDepth,
+      wallThickness,
+      baseHeight,
+      wallHeight,
+      halfW,
+      halfD
+    );
+    meshes.push(insertMesh);
   }
 
   // 4. Scoops (if enabled and not constrained)

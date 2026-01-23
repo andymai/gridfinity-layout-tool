@@ -57,6 +57,7 @@ const DesignerPage = lazyWithRetry(() =>
   import('./features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );
 import { useDesignerRouting } from './features/bin-designer/hooks/useDesignerRouting';
+import { usePlaceBinFromURL } from './features/bin-designer/hooks/usePlaceBinInLayout';
 import { SHORTCUTS } from './core/constants';
 
 // Legacy context menu state for backwards compatibility (has binId instead of binIds)
@@ -108,6 +109,16 @@ try {
   initialLoadError = e as Error;
 }
 
+/**
+ * Root application component that composes and renders the responsive app UI, providers, and feature-gated lazy modules.
+ *
+ * Renders mobile, tablet, or desktop layouts as appropriate; initializes app-level effects (routing, autosave,
+ * cross-tab sync, analytics, storage migration, PWA updates, keyboard shortcuts); and wraps content with either
+ * collaborative or local mutations providers. Conditionally mounts lazy features such as Designer, LabsDrawer,
+ * SharedLayoutImporter, and collaboration provider.
+ *
+ * @returns The top-level React element for the application UI, including layout, panels, modals, and global providers.
+ */
 export default function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
@@ -134,6 +145,9 @@ export default function App() {
   // Bin Designer route detection (behind feature flag)
   const isDesignerEnabled = useLabsStore((state) => state.isFeatureEnabled('bin_designer'));
   const { isDesignerRoute, navigateToPlanner } = useDesignerRouting();
+
+  // Handle ?placeBin= param from Designer's "Use in Layout" button
+  usePlaceBinFromURL();
 
   // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
   useOwnedShareSync();
