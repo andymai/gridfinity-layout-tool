@@ -2,13 +2,14 @@
  * Auto-save hook for the Bin Designer.
  *
  * Watches for parameter changes and saves to IndexedDB after a 1-second
- * debounce. Creates a new design on first save, updates existing on subsequent.
+ * debounce. Only auto-saves existing designs — new designs require an
+ * explicit save (e.g., user renames from "Untitled Bin").
  */
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { isOk } from '@/core/result';
-import { saveDesign, updateDesignParams } from '@/core/storage/DesignerStorage';
+import { updateDesignParams } from '@/core/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { captureThumbnail } from '../utils/thumbnail';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
@@ -19,73 +20,36 @@ const AUTO_SAVE_DELAY_MS = 1000;
 /**
  * Automatically saves designer parameters to IndexedDB after a short debounce when they change.
  *
- * Watches the designer's parameters and, after 1000ms of inactivity, either updates the current design or creates a new one; captures a 3D-preview thumbnail if available, updates a lightweight registry entry with design metadata, and updates save status and current design id as appropriate. Skips saving on initial mount and avoids redundant saves when parameters are unchanged.
+ * Only updates existing designs (where currentDesignId is set). New/unsaved designs are not
+ * auto-persisted — the user must explicitly save by naming the design. This prevents unwanted
+ * "Untitled Bin" entries from appearing in My Designs during exploratory parameter tweaks.
  */
 export function useAutoSave(): void {
-  const { params, currentDesignId, designName } = useDesignerStore(
+  const { params, currentDesignId } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
       currentDesignId: s.currentDesignId,
-      designName: s.designName,
     }))
   );
 
   const setSaveStatus = useDesignerStore((s) => s.setSaveStatus);
-  const setCurrentDesignId = useDesignerStore((s) => s.setCurrentDesignId);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
   const lastSavedParams = useRef<BinParams | null>(null);
   const abortRef = useRef(false);
 
-  useEffect(() => {
-    // Skip first render (initial mount shouldn't trigger save)
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      lastSavedParams.current = params;
-      return;
-    }
+  const performSave = useCallback(
+    async (
+      paramsToSave: BinParams,
+      designId: string,
+      abortToken: { current: boolean }
+    ): Promise<void> => {
+      setSaveStatus('saving');
 
-    // Skip if params haven't actually changed (reference check is fine with Immer)
-    if (lastSavedParams.current === params) {
-      return;
-    }
+      // Capture thumbnail from the 3D preview (null if canvas not ready)
+      const thumbnail = captureThumbnail();
 
-    // Abort any in-flight save and clear pending timer
-    abortRef.current = true;
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-
-    // Reset abort flag for the new save
-    abortRef.current = false;
-    const abortToken = abortRef;
-
-    timerRef.current = setTimeout(() => {
-      void performSave(params, currentDesignId, designName, abortToken);
-    }, AUTO_SAVE_DELAY_MS);
-
-    return () => {
-      abortRef.current = true;
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, [params, currentDesignId, designName]);
-
-  async function performSave(
-    paramsToSave: BinParams,
-    designId: string | null,
-    name: string,
-    abortToken: { current: boolean }
-  ): Promise<void> {
-    setSaveStatus('saving');
-
-    // Capture thumbnail from the 3D preview (null if canvas not ready)
-    const thumbnail = captureThumbnail();
-
-    if (designId) {
-      // Update existing design
       const result = await updateDesignParams(designId, paramsToSave, thumbnail);
       if (abortToken.current) return; // Superseded by newer save
       if (isOk(result)) {
@@ -104,31 +68,49 @@ export function useAutoSave(): void {
       } else {
         setSaveStatus('error');
       }
-    } else {
-      // Create new design
-      const result = await saveDesign({
-        name,
-        params: paramsToSave,
-        thumbnail,
-      });
-      if (abortToken.current) return; // Superseded by newer save
-      if (isOk(result)) {
-        lastSavedParams.current = paramsToSave;
-        setCurrentDesignId(result.value.id);
-        setSaveStatus('saved');
-        // Sync lightweight ref to registry for Layout Planner
-        upsertRegistryEntry({
-          id: result.value.id,
-          name: result.value.name,
-          width: paramsToSave.width,
-          depth: paramsToSave.depth,
-          height: paramsToSave.height,
-          thumbnail: result.value.thumbnail,
-          updatedAt: result.value.updatedAt,
-        });
-      } else {
-        setSaveStatus('error');
-      }
+    },
+    [setSaveStatus]
+  );
+
+  useEffect(() => {
+    // Skip first render (initial mount shouldn't trigger save)
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      lastSavedParams.current = params;
+      return;
     }
-  }
+
+    // Only auto-save existing designs — new designs require explicit save
+    // (e.g., user renames from "Untitled Bin") to avoid creating unwanted entries
+    if (!currentDesignId) {
+      return;
+    }
+
+    // Skip if params haven't actually changed (reference check is fine with Immer)
+    if (lastSavedParams.current === params) {
+      return;
+    }
+
+    // Abort any in-flight save and clear pending timer
+    abortRef.current = true;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
+    // Reset abort flag for the new save
+    abortRef.current = false;
+    const abortToken = abortRef;
+
+    const designId = currentDesignId; // Narrowed to string by guard above
+    timerRef.current = setTimeout(() => {
+      void performSave(params, designId, abortToken);
+    }, AUTO_SAVE_DELAY_MS);
+
+    return () => {
+      abortRef.current = true;
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [params, currentDesignId, performSave]);
 }
