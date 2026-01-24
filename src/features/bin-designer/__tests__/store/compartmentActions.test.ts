@@ -42,7 +42,7 @@ describe('DesignerStore - compartment actions', () => {
 
       const newHistory = useDesignerStore.getState().history;
       expect(newHistory.past).toHaveLength(1);
-      expect(newHistory.past[0]).toEqual(DEFAULT_BIN_PARAMS);
+      expect(newHistory.past[0].params).toEqual(DEFAULT_BIN_PARAMS);
     });
 
     it('clears future history', () => {
@@ -321,7 +321,7 @@ describe('DesignerStore - compartment actions', () => {
     });
 
     it('pushes history', () => {
-      const { setCompartmentGrid, mergeCells, splitCompartment, history } = useDesignerStore.getState();
+      const { setCompartmentGrid, mergeCells, splitCompartment } = useDesignerStore.getState();
       setCompartmentGrid(2, 2);
       mergeCells([0, 1, 2, 3]);
 
@@ -335,7 +335,8 @@ describe('DesignerStore - compartment actions', () => {
     });
 
     it('clears future history', () => {
-      const { setCompartmentGrid, mergeCells, undo, splitCompartment } = useDesignerStore.getState();
+      const { setCompartmentGrid, mergeCells, undo, splitCompartment } =
+        useDesignerStore.getState();
       setCompartmentGrid(2, 2);
       mergeCells([0, 1, 2, 3]);
       undo();
@@ -403,7 +404,7 @@ describe('DesignerStore - compartment actions', () => {
     });
 
     it('pushes history', () => {
-      const { setCompartmentGrid, resetCompartments, history } = useDesignerStore.getState();
+      const { setCompartmentGrid, resetCompartments } = useDesignerStore.getState();
       setCompartmentGrid(2, 2);
 
       const beforeHistoryLength = useDesignerStore.getState().history.past.length;
@@ -468,7 +469,8 @@ describe('DesignerStore - compartment actions', () => {
     });
 
     it('undo after split reverts to merged state', () => {
-      const { setCompartmentGrid, mergeCells, splitCompartment, undo } = useDesignerStore.getState();
+      const { setCompartmentGrid, mergeCells, splitCompartment, undo } =
+        useDesignerStore.getState();
       setCompartmentGrid(2, 2);
       mergeCells([0, 1, 2, 3]);
 
@@ -509,7 +511,8 @@ describe('DesignerStore - compartment actions', () => {
     });
 
     it('multiple undo/redo operations maintain consistency', () => {
-      const { setCompartmentGrid, mergeCells, splitCompartment, undo, redo } = useDesignerStore.getState();
+      const { setCompartmentGrid, mergeCells, splitCompartment, undo, redo } =
+        useDesignerStore.getState();
 
       setCompartmentGrid(2, 2);
       const state1 = { ...useDesignerStore.getState().params.compartments };

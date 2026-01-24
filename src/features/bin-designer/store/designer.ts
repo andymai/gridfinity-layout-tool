@@ -2,12 +2,12 @@
  * Bin Designer Zustand store.
  *
  * Manages all designer state: bin parameters, generation status,
- * undo/redo history, and UI state.
+ * undo/redo history with mesh caching, and UI state.
  */
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { current } from 'immer';
+import { current, type Draft } from 'immer';
 import type {
   DesignerState,
   BinParams,
@@ -18,6 +18,8 @@ import type {
   DesignerTab,
   SaveStatus,
   SavedDesign,
+  HistoryEntry,
+  CachedMesh,
 } from '../types';
 import {
   DEFAULT_BIN_PARAMS,
@@ -29,6 +31,38 @@ import {
 } from '../constants';
 import { isFractional } from '@/core/constants';
 import { isRectangularSelection, normalizeIds } from '../utils/compartments';
+import { createCachedMesh, evictIfNeeded } from './meshCacheManager';
+
+/**
+ * Pending mesh cache: stores the mesh generated for the current params,
+ * to be attached to the next history entry when params change.
+ */
+let pendingMeshCache: CachedMesh | null = null;
+
+/**
+ * Push current params (with pending mesh) to history past array.
+ * Evicts old caches if memory budget exceeded.
+ */
+function pushHistoryEntry(state: Draft<DesignerState>): void {
+  const entry: HistoryEntry = {
+    params: current(state.params),
+    mesh: pendingMeshCache,
+  };
+  state.history.past = [
+    ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+    entry,
+  ];
+  state.history.future = [];
+  state.generation.epoch += 1;
+
+  // Evict old meshes if over memory budget
+  const evicted = evictIfNeeded(state.history.past, state.history.future);
+  state.history.past = evicted.past as HistoryEntry[];
+  state.history.future = evicted.future as HistoryEntry[];
+
+  // Clear cached mesh for the previous params; new params need a fresh result
+  pendingMeshCache = null;
+}
 
 export const useDesignerStore = create<DesignerState>()(
   immer((set, get) => ({
@@ -47,34 +81,21 @@ export const useDesignerStore = create<DesignerState>()(
     // Param actions
     setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => {
       set((state) => {
-        // Push current params to history before modifying (deep snapshot via current())
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
         state.params[key] = value;
       });
     },
 
     setParams: (partial: Partial<BinParams>) => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
         Object.assign(state.params, partial);
       });
     },
 
     resetToDefaults: () => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
         state.params = { ...DEFAULT_BIN_PARAMS };
       });
     },
@@ -100,14 +121,14 @@ export const useDesignerStore = create<DesignerState>()(
 
     newDesign: () => {
       set((state) => {
-        // Clear history — undoing to a previous design's params
-        // while in a new design context is semantically incorrect
         state.history.past = [];
         state.history.future = [];
         state.params = { ...DEFAULT_BIN_PARAMS };
         state.currentDesignId = null;
         state.designName = 'Untitled Bin';
         state.saveStatus = 'idle';
+        state.generation.epoch += 1;
+        pendingMeshCache = null;
       });
     },
 
@@ -118,17 +139,15 @@ export const useDesignerStore = create<DesignerState>()(
         state.designName = design.name;
         state.history = { past: [], future: [] };
         state.saveStatus = 'saved';
+        state.generation.epoch += 1;
+        pendingMeshCache = null;
       });
     },
 
     // History actions
     pushHistory: () => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
       });
     },
 
@@ -139,8 +158,33 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         const previous = state.history.past[state.history.past.length - 1];
         state.history.past = state.history.past.slice(0, -1);
-        state.history.future = [current(state.params), ...state.history.future];
-        state.params = previous;
+
+        // Push current state (with pending mesh) to future
+        const currentEntry: HistoryEntry = {
+          params: current(state.params),
+          mesh: pendingMeshCache,
+        };
+        state.history.future = [currentEntry, ...state.history.future];
+
+        // Restore params
+        state.params = previous.params;
+
+        if (previous.mesh) {
+          // Cache hit: restore mesh directly, no regeneration needed
+          state.generation.mesh = {
+            vertices: previous.mesh.vertices,
+            normals: previous.mesh.normals,
+            error: null,
+            timingMs: 0,
+          };
+          state.generation.status = 'complete';
+          pendingMeshCache = previous.mesh;
+          // epoch unchanged — no regeneration needed
+        } else {
+          // No cache: increment epoch to trigger regeneration
+          state.generation.epoch += 1;
+          pendingMeshCache = null;
+        }
       });
     },
 
@@ -151,20 +195,39 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         const next = state.history.future[0];
         state.history.future = state.history.future.slice(1);
-        state.history.past = [...state.history.past, current(state.params)];
-        state.params = next;
+
+        // Push current state (with pending mesh) to past
+        const currentEntry: HistoryEntry = {
+          params: current(state.params),
+          mesh: pendingMeshCache,
+        };
+        state.history.past = [...state.history.past, currentEntry];
+
+        // Restore params
+        state.params = next.params;
+
+        if (next.mesh) {
+          // Cache hit: restore mesh directly
+          state.generation.mesh = {
+            vertices: next.mesh.vertices,
+            normals: next.mesh.normals,
+            error: null,
+            timingMs: 0,
+          };
+          state.generation.status = 'complete';
+          pendingMeshCache = next.mesh;
+        } else {
+          // No cache: trigger regeneration
+          state.generation.epoch += 1;
+          pendingMeshCache = null;
+        }
       });
     },
 
     // Compartment actions
     setCompartmentGrid: (cols: number, rows: number) => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
-        // Create a uniform grid with each cell as its own compartment
+        pushHistoryEntry(state);
         const cells: number[] = [];
         for (let i = 0; i < rows * cols; i++) {
           cells.push(i);
@@ -183,19 +246,13 @@ export const useDesignerStore = create<DesignerState>()(
       const { params } = get();
       const { cols } = params.compartments;
 
-      // Validate rectangular selection
       if (!isRectangularSelection(cols, cellIndices)) return;
 
-      // Find target ID (lowest existing in selection)
       const existingIds = cellIndices.map((i) => params.compartments.cells[i]);
       const targetId = Math.min(...existingIds);
 
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
         const newCells = [...state.params.compartments.cells];
         for (const idx of cellIndices) {
           newCells[idx] = targetId;
@@ -209,11 +266,7 @@ export const useDesignerStore = create<DesignerState>()(
 
     splitCompartment: (compartmentId: number) => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
         const newCells = [...state.params.compartments.cells];
         let nextId = Math.max(...newCells) + 1;
         let first = true;
@@ -235,11 +288,7 @@ export const useDesignerStore = create<DesignerState>()(
 
     resetCompartments: () => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
         state.params.compartments = { ...DEFAULT_BIN_PARAMS.compartments };
       });
     },
@@ -247,33 +296,21 @@ export const useDesignerStore = create<DesignerState>()(
     // Insert actions
     addInsert: (insert: Insert) => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
         state.params.inserts = [...state.params.inserts, insert];
       });
     },
 
     removeInsert: (id: string) => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
         state.params.inserts = state.params.inserts.filter((i) => i.id !== id);
       });
     },
 
     updateInsert: (id: string, updates: Partial<Insert>) => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
         state.params.inserts = state.params.inserts.map((i) =>
           i.id === id ? { ...i, ...updates } : i
         );
@@ -282,11 +319,7 @@ export const useDesignerStore = create<DesignerState>()(
 
     clearInserts: () => {
       set((state) => {
-        state.history.past = [
-          ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-          current(state.params),
-        ];
-        state.history.future = [];
+        pushHistoryEntry(state);
         state.params.inserts = [];
       });
     },
@@ -303,6 +336,17 @@ export const useDesignerStore = create<DesignerState>()(
         state.generation.mesh = result;
         state.generation.status = result.error ? 'error' : 'complete';
       });
+
+      // Cache the mesh for the next history push
+      if (result.vertices && result.normals) {
+        pendingMeshCache = createCachedMesh(
+          result.vertices,
+          result.normals,
+          Math.floor(result.vertices.length / 9) // 3 vertices per triangle, 3 floats each
+        );
+      } else {
+        pendingMeshCache = null;
+      }
     },
 
     setWasmStatus: (status: WasmStatus) => {
@@ -340,15 +384,9 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         const enabling = !state.ui.halfBinMode;
         if (!enabling) {
-          // Push history before modifying params so rounding is undoable
           if (isFractional(state.params.width) || isFractional(state.params.depth)) {
-            state.history.past = [
-              ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
-              current(state.params),
-            ];
-            state.history.future = [];
+            pushHistoryEntry(state);
           }
-          // Disabling: round fractional dimensions to nearest integer
           if (isFractional(state.params.width)) {
             state.params.width = Math.round(state.params.width);
           }
@@ -361,3 +399,11 @@ export const useDesignerStore = create<DesignerState>()(
     },
   }))
 );
+
+/**
+ * Reset the pending mesh cache (used in tests).
+ * @internal
+ */
+export function _resetPendingMeshCache(): void {
+  pendingMeshCache = null;
+}

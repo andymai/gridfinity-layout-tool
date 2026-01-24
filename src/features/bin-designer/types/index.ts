@@ -155,6 +155,22 @@ export interface GenerationState {
   readonly status: GenerationStatus;
   readonly mesh: GenerationResult | null;
   readonly progress: number;
+  /** Increments on changes needing regeneration; cache hits leave epoch unchanged */
+  readonly epoch: number;
+}
+
+/** Cached mesh data for undo/redo history entries */
+export interface CachedMesh {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly triangleCount: number;
+  readonly byteSize: number;
+}
+
+/** History entry pairing params with optional cached mesh */
+export interface HistoryEntry {
+  readonly params: BinParams;
+  readonly mesh: CachedMesh | null;
 }
 
 // =============================================================================
@@ -177,10 +193,10 @@ export interface DesignerUIState {
   readonly halfBinMode: boolean;
 }
 
-/** Undo/redo history for bin parameters */
+/** Undo/redo history for bin parameters with optional mesh cache */
 export interface DesignerHistory {
-  readonly past: readonly BinParams[];
-  readonly future: readonly BinParams[];
+  readonly past: readonly HistoryEntry[];
+  readonly future: readonly HistoryEntry[];
 }
 
 // =============================================================================

@@ -6,17 +6,29 @@ import { DEFAULT_BIN_PARAMS } from '../../constants';
 
 // Mock Three.js rendering (jsdom has no WebGL)
 vi.mock('@react-three/fiber', () => ({
-  Canvas: ({ children }: { children: ReactNode }) => (
-    <div data-testid="r3f-canvas">{children}</div>
-  ),
+  Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
   useThree: () => ({
     camera: {
-      position: { clone: () => ({ x: 0, y: 0, z: 0, sub: () => ({ x: 0, y: 0, z: 0 }), normalize: () => ({ x: 0, y: 0, z: 1 }) }), copy: vi.fn(), set: vi.fn(), lerpVectors: vi.fn() },
+      position: {
+        clone: () => ({
+          x: 0,
+          y: 0,
+          z: 0,
+          sub: () => ({ x: 0, y: 0, z: 0 }),
+          normalize: () => ({ x: 0, y: 0, z: 1 }),
+        }),
+        copy: vi.fn(),
+        set: vi.fn(),
+        lerpVectors: vi.fn(),
+      },
       up: { set: vi.fn() },
       lookAt: vi.fn(),
     },
+    invalidate: vi.fn(),
   }),
-  useFrame: () => { /* noop */ },
+  useFrame: () => {
+    /* noop */
+  },
 }));
 
 vi.mock('@react-three/drei', () => ({
@@ -27,9 +39,15 @@ vi.mock('@react-three/drei', () => ({
 }));
 
 vi.mock('three', () => {
-  function BufferGeometry() { /* mock */ }
-  BufferGeometry.prototype.setAttribute = function () { return this; };
-  BufferGeometry.prototype.dispose = function () { /* noop */ };
+  function BufferGeometry() {
+    /* mock */
+  }
+  BufferGeometry.prototype.setAttribute = function () {
+    return this;
+  };
+  BufferGeometry.prototype.dispose = function () {
+    /* noop */
+  };
 
   function Float32BufferAttribute(array: Float32Array, _itemSize: number) {
     return { array };
@@ -37,34 +55,70 @@ vi.mock('three', () => {
 
   function Vector3(x = 0, y = 0, z = 0) {
     return {
-      x, y, z,
-      normalize: function () { return this; },
-      multiplyScalar: function () { return this; },
-      add: function () { return this; },
-      clone: function () { return { x, y, z, sub: () => ({ x: 0, y: 0, z: 0 }), normalize: () => ({ x: 0, y: 0, z: 1 }) }; },
-      copy: function () { return this; },
-      sub: function () { return this; },
-      set: function () { return this; },
-      setFromSpherical: function () { return this; },
-      lerpVectors: function () { return this; },
+      x,
+      y,
+      z,
+      normalize: function () {
+        return this;
+      },
+      multiplyScalar: function () {
+        return this;
+      },
+      add: function () {
+        return this;
+      },
+      clone: function () {
+        return {
+          x,
+          y,
+          z,
+          sub: () => ({ x: 0, y: 0, z: 0 }),
+          normalize: () => ({ x: 0, y: 0, z: 1 }),
+        };
+      },
+      copy: function () {
+        return this;
+      },
+      sub: function () {
+        return this;
+      },
+      set: function () {
+        return this;
+      },
+      setFromSpherical: function () {
+        return this;
+      },
+      lerpVectors: function () {
+        return this;
+      },
     };
   }
 
   function Spherical(_r = 0, _phi = 0, _theta = 0) {
     return {
-      radius: _r, phi: _phi, theta: _theta,
-      setFromVector3: function () { return this; },
+      radius: _r,
+      phi: _phi,
+      theta: _theta,
+      setFromVector3: function () {
+        return this;
+      },
     };
   }
 
   function Color(hex?: string) {
     return {
-      r: 0.8, g: 0.8, b: 0.8,
+      r: 0.8,
+      g: 0.8,
+      b: 0.8,
       getHSL: function (target: { h: number; s: number; l: number }) {
-        target.h = 0; target.s = 0; target.l = 0.8;
+        target.h = 0;
+        target.s = 0;
+        target.l = 0.8;
         return target;
       },
-      setHSL: function () { return this; },
+      setHSL: function () {
+        return this;
+      },
       _hex: hex,
     };
   }
@@ -109,8 +163,8 @@ describe('PreviewCanvas', () => {
       generation: {
         status: 'idle',
         mesh: null,
-        error: null,
-        timingMs: 0,
+        progress: 0,
+        epoch: 0,
       },
     });
   });
@@ -132,7 +186,7 @@ describe('PreviewCanvas', () => {
   it('shows skeleton when no mesh is available', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
-      generation: { status: 'idle', mesh: null, error: null, timingMs: 0 },
+      generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
     });
     render(<PreviewCanvas />);
 
@@ -142,7 +196,7 @@ describe('PreviewCanvas', () => {
   it('shows skeleton when generating with no prior mesh', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
-      generation: { status: 'generating', mesh: null, error: null, timingMs: 0 },
+      generation: { status: 'generating', mesh: null, progress: 0, epoch: 0 },
     });
     render(<PreviewCanvas />);
 
@@ -152,7 +206,7 @@ describe('PreviewCanvas', () => {
   it('shows skeleton when generation has error with no mesh', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
-      generation: { status: 'error', mesh: null, error: 'Failed', timingMs: 0 },
+      generation: { status: 'error', mesh: null, progress: 0, epoch: 0 },
     });
     render(<PreviewCanvas />);
 
@@ -167,9 +221,11 @@ describe('PreviewCanvas', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          error: null,
+          timingMs: 50,
         },
-        error: null,
-        timingMs: 50,
+        progress: 0,
+        epoch: 0,
       },
     });
     render(<PreviewCanvas />);
@@ -186,15 +242,17 @@ describe('PreviewCanvas', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          error: null,
+          timingMs: 50,
         },
-        error: null,
-        timingMs: 50,
+        progress: 0,
+        epoch: 0,
       },
     });
     render(<PreviewCanvas />);
 
     expect(screen.getByTestId('r3f-canvas')).toBeInTheDocument();
-    expect(screen.getByText('Updating…')).toBeInTheDocument();
+    expect(screen.getByText('Updating')).toBeInTheDocument();
   });
 
   it('does not show updating overlay when generation is complete', () => {
@@ -205,14 +263,16 @@ describe('PreviewCanvas', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          error: null,
+          timingMs: 50,
         },
-        error: null,
-        timingMs: 50,
+        progress: 0,
+        epoch: 0,
       },
     });
     render(<PreviewCanvas />);
 
-    expect(screen.queryByText('Updating...')).not.toBeInTheDocument();
+    expect(screen.queryByText('Updating')).not.toBeInTheDocument();
   });
 
   it('renders preview control buttons when mesh is available', () => {
@@ -223,9 +283,11 @@ describe('PreviewCanvas', () => {
         mesh: {
           vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
           normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          error: null,
+          timingMs: 50,
         },
-        error: null,
-        timingMs: 50,
+        progress: 0,
+        epoch: 0,
       },
     });
     render(<PreviewCanvas />);

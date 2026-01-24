@@ -50,6 +50,7 @@ export const DEFAULT_GENERATION_STATE: GenerationState = {
   status: 'idle',
   mesh: null,
   progress: 0,
+  epoch: 0,
 } as const;
 
 /** Default UI state */
@@ -76,7 +77,9 @@ export const DEFAULT_HISTORY: DesignerHistory = {
  * @param params - Partial bin parameters to migrate; any fields not provided will be filled from `DEFAULT_BIN_PARAMS`.
  * @returns A complete `BinParams` object with unspecified fields taken from `DEFAULT_BIN_PARAMS`.
  */
-export function migrateParams(params: Partial<BinParams> & { dividers?: { x: number; y: number; thickness: number } }): BinParams {
+export function migrateParams(
+  params: Partial<BinParams> & { dividers?: { x: number; y: number; thickness: number } }
+): BinParams {
   // Migrate old boolean scoop format to ScoopConfig
   let scoopConfig = DEFAULT_BIN_PARAMS.scoop;
   if (params.scoop !== undefined) {
