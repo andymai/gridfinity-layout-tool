@@ -110,6 +110,7 @@
  * - ml:meta:client_version:{version} → Events by client version
  */
 
+import { createHash } from 'crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Redis } from 'ioredis';
 import type { RedisOptions } from 'ioredis';
@@ -510,13 +511,7 @@ async function checkRateLimitInternal(ip: string, client: Redis): Promise<boolea
 }
 
 function hashIP(ip: string): string {
-  let hash = 0;
-  for (let i = 0; i < ip.length; i++) {
-    const char = ip.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(16).slice(0, 8);
+  return createHash('sha256').update(ip).digest('hex').slice(0, 16);
 }
 
 // ============================================
