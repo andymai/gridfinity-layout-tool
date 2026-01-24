@@ -16,7 +16,8 @@ import { BaseIcon } from './SectionIllustrations';
 import type { BaseConfig, BaseStyle } from '@/features/bin-designer/types';
 
 /** Derive base style from individual magnet/screw booleans */
-function computeBaseStyle(magnet: boolean, screw: boolean): BaseStyle {
+function computeBaseStyle(magnet: boolean, screw: boolean, currentStyle: BaseStyle): BaseStyle {
+  if (!magnet && !screw && currentStyle === 'weighted') return 'weighted';
   if (magnet && screw) return 'magnet_and_screw';
   if (magnet) return 'magnet';
   if (screw) return 'screw';
@@ -38,7 +39,7 @@ export function BaseSection() {
     const newMagnet = !hasMagnet;
     const newBase: BaseConfig = {
       ...base,
-      style: computeBaseStyle(newMagnet, hasScrew),
+      style: computeBaseStyle(newMagnet, hasScrew, base.style),
     };
     setParam('base', newBase);
   }, [base, hasMagnet, hasScrew, setParam]);
@@ -47,7 +48,7 @@ export function BaseSection() {
     const newScrew = !hasScrew;
     const newBase: BaseConfig = {
       ...base,
-      style: computeBaseStyle(hasMagnet, newScrew),
+      style: computeBaseStyle(hasMagnet, newScrew, base.style),
     };
     setParam('base', newBase);
   }, [base, hasMagnet, hasScrew, setParam]);
@@ -142,12 +143,7 @@ export function BaseSection() {
           onChange={toggleStackingLip}
         />
 
-        <FeatureToggle
-          label="Flat bottom"
-          checked={false}
-          onChange={() => {}}
-          comingSoon
-        />
+        <FeatureToggle label="Flat bottom" checked={false} onChange={() => {}} comingSoon />
       </div>
     </CollapsibleSection>
   );
