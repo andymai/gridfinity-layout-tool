@@ -667,6 +667,7 @@ export type LayerMoveMethod = 'inspector' | 'drag' | 'keyboard' | 'context_menu'
 export type RejectionReason =
   | 'cancelled' // User pressed Escape or clicked away
   | 'second_touch' // Second finger arrived (two-finger pan)
+  | 'pointer_cancel' // OS/browser interrupted the gesture (notification, system scroll)
   | 'outside_bounds' // Released outside grid bounds
   | 'too_small'; // Rectangle too small to create bin
 
