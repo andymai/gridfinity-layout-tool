@@ -6,7 +6,7 @@ import {
   getTotalBins,
   getTotalFilament,
   getSpoolEstimate,
-} from '@/utils/split';
+} from '@/features/print-export/utils/split';
 import type { Bin, PrintRow } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 

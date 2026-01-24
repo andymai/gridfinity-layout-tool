@@ -47,3 +47,20 @@ export {
   clamp,
   truncate,
 } from './validation';
+
+export {
+  getDisplayLayers,
+  getLayerZStart,
+  getLayerZStartResult,
+  getBin3DRect,
+  getBin3DRectResult,
+  footprintsOverlap,
+  verticalRangesOverlap,
+  binsCollide,
+  binsCollideResult,
+  getBlockedZones,
+  isInBlockedZone,
+  checkLayerReorderCollisions,
+} from './collision';
+
+export { fillAllWithSize, fillGaps } from './fill';

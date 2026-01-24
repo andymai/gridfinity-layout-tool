@@ -12,7 +12,7 @@ import {
   getTotalBins,
   getTotalPieces,
   getSpoolEstimate,
-} from '@/utils/split';
+} from '@/features/print-export/utils/split';
 import {
   applyFiltersAndSort,
   groupByCategory,
