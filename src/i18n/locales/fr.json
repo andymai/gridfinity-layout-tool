@@ -460,6 +460,8 @@
   "toast.categoryAdded": "Catégorie ajoutée",
   "toast.categoryDeleted": "Catégorie supprimée",
   "toast.categoryRenamed": "Catégorie renommée",
+  "toast.categoryAssigned": "Catégorie assignée à {count} bin(s)",
+  "toast.binsMovedToLayer": "{count} bin(s) déplacé(s) vers le layer",
 
   "toast.defaultsSaved": "Valeurs par défaut enregistrées",
   "toast.settingsReset": "Paramètres réinitialisés aux valeurs par défaut",
@@ -506,6 +508,7 @@
   "stlSearch.findSTL": "Trouver STL",
   "stlSearch.findOnSite": "Trouver sur {site}",
   "stlSearch.searchFor": "Rechercher un bin {width}×{depth}",
+  "stlSearch.searchForSplit": "Rechercher des générateurs de split bin",
   "stlSearch.splitNote": "Sera divisé pour l'impression",
   "stlSearch.openIn": "Ouvrir dans {site}",
 
@@ -521,6 +524,7 @@
 
   "halfBinBlocked.title": "Impossible de désactiver le mode half-bin",
   "halfBinBlocked.message": "Certains bins utilisent des dimensions fractionnaires. Redimensionner ou supprimer ces bins avant de désactiver le mode half-bin.",
+  "halfBinBlocked.cancelAriaLabel": "Annuler et garder le mode half-bin activé",
   "halfBinBlocked.close": "Compris",
 
   "gallery.title": "Galerie d'inspiration",
@@ -542,6 +546,8 @@
   "binDesigner.export": "Exporter",
   "binDesigner.exportSTL": "Exporter STL",
   "binDesigner.export3MF": "Exporter 3MF",
+  "binDesigner.formatSTL": "STL",
+  "binDesigner.format3MF": "3MF",
   "binDesigner.dimensions": "Dimensions",
   "binDesigner.features": "Fonctionnalités",
   "binDesigner.inserts": "Inserts",

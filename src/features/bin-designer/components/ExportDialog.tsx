@@ -131,13 +131,13 @@ export function ExportDialog() {
           <label className="mb-2 block text-sm font-medium text-content-secondary">Format</label>
           <div className="grid grid-cols-3 gap-2">
             <FormatOption
-              label={t('binDesigner.exportSTL').replace('Export ', '')}
+              label={t('binDesigner.formatSTL')}
               active={format === 'stl'}
               onClick={() => setFormat('stl')}
               description="Binary STL mesh"
             />
             <FormatOption
-              label={t('binDesigner.export3MF').replace('Export ', '')}
+              label={t('binDesigner.format3MF')}
               active={format === '3mf'}
               onClick={() => setFormat('3mf')}
               description="Mesh + metadata"

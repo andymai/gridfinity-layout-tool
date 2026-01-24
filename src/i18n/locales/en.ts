@@ -556,6 +556,8 @@ const en: Record<string, string> = {
   'toast.categoryAdded': 'Category added',
   'toast.categoryDeleted': 'Category deleted',
   'toast.categoryRenamed': 'Category renamed',
+  'toast.categoryAssigned': 'Category assigned to {count} bin(s)',
+  'toast.binsMovedToLayer': '{count} bin(s) moved to layer',
 
   // Settings
   'toast.defaultsSaved': 'Defaults saved',
@@ -614,6 +616,7 @@ const en: Record<string, string> = {
   'stlSearch.findSTL': 'Find STL',
   'stlSearch.findOnSite': 'Find on {site}',
   'stlSearch.searchFor': 'Search for {width}×{depth} bin',
+  'stlSearch.searchForSplit': 'Search for split bin generators',
   'stlSearch.splitNote': 'Will be split for printing',
   'stlSearch.openIn': 'Open in {site}',
 
@@ -635,6 +638,7 @@ const en: Record<string, string> = {
   // ===========================================================================
   'halfBinBlocked.title': 'Cannot Disable Half-Bin Mode',
   'halfBinBlocked.message': 'Some bins use fractional dimensions. Resize or delete these bins before disabling half-bin mode.',
+  'halfBinBlocked.cancelAriaLabel': 'Cancel and keep half-bin mode enabled',
   'halfBinBlocked.close': 'Got it',
 
   // ===========================================================================
@@ -665,6 +669,8 @@ const en: Record<string, string> = {
   'binDesigner.export': 'Export',
   'binDesigner.exportSTL': 'Export STL',
   'binDesigner.export3MF': 'Export 3MF',
+  'binDesigner.formatSTL': 'STL',
+  'binDesigner.format3MF': '3MF',
   'binDesigner.dimensions': 'Dimensions',
   'binDesigner.features': 'Features',
   'binDesigner.inserts': 'Inserts',

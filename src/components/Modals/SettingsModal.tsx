@@ -164,6 +164,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     if (e.key === ' ' || e.key === 'Enter') {
                       e.preventDefault();
                       updateSetting('locale', 'auto');
+                      setLocale(detectBrowserLocale());
                     }
                   }}
                 >

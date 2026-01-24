@@ -204,7 +204,7 @@ export function STLSearchDropdown({
             {/* Header */}
             <div className="px-4 py-2 border-b border-stroke-subtle">
               <div className="text-xs text-content-tertiary">
-                {needsSplit ? 'Search for split bin generators' : t('stlSearch.searchFor', { width: formatDimension(width), depth: formatDimension(depth) })}
+                {needsSplit ? t('stlSearch.searchForSplit') : t('stlSearch.searchFor', { width: formatDimension(width), depth: formatDimension(depth) })}
               </div>
             </div>
 

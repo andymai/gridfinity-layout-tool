@@ -106,7 +106,7 @@ export function MultiBinContextMenu({
       mlTracking.trackCategory(binsToUpdate[0], category.name, batchSize);
     }
 
-    addToast(t('toast.binsDeleted', { count: binsToUpdate.length }), 'success');
+    addToast(t('toast.categoryAssigned', { count: binsToUpdate.length }), 'success');
     onClose();
   };
 
@@ -124,7 +124,7 @@ export function MultiBinContextMenu({
         });
       });
     });
-    addToast(t('toast.binsDeleted', { count: stagingBins.length }), 'success');
+    addToast(t('toast.binsMovedToLayer', { count: stagingBins.length }), 'success');
     onClose();
   };
 

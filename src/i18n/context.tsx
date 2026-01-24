@@ -78,8 +78,11 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
   );
   const [isLoading, setIsLoading] = useState(initialLocale !== 'en');
   const mountedRef = useRef(true);
+  const latestLocaleRef = useRef<Locale>(initialLocale);
 
   const loadLocale = useCallback(async (target: Locale) => {
+    latestLocaleRef.current = target;
+
     if (target === 'en') {
       setTranslations(en);
       setIsLoading(false);
@@ -96,13 +99,14 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     setIsLoading(true);
     try {
       const module = await loader();
-      if (mountedRef.current) {
+      // Only apply if this is still the latest requested locale
+      if (mountedRef.current && latestLocaleRef.current === target) {
         setTranslations(module.default);
         setIsLoading(false);
       }
     } catch {
       // Fall back to English on load failure
-      if (mountedRef.current) {
+      if (mountedRef.current && latestLocaleRef.current === target) {
         setTranslations(en);
         setIsLoading(false);
       }
@@ -126,7 +130,9 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
       onLocaleChange?.(newLocale);
 
       // Update document lang attribute
-      document.documentElement.lang = newLocale === 'pt-BR' ? 'pt' : newLocale;
+      if (typeof document !== 'undefined') {
+        document.documentElement.lang = newLocale === 'pt-BR' ? 'pt' : newLocale;
+      }
     },
     [loadLocale, onLocaleChange]
   );

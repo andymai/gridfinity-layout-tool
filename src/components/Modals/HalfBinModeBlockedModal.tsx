@@ -184,7 +184,7 @@ export function HalfBinModeBlockedModal({
                      hover:bg-surface-elevated
                      disabled:opacity-50 disabled:cursor-not-allowed
                      transition-colors"
-            aria-label="Cancel and keep half-bin mode enabled"
+            aria-label={t('halfBinBlocked.cancelAriaLabel')}
           >
             {t('common.cancel')}
           </button>
