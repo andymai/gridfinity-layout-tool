@@ -363,9 +363,18 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       layers: validatedLayers,
       bins: validatedBins,
       categories: validatedCategories,
-      printBedSize: typeof layout.printBedSize === 'number' ? layout.printBedSize : undefined,
-      gridUnitMm: typeof layout.gridUnitMm === 'number' ? layout.gridUnitMm : undefined,
-      heightUnitMm: typeof layout.heightUnitMm === 'number' ? layout.heightUnitMm : undefined,
+      printBedSize:
+        typeof layout.printBedSize === 'number' && Number.isFinite(layout.printBedSize)
+          ? layout.printBedSize
+          : undefined,
+      gridUnitMm:
+        typeof layout.gridUnitMm === 'number' && Number.isFinite(layout.gridUnitMm)
+          ? layout.gridUnitMm
+          : undefined,
+      heightUnitMm:
+        typeof layout.heightUnitMm === 'number' && Number.isFinite(layout.heightUnitMm)
+          ? layout.heightUnitMm
+          : undefined,
     },
   };
 }
@@ -388,6 +397,9 @@ function isValidDrawer(value: unknown): value is DrawerShape {
     typeof obj.width === 'number' &&
     typeof obj.depth === 'number' &&
     typeof obj.height === 'number' &&
+    Number.isFinite(obj.width) &&
+    Number.isFinite(obj.depth) &&
+    Number.isFinite(obj.height) &&
     obj.width > 0 &&
     obj.depth > 0 &&
     obj.height > 0
@@ -398,7 +410,10 @@ function isValidLayer(value: unknown): value is LayerShape {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.id === 'string' && typeof obj.name === 'string' && typeof obj.height === 'number'
+    typeof obj.id === 'string' &&
+    typeof obj.name === 'string' &&
+    typeof obj.height === 'number' &&
+    Number.isFinite(obj.height)
   );
 }
 
@@ -412,7 +427,12 @@ function isValidBin(value: unknown): value is BinShape {
     typeof obj.y === 'number' &&
     typeof obj.width === 'number' &&
     typeof obj.depth === 'number' &&
-    typeof obj.height === 'number'
+    typeof obj.height === 'number' &&
+    Number.isFinite(obj.x) &&
+    Number.isFinite(obj.y) &&
+    Number.isFinite(obj.width) &&
+    Number.isFinite(obj.depth) &&
+    Number.isFinite(obj.height)
   );
 }
 

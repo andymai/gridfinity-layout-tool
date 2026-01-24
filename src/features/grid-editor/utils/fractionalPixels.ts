@@ -10,6 +10,12 @@
  * boundary need proportional pixel sizing.
  */
 
+/**
+ * Epsilon for floating-point gap count calculation.
+ * Prevents Math.floor from under-counting due to values like 1.9999999999.
+ */
+const FLOAT_EPSILON = 0.001;
+
 export interface FractionalGridContext {
   /** Full drawer dimension in grid units (e.g., 10.5) */
   drawerDimension: number;
@@ -59,7 +65,7 @@ export function calcFractionalPixelSize(
     }
     if (inInteger > 0) {
       if (inFractional > 0) pixels += gap;
-      pixels += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+      pixels += inInteger * cellSize + Math.max(0, Math.floor(inInteger + FLOAT_EPSILON) - 1) * gap;
     }
     return pixels;
   } else {
@@ -69,7 +75,7 @@ export function calcFractionalPixelSize(
 
     let pixels = 0;
     if (inInteger > 0) {
-      pixels += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
+      pixels += inInteger * cellSize + Math.max(0, Math.floor(inInteger + FLOAT_EPSILON) - 1) * gap;
     }
     if (inFractional > 0) {
       if (inInteger > 0) pixels += gap;
