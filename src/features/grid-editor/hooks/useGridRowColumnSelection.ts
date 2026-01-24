@@ -48,6 +48,15 @@ export function useGridRowColumnSelection(
   const [lastClickedRow, setLastClickedRow] = useState<number | null>(null);
   const [lastClickedCol, setLastClickedCol] = useState<number | null>(null);
 
+  // Reset shift-click anchors when layer changes to avoid cross-layer range artifacts
+  // Uses "adjust state during render" pattern (React-recommended over useEffect for prop-derived resets)
+  const [prevLayerId, setPrevLayerId] = useState(activeLayerId);
+  if (prevLayerId !== activeLayerId) {
+    setPrevLayerId(activeLayerId);
+    setLastClickedRow(null);
+    setLastClickedCol(null);
+  }
+
   // Get all bins that occupy any row in the given range (1-indexed row numbers)
   const getBinsInRowRange = useCallback(
     (startRow: number, endRow: number): Bin[] => {
