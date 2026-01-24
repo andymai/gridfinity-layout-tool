@@ -18,7 +18,12 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { ThicknessSelector } from './controls/ThicknessSelector';
-import { getCompartmentCount, isRectangularSelection, cellIndex } from '../utils/compartments';
+import {
+  getCompartmentCount,
+  getCompartmentBounds,
+  isRectangularSelection,
+  cellIndex,
+} from '../utils/compartments';
 import type { CompartmentConfig } from '../types';
 
 // =============================================================================
@@ -440,6 +445,18 @@ function GridCell({
   const borderBottom = hasBottomNeighbor ? 0 : 1.5;
   const borderLeft = hasLeftNeighbor ? 0 : 1.5;
 
+  // Show dimension label on the top-left cell of multi-cell compartments
+  const isTopLeftOfCompartment = !hasTopNeighbor && !hasLeftNeighbor;
+  let dimensionLabel: string | null = null;
+  if (isTopLeftOfCompartment && isSplittable) {
+    const bounds = getCompartmentBounds(config, compartmentId);
+    if (bounds) {
+      const cWidth = bounds.maxCol - bounds.minCol + 1;
+      const cHeight = bounds.maxRow - bounds.minRow + 1;
+      dimensionLabel = `${cWidth}\u00d7${cHeight}`;
+    }
+  }
+
   return (
     <div
       className="relative touch-manipulation"
@@ -463,6 +480,21 @@ function GridCell({
       }}
       onPointerEnter={() => onPointerEnter(idx)}
       onPointerLeave={onPointerLeave}
-    />
+    >
+      {dimensionLabel && (
+        <span
+          className="pointer-events-none absolute text-[9px] font-medium leading-none"
+          style={{
+            top: '3px',
+            left: '3px',
+            color: borderColor,
+            opacity: 0.8,
+          }}
+          aria-hidden="true"
+        >
+          {dimensionLabel}
+        </span>
+      )}
+    </div>
   );
 }
