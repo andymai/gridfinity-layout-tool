@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GenerationBridge } from '../bridge/GenerationBridge';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { WorkerResponse } from '../bridge/types';
 
 /**

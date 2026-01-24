@@ -1,10 +1,13 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
-import type { BinParams } from '@/features/bin-designer/types';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 
-type GenerateFn = (params: BinParams, onProgress?: (stage: string, progress: number) => void) => MeshData;
+type GenerateFn = (
+  params: BinParams,
+  onProgress?: (stage: string, progress: number) => void
+) => MeshData;
 let generateBin: GenerateFn;
 
 beforeAll(async () => {
@@ -13,7 +16,10 @@ beforeAll(async () => {
   const { readFileSync } = await import('fs');
   const { join } = await import('path');
 
-  const wasmPath = join(process.cwd(), 'node_modules/replicad-opencascadejs/src/replicad_single.wasm');
+  const wasmPath = join(
+    process.cwd(),
+    'node_modules/replicad-opencascadejs/src/replicad_single.wasm'
+  );
   const wasmBinary = readFileSync(wasmPath);
   const OC = await opencascade({ wasmBinary });
   setOC(OC);
