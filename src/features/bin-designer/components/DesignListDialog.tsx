@@ -70,6 +70,15 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   );
 
   const handleNewDesign = useCallback(() => {
+    // Confirm if user has an active design with history
+    const state = useDesignerStore.getState();
+    if (state.currentDesignId && state.history.past.length > 0) {
+      if (
+        !window.confirm('Start a new design? Your current design is saved and can be loaded later.')
+      ) {
+        return;
+      }
+    }
     newDesign();
     syncUrlToDesign(null);
     addToast({ message: 'New design created', type: 'success', duration: 2000 });
@@ -103,9 +112,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         // Re-save with updated name (uses saveDesign which preserves createdAt)
         const { saveDesign } = await import('@/core/storage/DesignerStorage');
         await saveDesign({ ...design, name: trimmed });
-        setDesigns((prev) =>
-          prev.map((d) => (d.id === design.id ? { ...d, name: trimmed } : d))
-        );
+        setDesigns((prev) => prev.map((d) => (d.id === design.id ? { ...d, name: trimmed } : d)));
         // Update current design name if this is the active one
         if (design.id === currentDesignId) {
           useDesignerStore.getState().setDesignName(trimmed);
@@ -146,19 +153,37 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
               className="rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
               aria-label="Close"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
         </div>
 
         {/* Design list */}
-        <div className="max-h-[50vh] overflow-y-auto px-5 py-3" aria-busy={loading} aria-label="Saved designs">
+        <div
+          className="max-h-[50vh] overflow-y-auto px-5 py-3"
+          aria-busy={loading}
+          aria-label="Saved designs"
+        >
           {loading ? (
             <div className="space-y-2 py-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex animate-pulse motion-reduce:animate-none items-center gap-3 rounded-lg border border-stroke-subtle px-3 py-2.5">
+                <div
+                  key={i}
+                  className="flex animate-pulse motion-reduce:animate-none items-center gap-3 rounded-lg border border-stroke-subtle px-3 py-2.5"
+                >
                   <div className="h-10 w-10 flex-shrink-0 rounded-md bg-surface-elevated" />
                   <div className="flex-1 space-y-1.5">
                     <div className="h-3.5 w-24 rounded bg-surface-elevated" />
@@ -169,10 +194,48 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
             </div>
           ) : designs.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-sm text-content-secondary">No saved designs yet</p>
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-surface-elevated">
+                <svg
+                  className="h-6 w-6 text-content-tertiary"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-content-secondary">No saved designs yet</p>
               <p className="mt-1 text-xs text-content-disabled">
                 Changes are saved automatically as you design
               </p>
+              <button
+                onClick={() => {
+                  handleNewDesign();
+                }}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-surface transition-colors hover:bg-accent-hover"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Start a new design
+              </button>
             </div>
           ) : (
             <ul className="space-y-2">
@@ -194,8 +257,19 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                         className="h-full w-full rounded-md object-cover"
                       />
                     ) : (
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                        />
                       </svg>
                     )}
                   </div>
@@ -239,8 +313,19 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                       className="rounded p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
                       aria-label={`Rename ${design.name}`}
                     >
-                      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      <svg
+                        className="h-3.5 w-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
                       </svg>
                     </button>
                     <button
@@ -248,8 +333,19 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                       className="rounded p-1 text-content-secondary hover:bg-red-500/10 hover:text-red-400"
                       aria-label={`Delete ${design.name}`}
                     >
-                      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <svg
+                        className="h-3.5 w-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
                       </svg>
                     </button>
                   </div>

@@ -18,11 +18,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { ThicknessSelector } from './controls/ThicknessSelector';
-import {
-  getCompartmentCount,
-  isRectangularSelection,
-  cellIndex,
-} from '../utils/compartments';
+import { getCompartmentCount, isRectangularSelection, cellIndex } from '../utils/compartments';
 import type { CompartmentConfig } from '../types';
 
 // =============================================================================
@@ -92,14 +88,11 @@ export function CompartmentEditor() {
     [cols]
   );
 
-  const handleCellPointerDown = useCallback(
-    (idx: number) => {
-      setDragStart(idx);
-      setIsDragging(true);
-      setSelection(new Set([idx]));
-    },
-    []
-  );
+  const handleCellPointerDown = useCallback((idx: number) => {
+    setDragStart(idx);
+    setIsDragging(true);
+    setSelection(new Set([idx]));
+  }, []);
 
   const handleCellPointerEnter = useCallback(
     (idx: number) => {
@@ -151,7 +144,10 @@ export function CompartmentEditor() {
   const handleColsStep = useCallback(
     (delta: number) => {
       const next = cols + delta;
-      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID, Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID, next));
+      const clamped = Math.min(
+        DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID,
+        Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID, next)
+      );
       setCompartmentGrid(clamped, rows);
       setSelection(new Set());
     },
@@ -169,7 +165,10 @@ export function CompartmentEditor() {
   const handleRowsStep = useCallback(
     (delta: number) => {
       const next = rows + delta;
-      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID, Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID, next));
+      const clamped = Math.min(
+        DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID,
+        Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID, next)
+      );
       setCompartmentGrid(cols, clamped);
       setSelection(new Set());
     },
@@ -235,12 +234,15 @@ export function CompartmentEditor() {
                   {compartmentCount} {compartmentCount === 1 ? 'compartment' : 'compartments'}
                 </span>
               </div>
-              <p className="mb-3 text-xs text-content-tertiary">
+              <p id="compartment-grid-instructions" className="mb-3 text-xs text-content-tertiary">
                 Drag to select cells, then release to merge. Click a merged compartment to split.
               </p>
               <div
                 ref={gridRef}
                 className="mx-auto aspect-square max-w-[280px] select-none rounded-lg border border-stroke-subtle p-1"
+                role="application"
+                aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
+                aria-describedby="compartment-grid-instructions"
                 onPointerUp={handlePointerUp}
                 onPointerLeave={handlePointerUp}
               >

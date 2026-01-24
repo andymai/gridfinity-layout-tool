@@ -146,13 +146,22 @@ export function DimensionsSection() {
 
         {/* Half-bin mode toggle */}
         <div
-          className="flex items-center justify-between pt-2 cursor-pointer"
+          className="flex items-center justify-between pt-2 cursor-pointer rounded-md px-1 -mx-1 py-1 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
           onClick={toggleHalfBinMode}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggleHalfBinMode();
+            }
+          }}
+          role="checkbox"
+          aria-checked={halfBinMode}
+          aria-label="Half-bin mode (experimental): enable 0.5 grid unit precision"
+          tabIndex={0}
         >
           <div className="flex items-center gap-1.5">
             <span
               className={`text-xs leading-none ${halfBinMode ? 'text-content' : 'text-content-tertiary'}`}
-              title="Enable 0.5 grid unit precision for half-size bins"
             >
               Half-bin mode
             </span>

@@ -56,16 +56,33 @@ export function PreviewControls({
     return () => document.removeEventListener('mousedown', handleClick);
   }, [colorPickerOpen]);
 
-  const handleColorSelect = useCallback((color: string) => {
-    onColorChange(color);
-    setColorPickerOpen(false);
-  }, [onColorChange]);
+  const handleColorSelect = useCallback(
+    (color: string) => {
+      onColorChange(color);
+      setColorPickerOpen(false);
+    },
+    [onColorChange]
+  );
+
+  // Close picker on Escape
+  useEffect(() => {
+    if (!colorPickerOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setColorPickerOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [colorPickerOpen]);
 
   // Shared button styles — min 36px touch target
-  const baseBtn = "rounded-md bg-surface-elevated/80 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur transition-colors hover:bg-surface-elevated hover:text-content min-w-[36px] min-h-[32px] md:min-h-[28px] touch-manipulation";
+  const baseBtn =
+    'rounded-md bg-surface-elevated/80 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur transition-colors hover:bg-surface-elevated hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none min-w-[36px] min-h-[32px] md:min-h-[28px] touch-manipulation';
 
   return (
-    <div className="absolute right-2 top-2 flex flex-col gap-1.5">
+    <div className="absolute bottom-2 left-2 flex flex-col gap-1.5 md:bottom-auto md:left-auto md:right-2 md:top-2">
       {/* Camera presets */}
       {PRESETS.map(({ key, label, shortcut }) => (
         <button
@@ -74,9 +91,14 @@ export function PreviewControls({
           onClick={() => onCameraPreset(key)}
           className={baseBtn}
           title={`${label} view (${shortcut})`}
-          aria-label={`${label} camera view`}
+          aria-label={`${label} camera view, keyboard shortcut ${shortcut}`}
         >
-          {label}
+          <span className="inline-flex items-center gap-1">
+            {label}
+            <kbd className="hidden text-[9px] font-normal text-content-tertiary md:inline">
+              {shortcut}
+            </kbd>
+          </span>
         </button>
       ))}
 
@@ -88,25 +110,35 @@ export function PreviewControls({
         onClick={onResetView}
         className={baseBtn}
         title="Reset view (R)"
-        aria-label="Reset camera view"
+        aria-label="Reset camera view, keyboard shortcut R"
       >
-        Reset
+        <span className="inline-flex items-center gap-1">
+          Reset
+          <kbd className="hidden text-[9px] font-normal text-content-tertiary md:inline">R</kbd>
+        </span>
       </button>
 
       {/* Wireframe toggle */}
       <button
         type="button"
         onClick={onWireframeToggle}
-        className={`rounded-md px-2.5 py-1.5 text-[11px] font-medium shadow-sm backdrop-blur transition-colors min-w-[36px] min-h-[32px] md:min-h-[28px] touch-manipulation ${
+        className={`rounded-md px-2.5 py-1.5 text-[11px] font-medium shadow-sm backdrop-blur transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none min-w-[36px] min-h-[32px] md:min-h-[28px] touch-manipulation ${
           wireframe
             ? 'bg-accent text-white'
             : 'bg-surface-elevated/80 text-content-secondary hover:bg-surface-elevated hover:text-content'
         }`}
         title="Toggle wireframe (W)"
-        aria-label="Toggle wireframe mode"
+        aria-label="Toggle wireframe mode, keyboard shortcut W"
         aria-pressed={wireframe}
       >
-        Wire
+        <span className="inline-flex items-center gap-1">
+          Wire
+          <kbd
+            className={`hidden text-[9px] font-normal md:inline ${wireframe ? 'text-white/60' : 'text-content-tertiary'}`}
+          >
+            W
+          </kbd>
+        </span>
       </button>
 
       <div className="my-0.5 h-px bg-stroke-subtle/50" />
@@ -139,7 +171,7 @@ export function PreviewControls({
                   key={color}
                   type="button"
                   onClick={() => handleColorSelect(color)}
-                  className={`flex h-7 w-7 items-center justify-center rounded-md border transition-transform hover:scale-110 ${
+                  className={`flex h-7 w-7 items-center justify-center rounded-md border transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
                     previewColor === color
                       ? 'border-accent ring-1 ring-accent'
                       : 'border-stroke-subtle/50'
