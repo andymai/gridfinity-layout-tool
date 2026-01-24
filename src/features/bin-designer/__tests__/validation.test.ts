@@ -166,9 +166,17 @@ describe('validateBinParams', () => {
   });
 
   describe('wall cutout constraints', () => {
-    it('should reject negative wall values', () => {
+    it('should reject negative wall width values', () => {
       const result = validateBinParams(
-        makeParams({ walls: { front: -10, back: 0, left: 0, right: 0 } })
+        makeParams({
+          walls: {
+            front: { width: -10, depth: 50 },
+            back: { width: 0, depth: 0 },
+            left: { width: 0, depth: 0 },
+            right: { width: 0, depth: 0 },
+            interior: { width: 0, depth: 0 },
+          },
+        })
       );
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -176,16 +184,68 @@ describe('validateBinParams', () => {
       }
     });
 
-    it('should reject values above 100%', () => {
+    it('should reject width values above 100%', () => {
       const result = validateBinParams(
-        makeParams({ walls: { front: 0, back: 110, left: 0, right: 0 } })
+        makeParams({
+          walls: {
+            front: { width: 0, depth: 0 },
+            back: { width: 110, depth: 50 },
+            left: { width: 0, depth: 0 },
+            right: { width: 0, depth: 0 },
+            interior: { width: 0, depth: 0 },
+          },
+        })
       );
       expect(isErr(result)).toBe(true);
     });
 
-    it('should reject values between 0 and minimum', () => {
+    it('should reject width values between 0 and minimum', () => {
       const result = validateBinParams(
-        makeParams({ walls: { front: 15, back: 0, left: 0, right: 0 } })
+        makeParams({
+          walls: {
+            front: { width: 15, depth: 50 },
+            back: { width: 0, depth: 0 },
+            left: { width: 0, depth: 0 },
+            right: { width: 0, depth: 0 },
+            interior: { width: 0, depth: 0 },
+          },
+        })
+      );
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('WALL_CUTOUT_TOO_SMALL');
+      }
+    });
+
+    it('should reject negative depth values', () => {
+      const result = validateBinParams(
+        makeParams({
+          walls: {
+            front: { width: 50, depth: -10 },
+            back: { width: 0, depth: 0 },
+            left: { width: 0, depth: 0 },
+            right: { width: 0, depth: 0 },
+            interior: { width: 0, depth: 0 },
+          },
+        })
+      );
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('WALL_CUTOUT_OUT_OF_RANGE');
+      }
+    });
+
+    it('should reject depth values between 0 and minimum', () => {
+      const result = validateBinParams(
+        makeParams({
+          walls: {
+            front: { width: 50, depth: 15 },
+            back: { width: 0, depth: 0 },
+            left: { width: 0, depth: 0 },
+            right: { width: 0, depth: 0 },
+            interior: { width: 0, depth: 0 },
+          },
+        })
       );
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -195,14 +255,64 @@ describe('validateBinParams', () => {
 
     it('should accept 0% (no cutout)', () => {
       const result = validateBinParams(
-        makeParams({ walls: { front: 0, back: 0, left: 0, right: 0 } })
+        makeParams({
+          walls: {
+            front: { width: 0, depth: 0 },
+            back: { width: 0, depth: 0 },
+            left: { width: 0, depth: 0 },
+            right: { width: 0, depth: 0 },
+            interior: { width: 0, depth: 0 },
+          },
+        })
       );
       expect(isOk(result)).toBe(true);
     });
 
     it('should accept minimum cutout (20%)', () => {
       const result = validateBinParams(
-        makeParams({ walls: { front: 20, back: 50, left: 0, right: 100 } })
+        makeParams({
+          walls: {
+            front: { width: 20, depth: 20 },
+            back: { width: 50, depth: 60 },
+            left: { width: 0, depth: 0 },
+            right: { width: 100, depth: 100 },
+            interior: { width: 0, depth: 0 },
+          },
+        })
+      );
+      expect(isOk(result)).toBe(true);
+    });
+
+    it('should validate interior wall cutouts', () => {
+      const result = validateBinParams(
+        makeParams({
+          walls: {
+            front: { width: 0, depth: 0 },
+            back: { width: 0, depth: 0 },
+            left: { width: 0, depth: 0 },
+            right: { width: 0, depth: 0 },
+            interior: { width: 15, depth: 50 },
+          },
+        })
+      );
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('WALL_CUTOUT_TOO_SMALL');
+        expect(result.error.field).toBe('walls.interior.width');
+      }
+    });
+
+    it('should accept valid interior cutout', () => {
+      const result = validateBinParams(
+        makeParams({
+          walls: {
+            front: { width: 0, depth: 0 },
+            back: { width: 0, depth: 0 },
+            left: { width: 0, depth: 0 },
+            right: { width: 0, depth: 0 },
+            interior: { width: 80, depth: 50 },
+          },
+        })
       );
       expect(isOk(result)).toBe(true);
     });

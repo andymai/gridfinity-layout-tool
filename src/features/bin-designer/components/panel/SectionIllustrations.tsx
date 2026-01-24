@@ -8,7 +8,16 @@
 /** 3D cube wireframe representing bin dimensions */
 export function DimensionsIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       {/* Front face */}
       <rect x="3" y="5" width="8" height="8" rx="0.5" />
       {/* Top face (isometric) */}
@@ -22,7 +31,16 @@ export function DimensionsIcon() {
 /** Bottom profile showing magnet holes and baseplate interface */
 export function BaseIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       {/* Bin body outline */}
       <path d="M2 4 L2 12 L14 12 L14 4" />
       {/* Base profile step */}
@@ -37,7 +55,16 @@ export function BaseIcon() {
 /** Cross-section showing compartment dividers */
 export function InteriorIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       {/* Outer bin walls */}
       <rect x="2" y="3" width="12" height="10" rx="0.5" />
       {/* Vertical divider */}
@@ -53,7 +80,16 @@ export function InteriorIcon() {
 /** Bin shell outline showing wall thickness */
 export function WallsIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       {/* Outer wall */}
       <rect x="2" y="3" width="12" height="10" rx="0.5" />
       {/* Inner wall (showing thickness) */}
@@ -67,7 +103,16 @@ export function WallsIcon() {
 /** Circle cut into bin floor representing inserts */
 export function InsertsIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       {/* Bin floor (top-down view) */}
       <rect x="2" y="2" width="12" height="12" rx="1" />
       {/* Circular insert */}
@@ -78,14 +123,72 @@ export function InsertsIcon() {
   );
 }
 
+/** Quarter-cylinder scoop ramp at compartment front */
+export function ScoopIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Bin outline */}
+      <rect x="2" y="3" width="12" height="10" rx="0.5" />
+      {/* Scoop curve (quarter circle at bottom) */}
+      <path d="M4 13 Q4 8 9 8" />
+      {/* Scoop curve (second compartment) */}
+      <path d="M10 13 Q10 9 14 9" strokeDasharray="1.5 1" />
+    </svg>
+  );
+}
+
+/** Wall with U-shaped notch cut from top */
+export function WallCutoutsIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Bin outline */}
+      <path d="M2 3 L2 13 L14 13 L14 3" />
+      {/* Front wall with U-notch */}
+      <path d="M2 13 L5 13 L5.5 10 L10.5 10 L11 13 L14 13" strokeWidth="1.5" />
+      {/* 45-degree slopes */}
+      <path d="M5.5 10 L6 8.5 L10 8.5 L10.5 10" strokeDasharray="1.5 1" />
+    </svg>
+  );
+}
+
 /** Sparkle/star icon for coming soon features */
 export function ComingSoonIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       {/* Four-point star */}
       <path d="M8 2 L9 6 L13 7 L9 8 L8 13 L7 8 L3 7 L7 6 Z" />
       {/* Small sparkle */}
-      <path d="M12 3 L12.5 4 L13.5 4.5 L12.5 5 L12 6 L11.5 5 L10.5 4.5 L11.5 4 Z" strokeWidth="0.8" />
+      <path
+        d="M12 3 L12.5 4 L13.5 4.5 L12.5 5 L12 6 L11.5 5 L10.5 4.5 L11.5 4 Z"
+        strokeWidth="0.8"
+      />
     </svg>
   );
 }

@@ -47,10 +47,10 @@ export function describeBin(params: BinParams): string {
 
   // Wall cutouts
   const cutoutSides: string[] = [];
-  if (params.walls.front > 0) cutoutSides.push('front');
-  if (params.walls.back > 0) cutoutSides.push('back');
-  if (params.walls.left > 0) cutoutSides.push('left');
-  if (params.walls.right > 0) cutoutSides.push('right');
+  if (params.walls.front.width > 0) cutoutSides.push('front');
+  if (params.walls.back.width > 0) cutoutSides.push('back');
+  if (params.walls.left.width > 0) cutoutSides.push('left');
+  if (params.walls.right.width > 0) cutoutSides.push('right');
   if (cutoutSides.length > 0) {
     features.push(`${cutoutSides.join('/')} wall cutouts`);
   }
@@ -61,9 +61,7 @@ export function describeBin(params: BinParams): string {
   }
 
   const size = `${params.width}×${params.depth}×${params.height}`;
-  const featureStr = features.length > 0
-    ? ` with ${features.join(', ')}`
-    : '';
+  const featureStr = features.length > 0 ? ` with ${features.join(', ')}` : '';
 
   return `3D preview of a ${size} Gridfinity bin${featureStr}`;
 }

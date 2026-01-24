@@ -170,22 +170,38 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
     });
   }
 
-  // Wall cutout checks (0 or 20-100%)
-  const wallFields = ['front', 'back', 'left', 'right'] as const;
+  // Wall cutout checks (width and depth: 0 or 20-100%)
+  const wallFields = ['front', 'back', 'left', 'right', 'interior'] as const;
   for (const side of wallFields) {
-    const value = params.walls[side];
-    if (value < 0 || value > DESIGNER_CONSTRAINTS.MAX_WALL_CUTOUT) {
+    const cutout = params.walls[side];
+    // Validate width
+    if (cutout.width < 0 || cutout.width > DESIGNER_CONSTRAINTS.MAX_WALL_CUTOUT) {
       return err({
         code: 'WALL_CUTOUT_OUT_OF_RANGE',
-        message: `${side} wall cutout must be between 0 and ${DESIGNER_CONSTRAINTS.MAX_WALL_CUTOUT}%`,
-        field: `walls.${side}`,
+        message: `${side} wall cutout width must be between 0 and ${DESIGNER_CONSTRAINTS.MAX_WALL_CUTOUT}%`,
+        field: `walls.${side}.width`,
       });
     }
-    if (value > 0 && value < DESIGNER_CONSTRAINTS.MIN_WALL_CUTOUT) {
+    if (cutout.width > 0 && cutout.width < DESIGNER_CONSTRAINTS.MIN_WALL_CUTOUT) {
       return err({
         code: 'WALL_CUTOUT_TOO_SMALL',
-        message: `${side} wall cutout must be 0% or at least ${DESIGNER_CONSTRAINTS.MIN_WALL_CUTOUT}%`,
-        field: `walls.${side}`,
+        message: `${side} wall cutout width must be 0% or at least ${DESIGNER_CONSTRAINTS.MIN_WALL_CUTOUT}%`,
+        field: `walls.${side}.width`,
+      });
+    }
+    // Validate depth
+    if (cutout.depth < 0 || cutout.depth > DESIGNER_CONSTRAINTS.MAX_WALL_CUTOUT) {
+      return err({
+        code: 'WALL_CUTOUT_OUT_OF_RANGE',
+        message: `${side} wall cutout depth must be between 0 and ${DESIGNER_CONSTRAINTS.MAX_WALL_CUTOUT}%`,
+        field: `walls.${side}.depth`,
+      });
+    }
+    if (cutout.depth > 0 && cutout.depth < DESIGNER_CONSTRAINTS.MIN_WALL_CUTOUT) {
+      return err({
+        code: 'WALL_CUTOUT_TOO_SMALL',
+        message: `${side} wall cutout depth must be 0% or at least ${DESIGNER_CONSTRAINTS.MIN_WALL_CUTOUT}%`,
+        field: `walls.${side}.depth`,
       });
     }
   }

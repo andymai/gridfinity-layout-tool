@@ -106,7 +106,7 @@ function isObject(val: unknown): val is Record<string, unknown> {
  */
 function validateBase(base: unknown): string | null {
   if (!isObject(base)) return 'base must be an object';
-  if (!VALID_BASE_STYLES.includes(base.style as typeof VALID_BASE_STYLES[number])) {
+  if (!VALID_BASE_STYLES.includes(base.style as (typeof VALID_BASE_STYLES)[number])) {
     return `base.style must be one of: ${VALID_BASE_STYLES.join(', ')}`;
   }
   if (!isNumber(base.magnetDiameter) || !inRange(base.magnetDiameter, 1, 20)) {
@@ -136,8 +136,14 @@ function validateDividers(dividers: unknown): string | null {
   if (!isNumber(dividers.y) || !inRange(dividers.y, 0, CONSTRAINTS.MAX_DIVIDERS)) {
     return `dividers.y must be 0-${CONSTRAINTS.MAX_DIVIDERS}`;
   }
-  if (!isNumber(dividers.thickness) ||
-    !inRange(dividers.thickness, CONSTRAINTS.MIN_DIVIDER_THICKNESS, CONSTRAINTS.MAX_DIVIDER_THICKNESS)) {
+  if (
+    !isNumber(dividers.thickness) ||
+    !inRange(
+      dividers.thickness,
+      CONSTRAINTS.MIN_DIVIDER_THICKNESS,
+      CONSTRAINTS.MAX_DIVIDER_THICKNESS
+    )
+  ) {
     return `dividers.thickness must be ${CONSTRAINTS.MIN_DIVIDER_THICKNESS}-${CONSTRAINTS.MAX_DIVIDER_THICKNESS}`;
   }
   return null;
@@ -151,13 +157,26 @@ function validateDividers(dividers: unknown): string | null {
  */
 function validateCompartments(compartments: unknown): string | null {
   if (!isObject(compartments)) return 'compartments must be an object';
-  if (!isNumber(compartments.cols) || !inRange(compartments.cols, CONSTRAINTS.MIN_COMPARTMENT_GRID, CONSTRAINTS.MAX_COMPARTMENT_GRID)) {
+  if (
+    !isNumber(compartments.cols) ||
+    !inRange(compartments.cols, CONSTRAINTS.MIN_COMPARTMENT_GRID, CONSTRAINTS.MAX_COMPARTMENT_GRID)
+  ) {
     return `compartments.cols must be ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
   }
-  if (!isNumber(compartments.rows) || !inRange(compartments.rows, CONSTRAINTS.MIN_COMPARTMENT_GRID, CONSTRAINTS.MAX_COMPARTMENT_GRID)) {
+  if (
+    !isNumber(compartments.rows) ||
+    !inRange(compartments.rows, CONSTRAINTS.MIN_COMPARTMENT_GRID, CONSTRAINTS.MAX_COMPARTMENT_GRID)
+  ) {
     return `compartments.rows must be ${CONSTRAINTS.MIN_COMPARTMENT_GRID}-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
   }
-  if (!isNumber(compartments.thickness) || !inRange(compartments.thickness, CONSTRAINTS.MIN_COMPARTMENT_THICKNESS, CONSTRAINTS.MAX_COMPARTMENT_THICKNESS)) {
+  if (
+    !isNumber(compartments.thickness) ||
+    !inRange(
+      compartments.thickness,
+      CONSTRAINTS.MIN_COMPARTMENT_THICKNESS,
+      CONSTRAINTS.MAX_COMPARTMENT_THICKNESS
+    )
+  ) {
     return `compartments.thickness must be ${CONSTRAINTS.MIN_COMPARTMENT_THICKNESS}-${CONSTRAINTS.MAX_COMPARTMENT_THICKNESS}`;
   }
   if (!Array.isArray(compartments.cells)) return 'compartments.cells must be an array';
@@ -188,18 +207,58 @@ function validateLabel(label: unknown): string | null {
 }
 
 /**
+ * Validate a single WallCutout object (width + depth percentages).
+ */
+function validateWallCutout(cutout: unknown, side: string): string | null {
+  if (!isObject(cutout)) return `walls.${side} must be an object with width and depth`;
+  if (!isNumber(cutout.width) || !inRange(cutout.width, 0, CONSTRAINTS.MAX_WALL_CUTOUT)) {
+    return `walls.${side}.width must be 0-${CONSTRAINTS.MAX_WALL_CUTOUT}`;
+  }
+  if (!isNumber(cutout.depth) || !inRange(cutout.depth, 0, CONSTRAINTS.MAX_WALL_CUTOUT)) {
+    return `walls.${side}.depth must be 0-${CONSTRAINTS.MAX_WALL_CUTOUT}`;
+  }
+  return null;
+}
+
+/**
  * Validate wall cutout sizes for the four sides of a bin.
+ * Accepts both legacy format (number per side) and new format (WallCutout objects).
  *
- * @param walls - Expected to be an object containing numeric cutout values for `front`, `back`, `left`, and `right`.
- * @returns `null` if `walls` is valid; otherwise a string describing the first validation failure (e.g., missing object or a side outside 0–CONSTRAINTS.MAX_WALL_CUTOUT).
+ * @param walls - Expected to be an object containing cutout values for `front`, `back`, `left`, `right`, and optionally `interior`.
+ * @returns `null` if `walls` is valid; otherwise a string describing the first validation failure.
  */
 function validateWalls(walls: unknown): string | null {
   if (!isObject(walls)) return 'walls must be an object';
+
   for (const side of ['front', 'back', 'left', 'right'] as const) {
-    if (!isNumber(walls[side]) || !inRange(walls[side] as number, 0, CONSTRAINTS.MAX_WALL_CUTOUT)) {
-      return `walls.${side} must be 0-${CONSTRAINTS.MAX_WALL_CUTOUT}`;
+    const val = walls[side];
+    if (isNumber(val)) {
+      // Legacy format: single number (width percentage)
+      if (!inRange(val, 0, CONSTRAINTS.MAX_WALL_CUTOUT)) {
+        return `walls.${side} must be 0-${CONSTRAINTS.MAX_WALL_CUTOUT}`;
+      }
+    } else if (isObject(val)) {
+      // New format: WallCutout object
+      const err = validateWallCutout(val, side);
+      if (err) return err;
+    } else {
+      return `walls.${side} must be a number or object with width and depth`;
     }
   }
+
+  // Interior is optional
+  if (walls.interior !== undefined) {
+    if (isObject(walls.interior)) {
+      const err = validateWallCutout(walls.interior, 'interior');
+      if (err) return err;
+    } else if (
+      !isNumber(walls.interior) ||
+      !inRange(walls.interior as number, 0, CONSTRAINTS.MAX_WALL_CUTOUT)
+    ) {
+      return `walls.interior must be 0-${CONSTRAINTS.MAX_WALL_CUTOUT} or an object`;
+    }
+  }
+
   return null;
 }
 
@@ -213,7 +272,7 @@ function validateWalls(walls: unknown): string | null {
 function validateInsert(insert: unknown, index: number): string | null {
   if (!isObject(insert)) return `inserts[${index}] must be an object`;
   if (!isString(insert.id)) return `inserts[${index}].id must be a string`;
-  if (!VALID_INSERT_SHAPES.includes(insert.shape as typeof VALID_INSERT_SHAPES[number])) {
+  if (!VALID_INSERT_SHAPES.includes(insert.shape as (typeof VALID_INSERT_SHAPES)[number])) {
     return `inserts[${index}].shape must be one of: ${VALID_INSERT_SHAPES.join(', ')}`;
   }
   if (!isNumber(insert.x) || !inRange(insert.x, 0, CONSTRAINTS.MAX_INSERT_DIMENSION)) {
@@ -231,7 +290,7 @@ function validateInsert(insert: unknown, index: number): string | null {
   if (!isNumber(insert.cutDepth) || !inRange(insert.cutDepth, 0.1, CONSTRAINTS.MAX_INSERT_DEPTH)) {
     return `inserts[${index}].cutDepth must be 0.1-${CONSTRAINTS.MAX_INSERT_DEPTH}`;
   }
-  if (!VALID_ROTATIONS.includes(insert.rotation as typeof VALID_ROTATIONS[number])) {
+  if (!VALID_ROTATIONS.includes(insert.rotation as (typeof VALID_ROTATIONS)[number])) {
     return `inserts[${index}].rotation must be 0, 90, 180, or 270`;
   }
   if (!isNumber(insert.cornerRadius) || !inRange(insert.cornerRadius, 0, 50)) {
@@ -250,16 +309,19 @@ function validateInsert(insert: unknown, index: number): string | null {
  * @param sizeBytes - The size of the raw payload in bytes (used to enforce the maximum payload size).
  * @returns A result object: on success `{ valid: true, payload }` where `payload` contains the validated `type`, `version`, and `params`; on failure `{ valid: false, error }` where `error` includes a `code` and human-readable `message` describing the validation failure.
  */
-export function validateDesignerShare(
-  body: unknown,
-  sizeBytes: number
-): DesignerValidationResult {
+export function validateDesignerShare(body: unknown, sizeBytes: number): DesignerValidationResult {
   if (sizeBytes > CONSTRAINTS.MAX_PAYLOAD_BYTES) {
-    return { valid: false, error: { code: 'SIZE_EXCEEDED', message: 'Designer share payload too large (max 100KB)' } };
+    return {
+      valid: false,
+      error: { code: 'SIZE_EXCEEDED', message: 'Designer share payload too large (max 100KB)' },
+    };
   }
 
   if (!isObject(body)) {
-    return { valid: false, error: { code: 'INVALID_PAYLOAD', message: 'Payload must be an object' } };
+    return {
+      valid: false,
+      error: { code: 'INVALID_PAYLOAD', message: 'Payload must be an object' },
+    };
   }
 
   if (body.type !== 'designer') {
@@ -276,35 +338,83 @@ export function validateDesignerShare(
   }
 
   // Dimensions
-  if (!isNumber(params.width) || !inRange(params.width, CONSTRAINTS.MIN_DIMENSION, CONSTRAINTS.MAX_DIMENSION)) {
-    return { valid: false, error: { code: 'INVALID_PARAMS', message: `width must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}` } };
+  if (
+    !isNumber(params.width) ||
+    !inRange(params.width, CONSTRAINTS.MIN_DIMENSION, CONSTRAINTS.MAX_DIMENSION)
+  ) {
+    return {
+      valid: false,
+      error: {
+        code: 'INVALID_PARAMS',
+        message: `width must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}`,
+      },
+    };
   }
-  if (!isNumber(params.depth) || !inRange(params.depth, CONSTRAINTS.MIN_DIMENSION, CONSTRAINTS.MAX_DIMENSION)) {
-    return { valid: false, error: { code: 'INVALID_PARAMS', message: `depth must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}` } };
+  if (
+    !isNumber(params.depth) ||
+    !inRange(params.depth, CONSTRAINTS.MIN_DIMENSION, CONSTRAINTS.MAX_DIMENSION)
+  ) {
+    return {
+      valid: false,
+      error: {
+        code: 'INVALID_PARAMS',
+        message: `depth must be ${CONSTRAINTS.MIN_DIMENSION}-${CONSTRAINTS.MAX_DIMENSION}`,
+      },
+    };
   }
-  if (!isNumber(params.height) || !inRange(params.height, CONSTRAINTS.MIN_HEIGHT, CONSTRAINTS.MAX_HEIGHT)) {
-    return { valid: false, error: { code: 'INVALID_PARAMS', message: `height must be ${CONSTRAINTS.MIN_HEIGHT}-${CONSTRAINTS.MAX_HEIGHT}` } };
+  if (
+    !isNumber(params.height) ||
+    !inRange(params.height, CONSTRAINTS.MIN_HEIGHT, CONSTRAINTS.MAX_HEIGHT)
+  ) {
+    return {
+      valid: false,
+      error: {
+        code: 'INVALID_PARAMS',
+        message: `height must be ${CONSTRAINTS.MIN_HEIGHT}-${CONSTRAINTS.MAX_HEIGHT}`,
+      },
+    };
   }
 
   // Style
-  if (!VALID_BIN_STYLES.includes(params.style as typeof VALID_BIN_STYLES[number])) {
-    return { valid: false, error: { code: 'INVALID_PARAMS', message: `style must be one of: ${VALID_BIN_STYLES.join(', ')}` } };
+  if (!VALID_BIN_STYLES.includes(params.style as (typeof VALID_BIN_STYLES)[number])) {
+    return {
+      valid: false,
+      error: {
+        code: 'INVALID_PARAMS',
+        message: `style must be one of: ${VALID_BIN_STYLES.join(', ')}`,
+      },
+    };
   }
 
   // Scoop (accept both legacy boolean and new ScoopConfig format)
   if (isObject(params.scoop)) {
     const scoopObj = params.scoop as Record<string, unknown>;
     if (!isBoolean(scoopObj.enabled)) {
-      return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop.enabled must be boolean' } };
+      return {
+        valid: false,
+        error: { code: 'INVALID_PARAMS', message: 'scoop.enabled must be boolean' },
+      };
     }
     if (scoopObj.radius !== undefined && scoopObj.radius !== 'auto' && !isNumber(scoopObj.radius)) {
-      return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop.radius must be "auto" or a number' } };
+      return {
+        valid: false,
+        error: { code: 'INVALID_PARAMS', message: 'scoop.radius must be "auto" or a number' },
+      };
     }
     if (scoopObj.allRows !== undefined && !isBoolean(scoopObj.allRows)) {
-      return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop.allRows must be boolean' } };
+      return {
+        valid: false,
+        error: { code: 'INVALID_PARAMS', message: 'scoop.allRows must be boolean' },
+      };
     }
   } else if (!isBoolean(params.scoop)) {
-    return { valid: false, error: { code: 'INVALID_PARAMS', message: 'scoop must be boolean or object with enabled field' } };
+    return {
+      valid: false,
+      error: {
+        code: 'INVALID_PARAMS',
+        message: 'scoop must be boolean or object with enabled field',
+      },
+    };
   }
 
   // Sub-objects
@@ -332,7 +442,10 @@ export function validateDesignerShare(
     return { valid: false, error: { code: 'INVALID_PARAMS', message: 'inserts must be an array' } };
   }
   if (params.inserts.length > CONSTRAINTS.MAX_INSERTS) {
-    return { valid: false, error: { code: 'INVALID_PARAMS', message: `max ${CONSTRAINTS.MAX_INSERTS} inserts` } };
+    return {
+      valid: false,
+      error: { code: 'INVALID_PARAMS', message: `max ${CONSTRAINTS.MAX_INSERTS} inserts` },
+    };
   }
   for (let i = 0; i < params.inserts.length; i++) {
     const insertErr = validateInsert(params.inserts[i], i);
