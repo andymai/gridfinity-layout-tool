@@ -19,7 +19,11 @@ import type { CompartmentConfig } from '../types';
  * This is the equivalent of the old dividers system with (cols-1) x dividers
  * and (rows-1) y dividers.
  */
-export function createUniformGrid(cols: number, rows: number, thickness: number): CompartmentConfig {
+export function createUniformGrid(
+  cols: number,
+  rows: number,
+  thickness: number
+): CompartmentConfig {
   const cells: number[] = [];
   for (let i = 0; i < rows * cols; i++) {
     cells.push(i);
@@ -109,7 +113,10 @@ export function getCompartmentCount(config: CompartmentConfig): number {
  * Check whether a set of cells forms a valid rectangle.
  * All cells must be contiguous and fill a rectangular region.
  */
-export function isRectangularSelection(cols: number, cellIndices: number[] | readonly number[]): boolean {
+export function isRectangularSelection(
+  cols: number,
+  cellIndices: number[] | readonly number[]
+): boolean {
   if (cellIndices.length === 0) return false;
   if (cellIndices.length === 1) return true;
 
@@ -224,10 +231,12 @@ export function normalizeIds(cells: number[]): number[] {
   let nextId = 0;
 
   const normalized = cells.map((id) => {
-    if (!idMap.has(id)) {
-      idMap.set(id, nextId++);
+    let normalizedId = idMap.get(id);
+    if (normalizedId === undefined) {
+      normalizedId = nextId++;
+      idMap.set(id, normalizedId);
     }
-    return idMap.get(id)!;
+    return normalizedId;
   });
 
   return normalized;
