@@ -100,19 +100,13 @@ export function useGridZoom(options: UseGridZoomOptions): GridZoomState {
     setZoom(clampedZoom);
   }, [drawerWidth, drawerDepth, gap, setZoom, isMobile, scrollContainerRef]);
 
-  // Fit to screen on initial mount and when drawer size changes (but not during resize drag)
-  // Uses useLayoutEffect to calculate zoom synchronously before paint, preventing CLS
+  // Fit to screen on initial mount, drawer size changes, or 3D preview toggle.
+  // Uses useLayoutEffect to calculate zoom synchronously before paint, preventing CLS.
+  // Skips during active resize drag to avoid fighting the user's intent.
   useLayoutEffect(() => {
-    // Skip while user is actively resizing via handles
     if (isResizing) return;
     fitToScreen();
-  }, [fitToScreen, drawerWidth, drawerDepth, isResizing]);
-
-  // Refit when 3D preview is toggled (changes available width on desktop, height on mobile)
-  // Uses useLayoutEffect for immediate response to user interaction
-  useLayoutEffect(() => {
-    fitToScreen();
-  }, [showIsometricPreview, fitToScreen]);
+  }, [fitToScreen, drawerWidth, drawerDepth, isResizing, showIsometricPreview]);
 
   return {
     zoom,

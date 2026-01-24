@@ -115,7 +115,9 @@ describe('useGridResize', () => {
         preventDefault: vi.fn(),
         clientX: 100,
         clientY: 100,
-      } as unknown as React.MouseEvent;
+        pointerId: 1,
+        target: { setPointerCapture: vi.fn() },
+      } as unknown as React.PointerEvent;
 
       act(() => {
         result.current.handleResizeStart('width', mockEvent);
@@ -132,7 +134,9 @@ describe('useGridResize', () => {
         preventDefault: vi.fn(),
         clientX: 100,
         clientY: 100,
-      } as unknown as React.MouseEvent;
+        pointerId: 1,
+        target: { setPointerCapture: vi.fn() },
+      } as unknown as React.PointerEvent;
 
       act(() => {
         result.current.handleResizeStart('depth', mockEvent);
@@ -148,7 +152,9 @@ describe('useGridResize', () => {
         preventDefault: vi.fn(),
         clientX: 100,
         clientY: 100,
-      } as unknown as React.MouseEvent;
+        pointerId: 1,
+        target: { setPointerCapture: vi.fn() },
+      } as unknown as React.PointerEvent;
 
       act(() => {
         result.current.handleResizeStart('both', mockEvent);
@@ -158,7 +164,7 @@ describe('useGridResize', () => {
     });
   });
 
-  describe('mouse move during resize', () => {
+  describe('pointer move during resize', () => {
     it('updates drawer width on horizontal drag', () => {
       const cellSize = 32;
       const gap = 2;
@@ -174,12 +180,14 @@ describe('useGridResize', () => {
           preventDefault: vi.fn(),
           clientX: 0,
           clientY: 0,
-        } as unknown as React.MouseEvent);
+          pointerId: 1,
+          target: { setPointerCapture: vi.fn() },
+        } as unknown as React.PointerEvent);
       });
 
-      // Simulate mouse move (2 cells to the right)
+      // Simulate pointer move (2 cells to the right)
       act(() => {
-        const moveEvent = new MouseEvent('mousemove', {
+        const moveEvent = new PointerEvent('pointermove', {
           clientX: cellStep * 2,
           clientY: 0,
         });
@@ -205,12 +213,14 @@ describe('useGridResize', () => {
           preventDefault: vi.fn(),
           clientX: 0,
           clientY: 0,
-        } as unknown as React.MouseEvent);
+          pointerId: 1,
+          target: { setPointerCapture: vi.fn() },
+        } as unknown as React.PointerEvent);
       });
 
-      // Simulate mouse move (3 cells down)
+      // Simulate pointer move (3 cells down)
       act(() => {
-        const moveEvent = new MouseEvent('mousemove', {
+        const moveEvent = new PointerEvent('pointermove', {
           clientX: 0,
           clientY: cellStep * 3,
         });
@@ -238,12 +248,14 @@ describe('useGridResize', () => {
           preventDefault: vi.fn(),
           clientX: 0,
           clientY: 0,
-        } as unknown as React.MouseEvent);
+          pointerId: 1,
+          target: { setPointerCapture: vi.fn() },
+        } as unknown as React.PointerEvent);
       });
 
-      // Simulate diagonal mouse move
+      // Simulate diagonal pointer move
       act(() => {
-        const moveEvent = new MouseEvent('mousemove', {
+        const moveEvent = new PointerEvent('pointermove', {
           clientX: cellStep * 2,
           clientY: cellStep * 3,
         });
@@ -268,12 +280,14 @@ describe('useGridResize', () => {
           preventDefault: vi.fn(),
           clientX: 0,
           clientY: 0,
-        } as unknown as React.MouseEvent);
+          pointerId: 1,
+          target: { setPointerCapture: vi.fn() },
+        } as unknown as React.PointerEvent);
       });
 
       // Simulate large negative move
       act(() => {
-        const moveEvent = new MouseEvent('mousemove', {
+        const moveEvent = new PointerEvent('pointermove', {
           clientX: -cellStep * 100,
           clientY: 0,
         });
@@ -297,12 +311,14 @@ describe('useGridResize', () => {
           preventDefault: vi.fn(),
           clientX: 0,
           clientY: 0,
-        } as unknown as React.MouseEvent);
+          pointerId: 1,
+          target: { setPointerCapture: vi.fn() },
+        } as unknown as React.PointerEvent);
       });
 
       // Simulate large positive move
       act(() => {
-        const moveEvent = new MouseEvent('mousemove', {
+        const moveEvent = new PointerEvent('pointermove', {
           clientX: cellStep * 100,
           clientY: 0,
         });
@@ -314,8 +330,8 @@ describe('useGridResize', () => {
     });
   });
 
-  describe('mouse up completes resize', () => {
-    it('clears resize direction on mouse up', () => {
+  describe('pointer up completes resize', () => {
+    it('clears resize direction on pointer up', () => {
       const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
       // Start resize
@@ -324,14 +340,16 @@ describe('useGridResize', () => {
           preventDefault: vi.fn(),
           clientX: 0,
           clientY: 0,
-        } as unknown as React.MouseEvent);
+          pointerId: 1,
+          target: { setPointerCapture: vi.fn() },
+        } as unknown as React.PointerEvent);
       });
 
       expect(result.current.resizeDirection).toBe('width');
 
-      // Mouse up
+      // Pointer up
       act(() => {
-        const upEvent = new MouseEvent('mouseup');
+        const upEvent = new PointerEvent('pointerup');
         document.dispatchEvent(upEvent);
       });
 
@@ -353,12 +371,14 @@ describe('useGridResize', () => {
           preventDefault: vi.fn(),
           clientX: 0,
           clientY: 0,
-        } as unknown as React.MouseEvent);
+          pointerId: 1,
+          target: { setPointerCapture: vi.fn() },
+        } as unknown as React.PointerEvent);
       });
 
       // Increase size (no clipping possible)
       act(() => {
-        const moveEvent = new MouseEvent('mousemove', {
+        const moveEvent = new PointerEvent('pointermove', {
           clientX: cellStep * 2,
           clientY: 0,
         });
@@ -367,7 +387,7 @@ describe('useGridResize', () => {
 
       // Complete resize
       act(() => {
-        const upEvent = new MouseEvent('mouseup');
+        const upEvent = new PointerEvent('pointerup');
         document.dispatchEvent(upEvent);
       });
 
@@ -406,11 +426,13 @@ describe('useGridResize', () => {
           preventDefault: vi.fn(),
           clientX: 0,
           clientY: 0,
-        } as unknown as React.MouseEvent);
+          pointerId: 1,
+          target: { setPointerCapture: vi.fn() },
+        } as unknown as React.PointerEvent);
       });
 
       act(() => {
-        const moveEvent = new MouseEvent('mousemove', {
+        const moveEvent = new PointerEvent('pointermove', {
           clientX: -cellStep * 5,
           clientY: 0,
         });
@@ -418,7 +440,7 @@ describe('useGridResize', () => {
       });
 
       act(() => {
-        const upEvent = new MouseEvent('mouseup');
+        const upEvent = new PointerEvent('pointerup');
         document.dispatchEvent(upEvent);
       });
 
@@ -469,7 +491,9 @@ describe('useGridResize', () => {
           preventDefault: vi.fn(),
           clientX: 0,
           clientY: 0,
-        } as unknown as React.MouseEvent);
+          pointerId: 1,
+          target: { setPointerCapture: vi.fn() },
+        } as unknown as React.PointerEvent);
       });
 
       // Unmount should not throw

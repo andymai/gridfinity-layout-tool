@@ -65,7 +65,9 @@ export function MergedBinMeshes({ bins }: MergedBinMeshesProps) {
   // Build merged geometry for all bins
   const geometry = useMemo(() => buildMergedGeometry(bins), [bins]);
 
-  // Cleanup geometry on change or unmount
+  // Cleanup geometry on change or unmount.
+  // When `geometry` changes: cleanup disposes the previous value, new effect captures the new one.
+  // On unmount: cleanup disposes the current geometry.
   useEffect(() => {
     return () => {
       geometry?.dispose();
