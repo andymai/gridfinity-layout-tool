@@ -17,7 +17,7 @@
  * ```
  */
 
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import type { Locale, Translations, TranslationVars } from './types';
 import en from './locales/en';
@@ -73,11 +73,8 @@ interface LocaleProviderProps {
 
 export function LocaleProvider({ children, initialLocale, onLocaleChange }: LocaleProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
-  const [translations, setTranslations] = useState<Translations>(
-    initialLocale === 'en' ? en : en // Start with English, load target async
-  );
+  const [translations, setTranslations] = useState<Translations>(en);
   const [isLoading, setIsLoading] = useState(initialLocale !== 'en');
-  const mountedRef = useRef(true);
   const latestLocaleRef = useRef<Locale>(initialLocale);
 
   const loadLocale = useCallback(async (target: Locale) => {
@@ -100,13 +97,13 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     try {
       const module = await loader();
       // Only apply if this is still the latest requested locale
-      if (mountedRef.current && latestLocaleRef.current === target) {
+      if (latestLocaleRef.current === target) {
         setTranslations(module.default);
         setIsLoading(false);
       }
     } catch {
       // Fall back to English on load failure
-      if (mountedRef.current && latestLocaleRef.current === target) {
+      if (latestLocaleRef.current === target) {
         setTranslations(en);
         setIsLoading(false);
       }
@@ -118,9 +115,6 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     if (initialLocale !== 'en') {
       loadLocale(initialLocale);
     }
-    return () => {
-      mountedRef.current = false;
-    };
   }, [initialLocale, loadLocale]);
 
   const setLocale = useCallback(
@@ -146,8 +140,13 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     [translations]
   );
 
+  const value = useMemo<LocaleContextValue>(
+    () => ({ locale, setLocale, t, isLoading }),
+    [locale, setLocale, t, isLoading]
+  );
+
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, t, isLoading }}>
+    <LocaleContext.Provider value={value}>
       {children}
     </LocaleContext.Provider>
   );
