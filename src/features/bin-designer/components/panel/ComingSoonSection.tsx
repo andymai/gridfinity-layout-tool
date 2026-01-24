@@ -15,9 +15,7 @@ interface PlannedFeature {
 }
 
 const SPEC_FEATURES: PlannedFeature[] = [
-  { name: 'Finger scoops', description: 'Ramp for easy part access per compartment' },
   { name: 'Label tabs', description: 'Front-face text embossing for organization' },
-  { name: 'Wall cutouts', description: 'Per-side wall removal for access/visibility' },
   { name: 'Flat bottom', description: 'Remove baseplate grid for flush surfaces' },
   { name: 'Anti-slide notches', description: 'Lip notches to prevent bin sliding' },
   { name: 'Magnet hole styles', description: 'Press-fit, glue-in, bridging-friendly' },
@@ -26,7 +24,6 @@ const SPEC_FEATURES: PlannedFeature[] = [
 const POWER_FEATURES: PlannedFeature[] = [
   { name: 'Floor inserts', description: 'Cut cavities into bin floor for tool holders' },
   { name: 'Weighted base', description: 'Heavier base for stability without magnets' },
-  { name: 'Wall cutout shapes', description: 'Custom profiles beyond % removal' },
   { name: 'Insert templates', description: 'Library of common tool holder shapes' },
   { name: 'Multi-color export', description: 'Separate lip/body for MMU printing' },
 ];

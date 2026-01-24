@@ -8,7 +8,9 @@ describe('a11y utilities', () => {
     it('describes a default bin with just dimensions', () => {
       const result = describeBin(DEFAULT_BIN_PARAMS);
       expect(result).toContain('3D preview of a');
-      expect(result).toContain(`${DEFAULT_BIN_PARAMS.width}×${DEFAULT_BIN_PARAMS.depth}×${DEFAULT_BIN_PARAMS.height}`);
+      expect(result).toContain(
+        `${DEFAULT_BIN_PARAMS.width}×${DEFAULT_BIN_PARAMS.depth}×${DEFAULT_BIN_PARAMS.height}`
+      );
       expect(result).toContain('Gridfinity bin');
     });
 
@@ -64,7 +66,13 @@ describe('a11y utilities', () => {
     it('includes wall cutouts with side names', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
-        walls: { front: 50, back: 0, left: 30, right: 0 },
+        walls: {
+          front: { width: 50, depth: 60 },
+          back: { width: 0, depth: 0 },
+          left: { width: 30, depth: 40 },
+          right: { width: 0, depth: 0 },
+          interior: { width: 0, depth: 0 },
+        },
       };
       expect(describeBin(params)).toContain('front/left wall cutouts');
     });
@@ -73,8 +81,32 @@ describe('a11y utilities', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         inserts: [
-          { id: '1', templateId: null, shape: 'circle' as const, x: 10, y: 10, width: 5, depth: 5, cutDepth: 5, rotation: 0, cornerRadius: 0, label: '' },
-          { id: '2', templateId: null, shape: 'circle' as const, x: 20, y: 20, width: 5, depth: 5, cutDepth: 5, rotation: 0, cornerRadius: 0, label: '' },
+          {
+            id: '1',
+            templateId: null,
+            shape: 'circle' as const,
+            x: 10,
+            y: 10,
+            width: 5,
+            depth: 5,
+            cutDepth: 5,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+          },
+          {
+            id: '2',
+            templateId: null,
+            shape: 'circle' as const,
+            x: 20,
+            y: 20,
+            width: 5,
+            depth: 5,
+            cutDepth: 5,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+          },
         ],
       };
       expect(describeBin(params)).toContain('2 inserts');
@@ -84,7 +116,19 @@ describe('a11y utilities', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         inserts: [
-          { id: '1', templateId: null, shape: 'circle' as const, x: 10, y: 10, width: 5, depth: 5, cutDepth: 5, rotation: 0, cornerRadius: 0, label: '' },
+          {
+            id: '1',
+            templateId: null,
+            shape: 'circle' as const,
+            x: 10,
+            y: 10,
+            width: 5,
+            depth: 5,
+            cutDepth: 5,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+          },
         ],
       };
       expect(describeBin(params)).toContain('1 insert');
@@ -112,7 +156,13 @@ describe('a11y utilities', () => {
         compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
         label: { enabled: false, text: '', fontSize: 'auto' },
         scoop: { enabled: false, radius: 'auto', allRows: false },
-        walls: { front: 0, back: 0, left: 0, right: 0 },
+        walls: {
+          front: { width: 0, depth: 0 },
+          back: { width: 0, depth: 0 },
+          left: { width: 0, depth: 0 },
+          right: { width: 0, depth: 0 },
+          interior: { width: 0, depth: 0 },
+        },
         inserts: [],
       };
       const result = describeBin(params);

@@ -31,10 +31,11 @@ describe('DEFAULT_BIN_PARAMS', () => {
   });
 
   it('should have no wall cutouts by default', () => {
-    expect(DEFAULT_BIN_PARAMS.walls.front).toBe(0);
-    expect(DEFAULT_BIN_PARAMS.walls.back).toBe(0);
-    expect(DEFAULT_BIN_PARAMS.walls.left).toBe(0);
-    expect(DEFAULT_BIN_PARAMS.walls.right).toBe(0);
+    expect(DEFAULT_BIN_PARAMS.walls.front).toEqual({ width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.back).toEqual({ width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.left).toEqual({ width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.right).toEqual({ width: 0, depth: 0 });
+    expect(DEFAULT_BIN_PARAMS.walls.interior).toEqual({ width: 0, depth: 0 });
   });
 
   it('should have stacking lip enabled', () => {
@@ -47,31 +48,27 @@ describe('DEFAULT_BIN_PARAMS', () => {
     expect(DEFAULT_BIN_PARAMS.scoop.radius).toBe('auto');
     expect(DEFAULT_BIN_PARAMS.scoop.allRows).toBe(false);
   });
-
 });
 
 describe('migrateParams', () => {
   it('should handle legacy boolean scoop: true', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = migrateParams({ scoop: true as any });
     expect(result.scoop).toEqual({ enabled: true, radius: 'auto', allRows: false });
   });
 
   it('should handle legacy boolean scoop: false', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = migrateParams({ scoop: false as any });
     expect(result.scoop).toEqual({ enabled: false, radius: 'auto', allRows: false });
   });
 
   it('should pass through valid ScoopConfig', () => {
     const config = { enabled: true, radius: 10, allRows: true };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const result = migrateParams({ scoop: config as any });
     expect(result.scoop).toEqual({ enabled: true, radius: 10, allRows: true });
   });
 
   it('should fill missing ScoopConfig fields with defaults', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = migrateParams({ scoop: { enabled: true } as any });
     expect(result.scoop.radius).toBe('auto');
     expect(result.scoop.allRows).toBe(false);
@@ -83,7 +80,6 @@ describe('migrateParams', () => {
   });
 
   it('should produce valid params from legacy format', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = migrateParams({
       width: 2,
       depth: 2,
@@ -114,6 +110,38 @@ describe('migrateParams', () => {
     expect(result.compartments.rows).toBe(2);
     expect(result.compartments.thickness).toBe(1.5);
     expect(result.compartments.cells).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+
+  it('should migrate legacy number-based walls to WallCutout format', () => {
+    const result = migrateParams({ walls: { front: 80, back: 0, left: 50, right: 0 } } as any);
+    expect(result.walls.front).toEqual({ width: 80, depth: 100 });
+    expect(result.walls.back).toEqual({ width: 0, depth: 0 });
+    expect(result.walls.left).toEqual({ width: 50, depth: 100 });
+    expect(result.walls.right).toEqual({ width: 0, depth: 0 });
+    expect(result.walls.interior).toEqual({ width: 0, depth: 0 });
+  });
+
+  it('should pass through new WallCutout format', () => {
+    const walls = {
+      front: { width: 80, depth: 60 },
+      back: { width: 0, depth: 0 },
+      left: { width: 0, depth: 0 },
+      right: { width: 50, depth: 40 },
+      interior: { width: 70, depth: 50 },
+    };
+    const result = migrateParams({ walls });
+    expect(result.walls).toEqual(walls);
+  });
+
+  it('should fill missing WallCutout fields with defaults', () => {
+    const result = migrateParams({ walls: { front: { width: 80 } } } as any);
+    expect(result.walls.front).toEqual({ width: 80, depth: 0 });
+    expect(result.walls.back).toEqual({ width: 0, depth: 0 });
+  });
+
+  it('should produce valid params from legacy wall format', () => {
+    const result = migrateParams({ walls: { front: 50, back: 80, left: 0, right: 100 } } as any);
+    expect(isOk(validateBinParams(result))).toBe(true);
   });
 });
 

@@ -74,12 +74,22 @@ export interface LabelConfig {
   readonly fontSize: 'auto' | number;
 }
 
-/** Wall cutout percentages (0-100) per side */
+/** A single wall cutout: width of the U-notch (centered) and depth from wall top */
+export interface WallCutout {
+  /** Width of the cutout as 0-100% of the wall span (centered) */
+  readonly width: number;
+  /** Depth of the cutout as 0-100% of the wall height (from top) */
+  readonly depth: number;
+}
+
+/** Wall cutout configuration per side plus interior divider walls */
 export interface WallConfig {
-  readonly front: number;
-  readonly back: number;
-  readonly left: number;
-  readonly right: number;
+  readonly front: WallCutout;
+  readonly back: WallCutout;
+  readonly left: WallCutout;
+  readonly right: WallCutout;
+  /** Uniform cutout applied to all interior compartment divider walls */
+  readonly interior: WallCutout;
 }
 
 /** Complete bin parameter set for generation */

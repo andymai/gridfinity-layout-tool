@@ -567,6 +567,228 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
   return cuts;
 }
 
+// ─── Wall Cutout Builder ─────────────────────────────────────────────────────
+
+/**
+ * Build wall cutout boolean cuts for exterior walls and interior divider walls.
+ *
+ * Each cutout is a trapezoidal notch with 45° slopes and a filleted bottom,
+ * cut from the top of the wall downward. For exterior walls with a stacking lip,
+ * the lip is also cut through in the notch width region.
+ *
+ * Profile cross-section (looking at the wall face):
+ *   ═══╡                        ╞═══  ← lip cut
+ *   ───│╮                      ╭│───  ← wall top
+ *       ╲                    ╱        ← 45° slope
+ *        ╲                  ╱
+ *         ╰────────────────╯          ← filleted bottom
+ *         WALL REMAINING BELOW
+ */
+function buildWallCutouts(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): Shape3D | null {
+  const { walls, compartments, wallThickness } = params;
+  const hasLip = params.base.stackingLip && params.style !== 'solid';
+  const lipHeight = hasLip ? GRIDFINITY.LIP_HEIGHT : 0;
+
+  let cuts: Shape3D | null = null;
+
+  /**
+   * Build a single wall cutout solid given dimensions and position.
+   * The cutout is oriented along the X axis (width = notchWidth) and
+   * cut into the wall from the top.
+   */
+  function buildCutoutSolid(
+    notchWidth: number,
+    notchDepth: number,
+    wallThick: number,
+    includeSlopes: boolean
+  ): Shape3D | null {
+    if (notchWidth <= 0 || notchDepth <= 0) return null;
+
+    const filletR = Math.min(3, notchDepth / 3);
+
+    // Build the cutout profile in the XZ plane (X = along wall, Z = height)
+    // The profile is a trapezoid with 45° slopes and filleted bottom corners
+    const slopeInset = includeSlopes ? Math.min(notchDepth - filletR, notchWidth / 2 - filletR) : 0;
+    const effectiveSlopeInset = Math.max(0, slopeInset);
+
+    // Bottom width = notchWidth - 2 * effectiveSlopeInset
+    const bottomWidth = notchWidth - 2 * effectiveSlopeInset;
+
+    if (bottomWidth < 0.1) {
+      // V-shaped cutout: slopes meet or nearly meet
+      // Use a simple triangular profile with filleted point
+      const halfW = notchWidth / 2;
+      const profile = draw([halfW, 0])
+        .lineTo([0, -notchDepth + filletR])
+        .lineTo([-halfW, 0])
+        .lineTo([halfW, 0])
+        .close();
+
+      const extruded = (profile.sketchOnPlane('XZ') as unknown as Sketch).extrude(
+        wallThick + 2
+      ) as Shape3D;
+      return extruded;
+    }
+
+    // Trapezoidal profile with flat bottom
+    const halfTopW = notchWidth / 2;
+    const halfBotW = bottomWidth / 2;
+
+    let profile;
+    if (effectiveSlopeInset > 0.1 && filletR > 0.1) {
+      // Full profile with slopes and fillets
+      profile = draw([halfTopW, 0])
+        .lineTo([halfBotW + filletR, -(notchDepth - filletR)])
+        .tangentArcTo([-halfBotW - filletR, -(notchDepth - filletR)])
+        .lineTo([-halfTopW, 0])
+        .lineTo([halfTopW, 0])
+        .close();
+    } else if (effectiveSlopeInset > 0.1) {
+      // Slopes but no fillet
+      profile = draw([halfTopW, 0])
+        .lineTo([halfBotW, -notchDepth])
+        .lineTo([-halfBotW, -notchDepth])
+        .lineTo([-halfTopW, 0])
+        .lineTo([halfTopW, 0])
+        .close();
+    } else {
+      // Rectangular cutout (no slopes)
+      profile = draw([halfTopW, 0])
+        .lineTo([halfTopW, -notchDepth])
+        .lineTo([-halfTopW, -notchDepth])
+        .lineTo([-halfTopW, 0])
+        .lineTo([halfTopW, 0])
+        .close();
+    }
+
+    const extruded = (profile.sketchOnPlane('XZ') as unknown as Sketch).extrude(
+      wallThick + 2
+    ) as Shape3D;
+
+    return extruded;
+  }
+
+  // Helper to position cutout on a wall face
+  type WallSide = 'front' | 'back' | 'left' | 'right';
+
+  function addExteriorCutout(side: WallSide): void {
+    const cutout = walls[side];
+    if (cutout.width <= 0 || cutout.depth <= 0) return;
+
+    const isXWall = side === 'front' || side === 'back';
+    const wallSpan = isXWall ? innerW : innerD;
+    const notchWidth = (wallSpan * cutout.width) / 100;
+    const cutHeight = wallHeight + lipHeight;
+    const notchDepth = (cutHeight * cutout.depth) / 100;
+
+    const solid = buildCutoutSolid(notchWidth, notchDepth, wallThickness, true);
+    if (!solid) return;
+
+    // Position: center of the wall face, at wall top height
+    const halfOuter = (isXWall ? innerW : innerD) / 2 + wallThickness;
+    let positioned: Shape3D;
+
+    switch (side) {
+      case 'front':
+        // Front wall: Y = -innerD/2 - wallThickness, facing +Y
+        positioned = solid.translate([0, -halfOuter - 1, wallHeight + lipHeight]);
+        break;
+      case 'back':
+        // Back wall: Y = +innerD/2, facing -Y
+        positioned = solid.translate([0, halfOuter - wallThickness - 1, wallHeight + lipHeight]);
+        break;
+      case 'left':
+        // Left wall: X = -innerW/2 - wallThickness, facing +X
+        // Rotate 90° around Z to orient along Y axis
+        positioned = solid
+          .rotate(90, [0, 0, 0], [0, 0, 1])
+          .translate([-halfOuter - 1, 0, wallHeight + lipHeight]);
+        break;
+      case 'right':
+        // Right wall: X = +innerW/2, facing -X
+        positioned = solid
+          .rotate(90, [0, 0, 0], [0, 0, 1])
+          .translate([halfOuter - wallThickness - 1, 0, wallHeight + lipHeight]);
+        break;
+    }
+
+    cuts = cuts ? cuts.fuse(positioned) : positioned;
+  }
+
+  // Build exterior wall cutouts
+  addExteriorCutout('front');
+  addExteriorCutout('back');
+  addExteriorCutout('left');
+  addExteriorCutout('right');
+
+  // Build interior divider wall cutouts
+  if (walls.interior.width > 0 && walls.interior.depth > 0) {
+    const { cols, rows, thickness, cells } = compartments;
+    if (cols > 1 || rows > 1) {
+      const cellW = innerW / cols;
+      const cellD = innerD / rows;
+      const notchDepthPct = walls.interior.depth;
+      const notchWidthPct = walls.interior.width;
+
+      // Vertical divider cutouts (along Y axis)
+      for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
+        const xPos = -innerW / 2 + colBoundary * cellW;
+
+        for (let row = 0; row < rows; row++) {
+          const leftId = cells[row * cols + (colBoundary - 1)];
+          const rightId = cells[row * cols + colBoundary];
+          if (leftId === rightId) continue;
+
+          // This cell boundary has a divider wall
+          const dividerLength = cellD;
+          const notchWidth = (dividerLength * notchWidthPct) / 100;
+          const notchDepth = (wallHeight * notchDepthPct) / 100;
+
+          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness, true);
+          if (!solid) continue;
+
+          const yCenter = -innerD / 2 + (row + 0.5) * cellD;
+          const positioned = solid
+            .rotate(90, [0, 0, 0], [0, 0, 1])
+            .translate([xPos - thickness / 2 - 1, yCenter, wallHeight]);
+
+          cuts = cuts ? cuts.fuse(positioned) : positioned;
+        }
+      }
+
+      // Horizontal divider cutouts (along X axis)
+      for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
+        const yPos = -innerD / 2 + rowBoundary * cellD;
+
+        for (let col = 0; col < cols; col++) {
+          const topId = cells[(rowBoundary - 1) * cols + col];
+          const bottomId = cells[rowBoundary * cols + col];
+          if (topId === bottomId) continue;
+
+          const dividerLength = cellW;
+          const notchWidth = (dividerLength * notchWidthPct) / 100;
+          const notchDepth = (wallHeight * notchDepthPct) / 100;
+
+          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness, true);
+          if (!solid) continue;
+
+          const xCenter = -innerW / 2 + (col + 0.5) * cellW;
+          const positioned = solid.translate([xCenter, yPos - thickness / 2 - 1, wallHeight]);
+
+          cuts = cuts ? cuts.fuse(positioned) : positioned;
+        }
+      }
+    }
+  }
+
+  return cuts;
+}
+
 // ─── Mesh Conversion ────────────────────────────────────────────────────────
 
 /**
@@ -770,6 +992,15 @@ export function generateBin(
         bin = bin.cut(scoopCut);
       } catch {
         // Scoop cut may fail — continue without scoops
+      }
+    }
+
+    const wallCutouts = buildWallCutouts(params, innerW, innerD, wallHeight);
+    if (wallCutouts) {
+      try {
+        bin = bin.cut(wallCutouts);
+      } catch {
+        // Wall cutout booleans may fail — continue without them
       }
     }
 
