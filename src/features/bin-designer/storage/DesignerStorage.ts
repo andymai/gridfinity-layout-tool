@@ -16,7 +16,7 @@ import {
   storageCorrupted,
   storageUnavailable,
 } from '@/core/result';
-import type { SavedDesign, BinParams, ExportFileNameConfig } from '../types';
+import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bin-designer/types';
 
 const DB_NAME = 'gridfinity-designer-v1';
 const DB_VERSION = 1;

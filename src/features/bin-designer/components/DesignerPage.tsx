@@ -26,7 +26,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useToastStore } from '@/core/store/toast';
 import { useShallow } from 'zustand/react/shallow';
 import { isOk } from '@/core/result';
-import { saveDesign } from '../storage/DesignerStorage';
+import { saveDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { captureThumbnail } from '@/features/bin-designer/utils/thumbnail';
 import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import type { SaveStatus } from '@/features/bin-designer/types';

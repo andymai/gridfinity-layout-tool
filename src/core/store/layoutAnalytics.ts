@@ -59,7 +59,9 @@ export function initLayoutAnalytics(): () => void {
         meta.type === 'uniform' ? { width: w, depth: d, height: meta.layerHeight ?? 1 } : undefined
       );
 
-      // Clear fill meta after consuming
+      // Clear fill meta after consuming.
+      // This setState triggers the subscriber again, but the if(meta) guard
+      // above prevents any repeated work on the second invocation.
       useLayoutStore.setState({ _fillMeta: null });
     }
 

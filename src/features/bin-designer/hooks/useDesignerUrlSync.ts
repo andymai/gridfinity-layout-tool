@@ -14,7 +14,7 @@
 
 import { useEffect, useRef } from 'react';
 import { isOk } from '@/core/result';
-import { loadDesign } from '../storage/DesignerStorage';
+import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { useToastStore } from '@/core/store/toast';

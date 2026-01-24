@@ -13,16 +13,6 @@ import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
 import { checkLayerReorderCollisions } from '@/shared/utils/collision';
 import { useSettingsStore } from './settings';
 import type { Result, LayoutError, ValidationError } from '@/core/result';
-
-/** Metadata about a fill operation, set by the store and consumed by the analytics subscriber. */
-export interface FillMeta {
-  type: 'uniform' | 'gaps';
-  count: number;
-  layerId: string;
-  width?: number;
-  depth?: number;
-  layerHeight?: number;
-}
 import {
   ok,
   err,
@@ -35,6 +25,16 @@ import {
   validationCollision,
   validationInvalidLayer,
 } from '@/core/result';
+
+/** Metadata about a fill operation, set by the store and consumed by the analytics subscriber. */
+export interface FillMeta {
+  type: 'uniform' | 'gaps';
+  count: number;
+  layerId: string;
+  width?: number;
+  depth?: number;
+  layerHeight?: number;
+}
 
 /** Source of the last edit to the layout - used to distinguish local edits from remote imports */
 export type EditSource = 'local' | 'remote' | 'init' | null;
