@@ -260,7 +260,7 @@ const en: Record<string, string> = {
   'print.summary.uniqueSizes': '{count} unique size(s)',
   'print.summary.pieces': '{count} piece(s)',
   'print.summary.splitRequired': 'Split required',
-  'print.summary.filament': '~{grams}g filament',
+  'print.summary.filament': '~{meters}m filament',
   'print.summary.cost': '~{cost}',
   'print.summary.printTime': '~{hours} print time',
 
@@ -634,8 +634,7 @@ const en: Record<string, string> = {
   // Half-Bin Mode Blocked Modal
   // ===========================================================================
   'halfBinBlocked.title': 'Cannot Disable Half-Bin Mode',
-  'halfBinBlocked.message': 'Some bins use fractional dimensions. Resize or delete these bins before disabling half-bin mode:',
-  'halfBinBlocked.binItem': '{width}×{depth} bin at ({x}, {y})',
+  'halfBinBlocked.message': 'Some bins use fractional dimensions. Resize or delete these bins before disabling half-bin mode.',
   'halfBinBlocked.close': 'Got it',
 
   // ===========================================================================

@@ -26,7 +26,7 @@ describe('PrintListSummary', () => {
     it('shows filament amount', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText('~25.5g filament')).toBeInTheDocument();
+      expect(screen.getByText('~25.5m filament')).toBeInTheDocument();
       expect(screen.getByText('25.5m')).toBeInTheDocument();
     });
 

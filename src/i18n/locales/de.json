@@ -214,7 +214,7 @@
   "print.summary.uniqueSizes": "{count} verschiedene Größe(n)",
   "print.summary.pieces": "{count} Stück",
   "print.summary.splitRequired": "Aufteilung erforderlich",
-  "print.summary.filament": "~{grams}g Filament",
+  "print.summary.filament": "~{meters}m Filament",
   "print.summary.cost": "~{cost}",
   "print.summary.printTime": "~{hours} Druckzeit",
 
@@ -520,8 +520,7 @@
   "drawer.halfBinModeHint": "0,5-Einheiten-Präzision für Bin-Platzierung aktivieren",
 
   "halfBinBlocked.title": "Half-Bin-Modus kann nicht deaktiviert werden",
-  "halfBinBlocked.message": "Einige Bins verwenden gebrochene Abmessungen. Ändern Sie die Größe oder löschen Sie diese Bins, bevor Sie den Half-Bin-Modus deaktivieren:",
-  "halfBinBlocked.binItem": "{width}×{depth} Bin bei ({x}, {y})",
+  "halfBinBlocked.message": "Einige Bins verwenden gebrochene Abmessungen. Ändern Sie die Größe oder löschen Sie diese Bins, bevor Sie den Half-Bin-Modus deaktivieren.",
   "halfBinBlocked.close": "Verstanden",
 
   "gallery.title": "Inspirationsgalerie",

@@ -88,7 +88,7 @@ export function PrintListSummary({
           className="flex justify-between text-content-secondary"
           title="Estimated 1.75mm PLA usage based on bin dimensions"
         >
-          <span className="text-content-tertiary">{t('print.summary.filament', { grams: totalFilament })}</span>
+          <span className="text-content-tertiary">{t('print.summary.filament', { meters: totalFilament })}</span>
           <span>{totalFilament}m</span>
         </div>
         <div
