@@ -12,7 +12,7 @@
  * from boundaries between cells with different IDs.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
@@ -25,19 +25,36 @@ import type { CompartmentConfig } from '../types';
 // Color palette for compartment visualization
 // =============================================================================
 
+/** Saturated, distinct colors for compartment fills */
 const COMPARTMENT_COLORS = [
-  'bg-blue-100 dark:bg-blue-900/30',
-  'bg-emerald-100 dark:bg-emerald-900/30',
-  'bg-amber-100 dark:bg-amber-900/30',
-  'bg-purple-100 dark:bg-purple-900/30',
-  'bg-rose-100 dark:bg-rose-900/30',
-  'bg-cyan-100 dark:bg-cyan-900/30',
-  'bg-orange-100 dark:bg-orange-900/30',
-  'bg-indigo-100 dark:bg-indigo-900/30',
+  '#dbeafe', // blue-100
+  '#d1fae5', // emerald-100
+  '#fef3c7', // amber-100
+  '#ede9fe', // violet-100
+  '#ffe4e6', // rose-100
+  '#cffafe', // cyan-100
+  '#ffedd5', // orange-100
+  '#e0e7ff', // indigo-100
 ] as const;
 
-function getCompartmentColor(id: number): string {
+/** Darker border colors matching compartment fills */
+const COMPARTMENT_BORDER_COLORS = [
+  '#93c5fd', // blue-300
+  '#6ee7b7', // emerald-300
+  '#fcd34d', // amber-300
+  '#c4b5fd', // violet-300
+  '#fda4af', // rose-300
+  '#67e8f9', // cyan-300
+  '#fdba74', // orange-300
+  '#a5b4fc', // indigo-300
+] as const;
+
+function getCompartmentFill(id: number): string {
   return COMPARTMENT_COLORS[id % COMPARTMENT_COLORS.length];
+}
+
+function getCompartmentBorder(id: number): string {
+  return COMPARTMENT_BORDER_COLORS[id % COMPARTMENT_BORDER_COLORS.length];
 }
 
 // =============================================================================
@@ -45,10 +62,12 @@ function getCompartmentColor(id: number): string {
 // =============================================================================
 
 export function CompartmentEditor() {
-  const { compartments, setParam, setCompartmentGrid, mergeCells, splitCompartment } =
+  const { compartments, width, depth, setParam, setCompartmentGrid, mergeCells, splitCompartment } =
     useDesignerStore(
       useShallow((s) => ({
         compartments: s.params.compartments,
+        width: s.params.width,
+        depth: s.params.depth,
         setParam: s.setParam,
         setCompartmentGrid: s.setCompartmentGrid,
         mergeCells: s.mergeCells,
@@ -62,6 +81,7 @@ export function CompartmentEditor() {
   const [selection, setSelection] = useState<Set<number>>(new Set());
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   // Compute selection rectangle from drag start to current cell
@@ -88,6 +108,15 @@ export function CompartmentEditor() {
     [cols]
   );
 
+  // Determine what action the current selection will trigger
+  const selectionAction = useMemo((): 'merge' | 'split' | 'none' => {
+    if (selection.size < 2) return 'none';
+    const indices = [...selection];
+    if (!isRectangularSelection(cols, indices)) return 'none';
+    const selectedIds = new Set(indices.map((i) => cells[i]));
+    return selectedIds.size === 1 ? 'split' : 'merge';
+  }, [selection, cols, cells]);
+
   const handleCellPointerDown = useCallback((idx: number) => {
     setDragStart(idx);
     setIsDragging(true);
@@ -96,11 +125,16 @@ export function CompartmentEditor() {
 
   const handleCellPointerEnter = useCallback(
     (idx: number) => {
+      setHoverIdx(idx);
       if (!isDragging || dragStart === null) return;
       setSelection(computeRectSelection(dragStart, idx));
     },
     [isDragging, dragStart, computeRectSelection]
   );
+
+  const handleCellPointerLeave = useCallback(() => {
+    setHoverIdx(null);
+  }, []);
 
   const handlePointerUp = useCallback(() => {
     if (!isDragging) return;
@@ -182,7 +216,36 @@ export function CompartmentEditor() {
     [compartments, setParam]
   );
 
+  const handleReset = useCallback(() => {
+    setCompartmentGrid(cols, rows);
+    setSelection(new Set());
+  }, [cols, rows, setCompartmentGrid]);
+
   const compartmentCount = getCompartmentCount(compartments);
+  const hasMergedCompartments = compartmentCount < cols * rows;
+
+  // Check if hovered cell is in a multi-cell compartment (splittable)
+  const hoveredIsSplittable = useMemo(() => {
+    if (hoverIdx === null || isDragging) return false;
+    const cId = cells[hoverIdx];
+    return cells.filter((c) => c === cId).length > 1;
+  }, [hoverIdx, cells, isDragging]);
+
+  // Dynamic instruction text
+  const instructionText = useMemo(() => {
+    if (isDragging && selection.size >= 2) {
+      if (selectionAction === 'merge') return `Release to merge ${selection.size} cells`;
+      if (selectionAction === 'split') return 'Release to split compartment';
+      return 'Drag to select a rectangle';
+    }
+    if (hoveredIsSplittable && !isDragging) {
+      return 'Click to split this compartment';
+    }
+    return 'Drag to merge cells. Click a compartment to split.';
+  }, [isDragging, selection.size, selectionAction, hoveredIsSplittable]);
+
+  // Compute aspect ratio from bin dimensions, clamped to avoid extreme shapes
+  const aspectRatio = Math.min(2, Math.max(0.5, width / depth));
 
   return (
     <div>
@@ -193,7 +256,7 @@ export function CompartmentEditor() {
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
               Grid Size
             </h3>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <span className="mb-1 block text-xs text-content-tertiary">Columns</span>
                 <StepperControl
@@ -230,28 +293,54 @@ export function CompartmentEditor() {
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-content-tertiary">
                   Layout
                 </h3>
-                <span className="text-xs text-content-tertiary">
-                  {compartmentCount} {compartmentCount === 1 ? 'compartment' : 'compartments'}
-                </span>
+                <div className="flex items-center gap-2">
+                  {hasMergedCompartments && (
+                    <button
+                      type="button"
+                      onClick={handleReset}
+                      className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+                      aria-label="Reset compartment layout to uniform grid"
+                    >
+                      Reset
+                    </button>
+                  )}
+                  <span className="text-xs tabular-nums text-content-tertiary">
+                    {compartmentCount} {compartmentCount === 1 ? 'compartment' : 'compartments'}
+                  </span>
+                </div>
               </div>
-              <p id="compartment-grid-instructions" className="mb-3 text-xs text-content-tertiary">
-                Drag to select cells, then release to merge. Click a merged compartment to split.
+              <p
+                id="compartment-grid-instructions"
+                className={`mb-3 text-xs transition-colors ${
+                  isDragging && selectionAction !== 'none'
+                    ? 'text-accent font-medium'
+                    : hoveredIsSplittable
+                      ? 'text-content-secondary'
+                      : 'text-content-tertiary'
+                }`}
+                aria-live="polite"
+              >
+                {instructionText}
               </p>
               <div
                 ref={gridRef}
-                className="mx-auto aspect-square max-w-[280px] select-none rounded-lg border border-stroke-subtle p-1"
+                className="mx-auto max-w-[280px] select-none rounded-lg border border-stroke-subtle bg-surface-elevated p-1.5"
+                style={{ aspectRatio: String(aspectRatio) }}
                 role="application"
                 aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
                 aria-describedby="compartment-grid-instructions"
                 onPointerUp={handlePointerUp}
-                onPointerLeave={handlePointerUp}
+                onPointerLeave={() => {
+                  handlePointerUp();
+                  setHoverIdx(null);
+                }}
               >
                 <div
-                  className="grid h-full w-full gap-0.5"
+                  className="grid h-full w-full"
                   style={{
                     gridTemplateColumns: `repeat(${cols}, 1fr)`,
                     gridTemplateRows: `repeat(${rows}, 1fr)`,
-                    transform: 'scaleY(-1)',
+                    gap: '2px',
                   }}
                 >
                   {cells.map((compartmentId, idx) => (
@@ -260,9 +349,15 @@ export function CompartmentEditor() {
                       idx={idx}
                       compartmentId={compartmentId}
                       isSelected={selection.has(idx)}
+                      isHovered={hoverIdx === idx && !isDragging}
+                      isSplittable={
+                        !isDragging && cells.filter((c) => c === compartmentId).length > 1
+                      }
+                      isDragging={isDragging}
                       config={compartments}
                       onPointerDown={handleCellPointerDown}
                       onPointerEnter={handleCellPointerEnter}
+                      onPointerLeave={handleCellPointerLeave}
                     />
                   ))}
                 </div>
@@ -297,21 +392,29 @@ function GridCell({
   idx,
   compartmentId,
   isSelected,
+  isHovered,
+  isSplittable,
+  isDragging,
   config,
   onPointerDown,
   onPointerEnter,
+  onPointerLeave,
 }: {
   idx: number;
   compartmentId: number;
   isSelected: boolean;
+  isHovered: boolean;
+  isSplittable: boolean;
+  isDragging: boolean;
   config: CompartmentConfig;
   onPointerDown: (idx: number) => void;
   onPointerEnter: (idx: number) => void;
+  onPointerLeave: () => void;
 }) {
   const col = idx % config.cols;
   const row = Math.floor(idx / config.cols);
 
-  // Determine which borders to hide (same compartment as neighbor = no border)
+  // Determine which edges are at the boundary of this compartment
   const hasRightNeighbor =
     col < config.cols - 1 && config.cells[cellIndex(config.cols, col + 1, row)] === compartmentId;
   const hasBottomNeighbor =
@@ -321,24 +424,45 @@ function GridCell({
   const hasTopNeighbor =
     row > 0 && config.cells[cellIndex(config.cols, col, row - 1)] === compartmentId;
 
-  const colorClass = getCompartmentColor(compartmentId);
+  // Compute rounded corners for outer edges of compartments
+  const cornerRadius = 4;
+  const topLeft = !hasTopNeighbor && !hasLeftNeighbor ? cornerRadius : 0;
+  const topRight = !hasTopNeighbor && !hasRightNeighbor ? cornerRadius : 0;
+  const bottomRight = !hasBottomNeighbor && !hasRightNeighbor ? cornerRadius : 0;
+  const bottomLeft = !hasBottomNeighbor && !hasLeftNeighbor ? cornerRadius : 0;
+
+  const fillColor = getCompartmentFill(compartmentId);
+  const borderColor = getCompartmentBorder(compartmentId);
+
+  // Build border widths: thicker on compartment edges, zero on internal edges
+  const borderTop = hasTopNeighbor ? 0 : 1.5;
+  const borderRight = hasRightNeighbor ? 0 : 1.5;
+  const borderBottom = hasBottomNeighbor ? 0 : 1.5;
+  const borderLeft = hasLeftNeighbor ? 0 : 1.5;
 
   return (
     <div
-      className={`
-        relative cursor-pointer transition-all duration-75
-        ${colorClass}
-        ${isSelected ? 'ring-2 ring-accent ring-inset z-10' : ''}
-        ${!hasRightNeighbor ? 'border-r border-r-stroke-default' : ''}
-        ${!hasBottomNeighbor ? 'border-b border-b-stroke-default' : ''}
-        ${!hasLeftNeighbor ? 'border-l border-l-stroke-default' : ''}
-        ${!hasTopNeighbor ? 'border-t border-t-stroke-default' : ''}
-      `}
+      className="relative touch-manipulation"
+      style={{
+        backgroundColor: isSelected
+          ? 'var(--color-accent)'
+          : isHovered && isSplittable
+            ? `color-mix(in srgb, ${fillColor} 60%, white)`
+            : fillColor,
+        borderRadius: `${topLeft}px ${topRight}px ${bottomRight}px ${bottomLeft}px`,
+        borderStyle: 'solid',
+        borderColor: isSelected ? 'var(--color-accent)' : borderColor,
+        borderWidth: `${borderTop}px ${borderRight}px ${borderBottom}px ${borderLeft}px`,
+        opacity: isSelected ? 0.7 : 1,
+        cursor: isDragging ? 'grabbing' : isSplittable ? 'pointer' : 'crosshair',
+        transition: 'background-color 100ms, opacity 100ms',
+      }}
       onPointerDown={(e) => {
         e.preventDefault();
         onPointerDown(idx);
       }}
       onPointerEnter={() => onPointerEnter(idx)}
+      onPointerLeave={onPointerLeave}
     />
   );
 }
