@@ -30,22 +30,9 @@ describe('useAutoSave', () => {
     vi.useRealTimers();
   });
 
-  function mockSaveDesign(id: string = 'new-id-123') {
+  function mockUpdateDesignParams(id: string = 'existing-id') {
     const savedDesign: SavedDesign = {
       id,
-      name: 'Untitled Bin',
-      params: DEFAULT_BIN_PARAMS,
-      thumbnail: null,
-      createdAt: '2026-01-22T00:00:00.000Z',
-      updatedAt: '2026-01-22T00:00:00.000Z',
-    };
-    vi.mocked(DesignerStorage.saveDesign).mockResolvedValue(ok(savedDesign));
-    return savedDesign;
-  }
-
-  function mockUpdateDesignParams() {
-    const savedDesign: SavedDesign = {
-      id: 'existing-id',
       name: 'Existing Bin',
       params: { ...DEFAULT_BIN_PARAMS, width: 3 },
       thumbnail: null,
@@ -57,38 +44,30 @@ describe('useAutoSave', () => {
   }
 
   it('should not save on initial render', async () => {
+    useDesignerStore.setState({ currentDesignId: 'existing-id' });
     renderHook(() => useAutoSave());
 
     await act(async () => {
       vi.advanceTimersByTime(2000);
     });
 
-    expect(DesignerStorage.saveDesign).not.toHaveBeenCalled();
     expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
   });
 
-  it('should create new design when currentDesignId is null', async () => {
-    mockSaveDesign('new-design-id');
+  it('should not save when currentDesignId is null (unsaved design)', async () => {
     renderHook(() => useAutoSave());
 
-    // Change params to trigger save
+    // Change params — should NOT trigger save since design hasn't been explicitly saved
     act(() => {
       useDesignerStore.getState().setParam('width', 3);
     });
 
-    // Wait for debounce
     await act(async () => {
       vi.advanceTimersByTime(1100);
     });
 
-    expect(DesignerStorage.saveDesign).toHaveBeenCalledWith({
-      name: 'Untitled Bin',
-      params: expect.objectContaining({ width: 3 }),
-      thumbnail: null,
-    });
-
-    expect(useDesignerStore.getState().currentDesignId).toBe('new-design-id');
-    expect(useDesignerStore.getState().saveStatus).toBe('saved');
+    expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
+    expect(useDesignerStore.getState().saveStatus).toBe('idle');
   });
 
   it('should update existing design when currentDesignId is set', async () => {
@@ -117,7 +96,9 @@ describe('useAutoSave', () => {
   });
 
   it('should debounce multiple rapid changes', async () => {
-    mockSaveDesign();
+    mockUpdateDesignParams();
+    useDesignerStore.setState({ currentDesignId: 'existing-id' });
+
     renderHook(() => useAutoSave());
 
     // Rapid changes
@@ -142,18 +123,19 @@ describe('useAutoSave', () => {
     });
 
     // Only the last value should be saved
-    expect(DesignerStorage.saveDesign).toHaveBeenCalledTimes(1);
-    expect(DesignerStorage.saveDesign).toHaveBeenCalledWith(
-      expect.objectContaining({
-        params: expect.objectContaining({ width: 4 }),
-      })
+    expect(DesignerStorage.updateDesignParams).toHaveBeenCalledTimes(1);
+    expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
+      'existing-id',
+      expect.objectContaining({ width: 4 }),
+      null
     );
   });
 
   it('should set saveStatus to error on failure', async () => {
-    vi.mocked(DesignerStorage.saveDesign).mockResolvedValue(
+    vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValue(
       err(storageUnavailable('indexedDB', new Error('quota exceeded')))
     );
+    useDesignerStore.setState({ currentDesignId: 'existing-id' });
 
     renderHook(() => useAutoSave());
 
@@ -170,11 +152,12 @@ describe('useAutoSave', () => {
 
   it('should set saveStatus to saving during save operation', async () => {
     let resolvePromise: ((value: unknown) => void) | null = null;
-    vi.mocked(DesignerStorage.saveDesign).mockReturnValue(
+    vi.mocked(DesignerStorage.updateDesignParams).mockReturnValue(
       new Promise((resolve) => {
         resolvePromise = resolve;
-      }) as ReturnType<typeof DesignerStorage.saveDesign>
+      }) as ReturnType<typeof DesignerStorage.updateDesignParams>
     );
+    useDesignerStore.setState({ currentDesignId: 'existing-id' });
 
     renderHook(() => useAutoSave());
 
@@ -192,9 +175,9 @@ describe('useAutoSave', () => {
     expect(resolvePromise).not.toBeNull();
     await act(async () => {
       resolvePromise?.(ok({
-        id: 'test-id',
+        id: 'existing-id',
         name: 'Test',
-        params: DEFAULT_BIN_PARAMS,
+        params: { ...DEFAULT_BIN_PARAMS, width: 3 },
         thumbnail: null,
         createdAt: '2026-01-22T00:00:00.000Z',
         updatedAt: '2026-01-22T00:00:00.000Z',
@@ -202,5 +185,38 @@ describe('useAutoSave', () => {
     });
 
     expect(useDesignerStore.getState().saveStatus).toBe('saved');
+  });
+
+  it('should start auto-saving after currentDesignId is set', async () => {
+    mockUpdateDesignParams();
+    renderHook(() => useAutoSave());
+
+    // Initially null — changes are ignored
+    act(() => {
+      useDesignerStore.getState().setParam('width', 3);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1100);
+    });
+    expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
+
+    // Simulate explicit save setting the ID (e.g., user renamed the design)
+    act(() => {
+      useDesignerStore.setState({ currentDesignId: 'new-id' });
+    });
+
+    // Now changes should trigger auto-save
+    act(() => {
+      useDesignerStore.getState().setParam('width', 5);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1100);
+    });
+
+    expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
+      'new-id',
+      expect.objectContaining({ width: 5 }),
+      null
+    );
   });
 });
