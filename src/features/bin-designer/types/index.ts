@@ -200,6 +200,21 @@ export interface DesignerHistory {
 }
 
 // =============================================================================
+// Export File Name Types
+// =============================================================================
+
+/** File naming style for exports */
+export type FileNameStyle = 'descriptive' | 'compact' | 'custom';
+
+/** Export filename configuration stored per design */
+export interface ExportFileNameConfig {
+  /** Which naming mode to use */
+  readonly style: FileNameStyle;
+  /** User-provided filename (without extension) for 'custom' mode */
+  readonly customName: string;
+}
+
+// =============================================================================
 // Storage Types
 // =============================================================================
 
@@ -211,6 +226,8 @@ export interface SavedDesign {
   readonly thumbnail: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  /** Per-design export filename preference (null = use defaults) */
+  readonly exportFileNameConfig: ExportFileNameConfig | null;
 }
 
 // =============================================================================
@@ -230,6 +247,7 @@ export interface DesignerState {
   currentDesignId: string | null;
   designName: string;
   saveStatus: SaveStatus;
+  exportFileNameConfig: ExportFileNameConfig;
 
   // Param actions
   setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => void;
@@ -245,6 +263,7 @@ export interface DesignerState {
   setCurrentDesignId: (id: string | null) => void;
   setDesignName: (name: string) => void;
   setSaveStatus: (status: SaveStatus) => void;
+  setExportFileNameConfig: (config: ExportFileNameConfig) => void;
   newDesign: () => void;
   loadDesign: (design: SavedDesign) => void;
 

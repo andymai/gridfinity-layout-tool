@@ -12,6 +12,7 @@ import type {
   DesignerState,
   BinParams,
   Insert,
+  ExportFileNameConfig,
   GenerationStatus,
   GenerationResult,
   WasmStatus,
@@ -30,6 +31,7 @@ import {
   migrateParams,
 } from '../constants';
 import { isErr } from '@/core/result';
+import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '../utils/fileNaming';
 import { isFractional } from '@/core/constants';
 import { isRectangularSelection, normalizeIds } from '../utils/compartments';
 import { validateCompartmentSizes } from '../utils/validation';
@@ -79,6 +81,7 @@ export const useDesignerStore = create<DesignerState>()(
     currentDesignId: null as string | null,
     designName: 'Untitled Bin',
     saveStatus: 'idle' as SaveStatus,
+    exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG },
 
     // Param actions
     setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => {
@@ -153,6 +156,12 @@ export const useDesignerStore = create<DesignerState>()(
       });
     },
 
+    setExportFileNameConfig: (config: ExportFileNameConfig) => {
+      set((state) => {
+        state.exportFileNameConfig = config;
+      });
+    },
+
     newDesign: () => {
       set((state) => {
         state.history.past = [];
@@ -161,6 +170,7 @@ export const useDesignerStore = create<DesignerState>()(
         state.currentDesignId = null;
         state.designName = 'Untitled Bin';
         state.saveStatus = 'idle';
+        state.exportFileNameConfig = { ...DEFAULT_EXPORT_FILE_NAME_CONFIG };
         state.generation.epoch += 1;
         pendingMeshCache = null;
       });
@@ -171,6 +181,7 @@ export const useDesignerStore = create<DesignerState>()(
         state.params = migrateParams(design.params);
         state.currentDesignId = design.id;
         state.designName = design.name;
+        state.exportFileNameConfig = design.exportFileNameConfig ?? { ...DEFAULT_EXPORT_FILE_NAME_CONFIG };
         state.history = { past: [], future: [] };
         state.saveStatus = 'saved';
         state.generation.epoch += 1;

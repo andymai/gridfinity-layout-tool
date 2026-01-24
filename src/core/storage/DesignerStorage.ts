@@ -9,7 +9,7 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import type { Result, StorageError } from '@/core/result';
 import { ok, err, isErr, storageNotFound, storageCorrupted, storageUnavailable } from '@/core/result';
-import type { SavedDesign, BinParams } from '@/features/bin-designer/types';
+import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bin-designer/types';
 
 const DB_NAME = 'gridfinity-designer-v1';
 const DB_VERSION = 1;
@@ -68,6 +68,7 @@ export async function saveDesign(
       name: design.name,
       params: design.params,
       thumbnail: design.thumbnail ?? null,
+      exportFileNameConfig: design.exportFileNameConfig ?? null,
       createdAt,
       updatedAt: now,
     };
@@ -148,17 +149,20 @@ export function closeDesignerDb(): void {
 }
 
 /**
- * Update an existing design's bin parameters and optionally its thumbnail.
+ * Update an existing design's bin parameters, thumbnail, and/or export config.
  *
  * If `thumbnail` is `undefined` the design's thumbnail is left unchanged; if `null` the thumbnail is cleared.
+ * If `exportFileNameConfig` is `undefined` it is left unchanged.
  *
  * @param thumbnail - The new thumbnail data, `null` to remove it, or `undefined` to keep the current thumbnail
+ * @param exportFileNameConfig - The new export config, or `undefined` to keep the current config
  * @returns A `Result` with the updated `SavedDesign` on success, or a `StorageError` on failure
  */
 export async function updateDesignParams(
   id: string,
   params: BinParams,
-  thumbnail?: string | null
+  thumbnail?: string | null,
+  exportFileNameConfig?: ExportFileNameConfig
 ): Promise<Result<SavedDesign, StorageError>> {
   const loadResult = await loadDesign(id);
   if (isErr(loadResult)) {
@@ -169,5 +173,6 @@ export async function updateDesignParams(
     ...loadResult.value,
     params,
     ...(thumbnail !== undefined ? { thumbnail } : {}),
+    ...(exportFileNameConfig !== undefined ? { exportFileNameConfig } : {}),
   });
 }

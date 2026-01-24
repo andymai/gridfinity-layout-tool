@@ -19,7 +19,7 @@ import { getActiveBridge } from '@/features/generation/bridge';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import { captureThumbnailPNG } from '@/features/bin-designer/utils/thumbnail';
-import type { FileNameStyle } from '@/features/bin-designer/utils/fileNaming';
+import type { ExportFileNameConfig } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 
 /** Supported export formats */
@@ -34,12 +34,10 @@ interface UseExportReturn {
   readonly canExportBREP: boolean;
   /** Current print estimates based on params */
   readonly estimates: PrintEstimate;
-  /** Preview of the generated file name */
-  readonly fileName: string;
-  /** Trigger STL download (from tessellated mesh, fast) */
-  readonly downloadSTL: (nameStyle?: FileNameStyle) => void;
+  /** Trigger STL download */
+  readonly downloadSTL: (config: ExportFileNameConfig, designName?: string) => void;
   /** Trigger 3MF download (with thumbnail & print settings) */
-  readonly download3MF: (nameStyle?: FileNameStyle) => Promise<void>;
+  readonly download3MF: (config: ExportFileNameConfig, designName?: string) => Promise<void>;
   /** Trigger STEP download (exact BREP via worker, lossless) */
   readonly downloadSTEP: () => Promise<void>;
 }
@@ -64,13 +62,8 @@ export function useExport(): UseExportReturn {
 
   const estimates = useMemo(() => estimatePrint(params), [params]);
 
-  const fileName = useMemo(
-    () => generateFileName(params, 'stl', 'descriptive'),
-    [params]
-  );
-
   const downloadSTL = useCallback(
-    (nameStyle: FileNameStyle = 'descriptive') => {
+    (config: ExportFileNameConfig, designName?: string) => {
       if (!canExport || !mesh?.vertices || !mesh?.normals) return;
 
       setIsExporting(true);
@@ -78,7 +71,7 @@ export function useExport(): UseExportReturn {
       let url: string | null = null;
       let anchor: HTMLAnchorElement | null = null;
       try {
-        const name = generateFileName(params, 'stl', nameStyle);
+        const name = generateFileName(params, 'stl', config, designName);
         const blob = exportSTL(mesh.vertices, mesh.normals, name);
 
         // Trigger browser download via hidden anchor
@@ -98,7 +91,7 @@ export function useExport(): UseExportReturn {
   );
 
   const download3MF = useCallback(
-    async (nameStyle: FileNameStyle = 'descriptive') => {
+    async (config: ExportFileNameConfig, designName?: string) => {
       if (!canExport || !mesh?.vertices || !mesh?.normals) return;
 
       setIsExporting(true);
@@ -106,7 +99,7 @@ export function useExport(): UseExportReturn {
       let url: string | null = null;
       let anchor: HTMLAnchorElement | null = null;
       try {
-        const name = generateFileName(params, '3mf', nameStyle);
+        const name = generateFileName(params, '3mf', config, designName);
 
         // Capture thumbnail from 3D preview (async canvas → PNG)
         const thumbnail = await captureThumbnailPNG() ?? undefined;
@@ -167,5 +160,5 @@ export function useExport(): UseExportReturn {
     [params]
   );
 
-  return { isExporting, canExport, canExportBREP, estimates, fileName, downloadSTL, download3MF, downloadSTEP };
+  return { isExporting, canExport, canExportBREP, estimates, downloadSTL, download3MF, downloadSTEP };
 }

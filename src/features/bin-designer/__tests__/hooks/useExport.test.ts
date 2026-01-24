@@ -85,10 +85,10 @@ describe('useExport', () => {
     expect(result.current.estimates.metersFilament).toBeGreaterThan(0);
   });
 
-  it('provides a file name preview', () => {
+  it('provides export function', () => {
     const { result } = renderHook(() => useExport());
-    expect(result.current.fileName).toContain('gridfinity');
-    expect(result.current.fileName).toContain('.stl');
+    expect(result.current.downloadSTL).toBeTypeOf('function');
+    expect(result.current.download3MF).toBeTypeOf('function');
   });
 
   it('isExporting is initially false', () => {
@@ -100,7 +100,7 @@ describe('useExport', () => {
     const { result } = renderHook(() => useExport());
 
     act(() => {
-      result.current.downloadSTL();
+      result.current.downloadSTL({ style: 'descriptive', customName: '' });
     });
 
     expect(mockCreateObjectURL).not.toHaveBeenCalled();
@@ -138,7 +138,7 @@ describe('useExport', () => {
     const { result } = renderHook(() => useExport());
 
     act(() => {
-      result.current.downloadSTL();
+      result.current.downloadSTL({ style: 'descriptive', customName: '' });
     });
 
     expect(mockCreateObjectURL).toHaveBeenCalledWith(expect.any(Blob));

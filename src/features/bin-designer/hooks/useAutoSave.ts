@@ -13,7 +13,7 @@ import { updateDesignParams } from '@/core/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { captureThumbnail } from '../utils/thumbnail';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
-import type { BinParams } from '../types';
+import type { BinParams, ExportFileNameConfig } from '../types';
 
 const AUTO_SAVE_DELAY_MS = 1000;
 
@@ -25,10 +25,11 @@ const AUTO_SAVE_DELAY_MS = 1000;
  * "Untitled Bin" entries from appearing in My Designs during exploratory parameter tweaks.
  */
 export function useAutoSave(): void {
-  const { params, currentDesignId } = useDesignerStore(
+  const { params, currentDesignId, exportFileNameConfig } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
       currentDesignId: s.currentDesignId,
+      exportFileNameConfig: s.exportFileNameConfig,
     }))
   );
 
@@ -37,11 +38,13 @@ export function useAutoSave(): void {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
   const lastSavedParams = useRef<BinParams | null>(null);
+  const lastSavedConfig = useRef<ExportFileNameConfig | null>(null);
   const abortRef = useRef(false);
 
   const performSave = useCallback(
     async (
       paramsToSave: BinParams,
+      configToSave: ExportFileNameConfig,
       designId: string,
       abortToken: { current: boolean }
     ): Promise<void> => {
@@ -50,10 +53,11 @@ export function useAutoSave(): void {
       // Capture thumbnail from the 3D preview (null if canvas not ready)
       const thumbnail = captureThumbnail();
 
-      const result = await updateDesignParams(designId, paramsToSave, thumbnail);
+      const result = await updateDesignParams(designId, paramsToSave, thumbnail, configToSave);
       if (abortToken.current) return; // Superseded by newer save
       if (isOk(result)) {
         lastSavedParams.current = paramsToSave;
+        lastSavedConfig.current = configToSave;
         setSaveStatus('saved');
         // Sync lightweight ref to registry for Layout Planner
         upsertRegistryEntry({
@@ -77,6 +81,7 @@ export function useAutoSave(): void {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       lastSavedParams.current = params;
+      lastSavedConfig.current = exportFileNameConfig;
       return;
     }
 
@@ -86,8 +91,8 @@ export function useAutoSave(): void {
       return;
     }
 
-    // Skip if params haven't actually changed (reference check is fine with Immer)
-    if (lastSavedParams.current === params) {
+    // Skip if neither params nor config have changed
+    if (lastSavedParams.current === params && lastSavedConfig.current === exportFileNameConfig) {
       return;
     }
 
@@ -103,7 +108,7 @@ export function useAutoSave(): void {
 
     const designId = currentDesignId; // Narrowed to string by guard above
     timerRef.current = setTimeout(() => {
-      void performSave(params, designId, abortToken);
+      void performSave(params, exportFileNameConfig, designId, abortToken);
     }, AUTO_SAVE_DELAY_MS);
 
     return () => {
@@ -112,5 +117,5 @@ export function useAutoSave(): void {
         clearTimeout(timerRef.current);
       }
     };
-  }, [params, currentDesignId, performSave]);
+  }, [params, exportFileNameConfig, currentDesignId, performSave]);
 }
