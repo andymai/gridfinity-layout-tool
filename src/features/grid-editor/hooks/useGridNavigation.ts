@@ -69,7 +69,7 @@ export function useGridNavigation() {
     if (!focusedBinId) return;
 
     // Find bin element by data attribute
-    const binElement = document.querySelector(`[data-bin-id="${focusedBinId}"]`);
+    const binElement = document.querySelector(`[data-bin-id="${CSS.escape(focusedBinId)}"]`);
     if (binElement instanceof HTMLElement) {
       binElement.focus();
     }

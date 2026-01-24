@@ -39,10 +39,11 @@ export const BinMesh = memo(function BinMesh({
     baseColor: color,
   });
 
-  // Animate emissive intensity for selected bins (slow pulse)
+  // Animate emissive intensity for selected bins (slow pulse).
+  // This component is only mounted for selected bins (non-selected use MergedBinMeshes),
+  // so this callback only runs for the small number of actively selected bins.
   useFrame(({ clock }) => {
     if (materialRef.current && isSelected) {
-      // Slow sine wave: 0.3 to 0.5 intensity over ~2 seconds
       const pulse = 0.4 + Math.sin(clock.elapsedTime * Math.PI) * 0.1;
       materialRef.current.emissiveIntensity = pulse;
     }

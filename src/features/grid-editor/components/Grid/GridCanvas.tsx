@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/shallow';
 import { useUIStore, useLayoutStore } from '@/core/store';
 import { useGridCoords, useGridTemplate } from '@/features/grid-editor/hooks';
 import { Bin } from './Bin';
+
 import { getBlockedZones } from '@/shared/utils/collision';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import type { Coord, ResizeHandle } from '@/core/types';
@@ -58,7 +59,7 @@ export function GridCanvas({
     }))
   );
 
-  const { getGridCoords, halfBinMode } = useGridCoords(gridRef);
+  const { getGridCoords } = useGridCoords(gridRef);
 
   // Memoized: Filter bins for current layer
   const activeBins = useMemo(
@@ -84,6 +85,7 @@ export function GridCanvas({
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const layerMap = useMemo(() => new Map(layers.map((l) => [l.id, l])), [layers]);
   const binMap = useMemo(() => new Map(bins.map((b) => [b.id, b])), [bins]);
+  const selectedBinIdSet = useMemo(() => new Set(selectedBinIds), [selectedBinIds]);
 
   // Capture phase handler for paint mode - runs before Bin components can stop propagation
   const handlePointerDownCapture = (e: PointerEvent<HTMLDivElement>) => {
@@ -266,7 +268,6 @@ export function GridCanvas({
             drawer={drawer}
             cellSize={cellSize}
             gap={gap}
-            halfBinMode={halfBinMode}
             isGhost
             isSelected={false}
             onStartDrag={onStartDrag}
@@ -376,9 +377,8 @@ export function GridCanvas({
             drawer={drawer}
             cellSize={cellSize}
             gap={gap}
-            halfBinMode={halfBinMode}
             isGhost={false}
-            isSelected={selectedBinIds.includes(bin.id)}
+            isSelected={selectedBinIdSet.has(bin.id)}
             onStartDrag={onStartDrag}
             onStartResize={onStartResize}
           />

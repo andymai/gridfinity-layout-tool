@@ -33,8 +33,8 @@ export interface GridResizeState {
   pendingResize: PendingResize | null;
   /** Whether resize handles should pulse (first-use hint) */
   shouldPulseResizeHandles: boolean;
-  /** Start resize operation from mouse event */
-  handleResizeStart: (direction: ResizeDirection, e: React.MouseEvent) => void;
+  /** Start resize operation from pointer event */
+  handleResizeStart: (direction: ResizeDirection, e: React.PointerEvent) => void;
   /** Confirm pending resize - moves clipped bins to staging */
   confirmResize: () => void;
   /** Cancel pending resize - reverts to original size */
@@ -80,6 +80,9 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
   const pulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Track captured pointer for explicit release on cleanup (matches useInteraction pattern)
+  const capturedPointerRef = useRef<{ element: HTMLElement; pointerId: number } | null>(null);
+
   // Use ref to track current drawer dimensions without causing effect re-runs
   const drawerRef = useRef(drawer);
   useEffect(() => {
@@ -106,8 +109,11 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
     };
   }, []);
 
-  const handleResizeStart = useCallback((direction: ResizeDirection, e: React.MouseEvent) => {
+  const handleResizeStart = useCallback((direction: ResizeDirection, e: React.PointerEvent) => {
     e.preventDefault();
+    const target = e.target as HTMLElement;
+    target.setPointerCapture(e.pointerId);
+    capturedPointerRef.current = { element: target, pointerId: e.pointerId };
     setResizeDirection(direction);
     setResizeStart({
       x: e.clientX,
@@ -120,7 +126,7 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
   useEffect(() => {
     if (!resizeDirection || !resizeStart) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
       const dx = e.clientX - resizeStart.x;
       const dy = e.clientY - resizeStart.y;
       const cellStep = cellSize + gap;
@@ -146,7 +152,21 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
       }
     };
 
-    const handleMouseUp = () => {
+    const releaseCapture = () => {
+      if (capturedPointerRef.current) {
+        try {
+          capturedPointerRef.current.element.releasePointerCapture(
+            capturedPointerRef.current.pointerId
+          );
+        } catch {
+          // Element may have been removed from DOM
+        }
+        capturedPointerRef.current = null;
+      }
+    };
+
+    const handlePointerUp = () => {
+      releaseCapture();
       // Read current state directly from store to ensure we have the latest values
       const currentState = useLayoutStore.getState().layout;
       const currentDrawer = currentState.drawer;
@@ -183,11 +203,12 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
       setResizeStart(null);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      releaseCapture();
     };
   }, [resizeDirection, resizeStart, cellSize, gap, updateDrawer]);
 

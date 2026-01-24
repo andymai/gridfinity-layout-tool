@@ -23,7 +23,7 @@ export interface DrawerResizeHandlesProps {
   /** Whether resize handles should pulse (first-use hint) */
   shouldPulse: boolean;
   /** Start resize operation */
-  onResizeStart: (direction: ResizeDirection, e: React.MouseEvent) => void;
+  onResizeStart: (direction: ResizeDirection, e: React.PointerEvent) => void;
 }
 
 export const DrawerResizeHandles = memo(function DrawerResizeHandles({
@@ -48,7 +48,7 @@ export const DrawerResizeHandles = memo(function DrawerResizeHandles({
           width: 24,
           cursor: 'ew-resize',
         }}
-        onMouseDown={(e) => onResizeStart('width', e)}
+        onPointerDown={(e) => onResizeStart('width', e)}
         title="Drag to add/remove columns"
       >
         <div
@@ -71,7 +71,7 @@ export const DrawerResizeHandles = memo(function DrawerResizeHandles({
           height: 24,
           cursor: 'ns-resize',
         }}
-        onMouseDown={(e) => onResizeStart('depth', e)}
+        onPointerDown={(e) => onResizeStart('depth', e)}
         title="Drag to add/remove rows"
       >
         <div
@@ -95,7 +95,7 @@ export const DrawerResizeHandles = memo(function DrawerResizeHandles({
           height: 24,
           cursor: 'nwse-resize',
         }}
-        onMouseDown={(e) => onResizeStart('both', e)}
+        onPointerDown={(e) => onResizeStart('both', e)}
         title="Drag to add/remove rows and columns"
       >
         <div
