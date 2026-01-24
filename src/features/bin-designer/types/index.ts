@@ -87,6 +87,10 @@ export interface BinParams {
   readonly width: number;
   readonly depth: number;
   readonly height: number;
+  /** Grid unit size in mm (default 42mm per Gridfinity spec) */
+  readonly gridUnitMm: number;
+  /** Height unit size in mm (default 7mm per Gridfinity spec) */
+  readonly heightUnitMm: number;
   /** Wall thickness in mm (default 1.2). Ignored when style is 'solid'. */
   readonly wallThickness: number;
   readonly base: BaseConfig;
@@ -169,6 +173,8 @@ export interface DesignerUIState {
   readonly exportDialogOpen: boolean;
   readonly designListOpen: boolean;
   readonly wireframeMode: boolean;
+  /** Whether half-bin mode is enabled (0.5 grid unit increments for width/depth) */
+  readonly halfBinMode: boolean;
 }
 
 /** Undo/redo history for bin parameters */
@@ -248,6 +254,7 @@ export interface DesignerState {
   setExportDialogOpen: (open: boolean) => void;
   setDesignListOpen: (open: boolean) => void;
   setWireframeMode: (enabled: boolean) => void;
+  toggleHalfBinMode: () => void;
 }
 
 // =============================================================================

@@ -13,6 +13,10 @@ interface CollapsibleSectionProps {
   actions?: ReactNode;
   /** Size variant for the header */
   variant?: 'default' | 'small';
+  /** Optional illustration icon shown before the title */
+  illustration?: ReactNode;
+  /** Optional summary shown when section is collapsed (e.g., "2×2×3u") */
+  summary?: ReactNode;
 }
 
 /**
@@ -26,6 +30,8 @@ export function CollapsibleSection({
   badge,
   actions,
   variant = 'default',
+  illustration,
+  summary,
 }: CollapsibleSectionProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   // Track if user has toggled - only animate after first interaction to prevent CLS
@@ -58,11 +64,19 @@ export function CollapsibleSection({
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
+          {illustration && (
+            <span className="flex-shrink-0 text-content-tertiary">{illustration}</span>
+          )}
           <span className={headerClass}>{title}</span>
           {badge}
         </button>
         {actions}
       </div>
+      {summary && !expanded && (
+        <div className="mt-1 ml-[22px] text-xs text-content-tertiary truncate">
+          {summary}
+        </div>
+      )}
       <div
         id={contentId}
         role="region"

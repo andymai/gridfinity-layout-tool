@@ -3,7 +3,7 @@
  *
  * Displays a top-down 2D view of the bin interior divided into a user-defined
  * grid. Users can:
- * 1. Set grid dimensions (rows × cols) via sliders
+ * 1. Set grid dimensions (rows × cols) via stepper controls
  * 2. Click-drag to select a rectangular region of cells
  * 3. Merge selected cells into one compartment (or split merged ones)
  *
@@ -16,7 +16,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { SliderInput } from './controls/SliderInput';
+import { StepperControl } from '@/shared/components/StepperControl';
 import { ThicknessSelector } from './controls/ThicknessSelector';
 import {
   getCompartmentCount,
@@ -148,12 +148,32 @@ export function CompartmentEditor() {
     [rows, setCompartmentGrid]
   );
 
+  const handleColsStep = useCallback(
+    (delta: number) => {
+      const next = cols + delta;
+      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID, Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID, next));
+      setCompartmentGrid(clamped, rows);
+      setSelection(new Set());
+    },
+    [cols, rows, setCompartmentGrid]
+  );
+
   const handleRowsChange = useCallback(
     (newRows: number) => {
       setCompartmentGrid(cols, newRows);
       setSelection(new Set());
     },
     [cols, setCompartmentGrid]
+  );
+
+  const handleRowsStep = useCallback(
+    (delta: number) => {
+      const next = rows + delta;
+      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID, Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID, next));
+      setCompartmentGrid(cols, clamped);
+      setSelection(new Set());
+    },
+    [cols, rows, setCompartmentGrid]
   );
 
   const handleThicknessChange = useCallback(
@@ -166,76 +186,87 @@ export function CompartmentEditor() {
   const compartmentCount = getCompartmentCount(compartments);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto px-4 py-3">
-        <div className="space-y-6">
+    <div>
+      <div>
+        <div className="space-y-5">
           {/* Grid dimensions */}
           <section>
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
               Grid Size
             </h3>
-            <div className="space-y-4">
-              <SliderInput
-                label="Columns"
-                value={cols}
-                onChange={handleColsChange}
-                min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
-                max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
-                step={1}
-                unit=""
-              />
-              <SliderInput
-                label="Rows"
-                value={rows}
-                onChange={handleRowsChange}
-                min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
-                max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
-                step={1}
-                unit=""
-              />
-            </div>
-          </section>
-
-          {/* Visual grid editor */}
-          <section>
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-content-tertiary">
-                Layout
-              </h3>
-              <span className="text-xs text-content-tertiary">
-                {compartmentCount} {compartmentCount === 1 ? 'compartment' : 'compartments'}
-              </span>
-            </div>
-            <p className="mb-3 text-xs text-content-tertiary">
-              Drag to select cells, then release to merge. Click a merged compartment to split.
-            </p>
-            <div
-              ref={gridRef}
-              className="mx-auto aspect-square max-w-[280px] select-none rounded-lg border border-stroke-subtle p-1"
-              onPointerUp={handlePointerUp}
-              onPointerLeave={handlePointerUp}
-            >
-              <div
-                className="grid h-full w-full gap-0.5"
-                style={{
-                  gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                  gridTemplateRows: `repeat(${rows}, 1fr)`,
-                }}
-              >
-                {cells.map((compartmentId, idx) => (
-                  <GridCell
-                    key={idx}
-                    idx={idx}
-                    compartmentId={compartmentId}
-                    isSelected={selection.has(idx)}
-                    config={compartments}
-                    onPointerDown={handleCellPointerDown}
-                    onPointerEnter={handleCellPointerEnter}
-                  />
-                ))}
+            <div className="space-y-3">
+              <div>
+                <span className="mb-1 block text-xs text-content-tertiary">Columns</span>
+                <StepperControl
+                  value={cols}
+                  onChange={handleColsChange}
+                  onStep={handleColsStep}
+                  min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
+                  max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
+                  step={1}
+                  variant="compact"
+                  ariaLabel="Columns"
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-xs text-content-tertiary">Rows</span>
+                <StepperControl
+                  value={rows}
+                  onChange={handleRowsChange}
+                  onStep={handleRowsStep}
+                  min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
+                  max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
+                  step={1}
+                  variant="compact"
+                  ariaLabel="Rows"
+                />
               </div>
             </div>
           </section>
+
+          {/* Visual grid editor (hidden for single-cell grids) */}
+          {(cols > 1 || rows > 1) && (
+            <section>
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-content-tertiary">
+                  Layout
+                </h3>
+                <span className="text-xs text-content-tertiary">
+                  {compartmentCount} {compartmentCount === 1 ? 'compartment' : 'compartments'}
+                </span>
+              </div>
+              <p className="mb-3 text-xs text-content-tertiary">
+                Drag to select cells, then release to merge. Click a merged compartment to split.
+              </p>
+              <div
+                ref={gridRef}
+                className="mx-auto aspect-square max-w-[280px] select-none rounded-lg border border-stroke-subtle p-1"
+                onPointerUp={handlePointerUp}
+                onPointerLeave={handlePointerUp}
+              >
+                <div
+                  className="grid h-full w-full gap-0.5"
+                  style={{
+                    gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                    gridTemplateRows: `repeat(${rows}, 1fr)`,
+                    transform: 'scaleY(-1)',
+                  }}
+                >
+                  {cells.map((compartmentId, idx) => (
+                    <GridCell
+                      key={idx}
+                      idx={idx}
+                      compartmentId={compartmentId}
+                      isSelected={selection.has(idx)}
+                      config={compartments}
+                      onPointerDown={handleCellPointerDown}
+                      onPointerEnter={handleCellPointerEnter}
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* Wall thickness (only when there are dividers) */}
           {compartmentCount > 1 && (
