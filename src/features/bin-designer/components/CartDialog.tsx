@@ -13,6 +13,7 @@ import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import type { BatchProgress } from '@/features/bin-designer/utils/batchExport';
 import type { CartItem } from '@/features/bin-designer/types';
+import { useTranslation } from '@/i18n';
 
 interface CartDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
   const removeFromCart = useCartStore((s) => s.removeFromCart);
   const clearCart = useCartStore((s) => s.clearCart);
   const addToast = useToastStore((s) => s.addToast);
+  const t = useTranslation();
 
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState<BatchProgress | null>(null);
@@ -128,7 +130,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-content">Export Cart</h2>
+            <h2 className="text-lg font-semibold text-content">{t('binDesigner.exportCart')}</h2>
             <span className="rounded-full bg-accent-muted px-2 py-0.5 text-xs font-medium text-accent">
               {items.length}
             </span>
@@ -152,9 +154,9 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
               <svg className="mx-auto mb-3 h-12 w-12 text-content-disabled" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
-              <p className="text-sm font-medium text-content-secondary">Cart is empty</p>
+              <p className="text-sm font-medium text-content-secondary">{t('binDesigner.cartEmpty')}</p>
               <p className="mt-1 text-xs text-content-tertiary">
-                Use the &ldquo;Add to Cart&rdquo; button to queue designs for batch export.
+                {t('binDesigner.cartEmptyHint')}
               </p>
             </div>
           ) : (

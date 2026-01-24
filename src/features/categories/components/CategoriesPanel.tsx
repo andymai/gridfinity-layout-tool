@@ -97,7 +97,7 @@ export function CategoriesPanel() {
         mlTracking.trackCategory(binsToUpdate[0], categoryName, binCount);
       }
 
-      addToast(`Changed ${binCount} bin${binCount > 1 ? 's' : ''} to "${categoryName}"`, 'success');
+      addToast(t('toast.categoryChanged', { count: binCount, name: categoryName }), 'success');
     }
   };
 
@@ -137,7 +137,7 @@ export function CategoriesPanel() {
 
     // Show message if it's the last category
     if (categories.length <= CONSTRAINTS.CATEGORIES_MIN) {
-      addToast('Cannot delete the last category', 'error');
+      addToast(t('categories.cannotDeleteLast'), 'error');
       return;
     }
 
@@ -280,7 +280,7 @@ export function CategoriesPanel() {
                         e.stopPropagation();
                         setEditingId(category.id);
                       }}
-                      title="Click to edit color"
+                      title={t('categories.editColor')}
                       aria-hidden="true"
                     >
                       {isActive && (
@@ -335,7 +335,7 @@ export function CategoriesPanel() {
                         setEditingId(category.id);
                       }}
                       className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1.5 -my-1 rounded hover:bg-surface-elevated transition-opacity flex-shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
-                      title="Edit category"
+                      title={t('categories.editCategory')}
                       aria-label={`Edit ${category.name}`}
                     >
                       <svg

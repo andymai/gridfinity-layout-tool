@@ -14,6 +14,7 @@ import { SliderInput } from '../controls/SliderInput';
 import { FeatureToggle } from './FeatureToggle';
 import { BaseIcon } from './SectionIllustrations';
 import type { BaseConfig, BaseStyle } from '@/features/bin-designer/types';
+import { useTranslation } from '@/i18n';
 
 /** Derive base style from individual magnet/screw booleans */
 function computeBaseStyle(magnet: boolean, screw: boolean, currentStyle: BaseStyle): BaseStyle {
@@ -31,6 +32,7 @@ export function BaseSection() {
       setParam: s.setParam,
     }))
   );
+  const t = useTranslation();
 
   const hasMagnet = base.style === 'magnet' || base.style === 'magnet_and_screw';
   const hasScrew = base.style === 'screw' || base.style === 'magnet_and_screw';
@@ -88,7 +90,7 @@ export function BaseSection() {
 
   return (
     <CollapsibleSection
-      title="Base"
+      title={t('binDesigner.base')}
       defaultExpanded={true}
       illustration={<BaseIcon />}
       summary={summary}

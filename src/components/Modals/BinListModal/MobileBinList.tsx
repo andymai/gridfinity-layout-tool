@@ -4,6 +4,7 @@ import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { useBinList } from '@/hooks/useBinList';
 import { SplitPreview } from '@/components/Print/SplitPreview';
 import type { EnhancedPrintRow, Category, PrintListSortKey } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 interface MobileBinListProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ const SORT_OPTIONS: { key: PrintListSortKey; label: string }[] = [
 ];
 
 function MobileBinListContent({ onClose }: { onClose: () => void }) {
+  const t = useTranslation();
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const [editingField, setEditingField] = useState<'label' | 'notes' | 'category' | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -275,7 +277,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
           className="px-4 py-3 border-b border-stroke bg-surface"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="text-xs text-content-tertiary mb-2">Download</div>
+          <div className="text-xs text-content-tertiary mb-2">{t('common.download')}</div>
           <div className="flex gap-2 mb-3">
             <button
               onClick={() => {
@@ -305,7 +307,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
               JSON
             </button>
           </div>
-          <div className="text-xs text-content-tertiary mb-2">Copy to clipboard</div>
+          <div className="text-xs text-content-tertiary mb-2">{t('mobile.copyToClipboard')}</div>
           <div className="flex gap-2">
             <button
               onClick={() => {
@@ -336,7 +338,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search label or notes..."
+            placeholder={t('binList.searchPlaceholder')}
             className="w-full pl-9 pr-4 py-2.5 text-sm bg-surface border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
           />
           <svg
@@ -584,7 +586,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
 
       {/* Category selection bottom sheet */}
       {editingField === 'category' && (
-        <BottomSheet title="Select Category" onClose={() => setEditingField(null)}>
+        <BottomSheet title={t('categories.selectCategory')} onClose={() => setEditingField(null)}>
           <div className="space-y-1">
             {categories.map((category) => (
               <button
@@ -614,7 +616,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
               type="text"
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
-              placeholder="Enter label..."
+              placeholder={t('binList.enterLabel')}
               className="w-full px-4 py-3 text-base bg-surface border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
               maxLength={24}
               autoFocus
@@ -624,7 +626,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
               disabled={!editValue.trim()}
               className="w-full py-3 rounded-lg bg-accent text-on-dark font-medium disabled:opacity-50"
             >
-              Apply
+              {t('common.apply')}
             </button>
           </div>
         </BottomSheet>
@@ -640,7 +642,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
             <textarea
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
-              placeholder="Enter notes..."
+              placeholder={t('binList.enterNotes')}
               className="w-full px-4 py-3 text-base bg-surface border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-accent resize-none"
               rows={3}
               maxLength={256}
@@ -651,7 +653,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
               disabled={!editValue.trim()}
               className="w-full py-3 rounded-lg bg-accent text-on-dark font-medium disabled:opacity-50"
             >
-              Apply
+              {t('common.apply')}
             </button>
           </div>
         </BottomSheet>

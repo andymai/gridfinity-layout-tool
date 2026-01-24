@@ -11,6 +11,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { useTranslation } from '@/i18n';
 
 export function PhysicalUnitsSection() {
   const { gridUnitMm, heightUnitMm, setParam } = useDesignerStore(
@@ -20,6 +21,7 @@ export function PhysicalUnitsSection() {
       setParam: s.setParam,
     }))
   );
+  const t = useTranslation();
 
   const handleGridUnitChange = useCallback(
     (value: number) => {
@@ -39,7 +41,7 @@ export function PhysicalUnitsSection() {
 
   return (
     <CollapsibleSection
-      title="Physical Units"
+      title={t('binDesigner.physicalUnits')}
       defaultExpanded={false}
       summary={summary}
     >

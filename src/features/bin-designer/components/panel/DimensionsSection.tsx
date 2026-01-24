@@ -11,6 +11,7 @@ import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { DimensionsIcon } from './SectionIllustrations';
+import { useTranslation } from '@/i18n';
 
 export function DimensionsSection() {
   const {
@@ -34,6 +35,7 @@ export function DimensionsSection() {
       toggleHalfBinMode: s.toggleHalfBinMode,
     }))
   );
+  const t = useTranslation();
 
   // Step sizes depend on half-bin mode
   const dimensionStep = halfBinMode ? 0.5 : 1;
@@ -78,7 +80,7 @@ export function DimensionsSection() {
 
   return (
     <CollapsibleSection
-      title="Dimensions"
+      title={t('binDesigner.dimensions')}
       defaultExpanded={true}
       illustration={<DimensionsIcon />}
       summary={summary}

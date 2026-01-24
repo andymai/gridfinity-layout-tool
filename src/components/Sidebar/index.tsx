@@ -15,6 +15,7 @@ import { useResponsive } from '@/shared/hooks';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
+import { useTranslation } from '@/i18n';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
 const InspirationGallery = lazyWithRetry(() =>
@@ -32,6 +33,7 @@ const SettingsModal = lazyWithRetry(() =>
  * @returns The sidebar element as JSX to be mounted in the application layout.
  */
 export function Sidebar() {
+  const t = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -92,7 +94,7 @@ export function Sidebar() {
           <button
             onClick={toggle}
             className="btn btn-ghost btn-icon"
-            title="Expand panel"
+            title={t('sidebar.expandPanel')}
             aria-label="Expand left panel"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,7 +121,7 @@ export function Sidebar() {
             <button
               onClick={() => setShowSettingsModal(true)}
               className="p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
-              title="Settings"
+              title={t('sidebar.settings')}
               aria-label="Open settings"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -140,7 +142,7 @@ export function Sidebar() {
             <button
               onClick={toggle}
               className="p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
-              title="Collapse panel"
+              title={t('sidebar.collapsePanel')}
               aria-label="Collapse left panel"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -254,7 +256,7 @@ export function Sidebar() {
                     <div>
                       <label
                         className="block text-content-tertiary mb-1"
-                        title="Maximum height in units"
+                        title={t('sidebar.maxHeight')}
                       >
                         Height
                       </label>
@@ -310,7 +312,7 @@ export function Sidebar() {
                     <div className="flex items-center gap-1.5">
                       <span
                         className={`leading-none ${halfBinMode ? 'text-content' : 'text-content-tertiary'}`}
-                        title="Enable 0.5 grid unit precision for half-size bins (H)"
+                        title={t('sidebar.halfBinTooltip')}
                       >
                         Half-bin mode
                       </span>
@@ -341,7 +343,7 @@ export function Sidebar() {
                                   ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
-                              title="Place half-unit column on the left"
+                              title={t('sidebar.halfBinLeft')}
                             >
                               Left
                             </button>
@@ -352,7 +354,7 @@ export function Sidebar() {
                                   ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
-                              title="Place half-unit column on the right"
+                              title={t('sidebar.halfBinRight')}
                             >
                               Right
                             </button>
@@ -370,7 +372,7 @@ export function Sidebar() {
                                   ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
-                              title="Place half-unit row at the bottom"
+                              title={t('sidebar.halfBinBottom')}
                             >
                               Bottom
                             </button>
@@ -381,7 +383,7 @@ export function Sidebar() {
                                   ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
-                              title="Place half-unit row at the top"
+                              title={t('sidebar.halfBinTop')}
                             >
                               Top
                             </button>
@@ -504,7 +506,7 @@ export function Sidebar() {
       )}
 
       {showInspirationGallery && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading gallery" />}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.gallery')} />}>
           <InspirationGallery
             isOpen={showInspirationGallery}
             onClose={() => setShowInspirationGallery(false)}
@@ -513,7 +515,7 @@ export function Sidebar() {
       )}
 
       {showSettingsModal && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading settings" />}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.settings')} />}>
           <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
         </Suspense>
       )}

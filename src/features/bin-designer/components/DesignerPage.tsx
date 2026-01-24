@@ -30,6 +30,7 @@ import { saveDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { captureThumbnail } from '@/features/bin-designer/utils/thumbnail';
 import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import type { SaveStatus } from '@/features/bin-designer/types';
+import { useTranslation } from '@/i18n';
 
 interface DesignerPageProps {
   /** Unused - navigation is handled by ToolSwitcher */
@@ -134,6 +135,7 @@ export function DesignerPage(_props: DesignerPageProps) {
   useDesignerUrlSync();
 
   const { isDesktop, isMobile } = useResponsive();
+  const t = useTranslation();
   const saveStatus = useDesignerStore((s) => s.saveStatus);
   const designName = useDesignerStore((s) => s.designName);
   const setDesignName = useDesignerStore((s) => s.setDesignName);
@@ -319,7 +321,7 @@ export function DesignerPage(_props: DesignerPageProps) {
             <button
               onClick={handleNameClick}
               className="hidden px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px] sm:inline-block"
-              title="Click to rename design"
+              title={t('binDesigner.clickToRename')}
             >
               {designName}
             </button>
@@ -329,7 +331,7 @@ export function DesignerPage(_props: DesignerPageProps) {
           <button
             onClick={() => setDesignListOpen(true)}
             className="hidden px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content sm:flex items-center gap-1.5"
-            title="Open design list"
+            title={t('binDesigner.openDesignList')}
             aria-label="Open design list"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -347,7 +349,7 @@ export function DesignerPage(_props: DesignerPageProps) {
           <button
             onClick={() => setDesignListOpen(true)}
             className="sm:hidden btn btn-ghost btn-icon"
-            title="My Designs"
+            title={t('binDesigner.myDesigns')}
             aria-label="Open design list"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -365,7 +367,7 @@ export function DesignerPage(_props: DesignerPageProps) {
             onClick={() => setExportDialogOpen(true)}
             disabled={!canExport}
             className="hidden px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content sm:flex items-center gap-1.5"
-            title="Export bin as STL"
+            title={t('binDesigner.exportSTL')}
             aria-label="Export bin as STL"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -376,7 +378,7 @@ export function DesignerPage(_props: DesignerPageProps) {
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            <span className="hidden lg:inline">Export</span>
+            <span className="hidden lg:inline">{t('binDesigner.export')}</span>
           </button>
         </div>
 
@@ -438,7 +440,7 @@ export function DesignerPage(_props: DesignerPageProps) {
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            Export
+            {t('binDesigner.export')}
           </button>
 
           {/* Mobile export icon button */}
@@ -446,7 +448,7 @@ export function DesignerPage(_props: DesignerPageProps) {
             onClick={() => setExportDialogOpen(true)}
             disabled={!canExport}
             className="sm:hidden btn btn-ghost btn-icon"
-            title="Export bin"
+            title={t('binDesigner.exportBin')}
             aria-label="Export bin as STL"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

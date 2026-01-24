@@ -15,6 +15,7 @@ import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getBinTextColors } from '@/shared/utils';
 import { calcFractionalPixelSize } from '@/features/grid-editor/utils/fractionalPixels';
 import { ResizeHandles } from './ResizeHandles';
+import { useTranslation } from '@/i18n';
 
 /** Clamp a value between min and max */
 function clamp(value: number, min: number, max: number): number {
@@ -59,6 +60,7 @@ function BinComponent({
   onStartDrag,
   onStartResize,
 }: BinProps) {
+  const t = useTranslation();
   const { isTouchDevice } = useResponsive();
 
   // Performance: Use focused stores directly instead of useUIStore facade.
@@ -465,7 +467,7 @@ function BinComponent({
           // Show first-time hint about resize handles
           const hintShown = localStorage.getItem('gridfinity-resize-hint-shown');
           if (!hintShown) {
-            addToast('Tip: Drag the handles to resize', 'info');
+            addToast(t('toast.resizeTip'), 'info');
             localStorage.setItem('gridfinity-resize-hint-shown', 'true');
           }
         }
@@ -767,7 +769,7 @@ function BinComponent({
             {!showLabel && needsSplit && !isGhost && (
               <span
                 className="ml-0.5 rounded-sm"
-                title="Exceeds print size, will be split"
+                title={t('grid.exceedsPrintSize')}
                 style={{
                   fontSize: `${Math.round(secondaryFontSize * 0.9)}px`,
                   padding: '0px 3px',
@@ -796,7 +798,7 @@ function BinComponent({
               {needsSplit && !isGhost && (
                 <span
                   className="ml-1"
-                  title="Exceeds print size, will be split"
+                  title={t('grid.exceedsPrintSize')}
                   style={{ color: 'var(--color-warning)' }}
                 >
                   ⚠

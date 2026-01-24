@@ -7,6 +7,7 @@ import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/val
 import { validateBinRotation } from '@/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Bin, Category, Layer, Layout } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 export type BinField =
   | 'width'
@@ -77,6 +78,7 @@ export interface UseBinInspectorReturn {
  * Extracts all common state and handlers used by RightPanel and MobileInspector.
  */
 export function useBinInspector(): UseBinInspectorReturn {
+  const t = useTranslation();
   const [deleteConfirmState, setDeleteConfirmState] = useState<ConfirmDeleteState | null>(null);
 
   // UI Store
@@ -294,9 +296,9 @@ export function useBinInspector(): UseBinInspectorReturn {
         }
       });
 
-      addToast(`Set "${trimmedKey}" on ${selectedBins.length} bins`, 'success');
+      addToast(t('toast.customPropertySet', { key: trimmedKey, count: selectedBins.length }), 'success');
     },
-    [selectedBins, execute, updateBin, addToast]
+    [selectedBins, execute, updateBin, addToast, t]
   );
 
   const updateMultiHeight = useCallback(
@@ -346,7 +348,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     (targetLayerId: string) => {
       if (!bin || bin.layerId === targetLayerId) return;
       if (bin.layerId === STAGING_ID) {
-        addToast('Drag bin from stash to place it on a layer', 'info');
+        addToast(t('toast.dragFromStash'), 'info');
         return;
       }
 
@@ -384,9 +386,9 @@ export function useBinInspector(): UseBinInspectorReturn {
       // Track layer movement after execution
       mlTracking.trackLayerMove(bin, fromLayerId, targetLayerId, 'inspector', 1);
 
-      addToast(`Moved to ${targetLayer.name}`, 'success');
+      addToast(t('toast.movedToLayer', { name: targetLayer.name }), 'success');
     },
-    [bin, layout, execute, updateBin, addToast]
+    [bin, layout, execute, updateBin, addToast, t]
   );
 
   // Move multiple bins to a different layer
@@ -423,7 +425,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       }
 
       if (movable.length === 0) {
-        addToast('No bins can be moved to this layer (collisions)', 'error');
+        addToast(t('toast.noMovableCollisions'), 'error');
         return;
       }
 
@@ -449,10 +451,10 @@ export function useBinInspector(): UseBinInspectorReturn {
           'info'
         );
       } else {
-        addToast(`Moved ${movable.length} bins to ${targetLayer.name}`, 'success');
+        addToast(t('toast.movedMultiToLayer', { count: movable.length, name: targetLayer.name }), 'success');
       }
     },
-    [selectedBins, layout, execute, updateBin, addToast]
+    [selectedBins, layout, execute, updateBin, addToast, t]
   );
 
   // Request delete (shows confirmation)

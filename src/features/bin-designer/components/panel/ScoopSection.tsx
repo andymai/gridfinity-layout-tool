@@ -15,6 +15,7 @@ import { FeatureToggle } from './FeatureToggle';
 import { SliderInput } from '../controls/SliderInput';
 import { ScoopIcon } from './SectionIllustrations';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '../../constants';
+import { useTranslation } from '@/i18n';
 
 export function ScoopSection() {
   const { scoop, width, depth, height, wallThickness, compartments, style, setParam } =
@@ -30,6 +31,7 @@ export function ScoopSection() {
         setParam: s.setParam,
       }))
     );
+  const t = useTranslation();
 
   const isSolid = style === 'solid';
 
@@ -84,7 +86,7 @@ export function ScoopSection() {
 
   return (
     <CollapsibleSection
-      title="Scoops"
+      title={t('binDesigner.scoops')}
       defaultExpanded={true}
       illustration={<ScoopIcon />}
       summary={summary}

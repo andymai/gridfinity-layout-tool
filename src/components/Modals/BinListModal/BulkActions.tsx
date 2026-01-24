@@ -194,7 +194,7 @@ export function BulkActions({
                     value={labelValue}
                     onChange={(e) => setLabelValue(e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, handleLabelSubmit)}
-                    placeholder="Enter label..."
+                    placeholder={t('binList.enterLabel')}
                     className="flex-1 px-2 py-1.5 text-sm bg-surface border border-stroke rounded focus:outline-none focus:ring-2 focus:ring-accent"
                     maxLength={24}
                     autoFocus
@@ -249,7 +249,7 @@ export function BulkActions({
                         handleNotesSubmit();
                       }
                     }}
-                    placeholder="Enter notes... (⌘+Enter to apply)"
+                    placeholder={t('binList.enterNotesShortcut', { mod: '⌘' })}
                     className="w-full px-2 py-1.5 text-sm bg-surface border border-stroke rounded focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                     rows={2}
                     maxLength={256}

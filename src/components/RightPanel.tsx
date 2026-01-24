@@ -6,6 +6,7 @@ import { exportPrintListTSV } from '@/core/storage';
 import { trackLayoutSnapshot } from '@/utils/analytics';
 import { ConfirmDialog, CollapsibleSection, LoadingFallback } from '@/shared/components';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
+import { useTranslation } from '@/i18n';
 
 const BinListModal = lazyWithRetry(() =>
   import('./Modals/BinListModal').then(namedExport('BinListModal'))
@@ -21,6 +22,7 @@ import {
 } from '@/features/bin-inspector';
 
 export function RightPanel() {
+  const t = useTranslation();
   const [printListExpanded, setPrintListExpanded] = useState(true);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [expandedSplitRow, setExpandedSplitRow] = useState<number | null>(null);
@@ -67,7 +69,7 @@ export function RightPanel() {
           <button
             onClick={toggle}
             className="btn btn-ghost btn-icon"
-            title="Expand panel"
+            title={t('rightPanel.expandPanel')}
             aria-label="Expand right panel"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -88,7 +90,7 @@ export function RightPanel() {
     <button
       onClick={toggle}
       className="flex-shrink-0 p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
-      title="Collapse panel"
+      title={t('rightPanel.collapsePanel')}
       aria-label="Collapse right panel"
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -183,7 +185,7 @@ export function RightPanel() {
                     setBinListModalOpen(true);
                   }}
                   className="btn btn-ghost p-1.5 min-w-0 min-h-0"
-                  title="Expand bin list"
+                  title={t('rightPanel.expandBinList')}
                   aria-label="Expand bin list to full view"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -206,7 +208,7 @@ export function RightPanel() {
                     setTimeout(() => setCopyFeedback(false), 2000);
                   }}
                   className="btn btn-ghost p-1.5 min-w-0 min-h-0"
-                  title="Copy as TSV for spreadsheets"
+                  title={t('rightPanel.copyTSV')}
                   aria-label="Copy bin list as TSV"
                 >
                   {copyFeedback ? (
@@ -253,27 +255,27 @@ export function RightPanel() {
                       </th>
                       <th
                         className="px-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                        title="Height"
+                        title={t('common.height')}
                       >
                         H
                       </th>
                       <th
                         className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                        title="Quantity"
+                        title={t('common.quantity')}
                       >
                         Qty
                       </th>
                       {printList.hasAnySplits && (
                         <th
                           className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                          title="Pieces after split"
+                          title={t('rightPanel.piecesAfterSplit')}
                         >
                           Pcs
                         </th>
                       )}
                       <th
                         className="pl-2 pr-4 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                        title="Estimated filament (meters)"
+                        title={t('rightPanel.filamentMeters')}
                       >
                         ~m
                       </th>
@@ -476,7 +478,7 @@ export function RightPanel() {
 
       {/* Expanded Bin List Modal */}
       {binListModalOpen && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading bin list" />}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.binList')} />}>
           <BinListModal isOpen={binListModalOpen} onClose={() => setBinListModalOpen(false)} />
         </Suspense>
       )}

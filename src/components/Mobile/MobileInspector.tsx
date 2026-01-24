@@ -5,12 +5,14 @@ import {
   MultiBinInspector,
   EmptyState,
 } from '@/features/bin-inspector';
+import { useTranslation } from '@/i18n';
 
 /**
  * Mobile-optimized bin inspector with large touch targets.
  * Uses shared inspector components with mobile variant.
  */
 export function MobileInspector() {
+  const t = useTranslation();
   const inspector = useBinInspector();
   const { selectedBins, isMultiSelect, bin, deleteConfirmState, confirmDelete, cancelDelete } =
     inspector;
@@ -29,8 +31,8 @@ export function MobileInspector() {
         <ConfirmDialog
           isOpen={deleteConfirmState !== null}
           title={deleteConfirmState?.title || 'Delete Bins'}
-          message={deleteConfirmState?.message || `Delete ${selectedBins.length} selected bins?`}
-          confirmText="Delete"
+          message={deleteConfirmState?.message || t('mobile.confirm.deleteMulti', { count: selectedBins.length })}
+          confirmText={t('common.delete')}
           destructive
           onConfirm={confirmDelete}
           onCancel={cancelDelete}
@@ -49,8 +51,8 @@ export function MobileInspector() {
       <ConfirmDialog
         isOpen={deleteConfirmState !== null}
         title={deleteConfirmState?.title || 'Delete Bin'}
-        message={deleteConfirmState?.message || `Delete this ${bin.width}×${bin.depth} bin?`}
-        confirmText="Delete"
+        message={deleteConfirmState?.message || t('mobile.confirm.deleteSingle', { width: bin.width, depth: bin.depth })}
+        confirmText={t('common.delete')}
         destructive
         onConfirm={confirmDelete}
         onCancel={cancelDelete}

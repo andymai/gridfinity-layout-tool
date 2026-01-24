@@ -101,7 +101,7 @@ export function ActiveLayerPanel() {
         .layout.bins.filter((b) => b.layerId === activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
-        addToast(`Added ${added} bins to fill gaps`, 'success');
+        addToast(t('toast.fillComplete', { count: added }), 'success');
       }
     }, 0);
   };
@@ -131,7 +131,7 @@ export function ActiveLayerPanel() {
         .layout.bins.filter((b) => b.layerId === activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
-        addToast(`Added ${added} ${width}×${depth} bins`, 'success');
+        addToast(t('toast.fillWithSize', { count: added, width, depth }), 'success');
       }
     }, 0);
   };
@@ -156,9 +156,9 @@ export function ActiveLayerPanel() {
         });
       });
 
-      addToast(`Added ${w}×${d} to stash`, 'success');
+      addToast(t('toast.binAddedToStash', { width: w, depth: d }), 'success');
     },
-    [activeLayerId, activeCategoryId, layout.layers, execute, addBin, addToast]
+    [activeLayerId, activeCategoryId, layout.layers, execute, addBin, addToast, t]
   );
 
   if (!activeLayer) return null;
@@ -203,7 +203,7 @@ export function ActiveLayerPanel() {
 
   return (
     <div>
-      <CollapsibleSection title="Bin Palette" variant="default">
+      <CollapsibleSection title={t('layers.binPalette')} variant="default">
         <p className="text-xs text-content-tertiary mb-3">
           Select a size, then click or drag on grid.{' '}
           <span className="text-content-disabled">Shift+click to add to stash.</span>
@@ -306,9 +306,9 @@ export function ActiveLayerPanel() {
       {/* Clear confirmation dialog */}
       <ConfirmDialog
         isOpen={showClearConfirm}
-        title="Clear Layer"
-        message={`Remove all ${layerBins.length} bin${layerBins.length !== 1 ? 's' : ''} from "${activeLayer.name}"? This can be undone.`}
-        confirmText="Clear"
+        title={t('layers.clearLayer.title')}
+        message={t('layers.clearLayer.message', { count: layerBins.length })}
+        confirmText={t('layers.clearLayer.confirm')}
         destructive
         onConfirm={handleClearLayer}
         onCancel={() => setShowClearConfirm(false)}

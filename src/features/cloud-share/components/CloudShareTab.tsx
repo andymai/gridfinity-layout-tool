@@ -269,7 +269,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-          <span className="font-medium">Failed to share layout</span>
+          <span className="font-medium">{t('share.failedToShareLayout')}</span>
         </div>
 
         <p className="text-sm text-content-secondary">{error.message}</p>

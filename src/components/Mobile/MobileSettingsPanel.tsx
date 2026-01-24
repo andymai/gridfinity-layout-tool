@@ -15,11 +15,13 @@ import { Checkbox } from '@/shared/components/Checkbox';
 import { SectionHeader } from '@/shared/components/SectionHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import type { STLSearchSite } from '@/core/store/settings';
+import { useTranslation } from '@/i18n';
 
 /**
  * Privacy settings section for mobile.
  */
 function MobilePrivacySection() {
+  const t = useTranslation();
   const { mlTelemetryEnabled, updateSetting } = useSettingsStore(
     useShallow((state) => ({
       mlTelemetryEnabled: state.settings.mlTelemetryEnabled,
@@ -33,7 +35,7 @@ function MobilePrivacySection() {
 
   return (
     <section>
-      <SectionHeader title="Privacy" />
+      <SectionHeader title={t('settings.privacy')} />
       <div
         className="flex items-center justify-between py-2 cursor-pointer"
         onClick={handleToggle}
@@ -68,6 +70,7 @@ function MobilePrivacySection() {
  * Mobile settings panel with grid configuration and app actions.
  */
 export function MobileSettingsPanel() {
+  const t = useTranslation();
   // Use consolidated drawer settings hook
   const {
     drawer,
@@ -116,7 +119,7 @@ export function MobileSettingsPanel() {
     <div className="pb-4 space-y-6">
       {/* Drawer Dimensions */}
       <section>
-        <SectionHeader title="Drawer Dimensions" />
+        <SectionHeader title={t('settings.drawerDimensions')} />
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           {/* Width */}
@@ -221,7 +224,7 @@ export function MobileSettingsPanel() {
 
       {/* Grid Settings */}
       <section>
-        <SectionHeader title="Grid Settings" />
+        <SectionHeader title={t('settings.gridSettings')} />
 
         <div className="space-y-3">
           <SettingsRow label="1 grid unit" unit="mm" variant="mobile">
@@ -263,7 +266,7 @@ export function MobileSettingsPanel() {
 
       {/* STL Search */}
       <section>
-        <SectionHeader title="STL Search" />
+        <SectionHeader title={t('settings.stlSearch')} />
         <div className="space-y-2">
           {settings.stlSearchSites.map((site: STLSearchSite) => (
             <div
@@ -294,7 +297,7 @@ export function MobileSettingsPanel() {
 
       {/* Preferences */}
       <section>
-        <SectionHeader title="Default Preferences" />
+        <SectionHeader title={t('settings.defaultPreferences')} />
 
         <div className="bg-surface-elevated rounded-lg p-3 space-y-2">
           <div className="text-xs text-content-tertiary">New layouts will use these defaults:</div>
@@ -333,7 +336,7 @@ export function MobileSettingsPanel() {
 
       {/* Labs */}
       <section>
-        <SectionHeader title="Experimental" />
+        <SectionHeader title={t('settings.experimental')} />
         <button
           onClick={openLabsDrawer}
           className="w-full flex items-center justify-between px-4 py-3 bg-surface-elevated rounded-lg hover:bg-surface-hover transition-colors"
@@ -383,9 +386,9 @@ export function MobileSettingsPanel() {
 
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}
-        title="Save as Defaults"
-        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawer.width}×${drawer.depth}×${drawer.height}u\nLayer height: ${activeLayerHeight}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
-        confirmText="Save"
+        title={t('settings.confirmSaveDefaults.title')}
+        message={t('settings.confirmSaveDefaults.message', { width: drawer.width, depth: drawer.depth, height: drawer.height, layerHeight: activeLayerHeight, printBed: printBedSize, gridUnit: gridUnitMm })}
+        confirmText={t('settings.confirmSaveDefaults.confirm')}
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />

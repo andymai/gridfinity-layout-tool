@@ -8,6 +8,7 @@ import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '@/core/const
 import { getBinTextColors } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { useTranslation } from '@/i18n';
 
 /** Clamp a value between min and max */
 function clamp(value: number, min: number, max: number): number {
@@ -81,6 +82,7 @@ function packBins(bins: PackedBin[], gridWidth: number): PackedBin[] {
  * Bins are displayed at actual scale, matching the main grid.
  */
 export function Staging() {
+  const t = useTranslation();
   const { layout, deleteBin, updateBin } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
@@ -277,7 +279,7 @@ export function Staging() {
         updateBin(binId, { width: bin.depth, depth: bin.width });
       });
 
-      addToast('Bin rotated', 'success');
+      addToast(t('toast.binRotated'), 'success');
     },
     [stagingBins, execute, updateBin, addToast]
   );
@@ -301,7 +303,7 @@ export function Staging() {
       }
     });
     setShowClearConfirm(false);
-    addToast(`Deleted ${count} stashed bins`, 'success');
+    addToast(t('toast.stashCleared', { count }), 'success');
   };
 
   const isDraggingStagingBin = interaction?.type === 'stagingDrag';
@@ -766,7 +768,7 @@ export function Staging() {
                         e.stopPropagation();
                         handleRotate(bin.id);
                       }}
-                      title="Rotate bin (R)"
+                      title={t('staging.rotateBin')}
                     >
                       <div
                         className="flex items-center justify-center transition-transform hover:scale-110"
@@ -805,9 +807,9 @@ export function Staging() {
       {/* Clear confirmation dialog */}
       <ConfirmDialog
         isOpen={showClearConfirm}
-        title="Clear Stash"
-        message={`Delete all ${stagingBins.length} stashed bins? This cannot be undone.`}
-        confirmText="Clear All"
+        title={t('staging.clearStash.title')}
+        message={t('staging.clearStash.message', { count: stagingBins.length })}
+        confirmText={t('staging.clearStash.confirm')}
         destructive
         onConfirm={handleClearStaging}
         onCancel={() => setShowClearConfirm(false)}

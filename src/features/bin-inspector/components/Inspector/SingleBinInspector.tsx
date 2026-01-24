@@ -7,6 +7,7 @@ import { StepperControl } from '@/shared/components/StepperControl';
 import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from './CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
+import { useTranslation } from '@/i18n';
 
 interface SingleBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -39,6 +40,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   } = inspector;
 
   const halfBinMode = useUIStore((state) => state.halfBinMode);
+  const t = useTranslation();
 
   if (!bin) return null;
 
@@ -91,7 +93,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         <div className="flex items-end gap-2">
           {/* Width control */}
           <div className="flex-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>Width</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.width')}</label>
             <StepperControl
               value={bin.width}
               onChange={(val) => updateField('width', val)}
@@ -113,7 +115,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 ? 'btn btn-secondary w-12 h-12 p-0 flex-shrink-0'
                 : 'flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors'
             }
-            title="Swap width ↔ depth (R)"
+            title={t('inspector.swapDimensions')}
             aria-label="Swap width and depth"
           >
             <svg
@@ -133,7 +135,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
           {/* Depth control */}
           <div className="flex-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>Depth</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.depth')}</label>
             <StepperControl
               value={bin.depth}
               onChange={(val) => updateField('depth', val)}
@@ -175,7 +177,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         >
           {/* Height control */}
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>Height</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.height')}</label>
             <StepperControl
               value={bin.height}
               onStep={(delta) => updateField('height', bin.height + delta)}
@@ -195,9 +197,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <div>
               <label
                 className={`block ${labelSize} text-content-tertiary`}
-                title="Extra blocked space above for tall contents"
+                title={t('inspector.clearanceTooltip')}
               >
-                Clearance
+                {t('inspector.clearance')}
               </label>
               <StepperControl
                 value={bin.clearanceHeight || 0}
@@ -229,7 +231,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Category */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>Category</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.category')}</label>
           <SelectDropdown
             value={bin.category}
             onChange={(value) => updateField('category', value)}
@@ -260,7 +262,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Label */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>Label</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.label')}</label>
           <input
             type="text"
             value={bin.label}
@@ -268,7 +270,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               updateField('label', e.target.value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH))
             }
             className={`input w-full ${inputHeight}`}
-            placeholder="Optional label"
+            placeholder={t('inspector.labelPlaceholder')}
             aria-label="Bin label"
           />
         </div>
@@ -284,14 +286,14 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Notes */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>Notes</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.notes')}</label>
           <textarea
             value={bin.notes}
             onChange={(e) =>
               updateField('notes', e.target.value.slice(0, CONSTRAINTS.NOTES_MAX_LENGTH))
             }
             className="input w-full"
-            placeholder="e.g., 2 dividers, STL link, contents"
+            placeholder={t('inspector.notesPlaceholder')}
             aria-label="Bin notes"
             rows={3}
             style={{ resize: 'vertical', minHeight: '60px' }}

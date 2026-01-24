@@ -12,6 +12,7 @@ import { useDesignerSharing } from '@/features/bin-designer/hooks/useDesignerSha
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
+import { useTranslation } from '@/i18n';
 
 interface ShareDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
   const params = useDesignerStore((s) => s.params);
   const setParams = useDesignerStore((s) => s.setParams);
   const { status, shareUrl, error, share, loadShared, reset } = useDesignerSharing();
+  const t = useTranslation();
 
   const [loadInput, setLoadInput] = useState('');
   const [copied, setCopied] = useState(false);
@@ -95,7 +97,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
       >
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-content">Share Design</h2>
+          <h2 className="text-lg font-semibold text-content">{t('binDesigner.shareDesign')}</h2>
           <button
             onClick={onClose}
             className="rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
@@ -110,7 +112,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
         {/* Share section */}
         <div className="space-y-3">
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-content">Create Share Link</h3>
+            <h3 className="text-sm font-medium text-content">{t('binDesigner.createShareLink')}</h3>
             <p className="text-xs text-content-secondary">
               Generate a link anyone can use to load this bin configuration.
             </p>
@@ -186,13 +188,13 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
 
           {/* Load section */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-content">Load Shared Design</h3>
+            <h3 className="text-sm font-medium text-content">{t('binDesigner.loadSharedDesign')}</h3>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={loadInput}
                 onChange={(e) => setLoadInput(e.target.value)}
-                placeholder="Paste share URL or ID"
+                placeholder={t('binDesigner.pasteShareUrl')}
                 className="flex-1 rounded-md border border-stroke-subtle bg-surface-secondary px-3 py-2 text-xs text-content placeholder:text-content-tertiary focus:border-accent focus:outline-none"
                 aria-label="Share URL or ID"
                 onKeyDown={(e) => { if (e.key === 'Enter') handleLoad(); }}

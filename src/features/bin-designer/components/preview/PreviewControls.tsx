@@ -5,6 +5,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from '@/i18n';
 
 export type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
 
@@ -143,6 +144,7 @@ export function PreviewControls({
   const desktopPickerRef = useRef<HTMLDivElement>(null);
   const mobilePickerRef = useRef<HTMLDivElement>(null);
   const mobileColorBtnRef = useRef<HTMLButtonElement>(null);
+  const t = useTranslation();
 
   // Close picker on outside click
   useEffect(() => {
@@ -223,7 +225,7 @@ export function PreviewControls({
             type="button"
             onClick={onResetView}
             className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
-            title="Reset view (R)"
+            title={t('binDesigner.resetView')}
             aria-label="Reset camera view, keyboard shortcut R"
           >
             <IconReset />
@@ -239,7 +241,7 @@ export function PreviewControls({
                 ? 'bg-accent text-white'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
-            title="Toggle wireframe (W)"
+            title={t('binDesigner.toggleWireframe')}
             aria-label="Toggle wireframe mode, keyboard shortcut W"
             aria-pressed={wireframe}
           >
@@ -256,7 +258,7 @@ export function PreviewControls({
               type="button"
               onClick={() => setColorPickerOpen((v) => !v)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
-              title="Change preview color"
+              title={t('binDesigner.changeColor')}
               aria-label="Change preview color"
               aria-expanded={colorPickerOpen}
             >
@@ -307,7 +309,7 @@ export function PreviewControls({
                       title="Custom color"
                     />
                     <span className="text-[11px] text-content-secondary font-medium">
-                      Custom...
+                      {t('binDesigner.customColor')}
                     </span>
                   </label>
                 </div>
@@ -351,7 +353,7 @@ export function PreviewControls({
             type="button"
             onClick={onResetView}
             className="flex items-center justify-center p-2 min-w-[36px] min-h-[36px] text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
-            title="Reset view (R)"
+            title={t('binDesigner.resetView')}
             aria-label="Reset camera view, keyboard shortcut R"
           >
             <IconReset />
@@ -366,7 +368,7 @@ export function PreviewControls({
                 ? 'bg-accent text-white'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
-            title="Toggle wireframe (W)"
+            title={t('binDesigner.toggleWireframe')}
             aria-label="Toggle wireframe mode, keyboard shortcut W"
             aria-pressed={wireframe}
           >
@@ -380,7 +382,7 @@ export function PreviewControls({
               type="button"
               onClick={() => setColorPickerOpen((v) => !v)}
               className="flex items-center justify-center p-2 min-w-[36px] min-h-[36px] text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
-              title="Change preview color"
+              title={t('binDesigner.changeColor')}
               aria-label="Change preview color"
               aria-expanded={colorPickerOpen}
             >
@@ -433,7 +435,7 @@ export function PreviewControls({
                   className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent p-0"
                   title="Custom color"
                 />
-                <span className="text-[11px] text-content-secondary font-medium">Custom...</span>
+                <span className="text-[11px] text-content-secondary font-medium">{t('binDesigner.customColor')}</span>
               </label>
             </div>
           </div>

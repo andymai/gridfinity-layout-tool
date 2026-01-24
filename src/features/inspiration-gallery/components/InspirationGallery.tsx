@@ -175,7 +175,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
       if (isOk(result)) {
         const switchResult = await switchLayout(result.value);
         if (isOk(switchResult)) {
-          addToast(`Added "${previewLayout.name}"`, 'success');
+          addToast(t('toast.galleryAdded', { name: previewLayout.name }), 'success');
           announceToScreenReader(`${previewLayout.name} added to your library`);
           trackEvent('template_applied', {
             template_id: previewLayout.id,
@@ -188,7 +188,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
         closeMobilePanel();
         onClose();
       } else {
-        addToast('Failed to add layout', 'error');
+        addToast(t('toast.galleryAddFailed'), 'error');
       }
     } finally {
       setIsImporting(false);

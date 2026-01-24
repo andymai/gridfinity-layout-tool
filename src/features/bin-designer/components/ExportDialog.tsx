@@ -159,7 +159,7 @@ export function ExportDialog() {
                 value={exportFileNameConfig.customName}
                 onChange={(e) => handleCustomNameChange(e.target.value)}
                 className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-content outline-none"
-                placeholder="Enter filename"
+                placeholder={t('binDesigner.filenamePlaceholder')}
                 aria-label="Custom file name"
                 maxLength={128}
               />

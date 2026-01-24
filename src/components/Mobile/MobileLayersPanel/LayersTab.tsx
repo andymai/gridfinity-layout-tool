@@ -7,12 +7,14 @@ import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk, isErr, getUserMessage } from '@/core/result';
+import { useTranslation } from '@/i18n';
 
 /**
  * Layers tab content - layer list with selection, height controls, reordering, and deletion.
  * Mobile-optimized with 44px touch targets.
  */
 export function LayersTab() {
+  const t = useTranslation();
   const [deleteLayerId, setDeleteLayerId] = useState<string | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
   const [renameLayerId, setRenameLayerId] = useState<string | null>(null);
@@ -256,7 +258,7 @@ export function LayersTab() {
                   onClick={() => handleHeightChange(layer.id, -1)}
                   disabled={layer.height <= 1}
                   className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover disabled:opacity-30 transition-colors"
-                  aria-label={`Decrease ${layer.name} height`}
+                  aria-label={t('layers.decreaseHeight', { name: layer.name })}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -269,14 +271,14 @@ export function LayersTab() {
                 </button>
                 <span
                   className="text-center text-xs font-medium text-content-secondary tabular-nums whitespace-nowrap min-w-[2ch]"
-                  title="Height for new bins placed on this layer"
+                  title={t('layers.heightTooltip')}
                 >
                   {layer.height}u
                 </span>
                 <button
                   onClick={() => handleHeightChange(layer.id, 1)}
                   className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover transition-colors"
-                  aria-label={`Increase ${layer.name} height`}
+                  aria-label={t('layers.increaseHeight', { name: layer.name })}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -373,14 +375,14 @@ export function LayersTab() {
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        Add Layer
+        {t('layers.addLayer')}
       </button>
 
       <ConfirmDialog
         isOpen={deleteLayerId !== null}
-        title="Delete Layer"
-        message={`Delete "${layerToDelete?.name}"${binsInLayer > 0 ? ` and its ${binsInLayer} bin${binsInLayer > 1 ? 's' : ''}` : ''}?`}
-        confirmText="Delete"
+        title={t('layers.confirmDelete.title')}
+        message={t('layers.confirmDelete.message', { name: layerToDelete?.name || '', count: binsInLayer })}
+        confirmText={t('layers.confirmDelete.confirm')}
         destructive
         onConfirm={confirmDeleteLayer}
         onCancel={cancelDeleteLayer}
@@ -416,7 +418,7 @@ export function LayersTab() {
                   }
                 }}
                 className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
-                placeholder="Layer name"
+                placeholder={t('layers.layerNamePlaceholder')}
                 maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
                 autoFocus
               />

@@ -10,6 +10,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { ThicknessSelector } from '../controls/ThicknessSelector';
 import { WallsIcon } from './SectionIllustrations';
+import { useTranslation } from '@/i18n';
 
 export function WallsSection() {
   const { wallThickness, setParam } = useDesignerStore(
@@ -18,12 +19,13 @@ export function WallsSection() {
       setParam: s.setParam,
     }))
   );
+  const t = useTranslation();
 
   const summary = `${wallThickness}mm`;
 
   return (
     <CollapsibleSection
-      title="Walls"
+      title={t('binDesigner.walls')}
       defaultExpanded={true}
       illustration={<WallsIcon />}
       summary={summary}

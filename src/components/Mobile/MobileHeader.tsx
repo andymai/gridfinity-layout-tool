@@ -7,6 +7,7 @@ import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { PresenceAvatars } from '@/components/Collab';
 import type { MobilePanel } from '@/core/store/ui';
 import type { SaveStatus } from '@/shared/hooks';
+import { useTranslation } from '@/i18n';
 
 interface MobileHeaderProps {
   onMenuClick: () => void;
@@ -19,6 +20,7 @@ interface MobileHeaderProps {
  * Shows app title, tip link, layout name (editable) and essential actions.
  */
 export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHeaderProps) {
+  const t = useTranslation();
   const layout = useLayoutStore((state) => state.layout);
   const setName = useLayoutStore((state) => state.setName);
 
@@ -105,7 +107,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
           onClick={onMenuClick}
           className="btn btn-ghost btn-icon"
           aria-label="Open settings"
-          title="Settings"
+          title={t('mobile.settings')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -285,7 +287,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
             onClick={onHelpClick}
             className="btn btn-ghost btn-icon"
             aria-label="Help and gestures"
-            title="Help"
+            title={t('mobile.help')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path

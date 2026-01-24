@@ -17,12 +17,14 @@ import {
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
 import type { LayoutEntry, SharePermission } from '@/core/types';
 import { isOk } from '@/core/result';
+import { useTranslation } from '@/i18n';
 
 /**
  * Mobile-optimized layouts panel with larger touch targets and swipe gestures.
  * Displays in BottomSheet for mobile users.
  */
 export function MobileLayoutsPanel() {
+  const t = useTranslation();
   const [deleteLayoutId, setDeleteLayoutId] = useState<string | null>(null);
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeX, setSwipeX] = useState(0);
@@ -506,9 +508,9 @@ export function MobileLayoutsPanel() {
       {/* Delete confirmation dialog */}
       <ConfirmDialog
         isOpen={deleteLayoutId !== null}
-        title="Delete Layout"
-        message={`Delete "${layoutToDelete?.name}"? This cannot be undone.`}
-        confirmText="Delete"
+        title={t('layouts.confirmDelete.title')}
+        message={t('layouts.confirmDelete.message', { name: layoutToDelete?.name || '' })}
+        confirmText={t('layouts.confirmDelete.confirm')}
         destructive
         onConfirm={confirmDelete}
         onCancel={() => setDeleteLayoutId(null)}
@@ -526,7 +528,7 @@ export function MobileLayoutsPanel() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-content mb-4">Share Layout</h3>
+              <h3 className="text-lg font-semibold text-content mb-4">{t('layouts.shareLayout')}</h3>
               <div className="space-y-2">
                 <button
                   onClick={() => handleCloudShare(shareMenuId)}
@@ -548,7 +550,7 @@ export function MobileLayoutsPanel() {
                     </svg>
                   </div>
                   <div className="text-left">
-                    <div className="font-medium text-content">Share to Cloud</div>
+                    <div className="font-medium text-content">{t('share.shareToCloud')}</div>
                     <div className="text-sm text-content-secondary">Create expiring share link</div>
                   </div>
                 </button>
@@ -572,8 +574,8 @@ export function MobileLayoutsPanel() {
                     </svg>
                   </div>
                   <div className="text-left">
-                    <div className="font-medium text-content">Copy Link</div>
-                    <div className="text-sm text-content-secondary">URL-encoded (may be long)</div>
+                    <div className="font-medium text-content">{t('share.copyLink')}</div>
+                    <div className="text-sm text-content-secondary">{t('share.link.urlEncoded')}</div>
                   </div>
                 </button>
                 <button
@@ -596,8 +598,8 @@ export function MobileLayoutsPanel() {
                     </svg>
                   </div>
                   <div className="text-left">
-                    <div className="font-medium text-content">Download JSON</div>
-                    <div className="text-sm text-content-secondary">Save as file</div>
+                    <div className="font-medium text-content">{t('share.file.download')}</div>
+                    <div className="text-sm text-content-secondary">{t('share.file.saveAsFile')}</div>
                   </div>
                 </button>
               </div>
@@ -642,7 +644,7 @@ export function MobileLayoutsPanel() {
                   }
                 }}
                 className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
-                placeholder="Layout name"
+                placeholder={t('layouts.layoutNamePlaceholder')}
                 maxLength={64}
                 autoFocus
               />
@@ -694,6 +696,7 @@ export function MobileLayoutsPanel() {
  * Handles cloud sharing operations with a mobile-optimized UI.
  */
 function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClose: () => void }) {
+  const t = useTranslation();
   const [urlCopied, setUrlCopied] = useState(false);
   // Local permission state for new shares (before any share exists)
   const [localPermission, setLocalPermission] = useState<SharePermission>('view');
@@ -844,7 +847,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
-              <span className="font-medium">Failed to share</span>
+              <span className="font-medium">{t('share.failedToShare')}</span>
             </div>
             <p className="text-sm text-content-secondary">{error.message}</p>
             <button
@@ -868,7 +871,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              <span className="font-medium">Shared successfully!</span>
+              <span className="font-medium">{t('share.sharedSuccessfully')}</span>
             </div>
 
             <div className="bg-surface rounded-lg p-3">

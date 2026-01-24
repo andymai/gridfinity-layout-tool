@@ -4,6 +4,7 @@ import { LayoutListItem } from './LayoutListItem';
 import { useLayoutStore } from '@/core/store/layout';
 import { loadLayoutAsync, downloadLayoutAsFile } from '@/core/storage';
 import { useUIStore } from '@/core/store/ui';
+import { useTranslation } from '@/i18n';
 
 /** Threshold for showing search bar */
 const SEARCH_THRESHOLD = 6;
@@ -32,6 +33,7 @@ export function LayoutList({
   onCreate,
   onShare,
 }: LayoutListProps) {
+  const t = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -189,7 +191,7 @@ export function LayoutList({
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search layouts..."
+              placeholder={t('layouts.searchPlaceholder')}
               className="w-full pl-9 pr-8 py-2 bg-surface border border-stroke rounded-lg text-sm text-content placeholder:text-content-tertiary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
               aria-label="Search layouts"
             />

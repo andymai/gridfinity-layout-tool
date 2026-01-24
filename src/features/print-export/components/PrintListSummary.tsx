@@ -41,7 +41,7 @@ export function PrintListSummary({
     return (
       <div className="p-3 rounded-lg bg-surface-elevated space-y-2">
         <div className="flex justify-between text-sm font-medium">
-          <span className="text-content-tertiary">Total</span>
+          <span className="text-content-tertiary">{t('print.summary.total')}</span>
           <span className="text-content">
             {totalBins} bins{hasAnySplits ? `, ${totalPieces} pcs` : ''}
           </span>
@@ -49,24 +49,24 @@ export function PrintListSummary({
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stroke-subtle text-xs">
           <div
             className="flex justify-between"
-            title="Estimated 1.75mm PLA usage based on bin dimensions"
+            title={t('print.summary.filamentTooltip')}
           >
-            <span className="text-content-tertiary">Filament</span>
+            <span className="text-content-tertiary">{t('print.summary.filamentLabel')}</span>
             <span className="text-content">{totalFilament}m</span>
           </div>
-          <div className="flex justify-between" title="Based on $15/kg filament cost">
-            <span className="text-content-tertiary">Cost</span>
+          <div className="flex justify-between" title={t('print.summary.costTooltip')}>
+            <span className="text-content-tertiary">{t('print.summary.costLabel')}</span>
             <span className="text-content">{formatCost(totalCost)}</span>
           </div>
           <div
             className="flex justify-between"
-            title="Based on 0.4mm nozzle, 0.2mm layer height, 15% infill"
+            title={t('print.summary.printTimeTooltip')}
           >
-            <span className="text-content-tertiary">Time</span>
+            <span className="text-content-tertiary">{t('print.summary.timeLabel')}</span>
             <span className="text-content">~{formatPrintTime(totalPrintTimeHours)}</span>
           </div>
-          <div className="flex justify-between" title="Based on 1kg spool (~330m of 1.75mm PLA)">
-            <span className="text-content-tertiary">Spool</span>
+          <div className="flex justify-between" title={t('print.summary.spoolTooltip')}>
+            <span className="text-content-tertiary">{t('print.summary.spoolLabel')}</span>
             <span className="text-content">{formatSpoolUsage(spoolPercentage)}</span>
           </div>
         </div>
@@ -86,30 +86,30 @@ export function PrintListSummary({
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2 border-t border-stroke-subtle text-xs">
         <div
           className="flex justify-between text-content-secondary"
-          title="Estimated 1.75mm PLA usage based on bin dimensions"
+          title={t('print.summary.filamentTooltip')}
         >
           <span className="text-content-tertiary">{t('print.summary.filament', { meters: totalFilament })}</span>
           <span>{totalFilament}m</span>
         </div>
         <div
           className="flex justify-between text-content-secondary"
-          title="Based on $15/kg filament cost"
+          title={t('print.summary.costTooltip')}
         >
           <span className="text-content-tertiary">{t('print.summary.cost', { cost: formatCost(totalCost) })}</span>
           <span>{formatCost(totalCost)}</span>
         </div>
         <div
           className="flex justify-between text-content-secondary"
-          title="Based on 0.4mm nozzle, 0.2mm layer height, 15% infill"
+          title={t('print.summary.printTimeTooltip')}
         >
           <span className="text-content-tertiary">{t('print.summary.printTime', { hours: formatPrintTime(totalPrintTimeHours) })}</span>
           <span>~{formatPrintTime(totalPrintTimeHours)}</span>
         </div>
         <div
           className="flex justify-between text-content-secondary"
-          title="Based on 1kg spool (~330m of 1.75mm PLA)"
+          title={t('print.summary.spoolTooltip')}
         >
-          <span className="text-content-tertiary">Spool</span>
+          <span className="text-content-tertiary">{t('print.summary.spoolLabel')}</span>
           <span>{formatSpoolUsage(spoolPercentage)}</span>
         </div>
       </div>

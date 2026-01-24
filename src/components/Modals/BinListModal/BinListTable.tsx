@@ -217,16 +217,16 @@ export function BinListTable({
               sortKey={sortKey}
               sortOrder={sortOrder}
               onSort={onSort}
-              title="Sort by size (area)"
+              title={t('print.sort.sortBySize')}
             />
-            <th className="w-8 px-1 py-2 sticky top-0 bg-surface-elevated" title="Find STL" />
+            <th className="w-8 px-1 py-2 sticky top-0 bg-surface-elevated" title={t('stlSearch.findSTL')} />
             <SortHeader
               label="H"
               sortKeyValue="height"
               sortKey={sortKey}
               sortOrder={sortOrder}
               onSort={onSort}
-              title="Sort by height"
+              title={t('print.sort.sortByHeight')}
               className="w-12"
             />
             <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">
@@ -237,7 +237,7 @@ export function BinListTable({
             </th>
             <th
               className="w-6 px-1 py-2 sticky top-0 bg-surface-elevated"
-              title="Custom properties"
+              title={t('print.sort.customProperties')}
             />
             <th className="px-3 py-2 text-right font-medium sticky top-0 bg-surface-elevated w-16">
               Qty
@@ -253,7 +253,7 @@ export function BinListTable({
               sortKey={sortKey}
               sortOrder={sortOrder}
               onSort={onSort}
-              title="Sort by filament usage"
+              title={t('print.sort.sortByFilament')}
               className="text-right w-16"
             />
           </tr>

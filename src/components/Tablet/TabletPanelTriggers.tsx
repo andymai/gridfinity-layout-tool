@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n';
+
 interface TabletPanelTriggersProps {
   leftPanelOpen: boolean;
   rightPanelOpen: boolean;
@@ -15,6 +17,8 @@ export function TabletPanelTriggers({
   onOpenLeftPanel,
   onOpenRightPanel,
 }: TabletPanelTriggersProps) {
+  const t = useTranslation();
+
   return (
     <>
       {/* Left panel trigger - top-left corner */}
@@ -28,7 +32,7 @@ export function TabletPanelTriggers({
             animation: 'fade-in 0.3s ease-out',
           }}
           aria-label="Open layers panel"
-          title="Layers & Categories"
+          title={t('tablet.layersCategories')}
         >
           {/* Layers icon */}
           <svg
@@ -59,7 +63,7 @@ export function TabletPanelTriggers({
             animation: 'fade-in 0.3s ease-out',
           }}
           aria-label="Open inspector panel"
-          title="Selection & Actions"
+          title={t('tablet.selectionActions')}
         >
           {/* Inspector/settings icon */}
           <svg

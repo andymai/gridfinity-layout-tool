@@ -98,7 +98,7 @@ export function SharedLayoutBanner() {
     clearSharedLayoutPreview();
 
     // Show feedback
-    addToast(`Saved "${savedLayout.name}" to your layouts`, 'success');
+    addToast(t('toast.savedToLayouts', { name: savedLayout.name }), 'success');
     announceToScreenReader(`Layout saved: ${savedLayout.name}`);
   };
 
@@ -126,7 +126,7 @@ export function SharedLayoutBanner() {
     clearSharedLayoutPreview();
 
     // Show feedback
-    addToast('Shared layout discarded', 'info');
+    addToast(t('share.banner.discarded'), 'info');
     announceToScreenReader('Shared layout discarded, returned to your layouts');
   };
 
@@ -172,9 +172,9 @@ export function SharedLayoutBanner() {
 
       <ConfirmDialog
         isOpen={showDiscardConfirm}
-        title="Discard shared layout?"
-        message="Any changes you made will be lost. You'll return to your previous layout."
-        confirmText="Discard"
+        title={t('share.banner.discardTitle')}
+        message={t('share.banner.discardMessage')}
+        confirmText={t('share.banner.discardConfirm')}
         cancelText="Keep viewing"
         destructive
         onConfirm={handleDiscard}

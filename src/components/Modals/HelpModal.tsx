@@ -284,7 +284,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search shortcuts..."
+                  placeholder={t('help.searchPlaceholder')}
                   className="w-full pl-9 pr-3 py-1.5 text-sm rounded-md bg-surface border border-stroke-subtle focus:outline-none focus:ring-2 focus:ring-accent/50 text-content placeholder:text-content-tertiary"
                 />
                 {searchQuery && (

@@ -25,12 +25,14 @@ import { trackLayoutAction } from '@/utils/analytics';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Result, Unit, LayoutError, StorageError, UnknownError } from '@/core/result';
 import { ok, err, OK, layoutLastEntity, layoutInvalidOperation, fromUnknown } from '@/core/result';
+import { useTranslation } from '@/i18n';
 
 /**
  * Orchestration hook for layout switching and management.
  * Coordinates mutations across multiple stores without cross-store dependencies.
  */
 export function useLayoutSwitcher() {
+  const t = useTranslation();
   const pendingSaveRef = useRef<number | null>(null);
 
   // Layout store
@@ -126,7 +128,7 @@ export function useLayoutSwitcher() {
         );
 
         if (isErr(result)) {
-          addToast('Failed to switch layout', 'error');
+          addToast(t('toast.layoutSwitchFailed'), 'error');
           return result;
         }
 
@@ -158,7 +160,7 @@ export function useLayoutSwitcher() {
 
         return OK;
       } catch (error) {
-        addToast('Failed to switch layout', 'error');
+        addToast(t('toast.layoutSwitchFailed'), 'error');
         return err(fromUnknown(error));
       }
     },
@@ -202,7 +204,7 @@ export function useLayoutSwitcher() {
         });
 
         if (isErr(result)) {
-          addToast('Failed to create layout', 'error');
+          addToast(t('toast.layoutCreateFailed'), 'error');
           return result;
         }
 
@@ -221,10 +223,10 @@ export function useLayoutSwitcher() {
 
         trackLayoutAction('created');
 
-        addToast('New layout created', 'success');
+        addToast(t('toast.layoutCreated'), 'success');
         return ok(result.value.layoutId);
       } catch (error) {
-        addToast('Failed to create layout', 'error');
+        addToast(t('toast.layoutCreateFailed'), 'error');
         return err(fromUnknown(error));
       }
     },
@@ -260,7 +262,7 @@ export function useLayoutSwitcher() {
         const result = await deleteLayoutWithEntry(id, currentLibrary);
 
         if (isErr(result)) {
-          addToast('Failed to delete layout', 'error');
+          addToast(t('toast.layoutDeleteFailed'), 'error');
           return result;
         }
 
@@ -279,10 +281,10 @@ export function useLayoutSwitcher() {
         // Track quality signal (deleted = negative signal for ML)
         mlTracking.trackQuality('deleted');
 
-        addToast('Layout deleted', 'success');
+        addToast(t('toast.layoutDeleted'), 'success');
         return OK;
       } catch (error) {
-        addToast('Failed to delete layout', 'error');
+        addToast(t('toast.layoutDeleteFailed'), 'error');
         return err(fromUnknown(error));
       }
     },
@@ -307,7 +309,7 @@ export function useLayoutSwitcher() {
         const result = await duplicateLayoutStorage(id, currentLibrary);
 
         if (isErr(result)) {
-          addToast('Failed to duplicate layout', 'error');
+          addToast(t('toast.layoutDuplicateFailed'), 'error');
           return result;
         }
 
@@ -318,10 +320,10 @@ export function useLayoutSwitcher() {
         // Track quality signal (duplicated = positive signal for ML)
         mlTracking.trackQuality('duplicated');
 
-        addToast('Layout duplicated', 'success');
+        addToast(t('toast.layoutDuplicated'), 'success');
         return ok(result.value.layoutId);
       } catch (error) {
-        addToast('Failed to duplicate layout', 'error');
+        addToast(t('toast.layoutDuplicateFailed'), 'error');
         return err(fromUnknown(error));
       }
     },
@@ -374,7 +376,7 @@ export function useLayoutSwitcher() {
         });
 
         if (isErr(result)) {
-          addToast('Failed to import layout', 'error');
+          addToast(t('toast.layoutImportFailed'), 'error');
           return result;
         }
 
@@ -383,10 +385,10 @@ export function useLayoutSwitcher() {
 
         trackLayoutAction('imported', forkedFrom ? 'url' : 'json');
 
-        addToast(`Imported "${importedLayout.name}"`, 'success');
+        addToast(t('toast.layoutImported', { name: importedLayout.name }), 'success');
         return ok(result.value.layoutId);
       } catch (error) {
-        addToast('Failed to import layout', 'error');
+        addToast(t('toast.layoutImportFailed'), 'error');
         return err(fromUnknown(error));
       }
     },

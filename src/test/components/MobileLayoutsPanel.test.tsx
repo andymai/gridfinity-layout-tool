@@ -375,7 +375,7 @@ describe('MobileLayoutsPanel', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/delete layout/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /delete layout/i })).toBeInTheDocument();
       });
     });
 
@@ -389,11 +389,11 @@ describe('MobileLayoutsPanel', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/delete layout/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /delete layout/i })).toBeInTheDocument();
       });
 
       // Confirm deletion
-      const confirmButton = screen.getByRole('button', { name: /^delete$/i });
+      const confirmButton = screen.getByRole('button', { name: /delete layout/i });
       act(() => {
         fireEvent.click(confirmButton);
       });
@@ -415,7 +415,7 @@ describe('MobileLayoutsPanel', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/delete layout/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /delete layout/i })).toBeInTheDocument();
       });
 
       // Cancel deletion

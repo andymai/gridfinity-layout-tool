@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CONSTRAINTS, RESERVED_PROPERTY_KEYS } from '@/core/constants';
+import { useTranslation } from '@/i18n';
 
 interface CustomPropertiesEditorProps {
   customProperties?: Record<string, string>;
@@ -24,6 +25,7 @@ export function CustomPropertiesEditor({
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslation();
 
   const isMobile = variant === 'mobile';
   const inputHeight = isMobile ? 'h-12' : '';
@@ -154,7 +156,7 @@ export function CustomPropertiesEditor({
                   type="button"
                   onClick={() => handleDelete(key)}
                   className="ml-auto p-1 text-content-tertiary hover:text-error transition-colors"
-                  title="Delete property"
+                  title={t('inspector.customProps.deleteProperty')}
                   aria-label={`Delete ${key}`}
                 >
                   <svg
@@ -183,7 +185,7 @@ export function CustomPropertiesEditor({
                 }
                 maxLength={CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH}
                 className={`input w-full ${inputHeight}`}
-                placeholder="Value"
+                placeholder={t('inspector.customProps.valuePlaceholder')}
                 aria-label={`Value for ${key}`}
               />
             </div>
@@ -204,7 +206,7 @@ export function CustomPropertiesEditor({
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
             maxLength={CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH}
             className={`input w-full ${inputHeight} ${error ? 'border-error' : ''}`}
-            placeholder="Property name (e.g., SKU, Quantity)"
+            placeholder={t('inspector.customProps.keyPlaceholder')}
             aria-label="New property name"
             autoFocus
           />
@@ -218,7 +220,7 @@ export function CustomPropertiesEditor({
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
             maxLength={CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH}
             className={`input w-full ${inputHeight}`}
-            placeholder="Value"
+            placeholder={t('inspector.customProps.valuePlaceholder')}
             aria-label="New property value"
           />
           {error && (

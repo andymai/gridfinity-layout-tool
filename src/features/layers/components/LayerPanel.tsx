@@ -8,11 +8,13 @@ import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store';
+import { useTranslation } from '@/i18n';
 
 // Drop position indicator for drag-and-drop reordering
 type DropPosition = { index: number; position: 'above' | 'below' } | null;
 
 export function LayerPanel() {
+  const t = useTranslation();
   const [deleteLayerId, setDeleteLayerId] = useState<string | null>(null);
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [dragSourceIndex, setDragSourceIndex] = useState<number | null>(null);
@@ -228,7 +230,7 @@ export function LayerPanel() {
 
   return (
     <div>
-      <CollapsibleSection title="Layers" variant="default" actions={addLayerButton}>
+      <CollapsibleSection title={t('layers.title')} variant="default" actions={addLayerButton}>
         {/* Height capacity indicator - only show for multiple layers */}
         {hasMultipleLayers && (
           <div className="flex items-center gap-2 mb-3">
@@ -377,7 +379,7 @@ export function LayerPanel() {
                       </button>
                       <span
                         className="text-[10px] tabular-nums min-w-[24px] text-center text-content-secondary"
-                        title="Height for new bins placed on this layer"
+                        title={t('layers.heightTooltip')}
                       >
                         {layer.height}u
                       </span>
@@ -418,7 +420,7 @@ export function LayerPanel() {
                         setDeleteLayerId(layer.id);
                       }}
                       className="p-1.5 rounded text-content-disabled hover:text-error hover:bg-surface-hover transition-colors"
-                      title="Delete this layer"
+                      title={t('layers.deleteTooltip')}
                       aria-label={`Delete ${layer.name} layer`}
                     >
                       <svg
@@ -472,9 +474,9 @@ export function LayerPanel() {
       {/* Delete layer confirmation */}
       <ConfirmDialog
         isOpen={deleteLayerId !== null}
-        title="Delete Layer"
-        message={`Delete "${layerToDelete?.name}"${binsInDeleteLayer > 0 ? ` and its ${binsInDeleteLayer} bin${binsInDeleteLayer > 1 ? 's' : ''}` : ''}?`}
-        confirmText="Delete"
+        title={t('layers.confirmDelete.title')}
+        message={t('layers.confirmDelete.message', { name: layerToDelete?.name || '', count: binsInDeleteLayer })}
+        confirmText={t('layers.confirmDelete.confirm')}
         destructive
         onConfirm={handleDeleteLayer}
         onCancel={() => setDeleteLayerId(null)}

@@ -4,6 +4,7 @@ import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBi
 import type { Layer } from '@/core/types';
 import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
+import { useTranslation } from '@/i18n';
 
 interface MultiBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -36,6 +37,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [propertyKey, setPropertyKey] = useState('');
   const [propertyValue, setPropertyValue] = useState('');
+  const t = useTranslation();
 
   if (selectedBins.length === 0) return null;
 
@@ -196,9 +198,9 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
           <div>
             <label
               className={`block ${labelSize} text-content-tertiary`}
-              title="Extra blocked space above bins for tall contents"
+              title={t('inspector.multi.clearanceTooltip')}
             >
-              Clearance
+              {t('inspector.clearance')}
             </label>
             <BulkIncrementControl
               displayValue={sameClearance ? `${minClearance}u` : `${minClearance}–${maxClearance}u`}
@@ -235,7 +237,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                   )
                 }
                 className={`input w-full ${inputHeight}`}
-                placeholder="Property name"
+                placeholder={t('inspector.customProps.multiKeyPlaceholder')}
                 aria-label="Property name"
                 list="property-key-suggestions"
                 autoFocus
@@ -254,7 +256,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                   )
                 }
                 className={`input w-full ${inputHeight}`}
-                placeholder="Value"
+                placeholder={t('inspector.customProps.multiValuePlaceholder')}
                 aria-label="Property value"
               />
               <div className="flex gap-2">

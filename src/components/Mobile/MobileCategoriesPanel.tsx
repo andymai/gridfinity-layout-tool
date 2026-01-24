@@ -6,6 +6,7 @@ import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk } from '@/core/result';
+import { useTranslation } from '@/i18n';
 
 const COLOR_PALETTE = [
   { color: '#f87171', name: 'Coral' },
@@ -26,6 +27,7 @@ const COLOR_PALETTE = [
  * Mobile-optimized categories panel with large touch targets.
  */
 export function MobileCategoriesPanel() {
+  const t = useTranslation();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
@@ -74,7 +76,7 @@ export function MobileCategoriesPanel() {
         }
       });
       const binCount = selectedBinIds.length;
-      addToast(`Changed ${binCount} bin${binCount > 1 ? 's' : ''} to "${name}"`, 'success');
+      addToast(t('toast.categoryChanged', { count: binCount, name }), 'success');
     }
 
     closeMobilePanel();
@@ -116,7 +118,7 @@ export function MobileCategoriesPanel() {
 
     // Show message if it's the last category
     if (categories.length <= CONSTRAINTS.CATEGORIES_MIN) {
-      addToast('Cannot delete the last category', 'error');
+      addToast(t('categories.cannotDeleteLast'), 'error');
       return;
     }
 
@@ -170,7 +172,7 @@ export function MobileCategoriesPanel() {
                     onChange={(e) => handleUpdateName(category.id, e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
                     className="input w-full"
-                    placeholder="Category name"
+                    placeholder={t('categories.categoryNamePlaceholder')}
                     autoFocus
                   />
 
@@ -271,9 +273,9 @@ export function MobileCategoriesPanel() {
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}
-        title="Delete Category"
-        message={`Delete "${deleteConfirm?.name}"? This cannot be undone.`}
-        confirmText="Delete"
+        title={t('categories.confirmDelete.title')}
+        message={t('categories.confirmDelete.message', { name: deleteConfirm?.name || '' })}
+        confirmText={t('categories.confirmDelete.confirm')}
         destructive
         onConfirm={confirmDelete}
         onCancel={() => setDeleteConfirm(null)}

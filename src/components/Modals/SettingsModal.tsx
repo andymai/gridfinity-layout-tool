@@ -371,9 +371,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}
-        title="Save as Defaults"
-        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawer.width}×${drawer.depth}×${drawer.height}u\nLayer height: ${activeLayerHeight}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
-        confirmText="Save"
+        title={t('settings.confirmSaveDefaults.title')}
+        message={t('settings.confirmSaveDefaults.message', {
+          width: drawer.width,
+          depth: drawer.depth,
+          height: drawer.height,
+          layerHeight: activeLayerHeight,
+          printBed: printBedSize,
+          gridUnit: gridUnitMm,
+        })}
+        confirmText={t('settings.confirmSaveDefaults.confirm')}
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />

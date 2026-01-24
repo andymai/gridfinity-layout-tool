@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import type { SharedWithMeEntry } from '@/core/types';
 import { useSharedWithMe } from '@/shared/hooks';
 import { SharedWithMeItem } from './SharedWithMeItem';
+import { useTranslation } from '@/i18n';
 
 interface SharedWithMeListProps {
   onOpenLayout: () => void; // Called after successfully opening a layout (to close modal)
@@ -12,6 +13,7 @@ interface SharedWithMeListProps {
  * Displays shared layouts sorted by last access time.
  */
 export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
+  const t = useTranslation();
   const { sharedWithMe, isLoaded, status, openSharedLayout, removeSharedLayout } =
     useSharedWithMe();
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -99,7 +101,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span>Loading...</span>
+          <span>{t('loading.sharedWithMe')}</span>
         </div>
       </div>
     );
