@@ -47,7 +47,12 @@ export function isValidDrawer(value: unknown): value is DrawerShape {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.width === 'number' && typeof obj.depth === 'number' && typeof obj.height === 'number'
+    typeof obj.width === 'number' &&
+    typeof obj.depth === 'number' &&
+    typeof obj.height === 'number' &&
+    Number.isFinite(obj.width) &&
+    Number.isFinite(obj.depth) &&
+    Number.isFinite(obj.height)
   );
 }
 
@@ -60,7 +65,10 @@ export function isValidLayer(value: unknown): value is LayerShape {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.id === 'string' && typeof obj.name === 'string' && typeof obj.height === 'number'
+    typeof obj.id === 'string' &&
+    typeof obj.name === 'string' &&
+    typeof obj.height === 'number' &&
+    Number.isFinite(obj.height)
   );
 }
 
@@ -79,7 +87,12 @@ export function isValidBin(value: unknown): value is BinShape {
     typeof obj.y === 'number' &&
     typeof obj.width === 'number' &&
     typeof obj.depth === 'number' &&
-    typeof obj.height === 'number'
+    typeof obj.height === 'number' &&
+    Number.isFinite(obj.x) &&
+    Number.isFinite(obj.y) &&
+    Number.isFinite(obj.width) &&
+    Number.isFinite(obj.depth) &&
+    Number.isFinite(obj.height)
   );
 }
 
