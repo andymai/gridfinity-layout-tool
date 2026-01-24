@@ -1,14 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { generateFileName } from '../utils/fileNaming';
+import { generateFileName, sanitizeFileName, DEFAULT_EXPORT_FILE_NAME_CONFIG } from '../utils/fileNaming';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
-import type { BinParams } from '../types';
+import type { BinParams, ExportFileNameConfig } from '../types';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
 }
 
+function makeConfig(overrides: Partial<ExportFileNameConfig> = {}): ExportFileNameConfig {
+  return { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, ...overrides };
+}
+
 describe('generateFileName', () => {
-  describe('compact style', () => {
+  describe('compact style (legacy string API)', () => {
     it('should generate compact name for default params', () => {
       const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', 'compact');
       expect(name).toBe('gf_2x2x3.stl');
@@ -29,7 +33,7 @@ describe('generateFileName', () => {
     });
   });
 
-  describe('descriptive style', () => {
+  describe('descriptive style (legacy string API)', () => {
     it('should generate base name with no features', () => {
       const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', 'descriptive');
       expect(name).toBe('gridfinity_2x2x3.stl');
@@ -111,5 +115,153 @@ describe('generateFileName', () => {
       const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl');
       expect(name).toBe('gridfinity_2x2x3.stl');
     });
+  });
+
+  describe('config object API', () => {
+    it('should work with ExportFileNameConfig for descriptive', () => {
+      const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', makeConfig({ style: 'descriptive' }));
+      expect(name).toBe('gridfinity_2x2x3.stl');
+    });
+
+    it('should work with ExportFileNameConfig for compact', () => {
+      const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', makeConfig({ style: 'compact' }));
+      expect(name).toBe('gf_2x2x3.stl');
+    });
+  });
+
+  describe('design name prefix', () => {
+    it('should use design name as prefix in descriptive mode', () => {
+      const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', 'descriptive', 'Screwdriver Bin');
+      expect(name).toBe('Screwdriver Bin_2x2x3.stl');
+    });
+
+    it('should use design name as prefix in compact mode', () => {
+      const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', 'compact', 'My Tools');
+      expect(name).toBe('My Tools_2x2x3.stl');
+    });
+
+    it('should include features with design name in descriptive mode', () => {
+      const name = generateFileName(
+        makeParams({ scoop: { enabled: true, radius: 'auto', allRows: false } }),
+        'stl',
+        'descriptive',
+        'Screwdriver Bin'
+      );
+      expect(name).toBe('Screwdriver Bin_2x2x3_scoop.stl');
+    });
+
+    it('should fall back to gridfinity prefix when design name is Untitled Bin', () => {
+      const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', 'descriptive', 'Untitled Bin');
+      expect(name).toBe('gridfinity_2x2x3.stl');
+    });
+
+    it('should fall back to gf prefix when design name is Untitled Bin in compact mode', () => {
+      const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', 'compact', 'Untitled Bin');
+      expect(name).toBe('gf_2x2x3.stl');
+    });
+
+    it('should fall back when design name is empty', () => {
+      const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', 'descriptive', '');
+      expect(name).toBe('gridfinity_2x2x3.stl');
+    });
+
+    it('should fall back when design name is whitespace only', () => {
+      const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', 'descriptive', '   ');
+      expect(name).toBe('gridfinity_2x2x3.stl');
+    });
+
+    it('should sanitize unsafe characters in design name', () => {
+      const name = generateFileName(DEFAULT_BIN_PARAMS, 'stl', 'descriptive', 'My/Bin<test>');
+      expect(name).toBe('My_Bin_test__2x2x3.stl');
+    });
+  });
+
+  describe('custom mode', () => {
+    it('should use custom name with extension', () => {
+      const name = generateFileName(
+        DEFAULT_BIN_PARAMS,
+        'stl',
+        makeConfig({ style: 'custom', customName: 'my-special-bin' })
+      );
+      expect(name).toBe('my-special-bin.stl');
+    });
+
+    it('should fallback to gridfinity-bin when custom name is empty', () => {
+      const name = generateFileName(
+        DEFAULT_BIN_PARAMS,
+        'stl',
+        makeConfig({ style: 'custom', customName: '' })
+      );
+      expect(name).toBe('gridfinity-bin.stl');
+    });
+
+    it('should sanitize custom name', () => {
+      const name = generateFileName(
+        DEFAULT_BIN_PARAMS,
+        'stl',
+        makeConfig({ style: 'custom', customName: 'my<bin>test' })
+      );
+      expect(name).toBe('my_bin_test.stl');
+    });
+
+    it('should fallback when custom name is only unsafe characters', () => {
+      const name = generateFileName(
+        DEFAULT_BIN_PARAMS,
+        'stl',
+        makeConfig({ style: 'custom', customName: '<<<>>>' })
+      );
+      expect(name).toBe('gridfinity-bin.stl');
+    });
+
+    it('should ignore design name in custom mode', () => {
+      const name = generateFileName(
+        DEFAULT_BIN_PARAMS,
+        'stl',
+        makeConfig({ style: 'custom', customName: 'custom-file' }),
+        'Some Design Name'
+      );
+      expect(name).toBe('custom-file.stl');
+    });
+
+    it('should work with 3mf format', () => {
+      const name = generateFileName(
+        DEFAULT_BIN_PARAMS,
+        '3mf',
+        makeConfig({ style: 'custom', customName: 'my-bin' })
+      );
+      expect(name).toBe('my-bin.3mf');
+    });
+  });
+});
+
+describe('sanitizeFileName', () => {
+  it('should replace angle brackets', () => {
+    expect(sanitizeFileName('foo<bar>')).toBe('foo_bar_');
+  });
+
+  it('should replace colons and slashes', () => {
+    expect(sanitizeFileName('C:\\path/to:file')).toBe('C__path_to_file');
+  });
+
+  it('should replace quotes and pipes', () => {
+    expect(sanitizeFileName('file"name|test')).toBe('file_name_test');
+  });
+
+  it('should trim whitespace', () => {
+    expect(sanitizeFileName('  hello  ')).toBe('hello');
+  });
+
+  it('should leave safe characters untouched', () => {
+    expect(sanitizeFileName('my-bin_v2 (copy).txt')).toBe('my-bin_v2 (copy).txt');
+  });
+});
+
+describe('DEFAULT_EXPORT_FILE_NAME_CONFIG', () => {
+  it('should have descriptive style by default', () => {
+    expect(DEFAULT_EXPORT_FILE_NAME_CONFIG.style).toBe('descriptive');
+  });
+
+  it('should have empty custom name by default', () => {
+    expect(DEFAULT_EXPORT_FILE_NAME_CONFIG.customName).toBe('');
   });
 });

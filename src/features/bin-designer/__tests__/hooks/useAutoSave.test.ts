@@ -90,7 +90,8 @@ describe('useAutoSave', () => {
     expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
       'existing-id',
       expect.objectContaining({ width: 4 }),
-      null // thumbnail (null since no canvas in test)
+      null, // thumbnail (null since no canvas in test)
+      { style: 'descriptive', customName: '' }
     );
     expect(useDesignerStore.getState().saveStatus).toBe('saved');
   });
@@ -127,7 +128,8 @@ describe('useAutoSave', () => {
     expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
       'existing-id',
       expect.objectContaining({ width: 4 }),
-      null
+      null,
+      { style: 'descriptive', customName: '' }
     );
   });
 
@@ -216,7 +218,8 @@ describe('useAutoSave', () => {
     expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
       'new-id',
       expect.objectContaining({ width: 5 }),
-      null
+      null,
+      { style: 'descriptive', customName: '' }
     );
   });
 });

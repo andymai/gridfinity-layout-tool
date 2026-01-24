@@ -141,6 +141,7 @@ export function DesignerPage(_props: DesignerPageProps) {
   const setCurrentDesignId = useDesignerStore((s) => s.setCurrentDesignId);
   const setSaveStatus = useDesignerStore((s) => s.setSaveStatus);
   const params = useDesignerStore((s) => s.params);
+  const exportFileNameConfig = useDesignerStore((s) => s.exportFileNameConfig);
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
   const setParams = useDesignerStore((s) => s.setParams);
@@ -197,7 +198,7 @@ export function DesignerPage(_props: DesignerPageProps) {
     if (!currentDesignId) {
       setSaveStatus('saving');
       const thumbnail = captureThumbnail();
-      void saveDesign({ name, params, thumbnail }).then((result) => {
+      void saveDesign({ name, params, thumbnail, exportFileNameConfig }).then((result) => {
         if (isOk(result)) {
           setCurrentDesignId(result.value.id);
           setSaveStatus('saved');
@@ -215,7 +216,7 @@ export function DesignerPage(_props: DesignerPageProps) {
         }
       });
     }
-  }, [editNameValue, setDesignName, currentDesignId, params, setCurrentDesignId, setSaveStatus]);
+  }, [editNameValue, setDesignName, currentDesignId, params, exportFileNameConfig, setCurrentDesignId, setSaveStatus]);
 
   const handleNameKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

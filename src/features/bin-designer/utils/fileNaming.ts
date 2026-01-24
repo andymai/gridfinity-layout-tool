@@ -1,40 +1,95 @@
 /**
  * File naming utilities for bin exports.
  *
- * Generates descriptive or compact file names from bin parameters.
+ * Generates descriptive, compact, or custom file names from bin parameters
+ * and optional design name.
  */
 
-import type { BinParams } from '../types';
+import type { BinParams, FileNameStyle, ExportFileNameConfig } from '../types';
 
-/** File naming style */
-export type FileNameStyle = 'descriptive' | 'compact';
+/** Default export filename config */
+export const DEFAULT_EXPORT_FILE_NAME_CONFIG: ExportFileNameConfig = {
+  style: 'descriptive',
+  customName: '',
+};
+
+/** Characters not allowed in filenames (replaced with underscore) */
+const UNSAFE_CHARS = /[<>:"/\\|?*\x00-\x1f]/g;
 
 /**
- * Generates a file name from bin parameters and export format.
+ * Sanitizes a string for use in a filename.
+ * Replaces unsafe characters and trims whitespace.
+ */
+export function sanitizeFileName(name: string): string {
+  return name.replace(UNSAFE_CHARS, '_').trim();
+}
+
+/**
+ * Determines the effective design name prefix.
+ * Returns null if the design name is the default "Untitled Bin" or empty.
+ */
+function getEffectiveDesignName(designName: string | undefined): string | null {
+  if (!designName || designName === 'Untitled Bin' || designName.trim() === '') {
+    return null;
+  }
+  return sanitizeFileName(designName);
+}
+
+export type { FileNameStyle };
+
+/**
+ * Generates a file name from bin parameters, export format, and naming config.
  *
  * @example
- * // Descriptive: "gridfinity_2x3x6_dividers_scoop.stl"
- * generateFileName(params, 'stl', 'descriptive')
+ * // Descriptive (no design name): "gridfinity_2x3x6_scoop.stl"
+ * generateFileName(params, 'stl', { style: 'descriptive', customName: '' })
  *
- * // Compact: "gf_2x3x6.stl"
- * generateFileName(params, 'stl', 'compact')
+ * // Descriptive (with design name): "Screwdriver Bin_2x3x6_scoop.stl"
+ * generateFileName(params, 'stl', { style: 'descriptive', customName: '' }, 'Screwdriver Bin')
+ *
+ * // Compact (no design name): "gf_2x3x6.stl"
+ * generateFileName(params, 'stl', { style: 'compact', customName: '' })
+ *
+ * // Compact (with design name): "Screwdriver Bin_2x3x6.stl"
+ * generateFileName(params, 'stl', { style: 'compact', customName: '' }, 'Screwdriver Bin')
+ *
+ * // Custom: "my-special-bin.stl"
+ * generateFileName(params, 'stl', { style: 'custom', customName: 'my-special-bin' })
  */
 export function generateFileName(
   params: BinParams,
   format: string,
-  style: FileNameStyle = 'descriptive'
+  config: FileNameStyle | ExportFileNameConfig = 'descriptive',
+  designName?: string
 ): string {
   const ext = format.toLowerCase();
-  const dims = formatDimensions(params);
 
-  if (style === 'compact') {
-    return `gf_${dims}.${ext}`;
+  // Normalize legacy string-based style to config object
+  const resolved: ExportFileNameConfig =
+    typeof config === 'string'
+      ? { style: config === 'custom' ? 'descriptive' : config, customName: '' }
+      : config;
+
+  if (resolved.style === 'custom') {
+    const sanitized = sanitizeFileName(resolved.customName);
+    const name = !sanitized || /^_+$/.test(sanitized) ? 'gridfinity-bin' : sanitized;
+    return `${name}.${ext}`;
   }
 
+  const dims = formatDimensions(params);
+  const effectiveName = getEffectiveDesignName(designName);
+
+  if (resolved.style === 'compact') {
+    const prefix = effectiveName ?? 'gf';
+    return `${prefix}_${dims}.${ext}`;
+  }
+
+  // Descriptive style
+  const prefix = effectiveName ?? 'gridfinity';
   const features = collectFeatures(params);
   const featureSuffix = features.length > 0 ? `_${features.join('_')}` : '';
 
-  return `gridfinity_${dims}${featureSuffix}.${ext}`;
+  return `${prefix}_${dims}${featureSuffix}.${ext}`;
 }
 
 /**

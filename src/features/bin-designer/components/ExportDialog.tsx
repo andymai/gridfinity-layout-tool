@@ -1,38 +1,41 @@
 /**
  * Export dialog for the bin designer.
  *
- * Shows export format options, file name preview, print estimates,
- * and a download button. Only STL is available in Alpha; others
- * are shown as "coming soon" placeholders.
+ * Shows export format options, editable file name with style selection
+ * (Descriptive / Compact / Custom), print estimates, and a download button.
+ * The filename preference is persisted per-design via the designer store.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import type { ExportFormat } from '@/features/bin-designer/hooks/useExport';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
-import type { FileNameStyle } from '@/features/bin-designer/utils/fileNaming';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
+import type { FileNameStyle } from '@/features/bin-designer/types';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 
 export function ExportDialog() {
-  const { exportDialogOpen, params, triangleCount } = useDesignerStore(
-    useShallow((state) => ({
-      exportDialogOpen: state.ui.exportDialogOpen,
-      params: state.params,
-      triangleCount: state.generation.mesh?.vertices
-        ? state.generation.mesh.vertices.length / 9
-        : 0,
-    }))
-  );
+  const { exportDialogOpen, params, triangleCount, designName, exportFileNameConfig } =
+    useDesignerStore(
+      useShallow((state) => ({
+        exportDialogOpen: state.ui.exportDialogOpen,
+        params: state.params,
+        triangleCount: state.generation.mesh?.vertices
+          ? state.generation.mesh.vertices.length / 9
+          : 0,
+        designName: state.designName,
+        exportFileNameConfig: state.exportFileNameConfig,
+      }))
+    );
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
+  const setExportFileNameConfig = useDesignerStore((s) => s.setExportFileNameConfig);
 
   const { canExport, estimates, isExporting, downloadSTL, download3MF } = useExport();
   const addToast = useToastStore((s) => s.addToast);
-  const [nameStyle, setNameStyle] = useState<FileNameStyle>('descriptive');
   const [format, setFormat] = useState<ExportFormat>('stl');
 
   const closeDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
@@ -41,9 +44,48 @@ export function ExportDialog() {
     onEscape: closeDialog,
   });
 
+  const customInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus the custom input when switching to custom mode
+  useEffect(() => {
+    if (exportFileNameConfig.style === 'custom' && customInputRef.current) {
+      customInputRef.current.focus();
+      customInputRef.current.select();
+    }
+  }, [exportFileNameConfig.style]);
+
+  const fileName = useMemo(
+    () => generateFileName(params, format, exportFileNameConfig, designName),
+    [params, format, exportFileNameConfig, designName]
+  );
+
+  // The display name (without extension) for the input field
+  const fileNameWithoutExt = useMemo(() => {
+    const lastDot = fileName.lastIndexOf('.');
+    return lastDot > 0 ? fileName.slice(0, lastDot) : fileName;
+  }, [fileName]);
+
+  const handleStyleChange = useCallback(
+    (style: FileNameStyle) => {
+      if (style === 'custom' && exportFileNameConfig.customName === '') {
+        // Pre-fill custom name with current auto-generated name (without extension)
+        setExportFileNameConfig({ style, customName: fileNameWithoutExt });
+      } else {
+        setExportFileNameConfig({ ...exportFileNameConfig, style });
+      }
+    },
+    [exportFileNameConfig, setExportFileNameConfig, fileNameWithoutExt]
+  );
+
+  const handleCustomNameChange = useCallback(
+    (value: string) => {
+      setExportFileNameConfig({ ...exportFileNameConfig, customName: value });
+    },
+    [exportFileNameConfig, setExportFileNameConfig]
+  );
+
   if (!exportDialogOpen) return null;
 
-  const fileName = generateFileName(params, format, nameStyle);
   const fileSizeBytes =
     format === 'stl' ? getSTLFileSize(triangleCount) : estimate3MFFileSize(triangleCount);
   const fileSizeLabel =
@@ -104,20 +146,45 @@ export function ExportDialog() {
 
         {/* File Name */}
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-content-secondary">File Name</label>
-          <div className="rounded-md border border-stroke-subtle bg-surface px-3 py-2">
-            <code className="break-all text-sm text-content">{fileName}</code>
+          <label className="mb-2 block text-sm font-medium text-content-secondary">
+            File Name
+          </label>
+          <div className="flex items-center rounded-md border border-stroke-subtle bg-surface">
+            {exportFileNameConfig.style === 'custom' ? (
+              <input
+                ref={customInputRef}
+                type="text"
+                value={exportFileNameConfig.customName}
+                onChange={(e) => handleCustomNameChange(e.target.value)}
+                className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-content outline-none"
+                placeholder="Enter filename"
+                aria-label="Custom file name"
+                maxLength={128}
+              />
+            ) : (
+              <span className="flex-1 truncate px-3 py-2 text-sm text-content">
+                {fileNameWithoutExt}
+              </span>
+            )}
+            <span className="shrink-0 border-l border-stroke-subtle px-2 py-2 text-sm text-content-tertiary">
+              .{format}
+            </span>
           </div>
           <div className="mt-2 flex gap-2">
             <NameStyleButton
-              active={nameStyle === 'descriptive'}
-              onClick={() => setNameStyle('descriptive')}
+              active={exportFileNameConfig.style === 'descriptive'}
+              onClick={() => handleStyleChange('descriptive')}
               label="Descriptive"
             />
             <NameStyleButton
-              active={nameStyle === 'compact'}
-              onClick={() => setNameStyle('compact')}
+              active={exportFileNameConfig.style === 'compact'}
+              onClick={() => handleStyleChange('compact')}
               label="Compact"
+            />
+            <NameStyleButton
+              active={exportFileNameConfig.style === 'custom'}
+              onClick={() => handleStyleChange('custom')}
+              label="Custom"
             />
           </div>
         </div>
@@ -146,9 +213,9 @@ export function ExportDialog() {
           onClick={async () => {
             try {
               if (format === '3mf') {
-                await download3MF(nameStyle);
+                await download3MF(exportFileNameConfig, designName);
               } else {
-                downloadSTL(nameStyle);
+                downloadSTL(exportFileNameConfig, designName);
               }
               addToast({
                 message: `${format.toUpperCase()} exported successfully`,
