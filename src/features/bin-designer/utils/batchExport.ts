@@ -6,8 +6,8 @@
  */
 
 import { zipSync, strToU8 } from 'fflate';
-import { GenerationBridge } from '@/features/generation/bridge';
-import { buildSTLBuffer } from '@/features/generation/export/stlExporter';
+import { GenerationBridge } from '@/shared/generation/bridge';
+import { buildSTLBuffer } from '@/shared/generation/export';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import type { CartItem } from '../types';
@@ -95,11 +95,7 @@ export async function batchExport(
         const result = await bridge.generateImmediate(item.params);
 
         // Build binary STL
-        const stlBuffer = buildSTLBuffer(
-          result.mesh.vertices,
-          result.mesh.normals,
-          item.name
-        );
+        const stlBuffer = buildSTLBuffer(result.mesh.vertices, result.mesh.normals, item.name);
 
         files[fileName] = new Uint8Array(stlBuffer);
 
@@ -133,15 +129,19 @@ export async function batchExport(
     });
 
     // Add manifest.json
-    const manifestJson = JSON.stringify({
-      version: 1,
-      generatedAt: new Date().toISOString(),
-      files: manifest,
-      totalEstimates: {
-        filamentG: manifest.reduce((sum, m) => sum + m.estimates.filamentG, 0),
-        printTimeMin: manifest.reduce((sum, m) => sum + m.estimates.printTimeMin, 0),
+    const manifestJson = JSON.stringify(
+      {
+        version: 1,
+        generatedAt: new Date().toISOString(),
+        files: manifest,
+        totalEstimates: {
+          filamentG: manifest.reduce((sum, m) => sum + m.estimates.filamentG, 0),
+          printTimeMin: manifest.reduce((sum, m) => sum + m.estimates.printTimeMin, 0),
+        },
       },
-    }, null, 2);
+      null,
+      2
+    );
     files['manifest.json'] = strToU8(manifestJson);
 
     // Create ZIP
