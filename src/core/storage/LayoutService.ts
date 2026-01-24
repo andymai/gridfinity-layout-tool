@@ -344,9 +344,15 @@ export function loadLibrary(): LayoutLibrary | null {
     if (validEntries.length < parsed.entries.length) {
       parsed.entries = validEntries;
 
+      // If all entries are gone, treat library as unrecoverable
+      if (validEntries.length === 0) {
+        console.warn('All library entries are corrupted/missing, will recreate');
+        return null;
+      }
+
       // If active layout was removed, switch to first available
       if (!validEntries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
-        parsed.activeLayoutId = validEntries[0]?.id || '';
+        parsed.activeLayoutId = validEntries[0].id;
       }
 
       // Persist cleanup so orphaned entries don't reappear on next load
@@ -412,9 +418,16 @@ export function loadLibraryResult(): Result<LayoutLibrary, StorageError> {
     if (validEntries.length < parsed.entries.length) {
       parsed.entries = validEntries;
 
+      // If all entries are gone, treat library as unrecoverable
+      if (validEntries.length === 0) {
+        return err(
+          storageCorrupted(LIBRARY_STORAGE_KEY, ['All library entries are corrupted or missing'])
+        );
+      }
+
       // If active layout was removed, switch to first available
       if (!validEntries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
-        parsed.activeLayoutId = validEntries[0]?.id || '';
+        parsed.activeLayoutId = validEntries[0].id;
       }
 
       // Persist cleanup so orphaned entries don't reappear on next load

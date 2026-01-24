@@ -270,6 +270,17 @@ describe('storage-library', () => {
       expect(loaded).not.toBeNull();
       expect(loaded!.activeLayoutId).toBe('layout-0'); // Switched to first available
     });
+
+    it('returns null when all entries are orphaned', () => {
+      const library = createTestLibrary(3);
+      // Don't save any layout data - all entries will be orphaned
+      saveLibrary(library);
+
+      const loaded = loadLibrary();
+
+      // When all entries are corrupted/missing, treat as unrecoverable
+      expect(loaded).toBeNull();
+    });
   });
 
   describe('computeLayoutPreview', () => {
@@ -481,8 +492,9 @@ describe('storage-library', () => {
 
       const result = initializeLayoutLibrary();
 
-      // Should create a recovered layout
-      expect(result.activeLayout.name).toBe('Recovered layout');
+      // When all entries are corrupted/missing, loadLibrary returns null
+      // and initializeLayoutLibrary creates a fresh default layout
+      expect(result.activeLayout.name).toBe('Untitled layout');
       expect(result.library.entries).toHaveLength(1);
     });
 

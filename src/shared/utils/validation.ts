@@ -1,6 +1,6 @@
 import type { Bin, Layout, ValidationResult, Rect, OperationResult } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID, RESERVED_PROPERTY_KEYS } from '@/core/constants';
-import { binsCollide, getLayerZStart, getBlockedZones, isInBlockedZone } from './collision';
+import { binsCollide, getLayerZStart, getBlockedZones, footprintsOverlap } from './collision';
 
 // ============================================================================
 // Type Guards for Import Validation
@@ -148,11 +148,9 @@ export function canPlaceBin(
   }
 
   const blockedZones = getBlockedZones(layerId, bins, layers);
-  for (let x = rect.x; x < rect.x + rect.width; x++) {
-    for (let y = rect.y; y < rect.y + rect.depth; y++) {
-      if (isInBlockedZone(x, y, blockedZones)) {
-        return { valid: false, reason: 'blocked_zone' };
-      }
+  for (const zone of blockedZones) {
+    if (footprintsOverlap(rect, zone)) {
+      return { valid: false, reason: 'blocked_zone' };
     }
   }
 

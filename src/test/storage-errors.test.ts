@@ -414,7 +414,7 @@ describe('storage error handling', () => {
       expect(result.library.activeLayoutId).toBe('backup-layout');
     });
 
-    it('creates recovery layout when all layouts are corrupted', () => {
+    it('creates fresh layout when all layouts are corrupted', () => {
       vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const library: LayoutLibrary = {
@@ -444,7 +444,9 @@ describe('storage error handling', () => {
 
       const result = initializeLayoutLibrary();
 
-      expect(result.activeLayout.name).toBe('Recovered layout');
+      // When all entries are corrupted, loadLibrary returns null and
+      // initializeLayoutLibrary creates a fresh default layout
+      expect(result.activeLayout.name).toBe('Untitled layout');
       expect(result.library.entries).toHaveLength(1);
     });
   });

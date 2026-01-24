@@ -279,13 +279,9 @@ export function useKeyboard() {
           const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
           if (!firstBin) return;
 
-          // Ring: [undefined, cat[0], cat[1], ..., cat[n-1]] — position 0 = no category
-          const ringSize = categories.length + 1;
-          const currentPos = firstBin.category
-            ? categories.findIndex((c) => c.id === firstBin.category) + 1
-            : 0;
-          const nextPos = (currentPos + direction + ringSize) % ringSize;
-          const newCategoryId = nextPos === 0 ? undefined : categories[nextPos - 1].id;
+          const currentPos = categories.findIndex((c) => c.id === firstBin.category);
+          const nextPos = (currentPos + direction + categories.length) % categories.length;
+          const newCategoryId = categories[nextPos].id;
 
           // Filter to only bins that actually change
           const binsToUpdate = selectedBinIds
@@ -296,9 +292,7 @@ export function useKeyboard() {
           if (binsToUpdate.length === 0) return;
 
           const batchSize = binsToUpdate.length;
-          const newCategory = newCategoryId
-            ? categories.find((c) => c.id === newCategoryId)
-            : undefined;
+          const newCategory = categories[nextPos];
 
           execute(() => {
             for (const bin of binsToUpdate) {
@@ -307,9 +301,7 @@ export function useKeyboard() {
           });
 
           // Track once per batch (not per bin)
-          if (newCategory && binsToUpdate.length > 0) {
-            mlTracking.trackCategory(binsToUpdate[0], newCategory.name, batchSize);
-          }
+          mlTracking.trackCategory(binsToUpdate[0], newCategory.name, batchSize);
         } else {
           // Cycle active drawing category (no "no category" option for drawing)
           const currentIndex = categories.findIndex((c) => c.id === activeCategoryId);
