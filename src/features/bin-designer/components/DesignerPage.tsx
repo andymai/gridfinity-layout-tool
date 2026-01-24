@@ -26,6 +26,9 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useToastStore } from '@/core/store/toast';
 import { useShallow } from 'zustand/react/shallow';
 import { isOk } from '@/core/result';
+import { saveDesign } from '@/core/storage/DesignerStorage';
+import { captureThumbnail } from '@/features/bin-designer/utils/thumbnail';
+import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import type { SaveStatus } from '@/features/bin-designer/types';
 
 interface DesignerPageProps {
@@ -134,6 +137,10 @@ export function DesignerPage(_props: DesignerPageProps) {
   const saveStatus = useDesignerStore((s) => s.saveStatus);
   const designName = useDesignerStore((s) => s.designName);
   const setDesignName = useDesignerStore((s) => s.setDesignName);
+  const currentDesignId = useDesignerStore((s) => s.currentDesignId);
+  const setCurrentDesignId = useDesignerStore((s) => s.setCurrentDesignId);
+  const setSaveStatus = useDesignerStore((s) => s.setSaveStatus);
+  const params = useDesignerStore((s) => s.params);
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
   const setParams = useDesignerStore((s) => s.setParams);
@@ -182,9 +189,33 @@ export function DesignerPage(_props: DesignerPageProps) {
   }, [designName]);
 
   const handleNameSubmit = useCallback(() => {
-    setDesignName(editNameValue.trim() || 'Untitled Bin');
+    const name = editNameValue.trim() || 'Untitled Bin';
+    setDesignName(name);
     setIsEditingName(false);
-  }, [editNameValue, setDesignName]);
+
+    // First save: when user names an unsaved design, persist it
+    if (!currentDesignId) {
+      setSaveStatus('saving');
+      const thumbnail = captureThumbnail();
+      void saveDesign({ name, params, thumbnail }).then((result) => {
+        if (isOk(result)) {
+          setCurrentDesignId(result.value.id);
+          setSaveStatus('saved');
+          upsertRegistryEntry({
+            id: result.value.id,
+            name: result.value.name,
+            width: params.width,
+            depth: params.depth,
+            height: params.height,
+            thumbnail: result.value.thumbnail,
+            updatedAt: result.value.updatedAt,
+          });
+        } else {
+          setSaveStatus('error');
+        }
+      });
+    }
+  }, [editNameValue, setDesignName, currentDesignId, params, setCurrentDesignId, setSaveStatus]);
 
   const handleNameKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
