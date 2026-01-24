@@ -340,13 +340,20 @@ export function loadLibrary(): LayoutLibrary | null {
       }
     });
 
-    // If we lost some entries, update the library
+    // If we lost some entries, persist the cleaned library
     if (validEntries.length < parsed.entries.length) {
       parsed.entries = validEntries;
 
       // If active layout was removed, switch to first available
       if (!validEntries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
         parsed.activeLayoutId = validEntries[0]?.id || '';
+      }
+
+      // Persist cleanup so orphaned entries don't reappear on next load
+      try {
+        backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, parsed);
+      } catch {
+        // Best-effort: cleanup will re-run on next load if save fails
       }
     }
 
@@ -401,13 +408,20 @@ export function loadLibraryResult(): Result<LayoutLibrary, StorageError> {
       }
     });
 
-    // If we lost some entries, update the library
+    // If we lost some entries, persist the cleaned library
     if (validEntries.length < parsed.entries.length) {
       parsed.entries = validEntries;
 
       // If active layout was removed, switch to first available
       if (!validEntries.some((e: LayoutEntry) => e.id === parsed.activeLayoutId)) {
         parsed.activeLayoutId = validEntries[0]?.id || '';
+      }
+
+      // Persist cleanup so orphaned entries don't reappear on next load
+      try {
+        backend.saveSyncGeneric(LIBRARY_STORAGE_KEY, parsed);
+      } catch {
+        // Best-effort: cleanup will re-run on next load if save fails
       }
     }
 
