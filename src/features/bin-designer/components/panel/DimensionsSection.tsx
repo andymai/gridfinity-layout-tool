@@ -6,26 +6,34 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
+import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { DimensionsIcon } from './SectionIllustrations';
 
 export function DimensionsSection() {
-  const { width, depth, height, gridUnitMm, heightUnitMm, halfBinMode, setParam, toggleHalfBinMode } =
-    useDesignerStore(
-      useShallow((s) => ({
-        width: s.params.width,
-        depth: s.params.depth,
-        height: s.params.height,
-        gridUnitMm: s.params.gridUnitMm,
-        heightUnitMm: s.params.heightUnitMm,
-        halfBinMode: s.ui.halfBinMode,
-        setParam: s.setParam,
-        toggleHalfBinMode: s.toggleHalfBinMode,
-      }))
-    );
+  const {
+    width,
+    depth,
+    height,
+    gridUnitMm,
+    heightUnitMm,
+    halfBinMode,
+    setParam,
+    toggleHalfBinMode,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      gridUnitMm: s.params.gridUnitMm,
+      heightUnitMm: s.params.heightUnitMm,
+      halfBinMode: s.ui.halfBinMode,
+      setParam: s.setParam,
+      toggleHalfBinMode: s.toggleHalfBinMode,
+    }))
+  );
 
   // Step sizes depend on half-bin mode
   const dimensionStep = halfBinMode ? 0.5 : 1;
@@ -59,7 +67,10 @@ export function DimensionsSection() {
   const handleHeightStep = useCallback(
     (delta: number) => {
       const next = height + delta * DESIGNER_CONSTRAINTS.HEIGHT_STEP;
-      const clamped = Math.min(DESIGNER_CONSTRAINTS.MAX_HEIGHT, Math.max(DESIGNER_CONSTRAINTS.MIN_HEIGHT, next));
+      const clamped = Math.min(
+        DESIGNER_CONSTRAINTS.MAX_HEIGHT,
+        Math.max(DESIGNER_CONSTRAINTS.MIN_HEIGHT, next)
+      );
       setParam('height', clamped);
     },
     [height, setParam]
@@ -77,7 +88,9 @@ export function DimensionsSection() {
         <div>
           <div className="mb-1 flex items-center justify-between">
             <span className="text-xs text-content-tertiary">Width</span>
-            <span className="text-[11px] tabular-nums text-content-tertiary">{widthMm.toFixed(0)}mm</span>
+            <span className="text-[11px] tabular-nums text-content-tertiary">
+              {widthMm.toFixed(0)}mm
+            </span>
           </div>
           <StepperControl
             value={width}
@@ -95,7 +108,9 @@ export function DimensionsSection() {
         <div>
           <div className="mb-1 flex items-center justify-between">
             <span className="text-xs text-content-tertiary">Depth</span>
-            <span className="text-[11px] tabular-nums text-content-tertiary">{depthMm.toFixed(0)}mm</span>
+            <span className="text-[11px] tabular-nums text-content-tertiary">
+              {depthMm.toFixed(0)}mm
+            </span>
           </div>
           <StepperControl
             value={depth}
@@ -114,7 +129,7 @@ export function DimensionsSection() {
           <div className="mb-1 flex items-center justify-between">
             <span className="text-xs text-content-tertiary">Height</span>
             <span className="text-[11px] tabular-nums text-content-tertiary">
-              {heightMm.toFixed(0)}mm body + {GRIDFINITY.LIP_HEIGHT}mm lip
+              {heightMm.toFixed(0)}mm body
             </span>
           </div>
           <StepperControl
@@ -133,16 +148,6 @@ export function DimensionsSection() {
         <div
           className="flex items-center justify-between pt-2 cursor-pointer"
           onClick={toggleHalfBinMode}
-          role="checkbox"
-          aria-checked={halfBinMode}
-          aria-label="Toggle half-bin mode"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === ' ' || e.key === 'Enter') {
-              e.preventDefault();
-              toggleHalfBinMode();
-            }
-          }}
         >
           <div className="flex items-center gap-1.5">
             <span
@@ -157,7 +162,6 @@ export function DimensionsSection() {
           </div>
           <Checkbox checked={halfBinMode} variant="desktop" />
         </div>
-
       </div>
     </CollapsibleSection>
   );

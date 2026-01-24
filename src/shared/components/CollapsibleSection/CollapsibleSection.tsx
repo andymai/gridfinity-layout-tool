@@ -73,7 +73,11 @@ export function CollapsibleSection({
         {actions}
       </div>
       {summary && !expanded && (
-        <div className="mt-1 ml-[22px] text-xs text-content-tertiary truncate">
+        <div
+          className={`mt-1 text-xs text-content-tertiary truncate ${
+            illustration ? 'ml-[38px]' : 'ml-[22px]'
+          }`}
+        >
           {summary}
         </div>
       )}
