@@ -82,7 +82,7 @@ export function PreviewControls({
     'rounded-md bg-surface-elevated/80 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur transition-colors hover:bg-surface-elevated hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none min-w-[36px] min-h-[32px] md:min-h-[28px] touch-manipulation';
 
   return (
-    <div className="absolute right-2 top-2 flex flex-col gap-1.5">
+    <div className="absolute bottom-2 left-2 flex flex-col gap-1.5 md:bottom-auto md:left-auto md:right-2 md:top-2">
       {/* Camera presets */}
       {PRESETS.map(({ key, label, shortcut }) => (
         <button

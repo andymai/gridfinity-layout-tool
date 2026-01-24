@@ -70,6 +70,15 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   );
 
   const handleNewDesign = useCallback(() => {
+    // Confirm if user has an active design with history
+    const state = useDesignerStore.getState();
+    if (state.currentDesignId && state.history.past.length > 0) {
+      if (
+        !window.confirm('Start a new design? Your current design is saved and can be loaded later.')
+      ) {
+        return;
+      }
+    }
     newDesign();
     syncUrlToDesign(null);
     addToast({ message: 'New design created', type: 'success', duration: 2000 });

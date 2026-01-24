@@ -42,21 +42,62 @@ interface DesignerPageProps {
 function SaveStatusIndicator({ status }: { status: SaveStatus }) {
   if (status === 'idle') return null;
 
-  const labels: Record<Exclude<SaveStatus, 'idle'>, string> = {
-    saving: 'Saving…',
-    saved: 'Saved',
-    error: 'Save failed',
-  };
-
-  const colors: Record<Exclude<SaveStatus, 'idle'>, string> = {
-    saving: 'text-content-secondary',
-    saved: 'text-green-400',
-    error: 'text-red-400',
-  };
-
   return (
-    <span className={`text-xs ${colors[status]}`} aria-live="polite">
-      {labels[status]}
+    <span className="inline-flex items-center gap-1" aria-live="polite">
+      {status === 'saving' && (
+        <svg
+          className="h-3 w-3 animate-spin text-content-secondary motion-reduce:animate-none"
+          fill="none"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
+        </svg>
+      )}
+      {status === 'saved' && (
+        <svg
+          className="h-3 w-3 text-green-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+      {status === 'error' && (
+        <svg
+          className="h-3 w-3 text-red-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2.5}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      )}
+      <span
+        className={`text-xs ${status === 'saving' ? 'text-content-secondary' : status === 'saved' ? 'text-green-400' : 'text-red-400'}`}
+      >
+        {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : 'Save failed'}
+      </span>
     </span>
   );
 }
