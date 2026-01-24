@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useDesignerUrlSync } from '../../hooks/useDesignerUrlSync';
 import { useDesignerStore } from '../../store/designer';
-import * as DesignerStorage from '@/core/storage/DesignerStorage';
+import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorage';
 import { ok, err, storageUnavailable } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '../../constants/defaults';
 import type { SavedDesign } from '../../types';
 
-vi.mock('@/core/storage/DesignerStorage');
+vi.mock('@/features/bin-designer/storage/DesignerStorage');
 
 describe('useDesignerUrlSync', () => {
   let originalHref: string;

@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import { useDesignerStore } from '../../store/designer';
-import * as DesignerStorage from '@/core/storage/DesignerStorage';
+import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorage';
 import { ok, err, storageUnavailable } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '../../constants/defaults';
 import type { SavedDesign } from '../../types';
 
-vi.mock('@/core/storage/DesignerStorage');
+vi.mock('@/features/bin-designer/storage/DesignerStorage');
 vi.mock('../../utils/thumbnail', () => ({
   captureThumbnail: () => null,
 }));
@@ -176,14 +176,16 @@ describe('useAutoSave', () => {
     // Resolve the save
     expect(resolvePromise).not.toBeNull();
     await act(async () => {
-      resolvePromise?.(ok({
-        id: 'existing-id',
-        name: 'Test',
-        params: { ...DEFAULT_BIN_PARAMS, width: 3 },
-        thumbnail: null,
-        createdAt: '2026-01-22T00:00:00.000Z',
-        updatedAt: '2026-01-22T00:00:00.000Z',
-      }));
+      resolvePromise?.(
+        ok({
+          id: 'existing-id',
+          name: 'Test',
+          params: { ...DEFAULT_BIN_PARAMS, width: 3 },
+          thumbnail: null,
+          createdAt: '2026-01-22T00:00:00.000Z',
+          updatedAt: '2026-01-22T00:00:00.000Z',
+        })
+      );
     });
 
     expect(useDesignerStore.getState().saveStatus).toBe('saved');

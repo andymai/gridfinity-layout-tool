@@ -8,6 +8,7 @@ import {
   useLabsStore,
   useUIStore,
 } from './core/store';
+import { initLayoutAnalytics } from './core/store/layoutAnalytics';
 import {
   useLayoutRouting,
   useAnalytics,
@@ -20,7 +21,7 @@ import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
 import { initializeLayoutLibrary, loadSharedWithMe } from './core/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
-import { Grid } from './features/grid-editor/components/Grid';
+import { Grid } from './features/grid-editor';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Staging } from './features/staging/components/Staging';
@@ -57,7 +58,7 @@ const LabsDrawer = lazyWithRetry(() =>
 const DesignerPage = lazyWithRetry(() =>
   import('./features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );
-import { useDesignerRouting } from './features/bin-designer/hooks/useDesignerRouting';
+import { useDesignerRouting } from './hooks/useDesignerRouting';
 import { usePlaceBinFromURL } from './features/bin-designer/hooks/usePlaceBinInLayout';
 import { SHORTCUTS } from './core/constants';
 
@@ -156,6 +157,11 @@ export default function App() {
 
   // Auto-sync owned shared layouts to Blob storage (Google Docs-like behavior)
   useOwnedShareSync();
+
+  // Initialize layout analytics subscriber (tracks feature usage from state changes)
+  useEffect(() => {
+    return initLayoutAnalytics();
+  }, []);
 
   // Tablet panel state (auto-collapses on tablet mode entry)
   const {

@@ -7,10 +7,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { isOk } from '@/core/result';
-import { listDesigns, deleteDesign } from '@/core/storage/DesignerStorage';
+import { listDesigns, deleteDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { removeRegistryEntry } from '../store/customBinRegistry';
 import { useDesignerStore } from '../store';
-import { useDesignerRouting } from '../hooks/useDesignerRouting';
+import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import type { SavedDesign } from '../types';
@@ -110,7 +110,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       const trimmed = editName.trim();
       if (trimmed && trimmed !== design.name) {
         // Re-save with updated name (uses saveDesign which preserves createdAt)
-        const { saveDesign } = await import('@/core/storage/DesignerStorage');
+        const { saveDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
         await saveDesign({ ...design, name: trimmed });
         setDesigns((prev) => prev.map((d) => (d.id === design.id ? { ...d, name: trimmed } : d)));
         // Update current design name if this is the active one

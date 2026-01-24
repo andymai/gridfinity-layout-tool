@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useDesignerRouting } from '../../hooks/useDesignerRouting';
+import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 
 describe('useDesignerRouting', () => {
   let originalPathname: string;
