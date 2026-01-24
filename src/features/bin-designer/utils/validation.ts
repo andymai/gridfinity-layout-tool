@@ -295,6 +295,13 @@ export function validateCompartmentSizes(
   rows: number,
   dividerThickness: number
 ): Result<undefined, DesignerValidationError> {
+  if (cols < 1 || rows < 1) {
+    return err({
+      code: 'COMPARTMENT_GRID_INVALID',
+      message: 'Compartment grid must have at least 1 column and 1 row.',
+      field: cols < 1 ? 'compartments.cols' : 'compartments.rows',
+    });
+  }
   if (cols <= 1 && rows <= 1) return ok(undefined);
 
   const { minCellW, minCellD } = computeMinCellSize(

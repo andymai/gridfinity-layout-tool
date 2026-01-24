@@ -373,8 +373,12 @@ function buildCompartmentWalls(
   const cellW = innerW / cols;
   const cellD = innerD / rows;
 
+  // Effective free space per cell after accounting for internal divider thickness
+  const effectiveCellW = (innerW - (cols - 1) * thickness) / cols;
+  const effectiveCellD = (innerD - (rows - 1) * thickness) / rows;
+
   // Safety net: skip wall generation if cells are too small for viable geometry
-  if (cellW < thickness * 2 || cellD < thickness * 2) return null;
+  if (effectiveCellW < thickness * 2 || effectiveCellD < thickness * 2) return null;
 
   let dividers: Shape3D | null = null;
 

@@ -82,7 +82,7 @@ export const useDesignerStore = create<DesignerState>()(
 
     // Param actions
     setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => {
-      // Guard compartment thickness changes against degenerate cell sizes
+      // Guard compartment configuration changes against degenerate cell sizes
       if (key === 'compartments') {
         const { params } = get();
         const newCompartments = value as BinParams['compartments'];
@@ -104,6 +104,23 @@ export const useDesignerStore = create<DesignerState>()(
     },
 
     setParams: (partial: Partial<BinParams>) => {
+      // Guard compartment configuration changes against degenerate cell sizes
+      if (partial.compartments) {
+        const { params } = get();
+        const width = partial.width ?? params.width;
+        const depth = partial.depth ?? params.depth;
+        const wallThickness = partial.wallThickness ?? params.wallThickness;
+        const result = validateCompartmentSizes(
+          width,
+          depth,
+          wallThickness,
+          partial.compartments.cols,
+          partial.compartments.rows,
+          partial.compartments.thickness
+        );
+        if (isErr(result)) return;
+      }
+
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params, partial);

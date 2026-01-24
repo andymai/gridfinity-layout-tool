@@ -554,6 +554,52 @@ describe('DesignerStore - compartment actions', () => {
       setParam('height', 5);
       expect(useDesignerStore.getState().params.height).toBe(5);
     });
+
+    it('setParams rejects compartment changes that produce too-small cells', () => {
+      const { setParams } = useDesignerStore.getState();
+      // Try to set 1-unit bin with 8x8 grid in one call
+      setParams({
+        width: 1,
+        depth: 1,
+        compartments: {
+          cols: 8,
+          rows: 8,
+          thickness: 1.2,
+          cells: Array.from({ length: 64 }, (_, i) => i),
+        },
+      });
+
+      // Should be no-op — compartments too small
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.cols).toBe(DEFAULT_BIN_PARAMS.compartments.cols);
+    });
+
+    it('setParams accepts valid compartment configuration', () => {
+      const { setParams } = useDesignerStore.getState();
+      setParams({
+        width: 2,
+        depth: 2,
+        compartments: {
+          cols: 3,
+          rows: 3,
+          thickness: 1.2,
+          cells: Array.from({ length: 9 }, (_, i) => i),
+        },
+      });
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.cols).toBe(3);
+      expect(params.width).toBe(2);
+    });
+
+    it('setParams without compartments is not affected by guard', () => {
+      const { setParams } = useDesignerStore.getState();
+      setParams({ width: 3, height: 5 });
+
+      const { params } = useDesignerStore.getState();
+      expect(params.width).toBe(3);
+      expect(params.height).toBe(5);
+    });
   });
 
   describe('history integration', () => {

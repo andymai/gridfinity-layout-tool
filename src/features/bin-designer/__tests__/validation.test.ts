@@ -4,10 +4,10 @@ import {
   validateBinParams,
   computeMinCellSize,
   validateCompartmentSizes,
-} from '../utils/validation';
-import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
-import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
-import type { BinParams } from '../types';
+} from '@/features/bin-designer/utils/validation';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
+import type { BinParams } from '@/features/bin-designer/types';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
@@ -576,6 +576,24 @@ describe('validateCompartmentSizes', () => {
     if (isErr(result)) {
       expect(result.error.message).toContain('Compartment cells too small');
       expect(result.error.message).toContain('min');
+    }
+  });
+
+  it('rejects cols less than 1', () => {
+    const result = validateCompartmentSizes(2, 2, 1.2, 0, 2, 1.2);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('COMPARTMENT_GRID_INVALID');
+      expect(result.error.field).toBe('compartments.cols');
+    }
+  });
+
+  it('rejects rows less than 1', () => {
+    const result = validateCompartmentSizes(2, 2, 1.2, 2, 0, 1.2);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('COMPARTMENT_GRID_INVALID');
+      expect(result.error.field).toBe('compartments.rows');
     }
   });
 });
