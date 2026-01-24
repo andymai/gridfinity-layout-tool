@@ -1131,6 +1131,73 @@ describe('useKeyboard', () => {
 
       expect(useLayoutStore.getState().layout.bins[0].category).toBe(categories[1].id);
     });
+
+    it('wraps category from last to first without setting undefined', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categories = layout.categories;
+
+      // Bin starts at the last (and only default) category
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categories[categories.length - 1].id,
+          label: '',
+          notes: '',
+        })
+      );
+
+      useSelectionStore.getState().setSelectedBins([binId]);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey(']');
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      // Should wrap to first category, never be undefined
+      expect(bin.category).toBe(categories[0].id);
+      expect(typeof bin.category).toBe('string');
+    });
+
+    it('wraps category from first to last with [ key', () => {
+      const { addBin, layout, addCategory } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+
+      addCategory({ name: 'Extra', color: '#FF0000' });
+      const categories = useLayoutStore.getState().layout.categories;
+
+      const binId = getBinId(
+        addBin({
+          layerId,
+          x: 0,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          category: categories[0].id,
+          label: '',
+          notes: '',
+        })
+      );
+
+      useSelectionStore.getState().setSelectedBins([binId]);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('[');
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      // Should wrap to last category
+      expect(bin.category).toBe(categories[categories.length - 1].id);
+      expect(typeof bin.category).toBe('string');
+    });
   });
 
   describe('quick label shortcut', () => {
