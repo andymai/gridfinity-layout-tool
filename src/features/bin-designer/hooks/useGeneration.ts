@@ -13,8 +13,10 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
 import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
+import { validateCompartmentSizes } from '../utils/validation';
 import type { BinParams } from '../types';
 
 /**
@@ -46,6 +48,26 @@ export function useGeneration(): void {
     async (currentParams: BinParams) => {
       const bridge = bridgeRef.current;
       if (!bridge || bridge.isDestroyed) return;
+
+      // Pre-flight validation: reject degenerate compartment configurations
+      const compartmentCheck = validateCompartmentSizes(
+        currentParams.width,
+        currentParams.depth,
+        currentParams.wallThickness,
+        currentParams.compartments.cols,
+        currentParams.compartments.rows,
+        currentParams.compartments.thickness
+      );
+      if (isErr(compartmentCheck)) {
+        setGenerationResult({
+          vertices: null,
+          normals: null,
+          error: compartmentCheck.error.message,
+          timingMs: 0,
+        });
+        setGenerationStatus('error');
+        return;
+      }
 
       setGenerationStatus('generating');
 

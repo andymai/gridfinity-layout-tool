@@ -440,6 +440,168 @@ describe('DesignerStore - compartment actions', () => {
     });
   });
 
+  describe('compartment size guards', () => {
+    it('setCompartmentGrid rejects grid that would produce too-small cells', () => {
+      const { setParam, setCompartmentGrid } = useDesignerStore.getState();
+      // Set a 1x1 bin (smallest possible)
+      setParam('width', 1);
+      setParam('depth', 1);
+
+      const beforeCells = [...useDesignerStore.getState().params.compartments.cells];
+      const beforeHistory = useDesignerStore.getState().history.past.length;
+
+      // 8x8 grid on a 1-unit bin would create cells < 5mm
+      setCompartmentGrid(8, 8);
+
+      const after = useDesignerStore.getState();
+      // Should be no-op: cells unchanged, no history entry added
+      expect(after.params.compartments.cells).toEqual(beforeCells);
+      expect(after.history.past.length).toBe(beforeHistory);
+    });
+
+    it('setCompartmentGrid accepts valid grid', () => {
+      const { setCompartmentGrid } = useDesignerStore.getState();
+      // Default 2x2 bin supports 3x3 grid
+      setCompartmentGrid(3, 3);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.cols).toBe(3);
+      expect(params.compartments.rows).toBe(3);
+    });
+
+    it('splitCompartment rejects split when cells would be too small', () => {
+      const { setParam, setCompartmentGrid, mergeCells } = useDesignerStore.getState();
+      // Set up 6-col grid with thick dividers on default 2-unit bin (valid: cells ~11.35mm)
+      setCompartmentGrid(6, 1);
+      setParam('compartments', {
+        cols: 6,
+        rows: 1,
+        thickness: 2.4,
+        cells: [0, 1, 2, 3, 4, 5],
+      });
+      // Merge all cells into one compartment
+      mergeCells([0, 1, 2, 3, 4, 5]);
+      // Shrink bin width (not guarded) — now individual cells would be ~4.5mm
+      setParam('width', 1);
+
+      const beforeHistory = useDesignerStore.getState().history.past.length;
+      const beforeCells = [...useDesignerStore.getState().params.compartments.cells];
+
+      // Splitting would create 6 individual cells on 1-unit bin → too small
+      const { splitCompartment } = useDesignerStore.getState();
+      splitCompartment(0);
+
+      const after = useDesignerStore.getState();
+      expect(after.params.compartments.cells).toEqual(beforeCells);
+      expect(after.history.past.length).toBe(beforeHistory);
+    });
+
+    it('splitCompartment allows split when cells are viable', () => {
+      const { setCompartmentGrid, mergeCells, splitCompartment } = useDesignerStore.getState();
+      // Default 2x2 bin, 2x2 grid — each cell is ~40mm
+      setCompartmentGrid(2, 2);
+      mergeCells([0, 1, 2, 3]);
+
+      const mergedId = useDesignerStore.getState().params.compartments.cells[0];
+      splitCompartment(mergedId);
+
+      const { params } = useDesignerStore.getState();
+      const uniqueIds = new Set(params.compartments.cells);
+      expect(uniqueIds.size).toBe(4);
+    });
+
+    it('setParam for compartments rejects thickness increase that makes cells too small', () => {
+      const { setParam } = useDesignerStore.getState();
+      // Set 1-unit bin with 6 cols and thin dividers (valid: cells ~6.2mm)
+      setParam('width', 1);
+      setParam('depth', 1);
+      setParam('compartments', {
+        cols: 6,
+        rows: 1,
+        thickness: 0.4,
+        cells: [0, 1, 2, 3, 4, 5],
+      });
+
+      const beforeThickness = useDesignerStore.getState().params.compartments.thickness;
+
+      // Increasing thickness to 2.4mm with 6 cols on 1-unit bin → cells ~4.5mm < 5mm
+      setParam('compartments', {
+        cols: 6,
+        rows: 1,
+        thickness: 2.4,
+        cells: [0, 1, 2, 3, 4, 5],
+      });
+
+      // Should be no-op
+      expect(useDesignerStore.getState().params.compartments.thickness).toBe(beforeThickness);
+    });
+
+    it('setParam for compartments accepts valid thickness', () => {
+      const { setParam } = useDesignerStore.getState();
+      // Default 2x2 bin with 2x2 grid — plenty of room for thick dividers
+      setParam('compartments', {
+        cols: 2,
+        rows: 2,
+        thickness: 2.4,
+        cells: [0, 1, 2, 3],
+      });
+
+      expect(useDesignerStore.getState().params.compartments.thickness).toBe(2.4);
+    });
+
+    it('setParam for non-compartment keys is not affected by guard', () => {
+      const { setParam } = useDesignerStore.getState();
+      setParam('height', 5);
+      expect(useDesignerStore.getState().params.height).toBe(5);
+    });
+
+    it('setParams rejects compartment changes that produce too-small cells', () => {
+      const { setParams } = useDesignerStore.getState();
+      // Try to set 1-unit bin with 8x8 grid in one call
+      setParams({
+        width: 1,
+        depth: 1,
+        compartments: {
+          cols: 8,
+          rows: 8,
+          thickness: 1.2,
+          cells: Array.from({ length: 64 }, (_, i) => i),
+        },
+      });
+
+      // Should be no-op — compartments too small
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.cols).toBe(DEFAULT_BIN_PARAMS.compartments.cols);
+    });
+
+    it('setParams accepts valid compartment configuration', () => {
+      const { setParams } = useDesignerStore.getState();
+      setParams({
+        width: 2,
+        depth: 2,
+        compartments: {
+          cols: 3,
+          rows: 3,
+          thickness: 1.2,
+          cells: Array.from({ length: 9 }, (_, i) => i),
+        },
+      });
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.cols).toBe(3);
+      expect(params.width).toBe(2);
+    });
+
+    it('setParams without compartments is not affected by guard', () => {
+      const { setParams } = useDesignerStore.getState();
+      setParams({ width: 3, height: 5 });
+
+      const { params } = useDesignerStore.getState();
+      expect(params.width).toBe(3);
+      expect(params.height).toBe(5);
+    });
+  });
+
   describe('history integration', () => {
     it('undo after merge reverts to previous state', () => {
       const { setCompartmentGrid, mergeCells, undo } = useDesignerStore.getState();

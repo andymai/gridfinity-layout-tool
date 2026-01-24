@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { isOk, isErr } from '@/core/result';
-import { validateBinParams } from '../utils/validation';
-import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
-import type { BinParams } from '../types';
+import {
+  validateBinParams,
+  computeMinCellSize,
+  validateCompartmentSizes,
+} from '@/features/bin-designer/utils/validation';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
+import type { BinParams } from '@/features/bin-designer/types';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
@@ -96,7 +101,16 @@ describe('validateBinParams', () => {
 
     it('should reject cols above maximum', () => {
       const result = validateBinParams(
-        makeParams({ compartments: { cols: 9, rows: 1, thickness: 1.2, cells: Array(9).fill(0).map((_, i) => i) } })
+        makeParams({
+          compartments: {
+            cols: 9,
+            rows: 1,
+            thickness: 1.2,
+            cells: Array(9)
+              .fill(0)
+              .map((_, i) => i),
+          },
+        })
       );
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
@@ -126,7 +140,16 @@ describe('validateBinParams', () => {
 
     it('should accept valid compartment config', () => {
       const result = validateBinParams(
-        makeParams({ compartments: { cols: 4, rows: 3, thickness: 1.2, cells: Array(12).fill(0).map((_, i) => i) } })
+        makeParams({
+          compartments: {
+            cols: 4,
+            rows: 3,
+            thickness: 1.2,
+            cells: Array(12)
+              .fill(0)
+              .map((_, i) => i),
+          },
+        })
       );
       expect(isOk(result)).toBe(true);
     });
@@ -203,7 +226,6 @@ describe('validateBinParams', () => {
       expect(isOk(result)).toBe(true);
     });
   });
-
 
   describe('magnet depth constraints', () => {
     it('should reject magnet depth below minimum', () => {
@@ -296,9 +318,11 @@ describe('validateBinParams', () => {
     });
 
     it('should accept valid fixed radius', () => {
-      expect(isOk(validateBinParams(
-        makeParams({ scoop: { enabled: true, radius: 10, allRows: false } })
-      ))).toBe(true);
+      expect(
+        isOk(
+          validateBinParams(makeParams({ scoop: { enabled: true, radius: 10, allRows: false } }))
+        )
+      ).toBe(true);
     });
 
     it('should not validate radius when scoop is disabled', () => {
@@ -310,12 +334,16 @@ describe('validateBinParams', () => {
     });
 
     it('should accept boundary radius values', () => {
-      expect(isOk(validateBinParams(
-        makeParams({ scoop: { enabled: true, radius: 2.0, allRows: false } })
-      ))).toBe(true);
-      expect(isOk(validateBinParams(
-        makeParams({ scoop: { enabled: true, radius: 30.0, allRows: false } })
-      ))).toBe(true);
+      expect(
+        isOk(
+          validateBinParams(makeParams({ scoop: { enabled: true, radius: 2.0, allRows: false } }))
+        )
+      ).toBe(true);
+      expect(
+        isOk(
+          validateBinParams(makeParams({ scoop: { enabled: true, radius: 30.0, allRows: false } }))
+        )
+      ).toBe(true);
     });
   });
 
@@ -327,7 +355,14 @@ describe('validateBinParams', () => {
         makeParams({
           width: 1,
           depth: 1,
-          compartments: { cols: 8, rows: 1, thickness: 1.2, cells: Array(8).fill(0).map((_, i) => i) },
+          compartments: {
+            cols: 8,
+            rows: 1,
+            thickness: 1.2,
+            cells: Array(8)
+              .fill(0)
+              .map((_, i) => i),
+          },
         })
       );
       expect(isErr(result)).toBe(true);
@@ -341,7 +376,14 @@ describe('validateBinParams', () => {
         makeParams({
           width: 1,
           depth: 1,
-          compartments: { cols: 1, rows: 8, thickness: 1.2, cells: Array(8).fill(0).map((_, i) => i) },
+          compartments: {
+            cols: 1,
+            rows: 8,
+            thickness: 1.2,
+            cells: Array(8)
+              .fill(0)
+              .map((_, i) => i),
+          },
         })
       );
       expect(isErr(result)).toBe(true);
@@ -357,7 +399,14 @@ describe('validateBinParams', () => {
         makeParams({
           width: 2,
           depth: 2,
-          compartments: { cols: 3, rows: 3, thickness: 1.2, cells: Array(9).fill(0).map((_, i) => i) },
+          compartments: {
+            cols: 3,
+            rows: 3,
+            thickness: 1.2,
+            cells: Array(9)
+              .fill(0)
+              .map((_, i) => i),
+          },
         })
       );
       expect(isOk(result)).toBe(true);
@@ -378,7 +427,14 @@ describe('validateBinParams', () => {
         makeParams({
           width: 1,
           depth: 1,
-          compartments: { cols: 7, rows: 1, thickness: 2.0, cells: Array(7).fill(0).map((_, i) => i) },
+          compartments: {
+            cols: 7,
+            rows: 1,
+            thickness: 2.0,
+            cells: Array(7)
+              .fill(0)
+              .map((_, i) => i),
+          },
         })
       );
       expect(isErr(result)).toBe(true);
@@ -390,7 +446,14 @@ describe('validateBinParams', () => {
         makeParams({
           width: 8,
           depth: 8,
-          compartments: { cols: 8, rows: 8, thickness: 1.2, cells: Array(64).fill(0).map((_, i) => i) },
+          compartments: {
+            cols: 8,
+            rows: 8,
+            thickness: 1.2,
+            cells: Array(64)
+              .fill(0)
+              .map((_, i) => i),
+          },
         })
       );
       expect(isOk(result)).toBe(true);
@@ -421,5 +484,116 @@ describe('validateBinParams', () => {
     it('should reject width 8.5', () => {
       expect(isErr(validateBinParams(makeParams({ width: 8.5 })))).toBe(true);
     });
+  });
+});
+
+describe('computeMinCellSize', () => {
+  it('computes correct cell size for single column/row', () => {
+    // 2x2 bin, 1x1 grid, 1.2mm thickness (no dividers)
+    const result = computeMinCellSize(2, 2, 1.2, 1, 1, 1.2);
+    const innerW = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * 1.2;
+    expect(result.minCellW).toBeCloseTo(innerW);
+    expect(result.minCellD).toBeCloseTo(innerW);
+  });
+
+  it('accounts for divider thickness with multiple columns', () => {
+    // 2x2 bin, 3 cols, 1 row, 1.2mm dividers
+    const result = computeMinCellSize(2, 2, 1.2, 3, 1, 1.2);
+    const innerW = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * 1.2;
+    const expectedCellW = (innerW - 2 * 1.2) / 3; // 2 dividers
+    expect(result.minCellW).toBeCloseTo(expectedCellW);
+  });
+
+  it('accounts for divider thickness with multiple rows', () => {
+    const result = computeMinCellSize(2, 2, 1.2, 1, 4, 1.2);
+    const innerD = 2 * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * 1.2;
+    const expectedCellD = (innerD - 3 * 1.2) / 4; // 3 dividers
+    expect(result.minCellD).toBeCloseTo(expectedCellD);
+  });
+
+  it('returns small values for degenerate config', () => {
+    // 0.5-unit bin, 8 cols, 2.4mm thick dividers
+    const result = computeMinCellSize(0.5, 0.5, 1.2, 8, 8, 2.4);
+    expect(result.minCellW).toBeLessThan(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE);
+    expect(result.minCellD).toBeLessThan(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE);
+  });
+
+  it('returns large values for spacious config', () => {
+    // 8-unit bin, 2 cols, thin dividers
+    const result = computeMinCellSize(8, 8, 0.95, 2, 2, 0.4);
+    expect(result.minCellW).toBeGreaterThan(100);
+    expect(result.minCellD).toBeGreaterThan(100);
+  });
+});
+
+describe('validateCompartmentSizes', () => {
+  it('returns ok for 1x1 grid (no validation needed)', () => {
+    const result = validateCompartmentSizes(1, 1, 1.2, 1, 1, 2.4);
+    expect(isOk(result)).toBe(true);
+  });
+
+  it('returns ok for viable grid configuration', () => {
+    // 2x2 bin, 3x3 grid, 1.2mm dividers — plenty of space
+    const result = validateCompartmentSizes(2, 2, 1.2, 3, 3, 1.2);
+    expect(isOk(result)).toBe(true);
+  });
+
+  it('returns error when cols produce too-small cells', () => {
+    // 1-unit bin, 8 cols, 1.2mm dividers → cells ~3.9mm wide
+    const result = validateCompartmentSizes(1, 1, 1.2, 8, 1, 1.2);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('COMPARTMENT_TOO_SMALL');
+      expect(result.error.field).toBe('compartments.cols');
+    }
+  });
+
+  it('returns error when rows produce too-small cells', () => {
+    // 1-unit bin, 1 col, 8 rows, 1.2mm dividers
+    const result = validateCompartmentSizes(1, 1, 1.2, 1, 8, 1.2);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('COMPARTMENT_TOO_SMALL');
+      expect(result.error.field).toBe('compartments.rows');
+    }
+  });
+
+  it('returns error when thick dividers make cells too small', () => {
+    // 1-unit bin, 6 cols, 2.4mm dividers
+    const result = validateCompartmentSizes(1, 1, 1.2, 6, 1, 2.4);
+    expect(isErr(result)).toBe(true);
+  });
+
+  it('accepts large bin with max grid', () => {
+    // 8-unit bin, 8x8 grid, 1.2mm dividers
+    const result = validateCompartmentSizes(8, 8, 1.2, 8, 8, 1.2);
+    expect(isOk(result)).toBe(true);
+  });
+
+  it('includes helpful error message', () => {
+    const result = validateCompartmentSizes(0.5, 0.5, 1.2, 4, 1, 1.2);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.message).toContain('Compartment cells too small');
+      expect(result.error.message).toContain('min');
+    }
+  });
+
+  it('rejects cols less than 1', () => {
+    const result = validateCompartmentSizes(2, 2, 1.2, 0, 2, 1.2);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('COMPARTMENT_GRID_INVALID');
+      expect(result.error.field).toBe('compartments.cols');
+    }
+  });
+
+  it('rejects rows less than 1', () => {
+    const result = validateCompartmentSizes(2, 2, 1.2, 2, 0, 1.2);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('COMPARTMENT_GRID_INVALID');
+      expect(result.error.field).toBe('compartments.rows');
+    }
   });
 });
