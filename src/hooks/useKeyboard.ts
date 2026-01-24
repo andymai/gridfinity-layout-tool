@@ -15,7 +15,7 @@ import { canPlaceBin } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/utils/binLocation';
 import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants';
-import { useGridNavigation } from '@/features/grid-editor/hooks/useGridNavigation';
+import { useGridNavigation } from '@/features/grid-editor';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 

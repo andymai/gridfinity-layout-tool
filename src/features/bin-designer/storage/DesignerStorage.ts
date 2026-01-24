@@ -8,8 +8,15 @@
 
 import { openDB, type IDBPDatabase } from 'idb';
 import type { Result, StorageError } from '@/core/result';
-import { ok, err, isErr, storageNotFound, storageCorrupted, storageUnavailable } from '@/core/result';
-import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bin-designer/types';
+import {
+  ok,
+  err,
+  isErr,
+  storageNotFound,
+  storageCorrupted,
+  storageUnavailable,
+} from '@/core/result';
+import type { SavedDesign, BinParams, ExportFileNameConfig } from '../types';
 
 const DB_NAME = 'gridfinity-designer-v1';
 const DB_VERSION = 1;
