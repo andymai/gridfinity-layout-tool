@@ -79,17 +79,6 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
   const [isLoading, setIsLoading] = useState(initialLocale !== 'en');
   const mountedRef = useRef(true);
 
-  // Load initial non-English locale on mount
-  useEffect(() => {
-    if (initialLocale !== 'en') {
-      loadLocale(initialLocale);
-    }
-    return () => {
-      mountedRef.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only run on mount
-  }, []);
-
   const loadLocale = useCallback(async (target: Locale) => {
     if (target === 'en') {
       setTranslations(en);
@@ -119,6 +108,16 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
       }
     }
   }, []);
+
+  // Load initial non-English locale on mount
+  useEffect(() => {
+    if (initialLocale !== 'en') {
+      loadLocale(initialLocale);
+    }
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [initialLocale, loadLocale]);
 
   const setLocale = useCallback(
     (newLocale: Locale) => {

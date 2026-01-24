@@ -24,9 +24,9 @@ export const SUPPORTED_LOCALES: readonly LocaleInfo[] = [
   { code: 'en', nativeName: 'English', englishName: 'English' },
   { code: 'de', nativeName: 'Deutsch', englishName: 'German' },
   { code: 'nl', nativeName: 'Nederlands', englishName: 'Dutch' },
-  { code: 'es', nativeName: 'Espanol', englishName: 'Spanish' },
-  { code: 'pt-BR', nativeName: 'Portugues (Brasil)', englishName: 'Portuguese (Brazil)' },
-  { code: 'fr', nativeName: 'Francais', englishName: 'French' },
+  { code: 'es', nativeName: 'Español', englishName: 'Spanish' },
+  { code: 'pt-BR', nativeName: 'Português (Brasil)', englishName: 'Portuguese (Brazil)' },
+  { code: 'fr', nativeName: 'Français', englishName: 'French' },
 ] as const;
 
 /** Flat key-value map of translations */
