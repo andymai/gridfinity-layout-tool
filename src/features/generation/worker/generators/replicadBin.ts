@@ -14,16 +14,12 @@
  * - Final mesh translated up by SOCKET_HEIGHT so Z=0 = absolute bottom
  */
 
-import {
-  draw,
-  drawRoundedRectangle,
-  drawCircle,
-  drawRectangle,
-} from 'replicad';
+import { draw, drawRoundedRectangle, drawCircle, drawRectangle } from 'replicad';
 import type { Solid, Shape3D, Sketch, Plane, Point } from 'replicad';
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { GRIDFINITY } from '@/shared/constants/bin';
+import type { StageCache, InvalidationLevel } from '../stageCache';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -86,15 +82,15 @@ function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
   // Profile insets from outer boundary at each Z breakpoint
   // (derived from socketProfile after translate(CLEARANCE/2, 0))
   const INSET_TOP = 0;
-  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2;    // 2.15mm
-  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2;  // 2.95mm
+  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
+  const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
 
   // Z positions of profile breakpoints
   const Z1 = 0;
-  const Z2 = -(CLEARANCE / 2);                           // -0.25
-  const Z3 = -SOCKET_BIG_TAPER;                          // -2.4
+  const Z2 = -(CLEARANCE / 2); // -0.25
+  const Z3 = -SOCKET_BIG_TAPER; // -2.4
   const Z4 = -(SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART); // -4.2
-  const Z5 = -SOCKET_HEIGHT;                             // -5.0
+  const Z5 = -SOCKET_HEIGHT; // -5.0
 
   // Helper to create a rounded rect sketch at a given Z with a given inset
   const sectionAt = (z: number, inset: number): Sketch => {
@@ -158,12 +154,13 @@ function buildBaseSocket(
       const cellD_mm = cellD_units * SIZE - CLEARANCE;
       const cellCenterY = yOffset + (cellD_units * SIZE) / 2 - totalD_mm / 2;
 
-      const cellSocket = buildSingleCellSocket(cellW_mm, cellD_mm)
-        .translate([cellCenterX, cellCenterY, 0]);
+      const cellSocket = buildSingleCellSocket(cellW_mm, cellD_mm).translate([
+        cellCenterX,
+        cellCenterY,
+        0,
+      ]);
 
-      baseSocket = baseSocket
-        ? baseSocket.fuse(cellSocket)
-        : cellSocket;
+      baseSocket = baseSocket ? baseSocket.fuse(cellSocket) : cellSocket;
 
       yOffset += cellD_units * SIZE;
     }
@@ -177,37 +174,62 @@ function buildBaseSocket(
     const HOLE_OFFSET = 13; // mm from cell center to hole center
 
     const magnetCutout = withMagnet
-      ? (drawCircle(magnetRadius).sketchOnPlane() as unknown as Sketch)
-          .extrude(magnetDepth) as Shape3D
+      ? ((drawCircle(magnetRadius).sketchOnPlane() as unknown as Sketch).extrude(
+          magnetDepth
+        ) as Shape3D)
       : null;
     const screwCutout = withScrew
-      ? (drawCircle(screwRadius).sketchOnPlane() as unknown as Sketch)
-          .extrude(SOCKET_HEIGHT) as Shape3D
+      ? ((drawCircle(screwRadius).sketchOnPlane() as unknown as Sketch).extrude(
+          SOCKET_HEIGHT
+        ) as Shape3D)
       : null;
 
-    const cutout: Shape3D = magnetCutout && screwCutout
-      ? magnetCutout.fuse(screwCutout)
-      : (magnetCutout || screwCutout) as Shape3D;
+    const cutout: Shape3D =
+      magnetCutout && screwCutout
+        ? magnetCutout.fuse(screwCutout)
+        : ((magnetCutout || screwCutout) as Shape3D);
 
     // Iterate cells again and cut holes only where both axes are full-unit
     xOffset = 0;
     for (let ix = 0; ix < cellsW.length; ix++) {
       const cellW_units = cellsW[ix];
-      if (cellW_units < 1) { xOffset += cellW_units * SIZE; continue; }
+      if (cellW_units < 1) {
+        xOffset += cellW_units * SIZE;
+        continue;
+      }
       const cellCenterX = xOffset + (cellW_units * SIZE) / 2 - totalW_mm / 2;
 
       let yOffset2 = 0;
       for (let iy = 0; iy < cellsD.length; iy++) {
         const cellD_units = cellsD[iy];
-        if (cellD_units < 1) { yOffset2 += cellD_units * SIZE; continue; }
+        if (cellD_units < 1) {
+          yOffset2 += cellD_units * SIZE;
+          continue;
+        }
         const cellCenterY = yOffset2 + (cellD_units * SIZE) / 2 - totalD_mm / 2;
 
         // 4 holes per full cell at ±HOLE_OFFSET from center
         result = result
-          .cut(cutout.clone().translate([cellCenterX - HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT]))
-          .cut(cutout.clone().translate([cellCenterX - HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT]))
-          .cut(cutout.clone().translate([cellCenterX + HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT]))
-          .cut(cutout.clone().translate([cellCenterX + HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT]));
+          .cut(
+            cutout
+              .clone()
+              .translate([cellCenterX - HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT])
+          )
+          .cut(
+            cutout
+              .clone()
+              .translate([cellCenterX - HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT])
+          )
+          .cut(
+            cutout
+              .clone()
+              .translate([cellCenterX + HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT])
+          )
+          .cut(
+            cutout
+              .clone()
+              .translate([cellCenterX + HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT])
+          );
 
         yOffset2 += cellD_units * SIZE;
       }
@@ -235,9 +257,9 @@ function buildBinBox(
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
 
-  let box = (drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)
-    .sketchOnPlane() as unknown as Sketch)
-    .extrude(wallHeight) as Shape3D;
+  let box = (
+    drawRoundedRectangle(outerW, outerD, CORNER_RADIUS).sketchOnPlane() as unknown as Sketch
+  ).extrude(wallHeight) as Shape3D;
 
   if (!keepFull) {
     box = box.shell(wallThickness, (f) => f.inPlane('XY', wallHeight));
@@ -286,14 +308,12 @@ function buildTopShape(
       sketcher = sketcher.vLineTo(0);
     }
 
-    let basicShape = sketcher.close();
+    const basicShape = sketcher.close();
 
     // Apply clearance shifts and clip to valid region
-    let shiftedShape = basicShape
+    const shiftedShape = basicShape
       .translate(AXIS_CLEARANCE, -AXIS_CLEARANCE)
-      .intersect(
-        drawRoundedRectangle(10, 10).translate(-5, includeLip ? 0 : 5)
-      );
+      .intersect(drawRoundedRectangle(10, 10).translate(-5, includeLip ? 0 : 5));
 
     // Shave off the clearance
     let topProfileShape = shiftedShape
@@ -311,8 +331,11 @@ function buildTopShape(
   };
 
   // Sweep around the bin perimeter (built at Z=0, caller translates)
-  const boxSketch = drawRoundedRectangle(outerW, outerD, CORNER_RADIUS)
-    .sketchOnPlane() as unknown as Sketch;
+  const boxSketch = drawRoundedRectangle(
+    outerW,
+    outerD,
+    CORNER_RADIUS
+  ).sketchOnPlane() as unknown as Sketch;
 
   return boxSketch
     .sweepSketch(topProfile, { withContact: true })
@@ -371,9 +394,9 @@ function buildCompartmentWalls(
           // Create wall segment from segStart to row (exclusive)
           const segLength = (row - segStart) * cellD;
           const yCenter = -innerD / 2 + (segStart + (row - segStart) / 2) * cellD;
-          const wall = (drawRectangle(thickness, segLength)
-            .sketchOnPlane('XY') as unknown as Sketch)
-            .extrude(wallHeight) as Shape3D;
+          const wall = (
+            drawRectangle(thickness, segLength).sketchOnPlane('XY') as unknown as Sketch
+          ).extrude(wallHeight) as Shape3D;
           const positioned = wall.translate([xPos, yCenter, 0]);
           dividers = dividers ? dividers.fuse(positioned) : positioned;
           segStart = null;
@@ -384,9 +407,9 @@ function buildCompartmentWalls(
     if (segStart !== null) {
       const segLength = (rows - segStart) * cellD;
       const yCenter = -innerD / 2 + (segStart + (rows - segStart) / 2) * cellD;
-      const wall = (drawRectangle(thickness, segLength)
-        .sketchOnPlane('XY') as unknown as Sketch)
-        .extrude(wallHeight) as Shape3D;
+      const wall = (
+        drawRectangle(thickness, segLength).sketchOnPlane('XY') as unknown as Sketch
+      ).extrude(wallHeight) as Shape3D;
       const positioned = wall.translate([xPos, yCenter, 0]);
       dividers = dividers ? dividers.fuse(positioned) : positioned;
     }
@@ -408,9 +431,9 @@ function buildCompartmentWalls(
         if (segStart !== null) {
           const segLength = (col - segStart) * cellW;
           const xCenter = -innerW / 2 + (segStart + (col - segStart) / 2) * cellW;
-          const wall = (drawRectangle(segLength, thickness)
-            .sketchOnPlane('XY') as unknown as Sketch)
-            .extrude(wallHeight) as Shape3D;
+          const wall = (
+            drawRectangle(segLength, thickness).sketchOnPlane('XY') as unknown as Sketch
+          ).extrude(wallHeight) as Shape3D;
           const positioned = wall.translate([xCenter, yPos, 0]);
           dividers = dividers ? dividers.fuse(positioned) : positioned;
           segStart = null;
@@ -420,9 +443,9 @@ function buildCompartmentWalls(
     if (segStart !== null) {
       const segLength = (cols - segStart) * cellW;
       const xCenter = -innerW / 2 + (segStart + (cols - segStart) / 2) * cellW;
-      const wall = (drawRectangle(segLength, thickness)
-        .sketchOnPlane('XY') as unknown as Sketch)
-        .extrude(wallHeight) as Shape3D;
+      const wall = (
+        drawRectangle(segLength, thickness).sketchOnPlane('XY') as unknown as Sketch
+      ).extrude(wallHeight) as Shape3D;
       const positioned = wall.translate([xCenter, yPos, 0]);
       dividers = dividers ? dividers.fuse(positioned) : positioned;
     }
@@ -465,9 +488,9 @@ function buildScoops(
       const cy = -innerD / 2 + compartmentD * (row + 0.5);
 
       // Scoop is a cylinder at the front wall of the compartment
-      const scoopCylinder = (drawCircle(radius)
-        .sketchOnPlane('XZ', cy - compartmentD / 2) as unknown as Sketch)
-        .extrude(compartmentW * 0.8) as Shape3D;
+      const scoopCylinder = (
+        drawCircle(radius).sketchOnPlane('XZ', cy - compartmentD / 2) as unknown as Sketch
+      ).extrude(compartmentW * 0.8) as Shape3D;
 
       const positioned = scoopCylinder.translate([cx, 0, 0]);
       scoops = scoops ? scoops.fuse(positioned) : positioned;
@@ -490,37 +513,41 @@ function buildInsertCuts(params: BinParams): Shape3D | null {
 
     switch (insert.shape) {
       case 'circle': {
-        solid = (drawCircle(insert.width / 2)
-          .sketchOnPlane('XY') as unknown as Sketch)
-          .extrude(insert.cutDepth) as Shape3D;
+        solid = (drawCircle(insert.width / 2).sketchOnPlane('XY') as unknown as Sketch).extrude(
+          insert.cutDepth
+        ) as Shape3D;
         break;
       }
       case 'rounded-rect': {
-        solid = (drawRoundedRectangle(insert.width, insert.depth, insert.cornerRadius)
-          .sketchOnPlane('XY') as unknown as Sketch)
-          .extrude(insert.cutDepth) as Shape3D;
+        solid = (
+          drawRoundedRectangle(insert.width, insert.depth, insert.cornerRadius).sketchOnPlane(
+            'XY'
+          ) as unknown as Sketch
+        ).extrude(insert.cutDepth) as Shape3D;
         break;
       }
       case 'hexagon': {
         // Approximate hexagon with circle (Replicad polygon support TBD)
-        solid = (drawCircle(insert.width / 2)
-          .sketchOnPlane('XY') as unknown as Sketch)
-          .extrude(insert.cutDepth) as Shape3D;
+        solid = (drawCircle(insert.width / 2).sketchOnPlane('XY') as unknown as Sketch).extrude(
+          insert.cutDepth
+        ) as Shape3D;
         break;
       }
       case 'slot': {
-        solid = (drawRoundedRectangle(
-          insert.width, insert.depth,
-          Math.min(insert.width, insert.depth) / 2
-        ).sketchOnPlane('XY') as unknown as Sketch)
-          .extrude(insert.cutDepth) as Shape3D;
+        solid = (
+          drawRoundedRectangle(
+            insert.width,
+            insert.depth,
+            Math.min(insert.width, insert.depth) / 2
+          ).sketchOnPlane('XY') as unknown as Sketch
+        ).extrude(insert.cutDepth) as Shape3D;
         break;
       }
       case 'rectangle':
       default: {
-        solid = (drawRectangle(insert.width, insert.depth)
-          .sketchOnPlane('XY') as unknown as Sketch)
-          .extrude(insert.cutDepth) as Shape3D;
+        solid = (
+          drawRectangle(insert.width, insert.depth).sketchOnPlane('XY') as unknown as Sketch
+        ).extrude(insert.cutDepth) as Shape3D;
         break;
       }
     }
@@ -624,16 +651,17 @@ export async function exportBin(
  * Generate a complete Gridfinity bin from parameters.
  * Assembly order: base socket + box body + top shape (stacking lip)
  * Then features: dividers, scoops, inserts
+ *
+ * When a StageCache is provided, skips recomputation of stages whose
+ * parameters haven't changed since the last generation.
  */
 export function generateBin(
   params: BinParams,
-  onProgress?: ProgressFn
+  onProgress?: ProgressFn,
+  stageCache?: StageCache
 ): MeshData {
   const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
-  // Wall height = total minus base height (first unit is base)
-  // But in our coordinate system, the box floor is at Z=0 and socket is below.
-  // The cavity height is (height - 1) height units (first unit = base, no cavity).
   const wallHeight = totalHeight - GRIDFINITY.BASE_HEIGHT;
 
   const outerW = params.width * SIZE - CLEARANCE;
@@ -642,60 +670,82 @@ export function generateBin(
   const innerD = outerD - 2 * wallThickness;
   const keepFull = params.style === 'solid';
 
-  // Determine base features
   const withMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
   const withScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
 
-  // Stage 1: Build base socket (per-cell segmented sockets for baseplate fit)
+  // Determine which stages need rebuilding
+  const invalidationLevel: InvalidationLevel = stageCache
+    ? stageCache.getInvalidationLevel(params)
+    : 'base';
+
+  if (stageCache) {
+    stageCache.invalidateFrom(invalidationLevel);
+  }
+
+  // Stage 1: Build base socket
   onProgress?.('base', 0.1);
-  const base = buildBaseSocket(
-    params.width,
-    params.depth,
-    withMagnet,
-    withScrew,
-    params.base.magnetDiameter / 2,
-    params.base.magnetDepth,
-    params.base.screwDiameter / 2
-  );
+  let base: Shape3D;
+  if (invalidationLevel === 'base' || !stageCache?.getBase()) {
+    base = buildBaseSocket(
+      params.width,
+      params.depth,
+      withMagnet,
+      withScrew,
+      params.base.magnetDiameter / 2,
+      params.base.magnetDepth,
+      params.base.screwDiameter / 2
+    );
+    stageCache?.setBase(base);
+  } else {
+    // Safe: else branch only reachable when stageCache is defined (condition checks stageCache?.getBase())
+    base = (stageCache as StageCache).getBase() as Shape3D;
+  }
 
   // Stage 2: Build bin box (walls + floor)
   onProgress?.('shell', 0.3);
-  const box = buildBinBox(
-    params.width,
-    params.depth,
-    wallHeight,
-    wallThickness,
-    keepFull
-  );
+  let box: Shape3D;
+  const needsShell =
+    invalidationLevel === 'base' || invalidationLevel === 'shell' || !stageCache?.getShell();
+  if (needsShell) {
+    box = buildBinBox(params.width, params.depth, wallHeight, wallThickness, keepFull);
+    stageCache?.setShell(box);
+  } else {
+    // Safe: else branch only reachable when stageCache is defined (needsShell false implies getShell() truthy)
+    box = (stageCache as StageCache).getShell() as Shape3D;
+  }
 
-  // Stage 3: Build stacking lip
+  // Stage 3: Assemble base + shell + stacking lip
   onProgress?.('features', 0.4);
   let bin: Shape3D;
-  if (params.base.stackingLip && !keepFull) {
-    try {
-      const top = buildTopShape(
-        params.width,
-        params.depth,
-        true, // includeLip
-        wallThickness
-      ).translateZ(wallHeight);
-      // Assemble: socket + box + top
-      bin = base
-        .fuse(box, { optimisation: 'commonFace' })
-        .fuse(top, { optimisation: 'commonFace' });
-    } catch {
-      // Top shape may fail — assemble without it
+  const needsAssembly =
+    needsShell || invalidationLevel === 'assembly' || !stageCache?.getAssembly();
+  if (needsAssembly) {
+    if (params.base.stackingLip && !keepFull) {
+      try {
+        const top = buildTopShape(params.width, params.depth, true, wallThickness).translateZ(
+          wallHeight
+        );
+        bin = base
+          .fuse(box, { optimisation: 'commonFace' })
+          .fuse(top, { optimisation: 'commonFace' });
+      } catch {
+        bin = base.fuse(box, { optimisation: 'commonFace' });
+      }
+    } else {
       bin = base.fuse(box, { optimisation: 'commonFace' });
     }
+    stageCache?.setAssembly(bin);
   } else {
-    bin = base.fuse(box, { optimisation: 'commonFace' });
+    // Safe: else branch only reachable when stageCache is defined (needsAssembly false implies getAssembly() truthy)
+    bin = (stageCache as StageCache).getAssembly() as Shape3D;
   }
 
   // Stage 4: Features (dividers, scoops, inserts)
+  // Features always rebuild because they apply boolean cuts to the assembly.
+  // When only feature params changed, assembly is reused as starting point.
   onProgress?.('features', 0.5);
 
   if (!keepFull) {
-    // Compartment divider walls (positioned from Z=0 = bin floor)
     const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, wallHeight);
     if (compartmentWalls) {
       try {
@@ -705,7 +755,6 @@ export function generateBin(
       }
     }
 
-    // Scoops (boolean cut from interior)
     const xDividers = params.compartments.cols - 1;
     const scoopCut = buildScoops(params, innerW, innerD, wallHeight, xDividers);
     if (scoopCut) {
@@ -716,7 +765,6 @@ export function generateBin(
       }
     }
 
-    // Insert cavities (positioned at Z=0 = bin floor)
     const insertCuts = buildInsertCuts(params);
     if (insertCuts) {
       try {
@@ -735,9 +783,12 @@ export function generateBin(
   onProgress?.('merge', 0.9);
   lastSolid = bin as unknown as Solid;
 
+  // Update cache with current params
+  stageCache?.setParams(params);
+
   const shapeMesh = bin.mesh({
-    tolerance: 0.1,        // mm chord tolerance (preview quality)
-    angularTolerance: 15,  // degrees (preview quality)
+    tolerance: 0.1,
+    angularTolerance: 15,
   });
 
   onProgress?.('merge', 1.0);

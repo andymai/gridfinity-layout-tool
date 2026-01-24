@@ -6,6 +6,7 @@
 
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
+import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -16,6 +17,7 @@ interface BinMeshProps {
 }
 
 export function BinMesh({ wireframe, color }: BinMeshProps) {
+  const { invalidate } = useThree();
   const { vertices, normals } = useDesignerStore(
     useShallow((s) => ({
       vertices: s.generation.mesh?.vertices ?? null,
@@ -38,6 +40,16 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       geometry?.dispose();
     };
   }, [geometry]);
+
+  // Invalidate frame when mesh data changes
+  useEffect(() => {
+    if (geometry) invalidate();
+  }, [geometry, invalidate]);
+
+  // Invalidate frame when visual props change
+  useEffect(() => {
+    invalidate();
+  }, [wireframe, color, invalidate]);
 
   if (!geometry) return null;
 

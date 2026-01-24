@@ -12,7 +12,15 @@ import { Vector3, Spherical } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { BinMesh, BinAxisLabels, BinDimensions, BinNameLabel, PreviewControls, PreviewSkeleton, type CameraPreset } from './preview';
+import {
+  BinMesh,
+  BinAxisLabels,
+  BinDimensions,
+  BinNameLabel,
+  PreviewControls,
+  PreviewSkeleton,
+  type CameraPreset,
+} from './preview';
 import { GradientBackground } from './preview/GradientBackground';
 import { FootprintGrid } from './preview/FootprintGrid';
 import { useDesignerKeyboard } from '../hooks/useDesignerKeyboard';
@@ -26,7 +34,7 @@ const DEFAULT_COLOR = '#d4d8dc';
 
 /** Camera positions for each preset (eye position looking toward center) */
 const CAMERA_PRESETS: Record<CameraPreset, [number, number, number]> = {
-  front: [0, -1, 0.3],    // Normalized direction — scaled by distance
+  front: [0, -1, 0.3], // Normalized direction — scaled by distance
   side: [1, 0, 0.3],
   top: [0, -0.01, 1],
   isometric: [0.6, -0.6, 0.5],
@@ -45,12 +53,7 @@ const REFRAME_THRESHOLD = 0.1; // 10% change
  * Calculate ideal camera distance to frame a bin of the given dimensions.
  * Uses perspective camera FOV geometry to ensure the bin fills ~65% of viewport.
  */
-function calculateIdealDistance(
-  width: number,
-  depth: number,
-  height: number,
-  fov: number
-): number {
+function calculateIdealDistance(width: number, depth: number, height: number, fov: number): number {
   const outerW = width * GRIDFINITY.GRID_SIZE;
   const outerD = depth * GRIDFINITY.GRID_SIZE;
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
@@ -81,16 +84,23 @@ function calculateBinCenter(_width: number, _depth: number, height: number): Vec
  */
 function CameraController({
   controlsRef,
+  invalidateRef,
   width,
   depth,
   height,
 }: {
   controlsRef: React.RefObject<OrbitControlsType | null>;
+  invalidateRef: React.MutableRefObject<(() => void) | null>;
   width: number;
   depth: number;
   height: number;
 }) {
-  const { camera } = useThree();
+  const { camera, invalidate } = useThree();
+
+  // Expose invalidate to hooks outside Canvas context
+  useEffect(() => {
+    invalidateRef.current = invalidate;
+  }, [invalidate, invalidateRef]);
   const animRef = useRef<{
     startPos: Vector3;
     targetPos: Vector3;
@@ -102,7 +112,10 @@ function CameraController({
 
   const fov = 45;
   const binCenter = useMemo(() => calculateBinCenter(width, depth, height), [width, depth, height]);
-  const idealDistance = useMemo(() => calculateIdealDistance(width, depth, height, fov), [width, depth, height, fov]);
+  const idealDistance = useMemo(
+    () => calculateIdealDistance(width, depth, height, fov),
+    [width, depth, height, fov]
+  );
 
   // Auto-frame: when bin dimensions change, smoothly adjust camera distance
   useEffect(() => {
@@ -161,6 +174,7 @@ function CameraController({
 
     camera.position.lerpVectors(anim.startPos, anim.targetPos, eased);
     camera.lookAt(binCenter);
+    invalidate();
 
     if (progress >= 1) {
       animRef.current = null;
@@ -176,69 +190,75 @@ function CameraController({
  */
 function usePresetTransition(
   controlsRef: React.RefObject<OrbitControlsType | null>,
+  invalidateRef: React.RefObject<(() => void) | null>,
   width: number,
   depth: number,
   height: number
 ) {
   const animFrameRef = useRef<number | null>(null);
 
-  const setCameraPreset = useCallback((preset: CameraPreset) => {
-    const controls = controlsRef.current;
-    if (!controls) return;
+  const setCameraPreset = useCallback(
+    (preset: CameraPreset) => {
+      const controls = controlsRef.current;
+      if (!controls) return;
 
-    const camera = controls.object;
-    const fov = 45;
-    const binCenter = calculateBinCenter(width, depth, height);
-    const idealDistance = calculateIdealDistance(width, depth, height, fov);
+      const camera = controls.object;
+      const fov = 45;
+      const binCenter = calculateBinCenter(width, depth, height);
+      const idealDistance = calculateIdealDistance(width, depth, height, fov);
 
-    // Calculate target position from preset direction
-    const direction = new Vector3(...CAMERA_PRESETS[preset]).normalize();
-    const targetPosition = direction.multiplyScalar(idealDistance).add(binCenter);
+      // Calculate target position from preset direction
+      const direction = new Vector3(...CAMERA_PRESETS[preset]).normalize();
+      const targetPosition = direction.multiplyScalar(idealDistance).add(binCenter);
 
-    // Current camera state
-    const startPosition = camera.position.clone();
-    const target = binCenter.clone();
+      // Current camera state
+      const startPosition = camera.position.clone();
+      const target = binCenter.clone();
 
-    // Convert to spherical for smooth arc interpolation
-    const startSpherical = new Spherical().setFromVector3(startPosition.clone().sub(target));
-    const targetSpherical = new Spherical().setFromVector3(targetPosition.clone().sub(target));
+      // Convert to spherical for smooth arc interpolation
+      const startSpherical = new Spherical().setFromVector3(startPosition.clone().sub(target));
+      const targetSpherical = new Spherical().setFromVector3(targetPosition.clone().sub(target));
 
-    const startTime = performance.now();
+      const startTime = performance.now();
 
-    // Cancel existing animation
-    if (animFrameRef.current !== null) {
-      cancelAnimationFrame(animFrameRef.current);
-    }
+      // Cancel existing animation
+      if (animFrameRef.current !== null) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
 
-    const animate = () => {
-      const elapsed = performance.now() - startTime;
-      const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
-      // Ease-out cubic for natural deceleration
-      const eased = 1 - Math.pow(1 - progress, 3);
+      const animate = () => {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
+        // Ease-out cubic for natural deceleration
+        const eased = 1 - Math.pow(1 - progress, 3);
 
-      // Interpolate in spherical coordinates for smooth arc
-      const currentSpherical = new Spherical(
-        startSpherical.radius + (targetSpherical.radius - startSpherical.radius) * eased,
-        startSpherical.phi + (targetSpherical.phi - startSpherical.phi) * eased,
-        startSpherical.theta + (targetSpherical.theta - startSpherical.theta) * eased
-      );
+        // Interpolate in spherical coordinates for smooth arc
+        const currentSpherical = new Spherical(
+          startSpherical.radius + (targetSpherical.radius - startSpherical.radius) * eased,
+          startSpherical.phi + (targetSpherical.phi - startSpherical.phi) * eased,
+          startSpherical.theta + (targetSpherical.theta - startSpherical.theta) * eased
+        );
 
-      const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
-      camera.position.copy(newPosition);
-      camera.up.set(0, 0, 1);
-      camera.lookAt(target);
-
-      if (progress < 1) {
-        animFrameRef.current = requestAnimationFrame(animate);
-      } else {
-        animFrameRef.current = null;
+        const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
+        camera.position.copy(newPosition);
+        camera.up.set(0, 0, 1);
+        camera.lookAt(target);
+        // Update controls and explicitly invalidate for demand mode rendering
         controls.target.copy(target);
         controls.update();
-      }
-    };
+        invalidateRef.current?.();
 
-    animate();
-  }, [controlsRef, width, depth, height]);
+        if (progress < 1) {
+          animFrameRef.current = requestAnimationFrame(animate);
+        } else {
+          animFrameRef.current = null;
+        }
+      };
+
+      animate();
+    },
+    [controlsRef, invalidateRef, width, depth, height]
+  );
 
   // Cleanup on unmount
   useEffect(() => {
@@ -266,6 +286,7 @@ function usePresetTransition(
  */
 export function PreviewCanvas() {
   const controlsRef = useRef<OrbitControlsType>(null);
+  const invalidateRef = useRef<(() => void) | null>(null);
   const [wireframe, setWireframe] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
 
@@ -304,6 +325,7 @@ export function PreviewCanvas() {
   // Smooth camera preset transitions
   const setCameraPreset = usePresetTransition(
     controlsRef,
+    invalidateRef,
     params.width,
     params.depth,
     params.height
@@ -346,21 +368,22 @@ export function PreviewCanvas() {
   const showOverlay = generationStatus === 'generating' && hasMesh;
 
   return (
-    <div
-      className="relative h-full w-full"
-      role="img"
-      aria-label={binDescription}
-    >
+    <div className="relative h-full w-full" role="img" aria-label={binDescription}>
       {/* ARIA live region for status announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {statusAnnouncement}
       </div>
 
       {showSkeleton ? (
-        <PreviewSkeleton wasmStatus={wasmStatus} generationStatus={generationStatus} onRetry={handleRetry} />
+        <PreviewSkeleton
+          wasmStatus={wasmStatus}
+          generationStatus={generationStatus}
+          onRetry={handleRetry}
+        />
       ) : (
         <>
           <Canvas
+            frameloop="demand"
             camera={{
               position: new Vector3(100, -100, 80),
               fov: 45,
@@ -385,6 +408,7 @@ export function PreviewCanvas() {
             {/* Camera controller for auto-framing */}
             <CameraController
               controlsRef={controlsRef}
+              invalidateRef={invalidateRef}
               width={width}
               depth={depth}
               height={height}
@@ -441,16 +465,30 @@ export function PreviewCanvas() {
             />
           </Canvas>
 
-          {/* Generating overlay */}
+          {/* Subtle corner spinner (previous mesh stays visible) */}
           {showOverlay && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/5 backdrop-blur-[2px] transition-opacity">
-              <span className="flex items-center gap-2 rounded-full bg-surface-elevated/95 px-3.5 py-1.5 text-xs font-medium text-content-secondary shadow-md">
-                <svg className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Updating…
-              </span>
+            <div className="absolute right-2 top-2 flex items-center gap-1.5 rounded-full bg-surface-elevated/90 px-2.5 py-1 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur-sm">
+              <svg
+                className="h-3 w-3 animate-spin motion-reduce:animate-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              Updating
             </div>
           )}
 
@@ -474,19 +512,27 @@ export function PreviewCanvas() {
 
 const TOUCH_HINT_KEY = 'gridfinity-designer-touch-hint-dismissed';
 
+function getStoredHintDismissed(): boolean {
+  try {
+    return !!localStorage.getItem(TOUCH_HINT_KEY);
+  } catch {
+    return false;
+  }
+}
+
 function TouchHint() {
   const { isTouchDevice, isDesktop } = useResponsive();
-  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
-  useEffect(() => {
-    if (isTouchDevice && !isDesktop && !localStorage.getItem(TOUCH_HINT_KEY)) {
-      setVisible(true);
-    }
-  }, [isTouchDevice, isDesktop]);
+  const visible = !dismissed && isTouchDevice && !isDesktop && !getStoredHintDismissed();
 
   const dismiss = useCallback(() => {
-    setVisible(false);
-    localStorage.setItem(TOUCH_HINT_KEY, '1');
+    setDismissed(true);
+    try {
+      localStorage.setItem(TOUCH_HINT_KEY, '1');
+    } catch {
+      /* storage unavailable */
+    }
   }, []);
 
   if (!visible) return null;
@@ -508,7 +554,13 @@ function TouchHint() {
           className="ml-1 rounded-full p-0.5 hover:bg-white/20"
           aria-label="Dismiss touch hints"
         >
-          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 12 12" aria-hidden="true">
+          <svg
+            className="h-3 w-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 12 12"
+            aria-hidden="true"
+          >
             <path d="M3 3l6 6M9 3l-6 6" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>

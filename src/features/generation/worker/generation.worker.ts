@@ -13,9 +13,10 @@
 
 import { setOC } from 'replicad';
 import type { WorkerMessage, WorkerResponse } from '../bridge/types';
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/shared/types/bin';
 import type { ExportPayload } from '../bridge/types';
 import { generateBin, exportBin } from './generators/replicadBin';
+import { StageCache } from './stageCache';
 
 import opencascade from 'replicad-opencascadejs/src/replicad_single.js';
 import opencascadeWasm from 'replicad-opencascadejs/src/replicad_single.wasm?url';
@@ -25,6 +26,9 @@ let activeRequestId: string | null = null;
 
 /** Whether OCCT has been initialized */
 let ocInitialized = false;
+
+/** Worker-side stage cache for reusing intermediate BREP shapes */
+const stageCache = new StageCache();
 
 /** Post a typed response to the main thread */
 function respond(response: WorkerResponse): void {
@@ -82,10 +86,14 @@ function generate(params: BinParams, requestId: string): void {
   const startTime = performance.now();
 
   try {
-    const meshData = generateBin(params, (stage, progress) => {
-      if (activeRequestId !== requestId) return; // Cancelled
-      reportProgress(requestId, stage as 'base' | 'shell' | 'features' | 'merge', progress);
-    });
+    const meshData = generateBin(
+      params,
+      (stage, progress) => {
+        if (activeRequestId !== requestId) return; // Cancelled
+        reportProgress(requestId, stage as 'base' | 'shell' | 'features' | 'merge', progress);
+      },
+      stageCache
+    );
 
     // Check for cancellation before posting result
     if (activeRequestId !== requestId) return;
