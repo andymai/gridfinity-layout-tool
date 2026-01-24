@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { useCallback, useRef, useEffect } from 'react';
 import type { Layout } from '@/core/types';
 import { useLayoutStore } from './layout';
+import { useSelectionStore } from './selection';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 
@@ -15,6 +16,29 @@ function cloneLayout(layout: Layout): Layout {
     return structuredClone(layout);
   }
   return JSON.parse(JSON.stringify(layout));
+}
+
+/**
+ * Remove stale bin references from the selection store after layout restoration.
+ * Called after undo/redo to prevent selectedBinIds, focusedBinId, etc. from
+ * referencing bins that no longer exist in the restored layout.
+ */
+function pruneStaleSelections(restoredLayout: Layout): void {
+  const binIds = new Set(restoredLayout.bins.map((b) => b.id));
+  const selectionState = useSelectionStore.getState();
+
+  const prunedIds = selectionState.selectedBinIds.filter((id) => binIds.has(id));
+  if (prunedIds.length !== selectionState.selectedBinIds.length) {
+    useSelectionStore.setState({ selectedBinIds: prunedIds });
+  }
+
+  if (selectionState.focusedBinId && !binIds.has(selectionState.focusedBinId)) {
+    useSelectionStore.setState({ focusedBinId: null });
+  }
+
+  if (selectionState.quickLabelBinId && !binIds.has(selectionState.quickLabelBinId)) {
+    useSelectionStore.setState({ quickLabelBinId: null });
+  }
 }
 
 interface HistoryState {
@@ -66,6 +90,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     }));
 
     useLayoutStore.setState({ layout: previous });
+    pruneStaleSelections(previous);
 
     // Track undo for ML telemetry
     // previousLayout = state we're reverting TO, currentLayout = state we had BEFORE undo
@@ -87,6 +112,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     }));
 
     useLayoutStore.setState({ layout: next });
+    pruneStaleSelections(next);
   },
 
   clear: () => {
