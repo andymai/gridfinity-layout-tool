@@ -69,6 +69,19 @@
       "prettier --write"
     ]
   },
+  "overrides": {
+    "path-to-regexp": "6.3.0",
+    "undici": "6.23.0",
+    "workbox-build": {
+      "source-map": "0.7.4",
+      "@rollup/plugin-replace": {
+        "magic-string": "0.30.21"
+      },
+      "@surma/rollup-plugin-off-main-thread": {
+        "magic-string": "0.30.21"
+      }
+    }
+  },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
     "@eslint/js": "^9.39.1",
@@ -78,7 +91,6 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
-    "@types/lz-string": "^1.5.0",
     "@types/node": "^25.0.10",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
@@ -102,7 +114,6 @@
     "prettier": "^3.5.0",
     "rollup-plugin-visualizer": "^6.0.5",
     "size-limit": "^12.0.0",
-    "source-map-explorer": "^2.5.3",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
