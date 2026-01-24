@@ -131,6 +131,49 @@ describe('canPlaceBin', () => {
     expect(result).toEqual({ valid: false, reason: 'blocked_zone' });
   });
 
+  it('rejects placement overlapping fractional blocked zone', () => {
+    const layout = createTestLayout();
+    // Small fractional bin on layer 1 that protrudes into layer 2
+    layout.bins = [
+      {
+        id: 'small-tall',
+        layerId: 'layer1',
+        x: 1.5,
+        y: 1.5,
+        width: 0.5,
+        depth: 0.5,
+        height: 6,
+        category: 'cat1',
+        label: '',
+        notes: '',
+      },
+    ];
+    // Bin on layer 2 that covers the blocked zone area
+    const result = canPlaceBin({ x: 0, y: 0, width: 3, depth: 3, height: 6 }, 'layer2', layout);
+    expect(result).toEqual({ valid: false, reason: 'blocked_zone' });
+  });
+
+  it('allows placement adjacent to fractional blocked zone', () => {
+    const layout = createTestLayout();
+    layout.bins = [
+      {
+        id: 'small-tall',
+        layerId: 'layer1',
+        x: 0,
+        y: 0,
+        width: 0.5,
+        depth: 0.5,
+        height: 6,
+        category: 'cat1',
+        label: '',
+        notes: '',
+      },
+    ];
+    // Bin placed at (1, 0) doesn't overlap the 0.5x0.5 blocked zone at (0, 0)
+    const result = canPlaceBin({ x: 1, y: 0, width: 2, depth: 2, height: 6 }, 'layer2', layout);
+    expect(result.valid).toBe(true);
+  });
+
   it('rejects placement exceeding depth', () => {
     const layout = createTestLayout();
     const result = canPlaceBin({ x: 0, y: 9, width: 2, depth: 2, height: 3 }, 'layer1', layout);
