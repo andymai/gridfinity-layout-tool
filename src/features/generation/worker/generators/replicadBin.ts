@@ -372,6 +372,10 @@ function buildCompartmentWalls(
 
   const cellW = innerW / cols;
   const cellD = innerD / rows;
+
+  // Safety net: skip wall generation if cells are too small for viable geometry
+  if (cellW < thickness * 2 || cellD < thickness * 2) return null;
+
   let dividers: Shape3D | null = null;
 
   // Derive wall segments from cell boundaries
