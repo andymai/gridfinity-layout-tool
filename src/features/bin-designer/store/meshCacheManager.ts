@@ -36,8 +36,9 @@ export function createCachedMesh(
 /**
  * Evict oldest mesh caches from history when total exceeds budget.
  *
- * Mutates the entries in-place by setting mesh to null on the oldest
- * entries first (from the beginning of past array).
+ * This function is pure: it does not mutate the provided arrays. It returns
+ * new arrays with `mesh` set to null on the oldest entries first (from the
+ * beginning of past, then from the end of future) until the budget is met.
  *
  * @returns New arrays with evicted entries (mesh set to null)
  */

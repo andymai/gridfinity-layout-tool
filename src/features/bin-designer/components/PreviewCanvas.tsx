@@ -84,16 +84,23 @@ function calculateBinCenter(_width: number, _depth: number, height: number): Vec
  */
 function CameraController({
   controlsRef,
+  invalidateRef,
   width,
   depth,
   height,
 }: {
   controlsRef: React.RefObject<OrbitControlsType | null>;
+  invalidateRef: React.MutableRefObject<(() => void) | null>;
   width: number;
   depth: number;
   height: number;
 }) {
   const { camera, invalidate } = useThree();
+
+  // Expose invalidate to hooks outside Canvas context
+  useEffect(() => {
+    invalidateRef.current = invalidate;
+  }, [invalidate, invalidateRef]);
   const animRef = useRef<{
     startPos: Vector3;
     targetPos: Vector3;
@@ -183,6 +190,7 @@ function CameraController({
  */
 function usePresetTransition(
   controlsRef: React.RefObject<OrbitControlsType | null>,
+  invalidateRef: React.RefObject<(() => void) | null>,
   width: number,
   depth: number,
   height: number
@@ -235,9 +243,10 @@ function usePresetTransition(
         camera.position.copy(newPosition);
         camera.up.set(0, 0, 1);
         camera.lookAt(target);
-        // Update controls each frame to trigger invalidation in demand mode
+        // Update controls and explicitly invalidate for demand mode rendering
         controls.target.copy(target);
         controls.update();
+        invalidateRef.current?.();
 
         if (progress < 1) {
           animFrameRef.current = requestAnimationFrame(animate);
@@ -248,7 +257,7 @@ function usePresetTransition(
 
       animate();
     },
-    [controlsRef, width, depth, height]
+    [controlsRef, invalidateRef, width, depth, height]
   );
 
   // Cleanup on unmount
@@ -277,6 +286,7 @@ function usePresetTransition(
  */
 export function PreviewCanvas() {
   const controlsRef = useRef<OrbitControlsType>(null);
+  const invalidateRef = useRef<(() => void) | null>(null);
   const [wireframe, setWireframe] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
 
@@ -315,6 +325,7 @@ export function PreviewCanvas() {
   // Smooth camera preset transitions
   const setCameraPreset = usePresetTransition(
     controlsRef,
+    invalidateRef,
     params.width,
     params.depth,
     params.height
@@ -397,6 +408,7 @@ export function PreviewCanvas() {
             {/* Camera controller for auto-framing */}
             <CameraController
               controlsRef={controlsRef}
+              invalidateRef={invalidateRef}
               width={width}
               depth={depth}
               height={height}

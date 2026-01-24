@@ -59,6 +59,9 @@ function pushHistoryEntry(state: Draft<DesignerState>): void {
   const evicted = evictIfNeeded(state.history.past, state.history.future);
   state.history.past = evicted.past as HistoryEntry[];
   state.history.future = evicted.future as HistoryEntry[];
+
+  // Clear cached mesh for the previous params; new params need a fresh result
+  pendingMeshCache = null;
 }
 
 export const useDesignerStore = create<DesignerState>()(
