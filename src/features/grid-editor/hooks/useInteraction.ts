@@ -278,13 +278,11 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       }
     };
 
-    const handlePointerUp = (e: PointerEvent) => {
-      // Clear pointer tracking
+    // Shared cleanup for pointer tracking and capture release
+    const cleanupPointer = (e: PointerEvent) => {
       if (e.pointerId === activePointerIdRef.current) {
         activePointerIdRef.current = null;
       }
-
-      // Release pointer capture
       if (capturedPointerRef.current) {
         try {
           capturedPointerRef.current.element.releasePointerCapture(
@@ -295,6 +293,10 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
         }
         capturedPointerRef.current = null;
       }
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      cleanupPointer(e);
 
       // Delegate to mode hooks (using refs for current handlers)
       if (interaction.type === 'draw' || interaction.type === 'paint') {
@@ -310,16 +312,35 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       setInteraction(null);
     };
 
+    // pointercancel fires when the OS/browser takes over the gesture (e.g.,
+    // system scroll, incoming call, notification). Discard the interaction
+    // without committing changes - the user didn't intentionally complete it.
+    const handlePointerCancel = (e: PointerEvent) => {
+      cleanupPointer(e);
+
+      // Track rejection for ML telemetry
+      if (interaction.type === 'draw' || interaction.type === 'paint') {
+        mlTracking.trackRejection('pointer_cancel', interaction.type, {
+          start: interaction.start,
+          current: interaction.current,
+        });
+      }
+
+      // Clear drop target if set (drag was interrupted)
+      setDropTarget(null);
+      setInteraction(null);
+    };
+
     document.addEventListener('pointerdown', handlePointerDown);
     document.addEventListener('pointermove', handlePointerMove);
     document.addEventListener('pointerup', handlePointerUp);
-    document.addEventListener('pointercancel', handlePointerUp);
+    document.addEventListener('pointercancel', handlePointerCancel);
 
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('pointermove', handlePointerMove);
       document.removeEventListener('pointerup', handlePointerUp);
-      document.removeEventListener('pointercancel', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerCancel);
       // Cancel any pending throttled move operations
       cancelThrottledRAF(processHeavyMove);
       // Release pointer capture on cleanup
@@ -337,7 +358,7 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     // Mode handlers are accessed via refs (drawModeRef, dragModeRef, etc.) so they're
     // always current. The refs are updated on every render, allowing this effect to
     // have minimal deps while still using current handler implementations.
-  }, [interaction, setInteraction, getGridCoords, clampCoords]);
+  }, [interaction, setInteraction, setDropTarget, getGridCoords, clampCoords]);
 
   // Broadcast interaction state to remote users for collaborative previews
   useEffect(() => {
