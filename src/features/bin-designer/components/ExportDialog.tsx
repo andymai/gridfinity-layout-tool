@@ -14,8 +14,7 @@ import type { ExportFormat } from '@/features/bin-designer/hooks/useExport';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import type { FileNameStyle } from '@/features/bin-designer/utils/fileNaming';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
-import { getSTLFileSize } from '@/features/generation/export/stlExporter';
-import { estimate3MFFileSize } from '@/features/generation/export/threemfExporter';
+import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 
@@ -45,12 +44,10 @@ export function ExportDialog() {
   if (!exportDialogOpen) return null;
 
   const fileName = generateFileName(params, format, nameStyle);
-  const fileSizeBytes = format === 'stl'
-    ? getSTLFileSize(triangleCount)
-    : estimate3MFFileSize(triangleCount);
-  const fileSizeLabel = fileSizeBytes < 1024
-    ? `${fileSizeBytes} B`
-    : `${Math.round(fileSizeBytes / 1024)} KB`;
+  const fileSizeBytes =
+    format === 'stl' ? getSTLFileSize(triangleCount) : estimate3MFFileSize(triangleCount);
+  const fileSizeLabel =
+    fileSizeBytes < 1024 ? `${fileSizeBytes} B` : `${Math.round(fileSizeBytes / 1024)} KB`;
 
   return (
     <div
@@ -75,7 +72,12 @@ export function ExportDialog() {
             aria-label="Close export dialog"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -84,8 +86,18 @@ export function ExportDialog() {
         <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-content-secondary">Format</label>
           <div className="grid grid-cols-3 gap-2">
-            <FormatOption label="STL" active={format === 'stl'} onClick={() => setFormat('stl')} description="Binary STL mesh" />
-            <FormatOption label="3MF" active={format === '3mf'} onClick={() => setFormat('3mf')} description="Mesh + metadata" />
+            <FormatOption
+              label="STL"
+              active={format === 'stl'}
+              onClick={() => setFormat('stl')}
+              description="Binary STL mesh"
+            />
+            <FormatOption
+              label="3MF"
+              active={format === '3mf'}
+              onClick={() => setFormat('3mf')}
+              description="Mesh + metadata"
+            />
             <FormatOption label="STEP" disabled description="Coming soon" />
           </div>
         </div>
@@ -123,6 +135,10 @@ export function ExportDialog() {
             <EstimateRow label="Triangles" value={triangleCount.toLocaleString()} />
             <EstimateRow label="File Size" value={fileSizeLabel} />
           </div>
+          <p className="mt-2 text-[10px] text-content-disabled">
+            Approximate values based on 15% infill, 0.2mm layers. Actual results depend on slicer
+            settings.
+          </p>
         </div>
 
         {/* Download Button */}
@@ -134,15 +150,45 @@ export function ExportDialog() {
               } else {
                 downloadSTL(nameStyle);
               }
-              addToast({ message: `${format.toUpperCase()} exported successfully`, type: 'success', duration: 3000 });
+              addToast({
+                message: `${format.toUpperCase()} exported successfully`,
+                type: 'success',
+                duration: 3000,
+              });
               closeDialog();
             } catch {
-              addToast({ message: 'Export failed — please try again', type: 'error', duration: 5000 });
+              addToast({
+                message: 'Export failed — please try again',
+                type: 'error',
+                duration: 5000,
+              });
             }
           }}
           disabled={!canExport || isExporting}
-          className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
         >
+          {isExporting && (
+            <svg
+              className="h-4 w-4 animate-spin motion-reduce:animate-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+          )}
           {isExporting ? 'Exporting…' : `Download ${format.toUpperCase()}`}
         </button>
 

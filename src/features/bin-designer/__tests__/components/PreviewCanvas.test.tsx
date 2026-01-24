@@ -292,9 +292,9 @@ describe('PreviewCanvas', () => {
     });
     render(<PreviewCanvas />);
 
-    expect(screen.getByLabelText('Front camera view')).toBeInTheDocument();
-    expect(screen.getByLabelText('Reset camera view')).toBeInTheDocument();
-    expect(screen.getByLabelText('Toggle wireframe mode')).toBeInTheDocument();
+    expect(screen.getByLabelText('Front camera view, keyboard shortcut 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('Reset camera view, keyboard shortcut R')).toBeInTheDocument();
+    expect(screen.getByLabelText('Toggle wireframe mode, keyboard shortcut W')).toBeInTheDocument();
     expect(screen.getByLabelText('Change preview color')).toBeInTheDocument();
   });
 });

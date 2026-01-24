@@ -7,7 +7,7 @@
  * committed (clamped + snapped) on blur or Enter.
  */
 
-import { useId, useState, useEffect, useCallback } from 'react';
+import { useId, useState, useCallback } from 'react';
 
 interface SliderInputProps {
   /** Display label */
@@ -45,44 +45,37 @@ export function SliderInput({
 
   // Local draft for the number input — allows free typing without
   // triggering intermediate onChange calls (e.g. typing "12" won't
-  // flash through "1" first).
-  const [draft, setDraft] = useState(String(value));
+  // flash through "1" first). When not editing, the displayed value
+  // derives directly from props, avoiding sync issues.
+  const [localDraft, setLocalDraft] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-
-  // Sync draft from external value changes (slider, undo, preset clicks)
-  useEffect(() => {
-    if (!isEditing) {
-      setDraft(String(value));
-    }
-  }, [value, isEditing]);
+  const draft = isEditing ? localDraft : String(value);
 
   const commitValue = useCallback(() => {
     setIsEditing(false);
-    const raw = Number(draft);
-    if (isNaN(raw) || draft.trim() === '') {
-      // Revert to current value on invalid input
-      setDraft(String(value));
+    const raw = Number(localDraft);
+    if (isNaN(raw) || localDraft.trim() === '') {
       return;
     }
     const clamped = Math.min(max, Math.max(min, raw));
     const snapped = Math.round(clamped / step) * step;
     const final = Number(snapped.toFixed(3));
-    setDraft(String(final));
     if (final !== value) {
       onChange(final);
     }
-  }, [draft, value, min, max, step, onChange]);
+  }, [localDraft, value, min, max, step, onChange]);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(Number(e.target.value));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDraft(e.target.value);
+    setLocalDraft(e.target.value);
   };
 
-  const handleInputFocus = () => {
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsEditing(true);
+    setLocalDraft(e.target.value);
   };
 
   const handleInputBlur = () => {
@@ -95,10 +88,12 @@ export function SliderInput({
       (e.target as HTMLInputElement).blur();
     } else if (e.key === 'Escape') {
       setIsEditing(false);
-      setDraft(String(value));
       (e.target as HTMLInputElement).blur();
     }
   };
+
+  const infoId = `${id}-info`;
+  const valueText = unit ? `${value} ${unit}` : String(value);
 
   return (
     <div className={disabled ? 'opacity-50' : ''}>
@@ -121,14 +116,15 @@ export function SliderInput({
             disabled={disabled}
             className="w-14 rounded border border-stroke-subtle bg-surface px-1.5 py-0.5 text-right text-xs tabular-nums text-content focus:outline-none focus:ring-1 focus:ring-accent disabled:cursor-not-allowed"
             aria-label={label}
+            aria-describedby={info ? infoId : undefined}
           />
-          {unit && (
-            <span className="text-xs text-content-tertiary">{unit}</span>
-          )}
+          {unit && <span className="text-xs text-content-tertiary">{unit}</span>}
         </div>
       </div>
       {info && (
-        <p className="mb-1 text-[10px] text-content-tertiary">{info}</p>
+        <p id={infoId} className="mb-1 text-[10px] text-content-tertiary">
+          {info}
+        </p>
       )}
       <input
         type="range"
@@ -138,8 +134,10 @@ export function SliderInput({
         max={max}
         step={step}
         disabled={disabled}
-        className="w-full h-1.5 rounded-full appearance-none bg-stroke-subtle accent-accent cursor-pointer disabled:cursor-not-allowed"
+        className="w-full h-1.5 rounded-full appearance-none bg-stroke-subtle accent-accent cursor-pointer disabled:cursor-not-allowed py-2"
         aria-label={`${label} slider`}
+        aria-valuetext={valueText}
+        aria-describedby={info ? infoId : undefined}
       />
     </div>
   );

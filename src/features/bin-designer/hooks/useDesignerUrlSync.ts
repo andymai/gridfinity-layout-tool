@@ -17,6 +17,7 @@ import { isOk } from '@/core/result';
 import { loadDesign } from '@/core/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { useDesignerRouting } from './useDesignerRouting';
+import { useToastStore } from '@/core/store/toast';
 
 /**
  * Synchronizes the designer's current design with the URL.
@@ -26,6 +27,7 @@ export function useDesignerUrlSync(): void {
   const { designIdFromUrl, syncUrlToDesign } = useDesignerRouting();
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
   const storeLoadDesign = useDesignerStore((s) => s.loadDesign);
+  const addToast = useToastStore((s) => s.addToast);
 
   // Track whether we're handling initial mount vs ongoing changes
   const mountedRef = useRef(false);
@@ -56,11 +58,15 @@ export function useDesignerUrlSync(): void {
     void loadDesign(designIdFromUrl).then((result) => {
       if (isOk(result)) {
         storeLoadDesign(result.value);
+      } else {
+        // Design not found — notify user and clean URL
+        addToast({ message: 'Design not found — starting fresh', type: 'info', duration: 4000 });
+        syncUrlToDesign(null);
       }
       loadingFromUrlRef.current = false;
       mountedRef.current = true;
     });
-  }, [designIdFromUrl, currentDesignId, storeLoadDesign]);
+  }, [designIdFromUrl, currentDesignId, storeLoadDesign, addToast, syncUrlToDesign]);
 
   // Direction 2: Store → URL (sync URL when design ID changes)
   useEffect(() => {

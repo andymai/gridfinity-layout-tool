@@ -305,11 +305,12 @@ export function PreviewCanvas() {
     return () => clearPreviewCanvas();
   }, []);
 
-  const { wasmStatus, generationStatus, hasMesh, params, designName } = useDesignerStore(
+  const { wasmStatus, generationStatus, hasMesh, meshError, params, designName } = useDesignerStore(
     useShallow((s) => ({
       wasmStatus: s.wasmStatus,
       generationStatus: s.generation.status,
       hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
+      meshError: s.generation.mesh?.error ?? null,
       params: s.params,
       designName: s.designName,
     }))
@@ -378,6 +379,7 @@ export function PreviewCanvas() {
         <PreviewSkeleton
           wasmStatus={wasmStatus}
           generationStatus={generationStatus}
+          errorMessage={meshError}
           onRetry={handleRetry}
         />
       ) : (
@@ -467,7 +469,11 @@ export function PreviewCanvas() {
 
           {/* Subtle corner spinner (previous mesh stays visible) */}
           {showOverlay && (
-            <div className="absolute right-2 top-2 flex items-center gap-1.5 rounded-full bg-surface-elevated/90 px-2.5 py-1 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur-sm">
+            <div
+              className="absolute right-2 top-2 flex items-center gap-1.5 rounded-full bg-surface-elevated/90 px-2.5 py-1 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur-sm"
+              role="status"
+              aria-label="Updating mesh"
+            >
               <svg
                 className="h-3 w-3 animate-spin motion-reduce:animate-none"
                 fill="none"

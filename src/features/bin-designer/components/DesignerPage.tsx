@@ -9,7 +9,7 @@
  * The useGeneration hook auto-generates mesh when parameters change.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { ParameterPanel } from '@/features/bin-designer/components/ParameterPanel';
 import { MobileParameterTabs } from '@/features/bin-designer/components/MobileParameterTabs';
 import { PreviewCanvas } from '@/features/bin-designer/components/PreviewCanvas';
@@ -24,6 +24,7 @@ import { migrateParams } from '@/features/bin-designer/constants/defaults';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useToastStore } from '@/core/store/toast';
+import { useShallow } from 'zustand/react/shallow';
 import { isOk } from '@/core/result';
 import type { SaveStatus } from '@/features/bin-designer/types';
 
@@ -41,21 +42,62 @@ interface DesignerPageProps {
 function SaveStatusIndicator({ status }: { status: SaveStatus }) {
   if (status === 'idle') return null;
 
-  const labels: Record<Exclude<SaveStatus, 'idle'>, string> = {
-    saving: 'Saving…',
-    saved: 'Saved',
-    error: 'Save failed',
-  };
-
-  const colors: Record<Exclude<SaveStatus, 'idle'>, string> = {
-    saving: 'text-content-secondary',
-    saved: 'text-green-400',
-    error: 'text-red-400',
-  };
-
   return (
-    <span className={`text-xs ${colors[status]}`} aria-live="polite">
-      {labels[status]}
+    <span className="inline-flex items-center gap-1" aria-live="polite">
+      {status === 'saving' && (
+        <svg
+          className="h-3 w-3 animate-spin text-content-secondary motion-reduce:animate-none"
+          fill="none"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
+        </svg>
+      )}
+      {status === 'saved' && (
+        <svg
+          className="h-3 w-3 text-green-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+      {status === 'error' && (
+        <svg
+          className="h-3 w-3 text-red-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2.5}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      )}
+      <span
+        className={`text-xs ${status === 'saving' ? 'text-content-secondary' : status === 'saved' ? 'text-green-400' : 'text-red-400'}`}
+      >
+        {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : 'Save failed'}
+      </span>
     </span>
   );
 }
@@ -94,14 +136,34 @@ export function DesignerPage(_props: DesignerPageProps) {
       s.generation.mesh.normals !== null
   );
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
+  const { canUndo, canRedo } = useDesignerStore(
+    useShallow((s) => ({
+      canUndo: s.history.past.length > 0,
+      canRedo: s.history.future.length > 0,
+    }))
+  );
+  const undo = useDesignerStore((s) => s.undo);
+  const redo = useDesignerStore((s) => s.redo);
+  const handleUndo = useCallback(() => {
+    undo();
+  }, [undo]);
+  const handleRedo = useCallback(() => {
+    redo();
+  }, [redo]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const addToast = useToastStore((s) => s.addToast);
 
-  // Close mobile menu on outside click or Escape
+  // Close mobile menu on outside click, manage keyboard navigation
   useEffect(() => {
     if (!mobileMenuOpen) return;
+    // Focus first enabled menu item when menu opens
+    const menuItems = mobileMenuRef.current?.querySelectorAll<HTMLButtonElement>(
+      '[role="menuitem"]:not([disabled])'
+    );
+    menuItems?.[0]?.focus();
+
     const handleClick = (e: MouseEvent) => {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
         setMobileMenuOpen(false);
@@ -112,6 +174,25 @@ export function DesignerPage(_props: DesignerPageProps) {
         e.preventDefault();
         setMobileMenuOpen(false);
         menuButtonRef.current?.focus();
+        return;
+      }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const items = Array.from(
+          mobileMenuRef.current?.querySelectorAll<HTMLButtonElement>(
+            '[role="menuitem"]:not([disabled])'
+          ) ?? []
+        );
+        if (items.length === 0) return;
+        const current = document.activeElement as HTMLElement;
+        const idx = items.indexOf(current as HTMLButtonElement);
+        let next: number;
+        if (e.key === 'ArrowDown') {
+          next = idx < items.length - 1 ? idx + 1 : 0;
+        } else {
+          next = idx > 0 ? idx - 1 : items.length - 1;
+        }
+        items[next]?.focus();
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -185,6 +266,54 @@ export function DesignerPage(_props: DesignerPageProps) {
           <SaveStatusIndicator status={saveStatus} />
         </div>
         <div className="flex items-center gap-2">
+          {/* Undo/Redo buttons */}
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={handleUndo}
+              disabled={!canUndo}
+              className="flex h-8 w-8 items-center justify-center rounded-md text-content-secondary transition-colors hover:bg-surface-hover hover:text-content disabled:text-content-disabled disabled:hover:bg-transparent"
+              aria-label="Undo (Ctrl+Z)"
+              title="Undo (Ctrl+Z)"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 10h10a5 5 0 015 5v2M3 10l4-4M3 10l4 4"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={handleRedo}
+              disabled={!canRedo}
+              className="flex h-8 w-8 items-center justify-center rounded-md text-content-secondary transition-colors hover:bg-surface-hover hover:text-content disabled:text-content-disabled disabled:hover:bg-transparent"
+              aria-label="Redo (Ctrl+Y)"
+              title="Redo (Ctrl+Y)"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 10H11a5 5 0 00-5 5v2M21 10l-4-4M21 10l-4 4"
+                />
+              </svg>
+            </button>
+          </div>
+          <div className="hidden h-5 w-px bg-stroke-subtle sm:block" />
           {/* Use in Layout button (coming soon) */}
           <button
             disabled
@@ -313,6 +442,37 @@ export function DesignerPage(_props: DesignerPageProps) {
                   Use in Layout
                   <span className="ml-auto text-[10px] text-content-tertiary">Soon</span>
                 </button>
+                <button
+                  onClick={() => {
+                    if (canExport) {
+                      setExportDialogOpen(true);
+                      setMobileMenuOpen(false);
+                    }
+                  }}
+                  disabled={!canExport}
+                  className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm ${canExport ? 'text-content hover:bg-surface-hover' : 'text-content-disabled cursor-not-allowed'}`}
+                  role="menuitem"
+                  aria-disabled={!canExport}
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                  Export
+                  {!canExport && (
+                    <span className="ml-auto text-[10px] text-content-tertiary">Generating...</span>
+                  )}
+                </button>
               </div>
             )}
           </div>
@@ -380,24 +540,47 @@ export function DesignerPage(_props: DesignerPageProps) {
         <button
           onClick={() => setExportDialogOpen(true)}
           disabled={!canExport}
-          className="fixed bottom-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-colors hover:bg-blue-700 disabled:bg-surface-elevated disabled:text-content-disabled disabled:shadow-none"
+          className="fixed bottom-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-all hover:bg-blue-700 hover:scale-105 active:scale-95 disabled:bg-surface-elevated disabled:text-content-disabled disabled:shadow-sm disabled:scale-100"
           style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
-          aria-label="Export bin as STL"
+          aria-label={canExport ? 'Export bin' : 'Export bin (waiting for mesh generation)'}
         >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
+          {!canExport ? (
+            <svg
+              className="h-5 w-5 animate-spin motion-reduce:animate-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+          ) : (
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+          )}
         </button>
       )}
 
