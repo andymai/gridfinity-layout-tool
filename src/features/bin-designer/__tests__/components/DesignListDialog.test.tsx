@@ -6,7 +6,7 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { ok } from '@/core/result';
 import type { SavedDesign } from '@/features/bin-designer/types';
 
-vi.mock('@/core/storage/DesignerStorage');
+vi.mock('@/features/bin-designer/storage/DesignerStorage');
 
 const mockDesigns: SavedDesign[] = [
   {
@@ -39,7 +39,7 @@ describe('DesignListDialog', () => {
     });
 
     // Set up the mock for listDesigns
-    const DesignerStorage = await import('@/core/storage/DesignerStorage');
+    const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
     vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok(mockDesigns));
     vi.mocked(DesignerStorage.deleteDesign).mockResolvedValue(ok(undefined));
     vi.mocked(DesignerStorage.saveDesign).mockResolvedValue(
@@ -48,9 +48,7 @@ describe('DesignListDialog', () => {
   });
 
   it('renders nothing when closed', () => {
-    const { container } = render(
-      <DesignListDialog open={false} onClose={onClose} />
-    );
+    const { container } = render(<DesignListDialog open={false} onClose={onClose} />);
     expect(container.innerHTML).toBe('');
   });
 
@@ -72,7 +70,7 @@ describe('DesignListDialog', () => {
   });
 
   it('shows empty state when no designs exist', async () => {
-    const DesignerStorage = await import('@/core/storage/DesignerStorage');
+    const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
     vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok([]));
 
     render(<DesignListDialog open={true} onClose={onClose} />);
@@ -125,7 +123,7 @@ describe('DesignListDialog', () => {
   });
 
   it('deletes a design from the list', async () => {
-    const DesignerStorage = await import('@/core/storage/DesignerStorage');
+    const DesignerStorage = await import('@/features/bin-designer/storage/DesignerStorage');
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<DesignListDialog open={true} onClose={onClose} />);
 
@@ -172,9 +170,7 @@ describe('DesignListDialog', () => {
   });
 
   it('shows thumbnail when design has one', async () => {
-    const { container } = render(
-      <DesignListDialog open={true} onClose={onClose} />
-    );
+    const { container } = render(<DesignListDialog open={true} onClose={onClose} />);
 
     await waitFor(() => {
       expect(screen.getByText('Screw Bin')).toBeInTheDocument();

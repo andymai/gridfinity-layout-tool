@@ -12,8 +12,6 @@ import { canPlaceBin, clamp } from '@/shared/utils/validation';
 import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
 import { checkLayerReorderCollisions } from '@/shared/utils/collision';
 import { useSettingsStore } from './settings';
-import { mlTracking } from '@/shared/analytics/useMLTracking';
-import { markFeatureUsed, trackFillOperation, trackBinCreated } from '@/utils/analytics';
 import type { Result, LayoutError, ValidationError } from '@/core/result';
 import {
   ok,
@@ -28,6 +26,16 @@ import {
   validationInvalidLayer,
 } from '@/core/result';
 
+/** Metadata about a fill operation, set by the store and consumed by the analytics subscriber. */
+export interface FillMeta {
+  type: 'uniform' | 'gaps';
+  count: number;
+  layerId: string;
+  width?: number;
+  depth?: number;
+  layerHeight?: number;
+}
+
 /** Source of the last edit to the layout - used to distinguish local edits from remote imports */
 export type EditSource = 'local' | 'remote' | 'init' | null;
 
@@ -35,6 +43,7 @@ interface LayoutState {
   layout: Layout;
   activeLayoutId: string | null; // ID of the layout in the library (null for unsaved)
   lastEditSource: EditSource; // Tracks whether last change was local, remote, or initial load
+  _fillMeta: FillMeta | null; // Transient metadata for analytics subscriber (cleared after read)
 
   // Bin operations - all return Result for consistent error handling
   addBin: (bin: Omit<Bin, 'id'>) => Result<string, ValidationError>;
@@ -95,6 +104,7 @@ export const useLayoutStore = create<LayoutState>()(
     layout: createDefaultLayout(),
     activeLayoutId: null,
     lastEditSource: null,
+    _fillMeta: null,
 
     addBin: (binData) => {
       const { layout } = get();
@@ -349,11 +359,6 @@ export const useLayoutStore = create<LayoutState>()(
         state.lastEditSource = 'local';
       });
 
-      // Track multi-layer usage when adding a 2nd+ layer
-      if (layout.layers.length >= 1) {
-        markFeatureUsed('multi_layer');
-      }
-
       return ok(id);
     },
 
@@ -480,7 +485,6 @@ export const useLayoutStore = create<LayoutState>()(
         state.layout.categories.push({ ...categoryData, id });
         state.lastEditSource = 'local';
       });
-      markFeatureUsed('custom_categories');
       return ok(id);
     },
 
@@ -541,17 +545,14 @@ export const useLayoutStore = create<LayoutState>()(
         set((state) => {
           state.layout.bins.push(...result.bins);
           state.lastEditSource = 'local';
-        });
-
-        // Track fill operation after bins are added
-        mlTracking.trackFill('uniform', result.bins.length, layerId, { width, depth });
-        markFeatureUsed('fill');
-        // Track for PostHog analytics
-        trackFillOperation('fill_layer', result.bins.length);
-        trackBinCreated('fill_layer', result.bins.length, {
-          width,
-          depth,
-          height: layer?.height ?? 1,
+          state._fillMeta = {
+            type: 'uniform',
+            count: result.bins.length,
+            layerId,
+            width,
+            depth,
+            layerHeight: layer?.height ?? 1,
+          };
         });
       }
 
@@ -568,14 +569,12 @@ export const useLayoutStore = create<LayoutState>()(
         set((state) => {
           state.layout.bins.push(...result.bins);
           state.lastEditSource = 'local';
+          state._fillMeta = {
+            type: 'gaps',
+            count: result.bins.length,
+            layerId,
+          };
         });
-
-        // Track fill operation after bins are added
-        mlTracking.trackFill('gaps', result.bins.length, layerId);
-        markFeatureUsed('fill');
-        // Track for PostHog analytics
-        trackFillOperation('fill_gaps', result.bins.length);
-        trackBinCreated('fill_gaps', result.bins.length);
       }
 
       return result.addedCount;

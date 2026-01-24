@@ -9,7 +9,7 @@
  */
 
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
-import { useDesignerRouting } from '@/features/bin-designer/hooks/useDesignerRouting';
+import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 
 interface ToolSwitcherProps {
   /** Compact mode for mobile layouts */

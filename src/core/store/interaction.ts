@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import type { Interaction } from '@/core/types';
-import { trackPaintMode } from '@/utils/analytics';
 
 /**
  * Interaction Store
@@ -93,28 +92,8 @@ export const useInteractionStore = create<InteractionStore>((set) => ({
   setDropTarget: (target) => set({ dropTarget: target }),
 
   // Paint mode actions
-  setPaintSize: (size) => {
-    const currentSize = useInteractionStore.getState().paintSize;
-    // Track paint mode entry/exit
-    if (size && !currentSize) {
-      trackPaintMode('entered');
-    } else if (!size && currentSize) {
-      trackPaintMode('exited');
-    }
-    set({ paintSize: size });
-  },
+  setPaintSize: (size) => set({ paintSize: size }),
   togglePaintSize: (size) => {
-    const currentSize = useInteractionStore.getState().paintSize;
-    const isToggleOff =
-      currentSize?.width === size.width && currentSize?.depth === size.depth;
-
-    // Track paint mode entry/exit
-    if (isToggleOff) {
-      trackPaintMode('exited');
-    } else if (!currentSize) {
-      trackPaintMode('entered');
-    }
-
     set((state) => ({
       paintSize:
         state.paintSize?.width === size.width && state.paintSize?.depth === size.depth

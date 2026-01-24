@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { isOk } from '@/core/result';
-import { updateDesignParams } from '@/core/storage/DesignerStorage';
+import { updateDesignParams } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { captureThumbnail } from '../utils/thumbnail';
 import { upsertRegistryEntry } from '../store/customBinRegistry';

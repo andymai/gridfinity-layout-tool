@@ -7,7 +7,7 @@ import {
   deleteDesign,
   updateDesignParams,
   closeDesignerDb,
-} from '@/core/storage/DesignerStorage';
+} from '@/features/bin-designer/storage/DesignerStorage';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams } from '../types';
 

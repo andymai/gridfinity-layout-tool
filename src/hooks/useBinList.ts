@@ -13,7 +13,7 @@ import { useInteractionStore } from '@/core/store/interaction';
 import type { LayoutError } from '@/core/result';
 import { markFeatureUsed } from '@/utils/analytics';
 import { isErr, getUserMessage } from '@/core/result';
-import { usePrintList, type UsePrintListReturn } from '@/features/print-export/hooks/usePrintList';
+import { usePrintList, type UsePrintListReturn } from '@/features/print-export';
 import {
   filterBySearch,
   calculateSelectionRange,
