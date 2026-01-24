@@ -12,6 +12,7 @@ import type { InspirationLayout, InspirationTheme } from '../types';
 import { ThemeFilterPills } from './ThemeFilterPills';
 import { LayoutCard } from './LayoutCard';
 import { LayoutPreviewOverlay } from './LayoutPreviewOverlay';
+import { useTranslation } from '@/i18n';
 
 interface InspirationGalleryProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ function getGridColumns(width: number): number {
 }
 
 function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
+  const t = useTranslation();
   const { isMobile, viewportWidth } = useResponsive();
   const [selectedTheme, setSelectedTheme] = useState<InspirationTheme | 'all'>('all');
   const [previewLayout, setPreviewLayout] = useState<InspirationLayout | null>(null);
@@ -285,7 +287,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
           <div className="flex items-center justify-between px-4 pt-3 pb-2">
             <div>
               <h2 id="inspiration-gallery-title" className="text-lg font-semibold text-content">
-                Inspiration Gallery
+                {t('gallery.title')}
               </h2>
               <p className="text-sm text-content-secondary">
                 See what's possible, then make it yours
@@ -323,7 +325,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
                 ref={closeButtonRef}
                 onClick={onClose}
                 className="p-1.5 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
-                aria-label="Close gallery"
+                aria-label={t('common.close')}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -386,7 +388,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
                   d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
                 />
               </svg>
-              <p className="text-content-secondary mb-2">No layouts found for this theme</p>
+              <p className="text-content-secondary mb-2">{t('gallery.empty')}</p>
               <button
                 onClick={() => setSelectedTheme('all')}
                 className="text-sm text-accent hover:underline"

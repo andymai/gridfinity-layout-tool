@@ -4,6 +4,7 @@ import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { track3DPreview, markFeatureUsed } from '@/utils/analytics';
+import { useTranslation } from '@/i18n';
 import type { Layer } from '@/core/types';
 import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
 
@@ -40,6 +41,7 @@ export const GridToolbar = memo(function GridToolbar({
   isNarrowToolbar,
   shouldPulsePaintHint,
 }: GridToolbarProps) {
+  const t = useTranslation();
   const { zoom, canZoomIn, canZoomOut, zoomIn, zoomOut, fitToScreen } = zoomState;
 
   // View store
@@ -121,7 +123,7 @@ export const GridToolbar = memo(function GridToolbar({
           <button
             onClick={() => leftPanelCollapsed && toggleLeftPanel()}
             className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-surface-elevated border border-stroke-subtle transition-colors hover:bg-surface-hover"
-            title={leftPanelCollapsed ? 'Show layers panel' : activeLayer.name}
+            title={leftPanelCollapsed ? t('toolbar.showLayersPanel') : activeLayer.name}
           >
             <div className="w-2 h-2 rounded-full bg-accent" />
             <span className="text-sm font-medium">{activeLayer.name}</span>
@@ -149,8 +151,8 @@ export const GridToolbar = memo(function GridToolbar({
           <button
             onClick={() => setPaintSize(null)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary-muted border border-accent hover:bg-accent/20 transition-colors cursor-pointer ${shouldPulsePaintHint ? 'animate-pulse motion-reduce:animate-none' : ''}`}
-            aria-label="Exit paint mode"
-            title="Click to exit paint mode"
+            aria-label={t('toolbar.exitPaintMode')}
+            title={t('toolbar.clickToExitPaint')}
           >
             <svg
               className="w-4 h-4 text-accent"
@@ -166,7 +168,7 @@ export const GridToolbar = memo(function GridToolbar({
               />
             </svg>
             <span className="text-sm text-accent font-medium leading-none">
-              Paint {paintSize.width}×{paintSize.depth}
+              {t('toolbar.paint', { width: paintSize.width, depth: paintSize.depth })}
             </span>
             <svg
               className="w-4 h-4 text-accent/60"
@@ -200,19 +202,19 @@ export const GridToolbar = memo(function GridToolbar({
                 d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
               />
             </svg>
-            <span className="text-sm text-info font-medium">Move Mode</span>
+            <span className="text-sm text-info font-medium">{t('toolbar.moveMode')}</span>
             <div className="flex items-center gap-1 ml-1">
               <span className="text-xs text-info/80">↑↓←→</span>
-              <span className="text-xs text-info/60">to move</span>
+              <span className="text-xs text-info/60">{t('toolbar.toMove')}</span>
               <kbd className="px-1.5 py-0.5 text-xs rounded bg-info/20 border border-info/30 text-info/70 leading-none">
                 Enter
               </kbd>
-              <span className="text-xs text-info/60">to place</span>
+              <span className="text-xs text-info/60">{t('toolbar.toPlace')}</span>
               <button
                 onClick={() => setKeyboardDragMode(false)}
                 className="text-info hover:text-info/70 transition-colors p-1.5 ml-1 rounded hover:bg-info/10"
-                aria-label="Exit move mode"
-                title="Exit move mode (Esc)"
+                aria-label={t('toolbar.exitMoveMode')}
+                title={t('toolbar.exitMoveModeEsc')}
               >
                 <svg
                   className="w-4 h-4"
@@ -248,19 +250,19 @@ export const GridToolbar = memo(function GridToolbar({
                 d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
               />
             </svg>
-            <span className="text-sm text-info font-medium">Resize Mode</span>
+            <span className="text-sm text-info font-medium">{t('toolbar.resizeMode')}</span>
             <div className="flex items-center gap-1 ml-1">
               <span className="text-xs text-info/80">↑↓←→</span>
-              <span className="text-xs text-info/60">to resize</span>
+              <span className="text-xs text-info/60">{t('toolbar.toResize')}</span>
               <kbd className="px-1.5 py-0.5 text-xs rounded bg-info/20 border border-info/30 text-info/70 leading-none">
                 Enter
               </kbd>
-              <span className="text-xs text-info/60">to apply</span>
+              <span className="text-xs text-info/60">{t('toolbar.toApply')}</span>
               <button
                 onClick={() => setKeyboardResizeMode(false)}
                 className="text-info hover:text-info/70 transition-colors p-1.5 ml-1 rounded hover:bg-info/10"
-                aria-label="Exit resize mode"
-                title="Exit resize mode (Esc)"
+                aria-label={t('toolbar.exitResizeMode')}
+                title={t('toolbar.exitResizeModeEsc')}
               >
                 <svg
                   className="w-4 h-4"
@@ -286,7 +288,7 @@ export const GridToolbar = memo(function GridToolbar({
             onClick={toggleShowLabels}
             role="checkbox"
             aria-checked={showLabels}
-            aria-label="Labels"
+            aria-label={t('toolbar.labels')}
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === ' ' || e.key === 'Enter') {
@@ -295,7 +297,7 @@ export const GridToolbar = memo(function GridToolbar({
               }
             }}
           >
-            <span className={showLabels ? 'text-content' : 'text-content-secondary'}>Labels</span>
+            <span className={showLabels ? 'text-content' : 'text-content-secondary'}>{t('toolbar.labels')}</span>
             <Checkbox checked={showLabels} variant="desktop" />
           </div>
         )}
@@ -305,7 +307,7 @@ export const GridToolbar = memo(function GridToolbar({
             onClick={toggleShowOtherLayers}
             role="checkbox"
             aria-checked={showOtherLayers}
-            aria-label="Show layers below"
+            aria-label={t('toolbar.showLayersBelow')}
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === ' ' || e.key === 'Enter') {
@@ -315,20 +317,20 @@ export const GridToolbar = memo(function GridToolbar({
             }}
           >
             <span className={showOtherLayers ? 'text-content' : 'text-content-secondary'}>
-              Show layers below
+              {t('toolbar.showLayersBelow')}
             </span>
             <Checkbox checked={showOtherLayers} variant="desktop" />
           </div>
         )}
 
         {/* Zoom controls */}
-        <div className="flex items-center gap-1" role="group" aria-label="Zoom controls">
+        <div className="flex items-center gap-1" role="group" aria-label={t('toolbar.zoomControls')}>
           <button
             onClick={zoomOut}
             disabled={!canZoomOut}
             className="btn btn-ghost p-1.5"
-            aria-label="Zoom out"
-            title="Zoom out (−)"
+            aria-label={t('toolbar.zoomOut')}
+            title={t('toolbar.zoomOutKey')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -341,8 +343,8 @@ export const GridToolbar = memo(function GridToolbar({
             onClick={zoomIn}
             disabled={!canZoomIn}
             className="btn btn-ghost p-1.5"
-            aria-label="Zoom in"
-            title="Zoom in (+)"
+            aria-label={t('toolbar.zoomIn')}
+            title={t('toolbar.zoomInKey')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -356,10 +358,10 @@ export const GridToolbar = memo(function GridToolbar({
           <button
             onClick={fitToScreen}
             className="btn btn-ghost px-2.5 py-1.5 text-sm"
-            aria-label="Fit grid to screen"
-            title="Fit to screen"
+            aria-label={t('toolbar.fitGridToScreen')}
+            title={t('toolbar.fitToScreen')}
           >
-            Fit
+            {t('toolbar.fit')}
           </button>
         </div>
 
@@ -373,8 +375,8 @@ export const GridToolbar = memo(function GridToolbar({
             toggleIsometricPreview();
           }}
           className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-ghost'} px-2.5 py-1.5 flex items-center gap-1.5`}
-          aria-label={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
-          title={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
+          aria-label={t(showIsometricPreview ? 'toolbar.hide3dPreview' : 'toolbar.show3dPreview')}
+          title={t(showIsometricPreview ? 'toolbar.hide3dPreview' : 'toolbar.show3dPreview')}
         >
           <svg
             className="w-4 h-4"
@@ -389,7 +391,7 @@ export const GridToolbar = memo(function GridToolbar({
             <path d="m3.3 7 8.7 5 8.7-5" />
             <path d="M12 22V12" />
           </svg>
-          {!isNarrowToolbar && <span className="text-sm">3D View</span>}
+          {!isNarrowToolbar && <span className="text-sm">{t('toolbar.3dView')}</span>}
         </button>
 
         {/* Overflow menu button - only when narrow */}
@@ -398,10 +400,10 @@ export const GridToolbar = memo(function GridToolbar({
             <button
               onClick={() => setOverflowMenuOpen(!overflowMenuOpen)}
               className={`btn ${overflowMenuOpen ? 'btn-primary' : 'btn-ghost'} p-1.5`}
-              aria-label="More options"
+              aria-label={t('toolbar.moreOptions')}
               aria-expanded={overflowMenuOpen}
               aria-haspopup="menu"
-              title="More options"
+              title={t('toolbar.moreOptions')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -425,7 +427,7 @@ export const GridToolbar = memo(function GridToolbar({
                     onClick={toggleShowLabels}
                     role="menuitemcheckbox"
                     aria-checked={showLabels}
-                    aria-label="Labels"
+                    aria-label={t('toolbar.labels')}
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === ' ' || e.key === 'Enter') {
@@ -435,7 +437,7 @@ export const GridToolbar = memo(function GridToolbar({
                     }}
                   >
                     <span className={showLabels ? 'text-content' : 'text-content-secondary'}>
-                      Labels
+                      {t('toolbar.labels')}
                     </span>
                     <Checkbox checked={showLabels} variant="desktop" />
                   </div>
@@ -446,7 +448,7 @@ export const GridToolbar = memo(function GridToolbar({
                     onClick={toggleShowOtherLayers}
                     role="menuitemcheckbox"
                     aria-checked={showOtherLayers}
-                    aria-label="Show layers below"
+                    aria-label={t('toolbar.showLayersBelow')}
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === ' ' || e.key === 'Enter') {
@@ -456,7 +458,7 @@ export const GridToolbar = memo(function GridToolbar({
                     }}
                   >
                     <span className={showOtherLayers ? 'text-content' : 'text-content-secondary'}>
-                      Show layers below
+                      {t('toolbar.showLayersBelow')}
                     </span>
                     <Checkbox checked={showOtherLayers} variant="desktop" />
                   </div>

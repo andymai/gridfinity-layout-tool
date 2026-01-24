@@ -34,12 +34,12 @@ describe('ImportModal', () => {
 
     it('renders file upload button', () => {
       const { getByText } = renderModal();
-      expect(getByText('Upload JSON File')).not.toBeNull();
+      expect(getByText('Browse files')).not.toBeNull();
     });
 
     it('renders textarea for JSON input', () => {
       const { getByLabelText } = renderModal();
-      expect(getByLabelText(/paste JSON/i)).not.toBeNull();
+      expect(getByLabelText(/paste a share link/i)).not.toBeNull();
     });
 
     it('renders import and cancel buttons', () => {
@@ -99,7 +99,7 @@ describe('ImportModal', () => {
     it('shows error for invalid JSON', async () => {
       const { getByLabelText, container } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
 
       await act(async () => {
         fireEvent.change(textarea, { target: { value: 'not valid json{{{' } });
@@ -114,7 +114,7 @@ describe('ImportModal', () => {
     it('shows validation errors for invalid layout structure', async () => {
       const { getByLabelText, findByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       const invalidLayout = JSON.stringify({ invalid: 'data' });
 
       await act(async () => {
@@ -127,7 +127,7 @@ describe('ImportModal', () => {
     it('shows preview for valid layout', async () => {
       const { getByLabelText, findByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       const validLayout = createDefaultLayout();
 
       await act(async () => {
@@ -143,7 +143,7 @@ describe('ImportModal', () => {
     it('shows correct drawer dimensions in preview', async () => {
       const { getByLabelText, findByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       const layout = createDefaultLayout();
       layout.drawer = { width: 12, depth: 10, height: 40 };
 
@@ -157,7 +157,7 @@ describe('ImportModal', () => {
     it('clears errors when textarea is cleared', async () => {
       const { getByLabelText, container } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
 
       // First add invalid JSON
       await act(async () => {
@@ -191,7 +191,7 @@ describe('ImportModal', () => {
     it('import button is disabled when there are validation errors', async () => {
       const { getByLabelText, getByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
 
       await act(async () => {
         fireEvent.change(textarea, { target: { value: 'invalid json' } });
@@ -204,7 +204,7 @@ describe('ImportModal', () => {
     it('import button is enabled for valid layout', async () => {
       const { getByLabelText, getByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       const validLayout = createDefaultLayout();
 
       await act(async () => {
@@ -220,7 +220,7 @@ describe('ImportModal', () => {
     it('calls onImport with parsed layout when import is clicked', async () => {
       const { getByLabelText, getByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       const validLayout = createDefaultLayout();
 
       await act(async () => {
@@ -275,7 +275,7 @@ describe('ImportModal', () => {
       const clickSpy = vi.spyOn(fileInput, 'click');
 
       act(() => {
-        fireEvent.click(getByText('Upload JSON File'));
+        fireEvent.click(getByText('Browse files'));
       });
 
       expect(clickSpy).toHaveBeenCalled();
@@ -317,7 +317,7 @@ describe('ImportModal', () => {
     it('shows preview for valid share URL', async () => {
       const { getByLabelText, container } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       // Create a minimal valid encoded layout (simplified mock)
       // The actual encoding would use lz-string compression
       const mockShareUrl = 'https://example.com#share=test-encoded-data';
@@ -336,7 +336,7 @@ describe('ImportModal', () => {
     it('detects share URL format', async () => {
       const { getByLabelText, container } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       // Test with different URL formats
       const shareUrl = '#share=ABC123_-xyz';
 
@@ -359,7 +359,7 @@ describe('ImportModal', () => {
     it('validates missing required fields', async () => {
       const { getByLabelText, findByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       const incompleteLayout = { version: '1.0' }; // Missing drawer, layers, etc.
 
       await act(async () => {
@@ -372,7 +372,7 @@ describe('ImportModal', () => {
     it('validates bin references', async () => {
       const { getByLabelText, findByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       const layout = createDefaultLayout();
       // Add a bin with invalid layer reference
       layout.bins = [
@@ -400,7 +400,7 @@ describe('ImportModal', () => {
     it('accepts layout with bins', async () => {
       const { getByLabelText, findByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       const layout = createDefaultLayout();
       layout.bins = [
         {
@@ -429,7 +429,7 @@ describe('ImportModal', () => {
     it('imports valid share URL', async () => {
       const { getByLabelText, getByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       const validLayout = createDefaultLayout();
       const encoded = encodeLayoutForURL(validLayout);
       const shareUrl = `#share=${encoded}`;
@@ -455,7 +455,7 @@ describe('ImportModal', () => {
     it('shows error for invalid share URL encoding', async () => {
       const { getByLabelText, findByText } = renderModal();
 
-      const textarea = getByLabelText(/paste JSON/i);
+      const textarea = getByLabelText(/paste a share link/i);
       // Invalid base64 encoded data
       const invalidShareUrl = '#share=!!!invalid-base64!!!';
 

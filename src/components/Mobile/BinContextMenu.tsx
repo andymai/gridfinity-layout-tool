@@ -12,6 +12,7 @@ import {
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { isOk } from '@/core/result';
+import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
 
 interface BinContextMenuProps {
@@ -25,6 +26,8 @@ interface BinContextMenuProps {
  * Context menu for single bin actions (triggered by right-click or long-press).
  */
 export function BinContextMenu({ bin, position, onClose, source }: BinContextMenuProps) {
+  const t = useTranslation();
+
   // Calculate adjusted position for upward opening
   // For staging bins, position menu above cursor but not too far
   // Use a moderate offset instead of full menu height to keep it close
@@ -133,7 +136,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
       {/* Header */}
       <div className="px-4 py-3 border-b border-stroke-subtle">
         <div className="font-medium text-content">
-          {bin.width}×{bin.depth} Bin
+          {t('inspector.bin', { width: bin.width, depth: bin.depth })}
         </div>
         {bin.label && <div className="text-sm truncate text-content-tertiary">{bin.label}</div>}
       </div>
@@ -152,7 +155,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
                 />
               </svg>
             }
-            label="Edit Properties"
+            label={t('mobile.binMenu.editProperties')}
             onClick={handleEdit}
           />
         )}
@@ -169,7 +172,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
                 />
               </svg>
             }
-            label="Duplicate"
+            label={t('mobile.binMenu.duplicate')}
             onClick={handleDuplicate}
           />
         )}
@@ -186,7 +189,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
                 />
               </svg>
             }
-            label="Rotate"
+            label={t('mobile.binMenu.rotate')}
             onClick={handleRotate}
           />
         )}
@@ -203,7 +206,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
                 />
               </svg>
             }
-            label="Move to Stash"
+            label={t('mobile.binMenu.toStash')}
             onClick={handleToStaging}
           />
         )}
@@ -229,7 +232,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
               />
             </svg>
           }
-          label="Delete"
+          label={t('common.delete')}
           onClick={handleDelete}
           destructive
         />

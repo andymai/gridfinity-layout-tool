@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, type CSSProperties } from 'react';
 import { SHORTCUTS } from '@/core/constants';
+import { useTranslation } from '@/i18n';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {
@@ -159,6 +160,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
 ];
 
 export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps) {
+  const t = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'shortcuts' | 'tips'>('shortcuts');
 
@@ -218,13 +220,13 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
         {/* Header */}
         <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle">
           <h2 id="help-title" style={STYLES.title}>
-            Help & Shortcuts
+            {t('help.title')}
           </h2>
           <button
             onClick={onClose}
             className="btn btn-ghost btn-icon"
             style={STYLES.buttonCompact}
-            aria-label="Close help"
+            aria-label={t('common.close')}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path

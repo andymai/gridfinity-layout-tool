@@ -76,7 +76,7 @@ describe('ExportDialog', () => {
 
   it('renders when dialog is open', () => {
     render(<ExportDialog />);
-    expect(screen.getByText('Export Bin')).toBeInTheDocument();
+    expect(screen.getByText('Export')).toBeInTheDocument();
   });
 
   it('shows format options with STL active', () => {
@@ -128,7 +128,7 @@ describe('ExportDialog', () => {
 
   it('closes on close button click', () => {
     render(<ExportDialog />);
-    const closeButton = screen.getByLabelText('Close export dialog');
+    const closeButton = screen.getByLabelText('Close');
     fireEvent.click(closeButton);
     expect(useDesignerStore.getState().ui.exportDialogOpen).toBe(false);
   });

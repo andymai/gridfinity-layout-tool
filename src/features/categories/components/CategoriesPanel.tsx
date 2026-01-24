@@ -8,6 +8,7 @@ import { useToastStore } from '@/core/store/toast';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { useTranslation } from '@/i18n';
 
 // Curated color palette optimized for dark UI backgrounds
 // Colors chosen for: visual distinction, balanced saturation, good contrast
@@ -29,6 +30,7 @@ const COLOR_PALETTE = [
 ];
 
 export function CategoriesPanel() {
+  const t = useTranslation();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
@@ -171,8 +173,8 @@ export function CategoriesPanel() {
       onClick={handleAddCategory}
       disabled={!canAddCategory}
       className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-      title="Add a new category"
-      aria-label="Add new category"
+      title={t('categories.addCategory')}
+      aria-label={t('categories.addCategory')}
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -182,7 +184,7 @@ export function CategoriesPanel() {
 
   return (
     <div>
-      <CollapsibleSection title="Categories" variant="default" actions={addCategoryButton}>
+      <CollapsibleSection title={t('categories.title')} variant="default" actions={addCategoryButton}>
         <div className="space-y-1">
           {categories.map((category) => {
             const isActive = category.id === activeCategoryId;
@@ -244,27 +246,27 @@ export function CategoriesPanel() {
                         className="btn btn-danger btn-sm flex-1 justify-center"
                         aria-label={
                           canDelete
-                            ? `Delete ${category.name} category`
+                            ? t('categories.deleteCategory')
                             : binCount > 0
                               ? `Cannot delete: ${binCount} bin${binCount > 1 ? 's' : ''} use this category`
                               : 'Cannot delete the last category'
                         }
                         title={
                           canDelete
-                            ? 'Delete category'
+                            ? t('categories.deleteCategory')
                             : binCount > 0
                               ? `${binCount} bin${binCount > 1 ? 's' : ''} use this category`
                               : 'At least one category is required'
                         }
                       >
-                        Delete
+                        {t('common.delete')}
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
                         className="btn btn-secondary btn-sm flex-1 justify-center"
                         aria-label="Finish editing category"
                       >
-                        Done
+                        {t('common.done')}
                       </button>
                     </div>
                   </div>
@@ -375,9 +377,9 @@ export function CategoriesPanel() {
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}
-        title="Delete Category"
-        message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
-        confirmText="Delete"
+        title={t('categories.confirmDelete.title')}
+        message={t('categories.confirmDelete.message', { name: deleteConfirm?.name || '' })}
+        confirmText={t('categories.confirmDelete.confirm')}
         destructive
         onConfirm={confirmDeleteCategory}
         onCancel={() => setDeleteConfirm(null)}

@@ -1,4 +1,5 @@
 import { formatPrintTime, formatCost } from '@/features/print-export/utils/printEstimates';
+import { useTranslation } from '@/i18n';
 
 interface PrintListSummaryProps {
   totalBins: number;
@@ -34,6 +35,7 @@ export function PrintListSummary({
   hasAnySplits,
   compact = false,
 }: PrintListSummaryProps) {
+  const t = useTranslation();
   if (compact) {
     // Mobile compact layout
     return (
@@ -76,9 +78,9 @@ export function PrintListSummary({
   return (
     <div className="px-4 py-3 border-t border-stroke-subtle bg-surface-elevated">
       <div className="flex justify-between font-medium mb-2 text-sm text-content">
-        <span>Total</span>
+        <span>{t('print.summary.title')}</span>
         <span>
-          {totalBins} bins{hasAnySplits ? `, ${totalPieces} pieces` : ''}
+          {t('print.summary.totalBins', { count: totalBins })}{hasAnySplits ? `, ${t('print.summary.pieces', { count: totalPieces })}` : ''}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2 border-t border-stroke-subtle text-xs">
@@ -86,21 +88,21 @@ export function PrintListSummary({
           className="flex justify-between text-content-secondary"
           title="Estimated 1.75mm PLA usage based on bin dimensions"
         >
-          <span className="text-content-tertiary">Filament</span>
+          <span className="text-content-tertiary">{t('print.summary.filament', { grams: totalFilament })}</span>
           <span>{totalFilament}m</span>
         </div>
         <div
           className="flex justify-between text-content-secondary"
           title="Based on $15/kg filament cost"
         >
-          <span className="text-content-tertiary">Est. Cost</span>
+          <span className="text-content-tertiary">{t('print.summary.cost', { cost: formatCost(totalCost) })}</span>
           <span>{formatCost(totalCost)}</span>
         </div>
         <div
           className="flex justify-between text-content-secondary"
           title="Based on 0.4mm nozzle, 0.2mm layer height, 15% infill"
         >
-          <span className="text-content-tertiary">Print Time</span>
+          <span className="text-content-tertiary">{t('print.summary.printTime', { hours: formatPrintTime(totalPrintTimeHours) })}</span>
           <span>~{formatPrintTime(totalPrintTimeHours)}</span>
         </div>
         <div

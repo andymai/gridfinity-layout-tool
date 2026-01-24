@@ -17,8 +17,10 @@ import type { FileNameStyle } from '@/features/bin-designer/types';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
+import { useTranslation } from '@/i18n';
 
 export function ExportDialog() {
+  const t = useTranslation();
   const { exportDialogOpen, params, triangleCount, designName, exportFileNameConfig } =
     useDesignerStore(
       useShallow((state) => ({
@@ -106,12 +108,12 @@ export function ExportDialog() {
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
           <h2 id="export-dialog-title" className="text-lg font-semibold text-content">
-            Export Bin
+            {t('binDesigner.export')}
           </h2>
           <button
             onClick={() => setExportDialogOpen(false)}
             className="rounded-md p-1 text-content-tertiary hover:bg-surface-hover hover:text-content-secondary"
-            aria-label="Close export dialog"
+            aria-label={t('common.close')}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -129,13 +131,13 @@ export function ExportDialog() {
           <label className="mb-2 block text-sm font-medium text-content-secondary">Format</label>
           <div className="grid grid-cols-3 gap-2">
             <FormatOption
-              label="STL"
+              label={t('binDesigner.exportSTL').replace('Export ', '')}
               active={format === 'stl'}
               onClick={() => setFormat('stl')}
               description="Binary STL mesh"
             />
             <FormatOption
-              label="3MF"
+              label={t('binDesigner.export3MF').replace('Export ', '')}
               active={format === '3mf'}
               onClick={() => setFormat('3mf')}
               description="Mesh + metadata"
@@ -256,7 +258,7 @@ export function ExportDialog() {
               />
             </svg>
           )}
-          {isExporting ? 'Exporting…' : `Download ${format.toUpperCase()}`}
+          {isExporting ? 'Exporting…' : `${t('common.download')} ${format.toUpperCase()}`}
         </button>
 
         {!canExport && (

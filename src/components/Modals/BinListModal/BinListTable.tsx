@@ -8,6 +8,7 @@ import type {
   PrintListSortKey,
   PrintListSortOrder,
 } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 interface BinListTableProps {
   rows: EnhancedPrintRow[];
@@ -98,6 +99,7 @@ export function BinListTable({
   onEditLabel,
   onEditNotes,
 }: BinListTableProps) {
+  const t = useTranslation();
   const [expandedSplitRow, setExpandedSplitRow] = useState<number | null>(null);
   const [editing, setEditing] = useState<EditingState | null>(null);
 
@@ -228,10 +230,10 @@ export function BinListTable({
               className="w-12"
             />
             <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">
-              Label
+              {t('inspector.label')}
             </th>
             <th className="px-3 py-2 text-left font-medium sticky top-0 bg-surface-elevated">
-              Notes
+              {t('inspector.notes')}
             </th>
             <th
               className="w-6 px-1 py-2 sticky top-0 bg-surface-elevated"

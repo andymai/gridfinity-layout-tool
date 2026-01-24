@@ -9,6 +9,7 @@ import { createLayoutEntry, initializeLayoutLibrary } from '@/core/storage';
 import { isErr, getUserMessage } from '@/core/result';
 import { ConfirmDialog } from '@/shared/components';
 import { useCollabMode } from '@/hooks/useCollabMode';
+import { useTranslation } from '@/i18n';
 
 /**
  * Banner shown when viewing a shared layout in view-only mode.
@@ -18,6 +19,7 @@ import { useCollabMode } from '@/hooks/useCollabMode';
  * is an active participant rather than just a viewer.
  */
 export function SharedLayoutBanner() {
+  const t = useTranslation();
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const {
@@ -149,7 +151,7 @@ export function SharedLayoutBanner() {
           />
         </svg>
         <span className="text-sm font-medium">
-          Viewing shared layout: <strong>{sharedLayoutOriginalName || layout.name}</strong>
+          {t('share.banner.viewing')}: <strong>{sharedLayoutOriginalName || layout.name}</strong>
         </span>
       </div>
 
@@ -158,7 +160,7 @@ export function SharedLayoutBanner() {
           onClick={handleSave}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-slate-900 hover:bg-slate-100 transition-colors"
         >
-          Save to My Layouts
+          {t('share.banner.saveToMyLayouts')}
         </button>
         <button
           onClick={() => setShowDiscardConfirm(true)}

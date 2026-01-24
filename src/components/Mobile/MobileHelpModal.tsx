@@ -1,4 +1,5 @@
 import { useEffect, type CSSProperties } from 'react';
+import { useTranslation } from '@/i18n';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {
@@ -50,6 +51,8 @@ interface MobileHelpModalProps {
  * Mobile-specific help modal showing touch gestures instead of keyboard shortcuts.
  */
 export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
+  const t = useTranslation();
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -91,9 +94,9 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
         <div className="flex justify-between items-center mb-5">
           <h2 id="mobile-help-title" style={STYLES.title}>
-            Touch Gestures
+            {t('mobile.help')}
           </h2>
-          <button onClick={onClose} className="btn btn-ghost w-10 h-10 p-0" aria-label="Close help">
+          <button onClick={onClose} className="btn btn-ghost w-10 h-10 p-0" aria-label={t('common.close')}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -167,7 +170,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
                 gesture="Drag on grid"
                 description="Fill area with bins"
               />
-              <GestureRow icon={<TapIcon />} gesture="Tap × button" description="Exit paint mode" />
+              <GestureRow icon={<TapIcon />} gesture={`Tap ${t('common.close')} button`} description="Exit paint mode" />
             </div>
           </section>
 

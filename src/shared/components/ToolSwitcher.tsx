@@ -10,6 +10,7 @@
 
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useDesignerRouting } from '@/hooks/useDesignerRouting';
+import { useTranslation } from '@/i18n';
 
 interface ToolSwitcherProps {
   /** Compact mode for mobile layouts */
@@ -46,6 +47,7 @@ type Tool = 'planner' | 'designer';
  * feature flag is disabled.
  */
 export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
+  const t = useTranslation();
   const isDesignerEnabled = useFeatureFlag('bin_designer');
   const { isDesignerRoute, navigateToDesigner, navigateToPlanner } = useDesignerRouting();
 
@@ -93,7 +95,7 @@ export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
               : 'text-content-tertiary hover:text-content-secondary'
           }`}
         >
-          Layout Planner
+          {t('toolSwitcher.gridEditor')}
         </button>
         <button
           role="tab"
@@ -105,7 +107,7 @@ export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
               : 'text-content-tertiary hover:text-content-secondary'
           }`}
         >
-          Bin Designer
+          {t('toolSwitcher.binDesigner')}
         </button>
       </div>
     </div>

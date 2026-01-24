@@ -48,13 +48,13 @@ describe('BinListFilters', () => {
     it('renders search input', () => {
       render(<BinListFilters {...defaultProps} />);
 
-      expect(screen.getByPlaceholderText('Search label or notes...')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
     });
 
     it('renders search input with aria-label', () => {
       render(<BinListFilters {...defaultProps} />);
 
-      expect(screen.getByLabelText('Search bins by label or notes')).toBeInTheDocument();
+      expect(screen.getByLabelText('Search')).toBeInTheDocument();
     });
 
     it('renders category toggles', () => {
@@ -95,7 +95,7 @@ describe('BinListFilters', () => {
     it('calls onSearchChange when typing', () => {
       render(<BinListFilters {...defaultProps} />);
 
-      const input = screen.getByPlaceholderText('Search label or notes...');
+      const input = screen.getByPlaceholderText('Search');
       fireEvent.change(input, { target: { value: 'new query' } });
 
       expect(mockOnSearchChange).toHaveBeenCalledWith('new query');
@@ -126,7 +126,7 @@ describe('BinListFilters', () => {
     it('auto-focuses search input by default after delay', () => {
       render(<BinListFilters {...defaultProps} />);
 
-      const input = screen.getByPlaceholderText('Search label or notes...');
+      const input = screen.getByPlaceholderText('Search');
       expect(document.activeElement).not.toBe(input);
 
       act(() => {
@@ -139,7 +139,7 @@ describe('BinListFilters', () => {
     it('does not auto-focus when autoFocus is false', () => {
       render(<BinListFilters {...defaultProps} autoFocus={false} />);
 
-      const input = screen.getByPlaceholderText('Search label or notes...');
+      const input = screen.getByPlaceholderText('Search');
 
       act(() => {
         vi.advanceTimersByTime(100);

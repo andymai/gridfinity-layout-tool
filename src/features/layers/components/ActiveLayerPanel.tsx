@@ -5,6 +5,17 @@ import { useToastStore } from '@/core/store/toast';
 import { STAGING_ID } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { useTranslation } from '@/i18n';
+
+// TODO: Add i18n keys for ActiveLayerPanel strings:
+// - Bin Palette (title)
+// - Select a size, then click or drag on grid (instruction)
+// - Shift+click to add to stash (hint)
+// - Squares, Rectangles, Wide, Tall (category labels)
+// - Fill with WxD, Fill X gaps, No gaps, Clear X bins, No bins (button text)
+// - Clear Layer (confirm dialog title)
+// - Confirm message for clear
+// - Toast messages for add to stash and fill operations
 
 // Square sizes
 const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];
@@ -29,6 +40,7 @@ const RECTANGLE_SIZES = [
 ];
 
 export function ActiveLayerPanel() {
+  const t = useTranslation();
   const [rotated, setRotated] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
@@ -101,7 +113,7 @@ export function ActiveLayerPanel() {
       clearLayer(activeLayerId);
       setSelectedBins([]);
     });
-    addToast(`Cleared ${count} bins from layer`, 'success');
+    addToast(t('toast.clearComplete', { count }), 'success');
     setShowClearConfirm(false);
   };
 

@@ -1,15 +1,14 @@
-import { useUIStore, type MobilePanel } from '@/core/store/ui';
+import { useUIStore } from '@/core/store/ui';
+import { useTranslation } from '@/i18n';
 
 interface NavItem {
-  id: MobilePanel;
-  label: string;
+  id: 'layers' | 'inspector' | 'categories' | 'print';
   icon: React.ReactNode;
 }
 
 const navItems: NavItem[] = [
   {
     id: 'layers',
-    label: 'Layers',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -23,7 +22,6 @@ const navItems: NavItem[] = [
   },
   {
     id: 'inspector',
-    label: 'Bin',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -37,7 +35,6 @@ const navItems: NavItem[] = [
   },
   {
     id: 'categories',
-    label: 'Categories',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -51,7 +48,6 @@ const navItems: NavItem[] = [
   },
   {
     id: 'print',
-    label: 'List',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -70,8 +66,23 @@ const navItems: NavItem[] = [
  * Provides tabs for different panels that slide up as bottom sheets.
  */
 export function BottomNavBar() {
+  const t = useTranslation();
   const activeMobilePanel = useUIStore((state) => state.activeMobilePanel);
   const toggleMobilePanel = useUIStore((state) => state.toggleMobilePanel);
+
+  // Create label lookup function instead of Record to handle only the nav items we display
+  const getLabel = (panelId: 'layers' | 'inspector' | 'categories' | 'print'): string => {
+    switch (panelId) {
+      case 'layers':
+        return t('mobile.nav.layers');
+      case 'inspector':
+        return t('mobile.nav.bin');
+      case 'categories':
+        return t('mobile.nav.categories');
+      case 'print':
+        return t('mobile.nav.list');
+    }
+  };
 
   return (
     <nav
@@ -86,6 +97,7 @@ export function BottomNavBar() {
     >
       {navItems.map((item) => {
         const isActive = activeMobilePanel === item.id;
+        const label = getLabel(item.id);
         return (
           <button
             key={item.id}
@@ -96,10 +108,10 @@ export function BottomNavBar() {
               backgroundColor: isActive ? 'var(--bg-hover)' : 'transparent',
             }}
             aria-pressed={isActive}
-            aria-label={`${item.label} panel`}
+            aria-label={`${label} panel`}
           >
             {item.icon}
-            <span className="text-xs">{item.label}</span>
+            <span className="text-xs">{label}</span>
           </button>
         );
       })}

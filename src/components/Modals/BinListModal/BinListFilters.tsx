@@ -1,6 +1,7 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { Checkbox } from '@/shared/components/Checkbox';
 import type { Category, PrintListFilters } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 interface BinListFiltersProps {
   /** Current search query */
@@ -41,6 +42,7 @@ export function BinListFilters({
   totalCount,
   autoFocus = true,
 }: BinListFiltersProps) {
+  const t = useTranslation();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus search input on mount
@@ -76,9 +78,9 @@ export function BinListFilters({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search label or notes..."
+            placeholder={t('common.search')}
             className="w-full pl-9 pr-8 py-2 text-sm bg-surface border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-            aria-label="Search bins by label or notes"
+            aria-label={t('common.search')}
           />
           {/* Search icon */}
           <svg

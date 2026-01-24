@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Locale } from '@/i18n/types';
 
 // Storage key for settings
 const SETTINGS_STORAGE_KEY = 'gridfinity-settings-v1';
@@ -190,6 +191,13 @@ export interface UserSettings {
    * Default: true (opt-out model)
    */
   mlTelemetryEnabled: boolean;
+
+  // Language preference
+  /**
+   * User's preferred locale. 'auto' means detect from browser.
+   * Persisted to survive page reloads.
+   */
+  locale: Locale | 'auto';
 }
 
 /**
@@ -220,6 +228,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // Privacy - opt-out by default (enabled)
   mlTelemetryEnabled: true,
+
+  // Language - auto-detect from browser by default
+  locale: 'auto' as const,
 };
 
 /**
