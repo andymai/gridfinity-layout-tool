@@ -13,6 +13,7 @@ export type {
   CompartmentConfig,
   ScoopConfig,
   LabelConfig,
+  WallCutout,
   WallConfig,
   Insert,
   InsertShape,
