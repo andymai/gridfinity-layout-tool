@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { Redis } from 'ioredis';
 import type { RedisOptions } from 'ioredis';
 
@@ -117,11 +118,11 @@ export async function checkRateLimit(
       resetAt: now + config.windowSeconds,
     };
   } catch (error) {
-    // If Redis is unavailable, allow the request but log
+    // If Redis is unavailable, deny the request (fail-closed)
     console.error('Rate limit check failed:', error);
     return {
-      allowed: true,
-      remaining: config.limit,
+      allowed: false,
+      remaining: 0,
       resetAt: now + config.windowSeconds,
     };
   }
@@ -129,16 +130,10 @@ export async function checkRateLimit(
 
 /**
  * Hash IP address for privacy (don't store raw IPs).
- * Using simple hash for Redis keys only.
+ * Uses SHA-256 truncated to 16 hex chars for Redis key use.
  */
 function hashIP(ip: string): string {
-  let hash = 0;
-  for (let i = 0; i < ip.length; i++) {
-    const char = ip.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit int
-  }
-  return Math.abs(hash).toString(36);
+  return createHash('sha256').update(ip).digest('hex').slice(0, 16);
 }
 
 /**

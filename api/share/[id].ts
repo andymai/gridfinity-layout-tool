@@ -278,7 +278,7 @@ async function handleDelete(
 
     // Get delete token from header or body
     const deleteToken =
-      (req.headers['x-delete-token'] as string) || (req.body && req.body.deleteToken);
+      (req.headers['x-delete-token'] as string) ?? (req.body?.deleteToken as string | undefined);
 
     if (!deleteToken) {
       return res.status(401).json({
