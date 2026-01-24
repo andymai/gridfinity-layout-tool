@@ -12,7 +12,7 @@ import { Vector3, Spherical } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { BinMesh, PreviewControls, PreviewSkeleton, type CameraPreset } from './preview';
+import { BinMesh, BinAxisLabels, BinDimensions, BinNameLabel, PreviewControls, PreviewSkeleton, type CameraPreset } from './preview';
 import { GradientBackground } from './preview/GradientBackground';
 import { FootprintGrid } from './preview/FootprintGrid';
 import { useDesignerKeyboard } from '../hooks/useDesignerKeyboard';
@@ -284,12 +284,13 @@ export function PreviewCanvas() {
     return () => clearPreviewCanvas();
   }, []);
 
-  const { wasmStatus, generationStatus, hasMesh, params } = useDesignerStore(
+  const { wasmStatus, generationStatus, hasMesh, params, designName } = useDesignerStore(
     useShallow((s) => ({
       wasmStatus: s.wasmStatus,
       generationStatus: s.generation.status,
       hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
       params: s.params,
+      designName: s.designName,
     }))
   );
 
@@ -407,7 +408,23 @@ export function PreviewCanvas() {
             {/* Footprint grid */}
             <FootprintGrid width={width} depth={depth} />
 
-{/* Orbit controls - Z-up with polar limits */}
+            {/* Grid axis labels */}
+            <BinAxisLabels width={width} depth={depth} />
+
+            {/* Dimension markers */}
+            <BinDimensions
+              width={width}
+              depth={depth}
+              height={height}
+              gridUnitMm={params.gridUnitMm}
+              heightUnitMm={params.heightUnitMm}
+              stackingLip={params.base.stackingLip}
+            />
+
+            {/* Design name on floor */}
+            <BinNameLabel width={width} depth={depth} name={designName} />
+
+            {/* Orbit controls - Z-up with polar limits */}
             <OrbitControls
               ref={controlsRef}
               makeDefault
