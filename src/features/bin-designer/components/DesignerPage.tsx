@@ -155,9 +155,15 @@ export function DesignerPage(_props: DesignerPageProps) {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const addToast = useToastStore((s) => s.addToast);
 
-  // Close mobile menu on outside click or Escape
+  // Close mobile menu on outside click, manage keyboard navigation
   useEffect(() => {
     if (!mobileMenuOpen) return;
+    // Focus first enabled menu item when menu opens
+    const menuItems = mobileMenuRef.current?.querySelectorAll<HTMLButtonElement>(
+      '[role="menuitem"]:not([disabled])'
+    );
+    menuItems?.[0]?.focus();
+
     const handleClick = (e: MouseEvent) => {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
         setMobileMenuOpen(false);
@@ -168,6 +174,25 @@ export function DesignerPage(_props: DesignerPageProps) {
         e.preventDefault();
         setMobileMenuOpen(false);
         menuButtonRef.current?.focus();
+        return;
+      }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const items = Array.from(
+          mobileMenuRef.current?.querySelectorAll<HTMLButtonElement>(
+            '[role="menuitem"]:not([disabled])'
+          ) ?? []
+        );
+        if (items.length === 0) return;
+        const current = document.activeElement as HTMLElement;
+        const idx = items.indexOf(current as HTMLButtonElement);
+        let next: number;
+        if (e.key === 'ArrowDown') {
+          next = idx < items.length - 1 ? idx + 1 : 0;
+        } else {
+          next = idx > 0 ? idx - 1 : items.length - 1;
+        }
+        items[next]?.focus();
       }
     };
     document.addEventListener('mousedown', handleClick);
