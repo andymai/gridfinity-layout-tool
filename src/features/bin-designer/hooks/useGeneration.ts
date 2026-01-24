@@ -1,34 +1,40 @@
 /**
  * Hook that manages the generation bridge lifecycle.
  *
- * Subscribes to designer store param changes, auto-generates on change (debounced),
- * and updates the store with mesh results.
+ * Subscribes to designer store epoch changes, auto-generates on change (debounced),
+ * and updates the store with mesh results. Skips regeneration on cache hits
+ * (epoch unchanged after undo/redo with cached mesh).
  *
  * Lifecycle:
  * 1. Mount: Initialize bridge worker
- * 2. Params change: Debounced generate (200ms via bridge)
+ * 2. Epoch change: Debounced generate (adaptive delay via bridge)
  * 3. Unmount: Destroy bridge and worker
  */
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useDesignerStore } from '../store';
-import { GenerationBridge, setActiveBridge } from '@/features/generation/bridge';
+import { GenerationBridge, setActiveBridge } from '@/shared/generation/bridge';
 import type { BinParams } from '../types';
 
 /**
- * Manages the GenerationBridge lifecycle and auto-regeneration.
+ * Manages the GenerationBridge lifecycle and epoch-based auto-regeneration.
  *
  * - Initializes the worker on mount
- * - Triggers generation whenever params change
+ * - Triggers generation when epoch changes (param mutations)
+ * - Skips generation when epoch is unchanged (cache hit on undo/redo)
  * - Cleans up the worker on unmount
  */
 export function useGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
   const initializedRef = useRef(false);
+  const prevEpochRef = useRef<number>(-1);
 
-  const params = useDesignerStore(
-    useShallow((state) => state.params)
+  const { params, epoch } = useDesignerStore(
+    useShallow((state) => ({
+      params: state.params,
+      epoch: state.generation.epoch,
+    }))
   );
 
   const setGenerationStatus = useDesignerStore((state) => state.setGenerationStatus);
@@ -36,41 +42,43 @@ export function useGeneration(): void {
   const setWasmStatus = useDesignerStore((state) => state.setWasmStatus);
 
   // Generate mesh from current params
-  const runGeneration = useCallback(async (currentParams: BinParams) => {
-    const bridge = bridgeRef.current;
-    if (!bridge || bridge.isDestroyed) return;
+  const runGeneration = useCallback(
+    async (currentParams: BinParams) => {
+      const bridge = bridgeRef.current;
+      if (!bridge || bridge.isDestroyed) return;
 
-    setGenerationStatus('generating');
+      setGenerationStatus('generating');
 
-    try {
-      const result = await bridge.generate(currentParams, (stage, progress) => {
-        // Progress updates could be wired to UI in future
-        void stage;
-        void progress;
-      });
+      try {
+        const result = await bridge.generate(currentParams, (stage, progress) => {
+          void stage;
+          void progress;
+        });
 
-      setGenerationResult({
-        vertices: result.mesh.vertices,
-        normals: result.mesh.normals,
-        error: null,
-        timingMs: result.timingMs,
-      });
-      setGenerationStatus('complete');
-    } catch (e) {
-      // Cancelled requests are expected during rapid param changes
-      if (e instanceof Error && e.message === 'Generation cancelled') {
-        return;
+        setGenerationResult({
+          vertices: result.mesh.vertices,
+          normals: result.mesh.normals,
+          error: null,
+          timingMs: result.timingMs,
+        });
+        setGenerationStatus('complete');
+      } catch (e) {
+        // Cancelled requests are expected during rapid param changes
+        if (e instanceof Error && e.message === 'Generation cancelled') {
+          return;
+        }
+
+        setGenerationResult({
+          vertices: null,
+          normals: null,
+          error: e instanceof Error ? e.message : String(e),
+          timingMs: 0,
+        });
+        setGenerationStatus('error');
       }
-
-      setGenerationResult({
-        vertices: null,
-        normals: null,
-        error: e instanceof Error ? e.message : String(e),
-        timingMs: 0,
-      });
-      setGenerationStatus('error');
-    }
-  }, [setGenerationStatus, setGenerationResult]);
+    },
+    [setGenerationStatus, setGenerationResult]
+  );
 
   // Initialize bridge on mount
   useEffect(() => {
@@ -80,13 +88,15 @@ export function useGeneration(): void {
 
     setWasmStatus('loading');
 
-    bridge.init()
+    bridge
+      .init()
       .then(() => {
         setWasmStatus('ready');
         initializedRef.current = true;
         // Trigger initial generation
-        const currentParams = useDesignerStore.getState().params;
-        void runGeneration(currentParams);
+        const currentState = useDesignerStore.getState();
+        prevEpochRef.current = currentState.generation.epoch;
+        void runGeneration(currentState.params);
       })
       .catch((_e) => {
         setWasmStatus('error');
@@ -100,9 +110,11 @@ export function useGeneration(): void {
     };
   }, [setWasmStatus, runGeneration]);
 
-  // Re-generate when params change (after initialization)
+  // Re-generate when epoch changes (after initialization)
   useEffect(() => {
     if (!initializedRef.current) return;
+    if (epoch === prevEpochRef.current) return; // Cache hit — skip regeneration
+    prevEpochRef.current = epoch;
     void runGeneration(params);
-  }, [params, runGeneration]);
+  }, [epoch, params, runGeneration]);
 }

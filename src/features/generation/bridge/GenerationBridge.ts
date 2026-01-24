@@ -5,7 +5,7 @@
  * request cancellation via AbortController pattern.
  */
 
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/shared/types/bin';
 import type {
   WorkerMessage,
   WorkerResponse,
@@ -13,9 +13,7 @@ import type {
   GenerationStage,
   ExportFormat,
 } from './types';
-
-/** Debounce delay before sending a generation request (ms) */
-const DEBOUNCE_MS = 200;
+import { AdaptiveDebounce } from './adaptiveDebounce';
 
 /** Callback for progress updates during generation */
 export type ProgressCallback = (stage: GenerationStage, progress: number) => void;
@@ -54,6 +52,7 @@ export class GenerationBridge {
   private pendingExportResolve: ((result: ExportResult) => void) | null = null;
   private pendingExportReject: ((error: Error) => void) | null = null;
   private exportRequestId: string | null = null;
+  private adaptiveDebounce = new AdaptiveDebounce();
 
   /**
    * Initialize the worker. Resolves when the worker signals INIT_READY.
@@ -70,10 +69,9 @@ export class GenerationBridge {
 
     this.initPromise = new Promise<void>((resolve, reject) => {
       try {
-        this.worker = new Worker(
-          new URL('../worker/generation.worker.ts', import.meta.url),
-          { type: 'module' }
-        );
+        this.worker = new Worker(new URL('../worker/generation.worker.ts', import.meta.url), {
+          type: 'module',
+        });
 
         const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
           if (event.data.type === 'INIT_READY') {
@@ -126,7 +124,7 @@ export class GenerationBridge {
       this.debounceTimer = setTimeout(() => {
         this.debounceTimer = null;
         this.sendGenerateMessage(params);
-      }, DEBOUNCE_MS);
+      }, this.adaptiveDebounce.getDelay());
     });
   }
 
@@ -188,6 +186,7 @@ export class GenerationBridge {
 
     this.initPromise = null;
     this.onProgress = null;
+    this.adaptiveDebounce.reset();
   }
 
   /**
@@ -267,6 +266,7 @@ export class GenerationBridge {
 
         case 'MESH_RESULT':
           if (response.requestId === this.currentRequestId && this.pendingResolve) {
+            this.adaptiveDebounce.recordTiming(response.timingMs);
             const resolve = this.pendingResolve;
             this.clearPending();
             resolve({
