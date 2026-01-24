@@ -350,7 +350,7 @@ export function DesignerPage(_props: DesignerPageProps) {
       {isDesktop ? (
         /* Desktop: side-by-side */
         <main className="flex flex-1 overflow-hidden">
-          <div className="w-80 flex-shrink-0 overflow-hidden border-r border-stroke-subtle bg-surface-secondary">
+          <div className="w-72 flex-shrink-0 overflow-hidden border-r border-stroke-subtle bg-surface-secondary">
             <ParameterPanel />
           </div>
           <div className="relative flex-1 overflow-hidden">

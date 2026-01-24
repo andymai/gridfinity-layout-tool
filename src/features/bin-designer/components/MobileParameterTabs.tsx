@@ -1,7 +1,6 @@
 /**
- * Mobile parameter panel — re-uses the tabbed ParameterPanel.
- * Now that we have multiple tabs (Size, Base, Compartments, Walls),
- * the panel handles its own tab switching.
+ * Mobile parameter panel — renders the scrollable ParameterPanel directly.
+ * Same layout on all breakpoints (no separate tab navigation for mobile).
  */
 
 import { ParameterPanel } from './ParameterPanel';

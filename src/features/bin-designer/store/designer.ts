@@ -334,5 +334,21 @@ export const useDesignerStore = create<DesignerState>()(
         state.ui.wireframeMode = enabled;
       });
     },
+
+    toggleHalfBinMode: () => {
+      set((state) => {
+        const enabling = !state.ui.halfBinMode;
+        if (!enabling) {
+          // Disabling: round fractional dimensions to nearest integer
+          if (state.params.width % 1 !== 0) {
+            state.params.width = Math.ceil(state.params.width);
+          }
+          if (state.params.depth % 1 !== 0) {
+            state.params.depth = Math.ceil(state.params.depth);
+          }
+        }
+        state.ui.halfBinMode = enabling;
+      });
+    },
   }))
 );

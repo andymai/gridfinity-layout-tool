@@ -9,6 +9,8 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   width: 2,
   depth: 2,
   height: 3,
+  gridUnitMm: 42,
+  heightUnitMm: 7,
   wallThickness: 1.2,
   base: {
     style: 'standard',
@@ -56,6 +58,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   exportDialogOpen: false,
   designListOpen: false,
   wireframeMode: false,
+  halfBinMode: false,
 } as const;
 
 /** Default empty history */
