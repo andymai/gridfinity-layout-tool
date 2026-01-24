@@ -1,4 +1,5 @@
 npx lint-staged
 npm run check:boundaries:staged
+npm run check:i18n
 npm run build
 npm run test:affected

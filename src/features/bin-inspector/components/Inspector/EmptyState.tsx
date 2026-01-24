@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n';
+
 interface EmptyStateProps {
   /** Platform variant affects touch targets and sizing */
   variant: 'desktop' | 'mobile';
@@ -8,6 +10,8 @@ interface EmptyStateProps {
  * Provides guidance on how to create/select bins.
  */
 export function EmptyState({ variant }: EmptyStateProps) {
+  const t = useTranslation();
+
   if (variant === 'mobile') {
     return (
       <div className="py-6 text-center">
@@ -26,26 +30,24 @@ export function EmptyState({ variant }: EmptyStateProps) {
             />
           </svg>
         </div>
-        <p className="font-medium mb-1 text-content-secondary">No bin selected</p>
-        <p className="text-sm mb-4 text-content-disabled">Tap a bin on the grid to edit it</p>
+        <p className="font-medium mb-1 text-content-secondary">{t('inspector.empty.title')}</p>
+        <p className="text-sm mb-4 text-content-disabled">{t('inspector.empty.mobileHint')}</p>
 
         {/* Creation hint */}
         <div className="mx-4 p-3 rounded-lg text-left bg-surface-elevated border border-stroke-subtle">
-          <p className="text-sm font-medium mb-2 text-content-secondary">How to create bins:</p>
+          <p className="text-sm font-medium mb-2 text-content-secondary">{t('inspector.empty.howToCreate')}</p>
           <ul className="text-sm space-y-1.5 text-content-tertiary">
             <li className="flex items-start gap-2">
               <span className="text-accent">1.</span>
-              <span>Tap and drag on empty grid cells to draw a bin</span>
+              <span>{t('inspector.empty.mobileStep1')}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-accent">2.</span>
-              <span>
-                Or use <strong>Layers</strong> tab to select a size, then tap to place
-              </span>
+              <span>{t('inspector.empty.mobileStep2')}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-accent">3.</span>
-              <span>Long-press a bin for quick actions</span>
+              <span>{t('inspector.empty.mobileStep3')}</span>
             </li>
           </ul>
         </div>
@@ -66,26 +68,26 @@ export function EmptyState({ variant }: EmptyStateProps) {
           />
         </svg>
       </div>
-      <p className="text-sm text-content-secondary mb-1">No bin selected</p>
-      <p className="text-xs text-content-disabled mb-3">Click a bin or drag to create one</p>
+      <p className="text-sm text-content-secondary mb-1">{t('inspector.empty.title')}</p>
+      <p className="text-xs text-content-disabled mb-3">{t('inspector.empty.drawHint')}</p>
       <div className="text-left text-xs space-y-1.5 text-content-tertiary w-full">
         <div className="flex items-center gap-2">
           <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
             Drag
           </kbd>
-          <span>Draw a new bin</span>
+          <span>{t('inspector.empty.hintDraw')}</span>
         </div>
         <div className="flex items-center gap-2">
           <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
             Ctrl+D
           </kbd>
-          <span>Duplicate selected</span>
+          <span>{t('inspector.empty.hintDuplicate')}</span>
         </div>
         <div className="flex items-center gap-2">
           <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
             L
           </kbd>
-          <span>Quick label</span>
+          <span>{t('inspector.empty.hintLabel')}</span>
         </div>
       </div>
     </div>

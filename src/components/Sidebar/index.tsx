@@ -116,7 +116,7 @@ export function Sidebar() {
             }`}
           >
             <h2 className="flex-1 text-xs font-semibold text-content-tertiary uppercase tracking-wider">
-              Tools
+              {t('sidebar.tools')}
             </h2>
             <button
               onClick={() => setShowSettingsModal(true)}
@@ -192,8 +192,8 @@ export function Sidebar() {
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-content">Inspiration Gallery</div>
-                  <div className="text-xs text-content-tertiary">Get ideas for your drawer</div>
+                  <div className="text-sm font-medium text-content">{t('sidebar.inspirationGallery')}</div>
+                  <div className="text-xs text-content-tertiary">{t('sidebar.inspirationHint')}</div>
                 </div>
                 <svg
                   className="w-4 h-4 text-content-tertiary group-hover:translate-x-0.5 transition-transform"
@@ -213,7 +213,7 @@ export function Sidebar() {
 
             {/* Grid Size */}
             <div data-grid-size-panel className="mt-auto px-4 py-4">
-              <CollapsibleSection title="Grid Size" variant="default">
+              <CollapsibleSection title={t('sidebar.gridSize')} variant="default">
                 <div className="text-xs text-content-secondary space-y-2">
                   {/* Width / Depth / Height in compact grid */}
                   <div className="grid grid-cols-3 gap-1.5">
@@ -222,7 +222,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={`Width in grid units (step: ${widthStep})`}
                       >
-                        Width
+                        {t('drawer.width')}
                       </label>
                       <StepperControl
                         value={drawer.width}
@@ -240,7 +240,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={`Depth in grid units (step: ${depthStep})`}
                       >
-                        Depth
+                        {t('drawer.depth')}
                       </label>
                       <StepperControl
                         value={drawer.depth}
@@ -258,7 +258,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={t('sidebar.maxHeight')}
                       >
-                        Height
+                        {t('drawer.height')}
                       </label>
                       <StepperControl
                         value={drawer.height}
@@ -314,10 +314,10 @@ export function Sidebar() {
                         className={`leading-none ${halfBinMode ? 'text-content' : 'text-content-tertiary'}`}
                         title={t('sidebar.halfBinTooltip')}
                       >
-                        Half-bin mode
+                        {t('sidebar.halfBinMode')}
                       </span>
                       <span className="text-[9px] leading-none text-warning bg-warning-muted px-1 py-0.5 rounded">
-                        experimental
+                        {t('settings.experimental')}
                       </span>
                       <kbd className="text-[9px] leading-none text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">
                         H
@@ -399,7 +399,7 @@ export function Sidebar() {
             {/* Physical Units */}
             <div data-units-panel className="px-4 py-4 border-t border-stroke-subtle">
               <CollapsibleSection
-                title="Physical Units"
+                title={t('sidebar.physicalUnits')}
                 variant="default"
                 defaultExpanded={isDesktop}
               >

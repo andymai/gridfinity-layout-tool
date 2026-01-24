@@ -9,6 +9,7 @@
  */
 
 import type { ConnectionStatus } from '@/hooks/usePresence';
+import { useTranslation } from '@/i18n';
 
 interface ConnectionIndicatorProps {
   /** Current connection status */
@@ -19,28 +20,20 @@ interface ConnectionIndicatorProps {
   className?: string;
 }
 
-/** Status-specific styling */
-const STATUS_STYLES: Record<ConnectionStatus, { bg: string; label: string; animate: boolean }> = {
-  connected: {
-    bg: 'bg-success',
-    label: 'Connected',
-    animate: false,
-  },
-  reconnecting: {
-    bg: 'bg-warning',
-    label: 'Reconnecting...',
-    animate: true,
-  },
-  connecting: {
-    bg: 'bg-info',
-    label: 'Connecting...',
-    animate: true,
-  },
-  disconnected: {
-    bg: 'bg-error',
-    label: 'Disconnected',
-    animate: false,
-  },
+/** Status-specific styling (non-translatable) */
+const STATUS_STYLES: Record<ConnectionStatus, { bg: string; animate: boolean }> = {
+  connected: { bg: 'bg-success', animate: false },
+  reconnecting: { bg: 'bg-warning', animate: true },
+  connecting: { bg: 'bg-info', animate: true },
+  disconnected: { bg: 'bg-error', animate: false },
+};
+
+/** Translation keys for status labels */
+const STATUS_LABEL_KEYS: Record<ConnectionStatus, string> = {
+  connected: 'collab.connected',
+  reconnecting: 'collab.reconnecting',
+  connecting: 'collab.connecting',
+  disconnected: 'collab.disconnected',
 };
 
 /** Size-specific dimensions */
@@ -57,7 +50,9 @@ export function ConnectionIndicator({
   size = 'sm',
   className = '',
 }: ConnectionIndicatorProps) {
-  const { bg, label, animate } = STATUS_STYLES[status];
+  const t = useTranslation();
+  const { bg, animate } = STATUS_STYLES[status];
+  const label = t(STATUS_LABEL_KEYS[status]);
   const sizeClass = SIZE_STYLES[size];
 
   return (

@@ -285,13 +285,13 @@ describe('BinListDashboard', () => {
     it('shows collapse/expand button when collapsible', () => {
       render(<BinListDashboard {...defaultProps} collapsible={true} />);
 
-      expect(screen.getByLabelText('Collapse statistics')).toBeInTheDocument();
+      expect(screen.getByLabelText('Hide statistics')).toBeInTheDocument();
     });
 
     it('starts collapsed when defaultCollapsed is true', () => {
       render(<BinListDashboard {...defaultProps} collapsible={true} defaultCollapsed={true} />);
 
-      expect(screen.getByLabelText('Expand statistics')).toBeInTheDocument();
+      expect(screen.getByLabelText('Show statistics')).toBeInTheDocument();
       // Stats should not be visible when collapsed
       expect(screen.queryByTestId('stat-bin-types')).not.toBeInTheDocument();
     });
@@ -306,14 +306,14 @@ describe('BinListDashboard', () => {
       render(<BinListDashboard {...defaultProps} collapsible={true} defaultCollapsed={false} />);
 
       // Initially expanded
-      expect(screen.getByLabelText('Collapse statistics')).toBeInTheDocument();
+      expect(screen.getByLabelText('Hide statistics')).toBeInTheDocument();
       expect(screen.getByTestId('stat-bin-types')).toBeInTheDocument();
 
       // Click to collapse
-      fireEvent.click(screen.getByLabelText('Collapse statistics'));
+      fireEvent.click(screen.getByLabelText('Hide statistics'));
 
       // Now collapsed
-      expect(screen.getByLabelText('Expand statistics')).toBeInTheDocument();
+      expect(screen.getByLabelText('Show statistics')).toBeInTheDocument();
       expect(screen.queryByTestId('stat-bin-types')).not.toBeInTheDocument();
     });
 
@@ -324,7 +324,7 @@ describe('BinListDashboard', () => {
       expect(screen.queryByTestId('stat-bin-types')).not.toBeInTheDocument();
 
       // Click to expand
-      fireEvent.click(screen.getByLabelText('Expand statistics'));
+      fireEvent.click(screen.getByLabelText('Show statistics'));
 
       // Now expanded
       expect(screen.getByTestId('stat-bin-types')).toBeInTheDocument();
@@ -333,14 +333,14 @@ describe('BinListDashboard', () => {
     it('has correct aria-expanded attribute', () => {
       render(<BinListDashboard {...defaultProps} collapsible={true} defaultCollapsed={false} />);
 
-      const button = screen.getByLabelText('Collapse statistics');
+      const button = screen.getByLabelText('Hide statistics');
       expect(button).toHaveAttribute('aria-expanded', 'true');
     });
 
     it('has correct aria-expanded when collapsed', () => {
       render(<BinListDashboard {...defaultProps} collapsible={true} defaultCollapsed={true} />);
 
-      const button = screen.getByLabelText('Expand statistics');
+      const button = screen.getByLabelText('Show statistics');
       expect(button).toHaveAttribute('aria-expanded', 'false');
     });
   });

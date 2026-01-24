@@ -109,6 +109,12 @@ const en: Record<string, string> = {
   'sidebar.halfBinRight': 'Place half-unit column on the right',
   'sidebar.halfBinBottom': 'Place half-unit row at the bottom',
   'sidebar.halfBinTop': 'Place half-unit row at the top',
+  'sidebar.tools': 'Tools',
+  'sidebar.inspirationGallery': 'Inspiration Gallery',
+  'sidebar.inspirationHint': 'Get ideas for your drawer',
+  'sidebar.gridSize': 'Grid Size',
+  'sidebar.halfBinMode': 'Half-bin mode',
+  'sidebar.physicalUnits': 'Physical Units',
 
   // ===========================================================================
   // Right Panel (Bin List)
@@ -157,6 +163,14 @@ const en: Record<string, string> = {
   'inspector.customProps.multiValuePlaceholder': 'Value',
   'inspector.empty.title': 'No bin selected',
   'inspector.empty.drawHint': 'Click a bin on the grid or draw to create one',
+  'inspector.empty.mobileHint': 'Tap a bin on the grid, or use the Tools tab to create one',
+  'inspector.empty.howToCreate': 'How to create bins:',
+  'inspector.empty.mobileStep1': 'Go to Layers → Tools tab',
+  'inspector.empty.mobileStep2': 'Select a bin size',
+  'inspector.empty.mobileStep3': 'Tap on the grid to place',
+  'inspector.empty.hintDraw': 'Draw to create a bin',
+  'inspector.empty.hintDuplicate': 'Duplicate selected bin',
+  'inspector.empty.hintLabel': 'Add/edit label',
 
   // ===========================================================================
   // Layers
@@ -554,6 +568,41 @@ const en: Record<string, string> = {
   'binList.enterLabel': 'Enter label...',
   'binList.enterNotes': 'Enter notes...',
   'binList.enterNotesShortcut': 'Enter notes... ({mod}+Enter to apply)',
+
+  // ===========================================================================
+  // Dashboard (Bin List Stats)
+  // ===========================================================================
+  'dashboard.statistics': 'Statistics',
+  'dashboard.expandStats': 'Show statistics',
+  'dashboard.collapseStats': 'Hide statistics',
+  'dashboard.binTypes': 'Bin Types',
+  'dashboard.totalBins': 'Total Bins',
+  'dashboard.printPieces': 'Print Pieces',
+  'dashboard.filament': 'Filament',
+  'dashboard.estCost': 'Est. Cost',
+  'dashboard.printTime': 'Print Time',
+  'dashboard.spools': 'Spools',
+  'dashboard.filamentByCategory': 'Filament by Category',
+  'dashboard.noData': 'No data to display',
+  'dashboard.other': 'Other ({count})',
+
+  // ===========================================================================
+  // Collaboration
+  // ===========================================================================
+  'collab.connected': 'Connected',
+  'collab.reconnecting': 'Reconnecting',
+  'collab.connecting': 'Connecting',
+  'collab.disconnected': 'Disconnected',
+  'collab.noOneHere': 'No one else is here',
+  'collab.participants': 'Participants',
+  'collab.you': '(you)',
+  'collab.owner': 'Owner',
+
+  // ===========================================================================
+  // Mobile Tabs
+  // ===========================================================================
+  'mobile.tabs.layers': 'Layers',
+  'mobile.tabs.tools': 'Tools',
 };
 
 export default en;

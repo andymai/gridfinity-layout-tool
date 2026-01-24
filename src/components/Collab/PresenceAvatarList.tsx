@@ -6,6 +6,7 @@
  */
 
 import type { Participant } from '@/hooks/usePresence';
+import { useTranslation } from '@/i18n';
 import { PresenceAvatar } from './PresenceAvatar';
 
 interface PresenceAvatarListProps {
@@ -19,16 +20,18 @@ interface PresenceAvatarListProps {
  * Renders a vertical list of all participants.
  */
 export function PresenceAvatarList({ participants, className = '' }: PresenceAvatarListProps) {
+  const t = useTranslation();
+
   if (participants.length === 0) {
     return (
       <div className={`text-sm text-content-secondary py-2 ${className}`}>
-        No one else is here yet
+        {t('collab.noOneHere')}
       </div>
     );
   }
 
   return (
-    <ul className={`space-y-1 ${className}`} role="list" aria-label="Participants">
+    <ul className={`space-y-1 ${className}`} role="list" aria-label={t('collab.participants')}>
       {participants.map((participant) => (
         <li
           key={participant.id}
@@ -41,10 +44,10 @@ export function PresenceAvatarList({ participants, className = '' }: PresenceAva
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-sm text-content truncate">{participant.name}</span>
-              {participant.isSelf && <span className="text-xs text-content-tertiary">(you)</span>}
+              {participant.isSelf && <span className="text-xs text-content-tertiary">{t('collab.you')}</span>}
               {participant.isOwner && (
                 <span className="text-xs text-warning bg-warning/10 px-1.5 py-0.5 rounded">
-                  Owner
+                  {t('collab.owner')}
                 </span>
               )}
             </div>

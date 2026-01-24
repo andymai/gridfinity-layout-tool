@@ -1,4 +1,5 @@
 import type { CategoryBreakdown } from '@/utils/binListOperations';
+import { useTranslation } from '@/i18n';
 
 export interface CategoryBreakdownChartProps {
   /** Category breakdown data */
@@ -21,8 +22,10 @@ export function CategoryBreakdownChart({
   maxCategories = 6,
   compact = false,
 }: CategoryBreakdownChartProps) {
+  const t = useTranslation();
+
   if (breakdown.length === 0) {
-    return <div className="text-center py-4 text-content-tertiary text-sm">No data to display</div>;
+    return <div className="text-center py-4 text-content-tertiary text-sm">{t('dashboard.noData')}</div>;
   }
 
   // Limit categories and group the rest as "Other"
@@ -37,7 +40,7 @@ export function CategoryBreakdownChart({
       ...visible,
       {
         categoryId: 'other',
-        categoryName: `Other (${others.length})`,
+        categoryName: t('dashboard.other', { count: String(others.length) }),
         categoryColor: '#6B7280',
         filament: Math.round(otherTotal * 10) / 10,
         cost: others.reduce((sum, c) => sum + c.cost, 0),
