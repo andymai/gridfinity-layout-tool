@@ -5,7 +5,7 @@
  * (GenerationBridge) and the Web Worker (generation.worker.ts).
  */
 
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams } from '@/shared/types/bin';
 
 // ─── Main → Worker Messages ──────────────────────────────────────────────────
 

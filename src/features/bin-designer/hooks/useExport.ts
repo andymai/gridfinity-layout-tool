@@ -13,9 +13,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import { exportSTL } from '@/features/generation/export/stlExporter';
-import { export3MF } from '@/features/generation/export/threemfExporter';
-import { getActiveBridge } from '@/features/generation/bridge';
+import { exportSTL, export3MF } from '@/shared/generation/export';
+import { getActiveBridge } from '@/shared/generation/bridge';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import { captureThumbnailPNG } from '@/features/bin-designer/utils/thumbnail';
@@ -52,10 +51,8 @@ export function useExport(): UseExportReturn {
 
   const [isExporting, setIsExporting] = useState(false);
 
-  const canExport = mesh !== null &&
-    mesh.vertices !== null &&
-    mesh.normals !== null &&
-    mesh.error === null;
+  const canExport =
+    mesh !== null && mesh.vertices !== null && mesh.normals !== null && mesh.error === null;
 
   // BREP export requires the generation worker to be active
   const canExportBREP = canExport && getActiveBridge() !== null;
@@ -102,7 +99,7 @@ export function useExport(): UseExportReturn {
         const name = generateFileName(params, '3mf', config, designName);
 
         // Capture thumbnail from 3D preview (async canvas → PNG)
-        const thumbnail = await captureThumbnailPNG() ?? undefined;
+        const thumbnail = (await captureThumbnailPNG()) ?? undefined;
 
         const blob = export3MF(mesh.vertices, mesh.normals, {
           name: name.replace(/\.3mf$/, ''),
@@ -132,33 +129,38 @@ export function useExport(): UseExportReturn {
     [canExport, mesh, params, estimates]
   );
 
-  const downloadSTEP = useCallback(
-    async () => {
-      const bridge = getActiveBridge();
-      if (!bridge) return;
+  const downloadSTEP = useCallback(async () => {
+    const bridge = getActiveBridge();
+    if (!bridge) return;
 
-      setIsExporting(true);
+    setIsExporting(true);
 
-      let url: string | null = null;
-      let anchor: HTMLAnchorElement | null = null;
-      try {
-        const result = await bridge.exportBin(params, 'step');
+    let url: string | null = null;
+    let anchor: HTMLAnchorElement | null = null;
+    try {
+      const result = await bridge.exportBin(params, 'step');
 
-        const blob = new Blob([result.data], { type: 'application/step' });
-        url = URL.createObjectURL(blob);
-        anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = result.fileName;
-        document.body.appendChild(anchor);
-        anchor.click();
-      } finally {
-        if (anchor?.parentNode) anchor.parentNode.removeChild(anchor);
-        if (url) URL.revokeObjectURL(url);
-        setIsExporting(false);
-      }
-    },
-    [params]
-  );
+      const blob = new Blob([result.data], { type: 'application/step' });
+      url = URL.createObjectURL(blob);
+      anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = result.fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+    } finally {
+      if (anchor?.parentNode) anchor.parentNode.removeChild(anchor);
+      if (url) URL.revokeObjectURL(url);
+      setIsExporting(false);
+    }
+  }, [params]);
 
-  return { isExporting, canExport, canExportBREP, estimates, downloadSTL, download3MF, downloadSTEP };
+  return {
+    isExporting,
+    canExport,
+    canExportBREP,
+    estimates,
+    downloadSTL,
+    download3MF,
+    downloadSTEP,
+  };
 }

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGeneration } from '../../hooks/useGeneration';
 import { useDesignerStore } from '../../store';
-import type { WorkerResponse } from '@/features/generation/bridge/types';
+import type { WorkerResponse } from '@/shared/generation/bridge';
 
 /**
  * Mock Worker for testing the useGeneration hook.
@@ -145,9 +145,9 @@ describe('useGeneration', () => {
 
     // Complete initial generation
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(1);   // init
+      await vi.advanceTimersByTimeAsync(1); // init
       await vi.advanceTimersByTimeAsync(201); // debounce
-      await vi.advanceTimersByTimeAsync(1);   // worker response
+      await vi.advanceTimersByTimeAsync(1); // worker response
     });
 
     expect(useDesignerStore.getState().generation.status).toBe('complete');
@@ -160,7 +160,7 @@ describe('useGeneration', () => {
     // Wait for re-generation: debounce (200ms) + worker response
     await act(async () => {
       await vi.advanceTimersByTimeAsync(201); // debounce
-      await vi.advanceTimersByTimeAsync(1);   // worker response
+      await vi.advanceTimersByTimeAsync(1); // worker response
     });
 
     expect(useDesignerStore.getState().generation.status).toBe('complete');
@@ -208,9 +208,9 @@ describe('useGeneration', () => {
 
     // Init + debounce + error response
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(1);   // init
+      await vi.advanceTimersByTimeAsync(1); // init
       await vi.advanceTimersByTimeAsync(201); // debounce
-      await vi.advanceTimersByTimeAsync(1);   // worker error response
+      await vi.advanceTimersByTimeAsync(1); // worker error response
     });
 
     const state = useDesignerStore.getState();
