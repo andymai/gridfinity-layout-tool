@@ -1,5 +1,10 @@
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
+import {
+  calcFractionalPixelSize,
+  type FractionalGridContext,
+} from '@/features/grid-editor/utils/fractionalPixels';
 
 interface OverlayProps {
   cellSize: number;
@@ -22,112 +27,45 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     }))
   );
 
-  // Always use standard cell size (grid renders at normal dimensions)
-  // Half-bin mode only affects snapping, not visual grid size
   const visualCellSize = cellSize;
-  // No scaling needed - grid is always standard dimensions
-  const scale = 1;
-  // Visual grid dimensions (standard)
   const visualDepth = drawer.depth;
   const integerDepth = Math.floor(drawer.depth);
+
+  // O(1) lookup map for bins (avoids O(n) .find() calls in render loops)
+  const binMap = useMemo(() => new Map(bins.map((b) => [b.id, b])), [bins]);
 
   // Fractional edge settings affect visual positioning
   const hasFractionalWidth = drawer.width % 1 !== 0;
   const hasFractionalDepth = drawer.depth % 1 !== 0;
   const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
   const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
-
-  // Calculate fractional cell dimensions
   const fractionalWidthPart = drawer.width - Math.floor(drawer.width);
   const fractionalDepthPart = drawer.depth - Math.floor(drawer.depth);
   const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
   const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
 
+  // Shared fractional grid contexts for width and depth calculations
+  const widthCtx: FractionalGridContext = {
+    drawerDimension: drawer.width,
+    fractionalEdge: fractionalEdgeX,
+    cellSize: visualCellSize,
+    gap,
+  };
+  const depthCtx: FractionalGridContext = {
+    drawerDimension: drawer.depth,
+    fractionalEdge: fractionalEdgeY,
+    cellSize: visualCellSize,
+    gap,
+  };
+
   // Helper to calculate pixel dimension for grid elements (standard calculation)
   const toPixels = (units: number) => units * visualCellSize + Math.max(0, units - 1) * gap;
 
-  // Calculate pixel width accounting for fractional edges
-  const calcPixelWidth = (x: number, width: number): number => {
-    if (!hasFractionalWidth) {
-      return width * visualCellSize + Math.max(0, width - 1) * gap;
-    }
-
-    const binEndX = x + width;
-
-    if (fractionalEdgeX === 'start') {
-      // Fractional column at left [0, fractionalWidthPart)
-      const inFractional = Math.max(0, Math.min(binEndX, fractionalWidthPart) - Math.max(x, 0));
-      const inInteger = width - inFractional;
-
-      let pixelWidth = 0;
-      if (inFractional > 0) {
-        pixelWidth += (inFractional / fractionalWidthPart) * fractionalCellWidth;
-      }
-      if (inInteger > 0) {
-        if (inFractional > 0) pixelWidth += gap;
-        pixelWidth +=
-          inInteger * visualCellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-      }
-      return pixelWidth;
-    } else {
-      // Fractional column at right
-      const integerWidth = Math.floor(drawer.width);
-      const inInteger = Math.max(0, Math.min(binEndX, integerWidth) - x);
-      const inFractional = width - inInteger;
-
-      let pixelWidth = 0;
-      if (inInteger > 0) {
-        pixelWidth +=
-          inInteger * visualCellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-      }
-      if (inFractional > 0) {
-        if (inInteger > 0) pixelWidth += gap;
-        pixelWidth += (inFractional / fractionalWidthPart) * fractionalCellWidth;
-      }
-      return pixelWidth;
-    }
-  };
-
-  // Calculate pixel height accounting for fractional edges
-  const calcPixelHeight = (y: number, depth: number): number => {
-    if (!hasFractionalDepth) {
-      return depth * visualCellSize + Math.max(0, depth - 1) * gap;
-    }
-
-    const binEndY = y + depth;
-
-    if (fractionalEdgeY === 'start') {
-      // Fractional row at bottom [0, fractionalDepthPart)
-      const inFractional = Math.max(0, Math.min(binEndY, fractionalDepthPart) - Math.max(y, 0));
-      const inInteger = depth - inFractional;
-
-      let pixelHeight = 0;
-      if (inFractional > 0) {
-        pixelHeight += (inFractional / fractionalDepthPart) * fractionalCellHeight;
-      }
-      if (inInteger > 0) {
-        if (inFractional > 0) pixelHeight += gap;
-        pixelHeight +=
-          inInteger * visualCellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-      }
-      return pixelHeight;
-    } else {
-      // Fractional row at top [integerDepth, drawer.depth)
-      const inInteger = Math.max(0, Math.min(binEndY, integerDepth) - y);
-      const inFractional = depth - inInteger;
-
-      let pixelHeight = 0;
-      if (inInteger > 0) {
-        pixelHeight +=
-          inInteger * visualCellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-      }
-      if (inFractional > 0) {
-        if (inInteger > 0) pixelHeight += gap;
-        pixelHeight += (inFractional / fractionalDepthPart) * fractionalCellHeight;
-      }
-      return pixelHeight;
-    }
-  };
+  // Calculate pixel width/height accounting for fractional edges
+  const calcPixelWidth = (x: number, width: number) =>
+    calcFractionalPixelSize(x, width, widthCtx);
+  const calcPixelHeight = (y: number, depth: number) =>
+    calcFractionalPixelSize(y, depth, depthCtx);
 
   // Helper to calculate left position accounting for fractional edge
   // When fractionalEdgeX='start', the first column is narrower
@@ -207,15 +145,10 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     const width = x2 - x1 + minUnit;
     const depth = y2 - y1 + minUnit;
 
-    // Scale coordinates for half-bin mode
-    const vx1 = x1 * scale;
-    const vWidth = width * scale;
-    const vDepth = depth * scale;
-
-    const left = calcLeft(vx1);
-    const top = calcTop(y1 * scale, vDepth);
-    const rectWidth = calcPixelWidth(vx1, vWidth);
-    const rectHeight = calcPixelHeight(y1 * scale, vDepth);
+    const left = calcLeft(x1);
+    const top = calcTop(y1, depth);
+    const rectWidth = calcPixelWidth(x1, width);
+    const rectHeight = calcPixelHeight(y1, depth);
 
     previews.push(
       <div
@@ -239,7 +172,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     if (!isOverGrid) {
       // Don't render any preview when dragging outside grid
     } else {
-      const primaryBin = bins.find((b) => b.id === binIds[0]);
+      const primaryBin = binMap.get(binIds[0]);
       if (!primaryBin) return null;
 
       const borderColor = valid ? 'var(--color-success)' : 'var(--color-error)';
@@ -251,23 +184,17 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
       // Draw preview for each bin being dragged with uniform delta applied
       for (const binId of binIds) {
-        const bin = bins.find((b) => b.id === binId);
+        const bin = binMap.get(binId);
         if (!bin) continue;
 
         // Apply uniform delta - NO individual clamping (preserves arrangement)
         const newX = bin.x + deltaX;
         const newY = bin.y + deltaY;
 
-        // Scale for half-bin mode
-        const vNewX = newX * scale;
-        const vNewY = newY * scale;
-        const vBinWidth = bin.width * scale;
-        const vBinDepth = bin.depth * scale;
-
-        const left = calcLeft(vNewX);
-        const top = calcTop(vNewY, vBinDepth);
-        const rectWidth = calcPixelWidth(vNewX, vBinWidth);
-        const rectHeight = calcPixelHeight(vNewY, vBinDepth);
+        const left = calcLeft(newX);
+        const top = calcTop(newY, bin.depth);
+        const rectWidth = calcPixelWidth(newX, bin.width);
+        const rectHeight = calcPixelHeight(newY, bin.depth);
 
         previews.push(
           <div
@@ -294,18 +221,13 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     // Draw preview for each bin being resized
     for (const binId of binIds) {
       const currentRect = currentRects.get(binId);
-      const originalBin = bins.find((b) => b.id === binId);
+      const originalBin = binMap.get(binId);
       if (!currentRect || !originalBin) continue;
 
-      // Scale for half-bin mode
-      const vRectX = currentRect.x * scale;
-      const vRectWidth = currentRect.width * scale;
-      const vRectDepth = currentRect.depth * scale;
-
-      const left = calcLeft(vRectX);
-      const top = calcTop(currentRect.y * scale, vRectDepth);
-      const rectWidth = toPixels(vRectWidth);
-      const rectHeight = toPixels(vRectDepth);
+      const left = calcLeft(currentRect.x);
+      const top = calcTop(currentRect.y, currentRect.depth);
+      const rectWidth = toPixels(currentRect.width);
+      const rectHeight = toPixels(currentRect.depth);
 
       // Ghost outline of original size (dashed gray border)
       const sizeChanged =
@@ -315,15 +237,10 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         currentRect.depth !== originalBin.depth;
 
       if (sizeChanged) {
-        // Scale original bin dimensions
-        const vOrigX = originalBin.x * scale;
-        const vOrigWidth = originalBin.width * scale;
-        const vOrigDepth = originalBin.depth * scale;
-
-        const origLeft = calcLeft(vOrigX);
-        const origTop = calcTop(originalBin.y * scale, vOrigDepth);
-        const origWidth = toPixels(vOrigWidth);
-        const origHeight = toPixels(vOrigDepth);
+        const origLeft = calcLeft(originalBin.x);
+        const origTop = calcTop(originalBin.y, originalBin.depth);
+        const origWidth = toPixels(originalBin.width);
+        const origHeight = toPixels(originalBin.depth);
 
         previews.push(
           <div
@@ -364,22 +281,17 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     }
   } else if (interaction.type === 'stagingDrag') {
     const { binId, currentCoord, valid } = interaction;
-    const bin = bins.find((b) => b.id === binId);
+    const bin = binMap.get(binId);
 
     // Only show preview if we have a valid coordinate (mouse is over grid)
     if (bin && currentCoord) {
       const borderColor = valid ? 'var(--color-success)' : 'var(--color-error)';
       const bgColor = valid ? 'var(--color-success-muted)' : 'var(--color-error-muted)';
 
-      // Scale for half-bin mode
-      const vCoordX = currentCoord.x * scale;
-      const vBinWidth = bin.width * scale;
-      const vBinDepth = bin.depth * scale;
-
-      const left = calcLeft(vCoordX);
-      const top = calcTop(currentCoord.y * scale, vBinDepth);
-      const rectWidth = toPixels(vBinWidth);
-      const rectHeight = toPixels(vBinDepth);
+      const left = calcLeft(currentCoord.x);
+      const top = calcTop(currentCoord.y, bin.depth);
+      const rectWidth = toPixels(bin.width);
+      const rectHeight = toPixels(bin.depth);
 
       previews.push(
         <div
@@ -419,16 +331,11 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     const remainderDepth = areaDepth - usedDepth;
     const hasRemainder = remainderWidth > 0 || remainderDepth > 0;
 
-    // Scale for half-bin mode
-    const vx1 = x1 * scale;
-    const vAreaWidth = areaWidth * scale;
-    const vAreaDepth = areaDepth * scale;
-
     // Outer selection area (amber dashed like draw)
-    const areaLeft = calcLeft(vx1);
-    const areaTop = calcTop(y1 * scale, vAreaDepth);
-    const areaPixelWidth = toPixels(vAreaWidth);
-    const areaPixelHeight = toPixels(vAreaDepth);
+    const areaLeft = calcLeft(x1);
+    const areaTop = calcTop(y1, areaDepth);
+    const areaPixelWidth = toPixels(areaWidth);
+    const areaPixelHeight = toPixels(areaDepth);
 
     previews.push(
       <div
@@ -448,22 +355,15 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
     // Draw grid of bin previews
     if (binsAcross > 0 && binsDown > 0) {
-      // Scale paint size for visual display
-      const vPaintWidth = paintSize.width * scale;
-      const vPaintDepth = paintSize.depth * scale;
-
       for (let row = 0; row < binsDown; row++) {
         for (let col = 0; col < binsAcross; col++) {
           const binX = x1 + col * paintSize.width;
           const binY = y1 + row * paintSize.depth;
 
-          // Scale coordinates
-          const vBinX = binX * scale;
-
-          const left = calcLeft(vBinX);
-          const top = calcTop(binY * scale, vPaintDepth);
-          const rectWidth = toPixels(vPaintWidth);
-          const rectHeight = toPixels(vPaintDepth);
+          const left = calcLeft(binX);
+          const top = calcTop(binY, paintSize.depth);
+          const rectWidth = toPixels(paintSize.width);
+          const rectHeight = toPixels(paintSize.depth);
 
           previews.push(
             <div
@@ -486,20 +386,14 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
     // Show remainder area as red/warning if it exists
     if (hasRemainder) {
-      // Scale remainder dimensions
-      const vRemainderWidth = remainderWidth * scale;
-      const vRemainderDepth = remainderDepth * scale;
-      const vUsedDepth = usedDepth * scale;
-
       // Right remainder strip
       if (remainderWidth > 0 && binsDown > 0) {
         const stripX = x1 + usedWidth;
-        const vStripX = stripX * scale;
 
-        const stripLeft = calcLeft(vStripX);
-        const stripTop = calcTop(y1 * scale, vUsedDepth);
-        const stripWidth = toPixels(vRemainderWidth);
-        const stripHeight = toPixels(vUsedDepth);
+        const stripLeft = calcLeft(stripX);
+        const stripTop = calcTop(y1, usedDepth);
+        const stripWidth = toPixels(remainderWidth);
+        const stripHeight = toPixels(usedDepth);
 
         previews.push(
           <div
@@ -521,10 +415,10 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       if (remainderDepth > 0) {
         const stripY = y1 + usedDepth;
 
-        const stripLeft = calcLeft(vx1);
-        const stripTop = calcTop(stripY * scale, vRemainderDepth);
-        const stripWidth = toPixels(vAreaWidth);
-        const stripHeight = toPixels(vRemainderDepth);
+        const stripLeft = calcLeft(x1);
+        const stripTop = calcTop(stripY, remainderDepth);
+        const stripWidth = toPixels(areaWidth);
+        const stripHeight = toPixels(remainderDepth);
 
         previews.push(
           <div

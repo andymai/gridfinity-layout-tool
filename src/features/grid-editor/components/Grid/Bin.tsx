@@ -13,6 +13,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useResponsive } from '@/shared/hooks';
 import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getBinTextColors } from '@/shared/utils';
+import { calcFractionalPixelSize } from '@/features/grid-editor/utils/fractionalPixels';
 import { ResizeHandles } from './ResizeHandles';
 
 /** Clamp a value between min and max */
@@ -30,7 +31,6 @@ interface BinProps {
   drawer: Drawer;
   cellSize: number;
   gap?: number;
-  halfBinMode?: boolean;
   isGhost: boolean;
   isSelected: boolean;
   onStartDrag: (
@@ -54,7 +54,6 @@ function BinComponent({
   drawer,
   cellSize,
   gap = 1,
-  halfBinMode: _halfBinMode = false,
   isGhost,
   isSelected,
   onStartDrag,
@@ -225,69 +224,23 @@ function BinComponent({
     const gridRowStart = topRow;
     const gridRowSpan = Math.max(1, bottomRow - topRow + 1);
 
-    // Calculate actual pixel dimensions of bin
+    // Calculate actual pixel dimensions using shared fractional pixel utility
     const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
     const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
 
-    // Calculate pixel width accounting for fractional edge
-    let binPixelWidth: number;
-    if (!hasFractionalDrawerWidth) {
-      binPixelWidth = bin.width * cellSize + Math.max(0, bin.width - 1) * gap;
-    } else if (fractionalEdgeX === 'start') {
-      const inFractional = Math.max(0, Math.min(binEndX, fractionalWidthPart) - Math.max(bin.x, 0));
-      const inInteger = bin.width - inFractional;
-      let width = 0;
-      if (inFractional > 0) {
-        width += (inFractional / fractionalWidthPart) * fractionalCellWidth;
-      }
-      if (inInteger > 0) {
-        if (inFractional > 0) width += gap;
-        width += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-      }
-      binPixelWidth = width;
-    } else {
-      const inInteger = Math.max(0, Math.min(binEndX, integerWidth) - bin.x);
-      const inFractional = bin.width - inInteger;
-      let width = 0;
-      if (inInteger > 0) {
-        width += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-      }
-      if (inFractional > 0) {
-        if (inInteger > 0) width += gap;
-        width += (inFractional / fractionalWidthPart) * fractionalCellWidth;
-      }
-      binPixelWidth = width;
-    }
+    const binPixelWidth = calcFractionalPixelSize(bin.x, bin.width, {
+      drawerDimension: drawer.width,
+      fractionalEdge: fractionalEdgeX,
+      cellSize,
+      gap,
+    });
 
-    // Calculate pixel height accounting for fractional edge
-    let binPixelHeight: number;
-    if (!hasFractionalDrawerDepth) {
-      binPixelHeight = bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap;
-    } else if (fractionalEdgeY === 'start') {
-      const inFractional = Math.max(0, Math.min(binEndY, fractionalDepthPart) - Math.max(bin.y, 0));
-      const inInteger = bin.depth - inFractional;
-      let height = 0;
-      if (inFractional > 0) {
-        height += (inFractional / fractionalDepthPart) * fractionalCellHeight;
-      }
-      if (inInteger > 0) {
-        if (inFractional > 0) height += gap;
-        height += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-      }
-      binPixelHeight = height;
-    } else {
-      const inInteger = Math.max(0, Math.min(binEndY, integerDepth) - bin.y);
-      const inFractional = bin.depth - inInteger;
-      let height = 0;
-      if (inInteger > 0) {
-        height += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-      }
-      if (inFractional > 0) {
-        if (inInteger > 0) height += gap;
-        height += (inFractional / fractionalDepthPart) * fractionalCellHeight;
-      }
-      binPixelHeight = height;
-    }
+    const binPixelHeight = calcFractionalPixelSize(bin.y, bin.depth, {
+      drawerDimension: drawer.depth,
+      fractionalEdge: fractionalEdgeY,
+      cellSize,
+      gap,
+    });
 
     // Need custom sizing when drawer has fractional dimensions or bin has fractional coords
     const needsCustomSizing =
@@ -911,7 +864,7 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
     return false;
   }
 
-  // Re-render if customProperties change (compare by key count and values)
+  // Re-render if customProperties change (compare keys and values)
   const prevCustomProps = prevBin.customProperties;
   const nextCustomProps = nextBin.customProperties;
   const prevHasProps = prevCustomProps && Object.keys(prevCustomProps).length > 0;
@@ -923,6 +876,9 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
     const prevKeys = Object.keys(prevCustomProps);
     const nextKeys = Object.keys(nextCustomProps);
     if (prevKeys.length !== nextKeys.length) return false;
+    for (const key of prevKeys) {
+      if (prevCustomProps[key] !== nextCustomProps[key]) return false;
+    }
   }
 
   // Re-render if category changes
@@ -953,11 +909,6 @@ function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
 
   // Re-render if cellSize or gap changes (affects sizing)
   if (prevProps.cellSize !== nextProps.cellSize || prevProps.gap !== nextProps.gap) {
-    return false;
-  }
-
-  // Re-render if halfBinMode changes (affects grid positioning)
-  if (prevProps.halfBinMode !== nextProps.halfBinMode) {
     return false;
   }
 

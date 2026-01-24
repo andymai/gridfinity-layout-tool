@@ -91,7 +91,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
   if (!bin) return null;
 
   // Find the bin element to position the popover
-  const binElement = document.querySelector(`[data-bin-id="${binId}"]`);
+  const binElement = document.querySelector(`[data-bin-id="${CSS.escape(binId)}"]`);
   if (!binElement) return null;
 
   const binRect = binElement.getBoundingClientRect();
