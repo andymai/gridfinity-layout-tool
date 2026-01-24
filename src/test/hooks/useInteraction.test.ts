@@ -947,6 +947,122 @@ describe('pointer events', () => {
     expect(useUIStore.getState().interaction).toBeNull();
   });
 
+  it('pointer cancel does not create a bin for draw interaction', () => {
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    const binsBefore = useLayoutStore.getState().layout.bins.length;
+
+    // Start a draw interaction
+    act(() => {
+      result.current.startDraw({ x: 0, y: 0 });
+    });
+
+    // Simulate pointer move to establish a region
+    act(() => {
+      const moveEvent = new PointerEvent('pointermove', {
+        clientX: 100,
+        clientY: 100,
+        bubbles: true,
+        isPrimary: true,
+      });
+      document.dispatchEvent(moveEvent);
+    });
+
+    // Simulate pointer cancel (OS interruption)
+    act(() => {
+      const cancelEvent = new PointerEvent('pointercancel', { bubbles: true });
+      document.dispatchEvent(cancelEvent);
+    });
+
+    // No bin should be created
+    expect(useLayoutStore.getState().layout.bins.length).toBe(binsBefore);
+  });
+
+  it('pointer cancel does not commit drag movement', () => {
+    const gridRef = createMockGridRef();
+    const layout = useLayoutStore.getState().layout;
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    // Add a bin at position (2, 2)
+    const addResult = useLayoutStore.getState().addBin({
+      layerId,
+      x: 2,
+      y: 2,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: 'Test',
+      notes: '',
+    });
+    const binId = getBinId(addResult);
+
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    // Start dragging
+    act(() => {
+      result.current.startDrag(binId, 68, 68);
+    });
+
+    expect(useUIStore.getState().interaction?.type).toBe('drag');
+
+    // Simulate pointer cancel
+    act(() => {
+      const cancelEvent = new PointerEvent('pointercancel', { bubbles: true });
+      document.dispatchEvent(cancelEvent);
+    });
+
+    // Bin should still be at original position
+    const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId);
+    expect(bin?.x).toBe(2);
+    expect(bin?.y).toBe(2);
+  });
+
+  it('pointer cancel clears drop target if set during drag', () => {
+    const gridRef = createMockGridRef();
+    const layout = useLayoutStore.getState().layout;
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const addResult = useLayoutStore.getState().addBin({
+      layerId,
+      x: 0,
+      y: 0,
+      width: 2,
+      depth: 2,
+      height: 3,
+      category: categoryId,
+      label: '',
+      notes: '',
+    });
+    const binId = getBinId(addResult);
+
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    // Start drag and set drop target
+    act(() => {
+      result.current.startDrag(binId, 36, 36);
+    });
+    act(() => {
+      useUIStore.getState().setDropTarget('trash');
+    });
+
+    expect(useUIStore.getState().dropTarget).toBe('trash');
+
+    // Simulate pointer cancel
+    act(() => {
+      const cancelEvent = new PointerEvent('pointercancel', { bubbles: true });
+      document.dispatchEvent(cancelEvent);
+    });
+
+    // Drop target should be cleared
+    expect(useUIStore.getState().dropTarget).toBeNull();
+    // Bin should NOT be deleted
+    expect(useLayoutStore.getState().layout.bins.find((b) => b.id === binId)).toBeDefined();
+  });
+
   it('paint mode creates multiple bins in area', () => {
     // Enable paint mode with 2x2 bins
     useUIStore.getState().setPaintSize({ width: 2, depth: 2 });

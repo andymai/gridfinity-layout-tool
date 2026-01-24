@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useHistoryStore } from '@/core/store/history';
 import { useLayoutStore } from '@/core/store/layout';
+import { useSelectionStore } from '@/core/store/selection';
 import { createDefaultLayout, CONSTRAINTS } from '@/core/constants';
+import { isOk } from '@/core/result';
 import { resetAllStores } from '@/test/testUtils';
 
 describe('history store', () => {
@@ -309,6 +311,199 @@ describe('history store', () => {
       // Redo to 2 bins
       redo();
       expect(useLayoutStore.getState().layout.bins).toHaveLength(2);
+    });
+  });
+
+  describe('selection pruning on undo/redo', () => {
+    it('clears selectedBinIds for bins removed by undo', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Save state before adding bin
+      push(JSON.parse(JSON.stringify(layout)));
+
+      // Add a bin
+      const addResult = useLayoutStore.getState().addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Test',
+        notes: '',
+      });
+
+      if (!isOk(addResult)) throw new Error('addBin failed');
+      const binId = addResult.value;
+
+      // Select the new bin
+      useSelectionStore.setState({ selectedBinIds: [binId] });
+      expect(useSelectionStore.getState().selectedBinIds).toContain(binId);
+
+      // Undo the bin creation
+      undo();
+
+      // Bin should not exist in layout
+      expect(useLayoutStore.getState().layout.bins.find((b) => b.id === binId)).toBeUndefined();
+      // Selection should be pruned
+      expect(useSelectionStore.getState().selectedBinIds).not.toContain(binId);
+    });
+
+    it('clears focusedBinId when focused bin is removed by undo', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      push(JSON.parse(JSON.stringify(layout)));
+
+      const addResult = useLayoutStore.getState().addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 1,
+        depth: 1,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      if (!isOk(addResult)) throw new Error('addBin failed');
+      const binId = addResult.value;
+
+      useSelectionStore.setState({ focusedBinId: binId });
+
+      undo();
+
+      expect(useSelectionStore.getState().focusedBinId).toBeNull();
+    });
+
+    it('clears quickLabelBinId when bin is removed by undo', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      push(JSON.parse(JSON.stringify(layout)));
+
+      const addResult = useLayoutStore.getState().addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 1,
+        depth: 1,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+
+      if (!isOk(addResult)) throw new Error('addBin failed');
+      const binId = addResult.value;
+
+      useSelectionStore.setState({ quickLabelBinId: binId });
+
+      undo();
+
+      expect(useSelectionStore.getState().quickLabelBinId).toBeNull();
+    });
+
+    it('preserves selectedBinIds for bins that still exist after undo', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Add first bin
+      const result1 = useLayoutStore.getState().addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Bin1',
+        notes: '',
+      });
+      if (!isOk(result1)) throw new Error('addBin failed');
+      const bin1Id = result1.value;
+
+      // Save state with 1 bin
+      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)));
+
+      // Add second bin
+      const result2 = useLayoutStore.getState().addBin({
+        layerId,
+        x: 4,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Bin2',
+        notes: '',
+      });
+      if (!isOk(result2)) throw new Error('addBin failed');
+      const bin2Id = result2.value;
+
+      // Select both bins
+      useSelectionStore.setState({ selectedBinIds: [bin1Id, bin2Id] });
+
+      // Undo removes bin2 but keeps bin1
+      undo();
+
+      // Only bin1 should remain in selection
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([bin1Id]);
+    });
+
+    it('prunes stale selections on redo', () => {
+      const { push, undo, redo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Add a bin
+      const addResult = useLayoutStore.getState().addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Test',
+        notes: '',
+      });
+      if (!isOk(addResult)) throw new Error('addBin failed');
+      const binId = addResult.value;
+
+      // Save state with 1 bin
+      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)));
+
+      // Delete the bin
+      useLayoutStore.getState().deleteBin(binId);
+
+      // Select a fake bin ID that doesn't exist
+      useSelectionStore.setState({ selectedBinIds: ['nonexistent-id'] });
+
+      // Undo back to state with 1 bin
+      undo();
+
+      // After undo, 'nonexistent-id' should be pruned (doesn't exist in restored state)
+      expect(useSelectionStore.getState().selectedBinIds).not.toContain('nonexistent-id');
+
+      // Redo back to state with 0 bins
+      useSelectionStore.setState({ selectedBinIds: [binId] });
+      redo();
+
+      // After redo, binId should be pruned (bin was deleted in this state)
+      expect(useSelectionStore.getState().selectedBinIds).not.toContain(binId);
     });
   });
 });
