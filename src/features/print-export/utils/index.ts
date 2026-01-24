@@ -2,3 +2,4 @@
 export * from './printEstimates';
 export * from './printLayout';
 export * from './printListOperations';
+export * from './split';

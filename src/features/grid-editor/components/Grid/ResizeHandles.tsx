@@ -6,7 +6,10 @@ import type {
   HandlePlacement,
 } from '@/core/types';
 import { ResizeHandle } from './ResizeHandle';
-import { getAllHandles, shouldUseExternalHandles } from '@/utils/handlePositioning';
+import {
+  getAllHandles,
+  shouldUseExternalHandles,
+} from '@/features/grid-editor/utils/handlePositioning';
 
 interface ResizeHandlesProps {
   binWidth: number;

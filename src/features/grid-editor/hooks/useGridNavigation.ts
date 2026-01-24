@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { useLayoutStore, useUIStore } from '@/core/store';
-import { findNearestBinInDirection, type Direction } from '@/utils/navigation';
+import { findNearestBinInDirection, type Direction } from '@/features/grid-editor/utils/navigation';
 
 /**
  * Hook for keyboard-based spatial navigation between bins.

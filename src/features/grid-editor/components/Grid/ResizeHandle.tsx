@@ -5,7 +5,11 @@ import type {
   HandleVariant,
   HandlePlacement,
 } from '@/core/types';
-import { getHandlePosition, getHandleVisual, isCornerHandle } from '@/utils/handlePositioning';
+import {
+  getHandlePosition,
+  getHandleVisual,
+  isCornerHandle,
+} from '@/features/grid-editor/utils/handlePositioning';
 
 interface ResizeHandleProps {
   handle: ResizeHandleType;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findNearestBinInDirection, type Direction } from '@/utils/navigation';
+import { findNearestBinInDirection, type Direction } from '@/features/grid-editor/utils/navigation';
 import type { Bin } from '@/core/types';
 
 // Helper to create a test bin
