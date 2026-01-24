@@ -27,6 +27,7 @@ import {
   DESIGNER_CONSTRAINTS,
   migrateParams,
 } from '../constants';
+import { isFractional } from '@/core/constants';
 import { isRectangularSelection, normalizeIds } from '../utils/compartments';
 
 export const useDesignerStore = create<DesignerState>()(
@@ -339,12 +340,20 @@ export const useDesignerStore = create<DesignerState>()(
       set((state) => {
         const enabling = !state.ui.halfBinMode;
         if (!enabling) {
-          // Disabling: round fractional dimensions to nearest integer
-          if (state.params.width % 1 !== 0) {
-            state.params.width = Math.ceil(state.params.width);
+          // Push history before modifying params so rounding is undoable
+          if (isFractional(state.params.width) || isFractional(state.params.depth)) {
+            state.history.past = [
+              ...state.history.past.slice(-(DESIGNER_CONSTRAINTS.MAX_HISTORY - 1)),
+              current(state.params),
+            ];
+            state.history.future = [];
           }
-          if (state.params.depth % 1 !== 0) {
-            state.params.depth = Math.ceil(state.params.depth);
+          // Disabling: round fractional dimensions to nearest integer
+          if (isFractional(state.params.width)) {
+            state.params.width = Math.round(state.params.width);
+          }
+          if (isFractional(state.params.depth)) {
+            state.params.depth = Math.round(state.params.depth);
           }
         }
         state.ui.halfBinMode = enabling;

@@ -2,7 +2,7 @@
  * Bin Designer page layout.
  *
  * Three responsive layouts:
- * - Desktop (≥900px): Side panel (320px) + full 3D preview
+ * - Desktop (≥900px): Side panel (288px) + full 3D preview
  * - Tablet (768-899px): Stacked - 3D preview (50vh) + tabbed controls below
  * - Mobile (<768px): Stacked - 3D preview (40vh) + tabbed controls + floating export FAB
  *
