@@ -94,7 +94,7 @@ export function fillAllWithSize(
   halfBinMode: boolean = false
 ): { bins: Bin[]; skippedCells: number } {
   const layer = layout.layers.find((l) => l.id === layerId);
-  if (!layer) {
+  if (!layer || binWidth <= 0 || binDepth <= 0) {
     return { bins: [], skippedCells: 0 };
   }
 
