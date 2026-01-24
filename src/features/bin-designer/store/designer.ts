@@ -29,8 +29,10 @@ import {
   DESIGNER_CONSTRAINTS,
   migrateParams,
 } from '../constants';
+import { isErr } from '@/core/result';
 import { isFractional } from '@/core/constants';
 import { isRectangularSelection, normalizeIds } from '../utils/compartments';
+import { validateCompartmentSizes } from '../utils/validation';
 import { createCachedMesh, evictIfNeeded } from './meshCacheManager';
 
 /**
@@ -80,6 +82,21 @@ export const useDesignerStore = create<DesignerState>()(
 
     // Param actions
     setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => {
+      // Guard compartment configuration changes against degenerate cell sizes
+      if (key === 'compartments') {
+        const { params } = get();
+        const newCompartments = value as BinParams['compartments'];
+        const result = validateCompartmentSizes(
+          params.width,
+          params.depth,
+          params.wallThickness,
+          newCompartments.cols,
+          newCompartments.rows,
+          newCompartments.thickness
+        );
+        if (isErr(result)) return;
+      }
+
       set((state) => {
         pushHistoryEntry(state);
         state.params[key] = value;
@@ -87,6 +104,23 @@ export const useDesignerStore = create<DesignerState>()(
     },
 
     setParams: (partial: Partial<BinParams>) => {
+      // Guard compartment configuration changes against degenerate cell sizes
+      if (partial.compartments) {
+        const { params } = get();
+        const width = partial.width ?? params.width;
+        const depth = partial.depth ?? params.depth;
+        const wallThickness = partial.wallThickness ?? params.wallThickness;
+        const result = validateCompartmentSizes(
+          width,
+          depth,
+          wallThickness,
+          partial.compartments.cols,
+          partial.compartments.rows,
+          partial.compartments.thickness
+        );
+        if (isErr(result)) return;
+      }
+
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params, partial);
@@ -226,6 +260,17 @@ export const useDesignerStore = create<DesignerState>()(
 
     // Compartment actions
     setCompartmentGrid: (cols: number, rows: number) => {
+      const { params } = get();
+      const result = validateCompartmentSizes(
+        params.width,
+        params.depth,
+        params.wallThickness,
+        cols,
+        rows,
+        params.compartments.thickness
+      );
+      if (isErr(result)) return;
+
       set((state) => {
         pushHistoryEntry(state);
         const cells: number[] = [];
@@ -265,6 +310,18 @@ export const useDesignerStore = create<DesignerState>()(
     },
 
     splitCompartment: (compartmentId: number) => {
+      const { params } = get();
+      // Splitting produces individual cells — validate full grid is viable
+      const result = validateCompartmentSizes(
+        params.width,
+        params.depth,
+        params.wallThickness,
+        params.compartments.cols,
+        params.compartments.rows,
+        params.compartments.thickness
+      );
+      if (isErr(result)) return;
+
       set((state) => {
         pushHistoryEntry(state);
         const newCells = [...state.params.compartments.cells];

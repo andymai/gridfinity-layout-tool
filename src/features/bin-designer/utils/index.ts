@@ -1,5 +1,5 @@
-export { validateBinParams } from './validation';
-export type { DesignerValidationError } from './validation';
+export { validateBinParams, computeMinCellSize, validateCompartmentSizes } from './validation';
+export type { DesignerValidationError, MinCellSize } from './validation';
 export { generateFileName } from './fileNaming';
 export type { FileNameStyle } from './fileNaming';
 export { estimatePrint, formatPrintTime, formatFilament } from './printEstimates';

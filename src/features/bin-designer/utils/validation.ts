@@ -34,9 +34,7 @@ export interface DesignerValidationError {
  * Validates all bin parameters against constraints.
  * Returns the params if valid, or an error describing the first violation.
  */
-export function validateBinParams(
-  params: BinParams
-): Result<BinParams, DesignerValidationError> {
+export function validateBinParams(params: BinParams): Result<BinParams, DesignerValidationError> {
   const { MIN_DIMENSION, MAX_DIMENSION, MIN_HEIGHT, MAX_HEIGHT } = DESIGNER_CONSTRAINTS;
 
   // Dimension range checks
@@ -217,8 +215,10 @@ export function validateBinParams(
 
   // Compartment size validation (ensures grid cells aren't impossibly thin)
   if (params.compartments.cols > 1 || params.compartments.rows > 1) {
-    const innerWidth = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
-    const innerDepth = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
+    const innerWidth =
+      params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
+    const innerDepth =
+      params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
 
     if (params.compartments.cols > 1) {
       const maxDividers = params.compartments.cols - 1;
@@ -246,6 +246,88 @@ export function validateBinParams(
     }
   }
 
-
   return ok(params);
+}
+
+/** Result of computing minimum cell dimensions (in mm) */
+export interface MinCellSize {
+  readonly minCellW: number;
+  readonly minCellD: number;
+}
+
+/**
+ * Computes the minimum individual cell dimensions (mm) for a compartment grid,
+ * accounting for inner bin dimensions and divider thickness.
+ *
+ * Used to determine if a grid configuration would produce degenerate geometry.
+ */
+export function computeMinCellSize(
+  width: number,
+  depth: number,
+  wallThickness: number,
+  cols: number,
+  rows: number,
+  dividerThickness: number
+): MinCellSize {
+  const innerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+  const innerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+
+  const dividersW = cols > 1 ? (cols - 1) * dividerThickness : 0;
+  const dividersD = rows > 1 ? (rows - 1) * dividerThickness : 0;
+
+  const minCellW = (innerW - dividersW) / cols;
+  const minCellD = (innerD - dividersD) / rows;
+
+  return { minCellW, minCellD };
+}
+
+/**
+ * Validates that compartment cell dimensions are large enough for viable geometry.
+ * Returns ok(undefined) if valid, or an error describing the constraint violation.
+ *
+ * Used as a guard before split/grid/thickness operations and before mesh generation.
+ */
+export function validateCompartmentSizes(
+  width: number,
+  depth: number,
+  wallThickness: number,
+  cols: number,
+  rows: number,
+  dividerThickness: number
+): Result<undefined, DesignerValidationError> {
+  if (cols < 1 || rows < 1) {
+    return err({
+      code: 'COMPARTMENT_GRID_INVALID',
+      message: 'Compartment grid must have at least 1 column and 1 row.',
+      field: cols < 1 ? 'compartments.cols' : 'compartments.rows',
+    });
+  }
+  if (cols <= 1 && rows <= 1) return ok(undefined);
+
+  const { minCellW, minCellD } = computeMinCellSize(
+    width,
+    depth,
+    wallThickness,
+    cols,
+    rows,
+    dividerThickness
+  );
+
+  if (cols > 1 && minCellW < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
+    return err({
+      code: 'COMPARTMENT_TOO_SMALL',
+      message: `Compartment cells too small (${minCellW.toFixed(1)}mm wide, min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm). Reduce grid size or increase bin dimensions.`,
+      field: 'compartments.cols',
+    });
+  }
+
+  if (rows > 1 && minCellD < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
+    return err({
+      code: 'COMPARTMENT_TOO_SMALL',
+      message: `Compartment cells too small (${minCellD.toFixed(1)}mm deep, min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm). Reduce grid size or increase bin dimensions.`,
+      field: 'compartments.rows',
+    });
+  }
+
+  return ok(undefined);
 }
