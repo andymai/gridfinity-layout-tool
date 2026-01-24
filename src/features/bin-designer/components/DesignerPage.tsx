@@ -4,7 +4,7 @@
  * Three responsive layouts:
  * - Desktop (≥900px): Side panel (288px) + full 3D preview
  * - Tablet (768-899px): Stacked - 3D preview (50vh) + tabbed controls below
- * - Mobile (<768px): Stacked - 3D preview (40vh) + tabbed controls + floating export FAB
+ * - Mobile (<768px): Stacked - 3D preview (40vh) + tabbed controls
  *
  * The useGeneration hook auto-generates mesh when parameters change.
  */
@@ -43,24 +43,34 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
   if (status === 'idle') return null;
 
   return (
-    <span className="inline-flex items-center gap-1" aria-live="polite">
+    <div
+      className={`flex items-center gap-1.5 px-2 py-1 text-[11px] mr-2 ${
+        status === 'saving'
+          ? 'text-content-tertiary'
+          : status === 'saved'
+            ? 'text-content-secondary animate-fade-in'
+            : 'text-red-400'
+      }`}
+      aria-live="polite"
+      role="status"
+    >
       {status === 'saving' && (
         <svg
-          className="h-3 w-3 animate-spin text-content-secondary motion-reduce:animate-none"
-          fill="none"
+          className="w-3 h-3 animate-spin motion-reduce:animate-none"
           viewBox="0 0 24 24"
+          fill="none"
           aria-hidden="true"
         >
           <circle
-            className="opacity-25"
+            className="opacity-20"
             cx="12"
             cy="12"
             r="10"
             stroke="currentColor"
-            strokeWidth="4"
+            strokeWidth="3"
           />
           <path
-            className="opacity-75"
+            className="opacity-70"
             fill="currentColor"
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
           />
@@ -68,10 +78,10 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
       )}
       {status === 'saved' && (
         <svg
-          className="h-3 w-3 text-green-400"
+          className="w-3 h-3 text-success"
           fill="none"
-          stroke="currentColor"
           viewBox="0 0 24 24"
+          stroke="currentColor"
           aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -79,10 +89,10 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
       )}
       {status === 'error' && (
         <svg
-          className="h-3 w-3 text-red-400"
+          className="w-3 h-3"
           fill="none"
-          stroke="currentColor"
           viewBox="0 0 24 24"
+          stroke="currentColor"
           aria-hidden="true"
         >
           <path
@@ -93,12 +103,10 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
           />
         </svg>
       )}
-      <span
-        className={`text-xs ${status === 'saving' ? 'text-content-secondary' : status === 'saved' ? 'text-green-400' : 'text-red-400'}`}
-      >
-        {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : 'Save failed'}
+      <span>
+        {status === 'saving' ? 'Saving...' : status === 'saved' ? 'Saved' : 'Save failed'}
       </span>
-    </span>
+    </div>
   );
 }
 
@@ -125,6 +133,7 @@ export function DesignerPage(_props: DesignerPageProps) {
   const { isDesktop, isMobile } = useResponsive();
   const saveStatus = useDesignerStore((s) => s.saveStatus);
   const designName = useDesignerStore((s) => s.designName);
+  const setDesignName = useDesignerStore((s) => s.setDesignName);
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
   const setParams = useDesignerStore((s) => s.setParams);
@@ -150,58 +159,46 @@ export function DesignerPage(_props: DesignerPageProps) {
   const handleRedo = useCallback(() => {
     redo();
   }, [redo]);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const addToast = useToastStore((s) => s.addToast);
+  // Platform detection for keyboard shortcut hints
+  const isMac =
+    typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const modKey = isMac ? '\u2318' : 'Ctrl';
 
-  // Close mobile menu on outside click, manage keyboard navigation
+  // Inline name editing (like planner mode)
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState(designName);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
-    if (!mobileMenuOpen) return;
-    // Focus first enabled menu item when menu opens
-    const menuItems = mobileMenuRef.current?.querySelectorAll<HTMLButtonElement>(
-      '[role="menuitem"]:not([disabled])'
-    );
-    menuItems?.[0]?.focus();
+    if (isEditingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [isEditingName]);
 
-    const handleClick = (e: MouseEvent) => {
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
-        setMobileMenuOpen(false);
+  const handleNameClick = useCallback(() => {
+    setEditNameValue(designName);
+    setIsEditingName(true);
+  }, [designName]);
+
+  const handleNameSubmit = useCallback(() => {
+    setDesignName(editNameValue.trim() || 'Untitled Bin');
+    setIsEditingName(false);
+  }, [editNameValue, setDesignName]);
+
+  const handleNameKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleNameSubmit();
+      } else if (e.key === 'Escape') {
+        setEditNameValue(designName);
+        setIsEditingName(false);
       }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        setMobileMenuOpen(false);
-        menuButtonRef.current?.focus();
-        return;
-      }
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        const items = Array.from(
-          mobileMenuRef.current?.querySelectorAll<HTMLButtonElement>(
-            '[role="menuitem"]:not([disabled])'
-          ) ?? []
-        );
-        if (items.length === 0) return;
-        const current = document.activeElement as HTMLElement;
-        const idx = items.indexOf(current as HTMLButtonElement);
-        let next: number;
-        if (e.key === 'ArrowDown') {
-          next = idx < items.length - 1 ? idx + 1 : 0;
-        } else {
-          next = idx > 0 ? idx - 1 : items.length - 1;
-        }
-        items[next]?.focus();
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleClick);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [mobileMenuOpen]);
+    },
+    [handleNameSubmit, designName]
+  );
+
+  const addToast = useToastStore((s) => s.addToast);
 
   // Handle ?share= URL parameter on mount
   const shareHandled = useRef(false);
@@ -236,124 +233,145 @@ export function DesignerPage(_props: DesignerPageProps) {
   return (
     <div className="flex h-screen flex-col bg-surface">
       {/* Header */}
-      <header className="h-12 flex items-center justify-between border-b border-stroke-subtle bg-surface-secondary px-3 lg:px-4">
-        <div className="flex items-center gap-2 lg:gap-3">
+      <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+        <div className="flex items-center gap-4 min-w-0">
           <ToolSwitcher compact={!isDesktop} />
-          <div className="hidden h-5 w-px bg-stroke-subtle sm:block" />
+
+          {/* Divider */}
+          <div className="w-px h-6 bg-stroke-subtle" />
+
+          {/* Design name (click to rename inline) */}
+          {isEditingName ? (
+            <input
+              ref={nameInputRef}
+              type="text"
+              value={editNameValue}
+              onChange={(e) => setEditNameValue(e.target.value)}
+              onBlur={handleNameSubmit}
+              onKeyDown={handleNameKeyDown}
+              maxLength={50}
+              aria-label="Design name"
+              className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content"
+              style={{
+                boxShadow: '0 0 0 3px var(--color-primary-muted)',
+              }}
+            />
+          ) : (
+            <button
+              onClick={handleNameClick}
+              className="hidden px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px] sm:inline-block"
+              title="Click to rename design"
+            >
+              {designName}
+            </button>
+          )}
+
+          {/* Designs switcher button */}
           <button
             onClick={() => setDesignListOpen(true)}
-            className="hidden items-center gap-1 rounded-md px-2 py-1 text-sm text-content hover:bg-surface-hover sm:flex"
+            className="hidden px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content sm:flex items-center gap-1.5"
+            title="Open design list"
             aria-label="Open design list"
           >
-            <span className="max-w-[120px] truncate font-medium lg:max-w-[160px]">
-              {designName}
-            </span>
-            <svg
-              className="h-3.5 w-3.5 text-content-secondary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M19 9l-7 7-7-7"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+            <span className="hidden lg:inline">Designs</span>
+          </button>
+
+          {/* Designs button (icon only, for mobile) */}
+          <button
+            onClick={() => setDesignListOpen(true)}
+            className="sm:hidden btn btn-ghost btn-icon"
+            title="My Designs"
+            aria-label="Open design list"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
             </svg>
           </button>
-          <SaveStatusIndicator status={saveStatus} />
+
+          {/* Export button */}
+          <button
+            onClick={() => setExportDialogOpen(true)}
+            disabled={!canExport}
+            className="hidden px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content sm:flex items-center gap-1.5"
+            title="Export bin as STL"
+            aria-label="Export bin as STL"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            <span className="hidden lg:inline">Export</span>
+          </button>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Save status indicator */}
+          <SaveStatusIndicator status={saveStatus} />
+
           {/* Undo/Redo buttons */}
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center">
             <button
               onClick={handleUndo}
               disabled={!canUndo}
-              className="flex h-8 w-8 items-center justify-center rounded-md text-content-secondary transition-colors hover:bg-surface-hover hover:text-content disabled:text-content-disabled disabled:hover:bg-transparent"
-              aria-label="Undo (Ctrl+Z)"
-              title="Undo (Ctrl+Z)"
+              className="btn btn-ghost btn-icon"
+              title={`Undo (${modKey}+Z)`}
+              aria-label={`Undo (${modKey}+Z)`}
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M3 10h10a5 5 0 015 5v2M3 10l4-4M3 10l4 4"
+                  d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
                 />
               </svg>
             </button>
             <button
               onClick={handleRedo}
               disabled={!canRedo}
-              className="flex h-8 w-8 items-center justify-center rounded-md text-content-secondary transition-colors hover:bg-surface-hover hover:text-content disabled:text-content-disabled disabled:hover:bg-transparent"
-              aria-label="Redo (Ctrl+Y)"
-              title="Redo (Ctrl+Y)"
+              className="btn btn-ghost btn-icon"
+              title={`Redo (${modKey}+Y)`}
+              aria-label={`Redo (${modKey}+Y)`}
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M21 10H11a5 5 0 00-5 5v2M21 10l-4-4M21 10l-4 4"
+                  d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
                 />
               </svg>
             </button>
           </div>
-          <div className="hidden h-5 w-px bg-stroke-subtle sm:block" />
-          {/* Use in Layout button (coming soon) */}
-          <button
-            disabled
-            className="hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-content-disabled cursor-not-allowed sm:flex"
-            aria-label="Use in Layout (coming soon)"
-            title="Coming soon"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-              />
-            </svg>
-            Use in Layout
-            <span className="rounded bg-surface-elevated px-1.5 py-0.5 text-[10px] text-content-tertiary">
-              Soon
-            </span>
-          </button>
-          {/* Export button (hidden on mobile, replaced by FAB) */}
+
+          {/* Divider */}
+          <div className="w-px h-6 bg-stroke-subtle mx-1" />
+
+          {/* Export button (primary, desktop) */}
           <button
             onClick={() => setExportDialogOpen(true)}
             disabled={!canExport}
-            className="hidden items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled sm:flex"
+            className="hidden items-center gap-1.5 btn btn-primary px-3 py-1.5 text-sm font-medium sm:flex"
             aria-label="Export bin as STL"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -364,118 +382,23 @@ export function DesignerPage(_props: DesignerPageProps) {
             Export
           </button>
 
-          {/* Mobile overflow menu (visible only on small screens) */}
-          <div className="relative sm:hidden" ref={mobileMenuRef}>
-            <button
-              ref={menuButtonRef}
-              onClick={() => setMobileMenuOpen((v) => !v)}
-              className="flex h-9 w-9 items-center justify-center rounded-md text-content-secondary hover:bg-surface-hover hover:text-content"
-              aria-label="More actions"
-              aria-expanded={mobileMenuOpen}
-              aria-haspopup="menu"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 5v.01M12 12v.01M12 19v.01"
-                />
-              </svg>
-            </button>
-            {mobileMenuOpen && (
-              <div
-                className="absolute right-0 top-full z-40 mt-1 w-48 rounded-lg border border-stroke-subtle bg-surface-elevated py-1 shadow-xl"
-                role="menu"
-                aria-label="Actions"
-              >
-                <button
-                  onClick={() => {
-                    setDesignListOpen(true);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content hover:bg-surface-hover"
-                  role="menuitem"
-                >
-                  <svg
-                    className="h-4 w-4 text-content-secondary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                  My Designs
-                </button>
-                <button
-                  disabled
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-content-disabled cursor-not-allowed"
-                  role="menuitem"
-                  aria-disabled="true"
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                    />
-                  </svg>
-                  Use in Layout
-                  <span className="ml-auto text-[10px] text-content-tertiary">Soon</span>
-                </button>
-                <button
-                  onClick={() => {
-                    if (canExport) {
-                      setExportDialogOpen(true);
-                      setMobileMenuOpen(false);
-                    }
-                  }}
-                  disabled={!canExport}
-                  className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm ${canExport ? 'text-content hover:bg-surface-hover' : 'text-content-disabled cursor-not-allowed'}`}
-                  role="menuitem"
-                  aria-disabled={!canExport}
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                    />
-                  </svg>
-                  Export
-                  {!canExport && (
-                    <span className="ml-auto text-[10px] text-content-tertiary">Generating...</span>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Mobile export icon button */}
+          <button
+            onClick={() => setExportDialogOpen(true)}
+            disabled={!canExport}
+            className="sm:hidden btn btn-ghost btn-icon"
+            title="Export bin"
+            aria-label="Export bin as STL"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+          </button>
         </div>
       </header>
 
@@ -533,55 +456,6 @@ export function DesignerPage(_props: DesignerPageProps) {
             <MobileParameterTabs />
           </div>
         </main>
-      )}
-
-      {/* Mobile floating export button */}
-      {isMobile && (
-        <button
-          onClick={() => setExportDialogOpen(true)}
-          disabled={!canExport}
-          className="fixed bottom-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-all hover:bg-blue-700 hover:scale-105 active:scale-95 disabled:bg-surface-elevated disabled:text-content-disabled disabled:shadow-sm disabled:scale-100"
-          style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
-          aria-label={canExport ? 'Export bin' : 'Export bin (waiting for mesh generation)'}
-        >
-          {!canExport ? (
-            <svg
-              className="h-5 w-5 animate-spin motion-reduce:animate-none"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-          ) : (
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              />
-            </svg>
-          )}
-        </button>
       )}
 
       {/* Modals */}

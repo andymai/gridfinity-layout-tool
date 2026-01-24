@@ -292,9 +292,16 @@ describe('PreviewCanvas', () => {
     });
     render(<PreviewCanvas />);
 
-    expect(screen.getByLabelText('Front camera view, keyboard shortcut 1')).toBeInTheDocument();
-    expect(screen.getByLabelText('Reset camera view, keyboard shortcut R')).toBeInTheDocument();
-    expect(screen.getByLabelText('Toggle wireframe mode, keyboard shortcut W')).toBeInTheDocument();
-    expect(screen.getByLabelText('Change preview color')).toBeInTheDocument();
+    // Desktop and mobile controls both render in DOM (visibility is CSS-based)
+    expect(
+      screen.getAllByLabelText('Front camera view, keyboard shortcut 1').length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByLabelText('Reset camera view, keyboard shortcut R').length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByLabelText('Toggle wireframe mode, keyboard shortcut W').length
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText('Change preview color').length).toBeGreaterThan(0);
   });
 });
