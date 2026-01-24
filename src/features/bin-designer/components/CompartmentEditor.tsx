@@ -3,7 +3,7 @@
  *
  * Displays a top-down 2D view of the bin interior divided into a user-defined
  * grid. Users can:
- * 1. Set grid dimensions (rows × cols) via stepper controls
+ * 1. Set grid dimensions (rows x cols) via stepper controls
  * 2. Click-drag to select a rectangular region of cells
  * 3. Merge selected cells into one compartment (or split merged ones)
  *
@@ -23,43 +23,52 @@ import {
   getCompartmentBounds,
   isRectangularSelection,
   cellIndex,
-} from '../utils/compartments';
-import type { CompartmentConfig } from '../types';
+} from '@/features/bin-designer/utils/compartments';
+import type { CompartmentConfig } from '@/features/bin-designer/types';
 
 // =============================================================================
 // Color palette for compartment visualization
+// Uses HSL pairs (fill + border) that work in both light and dark modes.
+// Fills use CSS variables to adapt: light mode gets pastel tints,
+// dark mode gets desaturated darker shades.
 // =============================================================================
 
-/** Saturated, distinct colors for compartment fills */
-const COMPARTMENT_COLORS = [
-  '#dbeafe', // blue-100
-  '#d1fae5', // emerald-100
-  '#fef3c7', // amber-100
-  '#ede9fe', // violet-100
-  '#ffe4e6', // rose-100
-  '#cffafe', // cyan-100
-  '#ffedd5', // orange-100
-  '#e0e7ff', // indigo-100
-] as const;
+/** Fill/border color pairs as [fillHSL, borderHSL] */
+const COMPARTMENT_COLOR_PAIRS: ReadonlyArray<{ fill: string; border: string; darkFill: string }> = [
+  { fill: 'hsl(214, 95%, 93%)', border: 'hsl(214, 85%, 70%)', darkFill: 'hsl(214, 40%, 25%)' },
+  { fill: 'hsl(152, 81%, 92%)', border: 'hsl(152, 60%, 55%)', darkFill: 'hsl(152, 30%, 22%)' },
+  { fill: 'hsl(48, 96%, 89%)', border: 'hsl(48, 80%, 55%)', darkFill: 'hsl(48, 40%, 22%)' },
+  { fill: 'hsl(250, 95%, 95%)', border: 'hsl(250, 70%, 70%)', darkFill: 'hsl(250, 35%, 28%)' },
+  { fill: 'hsl(350, 100%, 93%)', border: 'hsl(350, 75%, 65%)', darkFill: 'hsl(350, 35%, 25%)' },
+  { fill: 'hsl(183, 100%, 93%)', border: 'hsl(183, 70%, 55%)', darkFill: 'hsl(183, 30%, 22%)' },
+  { fill: 'hsl(24, 100%, 91%)', border: 'hsl(24, 85%, 60%)', darkFill: 'hsl(24, 40%, 24%)' },
+  { fill: 'hsl(226, 100%, 92%)', border: 'hsl(226, 75%, 68%)', darkFill: 'hsl(226, 35%, 26%)' },
+];
 
-/** Darker border colors matching compartment fills */
-const COMPARTMENT_BORDER_COLORS = [
-  '#93c5fd', // blue-300
-  '#6ee7b7', // emerald-300
-  '#fcd34d', // amber-300
-  '#c4b5fd', // violet-300
-  '#fda4af', // rose-300
-  '#67e8f9', // cyan-300
-  '#fdba74', // orange-300
-  '#a5b4fc', // indigo-300
-] as const;
+/** Detect dark mode via matchMedia */
+function isDarkMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
 
 function getCompartmentFill(id: number): string {
-  return COMPARTMENT_COLORS[id % COMPARTMENT_COLORS.length];
+  const pair = COMPARTMENT_COLOR_PAIRS[id % COMPARTMENT_COLOR_PAIRS.length];
+  return isDarkMode() ? pair.darkFill : pair.fill;
 }
 
 function getCompartmentBorder(id: number): string {
-  return COMPARTMENT_BORDER_COLORS[id % COMPARTMENT_BORDER_COLORS.length];
+  return COMPARTMENT_COLOR_PAIRS[id % COMPARTMENT_COLOR_PAIRS.length].border;
+}
+
+/** Lighten a fill color for hover state using opacity-based approach (no color-mix needed) */
+function getHoverFill(id: number): string {
+  const pair = COMPARTMENT_COLOR_PAIRS[id % COMPARTMENT_COLOR_PAIRS.length];
+  if (isDarkMode()) {
+    // In dark mode, lighten slightly
+    return pair.border; // Use the border color (brighter) as hover fill
+  }
+  // In light mode, make the fill slightly more vivid — use border at low opacity over white
+  return pair.border;
 }
 
 // =============================================================================
@@ -88,6 +97,15 @@ export function CompartmentEditor() {
   const [isDragging, setIsDragging] = useState(false);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+
+  // Pre-compute cell counts per compartment to avoid repeated O(n) scans
+  const compartmentCellCounts = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const id of cells) {
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+    return counts;
+  }, [cells]);
 
   // Compute selection rectangle from drag start to current cell
   const computeRectSelection = useCallback(
@@ -163,14 +181,13 @@ export function CompartmentEditor() {
       // Single cell click: if it's part of a multi-cell compartment, split it
       const idx = [...selection][0];
       const compartmentId = cells[idx];
-      const cellsInCompartment = cells.filter((c) => c === compartmentId).length;
-      if (cellsInCompartment > 1) {
+      if ((compartmentCellCounts.get(compartmentId) ?? 0) > 1) {
         splitCompartment(compartmentId);
       }
     }
 
     setSelection(new Set());
-  }, [isDragging, selection, cols, cells, mergeCells, splitCompartment]);
+  }, [isDragging, selection, cols, cells, mergeCells, splitCompartment, compartmentCellCounts]);
 
   const handleColsChange = useCallback(
     (newCols: number) => {
@@ -233,8 +250,8 @@ export function CompartmentEditor() {
   const hoveredIsSplittable = useMemo(() => {
     if (hoverIdx === null || isDragging) return false;
     const cId = cells[hoverIdx];
-    return cells.filter((c) => c === cId).length > 1;
-  }, [hoverIdx, cells, isDragging]);
+    return (compartmentCellCounts.get(cId) ?? 0) > 1;
+  }, [hoverIdx, cells, isDragging, compartmentCellCounts]);
 
   // Dynamic instruction text
   const instructionText = useMemo(() => {
@@ -250,7 +267,7 @@ export function CompartmentEditor() {
   }, [isDragging, selection.size, selectionAction, hoveredIsSplittable]);
 
   // Compute aspect ratio from bin dimensions, clamped to avoid extreme shapes
-  const aspectRatio = Math.min(2, Math.max(0.5, width / depth));
+  const aspectRatio = depth > 0 ? Math.min(2, Math.max(0.5, width / depth)) : 1;
 
   return (
     <div>
@@ -316,21 +333,21 @@ export function CompartmentEditor() {
               </div>
               <p
                 id="compartment-grid-instructions"
-                className={`mb-3 text-xs transition-colors ${
+                className={`mb-3 text-xs transition-all ${
                   isDragging && selectionAction !== 'none'
                     ? 'text-accent font-medium'
                     : hoveredIsSplittable
                       ? 'text-content-secondary'
                       : 'text-content-tertiary'
                 }`}
-                aria-live="polite"
+                aria-live={isDragging ? 'off' : 'polite'}
               >
                 {instructionText}
               </p>
               <div
                 ref={gridRef}
                 className="mx-auto max-w-[280px] select-none rounded-lg border border-stroke-subtle bg-surface-elevated p-1.5"
-                style={{ aspectRatio: String(aspectRatio) }}
+                style={{ aspectRatio }}
                 role="application"
                 aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
                 aria-describedby="compartment-grid-instructions"
@@ -345,7 +362,7 @@ export function CompartmentEditor() {
                   style={{
                     gridTemplateColumns: `repeat(${cols}, 1fr)`,
                     gridTemplateRows: `repeat(${rows}, 1fr)`,
-                    gap: '2px',
+                    gap: '1px',
                   }}
                 >
                   {cells.map((compartmentId, idx) => (
@@ -356,7 +373,7 @@ export function CompartmentEditor() {
                       isSelected={selection.has(idx)}
                       isHovered={hoverIdx === idx && !isDragging}
                       isSplittable={
-                        !isDragging && cells.filter((c) => c === compartmentId).length > 1
+                        !isDragging && (compartmentCellCounts.get(compartmentId) ?? 0) > 1
                       }
                       isDragging={isDragging}
                       config={compartments}
@@ -393,6 +410,7 @@ export function CompartmentEditor() {
 // Grid Cell Sub-component
 // =============================================================================
 
+/** Renders a single cell in the compartment grid with dynamic styling and keyboard support. */
 function GridCell({
   idx,
   compartmentId,
@@ -439,11 +457,11 @@ function GridCell({
   const fillColor = getCompartmentFill(compartmentId);
   const borderColor = getCompartmentBorder(compartmentId);
 
-  // Build border widths: thicker on compartment edges, zero on internal edges
-  const borderTop = hasTopNeighbor ? 0 : 1.5;
-  const borderRight = hasRightNeighbor ? 0 : 1.5;
-  const borderBottom = hasBottomNeighbor ? 0 : 1.5;
-  const borderLeft = hasLeftNeighbor ? 0 : 1.5;
+  // Build border widths: use integer pixels for consistent rendering
+  const borderTop = hasTopNeighbor ? 0 : 2;
+  const borderRight = hasRightNeighbor ? 0 : 2;
+  const borderBottom = hasBottomNeighbor ? 0 : 2;
+  const borderLeft = hasLeftNeighbor ? 0 : 2;
 
   // Show dimension label on the top-left cell of multi-cell compartments
   const isTopLeftOfCompartment = !hasTopNeighbor && !hasLeftNeighbor;
@@ -453,44 +471,57 @@ function GridCell({
     if (bounds) {
       const cWidth = bounds.maxCol - bounds.minCol + 1;
       const cHeight = bounds.maxRow - bounds.minRow + 1;
-      dimensionLabel = `${cWidth}\u00d7${cHeight}`;
+      dimensionLabel = `${cWidth}×${cHeight}`;
     }
   }
+
+  // Determine the cell's accessible label
+  const cellLabel = dimensionLabel
+    ? `Compartment ${compartmentId + 1}, ${dimensionLabel}, ${isSplittable ? 'click to split' : ''}`
+    : `Cell ${col + 1}, ${row + 1}`;
 
   return (
     <div
       className="relative touch-manipulation"
+      role="button"
+      tabIndex={0}
+      aria-label={cellLabel}
+      aria-pressed={isSelected}
       style={{
         backgroundColor: isSelected
           ? 'var(--color-accent)'
           : isHovered && isSplittable
-            ? `color-mix(in srgb, ${fillColor} 60%, white)`
+            ? getHoverFill(compartmentId)
             : fillColor,
         borderRadius: `${topLeft}px ${topRight}px ${bottomRight}px ${bottomLeft}px`,
         borderStyle: 'solid',
         borderColor: isSelected ? 'var(--color-accent)' : borderColor,
         borderWidth: `${borderTop}px ${borderRight}px ${borderBottom}px ${borderLeft}px`,
         opacity: isSelected ? 0.7 : 1,
-        cursor: isDragging ? 'grabbing' : isSplittable ? 'pointer' : 'crosshair',
+        cursor: isDragging ? 'crosshair' : isSplittable ? 'pointer' : 'crosshair',
         transition: 'background-color 100ms, opacity 100ms',
       }}
       onPointerDown={(e) => {
         e.preventDefault();
         onPointerDown(idx);
       }}
+      onKeyDown={(e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          onPointerDown(idx);
+        }
+      }}
       onPointerEnter={() => onPointerEnter(idx)}
       onPointerLeave={onPointerLeave}
     >
       {dimensionLabel && (
         <span
-          className="pointer-events-none absolute text-[9px] font-medium leading-none"
+          className="pointer-events-none absolute text-[9px] font-bold leading-none"
           style={{
             top: '3px',
             left: '3px',
             color: borderColor,
-            opacity: 0.8,
           }}
-          aria-hidden="true"
         >
           {dimensionLabel}
         </span>

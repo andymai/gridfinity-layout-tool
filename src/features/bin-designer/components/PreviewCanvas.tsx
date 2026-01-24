@@ -289,6 +289,7 @@ export function PreviewCanvas() {
   const invalidateRef = useRef<(() => void) | null>(null);
   const [wireframe, setWireframe] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
+  const [activePreset, setActivePreset] = useState<CameraPreset | null>('isometric');
 
   // Preview color persisted in localStorage
   const [previewColor, setPreviewColor] = useState(() => {
@@ -324,7 +325,7 @@ export function PreviewCanvas() {
   const redo = useDesignerStore((s) => s.redo);
 
   // Smooth camera preset transitions
-  const setCameraPreset = usePresetTransition(
+  const setCameraPresetRaw = usePresetTransition(
     controlsRef,
     invalidateRef,
     params.width,
@@ -332,9 +333,23 @@ export function PreviewCanvas() {
     params.height
   );
 
+  const setCameraPreset = useCallback(
+    (preset: CameraPreset) => {
+      setCameraPresetRaw(preset);
+      setActivePreset(preset);
+    },
+    [setCameraPresetRaw]
+  );
+
   const resetView = useCallback(() => {
     setCameraPreset('isometric');
   }, [setCameraPreset]);
+
+  // Clear active preset when user manually orbits
+  const handleOrbitStart = useCallback(() => {
+    setIsInteracting(true);
+    setActivePreset(null);
+  }, []);
 
   const toggleWireframe = useCallback(() => {
     setWireframe((w) => !w);
@@ -462,7 +477,7 @@ export function PreviewCanvas() {
               maxDistance={800}
               maxPolarAngle={Math.PI * 0.85}
               minPolarAngle={Math.PI * 0.05}
-              onStart={() => setIsInteracting(true)}
+              onStart={handleOrbitStart}
               onEnd={() => setIsInteracting(false)}
             />
           </Canvas>
@@ -502,6 +517,7 @@ export function PreviewCanvas() {
           <PreviewControls
             wireframe={wireframe}
             previewColor={previewColor}
+            activePreset={activePreset}
             onWireframeToggle={toggleWireframe}
             onColorChange={handleColorChange}
             onCameraPreset={setCameraPreset}
