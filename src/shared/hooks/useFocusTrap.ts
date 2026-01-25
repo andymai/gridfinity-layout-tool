@@ -27,11 +27,12 @@ interface UseFocusTrapOptions {
 export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(
   options: UseFocusTrapOptions
 ): RefObject<T | null> {
+  const { active, onEscape } = options;
   const containerRef = useRef<T | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!options.active) return;
+    if (!active) return;
 
     // Store the currently focused element to restore later
     previousFocusRef.current = document.activeElement as HTMLElement | null;
@@ -53,7 +54,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(
 
       if (e.key === 'Escape') {
         e.preventDefault();
-        options.onEscape?.();
+        onEscape?.();
         return;
       }
 
@@ -91,7 +92,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(
         previousFocusRef.current.focus();
       }
     };
-  }, [options.active, options.onEscape]);
+  }, [active, onEscape]);
 
   return containerRef;
 }
