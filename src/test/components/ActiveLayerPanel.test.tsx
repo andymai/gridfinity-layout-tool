@@ -79,7 +79,7 @@ describe('ActiveLayerPanel', () => {
     it('displays instruction text', () => {
       render(<ActiveLayerPanel />);
 
-      expect(screen.getByText(/Select a size, then click or drag/)).toBeInTheDocument();
+      expect(screen.getByText(/Select a size, then drag to fill/)).toBeInTheDocument();
     });
 
     it('displays squares section', () => {

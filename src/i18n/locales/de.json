@@ -532,7 +532,7 @@
   "layers.addNewLayer": "Neuen Layer hinzufügen",
   "layers.binPalette": "Bin-Palette",
   "layers.binPaletteHint": "Shift+Klick zum Hinzufügen zum Stash.",
-  "layers.binPaletteInstruction": "Wähle eine Größe, dann klicke oder ziehe auf dem Raster.",
+  "layers.binPaletteInstruction": "Wähle eine Größe, dann ziehe um den Bereich mit Bins zu füllen.",
   "layers.clearBins": "Bins löschen",
   "layers.clearBinsTitle": "Alle Bins von diesem Layer entfernen",
   "layers.clearLayer.confirm": "Leeren",
