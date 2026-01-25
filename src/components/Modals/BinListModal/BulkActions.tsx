@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Category } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 interface BulkActionsProps {
   /** Number of selected items */
@@ -33,6 +34,7 @@ export function BulkActions({
   onUpdateLabel,
   onUpdateNotes,
 }: BulkActionsProps) {
+  const t = useTranslation();
   const [openDropdown, setOpenDropdown] = useState<DropdownOpen>(null);
   const [labelValue, setLabelValue] = useState('');
   const [notesValue, setNotesValue] = useState('');
@@ -90,13 +92,13 @@ export function BulkActions({
   return (
     <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 border-y border-accent/20">
       {/* Selection count */}
-      <span className="text-sm font-medium text-content">{selectionCount} selected</span>
+      <span className="text-sm font-medium text-content">{t('binList.selected', { count: selectionCount })}</span>
 
       {/* Clear selection */}
       <button
         onClick={onClearSelection}
         className="text-sm text-content-secondary hover:text-content transition-colors"
-        aria-label="Clear selection"
+        aria-label={t('binList.clearSelection')}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -128,7 +130,7 @@ export function BulkActions({
                 d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"
               />
             </svg>
-            Category
+            {t('inspector.category')}
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -178,21 +180,19 @@ export function BulkActions({
                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                 />
               </svg>
-              Label
+              {t('inspector.label')}
             </button>
 
             {openDropdown === 'label' && (
               <div className="absolute top-full left-0 mt-1 w-64 p-3 bg-surface-elevated border border-stroke rounded-lg shadow-lg z-50">
-                <label className="block text-xs text-content-secondary mb-1">
-                  Set label for {selectionCount} bin{selectionCount !== 1 ? 's' : ''}
-                </label>
+                <label className="block text-xs text-content-secondary mb-1">{t('binList.setLabelForCount', { count: selectionCount })}</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={labelValue}
                     onChange={(e) => setLabelValue(e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, handleLabelSubmit)}
-                    placeholder="Enter label..."
+                    placeholder={t('binList.enterLabel')}
                     className="flex-1 px-2 py-1.5 text-sm bg-surface border border-stroke rounded focus:outline-none focus:ring-2 focus:ring-accent"
                     maxLength={24}
                     autoFocus
@@ -202,7 +202,7 @@ export function BulkActions({
                     disabled={!labelValue.trim()}
                     className="px-3 py-1.5 text-sm bg-accent text-on-dark rounded hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Apply
+                    {t('common.apply')}
                   </button>
                 </div>
               </div>
@@ -226,14 +226,12 @@ export function BulkActions({
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              Notes
+              {t('inspector.notes')}
             </button>
 
             {openDropdown === 'notes' && (
               <div className="absolute top-full left-0 mt-1 w-72 p-3 bg-surface-elevated border border-stroke rounded-lg shadow-lg z-50">
-                <label className="block text-xs text-content-secondary mb-1">
-                  Set notes for {selectionCount} bin{selectionCount !== 1 ? 's' : ''}
-                </label>
+                <label className="block text-xs text-content-secondary mb-1">{t('binList.setNotesForCount', { count: selectionCount })}</label>
                 <div className="flex flex-col gap-2">
                   <textarea
                     value={notesValue}
@@ -247,7 +245,7 @@ export function BulkActions({
                         handleNotesSubmit();
                       }
                     }}
-                    placeholder="Enter notes... (⌘+Enter to apply)"
+                    placeholder={t('binList.enterNotesShortcut', { mod: '⌘' })}
                     className="w-full px-2 py-1.5 text-sm bg-surface border border-stroke rounded focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                     rows={2}
                     maxLength={256}
@@ -258,7 +256,7 @@ export function BulkActions({
                     disabled={!notesValue.trim()}
                     className="self-end px-3 py-1.5 text-sm bg-accent text-on-dark rounded hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Apply
+                    {t('common.apply')}
                   </button>
                 </div>
               </div>
@@ -281,7 +279,7 @@ export function BulkActions({
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
           </svg>
-          Delete
+          {t('common.delete')}
         </button>
       </div>
     </div>

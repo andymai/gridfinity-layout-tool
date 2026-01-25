@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CONSTRAINTS, RESERVED_PROPERTY_KEYS } from '@/core/constants';
+import { useTranslation } from '@/i18n';
 
 interface CustomPropertiesEditorProps {
   customProperties?: Record<string, string>;
@@ -24,6 +25,7 @@ export function CustomPropertiesEditor({
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslation();
 
   const isMobile = variant === 'mobile';
   const inputHeight = isMobile ? 'h-12' : '';
@@ -122,8 +124,9 @@ export function CustomPropertiesEditor({
     <div>
       <div className="flex items-center justify-between mb-2">
         <label className={`block ${labelSize} text-content-tertiary`}>
-          Custom Properties{' '}
-          {hasProperties && <span className="text-content-disabled">({properties.length})</span>}
+          {hasProperties
+            ? t('inspector.customPropertiesCount', { count: properties.length })
+            : t('inspector.customProperties')}
         </label>
         {!isAdding && (
           <button
@@ -131,15 +134,13 @@ export function CustomPropertiesEditor({
             onClick={() => setIsAdding(true)}
             disabled={atMaxProperties}
             className="text-xs text-accent hover:text-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Add custom property"
+            aria-label={t('inspector.addCustomProperty')}
             title={
               atMaxProperties
-                ? `Maximum ${CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT} properties reached`
-                : 'Add custom property'
+                ? t('inspector.maxPropertiesReached', { max: CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT })
+                : t('inspector.addCustomProperty')
             }
-          >
-            + Add
-          </button>
+          >{t('inspector.add')}</button>
         )}
       </div>
 
@@ -154,7 +155,7 @@ export function CustomPropertiesEditor({
                   type="button"
                   onClick={() => handleDelete(key)}
                   className="ml-auto p-1 text-content-tertiary hover:text-error transition-colors"
-                  title="Delete property"
+                  title={t('inspector.customProps.deleteProperty')}
                   aria-label={`Delete ${key}`}
                 >
                   <svg
@@ -183,7 +184,7 @@ export function CustomPropertiesEditor({
                 }
                 maxLength={CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH}
                 className={`input w-full ${inputHeight}`}
-                placeholder="Value"
+                placeholder={t('inspector.customProps.valuePlaceholder')}
                 aria-label={`Value for ${key}`}
               />
             </div>
@@ -204,8 +205,8 @@ export function CustomPropertiesEditor({
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
             maxLength={CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH}
             className={`input w-full ${inputHeight} ${error ? 'border-error' : ''}`}
-            placeholder="Property name (e.g., SKU, Quantity)"
-            aria-label="New property name"
+            placeholder={t('inspector.customProps.keyPlaceholder')}
+            aria-label={t('inspector.newPropertyName')}
             autoFocus
           />
           <input
@@ -218,8 +219,8 @@ export function CustomPropertiesEditor({
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
             maxLength={CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH}
             className={`input w-full ${inputHeight}`}
-            placeholder="Value"
-            aria-label="New property value"
+            placeholder={t('inspector.customProps.valuePlaceholder')}
+            aria-label={t('inspector.newPropertyValue')}
           />
           {error && (
             <div className="text-xs text-error" role="alert" aria-live="assertive">
@@ -232,28 +233,24 @@ export function CustomPropertiesEditor({
               onClick={handleAdd}
               disabled={!newKey.trim() || !newValue.trim()}
               className={`btn btn-primary flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
-            >
-              Add
-            </button>
+            >{t('common.add')}</button>
             <button
               type="button"
               onClick={handleCancelAdd}
               className={`btn btn-ghost flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
-            >
-              Cancel
-            </button>
+            >{t('common.cancel')}</button>
           </div>
         </div>
       )}
 
       {!hasProperties && !isAdding && (
-        <div className="text-sm text-content-disabled italic">No custom properties</div>
+        <div className="text-sm text-content-disabled italic">{t('inspector.noCustomProperties')}</div>
       )}
 
       {/* Quick add suggestions - show keys used by other bins */}
       {!isAdding && availableSuggestions.length > 0 && !atMaxProperties && (
         <div className="mt-2 pt-2 border-t border-stroke-subtle">
-          <div className="text-xs text-content-tertiary mb-1.5">Quick add from other bins:</div>
+          <div className="text-xs text-content-tertiary mb-1.5">{t('inspector.quickAddFromOtherBins')}</div>
           <div className="flex flex-wrap gap-1.5">
             {availableSuggestions.slice(0, 6).map((key) => (
               <button
@@ -261,15 +258,14 @@ export function CustomPropertiesEditor({
                 type="button"
                 onClick={() => handleQuickAdd(key)}
                 className="text-xs px-2 py-1 rounded bg-surface-secondary hover:bg-surface-elevated text-content-secondary hover:text-content transition-colors border border-stroke-subtle"
-                title={`Add "${key}" property`}
+                title={t('inspector.addProperty', { key })}
               >
-                + {key}
+                {t('inspector.addPrefix', { key })}
               </button>
             ))}
             {availableSuggestions.length > 6 && (
               <span className="text-xs text-content-disabled px-1 py-1">
-                +{availableSuggestions.length - 6} more
-              </span>
+                {t('inspector.moreCount', { count: availableSuggestions.length - 6 })}</span>
             )}
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useToastStore } from '@/core/store/toast';
 import type { PaintSize } from '@/core/store/interaction';
+import { useTranslation } from '@/i18n';
 
 /**
  * Grid First-Use Hints Hook
@@ -24,6 +25,7 @@ export interface UseGridFirstUseHintsOptions {
 export function useGridFirstUseHints(options: UseGridFirstUseHintsOptions): GridFirstUseHintsState {
   const { paintSize } = options;
 
+  const t = useTranslation();
   const addToast = useToastStore((state) => state.addToast);
 
   // Track if paint mode hint should pulse (first use)
@@ -44,7 +46,7 @@ export function useGridFirstUseHints(options: UseGridFirstUseHintsOptions): Grid
     if (paintSize) {
       const hintShown = localStorage.getItem('gridfinity-paint-mode-hint-shown');
       if (!hintShown) {
-        addToast('Paint Mode: Drag to fill area, press Esc or click × to exit', 'info');
+        addToast(t('toast.paintModeHint'), 'info');
         localStorage.setItem('gridfinity-paint-mode-hint-shown', 'true');
         // Defer state update to avoid cascading renders
         pulseTimeoutRef.current = setTimeout(() => {
@@ -64,7 +66,7 @@ export function useGridFirstUseHints(options: UseGridFirstUseHintsOptions): Grid
       if (stopPulseTimeoutRef.current) clearTimeout(stopPulseTimeoutRef.current);
       if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
     };
-  }, [paintSize, addToast]);
+  }, [paintSize, addToast, t]);
 
   return {
     shouldPulsePaintHint,

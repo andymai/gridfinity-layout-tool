@@ -4,9 +4,14 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import './index.css';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
+import { LocaleProvider } from './i18n/context.tsx';
+import { detectBrowserLocale } from './i18n/detection.ts';
+import { isLocale } from './i18n/types.ts';
+import { useSettingsStore } from './core/store/settings.ts';
 import { initAnalytics } from './utils/analytics.ts';
 import { initMLTelemetry, setLayoutStoreRef } from './shared/analytics/mlTelemetry';
 import { useLayoutStore } from './core/store/layout.ts';
+import type { Locale } from './i18n/types.ts';
 
 // Initialize Posthog analytics (no-op in dev)
 initAnalytics();
@@ -33,6 +38,25 @@ document.addEventListener(
   { passive: false }
 );
 
+// Resolve initial locale from settings (sync - no async load needed for this)
+function resolveInitialLocale(): Locale {
+  const savedLocale = useSettingsStore.getState().settings.locale;
+  if (savedLocale !== 'auto' && isLocale(savedLocale)) {
+    return savedLocale;
+  }
+  return detectBrowserLocale();
+}
+
+const initialLocale = resolveInitialLocale();
+
+// Set initial lang attribute on <html>
+document.documentElement.lang = initialLocale === 'pt-BR' ? 'pt' : initialLocale;
+
+// Persist locale changes to settings store
+function handleLocaleChange(locale: Locale): void {
+  useSettingsStore.getState().updateSetting('locale', locale);
+}
+
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Root element not found');
@@ -42,7 +66,9 @@ if (!rootElement) {
 // R3F's Canvas doesn't handle StrictMode's double-mount cycle well
 createRoot(rootElement).render(
   <ErrorBoundary>
-    <App />
+    <LocaleProvider initialLocale={initialLocale} onLocaleChange={handleLocaleChange}>
+      <App />
+    </LocaleProvider>
     <Analytics />
     <SpeedInsights />
   </ErrorBoundary>

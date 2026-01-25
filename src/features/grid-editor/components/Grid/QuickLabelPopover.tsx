@@ -4,6 +4,7 @@ import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { markFeatureUsed } from '@/utils/analytics';
+import { useTranslation } from '@/i18n';
 
 /**
  * Small popover that appears near a bin for quick label editing.
@@ -19,6 +20,7 @@ export function QuickLabelPopover() {
 }
 
 function QuickLabelPopoverInner({ binId }: { binId: string }) {
+  const t = useTranslation();
   const hideQuickLabel = useUIStore((state) => state.hideQuickLabel);
   const bins = useLayoutStore((state) => state.layout.bins);
   const { updateBin } = useMutations();
@@ -126,9 +128,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
       >
         {/* Header */}
         <div className="px-3 py-2 border-b border-stroke-subtle bg-surface-secondary">
-          <div className="text-xs font-medium text-content-secondary">
-            Label for {bin.width}×{bin.depth} bin
-          </div>
+          <div className="text-xs font-medium text-content-secondary">{t('grid.labelFor')}{bin.width}×{bin.depth}{t('grid.bin')}</div>
         </div>
 
         {/* Input area */}
@@ -150,7 +150,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
                 type="button"
                 onClick={handleClear}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
-                aria-label="Clear"
+                aria-label={t('grid.clear')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -173,7 +173,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
               >
                 Enter
               </kbd>
-              <span className="ml-1">save</span>
+              <span className="ml-1">{t('grid.save')}</span>
             </span>
             <span>
               <kbd
@@ -182,7 +182,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
               >
                 Esc
               </kbd>
-              <span className="ml-1">cancel</span>
+              <span className="ml-1">{t('grid.cancel')}</span>
             </span>
           </div>
         </div>

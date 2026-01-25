@@ -7,6 +7,9 @@
  */
 
 import type { ConnectionStatus } from '@/hooks/usePresence';
+import { useTranslation } from '@/i18n';
+
+const PEOPLE_EMOJI = '👥';
 import { ConnectionIndicator } from './ConnectionIndicator';
 
 interface PresenceMobileButtonProps {
@@ -29,6 +32,7 @@ export function PresenceMobileButton({
   onPress,
   className = '',
 }: PresenceMobileButtonProps) {
+  const t = useTranslation();
   return (
     <button
       onClick={onPress}
@@ -39,13 +43,11 @@ export function PresenceMobileButton({
         hover:bg-surface-hover transition-colors
         ${className}
       `.trim()}
-      aria-label={`${participantCount} collaborators - tap to see all`}
-      title={`${participantCount} collaborators`}
+      aria-label={t('collab.mobileButton.ariaLabel', { count: participantCount })}
+      title={t('collab.mobileButton.title', { count: participantCount })}
     >
       {/* People emoji */}
-      <span className="text-base" aria-hidden="true">
-        👥
-      </span>
+      <span className="text-base" aria-hidden="true">{PEOPLE_EMOJI}</span>
 
       {/* Count */}
       <span>{participantCount}</span>

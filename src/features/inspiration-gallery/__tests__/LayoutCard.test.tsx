@@ -70,7 +70,7 @@ describe('LayoutCard', () => {
     it('renders bin count and drawer size', () => {
       render(<LayoutCard {...defaultProps} />);
 
-      expect(screen.getByText('12 bins · 10×8')).toBeInTheDocument();
+      expect(screen.getByText((content) => content.includes('12 bins · 10×8'))).toBeInTheDocument();
     });
 
     it('renders theme badge', () => {
@@ -230,7 +230,7 @@ describe('LayoutCard', () => {
 
       render(<LayoutCard {...defaultProps} layout={layout} />);
 
-      expect(screen.getByText('25 bins · 15×12')).toBeInTheDocument();
+      expect(screen.getByText((content) => content.includes('25 bins · 15×12'))).toBeInTheDocument();
     });
 
     it('handles single bin count', () => {
@@ -243,7 +243,7 @@ describe('LayoutCard', () => {
 
       render(<LayoutCard {...defaultProps} layout={layout} />);
 
-      expect(screen.getByText('1 bins · 10×8')).toBeInTheDocument();
+      expect(screen.getByText((content) => content.includes('1 bins · 10×8'))).toBeInTheDocument();
     });
   });
 });

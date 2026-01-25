@@ -11,6 +11,7 @@ import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { DimensionsIcon } from './SectionIllustrations';
+import { useTranslation } from '@/i18n';
 
 export function DimensionsSection() {
   const {
@@ -34,6 +35,7 @@ export function DimensionsSection() {
       toggleHalfBinMode: s.toggleHalfBinMode,
     }))
   );
+  const t = useTranslation();
 
   // Step sizes depend on half-bin mode
   const dimensionStep = halfBinMode ? 0.5 : 1;
@@ -78,7 +80,7 @@ export function DimensionsSection() {
 
   return (
     <CollapsibleSection
-      title="Dimensions"
+      title={t('binDesigner.dimensions')}
       defaultExpanded={true}
       illustration={<DimensionsIcon />}
       summary={summary}
@@ -87,7 +89,7 @@ export function DimensionsSection() {
         {/* Width */}
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-xs text-content-tertiary">Width</span>
+            <span className="text-xs text-content-tertiary">{t('common.width')}</span>
             <span className="text-[11px] tabular-nums text-content-tertiary">
               {widthMm.toFixed(0)}mm
             </span>
@@ -107,7 +109,7 @@ export function DimensionsSection() {
         {/* Depth */}
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-xs text-content-tertiary">Depth</span>
+            <span className="text-xs text-content-tertiary">{t('common.depth')}</span>
             <span className="text-[11px] tabular-nums text-content-tertiary">
               {depthMm.toFixed(0)}mm
             </span>
@@ -127,10 +129,9 @@ export function DimensionsSection() {
         {/* Height */}
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-xs text-content-tertiary">Height</span>
+            <span className="text-xs text-content-tertiary">{t('common.height')}</span>
             <span className="text-[11px] tabular-nums text-content-tertiary">
-              {heightMm.toFixed(0)}mm body
-            </span>
+              {heightMm.toFixed(0)}{t('binDesigner.mmBody')}</span>
           </div>
           <StepperControl
             value={height}
@@ -156,18 +157,14 @@ export function DimensionsSection() {
           }}
           role="checkbox"
           aria-checked={halfBinMode}
-          aria-label="Half-bin mode (experimental): enable 0.5 grid unit precision"
+          aria-label={t('binDesigner.halfBinModeExperimentalEnable05Grid')}
           tabIndex={0}
         >
           <div className="flex items-center gap-1.5">
             <span
               className={`text-xs leading-none ${halfBinMode ? 'text-content' : 'text-content-tertiary'}`}
-            >
-              Half-bin mode
-            </span>
-            <span className="text-[9px] leading-none text-warning bg-warning-muted px-1 py-0.5 rounded">
-              experimental
-            </span>
+            >{t('binDesigner.halfBinMode')}</span>
+            <span className="text-[9px] leading-none text-warning bg-warning-muted px-1 py-0.5 rounded">{t('binDesigner.experimental')}</span>
           </div>
           <Checkbox checked={halfBinMode} variant="desktop" />
         </div>

@@ -1,6 +1,7 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { Checkbox } from '@/shared/components/Checkbox';
 import type { Category, PrintListFilters } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 interface BinListFiltersProps {
   /** Current search query */
@@ -41,6 +42,7 @@ export function BinListFilters({
   totalCount,
   autoFocus = true,
 }: BinListFiltersProps) {
+  const t = useTranslation();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus search input on mount
@@ -76,9 +78,9 @@ export function BinListFilters({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search label or notes..."
+            placeholder={t('common.search')}
             className="w-full pl-9 pr-8 py-2 text-sm bg-surface border border-stroke rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-            aria-label="Search bins by label or notes"
+            aria-label={t('common.search')}
           />
           {/* Search icon */}
           <svg
@@ -99,7 +101,7 @@ export function BinListFilters({
             <button
               onClick={handleClearSearch}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-content rounded-full hover:bg-surface-hover"
-              aria-label="Clear search"
+              aria-label={t('binList.clearSearch')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -116,14 +118,9 @@ export function BinListFilters({
         {/* Result count */}
         <div className="text-sm text-content-secondary">
           {hiddenCount > 0 ? (
-            <span>
-              Showing <span className="font-medium text-content">{visibleCount}</span> of{' '}
-              {totalCount}
-            </span>
+            <span>{t('binList.showingOf', { visible: visibleCount, total: totalCount })}</span>
           ) : (
-            <span>
-              <span className="font-medium text-content">{totalCount}</span> bin types
-            </span>
+            <span>{t('binList.totalBinTypes', { count: totalCount })}</span>
           )}
         </div>
 
@@ -132,9 +129,7 @@ export function BinListFilters({
           <button
             onClick={onResetFilters}
             className="text-sm text-accent hover:text-accent-hover transition-colors"
-          >
-            Reset filters
-          </button>
+          >{t('binList.resetFilters')}</button>
         )}
       </div>
 
@@ -142,7 +137,7 @@ export function BinListFilters({
       <div className="flex items-center gap-4 flex-wrap">
         {/* Category toggles */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-content-tertiary">Categories:</span>
+          <span className="text-xs text-content-tertiary">{t('binList.categories')}</span>
           {categories.map((category) => {
             const isHidden = filters.hiddenCategoryIds.has(category.id);
             return (
@@ -189,7 +184,7 @@ export function BinListFilters({
           onClick={onToggleGroupByCategory}
           role="checkbox"
           aria-checked={filters.groupByCategory}
-          aria-label="Group by category"
+          aria-label={t('binList.groupByCategory')}
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === ' ' || e.key === 'Enter') {
@@ -200,9 +195,7 @@ export function BinListFilters({
         >
           <span
             className={`text-sm ${filters.groupByCategory ? 'text-content' : 'text-content-secondary'}`}
-          >
-            Group by category
-          </span>
+          >{t('binList.groupByCategory')}</span>
           <Checkbox checked={filters.groupByCategory} variant="desktop" />
         </div>
       </div>

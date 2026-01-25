@@ -1,4 +1,5 @@
 import { useState, useCallback, useId } from 'react';
+import { useTranslation } from '@/i18n';
 import {
   StatCard,
   BinIcon,
@@ -55,6 +56,7 @@ export function BinListDashboard({
   collapsible = false,
   defaultCollapsed = false,
 }: BinListDashboardProps) {
+  const t = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const contentId = useId();
 
@@ -75,11 +77,10 @@ export function BinListDashboard({
   const header = (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <h3 className="text-sm font-medium text-content">Statistics</h3>
+        <h3 className="text-sm font-medium text-content">{t('dashboard.statistics')}</h3>
         {collapsible && (
           <span className="text-xs text-content-tertiary">
-            {totalBins} bins, {totalFilament}m filament
-          </span>
+            {t('dashboard.compactSummary', { bins: totalBins, filament: totalFilament })}</span>
         )}
       </div>
       {collapsible && (
@@ -88,7 +89,7 @@ export function BinListDashboard({
           className="p-1 text-content-tertiary hover:text-content rounded transition-colors"
           aria-expanded={!isCollapsed}
           aria-controls={contentId}
-          aria-label={isCollapsed ? 'Expand statistics' : 'Collapse statistics'}
+          aria-label={isCollapsed ? t('dashboard.expandStats') : t('dashboard.collapseStats')}
         >
           <svg
             className={`w-5 h-5 transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
@@ -123,20 +124,20 @@ export function BinListDashboard({
       <div id={contentId} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatCard
           icon={<BinIcon />}
-          label="Bin Types"
+          label={t('dashboard.binTypes')}
           value={totalBinTypes}
           title={`${totalBinTypes} unique bin configurations`}
         />
         <StatCard
           icon={<BinIcon />}
-          label="Total Bins"
+          label={t('dashboard.totalBins')}
           value={totalBins}
           title={`${totalBins} individual bins`}
         />
         {hasAnySplits && (
           <StatCard
             icon={<BinIcon />}
-            label="Print Pieces"
+            label={t('dashboard.printPieces')}
             value={totalPieces}
             title={`${totalPieces} pieces after split optimization`}
             variant="warning"
@@ -144,27 +145,27 @@ export function BinListDashboard({
         )}
         <StatCard
           icon={<FilamentIcon />}
-          label="Filament"
+          label={t('dashboard.filament')}
           value={totalFilament}
           unit="m"
           title={`${totalFilament} meters of filament`}
         />
         <StatCard
           icon={<CostIcon />}
-          label="Est. Cost"
+          label={t('dashboard.estCost')}
           value={`$${totalCost.toFixed(2)}`}
           title={`Estimated cost based on filament usage`}
           variant="info"
         />
         <StatCard
           icon={<TimeIcon />}
-          label="Print Time"
+          label={t('dashboard.printTime')}
           value={formatPrintTime(totalPrintTimeHours)}
           title={`Estimated print time: ${totalPrintTimeHours.toFixed(1)} hours`}
         />
         <StatCard
           icon={<SpoolIcon />}
-          label="Spools"
+          label={t('dashboard.spools')}
           value={spoolEstimate}
           unit={`(${spoolPercentage}%)`}
           title={`${spoolEstimate} spool(s) needed (${spoolPercentage}% of spool)`}
@@ -174,7 +175,7 @@ export function BinListDashboard({
       {/* Category breakdown */}
       {categoryBreakdown.length > 0 && (
         <div className="bg-surface-elevated rounded-lg p-4">
-          <h4 className="text-sm font-medium text-content mb-3">Filament by Category</h4>
+          <h4 className="text-sm font-medium text-content mb-3">{t('dashboard.filamentByCategory')}</h4>
           <CategoryBreakdownChart breakdown={categoryBreakdown} />
           <div className="mt-3 pt-3 border-t border-stroke-subtle">
             <CategoryLegend breakdown={categoryBreakdown} />

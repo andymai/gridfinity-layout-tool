@@ -8,6 +8,7 @@ import { ImportView } from './ImportView';
 import { SharedWithMeList } from './SharedWithMeList';
 import type { Layout } from '@/core/types';
 import { isOk } from '@/core/result';
+import { useTranslation } from '@/i18n';
 
 type Tab = 'layouts' | 'shared' | 'import';
 
@@ -40,6 +41,7 @@ function LayoutManagerModalContent({
   onClose: () => void;
   renderShareModal?: (props: ShareModalRenderProps) => ReactNode;
 }) {
+  const t = useTranslation();
   const [shareModalLayoutId, setShareModalLayoutId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('layouts');
   const modalRef = useRef<HTMLDivElement>(null);
@@ -186,14 +188,12 @@ function LayoutManagerModalContent({
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 id="layout-manager-title" className="text-2xl font-bold text-content">
-            Layouts
-          </h2>
+          <h2 id="layout-manager-title" className="text-2xl font-bold text-content">{t('layouts.layouts')}</h2>
           <button
             ref={closeButtonRef}
             onClick={onClose}
             className="p-1 text-content-secondary hover:text-content transition-colors rounded hover:bg-surface"
-            aria-label="Close layouts dialog"
+            aria-label={t('layouts.closeLayoutsDialog')}
           >
             <svg
               className="w-6 h-6"
@@ -240,9 +240,7 @@ function LayoutManagerModalContent({
                 strokeWidth={2}
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
-            </svg>
-            My Layouts
-          </button>
+            </svg>{t('layouts.myLayouts')}</button>
 
           <button
             id="shared-tab"
@@ -272,9 +270,7 @@ function LayoutManagerModalContent({
                 strokeWidth={2}
                 d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
               />
-            </svg>
-            Shared
-            {sharedWithMeCount > 0 && (
+            </svg>{t('layouts.shared')}{sharedWithMeCount > 0 && (
               <span
                 className={`
                 text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center
@@ -314,9 +310,7 @@ function LayoutManagerModalContent({
                 strokeWidth={2}
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
               />
-            </svg>
-            Import
-          </button>
+            </svg>{t('common.import')}</button>
         </div>
 
         {/* Tab Content */}

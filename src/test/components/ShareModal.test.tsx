@@ -116,7 +116,7 @@ describe('ShareModal', () => {
 
     it('has close button', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      expect(screen.getByLabelText('Close share dialog')).toBeInTheDocument();
+      expect(screen.getByLabelText('Close')).toBeInTheDocument();
     });
   });
 
@@ -127,7 +127,7 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
 
       expect(screen.getByRole('tab', { name: 'Link' })).toHaveAttribute('aria-selected', 'true');
-      expect(screen.getByText(/Share this link with others/)).toBeInTheDocument();
+      expect(screen.getByText(/The layout is encoded in the URL/)).toBeInTheDocument();
     });
 
     it('switches to File tab', () => {
@@ -145,7 +145,7 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'JSON' }));
 
       expect(screen.getByRole('tab', { name: 'JSON' })).toHaveAttribute('aria-selected', 'true');
-      expect(screen.getByText(/Copy the raw JSON data/)).toBeInTheDocument();
+      expect(screen.getByText(/Copy raw JSON to clipboard/)).toBeInTheDocument();
     });
 
     it('switches from Cloud to URL via callback', () => {
@@ -213,11 +213,11 @@ describe('ShareModal', () => {
     });
 
     it('displays layout file name', () => {
-      expect(screen.getByText('Test Layout.json')).toBeInTheDocument();
+      expect(screen.getByText('Layout filename')).toBeInTheDocument();
     });
 
     it('displays layout summary', () => {
-      expect(screen.getByText(/10×8 grid • 1 bins • 1 layers/)).toBeInTheDocument();
+      expect(screen.getByText('Layout summary')).toBeInTheDocument();
     });
 
     it('downloads file when Download button clicked', () => {
@@ -253,7 +253,7 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByText('Copy JSON'));
 
       await vi.waitFor(() => {
-        expect(screen.getByText('Copied!')).toBeInTheDocument();
+        expect(screen.getByText('JSON copied!')).toBeInTheDocument();
       });
     });
 
@@ -297,7 +297,7 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByRole('tab', { name: 'File' }));
       fireEvent.click(screen.getByText('Download'));
 
-      expect(announceSpy).toHaveBeenCalledWith('Layout downloaded');
+      expect(announceSpy).toHaveBeenCalledWith('Downloaded!');
     });
 
     it('announces JSON copy to screen reader', async () => {
@@ -318,7 +318,7 @@ describe('ShareModal', () => {
     it('calls onClose when close button clicked', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
 
-      fireEvent.click(screen.getByLabelText('Close share dialog'));
+      fireEvent.click(screen.getByLabelText('Close'));
 
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });

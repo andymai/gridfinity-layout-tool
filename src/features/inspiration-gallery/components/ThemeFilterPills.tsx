@@ -1,5 +1,6 @@
 import { THEME_CONFIG } from '../types';
 import type { InspirationTheme } from '../types';
+import { useTranslation } from '@/i18n';
 
 interface ThemeFilterPillsProps {
   selectedTheme: InspirationTheme | 'all';
@@ -15,6 +16,7 @@ export function ThemeFilterPills({
   onThemeChange,
   themeCounts,
 }: ThemeFilterPillsProps) {
+  const t = useTranslation();
   const themes: Array<InspirationTheme | 'all'> = [
     'all',
     'kitchen',
@@ -25,10 +27,10 @@ export function ThemeFilterPills({
   ];
 
   return (
-    <div role="tablist" aria-label="Filter by theme" className="flex gap-2 min-w-max">
+    <div role="tablist" aria-label={t('gallery.filterByTheme')} className="flex gap-2 min-w-max">
       {themes.map((theme) => {
         const isSelected = selectedTheme === theme;
-        const label = theme === 'all' ? 'All' : THEME_CONFIG[theme].label;
+        const label = theme === 'all' ? t('gallery.all') : THEME_CONFIG[theme].label;
         const count = themeCounts[theme];
 
         return (

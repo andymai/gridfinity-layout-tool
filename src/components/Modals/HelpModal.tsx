@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, type CSSProperties } from 'react';
 import { SHORTCUTS } from '@/core/constants';
+import { useTranslation } from '@/i18n';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {
@@ -60,16 +61,18 @@ interface HelpModalProps {
 // Shortcut categories with their shortcuts
 interface ShortcutItem {
   keys: string | readonly string[];
-  description: string;
+  descriptionKey: string; // Translation key
   modifier?: boolean; // Whether to show Ctrl/⌘ prefix
 }
 
 interface ShortcutCategory {
   id: string;
-  name: string;
+  nameKey: string; // Translation key
   icon: React.ReactNode;
   shortcuts: ShortcutItem[];
 }
+
+const KEY_SEPARATOR = '+';
 
 const getModifierKey = () => {
   if (typeof navigator === 'undefined') return 'Ctrl';
@@ -84,81 +87,82 @@ const formatKey = (key: string | readonly string[]): string => {
   return key as string;
 };
 
-// Define shortcut categories
+// Define shortcut categories using translation keys
 const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
   {
     id: 'general',
-    name: 'General',
+    nameKey: 'help.category.general',
     icon: <CommandIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.UNDO), description: 'Undo', modifier: true },
-      { keys: formatKey(SHORTCUTS.REDO), description: 'Redo', modifier: true },
-      { keys: formatKey(SHORTCUTS.HELP), description: 'Show this help' },
-      { keys: formatKey(SHORTCUTS.ESCAPE), description: 'Cancel / Deselect' },
+      { keys: formatKey(SHORTCUTS.UNDO), descriptionKey: 'help.shortcut.undo', modifier: true },
+      { keys: formatKey(SHORTCUTS.REDO), descriptionKey: 'help.shortcut.redo', modifier: true },
+      { keys: formatKey(SHORTCUTS.HELP), descriptionKey: 'help.shortcut.showHelp' },
+      { keys: formatKey(SHORTCUTS.ESCAPE), descriptionKey: 'help.shortcut.cancelDeselect' },
     ],
   },
   {
     id: 'editing',
-    name: 'Editing',
+    nameKey: 'help.category.editing',
     icon: <EditIcon />,
     shortcuts: [
-      { keys: 'D', description: 'Duplicate selected bins', modifier: true },
-      { keys: formatKey(SHORTCUTS.DELETE), description: 'Delete selected bins' },
-      { keys: formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase(), description: 'Quick label edit' },
-      { keys: 'Arrow keys', description: 'Nudge selected bins' },
+      { keys: 'D', descriptionKey: 'help.shortcut.duplicate', modifier: true },
+      { keys: formatKey(SHORTCUTS.DELETE), descriptionKey: 'help.shortcut.delete' },
+      { keys: formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase(), descriptionKey: 'help.shortcut.quickLabel' },
+      { keys: 'Arrow keys', descriptionKey: 'help.shortcut.nudge' },
     ],
   },
   {
     id: 'navigation',
-    name: 'Navigation',
+    nameKey: 'help.category.navigation',
     icon: <NavigationIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.LAYER_UP).toUpperCase(), description: 'Layer above' },
-      { keys: formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase(), description: 'Layer below' },
-      { keys: formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase(), description: 'Previous bin' },
-      { keys: formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase(), description: 'Next bin' },
+      { keys: formatKey(SHORTCUTS.LAYER_UP).toUpperCase(), descriptionKey: 'help.shortcut.layerUp' },
+      { keys: formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase(), descriptionKey: 'help.shortcut.layerDown' },
+      { keys: formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase(), descriptionKey: 'help.shortcut.prevBin' },
+      { keys: formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase(), descriptionKey: 'help.shortcut.nextBin' },
       {
         keys: `${formatKey(SHORTCUTS.CATEGORY_PREV)} / ${formatKey(SHORTCUTS.CATEGORY_NEXT)}`,
-        description: 'Cycle category',
+        descriptionKey: 'help.shortcut.cycleCategory',
       },
     ],
   },
   {
     id: 'view',
-    name: 'View',
+    nameKey: 'help.category.view',
     icon: <ViewIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.ZOOM_IN), description: 'Zoom in' },
-      { keys: formatKey(SHORTCUTS.ZOOM_OUT), description: 'Zoom out' },
-      { keys: 'O', description: 'Open layout manager', modifier: true },
+      { keys: formatKey(SHORTCUTS.ZOOM_IN), descriptionKey: 'help.shortcut.zoomIn' },
+      { keys: formatKey(SHORTCUTS.ZOOM_OUT), descriptionKey: 'help.shortcut.zoomOut' },
+      { keys: 'O', descriptionKey: 'help.shortcut.openLayoutManager', modifier: true },
     ],
   },
   {
     id: '3d-preview',
-    name: '3D Preview',
+    nameKey: 'help.category.preview3d',
     icon: <CubeIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.PREVIEW_TOGGLE).toUpperCase(), description: 'Toggle 3D preview' },
-      { keys: 'Space', description: 'Expand preview' },
-      { keys: '1', description: 'Isometric view' },
-      { keys: '2', description: 'Front view' },
-      { keys: '3', description: 'Side view' },
+      { keys: formatKey(SHORTCUTS.PREVIEW_TOGGLE).toUpperCase(), descriptionKey: 'help.shortcut.togglePreview' },
+      { keys: 'Space', descriptionKey: 'help.shortcut.expandPreview' },
+      { keys: '1', descriptionKey: 'help.shortcut.isometricView' },
+      { keys: '2', descriptionKey: 'help.shortcut.frontView' },
+      { keys: '3', descriptionKey: 'help.shortcut.sideView' },
     ],
   },
   {
     id: 'advanced',
-    name: 'Advanced',
+    nameKey: 'help.category.advanced',
     icon: <SettingsIcon />,
     shortcuts: [
       {
         keys: formatKey(SHORTCUTS.HALF_BIN_TOGGLE).toUpperCase(),
-        description: 'Toggle half-bin mode',
+        descriptionKey: 'help.shortcut.toggleHalfBin',
       },
     ],
   },
 ];
 
 export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps) {
+  const t = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'shortcuts' | 'tips'>('shortcuts');
 
@@ -180,7 +184,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
     };
   }, [isOpen, onClose]);
 
-  // Filter shortcuts based on search query
+  // Filter shortcuts based on search query (searches translated strings)
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) return SHORTCUT_CATEGORIES;
 
@@ -189,13 +193,13 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
       ...category,
       shortcuts: category.shortcuts.filter(
         (shortcut) =>
-          shortcut.description.toLowerCase().includes(query) ||
+          t(shortcut.descriptionKey).toLowerCase().includes(query) ||
           (typeof shortcut.keys === 'string' && shortcut.keys.toLowerCase().includes(query)) ||
           (Array.isArray(shortcut.keys) &&
             shortcut.keys.some((k) => k.toLowerCase().includes(query)))
       ),
     })).filter((category) => category.shortcuts.length > 0);
-  }, [searchQuery]);
+  }, [searchQuery, t]);
 
   if (!isOpen) return null;
 
@@ -218,13 +222,13 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
         {/* Header */}
         <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle">
           <h2 id="help-title" style={STYLES.title}>
-            Help & Shortcuts
+            {t('help.title')}
           </h2>
           <button
             onClick={onClose}
             className="btn btn-ghost btn-icon"
             style={STYLES.buttonCompact}
-            aria-label="Close help"
+            aria-label={t('common.close')}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -247,9 +251,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   ? 'bg-accent/20 text-accent'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
-            >
-              Shortcuts
-            </button>
+            >{t('help.shortcuts')}</button>
             <button
               onClick={() => setActiveTab('tips')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
@@ -257,9 +259,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   ? 'bg-accent/20 text-accent'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
-            >
-              Tips & Info
-            </button>
+            >{t('help.tipsInfo')}</button>
           </div>
 
           {activeTab === 'shortcuts' && (
@@ -282,14 +282,14 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search shortcuts..."
+                  placeholder={t('help.searchPlaceholder')}
                   className="w-full pl-9 pr-3 py-1.5 text-sm rounded-md bg-surface border border-stroke-subtle focus:outline-none focus:ring-2 focus:ring-accent/50 text-content placeholder:text-content-tertiary"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
                     className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-content-tertiary hover:text-content focus-visible:ring-2 focus-visible:ring-accent"
-                    aria-label="Clear search"
+                    aria-label={t('help.clearSearch')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -311,9 +311,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
           {activeTab === 'shortcuts' ? (
             <div className="space-y-6">
               {filteredCategories.length === 0 ? (
-                <div className="text-center py-8 text-content-tertiary">
-                  No shortcuts found for "{searchQuery}"
-                </div>
+                <div className="text-center py-8 text-content-tertiary">{t('help.noShortcutsFoundFor', { query: searchQuery })}</div>
               ) : (
                 filteredCategories.map((category) => (
                   <ShortcutCategorySection
@@ -353,18 +351,19 @@ function ShortcutCategorySection({
   category: ShortcutCategory;
   modifierKey: string;
 }) {
+  const t = useTranslation();
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-accent">{category.icon}</span>
-        <h3 style={STYLES.sectionHeader}>{category.name}</h3>
+        <h3 style={STYLES.sectionHeader}>{t(category.nameKey)}</h3>
       </div>
       <div className="grid gap-2">
         {category.shortcuts.map((shortcut, index) => (
           <ShortcutRow
             key={index}
             keys={shortcut.keys}
-            description={shortcut.description}
+            description={t(shortcut.descriptionKey)}
             modifier={shortcut.modifier}
             modifierKey={modifierKey}
           />
@@ -403,7 +402,7 @@ function ShortcutRow({
         {modifier && (
           <>
             <KeyboardKey>{modifierKey}</KeyboardKey>
-            <span className="text-content-tertiary text-xs">+</span>
+            <span className="text-content-tertiary text-xs">{KEY_SEPARATOR}</span>
           </>
         )}
         {keyArray.map((key, index) => (
@@ -419,13 +418,14 @@ function ShortcutRow({
 
 // Mouse interactions section
 function MouseInteractionsSection() {
+  const t = useTranslation();
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-accent">
           <MouseIcon />
         </span>
-        <h3 style={STYLES.sectionHeader}>Mouse</h3>
+        <h3 style={STYLES.sectionHeader}>{t('help.mouse')}</h3>
       </div>
       <div className="grid gap-2">
         <InteractionRow action="Click + drag on empty" description="Draw new bin" />
@@ -443,13 +443,14 @@ function MouseInteractionsSection() {
 
 // Touch gestures section
 function TouchGesturesSection() {
+  const t = useTranslation();
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-accent">
           <TouchIcon />
         </span>
-        <h3 style={STYLES.sectionHeader}>Touch Gestures</h3>
+        <h3 style={STYLES.sectionHeader}>{t('help.touchGestures')}</h3>
       </div>
       <div className="grid gap-2">
         <InteractionRow action="Tap bin" description="Select" />
@@ -475,6 +476,7 @@ function InteractionRow({ action, description }: { action: string; description: 
 
 // Tips section
 function TipsSection() {
+  const t = useTranslation();
   const tips = [
     'Use the Bin Palette to select a size, then click or drag to paint bins',
     'Bins that exceed the max print size will be automatically split',
@@ -487,9 +489,7 @@ function TipsSection() {
 
   return (
     <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        Tips
-      </h3>
+      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>{t('help.tips')}</h3>
       <ul className="space-y-2 p-4 rounded-lg" style={STYLES.tipsList}>
         {tips.map((tip, index) => (
           <li key={index} className="flex items-start gap-2">
@@ -504,21 +504,20 @@ function TipsSection() {
 
 // Blocked zones section
 function BlockedZonesSection() {
+  const t = useTranslation();
   return (
     <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        Blocked Zones
-      </h3>
+      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>{t('help.blockedZones')}</h3>
       <div className="p-4 rounded-lg" style={STYLES.blockedZonesContent}>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>What are blocked zones?</strong>
+          <strong style={STYLES.textPrimary}>{t('help.whatAreBlockedZones')}</strong>
         </p>
         <p className="mb-3">
           When a bin is taller than its layer height, it extends into layers above. These areas
           appear as striped cells and cannot have new bins placed on them.
         </p>
         <p>
-          <strong style={STYLES.textPrimary}>Example:</strong> A 5u tall bin on Layer 1 (3u) extends
+          <strong style={STYLES.textPrimary}>{t('help.example')}</strong> A 5u tall bin on Layer 1 (3u) extends
           2u into Layer 2. Those cells on Layer 2 are blocked because the physical bin occupies that
           space.
         </p>
@@ -529,14 +528,13 @@ function BlockedZonesSection() {
 
 // Bin clearance section
 function BinClearanceSection() {
+  const t = useTranslation();
   return (
     <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        Bin Clearance
-      </h3>
+      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>{t('help.binClearance')}</h3>
       <div className="p-4 rounded-lg" style={STYLES.blockedZonesContent}>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>What is clearance?</strong>
+          <strong style={STYLES.textPrimary}>{t('help.whatIsClearance')}</strong>
         </p>
         <p className="mb-3">
           Clearance reserves empty space above a bin for tall contents that stick out, like scissors
@@ -544,7 +542,7 @@ function BinClearanceSection() {
           height.
         </p>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>Example:</strong> A 2u tall bin with 1u clearance will
+          <strong style={STYLES.textPrimary}>{t('help.example')}</strong> A 2u tall bin with 1u clearance will
           block 3u total of vertical space, but only prints as a 2u bin.
         </p>
         <p>

@@ -15,8 +15,7 @@ describe('SplitWarning', () => {
     it('shows success state', () => {
       render(<SplitWarning {...defaultProps} />);
 
-      expect(screen.getByText(/Fits print bed/)).toBeInTheDocument();
-      expect(screen.getByText(/2×2 ≤ 6×6/)).toBeInTheDocument();
+      expect(screen.getByText(/Fits print bed dimensions/)).toBeInTheDocument();
     });
 
     it('shows success checkmark icon', () => {
@@ -38,29 +37,30 @@ describe('SplitWarning', () => {
     it('shows warning state', () => {
       render(<SplitWarning {...oversizedProps} />);
 
-      expect(screen.getByText(/Exceeds print bed/)).toBeInTheDocument();
+      expect(screen.getByText('Oversized for print bed')).toBeInTheDocument();
     });
 
     it('calculates pieces correctly for width overflow', () => {
-      render(<SplitWarning {...oversizedProps} />);
+      render(<SplitWarning {...oversizedProps} compact />);
 
       // 8 width / 6 max = 2 pieces wide, 4 depth / 6 max = 1 piece deep
       // Total: 2 * 1 = 2 pieces
-      expect(screen.getByText(/2 pieces/)).toBeInTheDocument();
+      expect(screen.getByText('2 piece(s) needed')).toBeInTheDocument();
     });
 
     it('calculates pieces correctly for both dimensions overflow', () => {
-      render(<SplitWarning {...defaultProps} binWidth={12} binDepth={10} />);
+      render(<SplitWarning {...defaultProps} binWidth={12} binDepth={10} compact />);
 
       // 12 width / 6 max = 2 pieces wide, 10 depth / 6 max = 2 pieces deep
       // Total: 2 * 2 = 4 pieces
-      expect(screen.getByText(/4 pieces/)).toBeInTheDocument();
+      expect(screen.getByText('4 piece(s) needed')).toBeInTheDocument();
     });
 
     it('shows max piece size info', () => {
       render(<SplitWarning {...oversizedProps} />);
 
-      expect(screen.getByText(/max 6×6 per piece/)).toBeInTheDocument();
+      // The message now contains the full explanation
+      expect(screen.getByText(/exceeds your print bed/)).toBeInTheDocument();
     });
 
     it('renders print bed indicator with correct title', () => {
@@ -83,14 +83,14 @@ describe('SplitWarning', () => {
     it('shows simplified warning in compact mode', () => {
       render(<SplitWarning {...oversizedProps} />);
 
-      expect(screen.getByText(/Will be split into 2 pieces for printing/)).toBeInTheDocument();
+      expect(screen.getByText(/2 piece\(s\) needed/)).toBeInTheDocument();
     });
 
     it('does not show detailed explanation in compact mode', () => {
       render(<SplitWarning {...oversizedProps} />);
 
-      expect(screen.queryByText(/Exceeds print bed/)).not.toBeInTheDocument();
-      expect(screen.queryByText(/max.*per piece/)).not.toBeInTheDocument();
+      expect(screen.queryByText('Oversized for print bed')).not.toBeInTheDocument();
+      expect(screen.queryByText(/exceeds your print bed/)).not.toBeInTheDocument();
     });
 
     it('does not render print bed indicator in compact mode', () => {
@@ -109,17 +109,17 @@ describe('SplitWarning', () => {
     });
 
     it('handles one unit over max', () => {
-      render(<SplitWarning {...defaultProps} binWidth={7} binDepth={6} />);
+      render(<SplitWarning {...defaultProps} binWidth={7} binDepth={6} compact />);
 
       // 7 / 6 = 2 pieces wide, 6 / 6 = 1 piece deep = 2 pieces
-      expect(screen.getByText(/2 pieces/)).toBeInTheDocument();
+      expect(screen.getByText('2 piece(s) needed')).toBeInTheDocument();
     });
 
     it('handles fractional dimensions', () => {
       render(<SplitWarning {...defaultProps} binWidth={6.5} binDepth={3} />);
 
       // 6.5 > 6 so needs split
-      expect(screen.getByText(/Exceeds print bed/)).toBeInTheDocument();
+      expect(screen.getByText('Oversized for print bed')).toBeInTheDocument();
     });
 
     it('handles different grid unit sizes', () => {
@@ -130,11 +130,12 @@ describe('SplitWarning', () => {
           maxGridUnits={5}
           binWidth={6}
           binDepth={3}
+          compact
         />
       );
 
       // 6 > 5 max, so needs split
-      expect(screen.getByText(/2 pieces/)).toBeInTheDocument();
+      expect(screen.getByText('2 piece(s) needed')).toBeInTheDocument();
     });
   });
 });

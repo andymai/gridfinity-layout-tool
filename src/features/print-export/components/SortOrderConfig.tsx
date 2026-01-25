@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Checkbox } from '@/shared/components/Checkbox';
 import type { BinListSortOrder, SortFieldConfig, BinSortField } from '@/core/store/settings';
 import { SORT_FIELD_LABELS } from '@/core/store/settings';
+import { useTranslation } from '@/i18n';
 
 interface SortOrderConfigProps {
   sortOrder: BinListSortOrder;
@@ -13,6 +14,7 @@ interface SortOrderConfigProps {
  * Users can enable/disable sort fields and drag to change priority.
  */
 export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
+  const t = useTranslation();
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
@@ -76,8 +78,7 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
     <div className="sort-order-config">
       {/* Active sort summary */}
       {activeSortFields.length > 0 && (
-        <div className="text-xs text-content-tertiary mb-2">
-          Sorting by: {activeSortFields.map((s) => SORT_FIELD_LABELS[s.field]).join(' → ')}
+        <div className="text-xs text-content-tertiary mb-2">{t('print.sortingBy')}{activeSortFields.map((s) => SORT_FIELD_LABELS[s.field]).join(' → ')}
         </div>
       )}
 
@@ -99,6 +100,7 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
             onDragOver={(e) => handleDragOver(e, index)}
             onDragEnd={handleDragEnd}
             onDragLeave={handleDragLeave}
+            t={t}
           />
         ))}
       </div>
@@ -120,6 +122,7 @@ interface SortFieldItemProps {
   onDragOver: (e: React.DragEvent) => void;
   onDragEnd: () => void;
   onDragLeave: () => void;
+  t: (key: string) => string;
 }
 
 function SortFieldItem({
@@ -136,6 +139,7 @@ function SortFieldItem({
   onDragOver,
   onDragEnd,
   onDragLeave,
+  t,
 }: SortFieldItemProps) {
   return (
     <div
@@ -154,7 +158,7 @@ function SortFieldItem({
       {/* Drag handle */}
       <div
         className="cursor-grab text-content-tertiary hover:text-content-secondary"
-        title="Drag to reorder"
+        title={t('print.sort.dragToReorder')}
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
           <circle cx="9" cy="6" r="1.5" />
@@ -203,7 +207,7 @@ function SortFieldItem({
           onClick={onMoveUp}
           disabled={isFirst}
           className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          title="Move up"
+          title={t('print.sort.moveUp')}
           aria-label={`Move ${SORT_FIELD_LABELS[config.field]} up`}
         >
           <svg
@@ -221,7 +225,7 @@ function SortFieldItem({
           onClick={onMoveDown}
           disabled={isLast}
           className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          title="Move down"
+          title={t('print.sort.moveDown')}
           aria-label={`Move ${SORT_FIELD_LABELS[config.field]} down`}
         >
           <svg

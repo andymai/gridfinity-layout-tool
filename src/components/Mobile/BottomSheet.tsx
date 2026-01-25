@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useUIStore } from '@/core/store/ui';
 import { useResponsive } from '@/shared/hooks';
+import { useTranslation } from '@/i18n';
 
 interface BottomSheetProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ interface BottomSheetProps {
  * Features gesture dismiss (swipe down) and backdrop tap to close.
  */
 export function BottomSheet({ children, title }: BottomSheetProps) {
+  const t = useTranslation();
   const activeMobilePanel = useUIStore((state) => state.activeMobilePanel);
   const closeMobilePanel = useUIStore((state) => state.closeMobilePanel);
   const { viewportHeight } = useResponsive();
@@ -144,7 +146,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
               height: isDragging ? 'auto' : 0,
             }}
           >
-            {dragY > 80 ? 'Release to close' : 'Swipe down to close'}
+            {dragY > 80 ? t('mobile.bottomSheet.releaseToClose') : t('mobile.bottomSheet.swipeToClose')}
           </div>
 
           {/* Title row */}
@@ -153,7 +155,7 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
             <button
               onClick={closeMobilePanel}
               className="btn btn-ghost btn-icon"
-              aria-label="Close panel"
+              aria-label={t('mobile.bottomSheet.closePanel')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path

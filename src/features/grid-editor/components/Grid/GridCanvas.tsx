@@ -8,6 +8,7 @@ import { Bin } from './Bin';
 import { getBlockedZones } from '@/shared/utils/collision';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import type { Coord, ResizeHandle } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 interface GridCanvasProps {
   gridRef: RefObject<HTMLDivElement | null>;
@@ -30,6 +31,7 @@ export function GridCanvas({
   onStartDrag,
   onStartResize,
 }: GridCanvasProps) {
+  const t = useTranslation();
   const { drawer, bins, layers, categories } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
@@ -337,8 +339,8 @@ export function GridCanvas({
               role="button"
               aria-label={
                 sourceLayer
-                  ? `Blocked by bin from ${sourceLayer.name}. Click to switch layer.`
-                  : 'Blocked zone'
+                  ? t('grid.blockedByBin', { layer: sourceLayer.name })
+                  : t('grid.blockedZone')
               }
             >
               {/* Diagonal hatching pattern */}

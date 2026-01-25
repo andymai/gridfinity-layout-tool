@@ -8,6 +8,7 @@ import {
 } from '@/core/storage';
 import { trackLayoutSnapshot, trackEvent } from '@/utils/analytics';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { useTranslation } from '@/i18n';
 import { CloudShareTab } from './CloudShareTab';
 
 interface ShareModalProps {
@@ -23,6 +24,7 @@ export function ShareModal({ isOpen, onClose, layoutId }: ShareModalProps) {
 }
 
 function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutId?: string }) {
+  const t = useTranslation();
   const layout = useLayoutStore((state) => state.layout);
   const activeLayoutId = useLibraryStore((state) => state.library.activeLayoutId);
   const announceToScreenReader = useUIStore((state) => state.announceToScreenReader);
@@ -71,7 +73,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
     const success = await copyToClipboard(shareURL);
     if (success) {
       setCopied(true);
-      announceToScreenReader('Link copied to clipboard');
+      announceToScreenReader(t('toast.linkCopied'));
       trackLayoutSnapshot(layout, 'export_url');
       setTimeout(() => setCopied(false), 2000);
     }
@@ -82,7 +84,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
     const success = await copyToClipboard(json);
     if (success) {
       setCopied(true);
-      announceToScreenReader('JSON copied to clipboard');
+      announceToScreenReader(t('toast.jsonCopied'));
       trackLayoutSnapshot(layout, 'export_json');
       mlTracking.trackSnapshot('export_json');
       mlTracking.trackQuality('exported');
@@ -92,7 +94,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
   const handleDownload = () => {
     downloadLayoutAsFile(layout);
-    announceToScreenReader('Layout downloaded');
+    announceToScreenReader(t('share.file.downloaded'));
     trackLayoutSnapshot(layout, 'export_json');
     mlTracking.trackSnapshot('export_json');
     mlTracking.trackQuality('exported');
@@ -114,12 +116,12 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
       >
         <div className="flex justify-between items-center mb-6">
           <h2 id="share-modal-title" className="text-2xl font-bold text-content">
-            Share Layout
+            {t('share.title')}
           </h2>
           <button
             onClick={onClose}
             className="p-2 -m-2 rounded-md text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
-            aria-label="Close share dialog"
+            aria-label={t('common.close')}
           >
             <svg
               className="w-5 h-5"
@@ -149,7 +151,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
             >
-              Cloud
+              {t('share.tabs.cloud')}
             </button>
           )}
           <button
@@ -162,7 +164,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
-            Link
+            {t('share.tabs.link')}
           </button>
           <button
             role="tab"
@@ -174,7 +176,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
-            File
+            {t('share.tabs.file')}
           </button>
           <button
             role="tab"
@@ -186,7 +188,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
-            JSON
+            {t('share.tabs.json')}
           </button>
         </div>
 
@@ -204,7 +206,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
           {activeTab === 'url' && (
             <div className="space-y-4">
               <p className="text-sm text-content-secondary">
-                Share this link with others. They can open it to import your layout directly.
+                {t('share.link.description')}
               </p>
               <div className="flex gap-2">
                 <input
@@ -216,11 +218,11 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                   className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                 />
                 <button onClick={handleCopyURL} className="btn btn-primary px-4">
-                  {copied ? 'Copied!' : 'Copy'}
+                  {copied ? t('common.copied') : t('common.copy')}
                 </button>
               </div>
               <div className="text-xs text-content-tertiary">
-                Note: Very large layouts may create long URLs that don't work in some browsers.
+                {t('share.link.longUrlNote')}
               </div>
             </div>
           )}
@@ -228,8 +230,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
           {activeTab === 'file' && (
             <div className="space-y-4">
               <p className="text-sm text-content-secondary">
-                Download your layout as a JSON file. This file can be imported later or shared with
-                others.
+                {t('share.file.description')}
               </p>
               <div className="bg-surface rounded-lg p-4">
                 <div className="flex items-center gap-3">
@@ -249,14 +250,12 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-content">{layout.name}.json</div>
+                    <div className="font-medium text-content">{t('share.layoutFilename', { name: layout.name })}</div>
                     <div className="text-sm text-content-secondary">
-                      {layout.drawer.width}×{layout.drawer.depth} grid • {layout.bins.length} bins •{' '}
-                      {layout.layers.length} layers
-                    </div>
+                      {t('share.layoutSummary', { grid: `${layout.drawer.width}×${layout.drawer.depth}`, bins: layout.bins.length, layers: layout.layers.length })}</div>
                   </div>
                   <button onClick={handleDownload} className="btn btn-primary">
-                    Download
+                    {t('common.download')}
                   </button>
                 </div>
               </div>
@@ -266,7 +265,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
           {activeTab === 'json' && (
             <div className="space-y-4 flex-1 flex flex-col">
               <p className="text-sm text-content-secondary">
-                Copy the raw JSON data. Paste it into the Import dialog or save it yourself.
+                {t('share.json.description')}
               </p>
               <textarea
                 ref={jsonTextareaRef}
@@ -276,7 +275,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                 className="flex-1 bg-surface text-content p-3 rounded font-mono text-xs resize-none focus:outline-none focus:ring-2 focus:ring-accent min-h-[200px]"
               />
               <button onClick={handleCopyJSON} className="btn btn-primary self-start">
-                {copied ? 'Copied!' : 'Copy JSON'}
+                {copied ? t('share.json.copied') : t('share.json.copy')}
               </button>
             </div>
           )}

@@ -128,7 +128,7 @@ describe('PrintModal', () => {
     it('renders Print and Cancel buttons', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      expect(screen.getByText('Print')).toBeInTheDocument();
+      expect(screen.getByText('Print Now')).toBeInTheDocument();
       expect(screen.getByText('Cancel')).toBeInTheDocument();
     });
   });
@@ -189,7 +189,7 @@ describe('PrintModal', () => {
     it('shows Select All button when multiple layers exist', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      expect(screen.getByText('Select All')).toBeInTheDocument();
+      expect(screen.getByText('All')).toBeInTheDocument();
     });
 
     it('selects all layers when Select All clicked', () => {
@@ -199,8 +199,8 @@ describe('PrintModal', () => {
       const layer1 = screen.getByText('Layer 1').closest('[role="checkbox"]');
       fireEvent.click(layer1!);
 
-      // Then click Select All
-      fireEvent.click(screen.getByText('Select All'));
+      // Then click All
+      fireEvent.click(screen.getByText('All'));
 
       // Both should be selected
       const selectedLayers = screen.getAllByTestId('selected-layers')[0];
@@ -218,7 +218,7 @@ describe('PrintModal', () => {
       fireEvent.click(layer2!);
 
       // Print button should be disabled
-      const printButton = screen.getByText('Print').closest('button');
+      const printButton = screen.getByText('Print Now').closest('button');
       expect(printButton).toBeDisabled();
     });
 
@@ -226,8 +226,8 @@ describe('PrintModal', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
       // Layer 1 has 1 bin, Layer 2 has 1 bin
-      // There are 2 instances of "1 bin" (one per layer)
-      expect(screen.getAllByText('1 bin')).toHaveLength(2);
+      // The component shows "{count} bins" for each layer
+      expect(screen.getAllByText('1 bins')).toHaveLength(2);
     });
   });
 
@@ -245,7 +245,7 @@ describe('PrintModal', () => {
       const onClose = vi.fn();
       render(<PrintModal isOpen={true} onClose={onClose} />);
 
-      const closeButton = screen.getByLabelText('Close print dialog');
+      const closeButton = screen.getByLabelText('Close');
       fireEvent.click(closeButton);
 
       expect(onClose).toHaveBeenCalled();
@@ -304,29 +304,29 @@ describe('PrintModal', () => {
     it('calls window.print when Print button clicked', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      fireEvent.click(screen.getByText('Print'));
+      fireEvent.click(screen.getByText('Print Now'));
 
       expect(mockPrint).toHaveBeenCalled();
     });
   });
 
   describe('print settings', () => {
-    it('renders Labels checkbox', () => {
+    it('renders Label checkbox', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      expect(screen.getByText('Labels')).toBeInTheDocument();
+      expect(screen.getByText('Label')).toBeInTheDocument();
     });
 
-    it('renders Categories checkbox', () => {
+    it('renders Category color checkbox', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      expect(screen.getByText('Categories')).toBeInTheDocument();
+      expect(screen.getByText('Category color')).toBeInTheDocument();
     });
 
     it('renders Size checkbox', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      expect(screen.getByText('Size (WxD)')).toBeInTheDocument();
+      expect(screen.getByText('Size')).toBeInTheDocument();
     });
 
     it('renders Height checkbox', () => {
@@ -335,23 +335,23 @@ describe('PrintModal', () => {
       expect(screen.getByText('Height')).toBeInTheDocument();
     });
 
-    it('renders Show Header checkbox', () => {
+    it('renders Show header checkbox', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      expect(screen.getByText('Show Header')).toBeInTheDocument();
+      expect(screen.getByText('Show header')).toBeInTheDocument();
     });
 
-    it('renders Bin Details Table checkbox', () => {
+    it('renders Bin list checkbox', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      expect(screen.getByText('Bin Details Table')).toBeInTheDocument();
+      expect(screen.getByText('Bin list')).toBeInTheDocument();
     });
 
     it('toggles setting on checkbox click', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      // Find and click Labels checkbox
-      const labelsCheckbox = screen.getByText('Labels').closest('[role="checkbox"]');
+      // Find and click Label checkbox
+      const labelsCheckbox = screen.getByText('Label').closest('[role="checkbox"]');
       fireEvent.click(labelsCheckbox!);
 
       // Verify settings store was updated
@@ -362,7 +362,7 @@ describe('PrintModal', () => {
     it('toggles setting on Enter key', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      const labelsCheckbox = screen.getByText('Labels').closest('[role="checkbox"]');
+      const labelsCheckbox = screen.getByText('Label').closest('[role="checkbox"]');
       fireEvent.keyDown(labelsCheckbox!, { key: 'Enter' });
 
       const { settings } = useSettingsStore.getState();
@@ -372,23 +372,23 @@ describe('PrintModal', () => {
     it('toggles setting on Space key', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      const labelsCheckbox = screen.getByText('Labels').closest('[role="checkbox"]');
+      const labelsCheckbox = screen.getByText('Label').closest('[role="checkbox"]');
       fireEvent.keyDown(labelsCheckbox!, { key: ' ' });
 
       const { settings } = useSettingsStore.getState();
       expect(settings.printViewSettings.showLabel).toBe(false);
     });
 
-    it('shows nested header options when Show Header is enabled', () => {
+    it('shows nested header options when Show header is enabled', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
       // Header options should be visible by default
-      expect(screen.getByText('Layout Name')).toBeInTheDocument();
-      expect(screen.getByText('Drawer Info')).toBeInTheDocument();
+      expect(screen.getByText('Layout name')).toBeInTheDocument();
+      expect(screen.getByText('Drawer info')).toBeInTheDocument();
       expect(screen.getByText('Date')).toBeInTheDocument();
     });
 
-    it('hides nested header options when Show Header is disabled', () => {
+    it('hides nested header options when Show header is disabled', () => {
       // Start with header disabled
       useSettingsStore.setState({
         settings: {
@@ -399,8 +399,8 @@ describe('PrintModal', () => {
 
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      expect(screen.queryByText('Layout Name')).not.toBeInTheDocument();
-      expect(screen.queryByText('Drawer Info')).not.toBeInTheDocument();
+      expect(screen.queryByText('Layout name')).not.toBeInTheDocument();
+      expect(screen.queryByText('Drawer info')).not.toBeInTheDocument();
       expect(screen.queryByText('Date')).not.toBeInTheDocument();
     });
   });
@@ -455,9 +455,9 @@ describe('CheckboxOption', () => {
   it('has correct aria attributes', () => {
     render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-    const checkbox = screen.getByText('Labels').closest('[role="checkbox"]');
+    const checkbox = screen.getByText('Label').closest('[role="checkbox"]');
     expect(checkbox).toHaveAttribute('aria-checked', 'true');
-    expect(checkbox).toHaveAttribute('aria-label', 'Labels');
+    expect(checkbox).toHaveAttribute('aria-label', 'Label');
     expect(checkbox).toHaveAttribute('tabindex', '0');
   });
 });

@@ -28,6 +28,7 @@ import { CollabCursors, CollabGhosts, CollabSelectionRings } from '@/components/
 import { useCollabMode } from '@/hooks/useCollabMode';
 import { useCollabPresence } from '@/hooks/useCollabPresence';
 import { useGridCoords } from '@/features/grid-editor/hooks/useGridCoords';
+import { useTranslation } from '@/i18n';
 
 // Lazy load the 3D preview component (includes three.js, ~800KB) - with retry for chunk load failures
 const IsometricPreview = lazyWithRetry(() =>
@@ -44,6 +45,7 @@ const MobileGridToolbar = lazyWithRetry(() =>
  * Displays the drawer grid with bins, handles user interactions.
  */
 export function Grid() {
+  const t = useTranslation();
   const { isMobile, viewportWidth } = useResponsive();
   const gridRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -374,15 +376,15 @@ export function Grid() {
                           </div>
                           <p className="font-medium mb-1 text-sm text-content-secondary">
                             {isMobile
-                              ? 'Tap and drag to draw a bin'
-                              : 'Click and drag to draw a bin'}
+                              ? t('grid.emptyHint.tapToDraw')
+                              : t('grid.emptyHint.clickToDraw')}
                           </p>
                           <p className="text-xs text-content-disabled">
                             {isFirstLayer
                               ? isMobile
-                                ? 'Or use Layers tab to select a size'
-                                : 'Or select a size from the Bin Palette on the left'
-                              : 'Striped areas are blocked by bins below'}
+                                ? t('grid.emptyHint.useLayersTab')
+                                : t('grid.emptyHint.useBinPalette')
+                              : t('grid.emptyHint.stripedBlocked')}
                           </p>
                         </div>
                       </div>
@@ -420,7 +422,7 @@ export function Grid() {
           {/* Resize confirmation dialog */}
           <ConfirmDialog
             isOpen={pendingResize !== null}
-            title="Resize Grid"
+            title={t('grid.resizeGrid')}
             message={
               pendingResize
                 ? `${pendingResize.clippedBinIds.length} bin${pendingResize.clippedBinIds.length > 1 ? 's' : ''} will be moved to stash. Continue?`

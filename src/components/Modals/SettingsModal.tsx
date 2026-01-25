@@ -8,6 +8,8 @@ import { SparklesIcon } from '@/features/labs/components/icons';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
+import { useTranslation, useLocale, SUPPORTED_LOCALES, detectBrowserLocale } from '@/i18n';
+import type { Locale } from '@/i18n';
 import type { STLSearchSite } from '@/core/store/settings';
 
 // Style constants
@@ -37,6 +39,8 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+  const t = useTranslation();
+  const { locale, setLocale } = useLocale();
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -52,9 +56,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setShowSaveDefaultsConfirm,
   } = useDrawerSettings();
 
-  const { mlTelemetryEnabled, updateSetting } = useSettingsStore(
+  const { mlTelemetryEnabled, settingsLocale, updateSetting } = useSettingsStore(
     useShallow((state) => ({
       mlTelemetryEnabled: state.settings.mlTelemetryEnabled,
+      settingsLocale: state.settings.locale,
       updateSetting: state.updateSetting,
     }))
   );
@@ -114,14 +119,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           {/* Header */}
           <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle">
             <h2 id="settings-title" style={STYLES.title}>
-              Settings
+              {t('settings.title')}
             </h2>
             <button
               ref={closeButtonRef}
               onClick={onClose}
               className="btn btn-ghost btn-icon"
               style={{ minWidth: 'auto', minHeight: 'auto' }}
-              aria-label="Close settings"
+              aria-label={t('common.close')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -136,41 +141,118 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto scrollbar-thin p-6 space-y-8">
+            {/* Language Section */}
+            <section>
+              <h3 style={STYLES.sectionHeader} className="mb-3">
+                {t('settings.language')}
+              </h3>
+              <p className="text-sm text-content-tertiary mb-3">
+                {t('settings.languageHint')}
+              </p>
+              <div className="space-y-1">
+                {/* Auto option */}
+                <div
+                  className={`flex items-center justify-between text-sm cursor-pointer group rounded-md p-2 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent ${settingsLocale === 'auto' ? 'bg-surface-elevated border border-accent/30' : 'hover:bg-surface-hover'}`}
+                  onClick={() => {
+                    updateSetting('locale', 'auto');
+                    setLocale(detectBrowserLocale());
+                  }}
+                  role="radio"
+                  aria-checked={settingsLocale === 'auto'}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                      e.preventDefault();
+                      updateSetting('locale', 'auto');
+                      setLocale(detectBrowserLocale());
+                    }
+                  }}
+                >
+                  <span className={settingsLocale === 'auto' ? 'text-content' : 'text-content-secondary'}>
+                    {t('settings.autoDetect')}
+                  </span>
+                  {settingsLocale === 'auto' && (
+                    <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                {/* Language options */}
+                {SUPPORTED_LOCALES.map((loc) => (
+                  <div
+                    key={loc.code}
+                    className={`flex items-center justify-between text-sm cursor-pointer group rounded-md p-2 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent ${locale === loc.code && settingsLocale !== 'auto' ? 'bg-surface-elevated border border-accent/30' : 'hover:bg-surface-hover'}`}
+                    onClick={() => {
+                      updateSetting('locale', loc.code);
+                      setLocale(loc.code as Locale);
+                    }}
+                    role="radio"
+                    aria-checked={locale === loc.code && settingsLocale !== 'auto'}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault();
+                        updateSetting('locale', loc.code);
+                        setLocale(loc.code as Locale);
+                      }
+                    }}
+                  >
+                    <div>
+                      <span className={locale === loc.code && settingsLocale !== 'auto' ? 'text-content' : 'text-content-secondary'}>
+                        {loc.nativeName}
+                      </span>
+                      {loc.code !== 'en' && (
+                        <span className="text-xs text-content-disabled ml-2">{loc.englishName}</span>
+                      )}
+                    </div>
+                    {locale === loc.code && settingsLocale !== 'auto' && (
+                      <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Divider */}
+            <hr className="border-stroke-subtle" />
+
             {/* Default Preferences Section */}
             <section>
               <h3 style={STYLES.sectionHeader} className="mb-3">
-                Default Preferences
+                {t('settings.defaultPreferences')}
               </h3>
               <p className="text-sm text-content-tertiary mb-3">
-                New layouts will use these settings:
+                {t('settings.defaultPreferencesHint')}
               </p>
               <div className="text-sm text-content-secondary space-y-1 mb-4 p-3 rounded-lg bg-surface-elevated border border-stroke-subtle">
                 <div className="flex justify-between">
-                  <span>Drawer size</span>
+                  <span>{t('settings.drawerSize')}</span>
                   <span className="text-content-tertiary">
                     {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×
                     {settings.defaultDrawerHeight}u
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Layer height</span>
+                  <span>{t('settings.layerHeight')}</span>
                   <span className="text-content-tertiary">{settings.defaultLayerHeight}u</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Print bed</span>
+                  <span>{t('settings.printBed')}</span>
                   <span className="text-content-tertiary">{settings.defaultPrintBedSize}mm</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Grid unit</span>
+                  <span>{t('settings.gridUnit')}</span>
                   <span className="text-content-tertiary">{settings.defaultGridUnitMm}mm</span>
                 </div>
               </div>
               <button
                 onClick={() => setShowSaveDefaultsConfirm(true)}
                 className="w-full text-sm py-2 px-3 rounded-lg bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle transition-colors"
-                title="Save current layout settings as defaults for new layouts"
+                title={t('settings.saveCurrentTitle')}
               >
-                Save Current as Defaults
+                {t('settings.saveCurrentAsDefaults')}
               </button>
             </section>
 
@@ -180,10 +262,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* STL Search Section */}
             <section>
               <h3 style={STYLES.sectionHeader} className="mb-3">
-                STL Search
+                {t('settings.stlSearch')}
               </h3>
               <p className="text-sm text-content-tertiary mb-3">
-                Choose which sites to search for Gridfinity STL files:
+                {t('settings.stlSearchHint')}
               </p>
               <div className="space-y-2">
                 {settings.stlSearchSites.map((site: STLSearchSite) => (
@@ -193,7 +275,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     onClick={() => toggleSTLSite(site.id)}
                     role="checkbox"
                     aria-checked={site.enabled}
-                    aria-label={`Toggle ${site.name}`}
+                    aria-label={t('settings.toggleSite', { name: site.name })}
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === ' ' || e.key === 'Enter') {
@@ -219,14 +301,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* Privacy Section */}
             <section>
               <h3 style={STYLES.sectionHeader} className="mb-3">
-                Privacy
+                {t('settings.privacy')}
               </h3>
               <div
                 className="flex items-center justify-between text-sm cursor-pointer group rounded-md p-1 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
                 onClick={handlePrivacyToggle}
                 role="checkbox"
                 aria-checked={mlTelemetryEnabled}
-                aria-label="Toggle usage data collection"
+                aria-label={t('settings.toggleUsageData')}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === ' ' || e.key === 'Enter') {
@@ -239,10 +321,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <span
                     className={`${mlTelemetryEnabled ? 'text-content' : 'text-content-tertiary'} group-hover:text-content transition-colors`}
                   >
-                    Help improve suggestions
+                    {t('settings.helpImprove')}
                   </span>
                   <p className="text-xs text-content-disabled mt-0.5">
-                    Share bin sizes and placement patterns (no personal data)
+                    {t('settings.helpImproveHint')}
                   </p>
                 </div>
                 <Checkbox checked={mlTelemetryEnabled} variant="desktop" />
@@ -256,10 +338,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <SparklesIcon className="w-5 h-5 text-accent" />
-                <h3 style={STYLES.sectionHeader}>Labs</h3>
+                <h3 style={STYLES.sectionHeader}>{t('settings.labs')}</h3>
               </div>
               <p className="text-sm text-content-tertiary mb-4">
-                Try new features before they're released. Features may change based on feedback.
+                {t('settings.labsHint')}
               </p>
 
               {toggleableFeatures.length > 0 ? (
@@ -276,8 +358,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               ) : (
                 <div className="text-center py-6 text-content-tertiary">
                   <SparklesIcon className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No experimental features available right now.</p>
-                  <p className="text-xs mt-1">Check back later!</p>
+                  <p className="text-sm">{t('settings.labsEmpty')}</p>
+                  <p className="text-xs mt-1">{t('settings.labsCheckBack')}</p>
                 </div>
               )}
 
@@ -289,9 +371,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}
-        title="Save as Defaults"
-        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawer.width}×${drawer.depth}×${drawer.height}u\nLayer height: ${activeLayerHeight}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
-        confirmText="Save"
+        title={t('settings.confirmSaveDefaults.title')}
+        message={t('settings.confirmSaveDefaults.message', {
+          width: drawer.width,
+          depth: drawer.depth,
+          height: drawer.height,
+          layerHeight: activeLayerHeight,
+          printBed: printBedSize,
+          gridUnit: gridUnitMm,
+        })}
+        confirmText={t('settings.confirmSaveDefaults.confirm')}
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />

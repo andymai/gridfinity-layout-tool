@@ -9,6 +9,7 @@ import {
 import { useContextMenu } from '@/hooks/useContextMenu';
 import { STAGING_ID } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
 
 interface MultiBinContextMenuProps {
@@ -28,6 +29,8 @@ export function MultiBinContextMenu({
   onClose,
   source,
 }: MultiBinContextMenuProps) {
+  const t = useTranslation();
+
   // Calculate adjusted position for upward opening
   // For staging bins, position menu above cursor but not too far
   const shouldOpenUpward = source === 'staging';
@@ -77,7 +80,7 @@ export function MultiBinContextMenu({
       bins.forEach((b) => deleteBin(b.id));
     });
     setSelectedBins([]);
-    addToast(`Deleted ${bins.length} bins`, 'success');
+    addToast(t('toast.binsDeleted', { count: bins.length }), 'success');
     onClose();
   };
 
@@ -103,7 +106,7 @@ export function MultiBinContextMenu({
       mlTracking.trackCategory(binsToUpdate[0], category.name, batchSize);
     }
 
-    addToast(`Updated ${binsToUpdate.length} bins`, 'success');
+    addToast(t('toast.categoryAssigned', { count: binsToUpdate.length }), 'success');
     onClose();
   };
 
@@ -121,7 +124,7 @@ export function MultiBinContextMenu({
         });
       });
     });
-    addToast(`Moved ${stagingBins.length} bins to ${layer.name}`, 'success');
+    addToast(t('toast.binsMovedToLayer', { count: stagingBins.length }), 'success');
     onClose();
   };
 
@@ -134,10 +137,10 @@ export function MultiBinContextMenu({
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-stroke-subtle">
-        <div className="font-medium text-content">{bins.length} Bins Selected</div>
+        <div className="font-medium text-content">{t('inspector.multi.title', { count: bins.length })}</div>
         {stagingBins.length > 0 && gridBins.length > 0 && (
           <div className="text-sm text-content-tertiary">
-            {stagingBins.length} in stash, {gridBins.length} on grid
+            {t('mobile.contextMenu.stashAndGrid', { stash: stagingBins.length, grid: gridBins.length })}
           </div>
         )}
       </div>
@@ -164,7 +167,7 @@ export function MultiBinContextMenu({
                   d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
                 />
               </svg>
-              Change Category
+              {t('inspector.multi.category')}
             </div>
             <svg
               className={`w-4 h-4 ml-3 transition-transform ${showCategoryPicker ? 'rotate-180' : ''}`}
@@ -217,7 +220,7 @@ export function MultiBinContextMenu({
                     d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
                   />
                 </svg>
-                Move to Layer
+                {t('inspector.multi.layer')}
               </div>
               <svg
                 className={`w-4 h-4 ml-3 transition-transform ${showLayerPicker ? 'rotate-180' : ''}`}
@@ -242,7 +245,7 @@ export function MultiBinContextMenu({
                     className="w-full px-3 py-2 text-left rounded transition-colors hover:bg-surface-hover"
                   >
                     <div className="text-sm text-content">{layer.name}</div>
-                    <div className="text-xs text-content-tertiary">Min height: {layer.height}u</div>
+                    <div className="text-xs text-content-tertiary">{t('mobile.contextMenu.minHeight', { height: layer.height })}</div>
                   </button>
                 ))}
               </div>
@@ -264,7 +267,7 @@ export function MultiBinContextMenu({
               />
             </svg>
           }
-          label="Delete All"
+          label={t('inspector.multi.delete')}
           onClick={handleDeleteAll}
           destructive
         />

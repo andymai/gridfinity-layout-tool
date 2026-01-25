@@ -7,6 +7,7 @@
  */
 
 import { useState, useId, type ReactNode } from 'react';
+import { useTranslation } from '@/i18n';
 
 interface FeatureToggleProps {
   /** Display label for the feature */
@@ -31,6 +32,7 @@ export function FeatureToggle({
   children,
   comingSoon = false,
 }: FeatureToggleProps) {
+  const t = useTranslation();
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const contentId = useId();
 
@@ -41,9 +43,7 @@ export function FeatureToggle({
         <div className="flex items-center gap-2">
           <span className="text-xs text-content-secondary">{label}</span>
           {comingSoon && (
-            <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-[10px] font-medium text-content-tertiary">
-              Soon
-            </span>
+            <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-[10px] font-medium text-content-tertiary">{t('binDesigner.soon')}</span>
           )}
         </div>
         <button
@@ -83,7 +83,7 @@ export function FeatureToggle({
               aria-controls={contentId}
               className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
             >
-              {customizeOpen ? 'Done' : 'Customize'}
+              {customizeOpen ? t('common.done') : t('binDesigner.customize')}
             </button>
           </div>
 

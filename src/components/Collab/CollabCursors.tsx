@@ -15,6 +15,7 @@ import { useUIStore, useLayoutStore } from '@/core/store';
 import { getBaseCellSize } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
 import { useInterpolatedPresence } from '@/hooks/useInterpolatedPresence';
+import { useTranslation } from '@/i18n';
 import { CollabCursor } from './CollabCursor';
 
 interface CollabCursorsProps {
@@ -37,6 +38,7 @@ interface CollabCursorsProps {
  * ```
  */
 export function CollabCursors({ className }: CollabCursorsProps) {
+  const t = useTranslation();
   const others = useOthers();
   const zoom = useUIStore((state) => state.zoom);
   const drawer = useLayoutStore((state) => state.layout.drawer);
@@ -66,7 +68,7 @@ export function CollabCursors({ className }: CollabCursorsProps) {
   return (
     <div
       className={`absolute inset-0 pointer-events-none z-40 overflow-hidden ${className ?? ''}`}
-      aria-label={`${visibleCursors.length} other user${visibleCursors.length === 1 ? '' : 's'} viewing`}
+      aria-label={t('collab.cursors.viewing', { count: visibleCursors.length })}
     >
       {visibleCursors.map(({ connectionId, presence }) => {
         const position = interpolatedPositions.get(connectionId);

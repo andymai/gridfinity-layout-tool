@@ -8,6 +8,7 @@
 
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { ComingSoonIcon } from './SectionIllustrations';
+import { useTranslation } from '@/i18n';
 
 interface PlannedFeature {
   name: string;
@@ -50,15 +51,16 @@ function FeatureList({ title, features }: { title: string; features: PlannedFeat
 }
 
 export function ComingSoonSection() {
+  const t = useTranslation();
   return (
     <CollapsibleSection
-      title="Coming Soon"
+      title={t('binDesigner.comingSoon')}
       defaultExpanded={false}
       illustration={<ComingSoonIcon />}
     >
       <div className="space-y-4">
-        <FeatureList title="Spec Features" features={SPEC_FEATURES} />
-        <FeatureList title="Power Features" features={POWER_FEATURES} />
+        <FeatureList title={t('binDesigner.specFeatures')} features={SPEC_FEATURES} />
+        <FeatureList title={t('binDesigner.powerFeatures')} features={POWER_FEATURES} />
       </div>
     </CollapsibleSection>
   );

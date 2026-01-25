@@ -28,6 +28,7 @@ import {
 import { exportPrintListTSV } from '@/core/storage';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { EnhancedPrintRow } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 export interface UseBinListReturn extends Omit<UsePrintListReturn, 'rows'> {
   // Filtered rows (after text search)
@@ -71,6 +72,7 @@ export interface UseBinListReturn extends Omit<UsePrintListReturn, 'rows'> {
 }
 
 export function useBinList(): UseBinListReturn {
+  const t = useTranslation();
   // Get base print list functionality
   const printList = usePrintList();
 
@@ -176,11 +178,11 @@ export function useBinList(): UseBinListReturn {
     setSelectedBins([]);
 
     if (successCount > 0) {
-      addToast(`Deleted ${successCount} bin${successCount !== 1 ? 's' : ''}`, 'success');
+      addToast(t('toast.binDeletedMulti', { count: successCount }), 'success');
       announceToScreenReader(`Deleted ${successCount} bins`);
     }
     if (lastError) {
-      addToast(`Some bins could not be deleted: ${getUserMessage(lastError)}`, 'error');
+      addToast(t('toast.binDeleteFailed', { error: getUserMessage(lastError) }), 'error');
     }
   }, [
     selectedBinIds,
@@ -191,6 +193,7 @@ export function useBinList(): UseBinListReturn {
     setSelectedBins,
     addToast,
     announceToScreenReader,
+    t,
   ]);
 
   const changeBulkCategory = useCallback(
@@ -233,7 +236,7 @@ export function useBinList(): UseBinListReturn {
         announceToScreenReader(`Changed category for ${successCount} bins`);
       }
       if (lastError) {
-        addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
+        addToast(t('toast.binUpdateFailed', { error: getUserMessage(lastError) }), 'error');
       }
     },
     [
@@ -245,6 +248,7 @@ export function useBinList(): UseBinListReturn {
       clearSelection,
       addToast,
       announceToScreenReader,
+      t,
     ]
   );
 
@@ -281,10 +285,10 @@ export function useBinList(): UseBinListReturn {
         }
       }
       if (lastError) {
-        addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
+        addToast(t('toast.binUpdateFailed', { error: getUserMessage(lastError) }), 'error');
       }
     },
-    [selectedBinIds, layout.bins, execute, updateBin, addToast]
+    [selectedBinIds, layout.bins, execute, updateBin, addToast, t]
   );
 
   const updateBulkNotes = useCallback(
@@ -312,10 +316,10 @@ export function useBinList(): UseBinListReturn {
         );
       }
       if (lastError) {
-        addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
+        addToast(t('toast.binUpdateFailed', { error: getUserMessage(lastError) }), 'error');
       }
     },
-    [selectedBinIds, execute, updateBin, addToast]
+    [selectedBinIds, execute, updateBin, addToast, t]
   );
 
   // Inline editing handlers (for specific bin IDs, not selection-based)
@@ -349,10 +353,10 @@ export function useBinList(): UseBinListReturn {
         );
       }
       if (lastError) {
-        addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
+        addToast(t('toast.binUpdateFailed', { error: getUserMessage(lastError) }), 'error');
       }
     },
-    [layout.bins, execute, updateBin, addToast]
+    [layout.bins, execute, updateBin, addToast, t]
   );
 
   const updateBinNotes = useCallback(
@@ -380,10 +384,10 @@ export function useBinList(): UseBinListReturn {
         );
       }
       if (lastError) {
-        addToast(`Some bins could not be updated: ${getUserMessage(lastError)}`, 'error');
+        addToast(t('toast.binUpdateFailed', { error: getUserMessage(lastError) }), 'error');
       }
     },
-    [execute, updateBin, addToast]
+    [execute, updateBin, addToast, t]
   );
 
   // Export handlers
@@ -439,9 +443,9 @@ export function useBinList(): UseBinListReturn {
       }
 
       downloadAsFile(content, `${baseName}.${extension}`, mimeType);
-      addToast(`Downloaded ${extension.toUpperCase()} file`, 'success');
+      addToast(t('toast.downloadedFile', { format: extension.toUpperCase() }), 'success');
     },
-    [exportToTSV, exportToCSV, exportToJSON, layout.name, addToast]
+    [exportToTSV, exportToCSV, exportToJSON, layout.name, addToast, t]
   );
 
   const copyToClipboardFn = useCallback(
@@ -461,14 +465,14 @@ export function useBinList(): UseBinListReturn {
 
       try {
         await navigator.clipboard.writeText(content);
-        addToast(`Copied ${format.toUpperCase()} to clipboard`, 'success');
+        addToast(t('toast.copiedFormat', { format: format.toUpperCase() }), 'success');
         return true;
       } catch {
-        addToast('Failed to copy to clipboard', 'error');
+        addToast(t('toast.copyFailed'), 'error');
         return false;
       }
     },
-    [exportToTSV, exportToCSV, exportToJSON, addToast]
+    [exportToTSV, exportToCSV, exportToJSON, addToast, t]
   );
 
   // Computed values

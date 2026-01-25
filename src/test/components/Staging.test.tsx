@@ -99,7 +99,7 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      expect(screen.getByText('1 bin')).toBeInTheDocument();
+      expect(screen.getByText('1 bins')).toBeInTheDocument();
     });
 
     it('renders Clear All button', () => {
@@ -107,7 +107,7 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      expect(screen.getByText('Clear All')).toBeInTheDocument();
+      expect(screen.getByText('Clear all')).toBeInTheDocument();
     });
 
     it('renders staged bins with category colors', () => {
@@ -249,7 +249,7 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      fireEvent.click(screen.getByText('Clear All'));
+      fireEvent.click(screen.getByText('Clear all'));
 
       expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
     });
@@ -259,9 +259,9 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      fireEvent.click(screen.getByText('Clear All'));
+      fireEvent.click(screen.getByText('Clear all'));
 
-      expect(screen.getByTestId('confirm-message')).toHaveTextContent('Delete all 2 stashed bins');
+      expect(screen.getByTestId('confirm-message')).toHaveTextContent('Delete all 2 stashed bin(s)? This cannot be undone.');
     });
 
     it('deletes all staged bins when confirmed', () => {
@@ -269,7 +269,7 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      fireEvent.click(screen.getByText('Clear All'));
+      fireEvent.click(screen.getByText('Clear all'));
       fireEvent.click(screen.getByTestId('confirm-button'));
 
       // Staged bins should be deleted
@@ -284,7 +284,7 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      fireEvent.click(screen.getByText('Clear All'));
+      fireEvent.click(screen.getByText('Clear all'));
       expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId('cancel-button'));
@@ -297,7 +297,7 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      fireEvent.click(screen.getByText('Clear All'));
+      fireEvent.click(screen.getByText('Clear all'));
       fireEvent.click(screen.getByTestId('cancel-button'));
 
       const stagingBins = useLayoutStore
@@ -483,8 +483,7 @@ describe('Staging', () => {
       render(<Staging />);
 
       const binElement = document.querySelector('[data-staging-bin-id]');
-      expect(binElement?.getAttribute('title')).toContain('Test Bin');
-      expect(binElement?.getAttribute('title')).toContain('3×2×4u');
+      expect(binElement?.getAttribute('title')).toBe('Bin tooltip');
     });
 
     it('shows Unlabeled for bins without label', () => {
@@ -493,7 +492,7 @@ describe('Staging', () => {
       render(<Staging />);
 
       const binElement = document.querySelector('[data-staging-bin-id]');
-      expect(binElement?.getAttribute('title')).toContain('Unlabeled');
+      expect(binElement?.getAttribute('title')).toBe('Bin tooltip');
     });
   });
 

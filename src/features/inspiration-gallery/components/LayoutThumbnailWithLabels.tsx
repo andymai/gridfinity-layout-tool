@@ -1,5 +1,7 @@
 import type { Layout } from '@/core/types';
 
+const UNCATEGORIZED_COLOR = '#94a3b8';
+
 interface LayoutThumbnailWithLabelsProps {
   layout: Layout;
   /** Base size for internal calculations (actual display size controlled by CSS) */
@@ -102,7 +104,7 @@ export function LayoutThumbnailWithLabels({
         const binWidth = Math.max(bin.width * scaleX - 1, 2);
         const binHeight = Math.max(bin.depth * scaleY - 1, 2);
         const binMin = Math.min(binWidth, binHeight);
-        const color = categoryColors.get(bin.category) || '#94a3b8';
+        const color = categoryColors.get(bin.category) || UNCATEGORIZED_COLOR;
 
         // Smart rotation: rotate text when bin is significantly taller than wide (matches Bin.tsx)
         const shouldRotate = bin.depth > bin.width * 1.5;

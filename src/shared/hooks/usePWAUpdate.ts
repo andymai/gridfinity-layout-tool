@@ -9,6 +9,7 @@ import {
   loadEphemeralState,
   type EphemeralState,
 } from '@/utils/ephemeralState';
+import { useTranslation } from '@/i18n';
 
 // Toast duration for update notification
 const UPDATE_TOAST_MS = 5000;
@@ -243,6 +244,7 @@ function restoreEphemeralState(): boolean {
  * - Auto-reloads after a short delay
  */
 export function usePWAUpdate(): void {
+  const t = useTranslation();
   const addToast = useToastStore((state) => state.addToast);
   const hasTriggeredReload = useRef(false);
   const intervalRef = useRef<number | undefined>(undefined);
@@ -318,7 +320,7 @@ export function usePWAUpdate(): void {
     const handleOnline = () => {
       if (wasOfflineRef.current) {
         wasOfflineRef.current = false;
-        addToast('Back online', 'success');
+        addToast(t('toast.online'), 'success');
         // Check for updates when coming back online
         checkForUpdate();
       }
@@ -327,7 +329,7 @@ export function usePWAUpdate(): void {
     const handleOffline = () => {
       if (!wasOfflineRef.current) {
         wasOfflineRef.current = true;
-        addToast("You're offline. Changes save locally.", 'info');
+        addToast(t('toast.offline'), 'info');
       }
     };
 
@@ -338,7 +340,7 @@ export function usePWAUpdate(): void {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [addToast, checkForUpdate]);
+  }, [addToast, checkForUpdate, t]);
 
   // Set up visibility listener for update checks (not focus - fires too often)
   useEffect(() => {
@@ -397,7 +399,7 @@ export function usePWAUpdate(): void {
       }
 
       // Show toast notification
-      addToast('Updating to latest version...', 'info', UPDATE_TOAST_MS);
+      addToast(t('toast.updating'), 'info', UPDATE_TOAST_MS);
 
       // Brief delay to let user see the toast (cancellable)
       await new Promise<void>((resolve) => {
@@ -430,7 +432,7 @@ export function usePWAUpdate(): void {
         clearTimeout(toastTimeoutId);
       }
     };
-  }, [needRefresh, addToast, updateServiceWorker]);
+  }, [needRefresh, addToast, updateServiceWorker, t]);
 
   // Restore ephemeral state on mount (after PWA update reload)
   useEffect(() => {
@@ -438,11 +440,10 @@ export function usePWAUpdate(): void {
     const timeoutId = setTimeout(() => {
       const restored = restoreEphemeralState();
       if (restored) {
-        addToast('Session restored', 'success', 2000);
+        addToast(t('toast.sessionRestored'), 'success', 2000);
       }
     }, 100);
 
     return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only run once on mount
-  }, []);
+  }, [addToast, t]);
 }

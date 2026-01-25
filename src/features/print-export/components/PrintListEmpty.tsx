@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n';
+
 interface PrintListEmptyProps {
   /** Compact mode for inline placement */
   compact?: boolean;
@@ -7,6 +9,7 @@ interface PrintListEmptyProps {
  * Empty state for print list when no bins are placed.
  */
 export function PrintListEmpty({ compact = false }: PrintListEmptyProps) {
+  const t = useTranslation();
   if (compact) {
     return (
       <div className="py-8 text-center">
@@ -25,8 +28,8 @@ export function PrintListEmpty({ compact = false }: PrintListEmptyProps) {
             />
           </svg>
         </div>
-        <p className="text-content-secondary">No bins to print</p>
-        <p className="text-sm mt-1 text-content-disabled">Draw bins on the grid to see them here</p>
+        <p className="text-content-secondary">{t('print.empty.title')}</p>
+        <p className="text-sm mt-1 text-content-disabled">{t('print.empty.message')}</p>
       </div>
     );
   }
@@ -43,8 +46,8 @@ export function PrintListEmpty({ compact = false }: PrintListEmptyProps) {
           />
         </svg>
       </div>
-      <p className="text-sm text-content-secondary mb-1">No bins placed yet</p>
-      <p className="text-xs text-content-disabled">Draw or click to place bins on the grid</p>
+      <p className="text-sm text-content-secondary mb-1">{t('print.empty.title')}</p>
+      <p className="text-xs text-content-disabled">{t('print.empty.message')}</p>
     </div>
   );
 }

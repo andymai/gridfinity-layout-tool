@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n';
+
 interface SplitWarningProps {
   binWidth: number;
   binDepth: number;
@@ -98,6 +100,7 @@ export function SplitWarning({
   printBedSize,
   compact = false,
 }: SplitWarningProps) {
+  const t = useTranslation();
   const needsSplit = binWidth > maxGridUnits || binDepth > maxGridUnits;
   const pieces = Math.ceil(binWidth / maxGridUnits) * Math.ceil(binDepth / maxGridUnits);
 
@@ -113,9 +116,7 @@ export function SplitWarning({
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
-        <span className="text-xs text-content-tertiary">
-          Fits print bed ({binWidth}×{binDepth} ≤ {maxGridUnits}×{maxGridUnits})
-        </span>
+        <span className="text-xs text-content-tertiary">{t('inspector.fitsPrintBedDimensions', { binWidth, binDepth, max: maxGridUnits })}</span>
       </div>
     );
   }
@@ -137,7 +138,7 @@ export function SplitWarning({
             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
           />
         </svg>
-        <span className="text-sm">Will be split into {pieces} pieces for printing</span>
+        <span className="text-sm">{t('inspector.split.piecesNeeded', { count: pieces })}</span>
       </div>
     );
   }
@@ -166,10 +167,16 @@ export function SplitWarning({
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
             />
           </svg>
-          <span className="font-medium">Exceeds print bed</span>
+          <span className="font-medium">{t('inspector.split.title')}</span>
         </div>
         <p className="text-xs opacity-80">
-          Will be split into {pieces} pieces (max {maxGridUnits}×{maxGridUnits} per piece)
+          {t('inspector.split.message', {
+            width: binWidth,
+            depth: binDepth,
+            widthMm: binWidth * gridUnitMm,
+            depthMm: binDepth * gridUnitMm,
+            bedSize: printBedSize,
+          })}
         </p>
       </div>
     </div>

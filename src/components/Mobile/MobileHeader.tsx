@@ -7,6 +7,7 @@ import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { PresenceAvatars } from '@/components/Collab';
 import type { MobilePanel } from '@/core/store/ui';
 import type { SaveStatus } from '@/shared/hooks';
+import { useTranslation } from '@/i18n';
 
 interface MobileHeaderProps {
   onMenuClick: () => void;
@@ -19,6 +20,7 @@ interface MobileHeaderProps {
  * Shows app title, tip link, layout name (editable) and essential actions.
  */
 export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHeaderProps) {
+  const t = useTranslation();
   const layout = useLayoutStore((state) => state.layout);
   const setName = useLayoutStore((state) => state.setName);
 
@@ -78,13 +80,11 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-accent hover:underline"
-            aria-label="Discuss on Reddit"
+            aria-label={t('header.discussOnReddit')}
           >
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
-            </svg>
-            Reddit
-          </a>
+            </svg>{t('mobile.header.reddit')}</a>
           <a
             href="https://ko-fi.com/andyaragon"
             target="_blank"
@@ -93,9 +93,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
           >
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-            Tip
-          </a>
+            </svg>{t('mobile.header.tip')}</a>
         </div>
       </div>
       {/* Action bar */}
@@ -104,8 +102,8 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
         <button
           onClick={onMenuClick}
           className="btn btn-ghost btn-icon"
-          aria-label="Open settings"
-          title="Settings"
+          aria-label={t('mobile.header.openSettings')}
+          title={t('mobile.settings')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -128,7 +126,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
           <button
             onClick={() => handleLandscapeNav('layers')}
             className="landscape-nav-button btn btn-ghost btn-icon"
-            aria-label="Layers"
+            aria-label={t('common.layers')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -142,7 +140,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
           <button
             onClick={() => handleLandscapeNav('inspector')}
             className="landscape-nav-button btn btn-ghost btn-icon"
-            aria-label="Inspector"
+            aria-label={t('mobile.header.inspector')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -156,7 +154,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
           <button
             onClick={() => handleLandscapeNav('categories')}
             className="landscape-nav-button btn btn-ghost btn-icon"
-            aria-label="Categories"
+            aria-label={t('mobile.header.categories')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -170,7 +168,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
           <button
             onClick={() => handleLandscapeNav('print')}
             className="landscape-nav-button btn btn-ghost btn-icon"
-            aria-label="Bin List"
+            aria-label={t('mobile.header.binList')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -204,7 +202,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
                 handleNameClick();
               }}
               className="w-full text-sm truncate py-1 rounded transition-colors text-content flex items-center justify-center gap-1"
-              aria-label="Open layouts panel"
+              aria-label={t('mobile.header.openLayoutsPanel')}
             >
               <span className="truncate">{layout.name}</span>
               <svg
@@ -234,7 +232,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
             <div
               className="flex items-center justify-center w-7 h-7"
               aria-live="polite"
-              aria-label="Saved"
+              aria-label={t('mobile.header.saved')}
             >
               <svg
                 className="w-3.5 h-3.5 text-success"
@@ -255,7 +253,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
             onClick={undo}
             disabled={!canUndo}
             className="btn btn-ghost btn-icon"
-            aria-label={canUndo ? 'Undo' : 'Nothing to undo'}
+            aria-label={canUndo ? t('common.undo') : t('mobile.header.nothingToUndo')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -270,7 +268,7 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
             onClick={redo}
             disabled={!canRedo}
             className="btn btn-ghost btn-icon"
-            aria-label={canRedo ? 'Redo' : 'Nothing to redo'}
+            aria-label={canRedo ? t('common.redo') : t('mobile.header.nothingToRedo')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -284,8 +282,8 @@ export function MobileHeader({ onMenuClick, onHelpClick, saveStatus }: MobileHea
           <button
             onClick={onHelpClick}
             className="btn btn-ghost btn-icon"
-            aria-label="Help and gestures"
-            title="Help"
+            aria-label={t('mobile.header.helpAndGestures')}
+            title={t('mobile.help')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path

@@ -83,19 +83,19 @@ describe('CloudShareTab', () => {
   describe('idle state - no existing share', () => {
     it('renders share form', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText(/Share your layout to the cloud/)).toBeInTheDocument();
-      expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+      expect(screen.getByText(/Share via a short link/)).toBeInTheDocument();
+      expect(screen.getByText('Publish')).toBeInTheDocument();
     });
 
     it('displays permission selector', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByLabelText(/Permission/)).toBeInTheDocument();
+      expect(screen.getByLabelText('Permissions')).toBeInTheDocument();
     });
 
     it('calls share with view permission by default', async () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Share to Cloud'));
+      fireEvent.click(screen.getByText('Publish'));
 
       expect(mockShare).toHaveBeenCalledWith('view');
     });
@@ -103,7 +103,7 @@ describe('CloudShareTab', () => {
     it('displays permission options', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      const select = screen.getByLabelText(/Permission/) as HTMLSelectElement;
+      const select = screen.getByLabelText('Permissions') as HTMLSelectElement;
       expect(select.options.length).toBe(2); // view and edit
     });
 
@@ -127,25 +127,27 @@ describe('CloudShareTab', () => {
 
     it('displays share info', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText(/Shared on/)).toBeInTheDocument();
-      expect(screen.getByText(/can view/i)).toBeInTheDocument();
+      expect(screen.getByText(/Last updated/)).toBeInTheDocument();
+      // "View only" appears as both display text and dropdown option
+      expect(screen.getAllByText('View only').length).toBeGreaterThanOrEqual(1);
     });
 
     it('displays permission info', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText(/can view/i)).toBeInTheDocument();
+      // "View only" appears as both display text and dropdown option
+      expect(screen.getAllByText('View only').length).toBeGreaterThanOrEqual(1);
     });
 
     it('has Copy Link button', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText('Copy Link')).toBeInTheDocument();
+      expect(screen.getByText('Copy link')).toBeInTheDocument();
     });
 
     it('calls copyUrl when Copy Link clicked', async () => {
       mockCopyUrl.mockResolvedValue(true);
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Copy Link'));
+      fireEvent.click(screen.getByText('Copy link'));
 
       expect(mockCopyUrl).toHaveBeenCalled();
     });
@@ -154,25 +156,25 @@ describe('CloudShareTab', () => {
       mockCopyUrl.mockResolvedValue(true);
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Copy Link'));
+      fireEvent.click(screen.getByText('Copy link'));
 
       expect(mockCopyUrl).toHaveBeenCalled();
     });
 
     it('has permission select dropdown', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByLabelText(/Update permission/)).toBeInTheDocument();
+      expect(screen.getByLabelText('Permissions')).toBeInTheDocument();
     });
 
-    it('has Delete share link', () => {
+    it('has Unpublish link', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText('Delete share')).toBeInTheDocument();
+      expect(screen.getByText('Unpublish')).toBeInTheDocument();
     });
 
-    it('shows delete confirmation on Delete share click', () => {
+    it('shows delete confirmation on Unpublish click', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Delete share'));
+      fireEvent.click(screen.getByText('Unpublish'));
 
       expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument();
     });
@@ -181,7 +183,7 @@ describe('CloudShareTab', () => {
       mockRemove.mockResolvedValue(true);
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Delete share'));
+      fireEvent.click(screen.getByText('Unpublish'));
       fireEvent.click(screen.getByText('Delete'));
 
       expect(mockRemove).toHaveBeenCalled();
@@ -190,7 +192,7 @@ describe('CloudShareTab', () => {
     it('hides confirmation on Cancel', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Delete share'));
+      fireEvent.click(screen.getByText('Unpublish'));
       expect(screen.getByText(/Are you sure/)).toBeInTheDocument();
 
       fireEvent.click(screen.getByText('Cancel'));
@@ -204,18 +206,18 @@ describe('CloudShareTab', () => {
   });
 
   describe('loading states', () => {
-    it('shows uploading message when sharing', () => {
+    it('shows publishing message when sharing', () => {
       mockCloudShareState.status = 'sharing';
       render(<CloudShareTab {...defaultProps} />);
 
-      expect(screen.getByText('Uploading layout...')).toBeInTheDocument();
+      expect(screen.getByText('Publishing...')).toBeInTheDocument();
     });
 
     it('shows updating message when updating', () => {
       mockCloudShareState.status = 'updating';
       render(<CloudShareTab {...defaultProps} />);
 
-      expect(screen.getByText('Updating share...')).toBeInTheDocument();
+      expect(screen.getByText('Updating...')).toBeInTheDocument();
     });
 
     it('shows deleting message when deleting', () => {
@@ -246,7 +248,7 @@ describe('CloudShareTab', () => {
 
     it('displays success message', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText('Layout shared successfully!')).toBeInTheDocument();
+      expect(screen.getByText('Published!')).toBeInTheDocument();
     });
 
     it('displays share URL', () => {
@@ -270,7 +272,7 @@ describe('CloudShareTab', () => {
 
     it('displays permission info', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText(/can view/i)).toBeInTheDocument();
+      expect(screen.getByText('View only')).toBeInTheDocument();
     });
 
     it('has Done button', () => {
@@ -288,13 +290,13 @@ describe('CloudShareTab', () => {
 
     it('has Share Another button', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText('Share Another')).toBeInTheDocument();
+      expect(screen.getByText('Share another')).toBeInTheDocument();
     });
 
     it('calls reset when Share Another clicked', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Share Another'));
+      fireEvent.click(screen.getByText('Share another'));
 
       expect(mockReset).toHaveBeenCalled();
     });
@@ -338,13 +340,13 @@ describe('CloudShareTab', () => {
 
     it('has Use Share Link Instead button', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText('Use Share Link Instead')).toBeInTheDocument();
+      expect(screen.getByText('Use share link instead')).toBeInTheDocument();
     });
 
     it('calls onSwitchToUrlTab when fallback clicked', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Use Share Link Instead'));
+      fireEvent.click(screen.getByText('Use share link instead'));
 
       expect(mockOnSwitchToUrlTab).toHaveBeenCalled();
     });
@@ -354,7 +356,7 @@ describe('CloudShareTab', () => {
     it('has permission select element', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      const select = screen.getByLabelText(/Permission/) as HTMLSelectElement;
+      const select = screen.getByLabelText('Permissions') as HTMLSelectElement;
       expect(select).toBeInTheDocument();
       // Should have view and edit options
       expect(select.options.length).toBe(2);
@@ -363,7 +365,7 @@ describe('CloudShareTab', () => {
     it('defaults to view permission', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Share to Cloud'));
+      fireEvent.click(screen.getByText('Publish'));
       expect(mockShare).toHaveBeenCalledWith('view');
     });
   });
@@ -371,7 +373,7 @@ describe('CloudShareTab', () => {
   describe('accessibility', () => {
     it('has accessible label for permission select', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByLabelText(/Permission/)).toBeInTheDocument();
+      expect(screen.getByLabelText('Permissions')).toBeInTheDocument();
     });
 
     it('URL input has select behavior on click', () => {
@@ -405,11 +407,11 @@ describe('CloudShareTab', () => {
       mockCopyUrl.mockResolvedValue(false);
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Copy Link'));
+      fireEvent.click(screen.getByText('Copy link'));
 
-      // Should not show Copied! when copy fails
+      // Should not show Link copied! when copy fails
       await waitFor(() => {
-        expect(screen.queryByText('Copied!')).not.toBeInTheDocument();
+        expect(screen.queryByText('Link copied!')).not.toBeInTheDocument();
       });
     });
   });

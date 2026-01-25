@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react';
 import { validateImport } from '@/shared/utils/validation';
 import { decodeLayoutFromURL } from '@/core/storage';
 import type { Layout } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 interface ImportModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
 }
 
 function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpen'>) {
+  const t = useTranslation();
   const [jsonText, setJsonText] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
   const [preview, setPreview] = useState<{
@@ -147,12 +149,12 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
       >
         <div className="flex justify-between items-center mb-6">
           <h2 id="import-modal-title" className="text-2xl font-bold text-content">
-            Import Layout
+            {t('layouts.import.title')}
           </h2>
           <button
             onClick={onClose}
             className="p-2 -m-2 rounded-md text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
-            aria-label="Close import dialog"
+            aria-label={t('layouts.import.closeImportDialog')}
           >
             <svg
               className="w-5 h-5"
@@ -177,20 +179,20 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               accept=".json"
               onChange={handleFileUpload}
               className="hidden"
-              aria-label="Select JSON file to import"
+              aria-label={t('layouts.import.selectJsonFileToImport')}
             />
             <button
               onClick={() => fileInputRef.current?.click()}
               className="px-4 py-2 bg-surface-hover hover:bg-surface-active text-content rounded transition-colors"
             >
-              Upload JSON File
+              {t('layouts.import.browseFiles')}
             </button>
           </div>
 
           {/* Textarea */}
           <div className="flex-1 flex flex-col min-h-0">
             <label htmlFor="json-input" className="text-sm text-content-secondary mb-2">
-              Or paste JSON or share link:
+              {t('layouts.import.pasteLink')}
             </label>
             <textarea
               id="json-input"
@@ -209,7 +211,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               aria-live="assertive"
               className="bg-error/10 border border-error rounded p-3 max-h-32 overflow-y-auto"
             >
-              <div className="text-sm font-semibold text-error mb-1">Validation Errors:</div>
+              <div className="text-sm font-semibold text-error mb-1">{t('layouts.import.validationErrors')}</div>
               <ul className="text-sm text-error/80 space-y-1">
                 {errors.map((error) => (
                   <li key={error}>• {error}</li>
@@ -221,11 +223,11 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
           {/* Preview */}
           {preview && (
             <div aria-live="polite" className="bg-success/10 border border-success rounded p-3">
-              <div className="text-sm font-semibold text-success mb-2">Preview:</div>
+              <div className="text-sm font-semibold text-success mb-2">{t('layouts.import.preview')}</div>
               <div className="text-sm text-success/80 space-y-1">
-                <div>Drawer size: {preview.drawerSize}</div>
-                <div>Layers: {preview.layerCount}</div>
-                <div>Bins: {preview.binCount}</div>
+                <div>{t('layouts.import.drawerSize', { size: preview.drawerSize })}</div>
+                <div>{t('layouts.import.layers', { count: preview.layerCount })}</div>
+                <div>{t('layouts.import.bins', { count: preview.binCount })}</div>
               </div>
             </div>
           )}
@@ -238,10 +240,10 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
             disabled={!!errors.length || !jsonText.trim()}
             className="btn btn-primary"
           >
-            Import
+            {t('common.import')}
           </button>
           <button onClick={onClose} className="btn btn-secondary">
-            Cancel
+            {t('common.cancel')}
           </button>
         </div>
       </div>

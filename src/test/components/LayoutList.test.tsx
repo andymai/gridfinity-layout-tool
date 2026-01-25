@@ -120,13 +120,13 @@ describe('LayoutList', () => {
     it('renders layout count in footer', () => {
       render(<LayoutList {...defaultProps} />);
 
-      expect(screen.getByText('2 layouts')).toBeInTheDocument();
+      expect(screen.getByText('2 layout(s)')).toBeInTheDocument();
     });
 
     it('renders singular layout count', () => {
       render(<LayoutList {...defaultProps} entries={[createTestEntry('layout-1', 'Only')]} />);
 
-      expect(screen.getByText('1 layout')).toBeInTheDocument();
+      expect(screen.getByText('1 layout(s)')).toBeInTheDocument();
     });
 
     it('renders listbox with correct aria-label', () => {

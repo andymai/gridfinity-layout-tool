@@ -9,6 +9,7 @@ import { createLayoutEntry, initializeLayoutLibrary } from '@/core/storage';
 import { isErr, getUserMessage } from '@/core/result';
 import { ConfirmDialog } from '@/shared/components';
 import { useCollabMode } from '@/hooks/useCollabMode';
+import { useTranslation } from '@/i18n';
 
 /**
  * Banner shown when viewing a shared layout in view-only mode.
@@ -18,6 +19,7 @@ import { useCollabMode } from '@/hooks/useCollabMode';
  * is an active participant rather than just a viewer.
  */
 export function SharedLayoutBanner() {
+  const t = useTranslation();
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const {
@@ -96,7 +98,7 @@ export function SharedLayoutBanner() {
     clearSharedLayoutPreview();
 
     // Show feedback
-    addToast(`Saved "${savedLayout.name}" to your layouts`, 'success');
+    addToast(t('toast.savedToLayouts', { name: savedLayout.name }), 'success');
     announceToScreenReader(`Layout saved: ${savedLayout.name}`);
   };
 
@@ -124,7 +126,7 @@ export function SharedLayoutBanner() {
     clearSharedLayoutPreview();
 
     // Show feedback
-    addToast('Shared layout discarded', 'info');
+    addToast(t('share.banner.discarded'), 'info');
     announceToScreenReader('Shared layout discarded, returned to your layouts');
   };
 
@@ -149,7 +151,7 @@ export function SharedLayoutBanner() {
           />
         </svg>
         <span className="text-sm font-medium">
-          Viewing shared layout: <strong>{sharedLayoutOriginalName || layout.name}</strong>
+          {t('share.banner.viewingLayout', { name: sharedLayoutOriginalName || layout.name })}
         </span>
       </div>
 
@@ -158,21 +160,21 @@ export function SharedLayoutBanner() {
           onClick={handleSave}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-slate-900 hover:bg-slate-100 transition-colors"
         >
-          Save to My Layouts
+          {t('share.banner.saveToMyLayouts')}
         </button>
         <button
           onClick={() => setShowDiscardConfirm(true)}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white/15 hover:bg-white/25 transition-colors"
         >
-          Discard
+          {t('share.banner.discardConfirm')}
         </button>
       </div>
 
       <ConfirmDialog
         isOpen={showDiscardConfirm}
-        title="Discard shared layout?"
-        message="Any changes you made will be lost. You'll return to your previous layout."
-        confirmText="Discard"
+        title={t('share.banner.discardTitle')}
+        message={t('share.banner.discardMessage')}
+        confirmText={t('share.banner.discardConfirm')}
         cancelText="Keep viewing"
         destructive
         onConfirm={handleDiscard}

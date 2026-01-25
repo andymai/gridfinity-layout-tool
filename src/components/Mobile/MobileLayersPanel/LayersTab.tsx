@@ -7,12 +7,14 @@ import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk, isErr, getUserMessage } from '@/core/result';
+import { useTranslation } from '@/i18n';
 
 /**
  * Layers tab content - layer list with selection, height controls, reordering, and deletion.
  * Mobile-optimized with 44px touch targets.
  */
 export function LayersTab() {
+  const t = useTranslation();
   const [deleteLayerId, setDeleteLayerId] = useState<string | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
   const [renameLayerId, setRenameLayerId] = useState<string | null>(null);
@@ -245,7 +247,7 @@ export function LayersTab() {
                   {layer.name}
                 </span>
                 <span className="text-xs text-content-tertiary">
-                  {binCount} bin{binCount !== 1 ? 's' : ''}
+                  {t('mobile.layers.binCount', { count: binCount })}
                   {hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
                 </span>
               </button>
@@ -256,7 +258,7 @@ export function LayersTab() {
                   onClick={() => handleHeightChange(layer.id, -1)}
                   disabled={layer.height <= 1}
                   className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover disabled:opacity-30 transition-colors"
-                  aria-label={`Decrease ${layer.name} height`}
+                  aria-label={t('layers.decreaseHeight', { name: layer.name })}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -269,14 +271,14 @@ export function LayersTab() {
                 </button>
                 <span
                   className="text-center text-xs font-medium text-content-secondary tabular-nums whitespace-nowrap min-w-[2ch]"
-                  title="Height for new bins placed on this layer"
+                  title={t('layers.heightTooltip')}
                 >
                   {layer.height}u
                 </span>
                 <button
                   onClick={() => handleHeightChange(layer.id, 1)}
                   className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover transition-colors"
-                  aria-label={`Increase ${layer.name} height`}
+                  aria-label={t('layers.increaseHeight', { name: layer.name })}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -296,7 +298,7 @@ export function LayersTab() {
                     onClick={() => handleMoveLayer(displayIndex, 'up')}
                     disabled={displayIndex === 0}
                     className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
-                    aria-label="Move layer up"
+                    aria-label={t('mobile.moveLayerUp')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -311,7 +313,7 @@ export function LayersTab() {
                     onClick={() => handleMoveLayer(displayIndex, 'down')}
                     disabled={displayIndex === layers.length - 1}
                     className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
-                    aria-label="Move layer down"
+                    aria-label={t('mobile.moveLayerDown')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -330,7 +332,7 @@ export function LayersTab() {
                 <button
                   onClick={() => handleDeleteLayer(layer.id)}
                   className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-error transition-colors"
-                  aria-label="Delete layer"
+                  aria-label={t('mobile.deleteLayer')}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -350,8 +352,8 @@ export function LayersTab() {
       {/* Stats line */}
       <div className="text-sm text-content-tertiary mb-2 mt-4">
         {hasMultipleLayers
-          ? `${totalCoverage}% filled · ${totalBinCount} bin${totalBinCount !== 1 ? 's' : ''} total`
-          : `${activeCoverage}% filled · ${activeLayerBins.length} bin${activeLayerBins.length !== 1 ? 's' : ''}`}
+          ? t('mobile.layers.statsMulti', { coverage: totalCoverage, count: totalBinCount })
+          : t('mobile.layers.statsSingle', { coverage: activeCoverage, count: activeLayerBins.length })}
       </div>
 
       {/* Coverage bar */}
@@ -373,14 +375,14 @@ export function LayersTab() {
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        Add Layer
+        {t('layers.addLayer')}
       </button>
 
       <ConfirmDialog
         isOpen={deleteLayerId !== null}
-        title="Delete Layer"
-        message={`Delete "${layerToDelete?.name}"${binsInLayer > 0 ? ` and its ${binsInLayer} bin${binsInLayer > 1 ? 's' : ''}` : ''}?`}
-        confirmText="Delete"
+        title={t('layers.confirmDelete.title')}
+        message={t('layers.confirmDelete.message', { name: layerToDelete?.name || '', count: binsInLayer })}
+        confirmText={t('layers.confirmDelete.confirm')}
         destructive
         onConfirm={confirmDeleteLayer}
         onCancel={cancelDeleteLayer}
@@ -401,7 +403,7 @@ export function LayersTab() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-content mb-4">Rename Layer</h3>
+              <h3 className="text-lg font-semibold text-content mb-4">{t('mobile.renameLayer')}</h3>
               <input
                 ref={renameInputRef}
                 type="text"
@@ -416,7 +418,7 @@ export function LayersTab() {
                   }
                 }}
                 className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
-                placeholder="Layer name"
+                placeholder={t('layers.layerNamePlaceholder')}
                 maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
                 autoFocus
               />
@@ -427,16 +429,12 @@ export function LayersTab() {
                     setRenameValue('');
                   }}
                   className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
-                >
-                  Cancel
-                </button>
+                >{t('common.cancel')}</button>
                 <button
                   onClick={handleRenameConfirm}
                   disabled={!renameValue.trim()}
                   className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
-                >
-                  Rename
-                </button>
+                >{t('common.rename')}</button>
               </div>
             </div>
           </div>,

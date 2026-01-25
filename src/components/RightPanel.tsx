@@ -6,6 +6,9 @@ import { exportPrintListTSV } from '@/core/storage';
 import { trackLayoutSnapshot } from '@/utils/analytics';
 import { ConfirmDialog, CollapsibleSection, LoadingFallback } from '@/shared/components';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
+import { useTranslation } from '@/i18n';
+
+const LIST_SEPARATOR = ', ';
 
 const BinListModal = lazyWithRetry(() =>
   import('./Modals/BinListModal').then(namedExport('BinListModal'))
@@ -21,6 +24,7 @@ import {
 } from '@/features/bin-inspector';
 
 export function RightPanel() {
+  const t = useTranslation();
   const [printListExpanded, setPrintListExpanded] = useState(true);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [expandedSplitRow, setExpandedSplitRow] = useState<number | null>(null);
@@ -67,8 +71,8 @@ export function RightPanel() {
           <button
             onClick={toggle}
             className="btn btn-ghost btn-icon"
-            title="Expand panel"
-            aria-label="Expand right panel"
+            title={t('rightPanel.expandPanel')}
+            aria-label={t('rightPanel.expandRightPanel')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -88,8 +92,8 @@ export function RightPanel() {
     <button
       onClick={toggle}
       className="flex-shrink-0 p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
-      title="Collapse panel"
-      aria-label="Collapse right panel"
+      title={t('rightPanel.collapsePanel')}
+      aria-label={t('rightPanel.collapseRightPanel')}
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -115,9 +119,7 @@ export function RightPanel() {
         }`}
       >
         {collapseButton}
-        <h2 className="text-xs font-semibold text-content-tertiary uppercase tracking-wider">
-          Inspector
-        </h2>
+        <h2 className="text-xs font-semibold text-content-tertiary uppercase tracking-wider">{t('rightPanel.inspector')}</h2>
       </div>
 
       {/* Scrollable content area */}
@@ -129,7 +131,7 @@ export function RightPanel() {
         {/* Selection Panel - Collapsible */}
         <div className="px-4 py-3 border-b border-stroke-subtle">
           <CollapsibleSection
-            title={isMultiSelect ? 'Multi-Selection' : bin ? 'Bin Properties' : 'Selection'}
+            title={isMultiSelect ? t('rightPanel.multiSelection') : bin ? t('rightPanel.binProperties') : t('rightPanel.selection')}
             variant="default"
           >
             {isMultiSelect ? (
@@ -169,7 +171,7 @@ export function RightPanel() {
                   d="M19 9l-7 7-7-7"
                 />
               </svg>
-              <h2 className="section-header m-0">Bin List</h2>
+              <h2 className="section-header m-0">{t('rightPanel.binList')}</h2>
               {printList.rows.length > 0 && (
                 <span className="badge badge-info">{printList.totalBins}</span>
               )}
@@ -183,8 +185,8 @@ export function RightPanel() {
                     setBinListModalOpen(true);
                   }}
                   className="btn btn-ghost p-1.5 min-w-0 min-h-0"
-                  title="Expand bin list"
-                  aria-label="Expand bin list to full view"
+                  title={t('rightPanel.expandBinList')}
+                  aria-label={t('rightPanel.expandBinListToFullView')}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -206,8 +208,8 @@ export function RightPanel() {
                     setTimeout(() => setCopyFeedback(false), 2000);
                   }}
                   className="btn btn-ghost p-1.5 min-w-0 min-h-0"
-                  title="Copy as TSV for spreadsheets"
-                  aria-label="Copy bin list as TSV"
+                  title={t('rightPanel.copyTSV')}
+                  aria-label={t('rightPanel.copyBinListAsTsv')}
                 >
                   {copyFeedback ? (
                     <svg
@@ -248,34 +250,32 @@ export function RightPanel() {
                 <table className="w-full text-sm">
                   <thead className="bg-surface-elevated">
                     <tr>
-                      <th className="pl-4 pr-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated">
-                        Size
-                      </th>
+                      <th className="pl-4 pr-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated">{t('common.size')}</th>
                       <th
                         className="px-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                        title="Height"
+                        title={t('common.height')}
                       >
                         H
                       </th>
                       <th
                         className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                        title="Quantity"
+                        title={t('common.quantity')}
                       >
-                        Qty
+                        {t('rightPanel.qtyAbbrev')}
                       </th>
                       {printList.hasAnySplits && (
                         <th
                           className="px-2 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                          title="Pieces after split"
+                          title={t('rightPanel.piecesAfterSplit')}
                         >
-                          Pcs
+                          {t('rightPanel.pcsAbbrev')}
                         </th>
                       )}
                       <th
                         className="pl-2 pr-4 py-2 text-right font-medium sticky top-0 text-content-secondary bg-surface-elevated"
-                        title="Estimated filament (meters)"
+                        title={t('rightPanel.filamentMeters')}
                       >
-                        ~m
+                        {t('rightPanel.filamentAbbrev')}
                       </th>
                     </tr>
                   </thead>
@@ -306,9 +306,9 @@ export function RightPanel() {
                                       .map(
                                         (catId) =>
                                           layout.categories.find((c) => c.id === catId)?.name ||
-                                          'Unknown'
+                                          t('common.unknown')
                                       )
-                                      .join(', ')}
+                                      .join(LIST_SEPARATOR)}
                                   >
                                     {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
                                       const cat = layout.categories.find((c) => c.id === catId);
@@ -320,13 +320,13 @@ export function RightPanel() {
                                           style={{
                                             backgroundColor: cat?.color || DEFAULT_CATEGORY_COLOR,
                                           }}
-                                          aria-label={cat?.name || 'Unknown category'}
+                                          aria-label={cat?.name || t('rightPanel.unknownCategory')}
                                         />
                                       );
                                     })}
                                     {(row.categoryIds ?? []).length > 3 && (
                                       <span className="text-[9px] text-content-disabled">
-                                        +{(row.categoryIds ?? []).length - 3}
+                                        {t('rightPanel.moreCategories', { count: (row.categoryIds ?? []).length - 3 })}
                                       </span>
                                     )}
                                   </span>
@@ -337,7 +337,7 @@ export function RightPanel() {
                                       fill="none"
                                       viewBox="0 0 24 24"
                                       stroke="currentColor"
-                                      aria-label="Click to see split preview"
+                                      aria-label={t('grid.clickToSeeSplitPreview')}
                                     >
                                       <path
                                         strokeLinecap="round"
@@ -368,7 +368,7 @@ export function RightPanel() {
                                           fill="none"
                                           viewBox="0 0 24 24"
                                           stroke="currentColor"
-                                          aria-label="Has notes"
+                                          aria-label={t('grid.hasNotesAriaLabel')}
                                         >
                                           <path
                                             strokeLinecap="round"
@@ -382,14 +382,14 @@ export function RightPanel() {
                                     {row.customProperties &&
                                       Object.keys(row.customProperties).length > 0 && (
                                         <span
-                                          title={`${Object.keys(row.customProperties).length} custom ${Object.keys(row.customProperties).length === 1 ? 'property' : 'properties'}`}
+                                          title={t('rightPanel.customPropertiesCount', { count: Object.keys(row.customProperties).length })}
                                         >
                                           <svg
                                             className="w-3 h-3 flex-shrink-0 text-content-disabled"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             stroke="currentColor"
-                                            aria-label="Has custom properties"
+                                            aria-label={t('grid.hasCustomPropertiesAriaLabel')}
                                           >
                                             <path
                                               strokeLinecap="round"
@@ -424,9 +424,7 @@ export function RightPanel() {
                                 <div className="flex items-start gap-4">
                                   <SplitPreview width={w} depth={d} pieces={row.pieces} />
                                   <div className="text-xs text-content-secondary">
-                                    <div className="font-medium mb-1">
-                                      Split into {row.totalPieces} pieces:
-                                    </div>
+                                    <div className="font-medium mb-1">{t('rightPanel.splitInto')}{row.totalPieces}{t('rightPanel.pieces')}</div>
                                     {row.pieces.map((piece) => (
                                       <div
                                         key={`${piece.width}x${piece.depth}`}
@@ -476,7 +474,7 @@ export function RightPanel() {
 
       {/* Expanded Bin List Modal */}
       {binListModalOpen && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading bin list" />}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.binList')} />}>
           <BinListModal isOpen={binListModalOpen} onClose={() => setBinListModalOpen(false)} />
         </Suspense>
       )}

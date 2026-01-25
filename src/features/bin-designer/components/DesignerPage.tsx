@@ -30,6 +30,7 @@ import { saveDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { captureThumbnail } from '@/features/bin-designer/utils/thumbnail';
 import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import type { SaveStatus } from '@/features/bin-designer/types';
+import { useTranslation } from '@/i18n';
 
 interface DesignerPageProps {
   /** Unused - navigation is handled by ToolSwitcher */
@@ -43,6 +44,7 @@ interface DesignerPageProps {
  * @returns A small text <span> showing `"Saving…"`, `"Saved"`, or `"Save failed"` depending on `status`, or `null` when `status` is `'idle'`.
  */
 function SaveStatusIndicator({ status }: { status: SaveStatus }) {
+  const t = useTranslation();
   if (status === 'idle') return null;
 
   return (
@@ -107,7 +109,7 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
         </svg>
       )}
       <span>
-        {status === 'saving' ? 'Saving...' : status === 'saved' ? 'Saved' : 'Save failed'}
+        {status === 'saving' ? t('binDesigner.saving') : status === 'saved' ? t('binDesigner.saved') : t('binDesigner.saveFailed')}
       </span>
     </div>
   );
@@ -134,6 +136,7 @@ export function DesignerPage(_props: DesignerPageProps) {
   useDesignerUrlSync();
 
   const { isDesktop, isMobile } = useResponsive();
+  const t = useTranslation();
   const saveStatus = useDesignerStore((s) => s.saveStatus);
   const designName = useDesignerStore((s) => s.designName);
   const setDesignName = useDesignerStore((s) => s.setDesignName);
@@ -295,9 +298,7 @@ export function DesignerPage(_props: DesignerPageProps) {
                 strokeWidth={2}
                 d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
               />
-            </svg>
-            Experimental
-          </span>
+            </svg>{t('binDesigner.experimental')}</span>
 
           {/* Design name (click to rename inline) */}
           {isEditingName ? (
@@ -309,7 +310,7 @@ export function DesignerPage(_props: DesignerPageProps) {
               onBlur={handleNameSubmit}
               onKeyDown={handleNameKeyDown}
               maxLength={50}
-              aria-label="Design name"
+              aria-label={t('binDesigner.designName')}
               className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content"
               style={{
                 boxShadow: '0 0 0 3px var(--color-primary-muted)',
@@ -319,7 +320,7 @@ export function DesignerPage(_props: DesignerPageProps) {
             <button
               onClick={handleNameClick}
               className="hidden px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px] sm:inline-block"
-              title="Click to rename design"
+              title={t('binDesigner.clickToRename')}
             >
               {designName}
             </button>
@@ -329,8 +330,8 @@ export function DesignerPage(_props: DesignerPageProps) {
           <button
             onClick={() => setDesignListOpen(true)}
             className="hidden px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content sm:flex items-center gap-1.5"
-            title="Open design list"
-            aria-label="Open design list"
+            title={t('binDesigner.openDesignList')}
+            aria-label={t('binDesigner.openDesignList')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -340,15 +341,15 @@ export function DesignerPage(_props: DesignerPageProps) {
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
             </svg>
-            <span className="hidden lg:inline">Designs</span>
+            <span className="hidden lg:inline">{t('binDesigner.designs')}</span>
           </button>
 
           {/* Designs button (icon only, for mobile) */}
           <button
             onClick={() => setDesignListOpen(true)}
             className="sm:hidden btn btn-ghost btn-icon"
-            title="My Designs"
-            aria-label="Open design list"
+            title={t('binDesigner.myDesigns')}
+            aria-label={t('binDesigner.openDesignList')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -365,8 +366,8 @@ export function DesignerPage(_props: DesignerPageProps) {
             onClick={() => setExportDialogOpen(true)}
             disabled={!canExport}
             className="hidden px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content sm:flex items-center gap-1.5"
-            title="Export bin as STL"
-            aria-label="Export bin as STL"
+            title={t('binDesigner.exportSTL')}
+            aria-label={t('binDesigner.exportBinAsStl')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -376,7 +377,7 @@ export function DesignerPage(_props: DesignerPageProps) {
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            <span className="hidden lg:inline">Export</span>
+            <span className="hidden lg:inline">{t('binDesigner.export')}</span>
           </button>
         </div>
 
@@ -428,7 +429,7 @@ export function DesignerPage(_props: DesignerPageProps) {
             onClick={() => setExportDialogOpen(true)}
             disabled={!canExport}
             className="hidden items-center gap-1.5 btn btn-primary px-3 py-1.5 text-sm font-medium sm:flex"
-            aria-label="Export bin as STL"
+            aria-label={t('binDesigner.exportBinAsStl')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -438,7 +439,7 @@ export function DesignerPage(_props: DesignerPageProps) {
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            Export
+            {t('binDesigner.export')}
           </button>
 
           {/* Mobile export icon button */}
@@ -446,8 +447,8 @@ export function DesignerPage(_props: DesignerPageProps) {
             onClick={() => setExportDialogOpen(true)}
             disabled={!canExport}
             className="sm:hidden btn btn-ghost btn-icon"
-            title="Export bin"
-            aria-label="Export bin as STL"
+            title={t('binDesigner.exportBin')}
+            aria-label={t('binDesigner.exportBinAsStl')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -483,9 +484,7 @@ export function DesignerPage(_props: DesignerPageProps) {
               fill="currentColor"
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
-          </svg>
-          Loading shared design…
-        </div>
+          </svg>{t('binDesigner.loadingSharedDesign')}</div>
       )}
 
       {/* Main content - responsive layout */}

@@ -2,6 +2,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore } from '@/core/store';
 import { CONSTRAINTS } from '@/core/constants';
+import { useTranslation } from '@/i18n';
 
 interface MobileGridToolbarProps {
   onFitToScreen: () => void;
@@ -12,6 +13,7 @@ interface MobileGridToolbarProps {
  * Shows layer indicator, paint mode, 3D preview toggle, and basic zoom.
  */
 export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
+  const t = useTranslation();
   const {
     zoom,
     zoomIn,
@@ -51,7 +53,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
       >
         <div className="w-2 h-2 rounded-full flex-shrink-0 bg-accent" />
         <span className="font-medium truncate max-w-[80px] text-sm text-content">
-          {activeLayer?.name || 'Layer'}
+          {activeLayer?.name || t('mobile.toolbar.defaultLayer')}
         </span>
         <svg
           className="w-3 h-3 flex-shrink-0 text-content-tertiary"
@@ -69,7 +71,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
           onClick={() => setPaintSize(null)}
           className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-accent text-accent text-xs font-medium"
           style={{ backgroundColor: 'var(--color-primary-muted)' }}
-          aria-label={`Exit paint mode (${paintSize.width}×${paintSize.depth})`}
+          aria-label={t('toolbar.exitPaintMode')}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -97,8 +99,8 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
         <button
           onClick={toggleIsometricPreview}
           className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-secondary'} w-10 h-10 p-0`}
-          aria-label={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
-          title={showIsometricPreview ? 'Hide 3D preview' : 'Show 3D preview'}
+          aria-label={showIsometricPreview ? t('toolbar.hide3dPreview') : t('toolbar.show3dPreview')}
+          title={showIsometricPreview ? t('toolbar.hide3dPreview') : t('toolbar.show3dPreview')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -113,7 +115,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
           onClick={zoomOut}
           disabled={!canZoomOut}
           className="btn btn-secondary w-10 h-10 p-0"
-          aria-label="Zoom out"
+          aria-label={t('toolbar.zoomOut')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -122,7 +124,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
         <button
           onClick={onFitToScreen}
           className="btn btn-secondary px-3 h-10"
-          aria-label="Fit to screen"
+          aria-label={t('toolbar.fitToScreen')}
         >
           <span className="text-sm font-medium">{Math.round(zoom * 100)}%</span>
         </button>
@@ -130,7 +132,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
           onClick={zoomIn}
           disabled={!canZoomIn}
           className="btn btn-secondary w-10 h-10 p-0"
-          aria-label="Zoom in"
+          aria-label={t('toolbar.zoomIn')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
