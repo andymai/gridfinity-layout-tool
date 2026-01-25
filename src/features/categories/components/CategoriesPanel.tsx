@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
@@ -32,8 +32,11 @@ const COLOR_PALETTE = [
 export function CategoriesPanel() {
   const t = useTranslation();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [colorPickerId, setColorPickerId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
+  const editingRef = useRef<HTMLDivElement>(null);
 
   const { categories, bins } = useLayoutStore(
     useShallow((state) => ({
@@ -71,6 +74,46 @@ export function CategoriesPanel() {
       setHighlightedCategoryId(null);
     };
   }, [setHighlightedCategoryId]);
+
+  // Close edit mode or color picker on click outside or Escape
+  useEffect(() => {
+    if (!editingId && !colorPickerId) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target;
+      // Guard against null target or non-Node target (rare but possible in DOM)
+      if (!(target instanceof Node)) return;
+
+      // Close color picker if clicking outside it
+      if (colorPickerId && colorPickerRef.current && !colorPickerRef.current.contains(target)) {
+        setColorPickerId(null);
+      }
+
+      // Close edit mode if clicking outside the editing area
+      if (editingId && editingRef.current && !editingRef.current.contains(target)) {
+        setEditingId(null);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setColorPickerId(null);
+        setEditingId(null);
+      }
+    };
+
+    // Small delay to avoid immediate trigger from the click that opened the mode
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [editingId, colorPickerId]);
 
   // Handle category selection: applies to selected bins if any, always sets active category
   const handleCategorySelect = (categoryId: string, categoryName: string) => {
@@ -184,7 +227,11 @@ export function CategoriesPanel() {
 
   return (
     <div>
-      <CollapsibleSection title={t('categories.title')} variant="default" actions={addCategoryButton}>
+      <CollapsibleSection
+        title={t('categories.title')}
+        variant="default"
+        actions={addCategoryButton}
+      >
         <div className="space-y-1">
           {categories.map((category) => {
             const isActive = category.id === activeCategoryId;
@@ -196,7 +243,7 @@ export function CategoriesPanel() {
             return (
               <div
                 key={category.id}
-                className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-all ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
+                className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-colors duration-150 ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
                 onClick={() => handleCategorySelect(category.id, category.name)}
                 onMouseEnter={() => {
                   setHoveredCategoryId(category.id);
@@ -208,8 +255,12 @@ export function CategoriesPanel() {
                 }}
               >
                 {isEditing ? (
-                  <div className="flex flex-col gap-2 w-full" onClick={(e) => e.stopPropagation()}>
-                    {/* Name input */}
+                  <div
+                    ref={editingRef}
+                    className="flex flex-col gap-2 w-full"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Name input - auto-saves on change */}
                     <input
                       type="text"
                       value={category.name}
@@ -217,14 +268,15 @@ export function CategoriesPanel() {
                       onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
                       className="input w-full py-1 px-2 text-sm"
                       autoFocus
+                      placeholder={t('categories.categoryNamePlaceholder')}
                     />
-                    {/* Color palette */}
-                    <div className="grid grid-cols-6 gap-1.5">
+                    {/* Color palette - 7 columns for better fit with 14 colors */}
+                    <div className="grid grid-cols-7 gap-1">
                       {COLOR_PALETTE.map(({ color, name }) => (
                         <button
                           key={color}
                           onClick={() => handleUpdateCategory(category.id, 'color', color)}
-                          className="w-7 h-7 rounded transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-accent"
+                          className="w-6 h-6 rounded transition-all duration-150 hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-accent"
                           style={{
                             backgroundColor: color,
                             boxShadow:
@@ -233,72 +285,90 @@ export function CategoriesPanel() {
                                 : 'var(--shadow-sm)',
                           }}
                           title={name}
-                          aria-label={`Set color to ${name}`}
+                          aria-label={t('categories.setColorTo', { name })}
                           aria-pressed={category.color === color}
                         />
                       ))}
                     </div>
-                    {/* Action buttons */}
-                    <div className="flex gap-2 mt-1">
-                      <button
-                        onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
-                        disabled={!canDelete}
-                        className="btn btn-danger btn-sm flex-1 justify-center"
-                        aria-label={
-                          canDelete
-                            ? t('categories.deleteCategory')
-                            : binCount > 0
-                              ? t('categories.cannotDeleteInUse', { count: binCount })
-                              : t('categories.cannotDeleteLast')
-                        }
-                        title={
-                          canDelete
-                            ? t('categories.deleteCategory')
-                            : binCount > 0
-                              ? t('categories.binsUseCategory', { count: binCount })
-                              : t('categories.atLeastOneRequired')
-                        }
-                      >
-                        {t('common.delete')}
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="btn btn-secondary btn-sm flex-1 justify-center"
-                        aria-label={t('categories.finishEditingCategory')}
-                      >
-                        {t('common.done')}
-                      </button>
+                    {/* Footer row: hint + delete link */}
+                    <div className="flex items-center justify-between text-xs text-content-tertiary mt-0.5">
+                      <span>{t('categories.clickOutsideToClose')}</span>
+                      {canDelete && (
+                        <button
+                          onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
+                          className="text-content-tertiary hover:text-error transition-colors"
+                          aria-label={t('categories.deleteCategory')}
+                        >
+                          {t('common.delete')}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : (
                   <>
-                    {/* Color swatch with checkmark overlay */}
-                    <div
-                      className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm cursor-pointer transition-transform hover:scale-110"
-                      style={{ backgroundColor: category.color }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingId(category.id);
-                      }}
-                      title={t('categories.editColor')}
-                      aria-hidden="true"
-                    >
-                      {isActive && (
-                        <svg
-                          className="absolute inset-0 w-5 h-5 p-0.5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="white"
-                          style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }}
-                          aria-hidden="true"
+                    {/* Color swatch with checkmark overlay - click to open quick color picker */}
+                    <div className="relative">
+                      <button
+                        className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm transition-all duration-150 hover:scale-110 hover:ring-2 hover:ring-accent/50 focus-visible:ring-2 focus-visible:ring-accent"
+                        style={{ backgroundColor: category.color }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setColorPickerId(colorPickerId === category.id ? null : category.id);
+                        }}
+                        title={t('categories.changeColor')}
+                        aria-label={t('categories.changeColor')}
+                        aria-expanded={colorPickerId === category.id}
+                        aria-haspopup="true"
+                      >
+                        {isActive && (
+                          <svg
+                            className="absolute inset-0 w-5 h-5 p-0.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="white"
+                            style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }}
+                            aria-hidden="true"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </button>
+
+                      {/* Quick color picker popover */}
+                      {colorPickerId === category.id && (
+                        <div
+                          ref={colorPickerRef}
+                          className="absolute left-0 top-full mt-1.5 z-50 p-2 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg animate-scale-in"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
+                          <div className="grid grid-cols-7 gap-1">
+                            {COLOR_PALETTE.map(({ color, name }) => (
+                              <button
+                                key={color}
+                                onClick={() => {
+                                  handleUpdateCategory(category.id, 'color', color);
+                                  setColorPickerId(null);
+                                }}
+                                className="w-6 h-6 rounded transition-all duration-150 hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-accent"
+                                style={{
+                                  backgroundColor: color,
+                                  boxShadow:
+                                    category.color === color
+                                      ? '0 0 0 2px var(--color-primary)'
+                                      : 'var(--shadow-sm)',
+                                }}
+                                title={name}
+                                aria-label={t('categories.setColorTo', { name })}
+                                aria-pressed={category.color === color}
+                              />
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                     {/* Category name - click to select, double-click to edit */}
@@ -310,12 +380,16 @@ export function CategoriesPanel() {
                       }}
                       onDoubleClick={(e) => {
                         e.stopPropagation();
+                        setColorPickerId(null);
                         setEditingId(category.id);
                       }}
                       aria-pressed={isActive}
                       aria-label={
                         selectedBinIds.length > 0
-                          ? t('categories.applyToSelectedBins', { name: category.name, count: selectedBinIds.length })
+                          ? t('categories.applyToSelectedBins', {
+                              name: category.name,
+                              count: selectedBinIds.length,
+                            })
                           : isActive
                             ? t('categories.selectedForNewBins', { name: category.name })
                             : t('categories.selectForNewBins', { name: category.name })
@@ -332,11 +406,12 @@ export function CategoriesPanel() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        setColorPickerId(null);
                         setEditingId(category.id);
                       }}
                       className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1.5 -my-1 rounded hover:bg-surface-elevated transition-opacity flex-shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
                       title={t('categories.editCategory')}
-                      aria-label={`Edit ${category.name}`}
+                      aria-label={t('categories.editCategoryAria', { name: category.name })}
                     >
                       <svg
                         className="w-3.5 h-3.5 text-content-secondary"
@@ -352,6 +427,29 @@ export function CategoriesPanel() {
                         />
                       </svg>
                     </button>
+                    {/* Delete button - appears on hover for unused categories */}
+                    {canDelete && (
+                      <button
+                        onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1.5 -my-1 rounded text-content-tertiary hover:text-error hover:bg-error/10 transition-all flex-shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
+                        title={t('categories.deleteCategory')}
+                        aria-label={t('categories.deleteCategoryAria', { name: category.name })}
+                      >
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    )}
                     {/* Bin count badge */}
                     <span
                       className={`text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${

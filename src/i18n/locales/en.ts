@@ -347,7 +347,6 @@ const en: Record<string, string> = {
   'categories.addCategory': 'Add category',
   'categories.deleteCategory': 'Delete category',
   'categories.editCategory': 'Edit category',
-  'categories.editColor': 'Click to edit color',
   'categories.confirmDelete.title': 'Delete Category',
   'categories.confirmDelete.message':
     'Delete "{name}"? Bins in this category will be moved to the default category.',
@@ -365,6 +364,11 @@ const en: Record<string, string> = {
   'categories.noBinsUseCategory': 'No bins use this category',
   'categories.selectedForNewBins': '{name} (selected for new bins)',
   'categories.selectForNewBins': 'Select {name} for new bins',
+  'categories.changeColor': 'Change color',
+  'categories.setColorTo': 'Set color to {name}',
+  'categories.clickOutsideToClose': 'Click outside to close',
+  'categories.editCategoryAria': 'Edit {name}',
+  'categories.deleteCategoryAria': 'Delete {name}',
 
   // ===========================================================================
   // Staging / Stash
