@@ -81,7 +81,6 @@ export function DropZones() {
   }
 
   const binCount = interaction.type === 'drag' ? interaction.binIds.length : 1;
-  const binLabel = binCount === 1 ? '1 bin' : `${binCount} bins`;
 
   return (
     <div
@@ -122,7 +121,7 @@ export function DropZones() {
           style={{
             color: dropTarget === 'trash' ? 'white' : 'var(--text-primary)',
           }}
-        >{t('common.delete')}{binLabel}
+        >{t('common.deleteBins', { count: binCount })}
         </div>
       </div>
     </div>

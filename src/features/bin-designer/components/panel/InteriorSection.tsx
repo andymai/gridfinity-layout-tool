@@ -21,7 +21,7 @@ export function InteriorSection() {
   const t = useTranslation();
 
   const compartmentCount = getCompartmentCount(compartments);
-  const summary = `${compartmentCount} ${compartmentCount === 1 ? 'compartment' : 'compartments'}`;
+  const summary = t('binDesigner.interiorSummary', { count: compartmentCount });
 
   return (
     <CollapsibleSection

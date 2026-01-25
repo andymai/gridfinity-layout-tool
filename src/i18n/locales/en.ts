@@ -20,6 +20,7 @@ const en: Record<string, string> = {
   'common.save': 'Save',
   'common.cancel': 'Cancel',
   'common.delete': 'Delete',
+  'common.deleteBins': 'Delete {count} bin(s)',
   'common.close': 'Close',
   'common.loading': 'Loading...',
 
@@ -1030,6 +1031,7 @@ const en: Record<string, string> = {
   'binDesigner.myDesigns': 'My Designs',
   'binDesigner.dimensions': 'Dimensions',
   'binDesigner.interior': 'Interior',
+  'binDesigner.interiorSummary': '{count} compartment(s)',
   'binDesigner.walls': 'Walls',
   'binDesigner.wallCutouts': 'Wall Cutouts',
   'binDesigner.base': 'Base',
