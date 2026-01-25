@@ -5,8 +5,10 @@ import { getToggleableFeatures, getGraduatedFeatures, type FeatureId } from '@/c
 import { FeatureCard } from './FeatureCard';
 import { GraduatedSection } from './GraduatedSection';
 import { SparklesIcon, CloseIcon } from './icons';
+import { useTranslation } from '@/i18n';
 
 export function LabsDrawer() {
+  const t = useTranslation();
   const { isOpen, closeDrawer, toggleFeature, isFeatureEnabled } = useLabsStore(
     useShallow((state) => ({
       isOpen: state.isDrawerOpen,
@@ -66,7 +68,7 @@ export function LabsDrawer() {
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Labs experimental features"
+        aria-label={t('labs.labsExperimentalFeatures')}
         className={`fixed top-0 right-0 z-[100] h-full w-full max-w-[400px] bg-surface-elevated border-l border-stroke-subtle shadow-xl transition-transform duration-300 ease-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
@@ -76,13 +78,13 @@ export function LabsDrawer() {
           <header className="flex items-center justify-between px-6 py-4 border-b border-stroke-subtle">
             <div className="flex items-center gap-2">
               <SparklesIcon className="w-5 h-5 text-accent" />
-              <h2 className="text-lg font-semibold text-content">Labs</h2>
+              <h2 className="text-lg font-semibold text-content">{t('labs.labs')}</h2>
             </div>
             <button
               ref={closeButtonRef}
               onClick={closeDrawer}
               className="p-2 -mr-2 rounded-md text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
-              aria-label="Close Labs"
+              aria-label={t('labs.closeLabs')}
             >
               <CloseIcon className="w-5 h-5" />
             </button>
@@ -112,7 +114,7 @@ export function LabsDrawer() {
               <div className="text-center py-8 text-content-tertiary">
                 <SparklesIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>No experimental features available right now.</p>
-                <p className="text-xs mt-1">Check back later!</p>
+                <p className="text-xs mt-1">{t('labs.checkBackLater')}</p>
               </div>
             )}
 

@@ -12,6 +12,7 @@ import {
 import { fetchShare } from '@/core/api/share';
 import { isOk, getUserMessage } from '@/core/result';
 import type { Layout, SharePermission, LayoutPreview } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 // Check for shared layout once at module load time (URL-encoded shares)
 const initialShareResult = getSharedLayoutFromURL();
@@ -28,6 +29,7 @@ const initialCloudShareId = getCloudShareIdFromURL();
  * - Cloud share: /l/{12-char-id} (only for layouts in "Shared with me" list)
  */
 export function SharedLayoutImporter() {
+  const t = useTranslation();
   // Loading state is only set to true when we confirm we need to cloud fetch
   // (not when there's just a URL ID - it might be a local layout)
   const [isLoading, setIsLoading] = useState(false);
@@ -163,13 +165,13 @@ export function SharedLayoutImporter() {
       clearSharedLayoutFromURL();
       // Show error feedback to user
       const errorMessage = errors.length > 0 ? errors[0] : 'Invalid share link';
-      addToast(`Failed to load shared layout: ${errorMessage}`, 'error');
+      addToast(t('toast.sharedLayoutFailed', { error: errorMessage }), 'error');
       return;
     }
 
     loadLayoutPreview(layout);
     clearSharedLayoutFromURL();
-  }, [loadLayoutPreview, addToast]);
+  }, [loadLayoutPreview, addToast, t]);
 
   // Track whether we've started processing a cloud share (persists through Strict Mode remounts)
   const hasStartedCloudFetch = useRef(false);
@@ -246,7 +248,7 @@ export function SharedLayoutImporter() {
 
       if (!isOk(result)) {
         const message = getUserMessage(result.error);
-        addToast(`Failed to load shared layout: ${message}`, 'error');
+        addToast(t('toast.sharedLayoutFailed', { error: message }), 'error');
         return;
       }
 
@@ -276,6 +278,7 @@ export function SharedLayoutImporter() {
     libraryEntries,
     sharedLayoutCloudShareId,
     getSharedWithMeByShareId,
+    t,
   ]);
 
   // Show loading state for cloud shares
@@ -298,7 +301,7 @@ export function SharedLayoutImporter() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span className="text-content">Loading shared layout...</span>
+          <span className="text-content">{t('share.loadingShared')}</span>
         </div>
       </div>
     );

@@ -254,7 +254,7 @@ describe('LayoutPreviewOverlay', () => {
 
       render(<LayoutPreviewOverlay {...defaultProps} />);
 
-      expect(screen.getByText('10×8 drawer')).toBeInTheDocument();
+      expect(screen.getByText((content) => content.includes('10×8') && content.includes('drawer'))).toBeInTheDocument();
       expect(screen.getByText(/420×336mm/)).toBeInTheDocument();
     });
 
@@ -265,7 +265,7 @@ describe('LayoutPreviewOverlay', () => {
 
       render(<LayoutPreviewOverlay {...defaultProps} />);
 
-      expect(screen.getByText(/yours: 15×12/)).toBeInTheDocument();
+      expect(screen.getByText((content) => content.includes('yours: 15×12'))).toBeInTheDocument();
     });
   });
 
@@ -341,7 +341,7 @@ describe('LayoutPreviewOverlay', () => {
     it('shows related layouts section', () => {
       render(<LayoutPreviewOverlay {...defaultProps} />);
 
-      expect(screen.getByText('More Workshop')).toBeInTheDocument();
+      expect(screen.getByText((content) => content.includes('More') && content.includes('Workshop'))).toBeInTheDocument();
     });
 
     it('displays related layout names', () => {
@@ -420,7 +420,7 @@ describe('LayoutPreviewOverlay', () => {
       const onUseLayout = vi.fn();
       render(<LayoutPreviewOverlay {...defaultProps} onUseLayout={onUseLayout} />);
 
-      fireEvent.click(screen.getByText('Use as Starting Point'));
+      fireEvent.click(screen.getByText((content) => content.includes('Use as Starting Point')));
 
       expect(onUseLayout).toHaveBeenCalledTimes(1);
     });
@@ -430,7 +430,7 @@ describe('LayoutPreviewOverlay', () => {
     it('shows normal button when not importing', () => {
       render(<LayoutPreviewOverlay {...defaultProps} isImporting={false} />);
 
-      expect(screen.getByText('Use as Starting Point')).toBeInTheDocument();
+      expect(screen.getByText((content) => content.includes('Use as Starting Point'))).toBeInTheDocument();
       expect(screen.queryByText('Adding...')).not.toBeInTheDocument();
     });
 
@@ -463,7 +463,7 @@ describe('LayoutPreviewOverlay', () => {
       render(<LayoutPreviewOverlay {...defaultProps} />);
 
       expect(
-        screen.getByText('Use as a starting point — customize to fit your items')
+        screen.getByText((content) => content.includes('Use as a starting point') && content.includes('customize to fit your items'))
       ).toBeInTheDocument();
     });
   });

@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { captureException } from '@/utils/analytics';
+import { getStaticTranslation } from '@/i18n';
 
 interface Props {
   children: ReactNode;
@@ -63,27 +64,32 @@ export class ErrorBoundary extends Component<Props, State> {
                 />
               </svg>
             </div>
-            <h1 className="text-xl font-semibold mb-2 text-content">Something went wrong</h1>
+            {/* eslint-disable i18next/no-literal-string -- translation keys for getStaticTranslation */}
+            <h1 className="text-xl font-semibold mb-2 text-content">
+              {getStaticTranslation('errorBoundary.heading')}
+            </h1>
             <p className="text-content-secondary mb-2">
-              The app encountered an unexpected error. Your layout data is safe.
+              {getStaticTranslation('errorBoundary.description')}
             </p>
             <p className="text-sm text-content-tertiary mb-6">
-              Try refreshing the page. If the problem persists, resetting app data will restore
-              defaults while your browser may still have cached data.
+              {getStaticTranslation('errorBoundary.hint')}
             </p>
+            {/* eslint-enable i18next/no-literal-string */}
             {this.state.error && (
               <pre className="text-left text-xs rounded-lg p-3 mb-6 overflow-auto max-h-32 text-error bg-surface-elevated border border-stroke-subtle">
                 {this.state.error.message}
               </pre>
             )}
+            {/* eslint-disable i18next/no-literal-string -- translation keys */}
             <div className="flex gap-3 justify-center">
               <button onClick={this.handleReset} className="btn btn-secondary">
-                Try Again
+                {getStaticTranslation('errorBoundary.tryAgain')}
               </button>
               <button onClick={this.handleClearStorage} className="btn btn-danger">
-                Reset App Data
+                {getStaticTranslation('errorBoundary.resetAppData')}
               </button>
             </div>
+            {/* eslint-enable i18next/no-literal-string */}
           </div>
         </div>
       );

@@ -7,6 +7,7 @@ import {
   type PrintViewSettings,
   type BinListSortOrder,
 } from '@/core/store/settings';
+import { useTranslation } from '@/i18n';
 import { PrintLayout } from './PrintLayout';
 import { SortOrderConfig } from './SortOrderConfig';
 import { Checkbox } from '@/shared/components/Checkbox';
@@ -45,6 +46,7 @@ interface PrintModalProps {
  * Opens browser print dialog on print button click.
  */
 export function PrintModal({ isOpen, onClose }: PrintModalProps) {
+  const t = useTranslation();
   const { layout } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
@@ -212,12 +214,12 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
           {/* Header */}
           <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle print-modal-header">
             <h2 id="print-modal-title" style={STYLES.title}>
-              Print Layout
+              {t('print.title')}
             </h2>
             <button
               onClick={onClose}
               className="btn btn-ghost btn-icon"
-              aria-label="Close print dialog"
+              aria-label={t('common.close')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -237,14 +239,14 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
               {/* Layer Selection */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 style={STYLES.sectionHeader}>Layers</h3>
+                  <h3 style={STYLES.sectionHeader}>{t('layers.title')}</h3>
                   {layout.layers.length > 1 && (
                     <button
                       onClick={selectAllLayers}
                       className="text-xs text-accent hover:underline"
                       disabled={allLayersSelected}
                     >
-                      Select All
+                      {t('common.all')}
                     </button>
                   )}
                 </div>
@@ -259,7 +261,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                         onClick={() => toggleLayer(layer.id)}
                         role="checkbox"
                         aria-checked={isChecked}
-                        aria-label={`Select ${layer.name}`}
+                        aria-label={t('print.selectLayer', { layer: layer.name })}
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === ' ' || e.key === 'Enter') {
@@ -274,7 +276,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                           {layer.name}
                         </span>
                         <span className="text-xs text-content-tertiary">
-                          {binCount} bin{binCount !== 1 ? 's' : ''}
+                          {t('print.binCount', { count: binCount })}
                         </span>
                         <Checkbox checked={isChecked} variant="desktop" />
                       </div>
@@ -286,42 +288,42 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
               {/* Include in Print */}
               <div className="mb-6">
                 <h3 style={STYLES.sectionHeader} className="mb-3">
-                  Include in Print
+                  {t('print.options')}
                 </h3>
 
                 {/* Bin Display Options */}
                 <div className="mb-4">
                   <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
-                    On Bins
+                    {t('print.binDisplay')}
                   </div>
                   <div className="space-y-2">
                     <CheckboxOption
-                      label="Labels"
+                      label={t('print.showLabel')}
                       checked={printViewSettings.showLabel}
                       onChange={(v) => updatePrintSetting('showLabel', v)}
                     />
                     <CheckboxOption
-                      label="Categories"
+                      label={t('print.showCategoryColor')}
                       checked={printViewSettings.showCategoryColor}
                       onChange={(v) => updatePrintSetting('showCategoryColor', v)}
                     />
                     <CheckboxOption
-                      label="Size (WxD)"
+                      label={t('print.showSize')}
                       checked={printViewSettings.showSize}
                       onChange={(v) => updatePrintSetting('showSize', v)}
                     />
                     <CheckboxOption
-                      label="Height"
+                      label={t('print.showHeight')}
                       checked={printViewSettings.showHeight}
                       onChange={(v) => updatePrintSetting('showHeight', v)}
                     />
                     <CheckboxOption
-                      label="Notes"
+                      label={t('print.showNotes')}
                       checked={printViewSettings.showNotes}
                       onChange={(v) => updatePrintSetting('showNotes', v)}
                     />
                     <CheckboxOption
-                      label="Custom Properties"
+                      label={t('print.showCustomProperties')}
                       checked={printViewSettings.showCustomProperties}
                       onChange={(v) => updatePrintSetting('showCustomProperties', v)}
                     />
@@ -331,28 +333,28 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                 {/* Header Options */}
                 <div className="mb-4">
                   <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
-                    Header
+                    {t('print.headerOptions')}
                   </div>
                   <div className="space-y-2">
                     <CheckboxOption
-                      label="Show Header"
+                      label={t('print.showHeader')}
                       checked={printViewSettings.showHeader}
                       onChange={(v) => updatePrintSetting('showHeader', v)}
                     />
                     {printViewSettings.showHeader && (
                       <div className="ml-4 space-y-2 border-l border-stroke-subtle pl-3">
                         <CheckboxOption
-                          label="Layout Name"
+                          label={t('print.showLayoutName')}
                           checked={printViewSettings.showLayoutName}
                           onChange={(v) => updatePrintSetting('showLayoutName', v)}
                         />
                         <CheckboxOption
-                          label="Drawer Info"
+                          label={t('print.showDrawerInfo')}
                           checked={printViewSettings.showDrawerInfo}
                           onChange={(v) => updatePrintSetting('showDrawerInfo', v)}
                         />
                         <CheckboxOption
-                          label="Date"
+                          label={t('print.showDate')}
                           checked={printViewSettings.showDate}
                           onChange={(v) => updatePrintSetting('showDate', v)}
                         />
@@ -364,21 +366,21 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                 {/* Layout Options */}
                 <div>
                   <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
-                    Layout
+                    {t('print.layoutOptions')}
                   </div>
                   <div className="space-y-2">
                     <CheckboxOption
-                      label="Grid Coordinates"
+                      label={t('print.showGridCoordinates')}
                       checked={printViewSettings.showGridCoordinates}
                       onChange={(v) => updatePrintSetting('showGridCoordinates', v)}
                     />
                     <CheckboxOption
-                      label="Category Legend"
+                      label={t('print.showLegend')}
                       checked={printViewSettings.showLegend}
                       onChange={(v) => updatePrintSetting('showLegend', v)}
                     />
                     <CheckboxOption
-                      label="Bin Details Table"
+                      label={t('print.showBinList')}
                       checked={printViewSettings.showBinList}
                       onChange={(v) => updatePrintSetting('showBinList', v)}
                     />
@@ -390,7 +392,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
               {printViewSettings.showBinList && (
                 <div className="mb-6">
                   <h3 style={STYLES.sectionHeader} className="mb-3">
-                    Bin List Sorting
+                    {t('print.sortOrder')}
                   </h3>
                   <SortOrderConfig
                     sortOrder={printViewSettings.binListSortOrder}
@@ -419,12 +421,10 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
           {/* Footer */}
           <div className="flex items-center justify-end gap-3 p-4 border-t border-stroke-subtle print-modal-footer">
             {noLayersSelected && (
-              <span className="text-xs text-warning mr-auto">
-                Select at least one layer to print
-              </span>
+              <span className="text-xs text-warning mr-auto">{t('print.selectAtLeastOneLayerToPrint')}</span>
             )}
             <button onClick={onClose} className="btn btn-secondary">
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={handlePrint}
@@ -439,7 +439,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                   d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
                 />
               </svg>
-              Print
+              {t('print.printNow')}
             </button>
           </div>
         </div>

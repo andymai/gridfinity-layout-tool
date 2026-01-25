@@ -31,6 +31,7 @@ const LabsDrawer = lazyWithRetry(() =>
 import { usePresence } from '@/hooks/usePresence';
 import { useCollabMode } from '@/hooks/useCollabMode';
 import type { SaveStatus } from '@/shared/hooks';
+import { useTranslation } from '@/i18n';
 
 // Legacy context menu state for backwards compatibility (has binId instead of binIds)
 interface LegacyContextMenuStateWithBinId {
@@ -143,6 +144,7 @@ export function MobileLayout({
  * Only mounted when in collaborative mode (inside RoomProvider).
  */
 function ParticipantsPanel() {
+  const t = useTranslation();
   const { isCollaborative } = useCollabMode();
   const { participants } = usePresence();
 
@@ -150,9 +152,7 @@ function ParticipantsPanel() {
   // but guard just in case
   if (!isCollaborative) {
     return (
-      <div className="px-4 py-8 text-center text-content-secondary text-sm">
-        Collaborative editing is not active
-      </div>
+      <div className="px-4 py-8 text-center text-content-secondary text-sm">{t('layout.collaborativeEditingIsNotActive')}</div>
     );
   }
 

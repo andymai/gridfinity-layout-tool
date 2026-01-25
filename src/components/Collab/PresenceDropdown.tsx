@@ -9,6 +9,7 @@ import { useRef, useEffect, useLayoutEffect, useCallback, useState } from 'react
 import type { Participant, ConnectionStatus } from '@/hooks/usePresence';
 import { PresenceAvatarList } from './PresenceAvatarList';
 import { ConnectionIndicator } from './ConnectionIndicator';
+import { useTranslation } from '@/i18n';
 
 /** Minimum distance from viewport edge */
 const VIEWPORT_PADDING = 16;
@@ -35,6 +36,7 @@ export function PresenceDropdown({
   triggerRef,
   onClose,
 }: PresenceDropdownProps) {
+  const t = useTranslation();
   const popoverRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ top: number; right: number } | null>(null);
 
@@ -151,21 +153,21 @@ export function PresenceDropdown({
       style={popoverStyle}
       className="bg-surface-elevated border border-stroke rounded-lg shadow-lg overflow-hidden"
       role="dialog"
-      aria-label="Participants"
+      aria-label={t('collab.participants')}
       aria-modal="true"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-stroke-subtle">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-content">
-            {participants.length} {participants.length === 1 ? 'person' : 'people'}
+            {t('collab.participantCount', { count: participants.length })}
           </span>
           <ConnectionIndicator status={status} size="sm" />
         </div>
         <button
           onClick={onClose}
           className="text-content-tertiary hover:text-content transition-colors p-1 -m-1"
-          aria-label="Close"
+          aria-label={t('common.close')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path

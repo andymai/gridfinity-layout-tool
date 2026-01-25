@@ -1,6 +1,7 @@
 import type { FeatureFlag } from '@/core/labs';
 import { FeatureStatusBadge } from './FeatureStatusBadge';
 import { SparklesIcon } from './icons';
+import { useTranslation } from '@/i18n';
 
 interface FeatureCardProps {
   feature: FeatureFlag;
@@ -9,6 +10,7 @@ interface FeatureCardProps {
 }
 
 export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) {
+  const t = useTranslation();
   const isGraduated = feature.status === 'graduated';
   const isDeprecated = feature.status === 'deprecated';
   const isComingSoon = feature.comingSoon === true;
@@ -22,9 +24,7 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="text-[15px] font-semibold text-content leading-tight">{feature.name}</h3>
         {isComingSoon ? (
-          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded bg-purple-500/15 text-purple-400">
-            Coming Soon
-          </span>
+          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded bg-purple-500/15 text-purple-400">{t('labs.comingSoon')}</span>
         ) : (
           <FeatureStatusBadge status={feature.status} />
         )}
@@ -59,9 +59,7 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-accent hover:underline flex items-center gap-1"
-          >
-            Learn more
-            <ExternalLinkIcon className="w-3 h-3" />
+          >{t('labs.learnMore')}<ExternalLinkIcon className="w-3 h-3" />
           </a>
         ) : (
           <span />
@@ -71,14 +69,14 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
         {isComingSoon ? (
           <div className="flex items-center gap-2 text-xs text-purple-400">
             <SparklesIcon className="w-4 h-4" />
-            <span>In development</span>
+            <span>{t('labs.inDevelopment')}</span>
           </div>
         ) : isToggleable ? (
           <button
             type="button"
             role="switch"
             aria-checked={isEnabled}
-            aria-label={`${feature.name}, ${isEnabled ? 'enabled' : 'disabled'}`}
+            aria-label={t('labs.featureToggle', { name: feature.name, status: isEnabled ? t('labs.enabled') : t('labs.disabled') })}
             onClick={onToggle}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface ${
               isEnabled ? 'bg-accent' : 'bg-surface-secondary border border-stroke'
@@ -93,7 +91,7 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
         ) : isGraduated ? (
           <div className="flex items-center gap-2 text-xs text-success">
             <CheckIcon className="w-4 h-4" />
-            <span>Always on</span>
+            <span>{t('labs.alwaysOn')}</span>
           </div>
         ) : null}
       </div>

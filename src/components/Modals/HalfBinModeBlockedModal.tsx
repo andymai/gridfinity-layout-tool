@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { HalfBinConstraintViolation } from '@/utils/halfBinConstraints';
+import { useTranslation } from '@/i18n';
 
 interface HalfBinModeBlockedModalProps {
   isOpen: boolean;
@@ -48,6 +49,7 @@ export function HalfBinModeBlockedModal({
   onClose,
   onRemediate,
 }: HalfBinModeBlockedModalProps) {
+  const t = useTranslation();
   const [isRemediating, setIsRemediating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -105,7 +107,7 @@ export function HalfBinModeBlockedModal({
       await onRemediate();
       // Success - modal will be closed by parent component
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while moving bins');
+      setError(err instanceof Error ? err.message : t('halfBinBlocked.errorFallback'));
       setIsRemediating(false);
     }
   };
@@ -149,22 +151,13 @@ export function HalfBinModeBlockedModal({
           <div className="flex-1 min-w-0">
             {/* Title */}
             <h2 id="half-bin-blocked-title" className="text-lg font-semibold text-content mb-2">
-              Cannot Disable Half-Bin Mode
+              {t('halfBinBlocked.title')}
             </h2>
 
             {/* Message */}
             <div id="half-bin-blocked-message" className="space-y-3">
               <p className="text-sm text-content-secondary leading-relaxed">
-                Your layout contains{' '}
-                <span className="font-medium text-content">
-                  {violation.count} bin{violation.count !== 1 ? 's' : ''}
-                </span>{' '}
-                with fractional dimensions (0.5 unit increments).
-              </p>
-
-              <p className="text-sm text-content-secondary leading-relaxed">
-                To disable half-bin mode, these bins must be removed from the grid. You can move
-                them to the staging area now.
+                {t('halfBinBlocked.message')}
               </p>
             </div>
 
@@ -191,9 +184,9 @@ export function HalfBinModeBlockedModal({
                      hover:bg-surface-elevated
                      disabled:opacity-50 disabled:cursor-not-allowed
                      transition-colors"
-            aria-label="Cancel and keep half-bin mode enabled"
+            aria-label={t('halfBinBlocked.cancelAriaLabel')}
           >
-            Cancel
+            {t('common.cancel')}
           </button>
 
           <button
@@ -205,7 +198,7 @@ export function HalfBinModeBlockedModal({
                      disabled:opacity-50 disabled:cursor-not-allowed
                      transition-colors
                      flex items-center gap-2"
-            aria-label={`Move ${violation.count} bin${violation.count !== 1 ? 's' : ''} to staging and disable half-bin mode`}
+            aria-label={t('halfBinMode.remediate.ariaLabel', { count: violation.count })}
           >
             {isRemediating ? (
               <>
@@ -230,11 +223,11 @@ export function HalfBinModeBlockedModal({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                <span>Moving...</span>
+                <span>{t('common.loading')}</span>
               </>
             ) : (
               <>
-                <span>Move to Staging</span>
+                <span>{t('halfBinBlocked.close')}</span>
                 <svg
                   className="w-4 h-4"
                   fill="none"

@@ -40,7 +40,7 @@ describe('CustomPropertiesEditor', () => {
           variant="desktop"
         />
       );
-      expect(getByText('(2)')).toBeInTheDocument();
+      expect(getByText('2 custom properties')).toBeInTheDocument();
     });
 
     it('renders Add button when not at max', () => {

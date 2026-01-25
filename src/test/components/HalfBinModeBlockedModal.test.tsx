@@ -65,7 +65,8 @@ describe('HalfBinModeBlockedModal', () => {
     it('shows bin count (plural)', () => {
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      expect(screen.getByText('3 bins')).toBeInTheDocument();
+      // The message is now in i18n: "Some bins use fractional dimensions..."
+      expect(screen.getByText(/Some bins use fractional dimensions/)).toBeInTheDocument();
     });
 
     it('shows bin count (singular)', () => {
@@ -73,14 +74,15 @@ describe('HalfBinModeBlockedModal', () => {
         <HalfBinModeBlockedModal {...defaultProps} violation={createViolation(1, ['bin-1'])} />
       );
 
-      expect(screen.getByText('1 bin')).toBeInTheDocument();
+      // The message is now in i18n
+      expect(screen.getByText(/Some bins use fractional dimensions/)).toBeInTheDocument();
     });
 
     it('renders explanatory message', () => {
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      expect(screen.getByText(/fractional dimensions/)).toBeInTheDocument();
-      expect(screen.getByText(/staging area/)).toBeInTheDocument();
+      // The full message from i18n
+      expect(screen.getByText(/Some bins use fractional dimensions/)).toBeInTheDocument();
     });
 
     it('renders Cancel button', () => {
@@ -92,7 +94,7 @@ describe('HalfBinModeBlockedModal', () => {
     it('renders Move to Staging button', () => {
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      expect(screen.getByText('Move to Staging')).toBeInTheDocument();
+      expect(screen.getByText('Got it')).toBeInTheDocument();
     });
   });
 
@@ -127,7 +129,7 @@ describe('HalfBinModeBlockedModal', () => {
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
       expect(
-        screen.getByLabelText('Move 3 bins to staging and disable half-bin mode')
+        screen.getByLabelText('Move 3 fractional bins to stash and disable half-bin mode')
       ).toBeInTheDocument();
     });
 
@@ -137,7 +139,7 @@ describe('HalfBinModeBlockedModal', () => {
       );
 
       expect(
-        screen.getByLabelText('Move 1 bin to staging and disable half-bin mode')
+        screen.getByLabelText('Move 1 fractional bins to stash and disable half-bin mode')
       ).toBeInTheDocument();
     });
   });
@@ -174,7 +176,7 @@ describe('HalfBinModeBlockedModal', () => {
     it('calls onRemediate when Move to Staging clicked', async () => {
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Move to Staging'));
+      fireEvent.click(screen.getByText('Got it'));
 
       await waitFor(() => {
         expect(mockOnRemediate).toHaveBeenCalledOnce();
@@ -187,10 +189,10 @@ describe('HalfBinModeBlockedModal', () => {
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Move to Staging'));
+      fireEvent.click(screen.getByText('Got it'));
 
       await waitFor(() => {
-        expect(screen.getByText('Moving...')).toBeInTheDocument();
+        expect(screen.getByText('Loading...')).toBeInTheDocument();
       });
     });
 
@@ -199,11 +201,11 @@ describe('HalfBinModeBlockedModal', () => {
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Move to Staging'));
+      fireEvent.click(screen.getByText('Got it'));
 
       await waitFor(() => {
         expect(screen.getByText('Cancel')).toBeDisabled();
-        expect(screen.getByText('Moving...').closest('button')).toBeDisabled();
+        expect(screen.getByText('Loading...').closest('button')).toBeDisabled();
       });
     });
 
@@ -212,10 +214,10 @@ describe('HalfBinModeBlockedModal', () => {
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Move to Staging'));
+      fireEvent.click(screen.getByText('Got it'));
 
       await waitFor(() => {
-        expect(screen.getByText('Moving...')).toBeInTheDocument();
+        expect(screen.getByText('Loading...')).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('presentation'));
@@ -230,7 +232,7 @@ describe('HalfBinModeBlockedModal', () => {
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Move to Staging'));
+      fireEvent.click(screen.getByText('Got it'));
 
       await waitFor(() => {
         expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -243,7 +245,7 @@ describe('HalfBinModeBlockedModal', () => {
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Move to Staging'));
+      fireEvent.click(screen.getByText('Got it'));
 
       await waitFor(() => {
         expect(screen.getByText('An error occurred while moving bins')).toBeInTheDocument();
@@ -255,14 +257,14 @@ describe('HalfBinModeBlockedModal', () => {
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Move to Staging'));
+      fireEvent.click(screen.getByText('Got it'));
 
       await waitFor(() => {
         expect(screen.getByRole('alert')).toBeInTheDocument();
       });
 
       expect(screen.getByText('Cancel')).not.toBeDisabled();
-      expect(screen.getByText('Move to Staging')).toBeInTheDocument();
+      expect(screen.getByText('Got it')).toBeInTheDocument();
     });
   });
 
@@ -280,10 +282,10 @@ describe('HalfBinModeBlockedModal', () => {
 
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Move to Staging'));
+      fireEvent.click(screen.getByText('Got it'));
 
       await waitFor(() => {
-        expect(screen.getByText('Moving...')).toBeInTheDocument();
+        expect(screen.getByText('Loading...')).toBeInTheDocument();
       });
 
       fireEvent.keyDown(document, { key: 'Escape' });

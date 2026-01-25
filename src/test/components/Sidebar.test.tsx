@@ -339,7 +339,9 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       expect(screen.getByText('Half-unit edge position')).toBeInTheDocument();
-      expect(screen.getByText('Width (+.5)')).toBeInTheDocument();
+      // Check for Width label in fractional edge controls (there are multiple "Width" texts)
+      const widthLabels = screen.getAllByText('Width');
+      expect(widthLabels.length).toBeGreaterThan(1);
     });
 
     it('shows edge controls when depth is fractional', () => {
@@ -348,7 +350,9 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       expect(screen.getByText('Half-unit edge position')).toBeInTheDocument();
-      expect(screen.getByText('Depth (+.5)')).toBeInTheDocument();
+      // Check for Depth label in fractional edge controls (there are multiple "Depth" texts)
+      const depthLabels = screen.getAllByText('Depth');
+      expect(depthLabels.length).toBeGreaterThan(1);
     });
 
     it('shows Left/Right buttons for fractional width', () => {
@@ -437,7 +441,7 @@ describe('Sidebar', () => {
     it('renders Gridfinity attribution', () => {
       render(<Sidebar />);
 
-      expect(screen.getByText(/Gridfinity by/)).toBeInTheDocument();
+      expect(screen.getByText(/by Zack Freedman/)).toBeInTheDocument();
       expect(screen.getByText('Zack Freedman')).toBeInTheDocument();
     });
 

@@ -4,6 +4,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore, useUndoableAction } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { useTranslation } from '@/i18n';
 
 // Square sizes (matching desktop ActiveLayerPanel)
 const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];
@@ -32,6 +33,7 @@ const RECTANGLE_SIZES = [
  * Mobile-optimized with 44px touch targets.
  */
 export function ToolsTab() {
+  const t = useTranslation();
   const [rotated, setRotated] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
@@ -92,7 +94,7 @@ export function ToolsTab() {
         .layout.bins.filter((b) => b.layerId === activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
-        addToast(`Added ${added} bin${added !== 1 ? 's' : ''} to fill gaps`, 'success');
+        addToast(t('toast.fillComplete', { count: added }), 'success');
       }
     }, 0);
   };
@@ -104,7 +106,7 @@ export function ToolsTab() {
       clearLayer(activeLayerId);
       setSelectedBins([]);
     });
-    addToast(`Cleared ${count} bins from layer`, 'success');
+    addToast(t('toast.clearComplete', { count }), 'success');
     setShowClearConfirm(false);
     closeMobilePanel();
   };
@@ -124,7 +126,7 @@ export function ToolsTab() {
         .layout.bins.filter((b) => b.layerId === activeLayerId).length;
       const added = afterCount - beforeCount;
       if (added > 0) {
-        addToast(`Added ${added} ${width}×${depth} bins`, 'success');
+        addToast(t('toast.fillWithSize', { count: added, width, depth }), 'success');
       }
     }, 0);
   };
@@ -149,7 +151,7 @@ export function ToolsTab() {
             ? 'bg-accent/20 ring-2 ring-accent'
             : 'bg-surface-elevated hover:bg-surface-hover'
         }`}
-        aria-label={`${isActive ? 'Deselect' : 'Select'} ${w}×${d} for painting`}
+        aria-label={t('mobile.tools.selectForPaint', { action: t(isActive ? 'mobile.tools.deselect' : 'mobile.tools.select'), width: w, depth: d })}
       >
         <div
           className="rounded-[2px]"
@@ -172,11 +174,11 @@ export function ToolsTab() {
     <div className="pb-4">
       {/* Instructions */}
       <p className="text-xs text-content-tertiary mb-4">
-        Select a size, then tap or drag on grid to place bins.
+        {t('mobile.tools.instructions')}
       </p>
 
       {/* Squares section */}
-      <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">Squares</div>
+      <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">{t('mobile.tools.squares')}</div>
       <div className="grid grid-cols-6 gap-2">
         {SQUARE_SIZES.map((size) => (
           <SizeButton key={`${size}×${size}`} w={size} d={size} />
@@ -185,11 +187,11 @@ export function ToolsTab() {
 
       {/* Rectangles section */}
       <div className="flex items-center justify-between mt-4 mb-2">
-        <span className="text-xs text-content-tertiary uppercase tracking-wide">Rectangles</span>
+        <span className="text-xs text-content-tertiary uppercase tracking-wide">{t('mobile.tools.rectangles')}</span>
         <button
           onClick={() => setRotated(!rotated)}
           className="text-xs text-content-tertiary hover:text-content flex items-center gap-1.5 px-2 py-1 rounded transition-colors"
-          aria-label={rotated ? 'Switch to wide rectangles' : 'Switch to tall rectangles'}
+          aria-label={t(rotated ? 'mobile.tools.switchToWide' : 'mobile.tools.switchToTall')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -199,7 +201,7 @@ export function ToolsTab() {
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-          {rotated ? 'Tall' : 'Wide'}
+          {t(rotated ? 'mobile.tools.tall' : 'mobile.tools.wide')}
         </button>
       </div>
       <div className="grid grid-cols-5 gap-2">
@@ -217,7 +219,7 @@ export function ToolsTab() {
             onClick={() => handleFill(paintSize.width, paintSize.depth)}
             className="btn btn-primary w-full h-11 justify-center"
           >
-            Fill with {paintSize.width}×{paintSize.depth}
+            {t('mobile.tools.fillWithSize', { width: paintSize.width, depth: paintSize.depth })}
           </button>
         )}
 
@@ -235,7 +237,7 @@ export function ToolsTab() {
               d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
             />
           </svg>
-          {emptyCells > 0 ? `Fill ${emptyCells} Gaps` : 'No Gaps'}
+          {emptyCells > 0 ? t('mobile.tools.fillGaps', { count: emptyCells }) : t('mobile.tools.noGaps')}
         </button>
 
         {/* Clear Layer */}
@@ -252,16 +254,16 @@ export function ToolsTab() {
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
           </svg>
-          {layerBins.length > 0 ? `Clear ${layerBins.length} Bins` : 'No Bins'}
+          {layerBins.length > 0 ? t('mobile.tools.clearBins', { count: layerBins.length }) : t('mobile.tools.noBins')}
         </button>
       </div>
 
       {/* Clear confirmation dialog */}
       <ConfirmDialog
         isOpen={showClearConfirm}
-        title="Clear Layer"
-        message={`Remove all ${layerBins.length} bin${layerBins.length !== 1 ? 's' : ''} from "${activeLayer.name}"? This can be undone.`}
-        confirmText="Clear"
+        title={t('layers.clearLayer.title')}
+        message={t('layers.clearLayer.message', { count: layerBins.length })}
+        confirmText={t('layers.clearLayer.confirm')}
         destructive
         onConfirm={handleClearLayer}
         onCancel={() => setShowClearConfirm(false)}

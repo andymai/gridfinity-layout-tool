@@ -92,7 +92,7 @@ describe('CategoriesPanel', () => {
     it('shows add category button', () => {
       render(<CategoriesPanel />);
 
-      expect(screen.getByLabelText('Add new category')).toBeInTheDocument();
+      expect(screen.getByLabelText('Add category')).toBeInTheDocument();
     });
 
     it('shows active indicator on selected category', () => {
@@ -142,7 +142,7 @@ describe('CategoriesPanel', () => {
     it('adds a new category when button clicked', () => {
       render(<CategoriesPanel />);
 
-      fireEvent.click(screen.getByLabelText('Add new category'));
+      fireEvent.click(screen.getByLabelText('Add category'));
 
       const categories = useLayoutStore.getState().layout.categories;
       expect(categories).toHaveLength(3);
@@ -152,7 +152,7 @@ describe('CategoriesPanel', () => {
     it('enters edit mode for new category', () => {
       render(<CategoriesPanel />);
 
-      fireEvent.click(screen.getByLabelText('Add new category'));
+      fireEvent.click(screen.getByLabelText('Add category'));
 
       // Should show input field for editing
       expect(screen.getByDisplayValue('New Category')).toBeInTheDocument();
@@ -340,7 +340,7 @@ describe('CategoriesPanel', () => {
       render(<CategoriesPanel />);
 
       // Should show count of 2 for coral
-      expect(screen.getByTitle('2 bins use this category')).toBeInTheDocument();
+      expect(screen.getByTitle('2 bin(s) use this category')).toBeInTheDocument();
     });
 
     it('shows empty for categories without bins', () => {

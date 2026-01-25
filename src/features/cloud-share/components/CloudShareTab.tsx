@@ -4,6 +4,7 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from '@/i18n';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
 import type { SharePermission } from '@/core/types';
@@ -15,6 +16,7 @@ interface CloudShareTabProps {
 }
 
 export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShareTabProps) {
+  const t = useTranslation();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
   const urlInputRef = useRef<HTMLInputElement>(null);
@@ -83,12 +85,12 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
     return (
       <div className="space-y-4">
         <p className="text-sm text-content-secondary">
-          Share your layout to the cloud for easy sharing. Anyone with the link can import it.
+          {t('share.cloud.description')}
         </p>
 
         <div className="flex items-center gap-3">
           <label htmlFor="permission" className="text-sm text-content-secondary whitespace-nowrap">
-            Permission:
+            {t('share.cloud.permissionsLabel')}
           </label>
           <select
             id="permission"
@@ -96,13 +98,13 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
             onChange={(e) => setPermission(e.target.value as SharePermission)}
             className="bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <option value="view">Anyone can view</option>
-            <option value="edit">Anyone can edit</option>
+            <option value="view">{t('share.cloud.viewOnly')}</option>
+            <option value="edit">{t('share.cloud.canEdit')}</option>
           </select>
         </div>
 
         <button onClick={handleShare} className="btn btn-primary w-full">
-          Share to Cloud
+          {t('share.cloud.publish')}
         </button>
 
         <div className="text-xs text-content-tertiary border-t border-stroke-subtle pt-3 mt-3">
@@ -119,27 +121,27 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
       <div className="space-y-4">
         <div className="bg-surface rounded-lg p-4">
           <div className="text-sm text-content-secondary mb-1">
-            Shared on {formatShareDate(existingShare.sharedAt)}
+            {t('share.cloud.lastUpdated', { date: formatShareDate(existingShare.sharedAt) })}
           </div>
           <div className="text-sm text-content">
             {existingShare.permission === 'edit'
-              ? 'Anyone with the link can edit'
-              : 'Anyone with the link can view'}
+              ? t('share.cloud.canEdit')
+              : t('share.cloud.viewOnly')}
           </div>
         </div>
 
         <div className="flex gap-2">
           <button onClick={handleCopyUrl} className="btn btn-primary flex-1">
-            {urlCopied ? 'Copied!' : 'Copy Link'}
+            {urlCopied ? t('share.cloud.linkCopied') : t('share.cloud.copyLink')}
           </button>
           <select
             value={permission}
             onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
             className="btn btn-secondary"
-            aria-label="Update permission"
+            aria-label={t('share.cloud.permissions')}
           >
-            <option value="view">View only</option>
-            <option value="edit">Can edit</option>
+            <option value="view">{t('share.cloud.viewOnly')}</option>
+            <option value="edit">{t('share.cloud.canEdit')}</option>
           </select>
         </div>
 
@@ -147,7 +149,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           onClick={() => setShowDeleteConfirm(true)}
           className="text-sm text-content-tertiary hover:text-error transition-colors"
         >
-          Delete share
+          {t('share.cloud.unpublish')}
         </button>
 
         {showDeleteConfirm && (
@@ -160,10 +162,10 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
                 onClick={handleDelete}
                 className="btn btn-secondary text-error border-error hover:bg-error hover:text-white"
               >
-                Delete
+                {t('common.delete')}
               </button>
               <button onClick={() => setShowDeleteConfirm(false)} className="btn btn-secondary">
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
           </div>
@@ -179,8 +181,8 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
   // Loading states
   if (status === 'sharing' || status === 'updating' || status === 'deleting') {
     const messages = {
-      sharing: 'Uploading layout...',
-      updating: 'Updating share...',
+      sharing: t('share.cloud.publishing'),
+      updating: t('share.cloud.updating'),
       deleting: 'Deleting share...',
     };
 
@@ -216,11 +218,11 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          <span className="font-medium">Layout shared successfully!</span>
+          <span className="font-medium">{t('share.cloud.published')}</span>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm text-content-secondary">Share link:</label>
+          <label className="text-sm text-content-secondary">{t('share.cloud.shareLink')}</label>
           <div className="flex gap-2">
             <input
               ref={urlInputRef}
@@ -231,24 +233,22 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
               className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-accent"
             />
             <button onClick={handleCopyUrl} className="btn btn-primary px-4">
-              {urlCopied ? 'Copied!' : 'Copy'}
+              {urlCopied ? t('share.cloud.linkCopied') : t('common.copy')}
             </button>
           </div>
         </div>
 
         <div className="text-sm text-content-secondary">
           {result.permission === 'edit'
-            ? 'Anyone with the link can edit'
-            : 'Anyone with the link can view'}
+            ? t('share.cloud.canEdit')
+            : t('share.cloud.viewOnly')}
         </div>
 
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="btn btn-primary">
-            Done
+            {t('common.done')}
           </button>
-          <button onClick={reset} className="btn btn-secondary">
-            Share Another
-          </button>
+          <button onClick={reset} className="btn btn-secondary">{t('share.shareAnother')}</button>
         </div>
       </div>
     );
@@ -267,18 +267,16 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-          <span className="font-medium">Failed to share layout</span>
+          <span className="font-medium">{t('share.failedToShareLayout')}</span>
         </div>
 
         <p className="text-sm text-content-secondary">{error.message}</p>
 
         <div className="flex gap-3">
           <button onClick={reset} className="btn btn-primary">
-            Try Again
+            {t('error.tryAgain')}
           </button>
-          <button onClick={onSwitchToUrlTab} className="btn btn-secondary">
-            Use Share Link Instead
-          </button>
+          <button onClick={onSwitchToUrlTab} className="btn btn-secondary">{t('share.useShareLinkInstead')}</button>
         </div>
       </div>
     );

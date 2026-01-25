@@ -15,6 +15,7 @@ import { useResponsive } from '@/shared/hooks';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
+import { useTranslation } from '@/i18n';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
 const InspirationGallery = lazyWithRetry(() =>
@@ -32,6 +33,7 @@ const SettingsModal = lazyWithRetry(() =>
  * @returns The sidebar element as JSX to be mounted in the application layout.
  */
 export function Sidebar() {
+  const t = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -92,8 +94,8 @@ export function Sidebar() {
           <button
             onClick={toggle}
             className="btn btn-ghost btn-icon"
-            title="Expand panel"
-            aria-label="Expand left panel"
+            title={t('sidebar.expandPanel')}
+            aria-label={t('sidebar.expandLeftPanel')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -114,13 +116,13 @@ export function Sidebar() {
             }`}
           >
             <h2 className="flex-1 text-xs font-semibold text-content-tertiary uppercase tracking-wider">
-              Tools
+              {t('sidebar.tools')}
             </h2>
             <button
               onClick={() => setShowSettingsModal(true)}
               className="p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
-              title="Settings"
-              aria-label="Open settings"
+              title={t('sidebar.settings')}
+              aria-label={t('sidebar.openSettings')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -140,8 +142,8 @@ export function Sidebar() {
             <button
               onClick={toggle}
               className="p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
-              title="Collapse panel"
-              aria-label="Collapse left panel"
+              title={t('sidebar.collapsePanel')}
+              aria-label={t('sidebar.collapseLeftPanel')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -190,8 +192,8 @@ export function Sidebar() {
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-content">Inspiration Gallery</div>
-                  <div className="text-xs text-content-tertiary">Get ideas for your drawer</div>
+                  <div className="text-sm font-medium text-content">{t('sidebar.inspirationGallery')}</div>
+                  <div className="text-xs text-content-tertiary">{t('sidebar.inspirationHint')}</div>
                 </div>
                 <svg
                   className="w-4 h-4 text-content-tertiary group-hover:translate-x-0.5 transition-transform"
@@ -211,7 +213,7 @@ export function Sidebar() {
 
             {/* Grid Size */}
             <div data-grid-size-panel className="mt-auto px-4 py-4">
-              <CollapsibleSection title="Grid Size" variant="default">
+              <CollapsibleSection title={t('sidebar.gridSize')} variant="default">
                 <div className="text-xs text-content-secondary space-y-2">
                   {/* Width / Depth / Height in compact grid */}
                   <div className="grid grid-cols-3 gap-1.5">
@@ -220,7 +222,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={`Width in grid units (step: ${widthStep})`}
                       >
-                        Width
+                        {t('drawer.width')}
                       </label>
                       <StepperControl
                         value={drawer.width}
@@ -238,7 +240,7 @@ export function Sidebar() {
                         className="block text-content-tertiary mb-1"
                         title={`Depth in grid units (step: ${depthStep})`}
                       >
-                        Depth
+                        {t('drawer.depth')}
                       </label>
                       <StepperControl
                         value={drawer.depth}
@@ -254,9 +256,9 @@ export function Sidebar() {
                     <div>
                       <label
                         className="block text-content-tertiary mb-1"
-                        title="Maximum height in units"
+                        title={t('sidebar.maxHeight')}
                       >
-                        Height
+                        {t('drawer.height')}
                       </label>
                       <StepperControl
                         value={drawer.height}
@@ -298,7 +300,7 @@ export function Sidebar() {
                     onClick={handleHalfBinToggle}
                     role="checkbox"
                     aria-checked={halfBinMode}
-                    aria-label="Toggle half-bin mode"
+                    aria-label={t('sidebar.toggleHalfBinMode')}
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === ' ' || e.key === 'Enter') {
@@ -310,12 +312,12 @@ export function Sidebar() {
                     <div className="flex items-center gap-1.5">
                       <span
                         className={`leading-none ${halfBinMode ? 'text-content' : 'text-content-tertiary'}`}
-                        title="Enable 0.5 grid unit precision for half-size bins (H)"
+                        title={t('sidebar.halfBinTooltip')}
                       >
-                        Half-bin mode
+                        {t('sidebar.halfBinMode')}
                       </span>
                       <span className="text-[9px] leading-none text-warning bg-warning-muted px-1 py-0.5 rounded">
-                        experimental
+                        {t('settings.experimental')}
                       </span>
                       <kbd className="text-[9px] leading-none text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">
                         H
@@ -327,12 +329,10 @@ export function Sidebar() {
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
                   {(hasFractionalWidth || hasFractionalDepth) && (
                     <div className="pt-2 space-y-1.5">
-                      <div className="text-content-tertiary text-[10px] mb-1">
-                        Half-unit edge position
-                      </div>
+                      <div className="text-content-tertiary text-[10px] mb-1">{t('sidebar.halfUnitEdgePosition')}</div>
                       {hasFractionalWidth && (
                         <div className="flex items-center justify-between">
-                          <span className="text-content-tertiary">Width (+.5)</span>
+                          <span className="text-content-tertiary">{t('sidebar.width5')}</span>
                           <div className="flex rounded overflow-hidden border border-stroke-subtle">
                             <button
                               onClick={() => handleFractionalEdgeChange('x', 'start')}
@@ -341,10 +341,8 @@ export function Sidebar() {
                                   ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
-                              title="Place half-unit column on the left"
-                            >
-                              Left
-                            </button>
+                              title={t('sidebar.halfBinLeft')}
+                            >{t('sidebar.left')}</button>
                             <button
                               onClick={() => handleFractionalEdgeChange('x', 'end')}
                               className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
@@ -352,16 +350,14 @@ export function Sidebar() {
                                   ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
-                              title="Place half-unit column on the right"
-                            >
-                              Right
-                            </button>
+                              title={t('sidebar.halfBinRight')}
+                            >{t('sidebar.right')}</button>
                           </div>
                         </div>
                       )}
                       {hasFractionalDepth && (
                         <div className="flex items-center justify-between">
-                          <span className="text-content-tertiary">Depth (+.5)</span>
+                          <span className="text-content-tertiary">{t('sidebar.depth5')}</span>
                           <div className="flex rounded overflow-hidden border border-stroke-subtle">
                             <button
                               onClick={() => handleFractionalEdgeChange('y', 'start')}
@@ -370,10 +366,8 @@ export function Sidebar() {
                                   ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
-                              title="Place half-unit row at the bottom"
-                            >
-                              Bottom
-                            </button>
+                              title={t('sidebar.halfBinBottom')}
+                            >{t('sidebar.bottom')}</button>
                             <button
                               onClick={() => handleFractionalEdgeChange('y', 'end')}
                               className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
@@ -381,10 +375,8 @@ export function Sidebar() {
                                   ? 'bg-accent text-on-dark'
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
-                              title="Place half-unit row at the top"
-                            >
-                              Top
-                            </button>
+                              title={t('sidebar.halfBinTop')}
+                            >{t('sidebar.top')}</button>
                           </div>
                         </div>
                       )}
@@ -397,7 +389,7 @@ export function Sidebar() {
             {/* Physical Units */}
             <div data-units-panel className="px-4 py-4 border-t border-stroke-subtle">
               <CollapsibleSection
-                title="Physical Units"
+                title={t('sidebar.physicalUnits')}
                 variant="default"
                 defaultExpanded={isDesktop}
               >
@@ -453,8 +445,7 @@ export function Sidebar() {
             </div>
 
             {/* Attribution */}
-            <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
-              Gridfinity by{' '}
+            <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">{t('sidebar.gridfinityBy')}{' '}
               <a
                 href="https://www.youtube.com/c/ZackFreedman"
                 target="_blank"
@@ -463,8 +454,7 @@ export function Sidebar() {
               >
                 Zack Freedman
               </a>
-              <br />
-              Tool by{' '}
+              <br />{t('sidebar.toolBy')}{' '}
               <a
                 href="https://www.linkedin.com/in/andyhmai/"
                 target="_blank"
@@ -486,9 +476,7 @@ export function Sidebar() {
                   viewBox="0 0 24 24"
                 >
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>
-                Tip
-              </a>
+                </svg>{t('sidebar.tip')}</a>
             </div>
           </div>
         </div>
@@ -504,7 +492,7 @@ export function Sidebar() {
       )}
 
       {showInspirationGallery && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading gallery" />}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.gallery')} />}>
           <InspirationGallery
             isOpen={showInspirationGallery}
             onClose={() => setShowInspirationGallery(false)}
@@ -513,7 +501,7 @@ export function Sidebar() {
       )}
 
       {showSettingsModal && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading settings" />}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.settings')} />}>
           <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
         </Suspense>
       )}

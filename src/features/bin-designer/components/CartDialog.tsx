@@ -13,6 +13,7 @@ import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import type { BatchProgress } from '@/features/bin-designer/utils/batchExport';
 import type { CartItem } from '@/features/bin-designer/types';
+import { useTranslation } from '@/i18n';
 
 interface CartDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
   const removeFromCart = useCartStore((s) => s.removeFromCart);
   const clearCart = useCartStore((s) => s.clearCart);
   const addToast = useToastStore((s) => s.addToast);
+  const t = useTranslation();
 
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState<BatchProgress | null>(null);
@@ -122,13 +124,13 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
         className="mx-4 flex w-full max-w-lg flex-col rounded-lg border border-stroke-subtle bg-surface shadow-xl"
         style={{ maxHeight: '80vh' }}
         role="dialog"
-        aria-label="Export cart"
+        aria-label={t('binDesigner.exportCart')}
         aria-modal="true"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-content">Export Cart</h2>
+            <h2 className="text-lg font-semibold text-content">{t('binDesigner.exportCart')}</h2>
             <span className="rounded-full bg-accent-muted px-2 py-0.5 text-xs font-medium text-accent">
               {items.length}
             </span>
@@ -136,7 +138,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
           <button
             onClick={onClose}
             className="rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
-            aria-label="Close"
+            aria-label={t('common.close')}
             disabled={exporting}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -152,13 +154,13 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
               <svg className="mx-auto mb-3 h-12 w-12 text-content-disabled" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
-              <p className="text-sm font-medium text-content-secondary">Cart is empty</p>
+              <p className="text-sm font-medium text-content-secondary">{t('binDesigner.cartEmpty')}</p>
               <p className="mt-1 text-xs text-content-tertiary">
-                Use the &ldquo;Add to Cart&rdquo; button to queue designs for batch export.
+                {t('binDesigner.cartEmptyHint')}
               </p>
             </div>
           ) : (
-            <ul className="space-y-2" aria-label="Cart items">
+            <ul className="space-y-2" aria-label={t('binDesigner.cartItems')}>
               {items.map((item) => (
                 <CartItemRow
                   key={item.id}
@@ -176,9 +178,9 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
           <div className="border-t border-stroke-subtle px-5 py-4">
             {/* Estimates summary */}
             <div className="mb-3 flex gap-4 text-xs text-content-secondary">
-              <span>{totals.filament.toFixed(1)}g filament</span>
+              <span>{t('binDesigner.cart.filament', { amount: totals.filament.toFixed(1) })}</span>
               <span>{formatTime(totals.time)}</span>
-              <span>${totals.cost.toFixed(2)}</span>
+              <span>{t('binDesigner.cart.cost', { amount: totals.cost.toFixed(2) })}</span>
             </div>
 
             {/* Progress bar */}
@@ -198,7 +200,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
                   aria-valuenow={progress.current + 1}
                   aria-valuemin={0}
                   aria-valuemax={progress.total}
-                  aria-label="Export progress"
+                  aria-label={t('binDesigner.exportProgress')}
                 >
                   <div
                     className="h-full rounded-full bg-blue-500 transition-all"
@@ -221,17 +223,13 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
                 onClick={handleClearCart}
                 disabled={exporting}
                 className="text-xs text-content-secondary hover:text-content disabled:opacity-50"
-              >
-                Clear cart
-              </button>
+              >{t('binDesigner.clearCart')}</button>
               <div className="flex gap-2">
                 {exporting ? (
                   <button
                     onClick={handleCancel}
                     className="rounded-md px-4 py-2 text-sm font-medium text-content-secondary hover:bg-surface-hover"
-                  >
-                    Cancel
-                  </button>
+                  >{t('common.cancel')}</button>
                 ) : (
                   <button
                     onClick={handleExport}
@@ -239,9 +237,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Download ZIP
-                  </button>
+                    </svg>{t('binDesigner.downloadZip')}</button>
                 )}
               </div>
             </div>
@@ -269,6 +265,7 @@ function CartItemRow({
   onRemove: () => void;
   disabled: boolean;
 }) {
+  const t = useTranslation();
   const estimates = estimatePrint(item.params);
   const dims = `${item.params.width}×${item.params.depth}×${item.params.height}`;
 
@@ -291,7 +288,7 @@ function CartItemRow({
         <div className="flex gap-3 text-[10px] text-content-tertiary">
           <span>{dims}</span>
           <span>{item.params.style}</span>
-          <span>{estimates.gramsFilament.toFixed(1)}g</span>
+          <span>{t('binDesigner.cart.grams', { amount: estimates.gramsFilament.toFixed(1) })}</span>
         </div>
       </div>
 

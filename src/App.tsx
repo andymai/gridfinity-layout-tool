@@ -36,6 +36,7 @@ import { BinContextMenuWrapper } from './components/Mobile/BinContextMenuWrapper
 import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { LocalMutationsProvider } from './shared/contexts';
+import { useTranslation } from '@/i18n';
 
 // Lazy load cloud-share components - only needed when viewing/sharing layouts
 const SharedLayoutImporter = lazyWithRetry(() =>
@@ -126,6 +127,7 @@ try {
  * @returns The top-level React element for the application UI, including layout, panels, modals, and global providers.
  */
 export default function App() {
+  const t = useTranslation();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
   const { isMobile, isTablet } = useResponsive();
@@ -249,7 +251,7 @@ export default function App() {
   const wrapWithMutations = (content: React.ReactNode) => {
     if (isCollaborative && shareId) {
       return (
-        <Suspense fallback={<LoadingFallback label="Loading collaboration" />}>
+        <Suspense fallback={<LoadingFallback label={t('loading.collaboration')} />}>
           <CollabProvider shareId={shareId}>{content}</CollabProvider>
         </Suspense>
       );
@@ -277,7 +279,7 @@ export default function App() {
               />
             </svg>
           </div>
-          <h1 className="text-lg font-semibold mb-2 text-content">Unable to load app</h1>
+          <h1 className="text-lg font-semibold mb-2 text-content">{t('app.unableToLoadApp')}</h1>
           <p className="text-sm text-content-secondary mb-4">
             There was a problem loading your saved data. This is usually caused by corrupted
             storage. Try clearing your browser data for this site.
@@ -295,9 +297,7 @@ export default function App() {
               window.location.reload();
             }}
             className="btn btn-primary"
-          >
-            Clear Data & Reload
-          </button>
+          >{t('app.clearDataReload')}</button>
         </div>
       </div>
     );
@@ -306,7 +306,7 @@ export default function App() {
   // Bin Designer route - lazy loaded, behind feature flag
   if (isDesignerRoute && isDesignerEnabled) {
     return (
-      <Suspense fallback={<LoadingFallback label="Loading designer" />}>
+      <Suspense fallback={<LoadingFallback label={t('loading.designer')} />}>
         <DesignerPage />
       </Suspense>
     );
@@ -316,7 +316,7 @@ export default function App() {
   if (isMobile) {
     return wrapWithMutations(
       <div className={`h-screen ${entranceClass}`}>
-        <Suspense fallback={<LoadingFallback label="Loading mobile layout" />}>
+        <Suspense fallback={<LoadingFallback label={t('loading.mobileLayout')} />}>
           <MobileLayout
             isMobileHelpOpen={isMobileHelpOpen}
             setIsMobileHelpOpen={setIsMobileHelpOpen}
@@ -381,7 +381,7 @@ export default function App() {
 
         {/* Modals */}
         {isHelpOpen && (
-          <Suspense fallback={<LoadingFallback variant="overlay" label="Loading help" />}>
+          <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
             <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} isTablet />
           </Suspense>
         )}
@@ -429,9 +429,7 @@ export default function App() {
       className={`h-screen flex flex-col overflow-hidden bg-surface text-content ${entranceClass}`}
     >
       {/* Skip to content link for keyboard navigation */}
-      <a href="#main-grid" className="skip-to-content">
-        Skip to grid editor
-      </a>
+      <a href="#main-grid" className="skip-to-content">{t('app.skipToGridEditor')}</a>
 
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
       {hasSharedLayoutPreview && (
@@ -474,7 +472,7 @@ export default function App() {
 
       {/* Modals */}
       {isHelpOpen && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label="Loading help" />}>
+        <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.help')} />}>
           <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
         </Suspense>
       )}

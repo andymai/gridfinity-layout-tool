@@ -6,6 +6,7 @@ import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk } from '@/core/result';
+import { useTranslation } from '@/i18n';
 
 const COLOR_PALETTE = [
   { color: '#f87171', name: 'Coral' },
@@ -26,6 +27,7 @@ const COLOR_PALETTE = [
  * Mobile-optimized categories panel with large touch targets.
  */
 export function MobileCategoriesPanel() {
+  const t = useTranslation();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
@@ -74,7 +76,7 @@ export function MobileCategoriesPanel() {
         }
       });
       const binCount = selectedBinIds.length;
-      addToast(`Changed ${binCount} bin${binCount > 1 ? 's' : ''} to "${name}"`, 'success');
+      addToast(t('toast.categoryChanged', { count: binCount, name }), 'success');
     }
 
     closeMobilePanel();
@@ -108,7 +110,7 @@ export function MobileCategoriesPanel() {
     // Show helpful message if category is in use
     if (binCount > 0) {
       addToast(
-        `${binCount} bin${binCount > 1 ? 's' : ''} use "${name}". Reassign them first.`,
+        t('categories.deleteInUse', { count: binCount, name }),
         'error'
       );
       return;
@@ -116,7 +118,7 @@ export function MobileCategoriesPanel() {
 
     // Show message if it's the last category
     if (categories.length <= CONSTRAINTS.CATEGORIES_MIN) {
-      addToast('Cannot delete the last category', 'error');
+      addToast(t('categories.cannotDeleteLast'), 'error');
       return;
     }
 
@@ -145,8 +147,8 @@ export function MobileCategoriesPanel() {
     <div className="pb-4">
       <p className="text-sm mb-4 text-content-tertiary">
         {selectedBinIds.length > 0
-          ? `Tap a category to apply it to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}.`
-          : 'Select a category to use when drawing bins.'}
+          ? t('mobile.categories.tapToApply', { count: selectedBinIds.length })
+          : t('mobile.categories.selectDefault')}
       </p>
 
       <div className="space-y-2">
@@ -170,7 +172,7 @@ export function MobileCategoriesPanel() {
                     onChange={(e) => handleUpdateName(category.id, e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
                     className="input w-full"
-                    placeholder="Category name"
+                    placeholder={t('categories.categoryNamePlaceholder')}
                     autoFocus
                   />
 
@@ -198,12 +200,9 @@ export function MobileCategoriesPanel() {
                     <button
                       onClick={() => handleDelete(category.id, category.name)}
                       className={`btn flex-1 ${canDelete ? 'btn-danger' : 'btn-secondary opacity-50'}`}
-                    >
-                      Delete{binCount > 0 ? ` (${binCount} bins)` : ''}
+                    >{t('common.delete')}{binCount > 0 ? ` (${binCount} bins)` : ''}
                     </button>
-                    <button onClick={() => setEditingId(null)} className="btn btn-secondary flex-1">
-                      Done
-                    </button>
+                    <button onClick={() => setEditingId(null)} className="btn btn-secondary flex-1">{t('common.done')}</button>
                   </div>
                 </div>
               ) : (
@@ -212,8 +211,8 @@ export function MobileCategoriesPanel() {
                   onClick={() => handleSelectCategory(category.id, category.name)}
                   aria-label={
                     selectedBinIds.length > 0
-                      ? `Apply ${category.name} to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}`
-                      : `Select ${category.name} for new bins`
+                      ? t('mobile.categories.applyToSelected', { count: selectedBinIds.length, name: category.name })
+                      : t('mobile.categories.selectForNew', { name: category.name })
                   }
                 >
                   <div
@@ -229,9 +228,7 @@ export function MobileCategoriesPanel() {
                     </span>
                   )}
                   {isActive && (
-                    <span className="px-2 py-1 rounded text-xs font-medium bg-accent text-black">
-                      Active
-                    </span>
+                    <span className="px-2 py-1 rounded text-xs font-medium bg-accent text-black">{t('mobile.categories.active')}</span>
                   )}
                   <button
                     onClick={(e) => {
@@ -239,7 +236,7 @@ export function MobileCategoriesPanel() {
                       setEditingId(category.id);
                     }}
                     className="btn btn-ghost w-10 h-10 p-0"
-                    aria-label="Edit category"
+                    aria-label={t('mobile.categories.editCategory')}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -265,15 +262,13 @@ export function MobileCategoriesPanel() {
       >
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
-        Add Category
-      </button>
+        </svg>{t('mobile.categories.addCategory')}</button>
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}
-        title="Delete Category"
-        message={`Delete "${deleteConfirm?.name}"? This cannot be undone.`}
-        confirmText="Delete"
+        title={t('categories.confirmDelete.title')}
+        message={t('categories.confirmDelete.message', { name: deleteConfirm?.name || '' })}
+        confirmText={t('categories.confirmDelete.confirm')}
         destructive
         onConfirm={confirmDelete}
         onCancel={() => setDeleteConfirm(null)}

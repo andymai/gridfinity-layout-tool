@@ -272,7 +272,7 @@ describe('LayerPanel', () => {
       render(<LayerPanel />);
 
       // Click on the layer button for Layer 2
-      const layer2Button = screen.getByRole('button', { name: /Layer 2.*height units/ });
+      const layer2Button = screen.getByRole('button', { name: /Layer 2/ });
       fireEvent.click(layer2Button);
 
       expect(useUIStore.getState().activeLayerId).toBe('layer-2');
@@ -414,7 +414,7 @@ describe('LayerPanel', () => {
     it('shows total stats for multiple layers', () => {
       render(<LayerPanel />);
 
-      expect(screen.getByText(/total/)).toBeInTheDocument();
+      expect(screen.getByText(/bins total/)).toBeInTheDocument();
     });
   });
 
@@ -549,14 +549,14 @@ describe('LayerPanel', () => {
     it('layers have aria-pressed attribute', () => {
       render(<LayerPanel />);
 
-      const layerButton = screen.getByRole('button', { name: /Layer 1.*height units/ });
+      const layerButton = screen.getByRole('button', { name: /Layer 1.*Active/ });
       expect(layerButton).toHaveAttribute('aria-pressed');
     });
 
     it('active layer has aria-pressed true', () => {
       render(<LayerPanel />);
 
-      const layerButton = screen.getByRole('button', { name: /Layer 1.*active/ });
+      const layerButton = screen.getByRole('button', { name: /Layer 1.*Active/ });
       expect(layerButton).toHaveAttribute('aria-pressed', 'true');
     });
 

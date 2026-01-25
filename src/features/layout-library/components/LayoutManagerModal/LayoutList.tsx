@@ -4,6 +4,7 @@ import { LayoutListItem } from './LayoutListItem';
 import { useLayoutStore } from '@/core/store/layout';
 import { loadLayoutAsync, downloadLayoutAsFile } from '@/core/storage';
 import { useUIStore } from '@/core/store/ui';
+import { useTranslation } from '@/i18n';
 
 /** Threshold for showing search bar */
 const SEARCH_THRESHOLD = 6;
@@ -32,6 +33,7 @@ export function LayoutList({
   onCreate,
   onShare,
 }: LayoutListProps) {
+  const t = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -163,9 +165,7 @@ export function LayoutList({
             aria-hidden="true"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Layout
-        </button>
+          </svg>{t('layouts.newLayout')}</button>
 
         {/* Search (appears with 6+ layouts) */}
         {showSearch && (
@@ -189,15 +189,15 @@ export function LayoutList({
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search layouts..."
+              placeholder={t('layouts.searchPlaceholder')}
               className="w-full pl-9 pr-8 py-2 bg-surface border border-stroke rounded-lg text-sm text-content placeholder:text-content-tertiary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
-              aria-label="Search layouts"
+              aria-label={t('layouts.searchLayouts')}
             />
             {searchQuery && (
               <button
                 onClick={() => handleSearchChange('')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-content"
-                aria-label="Clear search"
+                aria-label={t('layouts.clearSearch')}
               >
                 <svg
                   className="w-4 h-4"
@@ -223,7 +223,7 @@ export function LayoutList({
       <div
         ref={listRef}
         role="listbox"
-        aria-label="Available layouts"
+        aria-label={t('layouts.availableLayouts')}
         aria-activedescendant={sortedEntries[focusedIndex]?.id}
         className="overflow-y-auto space-y-2 min-h-0 [scrollbar-gutter:stable]"
         onKeyDown={handleListKeyDown}
@@ -243,7 +243,7 @@ export function LayoutList({
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
-            <p>No layouts match "{searchQuery}"</p>
+            <p>{t('layouts.noLayoutsMatch', { query: searchQuery })}</p>
           </div>
         )}
 
@@ -262,8 +262,8 @@ export function LayoutList({
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
             </svg>
-            <p>No layouts yet</p>
-            <p className="text-sm mt-1">Create your first layout to get started</p>
+            <p>{t('layouts.noLayoutsYet')}</p>
+            <p className="text-sm mt-1">{t('layouts.createYourFirstLayoutToGetStarted')}</p>
           </div>
         )}
 
@@ -291,7 +291,7 @@ export function LayoutList({
 
       {/* Footer */}
       <div className="mt-4 pt-4 border-t border-stroke text-sm text-content-tertiary">
-        {entries.length} layout{entries.length === 1 ? '' : 's'}
+        {t('layouts.layoutCount', { count: entries.length })}
       </div>
     </div>
   );

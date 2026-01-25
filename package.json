@@ -22,7 +22,8 @@
     "size": "size-limit",
     "size:check": "size-limit --limit",
     "check:boundaries": "./scripts/check-module-boundaries.sh",
-    "check:boundaries:staged": "./scripts/check-module-boundaries.sh --staged"
+    "check:boundaries:staged": "./scripts/check-module-boundaries.sh --staged",
+    "check:i18n": "tsx scripts/check-i18n-keys.ts"
   },
   "size-limit": [
     {
@@ -101,6 +102,7 @@
     "@vitest/ui": "^4.0.16",
     "axe-core": "^4.11.1",
     "eslint": "^9.39.1",
+    "eslint-plugin-i18next": "^6.1.3",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "fake-indexeddb": "^6.2.5",

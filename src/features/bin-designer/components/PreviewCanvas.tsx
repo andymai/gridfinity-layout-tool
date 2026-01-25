@@ -27,6 +27,7 @@ import { useDesignerKeyboard } from '../hooks/useDesignerKeyboard';
 import { setPreviewCanvas, clearPreviewCanvas } from '../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
+import { useTranslation } from '@/i18n';
 
 /** localStorage key for persisting the user's preview color preference */
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
@@ -285,6 +286,7 @@ function usePresetTransition(
  * - Footprint grid matching the bin's unit dimensions
  */
 export function PreviewCanvas() {
+  const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
   const invalidateRef = useRef<(() => void) | null>(null);
   const [wireframe, setWireframe] = useState(false);
@@ -487,7 +489,7 @@ export function PreviewCanvas() {
             <div
               className="absolute right-2 top-2 flex items-center gap-1.5 rounded-full bg-surface-elevated/90 px-2.5 py-1 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur-sm"
               role="status"
-              aria-label="Updating mesh"
+              aria-label={t('binDesigner.updatingMesh')}
             >
               <svg
                 className="h-3 w-3 animate-spin motion-reduce:animate-none"
@@ -508,9 +510,7 @@ export function PreviewCanvas() {
                   fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
-              </svg>
-              Updating
-            </div>
+              </svg>{t('binDesigner.updating')}</div>
           )}
 
           {/* Control buttons */}
@@ -543,6 +543,7 @@ function getStoredHintDismissed(): boolean {
 }
 
 function TouchHint() {
+  const t = useTranslation();
   const { isTouchDevice, isDesktop } = useResponsive();
   const [dismissed, setDismissed] = useState(false);
 
@@ -563,18 +564,18 @@ function TouchHint() {
     <div
       className="absolute inset-x-0 bottom-3 flex justify-center"
       role="status"
-      aria-label="Touch gesture hints"
+      aria-label={t('binDesigner.touchGestureHints')}
     >
       <div className="flex items-center gap-3 rounded-full bg-black/70 px-4 py-2 text-[11px] text-white shadow-lg backdrop-blur-sm">
-        <span>Drag to orbit</span>
+        <span>{t('binDesigner.dragToOrbit')}</span>
         <span className="h-3 w-px bg-white/30" />
-        <span>Pinch to zoom</span>
+        <span>{t('binDesigner.pinchToZoom')}</span>
         <span className="h-3 w-px bg-white/30" />
-        <span>2 fingers to pan</span>
+        <span>{t('binDesigner.2FingersToPan')}</span>
         <button
           onClick={dismiss}
           className="ml-1 rounded-full p-0.5 hover:bg-white/20"
-          aria-label="Dismiss touch hints"
+          aria-label={t('binDesigner.dismissTouchHints')}
         >
           <svg
             className="h-3 w-3"

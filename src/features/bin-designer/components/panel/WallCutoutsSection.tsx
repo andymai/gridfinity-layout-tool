@@ -18,6 +18,7 @@ import { SliderInput } from '../controls/SliderInput';
 import { WallCutoutsIcon } from './SectionIllustrations';
 import { getCompartmentCount } from '../../utils/compartments';
 import type { WallCutout, WallConfig } from '../../types';
+import { useTranslation } from '@/i18n';
 
 const SIDES = ['front', 'back', 'left', 'right'] as const;
 type Side = (typeof SIDES)[number];
@@ -61,6 +62,7 @@ export function WallCutoutsSection() {
       setParam: s.setParam,
     }))
   );
+  const t = useTranslation();
 
   const isSolid = style === 'solid';
   const compartmentCount = getCompartmentCount(compartments);
@@ -97,7 +99,7 @@ export function WallCutoutsSection() {
 
   return (
     <CollapsibleSection
-      title="Wall Cutouts"
+      title={t('binDesigner.wallCutouts')}
       defaultExpanded={true}
       illustration={<WallCutoutsIcon />}
       summary={summary}

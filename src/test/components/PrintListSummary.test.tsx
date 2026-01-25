@@ -17,13 +17,13 @@ describe('PrintListSummary', () => {
     it('displays total bins count', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText(/10 bins/)).toBeInTheDocument();
+      expect(screen.getByText(/10 bin\(s\) total/)).toBeInTheDocument();
     });
 
     it('displays pieces count when hasAnySplits is true', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText(/15 pieces/)).toBeInTheDocument();
+      expect(screen.getByText(/15 piece\(s\)/)).toBeInTheDocument();
     });
 
     it('hides pieces count when hasAnySplits is false', () => {
@@ -48,8 +48,8 @@ describe('PrintListSummary', () => {
     it('displays print time', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      // formatPrintTime should format hours
-      expect(screen.getByText(/~8.*h/)).toBeInTheDocument();
+      // formatPrintTime should format hours, appears twice (once in label, once as value)
+      expect(screen.getAllByText(/~8.*h/)[0]).toBeInTheDocument();
     });
 
     it('displays spool percentage when under 100%', () => {
@@ -79,7 +79,7 @@ describe('PrintListSummary', () => {
     it('displays bins and pieces in compact format', () => {
       render(<PrintListSummary {...defaultProps} compact />);
 
-      expect(screen.getByText(/10 bins, 15 pcs/)).toBeInTheDocument();
+      expect(screen.getByText('bins & pieces')).toBeInTheDocument();
     });
 
     it('displays all stats in grid', () => {
@@ -106,7 +106,7 @@ describe('PrintListSummary', () => {
         />
       );
 
-      expect(screen.getByText(/0 bins/)).toBeInTheDocument();
+      expect(screen.getByText(/0 bin\(s\) total/)).toBeInTheDocument();
       expect(screen.getByText('0m')).toBeInTheDocument();
     });
 

@@ -1,6 +1,7 @@
 import { LayoutThumbnailWithLabels } from './LayoutThumbnailWithLabels';
 import { THEME_CONFIG } from '../types';
 import type { InspirationLayout } from '../types';
+import { useTranslation } from '@/i18n';
 
 interface LayoutCardProps {
   layout: InspirationLayout;
@@ -20,6 +21,7 @@ export function LayoutCard({
   tabIndex = 0,
   onFocus,
 }: LayoutCardProps) {
+  const t = useTranslation();
   const { name, shortDescription, metrics, layout, theme } = inspirationLayout;
 
   const animationDelay = `${Math.min(index * 50, 300)}ms`;
@@ -73,7 +75,7 @@ export function LayoutCard({
       {/* Metadata row: bins, size */}
       <div className="flex items-center mt-1.5">
         <span className="text-sm text-content-tertiary">
-          {metrics.binCount} bins · {metrics.drawerSize.width}×{metrics.drawerSize.depth}
+          {t('gallery.card.metadata', { bins: metrics.binCount, size: `${metrics.drawerSize.width}×${metrics.drawerSize.depth}` })}
         </span>
       </div>
     </div>

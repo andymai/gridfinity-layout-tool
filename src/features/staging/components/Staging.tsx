@@ -8,6 +8,7 @@ import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '@/core/const
 import { getBinTextColors } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { useTranslation } from '@/i18n';
 
 /** Clamp a value between min and max */
 function clamp(value: number, min: number, max: number): number {
@@ -81,6 +82,7 @@ function packBins(bins: PackedBin[], gridWidth: number): PackedBin[] {
  * Bins are displayed at actual scale, matching the main grid.
  */
 export function Staging() {
+  const t = useTranslation();
   const { layout, deleteBin, updateBin } = useLayoutStore(
     useShallow((state) => ({
       layout: state.layout,
@@ -277,9 +279,9 @@ export function Staging() {
         updateBin(binId, { width: bin.depth, depth: bin.width });
       });
 
-      addToast('Bin rotated', 'success');
+      addToast(t('toast.binRotated'), 'success');
     },
-    [stagingBins, execute, updateBin, addToast]
+    [stagingBins, execute, updateBin, addToast, t]
   );
 
   const handleClearStaging = () => {
@@ -301,7 +303,7 @@ export function Staging() {
       }
     });
     setShowClearConfirm(false);
-    addToast(`Deleted ${count} stashed bins`, 'success');
+    addToast(t('toast.stashCleared', { count }), 'success');
   };
 
   const isDraggingStagingBin = interaction?.type === 'stagingDrag';
@@ -491,7 +493,7 @@ export function Staging() {
               d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
             />
           </svg>
-          <span>{isDropTarget ? 'Drop to stash' : 'Drop here to stash'}</span>
+          <span>{isDropTarget ? t('staging.dropToStash') : t('staging.dropHereToStash')}</span>
         </div>
       </div>
     );
@@ -513,7 +515,7 @@ export function Staging() {
           onClick={handleToggleExpand}
           aria-expanded={isExpanded}
           aria-controls="staging-stash-panel"
-          title={isExpanded ? 'Click to collapse stash' : 'Click to expand stash'}
+          title={isExpanded ? t('staging.collapseStash') : t('staging.expandStash')}
         >
           <svg
             className={`w-3.5 h-3.5 transition-transform duration-200 text-content-tertiary ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
@@ -536,9 +538,9 @@ export function Staging() {
               d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
             />
           </svg>
-          <span className="text-sm text-content-secondary font-medium">Stash</span>
+          <span className="text-sm text-content-secondary font-medium">{t('staging.stash')}</span>
           <span className="px-1.5 py-0.5 rounded text-xs bg-surface-hover text-content-tertiary">
-            {stagingBins.length} {stagingBins.length === 1 ? 'bin' : 'bins'}
+            {t('staging.binCount', { count: stagingBins.length })}
           </span>
         </button>
 
@@ -553,9 +555,7 @@ export function Staging() {
               strokeWidth={2}
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
-          </svg>
-          Clear All
-        </button>
+          </svg>{t('staging.clearAll')}</button>
       </div>
 
       {/* Collapsible staging grid content */}
@@ -704,7 +704,7 @@ export function Staging() {
                   onContextMenu={(e) => handleBinContextMenu(bin.id, e)}
                   onPointerEnter={() => setHoveredBinId(bin.id)}
                   onPointerLeave={() => setHoveredBinId(null)}
-                  title={`${bin.label || 'Unlabeled'} — ${bin.width}×${bin.depth}×${bin.height}u\nClick to select • Drag to place on grid • Right-click for menu`}
+                  title={t('staging.binTooltip', { label: bin.label || t('staging.unlabeled'), width: bin.width, depth: bin.depth, height: bin.height })}
                 >
                   {/* Adaptive label: primary (label or dimensions) + optional secondary */}
                   {!isDragging && showAnyText && (
@@ -766,7 +766,7 @@ export function Staging() {
                         e.stopPropagation();
                         handleRotate(bin.id);
                       }}
-                      title="Rotate bin (R)"
+                      title={t('staging.rotateBin')}
                     >
                       <div
                         className="flex items-center justify-center transition-transform hover:scale-110"
@@ -805,9 +805,9 @@ export function Staging() {
       {/* Clear confirmation dialog */}
       <ConfirmDialog
         isOpen={showClearConfirm}
-        title="Clear Stash"
-        message={`Delete all ${stagingBins.length} stashed bins? This cannot be undone.`}
-        confirmText="Clear All"
+        title={t('staging.clearStash.title')}
+        message={t('staging.clearStash.message', { count: stagingBins.length })}
+        confirmText={t('staging.clearStash.confirm')}
         destructive
         onConfirm={handleClearStaging}
         onCancel={() => setShowClearConfirm(false)}

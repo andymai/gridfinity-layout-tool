@@ -12,6 +12,7 @@ import { useDesignerSharing } from '@/features/bin-designer/hooks/useDesignerSha
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
+import { useTranslation } from '@/i18n';
 
 interface ShareDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
   const params = useDesignerStore((s) => s.params);
   const setParams = useDesignerStore((s) => s.setParams);
   const { status, shareUrl, error, share, loadShared, reset } = useDesignerSharing();
+  const t = useTranslation();
 
   const [loadInput, setLoadInput] = useState('');
   const [copied, setCopied] = useState(false);
@@ -90,16 +92,16 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
       <div
         className="mx-4 w-full max-w-md rounded-lg border border-stroke-subtle bg-surface p-6 shadow-xl"
         role="dialog"
-        aria-label="Share design"
+        aria-label={t('binDesigner.shareDesign')}
         aria-modal="true"
       >
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-content">Share Design</h2>
+          <h2 className="text-lg font-semibold text-content">{t('binDesigner.shareDesign')}</h2>
           <button
             onClick={onClose}
             className="rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -110,7 +112,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
         {/* Share section */}
         <div className="space-y-3">
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-content">Create Share Link</h3>
+            <h3 className="text-sm font-medium text-content">{t('binDesigner.createShareLink')}</h3>
             <p className="text-xs text-content-secondary">
               Generate a link anyone can use to load this bin configuration.
             </p>
@@ -122,9 +124,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-                Create Share Link
-              </button>
+                </svg>{t('binDesigner.createShareLink')}</button>
             )}
 
             {status === 'sharing' && (
@@ -146,7 +146,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
                     value={shareUrl}
                     readOnly
                     className="flex-1 rounded-md border border-stroke-subtle bg-surface-secondary px-3 py-2 text-xs text-content"
-                    aria-label="Share URL"
+                    aria-label={t('binDesigner.shareUrl')}
                     onClick={(e) => (e.target as HTMLInputElement).select()}
                   />
                   <button
@@ -157,16 +157,12 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
                       <>
                         <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        Copied
-                      </>
+                        </svg>{t('binDesigner.copied')}</>
                     ) : (
                       <>
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                        Copy
-                      </>
+                        </svg>{t('common.copy')}</>
                     )}
                   </button>
                 </div>
@@ -180,21 +176,21 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
           {/* Divider */}
           <div className="flex items-center gap-3 py-1">
             <div className="h-px flex-1 bg-stroke-subtle" />
-            <span className="text-[10px] text-content-tertiary">or</span>
+            <span className="text-[10px] text-content-tertiary">{t('binDesigner.or')}</span>
             <div className="h-px flex-1 bg-stroke-subtle" />
           </div>
 
           {/* Load section */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-content">Load Shared Design</h3>
+            <h3 className="text-sm font-medium text-content">{t('binDesigner.loadSharedDesign')}</h3>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={loadInput}
                 onChange={(e) => setLoadInput(e.target.value)}
-                placeholder="Paste share URL or ID"
+                placeholder={t('binDesigner.pasteShareUrl')}
                 className="flex-1 rounded-md border border-stroke-subtle bg-surface-secondary px-3 py-2 text-xs text-content placeholder:text-content-tertiary focus:border-accent focus:outline-none"
-                aria-label="Share URL or ID"
+                aria-label={t('binDesigner.shareUrlOrId')}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleLoad(); }}
               />
               <button
@@ -202,7 +198,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
                 disabled={!loadInput.trim() || status === 'loading'}
                 className="rounded-md bg-surface-secondary px-3 py-2 text-xs font-medium text-content transition-colors hover:bg-surface-hover disabled:opacity-50"
               >
-                {status === 'loading' ? 'Loading...' : 'Load'}
+                {status === 'loading' ? t('binDesigner.loading') : t('binDesigner.load')}
               </button>
             </div>
           </div>

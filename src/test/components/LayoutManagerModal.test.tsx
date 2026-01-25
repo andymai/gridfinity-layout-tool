@@ -452,7 +452,7 @@ describe('LayoutManagerModal Accessibility', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/Click to confirm/i)).toBeInTheDocument();
+        expect(screen.getByText(/Delete Layout/i)).toBeInTheDocument();
       });
     });
   });
@@ -646,11 +646,11 @@ describe('LayoutManagerModal Accessibility', () => {
 
       // Click again to confirm
       await waitFor(() => {
-        expect(screen.getByText(/Click to confirm/i)).toBeInTheDocument();
+        expect(screen.getByText(/Delete Layout/i)).toBeInTheDocument();
       });
 
       act(() => {
-        fireEvent.click(screen.getByText(/Click to confirm/i));
+        fireEvent.click(screen.getByText(/Delete Layout/i));
       });
 
       await waitFor(() => {

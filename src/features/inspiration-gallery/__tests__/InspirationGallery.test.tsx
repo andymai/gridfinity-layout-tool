@@ -290,13 +290,13 @@ describe('InspirationGallery', () => {
     it('renders layout count in footer', () => {
       render(<InspirationGallery {...defaultProps} />);
 
-      expect(screen.getByText('3 layouts')).toBeInTheDocument();
+      expect(screen.getByText((content) => content.includes('3 layout(s)'))).toBeInTheDocument();
     });
 
     it('has close button', () => {
       render(<InspirationGallery {...defaultProps} />);
 
-      expect(screen.getByLabelText('Close gallery')).toBeInTheDocument();
+      expect(screen.getByLabelText('Close')).toBeInTheDocument();
     });
 
     it('has dialog role with aria attributes', () => {
@@ -336,7 +336,7 @@ describe('InspirationGallery', () => {
       fireEvent.click(screen.getByText('Workshop (2)'));
 
       await waitFor(() => {
-        expect(screen.getByText(/2 layouts? in Workshop/)).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes('2 layout(s) in Workshop'))).toBeInTheDocument();
       });
     });
 
@@ -379,7 +379,7 @@ describe('InspirationGallery', () => {
       const onClose = vi.fn();
       render(<InspirationGallery isOpen={true} onClose={onClose} />);
 
-      fireEvent.click(screen.getByLabelText('Close gallery'));
+      fireEvent.click(screen.getByLabelText('Close'));
 
       expect(onClose).toHaveBeenCalledTimes(1);
     });
@@ -543,7 +543,7 @@ describe('InspirationGallery', () => {
     it('focuses close button on mount', () => {
       render(<InspirationGallery {...defaultProps} />);
 
-      const closeButton = screen.getByLabelText('Close gallery');
+      const closeButton = screen.getByLabelText('Close');
       expect(document.activeElement).toBe(closeButton);
     });
 

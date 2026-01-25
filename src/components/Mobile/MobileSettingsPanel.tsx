@@ -15,11 +15,13 @@ import { Checkbox } from '@/shared/components/Checkbox';
 import { SectionHeader } from '@/shared/components/SectionHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import type { STLSearchSite } from '@/core/store/settings';
+import { useTranslation } from '@/i18n';
 
 /**
  * Privacy settings section for mobile.
  */
 function MobilePrivacySection() {
+  const t = useTranslation();
   const { mlTelemetryEnabled, updateSetting } = useSettingsStore(
     useShallow((state) => ({
       mlTelemetryEnabled: state.settings.mlTelemetryEnabled,
@@ -33,13 +35,13 @@ function MobilePrivacySection() {
 
   return (
     <section>
-      <SectionHeader title="Privacy" />
+      <SectionHeader title={t('settings.privacy')} />
       <div
         className="flex items-center justify-between py-2 cursor-pointer"
         onClick={handleToggle}
         role="checkbox"
         aria-checked={mlTelemetryEnabled}
-        aria-label="Toggle usage data collection"
+        aria-label={t('mobile.settings.toggleUsageDataCollection')}
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === ' ' || e.key === 'Enter') {
@@ -51,12 +53,8 @@ function MobilePrivacySection() {
         <div>
           <span
             className={`text-sm ${mlTelemetryEnabled ? 'text-content' : 'text-content-secondary'}`}
-          >
-            Help improve suggestions
-          </span>
-          <p className="text-xs text-content-tertiary">
-            Share bin sizes and placement patterns (no personal data)
-          </p>
+          >{t('mobile.settings.helpImproveSuggestions')}</span>
+          <p className="text-xs text-content-tertiary">{t('mobile.settings.shareBinSizesAndPlacementPatternsNo')}</p>
         </div>
         <Checkbox checked={mlTelemetryEnabled} variant="mobile" />
       </div>
@@ -68,6 +66,7 @@ function MobilePrivacySection() {
  * Mobile settings panel with grid configuration and app actions.
  */
 export function MobileSettingsPanel() {
+  const t = useTranslation();
   // Use consolidated drawer settings hook
   const {
     drawer,
@@ -116,12 +115,12 @@ export function MobileSettingsPanel() {
     <div className="pb-4 space-y-6">
       {/* Drawer Dimensions */}
       <section>
-        <SectionHeader title="Drawer Dimensions" />
+        <SectionHeader title={t('settings.drawerDimensions')} />
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           {/* Width */}
           <div>
-            <label className="block text-sm mb-1 text-content-tertiary">Width</label>
+            <label className="block text-sm mb-1 text-content-tertiary">{t('common.width')}</label>
             <StepperControl
               value={drawer.width}
               onChange={handleDrawerWidthInput}
@@ -136,7 +135,7 @@ export function MobileSettingsPanel() {
 
           {/* Depth */}
           <div>
-            <label className="block text-sm mb-1 text-content-tertiary">Depth</label>
+            <label className="block text-sm mb-1 text-content-tertiary">{t('common.depth')}</label>
             <StepperControl
               value={drawer.depth}
               onChange={handleDrawerDepthInput}
@@ -152,7 +151,7 @@ export function MobileSettingsPanel() {
 
         {/* Height */}
         <div>
-          <label className="block text-sm mb-1 text-content-tertiary">Height</label>
+          <label className="block text-sm mb-1 text-content-tertiary">{t('common.height')}</label>
           <StepperControl
             value={drawer.height}
             onStep={handleDrawerHeightChange}
@@ -193,7 +192,7 @@ export function MobileSettingsPanel() {
           onClick={handleHalfBinToggle}
           role="checkbox"
           aria-checked={halfBinMode}
-          aria-label="Toggle half-bin mode"
+          aria-label={t('mobile.settings.toggleHalfBinMode')}
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === ' ' || e.key === 'Enter') {
@@ -206,14 +205,10 @@ export function MobileSettingsPanel() {
             <div className="flex items-center gap-1.5">
               <span
                 className={`text-sm ${halfBinMode ? 'text-content' : 'text-content-secondary'}`}
-              >
-                Half-bin mode
-              </span>
-              <span className="text-[9px] text-warning bg-warning-muted px-1 py-0.5 rounded">
-                experimental
-              </span>
+              >{t('mobile.settings.halfBinMode')}</span>
+              <span className="text-[9px] text-warning bg-warning-muted px-1 py-0.5 rounded">{t('mobile.settings.experimental')}</span>
             </div>
-            <p className="text-xs text-content-tertiary">Allow 0.5 unit precision</p>
+            <p className="text-xs text-content-tertiary">{t('mobile.settings.allow05UnitPrecision')}</p>
           </div>
           <Checkbox checked={halfBinMode} variant="mobile" />
         </div>
@@ -221,7 +216,7 @@ export function MobileSettingsPanel() {
 
       {/* Grid Settings */}
       <section>
-        <SectionHeader title="Grid Settings" />
+        <SectionHeader title={t('settings.gridSettings')} />
 
         <div className="space-y-3">
           <SettingsRow label="1 grid unit" unit="mm" variant="mobile">
@@ -255,15 +250,14 @@ export function MobileSettingsPanel() {
             />
           </SettingsRow>
 
-          <div className="text-sm text-right text-content-disabled">
-            Max bin size: {maxGridUnits}×{maxGridUnits}
+          <div className="text-sm text-right text-content-disabled">{t('mobile.settings.maxBinSize')}{maxGridUnits}×{maxGridUnits}
           </div>
         </div>
       </section>
 
       {/* STL Search */}
       <section>
-        <SectionHeader title="STL Search" />
+        <SectionHeader title={t('settings.stlSearch')} />
         <div className="space-y-2">
           {settings.stlSearchSites.map((site: STLSearchSite) => (
             <div
@@ -294,22 +288,18 @@ export function MobileSettingsPanel() {
 
       {/* Preferences */}
       <section>
-        <SectionHeader title="Default Preferences" />
+        <SectionHeader title={t('settings.defaultPreferences')} />
 
         <div className="bg-surface-elevated rounded-lg p-3 space-y-2">
-          <div className="text-xs text-content-tertiary">New layouts will use these defaults:</div>
-          <div className="text-sm text-content-secondary">
-            Drawer: {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×
+          <div className="text-xs text-content-tertiary">{t('mobile.settings.newLayoutsWillUseTheseDefaults')}</div>
+          <div className="text-sm text-content-secondary">{t('mobile.settings.drawer')}{settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×
             {settings.defaultDrawerHeight}u
           </div>
-          <div className="text-sm text-content-secondary">
-            Layer height: {settings.defaultLayerHeight}u
+          <div className="text-sm text-content-secondary">{t('mobile.settings.layerHeight')}{settings.defaultLayerHeight}u
           </div>
-          <div className="text-sm text-content-secondary">
-            Print bed: {settings.defaultPrintBedSize}mm
+          <div className="text-sm text-content-secondary">{t('mobile.settings.printBed')}{settings.defaultPrintBedSize}mm
           </div>
-          <div className="text-sm text-content-secondary">
-            Grid unit: {settings.defaultGridUnitMm}mm
+          <div className="text-sm text-content-secondary">{t('mobile.settings.gridUnit')}{settings.defaultGridUnitMm}mm
           </div>
           <button
             onClick={() => setShowSaveDefaultsConfirm(true)}
@@ -322,9 +312,7 @@ export function MobileSettingsPanel() {
                 strokeWidth={2}
                 d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
               />
-            </svg>
-            Save Current as Defaults
-          </button>
+            </svg>{t('mobile.settings.saveCurrentAsDefaults')}</button>
         </div>
       </section>
 
@@ -333,7 +321,7 @@ export function MobileSettingsPanel() {
 
       {/* Labs */}
       <section>
-        <SectionHeader title="Experimental" />
+        <SectionHeader title={t('settings.experimental')} />
         <button
           onClick={openLabsDrawer}
           className="w-full flex items-center justify-between px-4 py-3 bg-surface-elevated rounded-lg hover:bg-surface-hover transition-colors"
@@ -341,14 +329,14 @@ export function MobileSettingsPanel() {
           <div className="flex items-center gap-3">
             <SparklesIcon className="w-5 h-5 text-accent" />
             <div className="text-left">
-              <div className="text-sm font-medium text-content">Labs</div>
-              <div className="text-xs text-content-tertiary">Try experimental features</div>
+              <div className="text-sm font-medium text-content">{t('mobile.settings.labs')}</div>
+              <div className="text-xs text-content-tertiary">{t('mobile.settings.tryExperimentalFeatures')}</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {labsEnabledCount > 0 && (
               <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[11px] font-semibold text-on-dark bg-accent rounded-full">
-                {labsEnabledCount > 9 ? '9+' : labsEnabledCount}
+                {labsEnabledCount > 9 ? t('common.overflowCount') : labsEnabledCount}
               </span>
             )}
             <ChevronRightIcon className="w-5 h-5 text-content-tertiary" />
@@ -366,10 +354,7 @@ export function MobileSettingsPanel() {
             className="hover:underline text-content-tertiary"
           >
             Gridfinity
-          </a>{' '}
-          by Zack Freedman
-          <br />
-          Tool by{' '}
+          </a>{' '}{t('mobile.settings.byZackFreedman')}<br />{t('mobile.settings.toolBy')}{' '}
           <a
             href="https://www.linkedin.com/in/andyhmai/"
             target="_blank"
@@ -383,9 +368,9 @@ export function MobileSettingsPanel() {
 
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}
-        title="Save as Defaults"
-        message={`Save current settings as defaults for new layouts?\n\nDrawer: ${drawer.width}×${drawer.depth}×${drawer.height}u\nLayer height: ${activeLayerHeight}u\nPrint bed: ${printBedSize}mm\nGrid unit: ${gridUnitMm}mm`}
-        confirmText="Save"
+        title={t('settings.confirmSaveDefaults.title')}
+        message={t('settings.confirmSaveDefaults.message', { width: drawer.width, depth: drawer.depth, height: drawer.height, layerHeight: activeLayerHeight, printBed: printBedSize, gridUnit: gridUnitMm })}
+        confirmText={t('settings.confirmSaveDefaults.confirm')}
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />

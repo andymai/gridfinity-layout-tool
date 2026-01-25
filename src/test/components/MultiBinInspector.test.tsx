@@ -91,7 +91,7 @@ describe('MultiBinInspector', () => {
       render(<MultiBinInspector inspector={inspector} variant="desktop" />);
 
       expect(screen.getByText('2')).toBeInTheDocument();
-      expect(screen.getByText('Bins Selected')).toBeInTheDocument();
+      expect(screen.getByText('bins selected')).toBeInTheDocument();
     });
 
     it('shows help text', () => {

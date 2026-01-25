@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import type { SharedWithMeEntry } from '@/core/types';
 import { useSharedWithMe } from '@/shared/hooks';
 import { SharedWithMeItem } from './SharedWithMeItem';
+import { useTranslation } from '@/i18n';
 
 interface SharedWithMeListProps {
   onOpenLayout: () => void; // Called after successfully opening a layout (to close modal)
@@ -12,6 +13,7 @@ interface SharedWithMeListProps {
  * Displays shared layouts sorted by last access time.
  */
 export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
+  const t = useTranslation();
   const { sharedWithMe, isLoaded, status, openSharedLayout, removeSharedLayout } =
     useSharedWithMe();
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -99,7 +101,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span>Loading...</span>
+          <span>{t('loading.sharedWithMe')}</span>
         </div>
       </div>
     );
@@ -124,7 +126,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-content mb-2">No shared layouts yet</h3>
+        <h3 className="text-lg font-medium text-content mb-2">{t('layouts.noSharedLayoutsYet')}</h3>
         <p className="text-sm text-content-secondary max-w-sm">
           When someone shares a layout with you, it will appear here automatically. Open a shared
           link to get started.
@@ -147,7 +149,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
       <div
         ref={listRef}
         role="listbox"
-        aria-label="Shared layouts"
+        aria-label={t('layouts.sharedLayouts')}
         className="flex flex-col gap-2"
         onKeyDown={handleKeyDown}
       >
@@ -167,7 +169,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
 
       {/* Count summary */}
       <div className="mt-2 text-xs text-content-tertiary text-center">
-        {sortedEntries.length} shared layout{sortedEntries.length !== 1 ? 's' : ''}
+        {t('layouts.sharedLayoutCount', { count: sortedEntries.length })}
       </div>
     </div>
   );

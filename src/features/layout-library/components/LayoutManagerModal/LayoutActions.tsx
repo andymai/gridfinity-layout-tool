@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { LayoutEntry } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 interface LayoutActionsProps {
   entry: LayoutEntry;
@@ -25,6 +26,7 @@ export function LayoutActions({
   onDuplicate,
   onDelete,
 }: LayoutActionsProps) {
+  const t = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
@@ -97,8 +99,8 @@ export function LayoutActions({
       <button
         onClick={handleAction(onCopyLink)}
         className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface transition-colors"
-        title="Copy share link"
-        aria-label={`Copy share link for ${entry.name}`}
+        title={t('common.copy')}
+        aria-label={`${t('common.copy')} ${entry.name}`}
       >
         <svg
           className="w-4 h-4"
@@ -120,8 +122,8 @@ export function LayoutActions({
       <button
         onClick={handleAction(onDownload)}
         className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface transition-colors"
-        title="Download as JSON"
-        aria-label={`Download ${entry.name} as JSON`}
+        title={t('common.download')}
+        aria-label={`${t('common.download')} ${entry.name}`}
       >
         <svg
           className="w-4 h-4"
@@ -189,7 +191,7 @@ export function LayoutActions({
                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                   />
                 </svg>
-                Rename
+                {t('common.rename')}
               </button>
               <button
                 role="menuitem"
@@ -210,7 +212,7 @@ export function LayoutActions({
                     d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                   />
                 </svg>
-                Duplicate
+                {t('common.duplicate')}
               </button>
               {!isOnlyLayout && (
                 <>
@@ -242,13 +244,11 @@ export function LayoutActions({
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                         />
                       </svg>
-                      {isConfirmingDelete ? 'Click to confirm' : 'Delete'}
+                      {isConfirmingDelete ? t('layouts.confirmDelete.confirm') : t('common.delete')}
                     </span>
                     {isConfirmingDelete && entry.preview.binCount > 0 && (
                       <span className="text-xs text-danger/60 ml-6">
-                        {entry.preview.binCount} bin{entry.preview.binCount === 1 ? '' : 's'} will
-                        be deleted
-                      </span>
+                        {t('layouts.binsWillBeDeleted', { count: entry.preview.binCount })}</span>
                     )}
                   </button>
                 </>

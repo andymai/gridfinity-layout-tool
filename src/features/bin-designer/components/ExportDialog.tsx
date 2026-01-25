@@ -17,8 +17,10 @@ import type { FileNameStyle } from '@/features/bin-designer/types';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
+import { useTranslation } from '@/i18n';
 
 export function ExportDialog() {
+  const t = useTranslation();
   const { exportDialogOpen, params, triangleCount, designName, exportFileNameConfig } =
     useDesignerStore(
       useShallow((state) => ({
@@ -106,12 +108,12 @@ export function ExportDialog() {
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
           <h2 id="export-dialog-title" className="text-lg font-semibold text-content">
-            Export Bin
+            {t('binDesigner.export')}
           </h2>
           <button
             onClick={() => setExportDialogOpen(false)}
             className="rounded-md p-1 text-content-tertiary hover:bg-surface-hover hover:text-content-secondary"
-            aria-label="Close export dialog"
+            aria-label={t('common.close')}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -126,16 +128,16 @@ export function ExportDialog() {
 
         {/* Format Selection */}
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-content-secondary">Format</label>
+          <label className="mb-2 block text-sm font-medium text-content-secondary">{t('binDesigner.format')}</label>
           <div className="grid grid-cols-3 gap-2">
             <FormatOption
-              label="STL"
+              label={t('binDesigner.formatSTL')}
               active={format === 'stl'}
               onClick={() => setFormat('stl')}
               description="Binary STL mesh"
             />
             <FormatOption
-              label="3MF"
+              label={t('binDesigner.format3MF')}
               active={format === '3mf'}
               onClick={() => setFormat('3mf')}
               description="Mesh + metadata"
@@ -146,9 +148,7 @@ export function ExportDialog() {
 
         {/* File Name */}
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-content-secondary">
-            File Name
-          </label>
+          <label className="mb-2 block text-sm font-medium text-content-secondary">{t('binDesigner.fileName')}</label>
           <div className="flex items-center rounded-md border border-stroke-subtle bg-surface">
             {exportFileNameConfig.style === 'custom' ? (
               <input
@@ -157,8 +157,8 @@ export function ExportDialog() {
                 value={exportFileNameConfig.customName}
                 onChange={(e) => handleCustomNameChange(e.target.value)}
                 className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-content outline-none"
-                placeholder="Enter filename"
-                aria-label="Custom file name"
+                placeholder={t('binDesigner.filenamePlaceholder')}
+                aria-label={t('binDesigner.customFileName')}
                 maxLength={128}
               />
             ) : (
@@ -191,9 +191,7 @@ export function ExportDialog() {
 
         {/* Print Estimates */}
         <div className="mb-5 rounded-lg border border-stroke-subtle bg-surface p-3">
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-tertiary">
-            Print Estimates (PLA)
-          </h3>
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-tertiary">{t('binDesigner.printEstimatesPla')}</h3>
           <div className="grid grid-cols-2 gap-y-1.5 text-sm">
             <EstimateRow label="Filament" value={formatFilament(estimates.metersFilament)} />
             <EstimateRow label="Weight" value={`${estimates.gramsFilament}g`} />
@@ -256,13 +254,11 @@ export function ExportDialog() {
               />
             </svg>
           )}
-          {isExporting ? 'Exporting…' : `Download ${format.toUpperCase()}`}
+          {isExporting ? t('binDesigner.exporting') : t('binDesigner.downloadFormat', { format: format.toUpperCase() })}
         </button>
 
         {!canExport && (
-          <p className="mt-2 text-center text-xs text-warning">
-            Generate a mesh first to enable export
-          </p>
+          <p className="mt-2 text-center text-xs text-warning">{t('binDesigner.generateAMeshFirstToEnableExport')}</p>
         )}
       </div>
     </div>

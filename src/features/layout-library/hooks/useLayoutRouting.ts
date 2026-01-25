@@ -16,6 +16,7 @@ import {
   getLayoutIdFromHistoryState,
   getCanonicalRedirect,
 } from '@/utils/url';
+import { useTranslation } from '@/i18n';
 
 /**
  * Hook that synchronizes the URL with the active layout.
@@ -35,6 +36,7 @@ import {
  * - Shared preview mode skips URL updates
  */
 export function useLayoutRouting(options: { skip?: boolean } = {}) {
+  const t = useTranslation();
   const hasInitialized = useRef(false);
 
   const { layout, activeLayoutId, importLayout } = useLayoutStore(
@@ -215,7 +217,7 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
       navigateToLayout(layoutId, false)
         .then((success) => {
           if (!success) {
-            addToast('Layout not found', 'error');
+            addToast(t('toast.layoutNotFound'), 'error');
             // Restore URL to current layout
             if (activeLayoutId && activeLayoutId !== '__shared_preview__') {
               const entry = getEntry(activeLayoutId);
@@ -232,7 +234,7 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [activeLayoutId, sharedLayoutPreview, navigateToLayout, addToast, getEntry, options.skip]);
+  }, [activeLayoutId, sharedLayoutPreview, navigateToLayout, addToast, getEntry, options.skip, t]);
 
   // Update URL when active layout changes (from UI interactions)
   useEffect(() => {

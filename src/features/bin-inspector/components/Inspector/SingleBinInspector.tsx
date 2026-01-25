@@ -7,6 +7,7 @@ import { StepperControl } from '@/shared/components/StepperControl';
 import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from './CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
+import { useTranslation } from '@/i18n';
 
 interface SingleBinInspectorProps {
   inspector: UseBinInspectorReturn;
@@ -39,6 +40,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   } = inspector;
 
   const halfBinMode = useUIStore((state) => state.halfBinMode);
+  const t = useTranslation();
 
   if (!bin) return null;
 
@@ -65,14 +67,13 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           aria-hidden="true"
         />
         <h2 className="flex-1 text-lg font-semibold text-content">
-          {formatDim(bin.width)}×{formatDim(bin.depth)} Bin
-        </h2>
+          {formatDim(bin.width)}×{formatDim(bin.depth)}{t('inspector.bin')}</h2>
         {onClose && (
           <button
             type="button"
             onClick={onClose || clearSelection}
             className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-            aria-label="Deselect bin"
+            aria-label={t('inspector.deselectBin')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -91,7 +92,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         <div className="flex items-end gap-2">
           {/* Width control */}
           <div className="flex-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>Width</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.width')}</label>
             <StepperControl
               value={bin.width}
               onChange={(val) => updateField('width', val)}
@@ -113,8 +114,8 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 ? 'btn btn-secondary w-12 h-12 p-0 flex-shrink-0'
                 : 'flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors'
             }
-            title="Swap width ↔ depth (R)"
-            aria-label="Swap width and depth"
+            title={t('inspector.swapDimensions')}
+            aria-label={t('inspector.swapWidthAndDepth')}
           >
             <svg
               className={isMobile ? 'w-5 h-5' : 'w-3 h-3'}
@@ -133,7 +134,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
           {/* Depth control */}
           <div className="flex-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>Depth</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.depth')}</label>
             <StepperControl
               value={bin.depth}
               onChange={(val) => updateField('depth', val)}
@@ -175,7 +176,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         >
           {/* Height control */}
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>Height</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.height')}</label>
             <StepperControl
               value={bin.height}
               onStep={(delta) => updateField('height', bin.height + delta)}
@@ -195,9 +196,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <div>
               <label
                 className={`block ${labelSize} text-content-tertiary`}
-                title="Extra blocked space above for tall contents"
+                title={t('inspector.clearanceTooltip')}
               >
-                Clearance
+                {t('inspector.clearance')}
               </label>
               <StepperControl
                 value={bin.clearanceHeight || 0}
@@ -211,8 +212,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 displayValue={`${bin.clearanceHeight || 0}u`}
               />
               <div className="text-center mt-1 text-[10px] text-content-disabled">
-                +{((bin.clearanceHeight || 0) * layout.heightUnitMm).toFixed(0)}mm above
-              </div>
+                {t('inspector.clearanceMm', { mm: ((bin.clearanceHeight || 0) * layout.heightUnitMm).toFixed(0) })}</div>
             </div>
           )}
         </div>
@@ -229,7 +229,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Category */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>Category</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.category')}</label>
           <SelectDropdown
             value={bin.category}
             onChange={(value) => updateField('category', value)}
@@ -243,7 +243,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         {/* Layer - only show for bins on grid (not in staging) */}
         {bin.layerId !== STAGING_ID && layout.layers.length > 1 && (
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>Layer</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.layer')}</label>
             <SelectDropdown
               value={bin.layerId}
               onChange={moveToLayer}
@@ -260,7 +260,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Label */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>Label</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.label')}</label>
           <input
             type="text"
             value={bin.label}
@@ -268,8 +268,8 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               updateField('label', e.target.value.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH))
             }
             className={`input w-full ${inputHeight}`}
-            placeholder="Optional label"
-            aria-label="Bin label"
+            placeholder={t('inspector.labelPlaceholder')}
+            aria-label={t('inspector.binLabel')}
           />
         </div>
 
@@ -284,15 +284,15 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Notes */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>Notes</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.notes')}</label>
           <textarea
             value={bin.notes}
             onChange={(e) =>
               updateField('notes', e.target.value.slice(0, CONSTRAINTS.NOTES_MAX_LENGTH))
             }
             className="input w-full"
-            placeholder="e.g., 2 dividers, STL link, contents"
-            aria-label="Bin notes"
+            placeholder={t('inspector.notesPlaceholder')}
+            aria-label={t('inspector.binNotes')}
             rows={3}
             style={{ resize: 'vertical', minHeight: '60px' }}
           />
@@ -316,17 +316,13 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               type="button"
               onClick={moveToStaging}
               className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
-            >
-              To Stash
-            </button>
+            >{t('inspector.toStash')}</button>
           )}
           <button
             type="button"
             onClick={requestDelete}
             className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
-          >
-            Delete
-          </button>
+          >{t('common.delete')}</button>
         </div>
       </div>
     </div>

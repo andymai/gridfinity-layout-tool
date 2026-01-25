@@ -6,6 +6,9 @@ import { useUIStore } from '@/core/store/ui';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from '@/components/Print/SplitPreview';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
+import { useTranslation } from '@/i18n';
+
+const OVERFLOW_PREFIX = '+';
 
 const BinListModal = lazyWithRetry(() =>
   import('@/components/Modals/BinListModal').then(namedExport('BinListModal'))
@@ -17,6 +20,7 @@ const BinListModal = lazyWithRetry(() =>
  * click to select bins, sort/filter controls.
  */
 export function MobilePrintList() {
+  const t = useTranslation();
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const [isExpandedModalOpen, setIsExpandedModalOpen] = useState(false);
@@ -46,14 +50,14 @@ export function MobilePrintList() {
       {/* Header with action buttons */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm text-content-tertiary">
-          {printList.totalBins} bins{printList.hasAnySplits ? `, ${printList.totalPieces} pcs` : ''}
+          {t('mobile.printList.summary', { bins: printList.totalBins, pieces: printList.totalPieces, hasSplits: printList.hasAnySplits ? '1' : '0' })}
         </span>
         <div className="flex items-center gap-2">
           {/* Expand button */}
           <button
             onClick={handleExpand}
             className="btn btn-ghost btn-sm gap-1.5"
-            aria-label="Expand bin list"
+            aria-label={t('mobile.printList.expandBinList')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -62,9 +66,7 @@ export function MobilePrintList() {
                 strokeWidth={2}
                 d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
               />
-            </svg>
-            Expand
-          </button>
+            </svg>{t('mobile.printList.expand')}</button>
           {/* Copy button */}
           <button onClick={handleCopy} className="btn btn-ghost btn-sm gap-1.5">
             {copyFeedback ? (
@@ -81,9 +83,7 @@ export function MobilePrintList() {
                     strokeWidth={2}
                     d="M5 13l4 4L19 7"
                   />
-                </svg>
-                Copied
-              </>
+                </svg>{t('mobile.printList.copied')}</>
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,9 +93,7 @@ export function MobilePrintList() {
                     strokeWidth={2}
                     d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                   />
-                </svg>
-                Copy
-              </>
+                </svg>{t('common.copy')}</>
             )}
           </button>
         </div>
@@ -134,9 +132,7 @@ export function MobilePrintList() {
                       );
                     })}
                     {(row.categoryIds ?? []).length > 3 && (
-                      <span className="text-xs text-content-disabled">
-                        +{(row.categoryIds ?? []).length - 3}
-                      </span>
+                      <span className="text-xs text-content-disabled">{OVERFLOW_PREFIX}{(row.categoryIds ?? []).length - 3}</span>
                     )}
                   </div>
 
@@ -146,9 +142,7 @@ export function MobilePrintList() {
                       <span className="font-semibold text-content">{row.size}</span>
                       <span className="text-sm text-content-tertiary">{row.height}u</span>
                       {row.needsSplit && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-[var(--color-warning-muted)] text-[var(--color-warning)]">
-                          Split
-                          <svg
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-[var(--color-warning-muted)] text-[var(--color-warning)]">{t('mobile.printList.split')}<svg
                             className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                             fill="none"
                             viewBox="0 0 24 24"
@@ -181,7 +175,7 @@ export function MobilePrintList() {
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
-                              aria-label="Has notes"
+                              aria-label={t('grid.hasNotesAriaLabel')}
                             >
                               <path
                                 strokeLinecap="round"
@@ -198,7 +192,7 @@ export function MobilePrintList() {
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
-                            aria-label="Has custom properties"
+                            aria-label={t('grid.hasCustomPropertiesAriaLabel')}
                           >
                             <path
                               strokeLinecap="round"
@@ -216,7 +210,7 @@ export function MobilePrintList() {
                   <div className="text-right flex-shrink-0">
                     <span className="font-semibold text-content">×{row.binCount}</span>
                     {row.needsSplit && (
-                      <div className="text-xs text-content-tertiary">{row.totalPieces} pcs</div>
+                      <div className="text-xs text-content-tertiary">{t('mobile.printList.pieces', { count: row.totalPieces })}</div>
                     )}
                     <div className="text-xs text-content-disabled mt-0.5">~{row.filament}m</div>
                   </div>
@@ -228,7 +222,7 @@ export function MobilePrintList() {
                     <div className="flex items-start gap-4">
                       <SplitPreview width={w} depth={d} pieces={row.pieces} cellSize={14} />
                       <div className="text-xs text-content-secondary flex-1">
-                        <div className="font-medium mb-1">Split into {row.totalPieces} pieces:</div>
+                        <div className="font-medium mb-1">{t('mobile.printList.splitInto', { count: row.totalPieces })}</div>
                         {row.pieces.map((piece) => (
                           <div
                             key={`${piece.width}x${piece.depth}`}

@@ -7,6 +7,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLabsStore, useLayoutStore, useUIStore, useToastStore } from '@/core/store';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { useCollabMode } from '@/hooks/useCollabMode';
+import { useTranslation } from '@/i18n';
 import { slugify } from '@/utils/slug';
 import type { SharePermission } from '@/core/types';
 
@@ -20,6 +21,7 @@ const POPOVER_WIDTH = 320;
  * Opens SharePopover on click to manage cloud shares.
  */
 export function ShareButton() {
+  const t = useTranslation();
   const isFeatureEnabled = useLabsStore((state) => state.isFeatureEnabled('collaborative_editing'));
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -52,7 +54,7 @@ export function ShareButton() {
         }`}
         aria-haspopup="true"
         aria-expanded={isPopoverOpen}
-        title={showSharedIndicator ? 'Manage shared link' : 'Share this layout'}
+        title={showSharedIndicator ? t('share.button.manageShare') : t('share.button.shareLayout')}
       >
         {/* Loading spinner */}
         {isLoading ? (
@@ -106,7 +108,7 @@ export function ShareButton() {
             />
           </svg>
         )}
-        {showSharedIndicator ? 'Shared' : 'Share'}
+        {showSharedIndicator ? t('share.button.shared') : t('share.button.share')}
       </button>
 
       {isPopoverOpen && (
@@ -133,6 +135,7 @@ function SharePopover({
   onClose: () => void;
   cloudShare: ReturnType<typeof useCloudShare>;
 }) {
+  const t = useTranslation();
   const popoverRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const layoutName = useLayoutStore((state) => state.layout.name);
@@ -387,7 +390,7 @@ function SharePopover({
       style={popoverStyle}
       className="bg-surface-elevated border border-stroke rounded-lg shadow-lg p-4"
       role="dialog"
-      aria-label="Share layout"
+      aria-label={t('share.title')}
     >
       {/* Header with layout name and close button */}
       <div className="flex items-center justify-between mb-3">
@@ -395,7 +398,7 @@ function SharePopover({
         <button
           onClick={onClose}
           className="text-content-tertiary hover:text-content transition-colors p-1 -m-1"
-          aria-label="Close"
+          aria-label={t('common.close')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -428,7 +431,7 @@ function SharePopover({
               />
             </svg>
             <span className="text-sm">
-              {status === 'sharing' ? 'Creating link...' : 'Updating...'}
+              {status === 'sharing' ? t('share.cloud.publishing') : t('share.cloud.updating')}
             </span>
           </div>
         </div>
@@ -439,7 +442,7 @@ function SharePopover({
         <div className="space-y-3">
           <div className="text-sm text-error">{error.message}</div>
           <button onClick={reset} className="btn btn-secondary w-full text-sm">
-            Try Again
+            {t('error.tryAgain')}
           </button>
         </div>
       )}
@@ -453,13 +456,11 @@ function SharePopover({
               onChange={(e) => setLocalPermission(e.target.value as SharePermission)}
               className="flex-1 bg-surface text-content text-sm px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
             >
-              <option value="view">Anyone with link can view</option>
-              <option value="edit">Anyone with link can edit</option>
+              <option value="view">{t('share.anyoneWithLinkCanView')}</option>
+              <option value="edit">{t('share.anyoneWithLinkCanEdit')}</option>
             </select>
           </div>
-          <button onClick={handleShare} className="btn btn-primary w-full text-sm">
-            Create Share Link
-          </button>
+          <button onClick={handleShare} className="btn btn-primary w-full text-sm">{t('share.createShareLink')}</button>
         </div>
       )}
 
@@ -493,18 +494,17 @@ function SharePopover({
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  Copied
+                  {t('common.copied')}
                 </span>
               ) : (
-                'Copy'
+                t('common.copy')
               )}
             </button>
           </div>
 
           {/* Permission display - read-only when viewing someone else's share */}
           {isViewingSharedLayout ? (
-            <div className="text-sm text-content-secondary">
-              Anyone with link can {localPermission}
+            <div className="text-sm text-content-secondary">{t('share.anyoneWithLinkCan')}{localPermission}
             </div>
           ) : (
             <select
@@ -512,8 +512,8 @@ function SharePopover({
               onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
               className="w-full bg-surface text-content text-sm px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
             >
-              <option value="view">Anyone with link can view</option>
-              <option value="edit">Anyone with link can edit</option>
+              <option value="view">{t('share.anyoneWithLinkCanView')}</option>
+              <option value="edit">{t('share.anyoneWithLinkCanEdit')}</option>
             </select>
           )}
 
@@ -530,9 +530,7 @@ function SharePopover({
                     setShowDeleteConfirm(true);
                   }}
                   className="text-sm text-content-tertiary hover:text-error transition-colors"
-                >
-                  Delete share link
-                </button>
+                >{t('share.deleteShareLink')}</button>
               ) : (
                 <div className="bg-error/10 border border-error/30 rounded-lg p-3 space-y-2">
                   <p className="text-sm text-content">
@@ -567,7 +565,7 @@ function SharePopover({
                           Deleting...
                         </span>
                       ) : (
-                        'Delete'
+                        t('common.delete')
                       )}
                     </button>
                     <button
@@ -577,9 +575,7 @@ function SharePopover({
                       }}
                       disabled={status === 'deleting'}
                       className="btn btn-secondary text-sm px-3 py-1.5 disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
+                    >{t('common.cancel')}</button>
                   </div>
                 </div>
               )}
@@ -588,9 +584,7 @@ function SharePopover({
 
           {/* Done button */}
           <div className="pt-2">
-            <button onClick={onClose} className="btn btn-secondary w-full text-sm">
-              Done
-            </button>
+            <button onClick={onClose} className="btn btn-secondary w-full text-sm">{t('common.done')}</button>
           </div>
         </div>
       )}

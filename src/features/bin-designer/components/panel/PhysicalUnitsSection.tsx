@@ -11,6 +11,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { useTranslation } from '@/i18n';
 
 export function PhysicalUnitsSection() {
   const { gridUnitMm, heightUnitMm, setParam } = useDesignerStore(
@@ -20,6 +21,7 @@ export function PhysicalUnitsSection() {
       setParam: s.setParam,
     }))
   );
+  const t = useTranslation();
 
   const handleGridUnitChange = useCallback(
     (value: number) => {
@@ -39,7 +41,7 @@ export function PhysicalUnitsSection() {
 
   return (
     <CollapsibleSection
-      title="Physical Units"
+      title={t('binDesigner.physicalUnits')}
       defaultExpanded={false}
       summary={summary}
     >
@@ -51,7 +53,7 @@ export function PhysicalUnitsSection() {
             min={1}
             max={200}
             className="input w-14 py-0.5 px-1 text-xs text-right"
-            aria-label="Grid unit"
+            aria-label={t('binDesigner.gridUnit')}
           />
         </SettingsRow>
         <SettingsRow label="Height unit" tooltip="Size of one height unit in mm (standard Gridfinity = 7mm)" unit="mm">
@@ -61,7 +63,7 @@ export function PhysicalUnitsSection() {
             min={1}
             max={50}
             className="input w-14 py-0.5 px-1 text-xs text-right"
-            aria-label="Height unit"
+            aria-label={t('binDesigner.heightUnit')}
           />
         </SettingsRow>
       </div>

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import type { LayoutEntry } from '@/core/types';
 import { LayoutThumbnail } from '@/components/LayoutThumbnail';
 import { LayoutActions } from './LayoutActions';
+import { useTranslation, useFormatting } from '@/i18n';
 
 interface LayoutListItemProps {
   entry: LayoutEntry;
@@ -36,6 +37,8 @@ export function LayoutListItem({
   onFocus,
   itemRef,
 }: LayoutListItemProps) {
+  const t = useTranslation();
+  const { formatRelativeDate } = useFormatting();
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(entry.name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -85,23 +88,6 @@ export function LayoutListItem({
     [isEditing, onSelect]
   );
 
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-      return 'Today';
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 7) {
-      return `${diffDays} days ago`;
-    } else {
-      return date.toLocaleDateString();
-    }
-  };
-
   return (
     <div
       ref={itemRef}
@@ -141,7 +127,7 @@ export function LayoutListItem({
               onClick={(e) => e.stopPropagation()}
               className="w-full bg-surface px-2 py-1 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm"
               maxLength={64}
-              aria-label="Layout name"
+              aria-label={t('layouts.layoutName')}
             />
           ) : (
             <div className="flex items-center gap-2">
@@ -149,10 +135,8 @@ export function LayoutListItem({
               {isActive && (
                 <span
                   className="text-xs px-1.5 py-0.5 bg-accent text-on-dark rounded flex-shrink-0 font-medium"
-                  aria-label="Currently active layout"
-                >
-                  Active
-                </span>
+                  aria-label={t('layouts.currentlyActiveLayout')}
+                >{t('layouts.active')}</span>
               )}
             </div>
           )}
@@ -162,14 +146,13 @@ export function LayoutListItem({
             <span>
               {entry.preview.drawerWidth}×{entry.preview.drawerDepth}×{entry.preview.drawerHeight}
             </span>
-            <span>{entry.preview.binCount} bins</span>
-            <span className="text-content-tertiary">{formatDate(entry.modifiedAt)}</span>
+            <span>{t('layouts.binCount', { count: entry.preview.binCount })}</span>
+            <span className="text-content-tertiary">{formatRelativeDate(entry.modifiedAt, false)}</span>
           </div>
 
           {/* Forked From */}
           {entry.forkedFrom && (
-            <div className="mt-0.5 text-xs text-content-tertiary">
-              Forked from {entry.forkedFrom.name}
+            <div className="mt-0.5 text-xs text-content-tertiary">{t('layouts.forkedFrom')}{entry.forkedFrom.name}
               {entry.forkedFrom.author && ` by ${entry.forkedFrom.author}`}
             </div>
           )}

@@ -67,13 +67,13 @@ describe('ImportView', () => {
     it('renders drop zone', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
-      expect(screen.getByText('Drag and drop a JSON file here')).toBeInTheDocument();
+      expect(screen.getByText('Drag and drop JSON file here')).toBeInTheDocument();
     });
 
     it('renders Browse Files button', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
-      expect(screen.getByText('Browse Files')).toBeInTheDocument();
+      expect(screen.getByText('Browse files')).toBeInTheDocument();
     });
 
     it('renders JSON textarea', () => {
@@ -115,7 +115,7 @@ describe('ImportView', () => {
       const textarea = screen.getByLabelText('Layout JSON');
       fireEvent.change(textarea, { target: { value: JSON.stringify(validLayout) } });
 
-      expect(screen.getByText('Ready to Import')).toBeInTheDocument();
+      expect(screen.getByText('Ready to import')).toBeInTheDocument();
       expect(screen.getByText('Test Layout')).toBeInTheDocument();
       expect(screen.getByText('10×8×12')).toBeInTheDocument();
     });
@@ -126,7 +126,7 @@ describe('ImportView', () => {
       const textarea = screen.getByLabelText('Layout JSON');
       fireEvent.change(textarea, { target: { value: '{invalid json}' } });
 
-      expect(screen.getByText('Validation Errors')).toBeInTheDocument();
+      expect(screen.getByText('Validation errors')).toBeInTheDocument();
       expect(screen.getByText('• Invalid JSON format')).toBeInTheDocument();
     });
 
@@ -141,7 +141,7 @@ describe('ImportView', () => {
       const textarea = screen.getByLabelText('Layout JSON');
       fireEvent.change(textarea, { target: { value: '{"version": "1.0"}' } });
 
-      expect(screen.getByText('Validation Errors')).toBeInTheDocument();
+      expect(screen.getByText('Validation errors')).toBeInTheDocument();
       expect(screen.getByText('• Missing drawer property')).toBeInTheDocument();
       expect(screen.getByText('• Invalid bins array')).toBeInTheDocument();
     });
@@ -198,7 +198,7 @@ describe('ImportView', () => {
       const textarea = screen.getByLabelText('Layout JSON');
       fireEvent.change(textarea, { target: { value: '#share=abc123' } });
 
-      expect(screen.getByText('Ready to Import')).toBeInTheDocument();
+      expect(screen.getByText('Ready to import')).toBeInTheDocument();
     });
 
     it('shows errors for invalid share URL', () => {
@@ -212,7 +212,7 @@ describe('ImportView', () => {
       const textarea = screen.getByLabelText('Layout JSON');
       fireEvent.change(textarea, { target: { value: '#share=invalid' } });
 
-      expect(screen.getByText('Validation Errors')).toBeInTheDocument();
+      expect(screen.getByText('Validation errors')).toBeInTheDocument();
       expect(screen.getByText('• Invalid share URL')).toBeInTheDocument();
     });
   });
@@ -224,7 +224,7 @@ describe('ImportView', () => {
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
       const clickSpy = vi.spyOn(fileInput, 'click');
 
-      fireEvent.click(screen.getByText('Browse Files'));
+      fireEvent.click(screen.getByText('Browse files'));
 
       expect(clickSpy).toHaveBeenCalled();
     });
@@ -247,7 +247,7 @@ describe('ImportView', () => {
       fireEvent.change(fileInput);
 
       await waitFor(() => {
-        expect(screen.getByText('Ready to Import')).toBeInTheDocument();
+        expect(screen.getByText('Ready to import')).toBeInTheDocument();
       });
     });
   });
@@ -256,20 +256,20 @@ describe('ImportView', () => {
     it('shows drag state when dragging over', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
-      const dropZone = screen.getByText('Drag and drop a JSON file here').closest('div');
+      const dropZone = screen.getByText('Drag and drop JSON file here').closest('div');
       fireEvent.dragOver(dropZone!, { preventDefault: vi.fn(), stopPropagation: vi.fn() });
 
-      expect(screen.getByText('Drop your file here')).toBeInTheDocument();
+      expect(screen.getByText('Drop file here')).toBeInTheDocument();
     });
 
     it('removes drag state when drag leaves', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
-      const dropZone = screen.getByText('Drag and drop a JSON file here').closest('div');
+      const dropZone = screen.getByText('Drag and drop JSON file here').closest('div');
       fireEvent.dragOver(dropZone!, { preventDefault: vi.fn(), stopPropagation: vi.fn() });
       fireEvent.dragLeave(dropZone!, { preventDefault: vi.fn(), stopPropagation: vi.fn() });
 
-      expect(screen.getByText('Drag and drop a JSON file here')).toBeInTheDocument();
+      expect(screen.getByText('Drag and drop JSON file here')).toBeInTheDocument();
     });
 
     it('processes dropped JSON file', async () => {
@@ -277,7 +277,7 @@ describe('ImportView', () => {
 
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
-      const dropZone = screen.getByText('Drag and drop a JSON file here').closest('div');
+      const dropZone = screen.getByText('Drag and drop JSON file here').closest('div');
       const file = new File([JSON.stringify(validLayout)], 'layout.json', {
         type: 'application/json',
       });
@@ -293,14 +293,14 @@ describe('ImportView', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Ready to Import')).toBeInTheDocument();
+        expect(screen.getByText('Ready to import')).toBeInTheDocument();
       });
     });
 
     it('shows error for non-JSON file drop', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
-      const dropZone = screen.getByText('Drag and drop a JSON file here').closest('div');
+      const dropZone = screen.getByText('Drag and drop JSON file here').closest('div');
       const file = new File(['some content'], 'layout.txt', { type: 'text/plain' });
 
       const dataTransfer = {
@@ -319,7 +319,7 @@ describe('ImportView', () => {
     it('handles empty file drop', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
-      const dropZone = screen.getByText('Drag and drop a JSON file here').closest('div');
+      const dropZone = screen.getByText('Drag and drop JSON file here').closest('div');
 
       const dataTransfer = {
         files: [],
@@ -332,7 +332,7 @@ describe('ImportView', () => {
       });
 
       // Should not show any errors for empty drop
-      expect(screen.queryByText('Validation Errors')).not.toBeInTheDocument();
+      expect(screen.queryByText('Validation errors')).not.toBeInTheDocument();
     });
   });
 
@@ -378,7 +378,7 @@ describe('ImportView', () => {
       const textarea = screen.getByLabelText('Layout JSON');
       fireEvent.change(textarea, { target: { value: JSON.stringify(validLayout) } });
 
-      expect(screen.getByText('Layers:')).toBeInTheDocument();
+      expect(screen.getByText('layers')).toBeInTheDocument();
       expect(screen.getByText('1')).toBeInTheDocument();
     });
 
@@ -390,7 +390,7 @@ describe('ImportView', () => {
       const textarea = screen.getByLabelText('Layout JSON');
       fireEvent.change(textarea, { target: { value: JSON.stringify(validLayout) } });
 
-      expect(screen.getByText('Bins:')).toBeInTheDocument();
+      expect(screen.getByText('bins')).toBeInTheDocument();
       expect(screen.getByText('2')).toBeInTheDocument();
     });
   });

@@ -8,7 +8,7 @@ describe('EmptyState', () => {
       render(<EmptyState variant="desktop" />);
 
       expect(screen.getByText('No bin selected')).toBeInTheDocument();
-      expect(screen.getByText('Click a bin or drag to create one')).toBeInTheDocument();
+      expect(screen.getByText('Click a bin on the grid or draw to create one')).toBeInTheDocument();
     });
 
     it('renders desktop icon', () => {
@@ -25,15 +25,15 @@ describe('EmptyState', () => {
       render(<EmptyState variant="mobile" />);
 
       expect(screen.getByText('No bin selected')).toBeInTheDocument();
-      expect(screen.getByText('Tap a bin on the grid to edit it')).toBeInTheDocument();
+      expect(screen.getByText('Tap a bin on the grid, or use the Tools tab to create one')).toBeInTheDocument();
     });
 
     it('renders creation instructions', () => {
       render(<EmptyState variant="mobile" />);
 
       expect(screen.getByText('How to create bins:')).toBeInTheDocument();
-      expect(screen.getByText(/Tap and drag on empty grid cells/)).toBeInTheDocument();
-      expect(screen.getByText(/Long-press a bin for quick actions/)).toBeInTheDocument();
+      expect(screen.getByText('Go to Layers → Tools tab')).toBeInTheDocument();
+      expect(screen.getByText('Tap on the grid to place')).toBeInTheDocument();
     });
 
     it('renders larger icon for mobile', () => {

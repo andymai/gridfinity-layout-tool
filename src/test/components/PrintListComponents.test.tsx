@@ -19,29 +19,28 @@ describe('PrintListSummary', () => {
     it('renders total bins', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText('Total')).toBeInTheDocument();
-      expect(screen.getByText('10 bins, 15 pieces')).toBeInTheDocument();
+      expect(screen.getByText('Print List')).toBeInTheDocument();
+      expect(screen.getByText('10 bin(s) total, 15 piece(s)')).toBeInTheDocument();
     });
 
     it('shows filament amount', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText('Filament')).toBeInTheDocument();
+      expect(screen.getByText('~25.5m filament')).toBeInTheDocument();
       expect(screen.getByText('25.5m')).toBeInTheDocument();
     });
 
     it('shows estimated cost', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText('Est. Cost')).toBeInTheDocument();
+      expect(screen.getByText('~$1.94')).toBeInTheDocument();
       expect(screen.getByText('$1.94')).toBeInTheDocument();
     });
 
     it('shows print time', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText('Print Time')).toBeInTheDocument();
-      expect(screen.getByText(/~8h 30m/)).toBeInTheDocument();
+      expect(screen.getByText(/~8h 30m print time/)).toBeInTheDocument();
     });
 
     it('shows spool percentage', () => {
@@ -60,8 +59,8 @@ describe('PrintListSummary', () => {
     it('hides pieces when no splits', () => {
       render(<PrintListSummary {...defaultProps} hasAnySplits={false} />);
 
-      expect(screen.getByText('10 bins')).toBeInTheDocument();
-      expect(screen.queryByText(/pieces/)).not.toBeInTheDocument();
+      expect(screen.getByText('10 bin(s) total')).toBeInTheDocument();
+      expect(screen.queryByText(/piece\(s\)/)).not.toBeInTheDocument();
     });
 
     it('has tooltips on metrics', () => {
@@ -79,7 +78,7 @@ describe('PrintListSummary', () => {
       render(<PrintListSummary {...defaultProps} compact={true} />);
 
       expect(screen.getByText('Total')).toBeInTheDocument();
-      expect(screen.getByText('10 bins, 15 pcs')).toBeInTheDocument();
+      expect(screen.getByText('bins & pieces')).toBeInTheDocument();
     });
 
     it('shows all metrics in compact layout', () => {
@@ -170,8 +169,8 @@ describe('PrintListEmpty', () => {
     it('renders empty state message', () => {
       render(<PrintListEmpty />);
 
-      expect(screen.getByText('No bins placed yet')).toBeInTheDocument();
-      expect(screen.getByText('Draw or click to place bins on the grid')).toBeInTheDocument();
+      expect(screen.getByText('No bins to print')).toBeInTheDocument();
+      expect(screen.getByText('Add bins to the grid to see the print list')).toBeInTheDocument();
     });
 
     it('renders icon', () => {
@@ -193,7 +192,7 @@ describe('PrintListEmpty', () => {
       render(<PrintListEmpty compact={true} />);
 
       expect(screen.getByText('No bins to print')).toBeInTheDocument();
-      expect(screen.getByText('Draw bins on the grid to see them here')).toBeInTheDocument();
+      expect(screen.getByText('Add bins to the grid to see the print list')).toBeInTheDocument();
     });
 
     it('renders larger icon in compact mode', () => {
