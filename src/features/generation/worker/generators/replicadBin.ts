@@ -612,11 +612,12 @@ function buildWallCutouts(
     if (notchWidth <= 0 || notchDepth <= 0) return null;
 
     // Simple rectangle profile extruded through the divider
+    // Center at Z=0 so downstream translate([..., wallHeight]) places cutout at top of wall
     const profile = drawRectangle(notchWidth, notchDepth);
     const solid = (profile.sketchOnPlane('XZ') as unknown as Sketch).extrude(
       extrudeLength
     ) as Shape3D;
-    return solid.translate([0, 0, notchDepth / 2]);
+    return solid.translate([0, 0, -notchDepth / 2]);
   }
 
   // Helper to position cutout on a wall face
@@ -635,7 +636,8 @@ function buildWallCutouts(
     if (notchWidth <= 0 || notchDepth <= 0) return;
 
     // Position: center of the wall face
-    const halfOuter = (isXWall ? innerW : innerD) / 2 + wallThickness;
+    // front/back walls use innerD for Y positioning, left/right use innerW for X positioning
+    const halfOuter = (isXWall ? innerD : innerW) / 2 + wallThickness;
     let positioned: Shape3D;
 
     // Build cutout directly at the wall position using sketchOnPlane with offset

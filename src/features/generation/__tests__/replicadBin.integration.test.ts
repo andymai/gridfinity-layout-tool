@@ -239,5 +239,38 @@ describe('replicad bin generation', () => {
       // If cutout works, the mesh should have MORE triangles
       expect(cutoutResult.triangleCount).toBeGreaterThan(baseResult.triangleCount);
     }, 60000);
+
+    it('wall cutout works on non-square bins (2x3)', () => {
+      // Tests for positioning bug where halfOuter used wrong dimension
+      const baseParams: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 3,
+        walls: {
+          front: { width: 0, depth: 0 },
+          back: { width: 0, depth: 0 },
+          left: { width: 0, depth: 0 },
+          right: { width: 0, depth: 0 },
+          interior: { width: 0, depth: 0 },
+        },
+      };
+
+      const withCutoutParams: BinParams = {
+        ...baseParams,
+        walls: {
+          front: { width: 80, depth: 60 },
+          back: { width: 0, depth: 0 },
+          left: { width: 80, depth: 60 },
+          right: { width: 0, depth: 0 },
+          interior: { width: 0, depth: 0 },
+        },
+      };
+
+      const baseResult = generateBin(baseParams);
+      const cutoutResult = generateBin(withCutoutParams);
+
+      // Both front (along X) and left (along Y) cutouts should work
+      expect(cutoutResult.triangleCount).toBeGreaterThan(baseResult.triangleCount);
+    }, 60000);
   });
 });
