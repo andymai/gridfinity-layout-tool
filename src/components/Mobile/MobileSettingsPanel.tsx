@@ -53,8 +53,12 @@ function MobilePrivacySection() {
         <div>
           <span
             className={`text-sm ${mlTelemetryEnabled ? 'text-content' : 'text-content-secondary'}`}
-          >{t('mobile.settings.helpImproveSuggestions')}</span>
-          <p className="text-xs text-content-tertiary">{t('mobile.settings.shareBinSizesAndPlacementPatternsNo')}</p>
+          >
+            {t('mobile.settings.helpImproveSuggestions')}
+          </span>
+          <p className="text-xs text-content-tertiary">
+            {t('mobile.settings.shareBinSizesAndPlacementPatternsNo')}
+          </p>
         </div>
         <Checkbox checked={mlTelemetryEnabled} variant="mobile" />
       </div>
@@ -202,13 +206,12 @@ export function MobileSettingsPanel() {
           }}
         >
           <div>
-            <div className="flex items-center gap-1.5">
-              <span
-                className={`text-sm ${halfBinMode ? 'text-content' : 'text-content-secondary'}`}
-              >{t('mobile.settings.halfBinMode')}</span>
-              <span className="text-[9px] text-warning bg-warning-muted px-1 py-0.5 rounded">{t('mobile.settings.experimental')}</span>
-            </div>
-            <p className="text-xs text-content-tertiary">{t('mobile.settings.allow05UnitPrecision')}</p>
+            <span className={`text-sm ${halfBinMode ? 'text-content' : 'text-content-secondary'}`}>
+              {t('mobile.settings.halfBinMode')}
+            </span>
+            <p className="text-xs text-content-tertiary">
+              {t('mobile.settings.allow05UnitPrecision')}
+            </p>
           </div>
           <Checkbox checked={halfBinMode} variant="mobile" />
         </div>
@@ -250,7 +253,9 @@ export function MobileSettingsPanel() {
             />
           </SettingsRow>
 
-          <div className="text-sm text-right text-content-disabled">{t('mobile.settings.maxBinSize')}{maxGridUnits}×{maxGridUnits}
+          <div className="text-sm text-right text-content-disabled">
+            {t('mobile.settings.maxBinSize')}
+            {maxGridUnits}×{maxGridUnits}
           </div>
         </div>
       </section>
@@ -291,15 +296,25 @@ export function MobileSettingsPanel() {
         <SectionHeader title={t('settings.defaultPreferences')} />
 
         <div className="bg-surface-elevated rounded-lg p-3 space-y-2">
-          <div className="text-xs text-content-tertiary">{t('mobile.settings.newLayoutsWillUseTheseDefaults')}</div>
-          <div className="text-sm text-content-secondary">{t('mobile.settings.drawer')}{settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×
+          <div className="text-xs text-content-tertiary">
+            {t('mobile.settings.newLayoutsWillUseTheseDefaults')}
+          </div>
+          <div className="text-sm text-content-secondary">
+            {t('mobile.settings.drawer')}
+            {settings.defaultDrawerWidth}×{settings.defaultDrawerDepth}×
             {settings.defaultDrawerHeight}u
           </div>
-          <div className="text-sm text-content-secondary">{t('mobile.settings.layerHeight')}{settings.defaultLayerHeight}u
+          <div className="text-sm text-content-secondary">
+            {t('mobile.settings.layerHeight')}
+            {settings.defaultLayerHeight}u
           </div>
-          <div className="text-sm text-content-secondary">{t('mobile.settings.printBed')}{settings.defaultPrintBedSize}mm
+          <div className="text-sm text-content-secondary">
+            {t('mobile.settings.printBed')}
+            {settings.defaultPrintBedSize}mm
           </div>
-          <div className="text-sm text-content-secondary">{t('mobile.settings.gridUnit')}{settings.defaultGridUnitMm}mm
+          <div className="text-sm text-content-secondary">
+            {t('mobile.settings.gridUnit')}
+            {settings.defaultGridUnitMm}mm
           </div>
           <button
             onClick={() => setShowSaveDefaultsConfirm(true)}
@@ -312,7 +327,9 @@ export function MobileSettingsPanel() {
                 strokeWidth={2}
                 d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
               />
-            </svg>{t('mobile.settings.saveCurrentAsDefaults')}</button>
+            </svg>
+            {t('mobile.settings.saveCurrentAsDefaults')}
+          </button>
         </div>
       </section>
 
@@ -330,7 +347,9 @@ export function MobileSettingsPanel() {
             <SparklesIcon className="w-5 h-5 text-accent" />
             <div className="text-left">
               <div className="text-sm font-medium text-content">{t('mobile.settings.labs')}</div>
-              <div className="text-xs text-content-tertiary">{t('mobile.settings.tryExperimentalFeatures')}</div>
+              <div className="text-xs text-content-tertiary">
+                {t('mobile.settings.tryExperimentalFeatures')}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -354,7 +373,10 @@ export function MobileSettingsPanel() {
             className="hover:underline text-content-tertiary"
           >
             Gridfinity
-          </a>{' '}{t('mobile.settings.byZackFreedman')}<br />{t('mobile.settings.toolBy')}{' '}
+          </a>{' '}
+          {t('mobile.settings.byZackFreedman')}
+          <br />
+          {t('mobile.settings.toolBy')}{' '}
           <a
             href="https://www.linkedin.com/in/andyhmai/"
             target="_blank"
@@ -369,7 +391,14 @@ export function MobileSettingsPanel() {
       <ConfirmDialog
         isOpen={showSaveDefaultsConfirm}
         title={t('settings.confirmSaveDefaults.title')}
-        message={t('settings.confirmSaveDefaults.message', { width: drawer.width, depth: drawer.depth, height: drawer.height, layerHeight: activeLayerHeight, printBed: printBedSize, gridUnit: gridUnitMm })}
+        message={t('settings.confirmSaveDefaults.message', {
+          width: drawer.width,
+          depth: drawer.depth,
+          height: drawer.height,
+          layerHeight: activeLayerHeight,
+          printBed: printBedSize,
+          gridUnit: gridUnitMm,
+        })}
         confirmText={t('settings.confirmSaveDefaults.confirm')}
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}

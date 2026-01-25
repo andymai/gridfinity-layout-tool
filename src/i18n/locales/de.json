@@ -41,7 +41,7 @@
   "binDesigner.gridSize": "Rastergröße",
   "binDesigner.gridUnit": "Grid unit",
   "binDesigner.halfBinMode": "Half-Bin-Modus",
-  "binDesigner.halfBinModeExperimentalEnable05Grid": "Half-Bin-Modus (experimentell): 0,5 grid unit Präzision aktivieren",
+  "binDesigner.halfBinModeEnable05Grid": "Half-Bin-Modus: 0,5 grid unit Präzision aktivieren",
   "binDesigner.heightUnit": "Height unit",
   "binDesigner.layout": "Layout",
   "binDesigner.load": "Laden",

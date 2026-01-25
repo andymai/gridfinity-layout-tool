@@ -1082,8 +1082,7 @@ const en: Record<string, string> = {
   'binDesigner.gridSize': 'Grid size',
   'binDesigner.gridUnit': 'Grid unit',
   'binDesigner.halfBinMode': 'Half-bin mode',
-  'binDesigner.halfBinModeExperimentalEnable05Grid':
-    'Half-bin mode (experimental): enable 0.5 grid unit precision',
+  'binDesigner.halfBinModeEnable05Grid': 'Half-bin mode: enable 0.5 grid unit precision',
   'binDesigner.heightUnit': 'Height unit',
   'binDesigner.layout': 'Layout',
   'binDesigner.load': 'Load',

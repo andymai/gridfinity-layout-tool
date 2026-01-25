@@ -47,7 +47,7 @@
   "binDesigner.gridSize": "Tamanho da grade",
   "binDesigner.gridUnit": "Grid unit",
   "binDesigner.halfBinMode": "Modo half-bin",
-  "binDesigner.halfBinModeExperimentalEnable05Grid": "Modo half-bin (experimental): habilita precisão de 0.5 grid unit",
+  "binDesigner.halfBinModeEnable05Grid": "Modo half-bin: habilita precisão de 0.5 grid unit",
   "binDesigner.heightUnit": "Height unit",
   "binDesigner.interior": "Interior",
   "binDesigner.interiorSummary": "{count} compartimento(s)",

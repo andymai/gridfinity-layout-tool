@@ -192,8 +192,12 @@ export function Sidebar() {
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-content">{t('sidebar.inspirationGallery')}</div>
-                  <div className="text-xs text-content-tertiary">{t('sidebar.inspirationHint')}</div>
+                  <div className="text-sm font-medium text-content">
+                    {t('sidebar.inspirationGallery')}
+                  </div>
+                  <div className="text-xs text-content-tertiary">
+                    {t('sidebar.inspirationHint')}
+                  </div>
                 </div>
                 <svg
                   className="w-4 h-4 text-content-tertiary group-hover:translate-x-0.5 transition-transform"
@@ -316,9 +320,6 @@ export function Sidebar() {
                       >
                         {t('sidebar.halfBinMode')}
                       </span>
-                      <span className="text-[9px] leading-none text-warning bg-warning-muted px-1 py-0.5 rounded">
-                        {t('settings.experimental')}
-                      </span>
                       <kbd className="text-[9px] leading-none text-content-disabled bg-surface-elevated px-1 py-0.5 rounded border border-stroke-subtle">
                         H
                       </kbd>
@@ -329,7 +330,9 @@ export function Sidebar() {
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
                   {(hasFractionalWidth || hasFractionalDepth) && (
                     <div className="pt-2 space-y-1.5">
-                      <div className="text-content-tertiary text-[10px] mb-1">{t('sidebar.halfUnitEdgePosition')}</div>
+                      <div className="text-content-tertiary text-[10px] mb-1">
+                        {t('sidebar.halfUnitEdgePosition')}
+                      </div>
                       {hasFractionalWidth && (
                         <div className="flex items-center justify-between">
                           <span className="text-content-tertiary">{t('sidebar.width5')}</span>
@@ -342,7 +345,9 @@ export function Sidebar() {
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title={t('sidebar.halfBinLeft')}
-                            >{t('sidebar.left')}</button>
+                            >
+                              {t('sidebar.left')}
+                            </button>
                             <button
                               onClick={() => handleFractionalEdgeChange('x', 'end')}
                               className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
@@ -351,7 +356,9 @@ export function Sidebar() {
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title={t('sidebar.halfBinRight')}
-                            >{t('sidebar.right')}</button>
+                            >
+                              {t('sidebar.right')}
+                            </button>
                           </div>
                         </div>
                       )}
@@ -367,7 +374,9 @@ export function Sidebar() {
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title={t('sidebar.halfBinBottom')}
-                            >{t('sidebar.bottom')}</button>
+                            >
+                              {t('sidebar.bottom')}
+                            </button>
                             <button
                               onClick={() => handleFractionalEdgeChange('y', 'end')}
                               className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
@@ -376,7 +385,9 @@ export function Sidebar() {
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title={t('sidebar.halfBinTop')}
-                            >{t('sidebar.top')}</button>
+                            >
+                              {t('sidebar.top')}
+                            </button>
                           </div>
                         </div>
                       )}
@@ -445,7 +456,8 @@ export function Sidebar() {
             </div>
 
             {/* Attribution */}
-            <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">{t('sidebar.gridfinityBy')}{' '}
+            <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
+              {t('sidebar.gridfinityBy')}{' '}
               <a
                 href="https://www.youtube.com/c/ZackFreedman"
                 target="_blank"
@@ -454,7 +466,8 @@ export function Sidebar() {
               >
                 Zack Freedman
               </a>
-              <br />{t('sidebar.toolBy')}{' '}
+              <br />
+              {t('sidebar.toolBy')}{' '}
               <a
                 href="https://www.linkedin.com/in/andyhmai/"
                 target="_blank"
@@ -476,7 +489,9 @@ export function Sidebar() {
                   viewBox="0 0 24 24"
                 >
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>{t('sidebar.tip')}</a>
+                </svg>
+                {t('sidebar.tip')}
+              </a>
             </div>
           </div>
         </div>
