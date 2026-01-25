@@ -48,9 +48,9 @@ const SIZE_CONFIG: Record<'sm' | 'md' | 'lg', { container: string; text: string;
 /**
  * Crown SVG icon for owner badge.
  */
-function CrownIcon({ className }: { className: string }) {
+function CrownIcon({ className, ariaLabel }: { className: string; ariaLabel: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-label="Owner">
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-label={ariaLabel}>
       <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
     </svg>
   );
@@ -95,7 +95,7 @@ export const PresenceAvatar = memo(function PresenceAvatar({
             className={`absolute ${config.crown} bg-warning rounded-full flex items-center justify-center`}
             aria-hidden="true"
           >
-            <CrownIcon className="w-2/3 h-2/3 text-warning-foreground" />
+            <CrownIcon className="w-2/3 h-2/3 text-warning-foreground" ariaLabel={t('collab.owner')} />
           </div>
         )}
       </div>

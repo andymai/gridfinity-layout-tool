@@ -61,13 +61,13 @@ interface HelpModalProps {
 // Shortcut categories with their shortcuts
 interface ShortcutItem {
   keys: string | readonly string[];
-  description: string;
+  descriptionKey: string; // Translation key
   modifier?: boolean; // Whether to show Ctrl/⌘ prefix
 }
 
 interface ShortcutCategory {
   id: string;
-  name: string;
+  nameKey: string; // Translation key
   icon: React.ReactNode;
   shortcuts: ShortcutItem[];
 }
@@ -87,75 +87,75 @@ const formatKey = (key: string | readonly string[]): string => {
   return key as string;
 };
 
-// Define shortcut categories
+// Define shortcut categories using translation keys
 const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
   {
     id: 'general',
-    name: 'General',
+    nameKey: 'help.category.general',
     icon: <CommandIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.UNDO), description: 'Undo', modifier: true },
-      { keys: formatKey(SHORTCUTS.REDO), description: 'Redo', modifier: true },
-      { keys: formatKey(SHORTCUTS.HELP), description: 'Show this help' },
-      { keys: formatKey(SHORTCUTS.ESCAPE), description: 'Cancel / Deselect' },
+      { keys: formatKey(SHORTCUTS.UNDO), descriptionKey: 'help.shortcut.undo', modifier: true },
+      { keys: formatKey(SHORTCUTS.REDO), descriptionKey: 'help.shortcut.redo', modifier: true },
+      { keys: formatKey(SHORTCUTS.HELP), descriptionKey: 'help.shortcut.showHelp' },
+      { keys: formatKey(SHORTCUTS.ESCAPE), descriptionKey: 'help.shortcut.cancelDeselect' },
     ],
   },
   {
     id: 'editing',
-    name: 'Editing',
+    nameKey: 'help.category.editing',
     icon: <EditIcon />,
     shortcuts: [
-      { keys: 'D', description: 'Duplicate selected bins', modifier: true },
-      { keys: formatKey(SHORTCUTS.DELETE), description: 'Delete selected bins' },
-      { keys: formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase(), description: 'Quick label edit' },
-      { keys: 'Arrow keys', description: 'Nudge selected bins' },
+      { keys: 'D', descriptionKey: 'help.shortcut.duplicate', modifier: true },
+      { keys: formatKey(SHORTCUTS.DELETE), descriptionKey: 'help.shortcut.delete' },
+      { keys: formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase(), descriptionKey: 'help.shortcut.quickLabel' },
+      { keys: 'Arrow keys', descriptionKey: 'help.shortcut.nudge' },
     ],
   },
   {
     id: 'navigation',
-    name: 'Navigation',
+    nameKey: 'help.category.navigation',
     icon: <NavigationIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.LAYER_UP).toUpperCase(), description: 'Layer above' },
-      { keys: formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase(), description: 'Layer below' },
-      { keys: formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase(), description: 'Previous bin' },
-      { keys: formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase(), description: 'Next bin' },
+      { keys: formatKey(SHORTCUTS.LAYER_UP).toUpperCase(), descriptionKey: 'help.shortcut.layerUp' },
+      { keys: formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase(), descriptionKey: 'help.shortcut.layerDown' },
+      { keys: formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase(), descriptionKey: 'help.shortcut.prevBin' },
+      { keys: formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase(), descriptionKey: 'help.shortcut.nextBin' },
       {
         keys: `${formatKey(SHORTCUTS.CATEGORY_PREV)} / ${formatKey(SHORTCUTS.CATEGORY_NEXT)}`,
-        description: 'Cycle category',
+        descriptionKey: 'help.shortcut.cycleCategory',
       },
     ],
   },
   {
     id: 'view',
-    name: 'View',
+    nameKey: 'help.category.view',
     icon: <ViewIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.ZOOM_IN), description: 'Zoom in' },
-      { keys: formatKey(SHORTCUTS.ZOOM_OUT), description: 'Zoom out' },
-      { keys: 'O', description: 'Open layout manager', modifier: true },
+      { keys: formatKey(SHORTCUTS.ZOOM_IN), descriptionKey: 'help.shortcut.zoomIn' },
+      { keys: formatKey(SHORTCUTS.ZOOM_OUT), descriptionKey: 'help.shortcut.zoomOut' },
+      { keys: 'O', descriptionKey: 'help.shortcut.openLayoutManager', modifier: true },
     ],
   },
   {
     id: '3d-preview',
-    name: '3D Preview',
+    nameKey: 'help.category.preview3d',
     icon: <CubeIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.PREVIEW_TOGGLE).toUpperCase(), description: 'Toggle 3D preview' },
-      { keys: 'Space', description: 'Expand preview' },
-      { keys: '1', description: 'Isometric view' },
-      { keys: '2', description: 'Front view' },
-      { keys: '3', description: 'Side view' },
+      { keys: formatKey(SHORTCUTS.PREVIEW_TOGGLE).toUpperCase(), descriptionKey: 'help.shortcut.togglePreview' },
+      { keys: 'Space', descriptionKey: 'help.shortcut.expandPreview' },
+      { keys: '1', descriptionKey: 'help.shortcut.isometricView' },
+      { keys: '2', descriptionKey: 'help.shortcut.frontView' },
+      { keys: '3', descriptionKey: 'help.shortcut.sideView' },
     ],
   },
   {
     id: 'advanced',
-    name: 'Advanced',
+    nameKey: 'help.category.advanced',
     icon: <SettingsIcon />,
     shortcuts: [
       {
         keys: formatKey(SHORTCUTS.HALF_BIN_TOGGLE).toUpperCase(),
-        description: 'Toggle half-bin mode',
+        descriptionKey: 'help.shortcut.toggleHalfBin',
       },
     ],
   },
@@ -184,7 +184,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
     };
   }, [isOpen, onClose]);
 
-  // Filter shortcuts based on search query
+  // Filter shortcuts based on search query (searches translated strings)
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) return SHORTCUT_CATEGORIES;
 
@@ -193,13 +193,13 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
       ...category,
       shortcuts: category.shortcuts.filter(
         (shortcut) =>
-          shortcut.description.toLowerCase().includes(query) ||
+          t(shortcut.descriptionKey).toLowerCase().includes(query) ||
           (typeof shortcut.keys === 'string' && shortcut.keys.toLowerCase().includes(query)) ||
           (Array.isArray(shortcut.keys) &&
             shortcut.keys.some((k) => k.toLowerCase().includes(query)))
       ),
     })).filter((category) => category.shortcuts.length > 0);
-  }, [searchQuery]);
+  }, [searchQuery, t]);
 
   if (!isOpen) return null;
 
@@ -351,18 +351,19 @@ function ShortcutCategorySection({
   category: ShortcutCategory;
   modifierKey: string;
 }) {
+  const t = useTranslation();
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-accent">{category.icon}</span>
-        <h3 style={STYLES.sectionHeader}>{category.name}</h3>
+        <h3 style={STYLES.sectionHeader}>{t(category.nameKey)}</h3>
       </div>
       <div className="grid gap-2">
         {category.shortcuts.map((shortcut, index) => (
           <ShortcutRow
             key={index}
             keys={shortcut.keys}
-            description={shortcut.description}
+            description={t(shortcut.descriptionKey)}
             modifier={shortcut.modifier}
             modifierKey={modifierKey}
           />

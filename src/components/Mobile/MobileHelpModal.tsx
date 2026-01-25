@@ -113,17 +113,17 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           <section>
             <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.drawingSelection')}</h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-              <GestureRow icon={<TapIcon />} gesture="Tap bin" description="Select bin" />
+              <GestureRow icon={<TapIcon />} gesture={t('help.gesture.tapBin')} description={t('help.gesture.selectBin')} />
               <GestureRow
                 icon={<DragIcon />}
-                gesture="Drag on empty grid"
-                description="Draw new bin"
+                gesture={t('help.gesture.dragEmpty')}
+                description={t('help.gesture.drawNewBin')}
               />
-              <GestureRow icon={<DragIcon />} gesture="Drag selected bin" description="Move bin" />
+              <GestureRow icon={<DragIcon />} gesture={t('help.gesture.dragSelected')} description={t('help.gesture.moveBin')} />
               <GestureRow
                 icon={<LongPressIcon />}
-                gesture="Long-press bin"
-                description="Open context menu"
+                gesture={t('help.gesture.longPress')}
+                description={t('help.gesture.openContextMenu')}
               />
             </div>
           </section>
@@ -134,18 +134,18 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<DragEdgeIcon />}
-                gesture="Drag bin edge"
-                description="Resize bin"
+                gesture={t('help.gesture.dragEdge')}
+                description={t('help.gesture.resizeBin')}
               />
               <GestureRow
                 icon={<DragCornerIcon />}
-                gesture="Drag corner handle"
-                description="Resize width & depth"
+                gesture={t('help.gesture.dragCorner')}
+                description={t('help.gesture.resizeWidthDepth')}
               />
               <GestureRow
                 icon={<DragIcon />}
-                gesture="Drag bin to stash"
-                description="Move to staging area"
+                gesture={t('help.gesture.dragToStash')}
+                description={t('help.gesture.moveToStaging')}
               />
             </div>
           </section>
@@ -156,15 +156,15 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<TapIcon />}
-                gesture="Tap size in palette"
-                description="Enter paint mode"
+                gesture={t('help.gesture.tapPalette')}
+                description={t('help.gesture.enterPaintMode')}
               />
               <GestureRow
                 icon={<DragIcon />}
-                gesture="Drag on grid"
-                description="Fill area with bins"
+                gesture={t('help.gesture.dragGrid')}
+                description={t('help.gesture.fillArea')}
               />
-              <GestureRow icon={<TapIcon />} gesture={`Tap ${t('common.close')} button`} description="Exit paint mode" />
+              <GestureRow icon={<TapIcon />} gesture={t('help.gesture.tapClose', { button: t('common.close') })} description={t('help.gesture.exitPaintMode')} />
             </div>
           </section>
 
@@ -174,18 +174,18 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<SwipeDownIcon />}
-                gesture="Swipe down on panel"
-                description="Close bottom sheet"
+                gesture={t('help.gesture.swipeDown')}
+                description={t('help.gesture.closeBottomSheet')}
               />
               <GestureRow
                 icon={<TapIcon />}
-                gesture="Tap layer button"
-                description="Switch layers"
+                gesture={t('help.gesture.tapLayer')}
+                description={t('help.gesture.switchLayers')}
               />
               <GestureRow
                 icon={<TapIcon />}
-                gesture="Tap striped zone"
-                description="Jump to blocking bin"
+                gesture={t('help.gesture.tapStriped')}
+                description={t('help.gesture.jumpToBlocking')}
               />
             </div>
           </section>
