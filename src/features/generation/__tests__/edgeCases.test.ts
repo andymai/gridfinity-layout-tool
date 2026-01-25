@@ -309,7 +309,10 @@ describe('edge case generation', () => {
 
       // Scoop cuts a curved surface, which requires more triangles to represent
       // Typical delta: ~52 triangles for the curved geometry
-      expect(withScoop.triangleCount).toBeGreaterThan(noScoop.triangleCount);
+      const triangleDelta = withScoop.triangleCount - noScoop.triangleCount;
+      // Scoop should add a meaningful number of triangles (curved surface)
+      // Minimum threshold prevents false passes from malformed/degenerate geometry
+      expect(triangleDelta).toBeGreaterThan(20);
     }, 30000);
   });
 });
