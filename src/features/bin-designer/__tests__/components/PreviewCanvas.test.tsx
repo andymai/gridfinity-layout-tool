@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '../../store';
+import { useToastStore } from '@/core/store/toast';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 
 // Mock Three.js rendering (jsdom has no WebGL)
@@ -303,5 +304,97 @@ describe('PreviewCanvas', () => {
       screen.getAllByLabelText('Toggle wireframe mode, keyboard shortcut W').length
     ).toBeGreaterThan(0);
     expect(screen.getAllByLabelText('Change preview color').length).toBeGreaterThan(0);
+  });
+
+  describe('error recovery', () => {
+    it('shows revert button when generation error and history exists', () => {
+      useDesignerStore.setState({
+        wasmStatus: 'ready',
+        generation: {
+          status: 'error',
+          mesh: { vertices: null, normals: null, error: 'Test error', timingMs: 0 },
+          progress: 0,
+          epoch: 1,
+        },
+        history: {
+          past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }],
+          future: [],
+        },
+      });
+      render(<PreviewCanvas />);
+
+      expect(screen.getByText('Generation failed')).toBeInTheDocument();
+      expect(screen.getByLabelText('Revert')).toBeInTheDocument();
+    });
+
+    it('does not show revert button when no history exists', () => {
+      useDesignerStore.setState({
+        wasmStatus: 'ready',
+        generation: {
+          status: 'error',
+          mesh: { vertices: null, normals: null, error: 'Test error', timingMs: 0 },
+          progress: 0,
+          epoch: 1,
+        },
+        history: {
+          past: [],
+          future: [],
+        },
+      });
+      render(<PreviewCanvas />);
+
+      expect(screen.getByText('Generation failed')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Revert')).not.toBeInTheDocument();
+    });
+
+    it('calls undo and shows toast when revert button clicked', () => {
+      const undoSpy = vi.spyOn(useDesignerStore.getState(), 'undo');
+      const addToastSpy = vi.spyOn(useToastStore.getState(), 'addToast');
+
+      useDesignerStore.setState({
+        wasmStatus: 'ready',
+        generation: {
+          status: 'error',
+          mesh: { vertices: null, normals: null, error: 'Test error', timingMs: 0 },
+          progress: 0,
+          epoch: 1,
+        },
+        history: {
+          past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }],
+          future: [],
+        },
+      });
+      render(<PreviewCanvas />);
+
+      const revertButton = screen.getByLabelText('Revert');
+      fireEvent.click(revertButton);
+
+      expect(undoSpy).toHaveBeenCalled();
+      expect(addToastSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Reverted to last working configuration',
+          type: 'info',
+        })
+      );
+
+      undoSpy.mockRestore();
+      addToastSpy.mockRestore();
+    });
+
+    it('does not show revert button for WASM errors (only retry)', () => {
+      useDesignerStore.setState({
+        wasmStatus: 'error',
+        generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
+        history: {
+          past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }],
+          future: [],
+        },
+      });
+      render(<PreviewCanvas />);
+
+      expect(screen.getByText('Engine failed to load')).toBeInTheDocument();
+      expect(screen.getByLabelText('Retry loading')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Revert')).not.toBeInTheDocument();
+    });
   });
 });

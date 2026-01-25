@@ -78,6 +78,8 @@
   "binDesigner.resetView": "Réinitialiser la vue (R)",
   "binDesigner.retry": "Réessayer",
   "binDesigner.retryLoading": "Réessayer le chargement",
+  "binDesigner.revertToWorking": "Annuler",
+  "binDesigner.revertedToWorking": "Retour à la dernière configuration fonctionnelle",
   "binDesigner.rows": "Rangées",
   "binDesigner.saved": "Enregistré",
   "binDesigner.savedDesigns": "Designs enregistrés",
