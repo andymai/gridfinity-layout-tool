@@ -347,15 +347,13 @@ describe('CategoriesPanel', () => {
       expect(screen.getByTitle('2 bin(s) use this category')).toBeInTheDocument();
     });
 
-    it('shows empty for categories without bins', () => {
+    it('does not render badges for categories without bins', () => {
       render(<CategoriesPanel />);
 
-      // Both categories have no bins, badges should be empty
-      const emptyBadges = screen.getAllByTitle('No bins use this category');
-      expect(emptyBadges).toHaveLength(2);
-      emptyBadges.forEach((badge) => {
-        expect(badge).toHaveTextContent('');
-      });
+      // Both categories have no bins, no badges should be rendered
+      expect(screen.queryByTitle('No bins use this category')).not.toBeInTheDocument();
+      // Also verify no bin count badges exist at all (they only render when binCount > 0)
+      expect(screen.queryByTitle(/bin\(s\) use this category/)).not.toBeInTheDocument();
     });
   });
 });
