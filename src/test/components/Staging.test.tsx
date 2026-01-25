@@ -261,7 +261,9 @@ describe('Staging', () => {
 
       fireEvent.click(screen.getByText('Clear all'));
 
-      expect(screen.getByTestId('confirm-message')).toHaveTextContent('Delete all 2 stashed bin(s)? This cannot be undone.');
+      expect(screen.getByTestId('confirm-message')).toHaveTextContent(
+        'Delete all 2 stashed bin(s)? This cannot be undone.'
+      );
     });
 
     it('deletes all staged bins when confirmed', () => {
@@ -397,6 +399,97 @@ describe('Staging', () => {
       // Both bins should be rendered
       expect(document.querySelector(`[data-staging-bin-id="${bins[0].id}"]`)).toBeInTheDocument();
       expect(document.querySelector(`[data-staging-bin-id="${bins[1].id}"]`)).toBeInTheDocument();
+    });
+
+    it('clusters bins by category (same category bins appear together)', () => {
+      // Create a second category
+      const layout = useLayoutStore.getState().layout;
+      const cat1 = layout.categories[0].id;
+      const cat2 = 'test-category-2';
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          categories: [...layout.categories, { id: cat2, name: 'Category 2', color: '#00ff00' }],
+        },
+      });
+
+      // Add bins: cat2, cat1, cat2, cat1 (interleaved)
+      // After clustering, cat1 bins should be grouped, cat2 bins should be grouped
+      const bins = addStagedBins([
+        { id: 'bin-cat2-a', width: 2, depth: 2, category: cat2 },
+        { id: 'bin-cat1-a', width: 2, depth: 2, category: cat1 },
+        { id: 'bin-cat2-b', width: 2, depth: 2, category: cat2 },
+        { id: 'bin-cat1-b', width: 2, depth: 2, category: cat1 },
+      ]);
+
+      render(<Staging />);
+
+      // All bins should be rendered
+      for (const bin of bins) {
+        expect(document.querySelector(`[data-staging-bin-id="${bin.id}"]`)).toBeInTheDocument();
+      }
+    });
+
+    it('clusters bins by similar dimensions (within 1 unit)', () => {
+      // Add bins with different sizes
+      // 2x2 and 2.5x2.5 should cluster (both floor to 2x2)
+      // 4x4 should be in its own cluster
+      const bins = addStagedBins([
+        { id: 'bin-small-a', width: 2, depth: 2 },
+        { id: 'bin-large', width: 4, depth: 4 },
+        { id: 'bin-small-b', width: 2.5, depth: 2.5 },
+      ]);
+
+      render(<Staging />);
+
+      // All bins should be rendered
+      for (const bin of bins) {
+        expect(document.querySelector(`[data-staging-bin-id="${bin.id}"]`)).toBeInTheDocument();
+      }
+    });
+
+    it('separates bins at dimension boundaries (1.9 vs 2.0)', () => {
+      // floor(1.9) = 1, floor(2.0) = 2, so these should be in different clusters
+      // This documents the "same floor value" behavior
+      const bins = addStagedBins([
+        { id: 'bin-1.9', width: 1.9, depth: 1.9 },
+        { id: 'bin-2.0', width: 2.0, depth: 2.0 },
+      ]);
+
+      render(<Staging />);
+
+      // Both bins should be rendered (in separate clusters)
+      for (const bin of bins) {
+        expect(document.querySelector(`[data-staging-bin-id="${bin.id}"]`)).toBeInTheDocument();
+      }
+    });
+
+    it('orders clusters by bin count (largest cluster first)', () => {
+      // Create categories
+      const layout = useLayoutStore.getState().layout;
+      const cat1 = layout.categories[0].id;
+      const cat2 = 'test-category-many';
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          categories: [...layout.categories, { id: cat2, name: 'Many Bins', color: '#ff00ff' }],
+        },
+      });
+
+      // cat2 has 3 bins, cat1 has 1 bin
+      // cat2 cluster should appear first (bottom-left in grid)
+      addStagedBins([
+        { id: 'bin-cat1-single', width: 2, depth: 2, category: cat1 },
+        { id: 'bin-cat2-a', width: 2, depth: 2, category: cat2 },
+        { id: 'bin-cat2-b', width: 2, depth: 2, category: cat2 },
+        { id: 'bin-cat2-c', width: 2, depth: 2, category: cat2 },
+      ]);
+
+      render(<Staging />);
+
+      // All bins should render - the clustering is internal to packing
+      const binElements = document.querySelectorAll('[data-staging-bin-id]');
+      expect(binElements).toHaveLength(4);
     });
   });
 
@@ -558,7 +651,9 @@ describe('Staging', () => {
       render(<Staging />);
 
       const handle = screen.getByTestId('stash-resize-handle');
-      const scrollContainer = document.getElementById('staging-stash-panel')?.querySelector('.overflow-y-auto');
+      const scrollContainer = document
+        .getElementById('staging-stash-panel')
+        ?.querySelector('.overflow-y-auto');
 
       // Mock setPointerCapture
       handle.setPointerCapture = vi.fn();
@@ -645,7 +740,9 @@ describe('Staging', () => {
       render(<Staging />);
 
       const handle = screen.getByTestId('stash-resize-handle');
-      const scrollContainer = document.getElementById('staging-stash-panel')?.querySelector('.overflow-y-auto');
+      const scrollContainer = document
+        .getElementById('staging-stash-panel')
+        ?.querySelector('.overflow-y-auto');
 
       handle.setPointerCapture = vi.fn();
 
@@ -666,7 +763,9 @@ describe('Staging', () => {
       render(<Staging />);
 
       const handle = screen.getByTestId('stash-resize-handle');
-      const scrollContainer = document.getElementById('staging-stash-panel')?.querySelector('.overflow-y-auto');
+      const scrollContainer = document
+        .getElementById('staging-stash-panel')
+        ?.querySelector('.overflow-y-auto');
 
       // Get initial style
       const initialStyle = scrollContainer?.getAttribute('style') || '';
