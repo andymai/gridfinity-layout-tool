@@ -35,19 +35,20 @@ interface PackedBin {
 
 /**
  * Create cluster key for grouping similar bins.
- * Bins with same category and similar dimensions (within 1 unit) share a key.
- * Using floor() means 2.0 and 2.9 cluster together (both floor to 2).
+ * Bins with same category and same floored dimensions share a key.
+ * Using floor() means 2.0 and 2.9 cluster together (both floor to 2),
+ * but 1.9 (floors to 1) goes in a different cluster.
  */
 function getClusterKey(bin: PackedBin): string {
   return `${bin.category}_${Math.floor(bin.width)}_${Math.floor(bin.depth)}`;
 }
 
 /**
- * Group bins into clusters by category + similar size, ordered by cluster size.
+ * Group bins into clusters by category + floored dimensions, ordered by cluster size.
  * Within each cluster, bins are sorted by area (largest first) for better packing.
  *
  * This improves stash organization by keeping similar bins together:
- * - All 2×3 "Electronics" bins cluster together
+ * - All 2×3 "Electronics" bins cluster together (2.1×3.5 included, but not 3×2)
  * - All 1×1 "Hardware" bins cluster together
  * - Largest clusters appear first (bottom-left of stash)
  */
@@ -68,6 +69,7 @@ function clusterBins(bins: PackedBin[]): PackedBin[] {
 
   // Convert to array and sort clusters by size (most bins first)
   // Use cluster key as tiebreaker for stable ordering when clusters have equal size
+  // Note: a[0] is safe because clusters only exist if at least one bin was added
   const clusterArray = Array.from(clusters.values());
   clusterArray.sort((a, b) => {
     const sizeDiff = b.length - a.length;
@@ -227,9 +229,9 @@ export function Staging() {
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (entry) {
-        // Account for padding (px-4 = 16px each side = 32px total)
-        const availableWidth = entry.contentRect.width;
-        setContainerWidth(availableWidth);
+        // contentRect.width is inner width (excluding padding)
+        // Padding is subtracted in the column calculation below
+        setContainerWidth(entry.contentRect.width);
       }
     });
 
