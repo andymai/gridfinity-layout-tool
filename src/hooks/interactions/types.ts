@@ -103,6 +103,7 @@ export type DragStartArgs = [
   clientY: number,
   pointerId?: number,
   duplicate?: boolean,
+  swapMode?: boolean,
 ];
 
 /**

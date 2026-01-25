@@ -307,7 +307,8 @@ describe('Bin', () => {
         100,
         100,
         expect.any(Number),
-        false
+        false, // duplicate flag
+        false // swap mode flag
       );
     });
 
@@ -377,7 +378,30 @@ describe('Bin', () => {
         100,
         100,
         expect.any(Number),
-        true // duplicate flag
+        true, // duplicate flag
+        false // swap mode flag (not active)
+      );
+    });
+
+    it('starts swap mode drag with Shift key', () => {
+      const { container } = render(<Bin {...defaultProps} />);
+      const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
+
+      fireEvent.pointerDown(binElement!, {
+        button: 0,
+        clientX: 100,
+        clientY: 100,
+        isPrimary: true,
+        shiftKey: true,
+      });
+
+      expect(mockOnStartDrag).toHaveBeenCalledWith(
+        'test-bin-1',
+        100,
+        100,
+        expect.any(Number),
+        false, // duplicate flag (not active)
+        true // swap mode flag
       );
     });
 
@@ -405,17 +429,8 @@ describe('Bin', () => {
       expect(toggleSelectionSpy).toHaveBeenCalledWith('test-bin-1');
     });
 
-    it('adds to selection with Shift+click', () => {
-      const addToSelectionSpy = vi.fn();
-      useSelectionStore.setState({ addToSelection: addToSelectionSpy });
-
-      const { container } = render(<Bin {...defaultProps} />);
-      const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
-
-      fireEvent.pointerDown(binElement!, { button: 0, shiftKey: true, isPrimary: true });
-
-      expect(addToSelectionSpy).toHaveBeenCalledWith('test-bin-1');
-    });
+    // Note: Shift+click now triggers swap mode drag instead of adding to selection.
+    // The swap mode behavior is tested in 'starts swap mode drag with Shift key' above.
 
     it('sets hover state on mouse enter (non-touch device)', () => {
       const { container } = render(<Bin {...defaultProps} />);

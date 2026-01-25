@@ -296,7 +296,10 @@ export function useBinInspector(): UseBinInspectorReturn {
         }
       });
 
-      addToast(t('toast.customPropertySet', { key: trimmedKey, count: selectedBins.length }), 'success');
+      addToast(
+        t('toast.customPropertySet', { key: trimmedKey, count: selectedBins.length }),
+        'success'
+      );
     },
     [selectedBins, execute, updateBin, addToast, t]
   );
@@ -451,7 +454,10 @@ export function useBinInspector(): UseBinInspectorReturn {
           'info'
         );
       } else {
-        addToast(t('toast.movedMultiToLayer', { count: movable.length, name: targetLayer.name }), 'success');
+        addToast(
+          t('toast.movedMultiToLayer', { count: movable.length, name: targetLayer.name }),
+          'success'
+        );
       }
     },
     [selectedBins, layout, execute, updateBin, addToast, t]
@@ -515,6 +521,7 @@ export function useBinInspector(): UseBinInspectorReturn {
   }, [setSelectedBins]);
 
   // Rotate bin (swap width and depth)
+  // Smart rotation: if rotation doesn't fit in place, finds nearby valid position
   // Returns true if rotation succeeded, false if blocked by collision
   const rotateBin = useCallback(() => {
     if (!bin) return false;
@@ -528,12 +535,23 @@ export function useBinInspector(): UseBinInspectorReturn {
     // Track rotation BEFORE executing (capture original dimensions)
     mlTracking.trackRotation(bin, 1);
 
-    // Rotation is valid, perform it
+    // Rotation is valid, perform it (may include position change)
     execute(() => {
-      updateBin(bin.id, { width: bin.depth, depth: bin.width });
+      const updates: Partial<Bin> = { width: bin.depth, depth: bin.width };
+      if (result.movedTo) {
+        updates.x = result.movedTo.x;
+        updates.y = result.movedTo.y;
+      }
+      updateBin(bin.id, updates);
     });
+
+    // Show toast if bin was relocated to fit rotation
+    if (result.movedTo) {
+      addToast(t('toast.rotateRepositioned', { distance: result.movedTo.distance }), 'info');
+    }
+
     return true;
-  }, [bin, layout, execute, updateBin, addToast]);
+  }, [bin, layout, execute, updateBin, addToast, t]);
 
   return {
     // Selection state

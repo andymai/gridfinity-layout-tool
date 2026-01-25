@@ -899,6 +899,9 @@ const en: Record<string, string> = {
   'toast.rotateBoundsFailed': 'Cannot rotate: bin would exceed drawer bounds',
   'toast.rotateCollisionFailed': 'Cannot rotate: would collide with another bin',
   'toast.rotateBlockedFailed': 'Cannot rotate: space is blocked by a bin below',
+  'toast.rotateRepositioned': 'Bin rotated and moved {distance} cell(s) to fit',
+  'toast.binsSwapped': 'Bins swapped positions',
+  'toast.binsSwappedRotated': 'Bins swapped positions (rotated to fit)',
   'toast.dismissNotification': 'Dismiss notification',
   'toast.notifications': 'Notifications',
 

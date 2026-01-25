@@ -40,7 +40,8 @@ interface BinProps {
     clientX: number,
     clientY: number,
     pointerId?: number,
-    duplicate?: boolean
+    duplicate?: boolean,
+    swapMode?: boolean
   ) => void;
   onStartResize: (binId: string, handle: ResizeHandle, pointerId?: number) => void;
 }
@@ -117,7 +118,6 @@ function BinComponent({
   // Selection actions - from useSelectionStore
   const setSelectedBin = useSelectionStore((state) => state.setSelectedBin);
   const toggleSelection = useSelectionStore((state) => state.toggleSelection);
-  const addToSelection = useSelectionStore((state) => state.addToSelection);
   const setFocusedBin = useSelectionStore((state) => state.setFocusedBin);
   const showQuickLabel = useSelectionStore((state) => state.showQuickLabel);
 
@@ -444,7 +444,6 @@ function BinComponent({
 
     if (e.button === 0) {
       const isMultiSelectKey = e.ctrlKey || e.metaKey;
-      const isRangeSelectKey = e.shiftKey;
 
       // Exit paint mode when selecting a bin
       if (paintSize) {
@@ -455,14 +454,12 @@ function BinComponent({
         // Ctrl/Cmd+click: toggle this bin in selection
         toggleSelection(bin.id);
         clearLongPress();
-      } else if (isRangeSelectKey) {
-        // Shift+click: add to selection (range select could be enhanced later)
-        addToSelection(bin.id);
-        clearLongPress();
       } else if (!isTouchDevice) {
         // Desktop: Normal click - single select and start drag immediately
         // Alt+drag starts a duplicate operation
-        const isDuplicateDrag = e.altKey;
+        // Shift+drag starts swap mode (swap with compatible bin)
+        const isDuplicateDrag = e.altKey && !e.shiftKey;
+        const isSwapDrag = e.shiftKey && !e.altKey;
         if (!isSelected) {
           setSelectedBin(bin.id);
           // Show first-time hint about resize handles
@@ -472,7 +469,7 @@ function BinComponent({
             localStorage.setItem('gridfinity-resize-hint-shown', 'true');
           }
         }
-        onStartDrag(bin.id, e.clientX, e.clientY, e.pointerId, isDuplicateDrag);
+        onStartDrag(bin.id, e.clientX, e.clientY, e.pointerId, isDuplicateDrag, isSwapDrag);
       } else {
         // Touch: Select on pointer down, drag starts on move
         if (!isSelected) {
@@ -778,7 +775,9 @@ function BinComponent({
                   color: 'var(--color-warning)',
                   fontWeight: 500,
                 }}
-              >{t('grid.split')}</span>
+              >
+                {t('grid.split')}
+              </span>
             )}
           </div>
           {/* Secondary text (dimensions when label is primary) */}
@@ -800,7 +799,9 @@ function BinComponent({
                   title={t('grid.exceedsPrintSize')}
                   style={{ color: 'var(--color-warning)' }}
                   aria-label={t('grid.exceedsPrintSize')}
-                >{WARNING_ICON}</span>
+                >
+                  {WARNING_ICON}
+                </span>
               )}
             </div>
           )}

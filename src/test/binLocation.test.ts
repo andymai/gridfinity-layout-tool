@@ -107,27 +107,33 @@ describe('binLocation utility', () => {
         expect(result.valid).toBe(true);
       });
 
-      it('rejects rotation when width exceeds drawer bounds', () => {
+      it('smart rotates with repositioning when width would exceed drawer bounds', () => {
+        // In a 5-wide drawer, a 3x6 bin rotated to 6x3 wouldn't fit at position 0
+        // but smart rotation should fail since 6-wide can never fit in 5-wide drawer
         const layout = createTestLayout({ drawer: { width: 5, height: 12, depth: 8 } });
         const bin = createTestBin({ x: 0, y: 0, width: 3, depth: 6, layerId: 'layer1' });
 
         const result = validateBinRotation(bin, layout);
 
+        // 6-wide rotated bin can NEVER fit in a 5-wide drawer, so this should fail
         expect(result.valid).toBe(false);
         expect(result.message).toContain('exceed drawer bounds');
       });
 
-      it('rejects rotation when depth exceeds drawer bounds', () => {
+      it('smart rotates with repositioning when depth would exceed drawer bounds', () => {
+        // In a 5-deep drawer, a 6x3 bin rotated to 3x6 wouldn't fit
+        // but smart rotation should fail since 6-deep can never fit in 5-deep drawer
         const layout = createTestLayout({ drawer: { width: 10, height: 12, depth: 5 } });
         const bin = createTestBin({ x: 0, y: 0, width: 6, depth: 3, layerId: 'layer1' });
 
         const result = validateBinRotation(bin, layout);
 
+        // 6-deep rotated bin can NEVER fit in a 5-deep drawer, so this should fail
         expect(result.valid).toBe(false);
         expect(result.message).toContain('exceed drawer bounds');
       });
 
-      it('rejects rotation when it would collide with another bin', () => {
+      it('smart rotates with repositioning to avoid collision', () => {
         const layout = createTestLayout({
           bins: [createTestBin({ id: 'bin2', x: 3, y: 0, width: 2, depth: 2, layerId: 'layer1' })],
         });
@@ -142,8 +148,12 @@ describe('binLocation utility', () => {
 
         const result = validateBinRotation(bin, layout);
 
-        expect(result.valid).toBe(false);
-        expect(result.message).toContain('collide');
+        // Smart rotation should find a nearby position to avoid collision
+        // In a 10x8 drawer with blocker at (3,0), the 4x2 rotated bin can fit elsewhere
+        expect(result.valid).toBe(true);
+        if (result.valid) {
+          expect(result.movedTo).toBeDefined(); // Should have been repositioned
+        }
       });
 
       it('allows rotation when bins are on different layers', () => {
