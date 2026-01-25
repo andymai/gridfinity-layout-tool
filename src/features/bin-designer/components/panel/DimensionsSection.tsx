@@ -131,7 +131,9 @@ export function DimensionsSection() {
           <div className="mb-1 flex items-center justify-between">
             <span className="text-xs text-content-tertiary">{t('common.height')}</span>
             <span className="text-[11px] tabular-nums text-content-tertiary">
-              {heightMm.toFixed(0)}{t('binDesigner.mmBody')}</span>
+              {heightMm.toFixed(0)}
+              {t('binDesigner.mmBody')}
+            </span>
           </div>
           <StepperControl
             value={height}
@@ -157,15 +159,14 @@ export function DimensionsSection() {
           }}
           role="checkbox"
           aria-checked={halfBinMode}
-          aria-label={t('binDesigner.halfBinModeExperimentalEnable05Grid')}
+          aria-label={t('binDesigner.halfBinModeEnable05Grid')}
           tabIndex={0}
         >
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`text-xs leading-none ${halfBinMode ? 'text-content' : 'text-content-tertiary'}`}
-            >{t('binDesigner.halfBinMode')}</span>
-            <span className="text-[9px] leading-none text-warning bg-warning-muted px-1 py-0.5 rounded">{t('binDesigner.experimental')}</span>
-          </div>
+          <span
+            className={`text-xs leading-none ${halfBinMode ? 'text-content' : 'text-content-tertiary'}`}
+          >
+            {t('binDesigner.halfBinMode')}
+          </span>
           <Checkbox checked={halfBinMode} variant="desktop" />
         </div>
       </div>

@@ -47,7 +47,7 @@
   "binDesigner.gridSize": "Grid grootte",
   "binDesigner.gridUnit": "Grid unit",
   "binDesigner.halfBinMode": "Half-bin modus",
-  "binDesigner.halfBinModeExperimentalEnable05Grid": "Half-bin modus (experimenteel): 0,5 grid unit precisie inschakelen",
+  "binDesigner.halfBinModeEnable05Grid": "Half-bin modus: 0,5 grid unit precisie inschakelen",
   "binDesigner.heightUnit": "Height unit",
   "binDesigner.interior": "Interieur",
   "binDesigner.interiorSummary": "{count} compartiment(en)",

@@ -49,7 +49,7 @@
   "binDesigner.gridSize": "Taille de grille",
   "binDesigner.gridUnit": "Grid unit",
   "binDesigner.halfBinMode": "Mode demi-bin",
-  "binDesigner.halfBinModeExperimentalEnable05Grid": "Mode demi-bin (expérimental) : activer la précision 0,5 grid unit",
+  "binDesigner.halfBinModeEnable05Grid": "Mode demi-bin : activer la précision 0,5 grid unit",
   "binDesigner.heightUnit": "Height unit",
   "binDesigner.interior": "Intérieur",
   "binDesigner.interiorSummary": "{count} compartiment(s)",
