@@ -215,22 +215,24 @@ describe('CategoriesPanel', () => {
 
     it('exits edit mode on Escape key', async () => {
       vi.useFakeTimers();
-      render(<CategoriesPanel />);
+      try {
+        render(<CategoriesPanel />);
 
-      // Enter edit mode via edit icon
-      const editButton = screen.getByRole('button', { name: /Edit Coral/i });
-      fireEvent.click(editButton);
+        // Enter edit mode via edit icon
+        const editButton = screen.getByRole('button', { name: /Edit Coral/i });
+        fireEvent.click(editButton);
 
-      // Wait for the click-outside listener to be attached (50ms delay)
-      await vi.advanceTimersByTimeAsync(100);
+        // Wait for the click-outside listener to be attached (50ms delay)
+        await vi.advanceTimersByTimeAsync(100);
 
-      // Press Escape on the document (the listener is attached to document)
-      fireEvent.keyDown(document, { key: 'Escape' });
+        // Press Escape on the document (the listener is attached to document)
+        fireEvent.keyDown(document, { key: 'Escape' });
 
-      // Should exit edit mode (input should no longer be visible)
-      expect(screen.queryByDisplayValue('Coral')).not.toBeInTheDocument();
-
-      vi.useRealTimers();
+        // Should exit edit mode (input should no longer be visible)
+        expect(screen.queryByDisplayValue('Coral')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 

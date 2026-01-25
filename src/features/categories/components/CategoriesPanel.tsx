@@ -80,7 +80,9 @@ export function CategoriesPanel() {
     if (!editingId && !colorPickerId) return;
 
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
+      const target = e.target;
+      // Guard against null target or non-Node target (rare but possible in DOM)
+      if (!(target instanceof Node)) return;
 
       // Close color picker if clicking outside it
       if (colorPickerId && colorPickerRef.current && !colorPickerRef.current.contains(target)) {
