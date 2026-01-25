@@ -297,6 +297,49 @@ Experimental feature using Liveblocks. Enable via Labs settings.
 - `useCollabPresence()` - Update presence data
 - `useInterpolatedPresence()` - Smooth cursor animations
 
+### Internationalization (`src/i18n/`)
+
+Multi-language support with lazy-loaded locales.
+
+**Supported locales:** English (inline), German, Spanish, French, Dutch, Portuguese (BR)
+
+**Key hooks:**
+
+```typescript
+import { useTranslation, useFormatting } from '@/i18n';
+
+const t = useTranslation();
+const { formatDate, formatRelativeDate, formatNumber } = useFormatting();
+
+// Translation with interpolation
+t('toast.binsDeleted', { count: 5 }); // "Deleted 5 bin(s)"
+
+// Locale-aware date formatting
+formatRelativeDate(timestamp);           // "Today", "2d ago", etc.
+formatRelativeDate(ts, false);           // Long format: "2 days ago"
+formatRelativeDate(ts, { includeTime: true }); // "5m ago", "2h ago"
+```
+
+**For class components** (like ErrorBoundary):
+
+```typescript
+import { getStaticTranslation } from '@/i18n';
+getStaticTranslation('errorBoundary.heading');
+```
+
+**Adding new keys:**
+
+1. Add to `src/i18n/locales/en.ts` (source of truth)
+2. Add translations to all JSON locale files
+3. Run `npm run check:i18n` to verify sync
+
+**Conventions:**
+
+- Use `{variable}` for interpolation (not `{{variable}}`)
+- Keep brand names ("Gridfinity") in English
+- Use `(s)` suffix for simple plurals (e.g., `{count} bin(s)`)
+- Aria-labels should be localized using `t()` function
+
 ### Labs / Feature Flags (`src/features/labs/`)
 
 Experimental features can be toggled in settings:
