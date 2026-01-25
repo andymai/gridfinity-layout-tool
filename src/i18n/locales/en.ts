@@ -90,6 +90,8 @@ const en: Record<string, string> = {
   'header.forHelp': 'for help',
   'header.help': 'Help',
   'header.loadingLayouts': 'Loading layouts',
+  'header.changeLanguage': 'Change language',
+  'header.selectLanguage': 'Select language',
 
   // ===========================================================================
   // Grid Toolbar

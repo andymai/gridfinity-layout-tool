@@ -334,6 +334,8 @@
   "header.layoutName": "Layoutnaam",
   "header.layouts": "Layouts",
   "header.loadingLayouts": "Layouts laden",
+  "header.changeLanguage": "Taal wijzigen",
+  "header.selectLanguage": "Selecteer taal",
   "header.openLayoutManager": "Layoutbeheer openen",
   "header.pressForHelp": "Druk op",
   "header.print": "Afdrukken",

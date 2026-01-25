@@ -334,6 +334,8 @@
   "header.layoutName": "Nombre del diseño",
   "header.layouts": "Diseños",
   "header.loadingLayouts": "Cargando diseños",
+  "header.changeLanguage": "Cambiar idioma",
+  "header.selectLanguage": "Seleccionar idioma",
   "header.openLayoutManager": "Abrir gestor de diseños",
   "header.pressForHelp": "Presiona",
   "header.print": "Imprimir",

@@ -334,6 +334,8 @@
   "header.layoutName": "Nome do layout",
   "header.layouts": "Layouts",
   "header.loadingLayouts": "Carregando layouts",
+  "header.changeLanguage": "Alterar idioma",
+  "header.selectLanguage": "Selecionar idioma",
   "header.openLayoutManager": "Abrir gerenciador de layouts",
   "header.pressForHelp": "Pressione",
   "header.print": "Imprimir",

@@ -9,6 +9,7 @@ import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
+import { LanguageSelector } from '@/shared/components/LanguageSelector';
 import { PresenceAvatars } from './Collab';
 import { useTranslation } from '@/i18n';
 import type { SaveStatus } from '@/shared/hooks';
@@ -355,6 +356,9 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
           </svg>
           <span className="hidden xl:inline">{t('header.discussOnReddit')}</span>
         </a>
+
+        {/* Language selector */}
+        <LanguageSelector />
 
         <button
           onClick={onHelpClick}
