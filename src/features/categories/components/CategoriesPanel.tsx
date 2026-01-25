@@ -271,7 +271,7 @@ export function CategoriesPanel() {
                       placeholder={t('categories.categoryNamePlaceholder')}
                     />
                     {/* Color palette - 7 columns for better fit with 14 colors */}
-                    <div className="grid grid-cols-7 gap-1">
+                    <div className="grid grid-cols-7 gap-1.5">
                       {COLOR_PALETTE.map(({ color, name }) => (
                         <button
                           key={color}
@@ -346,7 +346,7 @@ export function CategoriesPanel() {
                           className="absolute left-0 top-full mt-1.5 z-50 p-2 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg animate-scale-in"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="grid grid-cols-7 gap-1">
+                          <div className="grid grid-cols-7 gap-1.5">
                             {COLOR_PALETTE.map(({ color, name }) => (
                               <button
                                 key={color}
@@ -450,21 +450,17 @@ export function CategoriesPanel() {
                         </svg>
                       </button>
                     )}
-                    {/* Bin count badge */}
-                    <span
-                      className={`text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${
-                        isHovered && binCount > 0
-                          ? 'bg-accent/20 text-accent'
-                          : 'text-content-tertiary'
-                      }`}
-                      title={
-                        binCount > 0
-                          ? t('categories.binsUseCategory', { count: binCount })
-                          : t('categories.noBinsUseCategory')
-                      }
-                    >
-                      {binCount > 0 ? binCount : ''}
-                    </span>
+                    {/* Bin count badge - only rendered when category has bins */}
+                    {binCount > 0 && (
+                      <span
+                        className={`text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${
+                          isHovered ? 'bg-accent/20 text-accent' : 'text-content-tertiary'
+                        }`}
+                        title={t('categories.binsUseCategory', { count: binCount })}
+                      >
+                        {binCount}
+                      </span>
+                    )}
                   </>
                 )}
               </div>
