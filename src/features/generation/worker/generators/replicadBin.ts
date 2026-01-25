@@ -607,8 +607,7 @@ function buildWallCutouts(
   function buildCutoutSolid(
     notchWidth: number,
     notchDepth: number,
-    extrudeLength: number,
-    _alongX: boolean
+    extrudeLength: number
   ): Shape3D | null {
     if (notchWidth <= 0 || notchDepth <= 0) return null;
 
@@ -713,7 +712,7 @@ function buildWallCutouts(
           const notchWidth = (dividerLength * notchWidthPct) / 100;
           const notchDepth = (wallHeight * notchDepthPct) / 100;
 
-          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness, true);
+          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness);
           if (!solid) continue;
 
           const yCenter = -innerD / 2 + (row + 0.5) * cellD;
@@ -738,7 +737,7 @@ function buildWallCutouts(
           const notchWidth = (dividerLength * notchWidthPct) / 100;
           const notchDepth = (wallHeight * notchDepthPct) / 100;
 
-          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness, true);
+          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness);
           if (!solid) continue;
 
           const xCenter = -innerW / 2 + (col + 0.5) * cellW;
