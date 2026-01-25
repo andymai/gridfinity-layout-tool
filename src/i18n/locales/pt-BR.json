@@ -865,6 +865,8 @@
   "rightPanel.selection": "Seleção",
   "rightPanel.splitInto": "Dividir em",
   "rightPanel.unknownCategory": "Categoria desconhecida",
+  "seo.title": "Gridfinity Layout Tool | Planeje seus organizadores de gavetas impressos em 3D",
+  "seo.description": "Projete layouts de gavetas Gridfinity para impressão 3D. Planeje organizadores personalizados com bins arrastar e soltar, suporte multicamadas, prévia 3D e otimização automática de impressão.",
   "settings.autoDetect": "Automático (padrão do navegador)",
   "settings.confirmSaveDefaults.confirm": "Salvar",
   "settings.confirmSaveDefaults.message": "Salvar configurações atuais como padrão para novos layouts?\n\nDrawer: {width}×{depth}×{height}u\nAltura do layer: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm",

@@ -15,6 +15,13 @@
 
 const en: Record<string, string> = {
   // ===========================================================================
+  // SEO Meta Tags (dynamically injected into document head)
+  // ===========================================================================
+  'seo.title': 'Gridfinity Layout Tool | Plan Your 3D Printed Drawer Organizers',
+  'seo.description':
+    'Design Gridfinity drawer layouts for 3D printing. Plan custom organizers with drag-and-drop bins, multi-layer support, 3D preview, and automatic print optimization.',
+
+  // ===========================================================================
   // Common / Shared
   // ===========================================================================
   'common.save': 'Save',
