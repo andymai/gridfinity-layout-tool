@@ -114,7 +114,7 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
   const modKey = isMac ? '⌘' : 'Ctrl';
 
   return (
-    <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+    <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
       <div className="flex items-center gap-4 min-w-0">
         <ToolSwitcher />
 
@@ -396,7 +396,9 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
 
       {/* Lazy-loaded modals - only load chunks when modal is opened */}
       {showLayoutManager && (
-        <Suspense fallback={<LoadingFallback variant="overlay" label={t('header.loadingLayouts')} />}>
+        <Suspense
+          fallback={<LoadingFallback variant="overlay" label={t('header.loadingLayouts')} />}
+        >
           <LayoutManagerModal
             isOpen={showLayoutManager}
             onClose={() => setShowLayoutManager(false)}
