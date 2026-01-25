@@ -34,6 +34,19 @@ import type { ReactNode } from 'react';
 import type { Locale, Translations, TranslationVars } from './types';
 import en from './locales/en';
 
+/**
+ * Map of locale codes to Open Graph locale format.
+ * OG uses underscore format (e.g., en_US, de_DE).
+ */
+const OG_LOCALE_MAP: Record<Locale, string> = {
+  en: 'en_US',
+  de: 'de_DE',
+  nl: 'nl_NL',
+  es: 'es_ES',
+  fr: 'fr_FR',
+  'pt-BR': 'pt_BR',
+};
+
 /** Translation function signature */
 export type TFunction = (key: string, vars?: TranslationVars) => string;
 
@@ -157,14 +170,35 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
       setLocaleState(newLocale);
       loadLocale(newLocale);
       onLocaleChange?.(newLocale);
-
-      // Update document lang attribute
-      if (typeof document !== 'undefined') {
-        document.documentElement.lang = newLocale === 'pt-BR' ? 'pt' : newLocale;
-      }
     },
     [loadLocale, onLocaleChange]
   );
+
+  // Sync SEO meta tags when locale/translations change
+  useEffect(() => {
+    if (isLoading || typeof document === 'undefined') return;
+
+    // HTML lang attribute (screen readers, SEO)
+    document.documentElement.lang = locale;
+
+    // Page title and meta description
+    const seoTitle = translations['seo.title'] ?? en['seo.title'];
+    const seoDesc = translations['seo.description'] ?? en['seo.description'];
+
+    document.title = seoTitle;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', seoDesc);
+
+    // Open Graph tags
+    document
+      .querySelector('meta[property="og:locale"]')
+      ?.setAttribute('content', OG_LOCALE_MAP[locale]);
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', seoTitle);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', seoDesc);
+
+    // Twitter Card tags
+    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', seoTitle);
+    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', seoDesc);
+  }, [locale, translations, isLoading]);
 
   const t: TFunction = useCallback(
     (key: string, vars?: TranslationVars): string => {

@@ -865,6 +865,8 @@
   "rightPanel.selection": "Sélection",
   "rightPanel.splitInto": "Diviser en",
   "rightPanel.unknownCategory": "Catégorie inconnue",
+  "seo.title": "Gridfinity Layout Tool | Planifiez vos organisateurs de tiroirs imprimés en 3D",
+  "seo.description": "Concevez des agencements de tiroirs Gridfinity pour l'impression 3D. Planifiez des organisateurs personnalisés avec des bins glisser-déposer, support multicouche, aperçu 3D et optimisation automatique d'impression.",
   "settings.autoDetect": "Auto (langue du navigateur)",
   "settings.confirmSaveDefaults.confirm": "Enregistrer",
   "settings.confirmSaveDefaults.message": "Enregistrer les paramètres actuels comme valeurs par défaut pour les nouveaux layouts ?\n\nDrawer : {width}×{depth}×{height}u\nHauteur de layer : {layerHeight}u\nPrint bed : {printBed}mm\nGrid unit : {gridUnit}mm",
