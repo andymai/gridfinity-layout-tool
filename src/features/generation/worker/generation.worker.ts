@@ -110,10 +110,17 @@ function generate(params: BinParams, requestId: string): void {
     });
   } catch (e) {
     if (activeRequestId !== requestId) return; // Cancelled during generation
+    const errorMsg = e instanceof Error ? e.message : String(e);
+    // Log detailed error info for debugging
+    console.error('[BinGen] Generation failed:', errorMsg);
+    console.error('[BinGen] Params:', JSON.stringify(params, null, 2));
+    if (e instanceof Error && e.stack) {
+      console.error('[BinGen] Stack:', e.stack);
+    }
     respond({
       type: 'ERROR',
       requestId,
-      error: e instanceof Error ? e.message : String(e),
+      error: errorMsg,
     });
   } finally {
     if (activeRequestId === requestId) {
