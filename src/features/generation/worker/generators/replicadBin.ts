@@ -600,77 +600,24 @@ function buildWallCutouts(
    * Build a single wall cutout solid given dimensions and position.
    * The cutout is oriented along the X axis (width = notchWidth) and
    * cut into the wall from the top.
+   *
+   * NOTE: This is used for INTERIOR divider cutouts only. Exterior wall
+   * cutouts use inline code with sketchOnPlane(offset) for correct positioning.
    */
   function buildCutoutSolid(
     notchWidth: number,
     notchDepth: number,
-    wallThick: number,
-    includeSlopes: boolean
+    extrudeLength: number
   ): Shape3D | null {
     if (notchWidth <= 0 || notchDepth <= 0) return null;
 
-    const filletR = Math.min(3, notchDepth / 3);
-
-    // Build the cutout profile in the XZ plane (X = along wall, Z = height)
-    // The profile is a trapezoid with 45° slopes and filleted bottom corners
-    const slopeInset = includeSlopes ? Math.min(notchDepth - filletR, notchWidth / 2 - filletR) : 0;
-    const effectiveSlopeInset = Math.max(0, slopeInset);
-
-    // Bottom width = notchWidth - 2 * effectiveSlopeInset
-    const bottomWidth = notchWidth - 2 * effectiveSlopeInset;
-
-    if (bottomWidth < 0.1) {
-      // V-shaped cutout: slopes meet or nearly meet
-      // Use a simple triangular profile with filleted point
-      const halfW = notchWidth / 2;
-      const profile = draw([halfW, 0])
-        .lineTo([0, -notchDepth + filletR])
-        .lineTo([-halfW, 0])
-        .lineTo([halfW, 0])
-        .close();
-
-      const extruded = (profile.sketchOnPlane('XZ') as unknown as Sketch).extrude(
-        wallThick + 2
-      ) as Shape3D;
-      return extruded;
-    }
-
-    // Trapezoidal profile with flat bottom
-    const halfTopW = notchWidth / 2;
-    const halfBotW = bottomWidth / 2;
-
-    let profile;
-    if (effectiveSlopeInset > 0.1 && filletR > 0.1) {
-      // Full profile with slopes and fillets
-      profile = draw([halfTopW, 0])
-        .lineTo([halfBotW + filletR, -(notchDepth - filletR)])
-        .tangentArcTo([-halfBotW - filletR, -(notchDepth - filletR)])
-        .lineTo([-halfTopW, 0])
-        .lineTo([halfTopW, 0])
-        .close();
-    } else if (effectiveSlopeInset > 0.1) {
-      // Slopes but no fillet
-      profile = draw([halfTopW, 0])
-        .lineTo([halfBotW, -notchDepth])
-        .lineTo([-halfBotW, -notchDepth])
-        .lineTo([-halfTopW, 0])
-        .lineTo([halfTopW, 0])
-        .close();
-    } else {
-      // Rectangular cutout (no slopes)
-      profile = draw([halfTopW, 0])
-        .lineTo([halfTopW, -notchDepth])
-        .lineTo([-halfTopW, -notchDepth])
-        .lineTo([-halfTopW, 0])
-        .lineTo([halfTopW, 0])
-        .close();
-    }
-
-    const extruded = (profile.sketchOnPlane('XZ') as unknown as Sketch).extrude(
-      wallThick + 2
+    // Simple rectangle profile extruded through the divider
+    // Center at Z=0 so downstream translate([..., wallHeight]) places cutout at top of wall
+    const profile = drawRectangle(notchWidth, notchDepth);
+    const solid = (profile.sketchOnPlane('XZ') as unknown as Sketch).extrude(
+      extrudeLength
     ) as Shape3D;
-
-    return extruded;
+    return solid.translate([0, 0, -notchDepth / 2]);
   }
 
   // Helper to position cutout on a wall face
@@ -686,35 +633,53 @@ function buildWallCutouts(
     const cutHeight = wallHeight + lipHeight;
     const notchDepth = (cutHeight * cutout.depth) / 100;
 
-    const solid = buildCutoutSolid(notchWidth, notchDepth, wallThickness, true);
-    if (!solid) return;
+    if (notchWidth <= 0 || notchDepth <= 0) return;
 
-    // Position: center of the wall face, at wall top height
-    const halfOuter = (isXWall ? innerW : innerD) / 2 + wallThickness;
+    // Position: center of the wall face
+    // front/back walls use innerD for Y positioning, left/right use innerW for X positioning
+    const halfOuter = (isXWall ? innerD : innerW) / 2 + wallThickness;
     let positioned: Shape3D;
 
+    // Build cutout directly at the wall position using sketchOnPlane with offset
+    // This ensures correct positioning (similar to how scoops are built)
+    const extrudeLength = wallThickness + 10; // Ensure it goes through the wall
+
     switch (side) {
-      case 'front':
-        // Front wall: Y = -innerD/2 - wallThickness, facing +Y
-        positioned = solid.translate([0, -halfOuter - 1, wallHeight + lipHeight]);
+      case 'front': {
+        // Front wall: sketch at Y position, extrude into the bin
+        const yPos = -halfOuter - 1; // Start just outside the wall exterior
+        const cutoutProfile = (
+          drawRectangle(notchWidth, notchDepth).sketchOnPlane('XZ', yPos) as unknown as Sketch
+        ).extrude(extrudeLength) as Shape3D;
+        // Rectangle is centered, so shift Z so top is at wallHeight+lipHeight
+        positioned = cutoutProfile.translate([0, 0, wallHeight + lipHeight - notchDepth / 2]);
         break;
-      case 'back':
-        // Back wall: Y = +innerD/2, facing -Y
-        positioned = solid.translate([0, halfOuter - wallThickness - 1, wallHeight + lipHeight]);
+      }
+      case 'back': {
+        const yPos = halfOuter - extrudeLength + 1; // Start inside, extrude outward
+        const cutoutProfile = (
+          drawRectangle(notchWidth, notchDepth).sketchOnPlane('XZ', yPos) as unknown as Sketch
+        ).extrude(extrudeLength) as Shape3D;
+        positioned = cutoutProfile.translate([0, 0, wallHeight + lipHeight - notchDepth / 2]);
         break;
-      case 'left':
-        // Left wall: X = -innerW/2 - wallThickness, facing +X
-        // Rotate 90° around Z to orient along Y axis
-        positioned = solid
-          .rotate(90, [0, 0, 0], [0, 0, 1])
-          .translate([-halfOuter - 1, 0, wallHeight + lipHeight]);
+      }
+      case 'left': {
+        // Left wall: sketch on YZ plane at X position
+        const xPos = -halfOuter - 1;
+        const cutoutProfile = (
+          drawRectangle(notchWidth, notchDepth).sketchOnPlane('YZ', xPos) as unknown as Sketch
+        ).extrude(extrudeLength) as Shape3D;
+        positioned = cutoutProfile.translate([0, 0, wallHeight + lipHeight - notchDepth / 2]);
         break;
-      case 'right':
-        // Right wall: X = +innerW/2, facing -X
-        positioned = solid
-          .rotate(90, [0, 0, 0], [0, 0, 1])
-          .translate([halfOuter - wallThickness - 1, 0, wallHeight + lipHeight]);
+      }
+      case 'right': {
+        const xPos = halfOuter - extrudeLength + 1;
+        const cutoutProfile = (
+          drawRectangle(notchWidth, notchDepth).sketchOnPlane('YZ', xPos) as unknown as Sketch
+        ).extrude(extrudeLength) as Shape3D;
+        positioned = cutoutProfile.translate([0, 0, wallHeight + lipHeight - notchDepth / 2]);
         break;
+      }
     }
 
     cuts = cuts ? cuts.fuse(positioned) : positioned;
@@ -749,7 +714,7 @@ function buildWallCutouts(
           const notchWidth = (dividerLength * notchWidthPct) / 100;
           const notchDepth = (wallHeight * notchDepthPct) / 100;
 
-          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness, true);
+          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness);
           if (!solid) continue;
 
           const yCenter = -innerD / 2 + (row + 0.5) * cellD;
@@ -774,7 +739,7 @@ function buildWallCutouts(
           const notchWidth = (dividerLength * notchWidthPct) / 100;
           const notchDepth = (wallHeight * notchDepthPct) / 100;
 
-          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness, true);
+          const solid = buildCutoutSolid(notchWidth, notchDepth, thickness);
           if (!solid) continue;
 
           const xCenter = -innerW / 2 + (col + 0.5) * cellW;
