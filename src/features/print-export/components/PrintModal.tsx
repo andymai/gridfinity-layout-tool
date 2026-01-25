@@ -261,7 +261,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                         onClick={() => toggleLayer(layer.id)}
                         role="checkbox"
                         aria-checked={isChecked}
-                        aria-label={`Select ${layer.name}`}
+                        aria-label={t('print.selectLayer', { layer: layer.name })}
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === ' ' || e.key === 'Enter') {

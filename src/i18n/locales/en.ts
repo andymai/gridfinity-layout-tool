@@ -401,6 +401,7 @@ const en: Record<string, string> = {
   'print.allLayers': 'All layers',
   'print.binCount': 'Bin count',
   'print.binDetails': 'Bin details',
+  'print.selectLayer': 'Select {layer}',
   'print.bins': 'bins',
   'print.categories': 'Categories',
   'print.coordinates': 'Coordinates',
@@ -439,6 +440,7 @@ const en: Record<string, string> = {
   'share.cloud.permissionsLabel': 'Permissions',
   'share.link.description': 'The layout is encoded in the URL. No server needed.',
   'share.link.urlEncoded': 'URL-encoded (may be long)',
+  'share.link.longUrlNote': 'Note: Very large layouts may create long URLs that don\'t work in some browsers.',
   'share.file.description': 'Download your layout as a JSON file.',
   'share.file.download': 'Download JSON',
   'share.file.downloaded': 'Downloaded!',
@@ -635,7 +637,7 @@ const en: Record<string, string> = {
   'mobile.categories.selectForNew': 'Select for new',
   'mobile.categories.tapToApply': 'Tap to apply',
   'mobile.contextMenu.minHeight': 'Minimum height',
-  'mobile.contextMenu.stashAndGrid': 'Stash and grid',
+  'mobile.contextMenu.stashAndGrid': '{stash} in stash, {grid} on grid',
   'mobile.deleteLayer': 'Delete layer',
   'mobile.header.binList': 'Bin List',
   'mobile.header.categories': 'Categories',
@@ -853,7 +855,8 @@ const en: Record<string, string> = {
   'halfBinBlocked.message': 'Some bins use fractional dimensions. Resize or delete these bins before disabling half-bin mode.',
   'halfBinBlocked.cancelAriaLabel': 'Cancel and keep half-bin mode enabled',
   'halfBinBlocked.close': 'Got it',
-  'halfBinMode.remediate.ariaLabel': 'Remediate half-bin mode',
+  'halfBinBlocked.errorFallback': 'An error occurred while moving bins',
+  'halfBinMode.remediate.ariaLabel': 'Move {count} fractional bins to stash and disable half-bin mode',
 
   // ===========================================================================
   // Inspiration Gallery

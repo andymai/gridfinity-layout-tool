@@ -107,7 +107,7 @@ export function HalfBinModeBlockedModal({
       await onRemediate();
       // Success - modal will be closed by parent component
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while moving bins');
+      setError(err instanceof Error ? err.message : t('halfBinBlocked.errorFallback'));
       setIsRemediating(false);
     }
   };

@@ -140,7 +140,8 @@ export function MultiBinContextMenu({
         <div className="font-medium text-content">{t('inspector.multi.title', { count: bins.length })}</div>
         {stagingBins.length > 0 && gridBins.length > 0 && (
           <div className="text-sm text-content-tertiary">
-            {t('mobile.contextMenu.stashAndGrid', { stash: stagingBins.length, grid: gridBins.length })}</div>
+            {t('mobile.contextMenu.stashAndGrid', { stash: stagingBins.length, grid: gridBins.length })}
+          </div>
         )}
       </div>
 

@@ -222,7 +222,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                 </button>
               </div>
               <div className="text-xs text-content-tertiary">
-                Note: Very large layouts may create long URLs that don't work in some browsers.
+                {t('share.link.longUrlNote')}
               </div>
             </div>
           )}

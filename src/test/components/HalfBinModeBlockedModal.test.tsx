@@ -129,7 +129,7 @@ describe('HalfBinModeBlockedModal', () => {
       render(<HalfBinModeBlockedModal {...defaultProps} />);
 
       expect(
-        screen.getByLabelText('Remediate half-bin mode')
+        screen.getByLabelText('Move 3 fractional bins to stash and disable half-bin mode')
       ).toBeInTheDocument();
     });
 
@@ -139,7 +139,7 @@ describe('HalfBinModeBlockedModal', () => {
       );
 
       expect(
-        screen.getByLabelText('Remediate half-bin mode')
+        screen.getByLabelText('Move 1 fractional bins to stash and disable half-bin mode')
       ).toBeInTheDocument();
     });
   });

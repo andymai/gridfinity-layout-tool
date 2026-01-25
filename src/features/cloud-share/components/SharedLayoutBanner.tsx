@@ -165,7 +165,9 @@ export function SharedLayoutBanner() {
         <button
           onClick={() => setShowDiscardConfirm(true)}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white/15 hover:bg-white/25 transition-colors"
-        >{t('share.discard')}</button>
+        >
+          {t('share.banner.discardConfirm')}
+        </button>
       </div>
 
       <ConfirmDialog
