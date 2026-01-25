@@ -553,8 +553,8 @@
   "layers.showingTall": "Affichage : Haut",
   "layers.showingWide": "Affichage : Large",
   "layers.squares": "Carrés",
-  "layers.stats": "Stats",
-  "layers.statsTotal": "{count} bins au total",
+  "layers.stats": "{coverage}% rempli · {count} bins",
+  "layers.statsTotal": "{coverage}% rempli · {count} bins au total",
   "layers.switchToTall": "Passer à haut",
   "layers.switchToWide": "Passer à large",
   "layers.tall": "Haut",
@@ -1060,6 +1060,6 @@
   "toolSwitcher.activeTool": "Outil actif",
   "toolSwitcher.binDesigner": "Concepteur de bin",
   "toolSwitcher.gridEditor": "Éditeur de grille",
-  "toolSwitcher.gridfinityLayoutTool": "Outil de Layout Gridfinity",
+  "toolSwitcher.gridfinityLayoutTool": "Gridfinity Layout Tool",
   "toolSwitcher.toolSwitcher": "Sélecteur d'outils"
 }

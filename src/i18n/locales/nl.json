@@ -615,8 +615,8 @@
   "layers.showingTall": "Weergave: Hoog",
   "layers.showingWide": "Weergave: Breed",
   "layers.squares": "Vierkanten",
-  "layers.stats": "Statistieken",
-  "layers.statsTotal": "{count} bins totaal",
+  "layers.stats": "{coverage}% gevuld · {count} bins",
+  "layers.statsTotal": "{coverage}% gevuld · {count} bins totaal",
   "layers.switchToTall": "Wisselen naar hoog",
   "layers.switchToWide": "Wisselen naar breed",
   "layers.tall": "Hoog",
@@ -1060,6 +1060,6 @@
   "toolSwitcher.activeTool": "Actief gereedschap",
   "toolSwitcher.binDesigner": "Bin designer",
   "toolSwitcher.gridEditor": "Grid editor",
-  "toolSwitcher.gridfinityLayoutTool": "Gridfinity layout tool",
+  "toolSwitcher.gridfinityLayoutTool": "Gridfinity Layout Tool",
   "toolSwitcher.toolSwitcher": "Gereedschap wisselen"
 }
