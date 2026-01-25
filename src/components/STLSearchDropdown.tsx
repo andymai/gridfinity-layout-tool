@@ -121,7 +121,6 @@ export function STLSearchDropdown({
     hide();
   }, [hide]);
 
-  const sizeLabel = `${formatDimension(width)}x${formatDimension(depth)}`;
   const isDisabled = enabledSites.length === 0;
 
   // Build descriptive tooltip for icon variant (memoized to avoid array ops on every render)
@@ -129,8 +128,11 @@ export function STLSearchDropdown({
     () =>
       isSingleSite
         ? t('stlSearch.findOnSite', { site: enabledSites[0].name })
-        : t('stlSearch.searchFor', { width: formatDimension(width), depth: formatDimension(depth) }),
-    [isSingleSite, enabledSites, sizeLabel, t, width, depth]
+        : t('stlSearch.searchFor', {
+            width: formatDimension(width),
+            depth: formatDimension(depth),
+          }),
+    [isSingleSite, enabledSites, t, width, depth]
   );
 
   // Don't render anything if no sites are enabled
@@ -147,12 +149,17 @@ export function STLSearchDropdown({
           type="button"
           onClick={handleClick}
           className={`btn btn-ghost gap-1.5 text-content-secondary hover:text-content ${className}`}
-          aria-label={t('stlSearch.searchFor', { width: formatDimension(width), depth: formatDimension(depth) })}
+          aria-label={t('stlSearch.searchFor', {
+            width: formatDimension(width),
+            depth: formatDimension(depth),
+          })}
           aria-expanded={isSingleSite ? undefined : isOpen}
           aria-haspopup={isSingleSite ? undefined : 'menu'}
         >
           <SearchIcon className="w-4 h-4" />
-          {isSingleSite ? t('stlSearch.findOnSite', { site: enabledSites[0].name }) : t('stlSearch.findSTL')}
+          {isSingleSite
+            ? t('stlSearch.findOnSite', { site: enabledSites[0].name })
+            : t('stlSearch.findSTL')}
           {!isSingleSite && <ChevronIcon className="w-3 h-3" isOpen={isOpen} />}
         </button>
       )}
@@ -178,13 +185,18 @@ export function STLSearchDropdown({
           type="button"
           onClick={handleClick}
           className={`w-full px-4 py-3 flex items-center gap-3 text-content hover:bg-surface-hover ${className}`}
-          aria-label={t('stlSearch.searchFor', { width: formatDimension(width), depth: formatDimension(depth) })}
+          aria-label={t('stlSearch.searchFor', {
+            width: formatDimension(width),
+            depth: formatDimension(depth),
+          })}
           aria-expanded={isSingleSite ? undefined : isOpen}
           aria-haspopup={isSingleSite ? undefined : 'menu'}
         >
           <SearchIcon className="w-5 h-5 text-content-tertiary flex-shrink-0" />
           <span className="flex-1 text-left">
-            {isSingleSite ? t('stlSearch.findOnSite', { site: enabledSites[0].name }) : t('stlSearch.findSTL')}
+            {isSingleSite
+              ? t('stlSearch.findOnSite', { site: enabledSites[0].name })
+              : t('stlSearch.findSTL')}
           </span>
           {!isSingleSite && (
             <ChevronRightIcon className="w-4 h-4 text-content-tertiary flex-shrink-0" />
@@ -204,7 +216,12 @@ export function STLSearchDropdown({
             {/* Header */}
             <div className="px-4 py-2 border-b border-stroke-subtle">
               <div className="text-xs text-content-tertiary">
-                {needsSplit ? t('stlSearch.searchForSplit') : t('stlSearch.searchFor', { width: formatDimension(width), depth: formatDimension(depth) })}
+                {needsSplit
+                  ? t('stlSearch.searchForSplit')
+                  : t('stlSearch.searchFor', {
+                      width: formatDimension(width),
+                      depth: formatDimension(depth),
+                    })}
               </div>
             </div>
 

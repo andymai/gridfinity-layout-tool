@@ -15,7 +15,6 @@ import {
   normalizeIds,
   deriveWallSegments,
   fromDividerConfig,
-  type WallSegment,
 } from '@/features/bin-designer/utils/compartments';
 import type { CompartmentConfig } from '@/features/bin-designer/types';
 
