@@ -996,6 +996,7 @@
   "staging.dropHereToStash": "Hier neerzetten om op te slaan",
   "staging.dropToStash": "Naar stash slepen",
   "staging.expandStash": "Stash uitvouwen",
+  "staging.resizeHandle": "Sleep om het stash-paneel te vergroten/verkleinen",
   "staging.rotateBin": "Bin roteren (R)",
   "staging.stash": "Stash",
   "staging.title": "Stash",

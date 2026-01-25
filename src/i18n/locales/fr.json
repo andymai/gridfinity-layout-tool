@@ -996,6 +996,7 @@
   "staging.dropHereToStash": "Déposer ici pour stocker",
   "staging.dropToStash": "Déposer dans le stash",
   "staging.expandStash": "Développer le stash",
+  "staging.resizeHandle": "Glisser pour redimensionner le panneau de stash",
   "staging.rotateBin": "Pivoter le bin (R)",
   "staging.stash": "Stash",
   "staging.title": "Stash",

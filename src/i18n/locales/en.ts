@@ -385,6 +385,7 @@ const en: Record<string, string> = {
   'staging.dropHereToStash': 'Drop here to stash',
   'staging.dropToStash': 'Drop to stash',
   'staging.expandStash': 'Expand stash',
+  'staging.resizeHandle': 'Drag to resize stash panel',
   'staging.stash': 'Stash',
   'staging.unlabeled': 'Unlabeled',
 

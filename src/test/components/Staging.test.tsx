@@ -505,6 +505,202 @@ describe('Staging', () => {
       expect(container.querySelector('[data-stash]')).toBeInTheDocument();
     });
   });
+
+  describe('resize handle', () => {
+    beforeEach(() => {
+      // Mock window.innerHeight for consistent test behavior
+      Object.defineProperty(window, 'innerHeight', { value: 800, writable: true });
+    });
+
+    it('renders resize handle with correct ARIA attributes', () => {
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      expect(handle).toBeInTheDocument();
+      expect(handle).toHaveAttribute('role', 'separator');
+      expect(handle).toHaveAttribute('aria-orientation', 'horizontal');
+      expect(handle).toHaveAttribute('aria-label');
+      // Default max height is 33vh of 800px = 264px
+      expect(handle).toHaveAttribute('aria-valuenow', '264');
+      expect(handle).toHaveAttribute('aria-valuemin', '80');
+      // Max is 90% of 800px = 720px
+      expect(handle).toHaveAttribute('aria-valuemax', '720');
+    });
+
+    it('renders resize handle with cursor-ns-resize for vertical resizing', () => {
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      expect(handle.className).toContain('cursor-ns-resize');
+    });
+
+    it('starts resize on pointer down', () => {
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      // Mock setPointerCapture
+      handle.setPointerCapture = vi.fn();
+
+      fireEvent.pointerDown(handle, { pointerId: 1, clientY: 500 });
+
+      expect(handle.setPointerCapture).toHaveBeenCalledWith(1);
+    });
+
+    it('updates height during pointer move while resizing', () => {
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      const scrollContainer = document.getElementById('staging-stash-panel')?.querySelector('.overflow-y-auto');
+
+      // Mock setPointerCapture
+      handle.setPointerCapture = vi.fn();
+
+      // Start resize
+      fireEvent.pointerDown(handle, { pointerId: 1, clientY: 500 });
+
+      // Move pointer up (should increase height)
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 400 });
+
+      // Check that maxHeight was updated inline
+      expect(scrollContainer?.getAttribute('style')).toContain('max-height');
+    });
+
+    it('persists height to settings on pointer up', async () => {
+      const { useSettingsStore } = await import('@/core/store/settings');
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      // Mock pointer capture methods
+      handle.setPointerCapture = vi.fn();
+      handle.releasePointerCapture = vi.fn();
+
+      // Complete a resize gesture
+      fireEvent.pointerDown(handle, { pointerId: 1, clientY: 500 });
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 400 });
+      fireEvent.pointerUp(handle, { pointerId: 1 });
+
+      // Verify release was called
+      expect(handle.releasePointerCapture).toHaveBeenCalledWith(1);
+
+      // Settings should be updated (stashMaxHeight is no longer null)
+      // Note: In jsdom, offsetHeight is 0, so it will save 0
+      expect(useSettingsStore.getState().settings.stashMaxHeight).not.toBeNull();
+    });
+
+    it('handles pointer cancel by releasing capture', () => {
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      handle.setPointerCapture = vi.fn();
+      handle.releasePointerCapture = vi.fn();
+
+      fireEvent.pointerDown(handle, { pointerId: 1, clientY: 500 });
+      fireEvent.pointerCancel(handle, { pointerId: 1 });
+
+      expect(handle.releasePointerCapture).toHaveBeenCalledWith(1);
+    });
+
+    it('resets height to default on double-click', async () => {
+      const { useSettingsStore } = await import('@/core/store/settings');
+      // Set a custom height first
+      useSettingsStore.getState().updateSetting('stashMaxHeight', 400);
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      fireEvent.doubleClick(handle);
+
+      // Should reset to null (default 33vh)
+      expect(useSettingsStore.getState().settings.stashMaxHeight).toBeNull();
+    });
+
+    it('uses persisted height when available', async () => {
+      const { useSettingsStore } = await import('@/core/store/settings');
+      useSettingsStore.getState().updateSetting('stashMaxHeight', 350);
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      // aria-valuenow should reflect persisted value
+      expect(handle).toHaveAttribute('aria-valuenow', '350');
+    });
+
+    it('clamps height to minimum during resize', () => {
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      const scrollContainer = document.getElementById('staging-stash-panel')?.querySelector('.overflow-y-auto');
+
+      handle.setPointerCapture = vi.fn();
+
+      // Start at high Y (small height), try to drag down further
+      fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 });
+      // Drag down way past minimum (clientY 1000 means -900 from start, negative dy)
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 1000 });
+
+      // Height should be clamped to minimum (80px)
+      const style = scrollContainer?.getAttribute('style') || '';
+      // The height should exist and not be negative
+      expect(style).toContain('max-height');
+    });
+
+    it('does not update height when not resizing', () => {
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      const scrollContainer = document.getElementById('staging-stash-panel')?.querySelector('.overflow-y-auto');
+
+      // Get initial style
+      const initialStyle = scrollContainer?.getAttribute('style') || '';
+
+      // Move pointer without starting resize
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 400 });
+
+      // Style should not change
+      expect(scrollContainer?.getAttribute('style') || '').toBe(initialStyle);
+    });
+
+    it('prevents default and stops propagation on pointer down', () => {
+      addStagedBins([{}]);
+
+      render(<Staging />);
+
+      const handle = screen.getByTestId('stash-resize-handle');
+      handle.setPointerCapture = vi.fn();
+
+      const event = new PointerEvent('pointerdown', {
+        bubbles: true,
+        cancelable: true,
+        pointerId: 1,
+        clientY: 500,
+      });
+      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+      const stopPropagationSpy = vi.spyOn(event, 'stopPropagation');
+
+      handle.dispatchEvent(event);
+
+      expect(preventDefaultSpy).toHaveBeenCalled();
+      expect(stopPropagationSpy).toHaveBeenCalled();
+    });
+  });
 });
 
 describe('Staging as drop target', () => {

@@ -177,6 +177,11 @@ export interface UserSettings {
   lastLeftPanelCollapsed: boolean;
   lastRightPanelCollapsed: boolean;
   lastStashCollapsed: boolean;
+  /**
+   * Custom max height for the stash panel in pixels.
+   * null means use the default (33vh).
+   */
+  stashMaxHeight: number | null;
 
   // Print view preferences
   printViewSettings: PrintViewSettings;
@@ -219,6 +224,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   lastLeftPanelCollapsed: false,
   lastRightPanelCollapsed: false,
   lastStashCollapsed: false,
+  stashMaxHeight: null, // null = use default 33vh
 
   // Print view preferences
   printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },
