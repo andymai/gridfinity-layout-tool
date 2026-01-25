@@ -378,7 +378,7 @@ test.describe('Drag Bins Flow', () => {
  * Feature: Shift+drag allows swapping positions of two same-sized bins.
  * Bins are considered swap-compatible if:
  * - Exact same dimensions (2×3 with 2×3)
- * - 90° rotated match (2×3 with 3×2) - target bin rotates to fit
+ * - 90° rotated match (2×3 with 3×2) - dragged bin rotates to fit at target position
  *
  * NOTE: E2E swap tests are challenging due to precise coordinate requirements.
  * The core swap utilities are thoroughly tested in unit tests (src/test/swap.test.ts).

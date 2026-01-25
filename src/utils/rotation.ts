@@ -86,7 +86,8 @@ export function validateRotation(bin: Bin, layout: Layout, maxSearchDistance = 3
     bin.layerId,
     layout,
     bin.id,
-    maxSearchDistance
+    maxSearchDistance,
+    bin.clearanceHeight
   );
 
   if (nearbyPos) {

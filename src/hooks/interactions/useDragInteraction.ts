@@ -283,7 +283,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
           });
         });
 
-        // Show toast with undo action
+        // Show toast (operation is undoable via Ctrl+Z)
         const message = requiresRotation ? t('toast.binsSwappedRotated') : t('toast.binsSwapped');
         addToast(message, 'success');
       }

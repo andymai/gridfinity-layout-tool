@@ -78,7 +78,7 @@ describe('validateRotation', () => {
         drawer: { width: 10, depth: 8, height: 12 },
       });
       // 3x1 bin at row 6 - rotating to 1x3 would need rows 6-8, exceeding depth (8)
-      // Smart rotation moves it down to row 5 where 1x3 fits (rows 5-7)
+      // Smart rotation moves it to row 5 where 1x3 fits (rows 5-7)
       const bin = createTestBin({ x: 0, y: 6, width: 3, depth: 1 });
       layout.bins = [bin];
 
@@ -105,17 +105,15 @@ describe('validateRotation', () => {
       expect(result.movedTo).toBeUndefined(); // No move needed
     });
 
-    it('fails rotation when no nearby position is available (completely blocked)', () => {
+    it('allows rotation when bin fits at original position in small drawer', () => {
       const layout = createTestLayout({
         drawer: { width: 3, depth: 3, height: 12 }, // Very small drawer
       });
-      // 1x3 bin - rotating to 3x1 can't fit anywhere in a 3x3 drawer
-      // when it needs to expand from width=1 to width=3
+      // 1x3 bin - rotating to 3x1 in a 3x3 drawer
+      // A 3x1 rotated bin CAN fit at (0,0), (0,1), or (0,2)
       const bin = createTestBin({ x: 0, y: 0, width: 1, depth: 3 });
       layout.bins = [bin];
 
-      // In a 3x3 drawer, a 3x1 rotated bin actually CAN fit at (0,0), (0,1), or (0,2)
-      // This should succeed as there's room
       const result = validateRotation(bin, layout);
 
       expect(result.valid).toBe(true); // Fits at original position

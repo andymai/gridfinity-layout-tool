@@ -85,7 +85,8 @@ export function findNearbyValidPosition(
   layerId: string,
   layout: Layout,
   excludeBinId: string,
-  maxDistance = 3
+  maxDistance = 3,
+  clearanceHeight?: number
 ): NearbyPosition | null {
   // Determine step size based on whether dimensions are fractional (half-bin mode)
   const hasFractional =
@@ -108,7 +109,7 @@ export function findNearbyValidPosition(
 
     // Full validation at candidate position
     const result = canPlaceBin(
-      { x: candidateX, y: candidateY, width, depth, height },
+      { x: candidateX, y: candidateY, width, depth, height, clearanceHeight },
       layerId,
       layout,
       excludeBinId
