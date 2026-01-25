@@ -495,12 +495,17 @@ function buildScoops(
       const cx = -innerW / 2 + compartmentW * (col + 0.5);
       const cy = -innerD / 2 + compartmentD * (row + 0.5);
 
-      // Scoop is a cylinder at the front wall of the compartment
-      const scoopCylinder = (
-        drawCircle(radius).sketchOnPlane('XZ', cy - compartmentD / 2) as unknown as Sketch
-      ).extrude(compartmentW * 0.8) as Shape3D;
+      // Scoop is a horizontal cylinder running ACROSS the front wall (axis parallel to X)
+      // This creates a curved edge at the top of the front wall for finger access
+      const scoopCylinder = (drawCircle(radius).sketchOnPlane('YZ') as unknown as Sketch).extrude(
+        compartmentW * 0.8
+      ) as Shape3D;
 
-      const positioned = scoopCylinder.translate([cx, 0, 0]);
+      const positioned = scoopCylinder.translate([
+        cx - compartmentW * 0.4, // Center the scoop on the compartment
+        cy - compartmentD / 2, // Position at front wall of compartment
+        wallHeight, // At top of wall
+      ]);
       scoops = scoops ? scoops.fuse(positioned) : positioned;
     }
   }
@@ -692,7 +697,7 @@ function buildWallCutouts(
   addExteriorCutout('right');
 
   // Build interior divider wall cutouts
-  if (walls.interior.width > 0 && walls.interior.depth > 0) {
+  if (walls.interior && walls.interior.width > 0 && walls.interior.depth > 0) {
     const { cols, rows, thickness, cells } = compartments;
     if (cols > 1 || rows > 1) {
       const cellW = innerW / cols;
@@ -945,8 +950,11 @@ export function generateBin(
     if (compartmentWalls) {
       try {
         bin = bin.fuse(compartmentWalls);
-      } catch {
-        // Boolean fusion may fail — continue without dividers
+      } catch (e) {
+        console.warn(
+          '[BinGen] Divider fusion failed, skipping:',
+          e instanceof Error ? e.message : e
+        );
       }
     }
 
@@ -955,8 +963,8 @@ export function generateBin(
     if (scoopCut) {
       try {
         bin = bin.cut(scoopCut);
-      } catch {
-        // Scoop cut may fail — continue without scoops
+      } catch (e) {
+        console.warn('[BinGen] Scoop cut failed, skipping:', e instanceof Error ? e.message : e);
       }
     }
 
@@ -964,8 +972,8 @@ export function generateBin(
     if (wallCutouts) {
       try {
         bin = bin.cut(wallCutouts);
-      } catch {
-        // Wall cutout booleans may fail — continue without them
+      } catch (e) {
+        console.warn('[BinGen] Wall cutout failed, skipping:', e instanceof Error ? e.message : e);
       }
     }
 
@@ -973,8 +981,8 @@ export function generateBin(
     if (insertCuts) {
       try {
         bin = bin.cut(insertCuts);
-      } catch {
-        // Insert cuts may fail — continue without them
+      } catch (e) {
+        console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
       }
     }
   }
