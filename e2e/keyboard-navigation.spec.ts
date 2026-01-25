@@ -270,10 +270,10 @@ test.describe('Keyboard Navigation', () => {
     // Press ? to open help
     await page.keyboard.press('?');
 
-    // Help modal should be visible with heading "Help & Shortcuts"
+    // Help modal should be visible with heading "Keyboard Shortcuts"
     await waitForDialog(page);
     const helpModal = page.locator('[role="dialog"]').filter({
-      has: page.getByRole('heading', { name: /help/i }),
+      has: page.getByRole('heading', { name: /keyboard shortcuts/i }),
     });
     await expect(helpModal).toBeVisible();
   });
@@ -285,7 +285,7 @@ test.describe('Keyboard Navigation', () => {
     // Wait for modal to open
     await waitForDialog(page);
     const helpModal = page.locator('[role="dialog"]').filter({
-      has: page.getByRole('heading', { name: /help/i }),
+      has: page.getByRole('heading', { name: /keyboard shortcuts/i }),
     });
     await expect(helpModal).toBeVisible();
 

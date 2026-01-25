@@ -101,8 +101,8 @@ test.describe('Inspiration Gallery', () => {
     test('closes gallery with close button', async ({ page }) => {
       const dialog = await openGallery(page);
 
-      // Find and click the close button (aria-label="Close gallery")
-      const closeButton = dialog.locator('button[aria-label="Close gallery"]');
+      // Find and click the close button (aria-label="Close")
+      const closeButton = dialog.locator('button[aria-label="Close"]');
       await closeButton.click();
 
       await waitForGalleryClosed(page);

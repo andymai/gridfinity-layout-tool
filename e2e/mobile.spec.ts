@@ -169,12 +169,12 @@ test.describe('Mobile Layout', () => {
   });
 
   test('mobile help modal can be opened', async ({ page }) => {
-    // Look for help button
-    const helpButton = page.getByRole('button', { name: /help|\?/i }).first();
+    // Look for help button (aria-label includes "help" or "shortcuts")
+    const helpButton = page.getByRole('button', { name: /help|shortcuts|\?/i }).first();
     if (await helpButton.isVisible()) {
       await helpButton.click();
 
-      // Help modal should be visible
+      // Help modal should be visible with "Touch Gestures" tab (mobile) or "Keyboard Shortcuts" heading
       await expect(page.getByText(/touch gestures|keyboard shortcuts/i)).toBeVisible({
         timeout: 3000,
       });

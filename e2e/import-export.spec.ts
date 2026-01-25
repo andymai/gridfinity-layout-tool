@@ -40,8 +40,9 @@ test.describe('Import/Export Workflows', () => {
 
       const layoutModal = getActiveDialog(page);
 
-      // Click "Copy share link" button for the first layout - this opens the ShareModal
-      const copyLinkBtn = layoutModal.getByRole('button', { name: /copy share link/i }).first();
+      // Click the copy link button (icon button) for the first layout - this opens the ShareModal
+      // The button's aria-label is "Copy {layoutName}" (e.g., "Copy Untitled layout")
+      const copyLinkBtn = layoutModal.getByRole('button', { name: /^copy /i }).first();
       await copyLinkBtn.click();
 
       // Wait for share modal to appear (it stacks on top)
@@ -232,7 +233,7 @@ test.describe('Import/Export Workflows', () => {
       await waitForDialog(page);
 
       let layoutModal = getActiveDialog(page);
-      const copyLinkBtn = layoutModal.getByRole('button', { name: /copy share link/i }).first();
+      const copyLinkBtn = layoutModal.getByRole('button', { name: /^copy /i }).first();
       await copyLinkBtn.click();
       await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', {
         timeout: 5000,
@@ -271,7 +272,8 @@ test.describe('Import/Export Workflows', () => {
       await page.getByRole('button', { name: 'Open layout manager' }).click();
       await waitForDialog(page);
       const layoutModal = getActiveDialog(page);
-      const copyLinkBtn = layoutModal.getByRole('button', { name: /copy share link/i }).first();
+      // The copy link button's aria-label is "Copy {layoutName}" (e.g., "Copy Untitled layout")
+      const copyLinkBtn = layoutModal.getByRole('button', { name: /^copy /i }).first();
       await copyLinkBtn.click();
       await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', {
         timeout: 5000,
@@ -372,7 +374,7 @@ test.describe('Import/Export Workflows', () => {
       await page.getByRole('button', { name: 'Open layout manager' }).click();
       await waitForDialog(page);
       const layoutModal = getActiveDialog(page);
-      const copyLinkBtn = layoutModal.getByRole('button', { name: /copy share link/i }).first();
+      const copyLinkBtn = layoutModal.getByRole('button', { name: /^copy /i }).first();
       await copyLinkBtn.click();
       await page.waitForSelector('[role="dialog"][aria-labelledby="share-modal-title"]', {
         timeout: 5000,

@@ -217,7 +217,8 @@ describe('ShareModal', () => {
     });
 
     it('displays layout summary', () => {
-      expect(screen.getByText('Layout summary')).toBeInTheDocument();
+      // i18n: '{grid} grid · {bins} bins · {layers} layers'
+      expect(screen.getByText('10×8 grid · 1 bins · 1 layers')).toBeInTheDocument();
     });
 
     it('downloads file when Download button clicked', () => {
