@@ -323,7 +323,7 @@ export function BinListTable({
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        aria-label="Click to see split preview"
+                        aria-label={t('grid.clickToSeeSplitPreview')}
                       >
                         <path
                           strokeLinecap="round"

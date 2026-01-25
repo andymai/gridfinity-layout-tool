@@ -926,6 +926,9 @@ const en: Record<string, string> = {
   'grid.stack': 'Stack',
   'grid.stackShowActiveLayerAndBelow': 'Stack: Show active layer and below',
   'grid.toggle': 'Toggle',
+  'grid.hasNotesAriaLabel': 'Has notes',
+  'grid.hasCustomPropertiesAriaLabel': 'Has custom properties',
+  'grid.clickToSeeSplitPreview': 'Click to see split preview',
 
   // ===========================================================================
   // 3D Preview

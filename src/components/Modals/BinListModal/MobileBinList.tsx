@@ -812,7 +812,7 @@ function BinCard({
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  aria-label="Has notes"
+                  aria-label={t('grid.hasNotesAriaLabel')}
                 >
                   <path
                     strokeLinecap="round"
@@ -828,7 +828,7 @@ function BinCard({
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  aria-label="Has custom properties"
+                  aria-label={t('grid.hasCustomPropertiesAriaLabel')}
                 >
                   <path
                     strokeLinecap="round"

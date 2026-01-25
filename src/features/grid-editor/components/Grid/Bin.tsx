@@ -710,7 +710,7 @@ function BinComponent({
                 viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth={useSmallBadges ? 2.5 : 2}
-                aria-label="Has notes"
+                aria-label={t('grid.hasNotesAriaLabel')}
               >
                 <path
                   strokeLinecap="round"
@@ -732,7 +732,7 @@ function BinComponent({
                 viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth={useSmallBadges ? 2.5 : 2}
-                aria-label="Has custom properties"
+                aria-label={t('grid.hasCustomPropertiesAriaLabel')}
               >
                 <path
                   strokeLinecap="round"
