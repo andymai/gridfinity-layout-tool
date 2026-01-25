@@ -14,6 +14,7 @@ export const DEFAULT_EXPORT_FILE_NAME_CONFIG: ExportFileNameConfig = {
 };
 
 /** Characters not allowed in filenames (replaced with underscore) */
+// eslint-disable-next-line no-control-regex -- Intentionally matching control chars for filename sanitization
 const UNSAFE_CHARS = /[<>:"/\\|?*\x00-\x1f]/g;
 
 /**

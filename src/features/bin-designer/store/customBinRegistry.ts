@@ -9,6 +9,20 @@
 
 const REGISTRY_KEY = 'gridfinity-custom-bins-v1';
 
+/** Subscribers notified when the registry changes */
+const subscribers = new Set<() => void>();
+
+/** Subscribe to registry changes. Returns unsubscribe function. */
+export function subscribeToRegistry(callback: () => void): () => void {
+  subscribers.add(callback);
+  return () => subscribers.delete(callback);
+}
+
+/** Notify all subscribers that registry has changed */
+function notifySubscribers(): void {
+  subscribers.forEach((cb) => cb());
+}
+
 /** Lightweight reference to a saved bin design (for planner palette) */
 export interface CustomBinRef {
   readonly id: string;
@@ -71,6 +85,7 @@ export function upsertRegistryEntry(ref: CustomBinRef): void {
     refs.push(ref);
   }
   saveRegistry(refs);
+  notifySubscribers();
 }
 
 /**
@@ -83,6 +98,7 @@ export function upsertRegistryEntry(ref: CustomBinRef): void {
 export function removeRegistryEntry(id: string): void {
   const refs = loadRegistry().filter((r) => r.id !== id);
   saveRegistry(refs);
+  notifySubscribers();
 }
 
 /**
@@ -92,4 +108,5 @@ export function removeRegistryEntry(id: string): void {
  */
 export function rebuildRegistry(refs: CustomBinRef[]): void {
   saveRegistry(refs);
+  notifySubscribers();
 }

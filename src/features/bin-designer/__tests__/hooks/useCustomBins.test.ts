@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useCustomBins } from '../../hooks/useCustomBins';
+import { useCustomBins, resetCustomBinsCache } from '../../hooks/useCustomBins';
 import { upsertRegistryEntry, type CustomBinRef } from '../../store/customBinRegistry';
 
 function makeRef(id: string, name: string = 'Test Bin'): CustomBinRef {
@@ -18,6 +18,7 @@ function makeRef(id: string, name: string = 'Test Bin'): CustomBinRef {
 describe('useCustomBins', () => {
   beforeEach(() => {
     localStorage.clear();
+    resetCustomBinsCache(); // Reset module-level cache after clearing storage
   });
 
   it('returns empty array when no custom bins saved', () => {
