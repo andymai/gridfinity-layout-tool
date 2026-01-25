@@ -429,6 +429,15 @@ export function Staging() {
     resizeStartRef.current = null;
   }, [isResizing, updateSetting]);
 
+  // Double-click resets to default height (33vh)
+  const handleResizeDoubleClick = useCallback(() => {
+    updateSetting('stashMaxHeight', null);
+    // Also reset inline style if it was set during resize
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.maxHeight = '';
+    }
+  }, [updateSetting]);
+
   // Calculate the max-height style for the scroll container
   const scrollContainerMaxHeight = useMemo(() => {
     if (stashMaxHeight !== null) {
@@ -578,9 +587,10 @@ export function Staging() {
         isDropTarget ? 'border-accent bg-accent/10' : 'border-stroke bg-surface-secondary'
       }`}
     >
-      {/* Resize handle at top - draggable to adjust max height */}
+      {/* Resize handle at top - draggable to adjust max height, double-click to reset */}
       <div
         ref={resizeHandleRef}
+        data-testid="stash-resize-handle"
         className={`h-2 cursor-ns-resize flex items-center justify-center border-t-2 border-dashed transition-colors group ${
           isDropTarget ? 'border-accent' : 'border-stroke hover:border-accent/50'
         }`}
@@ -588,6 +598,7 @@ export function Staging() {
         onPointerMove={handleResizePointerMove}
         onPointerUp={handleResizePointerUp}
         onPointerCancel={handleResizePointerUp}
+        onDoubleClick={handleResizeDoubleClick}
         title={t('staging.resizeHandle')}
         role="separator"
         aria-orientation="horizontal"
