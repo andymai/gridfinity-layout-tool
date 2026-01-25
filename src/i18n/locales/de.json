@@ -529,7 +529,7 @@
   "layers.heightForNewBinsPlacedOnThisLayer": "Höhe für neue Bins auf diesem Layer",
   "layers.heightTooltip": "Höhe für neue Bins auf diesem Layer",
   "layers.increaseHeight": "{name} Höhe erhöhen",
-  "layers.layerButtonAria": "Layer {index}: {name}",
+  "layers.layerButtonAria": "{name}, {height}u Höhe, {coverage}% gefüllt{suffix}",
   "layers.layerNamePlaceholder": "Layer-Name",
   "layers.maxHeightFull": "Maximale Höhe ({max} Einheiten)",
   "layers.maxLayersReached": "Maximale Layers erreicht",
