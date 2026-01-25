@@ -865,6 +865,8 @@
   "rightPanel.selection": "Selectie",
   "rightPanel.splitInto": "Splitsen in",
   "rightPanel.unknownCategory": "Onbekende categorie",
+  "seo.title": "Gridfinity Layout Tool | Plan je 3D-geprinte lade-organizers",
+  "seo.description": "Ontwerp Gridfinity lade-indelingen voor 3D-printen. Plan aangepaste organizers met drag-and-drop bins, multi-layer ondersteuning, 3D-preview en automatische printoptimalisatie.",
   "settings.autoDetect": "Automatisch (browserstandaard)",
   "settings.confirmSaveDefaults.confirm": "Opslaan",
   "settings.confirmSaveDefaults.message": "Huidige instellingen opslaan als standaard voor nieuwe layouts?\n\nDrawer: {width}×{depth}×{height}u\nLayer hoogte: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm",

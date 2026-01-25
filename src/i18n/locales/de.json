@@ -857,6 +857,8 @@
   "rightPanel.selection": "Auswahl",
   "rightPanel.splitInto": "Teilen in",
   "rightPanel.unknownCategory": "Unbekannte Kategorie",
+  "seo.title": "Gridfinity Layout Tool | Plane deine 3D-gedruckten Schubladen-Organizer",
+  "seo.description": "Gestalte Gridfinity Schubladen-Layouts für den 3D-Druck. Plane individuelle Organizer mit Drag-and-Drop-Bins, Multi-Layer-Unterstützung, 3D-Vorschau und automatischer Druck-Optimierung.",
   "settings.autoDetect": "Auto (Browser-Standard)",
   "settings.confirmSaveDefaults.confirm": "Speichern",
   "settings.confirmSaveDefaults.message": "Aktuelle Einstellungen als Standard für neue Layouts speichern?\n\nDrawer: {width}×{depth}×{height}u\nLayer-Höhe: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm",

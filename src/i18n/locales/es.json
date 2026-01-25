@@ -865,6 +865,8 @@
   "rightPanel.selection": "Selección",
   "rightPanel.splitInto": "Dividir en",
   "rightPanel.unknownCategory": "Categoría desconocida",
+  "seo.title": "Gridfinity Layout Tool | Planifica tus organizadores de cajones para impresión 3D",
+  "seo.description": "Diseña layouts de cajones Gridfinity para impresión 3D. Planifica organizadores personalizados con bins arrastrables, soporte multicapa, vista previa 3D y optimización automática de impresión.",
   "settings.autoDetect": "Auto (predeterminado del navegador)",
   "settings.confirmSaveDefaults.confirm": "Guardar",
   "settings.confirmSaveDefaults.message": "¿Guardar la configuración actual como predeterminada para nuevos diseños?\n\nDrawer: {width}×{depth}×{height}u\nAltura de layer: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm",
