@@ -602,7 +602,7 @@
   "layers.addNewLayer": "Nieuwe layer toevoegen",
   "layers.binPalette": "Bin palet",
   "layers.binPaletteHint": "Shift+klik om toe te voegen aan stash.",
-  "layers.binPaletteInstruction": "Selecteer een grootte en klik of sleep op het raster.",
+  "layers.binPaletteInstruction": "Selecteer een grootte en sleep om het gebied te vullen met bins.",
   "layers.clearBins": "Bins wissen",
   "layers.clearBinsTitle": "Alle bins van deze layer wissen",
   "layers.clearLayer.confirm": "Wissen",

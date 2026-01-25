@@ -304,7 +304,7 @@ const en: Record<string, string> = {
   'layers.clearLayer.confirm': 'Clear',
   'layers.layerNamePlaceholder': 'Layer name',
   'layers.binPalette': 'Bin Palette',
-  'layers.binPaletteInstruction': 'Select a size, then click or drag on grid.',
+  'layers.binPaletteInstruction': 'Select a size, then drag to fill area with bins.',
   'layers.binPaletteHint': 'Shift+click to add to stash.',
   'layers.decreaseHeight': 'Decrease {name} height',
   'layers.increaseHeight': 'Increase {name} height',
