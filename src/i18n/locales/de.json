@@ -988,6 +988,7 @@
   "staging.dropHereToStash": "Hier ablegen zum Stashen",
   "staging.dropToStash": "Zum Stash ablegen",
   "staging.expandStash": "Stash ausklappen",
+  "staging.resizeHandle": "Ziehen um Stash-Panel zu vergrößern",
   "staging.rotateBin": "Bin drehen (R)",
   "staging.stash": "Stash",
   "staging.title": "Stash",

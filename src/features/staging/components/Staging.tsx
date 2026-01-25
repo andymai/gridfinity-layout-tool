@@ -10,6 +10,13 @@ import { ConfirmDialog } from '@/shared/components';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 
+/** Default max height for the stash panel (33% of viewport) */
+const DEFAULT_STASH_MAX_HEIGHT_VH = 33;
+/** Minimum height in pixels the stash can be resized to */
+const MIN_STASH_HEIGHT = 80;
+/** Maximum height in pixels (90% of viewport) */
+const MAX_STASH_HEIGHT_VH = 90;
+
 /** Clamp a value between min and max */
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -125,10 +132,18 @@ export function Staging() {
   // Collapse state with persistence
   // Use lazy initializer to read from settings store on first render
   const lastStashCollapsed = useSettingsStore((state) => state.settings.lastStashCollapsed);
+  const stashMaxHeight = useSettingsStore((state) => state.settings.stashMaxHeight);
   const updateSetting = useSettingsStore((state) => state.updateSetting);
   const [isExpanded, setIsExpanded] = useState(() => !lastStashCollapsed);
   const [hasToggled, setHasToggled] = useState(false);
   const prevBinCountRef = useRef(-1); // -1 = not yet initialized
+
+  // Resize state for draggable height adjustment
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStartRef = useRef<{ y: number; height: number } | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const resizeHandleRef = useRef<HTMLDivElement>(null);
+  const capturedPointerIdRef = useRef<number | null>(null);
 
   // Long-press detection state for context menu
   const longPressTimerRef = useRef<number | null>(null);
@@ -366,6 +381,71 @@ export function Staging() {
     updateSetting('lastStashCollapsed', !newExpanded);
   }, [isExpanded, updateSetting]);
 
+  // Resize handlers for draggable height adjustment
+  const handleResizePointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Use the resize handle ref for consistent pointer capture
+    const handle = resizeHandleRef.current;
+    if (!handle) return;
+    handle.setPointerCapture(e.pointerId);
+    capturedPointerIdRef.current = e.pointerId;
+    setIsResizing(true);
+    // Get current scroll container height
+    const currentHeight = scrollContainerRef.current?.offsetHeight ?? 200;
+    resizeStartRef.current = { y: e.clientY, height: currentHeight };
+  }, []);
+
+  const handleResizePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isResizing || !resizeStartRef.current) return;
+      e.preventDefault();
+      // Dragging up (negative dy) increases height
+      const dy = resizeStartRef.current.y - e.clientY;
+      const maxHeight = window.innerHeight * (MAX_STASH_HEIGHT_VH / 100);
+      const newHeight = clamp(resizeStartRef.current.height + dy, MIN_STASH_HEIGHT, maxHeight);
+      // Apply immediately for smooth feedback
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.style.maxHeight = `${newHeight}px`;
+      }
+    },
+    [isResizing]
+  );
+
+  const handleResizePointerUp = useCallback(() => {
+    if (!isResizing) return;
+    // Release pointer capture on the same element that captured it
+    const handle = resizeHandleRef.current;
+    if (handle && capturedPointerIdRef.current !== null) {
+      handle.releasePointerCapture(capturedPointerIdRef.current);
+    }
+    capturedPointerIdRef.current = null;
+    setIsResizing(false);
+    // Persist the final height
+    if (scrollContainerRef.current) {
+      const finalHeight = scrollContainerRef.current.offsetHeight;
+      updateSetting('stashMaxHeight', finalHeight);
+    }
+    resizeStartRef.current = null;
+  }, [isResizing, updateSetting]);
+
+  // Double-click resets to default height (33vh)
+  const handleResizeDoubleClick = useCallback(() => {
+    updateSetting('stashMaxHeight', null);
+    // Also reset inline style if it was set during resize
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.maxHeight = '';
+    }
+  }, [updateSetting]);
+
+  // Calculate the max-height style for the scroll container
+  const scrollContainerMaxHeight = useMemo(() => {
+    if (stashMaxHeight !== null) {
+      return `${stashMaxHeight}px`;
+    }
+    return `${DEFAULT_STASH_MAX_HEIGHT_VH}vh`;
+  }, [stashMaxHeight]);
+
   // Track pointer position to set drop target when hovering over stash
   useEffect(() => {
     if (!isDraggingFromGrid) return;
@@ -503,12 +583,44 @@ export function Staging() {
     <div
       data-stash
       ref={containerRef}
-      className={`px-4 py-3 flex-shrink-0 overflow-x-auto border-t-2 border-dashed transition-colors ${
+      className={`flex-shrink-0 transition-colors ${
         isDropTarget ? 'border-accent bg-accent/10' : 'border-stroke bg-surface-secondary'
       }`}
     >
+      {/* Resize handle at top - draggable to adjust max height, double-click to reset */}
+      <div
+        ref={resizeHandleRef}
+        data-testid="stash-resize-handle"
+        className={`h-2 cursor-ns-resize flex items-center justify-center border-t-2 border-dashed transition-colors group ${
+          isDropTarget ? 'border-accent' : 'border-stroke hover:border-accent/50'
+        }`}
+        onPointerDown={handleResizePointerDown}
+        onPointerMove={handleResizePointerMove}
+        onPointerUp={handleResizePointerUp}
+        onPointerCancel={handleResizePointerUp}
+        onDoubleClick={handleResizeDoubleClick}
+        title={t('staging.resizeHandle')}
+        role="separator"
+        aria-orientation="horizontal"
+        aria-label={t('staging.resizeHandle')}
+        aria-valuenow={
+          stashMaxHeight ?? Math.round(window.innerHeight * (DEFAULT_STASH_MAX_HEIGHT_VH / 100))
+        }
+        aria-valuemin={MIN_STASH_HEIGHT}
+        aria-valuemax={Math.round(window.innerHeight * (MAX_STASH_HEIGHT_VH / 100))}
+      >
+        {/* Visual grip indicator */}
+        <div
+          className={`w-12 h-1 rounded-full transition-all ${
+            isResizing
+              ? 'bg-accent scale-110'
+              : 'bg-content-disabled group-hover:bg-accent/60 group-hover:scale-105'
+          }`}
+        />
+      </div>
+
       {/* Header with collapse toggle */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between px-4 pt-2 pb-2">
         <button
           type="button"
           className="flex items-center gap-2 bg-transparent rounded hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-accent"
@@ -555,249 +667,268 @@ export function Staging() {
               strokeWidth={2}
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
-          </svg>{t('staging.clearAll')}</button>
+          </svg>
+          {t('staging.clearAll')}
+        </button>
       </div>
 
       {/* Collapsible staging grid content */}
       <div
         id="staging-stash-panel"
         className={`overflow-hidden ${hasToggled ? 'transition-all duration-200' : ''} ${
-          isExpanded ? 'opacity-100 max-h-[2000px]' : 'opacity-0 max-h-0'
+          isExpanded ? 'opacity-100' : 'opacity-0 max-h-0'
         }`}
       >
-        {/* Staging Grid */}
+        {/* Scrollable container with user-adjustable max height */}
         <div
-          className="relative inline-block rounded-lg"
+          ref={scrollContainerRef}
+          className="overflow-y-auto overflow-x-auto scrollbar-thin px-4 pb-3"
           style={{
-            // Width: integer columns + optional fractional column + gaps + padding
-            width:
-              integerWidth * (cellSize + gap) +
-              (hasFractionalWidth ? fractionalCellWidth + gap : 0) +
-              gap,
-            height: gridHeight * (cellSize + gap) + gap,
-            backgroundColor: 'var(--staging-bg)',
-            boxShadow: 'var(--shadow-sm)',
+            maxHeight: isExpanded ? scrollContainerMaxHeight : 0,
           }}
         >
-          {/* CSS Grid container */}
+          {/* Staging Grid */}
           <div
-            className="absolute inset-0"
+            className="relative inline-block rounded-lg"
             style={{
-              display: 'grid',
-              gridTemplateColumns: hasFractionalWidth
-                ? `repeat(${integerWidth}, ${cellSize}px) ${fractionalCellWidth}px`
-                : `repeat(${integerWidth}, ${cellSize}px)`,
-              gridTemplateRows: `repeat(${gridHeight}, ${cellSize}px)`,
-              gap: `${gap}px`,
-              padding: `${gap}px`,
+              // Width: integer columns + optional fractional column + gaps + padding
+              width:
+                integerWidth * (cellSize + gap) +
+                (hasFractionalWidth ? fractionalCellWidth + gap : 0) +
+                gap,
+              height: gridHeight * (cellSize + gap) + gap,
+              backgroundColor: 'var(--staging-bg)',
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
-            {/* Grid cells */}
-            {cells}
+            {/* CSS Grid container */}
+            <div
+              className="absolute inset-0"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: hasFractionalWidth
+                  ? `repeat(${integerWidth}, ${cellSize}px) ${fractionalCellWidth}px`
+                  : `repeat(${integerWidth}, ${cellSize}px)`,
+                gridTemplateRows: `repeat(${gridHeight}, ${cellSize}px)`,
+                gap: `${gap}px`,
+                padding: `${gap}px`,
+              }}
+            >
+              {/* Grid cells */}
+              {cells}
 
-            {/* Staged bins */}
-            {packedBins.map((bin) => {
-              const category = getCategory(bin.category);
-              const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
-              const textColors = getBinTextColors(bgColor);
-              const isDragging = bin.id === draggingBinId;
-              const isSelected = selectedBinIds.includes(bin.id);
+              {/* Staged bins */}
+              {packedBins.map((bin) => {
+                const category = getCategory(bin.category);
+                const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
+                const textColors = getBinTextColors(bgColor);
+                const isDragging = bin.id === draggingBinId;
+                const isSelected = selectedBinIds.includes(bin.id);
 
-              // Check if bin has fractional dimensions
-              const hasFractionalBin = bin.width % 1 !== 0 || bin.depth % 1 !== 0;
-              // Calculate CSS grid span (use ceiling for fractional bins)
-              const gridColSpan = Math.ceil(bin.x + bin.width) - Math.floor(bin.x);
-              const gridRowSpan = Math.ceil(bin.y + bin.depth) - Math.floor(bin.y);
+                // Check if bin has fractional dimensions
+                const hasFractionalBin = bin.width % 1 !== 0 || bin.depth % 1 !== 0;
+                // Calculate CSS grid span (use ceiling for fractional bins)
+                const gridColSpan = Math.ceil(bin.x + bin.width) - Math.floor(bin.x);
+                const gridRowSpan = Math.ceil(bin.y + bin.depth) - Math.floor(bin.y);
 
-              // Always calculate pixel dimensions for adaptive label sizing
-              const actualBinPixelWidth =
-                hasFractionalBin || hasFractionalWidth
-                  ? calcBinPixelWidth(bin.x, bin.width)
-                  : bin.width * cellSize + Math.max(0, bin.width - 1) * gap;
-              const actualBinPixelHeight = hasFractionalBin
-                ? calcBinPixelHeight(bin.depth)
-                : bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap;
+                // Always calculate pixel dimensions for adaptive label sizing
+                const actualBinPixelWidth =
+                  hasFractionalBin || hasFractionalWidth
+                    ? calcBinPixelWidth(bin.x, bin.width)
+                    : bin.width * cellSize + Math.max(0, bin.width - 1) * gap;
+                const actualBinPixelHeight = hasFractionalBin
+                  ? calcBinPixelHeight(bin.depth)
+                  : bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap;
 
-              // Only override CSS grid sizing for fractional bins
-              const cssWidthOverride =
-                hasFractionalBin || hasFractionalWidth ? actualBinPixelWidth : undefined;
-              const cssHeightOverride = hasFractionalBin ? actualBinPixelHeight : undefined;
+                // Only override CSS grid sizing for fractional bins
+                const cssWidthOverride =
+                  hasFractionalBin || hasFractionalWidth ? actualBinPixelWidth : undefined;
+                const cssHeightOverride = hasFractionalBin ? actualBinPixelHeight : undefined;
 
-              // Calculate grid row start (must be integer for valid CSS Grid)
-              const gridRowStart = gridHeight - Math.ceil(bin.y + bin.depth) + 1;
+                // Calculate grid row start (must be integer for valid CSS Grid)
+                const gridRowStart = gridHeight - Math.ceil(bin.y + bin.depth) + 1;
 
-              // ========== ADAPTIVE LABEL SYSTEM (matches Grid/Bin.tsx) ==========
-              // Format dimensions - show decimal if fractional
-              const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
-              const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
-              const hasLabel = showLabels && bin.label;
+                // ========== ADAPTIVE LABEL SYSTEM (matches Grid/Bin.tsx) ==========
+                // Format dimensions - show decimal if fractional
+                const formatDim = (val: number) =>
+                  val % 1 === 0 ? val.toString() : val.toFixed(1);
+                const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
+                const hasLabel = showLabels && bin.label;
 
-              // Smart rotation: use taller dimension for text if significantly taller
-              const shouldRotate = bin.depth > bin.width * 1.5;
+                // Smart rotation: use taller dimension for text if significantly taller
+                const shouldRotate = bin.depth > bin.width * 1.5;
 
-              // Font size constraints based on bin pixel size
-              const binPixelMin = Math.min(actualBinPixelWidth, actualBinPixelHeight);
-              const maxFontSize = clamp(Math.round(binPixelMin * 0.28), 9, 20);
-              const minFontSize = 9;
+                // Font size constraints based on bin pixel size
+                const binPixelMin = Math.min(actualBinPixelWidth, actualBinPixelHeight);
+                const maxFontSize = clamp(Math.round(binPixelMin * 0.28), 9, 20);
+                const minFontSize = 9;
 
-              // Available width for text (75% of bin width to account for padding)
-              const rawAvailableWidth = shouldRotate ? actualBinPixelHeight : actualBinPixelWidth;
-              const effectiveAvailableWidth = rawAvailableWidth * 0.75;
+                // Available width for text (75% of bin width to account for padding)
+                const rawAvailableWidth = shouldRotate ? actualBinPixelHeight : actualBinPixelWidth;
+                const effectiveAvailableWidth = rawAvailableWidth * 0.75;
 
-              // Calculate if label fits and at what font size
-              let labelFits = false;
-              let labelFontSize = maxFontSize;
+                // Calculate if label fits and at what font size
+                let labelFits = false;
+                let labelFontSize = maxFontSize;
 
-              if (hasLabel && bin.label) {
-                const labelLength = bin.label.length;
-                // textWidth = labelLength * fontSize * 0.6 (monospace assumption)
-                const neededFontSize = effectiveAvailableWidth / (labelLength * 0.6);
-                if (neededFontSize >= minFontSize) {
-                  labelFits = true;
-                  labelFontSize = clamp(Math.floor(neededFontSize), minFontSize, maxFontSize);
+                if (hasLabel && bin.label) {
+                  const labelLength = bin.label.length;
+                  // textWidth = labelLength * fontSize * 0.6 (monospace assumption)
+                  const neededFontSize = effectiveAvailableWidth / (labelLength * 0.6);
+                  if (neededFontSize >= minFontSize) {
+                    labelFits = true;
+                    labelFontSize = clamp(Math.floor(neededFontSize), minFontSize, maxFontSize);
+                  }
                 }
-              }
 
-              // Calculate font sizes
-              const primaryFontSize = labelFits ? labelFontSize : maxFontSize;
-              const secondaryFontSize = clamp(Math.round(primaryFontSize * 0.75), 8, 14);
+                // Calculate font sizes
+                const primaryFontSize = labelFits ? labelFontSize : maxFontSize;
+                const secondaryFontSize = clamp(Math.round(primaryFontSize * 0.75), 8, 14);
 
-              // Visibility thresholds
-              const showAnyText = binPixelMin >= 24;
-              const rawAvailableHeight = shouldRotate ? actualBinPixelWidth : actualBinPixelHeight;
-              const hasSpaceForSecondary = rawAvailableHeight * 0.75 >= primaryFontSize * 2.5;
+                // Visibility thresholds
+                const showAnyText = binPixelMin >= 24;
+                const rawAvailableHeight = shouldRotate
+                  ? actualBinPixelWidth
+                  : actualBinPixelHeight;
+                const hasSpaceForSecondary = rawAvailableHeight * 0.75 >= primaryFontSize * 2.5;
 
-              // Show label if it fits, otherwise show dimensions
-              const showLabel = hasLabel && labelFits;
-              const primaryText = showLabel && bin.label ? bin.label : dimensionsText;
-              const secondaryText = showLabel && hasSpaceForSecondary ? dimensionsText : null;
+                // Show label if it fits, otherwise show dimensions
+                const showLabel = hasLabel && labelFits;
+                const primaryText = showLabel && bin.label ? bin.label : dimensionsText;
+                const secondaryText = showLabel && hasSpaceForSecondary ? dimensionsText : null;
 
-              // Letter-spacing for small text
-              const letterSpacing = primaryFontSize < 11 ? '0.02em' : 'normal';
+                // Letter-spacing for small text
+                const letterSpacing = primaryFontSize < 11 ? '0.02em' : 'normal';
 
-              return (
-                <div
-                  key={bin.id}
-                  data-staging-bin-id={bin.id}
-                  className={`relative flex flex-col items-center justify-center transition-all duration-150 cursor-move rounded-sm z-10 touch-none ${
-                    isDragging
-                      ? 'bg-transparent border-2 border-dashed border-accent pointer-events-none'
-                      : isSelected
-                        ? 'border border-[var(--border-on-color)] shadow-sm ring-2 ring-selection-ring'
-                        : 'border border-[var(--border-on-color)] shadow-sm'
-                  }`}
-                  style={{
-                    gridColumn: `${bin.x + 1} / span ${gridColSpan}`,
-                    gridRow: `${gridRowStart} / span ${gridRowSpan}`,
-                    // Align fractional-depth bins to bottom of their grid cell
-                    alignSelf: hasFractionalBin && bin.depth < 1 ? 'end' : undefined,
-                    ...(!isDragging && { backgroundColor: bgColor }),
-                    // Override size for fractional bins
-                    ...(cssWidthOverride !== undefined && { width: cssWidthOverride }),
-                    ...(cssHeightOverride !== undefined && { height: cssHeightOverride }),
-                  }}
-                  onClick={(e) => handleBinClick(bin.id, e)}
-                  onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
-                  onPointerMove={handleBinPointerMove}
-                  onPointerUp={handleBinPointerUp}
-                  onPointerCancel={handleBinPointerCancel}
-                  onContextMenu={(e) => handleBinContextMenu(bin.id, e)}
-                  onPointerEnter={() => setHoveredBinId(bin.id)}
-                  onPointerLeave={() => setHoveredBinId(null)}
-                  title={t('staging.binTooltip', { label: bin.label || t('staging.unlabeled'), width: bin.width, depth: bin.depth, height: bin.height })}
-                >
-                  {/* Adaptive label: primary (label or dimensions) + optional secondary */}
-                  {!isDragging && showAnyText && (
-                    <div
-                      className="text-center pointer-events-none select-none flex flex-col items-center justify-center px-1"
-                      style={{
-                        transform: shouldRotate ? 'rotate(-90deg)' : 'none',
-                        width: shouldRotate ? `${(bin.depth / bin.width) * 90}%` : 'auto',
-                      }}
-                    >
-                      {/* Primary text (label if set, otherwise dimensions) */}
+                return (
+                  <div
+                    key={bin.id}
+                    data-staging-bin-id={bin.id}
+                    className={`relative flex flex-col items-center justify-center transition-all duration-150 cursor-move rounded-sm z-10 touch-none ${
+                      isDragging
+                        ? 'bg-transparent border-2 border-dashed border-accent pointer-events-none'
+                        : isSelected
+                          ? 'border border-[var(--border-on-color)] shadow-sm ring-2 ring-selection-ring'
+                          : 'border border-[var(--border-on-color)] shadow-sm'
+                    }`}
+                    style={{
+                      gridColumn: `${bin.x + 1} / span ${gridColSpan}`,
+                      gridRow: `${gridRowStart} / span ${gridRowSpan}`,
+                      // Align fractional-depth bins to bottom of their grid cell
+                      alignSelf: hasFractionalBin && bin.depth < 1 ? 'end' : undefined,
+                      ...(!isDragging && { backgroundColor: bgColor }),
+                      // Override size for fractional bins
+                      ...(cssWidthOverride !== undefined && { width: cssWidthOverride }),
+                      ...(cssHeightOverride !== undefined && { height: cssHeightOverride }),
+                    }}
+                    onClick={(e) => handleBinClick(bin.id, e)}
+                    onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
+                    onPointerMove={handleBinPointerMove}
+                    onPointerUp={handleBinPointerUp}
+                    onPointerCancel={handleBinPointerCancel}
+                    onContextMenu={(e) => handleBinContextMenu(bin.id, e)}
+                    onPointerEnter={() => setHoveredBinId(bin.id)}
+                    onPointerLeave={() => setHoveredBinId(null)}
+                    title={t('staging.binTooltip', {
+                      label: bin.label || t('staging.unlabeled'),
+                      width: bin.width,
+                      depth: bin.depth,
+                      height: bin.height,
+                    })}
+                  >
+                    {/* Adaptive label: primary (label or dimensions) + optional secondary */}
+                    {!isDragging && showAnyText && (
                       <div
-                        className="flex items-center justify-center gap-0.5 leading-tight whitespace-nowrap font-mono"
+                        className="text-center pointer-events-none select-none flex flex-col items-center justify-center px-1"
                         style={{
-                          color: textColors.primary,
-                          fontSize: `${primaryFontSize}px`,
-                          fontWeight: showLabel ? 500 : 600,
-                          textShadow: `0 1px 2px ${textColors.shadow}`,
-                          letterSpacing,
+                          transform: shouldRotate ? 'rotate(-90deg)' : 'none',
+                          width: shouldRotate ? `${(bin.depth / bin.width) * 90}%` : 'auto',
                         }}
                       >
-                        {primaryText}
-                      </div>
-                      {/* Secondary text (dimensions when label is primary) */}
-                      {secondaryText && (
+                        {/* Primary text (label if set, otherwise dimensions) */}
                         <div
-                          className="leading-tight font-mono"
+                          className="flex items-center justify-center gap-0.5 leading-tight whitespace-nowrap font-mono"
                           style={{
-                            color: textColors.secondary,
-                            fontSize: `${secondaryFontSize}px`,
-                            fontWeight: 'normal',
-                            textShadow: `0 1px 1px ${textColors.shadow}`,
-                            marginTop: 1,
+                            color: textColors.primary,
+                            fontSize: `${primaryFontSize}px`,
+                            fontWeight: showLabel ? 500 : 600,
+                            textShadow: `0 1px 2px ${textColors.shadow}`,
+                            letterSpacing,
                           }}
                         >
-                          {secondaryText}
+                          {primaryText}
                         </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Rotate button - desktop only, visible on hover or selection */}
-                  {!isTouchDevice && !isDragging && (hoveredBinId === bin.id || isSelected) && (
-                    <div
-                      className="absolute transition-opacity duration-150"
-                      style={{
-                        right: -22,
-                        top: -22,
-                        width: 44,
-                        height: 44,
-                        zIndex: 30,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        pointerEvents: 'auto',
-                      }}
-                      onPointerDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleRotate(bin.id);
-                      }}
-                      title={t('staging.rotateBin')}
-                    >
-                      <div
-                        className="flex items-center justify-center transition-transform hover:scale-110"
-                        style={{
-                          width: 32,
-                          height: 32,
-                          background: 'var(--selection-ring)',
-                          borderRadius: 'var(--radius-sm)',
-                          boxShadow: 'var(--shadow-md)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <svg
-                          className="w-4 h-4 text-white"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                          />
-                        </svg>
+                        {/* Secondary text (dimensions when label is primary) */}
+                        {secondaryText && (
+                          <div
+                            className="leading-tight font-mono"
+                            style={{
+                              color: textColors.secondary,
+                              fontSize: `${secondaryFontSize}px`,
+                              fontWeight: 'normal',
+                              textShadow: `0 1px 1px ${textColors.shadow}`,
+                              marginTop: 1,
+                            }}
+                          >
+                            {secondaryText}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    )}
+
+                    {/* Rotate button - desktop only, visible on hover or selection */}
+                    {!isTouchDevice && !isDragging && (hoveredBinId === bin.id || isSelected) && (
+                      <div
+                        className="absolute transition-opacity duration-150"
+                        style={{
+                          right: -22,
+                          top: -22,
+                          width: 44,
+                          height: 44,
+                          zIndex: 30,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          pointerEvents: 'auto',
+                        }}
+                        onPointerDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleRotate(bin.id);
+                        }}
+                        title={t('staging.rotateBin')}
+                      >
+                        <div
+                          className="flex items-center justify-center transition-transform hover:scale-110"
+                          style={{
+                            width: 32,
+                            height: 32,
+                            background: 'var(--selection-ring)',
+                            borderRadius: 'var(--radius-sm)',
+                            boxShadow: 'var(--shadow-md)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <svg
+                            className="w-4 h-4 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
