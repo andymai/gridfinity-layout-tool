@@ -4,16 +4,16 @@ Parametric 3D Gridfinity bin generator with WASM-based geometry engine.
 
 ## Key Files
 
-| File                               | Purpose                                                             |
-| ---------------------------------- | ------------------------------------------------------------------- |
-| `store/designer.ts`                | Zustand store: params, generation state, undo/redo history (max 50) |
-| `store/meshCacheManager.ts`        | Memory budget (100MB) for cached meshes in history                  |
-| `store/customBinRegistry.ts`       | Lightweight localStorage index for Layout Planner palette           |
-| `hooks/useGeneration.ts`           | Bridge lifecycle, epoch-based auto-regeneration                     |
-| `hooks/useAutoSave.ts`             | 1s debounced save for existing designs                              |
-| `hooks/useExport.ts`               | STL/3MF/STEP export lifecycle                                       |
-| `components/DesignerPage.tsx`      | Main layout, responsive (desktop/tablet/mobile)                     |
-| `components/CompartmentEditor.tsx` | Visual grid for merge/split cells                                   |
+| File                               | Purpose                                                              |
+| ---------------------------------- | -------------------------------------------------------------------- |
+| `store/designer.ts`                | Zustand store: params, generation state, undo/redo history (max 100) |
+| `store/meshCacheManager.ts`        | Memory budget (100MB) for cached meshes in history                   |
+| `store/customBinRegistry.ts`       | Lightweight localStorage index for Layout Planner palette            |
+| `hooks/useGeneration.ts`           | Bridge lifecycle, epoch-based auto-regeneration                      |
+| `hooks/useAutoSave.ts`             | 1s debounced save for existing designs                               |
+| `hooks/useExport.ts`               | STL/3MF/STEP export lifecycle                                        |
+| `components/DesignerPage.tsx`      | Main layout, responsive (desktop/tablet/mobile)                      |
+| `components/CompartmentEditor.tsx` | Visual grid for merge/split cells                                    |
 
 ## Data Flow
 
@@ -48,4 +48,4 @@ User edits params → store.setParam() → epoch++ → useGeneration detects
 
 - Grid: 42mm/unit, Height: 7mm/unit, Socket: 5mm deep
 - Dimensions: 0.5-8 units (0.5 increments)
-- History: 50 states, Cache: 100MB budget
+- History: 100 states, Cache: 100MB budget

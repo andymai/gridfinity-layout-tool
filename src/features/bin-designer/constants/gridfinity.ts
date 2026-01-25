@@ -77,7 +77,7 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_WALL_CUTOUT: 20, // % (minimum when > 0)
   MAX_WALL_CUTOUT: 100, // %
   MAX_LABEL_LENGTH: 20, // characters
-  MAX_HISTORY: 50, // undo/redo states
+  MAX_HISTORY: 100, // undo/redo states
   MIN_SCOOP_RADIUS: 2.0, // mm (minimum useful scoop)
   MAX_SCOOP_RADIUS: 30.0, // mm (large scoops for deep bins)
   // Wall thickness
