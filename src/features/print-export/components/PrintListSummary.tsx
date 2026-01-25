@@ -43,7 +43,9 @@ export function PrintListSummary({
         <div className="flex justify-between text-sm font-medium">
           <span className="text-content-tertiary">{t('print.summary.total')}</span>
           <span className="text-content">
-            {totalBins} bins{hasAnySplits ? `, ${totalPieces} pcs` : ''}
+            {hasAnySplits
+              ? t('print.summary.binsAndPieces', { bins: totalBins, pieces: totalPieces })
+              : t('print.summary.bins', { count: totalBins })}
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stroke-subtle text-xs">

@@ -118,13 +118,13 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         >
           <span className="text-[10px] font-bold text-black">{selectedBins.length}</span>
         </div>
-        <h2 className="flex-1 text-lg font-semibold text-content">Bins Selected</h2>
+        <h2 className="flex-1 text-lg font-semibold text-content">{t('inspector.binsSelected')}</h2>
         {onClose && (
           <button
             type="button"
             onClick={onClose || clearSelection}
             className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-            aria-label="Deselect all bins"
+            aria-label={t('inspector.deselectAllBins')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -145,7 +145,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
       <div className="space-y-3">
         {/* Category */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>Category</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>{t('common.category')}</label>
           <SelectDropdown
             value={commonCategory || ''}
             onChange={updateMultiCategory}
@@ -162,7 +162,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         {/* Layer - only show when there are bins on grid and multiple layers */}
         {gridBins.length > 0 && layout.layers.length > 1 && (
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>Layer</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.layer')}</label>
             <SelectDropdown
               value={commonLayer?.id || ''}
               onChange={updateMultiLayer}
@@ -184,7 +184,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
 
         {/* Height control */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>Height</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>{t('common.height')}</label>
           <BulkIncrementControl
             displayValue={sameHeight ? `${minHeight}u` : `${minHeight}–${maxHeight}u`}
             onStep={updateMultiHeight}
@@ -215,15 +215,13 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         {/* Custom Properties - Set same property on all bins */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>Custom Properties</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.customProperties')}</label>
             {!showPropertyForm && (
               <button
                 type="button"
                 onClick={() => setShowPropertyForm(true)}
                 className="text-xs text-accent hover:text-accent-hover transition-colors"
-              >
-                + Set Property
-              </button>
+              >{t('inspector.setProperty')}</button>
             )}
           </div>
           {showPropertyForm ? (
@@ -238,7 +236,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                 }
                 className={`input w-full ${inputHeight}`}
                 placeholder={t('inspector.customProps.multiKeyPlaceholder')}
-                aria-label="Property name"
+                aria-label={t('inspector.propertyName')}
                 list="property-key-suggestions"
                 autoFocus
               />
@@ -257,7 +255,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                 }
                 className={`input w-full ${inputHeight}`}
                 placeholder={t('inspector.customProps.multiValuePlaceholder')}
-                aria-label="Property value"
+                aria-label={t('inspector.propertyValue')}
               />
               <div className="flex gap-2">
                 <button
@@ -272,9 +270,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                   }}
                   disabled={!propertyKey.trim()}
                   className={`btn btn-primary flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
-                >
-                  Set on All
-                </button>
+                >{t('inspector.setOnAll')}</button>
                 <button
                   type="button"
                   onClick={() => {
@@ -283,15 +279,11 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                     setShowPropertyForm(false);
                   }}
                   className={`btn btn-ghost flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
-                >
-                  Cancel
-                </button>
+                >{t('common.cancel')}</button>
               </div>
             </div>
           ) : (
-            <p className={`text-xs text-content-disabled ${isMobile ? '' : 'mt-1'}`}>
-              Set the same property on all selected bins
-            </p>
+            <p className={`text-xs text-content-disabled ${isMobile ? '' : 'mt-1'}`}>{t('inspector.setTheSamePropertyOnAllSelectedBins')}</p>
           )}
         </div>
 
@@ -302,17 +294,13 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
               type="button"
               onClick={moveToStaging}
               className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
-            >
-              To Stash
-            </button>
+            >{t('inspector.toStash')}</button>
           )}
           <button
             type="button"
             onClick={requestDelete}
             className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
-          >
-            Delete All
-          </button>
+          >{t('inspector.deleteAll')}</button>
         </div>
       </div>
     </div>

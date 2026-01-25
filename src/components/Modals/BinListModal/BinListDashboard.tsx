@@ -80,8 +80,7 @@ export function BinListDashboard({
         <h3 className="text-sm font-medium text-content">{t('dashboard.statistics')}</h3>
         {collapsible && (
           <span className="text-xs text-content-tertiary">
-            {totalBins} bins, {totalFilament}m filament
-          </span>
+            {t('dashboard.compactSummary', { bins: totalBins, filament: totalFilament })}</span>
         )}
       </div>
       {collapsible && (

@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+
+const LIST_SEPARATOR = ', ';
 import { SplitPreview } from '@/components/Print/SplitPreview';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 import type {
@@ -191,7 +193,7 @@ export function BinListTable({
             d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
           />
         </svg>
-        <p className="text-sm">No bins match your filters</p>
+        <p className="text-sm">{t('binList.noBinsMatchYourFilters')}</p>
       </div>
     );
   }
@@ -207,7 +209,7 @@ export function BinListTable({
                 checked={isAllSelected}
                 onChange={onSelectAll}
                 className="rounded border-stroke focus:ring-accent"
-                aria-label="Select all rows"
+                aria-label={t('binList.selectAllRows')}
               />
             </th>
             <th className="w-8 px-2 py-2 sticky top-0 bg-surface-elevated" />
@@ -240,11 +242,11 @@ export function BinListTable({
               title={t('print.sort.customProperties')}
             />
             <th className="px-3 py-2 text-right font-medium sticky top-0 bg-surface-elevated w-16">
-              Qty
+              {t('binList.qtyAbbrev')}
             </th>
             {hasAnySplits && (
               <th className="px-3 py-2 text-right font-medium sticky top-0 bg-surface-elevated w-16">
-                Pcs
+                {t('binList.pcsAbbrev')}
               </th>
             )}
             <SortHeader
@@ -290,8 +292,8 @@ export function BinListTable({
                   <div
                     className="flex gap-0.5"
                     title={(row.categoryIds ?? [])
-                      .map((catId) => categories.find((c) => c.id === catId)?.name || 'Unknown')
-                      .join(', ')}
+                      .map((catId) => categories.find((c) => c.id === catId)?.name || t('common.unknown'))
+                      .join(LIST_SEPARATOR)}
                   >
                     {(row.categoryIds ?? []).slice(0, 3).map((catId) => {
                       const cat = categories.find((c) => c.id === catId);
@@ -305,7 +307,7 @@ export function BinListTable({
                     })}
                     {(row.categoryIds ?? []).length > 3 && (
                       <span className="text-[9px] text-content-disabled">
-                        +{(row.categoryIds ?? []).length - 3}
+                        {t('rightPanel.moreCategories', { count: (row.categoryIds ?? []).length - 3 })}
                       </span>
                     )}
                   </div>
@@ -364,7 +366,7 @@ export function BinListTable({
                   }
                   aria-label={
                     onEditLabel
-                      ? `Label: ${(row.labels ?? [])[0] || 'empty'}. Press Enter to edit.`
+                      ? t('binList.labelAriaEdit', { label: (row.labels ?? [])[0] || t('common.empty') })
                       : undefined
                   }
                 >
@@ -400,7 +402,7 @@ export function BinListTable({
                   onDoubleClick={() => handleDoubleClick(index, 'notes', row.notes || '')}
                   onKeyDown={(e) => handleCellKeyDown(e, index, 'notes', row.notes || '')}
                   aria-label={
-                    onEditNotes ? `Notes: ${row.notes || 'empty'}. Press Enter to edit.` : undefined
+                    onEditNotes ? t('binList.notesAriaEdit', { notes: row.notes || t('common.empty') }) : undefined
                   }
                 >
                   {editing?.rowIndex === index && editing.field === 'notes' ? (
@@ -430,11 +432,10 @@ export function BinListTable({
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                       strokeWidth={2}
-                      aria-label={`${Object.keys(row.customProperties).length} custom properties`}
+                      aria-label={t('binList.customPropertiesCount', { count: Object.keys(row.customProperties).length })}
                     >
                       <title>
-                        {Object.keys(row.customProperties).length} custom{' '}
-                        {Object.keys(row.customProperties).length === 1 ? 'property' : 'properties'}
+                        {t('binList.customPropertiesCount', { count: Object.keys(row.customProperties).length })}
                       </title>
                       <path
                         strokeLinecap="round"
@@ -474,9 +475,7 @@ export function BinListTable({
                     pieces={rows[expandedSplitRow].pieces}
                   />
                   <div className="text-xs text-content-secondary">
-                    <div className="font-medium mb-1">
-                      Split into {rows[expandedSplitRow].totalPieces} pieces:
-                    </div>
+                    <div className="font-medium mb-1">{t('binList.splitInto')}{rows[expandedSplitRow].totalPieces}{t('binList.pieces')}</div>
                     {rows[expandedSplitRow].pieces.map((piece) => (
                       <div key={`${piece.width}x${piece.depth}`} className="text-content-tertiary">
                         {piece.count}× {piece.width}×{piece.depth}

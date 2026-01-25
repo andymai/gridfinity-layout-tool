@@ -250,11 +250,9 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-content">{layout.name}.json</div>
+                    <div className="font-medium text-content">{t('share.layoutFilename', { name: layout.name })}</div>
                     <div className="text-sm text-content-secondary">
-                      {layout.drawer.width}×{layout.drawer.depth} grid • {layout.bins.length} bins •{' '}
-                      {layout.layers.length} layers
-                    </div>
+                      {t('share.layoutSummary', { grid: `${layout.drawer.width}×${layout.drawer.depth}`, bins: layout.bins.length, layers: layout.layers.length })}</div>
                   </div>
                   <button onClick={handleDownload} className="btn btn-primary">
                     {t('common.download')}

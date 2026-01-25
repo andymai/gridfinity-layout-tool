@@ -24,6 +24,7 @@ function clamp(value: number, min: number, max: number): number {
 
 const LONG_PRESS_DURATION = 500; // ms
 const DOUBLE_TAP_THRESHOLD = 300; // ms
+const WARNING_ICON = '⚠';
 
 interface BinProps {
   bin: BinType;
@@ -777,9 +778,7 @@ function BinComponent({
                   color: 'var(--color-warning)',
                   fontWeight: 500,
                 }}
-              >
-                Split
-              </span>
+              >{t('grid.split')}</span>
             )}
           </div>
           {/* Secondary text (dimensions when label is primary) */}
@@ -800,9 +799,8 @@ function BinComponent({
                   className="ml-1"
                   title={t('grid.exceedsPrintSize')}
                   style={{ color: 'var(--color-warning)' }}
-                >
-                  ⚠
-                </span>
+                  aria-label={t('grid.exceedsPrintSize')}
+                >{WARNING_ICON}</span>
               )}
             </div>
           )}

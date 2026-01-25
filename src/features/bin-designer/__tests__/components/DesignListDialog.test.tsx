@@ -57,7 +57,7 @@ describe('DesignListDialog', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText('My Designs')).toBeInTheDocument();
-    expect(screen.getByText('+ New Design')).toBeInTheDocument();
+    expect(screen.getByText('New Design')).toBeInTheDocument();
   });
 
   it('loads and displays saved designs', async () => {
@@ -115,7 +115,7 @@ describe('DesignListDialog', () => {
       expect(screen.getByText('Tool Holder')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText('+ New Design'));
+    fireEvent.click(screen.getByText('New Design'));
 
     expect(useDesignerStore.getState().currentDesignId).toBeNull();
     expect(useDesignerStore.getState().designName).toBe('Untitled Bin');

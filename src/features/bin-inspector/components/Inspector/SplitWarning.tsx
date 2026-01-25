@@ -116,9 +116,7 @@ export function SplitWarning({
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
-        <span className="text-xs text-content-tertiary">
-          Fits print bed ({binWidth}×{binDepth} ≤ {maxGridUnits}×{maxGridUnits})
-        </span>
+        <span className="text-xs text-content-tertiary">{t('inspector.fitsPrintBedDimensions', { binWidth, binDepth, max: maxGridUnits })}</span>
       </div>
     );
   }

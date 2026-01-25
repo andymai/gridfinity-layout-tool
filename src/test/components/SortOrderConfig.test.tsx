@@ -49,7 +49,7 @@ describe('SortOrderConfig', () => {
     it('shows active sort summary when fields are enabled', () => {
       render(<SortOrderConfig sortOrder={defaultSortOrder} onChange={() => {}} />);
 
-      expect(screen.getByText(/Sorting by:/)).toBeInTheDocument();
+      expect(screen.getByText(/Sorting by/)).toBeInTheDocument();
       expect(screen.getByText(/Category → Position/)).toBeInTheDocument();
     });
 
@@ -57,7 +57,7 @@ describe('SortOrderConfig', () => {
       const allDisabled: BinListSortOrder = defaultSortOrder.map((s) => ({ ...s, enabled: false }));
       render(<SortOrderConfig sortOrder={allDisabled} onChange={() => {}} />);
 
-      expect(screen.queryByText(/Sorting by:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Sorting by/)).not.toBeInTheDocument();
     });
 
     it('shows priority numbers for enabled fields', () => {
@@ -302,7 +302,7 @@ describe('SortOrderConfig', () => {
       ];
       render(<SortOrderConfig sortOrder={singleEnabled} onChange={() => {}} />);
 
-      expect(screen.getByText('Sorting by: Category')).toBeInTheDocument();
+      expect(screen.getByText('Sorting byCategory')).toBeInTheDocument();
     });
   });
 });

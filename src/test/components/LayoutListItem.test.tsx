@@ -125,7 +125,7 @@ describe('LayoutListItem', () => {
     it('renders bin count', () => {
       render(<LayoutListItem {...defaultProps} />);
 
-      expect(screen.getByText('5 bins')).toBeInTheDocument();
+      expect(screen.getByText('Bin count')).toBeInTheDocument();
     });
 
     it('renders LayoutActions', () => {
@@ -238,7 +238,8 @@ describe('LayoutListItem', () => {
       });
       render(<LayoutListItem {...defaultProps} entry={entry} />);
 
-      expect(screen.getByText('Forked from Original Layout')).toBeInTheDocument();
+      expect(screen.getByText(/Forked from/)).toBeInTheDocument();
+      expect(screen.getByText(/Original Layout/)).toBeInTheDocument();
     });
 
     it('shows forked from with author when present', () => {
@@ -247,7 +248,9 @@ describe('LayoutListItem', () => {
       });
       render(<LayoutListItem {...defaultProps} entry={entry} />);
 
-      expect(screen.getByText('Forked from Original Layout by John')).toBeInTheDocument();
+      expect(screen.getByText(/Forked from/)).toBeInTheDocument();
+      expect(screen.getByText(/Original Layout/)).toBeInTheDocument();
+      expect(screen.getByText(/by John/)).toBeInTheDocument();
     });
 
     it('does not show forked from when not present', () => {

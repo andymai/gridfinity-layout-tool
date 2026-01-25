@@ -337,7 +337,7 @@ describe('RightPanel', () => {
       render(<RightPanel />);
 
       expect(screen.getByTestId('multi-bin-inspector')).toBeInTheDocument();
-      expect(screen.getByTestId('collapsible-title')).toHaveTextContent('Multi-Selection');
+      expect(screen.getByTestId('collapsible-title')).toHaveTextContent('Multi-selection');
     });
 
     it('calls clearSelection when single inspector close clicked', () => {
@@ -652,7 +652,10 @@ describe('RightPanel', () => {
       fireEvent.click(screen.getByText('8×8'));
 
       expect(screen.getByTestId('split-preview')).toBeInTheDocument();
-      expect(screen.getByText(/Split into 4 pieces/)).toBeInTheDocument();
+      // Text is split across multiple text nodes: "Split into" + "4" + "Pieces"
+      expect(screen.getByText((content, element) => {
+        return element?.textContent === 'Split into4Pieces';
+      })).toBeInTheDocument();
     });
 
     it('collapses split preview when clicked again', () => {

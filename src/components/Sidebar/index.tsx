@@ -95,7 +95,7 @@ export function Sidebar() {
             onClick={toggle}
             className="btn btn-ghost btn-icon"
             title={t('sidebar.expandPanel')}
-            aria-label="Expand left panel"
+            aria-label={t('sidebar.expandLeftPanel')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -122,7 +122,7 @@ export function Sidebar() {
               onClick={() => setShowSettingsModal(true)}
               className="p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
               title={t('sidebar.settings')}
-              aria-label="Open settings"
+              aria-label={t('sidebar.openSettings')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -143,7 +143,7 @@ export function Sidebar() {
               onClick={toggle}
               className="p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
               title={t('sidebar.collapsePanel')}
-              aria-label="Collapse left panel"
+              aria-label={t('sidebar.collapseLeftPanel')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -300,7 +300,7 @@ export function Sidebar() {
                     onClick={handleHalfBinToggle}
                     role="checkbox"
                     aria-checked={halfBinMode}
-                    aria-label="Toggle half-bin mode"
+                    aria-label={t('sidebar.toggleHalfBinMode')}
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === ' ' || e.key === 'Enter') {
@@ -329,12 +329,10 @@ export function Sidebar() {
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
                   {(hasFractionalWidth || hasFractionalDepth) && (
                     <div className="pt-2 space-y-1.5">
-                      <div className="text-content-tertiary text-[10px] mb-1">
-                        Half-unit edge position
-                      </div>
+                      <div className="text-content-tertiary text-[10px] mb-1">{t('sidebar.halfUnitEdgePosition')}</div>
                       {hasFractionalWidth && (
                         <div className="flex items-center justify-between">
-                          <span className="text-content-tertiary">Width (+.5)</span>
+                          <span className="text-content-tertiary">{t('sidebar.width5')}</span>
                           <div className="flex rounded overflow-hidden border border-stroke-subtle">
                             <button
                               onClick={() => handleFractionalEdgeChange('x', 'start')}
@@ -344,9 +342,7 @@ export function Sidebar() {
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title={t('sidebar.halfBinLeft')}
-                            >
-                              Left
-                            </button>
+                            >{t('sidebar.left')}</button>
                             <button
                               onClick={() => handleFractionalEdgeChange('x', 'end')}
                               className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
@@ -355,15 +351,13 @@ export function Sidebar() {
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title={t('sidebar.halfBinRight')}
-                            >
-                              Right
-                            </button>
+                            >{t('sidebar.right')}</button>
                           </div>
                         </div>
                       )}
                       {hasFractionalDepth && (
                         <div className="flex items-center justify-between">
-                          <span className="text-content-tertiary">Depth (+.5)</span>
+                          <span className="text-content-tertiary">{t('sidebar.depth5')}</span>
                           <div className="flex rounded overflow-hidden border border-stroke-subtle">
                             <button
                               onClick={() => handleFractionalEdgeChange('y', 'start')}
@@ -373,9 +367,7 @@ export function Sidebar() {
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title={t('sidebar.halfBinBottom')}
-                            >
-                              Bottom
-                            </button>
+                            >{t('sidebar.bottom')}</button>
                             <button
                               onClick={() => handleFractionalEdgeChange('y', 'end')}
                               className={`px-2.5 py-1 text-[10px] border-l border-stroke-subtle transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
@@ -384,9 +376,7 @@ export function Sidebar() {
                                   : 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover'
                               }`}
                               title={t('sidebar.halfBinTop')}
-                            >
-                              Top
-                            </button>
+                            >{t('sidebar.top')}</button>
                           </div>
                         </div>
                       )}
@@ -455,8 +445,7 @@ export function Sidebar() {
             </div>
 
             {/* Attribution */}
-            <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
-              Gridfinity by{' '}
+            <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">{t('sidebar.gridfinityBy')}{' '}
               <a
                 href="https://www.youtube.com/c/ZackFreedman"
                 target="_blank"
@@ -465,8 +454,7 @@ export function Sidebar() {
               >
                 Zack Freedman
               </a>
-              <br />
-              Tool by{' '}
+              <br />{t('sidebar.toolBy')}{' '}
               <a
                 href="https://www.linkedin.com/in/andyhmai/"
                 target="_blank"
@@ -488,9 +476,7 @@ export function Sidebar() {
                   viewBox="0 0 24 24"
                 >
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>
-                Tip
-              </a>
+                </svg>{t('sidebar.tip')}</a>
             </div>
           </div>
         </div>

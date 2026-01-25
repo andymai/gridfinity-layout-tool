@@ -128,7 +128,7 @@ export function ExportDialog() {
 
         {/* Format Selection */}
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-content-secondary">Format</label>
+          <label className="mb-2 block text-sm font-medium text-content-secondary">{t('binDesigner.format')}</label>
           <div className="grid grid-cols-3 gap-2">
             <FormatOption
               label={t('binDesigner.formatSTL')}
@@ -148,9 +148,7 @@ export function ExportDialog() {
 
         {/* File Name */}
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-content-secondary">
-            File Name
-          </label>
+          <label className="mb-2 block text-sm font-medium text-content-secondary">{t('binDesigner.fileName')}</label>
           <div className="flex items-center rounded-md border border-stroke-subtle bg-surface">
             {exportFileNameConfig.style === 'custom' ? (
               <input
@@ -160,7 +158,7 @@ export function ExportDialog() {
                 onChange={(e) => handleCustomNameChange(e.target.value)}
                 className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-content outline-none"
                 placeholder={t('binDesigner.filenamePlaceholder')}
-                aria-label="Custom file name"
+                aria-label={t('binDesigner.customFileName')}
                 maxLength={128}
               />
             ) : (
@@ -193,9 +191,7 @@ export function ExportDialog() {
 
         {/* Print Estimates */}
         <div className="mb-5 rounded-lg border border-stroke-subtle bg-surface p-3">
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-tertiary">
-            Print Estimates (PLA)
-          </h3>
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-tertiary">{t('binDesigner.printEstimatesPla')}</h3>
           <div className="grid grid-cols-2 gap-y-1.5 text-sm">
             <EstimateRow label="Filament" value={formatFilament(estimates.metersFilament)} />
             <EstimateRow label="Weight" value={`${estimates.gramsFilament}g`} />
@@ -258,13 +254,11 @@ export function ExportDialog() {
               />
             </svg>
           )}
-          {isExporting ? 'Exporting…' : `${t('common.download')} ${format.toUpperCase()}`}
+          {isExporting ? t('binDesigner.exporting') : t('binDesigner.downloadFormat', { format: format.toUpperCase() })}
         </button>
 
         {!canExport && (
-          <p className="mt-2 text-center text-xs text-warning">
-            Generate a mesh first to enable export
-          </p>
+          <p className="mt-2 text-center text-xs text-warning">{t('binDesigner.generateAMeshFirstToEnableExport')}</p>
         )}
       </div>
     </div>

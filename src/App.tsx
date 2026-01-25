@@ -279,7 +279,7 @@ export default function App() {
               />
             </svg>
           </div>
-          <h1 className="text-lg font-semibold mb-2 text-content">Unable to load app</h1>
+          <h1 className="text-lg font-semibold mb-2 text-content">{t('app.unableToLoadApp')}</h1>
           <p className="text-sm text-content-secondary mb-4">
             There was a problem loading your saved data. This is usually caused by corrupted
             storage. Try clearing your browser data for this site.
@@ -297,9 +297,7 @@ export default function App() {
               window.location.reload();
             }}
             className="btn btn-primary"
-          >
-            Clear Data & Reload
-          </button>
+          >{t('app.clearDataReload')}</button>
         </div>
       </div>
     );
@@ -431,9 +429,7 @@ export default function App() {
       className={`h-screen flex flex-col overflow-hidden bg-surface text-content ${entranceClass}`}
     >
       {/* Skip to content link for keyboard navigation */}
-      <a href="#main-grid" className="skip-to-content">
-        Skip to grid editor
-      </a>
+      <a href="#main-grid" className="skip-to-content">{t('app.skipToGridEditor')}</a>
 
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
       {hasSharedLayoutPreview && (

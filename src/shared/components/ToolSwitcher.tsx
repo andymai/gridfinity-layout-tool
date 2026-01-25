@@ -55,10 +55,10 @@ export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
   if (!isDesignerEnabled) {
     if (compact) {
       return (
-        <span className="text-xs font-medium text-content-secondary">Gridfinity Layout Tool</span>
+        <span className="text-xs font-medium text-content-secondary">{t('toolSwitcher.gridfinityLayoutTool')}</span>
       );
     }
-    return <h1 className="text-lg font-semibold text-content">Gridfinity Layout Tool</h1>;
+    return <h1 className="text-lg font-semibold text-content">{t('toolSwitcher.gridfinityLayoutTool')}</h1>;
   }
 
   const activeTool: Tool = isDesignerRoute ? 'designer' : 'planner';
@@ -78,12 +78,12 @@ export function ToolSwitcher({ compact = false }: ToolSwitcherProps) {
   const gap = compact ? 'gap-1.5' : 'gap-2';
 
   return (
-    <div className={`flex items-center ${gap}`} role="navigation" aria-label="Tool switcher">
+    <div className={`flex items-center ${gap}`} role="navigation" aria-label={t('toolSwitcher.toolSwitcher')}>
       <GridfinityIcon className={`${iconSize} text-content-secondary flex-shrink-0`} />
       <div
         className="flex rounded-md bg-surface p-0.5 border border-stroke-subtle"
         role="tablist"
-        aria-label="Active tool"
+        aria-label={t('toolSwitcher.activeTool')}
       >
         <button
           role="tab"

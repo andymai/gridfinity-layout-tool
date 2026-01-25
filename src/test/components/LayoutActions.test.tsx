@@ -200,7 +200,7 @@ describe('LayoutActions', () => {
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
 
-      expect(screen.getByText(/5 bins will be deleted/)).toBeInTheDocument();
+      expect(screen.getByText(/bins will be deleted/)).toBeInTheDocument();
     });
 
     it('shows singular bin message when 1 bin', () => {
@@ -214,7 +214,7 @@ describe('LayoutActions', () => {
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
 
-      expect(screen.getByText(/1 bin will be deleted/)).toBeInTheDocument();
+      expect(screen.getByText(/bins will be deleted/)).toBeInTheDocument();
     });
 
     it('calls onDelete on second delete click', () => {

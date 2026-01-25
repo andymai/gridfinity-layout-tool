@@ -17,6 +17,10 @@
  * ```
  */
 
+/* eslint-disable react-refresh/only-export-components */
+// Hooks are intentionally co-located with LocaleProvider for cohesion.
+// Fast Refresh still works; this just skips component-level HMR for hooks.
+
 import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import type { Locale, Translations, TranslationVars } from './types';
@@ -113,7 +117,9 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
   // Load initial non-English locale on mount
   useEffect(() => {
     if (initialLocale !== 'en') {
-      loadLocale(initialLocale);
+      // Schedule for next microtask to avoid sync setState during effect
+      // (React Compiler flags sync state updates in effects as problematic)
+      void Promise.resolve().then(() => loadLocale(initialLocale));
     }
   }, [initialLocale, loadLocale]);
 

@@ -105,15 +105,13 @@ export function ScoopSection() {
           <div className="space-y-3">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-content-secondary">Radius</span>
+                <span className="text-xs text-content-secondary">{t('binDesigner.radius')}</span>
                 {scoop.radius !== 'auto' && (
                   <button
                     type="button"
                     onClick={handleResetRadius}
                     className="text-[10px] text-accent hover:text-accent/80 transition-colors"
-                  >
-                    Reset to auto
-                  </button>
+                  >{t('binDesigner.resetToAuto')}</button>
                 )}
               </div>
               <SliderInput
@@ -134,8 +132,8 @@ export function ScoopSection() {
                 onChange={handleAllRowsToggle}
                 className="h-3.5 w-3.5 rounded border-stroke-subtle text-accent focus:ring-accent"
               />
-              <span className="text-xs text-content-secondary">All rows</span>
-              <span className="text-[10px] text-content-tertiary">(not just front)</span>
+              <span className="text-xs text-content-secondary">{t('binDesigner.allRows')}</span>
+              <span className="text-[10px] text-content-tertiary">{t('binDesigner.notJustFront')}</span>
             </label>
           </div>
         </FeatureToggle>

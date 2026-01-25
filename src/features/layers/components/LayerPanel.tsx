@@ -216,11 +216,11 @@ export function LayerPanel() {
       title={
         !canAddLayer
           ? heightFull
-            ? `Max height full (${totalLayerHeight}/${drawerHeight}u)`
-            : `Maximum ${CONSTRAINTS.LAYERS_MAX} layers`
-          : 'Add a new layer'
+            ? t('layers.maxHeightFull', { current: totalLayerHeight, max: drawerHeight })
+            : t('layers.maxLayersReached', { max: CONSTRAINTS.LAYERS_MAX })
+          : t('layers.addNewLayer')
       }
-      aria-label="Add new layer"
+      aria-label={t('layers.addNewLayer')}
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -342,8 +342,8 @@ export function LayerPanel() {
                         }
                       }}
                       aria-pressed={isActive}
-                      aria-label={`${layer.name}, ${layer.height} height units for new bins, ${layerCoverage}% coverage${isActive ? ', active - click to rename' : ''}`}
-                      title={isActive ? 'Click to rename' : `Select ${layer.name}`}
+                      aria-label={t('layers.layerButtonAria', { name: layer.name, height: layer.height, coverage: layerCoverage, suffix: isActive ? t('layers.activeClickToRename') : '' })}
+                      title={isActive ? t('layers.clickToRename') : t('layers.selectLayer', { name: layer.name })}
                     >
                       {layer.name}
                     </button>
@@ -406,7 +406,7 @@ export function LayerPanel() {
                   ) : (
                     <span
                       className="px-1.5 py-0.5 rounded text-[10px] bg-surface-hover"
-                      title="Height for new bins placed on this layer"
+                      title={t('layers.heightForNewBinsPlacedOnThisLayer')}
                     >
                       {layer.height}u
                     </span>
@@ -452,8 +452,8 @@ export function LayerPanel() {
         {/* Stats line */}
         <div className="text-xs text-content-tertiary mb-2">
           {hasMultipleLayers
-            ? `${totalCoverage}% filled · ${totalBinCount} bin${totalBinCount !== 1 ? 's' : ''} total`
-            : `${coverage}% filled · ${binCount} bin${binCount !== 1 ? 's' : ''}`}
+            ? t('layers.statsTotal', { coverage: totalCoverage, count: totalBinCount })
+            : t('layers.stats', { coverage, count: binCount })}
         </div>
 
         {/* Coverage bar */}

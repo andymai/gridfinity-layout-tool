@@ -151,7 +151,7 @@ export function SharedLayoutBanner() {
           />
         </svg>
         <span className="text-sm font-medium">
-          {t('share.banner.viewing')}: <strong>{sharedLayoutOriginalName || layout.name}</strong>
+          {t('share.banner.viewingLayout', { name: sharedLayoutOriginalName || layout.name })}
         </span>
       </div>
 
@@ -165,9 +165,7 @@ export function SharedLayoutBanner() {
         <button
           onClick={() => setShowDiscardConfirm(true)}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white/15 hover:bg-white/25 transition-colors"
-        >
-          Discard
-        </button>
+        >{t('share.discard')}</button>
       </div>
 
       <ConfirmDialog

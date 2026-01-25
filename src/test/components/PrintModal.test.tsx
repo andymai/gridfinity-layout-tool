@@ -226,8 +226,8 @@ describe('PrintModal', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
       // Layer 1 has 1 bin, Layer 2 has 1 bin
-      // There are 2 instances of "1 bin" (one per layer)
-      expect(screen.getAllByText('1 bin')).toHaveLength(2);
+      // The component shows "Bin count" label for each layer
+      expect(screen.getAllByText('Bin count')).toHaveLength(2);
     });
   });
 

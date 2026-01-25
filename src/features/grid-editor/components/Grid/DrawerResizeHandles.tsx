@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import type { ResizeDirection } from '@/features/grid-editor/hooks/useGridResize';
+import { useTranslation } from '@/i18n';
 
 /**
  * Drawer Resize Handles Component
@@ -35,6 +36,7 @@ export const DrawerResizeHandles = memo(function DrawerResizeHandles({
   shouldPulse,
   onResizeStart,
 }: DrawerResizeHandlesProps) {
+  const t = useTranslation();
   const pulseClass = shouldPulse ? 'animate-pulse motion-reduce:animate-none' : '';
 
   return (
@@ -49,7 +51,7 @@ export const DrawerResizeHandles = memo(function DrawerResizeHandles({
           cursor: 'ew-resize',
         }}
         onPointerDown={(e) => onResizeStart('width', e)}
-        title="Drag to add/remove columns"
+        title={t('grid.dragToAddRemoveColumns')}
       >
         <div
           className={`h-16 w-1 rounded-full transition-all group-hover:h-24 group-hover:w-[3px] group-hover:scale-[1.3] group-hover:drop-shadow-lg ${pulseClass}`}
@@ -72,7 +74,7 @@ export const DrawerResizeHandles = memo(function DrawerResizeHandles({
           cursor: 'ns-resize',
         }}
         onPointerDown={(e) => onResizeStart('depth', e)}
-        title="Drag to add/remove rows"
+        title={t('grid.dragToAddRemoveRows')}
       >
         <div
           className={`w-16 h-1 rounded-full transition-all group-hover:w-24 group-hover:h-[3px] group-hover:scale-[1.3] group-hover:drop-shadow-lg ${pulseClass}`}
@@ -96,7 +98,7 @@ export const DrawerResizeHandles = memo(function DrawerResizeHandles({
           cursor: 'nwse-resize',
         }}
         onPointerDown={(e) => onResizeStart('both', e)}
-        title="Drag to add/remove rows and columns"
+        title={t('grid.dragToAddRemoveRowsAndColumns')}
       >
         <div
           className={`w-3 h-3 rounded-sm transition-all group-hover:w-5 group-hover:h-5 group-hover:scale-[1.3] group-hover:drop-shadow-lg ${pulseClass}`}

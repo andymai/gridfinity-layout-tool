@@ -78,8 +78,7 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
     <div className="sort-order-config">
       {/* Active sort summary */}
       {activeSortFields.length > 0 && (
-        <div className="text-xs text-content-tertiary mb-2">
-          Sorting by: {activeSortFields.map((s) => SORT_FIELD_LABELS[s.field]).join(' → ')}
+        <div className="text-xs text-content-tertiary mb-2">{t('print.sortingBy')}{activeSortFields.map((s) => SORT_FIELD_LABELS[s.field]).join(' → ')}
         </div>
       )}
 

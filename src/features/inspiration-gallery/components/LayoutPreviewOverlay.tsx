@@ -5,6 +5,7 @@ import { LayoutThumbnailWithLabels } from './LayoutThumbnailWithLabels';
 import { THEME_CONFIG } from '../types';
 import { INSPIRATION_LAYOUTS } from '../data';
 import type { InspirationLayout } from '../types';
+import { useTranslation } from '@/i18n';
 
 interface LayoutPreviewOverlayProps {
   layout: InspirationLayout;
@@ -24,6 +25,7 @@ export function LayoutPreviewOverlay({
   onSelectRelated,
   isImporting,
 }: LayoutPreviewOverlayProps) {
+  const t = useTranslation();
   const { isMobile } = useResponsive();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -90,7 +92,7 @@ export function LayoutPreviewOverlay({
               ref={closeButtonRef}
               onClick={onClose}
               className="p-2 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
-              aria-label="Back to gallery"
+              aria-label={t('gallery.backToGallery')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -133,7 +135,7 @@ export function LayoutPreviewOverlay({
           >
             {/* Description */}
             <div>
-              <h3 className="text-sm font-medium text-content mb-2">Description</h3>
+              <h3 className="text-sm font-medium text-content mb-2">{t('gallery.description')}</h3>
               <p className="text-sm text-content-secondary">{description}</p>
             </div>
 
@@ -148,7 +150,7 @@ export function LayoutPreviewOverlay({
 
             {/* Metrics - streamlined, no redundant drawer size */}
             <div>
-              <h3 className="text-sm font-medium text-content mb-3">Layout Details</h3>
+              <h3 className="text-sm font-medium text-content mb-3">{t('gallery.layoutDetails')}</h3>
               <div className="grid grid-cols-3 gap-2">
                 <MetricCard label="Bins" value={metrics.binCount.toString()} />
                 <MetricCard label="Layers" value={metrics.layerCount.toString()} />
@@ -159,7 +161,7 @@ export function LayoutPreviewOverlay({
             {/* Example items */}
             {labeledBins.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-content mb-2">Example Items</h3>
+                <h3 className="text-sm font-medium text-content mb-2">{t('gallery.exampleItems')}</h3>
                 <div className="flex flex-wrap gap-1">
                   {labeledBins.slice(0, 8).map((bin) => (
                     <span
@@ -171,8 +173,7 @@ export function LayoutPreviewOverlay({
                   ))}
                   {labeledBins.length > 8 && (
                     <span className="text-xs px-2 py-1 text-content-tertiary">
-                      +{labeledBins.length - 8} more
-                    </span>
+                      {t('gallery.moreCount', { count: labeledBins.length - 8 })}</span>
                   )}
                 </div>
               </div>
@@ -181,9 +182,7 @@ export function LayoutPreviewOverlay({
             {/* Related layouts */}
             {relatedLayouts.length > 0 && onSelectRelated && (
               <div>
-                <h3 className="text-sm font-medium text-content mb-2">
-                  More {THEME_CONFIG[theme].label}
-                </h3>
+                <h3 className="text-sm font-medium text-content mb-2">{t('gallery.moreInTheme', { theme: THEME_CONFIG[theme].label })}</h3>
                 <div className="flex gap-2">
                   {relatedLayouts.map((related) => (
                     <button
@@ -205,8 +204,7 @@ export function LayoutPreviewOverlay({
                         {related.name}
                       </div>
                       <div className="text-[10px] text-content-tertiary">
-                        {related.metrics.binCount} bins
-                      </div>
+                        {related.metrics.binCount}{t('gallery.bins')}</div>
                     </button>
                   ))}
                 </div>
@@ -218,9 +216,7 @@ export function LayoutPreviewOverlay({
         {/* Footer with CTA */}
         <div className="p-4 md:p-6 border-t border-stroke-subtle bg-surface shrink-0">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-sm text-content-secondary">
-              Use as a starting point — customize to fit your items
-            </p>
+            <p className="text-sm text-content-secondary">{t('gallery.useAsAStartingPointCustomizeToFitYo')}</p>
             <button
               onClick={onUseLayout}
               disabled={isImporting}
@@ -246,7 +242,7 @@ export function LayoutPreviewOverlay({
                   Adding...
                 </>
               ) : (
-                'Use as Starting Point'
+                t('gallery.useAsStartingPoint')
               )}
             </button>
           </div>
@@ -284,6 +280,7 @@ function DrawerSizeInfo({
   realWidth: number;
   realDepth: number;
 }) {
+  const t = useTranslation();
   if (matchesCurrent) {
     return (
       <div className="flex items-start gap-2 p-3 rounded-lg bg-success-muted border border-success/20">
@@ -296,10 +293,8 @@ function DrawerSizeInfo({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
         <div>
-          <div className="text-sm font-medium text-success">Matches your drawer</div>
-          <div className="text-xs text-success/70">
-            Same size as your current {currentSize.width}×{currentSize.depth} drawer
-          </div>
+          <div className="text-sm font-medium text-success">{t('gallery.matchesYourDrawer')}</div>
+          <div className="text-xs text-success/70">{t('gallery.sameSizeAsYourCurrent', { size: `${currentSize.width}×${currentSize.depth}` })}</div>
         </div>
       </div>
     );
@@ -323,15 +318,12 @@ function DrawerSizeInfo({
       </svg>
       <div>
         <div className="text-sm font-medium text-content-secondary">
-          {templateSize.width}×{templateSize.depth} drawer
-        </div>
+          {templateSize.width}×{templateSize.depth}{t('gallery.drawer')}</div>
         <div className="text-xs text-content-tertiary">
           {realWidth}×{realDepth}mm
           {(templateSize.width !== currentSize.width ||
             templateSize.depth !== currentSize.depth) && (
-            <span className="ml-1 text-content-disabled">
-              (yours: {currentSize.width}×{currentSize.depth})
-            </span>
+            <span className="ml-1 text-content-disabled">{t('gallery.yourSize', { size: `${currentSize.width}×${currentSize.depth}` })}</span>
           )}
         </div>
       </div>

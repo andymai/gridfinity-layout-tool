@@ -202,6 +202,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     announceToScreenReader,
     closeMobilePanel,
     onClose,
+    t,
   ]);
 
   // Keyboard navigation for grid
@@ -289,9 +290,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
               <h2 id="inspiration-gallery-title" className="text-lg font-semibold text-content">
                 {t('gallery.title')}
               </h2>
-              <p className="text-sm text-content-secondary">
-                See what's possible, then make it yours
-              </p>
+              <p className="text-sm text-content-secondary">{t('gallery.seeWhatSPossibleThenMakeItYours')}</p>
             </div>
             <div className="flex items-center gap-2">
               {/* Grid size slider (desktop only) */}
@@ -317,7 +316,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
                     value={gridColumns}
                     onChange={(e) => setGridColumns(Number(e.target.value))}
                     className="w-16"
-                    aria-label="Grid columns"
+                    aria-label={t('gallery.gridColumns')}
                   />
                 </div>
               )}
@@ -356,7 +355,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
             style={gridStyle}
             onKeyDown={handleGridKeyDown}
             role="grid"
-            aria-label="Layout gallery"
+            aria-label={t('gallery.layoutGallery')}
           >
             {filteredLayouts.map((layout, index) => (
               <LayoutCard
@@ -392,17 +391,16 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
               <button
                 onClick={() => setSelectedTheme('all')}
                 className="text-sm text-accent hover:underline"
-              >
-                Browse all layouts
-              </button>
+              >{t('gallery.browseAllLayouts')}</button>
             </div>
           )}
         </div>
 
         {/* Footer with count */}
         <div className="px-3 py-1.5 border-t border-stroke-subtle text-xs text-content-tertiary shrink-0">
-          {filteredLayouts.length} layout{filteredLayouts.length !== 1 ? 's' : ''}
-          {selectedTheme !== 'all' && ` in ${THEME_CONFIG[selectedTheme].label}`}
+          {selectedTheme !== 'all'
+            ? t('gallery.layoutsInTheme', { count: filteredLayouts.length, theme: THEME_CONFIG[selectedTheme].label })
+            : t('gallery.layoutCount', { count: filteredLayouts.length })}
         </div>
       </div>
 

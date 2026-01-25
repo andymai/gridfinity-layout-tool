@@ -111,9 +111,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
         <div className="space-y-5">
           {/* Drawing & Selection */}
           <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>
-              Drawing & Selection
-            </h3>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.drawingSelection')}</h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow icon={<TapIcon />} gesture="Tap bin" description="Select bin" />
               <GestureRow
@@ -132,9 +130,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
           {/* Editing */}
           <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>
-              Editing
-            </h3>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.editing')}</h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<DragEdgeIcon />}
@@ -156,9 +152,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
           {/* Paint Mode */}
           <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>
-              Paint Mode
-            </h3>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.paintMode')}</h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<TapIcon />}
@@ -176,9 +170,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
           {/* Navigation */}
           <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>
-              Navigation
-            </h3>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.navigation')}</h3>
             <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
               <GestureRow
                 icon={<SwipeDownIcon />}
@@ -200,32 +192,27 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
           {/* Tips */}
           <section>
-            <h3 className="mb-3" style={STYLES.sectionHeader}>
-              Tips
-            </h3>
+            <h3 className="mb-3" style={STYLES.sectionHeader}>{t('mobile.help.tips')}</h3>
             <ul className="space-y-2 p-3 rounded-lg" style={STYLES.tipsList}>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>Long-press a bin to duplicate, delete, or move to stash</span>
+                <span>{t('mobile.help.longPressABinToDuplicateDeleteOrMov')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>Tap the 3D cube icon to see your layout in isometric view</span>
+                <span>{t('mobile.help.tapThe3dCubeIconToSeeYourLayoutInIs')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>
-                  With keyboard: M to move bins, R to resize, V for 3D preview, arrows to navigate,
-                  1-4 for camera views
-                </span>
+                <span>{t('mobile.help.withKeyboardMToMoveBinsRToResizeVFo')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>Oversized bins are automatically split for printing</span>
+                <span>{t('mobile.help.oversizedBinsAreAutomaticallySplitF')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span style={STYLES.colorPrimary}>•</span>
-                <span>Your layout auto-saves to your browser</span>
+                <span>{t('mobile.help.yourLayoutAutoSavesToYourBrowser')}</span>
               </li>
             </ul>
           </section>

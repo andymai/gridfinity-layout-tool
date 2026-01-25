@@ -53,7 +53,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
       >
         <div className="w-2 h-2 rounded-full flex-shrink-0 bg-accent" />
         <span className="font-medium truncate max-w-[80px] text-sm text-content">
-          {activeLayer?.name || 'Layer'}
+          {activeLayer?.name || t('mobile.toolbar.defaultLayer')}
         </span>
         <svg
           className="w-3 h-3 flex-shrink-0 text-content-tertiary"

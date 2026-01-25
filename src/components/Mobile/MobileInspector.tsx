@@ -30,7 +30,7 @@ export function MobileInspector() {
 
         <ConfirmDialog
           isOpen={deleteConfirmState !== null}
-          title={deleteConfirmState?.title || 'Delete Bins'}
+          title={deleteConfirmState?.title || t('mobile.inspector.deleteBins')}
           message={deleteConfirmState?.message || t('mobile.confirm.deleteMulti', { count: selectedBins.length })}
           confirmText={t('common.delete')}
           destructive
@@ -50,7 +50,7 @@ export function MobileInspector() {
 
       <ConfirmDialog
         isOpen={deleteConfirmState !== null}
-        title={deleteConfirmState?.title || 'Delete Bin'}
+        title={deleteConfirmState?.title || t('mobile.inspector.deleteBin')}
         message={deleteConfirmState?.message || t('mobile.confirm.deleteSingle', { width: bin.width, depth: bin.depth })}
         confirmText={t('common.delete')}
         destructive

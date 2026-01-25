@@ -14,6 +14,7 @@ import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import type { SavedDesign } from '../types';
+import { useTranslation } from '@/i18n';
 
 interface DesignListDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ interface DesignListDialogProps {
  * @returns The dialog's JSX element when open, otherwise `null`
  */
 export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
+  const t = useTranslation();
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -132,7 +134,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="My Designs"
+      aria-label={t('binDesigner.myDesigns')}
     >
       <div
         className="mx-4 max-h-[70vh] w-full max-w-lg overflow-hidden rounded-xl border border-stroke-subtle bg-surface-secondary shadow-xl"
@@ -140,18 +142,16 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
-          <h2 className="text-lg font-semibold text-content">My Designs</h2>
+          <h2 className="text-lg font-semibold text-content">{t('binDesigner.myDesigns')}</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={handleNewDesign}
               className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-surface transition-colors hover:bg-accent-hover"
-            >
-              + New Design
-            </button>
+            >{t('binDesigner.newDesign')}</button>
             <button
               onClick={onClose}
               className="rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
-              aria-label="Close"
+              aria-label={t('common.close')}
             >
               <svg
                 className="h-5 w-5"
@@ -175,7 +175,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         <div
           className="max-h-[50vh] overflow-y-auto px-5 py-3"
           aria-busy={loading}
-          aria-label="Saved designs"
+          aria-label={t('binDesigner.savedDesigns')}
         >
           {loading ? (
             <div className="space-y-2 py-2">
@@ -210,10 +210,8 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                   />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-content-secondary">No saved designs yet</p>
-              <p className="mt-1 text-xs text-content-disabled">
-                Changes are saved automatically as you design
-              </p>
+              <p className="text-sm font-medium text-content-secondary">{t('binDesigner.noSavedDesignsYet')}</p>
+              <p className="mt-1 text-xs text-content-disabled">{t('binDesigner.changesAreSavedAutomaticallyAsYouDe')}</p>
               <button
                 onClick={() => {
                   handleNewDesign();
@@ -233,9 +231,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                     strokeWidth={2}
                     d="M12 4v16m8-8H4"
                   />
-                </svg>
-                Start a new design
-              </button>
+                </svg>{t('binDesigner.startANewDesign')}</button>
             </div>
           ) : (
             <ul className="space-y-2">
@@ -287,7 +283,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                         }}
                         className="w-full rounded border border-accent bg-surface px-1.5 py-0.5 text-sm text-content outline-none"
                         autoFocus
-                        aria-label="Design name"
+                        aria-label={t('binDesigner.designName')}
                       />
                     ) : (
                       <p className="truncate text-sm font-medium text-content">{design.name}</p>
@@ -304,9 +300,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                         onClick={() => handleLoad(design)}
                         className="rounded px-2 py-1 text-xs font-medium text-accent hover:bg-accent/10"
                         aria-label={`Load ${design.name}`}
-                      >
-                        Load
-                      </button>
+                      >{t('binDesigner.load')}</button>
                     )}
                     <button
                       onClick={() => handleRenameStart(design)}

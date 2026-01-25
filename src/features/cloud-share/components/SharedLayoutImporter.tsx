@@ -171,7 +171,7 @@ export function SharedLayoutImporter() {
 
     loadLayoutPreview(layout);
     clearSharedLayoutFromURL();
-  }, [loadLayoutPreview, addToast]);
+  }, [loadLayoutPreview, addToast, t]);
 
   // Track whether we've started processing a cloud share (persists through Strict Mode remounts)
   const hasStartedCloudFetch = useRef(false);
@@ -278,6 +278,7 @@ export function SharedLayoutImporter() {
     libraryEntries,
     sharedLayoutCloudShareId,
     getSharedWithMeByShareId,
+    t,
   ]);
 
   // Show loading state for cloud shares

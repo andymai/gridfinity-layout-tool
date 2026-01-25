@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import type { SharedWithMeEntry } from '@/core/types';
 import { LayoutThumbnail } from '@/components/LayoutThumbnail';
+import { useTranslation } from '@/i18n';
 
 interface SharedWithMeItemProps {
   entry: SharedWithMeEntry;
@@ -25,6 +26,7 @@ export function SharedWithMeItem({
   onFocus,
   itemRef,
 }: SharedWithMeItemProps) {
+  const t = useTranslation();
   const handleItemKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -117,27 +119,24 @@ export function SharedWithMeItem({
               }
             `}
             >
-              {entry.permission === 'edit' ? 'Can edit' : 'View only'}
+              {entry.permission === 'edit' ? t('layouts.canEdit') : t('layouts.viewOnly')}
             </span>
 
             {/* Deleted badge */}
             {isDeleted && (
-              <span className="text-xs px-1.5 py-0.5 bg-error/20 text-error rounded flex-shrink-0">
-                Deleted
-              </span>
+              <span className="text-xs px-1.5 py-0.5 bg-error/20 text-error rounded flex-shrink-0">{t('layouts.deleted')}</span>
             )}
           </div>
 
           {/* Metadata */}
           <div className="mt-0.5 text-xs text-content-secondary flex flex-wrap gap-x-3 gap-y-0.5">
-            {entry.authorName && <span>Shared by {entry.authorName}</span>}
+            {entry.authorName && <span>{t('layouts.sharedBy', { name: entry.authorName })}</span>}
             {entry.preview && (
               <span>
                 {entry.preview.drawerWidth}×{entry.preview.drawerDepth}×{entry.preview.drawerHeight}
               </span>
             )}
-            <span className="text-content-tertiary">
-              Accessed {formatDate(entry.lastAccessedAt)}
+            <span className="text-content-tertiary">{t('layouts.accessed')}{formatDate(entry.lastAccessedAt)}
             </span>
           </div>
         </div>
@@ -159,8 +158,8 @@ export function SharedWithMeItem({
                   : 'text-content-secondary hover:text-content hover:bg-surface'
               }
             `}
-            title={isDeleted ? 'Layout has been deleted' : 'Open layout'}
-            aria-label={isDeleted ? 'Layout has been deleted' : 'Open layout'}
+            title={isDeleted ? t('layouts.layoutDeleted') : t('layouts.openLayout')}
+            aria-label={isDeleted ? t('layouts.layoutDeleted') : t('layouts.openLayout')}
           >
             {isLoading ? (
               <svg className="w-4 h-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none">
@@ -197,8 +196,8 @@ export function SharedWithMeItem({
               onRemove();
             }}
             className="p-2 rounded text-content-secondary hover:text-error hover:bg-surface transition-colors"
-            title="Remove from list"
-            aria-label="Remove from list"
+            title={t('layouts.removeFromList')}
+            aria-label={t('layouts.removeFromList')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path

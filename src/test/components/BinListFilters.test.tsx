@@ -68,7 +68,7 @@ describe('BinListFilters', () => {
     it('renders categories label', () => {
       render(<BinListFilters {...defaultProps} />);
 
-      expect(screen.getByText('Categories:')).toBeInTheDocument();
+      expect(screen.getByText('Categories')).toBeInTheDocument();
     });
 
     it('renders group by category checkbox', () => {
@@ -80,8 +80,7 @@ describe('BinListFilters', () => {
     it('shows total count when no filters active', () => {
       render(<BinListFilters {...defaultProps} />);
 
-      expect(screen.getByText('10')).toBeInTheDocument();
-      expect(screen.getByText('bin types')).toBeInTheDocument();
+      expect(screen.getByText('10 bin types')).toBeInTheDocument();
     });
   });
 
@@ -153,25 +152,21 @@ describe('BinListFilters', () => {
     it('shows "Showing X of Y" when filters hide some items', () => {
       render(<BinListFilters {...defaultProps} visibleCount={7} totalCount={10} />);
 
-      // Text is split: "Showing <span>7</span> of 10"
-      expect(screen.getByText(/Showing/)).toBeInTheDocument();
-      expect(screen.getByText('7')).toBeInTheDocument();
-      expect(screen.getByText(/of 10/)).toBeInTheDocument();
+      // Text is rendered as one string: "Showing 7 of 10"
+      expect(screen.getByText('Showing 7 of 10')).toBeInTheDocument();
     });
 
     it('shows total only when all items visible', () => {
       render(<BinListFilters {...defaultProps} visibleCount={10} totalCount={10} />);
 
-      expect(screen.queryByText('Showing')).not.toBeInTheDocument();
-      expect(screen.getByText('10')).toBeInTheDocument();
-      expect(screen.getByText('bin types')).toBeInTheDocument();
+      expect(screen.queryByText(/Showing/)).not.toBeInTheDocument();
+      expect(screen.getByText('10 bin types')).toBeInTheDocument();
     });
 
     it('shows zero visible when all filtered out', () => {
       render(<BinListFilters {...defaultProps} visibleCount={0} totalCount={10} />);
 
-      expect(screen.getByText('0')).toBeInTheDocument();
-      expect(screen.getByText(/of 10/)).toBeInTheDocument();
+      expect(screen.getByText('Showing 0 of 10')).toBeInTheDocument();
     });
   });
 
@@ -342,7 +337,7 @@ describe('BinListFilters', () => {
     it('handles empty categories array', () => {
       render(<BinListFilters {...defaultProps} categories={[]} />);
 
-      expect(screen.getByText('Categories:')).toBeInTheDocument();
+      expect(screen.getByText('Categories')).toBeInTheDocument();
       expect(screen.queryByRole('button', { pressed: true })).not.toBeInTheDocument();
     });
 
@@ -358,8 +353,7 @@ describe('BinListFilters', () => {
     it('handles zero total count', () => {
       render(<BinListFilters {...defaultProps} visibleCount={0} totalCount={0} />);
 
-      expect(screen.getByText('0')).toBeInTheDocument();
-      expect(screen.getByText('bin types')).toBeInTheDocument();
+      expect(screen.getByText('0 bin types')).toBeInTheDocument();
     });
   });
 });

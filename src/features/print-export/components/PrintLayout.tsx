@@ -11,6 +11,9 @@ import {
   sortBinsForPrint,
 } from '@/features/print-export/utils/printLayout';
 import { useGridTemplate } from '@/shared/hooks';
+import { useTranslation } from '@/i18n';
+
+const LIST_SEPARATOR = ', ';
 
 // Page widths for print (in pixels at 96 DPI, accounting for 0.5" margins)
 const PORTRAIT_WIDTH_PX = 670; // 8.5" - 1" margins = 7" ≈ 670px
@@ -37,6 +40,7 @@ export function PrintLayout({
   settings,
   availableWidth,
 }: PrintLayoutProps) {
+  const t = useTranslation();
   const { drawer, bins, layers, categories } = layout;
   const gap = DEFAULT_GAP;
 
@@ -308,7 +312,7 @@ export function PrintLayout({
             d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
           />
         </svg>
-        <p>No bins to print in selected layer(s)</p>
+        <p>{t('print.noBinsToPrintInSelectedLayerS')}</p>
       </div>
     );
   }
@@ -379,27 +383,26 @@ export function PrintLayout({
           {settings.showDrawerInfo && (
             <div className="print-header-info">
               <div className="print-header-group">
-                <span className="print-header-label">Drawer</span>
+                <span className="print-header-label">{t('print.drawer')}</span>
                 <span className="print-header-value">
                   {formatDrawerDimensions(drawer, layout.gridUnitMm)}
                 </span>
               </div>
               <div className="print-header-group">
-                <span className="print-header-label">Height</span>
+                <span className="print-header-label">{t('common.height')}</span>
                 <span className="print-header-value">
-                  {drawer.height}u ({drawer.height * layout.heightUnitMm}mm)
-                </span>
+                  {t('print.heightValue', { height: drawer.height, mm: drawer.height * layout.heightUnitMm })}</span>
               </div>
               <div className="print-header-group">
-                <span className="print-header-label">Bins</span>
+                <span className="print-header-label">{t('print.bins')}</span>
                 <span className="print-header-value">{allVisibleBins.length}</span>
               </div>
               <div className="print-header-group">
-                <span className="print-header-label">Layers</span>
+                <span className="print-header-label">{t('common.layers')}</span>
                 <span className="print-header-value">
                   {visibleLayers.length === layers.length
-                    ? `All (${layers.length})`
-                    : visibleLayers.map((l) => l.name).join(', ')}
+                    ? t('print.allLayers', { count: layers.length })
+                    : visibleLayers.map((l) => l.name).join(LIST_SEPARATOR)}
                 </span>
               </div>
             </div>
@@ -422,7 +425,7 @@ export function PrintLayout({
       {/* Category Legend with Counts */}
       {settings.showLegend && usedCategories.length > 0 && (
         <div className="print-legend">
-          <div className="print-legend-title">Categories</div>
+          <div className="print-legend-title">{t('print.categories')}</div>
           <div className="print-legend-items">
             {usedCategories.map((category) => {
               const count = binsByCategory.get(category.id) ?? 0;
@@ -430,7 +433,7 @@ export function PrintLayout({
                 <div key={category.id} className="print-legend-item">
                   <div className="print-legend-color" style={{ backgroundColor: category.color }} />
                   <span>{category.name}</span>
-                  <span className="print-legend-count">({count})</span>
+                  <span className="print-legend-count">{t('print.countParens', { count })}</span>
                 </div>
               );
             })}
@@ -451,18 +454,18 @@ export function PrintLayout({
 
           return (
             <div className="print-bin-list">
-              <div className="print-bin-list-title">Bin Details</div>
+              <div className="print-bin-list-title">{t('print.binDetails')}</div>
               <table className="print-bin-table">
                 <thead>
                   <tr>
-                    <th>Label</th>
-                    <th>Size</th>
-                    <th>Height</th>
-                    <th>Category</th>
-                    {visibleLayers.length > 1 && <th>Layer</th>}
-                    <th>Position</th>
-                    {hasAnyNotes && <th>Notes</th>}
-                    {hasAnyCustomProps && <th>Custom Properties</th>}
+                    <th>{t('common.label')}</th>
+                    <th>{t('common.size')}</th>
+                    <th>{t('common.height')}</th>
+                    <th>{t('common.category')}</th>
+                    {visibleLayers.length > 1 && <th>{t('print.layer')}</th>}
+                    <th>{t('print.position')}</th>
+                    {hasAnyNotes && <th>{t('common.notes')}</th>}
+                    {hasAnyCustomProps && <th>{t('print.customProperties')}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -491,7 +494,7 @@ export function PrintLayout({
                         </td>
                         {visibleLayers.length > 1 && <td>{layer?.name || '—'}</td>}
                         <td>
-                          ({bin.x + 1}, {bin.y + 1})
+                          {t('print.coordinates', { x: bin.x + 1, y: bin.y + 1 })}
                         </td>
                         {hasAnyNotes && (
                           <td className="print-bin-table-notes">
@@ -503,7 +506,7 @@ export function PrintLayout({
                             {customPropEntries.length > 0 ? (
                               customPropEntries.map(([key, value]) => (
                                 <div key={key} className="print-bin-table-prop">
-                                  <span className="print-bin-table-prop-key">{key}:</span> {value}
+                                  <span className="print-bin-table-prop-key">{t('print.propEntry', { key, value })}</span>
                                 </div>
                               ))
                             ) : (

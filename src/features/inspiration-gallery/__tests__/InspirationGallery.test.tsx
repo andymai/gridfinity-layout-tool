@@ -290,7 +290,7 @@ describe('InspirationGallery', () => {
     it('renders layout count in footer', () => {
       render(<InspirationGallery {...defaultProps} />);
 
-      expect(screen.getByText('3 layouts')).toBeInTheDocument();
+      expect(screen.getByText((content) => content.includes('3 layout(s)'))).toBeInTheDocument();
     });
 
     it('has close button', () => {
@@ -336,7 +336,7 @@ describe('InspirationGallery', () => {
       fireEvent.click(screen.getByText('Workshop (2)'));
 
       await waitFor(() => {
-        expect(screen.getByText(/2 layouts? in Workshop/)).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes('2 layout(s) in Workshop'))).toBeInTheDocument();
       });
     });
 

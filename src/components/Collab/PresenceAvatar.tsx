@@ -12,6 +12,7 @@
 import { memo } from 'react';
 import type { Participant } from '@/hooks/usePresence';
 import { getInitials } from '@/hooks/usePresence';
+import { useTranslation } from '@/i18n';
 
 interface PresenceAvatarProps {
   /** Participant data */
@@ -64,6 +65,7 @@ export const PresenceAvatar = memo(function PresenceAvatar({
   showName = false,
   className = '',
 }: PresenceAvatarProps) {
+  const t = useTranslation();
   const { name, color, isOwner, isSelf } = participant;
   const initials = getInitials(name);
   const config = SIZE_CONFIG[size];
@@ -102,7 +104,7 @@ export const PresenceAvatar = memo(function PresenceAvatar({
       {showName && (
         <span className="text-sm text-content truncate max-w-[120px]">
           {name}
-          {isSelf && <span className="text-content-tertiary ml-1">(you)</span>}
+          {isSelf && <span className="text-content-tertiary ml-1">{t('collab.you')}</span>}
         </span>
       )}
     </div>

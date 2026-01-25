@@ -134,7 +134,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
           <button
             onClick={onClose}
             className="w-10 h-10 flex items-center justify-center -ml-2 text-content-secondary hover:text-content"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -149,11 +149,9 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
             <h2
               id="mobile-bin-list-title"
               className="text-base font-semibold text-content leading-tight"
-            >
-              Bin List
-            </h2>
+            >{t('binList.binList')}</h2>
             <p className="text-xs text-content-tertiary leading-tight">
-              {totalBins} bins · {totalFilament}m
+              {t('binList.summaryStats', { bins: totalBins, filament: totalFilament })}
             </p>
           </div>
         </div>
@@ -165,7 +163,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
               setOpenDropdown(openDropdown === 'stats' ? null : 'stats');
             }}
             className={`w-10 h-10 flex items-center justify-center ${openDropdown === 'stats' ? 'text-accent' : 'text-content-secondary hover:text-content'}`}
-            aria-label="Toggle stats"
+            aria-label={t('binList.toggleStats')}
             aria-pressed={openDropdown === 'stats'}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -184,7 +182,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
               setOpenDropdown(openDropdown === 'export' ? null : 'export');
             }}
             className={`w-10 h-10 flex items-center justify-center ${openDropdown === 'export' ? 'text-accent' : 'text-content-secondary hover:text-content'}`}
-            aria-label="Export"
+            aria-label={t('common.export')}
             aria-expanded={openDropdown === 'export'}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -207,33 +205,33 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
         >
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <div className="text-content-tertiary text-xs">Bin Types</div>
+              <div className="text-content-tertiary text-xs">{t('binList.binTypes')}</div>
               <div className="font-semibold text-content">{rows.length}</div>
             </div>
             <div>
-              <div className="text-content-tertiary text-xs">Total Bins</div>
+              <div className="text-content-tertiary text-xs">{t('binList.totalBins')}</div>
               <div className="font-semibold text-content">{totalBins}</div>
             </div>
             {hasAnySplits && (
               <div>
-                <div className="text-content-tertiary text-xs">Print Pieces</div>
+                <div className="text-content-tertiary text-xs">{t('binList.printPieces')}</div>
                 <div className="font-semibold text-content">{totalPieces}</div>
               </div>
             )}
             <div>
-              <div className="text-content-tertiary text-xs">Filament</div>
+              <div className="text-content-tertiary text-xs">{t('binList.filament')}</div>
               <div className="font-semibold text-content">{totalFilament}m</div>
             </div>
             <div>
-              <div className="text-content-tertiary text-xs">Est. Cost</div>
-              <div className="font-semibold text-content">${totalCost.toFixed(2)}</div>
+              <div className="text-content-tertiary text-xs">{t('binList.estCost')}</div>
+              <div className="font-semibold text-content">{t('binList.costValue', { cost: totalCost.toFixed(2) })}</div>
             </div>
             <div>
-              <div className="text-content-tertiary text-xs">Print Time</div>
+              <div className="text-content-tertiary text-xs">{t('binList.printTime')}</div>
               <div className="font-semibold text-content">{totalPrintTimeHours.toFixed(1)}h</div>
             </div>
             <div className="col-span-2">
-              <div className="text-content-tertiary text-xs mb-1">Spool Usage</div>
+              <div className="text-content-tertiary text-xs mb-1">{t('binList.spoolUsage')}</div>
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-2 bg-surface-secondary rounded overflow-hidden">
                   <div
@@ -242,13 +240,13 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
                   />
                 </div>
                 <span className="text-xs font-medium text-content">
-                  {spoolEstimate.toFixed(1)} spools ({spoolPercentage.toFixed(0)}%)
+                  {t('binList.spoolUsage', { spools: spoolEstimate.toFixed(1), pct: spoolPercentage.toFixed(0) })}
                 </span>
               </div>
             </div>
             {categoryBreakdown.length > 1 && (
               <div className="col-span-2 pt-2 border-t border-stroke-subtle">
-                <div className="text-content-tertiary text-xs mb-2">By Category</div>
+                <div className="text-content-tertiary text-xs mb-2">{t('binList.byCategory')}</div>
                 <div className="space-y-1.5">
                   {categoryBreakdown.map(
                     ({ categoryId, categoryName, categoryColor, binCount, percentage }) => (
@@ -259,7 +257,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
                         />
                         <span className="flex-1 text-xs text-content truncate">{categoryName}</span>
                         <span className="text-xs text-content-tertiary">
-                          {binCount} ({percentage.toFixed(0)}%)
+                          {t('binList.categoryCount', { count: binCount, pct: percentage.toFixed(0) })}
                         </span>
                       </div>
                     )
@@ -315,18 +313,14 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
                 setOpenDropdown(null);
               }}
               className="flex-1 py-2 text-sm bg-surface-elevated border border-stroke rounded text-center"
-            >
-              Copy TSV
-            </button>
+            >{t('binList.copyTsv')}</button>
             <button
               onClick={() => {
                 copyToClipboard('csv');
                 setOpenDropdown(null);
               }}
               className="flex-1 py-2 text-sm bg-surface-elevated border border-stroke rounded text-center"
-            >
-              Copy CSV
-            </button>
+            >{t('binList.copyCsv')}</button>
           </div>
         </div>
       )}
@@ -377,7 +371,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
                 d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
               />
             </svg>
-            {SORT_OPTIONS.find((o) => o.key === filters.sortKey)?.label || 'Sort'}
+            {SORT_OPTIONS.find((o) => o.key === filters.sortKey)?.label || t('common.sort')}
             {filters.sortOrder === 'asc' && <span className="text-content-tertiary">↑</span>}
             {filters.sortOrder === 'desc' && filters.sortKey !== 'default' && (
               <span className="text-content-tertiary">↓</span>
@@ -391,9 +385,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
               flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-all
               ${filters.groupByCategory ? 'bg-accent text-on-dark' : 'bg-surface-elevated text-content border border-stroke'}
             `}
-          >
-            Group
-          </button>
+          >{t('common.group')}</button>
 
           {/* Reset filters (only show if filters are active) */}
           {(filters.hiddenCategoryIds.size > 0 ||
@@ -414,9 +406,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
                   strokeWidth={2}
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
-              </svg>
-              Reset
-            </button>
+              </svg>{t('common.reset')}</button>
           )}
 
           {/* Filter count */}
@@ -504,7 +494,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
                 d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
               />
             </svg>
-            <p className="text-sm">No bins match your filters</p>
+            <p className="text-sm">{t('binList.noBinsMatchYourFilters')}</p>
           </div>
         ) : (
           <div className="space-y-2 pb-20">
@@ -514,7 +504,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
                 onClick={() => (isAllSelected ? clearSelection() : selectAllRows())}
                 className="w-full p-3 rounded bg-accent/10 text-accent text-sm font-medium text-center border border-accent/30"
               >
-                {isAllSelected ? 'Deselect All' : `Select All (${rows.length})`}
+                {isAllSelected ? t('binList.deselectAll') : t('binList.selectAllCount', { count: rows.length })}
               </button>
             )}
 
@@ -543,30 +533,22 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
           style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-content">{selectionCount} selected</span>
-            <button onClick={clearSelection} className="text-sm text-content-secondary">
-              Cancel
-            </button>
+            <span className="text-sm font-medium text-content">{t('binList.nSelected', { count: selectionCount })}</span>
+            <button onClick={clearSelection} className="text-sm text-content-secondary">{t('common.cancel')}</button>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setEditingField('category')}
               className="flex-1 py-2.5 rounded bg-surface text-sm font-medium text-content border border-stroke"
-            >
-              Category
-            </button>
+            >{t('common.category')}</button>
             <button
               onClick={() => setEditingField('label')}
               className="flex-1 py-2.5 rounded bg-surface text-sm font-medium text-content border border-stroke"
-            >
-              Label
-            </button>
+            >{t('common.label')}</button>
             <button
               onClick={() => setEditingField('notes')}
               className="flex-1 py-2.5 rounded bg-surface text-sm font-medium text-content border border-stroke"
-            >
-              Notes
-            </button>
+            >{t('common.notes')}</button>
             <button
               onClick={deleteBulkSelection}
               className="px-4 py-2.5 rounded bg-error/10 text-sm font-medium text-error border border-error/20"
@@ -608,7 +590,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
       {/* Label editing bottom sheet */}
       {editingField === 'label' && (
         <BottomSheet
-          title={`Set Label for ${selectionCount} bin${selectionCount !== 1 ? 's' : ''}`}
+          title={t('binList.setLabelForBins', { count: selectionCount })}
           onClose={() => setEditingField(null)}
         >
           <div className="space-y-3">
@@ -635,7 +617,7 @@ function MobileBinListContent({ onClose }: { onClose: () => void }) {
       {/* Notes editing bottom sheet */}
       {editingField === 'notes' && (
         <BottomSheet
-          title={`Set Notes for ${selectionCount} bin${selectionCount !== 1 ? 's' : ''}`}
+          title={t('binList.setNotesForBins', { count: selectionCount })}
           onClose={() => setEditingField(null)}
         >
           <div className="space-y-3">
@@ -687,6 +669,7 @@ function BinCard({
   onLongPress,
   onToggleSelect,
 }: BinCardProps) {
+  const t = useTranslation();
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchTriggeredRef = useRef(false);
 
@@ -798,9 +781,7 @@ function BinCard({
             <span className="font-semibold text-content">{row.size}</span>
             <span className="text-sm text-content-tertiary">{row.height}u</span>
             {row.needsSplit && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-[var(--color-warning-muted)] text-[var(--color-warning)]">
-                Split
-                <svg
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-[var(--color-warning-muted)] text-[var(--color-warning)]">{t('binList.split')}<svg
                   className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                   fill="none"
                   viewBox="0 0 24 24"
@@ -865,7 +846,7 @@ function BinCard({
         <div className="text-right flex-shrink-0">
           <span className="font-semibold text-content">×{row.binCount}</span>
           {row.needsSplit && (
-            <div className="text-xs text-content-tertiary">{row.totalPieces} pcs</div>
+            <div className="text-xs text-content-tertiary">{t('binList.piecesCount', { count: row.totalPieces })}</div>
           )}
           <div className="text-xs text-content-disabled mt-0.5">~{row.filament}m</div>
         </div>
@@ -877,7 +858,7 @@ function BinCard({
           <div className="flex items-start gap-4">
             <SplitPreview width={w} depth={d} pieces={row.pieces} cellSize={14} />
             <div className="text-xs text-content-secondary flex-1">
-              <div className="font-medium mb-1">Split into {row.totalPieces} pieces:</div>
+              <div className="font-medium mb-1">{t('binList.splitIntoPieces', { count: row.totalPieces })}</div>
               {row.pieces.map((piece) => (
                 <div key={`${piece.width}x${piece.depth}`} className="text-content-tertiary">
                   {piece.count}× {piece.width}×{piece.depth}
@@ -899,6 +880,7 @@ interface BottomSheetProps {
 }
 
 function BottomSheet({ title, children, onClose }: BottomSheetProps) {
+  const t = useTranslation();
   const sheetId = useId();
 
   // Handle Escape key
@@ -925,7 +907,7 @@ function BottomSheet({ title, children, onClose }: BottomSheetProps) {
           <h3 id={sheetId} className="font-medium text-content">
             {title}
           </h3>
-          <button onClick={onClose} className="p-2 -mr-2 text-content-secondary" aria-label="Close">
+          <button onClick={onClose} className="p-2 -mr-2 text-content-secondary" aria-label={t('common.close')}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"

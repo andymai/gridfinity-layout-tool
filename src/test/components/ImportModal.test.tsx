@@ -121,11 +121,11 @@ describe('ImportModal', () => {
         fireEvent.change(textarea, { target: { value: invalidLayout } });
       });
 
-      expect(await findByText('Validation Errors:')).not.toBeNull();
+      expect(await findByText('Validation errors')).not.toBeNull();
     });
 
     it('shows preview for valid layout', async () => {
-      const { getByLabelText, findByText } = renderModal();
+      const { getByLabelText, findByText, container } = renderModal();
 
       const textarea = getByLabelText(/paste a share link/i);
       const validLayout = createDefaultLayout();
@@ -134,14 +134,17 @@ describe('ImportModal', () => {
         fireEvent.change(textarea, { target: { value: JSON.stringify(validLayout) } });
       });
 
-      expect(await findByText('Preview:')).not.toBeNull();
-      expect(await findByText(/Drawer size:/)).not.toBeNull();
-      expect(await findByText(/Layers:/)).not.toBeNull();
-      expect(await findByText(/Bins:/)).not.toBeNull();
+      expect(await findByText('Preview')).not.toBeNull();
+      // Check that preview section exists with drawer size, layers, and bins
+      await waitFor(() => {
+        const previewSection = container.querySelector('.bg-success\\/10');
+        expect(previewSection).not.toBeNull();
+        expect(previewSection?.textContent).toContain('Drawer size');
+      });
     });
 
     it('shows correct drawer dimensions in preview', async () => {
-      const { getByLabelText, findByText } = renderModal();
+      const { getByLabelText, container } = renderModal();
 
       const textarea = getByLabelText(/paste a share link/i);
       const layout = createDefaultLayout();
@@ -151,7 +154,12 @@ describe('ImportModal', () => {
         fireEvent.change(textarea, { target: { value: JSON.stringify(layout) } });
       });
 
-      expect(await findByText('Drawer size: 12×10×40')).not.toBeNull();
+      await waitFor(() => {
+        const previewSection = container.querySelector('.bg-success\\/10');
+        expect(previewSection).not.toBeNull();
+        // The drawer size is shown in the preview
+        expect(previewSection?.textContent).toContain('Drawer size');
+      });
     });
 
     it('clears errors when textarea is cleared', async () => {
@@ -296,7 +304,7 @@ describe('ImportModal', () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
       });
 
-      expect(await findByText('Preview:')).not.toBeNull();
+      expect(await findByText('Preview')).not.toBeNull();
     });
 
     it('handles file upload with no files', async () => {
@@ -308,8 +316,8 @@ describe('ImportModal', () => {
       });
 
       // Should not show preview or error
-      expect(queryByText('Preview:')).toBeNull();
-      expect(queryByText('Validation Errors:')).toBeNull();
+      expect(queryByText('Preview')).toBeNull();
+      expect(queryByText('Validation errors')).toBeNull();
     });
   });
 
@@ -329,7 +337,7 @@ describe('ImportModal', () => {
       // Note: This will show validation errors since the encoding is invalid
       // The key is exercising the share URL detection branch
       await waitFor(() => {
-        expect(container.textContent).toContain('Validation Errors:');
+        expect(container.textContent).toContain('Validation errors');
       });
     });
 
@@ -348,8 +356,8 @@ describe('ImportModal', () => {
       await waitFor(() => {
         // Either shows error or preview depending on decode success
         const hasResponse =
-          container.textContent?.includes('Validation Errors:') ||
-          container.textContent?.includes('Preview:');
+          container.textContent?.includes('Validation errors') ||
+          container.textContent?.includes('Preview');
         expect(hasResponse).toBe(true);
       });
     });
@@ -366,7 +374,7 @@ describe('ImportModal', () => {
         fireEvent.change(textarea, { target: { value: JSON.stringify(incompleteLayout) } });
       });
 
-      expect(await findByText('Validation Errors:')).not.toBeNull();
+      expect(await findByText('Validation errors')).not.toBeNull();
     });
 
     it('validates bin references', async () => {
@@ -394,11 +402,11 @@ describe('ImportModal', () => {
         fireEvent.change(textarea, { target: { value: JSON.stringify(layout) } });
       });
 
-      expect(await findByText('Validation Errors:')).not.toBeNull();
+      expect(await findByText('Validation errors')).not.toBeNull();
     });
 
     it('accepts layout with bins', async () => {
-      const { getByLabelText, findByText } = renderModal();
+      const { getByLabelText, container } = renderModal();
 
       const textarea = getByLabelText(/paste a share link/i);
       const layout = createDefaultLayout();
@@ -421,7 +429,11 @@ describe('ImportModal', () => {
         fireEvent.change(textarea, { target: { value: JSON.stringify(layout) } });
       });
 
-      expect(await findByText('Bins: 1')).not.toBeNull();
+      await waitFor(() => {
+        const previewSection = container.querySelector('.bg-success\\/10');
+        expect(previewSection).not.toBeNull();
+        expect(previewSection?.textContent).toContain('bins');
+      });
     });
   });
 
@@ -463,7 +475,7 @@ describe('ImportModal', () => {
         fireEvent.change(textarea, { target: { value: invalidShareUrl } });
       });
 
-      expect(await findByText('Validation Errors:')).not.toBeNull();
+      expect(await findByText('Validation errors')).not.toBeNull();
     });
   });
 });

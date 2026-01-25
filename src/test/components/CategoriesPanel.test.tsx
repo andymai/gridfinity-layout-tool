@@ -340,7 +340,7 @@ describe('CategoriesPanel', () => {
       render(<CategoriesPanel />);
 
       // Should show count of 2 for coral
-      expect(screen.getByTitle('2 bins use this category')).toBeInTheDocument();
+      expect(screen.getByTitle('2 bin(s) use this category')).toBeInTheDocument();
     });
 
     it('shows empty for categories without bins', () => {

@@ -17,6 +17,7 @@ const FONT_SIZE = 0.28;
 const FRACTIONAL_FONT_SIZE = 0.22;
 const TICK_SIZE = 0.08;
 const TICK_OPACITY = 0.3;
+const FRACTIONAL_LABEL = '+.5';
 
 /**
  * Renders X and Y axis labels along the edges of the floor grid.
@@ -143,7 +144,7 @@ export function AxisLabels({
           // Integer label centered in its cell (offset by xOffset when fractional is at start)
           xPos = xOffset + value - 0.5;
         }
-        const label = isFractional ? '+.5' : value.toString();
+        const label = isFractional ? FRACTIONAL_LABEL : value.toString();
 
         return (
           <Text
@@ -171,7 +172,7 @@ export function AxisLabels({
           // Integer label centered in its cell (offset by yOffset when fractional is at start)
           yPos = yOffset + value - 0.5;
         }
-        const label = isFractional ? '+.5' : value.toString();
+        const label = isFractional ? FRACTIONAL_LABEL : value.toString();
 
         return (
           <Text

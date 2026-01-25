@@ -89,7 +89,7 @@ describe('CloudShareTab', () => {
 
     it('displays permission selector', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByLabelText(/Permission/)).toBeInTheDocument();
+      expect(screen.getByLabelText('Permissions')).toBeInTheDocument();
     });
 
     it('calls share with view permission by default', async () => {
@@ -103,7 +103,7 @@ describe('CloudShareTab', () => {
     it('displays permission options', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      const select = screen.getByLabelText(/Permission/) as HTMLSelectElement;
+      const select = screen.getByLabelText('Permissions') as HTMLSelectElement;
       expect(select.options.length).toBe(2); // view and edit
     });
 
@@ -290,13 +290,13 @@ describe('CloudShareTab', () => {
 
     it('has Share Another button', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText('Share Another')).toBeInTheDocument();
+      expect(screen.getByText('Share another')).toBeInTheDocument();
     });
 
     it('calls reset when Share Another clicked', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Share Another'));
+      fireEvent.click(screen.getByText('Share another'));
 
       expect(mockReset).toHaveBeenCalled();
     });
@@ -340,13 +340,13 @@ describe('CloudShareTab', () => {
 
     it('has Use Share Link Instead button', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByText('Use Share Link Instead')).toBeInTheDocument();
+      expect(screen.getByText('Use share link instead')).toBeInTheDocument();
     });
 
     it('calls onSwitchToUrlTab when fallback clicked', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Use Share Link Instead'));
+      fireEvent.click(screen.getByText('Use share link instead'));
 
       expect(mockOnSwitchToUrlTab).toHaveBeenCalled();
     });
@@ -356,7 +356,7 @@ describe('CloudShareTab', () => {
     it('has permission select element', () => {
       render(<CloudShareTab {...defaultProps} />);
 
-      const select = screen.getByLabelText(/Permission/) as HTMLSelectElement;
+      const select = screen.getByLabelText('Permissions') as HTMLSelectElement;
       expect(select).toBeInTheDocument();
       // Should have view and edit options
       expect(select.options.length).toBe(2);
@@ -373,7 +373,7 @@ describe('CloudShareTab', () => {
   describe('accessibility', () => {
     it('has accessible label for permission select', () => {
       render(<CloudShareTab {...defaultProps} />);
-      expect(screen.getByLabelText(/Permission/)).toBeInTheDocument();
+      expect(screen.getByLabelText('Permissions')).toBeInTheDocument();
     });
 
     it('URL input has select behavior on click', () => {

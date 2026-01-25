@@ -92,13 +92,13 @@ export function BulkActions({
   return (
     <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 border-y border-accent/20">
       {/* Selection count */}
-      <span className="text-sm font-medium text-content">{selectionCount} selected</span>
+      <span className="text-sm font-medium text-content">{t('binList.selected', { count: selectionCount })}</span>
 
       {/* Clear selection */}
       <button
         onClick={onClearSelection}
         className="text-sm text-content-secondary hover:text-content transition-colors"
-        aria-label="Clear selection"
+        aria-label={t('binList.clearSelection')}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -185,9 +185,7 @@ export function BulkActions({
 
             {openDropdown === 'label' && (
               <div className="absolute top-full left-0 mt-1 w-64 p-3 bg-surface-elevated border border-stroke rounded-lg shadow-lg z-50">
-                <label className="block text-xs text-content-secondary mb-1">
-                  Set label for {selectionCount} bin{selectionCount !== 1 ? 's' : ''}
-                </label>
+                <label className="block text-xs text-content-secondary mb-1">{t('binList.setLabelForCount', { count: selectionCount })}</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -233,9 +231,7 @@ export function BulkActions({
 
             {openDropdown === 'notes' && (
               <div className="absolute top-full left-0 mt-1 w-72 p-3 bg-surface-elevated border border-stroke rounded-lg shadow-lg z-50">
-                <label className="block text-xs text-content-secondary mb-1">
-                  Set notes for {selectionCount} bin{selectionCount !== 1 ? 's' : ''}
-                </label>
+                <label className="block text-xs text-content-secondary mb-1">{t('binList.setNotesForCount', { count: selectionCount })}</label>
                 <div className="flex flex-col gap-2">
                   <textarea
                     value={notesValue}

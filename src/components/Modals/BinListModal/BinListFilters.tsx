@@ -101,7 +101,7 @@ export function BinListFilters({
             <button
               onClick={handleClearSearch}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-content rounded-full hover:bg-surface-hover"
-              aria-label="Clear search"
+              aria-label={t('binList.clearSearch')}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -118,14 +118,9 @@ export function BinListFilters({
         {/* Result count */}
         <div className="text-sm text-content-secondary">
           {hiddenCount > 0 ? (
-            <span>
-              Showing <span className="font-medium text-content">{visibleCount}</span> of{' '}
-              {totalCount}
-            </span>
+            <span>{t('binList.showingOf', { visible: visibleCount, total: totalCount })}</span>
           ) : (
-            <span>
-              <span className="font-medium text-content">{totalCount}</span> bin types
-            </span>
+            <span>{t('binList.totalBinTypes', { count: totalCount })}</span>
           )}
         </div>
 
@@ -134,9 +129,7 @@ export function BinListFilters({
           <button
             onClick={onResetFilters}
             className="text-sm text-accent hover:text-accent-hover transition-colors"
-          >
-            Reset filters
-          </button>
+          >{t('binList.resetFilters')}</button>
         )}
       </div>
 
@@ -144,7 +137,7 @@ export function BinListFilters({
       <div className="flex items-center gap-4 flex-wrap">
         {/* Category toggles */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-content-tertiary">Categories:</span>
+          <span className="text-xs text-content-tertiary">{t('binList.categories')}</span>
           {categories.map((category) => {
             const isHidden = filters.hiddenCategoryIds.has(category.id);
             return (
@@ -191,7 +184,7 @@ export function BinListFilters({
           onClick={onToggleGroupByCategory}
           role="checkbox"
           aria-checked={filters.groupByCategory}
-          aria-label="Group by category"
+          aria-label={t('binList.groupByCategory')}
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === ' ' || e.key === 'Enter') {
@@ -202,9 +195,7 @@ export function BinListFilters({
         >
           <span
             className={`text-sm ${filters.groupByCategory ? 'text-content' : 'text-content-secondary'}`}
-          >
-            Group by category
-          </span>
+          >{t('binList.groupByCategory')}</span>
           <Checkbox checked={filters.groupByCategory} variant="desktop" />
         </div>
       </div>

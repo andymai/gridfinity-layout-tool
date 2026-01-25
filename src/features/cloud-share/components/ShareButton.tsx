@@ -456,13 +456,11 @@ function SharePopover({
               onChange={(e) => setLocalPermission(e.target.value as SharePermission)}
               className="flex-1 bg-surface text-content text-sm px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
             >
-              <option value="view">Anyone with link can view</option>
-              <option value="edit">Anyone with link can edit</option>
+              <option value="view">{t('share.anyoneWithLinkCanView')}</option>
+              <option value="edit">{t('share.anyoneWithLinkCanEdit')}</option>
             </select>
           </div>
-          <button onClick={handleShare} className="btn btn-primary w-full text-sm">
-            Create Share Link
-          </button>
+          <button onClick={handleShare} className="btn btn-primary w-full text-sm">{t('share.createShareLink')}</button>
         </div>
       )}
 
@@ -506,8 +504,7 @@ function SharePopover({
 
           {/* Permission display - read-only when viewing someone else's share */}
           {isViewingSharedLayout ? (
-            <div className="text-sm text-content-secondary">
-              Anyone with link can {localPermission}
+            <div className="text-sm text-content-secondary">{t('share.anyoneWithLinkCan')}{localPermission}
             </div>
           ) : (
             <select
@@ -515,8 +512,8 @@ function SharePopover({
               onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
               className="w-full bg-surface text-content text-sm px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
             >
-              <option value="view">Anyone with link can view</option>
-              <option value="edit">Anyone with link can edit</option>
+              <option value="view">{t('share.anyoneWithLinkCanView')}</option>
+              <option value="edit">{t('share.anyoneWithLinkCanEdit')}</option>
             </select>
           )}
 
@@ -533,9 +530,7 @@ function SharePopover({
                     setShowDeleteConfirm(true);
                   }}
                   className="text-sm text-content-tertiary hover:text-error transition-colors"
-                >
-                  Delete share link
-                </button>
+                >{t('share.deleteShareLink')}</button>
               ) : (
                 <div className="bg-error/10 border border-error/30 rounded-lg p-3 space-y-2">
                   <p className="text-sm text-content">
@@ -570,7 +565,7 @@ function SharePopover({
                           Deleting...
                         </span>
                       ) : (
-                        'Delete'
+                        t('common.delete')
                       )}
                     </button>
                     <button
@@ -580,9 +575,7 @@ function SharePopover({
                       }}
                       disabled={status === 'deleting'}
                       className="btn btn-secondary text-sm px-3 py-1.5 disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
+                    >{t('common.cancel')}</button>
                   </div>
                 </div>
               )}
@@ -591,9 +584,7 @@ function SharePopover({
 
           {/* Done button */}
           <div className="pt-2">
-            <button onClick={onClose} className="btn btn-secondary w-full text-sm">
-              Done
-            </button>
+            <button onClick={onClose} className="btn btn-secondary w-full text-sm">{t('common.done')}</button>
           </div>
         </div>
       )}

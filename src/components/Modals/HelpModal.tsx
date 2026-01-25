@@ -72,6 +72,8 @@ interface ShortcutCategory {
   shortcuts: ShortcutItem[];
 }
 
+const KEY_SEPARATOR = '+';
+
 const getModifierKey = () => {
   if (typeof navigator === 'undefined') return 'Ctrl';
   const isMac = navigator.platform.toLowerCase().includes('mac');
@@ -249,9 +251,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   ? 'bg-accent/20 text-accent'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
-            >
-              Shortcuts
-            </button>
+            >{t('help.shortcuts')}</button>
             <button
               onClick={() => setActiveTab('tips')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
@@ -259,9 +259,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   ? 'bg-accent/20 text-accent'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
-            >
-              Tips & Info
-            </button>
+            >{t('help.tipsInfo')}</button>
           </div>
 
           {activeTab === 'shortcuts' && (
@@ -291,7 +289,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   <button
                     onClick={() => setSearchQuery('')}
                     className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-content-tertiary hover:text-content focus-visible:ring-2 focus-visible:ring-accent"
-                    aria-label="Clear search"
+                    aria-label={t('help.clearSearch')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -313,9 +311,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
           {activeTab === 'shortcuts' ? (
             <div className="space-y-6">
               {filteredCategories.length === 0 ? (
-                <div className="text-center py-8 text-content-tertiary">
-                  No shortcuts found for "{searchQuery}"
-                </div>
+                <div className="text-center py-8 text-content-tertiary">{t('help.noShortcutsFoundFor', { query: searchQuery })}</div>
               ) : (
                 filteredCategories.map((category) => (
                   <ShortcutCategorySection
@@ -405,7 +401,7 @@ function ShortcutRow({
         {modifier && (
           <>
             <KeyboardKey>{modifierKey}</KeyboardKey>
-            <span className="text-content-tertiary text-xs">+</span>
+            <span className="text-content-tertiary text-xs">{KEY_SEPARATOR}</span>
           </>
         )}
         {keyArray.map((key, index) => (
@@ -421,13 +417,14 @@ function ShortcutRow({
 
 // Mouse interactions section
 function MouseInteractionsSection() {
+  const t = useTranslation();
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-accent">
           <MouseIcon />
         </span>
-        <h3 style={STYLES.sectionHeader}>Mouse</h3>
+        <h3 style={STYLES.sectionHeader}>{t('help.mouse')}</h3>
       </div>
       <div className="grid gap-2">
         <InteractionRow action="Click + drag on empty" description="Draw new bin" />
@@ -445,13 +442,14 @@ function MouseInteractionsSection() {
 
 // Touch gestures section
 function TouchGesturesSection() {
+  const t = useTranslation();
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-accent">
           <TouchIcon />
         </span>
-        <h3 style={STYLES.sectionHeader}>Touch Gestures</h3>
+        <h3 style={STYLES.sectionHeader}>{t('help.touchGestures')}</h3>
       </div>
       <div className="grid gap-2">
         <InteractionRow action="Tap bin" description="Select" />
@@ -477,6 +475,7 @@ function InteractionRow({ action, description }: { action: string; description: 
 
 // Tips section
 function TipsSection() {
+  const t = useTranslation();
   const tips = [
     'Use the Bin Palette to select a size, then click or drag to paint bins',
     'Bins that exceed the max print size will be automatically split',
@@ -489,9 +488,7 @@ function TipsSection() {
 
   return (
     <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        Tips
-      </h3>
+      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>{t('help.tips')}</h3>
       <ul className="space-y-2 p-4 rounded-lg" style={STYLES.tipsList}>
         {tips.map((tip, index) => (
           <li key={index} className="flex items-start gap-2">
@@ -506,21 +503,20 @@ function TipsSection() {
 
 // Blocked zones section
 function BlockedZonesSection() {
+  const t = useTranslation();
   return (
     <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        Blocked Zones
-      </h3>
+      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>{t('help.blockedZones')}</h3>
       <div className="p-4 rounded-lg" style={STYLES.blockedZonesContent}>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>What are blocked zones?</strong>
+          <strong style={STYLES.textPrimary}>{t('help.whatAreBlockedZones')}</strong>
         </p>
         <p className="mb-3">
           When a bin is taller than its layer height, it extends into layers above. These areas
           appear as striped cells and cannot have new bins placed on them.
         </p>
         <p>
-          <strong style={STYLES.textPrimary}>Example:</strong> A 5u tall bin on Layer 1 (3u) extends
+          <strong style={STYLES.textPrimary}>{t('help.example')}</strong> A 5u tall bin on Layer 1 (3u) extends
           2u into Layer 2. Those cells on Layer 2 are blocked because the physical bin occupies that
           space.
         </p>
@@ -531,14 +527,13 @@ function BlockedZonesSection() {
 
 // Bin clearance section
 function BinClearanceSection() {
+  const t = useTranslation();
   return (
     <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
-        Bin Clearance
-      </h3>
+      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>{t('help.binClearance')}</h3>
       <div className="p-4 rounded-lg" style={STYLES.blockedZonesContent}>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>What is clearance?</strong>
+          <strong style={STYLES.textPrimary}>{t('help.whatIsClearance')}</strong>
         </p>
         <p className="mb-3">
           Clearance reserves empty space above a bin for tall contents that stick out, like scissors
@@ -546,7 +541,7 @@ function BinClearanceSection() {
           height.
         </p>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>Example:</strong> A 2u tall bin with 1u clearance will
+          <strong style={STYLES.textPrimary}>{t('help.example')}</strong> A 2u tall bin with 1u clearance will
           block 3u total of vertical space, but only prints as a 2u bin.
         </p>
         <p>

@@ -3,6 +3,7 @@ import type { ChangeEvent, DragEvent } from 'react';
 import { validateImport } from '@/shared/utils/validation';
 import { decodeLayoutFromURL } from '@/core/storage';
 import type { Layout } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 interface ImportViewProps {
   onImport: (layout: Layout) => void;
@@ -20,6 +21,7 @@ interface ImportPreview {
  * Import view with drag-and-drop file support and paste area.
  */
 export function ImportView({ onImport, onCancel }: ImportViewProps) {
+  const t = useTranslation();
   const [jsonText, setJsonText] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
@@ -161,9 +163,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
             strokeWidth={2}
             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
-        </svg>
-        Imported layouts are saved to My Layouts
-      </p>
+        </svg>{t('layouts.importedLayoutsAreSavedToMyLayouts')}</p>
 
       {/* Drop Zone */}
       <div
@@ -198,37 +198,31 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
         </svg>
 
         <p className="text-content-secondary mb-2">
-          {isDragging ? 'Drop your file here' : 'Drag and drop a JSON file here'}
+          {isDragging ? t('layouts.dropFileHere') : t('layouts.dragDropJson')}
         </p>
-        <p className="text-content-tertiary text-sm mb-4">or</p>
+        <p className="text-content-tertiary text-sm mb-4">{t('layouts.or')}</p>
         <button
           onClick={() => fileInputRef.current?.click()}
           className="px-4 py-2 bg-surface-secondary hover:bg-surface border border-stroke text-content text-sm rounded-lg transition-colors"
-        >
-          Browse Files
-        </button>
+        >{t('layouts.browseFiles')}</button>
       </div>
 
       {/* Divider */}
       <div className="flex items-center gap-4 mb-4">
         <div className="flex-1 border-t border-stroke" />
-        <span className="text-content-tertiary text-sm">or paste JSON</span>
+        <span className="text-content-tertiary text-sm">{t('layouts.orPasteJson')}</span>
         <div className="flex-1 border-t border-stroke" />
       </div>
 
       {/* Textarea */}
       <div className="flex-1 flex flex-col min-h-0 mb-4 p-0.5">
         <div className="flex items-center justify-between mb-2">
-          <label htmlFor="import-json-input" className="text-sm text-content-secondary">
-            Layout JSON
-          </label>
+          <label htmlFor="import-json-input" className="text-sm text-content-secondary">{t('layouts.layoutJson')}</label>
           {jsonText && (
             <button
               onClick={handleClear}
               className="text-xs text-content-tertiary hover:text-content"
-            >
-              Clear
-            </button>
+            >{t('layouts.clear')}</button>
           )}
         </div>
         <textarea
@@ -236,7 +230,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
           ref={textareaRef}
           value={jsonText}
           onChange={handleTextChange}
-          placeholder='{"version": "1.0", "name": "My Layout", ...}'
+          placeholder={t('layouts.jsonPlaceholder')}
           className="flex-1 bg-surface text-content p-3 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent border border-stroke min-h-[120px]"
         />
       </div>
@@ -252,9 +246,7 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
                 strokeWidth={2}
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
-            </svg>
-            Validation Errors
-          </div>
+            </svg>{t('layouts.validationErrors')}</div>
           <ul className="text-sm text-danger/80 space-y-1 ml-6">
             {errors.map((error, index) => (
               <li key={index}>• {error}</li>
@@ -274,17 +266,15 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
                 strokeWidth={2}
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
-            </svg>
-            Ready to Import
-          </div>
+            </svg>{t('layouts.readyToImport')}</div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-success/80">
-            <div>Name:</div>
+            <div>{t('layouts.name')}</div>
             <div className="font-medium">{preview.name}</div>
-            <div>Drawer size:</div>
+            <div>{t('layouts.drawerSize')}</div>
             <div>{preview.drawerSize}</div>
-            <div>Layers:</div>
+            <div>{t('layouts.layers')}</div>
             <div>{preview.layerCount}</div>
-            <div>Bins:</div>
+            <div>{t('layouts.bins')}</div>
             <div>{preview.binCount}</div>
           </div>
         </div>
@@ -296,15 +286,11 @@ export function ImportView({ onImport, onCancel }: ImportViewProps) {
           onClick={handleImport}
           disabled={!validLayout}
           className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-on-dark rounded-lg transition-colors text-sm font-medium"
-        >
-          Import Layout
-        </button>
+        >{t('layouts.importLayout')}</button>
         <button
           onClick={onCancel}
           className="py-2.5 px-4 bg-surface-secondary hover:bg-surface border border-stroke text-content rounded-lg transition-colors text-sm"
-        >
-          Cancel
-        </button>
+        >{t('common.cancel')}</button>
       </div>
     </div>
   );

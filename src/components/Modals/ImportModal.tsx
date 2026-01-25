@@ -154,7 +154,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
           <button
             onClick={onClose}
             className="p-2 -m-2 rounded-md text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
-            aria-label="Close import dialog"
+            aria-label={t('layouts.import.closeImportDialog')}
           >
             <svg
               className="w-5 h-5"
@@ -179,7 +179,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               accept=".json"
               onChange={handleFileUpload}
               className="hidden"
-              aria-label="Select JSON file to import"
+              aria-label={t('layouts.import.selectJsonFileToImport')}
             />
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -211,7 +211,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               aria-live="assertive"
               className="bg-error/10 border border-error rounded p-3 max-h-32 overflow-y-auto"
             >
-              <div className="text-sm font-semibold text-error mb-1">Validation Errors:</div>
+              <div className="text-sm font-semibold text-error mb-1">{t('layouts.import.validationErrors')}</div>
               <ul className="text-sm text-error/80 space-y-1">
                 {errors.map((error) => (
                   <li key={error}>• {error}</li>
@@ -223,11 +223,11 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
           {/* Preview */}
           {preview && (
             <div aria-live="polite" className="bg-success/10 border border-success rounded p-3">
-              <div className="text-sm font-semibold text-success mb-2">Preview:</div>
+              <div className="text-sm font-semibold text-success mb-2">{t('layouts.import.preview')}</div>
               <div className="text-sm text-success/80 space-y-1">
-                <div>Drawer size: {preview.drawerSize}</div>
-                <div>Layers: {preview.layerCount}</div>
-                <div>Bins: {preview.binCount}</div>
+                <div>{t('layouts.import.drawerSize', { size: preview.drawerSize })}</div>
+                <div>{t('layouts.import.layers', { count: preview.layerCount })}</div>
+                <div>{t('layouts.import.bins', { count: preview.binCount })}</div>
               </div>
             </div>
           )}

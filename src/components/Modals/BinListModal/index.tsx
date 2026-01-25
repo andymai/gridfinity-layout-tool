@@ -9,6 +9,7 @@ import { BinListFilters } from './BinListFilters';
 import { BinListDashboard } from './BinListDashboard';
 import { BulkActions } from './BulkActions';
 import { MobileBinList } from './MobileBinList';
+import { useTranslation } from '@/i18n';
 
 interface BinListModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export function BinListModal({ isOpen, onClose }: BinListModalProps) {
 }
 
 function BinListModalContent({ onClose }: { onClose: () => void }) {
+  const t = useTranslation();
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { isMobile } = useResponsive();
@@ -199,12 +201,9 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
             <h2
               id="bin-list-modal-title"
               className="text-base md:text-lg font-semibold text-content"
-            >
-              Bin List
-            </h2>
+            >{t('binList.binList')}</h2>
             <span className="text-xs md:text-sm text-content-tertiary hidden sm:inline">
-              {totalBins} bins · {totalFilament}m filament
-            </span>
+              {t('binList.headerSummary', { bins: totalBins, filament: totalFilament })}</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -222,7 +221,7 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
                   d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                 />
               </svg>
-              {showDashboard ? 'Hide Stats' : 'Show Stats'}
+              {showDashboard ? t('binList.hideStats') : t('binList.showStats')}
             </button>
 
             {/* Export dropdown */}
@@ -233,7 +232,7 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
               ref={closeButtonRef}
               onClick={onClose}
               className="p-2 text-content-secondary hover:text-content hover:bg-surface-hover rounded-lg transition-colors"
-              aria-label="Close bin list"
+              aria-label={t('binList.closeBinList')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -318,18 +317,16 @@ function BinListModalContent({ onClose }: { onClose: () => void }) {
             <div className="text-xs text-content-tertiary hidden md:block">
               Double-click label or notes to edit inline. Shift+click for range selection.
             </div>
-            <div className="text-xs text-content-tertiary md:hidden">
-              Tap to select · Long-press for options
-            </div>
+            <div className="text-xs text-content-tertiary md:hidden">{t('binList.tapToSelectLongPressForOptions')}</div>
             <div className="hidden md:flex items-center gap-2">
               <kbd className="px-1.5 py-0.5 text-xs bg-surface border border-stroke rounded">
                 ⌘A
               </kbd>
-              <span className="text-xs text-content-tertiary">Select all</span>
+              <span className="text-xs text-content-tertiary">{t('binList.selectAll')}</span>
               <kbd className="px-1.5 py-0.5 text-xs bg-surface border border-stroke rounded ml-3">
                 Esc
               </kbd>
-              <span className="text-xs text-content-tertiary">Clear / Close</span>
+              <span className="text-xs text-content-tertiary">{t('binList.clearClose')}</span>
             </div>
           </div>
         </footer>
@@ -347,6 +344,7 @@ function ExportDropdown({
   onDownload: (format: 'tsv' | 'csv' | 'json') => void;
   onCopy: (format: 'tsv' | 'csv' | 'json') => Promise<boolean>;
 }) {
+  const t = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -389,57 +387,41 @@ function ExportDropdown({
             strokeWidth={2}
             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
           />
-        </svg>
-        Export
-        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        </svg>{t('common.export')}<svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       {isOpen && (
         <div className="absolute right-0 top-full mt-1 w-48 py-1 bg-surface-elevated border border-stroke rounded-lg shadow-lg z-50">
-          <div className="px-3 py-1.5 text-xs text-content-tertiary border-b border-stroke-subtle">
-            Download
-          </div>
+          <div className="px-3 py-1.5 text-xs text-content-tertiary border-b border-stroke-subtle">{t('common.download')}</div>
           <button
             onClick={() => handleDownload('tsv')}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-content hover:bg-surface-hover"
           >
-            <span className="w-8 text-xs text-content-tertiary">TSV</span>
-            Tab-separated
-          </button>
+            <span className="w-8 text-xs text-content-tertiary">TSV</span>{t('binList.tabSeparated')}</button>
           <button
             onClick={() => handleDownload('csv')}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-content hover:bg-surface-hover"
           >
-            <span className="w-8 text-xs text-content-tertiary">CSV</span>
-            Comma-separated
-          </button>
+            <span className="w-8 text-xs text-content-tertiary">CSV</span>{t('binList.commaSeparated')}</button>
           <button
             onClick={() => handleDownload('json')}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-content hover:bg-surface-hover"
           >
-            <span className="w-8 text-xs text-content-tertiary">JSON</span>
-            Full data
-          </button>
+            <span className="w-8 text-xs text-content-tertiary">JSON</span>{t('binList.fullData')}</button>
 
-          <div className="px-3 py-1.5 text-xs text-content-tertiary border-y border-stroke-subtle mt-1">
-            Copy to clipboard
-          </div>
+          <div className="px-3 py-1.5 text-xs text-content-tertiary border-y border-stroke-subtle mt-1">{t('binList.copyToClipboard')}</div>
           <button
             onClick={() => handleCopy('tsv')}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-content hover:bg-surface-hover"
           >
-            <span className="w-8 text-xs text-content-tertiary">TSV</span>
-            Copy as TSV
-          </button>
+            <span className="w-8 text-xs text-content-tertiary">TSV</span>{t('binList.copyAsTsv')}</button>
           <button
             onClick={() => handleCopy('csv')}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-content hover:bg-surface-hover"
           >
-            <span className="w-8 text-xs text-content-tertiary">CSV</span>
-            Copy as CSV
-          </button>
+            <span className="w-8 text-xs text-content-tertiary">CSV</span>{t('binList.copyAsCsv')}</button>
         </div>
       )}
     </div>

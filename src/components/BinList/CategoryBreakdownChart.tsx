@@ -107,6 +107,7 @@ export function CategoryStackedBar({
   breakdown: CategoryBreakdown[];
   height?: string;
 }) {
+  const t = useTranslation();
   if (breakdown.length === 0) {
     return <div className={`${height} bg-surface rounded`} />;
   }
@@ -115,7 +116,7 @@ export function CategoryStackedBar({
     <div
       className={`${height} bg-surface rounded overflow-hidden flex`}
       role="img"
-      aria-label="Category breakdown"
+      aria-label={t('dashboard.categoryBreakdown')}
     >
       {breakdown.map((category) => (
         <div

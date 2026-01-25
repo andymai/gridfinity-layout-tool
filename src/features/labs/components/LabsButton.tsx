@@ -2,8 +2,10 @@ import { useMemo } from 'react';
 import { useLabsStore } from '@/core/store';
 import { getFeature } from '@/core/labs';
 import { SparklesIcon } from './icons';
+import { useTranslation } from '@/i18n';
 
 export function LabsButton() {
+  const t = useTranslation();
   const openDrawer = useLabsStore((state) => state.openDrawer);
   const enabledFeatures = useLabsStore((state) => state.preferences.enabledFeatures);
 
@@ -23,12 +25,12 @@ export function LabsButton() {
     >
       <SparklesIcon className="w-[18px] h-[18px] flex-shrink-0" />
       <div className="flex-1 text-left">
-        <div className="text-sm font-medium">Labs</div>
-        <div className="text-[11px] text-content-tertiary">Try experimental features</div>
+        <div className="text-sm font-medium">{t('labs.labs')}</div>
+        <div className="text-[11px] text-content-tertiary">{t('labs.tryExperimentalFeatures')}</div>
       </div>
       {enabledCount > 0 && (
         <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[11px] font-semibold text-on-dark bg-accent rounded-full">
-          {enabledCount > 9 ? '9+' : enabledCount}
+          {enabledCount > 9 ? t('common.overflowCount') : enabledCount}
         </span>
       )}
     </button>

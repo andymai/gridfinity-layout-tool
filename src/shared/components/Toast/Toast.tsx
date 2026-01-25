@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import type { Toast, ToastType } from '@/core/store/toast';
 import { useToastStore } from '@/core/store/toast';
 import { useResponsive } from '@/shared/hooks';
+import { useTranslation } from '@/i18n';
 
 // Animation duration must match CSS in index.css (.toast-exit-*)
 const EXIT_ANIMATION_MS = 150;
@@ -82,6 +83,7 @@ interface ToastItemProps {
 }
 
 function ToastItem({ toast, position, onRemove }: ToastItemProps) {
+  const t = useTranslation();
   const [isExiting, setIsExiting] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -180,7 +182,7 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
       <button
         onClick={handleDismiss}
         className="absolute top-1/2 -translate-y-1/2 right-1 p-2 flex items-center justify-center rounded-md text-current opacity-60 hover:opacity-100 hover:bg-white/10 transition-all focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:opacity-100"
-        aria-label="Dismiss notification"
+        aria-label={t('toast.dismissNotification')}
       >
         <CloseIcon />
       </button>
@@ -202,6 +204,7 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
 }
 
 export function ToastContainer() {
+  const t = useTranslation();
   const { toasts, removeToast } = useToastStore(
     useShallow((state) => ({
       toasts: state.toasts,
@@ -222,7 +225,7 @@ export function ToastContainer() {
   const toastWidth = isMobile ? 'w-full max-w-md' : 'w-80';
 
   return (
-    <div className={containerClasses} role="region" aria-label="Notifications" aria-live="polite">
+    <div className={containerClasses} role="region" aria-label={t('toast.notifications')} aria-live="polite">
       {toasts.map((toast) => (
         <div key={toast.id} className={toastWidth}>
           <ToastItem toast={toast} position={position} onRemove={removeToast} />

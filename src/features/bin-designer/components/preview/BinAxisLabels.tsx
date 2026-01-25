@@ -34,6 +34,7 @@ const TICK_SIZE = 3; // mm — outward from edge (planner: 0.08 units)
 const TICK_OPACITY = 0.3;
 const LABEL_OFFSET = 5; // mm from bin edge to label anchor (planner: 0.28 units)
 const TICK_OFFSET = 0.5; // mm above Z=0 to avoid z-fighting with floor
+const FRACTIONAL_LABEL = '+.5'; // Display label for half-unit cells
 
 /**
  * Grid axis labels showing column/row numbers along bin edges.
@@ -120,7 +121,7 @@ export function BinAxisLabels({ width, depth }: BinAxisLabelsProps) {
           ? -halfW + (integerWidth + (width - integerWidth) / 2) * GS
           : -halfW + (value - 0.5) * GS;
         const yPos = -halfD - LABEL_OFFSET;
-        const label = isFractional ? '+.5' : value.toString();
+        const label = isFractional ? FRACTIONAL_LABEL : value.toString();
 
         return (
           <Text
@@ -144,7 +145,7 @@ export function BinAxisLabels({ width, depth }: BinAxisLabelsProps) {
           ? -halfD + (integerDepth + (depth - integerDepth) / 2) * GS
           : -halfD + (value - 0.5) * GS;
         const xPos = -halfW - LABEL_OFFSET;
-        const label = isFractional ? '+.5' : value.toString();
+        const label = isFractional ? FRACTIONAL_LABEL : value.toString();
 
         return (
           <Text

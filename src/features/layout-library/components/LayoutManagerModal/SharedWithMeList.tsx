@@ -126,7 +126,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-content mb-2">No shared layouts yet</h3>
+        <h3 className="text-lg font-medium text-content mb-2">{t('layouts.noSharedLayoutsYet')}</h3>
         <p className="text-sm text-content-secondary max-w-sm">
           When someone shares a layout with you, it will appear here automatically. Open a shared
           link to get started.
@@ -149,7 +149,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
       <div
         ref={listRef}
         role="listbox"
-        aria-label="Shared layouts"
+        aria-label={t('layouts.sharedLayouts')}
         className="flex flex-col gap-2"
         onKeyDown={handleKeyDown}
       >
@@ -169,7 +169,7 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
 
       {/* Count summary */}
       <div className="mt-2 text-xs text-content-tertiary text-center">
-        {sortedEntries.length} shared layout{sortedEntries.length !== 1 ? 's' : ''}
+        {t('layouts.sharedLayoutCount', { count: sortedEntries.length })}
       </div>
     </div>
   );

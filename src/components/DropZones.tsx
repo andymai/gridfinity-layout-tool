@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '@/core/store';
+import { useTranslation } from '@/i18n';
 
 /**
  * Drop zone for deleting bins. Appears at top of screen when dragging.
  * Stash drop target is handled by the Staging component itself.
  */
 export function DropZones() {
+  const t = useTranslation();
   const { interaction, dropTarget, setDropTarget } = useUIStore(
     useShallow((state) => ({
       interaction: state.interaction,
@@ -120,8 +122,7 @@ export function DropZones() {
           style={{
             color: dropTarget === 'trash' ? 'white' : 'var(--text-primary)',
           }}
-        >
-          Delete {binLabel}
+        >{t('common.delete')}{binLabel}
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@
  */
 
 import type { WasmStatus, GenerationStatus } from '@/features/bin-designer/types';
+import { useTranslation } from '@/i18n';
 
 interface PreviewSkeletonProps {
   wasmStatus: WasmStatus;
@@ -19,6 +20,7 @@ export function PreviewSkeleton({
   errorMessage,
   onRetry,
 }: PreviewSkeletonProps) {
+  const t = useTranslation();
   const getMessage = () => {
     if (wasmStatus === 'loading') return 'Initializing engine...';
     if (wasmStatus === 'error') return 'Engine failed to load';
@@ -93,7 +95,7 @@ export function PreviewSkeleton({
           <button
             onClick={onRetry}
             className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-surface-elevated px-3 py-1.5 text-xs font-medium text-content-secondary shadow-sm transition-colors hover:bg-surface-hover hover:text-content"
-            aria-label="Retry loading"
+            aria-label={t('binDesigner.retryLoading')}
           >
             <svg
               className="h-3.5 w-3.5"
@@ -108,9 +110,7 @@ export function PreviewSkeleton({
                 strokeWidth={2}
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
-            </svg>
-            Retry
-          </button>
+            </svg>{t('binDesigner.retry')}</button>
         )}
       </div>
     </div>

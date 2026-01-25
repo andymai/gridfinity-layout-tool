@@ -247,7 +247,7 @@ export function LayersTab() {
                   {layer.name}
                 </span>
                 <span className="text-xs text-content-tertiary">
-                  {binCount} bin{binCount !== 1 ? 's' : ''}
+                  {t('mobile.layers.binCount', { count: binCount })}
                   {hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
                 </span>
               </button>
@@ -298,7 +298,7 @@ export function LayersTab() {
                     onClick={() => handleMoveLayer(displayIndex, 'up')}
                     disabled={displayIndex === 0}
                     className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
-                    aria-label="Move layer up"
+                    aria-label={t('mobile.moveLayerUp')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -313,7 +313,7 @@ export function LayersTab() {
                     onClick={() => handleMoveLayer(displayIndex, 'down')}
                     disabled={displayIndex === layers.length - 1}
                     className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-30 transition-colors"
-                    aria-label="Move layer down"
+                    aria-label={t('mobile.moveLayerDown')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -332,7 +332,7 @@ export function LayersTab() {
                 <button
                   onClick={() => handleDeleteLayer(layer.id)}
                   className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-error transition-colors"
-                  aria-label="Delete layer"
+                  aria-label={t('mobile.deleteLayer')}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -352,8 +352,8 @@ export function LayersTab() {
       {/* Stats line */}
       <div className="text-sm text-content-tertiary mb-2 mt-4">
         {hasMultipleLayers
-          ? `${totalCoverage}% filled · ${totalBinCount} bin${totalBinCount !== 1 ? 's' : ''} total`
-          : `${activeCoverage}% filled · ${activeLayerBins.length} bin${activeLayerBins.length !== 1 ? 's' : ''}`}
+          ? t('mobile.layers.statsMulti', { coverage: totalCoverage, count: totalBinCount })
+          : t('mobile.layers.statsSingle', { coverage: activeCoverage, count: activeLayerBins.length })}
       </div>
 
       {/* Coverage bar */}
@@ -403,7 +403,7 @@ export function LayersTab() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-content mb-4">Rename Layer</h3>
+              <h3 className="text-lg font-semibold text-content mb-4">{t('mobile.renameLayer')}</h3>
               <input
                 ref={renameInputRef}
                 type="text"
@@ -429,16 +429,12 @@ export function LayersTab() {
                     setRenameValue('');
                   }}
                   className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
-                >
-                  Cancel
-                </button>
+                >{t('common.cancel')}</button>
                 <button
                   onClick={handleRenameConfirm}
                   disabled={!renameValue.trim()}
                   className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
-                >
-                  Rename
-                </button>
+                >{t('common.rename')}</button>
               </div>
             </div>
           </div>,

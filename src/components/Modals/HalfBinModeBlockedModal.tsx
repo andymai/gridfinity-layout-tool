@@ -198,7 +198,7 @@ export function HalfBinModeBlockedModal({
                      disabled:opacity-50 disabled:cursor-not-allowed
                      transition-colors
                      flex items-center gap-2"
-            aria-label={`Move ${violation.count} bin${violation.count !== 1 ? 's' : ''} to staging and disable half-bin mode`}
+            aria-label={t('halfBinMode.remediate.ariaLabel', { count: violation.count })}
           >
             {isRemediating ? (
               <>

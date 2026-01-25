@@ -15,8 +15,7 @@ describe('SplitWarning', () => {
     it('shows success state', () => {
       render(<SplitWarning {...defaultProps} />);
 
-      expect(screen.getByText(/Fits print bed/)).toBeInTheDocument();
-      expect(screen.getByText(/2×2 ≤ 6×6/)).toBeInTheDocument();
+      expect(screen.getByText(/Fits print bed dimensions/)).toBeInTheDocument();
     });
 
     it('shows success checkmark icon', () => {

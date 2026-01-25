@@ -226,10 +226,10 @@ export function PreviewControls({
             onClick={onResetView}
             className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
             title={t('binDesigner.resetView')}
-            aria-label="Reset camera view, keyboard shortcut R"
+            aria-label={t('binDesigner.resetCameraViewKeyboardShortcutR')}
           >
             <IconReset />
-            <span>Reset</span>
+            <span>{t('common.reset')}</span>
           </button>
 
           {/* Wireframe toggle */}
@@ -242,11 +242,11 @@ export function PreviewControls({
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
             title={t('binDesigner.toggleWireframe')}
-            aria-label="Toggle wireframe mode, keyboard shortcut W"
+            aria-label={t('binDesigner.toggleWireframeModeKeyboardShortcut')}
             aria-pressed={wireframe}
           >
             <IconWireframe />
-            <span>Wire</span>
+            <span>{t('binDesigner.wire')}</span>
           </button>
 
           {/* Divider */}
@@ -259,21 +259,21 @@ export function PreviewControls({
               onClick={() => setColorPickerOpen((v) => !v)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
               title={t('binDesigner.changeColor')}
-              aria-label="Change preview color"
+              aria-label={t('binDesigner.changePreviewColor')}
               aria-expanded={colorPickerOpen}
             >
               <span
                 className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
                 style={{ backgroundColor: previewColor }}
               />
-              <span>Color</span>
+              <span>{t('common.color')}</span>
             </button>
 
             {colorPickerOpen && (
               <div
                 className="absolute right-0 top-full mt-2 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 shadow-xl"
                 role="listbox"
-                aria-label="Preview color options"
+                aria-label={t('binDesigner.previewColorOptions')}
               >
                 <div className="grid grid-cols-3 gap-2">
                   {COLOR_SWATCHES.map(({ color, label }) => (
@@ -306,7 +306,7 @@ export function PreviewControls({
                       value={previewColor}
                       onChange={(e) => onColorChange(e.target.value)}
                       className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent p-0"
-                      title="Custom color"
+                      title={t('binDesigner.customColor')}
                     />
                     <span className="text-[11px] text-content-secondary font-medium">
                       {t('binDesigner.customColor')}
@@ -354,7 +354,7 @@ export function PreviewControls({
             onClick={onResetView}
             className="flex items-center justify-center p-2 min-w-[36px] min-h-[36px] text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
             title={t('binDesigner.resetView')}
-            aria-label="Reset camera view, keyboard shortcut R"
+            aria-label={t('binDesigner.resetCameraViewKeyboardShortcutR')}
           >
             <IconReset />
           </button>
@@ -369,7 +369,7 @@ export function PreviewControls({
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
             title={t('binDesigner.toggleWireframe')}
-            aria-label="Toggle wireframe mode, keyboard shortcut W"
+            aria-label={t('binDesigner.toggleWireframeModeKeyboardShortcut')}
             aria-pressed={wireframe}
           >
             <IconWireframe />
@@ -383,7 +383,7 @@ export function PreviewControls({
               onClick={() => setColorPickerOpen((v) => !v)}
               className="flex items-center justify-center p-2 min-w-[36px] min-h-[36px] text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
               title={t('binDesigner.changeColor')}
-              aria-label="Change preview color"
+              aria-label={t('binDesigner.changePreviewColor')}
               aria-expanded={colorPickerOpen}
             >
               <span
@@ -400,7 +400,7 @@ export function PreviewControls({
             ref={mobilePickerRef}
             className="absolute bottom-full left-0 mb-2 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 shadow-xl"
             role="listbox"
-            aria-label="Preview color options"
+            aria-label={t('binDesigner.previewColorOptions')}
           >
             <div className="grid grid-cols-3 gap-2">
               {COLOR_SWATCHES.map(({ color, label }) => (
@@ -433,7 +433,7 @@ export function PreviewControls({
                   value={previewColor}
                   onChange={(e) => onColorChange(e.target.value)}
                   className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent p-0"
-                  title="Custom color"
+                  title={t('binDesigner.customColor')}
                 />
                 <span className="text-[11px] text-content-secondary font-medium">{t('binDesigner.customColor')}</span>
               </label>

@@ -180,8 +180,8 @@ export function ActiveLayerPanel() {
           }
         }}
         className={`flex flex-col items-center justify-end gap-1 h-[60px] p-1.5 rounded transition-colors ${isActive ? 'bg-accent/20' : 'hover:bg-surface-hover'} ${className}`}
-        aria-label={`${isActive ? 'Deselect' : 'Select'} ${w}×${d} for painting. Shift+click to add to stash.`}
-        title={`Click to paint ${w}×${d} bins. Shift+click to add to stash.`}
+        aria-label={t('layers.paintSizeAriaLabel', { action: isActive ? t('layers.deselect') : t('layers.select'), width: w, depth: d })}
+        title={t('layers.paintSizeTitle', { width: w, depth: d })}
       >
         <div
           className="rounded-[1px]"
@@ -210,7 +210,7 @@ export function ActiveLayerPanel() {
         </p>
 
         {/* Squares section */}
-        <div className="text-xs text-content-tertiary mb-1.5">Squares</div>
+        <div className="text-xs text-content-tertiary mb-1.5">{t('layers.squares')}</div>
         <div className="grid grid-cols-6 gap-1.5">
           {SQUARE_SIZES.map((size) => (
             <SizeButton key={`${size}×${size}`} w={size} d={size} className="w-full" />
@@ -219,14 +219,14 @@ export function ActiveLayerPanel() {
 
         {/* Rectangles section */}
         <div className="flex items-center justify-between mt-3 mb-1.5">
-          <span className="text-xs text-content-tertiary">Rectangles</span>
+          <span className="text-xs text-content-tertiary">{t('layers.rectangles')}</span>
           <button
             onClick={() => setRotated(!rotated)}
             className="text-xs text-content-tertiary hover:text-content flex items-center gap-1 transition-colors"
             title={
-              rotated ? 'Showing tall bins (click for wide)' : 'Showing wide bins (click for tall)'
+              rotated ? t('layers.showingTall') : t('layers.showingWide')
             }
-            aria-label={rotated ? 'Switch to wide rectangles' : 'Switch to tall rectangles'}
+            aria-label={rotated ? t('layers.switchToWide') : t('layers.switchToTall')}
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -236,7 +236,7 @@ export function ActiveLayerPanel() {
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            {rotated ? 'Tall' : 'Wide'}
+            {rotated ? t('layers.tall') : t('layers.wide')}
           </button>
         </div>
         <div className="grid grid-cols-5 gap-1.5">
@@ -253,8 +253,7 @@ export function ActiveLayerPanel() {
             className="btn btn-primary w-full justify-center mt-3 text-sm"
             title={`Fill empty space with ${paintSize.width}×${paintSize.depth} bins`}
             aria-label={`Fill layer with ${paintSize.width} by ${paintSize.depth} bins`}
-          >
-            Fill with {paintSize.width}×{paintSize.depth}
+          >{t('layers.fillWith')}{paintSize.width}×{paintSize.depth}
           </button>
         )}
 
@@ -265,8 +264,8 @@ export function ActiveLayerPanel() {
           className="btn btn-secondary w-full justify-center mt-2 text-sm"
           title={
             emptyCells > 0
-              ? `Fill ${emptyCells} empty cells with optimally-sized bins`
-              : 'No gaps to fill'
+              ? t('layers.fillGapsTitle', { count: emptyCells })
+              : t('layers.noGapsToFill')
           }
         >
           <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -277,7 +276,7 @@ export function ActiveLayerPanel() {
               d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
             />
           </svg>
-          {emptyCells > 0 ? `Fill ${emptyCells} gaps` : 'No gaps'}
+          {emptyCells > 0 ? t('layers.fillGaps', { count: emptyCells }) : t('layers.noGaps')}
         </button>
 
         {/* Clear layer button */}
@@ -287,8 +286,8 @@ export function ActiveLayerPanel() {
           className="btn btn-ghost w-full justify-center mt-2 text-sm text-error hover:bg-error/10"
           title={
             layerBins.length > 0
-              ? `Remove all ${layerBins.length} bins from this layer`
-              : 'No bins to clear'
+              ? t('layers.clearBinsTitle', { count: layerBins.length })
+              : t('layers.noBinsToClear')
           }
         >
           <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -299,7 +298,7 @@ export function ActiveLayerPanel() {
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
           </svg>
-          {layerBins.length > 0 ? `Clear ${layerBins.length} bins` : 'No bins'}
+          {layerBins.length > 0 ? t('layers.clearBins', { count: layerBins.length }) : t('layers.noBins')}
         </button>
       </CollapsibleSection>
 

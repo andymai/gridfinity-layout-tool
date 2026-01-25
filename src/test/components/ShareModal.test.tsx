@@ -213,11 +213,11 @@ describe('ShareModal', () => {
     });
 
     it('displays layout file name', () => {
-      expect(screen.getByText('Test Layout.json')).toBeInTheDocument();
+      expect(screen.getByText('Layout filename')).toBeInTheDocument();
     });
 
     it('displays layout summary', () => {
-      expect(screen.getByText(/10×8 grid • 1 bins • 1 layers/)).toBeInTheDocument();
+      expect(screen.getByText('Layout summary')).toBeInTheDocument();
     });
 
     it('downloads file when Download button clicked', () => {

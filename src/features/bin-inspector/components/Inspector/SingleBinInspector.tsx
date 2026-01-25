@@ -67,14 +67,13 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           aria-hidden="true"
         />
         <h2 className="flex-1 text-lg font-semibold text-content">
-          {formatDim(bin.width)}×{formatDim(bin.depth)} Bin
-        </h2>
+          {formatDim(bin.width)}×{formatDim(bin.depth)}{t('inspector.bin')}</h2>
         {onClose && (
           <button
             type="button"
             onClick={onClose || clearSelection}
             className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-            aria-label="Deselect bin"
+            aria-label={t('inspector.deselectBin')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -116,7 +115,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 : 'flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors'
             }
             title={t('inspector.swapDimensions')}
-            aria-label="Swap width and depth"
+            aria-label={t('inspector.swapWidthAndDepth')}
           >
             <svg
               className={isMobile ? 'w-5 h-5' : 'w-3 h-3'}
@@ -213,8 +212,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 displayValue={`${bin.clearanceHeight || 0}u`}
               />
               <div className="text-center mt-1 text-[10px] text-content-disabled">
-                +{((bin.clearanceHeight || 0) * layout.heightUnitMm).toFixed(0)}mm above
-              </div>
+                {t('inspector.clearanceMm', { mm: ((bin.clearanceHeight || 0) * layout.heightUnitMm).toFixed(0) })}</div>
             </div>
           )}
         </div>
@@ -245,7 +243,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         {/* Layer - only show for bins on grid (not in staging) */}
         {bin.layerId !== STAGING_ID && layout.layers.length > 1 && (
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>Layer</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.layer')}</label>
             <SelectDropdown
               value={bin.layerId}
               onChange={moveToLayer}
@@ -271,7 +269,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             }
             className={`input w-full ${inputHeight}`}
             placeholder={t('inspector.labelPlaceholder')}
-            aria-label="Bin label"
+            aria-label={t('inspector.binLabel')}
           />
         </div>
 
@@ -294,7 +292,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             }
             className="input w-full"
             placeholder={t('inspector.notesPlaceholder')}
-            aria-label="Bin notes"
+            aria-label={t('inspector.binNotes')}
             rows={3}
             style={{ resize: 'vertical', minHeight: '60px' }}
           />
@@ -318,17 +316,13 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               type="button"
               onClick={moveToStaging}
               className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
-            >
-              To Stash
-            </button>
+            >{t('inspector.toStash')}</button>
           )}
           <button
             type="button"
             onClick={requestDelete}
             className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
-          >
-            Delete
-          </button>
+          >{t('common.delete')}</button>
         </div>
       </div>
     </div>

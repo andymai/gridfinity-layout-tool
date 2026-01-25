@@ -253,7 +253,7 @@ export function MobileLayoutsPanel() {
     <div className="pb-4">
       {/* Layout count */}
       <div className="text-sm text-content-tertiary mb-3">
-        {library.entries.length} layout{library.entries.length !== 1 ? 's' : ''}
+        {t('mobile.layouts.layoutCount', { count: library.entries.length })}
       </div>
 
       {/* Layout list */}
@@ -357,9 +357,7 @@ export function MobileLayoutsPanel() {
                           {entry.name}
                         </span>
                         {isActive && (
-                          <span className="text-xs px-2 py-0.5 bg-accent text-on-dark rounded flex-shrink-0">
-                            Active
-                          </span>
+                          <span className="text-xs px-2 py-0.5 bg-accent text-on-dark rounded flex-shrink-0">{t('mobile.layouts.active')}</span>
                         )}
                       </div>
 
@@ -373,8 +371,7 @@ export function MobileLayoutsPanel() {
 
                       {/* Forked from info */}
                       {entry.forkedFrom && (
-                        <div className="text-xs text-content-disabled">
-                          Forked from {entry.forkedFrom.name}
+                        <div className="text-xs text-content-disabled">{t('mobile.layouts.forkedFrom')}{entry.forkedFrom.name}
                         </div>
                       )}
                     </div>
@@ -400,9 +397,7 @@ export function MobileLayoutsPanel() {
                           strokeWidth={2}
                           d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                         />
-                      </svg>
-                      Rename
-                    </button>
+                      </svg>{t('common.rename')}</button>
                     <button
                       onClick={() => handleShare(entry.id)}
                       className="btn btn-secondary flex-1 h-11"
@@ -419,9 +414,7 @@ export function MobileLayoutsPanel() {
                           strokeWidth={2}
                           d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                         />
-                      </svg>
-                      Share
-                    </button>
+                      </svg>{t('common.share')}</button>
                     <button
                       onClick={() => handleDuplicate(entry.id)}
                       className="btn btn-secondary flex-1 h-11"
@@ -438,9 +431,7 @@ export function MobileLayoutsPanel() {
                           strokeWidth={2}
                           d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                         />
-                      </svg>
-                      Duplicate
-                    </button>
+                      </svg>{t('common.duplicate')}</button>
                   </div>
                 )}
               </div>
@@ -484,8 +475,8 @@ export function MobileLayoutsPanel() {
           </svg>
         </div>
         <div className="flex-1 text-left">
-          <div className="text-sm font-medium text-content">Inspiration Gallery</div>
-          <div className="text-xs text-content-tertiary">Get ideas for your drawer</div>
+          <div className="text-sm font-medium text-content">{t('mobile.layouts.inspirationGallery')}</div>
+          <div className="text-xs text-content-tertiary">{t('mobile.layouts.getIdeasForYourDrawer')}</div>
         </div>
         <svg
           className="w-4 h-4 text-content-tertiary"
@@ -501,9 +492,7 @@ export function MobileLayoutsPanel() {
       <button onClick={handleCreateNew} className="btn btn-secondary w-full mt-3 h-12">
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
-        New Layout
-      </button>
+        </svg>{t('mobile.layouts.newLayout')}</button>
 
       {/* Delete confirmation dialog */}
       <ConfirmDialog
@@ -551,7 +540,7 @@ export function MobileLayoutsPanel() {
                   </div>
                   <div className="text-left">
                     <div className="font-medium text-content">{t('share.shareToCloud')}</div>
-                    <div className="text-sm text-content-secondary">Create expiring share link</div>
+                    <div className="text-sm text-content-secondary">{t('mobile.layouts.createExpiringShareLink')}</div>
                   </div>
                 </button>
                 <button
@@ -606,9 +595,7 @@ export function MobileLayoutsPanel() {
               <button
                 onClick={() => setShareMenuId(null)}
                 className="w-full mt-4 py-3 text-content-secondary font-medium"
-              >
-                Cancel
-              </button>
+              >{t('common.cancel')}</button>
             </div>
           </div>,
           document.body
@@ -629,7 +616,7 @@ export function MobileLayoutsPanel() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-content mb-4">Rename Layout</h3>
+              <h3 className="text-lg font-semibold text-content mb-4">{t('mobile.layouts.renameLayout')}</h3>
               <input
                 ref={renameInputRef}
                 type="text"
@@ -655,16 +642,12 @@ export function MobileLayoutsPanel() {
                     setRenameValue('');
                   }}
                   className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
-                >
-                  Cancel
-                </button>
+                >{t('common.cancel')}</button>
                 <button
                   onClick={handleRenameConfirm}
                   disabled={!renameValue.trim()}
                   className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
-                >
-                  Rename
-                </button>
+                >{t('common.rename')}</button>
               </div>
             </div>
           </div>,
@@ -797,9 +780,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
               />
             </svg>
           </div>
-          <h3 id="mobile-cloud-share-title" className="text-lg font-semibold text-content">
-            Cloud Share
-          </h3>
+          <h3 id="mobile-cloud-share-title" className="text-lg font-semibold text-content">{t('mobile.layouts.cloudShare')}</h3>
         </div>
 
         {/* Loading states */}
@@ -853,9 +834,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             <button
               onClick={reset}
               className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
-            >
-              Try Again
-            </button>
+            >{t('mobile.layouts.tryAgain')}</button>
           </div>
         )}
 
@@ -875,14 +854,14 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
             </div>
 
             <div className="bg-surface rounded-lg p-3">
-              <p className="text-sm text-content-secondary mb-2">Link copied to clipboard</p>
+              <p className="text-sm text-content-secondary mb-2">{t('mobile.layouts.linkCopiedToClipboard')}</p>
               <p className="text-xs text-content-tertiary break-all font-mono">{result.url}</p>
             </div>
 
             <p className="text-sm text-content-secondary">
               {result.permission === 'edit'
-                ? 'Anyone with the link can edit'
-                : 'Anyone with the link can view'}
+                ? t('mobile.layouts.anyoneCanEdit')
+                : t('mobile.layouts.anyoneCanView')}
             </p>
 
             <div className="flex gap-2">
@@ -890,14 +869,12 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
                 onClick={handleCopyUrl}
                 className="flex-1 py-3 bg-accent text-on-dark font-medium rounded-lg"
               >
-                {urlCopied ? 'Copied!' : 'Copy Link Again'}
+                {urlCopied ? t('common.copied') : t('mobile.layouts.copyLinkAgain')}
               </button>
               <button
                 onClick={onClose}
                 className="flex-1 py-3 bg-surface text-content font-medium rounded-lg"
-              >
-                Done
-              </button>
+              >{t('common.done')}</button>
             </div>
           </div>
         )}
@@ -913,26 +890,22 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
               <label
                 htmlFor="mobile-permission"
                 className="text-sm text-content-secondary whitespace-nowrap"
-              >
-                Permission:
-              </label>
+              >{t('mobile.layouts.permission')}</label>
               <select
                 id="mobile-permission"
                 value={permission}
                 onChange={(e) => setPermission(e.target.value as SharePermission)}
                 className="flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
               >
-                <option value="view">Anyone can view</option>
-                <option value="edit">Anyone can edit</option>
+                <option value="view">{t('mobile.layouts.anyoneCanView')}</option>
+                <option value="edit">{t('mobile.layouts.anyoneCanEdit')}</option>
               </select>
             </div>
 
             <button
               onClick={handleShare}
               className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
-            >
-              Share to Cloud
-            </button>
+            >{t('mobile.layouts.shareToCloud')}</button>
           </div>
         )}
 
@@ -940,13 +913,12 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
         {status === 'idle' && hasActiveShare && existingShare && (
           <div className="space-y-4">
             <div className="bg-surface rounded-lg p-3">
-              <p className="text-sm text-content-secondary">
-                Shared on {formatShareDate(existingShare.sharedAt)}
+              <p className="text-sm text-content-secondary">{t('mobile.layouts.sharedOn')}{formatShareDate(existingShare.sharedAt)}
               </p>
               <p className="text-sm text-content">
                 {existingShare.permission === 'edit'
-                  ? 'Anyone with the link can edit'
-                  : 'Anyone with the link can view'}
+                  ? t('mobile.layouts.anyoneCanEdit')
+                  : t('mobile.layouts.anyoneCanView')}
               </p>
             </div>
 
@@ -954,7 +926,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
               onClick={handleCopyUrl}
               className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
             >
-              {urlCopied ? 'Copied!' : 'Copy Link'}
+              {urlCopied ? t('common.copied') : t('share.copyLink')}
             </button>
 
             <div className="flex items-center gap-3">
@@ -962,27 +934,23 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
                 value={permission}
                 onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
                 className="flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none"
-                aria-label="Update permission"
+                aria-label={t('mobile.layouts.updatePermission')}
               >
-                <option value="view">Anyone can view</option>
-                <option value="edit">Anyone can edit</option>
+                <option value="view">{t('mobile.layouts.anyoneCanView')}</option>
+                <option value="edit">{t('mobile.layouts.anyoneCanEdit')}</option>
               </select>
             </div>
 
             <button
               onClick={handleDelete}
               className="w-full py-2 text-sm text-content-tertiary hover:text-error transition-colors"
-            >
-              Delete share
-            </button>
+            >{t('mobile.layouts.deleteShare')}</button>
           </div>
         )}
 
         {/* Cancel button */}
         {status !== 'success' && (
-          <button onClick={onClose} className="w-full mt-4 py-3 text-content-secondary font-medium">
-            Cancel
-          </button>
+          <button onClick={onClose} className="w-full mt-4 py-3 text-content-secondary font-medium">{t('common.cancel')}</button>
         )}
       </div>
     </div>
@@ -993,6 +961,7 @@ function MobileCloudSharePanel({ layoutId, onClose }: { layoutId: string; onClos
  * Layout preview info showing drawer dimensions, bin count, and layer count.
  */
 function LayoutPreviewInfo({ entry }: { entry: LayoutEntry }) {
+  const t = useTranslation();
   const { preview } = entry;
 
   return (
@@ -1011,10 +980,10 @@ function LayoutPreviewInfo({ entry }: { entry: LayoutEntry }) {
       </span>
 
       {/* Bin count */}
-      <span>{preview.binCount} bins</span>
+      <span>{t('mobile.layouts.previewBins', { count: preview.binCount })}</span>
 
       {/* Layer count */}
-      {preview.layerCount > 1 && <span>{preview.layerCount} layers</span>}
+      {preview.layerCount > 1 && <span>{t('mobile.layouts.previewLayers', { count: preview.layerCount })}</span>}
     </div>
   );
 }

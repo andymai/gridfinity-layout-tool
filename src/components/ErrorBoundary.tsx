@@ -2,6 +2,11 @@ import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { captureException } from '@/utils/analytics';
 
+// Error boundary strings as constants (class components cannot use hooks)
+const ERROR_HEADING = 'Something went wrong';
+const TRY_AGAIN = 'Try Again';
+const RESET_APP_DATA = 'Reset App Data';
+
 interface Props {
   children: ReactNode;
 }
@@ -63,7 +68,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 />
               </svg>
             </div>
-            <h1 className="text-xl font-semibold mb-2 text-content">Something went wrong</h1>
+            <h1 className="text-xl font-semibold mb-2 text-content">{ERROR_HEADING}</h1>
             <p className="text-content-secondary mb-2">
               The app encountered an unexpected error. Your layout data is safe.
             </p>
@@ -77,12 +82,8 @@ export class ErrorBoundary extends Component<Props, State> {
               </pre>
             )}
             <div className="flex gap-3 justify-center">
-              <button onClick={this.handleReset} className="btn btn-secondary">
-                Try Again
-              </button>
-              <button onClick={this.handleClearStorage} className="btn btn-danger">
-                Reset App Data
-              </button>
+              <button onClick={this.handleReset} className="btn btn-secondary">{TRY_AGAIN}</button>
+              <button onClick={this.handleClearStorage} className="btn btn-danger">{RESET_APP_DATA}</button>
             </div>
           </div>
         </div>

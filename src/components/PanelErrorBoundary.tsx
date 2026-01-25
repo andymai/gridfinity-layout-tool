@@ -2,6 +2,10 @@ import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { captureException } from '@/utils/analytics';
 
+// Error boundary strings as constants (class components cannot use hooks)
+const ERROR_SUFFIX = 'Error';
+const RETRY_LABEL = 'Retry';
+
 interface Props {
   children: ReactNode;
   /** Name of the panel for display in error message */
@@ -64,7 +68,7 @@ export class PanelErrorBoundary extends Component<Props, State> {
               />
             </svg>
           </div>
-          <h3 className="text-sm font-medium text-content mb-1">{this.props.panelName} Error</h3>
+          <h3 className="text-sm font-medium text-content mb-1">{this.props.panelName} {ERROR_SUFFIX}</h3>
           <p className="text-xs text-content-secondary mb-3 max-w-[200px]">
             Something went wrong loading this panel.
           </p>
@@ -76,9 +80,7 @@ export class PanelErrorBoundary extends Component<Props, State> {
           <button
             onClick={this.handleRetry}
             className="px-3 py-1.5 text-xs font-medium bg-surface-secondary hover:bg-surface-elevated rounded transition-colors"
-          >
-            Retry
-          </button>
+          >{RETRY_LABEL}</button>
         </div>
       );
     }

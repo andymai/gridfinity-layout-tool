@@ -193,6 +193,7 @@ export function useBinList(): UseBinListReturn {
     setSelectedBins,
     addToast,
     announceToScreenReader,
+    t,
   ]);
 
   const changeBulkCategory = useCallback(
@@ -247,6 +248,7 @@ export function useBinList(): UseBinListReturn {
       clearSelection,
       addToast,
       announceToScreenReader,
+      t,
     ]
   );
 

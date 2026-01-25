@@ -53,7 +53,7 @@ export function PhysicalUnitsSection() {
             min={1}
             max={200}
             className="input w-14 py-0.5 px-1 text-xs text-right"
-            aria-label="Grid unit"
+            aria-label={t('binDesigner.gridUnit')}
           />
         </SettingsRow>
         <SettingsRow label="Height unit" tooltip="Size of one height unit in mm (standard Gridfinity = 7mm)" unit="mm">
@@ -63,7 +63,7 @@ export function PhysicalUnitsSection() {
             min={1}
             max={50}
             className="input w-14 py-0.5 px-1 text-xs text-right"
-            aria-label="Height unit"
+            aria-label={t('binDesigner.heightUnit')}
           />
         </SettingsRow>
       </div>

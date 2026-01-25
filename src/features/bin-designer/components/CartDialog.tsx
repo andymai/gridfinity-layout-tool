@@ -124,7 +124,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
         className="mx-4 flex w-full max-w-lg flex-col rounded-lg border border-stroke-subtle bg-surface shadow-xl"
         style={{ maxHeight: '80vh' }}
         role="dialog"
-        aria-label="Export cart"
+        aria-label={t('binDesigner.exportCart')}
         aria-modal="true"
       >
         {/* Header */}
@@ -138,7 +138,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
           <button
             onClick={onClose}
             className="rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
-            aria-label="Close"
+            aria-label={t('common.close')}
             disabled={exporting}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -160,7 +160,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
               </p>
             </div>
           ) : (
-            <ul className="space-y-2" aria-label="Cart items">
+            <ul className="space-y-2" aria-label={t('binDesigner.cartItems')}>
               {items.map((item) => (
                 <CartItemRow
                   key={item.id}
@@ -178,9 +178,9 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
           <div className="border-t border-stroke-subtle px-5 py-4">
             {/* Estimates summary */}
             <div className="mb-3 flex gap-4 text-xs text-content-secondary">
-              <span>{totals.filament.toFixed(1)}g filament</span>
+              <span>{t('binDesigner.cart.filament', { amount: totals.filament.toFixed(1) })}</span>
               <span>{formatTime(totals.time)}</span>
-              <span>${totals.cost.toFixed(2)}</span>
+              <span>{t('binDesigner.cart.cost', { amount: totals.cost.toFixed(2) })}</span>
             </div>
 
             {/* Progress bar */}
@@ -200,7 +200,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
                   aria-valuenow={progress.current + 1}
                   aria-valuemin={0}
                   aria-valuemax={progress.total}
-                  aria-label="Export progress"
+                  aria-label={t('binDesigner.exportProgress')}
                 >
                   <div
                     className="h-full rounded-full bg-blue-500 transition-all"
@@ -223,17 +223,13 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
                 onClick={handleClearCart}
                 disabled={exporting}
                 className="text-xs text-content-secondary hover:text-content disabled:opacity-50"
-              >
-                Clear cart
-              </button>
+              >{t('binDesigner.clearCart')}</button>
               <div className="flex gap-2">
                 {exporting ? (
                   <button
                     onClick={handleCancel}
                     className="rounded-md px-4 py-2 text-sm font-medium text-content-secondary hover:bg-surface-hover"
-                  >
-                    Cancel
-                  </button>
+                  >{t('common.cancel')}</button>
                 ) : (
                   <button
                     onClick={handleExport}
@@ -241,9 +237,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Download ZIP
-                  </button>
+                    </svg>{t('binDesigner.downloadZip')}</button>
                 )}
               </div>
             </div>
@@ -271,6 +265,7 @@ function CartItemRow({
   onRemove: () => void;
   disabled: boolean;
 }) {
+  const t = useTranslation();
   const estimates = estimatePrint(item.params);
   const dims = `${item.params.width}×${item.params.depth}×${item.params.height}`;
 
@@ -293,7 +288,7 @@ function CartItemRow({
         <div className="flex gap-3 text-[10px] text-content-tertiary">
           <span>{dims}</span>
           <span>{item.params.style}</span>
-          <span>{estimates.gramsFilament.toFixed(1)}g</span>
+          <span>{t('binDesigner.cart.grams', { amount: estimates.gramsFilament.toFixed(1) })}</span>
         </div>
       </div>
 

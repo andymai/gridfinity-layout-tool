@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import type { RefObject } from 'react';
+import { useTranslation } from '@/i18n';
 
 interface ContextMenuContainerProps {
   /** Whether the menu is visible */
@@ -37,6 +38,7 @@ export function ContextMenuContainer({
   menuRef,
   children,
 }: ContextMenuContainerProps) {
+  const t = useTranslation();
   // Focus first menu item when menu opens
   useEffect(() => {
     if (!isOpen || !menuRef.current) return;
@@ -102,7 +104,7 @@ export function ContextMenuContainer({
       <div
         ref={menuRef}
         role="menu"
-        aria-label="Context menu"
+        aria-label={t('contextMenu.contextMenu')}
         className="fixed z-50 rounded-xl overflow-hidden shadow-xl bg-surface-elevated border border-stroke-subtle animate-fade-in"
         style={{
           left: position.x,

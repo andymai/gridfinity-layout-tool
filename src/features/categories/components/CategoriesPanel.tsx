@@ -248,15 +248,15 @@ export function CategoriesPanel() {
                           canDelete
                             ? t('categories.deleteCategory')
                             : binCount > 0
-                              ? `Cannot delete: ${binCount} bin${binCount > 1 ? 's' : ''} use this category`
-                              : 'Cannot delete the last category'
+                              ? t('categories.cannotDeleteInUse', { count: binCount })
+                              : t('categories.cannotDeleteLast')
                         }
                         title={
                           canDelete
                             ? t('categories.deleteCategory')
                             : binCount > 0
-                              ? `${binCount} bin${binCount > 1 ? 's' : ''} use this category`
-                              : 'At least one category is required'
+                              ? t('categories.binsUseCategory', { count: binCount })
+                              : t('categories.atLeastOneRequired')
                         }
                       >
                         {t('common.delete')}
@@ -264,7 +264,7 @@ export function CategoriesPanel() {
                       <button
                         onClick={() => setEditingId(null)}
                         className="btn btn-secondary btn-sm flex-1 justify-center"
-                        aria-label="Finish editing category"
+                        aria-label={t('categories.finishEditingCategory')}
                       >
                         {t('common.done')}
                       </button>
@@ -315,14 +315,14 @@ export function CategoriesPanel() {
                       aria-pressed={isActive}
                       aria-label={
                         selectedBinIds.length > 0
-                          ? `Apply ${category.name} to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}`
+                          ? t('categories.applyToSelectedBins', { name: category.name, count: selectedBinIds.length })
                           : isActive
-                            ? `${category.name} (selected for new bins)`
-                            : `Select ${category.name} for new bins`
+                            ? t('categories.selectedForNewBins', { name: category.name })
+                            : t('categories.selectForNewBins', { name: category.name })
                       }
                       title={
                         selectedBinIds.length > 0
-                          ? `Apply to ${selectedBinIds.length} selected bin${selectedBinIds.length > 1 ? 's' : ''}`
+                          ? t('categories.applyToCount', { count: selectedBinIds.length })
                           : undefined
                       }
                     >
@@ -361,8 +361,8 @@ export function CategoriesPanel() {
                       }`}
                       title={
                         binCount > 0
-                          ? `${binCount} bin${binCount > 1 ? 's' : ''} use this category`
-                          : 'No bins use this category'
+                          ? t('categories.binsUseCategory', { count: binCount })
+                          : t('categories.noBinsUseCategory')
                       }
                     >
                       {binCount > 0 ? binCount : ''}

@@ -175,6 +175,7 @@ export function useLayoutSwitcher() {
       clearHistory,
       clearSharedLayoutPreview,
       addToast,
+      t,
     ]
   );
 
@@ -241,6 +242,7 @@ export function useLayoutSwitcher() {
       clearHistory,
       addToast,
       settings,
+      t,
     ]
   );
 
@@ -288,7 +290,7 @@ export function useLayoutSwitcher() {
         return err(fromUnknown(error));
       }
     },
-    [setLibrary, switchLayout, addToast]
+    [setLibrary, switchLayout, addToast, t]
   );
 
   /**
@@ -327,7 +329,7 @@ export function useLayoutSwitcher() {
         return err(fromUnknown(error));
       }
     },
-    [getEntry, setLibrary, addToast]
+    [getEntry, setLibrary, addToast, t]
   );
 
   /**
@@ -392,7 +394,7 @@ export function useLayoutSwitcher() {
         return err(fromUnknown(error));
       }
     },
-    [setLibrary, addToast]
+    [setLibrary, addToast, t]
   );
 
   return {

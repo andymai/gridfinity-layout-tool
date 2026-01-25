@@ -31,7 +31,7 @@ export function TabletPanelTriggers({
             border: '1px solid var(--border-default)',
             animation: 'fade-in 0.3s ease-out',
           }}
-          aria-label="Open layers panel"
+          aria-label={t('tablet.openLayersPanel')}
           title={t('tablet.layersCategories')}
         >
           {/* Layers icon */}
@@ -62,7 +62,7 @@ export function TabletPanelTriggers({
             border: '1px solid var(--border-default)',
             animation: 'fade-in 0.3s ease-out',
           }}
-          aria-label="Open inspector panel"
+          aria-label={t('tablet.openInspectorPanel')}
           title={t('tablet.selectionActions')}
         >
           {/* Inspector/settings icon */}

@@ -90,7 +90,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
 
         <div className="flex items-center gap-3">
           <label htmlFor="permission" className="text-sm text-content-secondary whitespace-nowrap">
-            {t('share.cloud.permissions')}:
+            {t('share.cloud.permissionsLabel')}
           </label>
           <select
             id="permission"
@@ -248,9 +248,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           <button onClick={onClose} className="btn btn-primary">
             {t('common.done')}
           </button>
-          <button onClick={reset} className="btn btn-secondary">
-            Share Another
-          </button>
+          <button onClick={reset} className="btn btn-secondary">{t('share.shareAnother')}</button>
         </div>
       </div>
     );
@@ -278,9 +276,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           <button onClick={reset} className="btn btn-primary">
             {t('error.tryAgain')}
           </button>
-          <button onClick={onSwitchToUrlTab} className="btn btn-secondary">
-            Use Share Link Instead
-          </button>
+          <button onClick={onSwitchToUrlTab} className="btn btn-secondary">{t('share.useShareLinkInstead')}</button>
         </div>
       </div>
     );
