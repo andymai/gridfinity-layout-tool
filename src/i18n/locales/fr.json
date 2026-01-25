@@ -939,7 +939,7 @@
   "share.json.copy": "Copier JSON",
   "share.json.description": "Copier le JSON brut dans le presse-papiers.",
   "share.layoutFilename": "Nom de fichier du layout",
-  "share.layoutSummary": "Résumé du layout",
+  "share.layoutSummary": "{grid} grille · {bins} bacs · {layers} couches",
   "share.link.description": "Le layout est encodé dans l'URL. Aucun serveur requis.",
   "share.link.urlEncoded": "Encodé dans l'URL (peut être long)",
   "share.link.longUrlNote": "Remarque : Les layouts très volumineux peuvent créer des URLs longues qui ne fonctionnent pas dans certains navigateurs.",

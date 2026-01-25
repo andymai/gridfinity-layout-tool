@@ -939,7 +939,7 @@
   "share.json.copied": "JSON gekopieerd!",
   "share.json.description": "Kopieer ruwe JSON naar klembord.",
   "share.layoutFilename": "Layout bestandsnaam",
-  "share.layoutSummary": "Layout samenvatting",
+  "share.layoutSummary": "{grid} rooster · {bins} bakken · {layers} lagen",
   "share.link.description": "De layout is gecodeerd in de URL. Geen server nodig.",
   "share.link.urlEncoded": "URL-gecodeerd (kan lang zijn)",
   "share.link.longUrlNote": "Let op: Zeer grote layouts kunnen lange URLs genereren die in sommige browsers niet werken.",

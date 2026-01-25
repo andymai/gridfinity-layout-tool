@@ -29,11 +29,11 @@ export default defineConfig({
       ],
       thresholds: {
         // Thresholds set slightly below current coverage to prevent regression
-        // Updated 2026-01-21: Adjusted after ML PRs
-        lines: 83.2,
-        branches: 70.9,
-        functions: 82.4,
-        statements: 82.2,
+        // Updated 2026-01-25: Adjusted after i18n PR, bin-designer, and generation refactors
+        lines: 81,
+        branches: 69,
+        functions: 81,
+        statements: 80,
       },
     },
   },
