@@ -800,11 +800,16 @@ export function Staging() {
                 // Letter-spacing for small text
                 const letterSpacing = primaryFontSize < 11 ? '0.02em' : 'normal';
 
+                // Elevate z-index when hovered/selected so rotate button appears above other bins
+                const isElevated = hoveredBinId === bin.id || isSelected;
+
                 return (
                   <div
                     key={bin.id}
                     data-staging-bin-id={bin.id}
-                    className={`relative flex flex-col items-center justify-center transition-all duration-150 cursor-move rounded-sm z-10 touch-none ${
+                    className={`relative flex flex-col items-center justify-center transition-all duration-150 cursor-move rounded-sm touch-none ${
+                      isElevated ? 'z-20' : 'z-10'
+                    } ${
                       isDragging
                         ? 'bg-transparent border-2 border-dashed border-accent pointer-events-none'
                         : isSelected
