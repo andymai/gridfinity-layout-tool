@@ -21,7 +21,15 @@
 // Hooks are intentionally co-located with LocaleProvider for cohesion.
 // Fast Refresh still works; this just skips component-level HMR for hooks.
 
-import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from 'react';
 import type { ReactNode } from 'react';
 import type { Locale, Translations, TranslationVars } from './types';
 import en from './locales/en';
@@ -41,6 +49,27 @@ interface LocaleContextValue {
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
+
+/**
+ * Static translation lookup for use outside React context.
+ * Currently uses English only - suitable for ErrorBoundary and other
+ * edge cases where React context is unavailable.
+ *
+ * @example
+ * ```tsx
+ * import { getStaticTranslation } from '@/i18n';
+ * const heading = getStaticTranslation('error.heading');
+ * ```
+ */
+export function getStaticTranslation(key: string, vars?: TranslationVars): string {
+  const template = en[key] ?? key;
+  if (!vars) return template;
+  let result = template;
+  for (const [k, value] of Object.entries(vars)) {
+    result = result.replaceAll(`{${k}}`, String(value));
+  }
+  return result;
+}
 
 /**
  * Interpolate variables into a translation string.
@@ -151,11 +180,23 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     [locale, setLocale, t, isLoading]
   );
 
-  return (
-    <LocaleContext.Provider value={value}>
-      {children}
-    </LocaleContext.Provider>
-  );
+  // Show minimal loading state while translations are loading
+  // This prevents flash of English content for non-English users
+  if (isLoading) {
+    return (
+      <LocaleContext.Provider value={value}>
+        <div className="h-screen flex items-center justify-center bg-surface">
+          <div
+            className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin"
+            role="status"
+            aria-label="Loading"
+          />
+        </div>
+      </LocaleContext.Provider>
+    );
+  }
+
+  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 
 /**

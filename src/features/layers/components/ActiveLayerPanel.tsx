@@ -7,16 +7,6 @@ import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { useTranslation } from '@/i18n';
 
-// TODO: Add i18n keys for ActiveLayerPanel strings:
-// - Bin Palette (title)
-// - Select a size, then click or drag on grid (instruction)
-// - Shift+click to add to stash (hint)
-// - Squares, Rectangles, Wide, Tall (category labels)
-// - Fill with WxD, Fill X gaps, No gaps, Clear X bins, No bins (button text)
-// - Clear Layer (confirm dialog title)
-// - Confirm message for clear
-// - Toast messages for add to stash and fill operations
-
 // Square sizes
 const SQUARE_SIZES = [1, 2, 3, 4, 5, 6];
 
@@ -180,7 +170,11 @@ export function ActiveLayerPanel() {
           }
         }}
         className={`flex flex-col items-center justify-end gap-1 h-[60px] p-1.5 rounded transition-colors ${isActive ? 'bg-accent/20' : 'hover:bg-surface-hover'} ${className}`}
-        aria-label={t('layers.paintSizeAriaLabel', { action: isActive ? t('layers.deselect') : t('layers.select'), width: w, depth: d })}
+        aria-label={t('layers.paintSizeAriaLabel', {
+          action: isActive ? t('layers.deselect') : t('layers.select'),
+          width: w,
+          depth: d,
+        })}
         title={t('layers.paintSizeTitle', { width: w, depth: d })}
       >
         <div
@@ -205,8 +199,8 @@ export function ActiveLayerPanel() {
     <div>
       <CollapsibleSection title={t('layers.binPalette')} variant="default">
         <p className="text-xs text-content-tertiary mb-3">
-          Select a size, then click or drag on grid.{' '}
-          <span className="text-content-disabled">Shift+click to add to stash.</span>
+          {t('layers.binPaletteInstruction')}{' '}
+          <span className="text-content-disabled">{t('layers.binPaletteHint')}</span>
         </p>
 
         {/* Squares section */}
@@ -223,9 +217,7 @@ export function ActiveLayerPanel() {
           <button
             onClick={() => setRotated(!rotated)}
             className="text-xs text-content-tertiary hover:text-content flex items-center gap-1 transition-colors"
-            title={
-              rotated ? t('layers.showingTall') : t('layers.showingWide')
-            }
+            title={rotated ? t('layers.showingTall') : t('layers.showingWide')}
             aria-label={rotated ? t('layers.switchToWide') : t('layers.switchToTall')}
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -253,7 +245,9 @@ export function ActiveLayerPanel() {
             className="btn btn-primary w-full justify-center mt-3 text-sm"
             title={`Fill empty space with ${paintSize.width}×${paintSize.depth} bins`}
             aria-label={`Fill layer with ${paintSize.width} by ${paintSize.depth} bins`}
-          >{t('layers.fillWith')}{paintSize.width}×{paintSize.depth}
+          >
+            {t('layers.fillWith')}
+            {paintSize.width}×{paintSize.depth}
           </button>
         )}
 
@@ -298,7 +292,9 @@ export function ActiveLayerPanel() {
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
           </svg>
-          {layerBins.length > 0 ? t('layers.clearBins', { count: layerBins.length }) : t('layers.noBins')}
+          {layerBins.length > 0
+            ? t('layers.clearBins', { count: layerBins.length })
+            : t('layers.noBins')}
         </button>
       </CollapsibleSection>
 

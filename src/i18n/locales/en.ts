@@ -22,6 +22,15 @@ const en: Record<string, string> = {
   'common.delete': 'Delete',
   'common.close': 'Close',
   'common.loading': 'Loading...',
+
+  // Error boundary (used via getStaticTranslation, not hooks)
+  'errorBoundary.heading': 'Something went wrong',
+  'errorBoundary.description': 'The app encountered an unexpected error. Your layout data is safe.',
+  'errorBoundary.hint':
+    'Try refreshing the page. If the problem persists, resetting app data will restore defaults while your browser may still have cached data.',
+  'errorBoundary.tryAgain': 'Try Again',
+  'errorBoundary.resetAppData': 'Reset App Data',
+
   'common.copy': 'Copy',
   'common.copied': 'Copied!',
   'common.download': 'Download',
@@ -70,7 +79,8 @@ const en: Record<string, string> = {
   'header.layoutName': 'Layout name',
   'header.halfBinMode': 'Half-Bin Mode',
   'header.halfBinModeShort': '½-bin',
-  'header.halfBinModeTitle': 'Half-bin mode is active: 0.5 unit precision enabled (press H to toggle)',
+  'header.halfBinModeTitle':
+    'Half-bin mode is active: 0.5 unit precision enabled (press H to toggle)',
   'header.layouts': 'Layouts',
   'header.openLayoutManager': 'Open layout manager',
   'header.print': 'Print',
@@ -211,7 +221,8 @@ const en: Record<string, string> = {
   'inspector.multi.toStash': 'All to Stash',
   'inspector.multi.clearanceTooltip': 'Extra blocked space above bins for tall contents',
   'inspector.split.title': 'Oversized for print bed',
-  'inspector.split.message': 'This {width}×{depth} bin ({widthMm}×{depthMm}mm) exceeds your print bed ({bedSize}mm). It will be split into smaller pieces for printing.',
+  'inspector.split.message':
+    'This {width}×{depth} bin ({widthMm}×{depthMm}mm) exceeds your print bed ({bedSize}mm). It will be split into smaller pieces for printing.',
   'inspector.split.piecesNeeded': '{count} piece(s) needed',
   'inspector.customProps.title': 'Custom Properties',
   'inspector.customProps.addProperty': 'Add Property',
@@ -266,13 +277,16 @@ const en: Record<string, string> = {
   'layers.heightTooltip': 'Height for new bins placed on this layer',
   'layers.deleteTooltip': 'Delete this layer',
   'layers.confirmDelete.title': 'Delete Layer',
-  'layers.confirmDelete.message': 'Delete "{name}"? The {count} bin(s) on this layer will be moved to the Stash.',
+  'layers.confirmDelete.message':
+    'Delete "{name}"? The {count} bin(s) on this layer will be moved to the Stash.',
   'layers.confirmDelete.confirm': 'Delete',
   'layers.clearLayer.title': 'Clear Layer',
   'layers.clearLayer.message': 'Move all {count} bin(s) on this layer to the stash?',
   'layers.clearLayer.confirm': 'Clear',
   'layers.layerNamePlaceholder': 'Layer name',
   'layers.binPalette': 'Bin Palette',
+  'layers.binPaletteInstruction': 'Select a size, then click or drag on grid.',
+  'layers.binPaletteHint': 'Shift+click to add to stash.',
   'layers.decreaseHeight': 'Decrease {name} height',
   'layers.increaseHeight': 'Increase {name} height',
   'layers.activeClickToRename': 'Active (click to rename)',
@@ -316,7 +330,8 @@ const en: Record<string, string> = {
   'categories.editCategory': 'Edit category',
   'categories.editColor': 'Click to edit color',
   'categories.confirmDelete.title': 'Delete Category',
-  'categories.confirmDelete.message': 'Delete "{name}"? Bins in this category will be moved to the default category.',
+  'categories.confirmDelete.message':
+    'Delete "{name}"? Bins in this category will be moved to the default category.',
   'categories.confirmDelete.confirm': 'Delete Category',
   'categories.cannotDeleteLast': 'Cannot delete the last category',
   'categories.categoryNamePlaceholder': 'Category name',
@@ -442,7 +457,8 @@ const en: Record<string, string> = {
   'share.cloud.permissionsLabel': 'Permissions',
   'share.link.description': 'The layout is encoded in the URL. No server needed.',
   'share.link.urlEncoded': 'URL-encoded (may be long)',
-  'share.link.longUrlNote': 'Note: Very large layouts may create long URLs that don\'t work in some browsers.',
+  'share.link.longUrlNote':
+    "Note: Very large layouts may create long URLs that don't work in some browsers.",
   'share.file.description': 'Download your layout as a JSON file.',
   'share.file.download': 'Download JSON',
   'share.file.downloaded': 'Downloaded!',
@@ -459,7 +475,8 @@ const en: Record<string, string> = {
   'share.banner.savedToLayouts': 'Saved "{name}" to your layouts',
   'share.banner.discarded': 'Shared layout discarded',
   'share.banner.discardTitle': 'Discard shared layout?',
-  'share.banner.discardMessage': 'Any changes you made will be lost. You\'ll return to your previous layout.',
+  'share.banner.discardMessage':
+    "Any changes you made will be lost. You'll return to your previous layout.",
   'share.banner.discardConfirm': 'Discard',
   'share.banner.viewingLayout': 'Viewing layout',
   'share.shareToCloud': 'Share to Cloud',
@@ -558,7 +575,8 @@ const en: Record<string, string> = {
   'settings.saveCurrentAsDefaults': 'Save Current as Defaults',
   'settings.saveCurrentTitle': 'Save current layout settings as defaults for new layouts',
   'settings.confirmSaveDefaults.title': 'Save as Defaults',
-  'settings.confirmSaveDefaults.message': 'Save current settings as defaults for new layouts?\n\nDrawer: {width}×{depth}×{height}u\nLayer height: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm',
+  'settings.confirmSaveDefaults.message':
+    'Save current settings as defaults for new layouts?\n\nDrawer: {width}×{depth}×{height}u\nLayer height: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm',
   'settings.confirmSaveDefaults.confirm': 'Save',
   'settings.stlSearch': 'STL Search',
   'settings.stlSearchHint': 'Choose which sites to search for Gridfinity STL files:',
@@ -571,7 +589,8 @@ const en: Record<string, string> = {
   'settings.languageHint': 'Choose your preferred language',
   'settings.autoDetect': 'Auto (browser default)',
   'settings.labs': 'Labs',
-  'settings.labsHint': 'Try new features before they\'re released. Features may change based on feedback.',
+  'settings.labsHint':
+    "Try new features before they're released. Features may change based on feedback.",
   'settings.labsEmpty': 'No experimental features available right now.',
   'settings.labsCheckBack': 'Check back later!',
   'settings.experimental': 'Experimental',
@@ -731,13 +750,17 @@ const en: Record<string, string> = {
   'mobile.header.tip': 'Tip',
   'mobile.help.drawingSelection': 'Drawing & Selection',
   'mobile.help.editing': 'Editing',
-  'mobile.help.longPressABinToDuplicateDeleteOrMov': 'Long-press a bin to duplicate, delete, or move to stash',
+  'mobile.help.longPressABinToDuplicateDeleteOrMov':
+    'Long-press a bin to duplicate, delete, or move to stash',
   'mobile.help.navigation': 'Navigation',
-  'mobile.help.oversizedBinsAreAutomaticallySplitF': 'Oversized bins are automatically split for printing',
+  'mobile.help.oversizedBinsAreAutomaticallySplitF':
+    'Oversized bins are automatically split for printing',
   'mobile.help.paintMode': 'Paint Mode',
-  'mobile.help.tapThe3dCubeIconToSeeYourLayoutInIs': 'Tap the 3D cube icon to see your layout in isometric view',
+  'mobile.help.tapThe3dCubeIconToSeeYourLayoutInIs':
+    'Tap the 3D cube icon to see your layout in isometric view',
   'mobile.help.tips': 'Tips',
-  'mobile.help.withKeyboardMToMoveBinsRToResizeVFo': 'With keyboard: M to move bins, R to resize, V for 3D view',
+  'mobile.help.withKeyboardMToMoveBinsRToResizeVFo':
+    'With keyboard: M to move bins, R to resize, V for 3D view',
   'mobile.help.yourLayoutAutoSavesToYourBrowser': 'Your layout auto-saves to your browser',
   'mobile.inspector.deleteBin': 'Delete bin',
   'mobile.inspector.deleteBins': 'Delete bins',
@@ -788,7 +811,8 @@ const en: Record<string, string> = {
   'mobile.settings.newLayoutsWillUseTheseDefaults': 'New layouts will use these defaults:',
   'mobile.settings.printBed': 'Print bed: ',
   'mobile.settings.saveCurrentAsDefaults': 'Save Current as Defaults',
-  'mobile.settings.shareBinSizesAndPlacementPatternsNo': 'Share bin sizes and placement patterns (no personal data)',
+  'mobile.settings.shareBinSizesAndPlacementPatternsNo':
+    'Share bin sizes and placement patterns (no personal data)',
   'mobile.settings.toggleHalfBinMode': 'Toggle half-bin mode',
   'mobile.settings.toggleUsageDataCollection': 'Toggle usage data collection',
   'mobile.settings.toolBy': 'Tool by ',
@@ -844,7 +868,7 @@ const en: Record<string, string> = {
   'toast.sharedLayoutFailed': 'Failed to load shared layout: {error}',
   'toast.savedToLayouts': 'Saved "{name}" to your layouts',
   'toast.online': 'Back online',
-  'toast.offline': 'You\'re offline. Changes save locally.',
+  'toast.offline': "You're offline. Changes save locally.",
   'toast.updating': 'Updating to latest version...',
   'toast.sessionRestored': 'Session restored',
   'toast.rotateFailed': 'Cannot rotate bin',
@@ -858,7 +882,8 @@ const en: Record<string, string> = {
   // Grid Editor
   // ===========================================================================
   'grid.resizeDialog.title': 'Resize Grid',
-  'grid.resizeDialog.message': '{count} bin(s) won\'t fit in the new grid and will be moved to the Stash. Continue?',
+  'grid.resizeDialog.message':
+    "{count} bin(s) won't fit in the new grid and will be moved to the Stash. Continue?",
   'grid.resizeDialog.confirm': 'Move to Stash',
   'grid.exceedsPrintSize': 'Exceeds print size, will be split',
   'grid.labelPlaceholder': 'Enter label...',
@@ -931,11 +956,13 @@ const en: Record<string, string> = {
   // Half-Bin Mode Blocked
   // ===========================================================================
   'halfBinBlocked.title': 'Cannot Disable Half-Bin Mode',
-  'halfBinBlocked.message': 'Some bins use fractional dimensions. Resize or delete these bins before disabling half-bin mode.',
+  'halfBinBlocked.message':
+    'Some bins use fractional dimensions. Resize or delete these bins before disabling half-bin mode.',
   'halfBinBlocked.cancelAriaLabel': 'Cancel and keep half-bin mode enabled',
   'halfBinBlocked.close': 'Got it',
   'halfBinBlocked.errorFallback': 'An error occurred while moving bins',
-  'halfBinMode.remediate.ariaLabel': 'Move {count} fractional bins to stash and disable half-bin mode',
+  'halfBinMode.remediate.ariaLabel':
+    'Move {count} fractional bins to stash and disable half-bin mode',
 
   // ===========================================================================
   // Inspiration Gallery
@@ -961,8 +988,9 @@ const en: Record<string, string> = {
   'gallery.moreCount': '+{count} more',
   'gallery.moreInTheme': 'More {theme}',
   'gallery.sameSizeAsYourCurrent': 'Same size as your current {size} drawer',
-  'gallery.seeWhatSPossibleThenMakeItYours': 'See what\'s possible, then make it yours',
-  'gallery.useAsAStartingPointCustomizeToFitYo': 'Use as a starting point — customize to fit your items',
+  'gallery.seeWhatSPossibleThenMakeItYours': "See what's possible, then make it yours",
+  'gallery.useAsAStartingPointCustomizeToFitYo':
+    'Use as a starting point — customize to fit your items',
   'gallery.useAsStartingPoint': 'Use as Starting Point',
   'gallery.yourSize': '(yours: {size})',
 
@@ -1012,7 +1040,8 @@ const en: Record<string, string> = {
   'binDesigner.cart.grams': '{amount}g',
   'binDesigner.cartItems': 'Cart items',
   'binDesigner.changePreviewColor': 'Change preview color',
-  'binDesigner.changesAreSavedAutomaticallyAsYouDe': 'Changes are saved automatically as you design',
+  'binDesigner.changesAreSavedAutomaticallyAsYouDe':
+    'Changes are saved automatically as you design',
   'binDesigner.clearCart': 'Clear cart',
   'binDesigner.columns': 'Columns',
   'binDesigner.comingSoon': 'Coming Soon',
@@ -1037,7 +1066,8 @@ const en: Record<string, string> = {
   'binDesigner.gridSize': 'Grid size',
   'binDesigner.gridUnit': 'Grid unit',
   'binDesigner.halfBinMode': 'Half-bin mode',
-  'binDesigner.halfBinModeExperimentalEnable05Grid': 'Half-bin mode (experimental): enable 0.5 grid unit precision',
+  'binDesigner.halfBinModeExperimentalEnable05Grid':
+    'Half-bin mode (experimental): enable 0.5 grid unit precision',
   'binDesigner.heightUnit': 'Height unit',
   'binDesigner.layout': 'Layout',
   'binDesigner.load': 'Load',
@@ -1206,7 +1236,7 @@ const en: Record<string, string> = {
   // ===========================================================================
   // Key (reserved)
   // ===========================================================================
-  'key': 'key',
+  key: 'key',
 
   // ===========================================================================
   // Labs
@@ -1224,7 +1254,7 @@ const en: Record<string, string> = {
   'labs.learnMore': 'Learn more',
   'labs.nowAvailableToEveryone': 'Now available to everyone',
   'labs.tryExperimentalFeatures': 'Try experimental features',
-  'labs.whatsNew': 'What\'s new',
+  'labs.whatsNew': "What's new",
 
   // ===========================================================================
   // Layout (Collaboration)

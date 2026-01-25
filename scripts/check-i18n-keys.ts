@@ -1,3 +1,4 @@
+/* eslint-disable no-console -- CLI script that outputs to console */
 /**
  * Pre-commit check: Verify all locale JSON files have the same keys as en.ts.
  *
@@ -14,8 +15,9 @@ const LOCALES_DIR = join(import.meta.dirname, '..', 'src', 'i18n', 'locales');
 function getEnglishKeys(): string[] {
   const content = readFileSync(join(LOCALES_DIR, 'en.ts'), 'utf-8');
   const keys: string[] = [];
-  // Match lines like: 'key.name': 'value',
-  const regex = /^\s*'([^']+)':\s*'/gm;
+  // Match lines like: 'key.name': 'value', or 'key.name': "value",
+  // Also handles multi-line values where the value is on the next line
+  const regex = /^\s*'([^']+)':\s*['"\n]/gm;
   let match;
   while ((match = regex.exec(content)) !== null) {
     keys.push(match[1]);
@@ -69,7 +71,9 @@ for (const file of localeFiles) {
 console.log('');
 
 if (hasErrors) {
-  console.error('❌ i18n key mismatch detected. All locale files must have the same keys as en.ts.');
+  console.error(
+    '❌ i18n key mismatch detected. All locale files must have the same keys as en.ts.'
+  );
   process.exit(1);
 } else {
   console.log('✅ All locale files have matching keys.');

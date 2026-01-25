@@ -37,7 +37,6 @@ export function LanguageSelector() {
   const t = useTranslation();
   const { locale, setLocale, isLoading } = useLocale();
   const updateSetting = useSettingsStore((state) => state.updateSetting);
-  const settingsLocale = useSettingsStore((state) => state.settings.locale);
 
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -119,7 +118,7 @@ export function LanguageSelector() {
           aria-label={t('header.selectLanguage')}
         >
           {SUPPORTED_LOCALES.map((loc) => {
-            const isSelected = locale === loc.code && settingsLocale !== 'auto';
+            const isSelected = locale === loc.code;
             return (
               <button
                 key={loc.code}
@@ -134,6 +133,7 @@ export function LanguageSelector() {
               >
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-mono text-content-tertiary w-6">
+                    {/* eslint-disable-next-line i18next/no-literal-string -- locale codes are not translatable */}
                     {loc.code === 'pt-BR' ? 'PT' : loc.code.toUpperCase()}
                   </span>
                   <span>{loc.nativeName}</span>
