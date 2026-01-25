@@ -34,6 +34,60 @@ interface PackedBin {
 }
 
 /**
+ * Create cluster key for grouping similar bins.
+ * Bins with same category and same floored dimensions share a key.
+ * Using floor() means 2.0 and 2.9 cluster together (both floor to 2),
+ * but 1.9 (floors to 1) goes in a different cluster.
+ */
+function getClusterKey(bin: PackedBin): string {
+  return `${bin.category}_${Math.floor(bin.width)}_${Math.floor(bin.depth)}`;
+}
+
+/**
+ * Group bins into clusters by category + floored dimensions, ordered by cluster size.
+ * Within each cluster, bins are sorted by area (largest first) for better packing.
+ *
+ * This improves stash organization by keeping similar bins together:
+ * - All 2×3 "Electronics" bins cluster together (2.1×3.5 included, but not 3×2)
+ * - All 1×1 "Hardware" bins cluster together
+ * - Largest clusters appear first (bottom-left of stash)
+ */
+function clusterBins(bins: PackedBin[]): PackedBin[] {
+  if (bins.length === 0) return [];
+
+  // Group by cluster key (category + floored dimensions)
+  const clusters = new Map<string, PackedBin[]>();
+  for (const bin of bins) {
+    const key = getClusterKey(bin);
+    const group = clusters.get(key);
+    if (group) {
+      group.push(bin);
+    } else {
+      clusters.set(key, [bin]);
+    }
+  }
+
+  // Convert to array and sort clusters by size (most bins first)
+  // Use cluster key as tiebreaker for stable ordering when clusters have equal size
+  // Note: a[0] is safe because clusters only exist if at least one bin was added
+  const clusterArray = Array.from(clusters.values());
+  clusterArray.sort((a, b) => {
+    const sizeDiff = b.length - a.length;
+    if (sizeDiff !== 0) return sizeDiff;
+    return getClusterKey(a[0]).localeCompare(getClusterKey(b[0]));
+  });
+
+  // Flatten with intra-cluster area sort (largest bins first for better packing)
+  const result: PackedBin[] = [];
+  for (const cluster of clusterArray) {
+    cluster.sort((a, b) => b.width * b.depth - a.width * a.depth);
+    result.push(...cluster);
+  }
+
+  return result;
+}
+
+/**
  * Auto-pack bins into staging grid (simple left-to-right, bottom-up packing)
  */
 function packBins(bins: PackedBin[], gridWidth: number): PackedBin[] {
@@ -64,8 +118,8 @@ function packBins(bins: PackedBin[], gridWidth: number): PackedBin[] {
     }
   };
 
-  // Sort by area (largest first) for better packing
-  const sortedBins = [...bins].sort((a, b) => b.width * b.depth - a.width * a.depth);
+  // Cluster by category + similar size, then sort within clusters by area
+  const sortedBins = clusterBins(bins);
 
   for (const bin of sortedBins) {
     let placed = false;
@@ -145,6 +199,9 @@ export function Staging() {
   const resizeHandleRef = useRef<HTMLDivElement>(null);
   const capturedPointerIdRef = useRef<number | null>(null);
 
+  // Track container width for responsive stash grid (desktop only)
+  const [containerWidth, setContainerWidth] = useState<number | null>(null);
+
   // Long-press detection state for context menu
   const longPressTimerRef = useRef<number | null>(null);
   const longPressTriggeredRef = useRef(false);
@@ -164,9 +221,35 @@ export function Staging() {
     [layout.bins]
   );
 
+  // Observe container width for responsive stash (desktop fills available space)
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        // contentRect.width is inner width (excluding padding)
+        // Padding is subtracted in the column calculation below
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
   const cellSize = Math.round(BASE_CELL_SIZE * zoom);
   const gap = 1;
-  const gridWidth = layout.drawer.width; // Match main drawer width
+  const padding = 32; // px-4 = 16px each side
+  const drawerWidth = layout.drawer.width;
+
+  // Calculate how many columns fit in the container (responsive width)
+  // Use max of drawer width and available space for better horizontal utilization
+  const availableCols = containerWidth
+    ? Math.floor((containerWidth - padding - gap) / (cellSize + gap))
+    : drawerWidth;
+  const gridWidth = Math.max(drawerWidth, availableCols);
   const integerWidth = Math.floor(gridWidth);
   const hasFractionalWidth = gridWidth % 1 !== 0;
   const fractionalWidthPart = gridWidth - integerWidth;
