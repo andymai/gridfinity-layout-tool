@@ -1104,6 +1104,8 @@ const en: Record<string, string> = {
   'binDesigner.resetToAuto': 'Reset to auto',
   'binDesigner.retry': 'Retry',
   'binDesigner.retryLoading': 'Retry loading',
+  'binDesigner.revertToWorking': 'Revert',
+  'binDesigner.revertedToWorking': 'Reverted to last working configuration',
   'binDesigner.rows': 'Rows',
   'binDesigner.saved': 'Saved',
   'binDesigner.savedDesigns': 'Saved Designs',

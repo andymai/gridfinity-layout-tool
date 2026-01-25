@@ -76,6 +76,8 @@
   "binDesigner.resetView": "Redefinir vista (R)",
   "binDesigner.retry": "Tentar Novamente",
   "binDesigner.retryLoading": "Tentar carregar novamente",
+  "binDesigner.revertToWorking": "Reverter",
+  "binDesigner.revertedToWorking": "Revertido para última configuração funcional",
   "binDesigner.rows": "Linhas",
   "binDesigner.saved": "Salvo",
   "binDesigner.savedDesigns": "Designs Salvos",

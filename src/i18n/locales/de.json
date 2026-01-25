@@ -62,6 +62,8 @@
   "binDesigner.resetToAuto": "Auf Auto zurücksetzen",
   "binDesigner.retry": "Erneut versuchen",
   "binDesigner.retryLoading": "Erneut laden",
+  "binDesigner.revertToWorking": "Zurücksetzen",
+  "binDesigner.revertedToWorking": "Zur letzten funktionierenden Konfiguration zurückgesetzt",
   "binDesigner.rows": "Reihen",
   "binDesigner.saved": "Gespeichert",
   "binDesigner.savedDesigns": "Gespeicherte Designs",
