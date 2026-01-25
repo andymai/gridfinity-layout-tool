@@ -60,10 +60,10 @@ test.describe('Create Layout Flow', () => {
     // Press ? key to open help (Shift+/ on US keyboard)
     await page.keyboard.press('?');
 
-    // Wait for help modal with title "Help & Shortcuts"
+    // Wait for help modal with title "Keyboard Shortcuts"
     await waitForDialog(page);
     const modal = page.locator('[role="dialog"]').filter({
-      has: page.getByRole('heading', { name: /help/i }),
+      has: page.getByRole('heading', { name: /keyboard shortcuts/i }),
     });
     await expect(modal).toBeVisible({ timeout: 5000 });
 

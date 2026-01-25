@@ -187,7 +187,8 @@ test.describe('Layout Library Management', () => {
       await page.getByRole('menuitem', { name: /delete/i }).click();
 
       // Wait for the confirmation state to appear and click again
-      const confirmDeleteMenuItem = page.getByRole('menuitem', { name: /click to confirm/i });
+      // Note: i18n confirmation text is "Delete Layout" not "Click to confirm"
+      const confirmDeleteMenuItem = page.getByRole('menuitem', { name: /delete layout/i });
       await expect(confirmDeleteMenuItem).toBeVisible({ timeout: 5000 });
       await confirmDeleteMenuItem.click();
 

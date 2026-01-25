@@ -931,7 +931,7 @@
   "share.json.copy": "JSON kopieren",
   "share.json.description": "Raw-JSON in Zwischenablage kopieren.",
   "share.layoutFilename": "Layout-Dateiname",
-  "share.layoutSummary": "Layout-Zusammenfassung",
+  "share.layoutSummary": "{grid} Raster · {bins} Fächer · {layers} Ebenen",
   "share.link.description": "Das Layout ist in der URL codiert. Kein Server erforderlich.",
   "share.link.urlEncoded": "URL-codiert (kann lang sein)",
   "share.link.longUrlNote": "Hinweis: Sehr große Layouts können lange URLs erzeugen, die in einigen Browsern nicht funktionieren.",

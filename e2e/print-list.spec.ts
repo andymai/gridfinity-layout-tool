@@ -37,8 +37,9 @@ test.describe('Print List', () => {
     const binList = page.getByRole('heading', { name: /bin list/i });
     await expect(binList).toBeVisible();
 
-    // Should show empty state message
-    const emptyMessage = page.getByText(/no bins placed/i);
+    // Should show empty state message (i18n: "No bins to print")
+    // Use exact match to avoid matching the longer "No bins to print in selected layer(s)"
+    const emptyMessage = page.getByText('No bins to print', { exact: true });
     await expect(emptyMessage).toBeVisible();
   });
 

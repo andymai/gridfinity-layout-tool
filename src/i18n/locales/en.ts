@@ -511,7 +511,7 @@ const en: Record<string, string> = {
   'share.deleteShareLink': 'Delete share link',
   'share.discard': 'Discard',
   'share.layoutFilename': 'Layout filename',
-  'share.layoutSummary': 'Layout summary',
+  'share.layoutSummary': '{grid} grid · {bins} bins · {layers} layers',
   'share.shareAnother': 'Share another',
   'share.useShareLinkInstead': 'Use share link instead',
 

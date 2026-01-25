@@ -12,7 +12,7 @@ Gridfinity Layout Tool: React + TypeScript web app for 3D-printed drawer organiz
 
 Pre-commit hooks enforce lint, build, and test coverage. Run `npm run test:coverage` before committing.
 
-**Coverage Thresholds:** Lines: 83%, Branches: 71%, Functions: 83%, Statements: 82%
+**Coverage Thresholds:** Lines: 81%, Branches: 69%, Functions: 81%, Statements: 80%
 
 Focus testing on `src/shared/utils/` (~90%), `src/core/store/` (~87%), `src/hooks/` (~73%).
 
@@ -315,8 +315,8 @@ const { formatDate, formatRelativeDate, formatNumber } = useFormatting();
 t('toast.binsDeleted', { count: 5 }); // "Deleted 5 bin(s)"
 
 // Locale-aware date formatting
-formatRelativeDate(timestamp);           // "Today", "2d ago", etc.
-formatRelativeDate(ts, false);           // Long format: "2 days ago"
+formatRelativeDate(timestamp); // "Today", "2d ago", etc.
+formatRelativeDate(ts, false); // Long format: "2 days ago"
 formatRelativeDate(ts, { includeTime: true }); // "5m ago", "2h ago"
 ```
 

@@ -939,7 +939,7 @@
   "share.json.copy": "Copiar JSON",
   "share.json.description": "Copia el JSON sin formato al portapapeles.",
   "share.layoutFilename": "Nombre de archivo del diseño",
-  "share.layoutSummary": "Resumen del diseño",
+  "share.layoutSummary": "{grid} cuadrícula · {bins} contenedores · {layers} capas",
   "share.link.description": "El diseño está codificado en la URL. No se necesita servidor.",
   "share.link.urlEncoded": "Codificado en URL (puede ser largo)",
   "share.link.longUrlNote": "Nota: Los diseños muy grandes pueden crear URLs largas que no funcionan en algunos navegadores.",
