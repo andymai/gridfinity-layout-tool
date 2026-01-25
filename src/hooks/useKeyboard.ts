@@ -18,6 +18,7 @@ import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants
 import { useGridNavigation } from '@/features/grid-editor';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { useTranslation } from '@/i18n';
 
 /**
  * Check if a key matches any shortcut in a readonly array.
@@ -63,6 +64,8 @@ function isShortcut(key: string, shortcuts: readonly string[]): boolean {
  * ```
  */
 export function useKeyboard() {
+  const t = useTranslation();
+
   // Selection store
   const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
   const focusedBinId = useSelectionStore((state) => state.focusedBinId);
@@ -189,6 +192,7 @@ export function useKeyboard() {
       }
 
       // Rotate selected bin (R) - swap width and depth (standalone key, no Ctrl/Cmd)
+      // Smart rotation: if rotation doesn't fit in place, finds nearby valid position
       if (key.toLowerCase() === SHORTCUTS.ROTATE && !ctrlOrMeta && selectedBinIds.length === 1) {
         e.preventDefault();
         const bin = layout.bins.find((b) => b.id === selectedBinIds[0]);
@@ -200,10 +204,20 @@ export function useKeyboard() {
           return;
         }
 
-        // Rotation is valid, perform it
+        // Rotation is valid, perform it (may include position change)
         execute(() => {
-          updateBin(bin.id, { width: bin.depth, depth: bin.width });
+          const updates: Partial<typeof bin> = { width: bin.depth, depth: bin.width };
+          if (result.movedTo) {
+            updates.x = result.movedTo.x;
+            updates.y = result.movedTo.y;
+          }
+          updateBin(bin.id, updates);
         });
+
+        // Show toast if bin was relocated to fit rotation
+        if (result.movedTo) {
+          addToast(t('toast.rotateRepositioned', { distance: result.movedTo.distance }), 'info');
+        }
         return;
       }
 
@@ -454,6 +468,7 @@ export function useKeyboard() {
       toggleHalfBinMode,
       setShowLayoutManager,
       addToast,
+      t,
     ]
   );
 

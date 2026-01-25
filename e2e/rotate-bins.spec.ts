@@ -101,35 +101,55 @@ test.describe('Rotate Bins', () => {
     await expect(inspector.getByText(/2×3 Bin/i)).toBeVisible();
   });
 
-  // TODO: These edge-case tests are skipped due to grid auto-zoom making
-  // coordinate calculations unreliable. The rotation validation logic is
-  // thoroughly tested in unit tests (src/test/rotation.test.ts).
-  // See: https://github.com/andymai/gridfinity-layout-tool/issues/42
-  test.skip('shows error toast when rotation would exceed bounds', async ({ page }) => {
-    // Test requires placing a bin at exact grid position (column 8)
-    // which is difficult with auto-zoom. The underlying validation
-    // logic is tested in validateRotation unit tests.
-    await page.keyboard.press('Escape');
-    await waitForPaintModeExited(page);
+  // NOTE: Smart rotation E2E tests are challenging due to precise positioning requirements.
+  // The smart rotation logic is thoroughly tested in unit tests (src/test/rotation.test.ts
+  // and src/test/binLocation.test.ts). These E2E tests verify basic rotation still works.
 
-    // Would need to:
-    // 1. Create a 1x3 bin at column 8 (near right edge)
-    // 2. Try to rotate - should fail with bounds error
-    // 3. Verify toast message
+  // Skip: Requires precise bin placement at exact grid edge
+  // which is unreliable with auto-zoom. See unit tests for validation.
+  test.skip('smart rotation repositions bin when rotation would exceed bounds', async ({
+    page: _page,
+  }) => {
+    // This test would verify:
+    // 1. Place a 1x3 bin near right edge
+    // 2. Rotate - should reposition left to fit as 3x1
+    // 3. Verify toast shows repositioning message
+    //
+    // Skipped because precise edge placement is unreliable in E2E.
+    // Smart rotation validation is covered in src/test/rotation.test.ts
   });
 
-  test.skip('shows error toast when rotation would cause collision', async ({ page }) => {
-    // Test requires placing two adjacent bins at exact positions
-    // which is difficult with auto-zoom. The underlying validation
-    // logic is tested in validateRotation unit tests.
+  // Skip: Same coordinate precision issue
+  test.skip('smart rotation finds position when collision would occur', async ({ page: _page }) => {
+    // This test would verify rotation finds alternate position when blocked
+  });
+
+  test('rotation undo works correctly', async ({ page }) => {
+    // Verify that rotation (with or without repositioning) is undoable
     await page.keyboard.press('Escape');
     await waitForPaintModeExited(page);
 
-    // Would need to:
-    // 1. Create a 2x3 bin at position (0,0)
-    // 2. Create a 1x1 bin at position (2,0)
-    // 3. Try to rotate first bin - should fail with collision error
-    // 4. Verify toast message
+    // Draw a rectangular bin (2x3) using same coords as other tests
+    // This matches the working 'can rotate a bin using R key' test
+    const bin = await drawBinOnGrid(page, 20, 20, 84, 116);
+    await waitForBinSelected(bin);
+
+    const inspector = getInspector(page);
+    // Verify initial dimensions
+    await expect(inspector.getByText(/2×3 Bin/i)).toBeVisible();
+
+    // Rotate
+    await page.keyboard.press('r');
+    await waitForUndoEnabled(page);
+
+    // Verify dimensions changed (should now be 3x2)
+    await expect(inspector.getByText(/3×2 Bin/i)).toBeVisible();
+
+    // Undo should restore original dimensions
+    await page.keyboard.press('Control+z');
+
+    // Wait for undo to apply and verify restored
+    await expect(inspector.getByText(/2×3 Bin/i)).toBeVisible({ timeout: 3000 });
   });
 
   test('square bin rotation is a no-op', async ({ page }) => {

@@ -658,7 +658,7 @@ export type PlacementMethod = 'draw' | 'fill' | 'duplicate' | 'staging' | 'paint
 
 export type DeleteMethod = 'key' | 'context_menu' | 'bulk' | 'inspector';
 
-export type MoveMethod = 'drag' | 'nudge';
+export type MoveMethod = 'drag' | 'nudge' | 'swap';
 
 export type FillMethod = 'uniform' | 'gaps';
 

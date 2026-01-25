@@ -371,3 +371,176 @@ test.describe('Drag Bins Flow', () => {
     await waitForBinCount(page, 1);
   });
 });
+
+/**
+ * Bin Swap Tests
+ *
+ * Feature: Shift+drag allows swapping positions of two same-sized bins.
+ * Bins are considered swap-compatible if:
+ * - Exact same dimensions (2×3 with 2×3)
+ * - 90° rotated match (2×3 with 3×2) - dragged bin rotates to fit at target position
+ *
+ * NOTE: E2E swap tests are challenging due to precise coordinate requirements.
+ * The core swap utilities are thoroughly tested in unit tests (src/test/swap.test.ts).
+ * These E2E tests verify the Shift+drag interaction doesn't break normal behavior.
+ */
+test.describe('Bin Swap with Shift+drag', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await clearAllStorage(page);
+    await page.reload();
+    await waitForAppReady(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await clearAllStorage(page);
+    await resetViewport(page);
+
+    // Close any lingering dialogs
+    const dialogs = getActiveDialog(page);
+    if ((await dialogs.count()) > 0) {
+      await page.keyboard.press('Escape');
+      await dialogs.waitFor({ state: 'detached', timeout: 1000 }).catch(() => {});
+    }
+  });
+
+  // Skip: Swap detection requires precise cursor-over-bin positioning
+  // which is unreliable in E2E due to auto-zoom and coordinate mapping.
+  // The swap functionality is verified in unit tests (src/test/swap.test.ts).
+  test.skip('can swap two same-sized bins with Shift+drag', async ({ page: _page }) => {
+    // This test would verify:
+    // 1. Create two 2x2 bins
+    // 2. Shift+drag one onto the other
+    // 3. Verify swap toast appears
+    // 4. Verify positions are exchanged
+    //
+    // Skipped because swap target detection is coordinate-sensitive
+    // and E2E pixel coordinates don't reliably map to grid positions.
+  });
+
+  // Skip: Same coordinate precision issue as above
+  test.skip('swap with rotated-match bins shows rotation toast', async ({ page: _page }) => {
+    // This test would verify 2x3 can swap with 3x2 (rotated match)
+  });
+
+  test('Shift+drag to empty space moves bin normally', async ({ page }) => {
+    const bounds = await getGridBounds(page);
+
+    // Create single bin
+    const bin = await drawBinOnGrid(page, 30, 30, 94, 94);
+    await waitForBinCount(page, 1);
+    await waitForBinSelected(bin);
+
+    const binBoxBefore = await bin.boundingBox();
+    if (!binBoxBefore) throw new Error('Bin not found');
+
+    // Shift+drag to empty space (no swap target available)
+    await page.mouse.move(
+      binBoxBefore.x + binBoxBefore.width / 2,
+      binBoxBefore.y + binBoxBefore.height / 2
+    );
+    await page.keyboard.down('Shift');
+    await page.mouse.down();
+    // Drag to empty area far from any bins
+    await page.mouse.move(bounds.x + 300, bounds.y + 200, { steps: 10 });
+    await page.mouse.up();
+    await page.keyboard.up('Shift');
+
+    // Should still have 1 bin
+    await waitForBinCount(page, 1);
+
+    // Bin should have moved (normal drag when no swap target)
+    const binBoxAfter = await bin.boundingBox();
+    if (!binBoxAfter) throw new Error('Bin not found after drag');
+
+    // Position should have changed
+    expect(binBoxAfter.x).not.toBe(binBoxBefore.x);
+
+    // Operation should be undoable
+    await waitForUndoEnabled(page);
+  });
+
+  test('Shift+drag with incompatible bins falls back to normal drag', async ({ page }) => {
+    const bounds = await getGridBounds(page);
+
+    // Create bins with incompatible sizes (can't be swapped)
+    // First bin: 2x2, positioned in upper left
+    const bin1 = await drawBinOnGrid(page, 30, 30, 94, 94);
+    await waitForBinCount(page, 1);
+
+    // Second bin: 1x1 (incompatible - different size), positioned to the right
+    // We don't need to interact with bin2, just need it on the grid
+    await drawBinOnGrid(page, 200, 30, 232, 62);
+    await waitForBinCount(page, 2);
+
+    const bin1BoxBefore = await bin1.boundingBox();
+    if (!bin1BoxBefore) throw new Error('Bin not found');
+
+    // Select first bin
+    await bin1.click();
+    await waitForBinSelected(bin1);
+
+    // Shift+drag to clearly empty lower area (no obstruction)
+    await page.mouse.move(
+      bin1BoxBefore.x + bin1BoxBefore.width / 2,
+      bin1BoxBefore.y + bin1BoxBefore.height / 2
+    );
+    await page.keyboard.down('Shift');
+    await page.mouse.down();
+    // Drag to lower area of grid - definitely empty space
+    await page.mouse.move(bounds.x + 100, bounds.y + 250, { steps: 10 });
+    await page.mouse.up();
+    await page.keyboard.up('Shift');
+
+    // Should still have 2 bins
+    await waitForBinCount(page, 2);
+
+    // First bin should have moved (y position should be different)
+    const bin1BoxAfter = await bin1.boundingBox();
+    if (!bin1BoxAfter) throw new Error('Bin not found after drag');
+
+    // Check y changed (more reliable than x since we moved down)
+    expect(bin1BoxAfter.y).not.toBe(bin1BoxBefore.y);
+  });
+
+  test('Shift key during drag does not break undo', async ({ page }) => {
+    const bounds = await getGridBounds(page);
+
+    // Create a bin
+    const bin = await drawBinOnGrid(page, 30, 30, 94, 94);
+    await waitForBinCount(page, 1);
+    await waitForBinSelected(bin);
+
+    const binBoxBefore = await bin.boundingBox();
+    if (!binBoxBefore) throw new Error('Bin not found');
+
+    // Shift+drag to new position
+    await page.mouse.move(
+      binBoxBefore.x + binBoxBefore.width / 2,
+      binBoxBefore.y + binBoxBefore.height / 2
+    );
+    await page.keyboard.down('Shift');
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + 200, bounds.y + 100, { steps: 10 });
+    await page.mouse.up();
+    await page.keyboard.up('Shift');
+
+    // Operation should be undoable
+    await waitForUndoEnabled(page);
+
+    // Verify bin moved
+    const binBoxAfter = await bin.boundingBox();
+    if (!binBoxAfter) throw new Error('Bin not found after drag');
+    expect(binBoxAfter.x).not.toBe(binBoxBefore.x);
+
+    // Undo should restore position
+    await page.keyboard.press('Control+z');
+    await page.waitForTimeout(100);
+
+    const binBoxRestored = await bin.boundingBox();
+    if (!binBoxRestored) throw new Error('Bin not found after undo');
+
+    // Should be back near original position
+    expect(Math.abs(binBoxRestored.x - binBoxBefore.x)).toBeLessThan(10);
+  });
+});
