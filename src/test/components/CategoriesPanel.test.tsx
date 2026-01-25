@@ -213,20 +213,26 @@ describe('CategoriesPanel', () => {
       expect(screen.queryByDisplayValue('Coral')).not.toBeInTheDocument();
     });
 
-    it('exits edit mode on Done button click', () => {
-      render(<CategoriesPanel />);
+    it('exits edit mode on Escape key', async () => {
+      vi.useFakeTimers();
+      try {
+        render(<CategoriesPanel />);
 
-      // Enter edit mode via edit icon
-      const editButton = screen.getByRole('button', { name: /Edit Coral/i });
-      fireEvent.click(editButton);
+        // Enter edit mode via edit icon
+        const editButton = screen.getByRole('button', { name: /Edit Coral/i });
+        fireEvent.click(editButton);
 
-      // Click Done
-      fireEvent.click(screen.getByText('Done'));
+        // Wait for the click-outside listener to be attached (50ms delay)
+        await vi.advanceTimersByTimeAsync(100);
 
-      // Should exit edit mode
-      expect(
-        screen.queryByRole('button', { name: 'Finish editing category' })
-      ).not.toBeInTheDocument();
+        // Press Escape on the document (the listener is attached to document)
+        fireEvent.keyDown(document, { key: 'Escape' });
+
+        // Should exit edit mode (input should no longer be visible)
+        expect(screen.queryByDisplayValue('Coral')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
@@ -285,9 +291,8 @@ describe('CategoriesPanel', () => {
       const editButton = screen.getByRole('button', { name: /Edit Coral/i });
       fireEvent.click(editButton);
 
-      // Delete button should be disabled
-      const deleteButton = screen.getByText('Delete');
-      expect(deleteButton).toBeDisabled();
+      // Delete button should not be visible when category has bins
+      expect(screen.queryByText('Delete')).not.toBeInTheDocument();
     });
 
     it('prevents deleting last category', () => {
@@ -305,9 +310,8 @@ describe('CategoriesPanel', () => {
       const editButton = screen.getByRole('button', { name: /Edit Coral/i });
       fireEvent.click(editButton);
 
-      // Delete button should be disabled
-      const deleteButton = screen.getByText('Delete');
-      expect(deleteButton).toBeDisabled();
+      // Delete button should not be visible when it's the last category
+      expect(screen.queryByText('Delete')).not.toBeInTheDocument();
     });
   });
 
