@@ -84,6 +84,32 @@ if (typeof window !== 'undefined') {
       dispatchEvent: () => false,
     }),
   });
+
+  // Mock ResizeObserver for components that use it (e.g., responsive stash)
+  class MockResizeObserver {
+    callback: ResizeObserverCallback;
+    constructor(callback: ResizeObserverCallback) {
+      this.callback = callback;
+    }
+    observe() {
+      // Immediately call with a mock entry to simulate initial measurement
+      this.callback(
+        [
+          {
+            contentRect: { width: 800, height: 400 } as DOMRectReadOnly,
+            target: document.body,
+            borderBoxSize: [],
+            contentBoxSize: [],
+            devicePixelContentBoxSize: [],
+          },
+        ],
+        this
+      );
+    }
+    unobserve() {}
+    disconnect() {}
+  }
+  window.ResizeObserver = MockResizeObserver;
 }
 
 // Global cleanup for React components
