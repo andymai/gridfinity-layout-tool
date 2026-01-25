@@ -62,10 +62,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
   const toPixels = (units: number) => units * visualCellSize + Math.max(0, units - 1) * gap;
 
   // Calculate pixel width/height accounting for fractional edges
-  const calcPixelWidth = (x: number, width: number) =>
-    calcFractionalPixelSize(x, width, widthCtx);
-  const calcPixelHeight = (y: number, depth: number) =>
-    calcFractionalPixelSize(y, depth, depthCtx);
+  const calcPixelWidth = (x: number, width: number) => calcFractionalPixelSize(x, width, widthCtx);
+  const calcPixelHeight = (y: number, depth: number) => calcFractionalPixelSize(y, depth, depthCtx);
 
   // Helper to calculate left position accounting for fractional edge
   // When fractionalEdgeX='start', the first column is narrower
@@ -166,12 +164,82 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       />
     );
   } else if (interaction.type === 'drag') {
-    const { binIds, currentCoord, valid, isOverGrid } = interaction;
+    const { binIds, currentCoord, valid, isOverGrid, swapMode, swapTarget } = interaction;
+
+    // Show swap target highlight when hovering over a compatible bin
+    if (swapTarget && swapMode) {
+      const targetBin = binMap.get(swapTarget.binId);
+      if (targetBin) {
+        const targetLeft = calcLeft(targetBin.x);
+        const targetTop = calcTop(targetBin.y, targetBin.depth);
+        const targetWidth = calcPixelWidth(targetBin.x, targetBin.width);
+        const targetHeight = calcPixelHeight(targetBin.y, targetBin.depth);
+
+        // Swap target: purple/indigo highlight to distinguish from normal drag
+        previews.push(
+          <div
+            key={`swap-target-${swapTarget.binId}`}
+            style={{
+              position: 'absolute',
+              left: targetLeft,
+              top: targetTop,
+              width: targetWidth,
+              height: targetHeight,
+              border: '3px solid var(--color-primary)',
+              pointerEvents: 'none',
+              backgroundColor: 'var(--color-primary-muted)',
+              borderRadius: '4px',
+              zIndex: 60,
+            }}
+          >
+            {/* Swap indicator icon or text */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                color: 'var(--color-primary)',
+                fontWeight: 'bold',
+                fontSize: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+              {swapTarget.requiresRotation && (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9" />
+                </svg>
+              )}
+            </div>
+          </div>
+        );
+      }
+    }
 
     // Only show grid preview when mouse is over the grid
     if (!isOverGrid) {
       // Don't render any preview when dragging outside grid
-    } else {
+    } else if (!swapTarget) {
+      // Normal drag preview (only when not showing swap target)
       const primaryBin = binMap.get(binIds[0]);
       if (!primaryBin) return null;
 
