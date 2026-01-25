@@ -378,6 +378,7 @@ export function CategoriesPanel() {
                       }}
                       onDoubleClick={(e) => {
                         e.stopPropagation();
+                        setColorPickerId(null);
                         setEditingId(category.id);
                       }}
                       aria-pressed={isActive}
@@ -403,6 +404,7 @@ export function CategoriesPanel() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        setColorPickerId(null);
                         setEditingId(category.id);
                       }}
                       className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1.5 -my-1 rounded hover:bg-surface-elevated transition-opacity flex-shrink-0 focus-visible:ring-2 focus-visible:ring-accent"

@@ -168,7 +168,6 @@
   "categories.categoryNamePlaceholder": "Nom de catégorie",
   "categories.deleteInUse": "Supprimer une catégorie utilisée",
   "categories.editCategory": "Modifier la catégorie",
-  "categories.editColor": "Cliquer pour modifier la couleur",
   "categories.finishEditingCategory": "Terminer la modification de catégorie",
   "categories.noBinsUseCategory": "Aucun bin n'utilise cette catégorie",
   "categories.selectCategory": "Sélectionner une catégorie",

@@ -178,7 +178,6 @@
   "categories.addCategory": "Kategorie hinzufügen",
   "categories.deleteCategory": "Kategorie löschen",
   "categories.editCategory": "Kategorie bearbeiten",
-  "categories.editColor": "Klicken zum Bearbeiten der Farbe",
   "categories.selectCategory": "Kategorie auswählen",
   "categories.categoryNamePlaceholder": "Kategoriename",
   "categories.cannotDeleteLast": "Die letzte Kategorie kann nicht gelöscht werden",

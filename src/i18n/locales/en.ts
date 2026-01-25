@@ -347,7 +347,6 @@ const en: Record<string, string> = {
   'categories.addCategory': 'Add category',
   'categories.deleteCategory': 'Delete category',
   'categories.editCategory': 'Edit category',
-  'categories.editColor': 'Click to edit color',
   'categories.confirmDelete.title': 'Delete Category',
   'categories.confirmDelete.message':
     'Delete "{name}"? Bins in this category will be moved to the default category.',
