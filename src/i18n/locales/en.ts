@@ -365,6 +365,11 @@ const en: Record<string, string> = {
   'categories.noBinsUseCategory': 'No bins use this category',
   'categories.selectedForNewBins': '{name} (selected for new bins)',
   'categories.selectForNewBins': 'Select {name} for new bins',
+  'categories.changeColor': 'Change color',
+  'categories.setColorTo': 'Set color to {name}',
+  'categories.clickOutsideToClose': 'Click outside to close',
+  'categories.editCategoryAria': 'Edit {name}',
+  'categories.deleteCategoryAria': 'Delete {name}',
 
   // ===========================================================================
   // Staging / Stash
