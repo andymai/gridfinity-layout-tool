@@ -187,7 +187,7 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
       <LocaleContext.Provider value={value}>
         <div className="h-screen flex items-center justify-center bg-surface">
           <div
-            className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin"
+            className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin motion-reduce:animate-none"
             role="status"
             aria-label="Loading"
           />
@@ -280,7 +280,10 @@ export function useFormatting() {
       const opts =
         typeof shortFormat === 'boolean'
           ? { shortFormat, includeTime: false }
-          : { shortFormat: shortFormat.shortFormat ?? true, includeTime: shortFormat.includeTime ?? false };
+          : {
+              shortFormat: shortFormat.shortFormat ?? true,
+              includeTime: shortFormat.includeTime ?? false,
+            };
 
       // If includeTime is true, show minutes/hours for recent times
       if (opts.includeTime) {

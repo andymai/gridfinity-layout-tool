@@ -108,7 +108,9 @@ export function SharedWithMeItem({
 
             {/* Deleted badge */}
             {isDeleted && (
-              <span className="text-xs px-1.5 py-0.5 bg-error/20 text-error rounded flex-shrink-0">{t('layouts.deleted')}</span>
+              <span className="text-xs px-1.5 py-0.5 bg-error/20 text-error rounded flex-shrink-0">
+                {t('layouts.deleted')}
+              </span>
             )}
           </div>
 
@@ -120,7 +122,8 @@ export function SharedWithMeItem({
                 {entry.preview.drawerWidth}×{entry.preview.drawerDepth}×{entry.preview.drawerHeight}
               </span>
             )}
-            <span className="text-content-tertiary">{t('layouts.accessed')}{formatRelativeDate(entry.lastAccessedAt, false)}
+            <span className="text-content-tertiary">
+              {t('layouts.accessed')} {formatRelativeDate(entry.lastAccessedAt, false)}
             </span>
           </div>
         </div>
@@ -146,7 +149,11 @@ export function SharedWithMeItem({
             aria-label={isDeleted ? t('layouts.layoutDeleted') : t('layouts.openLayout')}
           >
             {isLoading ? (
-              <svg className="w-4 h-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none">
+              <svg
+                className="w-4 h-4 animate-spin motion-reduce:animate-none"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
                 <circle
                   className="opacity-25"
                   cx="12"
