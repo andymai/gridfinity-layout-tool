@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useDesignerStore, _resetPendingMeshCache } from '../../store/designer';
-import { DEFAULT_BIN_PARAMS } from '../../constants/defaults';
+import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '../../constants';
 
 describe('useDesignerStore', () => {
   beforeEach(() => {
@@ -128,7 +128,9 @@ describe('useDesignerStore', () => {
       for (let i = 0; i < 55; i++) {
         useDesignerStore.getState().setParam('width', (i % 6) + 0.5);
       }
-      expect(useDesignerStore.getState().history.past.length).toBeLessThanOrEqual(50);
+      expect(useDesignerStore.getState().history.past.length).toBeLessThanOrEqual(
+        DESIGNER_CONSTRAINTS.MAX_HISTORY
+      );
     });
 
     it('should restore cached mesh on undo without epoch change', () => {

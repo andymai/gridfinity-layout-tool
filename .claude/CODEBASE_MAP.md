@@ -71,24 +71,27 @@ Category → { id, name, color }
 
 ## Zustand Stores (`src/core/store/`)
 
-| Store | File | Purpose |
-|-------|------|---------|
-| **layout** | `layout.ts` | Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>` |
-| **library** | `library.ts` | Multi-layout management, active layout, CRUD |
-| **settings** | `settings.ts` | User preferences (localStorage: `gridfinity-settings-v1`) |
-| **history** | `history.ts` | Undo/redo (max 50). Use `useUndoableAction()` hook |
-| **selection** | `selection.ts` | Selected bin IDs, active layer/category |
-| **view** | `view.ts` | Zoom, panel visibility, context menu |
-| **interaction** | `interaction.ts` | Current mode (draw/drag/resize/paint), drop targets |
-| **toast** | `toast.ts` | Toast notifications (max 3) |
-| **halfBinMode** | `halfBinMode.ts` | Half-bin mode toggle (0.5 unit increments) |
-| **mobile** | `mobile.ts` | Mobile panel state |
-| **sharedPreview** | `sharedPreview.ts` | Shared layout preview |
-| **labs** | `labs.ts` | Feature flags |
+| Store             | File               | Purpose                                                                          |
+| ----------------- | ------------------ | -------------------------------------------------------------------------------- |
+| **layout**        | `layout.ts`        | Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>` |
+| **library**       | `library.ts`       | Multi-layout management, active layout, CRUD                                     |
+| **settings**      | `settings.ts`      | User preferences (localStorage: `gridfinity-settings-v1`)                        |
+| **history**       | `history.ts`       | Undo/redo (max 100). Use `useUndoableAction()` hook                              |
+| **selection**     | `selection.ts`     | Selected bin IDs, active layer/category                                          |
+| **view**          | `view.ts`          | Zoom, panel visibility, context menu                                             |
+| **interaction**   | `interaction.ts`   | Current mode (draw/drag/resize/paint), drop targets                              |
+| **toast**         | `toast.ts`         | Toast notifications (max 3)                                                      |
+| **halfBinMode**   | `halfBinMode.ts`   | Half-bin mode toggle (0.5 unit increments)                                       |
+| **mobile**        | `mobile.ts`        | Mobile panel state                                                               |
+| **sharedPreview** | `sharedPreview.ts` | Shared layout preview                                                            |
+| **labs**          | `labs.ts`          | Feature flags                                                                    |
 
 **Pattern:** Use `useShallow` for multiple selections:
+
 ```typescript
-const { drawer, bins } = useLayoutStore(useShallow(s => ({ drawer: s.layout.drawer, bins: s.layout.bins })));
+const { drawer, bins } = useLayoutStore(
+  useShallow((s) => ({ drawer: s.layout.drawer, bins: s.layout.bins }))
+);
 ```
 
 ---
@@ -97,42 +100,42 @@ const { drawer, bins } = useLayoutStore(useShallow(s => ({ drawer: s.layout.draw
 
 ### App-Level (`src/hooks/`)
 
-| Hook | Purpose |
-|------|---------|
-| `useKeyboard` | Global keyboard shortcuts (WASD, Ctrl+Z, etc.) |
-| `useLayoutSwitcher` | Switch between layouts |
-| `useDrawerSettings` | Drawer dimension editing |
-| `useFeatureFlag` | Check Labs feature flags |
-| `useCollabMode` | Check if in collaborative editing mode |
-| `useCollabSync` | Sync with Liveblocks real-time |
-| `use3DPreviewKeyboard` | 3D preview camera controls (1-4, Space, V) |
+| Hook                   | Purpose                                        |
+| ---------------------- | ---------------------------------------------- |
+| `useKeyboard`          | Global keyboard shortcuts (WASD, Ctrl+Z, etc.) |
+| `useLayoutSwitcher`    | Switch between layouts                         |
+| `useDrawerSettings`    | Drawer dimension editing                       |
+| `useFeatureFlag`       | Check Labs feature flags                       |
+| `useCollabMode`        | Check if in collaborative editing mode         |
+| `useCollabSync`        | Sync with Liveblocks real-time                 |
+| `use3DPreviewKeyboard` | 3D preview camera controls (1-4, Space, V)     |
 
 ### Interaction Hooks (`src/hooks/interactions/`)
 
-| Hook | Purpose |
-|------|---------|
-| `useDrawInteraction` | Drag-select to create bins |
-| `useDragInteraction` | Move selected bins |
-| `useResizeInteraction` | Resize via corner/edge handles |
-| `useStagingDragInteraction` | Drag from staging to grid |
+| Hook                        | Purpose                        |
+| --------------------------- | ------------------------------ |
+| `useDrawInteraction`        | Drag-select to create bins     |
+| `useDragInteraction`        | Move selected bins             |
+| `useResizeInteraction`      | Resize via corner/edge handles |
+| `useStagingDragInteraction` | Drag from staging to grid      |
 
 ### Grid Editor (`src/features/grid-editor/hooks/`)
 
-| Hook | Purpose |
-|------|---------|
-| `useGridCoords` | Screen → grid coordinate conversion |
-| `useGridZoom` | Zoom state & scroll handling |
-| `useGridResize` | Drawer resize logic |
-| `useInteraction` | Unified interaction dispatcher |
-| `useGridNavigation` | Keyboard navigation (WASD/arrows) |
+| Hook                | Purpose                             |
+| ------------------- | ----------------------------------- |
+| `useGridCoords`     | Screen → grid coordinate conversion |
+| `useGridZoom`       | Zoom state & scroll handling        |
+| `useGridResize`     | Drawer resize logic                 |
+| `useInteraction`    | Unified interaction dispatcher      |
+| `useGridNavigation` | Keyboard navigation (WASD/arrows)   |
 
 ### Shared (`src/shared/hooks/`)
 
-| Hook | Purpose |
-|------|---------|
-| `useResponsive` | Detect mobile/tablet/desktop |
-| `useAutoSave` | Debounced storage persist |
-| `useCrossTabSync` | Sync across browser tabs |
+| Hook              | Purpose                      |
+| ----------------- | ---------------------------- |
+| `useResponsive`   | Detect mobile/tablet/desktop |
+| `useAutoSave`     | Debounced storage persist    |
+| `useCrossTabSync` | Sync across browser tabs     |
 
 ---
 
@@ -144,15 +147,15 @@ All have barrel exports: `Checkbox`, `CollapsibleSection`, `ConfirmDialog`, `Con
 
 ### Grid Editor (`src/features/grid-editor/components/Grid/`)
 
-| Component | Purpose |
-|-----------|---------|
-| `Grid/index.tsx` | Main grid container (orchestrates everything) |
-| `GridCanvas.tsx` | CSS Grid canvas (NOT HTML Canvas) |
-| `Overlay.tsx` | Interactive bin layer with handles |
-| `Bin.tsx` | Individual bin DOM element |
-| `ResizeHandles.tsx` | Resize handle collection |
-| `GridToolbar.tsx` | Quick actions toolbar |
-| `IsometricPreview/` | **3D Preview** (Three.js, lazy-loaded) |
+| Component           | Purpose                                       |
+| ------------------- | --------------------------------------------- |
+| `Grid/index.tsx`    | Main grid container (orchestrates everything) |
+| `GridCanvas.tsx`    | CSS Grid canvas (NOT HTML Canvas)             |
+| `Overlay.tsx`       | Interactive bin layer with handles            |
+| `Bin.tsx`           | Individual bin DOM element                    |
+| `ResizeHandles.tsx` | Resize handle collection                      |
+| `GridToolbar.tsx`   | Quick actions toolbar                         |
+| `IsometricPreview/` | **3D Preview** (Three.js, lazy-loaded)        |
 
 ### Bin Inspector (`src/features/bin-inspector/components/Inspector/`)
 
@@ -177,26 +180,31 @@ All have barrel exports: `Checkbox`, `CollapsibleSection`, `ConfirmDialog`, `Con
 ### Atomic Operations (Preferred)
 
 ```typescript
-import { saveLayoutWithMetadata, createLayoutEntry, deleteLayoutWithEntry, switchActiveLayout } from '@/core/storage';
+import {
+  saveLayoutWithMetadata,
+  createLayoutEntry,
+  deleteLayoutWithEntry,
+  switchActiveLayout,
+} from '@/core/storage';
 ```
 
 ### Legacy CRUD
 
 ```typescript
 // Async (runtime)
-saveLayoutAsync(), loadLayoutAsync(), deleteLayoutAsync()
+(saveLayoutAsync(), loadLayoutAsync(), deleteLayoutAsync());
 
 // Result-based
-saveLayoutResult(), loadLayoutResult()
+(saveLayoutResult(), loadLayoutResult());
 
 // Sync (init only)
-saveLayoutSync(), loadLayoutSync()
+(saveLayoutSync(), loadLayoutSync());
 ```
 
 ### Import/Export
 
 ```typescript
-exportLayoutJSON(), importLayoutJSON(), encodeLayoutForURL(), decodeLayoutFromURL()
+(exportLayoutJSON(), importLayoutJSON(), encodeLayoutForURL(), decodeLayoutFromURL());
 ```
 
 ### Storage Keys
@@ -228,28 +236,28 @@ if (isOk(result)) {
 
 ### Shared (`src/shared/utils/`)
 
-| File | Exports |
-|------|---------|
-| `validation.ts` | `canPlaceBin()`, `isValidDrawer()`, `validateImport()` |
-| `compression.ts` | `compressLayout()`, `decompressLayout()` |
-| `color.ts` | `getContrastColor()`, `getBinTextColors()` |
-| `uuid.ts` | `generateUUID()`, `generateLayoutId()` |
-| `bins.ts` | `getVisibleBins()`, `getGridBins()`, `getStagingBins()` |
+| File             | Exports                                                 |
+| ---------------- | ------------------------------------------------------- |
+| `validation.ts`  | `canPlaceBin()`, `isValidDrawer()`, `validateImport()`  |
+| `compression.ts` | `compressLayout()`, `decompressLayout()`                |
+| `color.ts`       | `getContrastColor()`, `getBinTextColors()`              |
+| `uuid.ts`        | `generateUUID()`, `generateLayoutId()`                  |
+| `bins.ts`        | `getVisibleBins()`, `getGridBins()`, `getStagingBins()` |
 
 ### Grid Editor (`src/features/grid-editor/utils/`)
 
-| File | Exports |
-|------|---------|
+| File           | Exports                                   |
+| -------------- | ----------------------------------------- |
 | `collision.ts` | Collision detection, `getDisplayLayers()` |
-| `fill.ts` | `fillAllWithSize()`, `fillGaps()` |
+| `fill.ts`      | `fillAllWithSize()`, `fillGaps()`         |
 
 ### App-Level (`src/utils/`)
 
-| File | Exports |
-|------|---------|
-| `split.ts` | `splitBinSize()`, `generatePrintList()` |
-| `halfBinConstraints.ts` | Validate half-bin mode toggle |
-| `stlSearch.ts` | Gridfinity STL file search helpers |
+| File                    | Exports                                 |
+| ----------------------- | --------------------------------------- |
+| `split.ts`              | `splitBinSize()`, `generatePrintList()` |
+| `halfBinConstraints.ts` | Validate half-bin mode toggle           |
+| `stlSearch.ts`          | Gridfinity STL file search helpers      |
 
 ---
 
@@ -257,14 +265,14 @@ if (isOk(result)) {
 
 ### Constraints
 
-| Constraint | Value |
-|------------|-------|
-| Grid units | 0.5-50 |
-| Layers | 1-10 |
-| Categories | 1-20 |
-| Layouts | 100 max |
-| Undo states | 50 |
-| Zoom | 0.25-4.0 |
+| Constraint        | Value      |
+| ----------------- | ---------- |
+| Grid units        | 0.5-50     |
+| Layers            | 1-10       |
+| Categories        | 1-20       |
+| Layouts           | 100 max    |
+| Undo states       | 50         |
+| Zoom              | 0.25-4.0   |
 | Custom properties | 50/bin max |
 
 ### Special Values
@@ -283,13 +291,13 @@ if (isOk(result)) {
 
 ## API Endpoints (`api/`)
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/share` | POST | Create share (Vercel Blob) |
-| `/api/share/[id]` | GET/PUT/DELETE | CRUD share |
-| `/api/report/[id]` | POST | Report content |
-| `/api/liveblocks-auth` | POST | Liveblocks auth |
-| `/api/ml-telemetry` | POST | ML telemetry aggregation |
+| Endpoint               | Method         | Purpose                    |
+| ---------------------- | -------------- | -------------------------- |
+| `/api/share`           | POST           | Create share (Vercel Blob) |
+| `/api/share/[id]`      | GET/PUT/DELETE | CRUD share                 |
+| `/api/report/[id]`     | POST           | Report content             |
+| `/api/liveblocks-auth` | POST           | Liveblocks auth            |
+| `/api/ml-telemetry`    | POST           | ML telemetry aggregation   |
 
 Rate limits: 10 shares/hour, 100 reads/hour (Redis)
 
@@ -303,6 +311,7 @@ const isEnabled = useFeatureFlag('collaborative_editing');
 ```
 
 Current flags:
+
 - `collaborative_editing` - Real-time collaboration (experimental)
 - `layout_to_print` - STL export (coming soon)
 
@@ -336,11 +345,11 @@ import { useKeyboard, useLayoutSwitcher } from '@/hooks';
 
 ## Responsive Breakpoints
 
-| Mode | Width | Components |
-|------|-------|------------|
-| Mobile | <768px | `src/components/Mobile/*`, `MobileLayout.tsx` |
-| Tablet | 768-900px | `src/components/Tablet/*` overlay panels |
-| Desktop | ≥900px | Standard sidebar layout |
+| Mode    | Width     | Components                                    |
+| ------- | --------- | --------------------------------------------- |
+| Mobile  | <768px    | `src/components/Mobile/*`, `MobileLayout.tsx` |
+| Tablet  | 768-900px | `src/components/Tablet/*` overlay panels      |
+| Desktop | ≥900px    | Standard sidebar layout                       |
 
 Hook: `const { isMobile, isTablet, isDesktop } = useResponsive();`
 
@@ -363,6 +372,7 @@ npm run test:e2e       # Playwright headless
 ## Common Tasks Quick Reference
 
 ### Add a new bin programmatically
+
 ```typescript
 const { addBin } = useLayoutStore.getState();
 const { execute } = useUndoableAction();
@@ -370,24 +380,28 @@ execute(() => addBin({ x: 0, y: 0, width: 2, height: 2, depth: 6, layerId, categ
 ```
 
 ### Switch layouts
+
 ```typescript
 const { switchLayout } = useLayoutSwitcher();
 await switchLayout(layoutId);
 ```
 
 ### Check collision
+
 ```typescript
 import { canPlaceBin } from '@/shared/utils/validation';
 const isValid = canPlaceBin(newBin, existingBins, drawer);
 ```
 
 ### Get visible bins (current layer)
+
 ```typescript
 import { getVisibleBins } from '@/shared/utils/bins';
 const visibleBins = getVisibleBins(bins, activeLayerId);
 ```
 
 ### Show toast
+
 ```typescript
 const { addToast } = useToastStore.getState();
 addToast({ message: 'Saved!', type: 'success' });
@@ -400,6 +414,7 @@ addToast({ message: 'Saved!', type: 'success' });
 ### PostHog Integration
 
 See **`.claude/POSTHOG_API_GUIDE.md`** for comprehensive PostHog API documentation including:
+
 - Authentication setup
 - HogQL query examples
 - Dashboard/insight creation
@@ -407,11 +422,11 @@ See **`.claude/POSTHOG_API_GUIDE.md`** for comprehensive PostHog API documentati
 
 ### Useful Scripts
 
-| Script | Purpose |
-|--------|---------|
-| `scripts/posthog-query.ts` | Query PostHog data, list dashboards/insights |
-| `scripts/setup-posthog-dashboards.ts` | Create standard dashboards (run once) |
-| `scripts/audit-ml-telemetry.sh` | Audit ML telemetry data in Redis |
+| Script                                | Purpose                                      |
+| ------------------------------------- | -------------------------------------------- |
+| `scripts/posthog-query.ts`            | Query PostHog data, list dashboards/insights |
+| `scripts/setup-posthog-dashboards.ts` | Create standard dashboards (run once)        |
+| `scripts/audit-ml-telemetry.sh`       | Audit ML telemetry data in Redis             |
 
 ```bash
 # Query PostHog (requires POSTHOG_PERSONAL_API_KEY, POSTHOG_PROJECT_ID)
@@ -423,6 +438,7 @@ npx tsx scripts/posthog-query.ts "SELECT event, count() FROM events GROUP BY eve
 ### Feature Tracking
 
 Track feature adoption with `markFeatureUsed()`:
+
 ```typescript
 import { markFeatureUsed } from '@/utils/analytics';
 
