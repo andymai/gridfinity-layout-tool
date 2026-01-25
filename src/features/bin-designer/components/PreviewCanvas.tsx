@@ -28,6 +28,7 @@ import { setPreviewCanvas, clearPreviewCanvas } from '../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
+import { useToastStore } from '@/core/store/toast';
 
 /** localStorage key for persisting the user's preview color preference */
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
@@ -308,16 +309,18 @@ export function PreviewCanvas() {
     return () => clearPreviewCanvas();
   }, []);
 
-  const { wasmStatus, generationStatus, hasMesh, meshError, params, designName } = useDesignerStore(
-    useShallow((s) => ({
-      wasmStatus: s.wasmStatus,
-      generationStatus: s.generation.status,
-      hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
-      meshError: s.generation.mesh?.error ?? null,
-      params: s.params,
-      designName: s.designName,
-    }))
-  );
+  const { wasmStatus, generationStatus, hasMesh, meshError, params, designName, canRevert } =
+    useDesignerStore(
+      useShallow((s) => ({
+        wasmStatus: s.wasmStatus,
+        generationStatus: s.generation.status,
+        hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
+        meshError: s.generation.mesh?.error ?? null,
+        params: s.params,
+        designName: s.designName,
+        canRevert: s.history.past.length > 0,
+      }))
+    );
 
   // Screen reader description
   const binDescription = describeBin(params);
@@ -325,6 +328,13 @@ export function PreviewCanvas() {
 
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
+  const addToast = useToastStore((s) => s.addToast);
+
+  // Revert to last working configuration on generation error
+  const handleRevert = useCallback(() => {
+    undo();
+    addToast({ message: t('binDesigner.revertedToWorking'), type: 'info', duration: 3000 });
+  }, [undo, addToast, t]);
 
   // Smooth camera preset transitions
   const setCameraPresetRaw = usePresetTransition(
@@ -398,6 +408,8 @@ export function PreviewCanvas() {
           generationStatus={generationStatus}
           errorMessage={meshError}
           onRetry={handleRetry}
+          onRevert={handleRevert}
+          canRevert={canRevert}
         />
       ) : (
         <>
@@ -510,7 +522,9 @@ export function PreviewCanvas() {
                   fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
-              </svg>{t('binDesigner.updating')}</div>
+              </svg>
+              {t('binDesigner.updating')}
+            </div>
           )}
 
           {/* Control buttons */}

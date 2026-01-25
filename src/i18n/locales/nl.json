@@ -76,6 +76,8 @@
   "binDesigner.resetView": "Weergave resetten (R)",
   "binDesigner.retry": "Opnieuw proberen",
   "binDesigner.retryLoading": "Opnieuw laden",
+  "binDesigner.revertToWorking": "Ongedaan maken",
+  "binDesigner.revertedToWorking": "Teruggezet naar laatst werkende configuratie",
   "binDesigner.rows": "Rijen",
   "binDesigner.saved": "Opgeslagen",
   "binDesigner.savedDesigns": "Opgeslagen designs",
