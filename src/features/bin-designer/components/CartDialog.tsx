@@ -60,11 +60,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
     abortRef.current = controller;
 
     try {
-      const result = await batchExport(
-        items,
-        (p) => setProgress(p),
-        controller.signal
-      );
+      const result = await batchExport(items, (p) => setProgress(p), controller.signal);
 
       // Trigger download
       const url = URL.createObjectURL(result.blob);
@@ -79,7 +75,11 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
       if (result.failed.length > 0) {
         setError(`${result.failed.length} design(s) failed to generate and were skipped.`);
       } else {
-        addToast({ message: `Exported ${items.length} design(s) as ZIP`, type: 'success', duration: 3000 });
+        addToast({
+          message: `Exported ${items.length} design(s) as ZIP`,
+          type: 'success',
+          duration: 3000,
+        });
       }
     } catch (e) {
       if (e instanceof Error && e.message === 'Export cancelled') {
@@ -92,7 +92,7 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
       setProgress(null);
       abortRef.current = null;
     }
-  }, [items]);
+  }, [items, addToast]);
 
   const handleClearCart = useCallback(() => {
     if (!window.confirm(`Remove all ${items.length} items from cart?`)) return;
@@ -119,7 +119,10 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
   );
 
   return (
-    <div ref={dialogRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div
+      ref={dialogRef}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+    >
       <div
         className="mx-4 flex w-full max-w-lg flex-col rounded-lg border border-stroke-subtle bg-surface shadow-xl"
         style={{ maxHeight: '80vh' }}
@@ -141,8 +144,19 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
             aria-label={t('common.close')}
             disabled={exporting}
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -151,13 +165,24 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
         <div className="flex-1 overflow-y-auto px-5 py-3">
           {items.length === 0 ? (
             <div className="py-8 text-center">
-              <svg className="mx-auto mb-3 h-12 w-12 text-content-disabled" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              <svg
+                className="mx-auto mb-3 h-12 w-12 text-content-disabled"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
               </svg>
-              <p className="text-sm font-medium text-content-secondary">{t('binDesigner.cartEmpty')}</p>
-              <p className="mt-1 text-xs text-content-tertiary">
-                {t('binDesigner.cartEmptyHint')}
+              <p className="text-sm font-medium text-content-secondary">
+                {t('binDesigner.cartEmpty')}
               </p>
+              <p className="mt-1 text-xs text-content-tertiary">{t('binDesigner.cartEmptyHint')}</p>
             </div>
           ) : (
             <ul className="space-y-2" aria-label={t('binDesigner.cartItems')}>
@@ -186,13 +211,18 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
             {/* Progress bar */}
             {exporting && progress && (
               <div className="mb-3 space-y-1">
-                <div className="flex justify-between text-xs text-content-secondary" aria-live="polite">
+                <div
+                  className="flex justify-between text-xs text-content-secondary"
+                  aria-live="polite"
+                >
                   <span>
                     {progress.phase === 'generating'
                       ? `Generating: ${progress.currentName}`
                       : 'Packaging ZIP...'}
                   </span>
-                  <span>{progress.current + 1}/{progress.total}</span>
+                  <span>
+                    {progress.current + 1}/{progress.total}
+                  </span>
                 </div>
                 <div
                   className="h-1.5 overflow-hidden rounded-full bg-surface-secondary"
@@ -212,7 +242,10 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
 
             {/* Error */}
             {error && (
-              <div role="alert" className="mb-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-300">
+              <div
+                role="alert"
+                className="mb-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-300"
+              >
                 {error}
               </div>
             )}
@@ -223,21 +256,38 @@ export function CartDialog({ open, onClose }: CartDialogProps) {
                 onClick={handleClearCart}
                 disabled={exporting}
                 className="text-xs text-content-secondary hover:text-content disabled:opacity-50"
-              >{t('binDesigner.clearCart')}</button>
+              >
+                {t('binDesigner.clearCart')}
+              </button>
               <div className="flex gap-2">
                 {exporting ? (
                   <button
                     onClick={handleCancel}
                     className="rounded-md px-4 py-2 text-sm font-medium text-content-secondary hover:bg-surface-hover"
-                  >{t('common.cancel')}</button>
+                  >
+                    {t('common.cancel')}
+                  </button>
                 ) : (
                   <button
                     onClick={handleExport}
                     className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                   >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>{t('binDesigner.downloadZip')}</button>
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    {t('binDesigner.downloadZip')}
+                  </button>
                 )}
               </div>
             </div>
@@ -276,8 +326,19 @@ function CartItemRow({
         {item.thumbnail ? (
           <img src={item.thumbnail} alt="" className="h-full w-full object-cover" />
         ) : (
-          <svg className="h-5 w-5 text-content-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          <svg
+            className="h-5 w-5 text-content-tertiary"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+            />
           </svg>
         )}
       </div>
@@ -299,8 +360,19 @@ function CartItemRow({
         className="rounded p-1.5 text-content-tertiary transition-opacity hover:bg-surface-hover hover:text-content sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 disabled:opacity-50"
         aria-label={`Remove ${item.name} from cart`}
       >
-        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
     </li>
