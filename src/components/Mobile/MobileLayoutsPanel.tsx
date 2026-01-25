@@ -17,7 +17,7 @@ import {
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
 import type { LayoutEntry, SharePermission } from '@/core/types';
 import { isOk } from '@/core/result';
-import { useTranslation } from '@/i18n';
+import { useTranslation, useFormatting } from '@/i18n';
 
 /**
  * Mobile-optimized layouts panel with larger touch targets and swipe gestures.
@@ -25,6 +25,7 @@ import { useTranslation } from '@/i18n';
  */
 export function MobileLayoutsPanel() {
   const t = useTranslation();
+  const { formatRelativeDate } = useFormatting();
   const [deleteLayoutId, setDeleteLayoutId] = useState<string | null>(null);
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeX, setSwipeX] = useState(0);
@@ -233,18 +234,6 @@ export function MobileLayoutsPanel() {
     }
   }, [swipingId, swipeX]);
 
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
-
   const layoutToDelete = deleteLayoutId
     ? library.entries.find((e) => e.id === deleteLayoutId)
     : null;
@@ -366,7 +355,7 @@ export function MobileLayoutsPanel() {
 
                       {/* Modified date */}
                       <div className="text-xs text-content-tertiary mt-0.5">
-                        {formatDate(entry.modifiedAt)}
+                        {formatRelativeDate(entry.modifiedAt)}
                       </div>
 
                       {/* Forked from info */}

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import type { SharedWithMeEntry } from '@/core/types';
 import { LayoutThumbnail } from '@/components/LayoutThumbnail';
-import { useTranslation } from '@/i18n';
+import { useTranslation, useFormatting } from '@/i18n';
 
 interface SharedWithMeItemProps {
   entry: SharedWithMeEntry;
@@ -27,6 +27,7 @@ export function SharedWithMeItem({
   itemRef,
 }: SharedWithMeItemProps) {
   const t = useTranslation();
+  const { formatRelativeDate } = useFormatting();
   const handleItemKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -38,23 +39,6 @@ export function SharedWithMeItem({
     },
     [isLoading, entry.status, onOpen]
   );
-
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-      return 'Today';
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 7) {
-      return `${diffDays} days ago`;
-    } else {
-      return date.toLocaleDateString();
-    }
-  };
 
   const isDeleted = entry.status === 'deleted';
 
@@ -136,7 +120,7 @@ export function SharedWithMeItem({
                 {entry.preview.drawerWidth}×{entry.preview.drawerDepth}×{entry.preview.drawerHeight}
               </span>
             )}
-            <span className="text-content-tertiary">{t('layouts.accessed')}{formatDate(entry.lastAccessedAt)}
+            <span className="text-content-tertiary">{t('layouts.accessed')}{formatRelativeDate(entry.lastAccessedAt, false)}
             </span>
           </div>
         </div>

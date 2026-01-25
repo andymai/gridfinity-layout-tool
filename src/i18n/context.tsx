@@ -233,3 +233,85 @@ export function useLocale() {
   }
   return context;
 }
+
+/**
+ * Hook to access locale-aware formatting functions.
+ * Uses the app's current locale for consistent formatting.
+ *
+ * @example
+ * ```tsx
+ * const { formatDate, formatRelativeDate, formatNumber } = useFormatting();
+ * return <span>Updated: {formatRelativeDate(lastModified)}</span>;
+ * ```
+ */
+export function useFormatting() {
+  const context = useContext(LocaleContext);
+  if (!context) {
+    throw new Error('useFormatting must be used within a LocaleProvider');
+  }
+  const { locale, t } = context;
+
+  /** Format a date using the app's locale */
+  const formatDate = useCallback(
+    (date: Date | string | number, options?: Intl.DateTimeFormatOptions) => {
+      const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
+      return d.toLocaleDateString(locale, options);
+    },
+    [locale]
+  );
+
+  /**
+   * Format a date as a relative time string.
+   * @param date - The date to format
+   * @param options - Formatting options
+   * @param options.shortFormat - Use short format (Xd) vs long format (X days ago)
+   * @param options.includeTime - Include minutes/hours for recent times (default: false)
+   */
+  const formatRelativeDate = useCallback(
+    (
+      date: Date | string | number,
+      shortFormat: boolean | { shortFormat?: boolean; includeTime?: boolean } = true
+    ) => {
+      const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
+      const now = new Date();
+      const diffMs = now.getTime() - d.getTime();
+
+      // Parse options
+      const opts =
+        typeof shortFormat === 'boolean'
+          ? { shortFormat, includeTime: false }
+          : { shortFormat: shortFormat.shortFormat ?? true, includeTime: shortFormat.includeTime ?? false };
+
+      // If includeTime is true, show minutes/hours for recent times
+      if (opts.includeTime) {
+        const diffMinutes = Math.floor(diffMs / 60000);
+        if (diffMinutes < 1) return t('date.justNow');
+        if (diffMinutes < 60) return t('date.minutesAgo', { minutes: diffMinutes });
+
+        const diffHours = Math.floor(diffMinutes / 60);
+        if (diffHours < 24) return t('date.hoursAgo', { hours: diffHours });
+      }
+
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays === 0) return t('date.today');
+      if (diffDays === 1) return t('date.yesterday');
+      if (diffDays < 7) {
+        return opts.shortFormat
+          ? t('date.daysAgo', { days: diffDays })
+          : t('date.daysAgoLong', { days: diffDays });
+      }
+      return d.toLocaleDateString(locale);
+    },
+    [locale, t]
+  );
+
+  /** Format a number using the app's locale (adds thousand separators, etc.) */
+  const formatNumber = useCallback(
+    (value: number, options?: Intl.NumberFormatOptions) => {
+      return value.toLocaleString(locale, options);
+    },
+    [locale]
+  );
+
+  return { formatDate, formatRelativeDate, formatNumber, locale };
+}

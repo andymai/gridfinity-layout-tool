@@ -66,6 +66,17 @@ const en: Record<string, string> = {
   'common.width': 'Width',
 
   // ===========================================================================
+  // Date/Time (relative formatting)
+  // ===========================================================================
+  'date.today': 'Today',
+  'date.yesterday': 'Yesterday',
+  'date.daysAgo': '{days}d ago',
+  'date.daysAgoLong': '{days} days ago',
+  'date.hoursAgo': '{hours}h ago',
+  'date.minutesAgo': '{minutes}m ago',
+  'date.justNow': 'Just now',
+
+  // ===========================================================================
   // App
   // ===========================================================================
   'app.clearDataReload': 'Clear Data & Reload',

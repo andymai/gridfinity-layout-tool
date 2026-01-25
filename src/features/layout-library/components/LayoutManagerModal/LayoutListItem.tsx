@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import type { LayoutEntry } from '@/core/types';
 import { LayoutThumbnail } from '@/components/LayoutThumbnail';
 import { LayoutActions } from './LayoutActions';
-import { useTranslation } from '@/i18n';
+import { useTranslation, useFormatting } from '@/i18n';
 
 interface LayoutListItemProps {
   entry: LayoutEntry;
@@ -38,6 +38,7 @@ export function LayoutListItem({
   itemRef,
 }: LayoutListItemProps) {
   const t = useTranslation();
+  const { formatRelativeDate } = useFormatting();
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(entry.name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -86,23 +87,6 @@ export function LayoutListItem({
     },
     [isEditing, onSelect]
   );
-
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-      return 'Today';
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 7) {
-      return `${diffDays} days ago`;
-    } else {
-      return date.toLocaleDateString();
-    }
-  };
 
   return (
     <div
@@ -163,7 +147,7 @@ export function LayoutListItem({
               {entry.preview.drawerWidth}×{entry.preview.drawerDepth}×{entry.preview.drawerHeight}
             </span>
             <span>{t('layouts.binCount', { count: entry.preview.binCount })}</span>
-            <span className="text-content-tertiary">{formatDate(entry.modifiedAt)}</span>
+            <span className="text-content-tertiary">{formatRelativeDate(entry.modifiedAt, false)}</span>
           </div>
 
           {/* Forked From */}

@@ -14,7 +14,7 @@ import { useDesignerRouting } from '@/hooks/useDesignerRouting';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import type { SavedDesign } from '../types';
-import { useTranslation } from '@/i18n';
+import { useTranslation, useFormatting } from '@/i18n';
 
 interface DesignListDialogProps {
   open: boolean;
@@ -30,6 +30,7 @@ interface DesignListDialogProps {
  */
 export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const t = useTranslation();
+  const { formatRelativeDate } = useFormatting();
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -289,7 +290,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                       <p className="truncate text-sm font-medium text-content">{design.name}</p>
                     )}
                     <p className="text-xs text-content-secondary">
-                      {formatRelativeDate(design.updatedAt)}
+                      {formatRelativeDate(design.updatedAt, { includeTime: true })}
                     </p>
                   </div>
 
@@ -351,28 +352,4 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       </div>
     </div>
   );
-}
-
-/**
- * Format an ISO date string into a human-friendly relative label.
- *
- * @param isoString - An ISO 8601 timestamp or date string to format
- * @returns `Just now`, `Xm ago`, `Xh ago`, `Xd ago` for recent times, or the locale-formatted date for older timestamps
- */
-function formatRelativeDate(isoString: string): string {
-  const date = new Date(isoString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMinutes = Math.floor(diffMs / 60000);
-
-  if (diffMinutes < 1) return 'Just now';
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
-
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays}d ago`;
-
-  return date.toLocaleDateString();
 }
