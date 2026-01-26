@@ -27,7 +27,7 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
   // Initialize the suggestion trigger (monitors layout and generates suggestions)
   const { triggerSuggestions } = useSuggestionTrigger();
 
-  const { showHighlight, collapse, primarySuggestion } = useNameSuggestions();
+  const { showHighlight, collapse } = useNameSuggestions();
 
   // Listen for command palette trigger event
   const handleTriggerEvent = useCallback(() => {
@@ -43,14 +43,6 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
     window.addEventListener('trigger-name-suggestions', handleTriggerEvent);
     return () => window.removeEventListener('trigger-name-suggestions', handleTriggerEvent);
   }, [handleTriggerEvent]);
-
-  // Open popover when suggestions are ready from command trigger
-  useEffect(() => {
-    if (showHighlight && primarySuggestion) {
-      // Auto-open popover if triggered from command
-      // (The store tracks trigger source)
-    }
-  }, [showHighlight, primarySuggestion]);
 
   // Reset animation state when highlight goes away
   // Use queueMicrotask to avoid synchronous setState in effect body

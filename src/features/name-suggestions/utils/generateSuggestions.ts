@@ -188,7 +188,7 @@ interface SubcategoryPattern {
 const SUBCATEGORY_PATTERNS: SubcategoryPattern[] = [
   // Metric hardware (M2, M3, M4, M5, M6, M8 screws)
   {
-    patterns: [/^m[2-8]x?\d*/i, /^m\d+\s*(x|×)/i],
+    patterns: [/^m[2-8](?:x\d+)?$/i, /^m\d+\s*(x|×)\s*\d+/i],
     keywords: ['metric', 'hex', 'socket head', 'shcs', 'bhcs', 'fhcs'],
     names: ['Metric Hardware', 'Metric Screws', 'Metric Fasteners', 'Socket Head Collection'],
     minMatches: 3,
