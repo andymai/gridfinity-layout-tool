@@ -502,6 +502,12 @@ textarea:focus-visible {
   outline: none;
 }
 
+/* Command palette input - remove default focus ring */
+[cmdk-input]:focus,
+[cmdk-input]:focus-visible {
+  outline: none !important;
+}
+
 /* Paint mode indicator */
 .paint-mode-indicator {
   position: fixed;

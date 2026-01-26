@@ -1362,6 +1362,12 @@ const en: Record<string, string> = {
   // Export commands
   'commandPalette.downloadLayout': 'Download Layout',
   'commandPalette.copyShareLink': 'Copy Share Link',
+
+  // Footer
+  'commandPalette.footer.run': 'Run',
+  'commandPalette.footer.navigate': 'Navigate',
+  'commandPalette.footer.close': 'Close',
+  'commandPalette.footer.commandCount': '{count} commands',
 };
 
 export default en;

@@ -3,7 +3,7 @@
  * Provides quick access to actions and keyboard shortcuts.
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Command } from 'cmdk';
 import { useTranslation } from '@/i18n';
 import {
@@ -23,6 +23,7 @@ import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../command
 import type { CommandDefinition } from '../commands';
 import { useRecentCommandsStore } from '../store/recentStore';
 import { ShortcutBadge } from './ShortcutBadge';
+import { CommandPaletteFooter } from './CommandPaletteFooter';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -32,8 +33,8 @@ interface CommandPaletteProps {
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const t = useTranslation();
 
-  // Recent commands
-  const { recentIds, recordUsage } = useRecentCommandsStore();
+  // Frecency tracking
+  const { recordUsage } = useRecentCommandsStore();
 
   // Stores
   const layout = useLayoutStore((s) => s.layout);
@@ -52,6 +53,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     setActiveLayer,
     showQuickLabel,
     activeCategoryId,
+    setActiveCategory,
   } = useSelectionStore(
     useShallow((s) => ({
       selectedBinIds: s.selectedBinIds,
@@ -60,6 +62,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       setActiveLayer: s.setActiveLayer,
       showQuickLabel: s.showQuickLabel,
       activeCategoryId: s.activeCategoryId,
+      setActiveCategory: s.setActiveCategory,
     }))
   );
   const { zoomIn, zoomOut, toggleShowLabels, toggleShowOtherLayers, setPrintModalOpen } =
@@ -193,8 +196,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         case 'zoom-out':
           return () => zoomOut();
         case 'fit-to-screen':
-          // Not implemented - requires canvas context
-          return null;
+          return () => window.dispatchEvent(new CustomEvent('fit-to-screen'));
         case 'toggle-labels':
           return () => toggleShowLabels();
         case 'toggle-other-layers':
@@ -229,9 +231,46 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return () => setSelectedBins([layerBins[nextIndex].id]);
         }
         case 'prev-category':
-        case 'next-category':
-          // These are more complex - skip for now
-          return null;
+        case 'next-category': {
+          const categories = layout.categories;
+          if (categories.length === 0) return null;
+
+          const direction = id === 'next-category' ? 1 : -1;
+
+          if (selectedBinIds.length > 0) {
+            // Cycle category of selected bins
+            const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+            if (!firstBin) return null;
+
+            return () => {
+              const currentPos = categories.findIndex((c) => c.id === firstBin.category);
+              const nextPos = (currentPos + direction + categories.length) % categories.length;
+              const newCategoryId = categories[nextPos].id;
+
+              execute(() => {
+                for (const binId of selectedBinIds) {
+                  updateBin(binId, { category: newCategoryId });
+                }
+              });
+              addToast(
+                t('toast.categoryAssigned', { category: categories[nextPos].name }),
+                'success'
+              );
+            };
+          } else {
+            // Cycle active drawing category
+            return () => {
+              const currentIndex = categories.findIndex((c) => c.id === activeCategoryId);
+              const nextIndex =
+                currentIndex === -1
+                  ? direction === 1
+                    ? 0
+                    : categories.length - 1
+                  : (currentIndex + direction + categories.length) % categories.length;
+              setActiveCategory(categories[nextIndex].id);
+            };
+          }
+        }
         case 'move-to-stash':
           return selectedBinIds.length > 0
             ? () => {
@@ -285,6 +324,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       fillLayerGaps,
       setSelectedBins,
       setActiveLayer,
+      setActiveCategory,
       setInteraction,
       setShowLayoutManager,
       setPrintModalOpen,
@@ -301,14 +341,72 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     ]
   );
 
-  // Build commands with availability
+  // Contextual boost multipliers based on current app state
+  const contextBoosts = useMemo(() => {
+    const hasBinsSelected = selectedBinIds.length > 0;
+    const hasSingleBin = selectedBinIds.length === 1;
+    const hasMultipleLayers = layout.layers.length > 1;
+    const hasLayerBins = layout.bins.some((b) => b.layerId === activeLayerId);
+
+    // Returns multiplier: >1 = boosted, <1 = demoted, 1 = neutral
+    const boosts: Record<string, number> = {
+      // Edit commands - boost when bins selected
+      'delete-selected': hasBinsSelected ? 2.0 : 0.4,
+      'duplicate-selected': hasBinsSelected ? 2.0 : 0.4,
+      'rotate-bin': hasSingleBin ? 2.0 : 0.3,
+      'quick-label': hasSingleBin ? 1.8 : 0.4,
+      'clear-selection': hasBinsSelected ? 1.5 : 0.3,
+      'move-to-stash': hasBinsSelected ? 1.8 : 0.4,
+
+      // Layer commands - boost when multiple layers
+      'layer-up': hasMultipleLayers ? 1.5 : 0.5,
+      'layer-down': hasMultipleLayers ? 1.5 : 0.5,
+      'add-layer': layout.layers.length < 10 ? 1.3 : 0.5,
+      'clear-layer': hasLayerBins ? 1.5 : 0.3,
+
+      // 3D preview commands - boost when preview visible
+      'camera-isometric': showIsometricPreview ? 2.0 : 0.3,
+      'camera-top': showIsometricPreview ? 2.0 : 0.3,
+      'camera-front': showIsometricPreview ? 2.0 : 0.3,
+      'camera-side': showIsometricPreview ? 2.0 : 0.3,
+      'expand-preview': showIsometricPreview ? 1.8 : 0.3,
+      'toggle-preview': showIsometricPreview ? 1.0 : 1.5,
+
+      // Undo/redo - boost when available
+      undo: canUndo ? 1.5 : 0.3,
+      redo: canRedo ? 1.5 : 0.3,
+
+      // Category navigation - boost when bins selected
+      'prev-category': hasBinsSelected ? 1.8 : 0.8,
+      'next-category': hasBinsSelected ? 1.8 : 0.8,
+    };
+
+    return boosts;
+  }, [
+    selectedBinIds.length,
+    layout.layers.length,
+    layout.bins,
+    activeLayerId,
+    showIsometricPreview,
+    canUndo,
+    canRedo,
+  ]);
+
+  // Build commands with availability and boosted scores
   const commands = useMemo(() => {
-    return COMMAND_DEFINITIONS.map((def) => ({
-      ...def,
-      action: getAction(def.id),
-      isAvailable: getAction(def.id) !== null,
-    }));
-  }, [getAction]);
+    const { getFrecencyScore } = useRecentCommandsStore.getState();
+
+    return COMMAND_DEFINITIONS.map((def) => {
+      const frecency = getFrecencyScore(def.id);
+      const boost = contextBoosts[def.id] ?? 1.0;
+      return {
+        ...def,
+        action: getAction(def.id),
+        isAvailable: getAction(def.id) !== null,
+        effectiveScore: frecency * boost,
+      };
+    });
+  }, [getAction, contextBoosts]);
 
   // Group commands by category
   const groupedCommands = useMemo(() => {
@@ -322,12 +420,20 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     return groups;
   }, [commands]);
 
-  // Recent commands
+  // Frecent commands (combines frequency + recency + context)
   const recentCommands = useMemo(() => {
-    return recentIds
-      .map((id) => commands.find((c) => c.id === id))
-      .filter((c): c is (typeof commands)[number] => c !== undefined && c.isAvailable);
-  }, [recentIds, commands]);
+    return commands
+      .filter((c) => c.isAvailable && c.effectiveScore > 0.01)
+      .sort((a, b) => b.effectiveScore - a.effectiveScore)
+      .slice(0, 5);
+  }, [commands]);
+
+  // Track currently highlighted command for footer display
+  const [selectedCommandId, setSelectedCommandId] = useState<string | null>(null);
+  const selectedCommand = useMemo(
+    () => commands.find((c) => c.id === selectedCommandId) ?? null,
+    [commands, selectedCommandId]
+  );
 
   // Handle command selection
   const handleSelect = useCallback(
@@ -366,9 +472,16 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       {/* Palette container - top aligned like Spotlight */}
       <div className="absolute top-[12%] left-1/2 -translate-x-1/2 w-full max-w-xl px-4">
         <Command
-          className="rounded-2xl border border-stroke bg-surface-elevated shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] animate-scale-in"
+          className="rounded-2xl border border-stroke bg-surface-elevated shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] animate-scale-in overflow-hidden"
           onClick={(e) => e.stopPropagation()}
           loop
+          onValueChange={(value) => {
+            // cmdk sets value to the full search string, extract command ID
+            const cmd = commands.find(
+              (c) => `${t(c.labelKey)} ${c.keywords?.join(' ') ?? ''}` === value
+            );
+            setSelectedCommandId(cmd?.id ?? null);
+          }}
         >
           {/* Search input with icon */}
           <div className="flex items-center gap-3 px-4 border-b border-stroke-subtle">
@@ -476,6 +589,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               );
             })}
           </Command.List>
+
+          {/* Footer with keyboard hints */}
+          <CommandPaletteFooter selectedCommand={selectedCommand} matchCount={commands.length} />
         </Command>
       </div>
     </div>
