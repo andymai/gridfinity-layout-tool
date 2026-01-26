@@ -308,19 +308,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     category: 'export',
     keywords: ['url', 'share'],
   },
-  {
-    id: 'export-csv',
-    labelKey: 'commandPalette.exportCSV',
-    category: 'export',
-    keywords: ['clipboard', 'copy', 'spreadsheet', 'excel'],
-  },
-  {
-    id: 'export-tsv',
-    labelKey: 'commandPalette.exportTSV',
-    category: 'export',
-    keywords: ['clipboard', 'copy', 'tab', 'spreadsheet'],
-  },
-
   // === Selection ===
   {
     id: 'select-all',
@@ -334,6 +321,18 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     labelKey: 'commandPalette.selectNone',
     category: 'edit',
     keywords: ['deselect', 'clear', 'none'],
+  },
+  {
+    id: 'invert-selection',
+    labelKey: 'commandPalette.invertSelection',
+    category: 'edit',
+    keywords: ['reverse', 'opposite', 'toggle'],
+  },
+  {
+    id: 'select-by-category',
+    labelKey: 'commandPalette.selectByCategory',
+    category: 'edit',
+    keywords: ['filter', 'group', 'same category'],
   },
 
   // === Layout Management ===

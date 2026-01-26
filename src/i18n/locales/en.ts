@@ -912,6 +912,8 @@ const en: Record<string, string> = {
   'toast.movedToStash': 'Moved {count} bin(s) to stash',
   'toast.stagingCleared': 'Cleared {count} bin(s) from stash',
   'toast.restoredFromStaging': 'Restored {count} bin(s) from stash',
+  'toast.selectionInverted': 'Inverted selection ({count} bin(s))',
+  'toast.selectedByCategory': 'Selected {count} {name} bin(s)',
 
   // ===========================================================================
   // Grid Editor
@@ -1368,12 +1370,12 @@ const en: Record<string, string> = {
   // Export commands
   'commandPalette.downloadLayout': 'Download Layout',
   'commandPalette.copyShareLink': 'Copy Share Link',
-  'commandPalette.exportCSV': 'Copy Bins as CSV',
-  'commandPalette.exportTSV': 'Copy Bins as TSV',
 
   // Selection commands
   'commandPalette.selectAll': 'Select All Bins on Layer',
   'commandPalette.selectNone': 'Clear Selection',
+  'commandPalette.invertSelection': 'Invert Selection',
+  'commandPalette.selectByCategory': 'Select by Category',
 
   // Layout management commands
   'commandPalette.newLayout': 'New Layout',

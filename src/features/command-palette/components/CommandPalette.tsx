@@ -315,13 +315,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return () => window.dispatchEvent(new CustomEvent('download-layout'));
         case 'copy-share-link':
           return () => window.dispatchEvent(new CustomEvent('open-share-modal'));
-        case 'export-csv':
-          return () =>
-            window.dispatchEvent(new CustomEvent('copy-bins-clipboard', { detail: 'csv' }));
-        case 'export-tsv':
-          return () =>
-            window.dispatchEvent(new CustomEvent('copy-bins-clipboard', { detail: 'tsv' }));
-
         // Selection
         case 'select-all': {
           const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
@@ -339,6 +332,37 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 setInteraction(null);
               }
             : null;
+        case 'invert-selection': {
+          const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
+          if (layerBins.length === 0) return null;
+          const currentSet = new Set(selectedBinIds);
+          const invertedIds = layerBins.filter((b) => !currentSet.has(b.id)).map((b) => b.id);
+          return invertedIds.length > 0
+            ? () => {
+                setSelectedBins(invertedIds);
+                addToast(t('toast.selectionInverted', { count: invertedIds.length }), 'info');
+              }
+            : null;
+        }
+        case 'select-by-category': {
+          if (selectedBinIds.length === 0) return null;
+          const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+          if (!firstBin) return null;
+          const sameCategoryBins = layout.bins
+            .filter((b) => b.layerId === activeLayerId && b.category === firstBin.category)
+            .map((b) => b.id);
+          const category = layout.categories.find((c) => c.id === firstBin.category);
+          return () => {
+            setSelectedBins(sameCategoryBins);
+            addToast(
+              t('toast.selectedByCategory', {
+                count: sameCategoryBins.length,
+                name: category?.name || 'category',
+              }),
+              'info'
+            );
+          };
+        }
 
         // Layout management
         case 'new-layout':
@@ -501,9 +525,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       'clear-staging': hasStagingBins ? 1.8 : 0.3,
       'restore-from-staging': hasStagingBins ? 2.0 : 0.3,
 
-      // Export - always available, slight boost
-      'export-csv': 1.2,
-      'export-tsv': 1.1,
+      // Advanced selection - boost when bins selected
+      'invert-selection': hasLayerBins ? 1.5 : 0.3,
+      'select-by-category': hasBinsSelected ? 1.8 : 0.3,
     };
 
     return boosts;
