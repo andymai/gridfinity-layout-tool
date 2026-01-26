@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, Suspense } from 'react';
+import { useState, useRef, useCallback, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useUIStore } from '@/core/store';
 import { useDrawerSettings } from '@/hooks/useDrawerSettings';
@@ -81,6 +81,13 @@ export function Sidebar() {
     setShowHalfBinBlockedModal,
     halfBinViolation,
   } = useDrawerSettings();
+
+  // Listen for command palette open-settings-modal event
+  useEffect(() => {
+    const handleOpenSettings = () => setShowSettingsModal(true);
+    window.addEventListener('open-settings-modal', handleOpenSettings);
+    return () => window.removeEventListener('open-settings-modal', handleOpenSettings);
+  }, []);
 
   return (
     <aside
