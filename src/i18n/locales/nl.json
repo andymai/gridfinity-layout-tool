@@ -1195,5 +1195,6 @@
   "toolbar.zoomIn": "Inzoomen",
   "toolbar.zoomInKey": "Inzoomen (+)",
   "toolbar.zoomOut": "Uitzoomen",
-  "toolbar.zoomOutKey": "Uitzoomen (−)"
+  "toolbar.zoomOutKey": "Uitzoomen (−)",
+  "print.summary.piecesShort": "{count} pcs"
 }

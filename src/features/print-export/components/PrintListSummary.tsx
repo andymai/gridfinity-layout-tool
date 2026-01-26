@@ -24,7 +24,7 @@ function formatSpoolUsage(percentage: number): string {
 
 /** Get progress bar color based on spool usage level */
 function getSpoolColor(percentage: number): string {
-  if (percentage > 80) return 'var(--color-warning)';
+  if (percentage >= 80) return 'var(--color-warning)';
   return 'var(--color-info)';
 }
 
@@ -65,17 +65,23 @@ export function PrintListSummary({
             </span>
           </div>
           <span className="text-xs text-content tabular-nums">
-            {totalBins} bins
+            {t('print.summary.bins', { count: totalBins })}
             {hasAnySplits && (
-              <span className="text-content-tertiary"> → {totalPieces} pcs</span>
+              <span className="text-content-tertiary">
+                {' → '}
+                {t('print.summary.piecesShort', { count: totalPieces })}
+              </span>
             )}
           </span>
         </div>
 
         {/* Secondary row: Filament + Spool with progress */}
         <div className="flex justify-between items-center text-xs pt-2 border-t border-stroke-subtle">
-          <span className="text-content-tertiary tabular-nums" title={t('print.summary.filamentTooltip')}>
-            ~{totalFilament}m
+          <span
+            className="text-content-tertiary tabular-nums"
+            title={t('print.summary.filamentTooltip')}
+          >
+            {t('print.summary.filament', { meters: totalFilament })}
           </span>
           <div className="flex items-center gap-2" title={t('print.summary.spoolTooltip')}>
             <span className="text-content-tertiary">{t('print.summary.spoolLabel')}:</span>
@@ -111,30 +117,40 @@ export function PrintListSummary({
       <div className="flex justify-between items-baseline mb-2">
         <div className="flex items-baseline gap-4">
           <div title={t('print.summary.printTimeTooltip')}>
-            <span className="text-xs text-content-tertiary mr-1">{t('print.summary.timeLabel')}</span>
+            <span className="text-xs text-content-tertiary mr-1">
+              {t('print.summary.timeLabel')}
+            </span>
             <span className="text-sm font-semibold text-content tabular-nums">
               ~{formatPrintTime(totalPrintTimeHours)}
             </span>
           </div>
           <div title={t('print.summary.costTooltip')}>
-            <span className="text-xs text-content-tertiary mr-1">{t('print.summary.costLabel')}</span>
+            <span className="text-xs text-content-tertiary mr-1">
+              {t('print.summary.costLabel')}
+            </span>
             <span className="text-sm font-semibold text-content tabular-nums">
               {formatCost(totalCost)}
             </span>
           </div>
         </div>
         <span className="text-sm text-content tabular-nums">
-          {totalBins} bins
+          {t('print.summary.bins', { count: totalBins })}
           {hasAnySplits && (
-            <span className="text-content-tertiary"> → {totalPieces} pcs</span>
+            <span className="text-content-tertiary">
+              {' → '}
+              {t('print.summary.piecesShort', { count: totalPieces })}
+            </span>
           )}
         </span>
       </div>
 
       {/* Secondary row: Filament + Spool with progress bar */}
       <div className="flex justify-between items-center text-xs pt-2 border-t border-stroke-subtle">
-        <span className="text-content-tertiary tabular-nums" title={t('print.summary.filamentTooltip')}>
-          ~{totalFilament}m filament
+        <span
+          className="text-content-tertiary tabular-nums"
+          title={t('print.summary.filamentTooltip')}
+        >
+          {t('print.summary.filament', { meters: totalFilament })}
         </span>
         <div className="flex items-center gap-2" title={t('print.summary.spoolTooltip')}>
           <span className="text-content-tertiary">{t('print.summary.spoolLabel')}</span>
