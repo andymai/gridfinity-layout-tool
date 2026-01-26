@@ -253,7 +253,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 }
               });
               addToast(
-                t('toast.categoryAssigned', { category: categories[nextPos].name }),
+                t('toast.categoryChanged', {
+                  count: selectedBinIds.length,
+                  name: categories[nextPos].name,
+                }),
                 'success'
               );
             };
@@ -482,11 +485,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           onClick={(e) => e.stopPropagation()}
           loop
           onValueChange={(value) => {
-            // cmdk sets value to the full search string, extract command ID
-            const cmd = commands.find(
-              (c) => `${t(c.labelKey)} ${c.keywords?.join(' ') ?? ''}` === value
-            );
-            setSelectedCommandId(cmd?.id ?? null);
+            // Extract command ID from composite value (id::label keywords)
+            const commandId = value?.split('::')[0] ?? null;
+            setSelectedCommandId(commandId);
           }}
         >
           {/* Search input with icon */}
@@ -725,9 +726,12 @@ interface CommandItemProps {
 }
 
 function CommandItem({ command, onSelect, t }: CommandItemProps) {
+  // Use composite value: id::searchable_text for robust matching
+  const searchValue = `${command.id}::${t(command.labelKey)} ${command.keywords?.join(' ') ?? ''}`;
+
   return (
     <Command.Item
-      value={`${t(command.labelKey)} ${command.keywords?.join(' ') ?? ''}`}
+      value={searchValue}
       onSelect={() => onSelect(command.id)}
       disabled={!command.isAvailable}
       className="group flex items-center justify-between gap-3 mx-2 px-2.5 py-2 rounded-lg cursor-pointer text-[13px] text-content transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent data-[disabled=true]:opacity-35 data-[disabled=true]:cursor-not-allowed focus-visible:outline-none"

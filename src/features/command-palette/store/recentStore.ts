@@ -133,13 +133,15 @@ function saveFrecencyData(usage: Record<string, CommandUsage>): void {
 
 /**
  * Compute the top N recent command IDs from usage data.
+ * Pre-computes scores to avoid redundant calculations during sort.
  */
 function computeRecentIds(usage: Record<string, CommandUsage>): string[] {
   return Object.values(usage)
-    .filter((u) => calculateFrecencyScore(u) >= FRECENCY_CONFIG.MIN_SCORE_THRESHOLD)
-    .sort((a, b) => calculateFrecencyScore(b) - calculateFrecencyScore(a))
+    .map((u) => ({ usage: u, score: calculateFrecencyScore(u) }))
+    .filter((item) => item.score >= FRECENCY_CONFIG.MIN_SCORE_THRESHOLD)
+    .sort((a, b) => b.score - a.score)
     .slice(0, MAX_FRECENT_DISPLAY)
-    .map((u) => u.commandId);
+    .map((item) => item.usage.commandId);
 }
 
 export const useRecentCommandsStore = create<FrecencyState>()((set, get) => {
