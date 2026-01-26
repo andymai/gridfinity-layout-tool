@@ -131,6 +131,7 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
           allValid = false;
           invalidReason = result.reason;
           blockingInfo = result.blockingInfo;
+          break; // Preserve first blocking reason, consistent with drag interaction
         }
       }
 

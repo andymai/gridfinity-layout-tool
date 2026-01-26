@@ -442,8 +442,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       );
     }
 
-    // Show placement indicator when invalid
-    if (!valid && interaction.invalidReason) {
+    // Show placement indicator when invalid (only if at least one bin was processed)
+    if (!valid && interaction.invalidReason && !isFirstBin) {
       previews.push(
         <PlacementIndicator
           key="resize-indicator"
