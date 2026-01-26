@@ -2,6 +2,9 @@
  * Types for intelligent layout name suggestions.
  */
 
+// Re-export DEFAULT_LAYOUT_NAME from central constants for convenience
+export { DEFAULT_LAYOUT_NAME } from '@/core/constants';
+
 /**
  * Source of a name suggestion.
  */
@@ -57,8 +60,6 @@ export interface SuggestionInput {
   drawer: DrawerDimensions;
   /** Inferred drawer purpose (from purposeInference.ts) */
   purpose: string | null;
-  /** Current layout name */
-  currentName: string;
   /** User's locale for localized suggestions */
   locale: string;
 }
@@ -100,8 +101,3 @@ export interface SuggestionTelemetryEvent {
  * Minimum labeled bins required to show suggestions.
  */
 export const SUGGESTION_THRESHOLD = 5;
-
-/**
- * Default layout name that triggers suggestions.
- */
-export const DEFAULT_LAYOUT_NAME = 'Untitled layout';

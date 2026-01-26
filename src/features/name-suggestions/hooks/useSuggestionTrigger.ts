@@ -190,7 +190,6 @@ function buildSuggestionInput(
       height: layout.drawer.height,
     },
     purpose: purposeResult.purpose,
-    currentName: layout.name,
-    locale: 'en', // TODO: Get from i18n context
+    locale: typeof navigator !== 'undefined' ? navigator.language : 'en',
   };
 }

@@ -45,7 +45,6 @@ describe('Name suggestions for inspiration gallery layouts', () => {
           { name: 'Nuts & Washers', count: 5 },
         ],
         drawer: { width: 7, depth: 12, height: 6 },
-        currentName: 'Untitled layout',
         locale: 'en',
       };
 
@@ -84,7 +83,6 @@ describe('Name suggestions for inspiration gallery layouts', () => {
           { name: 'Other', count: 1 },
         ],
         drawer: { width: 13, depth: 11, height: 6 },
-        currentName: 'Untitled layout',
         locale: 'en',
       };
 
@@ -128,7 +126,6 @@ describe('Name suggestions for inspiration gallery layouts', () => {
           { name: 'Supplies', count: 3 },
         ],
         drawer: { width: 7, depth: 12, height: 6 },
-        currentName: 'Untitled layout',
         locale: 'en',
       };
 
@@ -169,7 +166,6 @@ describe('Name suggestions for inspiration gallery layouts', () => {
           { name: 'Other', count: 5 },
         ],
         drawer: { width: 7, depth: 12, height: 9 },
-        currentName: 'Untitled layout',
         locale: 'en',
       };
 
@@ -204,7 +200,6 @@ describe('Name suggestions for inspiration gallery layouts', () => {
           { name: 'Adapters', count: 4 },
         ],
         drawer: { width: 9, depth: 8, height: 12 },
-        currentName: 'Untitled layout',
         locale: 'en',
       };
 
@@ -245,7 +240,6 @@ describe('Name suggestions for inspiration gallery layouts', () => {
           { name: 'Finishing', count: 3 },
         ],
         drawer: { width: 7, depth: 12, height: 12 },
-        currentName: 'Untitled layout',
         locale: 'en',
       };
 
@@ -289,7 +283,6 @@ describe('Name suggestions for inspiration gallery layouts', () => {
           { name: 'Supplies', count: 5 },
         ],
         drawer: { width: 7, depth: 12, height: 6 },
-        currentName: 'Untitled layout',
         locale: 'en',
       };
 
@@ -326,7 +319,6 @@ describe('Name suggestions for inspiration gallery layouts', () => {
           { name: 'Misc', count: 6 },
         ],
         drawer: { width: 6, depth: 8, height: 6 },
-        currentName: 'Untitled layout',
         locale: 'en',
       };
 
@@ -353,7 +345,6 @@ describe('Name suggestions for inspiration gallery layouts', () => {
         labels: ['M2x4', 'M2x6', 'M3x8', 'M4x10', 'M5x12', 'Hex Nuts', 'Washers'],
         categories: [],
         drawer: { width: 7, depth: 12, height: 6 },
-        currentName: 'Untitled layout',
         locale: 'en',
       };
 
@@ -362,7 +353,6 @@ describe('Name suggestions for inspiration gallery layouts', () => {
         labels: ['Item 1', 'Item 2', 'Item 3', 'Stuff', 'Things'],
         categories: [],
         drawer: { width: 7, depth: 12, height: 6 },
-        currentName: 'Untitled layout',
         locale: 'en',
       };
 

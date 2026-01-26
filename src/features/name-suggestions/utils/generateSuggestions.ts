@@ -194,9 +194,9 @@ const SUBCATEGORY_PATTERNS: SubcategoryPattern[] = [
     minMatches: 3,
     confidenceBoost: 0.15,
   },
-  // Imperial hardware (#4, #6, #8, 1/4", etc.)
+  // Imperial hardware (#4, #6, #8, 1/4", 1/4, etc.)
   {
-    patterns: [/^#\d+/i, /^\d+\/\d+["-]/i, /^\d+-\d+\s*(unc|unf)/i],
+    patterns: [/^#\d+/i, /^\d+\/\d+["-]?/i, /^\d+-\d+\s*(unc|unf)/i],
     keywords: ['imperial', 'sae', 'inch'],
     names: ['Imperial Hardware', 'SAE Fasteners', 'American Hardware'],
     minMatches: 3,
@@ -855,33 +855,34 @@ function detectSubcategories(labels: string[]): SubcategoryMatch | null {
   const lowercaseLabels = labels.map((l) => l.toLowerCase());
 
   for (const subcategory of SUBCATEGORY_PATTERNS) {
-    let matchCount = 0;
+    const matchedIndices = new Set<number>();
 
     // Check pattern matches
-    for (const label of labels) {
+    for (let i = 0; i < labels.length; i++) {
       for (const pattern of subcategory.patterns) {
-        if (pattern.test(label)) {
-          matchCount++;
-          break; // Only count each label once
+        if (pattern.test(labels[i])) {
+          matchedIndices.add(i);
+          break; // Only count each label once per pattern
         }
       }
     }
 
-    // Check keyword matches
-    for (const label of lowercaseLabels) {
+    // Check keyword matches (only for labels not already matched by patterns)
+    for (let i = 0; i < lowercaseLabels.length; i++) {
+      if (matchedIndices.has(i)) continue; // Skip already matched labels
       for (const keyword of subcategory.keywords) {
-        if (label.includes(keyword)) {
-          matchCount++;
-          break; // Only count each label once
+        if (lowercaseLabels[i].includes(keyword)) {
+          matchedIndices.add(i);
+          break; // Only count each label once per keyword
         }
       }
     }
 
-    if (matchCount >= subcategory.minMatches) {
+    if (matchedIndices.size >= subcategory.minMatches) {
       return {
         names: subcategory.names,
         confidenceBoost: subcategory.confidenceBoost,
-        matchCount,
+        matchCount: matchedIndices.size,
       };
     }
   }

@@ -12,7 +12,6 @@ describe('generateSuggestions', () => {
     labels: [],
     categories: [],
     drawer: { width: 6, depth: 4, height: 6 },
-    currentName: 'Untitled layout',
     locale: 'en',
   };
 

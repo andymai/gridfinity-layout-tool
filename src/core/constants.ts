@@ -124,6 +124,9 @@ export function hasFractionalDimensions(rect: {
 /** Default category color (slate gray) - used as fallback when category is undefined */
 export const DEFAULT_CATEGORY_COLOR = '#6b7280';
 
+/** Default layout name for new layouts */
+export const DEFAULT_LAYOUT_NAME = 'Untitled layout';
+
 // === Default Categories ===
 
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -144,7 +147,7 @@ export function generateId(): string {
 
 export const createDefaultLayout = (): Layout => ({
   version: '1.0',
-  name: 'Untitled layout',
+  name: DEFAULT_LAYOUT_NAME,
   drawer: { width: 10, depth: 8, height: 12 },
   printBedSize: 256, // mm - typical print bed size
   gridUnitMm: 42,
@@ -170,7 +173,7 @@ export interface LayoutSettings {
 
 export const createLayoutWithSettings = (settings: LayoutSettings): Layout => ({
   version: '1.0',
-  name: 'Untitled layout',
+  name: DEFAULT_LAYOUT_NAME,
   drawer: {
     width: settings.defaultDrawerWidth,
     depth: settings.defaultDrawerDepth,
