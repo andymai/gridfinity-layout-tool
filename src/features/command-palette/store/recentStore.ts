@@ -77,14 +77,34 @@ function calculateFrecencyScore(usage: CommandUsage | undefined): number {
 /**
  * Load frecency data from localStorage, with migration from v1 format.
  */
+/**
+ * Validate that a value is a valid CommandUsage object.
+ */
+function isValidCommandUsage(value: unknown): value is CommandUsage {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as CommandUsage).commandId === 'string' &&
+    typeof (value as CommandUsage).useCount === 'number' &&
+    typeof (value as CommandUsage).lastUsedAt === 'number'
+  );
+}
+
 function loadFrecencyData(): Record<string, CommandUsage> {
   try {
     // Try new v2 format first
     const v2Data = localStorage.getItem(STORAGE_KEY_V2);
     if (v2Data) {
       const parsed = JSON.parse(v2Data);
-      if (typeof parsed === 'object' && parsed !== null) {
-        return parsed as Record<string, CommandUsage>;
+      // Validate it's a plain object (not array) with valid entries
+      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+        const validated: Record<string, CommandUsage> = {};
+        for (const [key, value] of Object.entries(parsed)) {
+          if (isValidCommandUsage(value)) {
+            validated[key] = value;
+          }
+        }
+        return validated;
       }
     }
 

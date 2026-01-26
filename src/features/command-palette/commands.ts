@@ -308,4 +308,74 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     category: 'export',
     keywords: ['url', 'share'],
   },
+  // === Selection ===
+  {
+    id: 'select-all',
+    labelKey: 'commandPalette.selectAll',
+    category: 'edit',
+    shortcut: { keys: 'A', modifier: true },
+    keywords: ['all', 'layer', 'bins'],
+  },
+  {
+    id: 'select-none',
+    labelKey: 'commandPalette.selectNone',
+    category: 'edit',
+    keywords: ['deselect', 'clear', 'none'],
+  },
+  {
+    id: 'invert-selection',
+    labelKey: 'commandPalette.invertSelection',
+    category: 'edit',
+    keywords: ['reverse', 'opposite', 'toggle'],
+  },
+  {
+    id: 'select-by-category',
+    labelKey: 'commandPalette.selectByCategory',
+    category: 'edit',
+    keywords: ['filter', 'group', 'same category'],
+  },
+
+  // === Layout Management ===
+  {
+    id: 'new-layout',
+    labelKey: 'commandPalette.newLayout',
+    category: 'navigation',
+    shortcut: { keys: 'N', modifier: true },
+    keywords: ['create', 'blank', 'fresh'],
+  },
+  {
+    id: 'duplicate-layout',
+    labelKey: 'commandPalette.duplicateLayout',
+    category: 'navigation',
+    keywords: ['copy', 'clone', 'layout'],
+  },
+
+  // === Tools ===
+  {
+    id: 'toggle-paint-mode',
+    labelKey: 'commandPalette.togglePaintMode',
+    category: 'tools',
+    shortcut: { keys: 'P' },
+    keywords: ['paint', 'brush', 'fill', 'rapid'],
+  },
+  {
+    id: 'fill-layer',
+    labelKey: 'commandPalette.fillLayer',
+    category: 'tools',
+    keywords: ['fill', 'uniform', 'complete', 'auto'],
+  },
+
+  // === Staging ===
+  {
+    id: 'clear-staging',
+    labelKey: 'commandPalette.clearStaging',
+    category: 'bins',
+    keywords: ['stash', 'empty', 'remove'],
+  },
+  {
+    id: 'restore-from-staging',
+    labelKey: 'commandPalette.restoreFromStaging',
+    category: 'bins',
+    keywords: ['unstash', 'bring back', 'recover'],
+  },
 ];
