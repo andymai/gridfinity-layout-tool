@@ -139,7 +139,7 @@ describe('ImportModal', () => {
       await waitFor(() => {
         const previewSection = container.querySelector('.bg-success\\/10');
         expect(previewSection).not.toBeNull();
-        expect(previewSection?.textContent).toContain('Drawer size');
+        expect(previewSection?.textContent).toContain('Drawer:');
       });
     });
 
@@ -158,7 +158,7 @@ describe('ImportModal', () => {
         const previewSection = container.querySelector('.bg-success\\/10');
         expect(previewSection).not.toBeNull();
         // The drawer size is shown in the preview
-        expect(previewSection?.textContent).toContain('Drawer size');
+        expect(previewSection?.textContent).toContain('Drawer:');
       });
     });
 

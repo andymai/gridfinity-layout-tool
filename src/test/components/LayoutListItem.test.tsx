@@ -125,7 +125,7 @@ describe('LayoutListItem', () => {
     it('renders bin count', () => {
       render(<LayoutListItem {...defaultProps} />);
 
-      expect(screen.getByText('Bin count')).toBeInTheDocument();
+      expect(screen.getByText(/\d+ bins/)).toBeInTheDocument();
     });
 
     it('renders LayoutActions', () => {
