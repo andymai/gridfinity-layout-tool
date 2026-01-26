@@ -128,6 +128,7 @@ export function computePreview(layout: Layout): LayoutPreview {
       w: bin.width,
       d: bin.depth,
       c: categoryColors.get(bin.category) || '#6B7280',
+      l: bin.label || undefined, // Include label if present
     }));
 
   return {

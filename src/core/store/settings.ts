@@ -182,6 +182,11 @@ export interface UserSettings {
    * null means use the default (33vh).
    */
   stashMaxHeight: number | null;
+  /**
+   * Preferred view mode for the layout manager modal.
+   * 'grid' shows cards, 'list' shows compact rows.
+   */
+  layoutManagerViewMode: 'grid' | 'list';
 
   // Print view preferences
   printViewSettings: PrintViewSettings;
@@ -225,6 +230,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   lastRightPanelCollapsed: false,
   lastStashCollapsed: false,
   stashMaxHeight: null, // null = use default 33vh
+  layoutManagerViewMode: 'grid',
 
   // Print view preferences
   printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },

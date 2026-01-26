@@ -525,6 +525,8 @@ const en: Record<string, string> = {
   // ===========================================================================
   'layouts.title': 'Layouts',
   'layouts.newLayout': 'New Layout',
+  'layouts.createNewLayoutDescription': 'Start fresh with an empty drawer',
+  'layouts.createNewLayoutHint': 'Start with a blank canvas',
   'layouts.shareLayout': 'Share Layout',
   'layouts.searchPlaceholder': 'Search layouts...',
   'layouts.layoutNamePlaceholder': 'Layout name',
@@ -586,6 +588,14 @@ const en: Record<string, string> = {
   'layouts.sharedLayoutCount': '{count} shared layout(s)',
   'layouts.sharedLayouts': 'Shared Layouts',
   'layouts.validationErrors': 'Validation errors',
+  'layouts.viewMode': 'View mode',
+  'layouts.listView': 'List view',
+  'layouts.gridView': 'Grid view',
+  'layouts.sortBy': 'Sort by',
+  'layouts.sortRecent': 'Recently Modified',
+  'layouts.sortName': 'Name (A-Z)',
+  'layouts.sortSize': 'Drawer Size',
+  'layouts.sortBinCount': 'Bin Count',
   'layouts.viewOnly': 'View only',
 
   // ===========================================================================

@@ -97,6 +97,8 @@ describe('LayoutList', () => {
       createTestEntry('layout-2', 'Second Layout'),
     ],
     activeLayoutId: 'layout-1',
+    viewMode: 'list' as const, // Use list mode for tests (backward compatible)
+    sortBy: 'recent' as const,
     onSwitch: mockOnSwitch,
     onRename: mockOnRename,
     onDuplicate: mockOnDuplicate,
