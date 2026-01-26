@@ -9,11 +9,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     exclude: ['e2e/**', 'node_modules/**'],
-    // Increase timeout for CI environment (slower than local dev)
-    testTimeout: 10000,
-    // Optimized for high-core-count CPUs (Ryzen 9 7950X3D: 16c/32t)
-    pool: 'threads', // Worker threads are faster than forks for jsdom tests
-    maxWorkers: 32, // Use all available threads
+    // Increase timeout for CI environment (can be 5-10x slower than local dev)
+    testTimeout: 30000,
+    // Use threads pool for faster jsdom tests
+    pool: 'threads',
+    // CI runners have limited cores, local dev can use more
+    maxWorkers: process.env.CI ? 4 : 32,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'html'],
