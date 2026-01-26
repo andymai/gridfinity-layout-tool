@@ -135,6 +135,10 @@ export type Interaction =
       swapMode?: boolean;
       /** Target bin for swap if hovering over a compatible bin */
       swapTarget?: SwapTarget;
+      /** Why placement is invalid (for user feedback) */
+      invalidReason?: ValidationReason;
+      /** Details about what's blocking placement */
+      blockingInfo?: BlockingInfo;
     }
   | {
       type: 'resize';
@@ -143,8 +147,21 @@ export type Interaction =
       startRects: Map<string, Rect>;
       currentRects: Map<string, Rect>;
       valid: boolean;
+      /** Why resize is invalid (for user feedback) */
+      invalidReason?: ValidationReason;
+      /** Details about what's blocking the resize */
+      blockingInfo?: BlockingInfo;
     }
-  | { type: 'stagingDrag'; binId: string; currentCoord: Coord | null; valid: boolean }
+  | {
+      type: 'stagingDrag';
+      binId: string;
+      currentCoord: Coord | null;
+      valid: boolean;
+      /** Why placement is invalid (for user feedback) */
+      invalidReason?: ValidationReason;
+      /** Details about what's blocking placement */
+      blockingInfo?: BlockingInfo;
+    }
   | { type: 'paint'; paintSize: { width: number; depth: number }; start: Coord; current: Coord };
 
 // === UI State ===
@@ -159,16 +176,31 @@ export interface UIState {
 
 // === Validation Results ===
 
+/** Reasons why bin placement may fail */
+export type ValidationReason =
+  | 'out_of_bounds'
+  | 'exceeds_width'
+  | 'exceeds_depth'
+  | 'exceeds_height'
+  | 'invalid_layer'
+  | 'collision'
+  | 'blocked_zone';
+
+/** Info about what's blocking a placement (for user feedback) */
+export interface BlockingInfo {
+  /** ID of the bin causing the block */
+  binId: string;
+  /** ID of the layer containing the blocking bin */
+  layerId: string;
+  /** Name of the layer (for display) */
+  layerName: string;
+}
+
 export interface ValidationResult {
   valid: boolean;
-  reason?:
-    | 'out_of_bounds'
-    | 'exceeds_width'
-    | 'exceeds_depth'
-    | 'exceeds_height'
-    | 'invalid_layer'
-    | 'collision'
-    | 'blocked_zone';
+  reason?: ValidationReason;
+  /** Details about what's blocking (for blocked_zone and collision) */
+  blockingInfo?: BlockingInfo;
 }
 
 /**

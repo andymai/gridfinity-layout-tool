@@ -313,7 +313,7 @@ export function GridCanvas({
           return (
             <div
               key={zone.sourceBinId}
-              className="relative cursor-pointer transition-all duration-150 hover:opacity-50 hover:ring-2 hover:ring-white/60"
+              className="blocked-zone relative cursor-pointer transition-all duration-150 hover:opacity-50 hover:ring-2 hover:ring-white/60"
               style={{
                 gridColumn: `${gridCol} / span ${gridColSpan}`,
                 gridRow: `${zoneGridRowStart} / span ${gridRowSpan}`,
@@ -333,13 +333,13 @@ export function GridCanvas({
               onClick={() => sourceBin && handleBlockedZoneClick(sourceBin.id, sourceBin.layerId)}
               title={
                 sourceLayer
-                  ? `Blocked by bin from ${sourceLayer.name} extending upward. Click to switch to ${sourceLayer.name}.`
+                  ? `${t('grid.blockedByBin', { layer: sourceLayer.name })}. ${t('grid.blockedZoneClick')}`
                   : undefined
               }
               role="button"
               aria-label={
                 sourceLayer
-                  ? t('grid.blockedByBin', { layer: sourceLayer.name })
+                  ? `${t('grid.blockedByBin', { layer: sourceLayer.name })}. ${t('grid.blockedZoneClick')}`
                   : t('grid.blockedZone')
               }
             >
