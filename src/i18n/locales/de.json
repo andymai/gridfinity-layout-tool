@@ -1195,5 +1195,6 @@
   "toolbar.zoomIn": "Vergrößern",
   "toolbar.zoomInKey": "Vergrößern (+)",
   "toolbar.zoomOut": "Verkleinern",
-  "toolbar.zoomOutKey": "Verkleinern (−)"
+  "toolbar.zoomOutKey": "Verkleinern (−)",
+  "print.summary.piecesShort": "{count} pcs"
 }
