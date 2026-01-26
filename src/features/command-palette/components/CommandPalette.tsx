@@ -428,6 +428,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       .slice(0, 5);
   }, [commands]);
 
+  // IDs of commands shown in recent section (to avoid duplicates)
+  const recentCommandIds = useMemo(
+    () => new Set(recentCommands.map((c) => c.id)),
+    [recentCommands]
+  );
+
   // Track currently highlighted command for footer display
   const [selectedCommandId, setSelectedCommandId] = useState<string | null>(null);
   const selectedCommand = useMemo(
@@ -566,9 +572,11 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               </Command.Group>
             )}
 
-            {/* Grouped commands */}
+            {/* Grouped commands (excluding ones already in Recent) */}
             {CATEGORY_ORDER.map((category) => {
-              const categoryCommands = groupedCommands[category];
+              const categoryCommands = groupedCommands[category]?.filter(
+                (cmd) => !recentCommandIds.has(cmd.id)
+              );
               if (!categoryCommands?.length) return null;
 
               return (
