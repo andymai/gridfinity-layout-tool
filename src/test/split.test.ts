@@ -328,7 +328,7 @@ describe('generatePrintList', () => {
     expect(rows[0].pieces[0].count).toBe(4);
   });
 
-  it('keeps labeled bins separate even with same dimensions', () => {
+  it('keeps labeled bins with DIFFERENT labels separate', () => {
     const bins: Bin[] = [
       {
         id: '1',
@@ -356,10 +356,44 @@ describe('generatePrintList', () => {
       },
     ];
     const rows = generatePrintList(bins, 4);
-    // Each labeled bin gets its own row
+    // Bins with different labels get separate rows
     expect(rows).toHaveLength(2);
     expect(rows[0].labels).toContain('Screws');
     expect(rows[1].labels).toContain('Bolts');
+  });
+
+  it('consolidates labeled bins with SAME label', () => {
+    const bins: Bin[] = [
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: 'Screws',
+        notes: '',
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: 'Screws',
+        notes: '',
+      },
+    ];
+    const rows = generatePrintList(bins, 4);
+    // Bins with same dimensions + label + category are consolidated
+    expect(rows).toHaveLength(1);
+    expect(rows[0].binCount).toBe(2);
+    expect(rows[0].labels).toContain('Screws');
   });
 
   it('groups unlabeled bins with same dimensions', () => {
@@ -406,7 +440,7 @@ describe('generatePrintList', () => {
     expect(rows).toHaveLength(2);
   });
 
-  it('keeps bins with custom properties separate even with same dimensions', () => {
+  it('consolidates bins with custom properties (merges values)', () => {
     const bins: Bin[] = [
       {
         id: '1',
@@ -436,10 +470,92 @@ describe('generatePrintList', () => {
       },
     ];
     const rows = generatePrintList(bins, 4);
-    // Each bin with custom properties gets its own row
-    expect(rows).toHaveLength(2);
-    expect(rows.some((r) => r.customProperties?.SKU === 'A1')).toBe(true);
-    expect(rows.some((r) => r.customProperties?.SKU === 'B2')).toBe(true);
+    // Bins are consolidated, custom properties are merged with "; " separator
+    expect(rows).toHaveLength(1);
+    expect(rows[0].binCount).toBe(2);
+    expect(rows[0].customProperties?.SKU).toBe('A1; B2');
+  });
+
+  it('consolidates bins with custom properties - same values are deduplicated', () => {
+    const bins: Bin[] = [
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+        customProperties: { Color: 'Red' },
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: '',
+        customProperties: { Color: 'Red' },
+      },
+    ];
+    const rows = generatePrintList(bins, 4);
+    // Consolidated - duplicate values are deduplicated
+    expect(rows).toHaveLength(1);
+    expect(rows[0].binCount).toBe(2);
+    expect(rows[0].customProperties?.Color).toBe('Red');
+  });
+
+  it('consolidates notes from multiple bins (unique values joined)', () => {
+    const bins: Bin[] = [
+      {
+        id: '1',
+        layerId: 'l1',
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: 'Note 1',
+      },
+      {
+        id: '2',
+        layerId: 'l1',
+        x: 2,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: 'Note 2',
+      },
+      {
+        id: '3',
+        layerId: 'l1',
+        x: 0,
+        y: 2,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: 'c1',
+        label: '',
+        notes: 'Note 1', // Duplicate
+      },
+    ];
+    const rows = generatePrintList(bins, 4);
+    // All bins consolidated, notes merged (unique only)
+    expect(rows).toHaveLength(1);
+    expect(rows[0].binCount).toBe(3);
+    expect(rows[0].notes).toBe('Note 1; Note 2');
   });
 
   it('groups bins without custom properties together', () => {
@@ -483,14 +599,11 @@ describe('generatePrintList', () => {
       },
     ];
     const rows = generatePrintList(bins, 4);
-    // Two bins without props grouped, one with props separate
-    expect(rows).toHaveLength(2);
-    const groupedRow = rows.find((r) => r.binCount === 2);
-    const individualRow = rows.find((r) => r.binCount === 1);
-    expect(groupedRow).toBeDefined();
-    expect(groupedRow?.customProperties).toBeUndefined();
-    expect(individualRow).toBeDefined();
-    expect(individualRow?.customProperties?.SKU).toBe('C3');
+    // All 3 bins are consolidated (same dimensions + label + category)
+    expect(rows).toHaveLength(1);
+    expect(rows[0].binCount).toBe(3);
+    // Custom property from the one bin that has it
+    expect(rows[0].customProperties?.SKU).toBe('C3');
   });
 
   it('treats empty customProperties object as no custom properties', () => {

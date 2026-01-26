@@ -382,7 +382,7 @@ describe('useBinList', () => {
   });
 
   describe('export functionality', () => {
-    it('exports to TSV format', () => {
+    it('exports to TSV format with new column order', () => {
       const layout = createTestLayout([
         createTestBin({ label: 'Test Bin', width: 2, depth: 2, height: 3 }),
       ]);
@@ -391,11 +391,13 @@ describe('useBinList', () => {
       const { result } = renderHook(() => useBinList());
       const tsv = result.current.exportToTSV();
 
-      expect(tsv).toContain('Size\tHeight\tBins');
+      // New column order: Qty, Size, Size(mm), Height, Category, Label, Notes
+      expect(tsv).toContain('Qty\tSize\tSize(mm)\tHeight\tCategory\tLabel\tNotes');
       expect(tsv).toContain('2×2');
+      expect(tsv).toContain('Test Bin');
     });
 
-    it('exports to CSV format', () => {
+    it('exports to CSV format with new column order', () => {
       const layout = createTestLayout([
         createTestBin({ label: 'Test Bin', width: 2, depth: 2, height: 3 }),
       ]);
@@ -404,8 +406,10 @@ describe('useBinList', () => {
       const { result } = renderHook(() => useBinList());
       const csv = result.current.exportToCSV();
 
-      expect(csv).toContain('Size,Height,Bins');
+      // New column order: Qty, Size, Size(mm), Height, Category, Label, Notes
+      expect(csv).toContain('Qty,Size,Size(mm),Height,Category,Label,Notes');
       expect(csv).toContain('2×2');
+      expect(csv).toContain('Test Bin');
     });
 
     it('exports to JSON format', () => {

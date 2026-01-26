@@ -141,15 +141,23 @@ function escapeCSVValue(value: string): string {
  * Metadata for CSV export including layout context.
  */
 export interface CSVExportMeta {
-  layoutName?: string;
-  gridSize?: string;
+  gridUnitMm: number;
+  categories: Array<{ id: string; name: string }>;
+}
+
+/**
+ * Calculate size in mm from grid units.
+ */
+function calculateSizeMm(size: string, gridUnitMm: number): string {
+  const [w, d] = size.split('×').map(Number);
+  return `${Math.round(w * gridUnitMm)}×${Math.round(d * gridUnitMm)}`;
 }
 
 /**
  * Format rows as CSV with proper escaping.
+ * Column order: Qty, Size, Size(mm), Height, Category, Label, Notes, [Custom Props]
  * Compatible with Excel, Google Sheets, etc.
  * Dynamically adds columns for custom properties that exist in any row.
- * Optionally includes layout name and grid size columns for context.
  */
 export function formatAsCSV(rows: EnhancedPrintRow[], meta?: CSVExportMeta): string {
   // Collect all unique custom property keys across all rows
@@ -163,21 +171,23 @@ export function formatAsCSV(rows: EnhancedPrintRow[], meta?: CSVExportMeta): str
   }
   const sortedKeys = Array.from(customKeys).sort();
 
-  // Build header with optional metadata and dynamic custom property columns
-  const metaHeader = meta ? 'Layout,Grid Size,' : '';
-  const baseHeader = `${metaHeader}Size,Height,Bins,Pieces,Filament (m),Label,Notes`;
+  // Build header with new column order: Qty, Size, Size(mm), Height, Category, Label, Notes
+  const baseHeader = 'Qty,Size,Size(mm),Height,Category,Label,Notes';
   const header = sortedKeys.length > 0 ? `${baseHeader},${sortedKeys.join(',')}` : baseHeader;
 
-  // Pre-compute metadata values if provided (with CSV escaping)
-  const layoutName = meta ? escapeCSVValue(meta.layoutName || '') : '';
-  const gridSize = meta ? escapeCSVValue(meta.gridSize || '') : '';
+  // Build category lookup map
+  const categoryMap = new Map(meta?.categories.map((c) => [c.id, c.name]) ?? []);
 
   // Build data rows
   const lines = rows.map((row) => {
+    const sizeMm = meta ? calculateSizeMm(row.size, meta.gridUnitMm) : '';
+    const categoryName = row.categoryIds?.[0]
+      ? escapeCSVValue(categoryMap.get(row.categoryIds[0]) || 'Uncategorized')
+      : '';
     const label = escapeCSVValue((row.labels ?? [])[0] || '');
     const notes = escapeCSVValue(row.notes || '');
-    const metaValues = meta ? `${layoutName},${gridSize},` : '';
-    const baseLine = `${metaValues}${row.size},${row.height}u,${row.binCount},${row.totalPieces},${row.filament},${label},${notes}`;
+
+    const baseLine = `${row.binCount},${row.size},${sizeMm},${row.height}u,${categoryName},${label},${notes}`;
 
     if (sortedKeys.length === 0) {
       return baseLine;

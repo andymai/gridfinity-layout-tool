@@ -230,40 +230,46 @@ describe('binListOperations', () => {
   });
 
   describe('formatAsCSV', () => {
-    it('creates valid CSV with header', () => {
+    // Default meta for tests (required for new column format)
+    const defaultMeta = {
+      gridUnitMm: 42,
+      categories: [{ id: 'cat1', name: 'Tools' }],
+    };
+
+    it('creates valid CSV with new column order', () => {
       const rows = [
         createTestRow({
           size: '3×2',
           height: 4,
           binCount: 2,
-          totalPieces: 2,
-          filament: 5.5,
+          categoryIds: ['cat1'],
           labels: ['Test bin'],
           notes: 'Some notes',
         }),
       ];
-      const csv = formatAsCSV(rows);
+      const csv = formatAsCSV(rows, defaultMeta);
       const lines = csv.split('\n');
 
-      expect(lines[0]).toBe('Size,Height,Bins,Pieces,Filament (m),Label,Notes');
-      expect(lines[1]).toBe('3×2,4u,2,2,5.5,Test bin,Some notes');
+      // New column order: Qty, Size, Size(mm), Height, Category, Label, Notes
+      expect(lines[0]).toBe('Qty,Size,Size(mm),Height,Category,Label,Notes');
+      expect(lines[1]).toBe('2,3×2,126×84,4u,Tools,Test bin,Some notes');
     });
 
     it('escapes commas in values', () => {
       const rows = [createTestRow({ labels: ['Label, with comma'] })];
-      const csv = formatAsCSV(rows);
+      const csv = formatAsCSV(rows, defaultMeta);
       expect(csv).toContain('"Label, with comma"');
     });
 
     it('escapes double quotes in values', () => {
       const rows = [createTestRow({ labels: ['Label with "quotes"'] })];
-      const csv = formatAsCSV(rows);
+      const csv = formatAsCSV(rows, defaultMeta);
       expect(csv).toContain('"Label with ""quotes"""');
     });
 
     it('escapes newlines in values', () => {
       const rows = [createTestRow({ notes: 'Line 1\nLine 2' })];
-      const csv = formatAsCSV(rows);
+      const csv = formatAsCSV(rows, defaultMeta);
       expect(csv).toContain('"Line 1\nLine 2"');
     });
 
@@ -274,7 +280,7 @@ describe('binListOperations', () => {
         createTestRow({ labels: ['-NEGATIVE'] }),
         createTestRow({ labels: ['@INDIRECT'] }),
       ];
-      const csv = formatAsCSV(rows);
+      const csv = formatAsCSV(rows, defaultMeta);
       // Values starting with formula chars should be prefixed with '
       expect(csv).toContain("'=SUM");
       expect(csv).toContain("'+1234567890");
@@ -284,14 +290,15 @@ describe('binListOperations', () => {
 
     it('handles empty labels and notes', () => {
       const rows = [createTestRow({ labels: [], notes: '' })];
-      const csv = formatAsCSV(rows);
+      const csv = formatAsCSV(rows, defaultMeta);
       const lines = csv.split('\n');
-      expect(lines[1]).toBe('2×2,3u,1,1,4.5,,');
+      // Qty,Size,Size(mm),Height,Category,Label,Notes
+      expect(lines[1]).toBe('1,2×2,84×84,3u,Tools,,');
     });
 
     it('handles empty rows array', () => {
-      const csv = formatAsCSV([]);
-      expect(csv).toBe('Size,Height,Bins,Pieces,Filament (m),Label,Notes');
+      const csv = formatAsCSV([], defaultMeta);
+      expect(csv).toBe('Qty,Size,Size(mm),Height,Category,Label,Notes');
     });
 
     it('includes custom property columns when present', () => {
@@ -310,11 +317,11 @@ describe('binListOperations', () => {
           },
         }),
       ];
-      const csv = formatAsCSV(rows);
+      const csv = formatAsCSV(rows, defaultMeta);
       const lines = csv.split('\n');
 
       // Header should include custom property columns (sorted alphabetically)
-      expect(lines[0]).toBe('Size,Height,Bins,Pieces,Filament (m),Label,Notes,Color,Material');
+      expect(lines[0]).toBe('Qty,Size,Size(mm),Height,Category,Label,Notes,Color,Material');
 
       // First row has both properties
       expect(lines[1]).toContain('Red,PETG');
@@ -331,7 +338,7 @@ describe('binListOperations', () => {
           },
         }),
       ];
-      const csv = formatAsCSV(rows);
+      const csv = formatAsCSV(rows, defaultMeta);
       expect(csv).toContain('"Value, with comma"');
     });
 
@@ -346,74 +353,38 @@ describe('binListOperations', () => {
           customProperties: {},
         }),
       ];
-      const csv = formatAsCSV(rows);
+      const csv = formatAsCSV(rows, defaultMeta);
       const lines = csv.split('\n');
 
       // No custom property columns
-      expect(lines[0]).toBe('Size,Height,Bins,Pieces,Filament (m),Label,Notes');
+      expect(lines[0]).toBe('Qty,Size,Size(mm),Height,Category,Label,Notes');
     });
 
-    it('includes layout metadata when provided', () => {
-      const rows = [
-        createTestRow({
-          size: '2×2',
-          height: 3,
-          binCount: 1,
-          totalPieces: 1,
-          filament: 4.5,
-          labels: ['Test'],
-        }),
-      ];
+    it('shows Uncategorized for missing category', () => {
+      const rows = [createTestRow({ categoryIds: ['unknown'] })];
+      const csv = formatAsCSV(rows, defaultMeta);
+      expect(csv).toContain('Uncategorized');
+    });
+
+    it('calculates Size(mm) correctly with different gridUnitMm', () => {
+      const rows = [createTestRow({ size: '2×3' })];
       const csv = formatAsCSV(rows, {
-        layoutName: 'My Drawer',
-        gridSize: '10×8',
+        gridUnitMm: 50,
+        categories: [{ id: 'cat1', name: 'Tools' }],
       });
       const lines = csv.split('\n');
-
-      // Header should have Layout and Grid Size columns first
-      expect(lines[0]).toBe('Layout,Grid Size,Size,Height,Bins,Pieces,Filament (m),Label,Notes');
-      // Data row should include metadata values
-      expect(lines[1]).toContain('My Drawer,10×8,');
+      // 2*50 = 100, 3*50 = 150
+      expect(lines[1]).toContain('100×150');
     });
 
-    it('includes layout metadata with custom properties', () => {
-      const rows = [
-        createTestRow({
-          labels: ['Bin 1'],
-          customProperties: { SKU: 'ABC123' },
-        }),
-      ];
+    it('escapes category names with special characters', () => {
+      const rows = [createTestRow({ categoryIds: ['cat1'] })];
       const csv = formatAsCSV(rows, {
-        layoutName: 'Tool Drawer',
-        gridSize: '12×10',
+        gridUnitMm: 42,
+        categories: [{ id: 'cat1', name: 'Tools, Hardware' }],
       });
-      const lines = csv.split('\n');
-
-      // Header should have metadata first, then base columns, then custom properties
-      expect(lines[0]).toBe(
-        'Layout,Grid Size,Size,Height,Bins,Pieces,Filament (m),Label,Notes,SKU'
-      );
-      expect(lines[1].startsWith('Tool Drawer,12×10,')).toBe(true);
-      expect(lines[1]).toContain('ABC123');
-    });
-
-    it('escapes layout metadata values', () => {
-      const rows = [createTestRow()];
-      const csv = formatAsCSV(rows, {
-        layoutName: 'Drawer, with comma',
-        gridSize: '10×8',
-      });
-      expect(csv).toContain('"Drawer, with comma"');
-    });
-
-    it('omits metadata columns when meta is undefined', () => {
-      const rows = [createTestRow()];
-      const csv = formatAsCSV(rows);
-      const lines = csv.split('\n');
-
-      // Should be the original format without Layout/Grid Size
-      expect(lines[0]).toBe('Size,Height,Bins,Pieces,Filament (m),Label,Notes');
-      expect(lines[1]).not.toContain('Layout');
+      // Category name with comma should be quoted
+      expect(csv).toContain('"Tools, Hardware"');
     });
   });
 
