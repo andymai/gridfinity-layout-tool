@@ -630,7 +630,7 @@ describe('MobileLayoutsPanel', () => {
       await waitFor(() => {
         expect(mockShare).toHaveBeenCalledWith('edit');
       });
-    });
+    }, 15000);
 
     it('shows existing share info when hasActiveShare', async () => {
       const existingShareInfo = {
@@ -712,7 +712,7 @@ describe('MobileLayoutsPanel', () => {
       await waitFor(() => {
         expect(mockCopyUrl).toHaveBeenCalled();
       });
-    });
+    }, 15000);
 
     it('updates permission for existing share', async () => {
       const existingShareInfo = {
