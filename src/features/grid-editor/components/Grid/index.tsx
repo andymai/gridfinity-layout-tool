@@ -171,6 +171,13 @@ export function Grid() {
     showIsometricPreview,
   });
 
+  // Listen for fit-to-screen command from command palette
+  useEffect(() => {
+    const handleFitToScreen = () => zoomState.fitToScreen();
+    window.addEventListener('fit-to-screen', handleFitToScreen);
+    return () => window.removeEventListener('fit-to-screen', handleFitToScreen);
+  }, [zoomState]);
+
   // Calculate cellSize using zoom from zoomState (may differ slightly due to fit-to-screen)
   const cellSize = Math.round(baseCellSize * zoomState.zoom);
 
