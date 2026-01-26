@@ -41,10 +41,18 @@ function PlacementIndicator({
     message = t('grid.blockedByBin', { layer: blockingInfo.layerName });
   } else if (reason === 'collision') {
     message = t('grid.collision');
-  } else if (reason === 'out_of_bounds' || reason === 'exceeds_width' || reason === 'exceeds_depth') {
+  } else if (
+    reason === 'out_of_bounds' ||
+    reason === 'exceeds_width' ||
+    reason === 'exceeds_depth' ||
+    reason === 'exceeds_height'
+  ) {
     message = t('grid.outOfBounds');
+  } else if (reason === 'invalid_layer') {
+    message = t('grid.invalidLayer');
   } else {
-    return null; // Don't show indicator for other reasons
+    // Exhaustive check - should never reach here with current ValidationReason type
+    return null;
   }
 
   return (

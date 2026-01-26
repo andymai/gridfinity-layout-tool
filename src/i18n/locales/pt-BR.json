@@ -363,6 +363,7 @@
   "grid.blockedZone": "Zona bloqueada",
   "grid.blockedZoneClick": "Clique para ver o bin bloqueador",
   "grid.collision": "Colide com bin existente",
+  "grid.invalidLayer": "Camada inválida",
   "grid.outOfBounds": "Fora dos limites",
   "grid.cancel": "Cancelar",
   "grid.clear": "Limpar",

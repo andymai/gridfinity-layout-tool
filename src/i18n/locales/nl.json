@@ -363,6 +363,7 @@
   "grid.blockedZone": "Geblokkeerd gebied",
   "grid.blockedZoneClick": "Klik om blokkerende bin te bekijken",
   "grid.collision": "Botst met bestaande bin",
+  "grid.invalidLayer": "Ongeldige laag",
   "grid.outOfBounds": "Buiten bereik",
   "grid.cancel": "Annuleren",
   "grid.clear": "Wissen",

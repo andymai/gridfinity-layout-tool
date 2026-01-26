@@ -952,6 +952,7 @@ const en: Record<string, string> = {
   'grid.blockedZone': 'Blocked zone',
   'grid.blockedZoneClick': 'Click to view blocking bin',
   'grid.collision': 'Collides with existing bin',
+  'grid.invalidLayer': 'Invalid layer',
   'grid.outOfBounds': 'Out of bounds',
   'grid.cancel': 'Cancel',
   'grid.clear': 'Clear',
