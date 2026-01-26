@@ -19,7 +19,7 @@ import {
 import { useAutoSave, useResponsive, useCrossTabSync, usePWAUpdate } from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
-import { initializeLayoutLibrary, loadSharedWithMe } from './core/storage';
+import { initializeLayoutLibrary, loadSharedWithMe, downloadLayoutAsFile } from '@/core/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './features/grid-editor';
 import { Sidebar } from './components/Sidebar';
@@ -254,6 +254,17 @@ export default function App() {
     const handleOpenHelp = () => setIsHelpOpen(true);
     window.addEventListener('open-help-modal', handleOpenHelp);
     return () => window.removeEventListener('open-help-modal', handleOpenHelp);
+  }, []);
+
+  // Download layout command palette action
+  useEffect(() => {
+    const handleDownloadLayout = () => {
+      const layout = useLayoutStore.getState().layout;
+      const filename = `${layout.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`;
+      downloadLayoutAsFile(layout, filename);
+    };
+    window.addEventListener('download-layout', handleDownloadLayout);
+    return () => window.removeEventListener('download-layout', handleDownloadLayout);
   }, []);
 
   // Helper to wrap content with appropriate MutationsProvider

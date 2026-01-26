@@ -420,12 +420,16 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <h3
               className={`font-semibold ${isPreviewExpanded ? 'text-lg' : 'text-base'}`}
               style={{ color: 'rgba(255, 255, 255, 0.9)' }}
-            >{t('grid.noBinsYet')}</h3>
+            >
+              {t('grid.noBinsYet')}
+            </h3>
             {/* Message */}
             <p
               className={isPreviewExpanded ? 'text-sm' : 'text-xs'}
               style={{ color: 'rgba(255, 255, 255, 0.7)' }}
-            >{t('grid.placeBinsOnTheGridToSeeYour3dLayout')}</p>
+            >
+              {t('grid.placeBinsOnTheGridToSeeYour3dLayout')}
+            </p>
           </div>
         </div>
       )}
@@ -482,7 +486,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <rect x="3" y="8" width="18" height="10" strokeWidth={2} rx="1" />
             <line x1="3" y1="13" x2="21" y2="13" strokeWidth={1.5} />
           </svg>
-          {isPreviewExpanded && !isMobile && <span className="text-xs font-medium">{t('grid.front')}</span>}
+          {isPreviewExpanded && !isMobile && (
+            <span className="text-xs font-medium">{t('grid.front')}</span>
+          )}
         </button>
         {/* Side view - rectangle taller than wide */}
         <button
@@ -505,7 +511,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <rect x="7" y="3" width="10" height="18" strokeWidth={2} rx="1" />
             <line x1="7" y1="12" x2="17" y2="12" strokeWidth={1.5} />
           </svg>
-          {isPreviewExpanded && !isMobile && <span className="text-xs font-medium">{t('grid.side')}</span>}
+          {isPreviewExpanded && !isMobile && (
+            <span className="text-xs font-medium">{t('grid.side')}</span>
+          )}
         </button>
       </div>
       {/* Layer view mode selector - segmented control, only show when multiple layers */}
@@ -676,7 +684,9 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-          {isPreviewExpanded && !isMobile && <span className="text-xs font-medium">{t('common.close')}</span>}
+          {isPreviewExpanded && !isMobile && (
+            <span className="text-xs font-medium">{t('common.close')}</span>
+          )}
         </button>
       </div>
 
@@ -694,19 +704,27 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <span>
               <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
                 V
-              </kbd>{' '}{t('grid.toggle')}</span>
+              </kbd>{' '}
+              {t('grid.toggle')}
+            </span>
             <span>
               <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
                 Space
-              </kbd>{' '}{t('grid.expand')}</span>
+              </kbd>{' '}
+              {t('grid.expand')}
+            </span>
             <span>
               <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
                 R
-              </kbd>{' '}{t('common.reset')}</span>
+              </kbd>{' '}
+              {t('common.reset')}
+            </span>
             <span>
               <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
                 Esc
-              </kbd>{' '}{t('common.close')}</span>
+              </kbd>{' '}
+              {t('common.close')}
+            </span>
           </div>
         </div>
       )}

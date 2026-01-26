@@ -217,34 +217,6 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     shortcut: { keys: 'Space' },
     keywords: ['fullscreen', 'maximize'],
   },
-  {
-    id: 'camera-isometric',
-    labelKey: 'commandPalette.cameraIsometric',
-    category: 'preview',
-    shortcut: { keys: SHORTCUTS.PRESET_ISOMETRIC },
-    keywords: ['angle', 'diagonal'],
-  },
-  {
-    id: 'camera-top',
-    labelKey: 'commandPalette.cameraTop',
-    category: 'preview',
-    shortcut: { keys: SHORTCUTS.PRESET_TOP },
-    keywords: ['overhead', 'above'],
-  },
-  {
-    id: 'camera-front',
-    labelKey: 'commandPalette.cameraFront',
-    category: 'preview',
-    shortcut: { keys: SHORTCUTS.PRESET_FRONT },
-    keywords: ['face'],
-  },
-  {
-    id: 'camera-side',
-    labelKey: 'commandPalette.cameraSide',
-    category: 'preview',
-    shortcut: { keys: SHORTCUTS.PRESET_SIDE },
-    keywords: ['profile', 'lateral'],
-  },
 
   // === Bins ===
   {
