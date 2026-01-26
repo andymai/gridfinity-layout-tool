@@ -579,6 +579,7 @@ const en: Record<string, string> = {
   'layouts.readyToImport': 'Ready to import',
   'layouts.removeFromList': 'Remove from list',
   'layouts.searchLayouts': 'Search layouts',
+  'layouts.suggestName': 'Suggest Name',
   'layouts.shared': 'Shared',
   'layouts.sharedBy': 'Shared by',
   'layouts.sharedLayoutCount': '{count} shared layout(s)',
@@ -1304,6 +1305,19 @@ const en: Record<string, string> = {
   'layout.collaborativeEditingIsNotActive': 'Collaborative editing is not active',
 
   // ===========================================================================
+  // Name Suggestions
+  // ===========================================================================
+  'nameSuggestion.title': 'Suggested Name',
+  'nameSuggestion.useThis': 'Use this',
+  'nameSuggestion.showAlternatives': '{count} more suggestions',
+  'nameSuggestion.hint': 'Click to use, or dismiss to keep your current name',
+  'nameSuggestion.source.labels': 'Based on bin labels',
+  'nameSuggestion.source.purpose': 'Based on drawer contents',
+  'nameSuggestion.source.categories': 'Based on categories',
+  'nameSuggestion.source.dimensions': 'Based on drawer size',
+  'common.dismiss': 'Dismiss',
+
+  // ===========================================================================
   // Command Palette
   // ===========================================================================
   'commandPalette.placeholder': 'Search commands...',
@@ -1388,6 +1402,9 @@ const en: Record<string, string> = {
   // Staging commands
   'commandPalette.clearStaging': 'Clear Staging Area',
   'commandPalette.restoreFromStaging': 'Restore All from Staging',
+
+  // Name suggestion command
+  'commandPalette.suggestLayoutName': 'Suggest Layout Name',
 
   // Footer
   'commandPalette.footer.run': 'Run',

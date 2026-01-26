@@ -8,6 +8,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
+import { NameFieldHighlight } from '@/features/name-suggestions';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { LanguageSelector } from '@/shared/components/LanguageSelector';
 import { PresenceAvatars } from './Collab';
@@ -138,13 +139,15 @@ export function Header({ onHelpClick, saveStatus }: HeaderProps) {
             }}
           />
         ) : (
-          <button
-            onClick={handleNameClick}
-            className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
-            title={t('header.editLayoutName')}
-          >
-            {layout.name}
-          </button>
+          <NameFieldHighlight>
+            <button
+              onClick={handleNameClick}
+              className="px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
+              title={t('header.editLayoutName')}
+            >
+              {layout.name}
+            </button>
+          </NameFieldHighlight>
         )}
 
         {/* Half-bin mode indicator badge */}
