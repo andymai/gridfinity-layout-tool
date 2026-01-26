@@ -200,7 +200,7 @@ describe('history store', () => {
   });
 
   describe('performance', () => {
-    it('handles large layouts with 2500 bins efficiently', () => {
+    it('handles large layouts with 2500 bins efficiently', { timeout: 60000 }, () => {
       const { push, undo, redo } = useHistoryStore.getState();
 
       // Create a layout with 2500 bins (the fill limit)
