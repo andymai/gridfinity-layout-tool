@@ -15,7 +15,7 @@ describe('SplitWarning', () => {
     it('shows success state', () => {
       render(<SplitWarning {...defaultProps} />);
 
-      expect(screen.getByText(/Fits print bed dimensions/)).toBeInTheDocument();
+      expect(screen.getByText(/fits print bed/)).toBeInTheDocument();
     });
 
     it('shows success checkmark icon', () => {
@@ -105,7 +105,7 @@ describe('SplitWarning', () => {
     it('handles exact max size (no split needed)', () => {
       render(<SplitWarning {...defaultProps} binWidth={6} binDepth={6} />);
 
-      expect(screen.getByText(/Fits print bed/)).toBeInTheDocument();
+      expect(screen.getByText(/fits print bed/)).toBeInTheDocument();
     });
 
     it('handles one unit over max', () => {

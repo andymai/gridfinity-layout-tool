@@ -23,7 +23,8 @@
     "size:check": "size-limit --limit",
     "check:boundaries": "./scripts/check-module-boundaries.sh",
     "check:boundaries:staged": "./scripts/check-module-boundaries.sh --staged",
-    "check:i18n": "tsx scripts/check-i18n-keys.ts"
+    "check:i18n": "tsx scripts/check-i18n-keys.ts",
+    "check:i18n:interpolation": "tsx scripts/check-i18n-interpolation.ts"
   },
   "size-limit": [
     {
