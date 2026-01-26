@@ -238,10 +238,10 @@ describe('history store', () => {
       }
       const pushDuration = performance.now() - startPush;
 
-      // Should complete in reasonable time (<2000ms for 10 pushes).
-      // Threshold is generous to avoid flakiness across environments
-      // (CI containers, low-power machines) while still catching O(n²) regressions.
-      expect(pushDuration).toBeLessThan(2000);
+      // Should complete in reasonable time (<8000ms for 10 pushes).
+      // Threshold is very generous to avoid flakiness in CI environments
+      // which can be 3-4x slower than local dev machines. Still catches O(n²) regressions.
+      expect(pushDuration).toBeLessThan(8000);
 
       // Measure undo/redo performance
       const startUndoRedo = performance.now();

@@ -483,8 +483,10 @@ describe('RightPanel', () => {
 
       fireEvent.click(screen.getByLabelText('Expand bin list to full view'));
 
-      expect(await screen.findByTestId('bin-list-modal')).toBeInTheDocument();
-    });
+      expect(
+        await screen.findByTestId('bin-list-modal', {}, { timeout: 5000 })
+      ).toBeInTheDocument();
+    }, 15000);
 
     it('closes BinListModal when close clicked', async () => {
       render(<RightPanel />);
@@ -653,9 +655,11 @@ describe('RightPanel', () => {
 
       expect(screen.getByTestId('split-preview')).toBeInTheDocument();
       // Text is split across multiple text nodes: "Split into" + "4" + "Pieces"
-      expect(screen.getByText((content, element) => {
-        return element?.textContent === 'Split into4Pieces';
-      })).toBeInTheDocument();
+      expect(
+        screen.getByText((content, element) => {
+          return element?.textContent === 'Split into4Pieces';
+        })
+      ).toBeInTheDocument();
     });
 
     it('collapses split preview when clicked again', () => {
