@@ -268,6 +268,7 @@ export interface ThumbnailBin {
   w: number; // Width in grid units
   d: number; // Depth in grid units
   c: string; // Category color (hex)
+  l?: string; // Optional label (truncated if needed)
 }
 
 /**
@@ -348,6 +349,21 @@ export interface LayoutEntry {
   preview: LayoutPreview; // Cached preview data
   cloudShare?: CloudShareInfo; // Cloud sharing metadata (if shared)
   nameSuggestionState?: NameSuggestionState; // Name suggestion dismissal tracking
+  /** Optional folder ID for organization. null/undefined = root level (future feature) */
+  folderId?: string | null;
+}
+
+/**
+ * Folder definition for layout organization.
+ * @future Implement folder creation/management UI
+ */
+export interface LayoutFolder {
+  id: string;
+  name: string; // max 32 chars
+  color?: string; // optional accent color
+  parentId?: string | null; // for nested folders (future)
+  createdAt: number;
+  modifiedAt: number;
 }
 
 /**
@@ -361,4 +377,6 @@ export interface LayoutLibrary {
     authorName?: string; // Default author name for new layouts
   };
   entries: LayoutEntry[]; // All layout entries (metadata only)
+  /** Folder definitions for layout organization (future feature) */
+  folders?: LayoutFolder[];
 }

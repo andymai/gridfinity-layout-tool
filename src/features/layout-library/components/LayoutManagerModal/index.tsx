@@ -3,12 +3,18 @@ import type { ReactNode } from 'react';
 import { useLayoutSwitcher } from '@/hooks';
 import { useUIStore } from '@/core/store/ui';
 import { useLibraryStore } from '@/core/store/library';
+import { useSettingsStore } from '@/core/store/settings';
+import { useResponsive } from '@/shared/hooks';
 import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
 import { SharedWithMeList } from './SharedWithMeList';
+import { ViewModeToggle } from './ViewModeToggle';
+import type { ViewMode } from './ViewModeToggle';
 import type { Layout } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
+
+export type SortOption = 'recent' | 'name' | 'size' | 'binCount';
 
 type Tab = 'layouts' | 'shared' | 'import';
 
@@ -42,10 +48,26 @@ function LayoutManagerModalContent({
   renderShareModal?: (props: ShareModalRenderProps) => ReactNode;
 }) {
   const t = useTranslation();
+  const { isMobile } = useResponsive();
   const [shareModalLayoutId, setShareModalLayoutId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('layouts');
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // View mode from persisted settings (default: grid)
+  const viewModePreference = useSettingsStore((state) => state.settings.layoutManagerViewMode);
+  const updateSetting = useSettingsStore((state) => state.updateSetting);
+
+  // Force list view on mobile, respect preference on desktop
+  const viewMode: ViewMode = isMobile ? 'list' : viewModePreference;
+
+  const handleViewModeChange = useCallback(
+    (mode: ViewMode) => {
+      updateSetting('layoutManagerViewMode', mode);
+    },
+    [updateSetting]
+  );
 
   const {
     activeLayoutId,
@@ -183,31 +205,53 @@ function LayoutManagerModalContent({
         role="dialog"
         aria-modal="true"
         aria-labelledby="layout-manager-title"
-        className="bg-surface-elevated rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] grid grid-rows-[auto_auto_1fr] animate-scale-in"
+        className="bg-surface-elevated rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[80vh] grid grid-rows-[auto_auto_1fr] animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 id="layout-manager-title" className="text-2xl font-bold text-content">{t('layouts.layouts')}</h2>
-          <button
-            ref={closeButtonRef}
-            onClick={onClose}
-            className="p-1 text-content-secondary hover:text-content transition-colors rounded hover:bg-surface"
-            aria-label={t('layouts.closeLayoutsDialog')}
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
+          <div className="flex items-center gap-3">
+            {/* View Mode Toggle + Sort (desktop only, layouts tab only) */}
+            {!isMobile && activeTab === 'layouts' && (
+              <>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="text-sm bg-surface border border-stroke rounded-lg pl-3 pr-8 py-1.5 text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent appearance-none bg-no-repeat bg-[length:16px] bg-[right_8px_center] cursor-pointer"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  }}
+                  aria-label={t('layouts.sortBy')}
+                >
+                  <option value="recent">{t('layouts.sortRecent')}</option>
+                  <option value="name">{t('layouts.sortName')}</option>
+                  <option value="size">{t('layouts.sortSize')}</option>
+                  <option value="binCount">{t('layouts.sortBinCount')}</option>
+                </select>
+                <ViewModeToggle value={viewMode} onChange={handleViewModeChange} />
+              </>
+            )}
+            <button
+              ref={closeButtonRef}
+              onClick={onClose}
+              className="p-1 text-content-secondary hover:text-content transition-colors rounded hover:bg-surface"
+              aria-label={t('layouts.closeLayoutsDialog')}
             >
-              <path d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -326,6 +370,8 @@ function LayoutManagerModalContent({
               <LayoutList
                 entries={library.entries}
                 activeLayoutId={activeLayoutId}
+                viewMode={viewMode}
+                sortBy={sortBy}
                 onSwitch={handleSwitch}
                 onRename={handleRename}
                 onDuplicate={handleDuplicate}
