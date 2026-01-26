@@ -626,6 +626,7 @@ const en: Record<string, string> = {
   // ===========================================================================
   'help.title': 'Keyboard Shortcuts',
   'help.searchPlaceholder': 'Search shortcuts...',
+  'help.commandPaletteTip': 'Quick tip: Use the command palette for fast access to all actions',
   'help.binClearance': 'Bin clearance',
   'help.blockedZones': 'Blocked zones',
   'help.clearSearch': 'Clear search',
@@ -648,6 +649,7 @@ const en: Record<string, string> = {
   'help.category.advanced': 'Advanced',
 
   // Shortcut descriptions
+  'help.shortcut.commandPalette': 'Open command palette',
   'help.shortcut.undo': 'Undo',
   'help.shortcut.redo': 'Redo',
   'help.shortcut.showHelp': 'Show this help',
@@ -1292,6 +1294,74 @@ const en: Record<string, string> = {
   // Layout (Collaboration)
   // ===========================================================================
   'layout.collaborativeEditingIsNotActive': 'Collaborative editing is not active',
+
+  // ===========================================================================
+  // Command Palette
+  // ===========================================================================
+  'commandPalette.placeholder': 'Search commands...',
+  'commandPalette.noResults': 'No commands found',
+  'commandPalette.recent': 'Recent',
+
+  // Categories
+  'commandPalette.category.navigation': 'Navigation',
+  'commandPalette.category.edit': 'Edit',
+  'commandPalette.category.layers': 'Layers',
+  'commandPalette.category.view': 'View',
+  'commandPalette.category.preview': '3D Preview',
+  'commandPalette.category.bins': 'Bins',
+  'commandPalette.category.tools': 'Tools',
+  'commandPalette.category.export': 'Export',
+
+  // Navigation commands
+  'commandPalette.openLayoutManager': 'Open Layout Manager',
+  'commandPalette.openSettings': 'Open Settings',
+  'commandPalette.openHelp': 'Open Help',
+  'commandPalette.openPrint': 'Open Print Preview',
+
+  // Edit commands
+  'commandPalette.undo': 'Undo',
+  'commandPalette.redo': 'Redo',
+  'commandPalette.deleteSelected': 'Delete Selected',
+  'commandPalette.duplicateSelected': 'Duplicate Selected',
+  'commandPalette.rotateBin': 'Rotate Bin',
+  'commandPalette.quickLabel': 'Quick Label',
+  'commandPalette.clearSelection': 'Clear Selection',
+
+  // Layer commands
+  'commandPalette.addLayer': 'Add Layer',
+  'commandPalette.layerUp': 'Go to Layer Above',
+  'commandPalette.layerDown': 'Go to Layer Below',
+  'commandPalette.clearLayer': 'Clear Active Layer',
+
+  // View commands
+  'commandPalette.zoomIn': 'Zoom In',
+  'commandPalette.zoomOut': 'Zoom Out',
+  'commandPalette.fitToScreen': 'Fit to Screen',
+  'commandPalette.toggleLabels': 'Toggle Labels',
+  'commandPalette.toggleOtherLayers': 'Toggle Other Layers',
+
+  // 3D Preview commands
+  'commandPalette.togglePreview': 'Toggle 3D Preview',
+  'commandPalette.expandPreview': 'Expand/Collapse Preview',
+  'commandPalette.cameraIsometric': 'Isometric View',
+  'commandPalette.cameraTop': 'Top View',
+  'commandPalette.cameraFront': 'Front View',
+  'commandPalette.cameraSide': 'Side View',
+
+  // Bin commands
+  'commandPalette.prevBin': 'Select Previous Bin',
+  'commandPalette.nextBin': 'Select Next Bin',
+  'commandPalette.prevCategory': 'Previous Category',
+  'commandPalette.nextCategory': 'Next Category',
+  'commandPalette.moveToStash': 'Move to Stash',
+
+  // Tool commands
+  'commandPalette.toggleHalfBin': 'Toggle Half-Bin Mode',
+  'commandPalette.fillGaps': 'Fill Layer Gaps',
+
+  // Export commands
+  'commandPalette.downloadLayout': 'Download Layout',
+  'commandPalette.copyShareLink': 'Copy Share Link',
 };
 
 export default en;
