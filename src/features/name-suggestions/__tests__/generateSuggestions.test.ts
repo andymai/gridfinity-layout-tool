@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateSuggestions, hashName, editDistance } from '../utils/generateSuggestions';
+import { generateSuggestions } from '../utils/generateSuggestions';
+import { hashName, editDistance } from '../utils/stringUtils';
 import type { SuggestionInput } from '../types';
 
 describe('generateSuggestions', () => {

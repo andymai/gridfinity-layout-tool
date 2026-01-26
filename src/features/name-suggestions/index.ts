@@ -25,8 +25,8 @@ export type { UseNameSuggestionsReturn } from './hooks';
 // Store
 export { useNameSuggestionStore } from './store';
 
-// Utils
-export { generateSuggestions, hashName, editDistance } from './utils';
+// Utils (generateSuggestions is lazy-loaded, not exported from barrel)
+export { hashName, editDistance } from './utils';
 
 // Types
 export type {

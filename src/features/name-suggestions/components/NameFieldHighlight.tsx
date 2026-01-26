@@ -31,11 +31,12 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
 
   // Listen for command palette trigger event
   const handleTriggerEvent = useCallback(() => {
-    // Manually trigger suggestions from command palette
-    const result = triggerSuggestions('command');
-    if (result.primary) {
-      setIsPopoverOpen(true);
-    }
+    // Manually trigger suggestions from command palette (async)
+    triggerSuggestions('command').then((result) => {
+      if (result.primary) {
+        setIsPopoverOpen(true);
+      }
+    });
   }, [triggerSuggestions]);
 
   useEffect(() => {

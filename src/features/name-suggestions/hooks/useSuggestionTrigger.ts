@@ -7,16 +7,19 @@
  * 3. Layout hasn't been dismissed for suggestions
  */
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useShallow } from 'zustand/react/shallow';
 import { STAGING_ID } from '@/core/constants';
 import { inferDrawerPurpose } from '@/shared/analytics/purposeInference';
 import { useNameSuggestionStore } from '../store';
-import { generateSuggestions } from '../utils';
 import { SUGGESTION_THRESHOLD, DEFAULT_LAYOUT_NAME } from '../types';
-import type { SuggestionInput, CategoryCount } from '../types';
+import type { SuggestionInput, CategoryCount, SuggestionResult } from '../types';
+
+// Lazy-load the heavy suggestion generation logic to reduce main bundle size
+const loadGenerateSuggestions = () =>
+  import('../utils/generateSuggestions').then((m) => m.generateSuggestions);
 
 /**
  * Hook that monitors layout and triggers suggestions when conditions are met.
@@ -77,15 +80,25 @@ export function useSuggestionTrigger() {
       // Build suggestion input
       const input = buildSuggestionInput(layout, categories);
 
-      // Generate suggestions
-      const result = generateSuggestions(input);
+      // Lazy-load and generate suggestions
+      let cancelled = false;
+      loadGenerateSuggestions().then((generateSuggestions) => {
+        if (cancelled) return;
 
-      // Only set if we have a good suggestion
-      if (result.primary && result.primary.confidence >= 0.4) {
-        setSuggestions(result, activeLayoutId, 'auto');
-        triggeredRef.current = activeLayoutId;
-      }
+        const result = generateSuggestions(input);
+
+        // Only set if we have a good suggestion
+        if (result.primary && result.primary.confidence >= 0.4) {
+          setSuggestions(result, activeLayoutId, 'auto');
+          triggeredRef.current = activeLayoutId;
+        }
+      });
+
+      return () => {
+        cancelled = true;
+      };
     }
+    return undefined;
   }, [
     labeledBinCount,
     isDefaultName,
@@ -107,17 +120,22 @@ export function useSuggestionTrigger() {
   /**
    * Manually trigger suggestion generation.
    * Used by Command Palette and Layout Manager menu.
+   * Returns a promise that resolves to the suggestion result.
    */
-  const triggerSuggestions = (source: 'command' | 'menu') => {
-    const input = buildSuggestionInput(layout, categories);
-    const result = generateSuggestions(input);
+  const triggerSuggestions = useCallback(
+    async (source: 'command' | 'menu'): Promise<SuggestionResult> => {
+      const input = buildSuggestionInput(layout, categories);
+      const generateSuggestions = await loadGenerateSuggestions();
+      const result = generateSuggestions(input);
 
-    if (result.primary) {
-      setSuggestions(result, activeLayoutId, source);
-    }
+      if (result.primary) {
+        setSuggestions(result, activeLayoutId, source);
+      }
 
-    return result;
-  };
+      return result;
+    },
+    [layout, categories, activeLayoutId, setSuggestions]
+  );
 
   return {
     /** Number of bins with labels */
