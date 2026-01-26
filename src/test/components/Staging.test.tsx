@@ -576,7 +576,7 @@ describe('Staging', () => {
       render(<Staging />);
 
       const binElement = document.querySelector('[data-staging-bin-id]');
-      expect(binElement?.getAttribute('title')).toBe('Bin tooltip');
+      expect(binElement?.getAttribute('title')).toBe('3×2×4u - Test Bin');
     });
 
     it('shows Unlabeled for bins without label', () => {
@@ -585,7 +585,7 @@ describe('Staging', () => {
       render(<Staging />);
 
       const binElement = document.querySelector('[data-staging-bin-id]');
-      expect(binElement?.getAttribute('title')).toBe('Bin tooltip');
+      expect(binElement?.getAttribute('title')).toBe('2×2×3u - Unlabeled');
     });
   });
 

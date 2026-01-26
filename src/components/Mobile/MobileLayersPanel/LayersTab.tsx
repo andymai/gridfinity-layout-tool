@@ -352,8 +352,15 @@ export function LayersTab() {
       {/* Stats line */}
       <div className="text-sm text-content-tertiary mb-2 mt-4">
         {hasMultipleLayers
-          ? t('mobile.layers.statsMulti', { coverage: totalCoverage, count: totalBinCount })
-          : t('mobile.layers.statsSingle', { coverage: activeCoverage, count: activeLayerBins.length })}
+          ? t('mobile.layers.statsMulti', {
+              coverage: totalCoverage,
+              count: totalBinCount,
+              layers: layers.length,
+            })
+          : t('mobile.layers.statsSingle', {
+              coverage: activeCoverage,
+              count: activeLayerBins.length,
+            })}
       </div>
 
       {/* Coverage bar */}
@@ -381,7 +388,10 @@ export function LayersTab() {
       <ConfirmDialog
         isOpen={deleteLayerId !== null}
         title={t('layers.confirmDelete.title')}
-        message={t('layers.confirmDelete.message', { name: layerToDelete?.name || '', count: binsInLayer })}
+        message={t('layers.confirmDelete.message', {
+          name: layerToDelete?.name || '',
+          count: binsInLayer,
+        })}
         confirmText={t('layers.confirmDelete.confirm')}
         destructive
         onConfirm={confirmDeleteLayer}
@@ -429,12 +439,16 @@ export function LayersTab() {
                     setRenameValue('');
                   }}
                   className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
-                >{t('common.cancel')}</button>
+                >
+                  {t('common.cancel')}
+                </button>
                 <button
                   onClick={handleRenameConfirm}
                   disabled={!renameValue.trim()}
                   className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
-                >{t('common.rename')}</button>
+                >
+                  {t('common.rename')}
+                </button>
               </div>
             </div>
           </div>,

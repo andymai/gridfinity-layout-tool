@@ -211,7 +211,7 @@ describe('SharedLayoutBanner', () => {
 
       render(<SharedLayoutBanner />);
 
-      expect(screen.getByText(/Viewing layout/)).toBeInTheDocument();
+      expect(screen.getByText(/Viewing "/)).toBeInTheDocument();
     });
   });
 
@@ -226,7 +226,7 @@ describe('SharedLayoutBanner', () => {
     it('displays the original layout name', () => {
       render(<SharedLayoutBanner />);
 
-      expect(screen.getByText(/Viewing layout/)).toBeInTheDocument();
+      expect(screen.getByText(/Viewing "/)).toBeInTheDocument();
     });
 
     it('has Save to My Layouts button', () => {
@@ -411,7 +411,7 @@ describe('SharedLayoutBanner', () => {
       render(<SharedLayoutBanner />);
 
       // Should render without crashing - the translation doesn't show the name
-      expect(screen.getByText(/Viewing layout/)).toBeInTheDocument();
+      expect(screen.getByText(/Viewing "/)).toBeInTheDocument();
     });
 
     it('handles empty layout name', () => {

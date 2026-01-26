@@ -213,7 +213,7 @@ describe('ShareModal', () => {
     });
 
     it('displays layout file name', () => {
-      expect(screen.getByText('Layout filename')).toBeInTheDocument();
+      expect(screen.getByText('Test Layout.json')).toBeInTheDocument();
     });
 
     it('displays layout summary', () => {

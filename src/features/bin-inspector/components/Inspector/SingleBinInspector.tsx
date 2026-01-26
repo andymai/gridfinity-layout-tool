@@ -67,7 +67,8 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           aria-hidden="true"
         />
         <h2 className="flex-1 text-lg font-semibold text-content">
-          {formatDim(bin.width)}×{formatDim(bin.depth)}{t('inspector.bin')}</h2>
+          {t('inspector.bin', { width: formatDim(bin.width), depth: formatDim(bin.depth) })}
+        </h2>
         {onClose && (
           <button
             type="button"
@@ -92,7 +93,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         <div className="flex items-end gap-2">
           {/* Width control */}
           <div className="flex-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.width')}</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              {t('inspector.width')}
+            </label>
             <StepperControl
               value={bin.width}
               onChange={(val) => updateField('width', val)}
@@ -134,7 +137,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
           {/* Depth control */}
           <div className="flex-1">
-            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.depth')}</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              {t('inspector.depth')}
+            </label>
             <StepperControl
               value={bin.depth}
               onChange={(val) => updateField('depth', val)}
@@ -176,7 +181,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         >
           {/* Height control */}
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.height')}</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              {t('inspector.height')}
+            </label>
             <StepperControl
               value={bin.height}
               onStep={(delta) => updateField('height', bin.height + delta)}
@@ -212,7 +219,10 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 displayValue={`${bin.clearanceHeight || 0}u`}
               />
               <div className="text-center mt-1 text-[10px] text-content-disabled">
-                {t('inspector.clearanceMm', { mm: ((bin.clearanceHeight || 0) * layout.heightUnitMm).toFixed(0) })}</div>
+                {t('inspector.clearanceMm', {
+                  mm: ((bin.clearanceHeight || 0) * layout.heightUnitMm).toFixed(0),
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -229,7 +239,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Category */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.category')}</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>
+            {t('inspector.category')}
+          </label>
           <SelectDropdown
             value={bin.category}
             onChange={(value) => updateField('category', value)}
@@ -243,7 +255,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         {/* Layer - only show for bins on grid (not in staging) */}
         {bin.layerId !== STAGING_ID && layout.layers.length > 1 && (
           <div>
-            <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.layer')}</label>
+            <label className={`block ${labelSize} text-content-tertiary`}>
+              {t('inspector.layer')}
+            </label>
             <SelectDropdown
               value={bin.layerId}
               onChange={moveToLayer}
@@ -260,7 +274,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Label */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.label')}</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>
+            {t('inspector.label')}
+          </label>
           <input
             type="text"
             value={bin.label}
@@ -284,7 +300,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Notes */}
         <div>
-          <label className={`block ${labelSize} text-content-tertiary`}>{t('inspector.notes')}</label>
+          <label className={`block ${labelSize} text-content-tertiary`}>
+            {t('inspector.notes')}
+          </label>
           <textarea
             value={bin.notes}
             onChange={(e) =>
@@ -316,13 +334,17 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               type="button"
               onClick={moveToStaging}
               className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
-            >{t('inspector.toStash')}</button>
+            >
+              {t('inspector.toStash')}
+            </button>
           )}
           <button
             type="button"
             onClick={requestDelete}
             className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
-          >{t('common.delete')}</button>
+          >
+            {t('common.delete')}
+          </button>
         </div>
       </div>
     </div>
