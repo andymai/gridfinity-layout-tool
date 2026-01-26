@@ -133,6 +133,14 @@ export function useCollabSync(): void {
     // Remote change detected - update local store
     lastSyncedLayoutRef.current = remoteLayout;
     importLayout(remoteLayout, undefined, 'remote');
+
+    // Cleanup: clear init timeout if effect re-runs or component unmounts
+    return () => {
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+        initTimeoutRef.current = null;
+      }
+    };
   }, [remoteLayout, lastEditSource, importLayout, localLayout, updateRemoteLayout]);
 
   // Effect: Local → Remote sync
@@ -160,14 +168,4 @@ export function useCollabSync(): void {
     lastSyncedLayoutRef.current = localLayout;
     updateRemoteLayout(localLayout);
   }, [localLayout, lastEditSource, updateRemoteLayout]);
-
-  // Cleanup effect: clear pending timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (initTimeoutRef.current) {
-        clearTimeout(initTimeoutRef.current);
-        initTimeoutRef.current = null;
-      }
-    };
-  }, []);
 }
