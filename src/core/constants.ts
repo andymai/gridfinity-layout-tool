@@ -169,29 +169,38 @@ export interface LayoutSettings {
   defaultPrintBedSize: number;
   defaultGridUnitMm: number;
   defaultHeightUnitMm: number;
+  /** Custom default categories. null means use DEFAULT_CATEGORIES. */
+  defaultCategories: Category[] | null;
 }
 
-export const createLayoutWithSettings = (settings: LayoutSettings): Layout => ({
-  version: '1.0',
-  name: DEFAULT_LAYOUT_NAME,
-  drawer: {
-    width: settings.defaultDrawerWidth,
-    depth: settings.defaultDrawerDepth,
-    height: settings.defaultDrawerHeight,
-  },
-  printBedSize: settings.defaultPrintBedSize,
-  gridUnitMm: settings.defaultGridUnitMm,
-  heightUnitMm: settings.defaultHeightUnitMm,
-  categories: [...DEFAULT_CATEGORIES],
-  layers: [
-    {
-      id: generateId(),
-      name: 'Layer 1',
-      height: Math.min(settings.defaultDrawerHeight, settings.defaultLayerHeight),
+export const createLayoutWithSettings = (settings: LayoutSettings): Layout => {
+  // Use custom categories if set, otherwise fall back to app defaults
+  const categories = settings.defaultCategories
+    ? settings.defaultCategories.map((c) => ({ ...c })) // Deep copy to avoid reference issues
+    : [...DEFAULT_CATEGORIES];
+
+  return {
+    version: '1.0',
+    name: DEFAULT_LAYOUT_NAME,
+    drawer: {
+      width: settings.defaultDrawerWidth,
+      depth: settings.defaultDrawerDepth,
+      height: settings.defaultDrawerHeight,
     },
-  ],
-  bins: [],
-});
+    printBedSize: settings.defaultPrintBedSize,
+    gridUnitMm: settings.defaultGridUnitMm,
+    heightUnitMm: settings.defaultHeightUnitMm,
+    categories,
+    layers: [
+      {
+        id: generateId(),
+        name: 'Layer 1',
+        height: Math.min(settings.defaultDrawerHeight, settings.defaultLayerHeight),
+      },
+    ],
+    bins: [],
+  };
+};
 
 // === Grid Sizing ===
 

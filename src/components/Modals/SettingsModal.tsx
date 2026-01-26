@@ -12,6 +12,7 @@ import { useDrawerSettings } from '@/hooks/useDrawerSettings';
 import { useTranslation, useLocale, SUPPORTED_LOCALES, detectBrowserLocale } from '@/i18n';
 import type { Locale } from '@/i18n';
 import type { STLSearchSite } from '@/core/store/settings';
+import { DEFAULT_CATEGORIES } from '@/core/constants';
 
 // Style constants
 const STYLES = {
@@ -55,6 +56,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     handleSaveDefaults,
     showSaveDefaultsConfirm,
     setShowSaveDefaultsConfirm,
+    currentCategories,
+    hasCustomCategoryDefaults,
+    showSaveCategoriesConfirm,
+    setShowSaveCategoriesConfirm,
+    handleSaveCategoriesAsDefaults,
   } = useDrawerSettings();
 
   const { mlTelemetryEnabled, settingsLocale, updateSetting } = useSettingsStore(
@@ -291,6 +297,60 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* Divider */}
             <hr className="border-stroke-subtle" />
 
+            {/* Default Categories Section */}
+            <section>
+              <h3 style={STYLES.sectionHeader} className="mb-3">
+                {t('settings.defaultCategories')}
+              </h3>
+              <p className="text-sm text-content-tertiary mb-3">
+                {t('settings.defaultCategoriesHint')}
+              </p>
+              <div className="text-sm text-content-secondary mb-4 p-3 rounded-lg bg-surface-elevated border border-stroke-subtle">
+                <div className="text-xs text-content-tertiary mb-2">
+                  {hasCustomCategoryDefaults
+                    ? t('settings.usingCustomCategories', {
+                        count: settings.defaultCategories?.length ?? 0,
+                      })
+                    : t('settings.usingBuiltInCategories', { count: DEFAULT_CATEGORIES.length })}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(settings.defaultCategories ?? DEFAULT_CATEGORIES).map((cat) => (
+                    <div
+                      key={cat.id}
+                      className="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-hover"
+                    >
+                      <span
+                        className="w-3 h-3 rounded-sm shadow-sm flex-shrink-0"
+                        style={{ backgroundColor: cat.color }}
+                      />
+                      <span className="text-xs text-content-secondary truncate max-w-[80px]">
+                        {cat.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowSaveCategoriesConfirm(true)}
+                  className="flex-1 text-sm py-2 px-3 rounded-lg bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle transition-colors"
+                >
+                  {t('settings.saveCategoriesAsDefaults')}
+                </button>
+                {hasCustomCategoryDefaults && (
+                  <button
+                    onClick={() => updateSetting('defaultCategories', null)}
+                    className="text-sm py-2 px-3 rounded-lg text-content-tertiary hover:text-content hover:bg-surface-hover border border-stroke-subtle transition-colors"
+                  >
+                    {t('settings.resetToBuiltIn')}
+                  </button>
+                )}
+              </div>
+            </section>
+
+            {/* Divider */}
+            <hr className="border-stroke-subtle" />
+
             {/* STL Search Section */}
             <section>
               <h3 style={STYLES.sectionHeader} className="mb-3">
@@ -411,6 +471,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         confirmText={t('settings.confirmSaveDefaults.confirm')}
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={showSaveCategoriesConfirm}
+        title={t('settings.confirmSaveCategories.title')}
+        message={`${t('settings.confirmSaveCategories.message', {
+          count: currentCategories.length,
+        })}\n\n${currentCategories.map((c) => c.name).join(', ')}`}
+        confirmText={t('settings.confirmSaveCategories.confirm')}
+        onConfirm={handleSaveCategoriesAsDefaults}
+        onCancel={() => setShowSaveCategoriesConfirm(false)}
       />
     </>,
     document.body

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Locale } from '@/i18n/types';
+import type { Category } from '@/core/types';
 
 // Storage key for settings
 const SETTINGS_STORAGE_KEY = 'gridfinity-settings-v1';
@@ -196,6 +197,12 @@ export interface UserSettings {
    * Persisted to survive page reloads.
    */
   locale: Locale | 'auto';
+
+  /**
+   * Default categories for new layouts.
+   * null means use built-in DEFAULT_CATEGORIES from constants.ts
+   */
+  defaultCategories: Category[] | null;
 }
 
 /**
@@ -231,6 +238,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // Language - auto-detect from browser by default
   locale: 'auto' as const,
+
+  // Default categories - null means use app defaults
+  defaultCategories: null,
 };
 
 /**
@@ -255,6 +265,24 @@ export function normalizeSortOrder(stored: BinListSortOrder | undefined): BinLis
   }
 
   return result;
+}
+
+/**
+ * Normalize categories to ensure valid data structure.
+ * Returns null if data is invalid (falls back to app defaults).
+ */
+function normalizeCategories(stored: Category[] | null | undefined): Category[] | null {
+  if (stored === null || stored === undefined) {
+    return null;
+  }
+  if (!Array.isArray(stored) || stored.length === 0) {
+    return null; // Invalid data, fall back to defaults
+  }
+  // Validate each category has required fields
+  const valid = stored.filter(
+    (c) => typeof c.id === 'string' && typeof c.name === 'string' && typeof c.color === 'string'
+  );
+  return valid.length > 0 ? valid : null;
 }
 
 /**
@@ -304,8 +332,16 @@ function loadSettings(): UserSettings {
       };
       // Normalize STL search sites
       const stlSearchSites = normalizeSTLSearchSites(parsed.stlSearchSites);
+      // Normalize default categories
+      const defaultCategories = normalizeCategories(parsed.defaultCategories);
       // Merge with defaults to handle any missing fields
-      return { ...DEFAULT_SETTINGS, ...parsed, printViewSettings, stlSearchSites };
+      return {
+        ...DEFAULT_SETTINGS,
+        ...parsed,
+        printViewSettings,
+        stlSearchSites,
+        defaultCategories,
+      };
     }
   } catch (e) {
     console.warn('Failed to load settings:', e);
@@ -339,6 +375,9 @@ interface SettingsState {
     heightUnitMm: number,
     layerHeight: number
   ) => void;
+
+  // Save current categories as defaults for new layouts
+  saveCategoriesAsDefaults: (categories: Category[]) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()((set) => ({
@@ -377,6 +416,18 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
         defaultPrintBedSize: printBedSize,
         defaultGridUnitMm: gridUnitMm,
         defaultHeightUnitMm: heightUnitMm,
+      };
+      saveSettings(newSettings);
+      return { settings: newSettings };
+    });
+  },
+
+  saveCategoriesAsDefaults: (categories) => {
+    set((state) => {
+      // Deep copy categories to avoid reference issues
+      const newSettings = {
+        ...state.settings,
+        defaultCategories: categories.length > 0 ? categories.map((c) => ({ ...c })) : null,
       };
       saveSettings(newSettings);
       return { settings: newSettings };
