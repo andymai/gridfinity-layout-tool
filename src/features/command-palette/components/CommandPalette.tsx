@@ -360,36 +360,75 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
   return (
     <div className="fixed inset-0 z-[100]" onClick={() => onOpenChange(false)}>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 animate-fade-in" />
+      {/* Backdrop with blur */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
 
-      {/* Palette container - top aligned */}
-      <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-full max-w-lg px-4">
+      {/* Palette container - top aligned like Spotlight */}
+      <div className="absolute top-[12%] left-1/2 -translate-x-1/2 w-full max-w-xl px-4">
         <Command
-          className="rounded-xl border border-stroke bg-surface-elevated shadow-2xl overflow-hidden animate-scale-in"
+          className="rounded-2xl border border-stroke bg-surface-elevated shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden animate-scale-in"
           onClick={(e) => e.stopPropagation()}
           loop
         >
-          <Command.Input
-            placeholder={t('commandPalette.placeholder')}
-            className="w-full px-4 py-3 text-base bg-transparent border-b border-stroke-subtle text-content placeholder:text-content-tertiary focus:outline-none"
-            autoFocus
-          />
+          {/* Search input with icon */}
+          <div className="flex items-center gap-3 px-4 border-b border-stroke-subtle">
+            <svg
+              className="w-5 h-5 text-content-tertiary shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <Command.Input
+              placeholder={t('commandPalette.placeholder')}
+              className="w-full py-4 text-base bg-transparent text-content placeholder:text-content-tertiary focus:outline-none"
+              autoFocus
+            />
+            <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[10px] font-mono rounded border border-stroke-subtle bg-surface text-content-tertiary">
+              esc
+            </kbd>
+          </div>
 
-          <Command.List className="max-h-[50vh] overflow-y-auto p-2 scrollbar-thin">
-            <Command.Empty className="py-6 text-center text-sm text-content-tertiary">
-              {t('commandPalette.noResults')}
+          <Command.List className="max-h-[60vh] overflow-y-auto p-2 scrollbar-thin">
+            <Command.Empty className="py-12 text-center">
+              <div className="text-content-tertiary">
+                <svg
+                  className="w-12 h-12 mx-auto mb-3 opacity-50"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                  />
+                </svg>
+                <p className="text-sm">{t('commandPalette.noResults')}</p>
+              </div>
             </Command.Empty>
 
             {/* Recent commands */}
             {recentCommands.length > 0 && (
               <Command.Group
                 heading={
-                  <span className="text-xs font-medium text-content-tertiary uppercase tracking-wide">
-                    {t('commandPalette.recent')}
-                  </span>
+                  <div className="flex items-center gap-2 px-2 pb-1">
+                    <svg className="w-3.5 h-3.5 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-[11px] font-semibold text-content-tertiary uppercase tracking-wider">
+                      {t('commandPalette.recent')}
+                    </span>
+                  </div>
                 }
-                className="mb-2"
+                className="mb-1"
               >
                 {recentCommands.map((cmd) => (
                   <CommandItem
@@ -411,11 +450,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 <Command.Group
                   key={category}
                   heading={
-                    <span className="text-xs font-medium text-content-tertiary uppercase tracking-wide">
-                      {t(CATEGORY_LABELS[category])}
-                    </span>
+                    <div className="flex items-center gap-2 px-2 pb-1 pt-2">
+                      <CategoryIcon category={category} />
+                      <span className="text-[11px] font-semibold text-content-tertiary uppercase tracking-wider">
+                        {t(CATEGORY_LABELS[category])}
+                      </span>
+                    </div>
                   }
-                  className="mb-2"
+                  className="mb-1"
                 >
                   {categoryCommands.map((cmd) => (
                     <CommandItem key={cmd.id} command={cmd} onSelect={handleSelect} t={t} />
@@ -430,6 +472,66 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   );
 }
 
+/** Category icons for visual distinction */
+function CategoryIcon({ category }: { category: string }) {
+  const iconClass = 'w-3.5 h-3.5 text-content-tertiary';
+
+  switch (category) {
+    case 'navigation':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      );
+    case 'edit':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      );
+    case 'layers':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      );
+    case 'view':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+      );
+    case 'preview':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+        </svg>
+      );
+    case 'bins':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      );
+    case 'tools':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      );
+    case 'export':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 interface CommandItemProps {
   command: CommandDefinition & { action: (() => void) | null; isAvailable: boolean };
   onSelect: (id: string) => void;
@@ -442,11 +544,15 @@ function CommandItem({ command, onSelect, t }: CommandItemProps) {
       value={`${t(command.labelKey)} ${command.keywords?.join(' ') ?? ''}`}
       onSelect={() => onSelect(command.id)}
       disabled={!command.isAvailable}
-      className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer text-sm text-content data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent data-[disabled=true]:opacity-40 data-[disabled=true]:cursor-not-allowed transition-colors"
+      className="group flex items-center justify-between gap-4 mx-1 px-3 py-2.5 rounded-lg cursor-pointer text-sm text-content transition-all data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent data-[disabled=true]:opacity-40 data-[disabled=true]:cursor-not-allowed hover:bg-surface-hover/50"
     >
-      <span>{t(command.labelKey)}</span>
+      <span className="truncate">{t(command.labelKey)}</span>
       {command.shortcut && (
-        <ShortcutBadge keys={command.shortcut.keys} modifier={command.shortcut.modifier} />
+        <ShortcutBadge
+          keys={command.shortcut.keys}
+          modifier={command.shortcut.modifier}
+          className="opacity-60 group-data-[selected=true]:opacity-100 transition-opacity shrink-0"
+        />
       )}
     </Command.Item>
   );
