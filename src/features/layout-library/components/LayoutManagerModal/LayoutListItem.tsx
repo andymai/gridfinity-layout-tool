@@ -98,12 +98,12 @@ export function LayoutListItem({
       aria-current={isActive ? 'true' : undefined}
       tabIndex={isFocused ? 0 : -1}
       className={`
-        w-full text-left p-3 rounded-lg border transition-colors cursor-pointer
+        w-full text-left p-3 rounded-lg border-2 transition-colors cursor-pointer
         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset
         ${
           isActive
-            ? 'bg-accent-muted border-accent'
-            : 'bg-surface-secondary border-transparent hover:border-stroke-subtle hover:bg-surface'
+            ? 'border-accent bg-accent-muted/30'
+            : 'border-stroke bg-surface-secondary hover:border-accent/50'
         }
       `}
       onClick={() => !isEditing && onSelect()}
