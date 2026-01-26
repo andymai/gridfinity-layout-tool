@@ -3,7 +3,7 @@
  * Provides quick access to actions and keyboard shortcuts.
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Command } from 'cmdk';
 import { useTranslation } from '@/i18n';
 import {
@@ -23,6 +23,7 @@ import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../command
 import type { CommandDefinition } from '../commands';
 import { useRecentCommandsStore } from '../store/recentStore';
 import { ShortcutBadge } from './ShortcutBadge';
+import { CommandPaletteFooter } from './CommandPaletteFooter';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -32,8 +33,8 @@ interface CommandPaletteProps {
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const t = useTranslation();
 
-  // Recent commands
-  const { recentIds, recordUsage } = useRecentCommandsStore();
+  // Frecency tracking
+  const { recordUsage } = useRecentCommandsStore();
 
   // Stores
   const layout = useLayoutStore((s) => s.layout);
@@ -52,6 +53,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     setActiveLayer,
     showQuickLabel,
     activeCategoryId,
+    setActiveCategory,
   } = useSelectionStore(
     useShallow((s) => ({
       selectedBinIds: s.selectedBinIds,
@@ -60,6 +62,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       setActiveLayer: s.setActiveLayer,
       showQuickLabel: s.showQuickLabel,
       activeCategoryId: s.activeCategoryId,
+      setActiveCategory: s.setActiveCategory,
     }))
   );
   const { zoomIn, zoomOut, toggleShowLabels, toggleShowOtherLayers, setPrintModalOpen } =
@@ -193,8 +196,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         case 'zoom-out':
           return () => zoomOut();
         case 'fit-to-screen':
-          // Not implemented - requires canvas context
-          return null;
+          return () => window.dispatchEvent(new CustomEvent('fit-to-screen'));
         case 'toggle-labels':
           return () => toggleShowLabels();
         case 'toggle-other-layers':
@@ -229,9 +231,49 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return () => setSelectedBins([layerBins[nextIndex].id]);
         }
         case 'prev-category':
-        case 'next-category':
-          // These are more complex - skip for now
-          return null;
+        case 'next-category': {
+          const categories = layout.categories;
+          if (categories.length === 0) return null;
+
+          const direction = id === 'next-category' ? 1 : -1;
+
+          if (selectedBinIds.length > 0) {
+            // Cycle category of selected bins
+            const firstBin = layout.bins.find((b) => b.id === selectedBinIds[0]);
+            if (!firstBin) return null;
+
+            return () => {
+              const currentPos = categories.findIndex((c) => c.id === firstBin.category);
+              const nextPos = (currentPos + direction + categories.length) % categories.length;
+              const newCategoryId = categories[nextPos].id;
+
+              execute(() => {
+                for (const binId of selectedBinIds) {
+                  updateBin(binId, { category: newCategoryId });
+                }
+              });
+              addToast(
+                t('toast.categoryChanged', {
+                  count: selectedBinIds.length,
+                  name: categories[nextPos].name,
+                }),
+                'success'
+              );
+            };
+          } else {
+            // Cycle active drawing category
+            return () => {
+              const currentIndex = categories.findIndex((c) => c.id === activeCategoryId);
+              const nextIndex =
+                currentIndex === -1
+                  ? direction === 1
+                    ? 0
+                    : categories.length - 1
+                  : (currentIndex + direction + categories.length) % categories.length;
+              setActiveCategory(categories[nextIndex].id);
+            };
+          }
+        }
         case 'move-to-stash':
           return selectedBinIds.length > 0
             ? () => {
@@ -285,6 +327,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       fillLayerGaps,
       setSelectedBins,
       setActiveLayer,
+      setActiveCategory,
       setInteraction,
       setShowLayoutManager,
       setPrintModalOpen,
@@ -301,14 +344,72 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     ]
   );
 
-  // Build commands with availability
+  // Contextual boost multipliers based on current app state
+  const contextBoosts = useMemo(() => {
+    const hasBinsSelected = selectedBinIds.length > 0;
+    const hasSingleBin = selectedBinIds.length === 1;
+    const hasMultipleLayers = layout.layers.length > 1;
+    const hasLayerBins = layout.bins.some((b) => b.layerId === activeLayerId);
+
+    // Returns multiplier: >1 = boosted, <1 = demoted, 1 = neutral
+    const boosts: Record<string, number> = {
+      // Edit commands - boost when bins selected
+      'delete-selected': hasBinsSelected ? 2.0 : 0.4,
+      'duplicate-selected': hasBinsSelected ? 2.0 : 0.4,
+      'rotate-bin': hasSingleBin ? 2.0 : 0.3,
+      'quick-label': hasSingleBin ? 1.8 : 0.4,
+      'clear-selection': hasBinsSelected ? 1.5 : 0.3,
+      'move-to-stash': hasBinsSelected ? 1.8 : 0.4,
+
+      // Layer commands - boost when multiple layers
+      'layer-up': hasMultipleLayers ? 1.5 : 0.5,
+      'layer-down': hasMultipleLayers ? 1.5 : 0.5,
+      'add-layer': layout.layers.length < 10 ? 1.3 : 0.5,
+      'clear-layer': hasLayerBins ? 1.5 : 0.3,
+
+      // 3D preview commands - boost when preview visible
+      'camera-isometric': showIsometricPreview ? 2.0 : 0.3,
+      'camera-top': showIsometricPreview ? 2.0 : 0.3,
+      'camera-front': showIsometricPreview ? 2.0 : 0.3,
+      'camera-side': showIsometricPreview ? 2.0 : 0.3,
+      'expand-preview': showIsometricPreview ? 1.8 : 0.3,
+      'toggle-preview': showIsometricPreview ? 1.0 : 1.5,
+
+      // Undo/redo - boost when available
+      undo: canUndo ? 1.5 : 0.3,
+      redo: canRedo ? 1.5 : 0.3,
+
+      // Category navigation - boost when bins selected
+      'prev-category': hasBinsSelected ? 1.8 : 0.8,
+      'next-category': hasBinsSelected ? 1.8 : 0.8,
+    };
+
+    return boosts;
+  }, [
+    selectedBinIds.length,
+    layout.layers.length,
+    layout.bins,
+    activeLayerId,
+    showIsometricPreview,
+    canUndo,
+    canRedo,
+  ]);
+
+  // Build commands with availability and boosted scores
   const commands = useMemo(() => {
-    return COMMAND_DEFINITIONS.map((def) => ({
-      ...def,
-      action: getAction(def.id),
-      isAvailable: getAction(def.id) !== null,
-    }));
-  }, [getAction]);
+    const { getFrecencyScore } = useRecentCommandsStore.getState();
+
+    return COMMAND_DEFINITIONS.map((def) => {
+      const frecency = getFrecencyScore(def.id);
+      const boost = contextBoosts[def.id] ?? 1.0;
+      return {
+        ...def,
+        action: getAction(def.id),
+        isAvailable: getAction(def.id) !== null,
+        effectiveScore: frecency * boost,
+      };
+    });
+  }, [getAction, contextBoosts]);
 
   // Group commands by category
   const groupedCommands = useMemo(() => {
@@ -322,12 +423,26 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     return groups;
   }, [commands]);
 
-  // Recent commands
+  // Frecent commands (combines frequency + recency + context)
   const recentCommands = useMemo(() => {
-    return recentIds
-      .map((id) => commands.find((c) => c.id === id))
-      .filter((c): c is (typeof commands)[number] => c !== undefined && c.isAvailable);
-  }, [recentIds, commands]);
+    return commands
+      .filter((c) => c.isAvailable && c.effectiveScore > 0.01)
+      .sort((a, b) => b.effectiveScore - a.effectiveScore)
+      .slice(0, 5);
+  }, [commands]);
+
+  // IDs of commands shown in recent section (to avoid duplicates)
+  const recentCommandIds = useMemo(
+    () => new Set(recentCommands.map((c) => c.id)),
+    [recentCommands]
+  );
+
+  // Track currently highlighted command for footer display
+  const [selectedCommandId, setSelectedCommandId] = useState<string | null>(null);
+  const selectedCommand = useMemo(
+    () => commands.find((c) => c.id === selectedCommandId) ?? null,
+    [commands, selectedCommandId]
+  );
 
   // Handle command selection
   const handleSelect = useCallback(
@@ -361,57 +476,64 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   return (
     <div className="fixed inset-0 z-[100]" onClick={() => onOpenChange(false)}>
       {/* Backdrop with blur */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] animate-fade-in" />
 
       {/* Palette container - top aligned like Spotlight */}
-      <div className="absolute top-[12%] left-1/2 -translate-x-1/2 w-full max-w-xl px-4">
+      <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-full max-w-[560px] px-4">
         <Command
-          className="rounded-2xl border border-stroke bg-surface-elevated shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] animate-scale-in"
+          className="rounded-xl border border-stroke bg-surface-secondary shadow-xl animate-scale-in overflow-hidden"
           onClick={(e) => e.stopPropagation()}
           loop
+          onValueChange={(value) => {
+            // Extract command ID from composite value (id::label keywords)
+            const commandId = value?.split('::')[0] ?? null;
+            setSelectedCommandId(commandId);
+          }}
         >
           {/* Search input with icon */}
-          <div className="flex items-center gap-3 px-4 border-b border-stroke-subtle">
+          <div className="flex items-center gap-3 px-4 border-b border-stroke-subtle bg-surface-secondary">
             <svg
-              className="w-5 h-5 text-content-tertiary shrink-0"
+              className="w-4 h-4 text-content-tertiary shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              strokeWidth={2.5}
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
             <Command.Input
               placeholder={t('commandPalette.placeholder')}
-              className="w-full py-4 text-base bg-transparent text-content placeholder:text-content-tertiary outline-none focus-visible:ring-0"
+              className="flex-1 py-3.5 text-[15px] bg-transparent text-content placeholder:text-content-tertiary outline-none"
               autoFocus
             />
-            <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[10px] font-mono rounded border border-stroke-subtle bg-surface text-content-tertiary">
+            <kbd className="hidden sm:inline-flex items-center justify-center min-w-[28px] h-[22px] px-1.5 text-[11px] font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-secondary shadow-[0_1px_0_1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.05)]">
               esc
             </kbd>
           </div>
 
-          <Command.List className="max-h-[60vh] overflow-y-auto overflow-x-hidden p-2 scrollbar-thin">
-            <Command.Empty className="py-12 text-center">
-              <div className="text-content-tertiary">
-                <svg
-                  className="w-12 h-12 mx-auto mb-3 opacity-50"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+          <Command.List className="max-h-[50vh] overflow-y-auto overflow-x-hidden py-2 scrollbar-thin">
+            <Command.Empty className="py-10 text-center">
+              <div className="flex flex-col items-center gap-2 text-content-tertiary">
+                <div className="w-10 h-10 rounded-lg bg-surface-hover flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 opacity-60"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
                     strokeWidth={1.5}
-                    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
-                  />
-                </svg>
-                <p className="text-sm">{t('commandPalette.noResults')}</p>
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                    />
+                  </svg>
+                </div>
+                <p className="text-sm text-content-secondary">{t('commandPalette.noResults')}</p>
               </div>
             </Command.Empty>
 
@@ -419,26 +541,26 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             {recentCommands.length > 0 && (
               <Command.Group
                 heading={
-                  <div className="flex items-center gap-2 px-2 pb-1">
+                  <div className="flex items-center gap-1.5 px-3 pb-1.5 pt-1">
                     <svg
-                      className="w-3.5 h-3.5 text-content-tertiary"
+                      className="w-3 h-3 text-content-tertiary"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      strokeWidth={2}
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth={2}
                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    <span className="text-[11px] font-semibold text-content-tertiary uppercase tracking-wider">
+                    <span className="text-[10px] font-semibold text-content-tertiary uppercase tracking-wider">
                       {t('commandPalette.recent')}
                     </span>
                   </div>
                 }
-                className="mb-1"
+                className="mb-0.5"
               >
                 {recentCommands.map((cmd) => (
                   <CommandItem
@@ -451,23 +573,25 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               </Command.Group>
             )}
 
-            {/* Grouped commands */}
+            {/* Grouped commands (excluding ones already in Recent) */}
             {CATEGORY_ORDER.map((category) => {
-              const categoryCommands = groupedCommands[category];
+              const categoryCommands = groupedCommands[category]?.filter(
+                (cmd) => !recentCommandIds.has(cmd.id)
+              );
               if (!categoryCommands?.length) return null;
 
               return (
                 <Command.Group
                   key={category}
                   heading={
-                    <div className="flex items-center gap-2 px-2 pb-1 pt-2">
+                    <div className="flex items-center gap-1.5 px-3 pb-1.5 pt-2.5 first:pt-1">
                       <CategoryIcon category={category} />
-                      <span className="text-[11px] font-semibold text-content-tertiary uppercase tracking-wider">
+                      <span className="text-[10px] font-semibold text-content-tertiary uppercase tracking-wider">
                         {t(CATEGORY_LABELS[category])}
                       </span>
                     </div>
                   }
-                  className="mb-1"
+                  className="mb-0.5"
                 >
                   {categoryCommands.map((cmd) => (
                     <CommandItem key={cmd.id} command={cmd} onSelect={handleSelect} t={t} />
@@ -476,6 +600,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               );
             })}
           </Command.List>
+
+          {/* Footer with keyboard hints */}
+          <CommandPaletteFooter selectedCommand={selectedCommand} matchCount={commands.length} />
         </Command>
       </div>
     </div>
@@ -484,7 +611,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
 /** Category icons for visual distinction */
 function CategoryIcon({ category }: { category: string }) {
-  const iconClass = 'w-3.5 h-3.5 text-content-tertiary';
+  const iconClass = 'w-3 h-3 text-content-tertiary';
 
   switch (category) {
     case 'navigation':
@@ -599,19 +726,22 @@ interface CommandItemProps {
 }
 
 function CommandItem({ command, onSelect, t }: CommandItemProps) {
+  // Use composite value: id::searchable_text for robust matching
+  const searchValue = `${command.id}::${t(command.labelKey)} ${command.keywords?.join(' ') ?? ''}`;
+
   return (
     <Command.Item
-      value={`${t(command.labelKey)} ${command.keywords?.join(' ') ?? ''}`}
+      value={searchValue}
       onSelect={() => onSelect(command.id)}
       disabled={!command.isAvailable}
-      className="group flex items-center justify-between gap-4 mx-1 px-3 py-2.5 rounded-lg cursor-pointer text-sm text-content transition-all data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent data-[disabled=true]:opacity-40 data-[disabled=true]:cursor-not-allowed hover:bg-surface-hover/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+      className="group flex items-center justify-between gap-3 mx-2 px-2.5 py-2 rounded-lg cursor-pointer text-[13px] text-content transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent data-[disabled=true]:opacity-35 data-[disabled=true]:cursor-not-allowed focus-visible:outline-none"
     >
       <span className="truncate">{t(command.labelKey)}</span>
       {command.shortcut && (
         <ShortcutBadge
           keys={command.shortcut.keys}
           modifier={command.shortcut.modifier}
-          className="opacity-60 group-data-[selected=true]:opacity-100 transition-opacity shrink-0"
+          className="opacity-50 group-data-[selected=true]:opacity-90 transition-opacity shrink-0"
         />
       )}
     </Command.Item>

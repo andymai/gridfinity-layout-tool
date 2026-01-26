@@ -502,6 +502,17 @@ textarea:focus-visible {
   outline: none;
 }
 
+/* Command palette input - custom focus handling */
+[cmdk-input]:focus {
+  outline: none;
+}
+
+/* Keep subtle focus ring for keyboard users */
+[cmdk-input]:focus-visible {
+  outline: none;
+  box-shadow: inset 0 -2px 0 var(--focus-ring);
+}
+
 /* Paint mode indicator */
 .paint-mode-indicator {
   position: fixed;
