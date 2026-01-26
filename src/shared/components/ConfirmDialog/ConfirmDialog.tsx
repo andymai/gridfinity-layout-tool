@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -84,7 +85,8 @@ export function ConfirmDialog({
 
   if (!isOpen) return null;
 
-  return (
+  // Use portal to escape parent stacking contexts (e.g., BottomSheet with transform)
+  return createPortal(
     <div
       className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in bg-overlay-dark"
       onClick={onCancel}
@@ -124,6 +126,7 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
