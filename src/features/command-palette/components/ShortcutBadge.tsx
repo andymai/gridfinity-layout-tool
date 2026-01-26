@@ -33,7 +33,7 @@ export function ShortcutBadge({ keys, modifier, className = '' }: ShortcutBadgeP
       )}
       {keyArray.map((key, index) => (
         <span key={key} className="flex items-center gap-1">
-          {}
+          {/* eslint-disable-next-line i18next/no-literal-string */}
           {index > 0 && <span className="text-content-tertiary text-xs">/</span>}
           <kbd className="inline-flex items-center justify-center min-w-[20px] h-5 px-1 text-xs font-mono rounded bg-surface border border-stroke-subtle text-content-secondary">
             {key}
