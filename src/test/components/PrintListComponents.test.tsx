@@ -78,7 +78,7 @@ describe('PrintListSummary', () => {
       render(<PrintListSummary {...defaultProps} compact={true} />);
 
       expect(screen.getByText('Total')).toBeInTheDocument();
-      expect(screen.getByText('bins & pieces')).toBeInTheDocument();
+      expect(screen.getByText('10 bins & 15 pieces')).toBeInTheDocument();
     });
 
     it('shows all metrics in compact layout', () => {
