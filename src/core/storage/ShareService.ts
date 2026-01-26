@@ -120,21 +120,29 @@ function escapeTSVValue(value: string): string {
  * Metadata for TSV export including layout context.
  */
 export interface PrintListTSVMeta {
-  layoutName?: string;
-  gridSize?: string;
+  gridUnitMm: number;
+  categories: Array<{ id: string; name: string }>;
+}
+
+/**
+ * Calculate size in mm from grid units.
+ */
+function calculateSizeMm(size: string, gridUnitMm: number): string {
+  const [w, d] = size.split('×').map(Number);
+  return `${Math.round(w * gridUnitMm)}×${Math.round(d * gridUnitMm)}`;
 }
 
 /**
  * Export print list as TSV for spreadsheet paste.
+ * Column order: Qty, Size, Size(mm), Height, Category, Label, Notes, [Custom Props]
  * Dynamically adds columns for custom properties that exist in any row.
- * Optionally includes layout name and grid size columns for context.
  */
 export function exportPrintListTSV(
   rows: Array<{
     size: string;
     height: number;
     binCount: number;
-    totalPieces: number;
+    categoryIds?: string[];
     labels?: string[];
     notes?: string;
     customProperties?: Record<string, string>;
@@ -152,21 +160,23 @@ export function exportPrintListTSV(
   }
   const sortedKeys = Array.from(customKeys).sort();
 
-  // Build header with optional metadata and dynamic custom property columns
-  const metaHeader = meta ? 'Layout\tGrid Size\t' : '';
-  const baseHeader = `${metaHeader}Size\tHeight\tBins\tPieces\tLabel\tNotes`;
+  // Build header with new column order: Qty, Size, Size(mm), Height, Category, Label, Notes
+  const baseHeader = 'Qty\tSize\tSize(mm)\tHeight\tCategory\tLabel\tNotes';
   const header = sortedKeys.length > 0 ? `${baseHeader}\t${sortedKeys.join('\t')}` : baseHeader;
 
-  // Pre-compute metadata values if provided (with TSV escaping)
-  const layoutName = meta ? escapeTSVValue(meta.layoutName || '') : '';
-  const gridSize = meta ? escapeTSVValue(meta.gridSize || '') : '';
+  // Build category lookup map
+  const categoryMap = new Map(meta?.categories.map((c) => [c.id, c.name]) ?? []);
 
   // Build data rows
   const lines = rows.map((r) => {
+    const sizeMm = meta ? calculateSizeMm(r.size, meta.gridUnitMm) : '';
+    const categoryName = r.categoryIds?.[0]
+      ? escapeTSVValue(categoryMap.get(r.categoryIds[0]) || 'Uncategorized')
+      : '';
     const label = escapeTSVValue(r.labels?.[0] || '');
     const notes = escapeTSVValue(r.notes || '');
-    const metaValues = meta ? `${layoutName}\t${gridSize}\t` : '';
-    const baseLine = `${metaValues}${r.size}\t${r.height}u\t${r.binCount}\t${r.totalPieces}\t${label}\t${notes}`;
+
+    const baseLine = `${r.binCount}\t${r.size}\t${sizeMm}\t${r.height}u\t${categoryName}\t${label}\t${notes}`;
 
     if (sortedKeys.length === 0) {
       return baseLine;

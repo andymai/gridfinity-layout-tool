@@ -393,17 +393,17 @@ export function useBinList(): UseBinListReturn {
   // Export handlers
   const exportToTSV = useCallback(() => {
     return exportPrintListTSV(filteredRows, {
-      layoutName: layout.name,
-      gridSize: `${layout.drawer.width}×${layout.drawer.depth}`,
+      gridUnitMm: layout.gridUnitMm,
+      categories: layout.categories,
     });
-  }, [filteredRows, layout.name, layout.drawer.width, layout.drawer.depth]);
+  }, [filteredRows, layout.gridUnitMm, layout.categories]);
 
   const exportToCSV = useCallback(() => {
     return formatAsCSV(filteredRows, {
-      layoutName: layout.name,
-      gridSize: `${layout.drawer.width}×${layout.drawer.depth}`,
+      gridUnitMm: layout.gridUnitMm,
+      categories: layout.categories,
     });
-  }, [filteredRows, layout.name, layout.drawer.width, layout.drawer.depth]);
+  }, [filteredRows, layout.gridUnitMm, layout.categories]);
 
   const exportToJSON = useCallback(() => {
     return formatAsJSON(filteredRows, layout);

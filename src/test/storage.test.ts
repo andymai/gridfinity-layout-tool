@@ -349,42 +349,49 @@ describe('storage', () => {
   });
 
   describe('exportPrintListTSV', () => {
+    // Default meta for tests (required for new column format)
+    const defaultMeta = {
+      gridUnitMm: 42,
+      categories: [{ id: 'cat1', name: 'Tools' }],
+    };
+
     it('exports empty list with header only', () => {
-      const tsv = exportPrintListTSV([]);
-      expect(tsv).toBe('Size\tHeight\tBins\tPieces\tLabel\tNotes');
+      const tsv = exportPrintListTSV([], defaultMeta);
+      expect(tsv).toBe('Qty\tSize\tSize(mm)\tHeight\tCategory\tLabel\tNotes');
     });
 
     it('exports single row correctly', () => {
-      const rows = [{ size: '1x1', height: 3, binCount: 5, totalPieces: 5 }];
-      const tsv = exportPrintListTSV(rows);
+      const rows = [{ size: '1×1', height: 3, binCount: 5, categoryIds: ['cat1'] }];
+      const tsv = exportPrintListTSV(rows, defaultMeta);
       const lines = tsv.split('\n');
       expect(lines).toHaveLength(2);
-      expect(lines[1]).toBe('1x1\t3u\t5\t5\t\t');
+      // Qty, Size, Size(mm), Height, Category, Label, Notes
+      expect(lines[1]).toBe('5\t1×1\t42×42\t3u\tTools\t\t');
     });
 
     it('exports row with labels and notes', () => {
       const rows = [
         {
-          size: '2x3',
+          size: '2×3',
           height: 6,
           binCount: 2,
-          totalPieces: 4,
+          categoryIds: ['cat1'],
           labels: ['Screws', 'Nails'],
           notes: 'Small parts',
         },
       ];
-      const tsv = exportPrintListTSV(rows);
+      const tsv = exportPrintListTSV(rows, defaultMeta);
       const lines = tsv.split('\n');
-      expect(lines[1]).toBe('2x3\t6u\t2\t4\tScrews\tSmall parts');
+      expect(lines[1]).toBe('2\t2×3\t84×126\t6u\tTools\tScrews\tSmall parts');
     });
 
     it('exports multiple rows', () => {
       const rows = [
-        { size: '1x1', height: 3, binCount: 10, totalPieces: 10 },
-        { size: '2x2', height: 6, binCount: 4, totalPieces: 4 },
-        { size: '3x1', height: 3, binCount: 2, totalPieces: 6 },
+        { size: '1×1', height: 3, binCount: 10, categoryIds: ['cat1'] },
+        { size: '2×2', height: 6, binCount: 4, categoryIds: ['cat1'] },
+        { size: '3×1', height: 3, binCount: 2, categoryIds: ['cat1'] },
       ];
-      const tsv = exportPrintListTSV(rows);
+      const tsv = exportPrintListTSV(rows, defaultMeta);
       const lines = tsv.split('\n');
       expect(lines).toHaveLength(4);
     });
@@ -392,116 +399,90 @@ describe('storage', () => {
     it('exports rows with custom properties as additional columns', () => {
       const rows = [
         {
-          size: '1x1',
+          size: '1×1',
           height: 3,
           binCount: 1,
-          totalPieces: 1,
+          categoryIds: ['cat1'],
           customProperties: { SKU: 'ABC123', Location: 'A1' },
         },
         {
-          size: '2x2',
+          size: '2×2',
           height: 6,
           binCount: 1,
-          totalPieces: 1,
+          categoryIds: ['cat1'],
           customProperties: { SKU: 'XYZ789' }, // Missing Location
         },
       ];
-      const tsv = exportPrintListTSV(rows);
+      const tsv = exportPrintListTSV(rows, defaultMeta);
       const lines = tsv.split('\n');
       expect(lines).toHaveLength(3);
       // Header should have custom property columns (sorted alphabetically)
-      expect(lines[0]).toBe('Size\tHeight\tBins\tPieces\tLabel\tNotes\tLocation\tSKU');
+      expect(lines[0]).toBe('Qty\tSize\tSize(mm)\tHeight\tCategory\tLabel\tNotes\tLocation\tSKU');
       // Row with both properties
-      expect(lines[1]).toBe('1x1\t3u\t1\t1\t\t\tA1\tABC123');
+      expect(lines[1]).toBe('1\t1×1\t42×42\t3u\tTools\t\t\tA1\tABC123');
       // Row missing Location should have empty value
-      expect(lines[2]).toBe('2x2\t6u\t1\t1\t\t\t\tXYZ789');
+      expect(lines[2]).toBe('1\t2×2\t84×84\t6u\tTools\t\t\t\tXYZ789');
     });
 
     it('does not add custom property columns when none present', () => {
       const rows = [
-        { size: '1x1', height: 3, binCount: 5, totalPieces: 5 },
-        { size: '2x2', height: 6, binCount: 4, totalPieces: 4 },
+        { size: '1×1', height: 3, binCount: 5, categoryIds: ['cat1'] },
+        { size: '2×2', height: 6, binCount: 4, categoryIds: ['cat1'] },
       ];
-      const tsv = exportPrintListTSV(rows);
+      const tsv = exportPrintListTSV(rows, defaultMeta);
       const lines = tsv.split('\n');
       // Header should not have extra columns
-      expect(lines[0]).toBe('Size\tHeight\tBins\tPieces\tLabel\tNotes');
+      expect(lines[0]).toBe('Qty\tSize\tSize(mm)\tHeight\tCategory\tLabel\tNotes');
     });
 
-    it('exports with layout metadata when provided', () => {
-      const rows = [{ size: '1x1', height: 3, binCount: 5, totalPieces: 5 }];
+    it('shows Uncategorized for missing category', () => {
+      const rows = [{ size: '1×1', height: 3, binCount: 5, categoryIds: ['unknown'] }];
+      const tsv = exportPrintListTSV(rows, defaultMeta);
+      const lines = tsv.split('\n');
+      expect(lines[1]).toContain('Uncategorized');
+    });
+
+    it('calculates Size(mm) correctly with different gridUnitMm', () => {
+      const rows = [{ size: '2×3', height: 3, binCount: 1, categoryIds: ['cat1'] }];
       const tsv = exportPrintListTSV(rows, {
-        layoutName: 'My Drawer',
-        gridSize: '10×8',
+        gridUnitMm: 50,
+        categories: [{ id: 'cat1', name: 'Tools' }],
       });
       const lines = tsv.split('\n');
-      expect(lines).toHaveLength(2);
-      // Header should have Layout and Grid Size columns first
-      expect(lines[0]).toBe('Layout\tGrid Size\tSize\tHeight\tBins\tPieces\tLabel\tNotes');
-      // Data row should include metadata values
-      expect(lines[1]).toBe('My Drawer\t10×8\t1x1\t3u\t5\t5\t\t');
+      // 2*50 = 100, 3*50 = 150
+      expect(lines[1]).toContain('100×150');
     });
 
-    it('exports with layout metadata and custom properties', () => {
-      const rows = [
-        {
-          size: '2x2',
-          height: 6,
-          binCount: 1,
-          totalPieces: 1,
-          labels: ['Screws'],
-          customProperties: { SKU: 'ABC123' },
-        },
-      ];
+    it('escapes tabs and newlines in category name', () => {
+      const rows = [{ size: '1×1', height: 3, binCount: 1, categoryIds: ['cat1'] }];
       const tsv = exportPrintListTSV(rows, {
-        layoutName: 'Tool Drawer',
-        gridSize: '12×10',
-      });
-      const lines = tsv.split('\n');
-      // Header should have metadata first, then base columns, then custom properties
-      expect(lines[0]).toBe('Layout\tGrid Size\tSize\tHeight\tBins\tPieces\tLabel\tNotes\tSKU');
-      expect(lines[1]).toBe('Tool Drawer\t12×10\t2x2\t6u\t1\t1\tScrews\t\tABC123');
-    });
-
-    it('exports without metadata columns when meta is undefined', () => {
-      const rows = [{ size: '1x1', height: 3, binCount: 1, totalPieces: 1 }];
-      const tsv = exportPrintListTSV(rows);
-      const lines = tsv.split('\n');
-      // Should be the original format without Layout/Grid Size
-      expect(lines[0]).toBe('Size\tHeight\tBins\tPieces\tLabel\tNotes');
-      expect(lines[1]).toBe('1x1\t3u\t1\t1\t\t');
-    });
-
-    it('escapes tabs and newlines in metadata values', () => {
-      const rows = [{ size: '1x1', height: 3, binCount: 1, totalPieces: 1 }];
-      const tsv = exportPrintListTSV(rows, {
-        layoutName: 'Drawer\twith\ttabs',
-        gridSize: '10×8',
+        gridUnitMm: 42,
+        categories: [{ id: 'cat1', name: 'Tools\twith\ttabs' }],
       });
       const lines = tsv.split('\n');
       // Tabs should be replaced with spaces
-      expect(lines[1]).toContain('Drawer with tabs');
-      // Should still have correct number of columns (no extra tabs)
-      expect(lines[1].split('\t')).toHaveLength(8);
+      expect(lines[1]).toContain('Tools with tabs');
+      // Should still have correct number of columns (7 base columns)
+      expect(lines[1].split('\t')).toHaveLength(7);
     });
 
     it('escapes tabs and newlines in label and notes', () => {
       const rows = [
         {
-          size: '1x1',
+          size: '1×1',
           height: 3,
           binCount: 1,
-          totalPieces: 1,
+          categoryIds: ['cat1'],
           labels: ['Label\twith\ttab'],
           notes: 'Notes\nwith\nnewlines',
         },
       ];
-      const tsv = exportPrintListTSV(rows);
+      const tsv = exportPrintListTSV(rows, defaultMeta);
       const lines = tsv.split('\n');
       expect(lines[1]).toContain('Label with tab');
       expect(lines[1]).toContain('Notes with newlines');
-      // Should still have correct number of columns
-      expect(lines[1].split('\t')).toHaveLength(6);
+      // Should still have correct number of columns (7 base columns)
+      expect(lines[1].split('\t')).toHaveLength(7);
     });
   });
 

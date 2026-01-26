@@ -129,16 +129,57 @@ function mergePieces(pieces: PrintPiece[]): PrintPiece[] {
 }
 
 /**
- * Check if a bin has custom properties (non-empty object).
+ * Merge unique values from an array, filtering empty strings.
+ * Used for consolidating notes and custom property values.
  */
-function hasCustomProperties(bin: Bin): boolean {
-  return bin.customProperties !== undefined && Object.keys(bin.customProperties).length > 0;
+function mergeUniqueValues(values: string[], separator = '; '): string {
+  const unique = new Set<string>();
+  for (const v of values) {
+    const trimmed = v.trim();
+    if (trimmed) {
+      unique.add(trimmed);
+    }
+  }
+  return Array.from(unique).join(separator);
+}
+
+/**
+ * Merge custom properties from multiple bins.
+ * Values for the same key are concatenated with "; " separator (unique only).
+ */
+function mergeCustomProperties(
+  propsList: Array<Record<string, string> | undefined>
+): Record<string, string> | undefined {
+  const merged = new Map<string, Set<string>>();
+
+  for (const props of propsList) {
+    if (!props) continue;
+    for (const [key, value] of Object.entries(props)) {
+      const trimmed = value.trim();
+      if (!trimmed) continue;
+      const existing = merged.get(key);
+      if (existing) {
+        existing.add(trimmed);
+      } else {
+        merged.set(key, new Set([trimmed]));
+      }
+    }
+  }
+
+  if (merged.size === 0) return undefined;
+
+  const result: Record<string, string> = {};
+  for (const [key, values] of merged) {
+    result[key] = Array.from(values).join('; ');
+  }
+  return result;
 }
 
 /**
  * Generate the print list from bins.
- * Groups bins by size×height, calculates split pieces.
- * Bins with labels or custom properties get their own rows.
+ * Groups bins by size×height×label×category, calculates split pieces.
+ * Bins with the same dimensions AND label AND category are consolidated with quantity counts.
+ * Notes and custom properties are merged (unique values joined with "; ").
  */
 export function generatePrintList(
   bins: Bin[],
@@ -147,7 +188,7 @@ export function generatePrintList(
 ): PrintRow[] {
   const placedBins = bins.filter((b) => b.layerId !== STAGING_ID);
 
-  // Group by size, height, category. Labeled bins and bins with custom properties get their own rows.
+  // Group by size, height, label, and category (consolidate same dimensions + label + category)
   const groups = new Map<
     string,
     {
@@ -157,22 +198,21 @@ export function generatePrintList(
       count: number;
       categoryId: string;
       label: string;
-      notes: string;
+      notesList: string[]; // Collect all notes for merging
       binIds: string[];
-      customProperties?: Record<string, string>;
+      customPropertiesList: Array<Record<string, string> | undefined>; // Collect for merging
     }
   >();
 
   for (const bin of placedBins) {
-    // Labeled bins and bins with custom properties get their own row
-    const isIndividual = bin.label || hasCustomProperties(bin);
-    const key = isIndividual
-      ? `${bin.width}×${bin.depth}×${bin.height}:${bin.category}:${bin.id}` // Unique key
-      : `${bin.width}×${bin.depth}×${bin.height}:${bin.category}`;
+    // Consolidate bins with same size + height + label + category
+    const key = `${bin.width}×${bin.depth}×${bin.height}:${bin.category}:${bin.label || ''}`;
     const existing = groups.get(key);
     if (existing) {
       existing.count++;
       existing.binIds.push(bin.id);
+      existing.notesList.push(bin.notes);
+      existing.customPropertiesList.push(bin.customProperties);
     } else {
       groups.set(key, {
         width: bin.width,
@@ -181,9 +221,9 @@ export function generatePrintList(
         count: 1,
         categoryId: bin.category,
         label: bin.label,
-        notes: bin.notes,
+        notesList: [bin.notes],
         binIds: [bin.id],
-        customProperties: bin.customProperties,
+        customPropertiesList: [bin.customProperties],
       });
     }
   }
@@ -204,6 +244,10 @@ export function generatePrintList(
     );
     const filament = Math.round(filamentPerBin * group.count * 10) / 10; // Round to 1 decimal
 
+    // Merge notes and custom properties from all bins in the group
+    const mergedNotes = mergeUniqueValues(group.notesList);
+    const mergedCustomProps = mergeCustomProperties(group.customPropertiesList);
+
     rows.push({
       size: `${group.width}×${group.depth}`,
       height: group.height,
@@ -214,9 +258,9 @@ export function generatePrintList(
       filament,
       categoryIds: [group.categoryId],
       labels: group.label ? [group.label] : [],
-      notes: group.notes,
+      notes: mergedNotes,
       binIds: group.binIds,
-      customProperties: group.customProperties,
+      customProperties: mergedCustomProps,
     });
   }
 
