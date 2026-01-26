@@ -906,6 +906,12 @@ const en: Record<string, string> = {
   'toast.binsSwappedRotated': 'Bins swapped positions (rotated to fit)',
   'toast.dismissNotification': 'Dismiss notification',
   'toast.notifications': 'Notifications',
+  'toast.selectedAll': 'Selected {count} bin(s)',
+  'toast.paintModeEnabled': 'Paint mode enabled. Click to place bins.',
+  'toast.layerFilled': 'Layer filled with bins',
+  'toast.movedToStash': 'Moved {count} bin(s) to stash',
+  'toast.stagingCleared': 'Cleared {count} bin(s) from stash',
+  'toast.restoredFromStaging': 'Restored {count} bin(s) from stash',
 
   // ===========================================================================
   // Grid Editor
@@ -1362,6 +1368,24 @@ const en: Record<string, string> = {
   // Export commands
   'commandPalette.downloadLayout': 'Download Layout',
   'commandPalette.copyShareLink': 'Copy Share Link',
+  'commandPalette.exportCSV': 'Copy Bins as CSV',
+  'commandPalette.exportTSV': 'Copy Bins as TSV',
+
+  // Selection commands
+  'commandPalette.selectAll': 'Select All Bins on Layer',
+  'commandPalette.selectNone': 'Clear Selection',
+
+  // Layout management commands
+  'commandPalette.newLayout': 'New Layout',
+  'commandPalette.duplicateLayout': 'Duplicate Layout',
+
+  // Tools commands (extended)
+  'commandPalette.togglePaintMode': 'Toggle Paint Mode',
+  'commandPalette.fillLayer': 'Fill Layer Uniformly',
+
+  // Staging commands
+  'commandPalette.clearStaging': 'Clear Staging Area',
+  'commandPalette.restoreFromStaging': 'Restore All from Staging',
 
   // Footer
   'commandPalette.footer.run': 'Run',

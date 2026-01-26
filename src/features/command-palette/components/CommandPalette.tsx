@@ -19,7 +19,9 @@ import {
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useShallow } from 'zustand/shallow';
+import { useLayoutSwitcher } from '@/hooks';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../commands';
+import { STAGING_ID } from '@/core/constants';
 import type { CommandDefinition } from '../commands';
 import { useRecentCommandsStore } from '../store/recentStore';
 import { ShortcutBadge } from './ShortcutBadge';
@@ -91,10 +93,20 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       }))
     );
   const setInteraction = useInteractionStore((s) => s.setInteraction);
+  const paintSize = useInteractionStore((s) => s.paintSize);
+  const setPaintSize = useInteractionStore((s) => s.setPaintSize);
   const addToast = useToastStore((s) => s.addToast);
-  const fillLayerGaps = useLayoutStore((s) => s.fillLayerGaps);
+  const { fillLayerGaps, fillLayer } = useLayoutStore(
+    useShallow((s) => ({
+      fillLayerGaps: s.fillLayerGaps,
+      fillLayer: s.fillLayer,
+    }))
+  );
   const { execute } = useUndoableAction();
   const { deleteBin, duplicateBin, updateBin, addLayer } = useMutations();
+
+  // Layout management
+  const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
 
   // Build action handlers
   const getAction = useCallback(
@@ -303,6 +315,90 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return () => window.dispatchEvent(new CustomEvent('download-layout'));
         case 'copy-share-link':
           return () => window.dispatchEvent(new CustomEvent('open-share-modal'));
+        case 'export-csv':
+          return () =>
+            window.dispatchEvent(new CustomEvent('copy-bins-clipboard', { detail: 'csv' }));
+        case 'export-tsv':
+          return () =>
+            window.dispatchEvent(new CustomEvent('copy-bins-clipboard', { detail: 'tsv' }));
+
+        // Selection
+        case 'select-all': {
+          const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);
+          return layerBins.length > 0
+            ? () => {
+                setSelectedBins(layerBins.map((b) => b.id));
+                addToast(t('toast.selectedAll', { count: layerBins.length }), 'info');
+              }
+            : null;
+        }
+        case 'select-none':
+          return selectedBinIds.length > 0
+            ? () => {
+                setSelectedBins([]);
+                setInteraction(null);
+              }
+            : null;
+
+        // Layout management
+        case 'new-layout':
+          return () => {
+            createNewLayout();
+          };
+        case 'duplicate-layout':
+          return activeLayoutId
+            ? () => {
+                duplicateLayout(activeLayoutId);
+              }
+            : null;
+
+        // Tools (extended)
+        case 'toggle-paint-mode':
+          return () => {
+            if (paintSize) {
+              setPaintSize(null);
+            } else {
+              // Default to 1x1 paint size
+              setPaintSize({ width: 1, depth: 1 });
+              addToast(t('toast.paintModeEnabled'), 'info');
+            }
+          };
+        case 'fill-layer':
+          return () => {
+            // Fill with 1x1 bins as the default uniform size
+            const count = fillLayer(activeLayerId, 1, 1, activeCategoryId, halfBinMode);
+            if (count > 0) {
+              addToast(t('toast.layerFilled'), 'success');
+            }
+          };
+
+        // Staging
+        case 'clear-staging': {
+          const stagingBins = layout.bins.filter((b) => b.layerId === STAGING_ID);
+          return stagingBins.length > 0
+            ? () => {
+                execute(() => {
+                  for (const bin of stagingBins) {
+                    deleteBin(bin.id);
+                  }
+                });
+                addToast(t('toast.stagingCleared', { count: stagingBins.length }), 'success');
+              }
+            : null;
+        }
+        case 'restore-from-staging': {
+          const stagingBins = layout.bins.filter((b) => b.layerId === STAGING_ID);
+          return stagingBins.length > 0
+            ? () => {
+                execute(() => {
+                  for (const bin of stagingBins) {
+                    updateBin(bin.id, { layerId: activeLayerId });
+                  }
+                });
+                addToast(t('toast.restoredFromStaging', { count: stagingBins.length }), 'success');
+              }
+            : null;
+        }
 
         default:
           return null;
@@ -317,14 +413,20 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       layout,
       activeLayerId,
       activeCategoryId,
+      activeLayoutId,
       showIsometricPreview,
       halfBinMode,
+      paintSize,
       execute,
       deleteBin,
       duplicateBin,
       updateBin,
       addLayer,
       fillLayerGaps,
+      fillLayer,
+      createNewLayout,
+      duplicateLayout,
+      setPaintSize,
       setSelectedBins,
       setActiveLayer,
       setActiveCategory,
@@ -350,6 +452,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     const hasSingleBin = selectedBinIds.length === 1;
     const hasMultipleLayers = layout.layers.length > 1;
     const hasLayerBins = layout.bins.some((b) => b.layerId === activeLayerId);
+    const hasStagingBins = layout.bins.some((b) => b.layerId === STAGING_ID);
 
     // Returns multiplier: >1 = boosted, <1 = demoted, 1 = neutral
     const boosts: Record<string, number> = {
@@ -382,6 +485,25 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       // Category navigation - boost when bins selected
       'prev-category': hasBinsSelected ? 1.8 : 0.8,
       'next-category': hasBinsSelected ? 1.8 : 0.8,
+
+      // Selection - boost select-all when no selection, select-none when selection exists
+      'select-all': hasBinsSelected ? 0.5 : 1.8,
+      'select-none': hasBinsSelected ? 1.5 : 0.3,
+
+      // Paint mode - boost when not in paint mode
+      'toggle-paint-mode': paintSize ? 1.2 : 1.5,
+
+      // Fill operations - boost when layer has space
+      'fill-layer': hasLayerBins ? 0.8 : 1.8,
+      'fill-gaps': hasLayerBins ? 1.5 : 0.5,
+
+      // Staging operations - boost when staging has bins
+      'clear-staging': hasStagingBins ? 1.8 : 0.3,
+      'restore-from-staging': hasStagingBins ? 2.0 : 0.3,
+
+      // Export - always available, slight boost
+      'export-csv': 1.2,
+      'export-tsv': 1.1,
     };
 
     return boosts;
@@ -393,6 +515,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     showIsometricPreview,
     canUndo,
     canRedo,
+    paintSize,
   ]);
 
   // Build commands with availability and boosted scores
@@ -402,10 +525,11 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     return COMMAND_DEFINITIONS.map((def) => {
       const frecency = getFrecencyScore(def.id);
       const boost = contextBoosts[def.id] ?? 1.0;
+      const action = getAction(def.id);
       return {
         ...def,
-        action: getAction(def.id),
-        isAvailable: getAction(def.id) !== null,
+        action,
+        isAvailable: action !== null,
         effectiveScore: frecency * boost,
       };
     });
