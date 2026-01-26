@@ -9,8 +9,12 @@ export function useCommandPalette() {
   const [open, setOpen] = useState(false);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Ignore if in input/textarea
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+    // Ignore if in input/textarea or contenteditable
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement ||
+      (e.target instanceof HTMLElement && e.target.isContentEditable)
+    ) {
       return;
     }
 

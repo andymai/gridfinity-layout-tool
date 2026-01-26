@@ -250,7 +250,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return () => {
             const result = toggleHalfBinMode();
             if (!result.success) {
-              addToast(t('toast.halfBinModeBlocked'), 'error');
+              addToast(t('halfBinBlocked.title'), 'error');
             }
           };
         case 'fill-gaps':
