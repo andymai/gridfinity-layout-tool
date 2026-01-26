@@ -79,7 +79,7 @@ describe('PrintListSummary', () => {
     it('displays bins and pieces in compact format', () => {
       render(<PrintListSummary {...defaultProps} compact />);
 
-      expect(screen.getByText('bins & pieces')).toBeInTheDocument();
+      expect(screen.getByText('10 bins & 15 pieces')).toBeInTheDocument();
     });
 
     it('displays all stats in grid', () => {

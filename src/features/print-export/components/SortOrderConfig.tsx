@@ -1,8 +1,20 @@
 import { useCallback, useState } from 'react';
 import { Checkbox } from '@/shared/components/Checkbox';
 import type { BinListSortOrder, SortFieldConfig, BinSortField } from '@/core/store/settings';
-import { SORT_FIELD_LABELS } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
+
+/**
+ * Maps sort fields to their translation keys.
+ * Reuses common.* keys where they already exist.
+ */
+const SORT_FIELD_KEYS: Record<BinSortField, string> = {
+  category: 'common.category',
+  layer: 'print.sort.field.layer',
+  position: 'print.sort.field.position',
+  size: 'common.size',
+  height: 'common.height',
+  label: 'common.label',
+};
 
 interface SortOrderConfigProps {
   sortOrder: BinListSortOrder;
@@ -78,7 +90,9 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
     <div className="sort-order-config">
       {/* Active sort summary */}
       {activeSortFields.length > 0 && (
-        <div className="text-xs text-content-tertiary mb-2">{t('print.sortingBy')}{activeSortFields.map((s) => SORT_FIELD_LABELS[s.field]).join(' → ')}
+        <div className="text-xs text-content-tertiary mb-2">
+          {t('print.sortingBy')}
+          {activeSortFields.map((s) => t(SORT_FIELD_KEYS[s.field])).join(' → ')}
         </div>
       )}
 
@@ -122,7 +136,7 @@ interface SortFieldItemProps {
   onDragOver: (e: React.DragEvent) => void;
   onDragEnd: () => void;
   onDragLeave: () => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string>) => string;
 }
 
 function SortFieldItem({
@@ -176,7 +190,7 @@ function SortFieldItem({
         onClick={onToggle}
         role="checkbox"
         aria-checked={config.enabled}
-        aria-label={`Toggle ${SORT_FIELD_LABELS[config.field]}`}
+        aria-label={t('print.sort.toggle', { field: t(SORT_FIELD_KEYS[config.field]) })}
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === ' ' || e.key === 'Enter') {
@@ -188,7 +202,7 @@ function SortFieldItem({
         <span
           className={`text-sm flex-1 ${config.enabled ? 'text-content' : 'text-content-secondary'}`}
         >
-          {SORT_FIELD_LABELS[config.field]}
+          {t(SORT_FIELD_KEYS[config.field])}
         </span>
         <Checkbox checked={config.enabled} variant="desktop" />
       </div>
@@ -208,7 +222,7 @@ function SortFieldItem({
           disabled={isFirst}
           className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title={t('print.sort.moveUp')}
-          aria-label={`Move ${SORT_FIELD_LABELS[config.field]} up`}
+          aria-label={t('print.sort.moveFieldUp', { field: t(SORT_FIELD_KEYS[config.field]) })}
         >
           <svg
             className="w-4 h-4"
@@ -226,7 +240,7 @@ function SortFieldItem({
           disabled={isLast}
           className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title={t('print.sort.moveDown')}
-          aria-label={`Move ${SORT_FIELD_LABELS[config.field]} down`}
+          aria-label={t('print.sort.moveFieldDown', { field: t(SORT_FIELD_KEYS[config.field]) })}
         >
           <svg
             className="w-4 h-4"

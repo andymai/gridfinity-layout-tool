@@ -78,18 +78,6 @@ export interface SortFieldConfig {
 export type BinListSortOrder = SortFieldConfig[];
 
 /**
- * Human-readable labels for sort fields.
- */
-export const SORT_FIELD_LABELS: Record<BinSortField, string> = {
-  category: 'Category',
-  layer: 'Layer',
-  position: 'Position',
-  size: 'Size',
-  height: 'Height',
-  label: 'Label',
-};
-
-/**
  * Default bin list sort order.
  */
 export const DEFAULT_BIN_LIST_SORT_ORDER: BinListSortOrder = [
