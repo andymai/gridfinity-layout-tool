@@ -46,10 +46,35 @@ export function SuggestionPopover({ anchorRef, isOpen, onClose }: SuggestionPopo
     const updatePosition = () => {
       const rect = anchorRef.current?.getBoundingClientRect();
       if (rect) {
-        setPosition({
-          top: rect.bottom + 8,
-          left: rect.left,
-        });
+        const popoverWidth = 288; // w-72 = 18rem = 288px
+        const popoverHeight = 200; // estimated height
+        const padding = 8;
+
+        // Calculate initial position
+        let top = rect.bottom + padding;
+        let left = rect.left;
+
+        // Check right boundary
+        if (left + popoverWidth > window.innerWidth - padding) {
+          left = window.innerWidth - popoverWidth - padding;
+        }
+
+        // Check left boundary
+        if (left < padding) {
+          left = padding;
+        }
+
+        // Check bottom boundary - flip to above if needed
+        if (top + popoverHeight > window.innerHeight - padding) {
+          top = rect.top - popoverHeight - padding;
+        }
+
+        // Ensure top is not negative
+        if (top < padding) {
+          top = padding;
+        }
+
+        setPosition({ top, left });
       }
     };
 
@@ -120,6 +145,7 @@ export function SuggestionPopover({ anchorRef, isOpen, onClose }: SuggestionPopo
     <div
       ref={popoverRef}
       role="dialog"
+      aria-modal="true"
       aria-label={t('nameSuggestion.title')}
       className="fixed z-50 w-72 bg-surface-elevated border border-stroke rounded-lg shadow-lg"
       style={{
@@ -188,7 +214,7 @@ export function SuggestionPopover({ anchorRef, isOpen, onClose }: SuggestionPopo
             <div className="mt-2 space-y-1">
               {alternatives.map((alt, index) => (
                 <button
-                  key={alt.name}
+                  key={`${alt.name}-${index}`}
                   onClick={() => handleAcceptAlternative(index)}
                   className="w-full text-left px-3 py-2 rounded text-sm text-content hover:bg-surface transition-colors"
                 >
