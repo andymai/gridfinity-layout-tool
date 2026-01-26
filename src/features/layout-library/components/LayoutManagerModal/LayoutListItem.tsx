@@ -15,6 +15,7 @@ interface LayoutListItemProps {
   onDelete: () => void;
   onCopyLink: () => void;
   onDownload: () => void;
+  onSuggestName?: () => void;
   onFocus: () => void;
   itemRef?: (el: HTMLDivElement | null) => void;
 }
@@ -34,6 +35,7 @@ export function LayoutListItem({
   onDelete,
   onCopyLink,
   onDownload,
+  onSuggestName,
   onFocus,
   itemRef,
 }: LayoutListItemProps) {
@@ -136,7 +138,9 @@ export function LayoutListItem({
                 <span
                   className="text-xs px-1.5 py-0.5 bg-accent text-on-dark rounded flex-shrink-0 font-medium"
                   aria-label={t('layouts.currentlyActiveLayout')}
-                >{t('layouts.active')}</span>
+                >
+                  {t('layouts.active')}
+                </span>
               )}
             </div>
           )}
@@ -147,13 +151,15 @@ export function LayoutListItem({
               {entry.preview.drawerWidth}×{entry.preview.drawerDepth}×{entry.preview.drawerHeight}
             </span>
             <span>{t('layouts.binCount', { count: entry.preview.binCount })}</span>
-            <span className="text-content-tertiary">{formatRelativeDate(entry.modifiedAt, false)}</span>
+            <span className="text-content-tertiary">
+              {formatRelativeDate(entry.modifiedAt, false)}
+            </span>
           </div>
 
           {/* Forked From */}
           {entry.forkedFrom && (
-            <div className="mt-0.5 text-xs text-content-tertiary">{t('layouts.forkedFrom')}{entry.forkedFrom.name}
-              {entry.forkedFrom.author && ` by ${entry.forkedFrom.author}`}
+            <div className="mt-0.5 text-xs text-content-tertiary">
+              {t('layouts.forkedFromName', { name: entry.forkedFrom.name })}
             </div>
           )}
         </div>
@@ -163,11 +169,13 @@ export function LayoutListItem({
           <LayoutActions
             entry={entry}
             isOnlyLayout={isOnlyLayout}
+            isActive={isActive}
             onCopyLink={onCopyLink}
             onDownload={onDownload}
             onRename={handleStartRename}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
+            onSuggestName={onSuggestName}
           />
         </div>
       </div>

@@ -827,6 +827,24 @@ input[type='range']:hover::-moz-range-thumb {
   animation: settleIn var(--transition-spring) forwards;
 }
 
+/* Name suggestion pulse animation */
+@keyframes suggestion-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+.animate-suggestion-pulse {
+  animation: suggestion-pulse 0.8s ease-out;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4);
+}
+
 /* Toast animation classes */
 .toast-enter-bottom {
   animation: toastEnterBottom 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;

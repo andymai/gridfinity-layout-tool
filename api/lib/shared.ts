@@ -85,6 +85,7 @@ export const ErrorCode = {
 
   // Server errors (5xx)
   SERVER_ERROR: 'SERVER_ERROR',
+  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
   CONFIGURATION_ERROR: 'CONFIGURATION_ERROR',
 
   // Network errors (client-side only, not returned by server)

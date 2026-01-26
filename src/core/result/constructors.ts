@@ -42,6 +42,7 @@ import type {
   ApiNotFoundError,
   ApiServerError,
   ApiNetworkError,
+  ApiTimeoutError,
   ApiValidationError,
   ApiContentBlockedError,
   ApiSizeLimitError,
@@ -435,6 +436,21 @@ export function apiNetworkError(cause?: unknown): ApiNetworkError {
     kind: 'ApiError',
     code: 'API_NETWORK_ERROR',
     message: getErrorInfo('API_NETWORK_ERROR').defaultMessage,
+    timestamp: Date.now(),
+    cause,
+  };
+}
+
+/**
+ * Create an API timeout error.
+ *
+ * @param cause - Original error that caused this
+ */
+export function apiTimeout(cause?: unknown): ApiTimeoutError {
+  return {
+    kind: 'ApiError',
+    code: 'API_TIMEOUT',
+    message: getErrorInfo('API_TIMEOUT').defaultMessage,
     timestamp: Date.now(),
     cause,
   };
