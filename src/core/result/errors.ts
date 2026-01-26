@@ -324,6 +324,14 @@ export interface ApiNetworkError extends AppError {
 }
 
 /**
+ * Error when API request times out.
+ */
+export interface ApiTimeoutError extends AppError {
+  readonly kind: 'ApiError';
+  readonly code: 'API_TIMEOUT';
+}
+
+/**
  * Error when API validation fails.
  */
 export interface ApiValidationError extends AppError {
@@ -396,6 +404,7 @@ export type ApiError =
   | ApiNotFoundError
   | ApiServerError
   | ApiNetworkError
+  | ApiTimeoutError
   | ApiValidationError
   | ApiContentBlockedError
   | ApiSizeLimitError

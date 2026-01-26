@@ -7,6 +7,7 @@ import type {
   CloudShareInfo,
   SharedWithMeEntry,
   SharePermission,
+  NameSuggestionState,
 } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { generateUUID, generateLayoutId } from '@/shared/utils';
@@ -78,6 +79,11 @@ interface LibraryState {
 
   setCloudShare: (layoutId: string, share: CloudShareInfo) => void;
   clearCloudShare: (layoutId: string) => void;
+
+  // Name suggestion state actions
+  setNameSuggestionDismissed: (layoutId: string, dismissed: boolean) => void;
+  clearNameSuggestionState: (layoutId: string) => void;
+  getNameSuggestionState: (layoutId: string) => NameSuggestionState | undefined;
 
   setShowLayoutManager: (show: boolean) => void;
 
@@ -240,6 +246,53 @@ export const useLibraryStore = create<LibraryState>()(
       } catch {
         // Storage full - state is updated in memory but won't persist on refresh
       }
+    },
+
+    // === Name suggestion state actions ===
+
+    setNameSuggestionDismissed: (layoutId, dismissed) => {
+      set((state) => {
+        const entry = state.library.entries.find((e) => e.id === layoutId);
+        if (entry) {
+          if (dismissed) {
+            // Set or increment dismiss state
+            entry.nameSuggestionState = {
+              dismissed: true,
+              dismissedAt: Date.now(),
+              dismissCount: (entry.nameSuggestionState?.dismissCount ?? 0) + 1,
+            };
+          } else {
+            // Clear dismiss state
+            entry.nameSuggestionState = undefined;
+          }
+        }
+      });
+      // Persist library immediately so dismiss state survives refresh
+      try {
+        saveLibrary(get().library);
+      } catch {
+        // Storage full - state is updated in memory but won't persist on refresh
+      }
+    },
+
+    clearNameSuggestionState: (layoutId) => {
+      set((state) => {
+        const entry = state.library.entries.find((e) => e.id === layoutId);
+        if (entry) {
+          entry.nameSuggestionState = undefined;
+        }
+      });
+      // Persist library immediately
+      try {
+        saveLibrary(get().library);
+      } catch {
+        // Storage full - state is updated in memory but won't persist on refresh
+      }
+    },
+
+    getNameSuggestionState: (layoutId) => {
+      const entry = get().library.entries.find((e) => e.id === layoutId);
+      return entry?.nameSuggestionState;
     },
 
     setShowLayoutManager: (show) => {

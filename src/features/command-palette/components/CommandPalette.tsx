@@ -315,6 +315,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return () => window.dispatchEvent(new CustomEvent('download-layout'));
         case 'copy-share-link':
           return () => window.dispatchEvent(new CustomEvent('open-share-modal'));
+
+        // Name suggestions
+        case 'suggest-layout-name':
+          return () => window.dispatchEvent(new CustomEvent('trigger-name-suggestions'));
         // Selection
         case 'select-all': {
           const layerBins = layout.bins.filter((b) => b.layerId === activeLayerId);

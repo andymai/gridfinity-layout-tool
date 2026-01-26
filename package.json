@@ -30,16 +30,17 @@
       "name": "Main bundle (gzip)",
       "path": "dist/assets/main-*.js",
       "gzip": true,
-      "limit": "165 kB"
+      "limit": "168 kB"
     },
     {
       "name": "Total JS (gzip)",
       "path": "dist/assets/*.js",
       "gzip": true,
-      "limit": "950 kB"
+      "limit": "965 kB"
     }
   ],
   "dependencies": {
+    "@ai-sdk/gateway": "^3.0.22",
     "@liveblocks/client": "^3.13.3",
     "@liveblocks/node": "^3.13.3",
     "@liveblocks/react": "^3.13.3",
@@ -47,7 +48,9 @@
     "@react-three/fiber": "^9.5.0",
     "@vercel/analytics": "^1.6.1",
     "@vercel/blob": "^2.0.0",
+    "@vercel/kv": "^3.0.0",
     "@vercel/speed-insights": "^1.3.1",
+    "ai": "^6.0.49",
     "cmdk": "^1.1.1",
     "fflate": "^0.8.2",
     "idb": "^8.0.3",
@@ -60,6 +63,7 @@
     "replicad": "^0.20.5",
     "replicad-opencascadejs": "^0.20.2",
     "three": "^0.182.0",
+    "zod": "^4.3.6",
     "zustand": "^5.0.9"
   },
   "lint-staged": {
