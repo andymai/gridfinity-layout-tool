@@ -13,6 +13,8 @@ import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { validateHalfBinModeToggle } from '@/utils/halfBinConstraints';
 import type { HalfBinConstraintViolation } from '@/utils/halfBinConstraints';
 import type { STLSearchSite, UserSettings } from '@/core/store/settings';
+import type { Category } from '@/core/types';
+import { useTranslation } from '@/i18n';
 
 /**
  * Return type for useDrawerSettings hook.
@@ -87,6 +89,13 @@ export interface UseDrawerSettingsReturn {
   showHalfBinBlockedModal: boolean;
   setShowHalfBinBlockedModal: (show: boolean) => void;
   halfBinViolation: HalfBinConstraintViolation | null;
+
+  // Category defaults
+  currentCategories: Category[];
+  hasCustomCategoryDefaults: boolean;
+  showSaveCategoriesConfirm: boolean;
+  setShowSaveCategoriesConfirm: (show: boolean) => void;
+  handleSaveCategoriesAsDefaults: () => void;
 }
 
 /**
@@ -122,10 +131,13 @@ export interface UseDrawerSettingsReturn {
  * ```
  */
 export function useDrawerSettings(): UseDrawerSettingsReturn {
+  const t = useTranslation();
+
   // Modal state
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
   const [showHalfBinBlockedModal, setShowHalfBinBlockedModal] = useState(false);
   const [halfBinViolation, setHalfBinViolation] = useState<HalfBinConstraintViolation | null>(null);
+  const [showSaveCategoriesConfirm, setShowSaveCategoriesConfirm] = useState(false);
 
   // Layout store selectors
   const {
@@ -165,9 +177,15 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const activeLayerId = useSelectionStore((state) => state.activeLayerId);
 
   // Settings store
-  const settings = useSettingsStore((state) => state.settings);
-  const saveCurrentAsDefaults = useSettingsStore((state) => state.saveCurrentAsDefaults);
-  const updateSetting = useSettingsStore((state) => state.updateSetting);
+  const { settings, saveCurrentAsDefaults, saveCategoriesAsDefaults, updateSetting } =
+    useSettingsStore(
+      useShallow((state) => ({
+        settings: state.settings,
+        saveCurrentAsDefaults: state.saveCurrentAsDefaults,
+        saveCategoriesAsDefaults: state.saveCategoriesAsDefaults,
+        updateSetting: state.updateSetting,
+      }))
+    );
 
   // Toast store
   const addToast = useToastStore((state) => state.addToast);
@@ -186,6 +204,10 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     [layers, activeLayerId]
   );
   const activeLayerHeight = activeLayer?.height ?? 3;
+
+  // Get current categories from layout (for save as defaults)
+  const currentCategories = useLayoutStore((state) => state.layout.categories);
+  const hasCustomCategoryDefaults = settings.defaultCategories !== null;
 
   // Computed values
   const hasFractionalWidth = drawerWidth % 1 !== 0;
@@ -320,6 +342,13 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     activeLayerHeight,
   ]);
 
+  // Save current categories as defaults
+  const handleSaveCategoriesAsDefaults = useCallback(() => {
+    saveCategoriesAsDefaults(currentCategories);
+    setShowSaveCategoriesConfirm(false);
+    addToast(t('toast.categoriesSavedAsDefaults'), 'success');
+  }, [saveCategoriesAsDefaults, currentCategories, addToast, t]);
+
   // STL search site toggle
   const toggleSTLSite = useCallback(
     (siteId: string) => {
@@ -384,5 +413,12 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     showHalfBinBlockedModal,
     setShowHalfBinBlockedModal,
     halfBinViolation,
+
+    // Category defaults
+    currentCategories,
+    hasCustomCategoryDefaults,
+    showSaveCategoriesConfirm,
+    setShowSaveCategoriesConfirm,
+    handleSaveCategoriesAsDefaults,
   };
 }

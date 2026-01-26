@@ -369,6 +369,8 @@ const en: Record<string, string> = {
   'categories.clickOutsideToClose': 'Click outside to close',
   'categories.editCategoryAria': 'Edit {name}',
   'categories.deleteCategoryAria': 'Delete {name}',
+  'categories.saveAsDefaults': 'Save as defaults',
+  'categories.saveAsDefaultsTitle': 'Save current categories as defaults for new layouts',
 
   // ===========================================================================
   // Staging / Stash
@@ -638,6 +640,18 @@ const en: Record<string, string> = {
   'settings.experimental': 'Experimental',
   'settings.drawerDimensions': 'Drawer Dimensions',
   'settings.gridSettings': 'Grid Settings',
+
+  // Default Categories
+  'settings.defaultCategories': 'Default Categories',
+  'settings.defaultCategoriesHint': 'Categories used when creating new layouts:',
+  'settings.usingBuiltInCategories': 'Using built-in defaults ({count})',
+  'settings.usingCustomCategories': 'Using custom defaults ({count})',
+  'settings.saveCategoriesAsDefaults': 'Save Current Categories as Defaults',
+  'settings.resetToBuiltIn': 'Reset to built-in',
+  'settings.confirmSaveCategories.title': 'Save Categories as Defaults',
+  'settings.confirmSaveCategories.message':
+    'Save these {count} categories as defaults for new layouts?',
+  'settings.confirmSaveCategories.confirm': 'Save',
 
   // ===========================================================================
   // Help
@@ -932,6 +946,8 @@ const en: Record<string, string> = {
   'toast.restoredFromStaging': 'Restored {count} bin(s) from stash',
   'toast.selectionInverted': 'Inverted selection ({count} bin(s))',
   'toast.selectedByCategory': 'Selected {count} {name} bin(s)',
+  'toast.categoriesSavedAsDefaults': 'Categories saved as defaults',
+  'toast.categoriesResetToBuiltIn': 'Reset to built-in categories',
 
   // ===========================================================================
   // Grid Editor

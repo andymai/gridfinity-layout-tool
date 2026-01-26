@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
+import { useLayoutStore, useUIStore, useUndoableAction, useSettingsStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -35,6 +35,7 @@ export function CategoriesPanel() {
   const [colorPickerId, setColorPickerId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
+  const [showSaveCategoriesConfirm, setShowSaveCategoriesConfirm] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const editingRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +57,7 @@ export function CategoriesPanel() {
       }))
     );
 
+  const saveCategoriesAsDefaults = useSettingsStore((state) => state.saveCategoriesAsDefaults);
   const addToast = useToastStore((state) => state.addToast);
   const { execute } = useUndoableAction();
 
@@ -211,27 +213,48 @@ export function CategoriesPanel() {
 
   const canAddCategory = categories.length < CONSTRAINTS.CATEGORIES_MAX;
 
-  const addCategoryButton = (
-    <button
-      onClick={handleAddCategory}
-      disabled={!canAddCategory}
-      className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
-      title={t('categories.addCategory')}
-      aria-label={t('categories.addCategory')}
-    >
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-      </svg>
-    </button>
+  const handleSaveCategoriesAsDefaults = () => {
+    saveCategoriesAsDefaults(categories);
+    setShowSaveCategoriesConfirm(false);
+    addToast(t('toast.categoriesSavedAsDefaults'), 'success');
+  };
+
+  const actionButtons = (
+    <div className="flex items-center gap-1">
+      <button
+        onClick={() => setShowSaveCategoriesConfirm(true)}
+        className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+        title={t('categories.saveAsDefaultsTitle')}
+        aria-label={t('categories.saveAsDefaults')}
+      >
+        {/* Pin icon */}
+        <svg
+          className="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path d="M12 17v5M9 3h6v2l-1 1v4l3 3v2H7v-2l3-3V6L9 5V3z" />
+        </svg>
+      </button>
+      <button
+        onClick={handleAddCategory}
+        disabled={!canAddCategory}
+        className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+        title={t('categories.addCategory')}
+        aria-label={t('categories.addCategory')}
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
+    </div>
   );
 
   return (
     <div>
-      <CollapsibleSection
-        title={t('categories.title')}
-        variant="default"
-        actions={addCategoryButton}
-      >
+      <CollapsibleSection title={t('categories.title')} variant="default" actions={actionButtons}>
         <div className="space-y-1">
           {categories.map((category) => {
             const isActive = category.id === activeCategoryId;
@@ -477,6 +500,15 @@ export function CategoriesPanel() {
         destructive
         onConfirm={confirmDeleteCategory}
         onCancel={() => setDeleteConfirm(null)}
+      />
+
+      <ConfirmDialog
+        isOpen={showSaveCategoriesConfirm}
+        title={t('settings.confirmSaveCategories.title')}
+        message={`${t('settings.confirmSaveCategories.message', { count: categories.length })}\n\n${categories.map((c) => c.name).join(', ')}`}
+        confirmText={t('settings.confirmSaveCategories.confirm')}
+        onConfirm={handleSaveCategoriesAsDefaults}
+        onCancel={() => setShowSaveCategoriesConfirm(false)}
       />
     </div>
   );
