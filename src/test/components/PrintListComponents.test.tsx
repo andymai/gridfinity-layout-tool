@@ -16,31 +16,32 @@ describe('PrintListSummary', () => {
   };
 
   describe('desktop layout', () => {
-    it('renders total bins', () => {
+    it('renders bins count with pieces when splits exist', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText('Print List')).toBeInTheDocument();
-      expect(screen.getByText('10 bin(s) total, 15 piece(s)')).toBeInTheDocument();
+      expect(screen.getByText('10 bins')).toBeInTheDocument();
+      // Pieces text is nested in a child span, use regex to find it
+      expect(screen.getByText(/15 pcs/)).toBeInTheDocument();
     });
 
     it('shows filament amount', () => {
       render(<PrintListSummary {...defaultProps} />);
 
       expect(screen.getByText('~25.5m filament')).toBeInTheDocument();
-      expect(screen.getByText('25.5m')).toBeInTheDocument();
     });
 
     it('shows estimated cost', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText('~$1.94')).toBeInTheDocument();
+      expect(screen.getByText('Cost')).toBeInTheDocument();
       expect(screen.getByText('$1.94')).toBeInTheDocument();
     });
 
     it('shows print time', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText(/~8h 30m print time/)).toBeInTheDocument();
+      expect(screen.getByText('Time')).toBeInTheDocument();
+      expect(screen.getByText('~8h 30m')).toBeInTheDocument();
     });
 
     it('shows spool percentage', () => {
@@ -59,8 +60,8 @@ describe('PrintListSummary', () => {
     it('hides pieces when no splits', () => {
       render(<PrintListSummary {...defaultProps} hasAnySplits={false} />);
 
-      expect(screen.getByText('10 bin(s) total')).toBeInTheDocument();
-      expect(screen.queryByText(/piece\(s\)/)).not.toBeInTheDocument();
+      expect(screen.getByText('10 bins')).toBeInTheDocument();
+      expect(screen.queryByText('pcs')).not.toBeInTheDocument();
     });
 
     it('has tooltips on metrics', () => {
@@ -74,27 +75,30 @@ describe('PrintListSummary', () => {
   });
 
   describe('compact mode', () => {
-    it('renders compact layout', () => {
+    it('renders compact layout with bins and pieces', () => {
       render(<PrintListSummary {...defaultProps} compact={true} />);
 
-      expect(screen.getByText('Total')).toBeInTheDocument();
-      expect(screen.getByText('10 bins & 15 pieces')).toBeInTheDocument();
+      expect(screen.getByText('10 bins')).toBeInTheDocument();
+      // Pieces text is nested in a child span, use regex to find it
+      expect(screen.getByText(/15 pcs/)).toBeInTheDocument();
     });
 
-    it('shows all metrics in compact layout', () => {
+    it('shows metrics in compact layout', () => {
       render(<PrintListSummary {...defaultProps} compact={true} />);
 
-      expect(screen.getByText('Filament')).toBeInTheDocument();
-      expect(screen.getByText('Cost')).toBeInTheDocument();
-      expect(screen.getByText('Time')).toBeInTheDocument();
-      expect(screen.getByText('Spool')).toBeInTheDocument();
+      // Compact mode shows values with minimal labels
+      expect(screen.getByText('~8h 30m')).toBeInTheDocument();
+      expect(screen.getByText('$1.94')).toBeInTheDocument();
+      expect(screen.getByText('~25.5m filament')).toBeInTheDocument();
+      expect(screen.getByText('Spool:')).toBeInTheDocument();
     });
 
-    it('uses abbreviated labels', () => {
-      render(<PrintListSummary {...defaultProps} compact={true} />);
+    it('shows spool progress bar in compact mode', () => {
+      const { container } = render(<PrintListSummary {...defaultProps} compact={true} />);
 
-      // Compact mode uses "Cost" instead of "Est. Cost"
-      expect(screen.getByText('Cost')).toBeInTheDocument();
+      const progressBar = container.querySelector('[role="progressbar"]');
+      expect(progressBar).toBeInTheDocument();
+      expect(progressBar).toHaveAttribute('aria-valuenow', '7.7');
     });
   });
 });

@@ -416,6 +416,7 @@ const en: Record<string, string> = {
   'print.summary.totalBins': '{count} bin(s) total',
   'print.summary.uniqueSizes': '{count} unique size(s)',
   'print.summary.pieces': '{count} piece(s)',
+  'print.summary.piecesShort': '{count} pcs',
   'print.summary.filament': '~{meters}m filament',
   'print.summary.filamentTooltip': 'Estimated 1.75mm PLA usage based on bin dimensions',
   'print.summary.cost': '~{cost}',

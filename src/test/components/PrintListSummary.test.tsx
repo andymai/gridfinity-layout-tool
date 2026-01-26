@@ -17,39 +17,37 @@ describe('PrintListSummary', () => {
     it('displays total bins count', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText(/10 bin\(s\) total/)).toBeInTheDocument();
+      expect(screen.getByText(/10 bins/)).toBeInTheDocument();
     });
 
     it('displays pieces count when hasAnySplits is true', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText(/15 piece\(s\)/)).toBeInTheDocument();
+      expect(screen.getByText(/15 pcs/)).toBeInTheDocument();
     });
 
     it('hides pieces count when hasAnySplits is false', () => {
       render(<PrintListSummary {...defaultProps} hasAnySplits={false} />);
 
-      expect(screen.queryByText(/pieces/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/pcs/)).not.toBeInTheDocument();
     });
 
     it('displays filament usage', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      expect(screen.getByText('25m')).toBeInTheDocument();
+      expect(screen.getByText(/~25m filament/)).toBeInTheDocument();
     });
 
     it('displays estimated cost', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      // formatCost formats as currency
       expect(screen.getByText('$3.75')).toBeInTheDocument();
     });
 
     it('displays print time', () => {
       render(<PrintListSummary {...defaultProps} />);
 
-      // formatPrintTime should format hours, appears twice (once in label, once as value)
-      expect(screen.getAllByText(/~8.*h/)[0]).toBeInTheDocument();
+      expect(screen.getByText(/~8h 30m/)).toBeInTheDocument();
     });
 
     it('displays spool percentage when under 100%', () => {
@@ -73,22 +71,41 @@ describe('PrintListSummary', () => {
       const costRow = container.querySelector('[title*="$15/kg"]');
       expect(costRow).toBeInTheDocument();
     });
+
+    it('renders progress bar for spool under 100%', () => {
+      render(<PrintListSummary {...defaultProps} />);
+
+      const progressBar = screen.getByRole('progressbar');
+      expect(progressBar).toBeInTheDocument();
+      expect(progressBar).toHaveAttribute('aria-valuenow', '45');
+    });
+
+    it('hides progress bar when spool over 100%', () => {
+      render(<PrintListSummary {...defaultProps} spoolPercentage={150} />);
+
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    });
   });
 
   describe('compact (mobile) layout', () => {
     it('displays bins and pieces in compact format', () => {
       render(<PrintListSummary {...defaultProps} compact />);
 
-      expect(screen.getByText('10 bins & 15 pieces')).toBeInTheDocument();
+      expect(screen.getByText(/10 bins/)).toBeInTheDocument();
+      expect(screen.getByText(/15 pcs/)).toBeInTheDocument();
     });
 
-    it('displays all stats in grid', () => {
+    it('displays primary stats prominently', () => {
       render(<PrintListSummary {...defaultProps} compact />);
 
-      expect(screen.getByText('Filament')).toBeInTheDocument();
-      expect(screen.getByText('Cost')).toBeInTheDocument();
-      expect(screen.getByText('Time')).toBeInTheDocument();
-      expect(screen.getByText('Spool')).toBeInTheDocument();
+      expect(screen.getByText(/~8h 30m/)).toBeInTheDocument();
+      expect(screen.getByText('$3.75')).toBeInTheDocument();
+    });
+
+    it('displays filament in short format', () => {
+      render(<PrintListSummary {...defaultProps} compact />);
+
+      expect(screen.getByText(/~25m/)).toBeInTheDocument();
     });
   });
 
@@ -106,14 +123,15 @@ describe('PrintListSummary', () => {
         />
       );
 
-      expect(screen.getByText(/0 bin\(s\) total/)).toBeInTheDocument();
-      expect(screen.getByText('0m')).toBeInTheDocument();
+      expect(screen.getByText(/0 bins/)).toBeInTheDocument();
+      expect(screen.getByText(/~0m filament/)).toBeInTheDocument();
+      expect(screen.getByText('$0.00')).toBeInTheDocument();
     });
 
     it('handles exactly 100% spool usage', () => {
       render(<PrintListSummary {...defaultProps} spoolPercentage={100} />);
 
-      expect(screen.getByText('1 spools')).toBeInTheDocument();
+      expect(screen.getByText('1 spool')).toBeInTheDocument();
     });
 
     it('handles fractional spool percentages', () => {
