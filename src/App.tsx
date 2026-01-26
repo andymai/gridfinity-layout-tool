@@ -19,7 +19,7 @@ import {
 import { useAutoSave, useResponsive, useCrossTabSync, usePWAUpdate } from './shared/hooks';
 import { useCollabMode } from './hooks/useCollabMode';
 import { useOwnedShareSync } from './features/cloud-share/hooks/useOwnedShareSync';
-import { initializeLayoutLibrary, loadSharedWithMe, downloadLayoutAsFile } from './core/storage';
+import { initializeLayoutLibrary, loadSharedWithMe, downloadLayoutAsFile } from '@/core/storage';
 import { lazyWithRetry, namedExport } from './utils/lazyWithRetry';
 import { Grid } from './features/grid-editor';
 import { Sidebar } from './components/Sidebar';
