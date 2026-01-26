@@ -119,7 +119,9 @@ export function RightPanel() {
         }`}
       >
         {collapseButton}
-        <h2 className="text-xs font-semibold text-content-tertiary uppercase tracking-wider">{t('rightPanel.inspector')}</h2>
+        <h2 className="text-xs font-semibold text-content-tertiary uppercase tracking-wider">
+          {t('rightPanel.inspector')}
+        </h2>
       </div>
 
       {/* Scrollable content area */}
@@ -131,7 +133,13 @@ export function RightPanel() {
         {/* Selection Panel - Collapsible */}
         <div className="px-4 py-3 border-b border-stroke-subtle">
           <CollapsibleSection
-            title={isMultiSelect ? t('rightPanel.multiSelection') : bin ? t('rightPanel.binProperties') : t('rightPanel.selection')}
+            title={
+              isMultiSelect
+                ? t('rightPanel.multiSelection')
+                : bin
+                  ? t('rightPanel.binProperties')
+                  : t('rightPanel.selection')
+            }
             variant="default"
           >
             {isMultiSelect ? (
@@ -201,7 +209,10 @@ export function RightPanel() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const tsv = exportPrintListTSV(printList.rows);
+                    const tsv = exportPrintListTSV(printList.rows, {
+                      gridUnitMm: layout.gridUnitMm,
+                      categories: layout.categories,
+                    });
                     navigator.clipboard.writeText(tsv);
                     setCopyFeedback(true);
                     trackLayoutSnapshot(useLayoutStore.getState().layout, 'export_tsv');
@@ -250,7 +261,9 @@ export function RightPanel() {
                 <table className="w-full text-sm">
                   <thead className="bg-surface-elevated">
                     <tr>
-                      <th className="pl-4 pr-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated">{t('common.size')}</th>
+                      <th className="pl-4 pr-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated">
+                        {t('common.size')}
+                      </th>
                       <th
                         className="px-2 py-2 text-left font-medium sticky top-0 text-content-secondary bg-surface-elevated"
                         title={t('common.height')}
@@ -326,7 +339,9 @@ export function RightPanel() {
                                     })}
                                     {(row.categoryIds ?? []).length > 3 && (
                                       <span className="text-[9px] text-content-disabled">
-                                        {t('rightPanel.moreCategories', { count: (row.categoryIds ?? []).length - 3 })}
+                                        {t('rightPanel.moreCategories', {
+                                          count: (row.categoryIds ?? []).length - 3,
+                                        })}
                                       </span>
                                     )}
                                   </span>
@@ -382,7 +397,9 @@ export function RightPanel() {
                                     {row.customProperties &&
                                       Object.keys(row.customProperties).length > 0 && (
                                         <span
-                                          title={t('rightPanel.customPropertiesCount', { count: Object.keys(row.customProperties).length })}
+                                          title={t('rightPanel.customPropertiesCount', {
+                                            count: Object.keys(row.customProperties).length,
+                                          })}
                                         >
                                           <svg
                                             className="w-3 h-3 flex-shrink-0 text-content-disabled"
@@ -424,7 +441,11 @@ export function RightPanel() {
                                 <div className="flex items-start gap-4">
                                   <SplitPreview width={w} depth={d} pieces={row.pieces} />
                                   <div className="text-xs text-content-secondary">
-                                    <div className="font-medium mb-1">{t('rightPanel.splitInto')}{row.totalPieces}{t('rightPanel.pieces')}</div>
+                                    <div className="font-medium mb-1">
+                                      {t('rightPanel.splitInto')}
+                                      {row.totalPieces}
+                                      {t('rightPanel.pieces')}
+                                    </div>
                                     {row.pieces.map((piece) => (
                                       <div
                                         key={`${piece.width}x${piece.depth}`}
