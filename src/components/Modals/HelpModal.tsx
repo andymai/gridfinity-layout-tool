@@ -94,6 +94,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     nameKey: 'help.category.general',
     icon: <CommandIcon />,
     shortcuts: [
+      { keys: 'K', descriptionKey: 'help.shortcut.commandPalette', modifier: true },
       { keys: formatKey(SHORTCUTS.UNDO), descriptionKey: 'help.shortcut.undo', modifier: true },
       { keys: formatKey(SHORTCUTS.REDO), descriptionKey: 'help.shortcut.redo', modifier: true },
       { keys: formatKey(SHORTCUTS.HELP), descriptionKey: 'help.shortcut.showHelp' },
@@ -107,7 +108,10 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     shortcuts: [
       { keys: 'D', descriptionKey: 'help.shortcut.duplicate', modifier: true },
       { keys: formatKey(SHORTCUTS.DELETE), descriptionKey: 'help.shortcut.delete' },
-      { keys: formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase(), descriptionKey: 'help.shortcut.quickLabel' },
+      {
+        keys: formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase(),
+        descriptionKey: 'help.shortcut.quickLabel',
+      },
       { keys: 'Arrow keys', descriptionKey: 'help.shortcut.nudge' },
     ],
   },
@@ -116,10 +120,22 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     nameKey: 'help.category.navigation',
     icon: <NavigationIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.LAYER_UP).toUpperCase(), descriptionKey: 'help.shortcut.layerUp' },
-      { keys: formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase(), descriptionKey: 'help.shortcut.layerDown' },
-      { keys: formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase(), descriptionKey: 'help.shortcut.prevBin' },
-      { keys: formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase(), descriptionKey: 'help.shortcut.nextBin' },
+      {
+        keys: formatKey(SHORTCUTS.LAYER_UP).toUpperCase(),
+        descriptionKey: 'help.shortcut.layerUp',
+      },
+      {
+        keys: formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase(),
+        descriptionKey: 'help.shortcut.layerDown',
+      },
+      {
+        keys: formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase(),
+        descriptionKey: 'help.shortcut.prevBin',
+      },
+      {
+        keys: formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase(),
+        descriptionKey: 'help.shortcut.nextBin',
+      },
       {
         keys: `${formatKey(SHORTCUTS.CATEGORY_PREV)} / ${formatKey(SHORTCUTS.CATEGORY_NEXT)}`,
         descriptionKey: 'help.shortcut.cycleCategory',
@@ -141,7 +157,10 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     nameKey: 'help.category.preview3d',
     icon: <CubeIcon />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.PREVIEW_TOGGLE).toUpperCase(), descriptionKey: 'help.shortcut.togglePreview' },
+      {
+        keys: formatKey(SHORTCUTS.PREVIEW_TOGGLE).toUpperCase(),
+        descriptionKey: 'help.shortcut.togglePreview',
+      },
       { keys: 'Space', descriptionKey: 'help.shortcut.expandPreview' },
       { keys: '1', descriptionKey: 'help.shortcut.isometricView' },
       { keys: '2', descriptionKey: 'help.shortcut.frontView' },
@@ -251,7 +270,9 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   ? 'bg-accent/20 text-accent'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
-            >{t('help.shortcuts')}</button>
+            >
+              {t('help.shortcuts')}
+            </button>
             <button
               onClick={() => setActiveTab('tips')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
@@ -259,7 +280,9 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   ? 'bg-accent/20 text-accent'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
-            >{t('help.tipsInfo')}</button>
+            >
+              {t('help.tipsInfo')}
+            </button>
           </div>
 
           {activeTab === 'shortcuts' && (
@@ -310,8 +333,44 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
         <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
           {activeTab === 'shortcuts' ? (
             <div className="space-y-6">
+              {/* Command palette tip */}
+              {!searchQuery && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/10 border border-accent/20">
+                  <div className="shrink-0 w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-accent"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-content">{t('help.commandPaletteTip')}</p>
+                  </div>
+                  <div className="shrink-0 flex items-center gap-1">
+                    <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
+                      {modifierKey}
+                    </kbd>
+                    {/* eslint-disable-next-line i18next/no-literal-string -- universal symbol */}
+                    <span className="text-content-tertiary text-xs">+</span>
+                    <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
+                      K
+                    </kbd>
+                  </div>
+                </div>
+              )}
+
               {filteredCategories.length === 0 ? (
-                <div className="text-center py-8 text-content-tertiary">{t('help.noShortcutsFoundFor', { query: searchQuery })}</div>
+                <div className="text-center py-8 text-content-tertiary">
+                  {t('help.noShortcutsFoundFor', { query: searchQuery })}
+                </div>
               ) : (
                 filteredCategories.map((category) => (
                   <ShortcutCategorySection
@@ -489,7 +548,9 @@ function TipsSection() {
 
   return (
     <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>{t('help.tips')}</h3>
+      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
+        {t('help.tips')}
+      </h3>
       <ul className="space-y-2 p-4 rounded-lg" style={STYLES.tipsList}>
         {tips.map((tip, index) => (
           <li key={index} className="flex items-start gap-2">
@@ -507,7 +568,9 @@ function BlockedZonesSection() {
   const t = useTranslation();
   return (
     <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>{t('help.blockedZones')}</h3>
+      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
+        {t('help.blockedZones')}
+      </h3>
       <div className="p-4 rounded-lg" style={STYLES.blockedZonesContent}>
         <p className="mb-3">
           <strong style={STYLES.textPrimary}>{t('help.whatAreBlockedZones')}</strong>
@@ -517,9 +580,9 @@ function BlockedZonesSection() {
           appear as striped cells and cannot have new bins placed on them.
         </p>
         <p>
-          <strong style={STYLES.textPrimary}>{t('help.example')}</strong> A 5u tall bin on Layer 1 (3u) extends
-          2u into Layer 2. Those cells on Layer 2 are blocked because the physical bin occupies that
-          space.
+          <strong style={STYLES.textPrimary}>{t('help.example')}</strong> A 5u tall bin on Layer 1
+          (3u) extends 2u into Layer 2. Those cells on Layer 2 are blocked because the physical bin
+          occupies that space.
         </p>
       </div>
     </section>
@@ -531,7 +594,9 @@ function BinClearanceSection() {
   const t = useTranslation();
   return (
     <section>
-      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>{t('help.binClearance')}</h3>
+      <h3 className="mb-4" style={{ ...STYLES.sectionHeader, fontSize: 'var(--text-lg)' }}>
+        {t('help.binClearance')}
+      </h3>
       <div className="p-4 rounded-lg" style={STYLES.blockedZonesContent}>
         <p className="mb-3">
           <strong style={STYLES.textPrimary}>{t('help.whatIsClearance')}</strong>
@@ -542,8 +607,8 @@ function BinClearanceSection() {
           height.
         </p>
         <p className="mb-3">
-          <strong style={STYLES.textPrimary}>{t('help.example')}</strong> A 2u tall bin with 1u clearance will
-          block 3u total of vertical space, but only prints as a 2u bin.
+          <strong style={STYLES.textPrimary}>{t('help.example')}</strong> A 2u tall bin with 1u
+          clearance will block 3u total of vertical space, but only prints as a 2u bin.
         </p>
         <p>
           Set clearance in the bin inspector (right panel) when you have multiple layers. The 3D

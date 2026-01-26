@@ -626,6 +626,7 @@ const en: Record<string, string> = {
   // ===========================================================================
   'help.title': 'Keyboard Shortcuts',
   'help.searchPlaceholder': 'Search shortcuts...',
+  'help.commandPaletteTip': 'Quick tip: Use the command palette for fast access to all actions',
   'help.binClearance': 'Bin clearance',
   'help.blockedZones': 'Blocked zones',
   'help.clearSearch': 'Clear search',
@@ -648,6 +649,7 @@ const en: Record<string, string> = {
   'help.category.advanced': 'Advanced',
 
   // Shortcut descriptions
+  'help.shortcut.commandPalette': 'Open command palette',
   'help.shortcut.undo': 'Undo',
   'help.shortcut.redo': 'Redo',
   'help.shortcut.showHelp': 'Show this help',
