@@ -141,27 +141,6 @@ test.describe('3D Preview', () => {
     }
   });
 
-  test('3D preview camera can be rotated with keyboard', async ({ page }) => {
-    // Show 3D preview via button
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
-    await toggleButton.click();
-
-    await waitForCanvas(page);
-    const canvas = page.locator('canvas');
-
-    // Press number keys to change camera preset (1-6)
-    // These should change the camera angle
-    await page.keyboard.press('1');
-
-    // Canvas should still be visible (camera changed but view persists)
-    await expect(canvas.first()).toBeVisible();
-
-    // Try another preset
-    await page.keyboard.press('2');
-
-    await expect(canvas.first()).toBeVisible();
-  });
-
   test('3D preview handles empty drawer', async ({ page }) => {
     // Enable 3D preview with no bins (empty drawer) via button
     const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();

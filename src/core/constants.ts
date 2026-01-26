@@ -260,11 +260,6 @@ export const SHORTCUTS = {
   // 3D Preview shortcuts
   PREVIEW_TOGGLE: 'v',
   PREVIEW_EXPAND: 'Space',
-  // Camera preset shortcuts
-  PRESET_ISOMETRIC: '1',
-  PRESET_TOP: '2',
-  PRESET_FRONT: '3',
-  PRESET_SIDE: '4',
   // Half-bin mode
   HALF_BIN_TOGGLE: 'h',
   // Layout management

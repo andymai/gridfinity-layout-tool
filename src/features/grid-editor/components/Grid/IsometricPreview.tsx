@@ -102,26 +102,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     setPreviewExpanded,
   });
 
-  // Listen for command palette camera preset events
-  useEffect(() => {
-    const handleCameraPreset = (e: CustomEvent<string>) => {
-      const commandId = e.detail;
-      // Map command IDs to preset names
-      const presetMap: Record<string, 'isometric' | 'front' | 'side'> = {
-        'camera-isometric': 'isometric',
-        'camera-front': 'front',
-        'camera-side': 'side',
-      };
-      const preset = presetMap[commandId];
-      if (preset && sceneRef.current) {
-        sceneRef.current.setPreset(preset);
-      }
-    };
-    window.addEventListener('preview-camera-preset', handleCameraPreset as EventListener);
-    return () =>
-      window.removeEventListener('preview-camera-preset', handleCameraPreset as EventListener);
-  }, []);
-
   // Handle backdrop click
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {

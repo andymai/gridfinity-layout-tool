@@ -192,134 +192,6 @@ describe('use3DPreviewKeyboard', () => {
     });
   });
 
-  describe('1-3 keys - camera presets', () => {
-    it('sets isometric preset on 1 key', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
-
-      act(() => {
-        const event = pressKey('1');
-        expect(event.defaultPrevented).toBe(true);
-      });
-
-      expect(mockSetPreset).toHaveBeenCalledWith('isometric');
-    });
-
-    it('sets front preset on 2 key', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
-
-      act(() => {
-        const event = pressKey('2');
-        expect(event.defaultPrevented).toBe(true);
-      });
-
-      expect(mockSetPreset).toHaveBeenCalledWith('front');
-    });
-
-    it('sets side preset on 3 key', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
-
-      act(() => {
-        const event = pressKey('3');
-        expect(event.defaultPrevented).toBe(true);
-      });
-
-      expect(mockSetPreset).toHaveBeenCalledWith('side');
-    });
-
-    it('does not handle 4 key (no top preset)', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
-
-      act(() => {
-        const event = pressKey('4');
-        // Key 4 is not handled, so default is not prevented
-        expect(event.defaultPrevented).toBe(false);
-      });
-
-      // No preset should be set for key 4
-      expect(mockSetPreset).not.toHaveBeenCalled();
-    });
-
-    it('does not set presets when preview is hidden', () => {
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: mockSceneRef,
-          isPreviewVisible: false,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
-
-      act(() => {
-        pressKey('1');
-        pressKey('2');
-        pressKey('3');
-        pressKey('4');
-      });
-
-      expect(mockSetPreset).not.toHaveBeenCalled();
-    });
-
-    it('handles null scene ref gracefully for presets', () => {
-      const nullSceneRef = { current: null };
-
-      renderHook(() =>
-        use3DPreviewKeyboard({
-          sceneRef: nullSceneRef,
-          isPreviewVisible: true,
-          isPreviewExpanded: false,
-          togglePreviewVisibility: mockTogglePreviewVisibility,
-          togglePreviewExpanded: mockTogglePreviewExpanded,
-          setPreviewExpanded: mockSetPreviewExpanded,
-        })
-      );
-
-      act(() => {
-        pressKey('1');
-      });
-
-      // Should not throw error
-      expect(mockSetPreset).not.toHaveBeenCalled();
-    });
-  });
-
   describe('input field detection', () => {
     it('does not handle shortcuts when typing in INPUT element', () => {
       renderHook(() =>
@@ -477,21 +349,23 @@ describe('use3DPreviewKeyboard', () => {
         { initialProps: { visible: true } }
       );
 
+      // When visible, Space should toggle expanded
       act(() => {
-        pressKey('1');
+        pressKey(' ');
       });
 
-      expect(mockSetPreset).toHaveBeenCalledTimes(1);
+      expect(mockTogglePreviewExpanded).toHaveBeenCalledTimes(1);
 
-      mockSetPreset.mockClear();
+      mockTogglePreviewExpanded.mockClear();
 
+      // After rerender with hidden, Space should not toggle expanded
       rerender({ visible: false });
 
       act(() => {
-        pressKey('1');
+        pressKey(' ');
       });
 
-      expect(mockSetPreset).not.toHaveBeenCalled();
+      expect(mockTogglePreviewExpanded).not.toHaveBeenCalled();
     });
   });
 });

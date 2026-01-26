@@ -219,14 +219,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           return () => toggleIsometricPreview();
         case 'expand-preview':
           return showIsometricPreview ? () => togglePreviewExpanded() : null;
-        case 'camera-isometric':
-        case 'camera-top':
-        case 'camera-front':
-        case 'camera-side':
-          // Dispatch event for preview controls to handle
-          return showIsometricPreview
-            ? () => window.dispatchEvent(new CustomEvent('preview-camera-preset', { detail: id }))
-            : null;
 
         // Bins
         case 'prev-bin':
@@ -499,10 +491,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       'clear-layer': hasLayerBins ? 1.5 : 0.3,
 
       // 3D preview commands - boost when preview visible
-      'camera-isometric': showIsometricPreview ? 2.0 : 0.3,
-      'camera-top': showIsometricPreview ? 2.0 : 0.3,
-      'camera-front': showIsometricPreview ? 2.0 : 0.3,
-      'camera-side': showIsometricPreview ? 2.0 : 0.3,
       'expand-preview': showIsometricPreview ? 1.8 : 0.3,
       'toggle-preview': showIsometricPreview ? 1.0 : 1.5,
 
