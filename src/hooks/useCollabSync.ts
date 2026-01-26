@@ -161,7 +161,9 @@ export function useCollabSync(): void {
     updateRemoteLayout(localLayout);
   }, [localLayout, lastEditSource, updateRemoteLayout]);
 
-  // Cleanup effect: clear pending timeout on unmount
+  // Cleanup effect: clear pending timeout on unmount only
+  // Using empty deps [] ensures this only runs on unmount, not on re-renders
+  // This is intentional - we don't want to cancel the init timeout when deps change
   useEffect(() => {
     return () => {
       if (initTimeoutRef.current) {

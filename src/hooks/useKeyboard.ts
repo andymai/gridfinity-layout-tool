@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { useShallow } from 'zustand/shallow';
 import {
   useLayoutStore,
   useHistoryStore,
@@ -66,23 +67,44 @@ function isShortcut(key: string, shortcuts: readonly string[]): boolean {
 export function useKeyboard() {
   const t = useTranslation();
 
-  // Selection store
-  const selectedBinIds = useSelectionStore((state) => state.selectedBinIds);
-  const focusedBinId = useSelectionStore((state) => state.focusedBinId);
-  const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
-  const activeLayerId = useSelectionStore((state) => state.activeLayerId);
-  const setActiveLayer = useSelectionStore((state) => state.setActiveLayer);
-  const showQuickLabel = useSelectionStore((state) => state.showQuickLabel);
-  const activeCategoryId = useSelectionStore((state) => state.activeCategoryId);
-  const setActiveCategory = useSelectionStore((state) => state.setActiveCategory);
+  // Selection store - use useShallow for multiple selectors
+  const {
+    selectedBinIds,
+    focusedBinId,
+    setSelectedBins,
+    activeLayerId,
+    setActiveLayer,
+    showQuickLabel,
+    activeCategoryId,
+    setActiveCategory,
+  } = useSelectionStore(
+    useShallow((state) => ({
+      selectedBinIds: state.selectedBinIds,
+      focusedBinId: state.focusedBinId,
+      setSelectedBins: state.setSelectedBins,
+      activeLayerId: state.activeLayerId,
+      setActiveLayer: state.setActiveLayer,
+      showQuickLabel: state.showQuickLabel,
+      activeCategoryId: state.activeCategoryId,
+      setActiveCategory: state.setActiveCategory,
+    }))
+  );
 
-  // Interaction store
-  const setInteraction = useInteractionStore((state) => state.setInteraction);
-  const setPaintSize = useInteractionStore((state) => state.setPaintSize);
+  // Interaction store - use useShallow for multiple selectors
+  const { setInteraction, setPaintSize } = useInteractionStore(
+    useShallow((state) => ({
+      setInteraction: state.setInteraction,
+      setPaintSize: state.setPaintSize,
+    }))
+  );
 
-  // View store
-  const zoomIn = useViewStore((state) => state.zoomIn);
-  const zoomOut = useViewStore((state) => state.zoomOut);
+  // View store - use useShallow for multiple selectors
+  const { zoomIn, zoomOut } = useViewStore(
+    useShallow((state) => ({
+      zoomIn: state.zoomIn,
+      zoomOut: state.zoomOut,
+    }))
+  );
 
   // Half-bin mode store
   const toggleHalfBinMode = useHalfBinModeStore((state) => state.toggleHalfBinMode);
@@ -96,10 +118,15 @@ export function useKeyboard() {
   const layout = useLayoutStore((state) => state.layout);
   const { deleteBin, duplicateBin, updateBin } = useMutations();
 
-  const undo = useHistoryStore((state) => state.undo);
-  const redo = useHistoryStore((state) => state.redo);
-  const canUndo = useHistoryStore((state) => state.canUndo);
-  const canRedo = useHistoryStore((state) => state.canRedo);
+  // History store - use useShallow for multiple selectors
+  const { undo, redo, canUndo, canRedo } = useHistoryStore(
+    useShallow((state) => ({
+      undo: state.undo,
+      redo: state.redo,
+      canUndo: state.canUndo,
+      canRedo: state.canRedo,
+    }))
+  );
 
   const { execute } = useUndoableAction();
 
