@@ -1,36 +1,15 @@
-# Name Suggestions Feature
+# Name Suggestions
 
-Intelligent layout name suggestions based on bin contents, categories, and drawer dimensions.
+Intelligent layout name suggestions based on bin contents.
 
-## Overview
-
-When users have 5+ labeled bins and their layout is still named "Untitled layout", this feature suggests meaningful names like "Electronics Drawer" or "Workshop Organizer".
-
-## Key Files
-
-- `types.ts` - Type definitions
-- `utils/generateSuggestions.ts` - Core suggestion algorithm
-- `store/index.ts` - Zustand store for suggestion state
-- `hooks/` - React hooks for consumption
-- `components/` - UI components
-
-## Usage
-
-```tsx
-import { NameFieldHighlight } from '@/features/name-suggestions';
-
-// Wrap the layout name input in Header
-<NameFieldHighlight>
-  <button>{layoutName}</button>
-</NameFieldHighlight>;
+```mermaid
+graph TB
+    UST[useSuggestionTrigger] -->|5+ bins, untitled| NSS[(store)]
+    NSS --> NFH[NameFieldHighlight] --> SP[SuggestionPopover]
+    UNS[useNameSuggestions] --> GS[generateSuggestions]
+    GS --> Labels & Purpose & Categories & Dimensions
+    SP -->|accept| LIB[(library store)]
 ```
-
-## Suggestion Sources
-
-1. **Labels** - Analyzes bin labels using `labelVocabulary.ts` domains
-2. **Purpose** - Uses `purposeInference.ts` to detect drawer purpose
-3. **Categories** - Uses custom category names if significant
-4. **Dimensions** - Fallback using drawer size
 
 ## Trigger Conditions
 
@@ -38,19 +17,23 @@ import { NameFieldHighlight } from '@/features/name-suggestions';
 - Layout name is "Untitled layout"
 - Not dismissed in current session
 
+## Suggestion Sources
+
+1. **Labels** - Analyzes bin labels via `labelVocabulary.ts`
+2. **Purpose** - `purposeInference.ts` detects drawer purpose
+3. **Categories** - Custom category names if significant
+4. **Dimensions** - Fallback using drawer size
+
 ## Entry Points
 
-1. **Auto-trigger** - Pulsing highlight on name field in Header
-2. **Command Palette** - "Suggest Layout Name" command
-3. **Layout Manager** - "Suggest Name" menu item
+- **Auto-trigger** - Pulsing highlight on Header name field
+- **Command Palette** - "Suggest Layout Name"
+- **Layout Manager** - "Suggest Name" menu item
 
-## Telemetry
+## Usage
 
-Tracks (privacy-preserving):
-
-- `shown` - Suggestions displayed
-- `accepted` - User accepted a suggestion
-- `edited` - User modified a suggestion
-- `dismissed` - User dismissed suggestions
-
-All names are hashed before sending to analytics.
+```tsx
+<NameFieldHighlight>
+  <button>{layoutName}</button>
+</NameFieldHighlight>
+```
