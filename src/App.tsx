@@ -37,6 +37,7 @@ import { TabletPanelOverlay, TabletPanelTriggers } from './components/Tablet';
 import { LiveRegion } from './components/LiveRegion';
 import { LocalMutationsProvider } from './shared/contexts';
 import { useTranslation } from '@/i18n';
+import { CommandPalette, useCommandPalette } from '@/features/command-palette';
 
 // Lazy load cloud-share components - only needed when viewing/sharing layouts
 const SharedLayoutImporter = lazyWithRetry(() =>
@@ -130,6 +131,9 @@ export default function App() {
   const t = useTranslation();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isMobileHelpOpen, setIsMobileHelpOpen] = useState(false);
+
+  // Command palette state (⌘K / Ctrl+K)
+  const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette();
   const { isMobile, isTablet } = useResponsive();
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
@@ -245,6 +249,13 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleHelpKeyboard);
   }, [handleHelpKeyboard]);
 
+  // Custom event listeners for command palette actions
+  useEffect(() => {
+    const handleOpenHelp = () => setIsHelpOpen(true);
+    window.addEventListener('open-help-modal', handleOpenHelp);
+    return () => window.removeEventListener('open-help-modal', handleOpenHelp);
+  }, []);
+
   // Helper to wrap content with appropriate MutationsProvider
   // - Collaborative mode: CollabProvider provides CollabMutationsProvider (lazy loaded)
   // - Local mode: LocalMutationsProvider
@@ -297,7 +308,9 @@ export default function App() {
               window.location.reload();
             }}
             className="btn btn-primary"
-          >{t('app.clearDataReload')}</button>
+          >
+            {t('app.clearDataReload')}
+          </button>
         </div>
       </div>
     );
@@ -386,6 +399,9 @@ export default function App() {
           </Suspense>
         )}
 
+        {/* Command Palette (⌘K / Ctrl+K) */}
+        <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+
         {/* Context menu (long-press on bin) */}
         {(() => {
           if (contextMenu) {
@@ -429,7 +445,9 @@ export default function App() {
       className={`h-screen flex flex-col overflow-hidden bg-surface text-content ${entranceClass}`}
     >
       {/* Skip to content link for keyboard navigation */}
-      <a href="#main-grid" className="skip-to-content">{t('app.skipToGridEditor')}</a>
+      <a href="#main-grid" className="skip-to-content">
+        {t('app.skipToGridEditor')}
+      </a>
 
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
       {hasSharedLayoutPreview && (
@@ -476,6 +494,9 @@ export default function App() {
           <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
         </Suspense>
       )}
+
+      {/* Command Palette (⌘K / Ctrl+K) */}
+      <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
 
       {/* Context menu (right-click on bin) */}
       {(() => {

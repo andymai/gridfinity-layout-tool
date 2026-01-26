@@ -1,0 +1,1 @@
+export { useCommandPalette } from './useCommandPalette';
