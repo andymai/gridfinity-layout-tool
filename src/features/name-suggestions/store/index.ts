@@ -1,15 +1,13 @@
 /**
  * Zustand store for name suggestion state management.
+ *
+ * Dismissal is persisted per-layout in LayoutEntry.nameSuggestionState
+ * via the library store, so it survives page refreshes.
  */
 
 import { create } from 'zustand';
+import { useLibraryStore } from '@/core/store/library';
 import type { SuggestionResult, SuggestionStatus } from '../types';
-
-/**
- * Duration in ms before dismissed suggestions can re-trigger.
- * Set to session-only (until page refresh) by using a very long timeout.
- */
-const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 interface NameSuggestionState {
   /** Current suggestion result */
@@ -26,6 +24,8 @@ interface NameSuggestionState {
   showAlternatives: boolean;
   /** Source of how suggestions were triggered */
   triggerSource: 'auto' | 'command' | 'menu' | null;
+  /** Whether LLM-powered suggestions are being fetched */
+  isLoadingMore: boolean;
 
   // Actions
   setSuggestions: (
@@ -34,6 +34,7 @@ interface NameSuggestionState {
     triggerSource?: 'auto' | 'command' | 'menu'
   ) => void;
   setStatus: (status: SuggestionStatus) => void;
+  setLoadingMore: (loading: boolean) => void;
   dismiss: () => void;
   accept: () => void;
   expand: () => void;
@@ -52,15 +53,15 @@ export const useNameSuggestionStore = create<NameSuggestionState>()((set, get) =
   isExpanded: false,
   showAlternatives: false,
   triggerSource: null,
+  isLoadingMore: false,
 
   setSuggestions: (result, layoutId, triggerSource = 'auto') => {
-    const state = get();
-
-    // Don't show if recently dismissed for this layout
-    if (state.layoutId === layoutId && state.dismissedAt !== null) {
-      const elapsed = Date.now() - state.dismissedAt;
-      if (elapsed < DISMISS_DURATION_MS) {
-        return;
+    // Don't auto-show if permanently dismissed for this layout
+    // (but allow manual triggers like command palette to bypass)
+    if (triggerSource === 'auto') {
+      const persistedState = useLibraryStore.getState().getNameSuggestionState(layoutId);
+      if (persistedState?.dismissed) {
+        return; // Layout was dismissed, don't auto-show
       }
     }
 
@@ -79,7 +80,18 @@ export const useNameSuggestionStore = create<NameSuggestionState>()((set, get) =
     set({ status });
   },
 
+  setLoadingMore: (loading) => {
+    set({ isLoadingMore: loading });
+  },
+
   dismiss: () => {
+    const { layoutId } = get();
+
+    // Persist dismissal to library store (survives page refresh)
+    if (layoutId) {
+      useLibraryStore.getState().setNameSuggestionDismissed(layoutId, true);
+    }
+
     set({
       status: 'dismissed',
       dismissedAt: Date.now(),
@@ -117,24 +129,25 @@ export const useNameSuggestionStore = create<NameSuggestionState>()((set, get) =
       isExpanded: false,
       showAlternatives: false,
       triggerSource: null,
+      isLoadingMore: false,
     });
   },
 
   shouldShowFor: (layoutId) => {
     const state = get();
 
+    // Check persisted dismissal state from library store (survives page refresh)
+    const persistedState = useLibraryStore.getState().getNameSuggestionState(layoutId);
+    if (persistedState?.dismissed) {
+      return false; // Permanently dismissed for this layout
+    }
+
     // Different layout - always allow
     if (state.layoutId !== layoutId) {
       return true;
     }
 
-    // Same layout - check if dismissed
-    if (state.dismissedAt !== null) {
-      const elapsed = Date.now() - state.dismissedAt;
-      return elapsed >= DISMISS_DURATION_MS;
-    }
-
-    // Same layout, not dismissed - check status
+    // Same layout, not persistently dismissed - check current session status
     return state.status !== 'accepted';
   },
 }));

@@ -1,8 +1,11 @@
 /**
  * Highlight wrapper for the name input field.
  *
- * Shows a pulsing glow when suggestions are available,
- * drawing user attention to click and see suggestions.
+ * Shows either:
+ * - Inline ghost text + Tab hint for high-confidence suggestions (>=0.7)
+ * - Pulsing highlight + badge for lower-confidence suggestions
+ *
+ * Both modes open the popover on click for alternatives.
  */
 
 import { useRef, useState, useEffect, useCallback, type ReactNode } from 'react';
@@ -27,7 +30,13 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
   // Initialize the suggestion trigger (monitors layout and generates suggestions)
   const { triggerSuggestions } = useSuggestionTrigger();
 
-  const { showHighlight, collapse } = useNameSuggestions();
+  const {
+    showHighlight,
+    showHighConfidenceInline,
+    primarySuggestion,
+    acceptPrimary,
+    collapse,
+  } = useNameSuggestions();
 
   // Listen for command palette trigger event
   const handleTriggerEvent = useCallback(() => {
@@ -64,6 +73,32 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
     return undefined;
   }, [showHighlight, hasAnimated]);
 
+  // Tab key handler for accepting high-confidence inline suggestions
+  useEffect(() => {
+    if (!showHighConfidenceInline) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle Tab when not in a text input and not with Shift
+      if (e.key === 'Tab' && !e.shiftKey) {
+        // Check if focus is within our wrapper or document is focused on body
+        const activeElement = document.activeElement;
+        const isInputFocused =
+          activeElement instanceof HTMLInputElement ||
+          activeElement instanceof HTMLTextAreaElement;
+
+        // Don't intercept Tab if user is typing in an input
+        if (isInputFocused) return;
+
+        // Accept the suggestion
+        e.preventDefault();
+        acceptPrimary();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showHighConfidenceInline, acceptPrimary]);
+
   // Handle click on the wrapper
   const handleClick = () => {
     if (showHighlight) {
@@ -77,8 +112,11 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
     collapse();
   };
 
+  // Show highlight styling only for low-confidence suggestions (not inline mode)
+  const showLowConfidenceHighlight = showHighlight && !showHighConfidenceInline;
+
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-flex items-center gap-1">
       <div
         ref={wrapperRef}
         onClick={handleClick}
@@ -86,9 +124,9 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
           relative rounded transition-all duration-300
           ${showHighlight ? 'cursor-pointer' : ''}
           ${
-            showHighlight && !hasAnimated
+            showLowConfidenceHighlight && !hasAnimated
               ? 'animate-suggestion-pulse'
-              : showHighlight
+              : showLowConfidenceHighlight
                 ? 'ring-2 ring-accent/40'
                 : ''
           }
@@ -96,8 +134,8 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
       >
         {children}
 
-        {/* Suggestion indicator badge */}
-        {showHighlight && (
+        {/* Suggestion indicator badge - only for low-confidence mode */}
+        {showLowConfidenceHighlight && (
           <div
             className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full flex items-center justify-center"
             title={t('nameSuggestion.title')}
@@ -112,6 +150,23 @@ export function NameFieldHighlight({ children }: NameFieldHighlightProps) {
           </div>
         )}
       </div>
+
+      {/* Inline ghost text for high-confidence suggestions */}
+      {showHighConfidenceInline && primarySuggestion && (
+        <button
+          onClick={handleClick}
+          className="inline-flex items-center gap-1.5 text-sm text-content-tertiary/50 hover:text-content-tertiary transition-colors cursor-pointer"
+          title={t('nameSuggestion.pressTabToAccept')}
+          aria-label={t('nameSuggestion.suggestedName', { name: primarySuggestion.name })}
+        >
+          <span className="truncate max-w-[120px]" aria-hidden="true">
+            {primarySuggestion.name}
+          </span>
+          <kbd className="px-1 py-0.5 text-[10px] font-medium bg-surface-secondary border border-stroke-subtle rounded text-content-tertiary">
+            Tab
+          </kbd>
+        </button>
+      )}
 
       {/* Suggestion popover */}
       <SuggestionPopover

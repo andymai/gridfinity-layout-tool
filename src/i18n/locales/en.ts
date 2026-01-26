@@ -559,6 +559,7 @@ const en: Record<string, string> = {
   'layouts.drawerSize': 'Drawer size',
   'layouts.dropFileHere': 'Drop file here',
   'layouts.forkedFrom': 'Forked from',
+  'layouts.forkedFromName': 'Forked from {name}',
   'layouts.importedLayoutsAreSavedToMyLayouts': 'Imported layouts are saved to My Layouts',
   'layouts.importLayout': 'Import Layout',
   'layouts.jsonPlaceholder': 'Paste JSON here',
@@ -1315,6 +1316,10 @@ const en: Record<string, string> = {
   'nameSuggestion.source.purpose': 'Based on drawer contents',
   'nameSuggestion.source.categories': 'Based on categories',
   'nameSuggestion.source.dimensions': 'Based on drawer size',
+  'nameSuggestion.source.server_ml': 'AI-generated suggestion',
+  'nameSuggestion.loadingMore': 'Getting better suggestions...',
+  'nameSuggestion.pressTabToAccept': 'Press Tab to accept',
+  'nameSuggestion.suggestedName': 'Suggested name: {name}',
   'common.dismiss': 'Dismiss',
 
   // ===========================================================================

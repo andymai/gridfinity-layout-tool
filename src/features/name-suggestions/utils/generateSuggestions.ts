@@ -427,10 +427,11 @@ const SUBCATEGORY_PATTERNS: SubcategoryPattern[] = [
     confidenceBoost: 0.2,
   },
   // Tabletop gaming / D&D
+  // Note: /\bd\d+\b/i could match vitamins like D3, so require dice-related context
   {
-    patterns: [/d\d+/i, /dice/i, /mini/i, /token/i],
-    keywords: ['dice', 'mini', 'miniature', 'token', 'figure', 'dnd', 'rpg', 'warhammer'],
-    names: ['Gaming Supplies', 'Tabletop Kit', 'D&D Accessories', 'RPG Organizer'],
+    patterns: [/\bd(?:4|6|8|10|12|20|100)\b/i, /dice/i, /\bmini(?:ature)?s?\b/i, /token/i],
+    keywords: ['dice', 'mini', 'miniature', 'token', 'figure', 'dnd', 'rpg', 'warhammer', 'pathfinder'],
+    names: ['Dice & Minis', 'Tabletop Kit', 'D&D Stuff', 'Game Night Drawer'],
     minMatches: 2,
     confidenceBoost: 0.2,
   },
@@ -516,8 +517,8 @@ const SUBCATEGORY_PATTERNS: SubcategoryPattern[] = [
   },
   // Airsoft / Paintball
   {
-    patterns: [/bb/i, /pellet/i, /mag/i, /airsoft/i],
-    keywords: ['airsoft', 'paintball', 'bb', 'pellet', 'magazine', 'ammo'],
+    patterns: [/\bbbs?\b/i, /pellet/i, /\bmag\b/i, /airsoft/i, /paintball/i],
+    keywords: ['airsoft', 'paintball', 'pellet', 'magazine', 'ammo'],
     names: ['Airsoft Gear', 'Tactical Supplies', 'Ammo Storage'],
     minMatches: 2,
     confidenceBoost: 0.2,
@@ -570,6 +571,227 @@ const SUBCATEGORY_PATTERNS: SubcategoryPattern[] = [
     minMatches: 2,
     confidenceBoost: 0.2,
   },
+  // Vitamins / Supplements (to avoid false positive with dice D6, etc.)
+  {
+    patterns: [/vitamin/i, /\b(?:d3|b12|b6|c|e|k2|omega)\b/i, /supplement/i, /probiotic/i],
+    keywords: ['vitamin', 'supplement', 'omega', 'probiotic', 'mineral', 'multivitamin'],
+    names: ['Vitamins', 'Daily Supplements', 'Health Drawer', 'Wellness Kit'],
+    minMatches: 2,
+    confidenceBoost: 0.25, // Higher to beat dice false positive
+  },
+  // Cleaning supplies
+  {
+    patterns: [/sponge/i, /brush/i, /wipe/i, /cleaner/i, /detergent/i],
+    keywords: ['cleaning', 'sponge', 'brush', 'wipe', 'spray', 'polish', 'cloth'],
+    names: ['Cleaning Supplies', 'Cleaning Drawer', 'Tidy Up Kit'],
+    minMatches: 2,
+    confidenceBoost: 0.15,
+  },
+  // EDC / Everyday Carry
+  {
+    patterns: [/flashlight/i, /multitool/i, /leatherman/i, /wallet/i],
+    keywords: ['edc', 'everyday', 'carry', 'pocket', 'flashlight', 'multitool'],
+    names: ['EDC Gear', 'Pocket Essentials', 'Everyday Carry', 'Daily Carry'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Nerf / Toy blasters
+  {
+    patterns: [/nerf/i, /dart/i, /blaster/i, /rival/i],
+    keywords: ['nerf', 'dart', 'blaster', 'foam', 'rival', 'elite'],
+    names: ['Nerf Arsenal', 'Blaster Drawer', 'Dart Storage', 'Nerf Stuff'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Smart home / Home automation
+  {
+    patterns: [/zigbee/i, /z-?wave/i, /sensor/i, /smart\s*(plug|bulb|switch)/i],
+    keywords: ['smart', 'sensor', 'zigbee', 'automation', 'iot', 'home assistant'],
+    names: ['Smart Home Parts', 'Home Automation', 'Sensor Drawer', 'IoT Stuff'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Phone/Device repair
+  {
+    patterns: [/screen/i, /battery/i, /spudger/i, /suction/i, /ifixit/i],
+    keywords: ['repair', 'screen', 'battery', 'spudger', 'pry', 'replacement'],
+    names: ['Repair Kit', 'Device Repair', 'Fix-It Drawer', 'Phone Parts'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Board games (non-RPG)
+  {
+    patterns: [/meeple/i, /card\s*sleeve/i, /token/i, /cube/i],
+    keywords: ['board game', 'meeple', 'token', 'cube', 'sleeve', 'component'],
+    names: ['Board Game Bits', 'Game Night', 'Gaming Drawer', 'Game Components'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // ============================================
+  // COMMUNITY-REQUESTED PATTERNS (HIGH PRIORITY)
+  // Based on real Gridfinity usage research
+  // ============================================
+
+  // Kitchen utensils & cooking (very popular use case)
+  {
+    patterns: [/spatula/i, /whisk/i, /ladle/i, /tongs/i, /utensil/i],
+    keywords: ['kitchen', 'utensil', 'spatula', 'spoon', 'cooking', 'ladle', 'tongs'],
+    names: ['Kitchen Utensils', 'Cooking Drawer', 'Kitchen Drawer', 'Utensil Organizer'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Cutlery & silverware
+  {
+    patterns: [/fork/i, /spoon/i, /knife/i, /chopstick/i, /cutlery/i],
+    keywords: ['cutlery', 'silverware', 'fork', 'spoon', 'knife', 'chopstick', 'flatware'],
+    names: ['Cutlery Drawer', 'Silverware', 'Flatware Organizer', 'Dining Drawer'],
+    minMatches: 3,
+    confidenceBoost: 0.2,
+  },
+  // Spices & seasonings
+  {
+    patterns: [/spice/i, /oregano/i, /paprika/i, /cumin/i, /cinnamon/i, /seasoning/i],
+    keywords: ['spice', 'spices', 'seasoning', 'herb', 'herbs', 'paprika', 'cumin'],
+    names: ['Spice Drawer', 'Spice Organizer', 'Seasoning Rack', 'Spice Collection'],
+    minMatches: 2,
+    confidenceBoost: 0.25,
+  },
+  // Coffee & tea
+  {
+    patterns: [/k-?cup/i, /nespresso/i, /coffee\s*pod/i, /tea\s*bag/i, /espresso/i],
+    keywords: ['coffee', 'tea', 'pod', 'kcup', 'nespresso', 'espresso', 'caffeine'],
+    names: ['Coffee Station', 'Tea Drawer', 'Coffee & Tea', 'Caffeine Corner'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Baking supplies
+  {
+    patterns: [/cookie\s*cutter/i, /piping\s*tip/i, /measuring\s*cup/i, /baking/i],
+    keywords: ['baking', 'cookie', 'piping', 'decorating', 'measuring', 'fondant'],
+    names: ['Baking Supplies', 'Baking Drawer', 'Cookie Decorating', 'Baker\'s Drawer'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // LEGO bricks (expanded - popular use case)
+  {
+    patterns: [/\b\d+x\d+\b/i, /technic/i, /minifig/i, /baseplate/i, /bricklink/i],
+    keywords: ['lego', 'brick', 'plate', 'tile', 'slope', 'technic', 'minifig', 'stud'],
+    names: ['LEGO Bricks', 'Brick Organizer', 'LEGO Parts', 'Building Blocks'],
+    minMatches: 2,
+    confidenceBoost: 0.25,
+  },
+  // Grooming & hair care
+  {
+    patterns: [/clipper/i, /trimmer/i, /wahl/i, /philips/i, /oneblade/i, /guard/i],
+    keywords: ['clipper', 'trimmer', 'hair', 'grooming', 'guard', 'comb', 'attachment'],
+    names: ['Grooming Kit', 'Hair Clippers', 'Grooming Drawer', 'Haircut Supplies'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Beard care
+  {
+    patterns: [/beard/i, /mustache/i, /shave/i, /razor/i, /aftershave/i],
+    keywords: ['beard', 'shave', 'razor', 'aftershave', 'balm', 'oil', 'brush'],
+    names: ['Beard Care', 'Shaving Kit', 'Grooming Essentials', 'Shave Drawer'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Dental & oral care
+  {
+    patterns: [/toothbrush/i, /sonicare/i, /oral-?b/i, /floss/i, /waterpik/i],
+    keywords: ['dental', 'toothbrush', 'floss', 'toothpaste', 'mouthwash', 'retainer'],
+    names: ['Dental Supplies', 'Oral Care', 'Toothbrush Drawer', 'Dental Kit'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // CNC & router bits
+  {
+    patterns: [/router\s*bit/i, /end\s*mill/i, /v-?bit/i, /collet/i, /er\d+/i],
+    keywords: ['router', 'bit', 'collet', 'endmill', 'cnc', 'shank', 'carbide'],
+    names: ['Router Bits', 'CNC Tooling', 'Milling Bits', 'CNC Supplies'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Sandpaper & abrasives
+  {
+    patterns: [/\d+\s*grit/i, /sandpaper/i, /sanding\s*disc/i, /abrasive/i],
+    keywords: ['sandpaper', 'grit', 'sanding', 'abrasive', 'polish', 'finishing'],
+    names: ['Sanding Supplies', 'Sandpaper Drawer', 'Abrasives', 'Finishing Supplies'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Automotive fluids & filters
+  {
+    patterns: [/oil\s*filter/i, /air\s*filter/i, /spark\s*plug/i, /brake\s*pad/i],
+    keywords: ['automotive', 'filter', 'fluid', 'brake', 'coolant', 'transmission'],
+    names: ['Auto Parts', 'Car Maintenance', 'Vehicle Supplies', 'Automotive Drawer'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Car fuses & electrical
+  {
+    patterns: [/\bfuse\b/i, /relay/i, /obd2?/i, /connector/i, /terminal/i],
+    keywords: ['fuse', 'relay', 'automotive', 'electrical', 'connector', 'obd'],
+    names: ['Car Electrical', 'Fuses & Relays', 'Auto Electrical', 'Wiring Supplies'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Resin 3D printing (distinct from FDM)
+  {
+    patterns: [/resin/i, /fep/i, /ipa/i, /cure/i, /wash\s*station/i, /lcd/i],
+    keywords: ['resin', 'fep', 'ipa', 'cure', 'wash', 'vat', 'lcd', 'msla'],
+    names: ['Resin Printing', 'SLA Supplies', 'Resin Station', 'Print Supplies'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // FPV & drone
+  {
+    patterns: [/propeller/i, /fpv/i, /quadcopter/i, /flight\s*controller/i, /vtx/i],
+    keywords: ['fpv', 'drone', 'propeller', 'quad', 'motor', 'esc', 'goggles'],
+    names: ['Drone Parts', 'FPV Gear', 'Quad Supplies', 'Flight Kit'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Fountain pens & ink
+  {
+    patterns: [/fountain\s*pen/i, /\bnib\b/i, /ink\s*bottle/i, /lamy/i, /twsbi/i, /pilot/i],
+    keywords: ['fountain', 'pen', 'nib', 'ink', 'converter', 'cartridge'],
+    names: ['Pen Collection', 'Ink Supplies', 'Fountain Pens', 'Writing Instruments'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Washi tape & journaling
+  {
+    patterns: [/washi/i, /bullet\s*journal/i, /planner/i, /sticker/i, /wax\s*seal/i],
+    keywords: ['washi', 'journal', 'planner', 'sticker', 'scrapbook', 'bujo'],
+    names: ['Journal Supplies', 'Planner Drawer', 'Washi & Stickers', 'Bujo Kit'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Model trains
+  {
+    patterns: [/\b(?:ho|n|o|g)\s*scale/i, /locomotive/i, /boxcar/i, /caboose/i, /dcc/i],
+    keywords: ['train', 'railroad', 'locomotive', 'scale', 'track', 'scenery'],
+    names: ['Model Trains', 'Railroad Parts', 'Train Supplies', 'Layout Accessories'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Gundam & model kits
+  {
+    patterns: [/gundam/i, /gunpla/i, /bandai/i, /\b(?:hg|mg|pg|rg)\b/i, /runner/i],
+    keywords: ['gundam', 'gunpla', 'model kit', 'bandai', 'plastic model', 'runner'],
+    names: ['Gunpla Supplies', 'Model Kit Parts', 'Gundam Builder', 'Kit Bash'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
+  // Mechanical keyboards
+  {
+    patterns: [/keycap/i, /switch/i, /stabilizer/i, /\b(?:cherry|gateron|kailh)\b/i, /pcb/i],
+    keywords: ['keycap', 'switch', 'keyboard', 'mechanical', 'stabilizer', 'lube'],
+    names: ['Keyboard Parts', 'Keycap Collection', 'Mech Keyboard', 'Switch Drawer'],
+    minMatches: 2,
+    confidenceBoost: 0.2,
+  },
 ];
 
 /**
@@ -609,97 +831,97 @@ const CREATIVE_NAMES: Record<LabelDomain, string[]> = {
     'My Tools',
     'Tool Drawer',
     'The Toolbox',
-    'Shop Stuff',
+    'Shop Drawer',
     'Workshop Drawer',
     'Hand Tools',
     'Fix-It Drawer',
-    'Project Tools',
-    'Repair Stuff',
-    'Tool Stash',
+    'When Things Break',
+    'Handy Stuff',
+    'The Good Tools',
   ],
   fasteners: [
     'Nuts and Bolts',
-    'Screws',
-    'Hardware',
+    'Screws etc',
+    'Hardware Drawer',
     'Small Parts',
     'Fasteners',
     'The Screw Drawer',
-    'Assembly Bits',
-    'Build Parts',
-    'Metric Stuff',
-    'Hardware Bits',
+    'Holding It Together',
+    'Assembly Parts',
+    "What's That Size?",
+    'The Tiny Parts',
   ],
   electronics: [
     'Electronics',
     'Components',
-    'Project Parts',
     'The Lab',
-    'Maker Stuff',
-    'Circuit Bits',
-    'Tinkering',
-    'Tech Stuff',
+    'Blinky Things',
+    'Project Parts',
+    'Circuit Drawer',
+    'Tinkering Drawer',
+    'Magic Smoke Storage',
     'Arduino Drawer',
-    'Spare Parts',
+    'The Bits That Beep',
   ],
   office: [
     'Desk Drawer',
-    'Office Stuff',
+    'Office Supplies',
     'Pens and Things',
     'Stationery',
-    'Work Stuff',
+    'The Work Drawer',
     'Desk Supplies',
     'Paper Clips etc',
-    'Office Bits',
-    'Writing Stuff',
-    'Desk Things',
+    'Meeting Survival Kit',
+    'Writing Things',
+    'Desk Essentials',
   ],
   craft: [
-    'Craft Stuff',
+    'Craft Supplies',
     'Art Supplies',
     'Project Drawer',
-    'Crafting',
-    'My Hobbies',
-    'Art Stuff',
-    'Maker Drawer',
-    'Creative Stuff',
-    'Hobby Supplies',
-    'Craft Bits',
+    'Making Stuff',
+    'Creative Drawer',
+    'Art Things',
+    'The Fun Drawer',
+    'Hobby Drawer',
+    'Creating Things',
+    'My Happy Place',
   ],
   printing_3d: [
     'Printer Stuff',
     '3D Printing',
     'Print Supplies',
     'Filament Drawer',
-    'Maker Parts',
+    'Nozzles and Things',
     'Printer Parts',
-    'Build Supplies',
-    'Nozzles etc',
-    'Printing Bits',
-    '3D Bits',
+    'Layer by Layer',
+    'Print Fails Prevention',
+    'The Benchy Drawer',
+    'Calibration Cubes',
   ],
   cosmetics: [
     'Makeup',
-    'Beauty Stuff',
+    'Beauty Drawer',
     'Cosmetics',
     'The Vanity',
     'Makeup Drawer',
-    'Beauty Drawer',
-    'Face Stuff',
+    'Looking Good',
+    'Face Things',
     'Getting Ready',
     'Daily Routine',
-    'Beauty Bits',
+    'Glow Up Drawer',
   ],
   misc: [
     'Junk Drawer',
     'Random Stuff',
     'Bits and Bobs',
-    'Misc',
     'Odds and Ends',
-    'Stuff',
+    'The Mystery Drawer',
+    'Stuff I Might Need',
     'Things',
-    'Miscellaneous',
-    'Random Things',
-    'Whatever',
+    'Who Knows What',
+    'Probably Important',
+    'Just In Case',
   ],
 };
 
@@ -1055,7 +1277,7 @@ export function generateSuggestions(input: SuggestionInput): SuggestionResult {
 
   // Strategy 1: Subcategory detection (highest confidence - most specific)
   if (subcategoryMatch && subcategoryMatch.names.length > 0) {
-    const baseConfidence = 0.85 + subcategoryMatch.confidenceBoost;
+    const baseConfidence = Math.min(1.0, 0.85 + subcategoryMatch.confidenceBoost);
 
     // Add all subcategory names with decreasing confidence
     subcategoryMatch.names.forEach((name, index) => {
@@ -1301,28 +1523,34 @@ export function generateSuggestions(input: SuggestionInput): SuggestionResult {
   }
 
   // Strategy 10: Dimensions-based fallback (always available)
-  // Simple, natural-sounding names
+  // Simple, natural-sounding names with personality
   const fallbacks = [
     { name: `${sizeDesc} Drawer`, confidence: 0.3 },
-    { name: 'My Drawer', confidence: 0.28 },
-    { name: 'Stuff', confidence: 0.27 },
-    { name: 'My Stuff', confidence: 0.26 },
-    { name: 'Things', confidence: 0.25 },
-    { name: 'Bits and Pieces', confidence: 0.24 },
-    { name: 'Misc', confidence: 0.23 },
-    { name: 'Storage', confidence: 0.22 },
-    { name: `${drawer.width}×${drawer.depth}`, confidence: 0.21 },
-    { name: 'Drawer', confidence: 0.2 },
+    { name: 'My Drawer', confidence: 0.29 },
+    { name: 'Stuff I Need', confidence: 0.28 },
+    { name: 'Bits and Pieces', confidence: 0.27 },
+    { name: 'Odds and Ends', confidence: 0.26 },
+    { name: "Don't Lose This", confidence: 0.25 },
+    { name: 'Important Things', confidence: 0.24 },
+    { name: 'Organized Chaos', confidence: 0.23 },
+    { name: 'The Good Drawer', confidence: 0.22 },
+    { name: 'Stuff', confidence: 0.21 },
   ];
 
-  // Add size-specific names
+  // Add size-specific names with more personality
   const area = drawer.width * drawer.depth;
-  if (area <= 20) {
-    fallbacks.unshift({ name: 'Small Drawer', confidence: 0.29 });
-    fallbacks.unshift({ name: 'Little Things', confidence: 0.28 });
+  if (area <= 12) {
+    fallbacks.unshift({ name: 'Tiny Treasures', confidence: 0.31 });
+    fallbacks.unshift({ name: 'Small but Mighty', confidence: 0.30 });
+  } else if (area <= 20) {
+    fallbacks.unshift({ name: 'Compact Drawer', confidence: 0.30 });
+    fallbacks.unshift({ name: 'Little Things', confidence: 0.29 });
+  } else if (area >= 150) {
+    fallbacks.unshift({ name: 'The Big One', confidence: 0.31 });
+    fallbacks.unshift({ name: 'Everything Drawer', confidence: 0.30 });
   } else if (area >= 100) {
-    fallbacks.unshift({ name: 'Big Drawer', confidence: 0.29 });
-    fallbacks.unshift({ name: 'The Big One', confidence: 0.28 });
+    fallbacks.unshift({ name: 'Big Drawer', confidence: 0.30 });
+    fallbacks.unshift({ name: 'Room for More', confidence: 0.29 });
   }
 
   for (const fallback of fallbacks) {
@@ -1333,12 +1561,20 @@ export function generateSuggestions(input: SuggestionInput): SuggestionResult {
     });
   }
 
-  // Sort by confidence (highest first) and deduplicate
+  // Build set of existing names (case-insensitive) to avoid duplicates
+  const existingNamesSet = new Set(
+    (input.existingNames ?? []).map((n) => n.toLowerCase().trim())
+  );
+
+  // Sort by confidence (highest first), deduplicate, and filter out existing names
   const sorted = suggestions.sort((a, b) => b.confidence - a.confidence);
   const seen = new Set<string>();
   const unique = sorted.filter((s) => {
     const normalized = s.name.toLowerCase();
+    // Skip if already in suggestions
     if (seen.has(normalized)) return false;
+    // Skip if already exists in library (user already has "Tool Drawer")
+    if (existingNamesSet.has(normalized)) return false;
     seen.add(normalized);
     return true;
   });

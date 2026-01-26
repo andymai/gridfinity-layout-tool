@@ -245,6 +245,15 @@ export const ERROR_CATALOG: Record<string, ErrorCatalogEntry> = {
     severity: 'error',
   },
 
+  API_TIMEOUT: {
+    code: 'API_TIMEOUT',
+    defaultMessage: 'Request timed out',
+    userMessage: 'Request timed out. Try again.',
+    recoveryHint: 'Check your connection and retry',
+    retryable: true,
+    severity: 'warning',
+  },
+
   API_VALIDATION_ERROR: {
     code: 'API_VALIDATION_ERROR',
     defaultMessage: 'Validation error',

@@ -38,3 +38,13 @@ export type {
   SuggestionTelemetryEvent,
 } from './types';
 export { SUGGESTION_THRESHOLD, DEFAULT_LAYOUT_NAME } from './types';
+
+// API Types (shared between client and server)
+export type {
+  SuggestNameRequest,
+  SuggestNameResponse,
+  LLMSuggestion,
+  SuggestNameErrorResponse,
+  SupportedLocale,
+} from './api-types';
+export { SUPPORTED_LOCALES } from './api-types';

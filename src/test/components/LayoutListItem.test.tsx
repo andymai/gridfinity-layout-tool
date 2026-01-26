@@ -242,17 +242,6 @@ describe('LayoutListItem', () => {
       expect(screen.getByText(/Original Layout/)).toBeInTheDocument();
     });
 
-    it('shows forked from with author when present', () => {
-      const entry = createTestEntry({
-        forkedFrom: { name: 'Original Layout', author: 'John' },
-      });
-      render(<LayoutListItem {...defaultProps} entry={entry} />);
-
-      expect(screen.getByText(/Forked from/)).toBeInTheDocument();
-      expect(screen.getByText(/Original Layout/)).toBeInTheDocument();
-      expect(screen.getByText(/by John/)).toBeInTheDocument();
-    });
-
     it('does not show forked from when not present', () => {
       render(<LayoutListItem {...defaultProps} />);
 

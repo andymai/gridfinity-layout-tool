@@ -12,6 +12,7 @@ describe('generateSuggestions', () => {
     labels: [],
     categories: [],
     drawer: { width: 6, depth: 4, height: 6 },
+    purpose: null,
     locale: 'en',
   };
 
@@ -167,7 +168,13 @@ describe('generateSuggestions', () => {
         (s) => s?.source === 'dimensions'
       );
       expect(dimSuggestion).not.toBeUndefined();
-      expect(dimSuggestion?.name).toContain('Compact');
+      // Should suggest size-related name for small drawer
+      expect(
+        dimSuggestion?.name.includes('Tiny') ||
+        dimSuggestion?.name.includes('Small') ||
+        dimSuggestion?.name.includes('Compact') ||
+        dimSuggestion?.name.includes('Little')
+      ).toBe(true);
     });
 
     it('generates size-based fallback for large drawers', () => {
@@ -182,8 +189,12 @@ describe('generateSuggestions', () => {
         (s) => s?.source === 'dimensions'
       );
       expect(dimSuggestion).not.toBeUndefined();
+      // Should suggest size-related name for large drawer
       expect(
-        dimSuggestion?.name.includes('Extra Large') || dimSuggestion?.name.includes('Large')
+        dimSuggestion?.name.includes('Extra Large') ||
+        dimSuggestion?.name.includes('Large') ||
+        dimSuggestion?.name.includes('Big') ||
+        dimSuggestion?.name.includes('Room for More')
       ).toBe(true);
     });
   });

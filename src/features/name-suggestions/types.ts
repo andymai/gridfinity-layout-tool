@@ -62,6 +62,8 @@ export interface SuggestionInput {
   purpose: string | null;
   /** User's locale for localized suggestions */
   locale: string;
+  /** Existing layout names in library (to avoid duplicates) */
+  existingNames?: string[];
 }
 
 export interface CategoryCount {
@@ -101,3 +103,9 @@ export interface SuggestionTelemetryEvent {
  * Minimum labeled bins required to show suggestions.
  */
 export const SUGGESTION_THRESHOLD = 5;
+
+/**
+ * Confidence threshold for showing inline ghost text.
+ * Below this threshold, we show the highlight + badge instead.
+ */
+export const HIGH_CONFIDENCE_THRESHOLD = 0.7;

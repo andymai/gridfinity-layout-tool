@@ -5,6 +5,9 @@
  * 1. Sufficient labeled bins (5+)
  * 2. Layout name is still default ("Untitled layout")
  * 3. Layout hasn't been dismissed for suggestions
+ *
+ * Uses local algorithm for instant suggestions, then fires LLM request
+ * in parallel for culturally-localized suggestions.
  */
 
 import { useEffect, useMemo, useRef, useCallback } from 'react';
@@ -13,9 +16,12 @@ import { useLibraryStore } from '@/core/store/library';
 import { useShallow } from 'zustand/react/shallow';
 import { STAGING_ID } from '@/core/constants';
 import { inferDrawerPurpose } from '@/shared/analytics/purposeInference';
+import { useLocale } from '@/i18n';
+import { isOk } from '@/core/result';
+import { fetchNameSuggestions, type SuggestNameRequest } from '@/core/api/suggestName';
 import { useNameSuggestionStore } from '../store';
 import { SUGGESTION_THRESHOLD, DEFAULT_LAYOUT_NAME } from '../types';
-import type { SuggestionInput, CategoryCount, SuggestionResult } from '../types';
+import type { SuggestionInput, CategoryCount, SuggestionResult, NameSuggestion } from '../types';
 
 // Lazy-load the heavy suggestion generation logic to reduce main bundle size
 const loadGenerateSuggestions = () =>
@@ -31,6 +37,9 @@ const loadGenerateSuggestions = () =>
  *
  * @returns Object with trigger state and manual trigger function
  */
+/** Timeout for LLM API calls (ms) */
+const LLM_TIMEOUT = 5000;
+
 export function useSuggestionTrigger() {
   const { bins, categories, name } = useLayoutStore(
     useShallow((s) => ({
@@ -41,12 +50,18 @@ export function useSuggestionTrigger() {
   );
 
   const activeLayoutId = useLibraryStore((s) => s.library.activeLayoutId);
+  const getNameSuggestionState = useLibraryStore((s) => s.getNameSuggestionState);
+  const libraryEntries = useLibraryStore((s) => s.library.entries);
 
-  const { status, layoutId, setSuggestions, shouldShowFor } = useNameSuggestionStore(
+  // Use app's configured locale (not navigator.language)
+  const { locale } = useLocale();
+
+  const { status, layoutId, setSuggestions, setLoadingMore, shouldShowFor } = useNameSuggestionStore(
     useShallow((s) => ({
       status: s.status,
       layoutId: s.layoutId,
       setSuggestions: s.setSuggestions,
+      setLoadingMore: s.setLoadingMore,
       shouldShowFor: s.shouldShowFor,
     }))
   );
@@ -72,30 +87,69 @@ export function useSuggestionTrigger() {
       return;
     }
 
+    // Skip if layout was permanently dismissed (persisted state)
+    const persistedState = getNameSuggestionState(activeLayoutId);
+    if (persistedState?.dismissed) {
+      return;
+    }
+
     // Check conditions
     const hasEnoughLabels = labeledBinCount >= SUGGESTION_THRESHOLD;
     const canShow = shouldShowFor(activeLayoutId);
 
     if (hasEnoughLabels && isDefaultName && canShow && status === 'idle') {
+      // Get existing layout names to avoid duplicates
+      const existingNames = libraryEntries.map((e) => e.name);
+
       // Build suggestion input
-      const input = buildSuggestionInput(layout, categories);
+      const input = buildSuggestionInput(layout, categories, locale, existingNames);
 
-      // Lazy-load and generate suggestions
-      let cancelled = false;
-      loadGenerateSuggestions().then((generateSuggestions) => {
-        if (cancelled) return;
+      // Create AbortController to cancel LLM request on layout change
+      const abortController = new AbortController();
 
-        const result = generateSuggestions(input);
+      // Lazy-load and generate local suggestions first (instant)
+      loadGenerateSuggestions()
+        .then(async (generateSuggestions) => {
+          if (abortController.signal.aborted) return;
 
-        // Only set if we have a good suggestion
-        if (result.primary && result.primary.confidence >= 0.4) {
-          setSuggestions(result, activeLayoutId, 'auto');
-          triggeredRef.current = activeLayoutId;
-        }
-      });
+          const localResult = generateSuggestions(input);
+
+          // Show local suggestions immediately if good enough
+          if (localResult.primary && localResult.primary.confidence >= 0.4) {
+            setSuggestions(localResult, activeLayoutId, 'auto');
+            triggeredRef.current = activeLayoutId;
+          }
+
+          // Fire LLM request for better localized suggestions
+          // Skip for English - local algorithm already generates English names
+          const isEnglish = input.locale === 'en' || input.locale.startsWith('en-');
+          if (localResult.primary && !isEnglish) {
+            setLoadingMore(true);
+            try {
+              // Pass local suggestions as hints for better localization
+              const hints = [
+                localResult.primary.name,
+                ...localResult.alternatives.map((a) => a.name),
+              ];
+              const llmResult = await fetchLLMSuggestions(input, hints, abortController.signal);
+              if (abortController.signal.aborted || !llmResult) return;
+
+              // Merge LLM suggestions with local ones (LLM takes priority)
+              const mergedResult = mergeSuggestions(localResult, llmResult);
+              setSuggestions(mergedResult, activeLayoutId, 'auto');
+            } finally {
+              if (!abortController.signal.aborted) {
+                setLoadingMore(false);
+              }
+            }
+          }
+        })
+        .catch(() => {
+          // Silently fail if dynamic import fails - suggestions are non-critical
+        });
 
       return () => {
-        cancelled = true;
+        abortController.abort();
       };
     }
     return undefined;
@@ -105,9 +159,13 @@ export function useSuggestionTrigger() {
     activeLayoutId,
     status,
     shouldShowFor,
+    getNameSuggestionState,
     layout,
     categories,
+    locale,
+    libraryEntries,
     setSuggestions,
+    setLoadingMore,
   ]);
 
   // Reset triggered ref when layout changes
@@ -124,17 +182,43 @@ export function useSuggestionTrigger() {
    */
   const triggerSuggestions = useCallback(
     async (source: 'command' | 'menu'): Promise<SuggestionResult> => {
-      const input = buildSuggestionInput(layout, categories);
+      // Get existing layout names to avoid duplicates
+      const existingNames = libraryEntries.map((e) => e.name);
+      const input = buildSuggestionInput(layout, categories, locale, existingNames);
       const generateSuggestions = await loadGenerateSuggestions();
-      const result = generateSuggestions(input);
 
-      if (result.primary) {
-        setSuggestions(result, activeLayoutId, source);
+      // Generate local suggestions first
+      const localResult = generateSuggestions(input);
+
+      // Show local suggestions immediately
+      if (localResult.primary) {
+        setSuggestions(localResult, activeLayoutId, source);
       }
 
-      return result;
+      // Fire LLM request for better localized suggestions
+      // Skip for English - local algorithm already generates English names
+      const isEnglish = input.locale === 'en' || input.locale.startsWith('en-');
+      if (!isEnglish) {
+        setLoadingMore(true);
+        try {
+          // Pass local suggestions as hints for better localization
+          const hints = localResult.primary
+            ? [localResult.primary.name, ...localResult.alternatives.map((a) => a.name)]
+            : undefined;
+          const llmResult = await fetchLLMSuggestions(input, hints);
+          if (llmResult) {
+            const mergedResult = mergeSuggestions(localResult, llmResult);
+            setSuggestions(mergedResult, activeLayoutId, source);
+            return mergedResult;
+          }
+        } finally {
+          setLoadingMore(false);
+        }
+      }
+
+      return localResult;
     },
-    [layout, categories, activeLayoutId, setSuggestions]
+    [layout, categories, locale, libraryEntries, activeLayoutId, setSuggestions, setLoadingMore]
   );
 
   return {
@@ -154,7 +238,9 @@ export function useSuggestionTrigger() {
  */
 function buildSuggestionInput(
   layout: ReturnType<typeof useLayoutStore.getState>['layout'],
-  categories: ReturnType<typeof useLayoutStore.getState>['layout']['categories']
+  categories: ReturnType<typeof useLayoutStore.getState>['layout']['categories'],
+  locale: string,
+  existingNames?: string[]
 ): SuggestionInput {
   // Extract labels from on-grid bins
   const labels = layout.bins
@@ -190,6 +276,90 @@ function buildSuggestionInput(
       height: layout.drawer.height,
     },
     purpose: purposeResult.purpose,
-    locale: typeof navigator !== 'undefined' ? navigator.language : 'en',
+    locale,
+    existingNames,
+  };
+}
+
+/**
+ * Fetch suggestions from the LLM API.
+ * Returns null if the request fails, times out, or is cancelled.
+ *
+ * @param input - The suggestion input
+ * @param hints - Optional English suggestions to help the LLM localize
+ * @param signal - Optional AbortSignal for cancellation
+ */
+async function fetchLLMSuggestions(
+  input: SuggestionInput,
+  hints?: string[],
+  signal?: AbortSignal
+): Promise<NameSuggestion[] | null> {
+  try {
+    const request: SuggestNameRequest = {
+      labels: input.labels.slice(0, 50), // API limit
+      drawerSize: {
+        w: input.drawer.width,
+        d: input.drawer.depth,
+        h: input.drawer.height,
+      },
+      locale: input.locale,
+      purpose: input.purpose ?? undefined,
+      hints: hints?.slice(0, 5), // Pass English suggestions as localization hints
+    };
+
+    const result = await fetchNameSuggestions(request, { timeout: LLM_TIMEOUT, signal });
+
+    if (isOk(result) && result.value.suggestions.length > 0) {
+      // Convert API response to NameSuggestion format
+      // LLM suggestions get high confidence (0.9) since they're culturally-localized
+      return result.value.suggestions.map((s, i) => ({
+        name: s.name,
+        confidence: 0.9 - i * 0.05, // First: 0.9, second: 0.85, etc.
+        source: s.source, // 'server_ml' from API
+      }));
+    }
+
+    return null;
+  } catch {
+    // Silently fail - local suggestions are the fallback
+    return null;
+  }
+}
+
+/**
+ * Merge LLM suggestions with local suggestions.
+ * LLM suggestions take priority as primary, local becomes alternatives.
+ */
+function mergeSuggestions(
+  local: SuggestionResult,
+  llmSuggestions: NameSuggestion[]
+): SuggestionResult {
+  if (llmSuggestions.length === 0) {
+    return local;
+  }
+
+  // LLM primary takes over
+  const primary = llmSuggestions[0];
+
+  // Combine remaining LLM suggestions with local alternatives
+  // Filter out duplicates (same name, case-insensitive)
+  const llmAlternatives = llmSuggestions.slice(1);
+  const localAlternatives = local.alternatives.filter(
+    (alt) =>
+      !llmSuggestions.some((llm) => llm.name.toLowerCase() === alt.name.toLowerCase())
+  );
+
+  // Include local primary as alternative if it's different from LLM primary
+  const alternatives: NameSuggestion[] = [...llmAlternatives];
+  if (local.primary && local.primary.name.toLowerCase() !== primary.name.toLowerCase()) {
+    alternatives.push(local.primary);
+  }
+  alternatives.push(...localAlternatives);
+
+  // Limit to 3 alternatives
+  return {
+    primary,
+    alternatives: alternatives.slice(0, 3),
+    timestamp: Date.now(),
   };
 }

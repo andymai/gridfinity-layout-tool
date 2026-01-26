@@ -2,14 +2,38 @@
  * Tests for name suggestion store.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useNameSuggestionStore } from '../store';
+import { useLibraryStore } from '@/core/store/library';
 import type { SuggestionResult } from '../types';
+
+// Track dismissed layouts for mock
+const dismissedLayouts = new Map<string, boolean>();
+
+// Mock the library store
+vi.mock('@/core/store/library', () => ({
+  useLibraryStore: {
+    getState: () => ({
+      setNameSuggestionDismissed: (layoutId: string, dismissed: boolean) => {
+        if (dismissed) {
+          dismissedLayouts.set(layoutId, true);
+        } else {
+          dismissedLayouts.delete(layoutId);
+        }
+      },
+      getNameSuggestionState: (layoutId: string) => {
+        return dismissedLayouts.has(layoutId) ? { dismissed: true, dismissedAt: Date.now(), dismissCount: 1 } : undefined;
+      },
+    }),
+  },
+}));
 
 describe('useNameSuggestionStore', () => {
   beforeEach(() => {
     // Reset store state before each test
     useNameSuggestionStore.getState().reset();
+    // Clear mock dismissed layouts
+    dismissedLayouts.clear();
   });
 
   const mockResult: SuggestionResult = {

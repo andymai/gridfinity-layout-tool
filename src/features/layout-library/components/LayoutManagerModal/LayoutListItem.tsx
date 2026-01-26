@@ -159,9 +159,7 @@ export function LayoutListItem({
           {/* Forked From */}
           {entry.forkedFrom && (
             <div className="mt-0.5 text-xs text-content-tertiary">
-              {t('layouts.forkedFrom')}
-              {entry.forkedFrom.name}
-              {entry.forkedFrom.author && ` by ${entry.forkedFrom.author}`}
+              {t('layouts.forkedFromName', { name: entry.forkedFrom.name })}
             </div>
           )}
         </div>
