@@ -10,7 +10,7 @@ import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import type { InteractionContext, ModeHandlers, DragStartArgs } from './types';
-import type { Coord, SwapTarget } from '@/core/types';
+import type { Coord, SwapTarget, ValidationReason, BlockingInfo } from '@/core/types';
 
 /**
  * Hook for drag mode interactions: moving bins by clicking and dragging.
@@ -177,6 +177,8 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
       let allValid = overGrid;
       const otherBinIds = new Set(interaction.binIds);
       let swapTarget: SwapTarget | undefined;
+      let invalidReason: ValidationReason | undefined;
+      let blockingInfo: BlockingInfo | undefined;
 
       if (overGrid) {
         // Check for swap target when in swap mode (single bin only)
@@ -228,6 +230,8 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
 
             if (!result.valid) {
               allValid = false;
+              invalidReason = result.reason;
+              blockingInfo = result.blockingInfo;
               break;
             }
           }
@@ -241,6 +245,8 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
         valid: allValid,
         isOverGrid: overGrid,
         swapTarget,
+        invalidReason,
+        blockingInfo,
       });
     },
     [layout, activeLayerId, isInBounds, setInteraction]
