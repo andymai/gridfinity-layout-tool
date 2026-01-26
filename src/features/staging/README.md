@@ -1,36 +1,26 @@
 # Staging
 
-Off-grid bin stash (holding area) for bins not placed on the layout grid.
+Off-grid bin stash for displaced bins.
 
-## Key Files
-
-| File                     | Purpose                                         |
-| ------------------------ | ----------------------------------------------- |
-| `components/Staging.tsx` | Stash panel UI with bin thumbnails, drag source |
-
-## Purpose
-
-Bins with `layerId === STAGING_ID` (`'__staging__'`) are stored here:
-
-- Displaced bins (drawer resize clips them)
-- Duplicated bins when no grid space available
-- User-moved bins (drag to stash icon)
-
-## Data Flow
-
-```
-Bin displaced → moveBinToStaging(id) → layerId = STAGING_ID
-Drag from stash → stagingDrag interaction → moveBinFromStaging(id, layerId, x, y)
+```mermaid
+graph TB
+    subgraph Sources
+        Resize[Drawer resize]
+        Dup[Duplicate no space]
+        Manual[User drag]
+        LayerDel[Layer deletion]
+    end
+    Sources --> MTS[moveBinToStaging] --> LAY[(layout)]
+    LAY -->|layerId = __staging__| ST[Staging.tsx]
+    ST -->|drag| SDM[stagingDrag mode] --> MFS[moveBinFromStaging] --> LAY
 ```
 
-## Integration
+## Key Concept
 
-- **grid-editor**: `stagingDrag` interaction mode handles placement
-- **layout store**: `moveBinToStaging()`, `moveBinFromStaging()` mutations
-- **cloud-share**: Staging bins excluded from sync fingerprint
+Bins with `layerId === '__staging__'` are stored here, not on any layer.
 
 ## Gotchas
 
 1. **STAGING_ID is magic string** - `'__staging__'`, not a real layer
-2. **Bins here don't count** toward print list until placed
-3. **Drag preview** uses `stagingDrag` mode in grid-editor
+2. **Bins don't count in print list** until placed
+3. **Cloud-share excludes staging** - filtered from sync fingerprint

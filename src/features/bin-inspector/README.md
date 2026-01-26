@@ -1,47 +1,25 @@
 # Bin Inspector
 
-Details panel for viewing and editing selected bin properties.
+Selected bin details panel with edit capabilities.
 
-## Key Files
-
-| File                          | Purpose                             |
-| ----------------------------- | ----------------------------------- |
-| `components/BinInspector.tsx` | Main panel showing bin details      |
-| `hooks/useBinInspector.ts`    | Selected bin data and edit handlers |
-
-## Features
-
-- View/edit bin dimensions (width, depth, height)
-- View/edit label and notes
-- Category assignment dropdown
-- Custom properties editor (key-value pairs)
-- Delete button with confirmation
-
-## Data Flow
-
-```
-Selection store → selectedBinIds → useBinInspector
-  → derives bin data from layout store
-  → edit handlers call layout store mutations
+```mermaid
+graph TB
+    SEL[(selection store)] -->|selectedBinIds| UBI[useBinInspector]
+    LAY[(layout store)] -->|bin data| UBI
+    UBI --> SI[SingleBinInspector] & MI[MultiBinInspector] & ES[EmptyState]
+    SI -->|edits| UA[useUndoableAction] --> LAY
 ```
 
-## Editable Fields
+## Constraints
 
-| Field        | Constraint                              |
+| Field        | Limit                                   |
 | ------------ | --------------------------------------- |
-| Label        | Max 64 chars                            |
-| Notes        | Max 256 chars                           |
-| Category     | From available categories               |
-| Custom props | Max 50, key: 32 chars, value: 256 chars |
+| Label        | 64 chars                                |
+| Notes        | 256 chars                               |
+| Custom props | 50 max, key: 32 chars, value: 256 chars |
 
 ## Gotchas
 
-1. **Multi-select shows summary** - can't edit dimensions of multiple bins
-2. **Custom properties have reserved keys** - id, layerId, category blocked
-3. **Height changes validate** - must fit in layer + drawer height
-
-## Integration
-
-- **selection store**: Reads `selectedBinIds`
-- **layout store**: Calls `updateBin()` for edits
-- **undo**: Edits wrapped in `useUndoableAction`
+1. **Multi-select shows summary only** - can't edit dimensions of multiple bins
+2. **Reserved property keys** - `id`, `layerId`, `category` blocked from custom props
+3. **Height validation** - must fit in layer + drawer height
