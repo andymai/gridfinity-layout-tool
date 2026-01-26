@@ -467,12 +467,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   return (
     <div className="fixed inset-0 z-[100]" onClick={() => onOpenChange(false)}>
       {/* Backdrop with blur */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] animate-fade-in" />
 
       {/* Palette container - top aligned like Spotlight */}
-      <div className="absolute top-[12%] left-1/2 -translate-x-1/2 w-full max-w-xl px-4">
+      <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-full max-w-[560px] px-4">
         <Command
-          className="rounded-2xl border border-stroke bg-surface-elevated shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] animate-scale-in overflow-hidden"
+          className="rounded-xl border border-stroke bg-surface-secondary shadow-xl animate-scale-in overflow-hidden"
           onClick={(e) => e.stopPropagation()}
           loop
           onValueChange={(value) => {
@@ -484,47 +484,49 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           }}
         >
           {/* Search input with icon */}
-          <div className="flex items-center gap-3 px-4 border-b border-stroke-subtle">
+          <div className="flex items-center gap-3 px-4 border-b border-stroke-subtle bg-surface-secondary">
             <svg
-              className="w-5 h-5 text-content-tertiary shrink-0"
+              className="w-4 h-4 text-content-tertiary shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              strokeWidth={2.5}
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
             <Command.Input
               placeholder={t('commandPalette.placeholder')}
-              className="w-full py-4 text-base bg-transparent text-content placeholder:text-content-tertiary outline-none focus-visible:ring-0"
+              className="flex-1 py-3.5 text-[15px] bg-transparent text-content placeholder:text-content-tertiary outline-none"
               autoFocus
             />
-            <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[10px] font-mono rounded border border-stroke-subtle bg-surface text-content-tertiary">
+            <kbd className="hidden sm:inline-flex items-center justify-center min-w-[28px] h-[22px] px-1.5 text-[11px] font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-secondary shadow-[0_1px_0_1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.05)]">
               esc
             </kbd>
           </div>
 
-          <Command.List className="max-h-[60vh] overflow-y-auto overflow-x-hidden p-2 scrollbar-thin">
-            <Command.Empty className="py-12 text-center">
-              <div className="text-content-tertiary">
-                <svg
-                  className="w-12 h-12 mx-auto mb-3 opacity-50"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+          <Command.List className="max-h-[50vh] overflow-y-auto overflow-x-hidden py-2 scrollbar-thin">
+            <Command.Empty className="py-10 text-center">
+              <div className="flex flex-col items-center gap-2 text-content-tertiary">
+                <div className="w-10 h-10 rounded-lg bg-surface-hover flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 opacity-60"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
                     strokeWidth={1.5}
-                    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
-                  />
-                </svg>
-                <p className="text-sm">{t('commandPalette.noResults')}</p>
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                    />
+                  </svg>
+                </div>
+                <p className="text-sm text-content-secondary">{t('commandPalette.noResults')}</p>
               </div>
             </Command.Empty>
 
@@ -532,26 +534,26 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             {recentCommands.length > 0 && (
               <Command.Group
                 heading={
-                  <div className="flex items-center gap-2 px-2 pb-1">
+                  <div className="flex items-center gap-1.5 px-3 pb-1.5 pt-1">
                     <svg
-                      className="w-3.5 h-3.5 text-content-tertiary"
+                      className="w-3 h-3 text-content-tertiary"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      strokeWidth={2}
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth={2}
                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    <span className="text-[11px] font-semibold text-content-tertiary uppercase tracking-wider">
+                    <span className="text-[10px] font-semibold text-content-tertiary uppercase tracking-wider">
                       {t('commandPalette.recent')}
                     </span>
                   </div>
                 }
-                className="mb-1"
+                className="mb-0.5"
               >
                 {recentCommands.map((cmd) => (
                   <CommandItem
@@ -573,14 +575,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 <Command.Group
                   key={category}
                   heading={
-                    <div className="flex items-center gap-2 px-2 pb-1 pt-2">
+                    <div className="flex items-center gap-1.5 px-3 pb-1.5 pt-2.5 first:pt-1">
                       <CategoryIcon category={category} />
-                      <span className="text-[11px] font-semibold text-content-tertiary uppercase tracking-wider">
+                      <span className="text-[10px] font-semibold text-content-tertiary uppercase tracking-wider">
                         {t(CATEGORY_LABELS[category])}
                       </span>
                     </div>
                   }
-                  className="mb-1"
+                  className="mb-0.5"
                 >
                   {categoryCommands.map((cmd) => (
                     <CommandItem key={cmd.id} command={cmd} onSelect={handleSelect} t={t} />
@@ -600,7 +602,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
 /** Category icons for visual distinction */
 function CategoryIcon({ category }: { category: string }) {
-  const iconClass = 'w-3.5 h-3.5 text-content-tertiary';
+  const iconClass = 'w-3 h-3 text-content-tertiary';
 
   switch (category) {
     case 'navigation':
@@ -720,14 +722,14 @@ function CommandItem({ command, onSelect, t }: CommandItemProps) {
       value={`${t(command.labelKey)} ${command.keywords?.join(' ') ?? ''}`}
       onSelect={() => onSelect(command.id)}
       disabled={!command.isAvailable}
-      className="group flex items-center justify-between gap-4 mx-1 px-3 py-2.5 rounded-lg cursor-pointer text-sm text-content transition-all data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent data-[disabled=true]:opacity-40 data-[disabled=true]:cursor-not-allowed hover:bg-surface-hover/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+      className="group flex items-center justify-between gap-3 mx-2 px-2.5 py-2 rounded-lg cursor-pointer text-[13px] text-content transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent data-[disabled=true]:opacity-35 data-[disabled=true]:cursor-not-allowed focus-visible:outline-none"
     >
       <span className="truncate">{t(command.labelKey)}</span>
       {command.shortcut && (
         <ShortcutBadge
           keys={command.shortcut.keys}
           modifier={command.shortcut.modifier}
-          className="opacity-60 group-data-[selected=true]:opacity-100 transition-opacity shrink-0"
+          className="opacity-50 group-data-[selected=true]:opacity-90 transition-opacity shrink-0"
         />
       )}
     </Command.Item>

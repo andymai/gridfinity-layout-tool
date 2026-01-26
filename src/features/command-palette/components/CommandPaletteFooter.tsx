@@ -14,29 +14,27 @@ interface CommandPaletteFooterProps {
   matchCount: number;
 }
 
+/** Footer keyboard key styling - smaller variant for hints */
+const footerKeyClasses =
+  'inline-flex items-center justify-center min-w-[20px] h-[18px] px-1 text-[10px] font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-tertiary shadow-[0_1px_0_1px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.05)]';
+
 export function CommandPaletteFooter({ selectedCommand, matchCount }: CommandPaletteFooterProps) {
   const t = useTranslation();
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-t border-stroke-subtle text-xs text-content-tertiary">
+    <div className="flex items-center justify-between px-3 py-2 border-t border-stroke-subtle bg-surface-secondary/50 text-[11px] text-content-tertiary">
       {/* Left: Action hints */}
-      <div className="flex items-center gap-4">
-        <span className="flex items-center gap-1.5">
-          <kbd className="inline-flex items-center justify-center px-1.5 h-5 text-[10px] font-mono rounded border border-stroke-subtle bg-surface">
-            ↵
-          </kbd>
+      <div className="flex items-center gap-3">
+        <span className="flex items-center gap-1">
+          <kbd className={footerKeyClasses}>↵</kbd>
           <span>{t('commandPalette.footer.run')}</span>
         </span>
-        <span className="flex items-center gap-1.5">
-          <kbd className="inline-flex items-center justify-center px-1.5 h-5 text-[10px] font-mono rounded border border-stroke-subtle bg-surface">
-            ↑↓
-          </kbd>
+        <span className="flex items-center gap-1">
+          <kbd className={footerKeyClasses}>↑↓</kbd>
           <span>{t('commandPalette.footer.navigate')}</span>
         </span>
-        <span className="flex items-center gap-1.5">
-          <kbd className="inline-flex items-center justify-center px-1.5 h-5 text-[10px] font-mono rounded border border-stroke-subtle bg-surface">
-            esc
-          </kbd>
+        <span className="hidden sm:flex items-center gap-1">
+          <kbd className={footerKeyClasses}>esc</kbd>
           <span>{t('commandPalette.footer.close')}</span>
         </span>
       </div>
@@ -47,10 +45,12 @@ export function CommandPaletteFooter({ selectedCommand, matchCount }: CommandPal
           <ShortcutBadge
             keys={selectedCommand.shortcut.keys}
             modifier={selectedCommand.shortcut.modifier}
-            className="opacity-80"
+            className="opacity-70"
           />
         ) : (
-          <span>{t('commandPalette.footer.commandCount', { count: matchCount })}</span>
+          <span className="text-content-tertiary">
+            {t('commandPalette.footer.commandCount', { count: matchCount })}
+          </span>
         )}
       </div>
     </div>
