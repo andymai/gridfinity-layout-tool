@@ -1,4 +1,5 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/shallow';
 import { useSettingsStore, useLabsStore } from '@/core/store';
 import { getToggleableFeatures, getGraduatedFeatures, type FeatureId } from '@/core/labs';
@@ -100,7 +101,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     updateSetting('mlTelemetryEnabled', !mlTelemetryEnabled);
   };
 
-  return (
+  // Use portal to escape parent stacking contexts (e.g., BottomSheet with transform)
+  return createPortal(
     <>
       <div
         className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in"
@@ -146,9 +148,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <h3 style={STYLES.sectionHeader} className="mb-3">
                 {t('settings.language')}
               </h3>
-              <p className="text-sm text-content-tertiary mb-3">
-                {t('settings.languageHint')}
-              </p>
+              <p className="text-sm text-content-tertiary mb-3">{t('settings.languageHint')}</p>
               <div className="space-y-1">
                 {/* Auto option */}
                 <div
@@ -168,12 +168,26 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     }
                   }}
                 >
-                  <span className={settingsLocale === 'auto' ? 'text-content' : 'text-content-secondary'}>
+                  <span
+                    className={
+                      settingsLocale === 'auto' ? 'text-content' : 'text-content-secondary'
+                    }
+                  >
                     {t('settings.autoDetect')}
                   </span>
                   {settingsLocale === 'auto' && (
-                    <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-4 h-4 text-accent"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </div>
@@ -198,16 +212,34 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     }}
                   >
                     <div>
-                      <span className={locale === loc.code && settingsLocale !== 'auto' ? 'text-content' : 'text-content-secondary'}>
+                      <span
+                        className={
+                          locale === loc.code && settingsLocale !== 'auto'
+                            ? 'text-content'
+                            : 'text-content-secondary'
+                        }
+                      >
                         {loc.nativeName}
                       </span>
                       {loc.code !== 'en' && (
-                        <span className="text-xs text-content-disabled ml-2">{loc.englishName}</span>
+                        <span className="text-xs text-content-disabled ml-2">
+                          {loc.englishName}
+                        </span>
                       )}
                     </div>
                     {locale === loc.code && settingsLocale !== 'auto' && (
-                      <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-4 h-4 text-accent"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     )}
                   </div>
@@ -264,9 +296,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <h3 style={STYLES.sectionHeader} className="mb-3">
                 {t('settings.stlSearch')}
               </h3>
-              <p className="text-sm text-content-tertiary mb-3">
-                {t('settings.stlSearchHint')}
-              </p>
+              <p className="text-sm text-content-tertiary mb-3">{t('settings.stlSearchHint')}</p>
               <div className="space-y-2">
                 {settings.stlSearchSites.map((site: STLSearchSite) => (
                   <div
@@ -340,9 +370,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <SparklesIcon className="w-5 h-5 text-accent" />
                 <h3 style={STYLES.sectionHeader}>{t('settings.labs')}</h3>
               </div>
-              <p className="text-sm text-content-tertiary mb-4">
-                {t('settings.labsHint')}
-              </p>
+              <p className="text-sm text-content-tertiary mb-4">{t('settings.labsHint')}</p>
 
               {toggleableFeatures.length > 0 ? (
                 <div className="space-y-3">
@@ -384,6 +412,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />
-    </>
+    </>,
+    document.body
   );
 }

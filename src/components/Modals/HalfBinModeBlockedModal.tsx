@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { HalfBinConstraintViolation } from '@/utils/halfBinConstraints';
 import { useTranslation } from '@/i18n';
 
@@ -114,7 +115,8 @@ export function HalfBinModeBlockedModal({
 
   if (!isOpen) return null;
 
-  return (
+  // Use portal to escape parent stacking contexts (e.g., BottomSheet with transform)
+  return createPortal(
     <div
       className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in bg-overlay-dark"
       onClick={isRemediating ? undefined : onClose}
@@ -247,6 +249,7 @@ export function HalfBinModeBlockedModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
