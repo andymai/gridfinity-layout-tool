@@ -862,6 +862,25 @@ input[type='range']:hover::-moz-range-thumb {
   animation: toastExitTop 150ms ease-out forwards;
 }
 
+/* Blocked zone styling - subtle pulse on hover to indicate clickability */
+.blocked-zone {
+  animation: blocked-zone-breathe 3s ease-in-out infinite;
+}
+
+.blocked-zone:hover {
+  animation: none;
+}
+
+@keyframes blocked-zone-breathe {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
 /* ===========================================
    REDUCED MOTION
    =========================================== */

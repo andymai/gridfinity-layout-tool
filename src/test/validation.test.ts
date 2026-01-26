@@ -62,7 +62,8 @@ describe('canPlaceBin', () => {
       },
     ];
     const result = canPlaceBin({ x: 1, y: 1, width: 2, depth: 2, height: 3 }, 'layer1', layout);
-    expect(result).toEqual({ valid: false, reason: 'collision' });
+    expect(result).toMatchObject({ valid: false, reason: 'collision' });
+    expect(result.blockingInfo).toMatchObject({ binId: 'existing', layerId: 'layer1' });
   });
 
   it('allows placement next to existing bin', () => {
@@ -128,7 +129,8 @@ describe('canPlaceBin', () => {
       },
     ];
     const result = canPlaceBin({ x: 1, y: 1, width: 2, depth: 2, height: 6 }, 'layer2', layout);
-    expect(result).toEqual({ valid: false, reason: 'blocked_zone' });
+    expect(result).toMatchObject({ valid: false, reason: 'blocked_zone' });
+    expect(result.blockingInfo).toMatchObject({ binId: 'tall', layerId: 'layer1' });
   });
 
   it('rejects placement overlapping fractional blocked zone', () => {
@@ -150,7 +152,8 @@ describe('canPlaceBin', () => {
     ];
     // Bin on layer 2 that covers the blocked zone area
     const result = canPlaceBin({ x: 0, y: 0, width: 3, depth: 3, height: 6 }, 'layer2', layout);
-    expect(result).toEqual({ valid: false, reason: 'blocked_zone' });
+    expect(result).toMatchObject({ valid: false, reason: 'blocked_zone' });
+    expect(result.blockingInfo).toMatchObject({ binId: 'small-tall', layerId: 'layer1' });
   });
 
   it('allows placement adjacent to fractional blocked zone', () => {
@@ -573,7 +576,8 @@ describe('canPlaceBin - rotation scenarios', () => {
       layout,
       'bin1'
     );
-    expect(result).toEqual({ valid: false, reason: 'collision' });
+    expect(result).toMatchObject({ valid: false, reason: 'collision' });
+    expect(result.blockingInfo).toMatchObject({ binId: 'bin2', layerId: 'layer1' });
   });
 
   it('allows rotation when adjacent bins do not collide', () => {

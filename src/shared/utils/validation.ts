@@ -150,7 +150,17 @@ export function canPlaceBin(
   const blockedZones = getBlockedZones(layerId, bins, layers);
   for (const zone of blockedZones) {
     if (footprintsOverlap(rect, zone)) {
-      return { valid: false, reason: 'blocked_zone' };
+      // Find the layer name for the blocking bin
+      const sourceLayer = layers.find((l) => l.id === zone.sourceLayerId);
+      return {
+        valid: false,
+        reason: 'blocked_zone',
+        blockingInfo: {
+          binId: zone.sourceBinId,
+          layerId: zone.sourceLayerId,
+          layerName: sourceLayer?.name ?? zone.sourceLayerId,
+        },
+      };
     }
   }
 
@@ -175,7 +185,17 @@ export function canPlaceBin(
     if (excludeBinIds?.has(other.id)) continue;
     if (other.layerId === STAGING_ID) continue;
     if (binsCollide(testBin, other, layers)) {
-      return { valid: false, reason: 'collision' };
+      // Find the layer name for the colliding bin
+      const otherLayer = layers.find((l) => l.id === other.layerId);
+      return {
+        valid: false,
+        reason: 'collision',
+        blockingInfo: {
+          binId: other.id,
+          layerId: other.layerId,
+          layerName: otherLayer?.name ?? other.layerId,
+        },
+      };
     }
   }
 

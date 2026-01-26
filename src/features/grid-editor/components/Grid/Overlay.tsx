@@ -5,6 +5,8 @@ import {
   calcFractionalPixelSize,
   type FractionalGridContext,
 } from '@/features/grid-editor/utils/fractionalPixels';
+import { useTranslation } from '@/i18n';
+import type { ValidationReason, BlockingInfo } from '@/core/types';
 
 interface OverlayProps {
   cellSize: number;
@@ -16,6 +18,66 @@ interface OverlayProps {
  * Shows amber dashed border for draw, green/red for drag/resize.
  * Supports multi-bin drag and resize previews.
  */
+/**
+ * Floating indicator component that shows why placement is invalid.
+ * Positioned relative to the preview rectangle.
+ */
+function PlacementIndicator({
+  reason,
+  blockingInfo,
+  left,
+  top,
+}: {
+  reason: ValidationReason;
+  blockingInfo?: BlockingInfo;
+  left: number;
+  top: number;
+}) {
+  const t = useTranslation();
+
+  // Generate message based on reason
+  let message: string;
+  if (reason === 'blocked_zone' && blockingInfo) {
+    message = t('grid.blockedByBin', { layer: blockingInfo.layerName });
+  } else if (reason === 'collision') {
+    message = t('grid.collision');
+  } else if (
+    reason === 'out_of_bounds' ||
+    reason === 'exceeds_width' ||
+    reason === 'exceeds_depth' ||
+    reason === 'exceeds_height'
+  ) {
+    message = t('grid.outOfBounds');
+  } else if (reason === 'invalid_layer') {
+    message = t('grid.invalidLayer');
+  } else {
+    // Exhaustive check - should never reach here with current ValidationReason type
+    return null;
+  }
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: left + 4,
+        top: top - 28,
+        backgroundColor: 'var(--color-error)',
+        color: 'white',
+        padding: '4px 8px',
+        borderRadius: '4px',
+        fontSize: '12px',
+        fontWeight: 500,
+        whiteSpace: 'nowrap',
+        pointerEvents: 'none',
+        zIndex: 100,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+      }}
+    >
+      {message}
+    </div>
+  );
+}
+
 export function Overlay({ cellSize, gap }: OverlayProps) {
   // Performance: Use focused stores directly instead of facade
   const interaction = useInteractionStore((state) => state.interaction);
@@ -251,6 +313,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const deltaY = currentCoord.y;
 
       // Draw preview for each bin being dragged with uniform delta applied
+      let firstPreviewLeft = 0;
+      let firstPreviewTop = 0;
       for (const binId of binIds) {
         const bin = binMap.get(binId);
         if (!bin) continue;
@@ -263,6 +327,12 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         const top = calcTop(newY, bin.depth);
         const rectWidth = calcPixelWidth(newX, bin.width);
         const rectHeight = calcPixelHeight(newY, bin.depth);
+
+        // Track first preview position for indicator
+        if (binId === binIds[0]) {
+          firstPreviewLeft = left;
+          firstPreviewTop = top;
+        }
 
         previews.push(
           <div
@@ -280,11 +350,28 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
           />
         );
       }
+
+      // Show placement indicator when invalid
+      if (!valid && interaction.invalidReason) {
+        previews.push(
+          <PlacementIndicator
+            key="drag-indicator"
+            reason={interaction.invalidReason}
+            blockingInfo={interaction.blockingInfo}
+            left={firstPreviewLeft}
+            top={firstPreviewTop}
+          />
+        );
+      }
     }
   } else if (interaction.type === 'resize') {
     const { binIds, currentRects, valid } = interaction;
     const borderColor = valid ? 'var(--color-success)' : 'var(--color-error)';
     const bgColor = valid ? 'var(--color-success-muted)' : 'var(--color-error-muted)';
+
+    let firstPreviewLeft = 0;
+    let firstPreviewTop = 0;
+    let isFirstBin = true;
 
     // Draw preview for each bin being resized
     for (const binId of binIds) {
@@ -296,6 +383,13 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       const top = calcTop(currentRect.y, currentRect.depth);
       const rectWidth = toPixels(currentRect.width);
       const rectHeight = toPixels(currentRect.depth);
+
+      // Track first preview position for indicator
+      if (isFirstBin) {
+        firstPreviewLeft = left;
+        firstPreviewTop = top;
+        isFirstBin = false;
+      }
 
       // Ghost outline of original size (dashed gray border)
       const sizeChanged =
@@ -347,6 +441,19 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
         />
       );
     }
+
+    // Show placement indicator when invalid (only if at least one bin was processed)
+    if (!valid && interaction.invalidReason && !isFirstBin) {
+      previews.push(
+        <PlacementIndicator
+          key="resize-indicator"
+          reason={interaction.invalidReason}
+          blockingInfo={interaction.blockingInfo}
+          left={firstPreviewLeft}
+          top={firstPreviewTop}
+        />
+      );
+    }
   } else if (interaction.type === 'stagingDrag') {
     const { binId, currentCoord, valid } = interaction;
     const bin = binMap.get(binId);
@@ -376,6 +483,19 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
           }}
         />
       );
+
+      // Show placement indicator when invalid
+      if (!valid && interaction.invalidReason) {
+        previews.push(
+          <PlacementIndicator
+            key="staging-drag-indicator"
+            reason={interaction.invalidReason}
+            blockingInfo={interaction.blockingInfo}
+            left={left}
+            top={top}
+          />
+        );
+      }
     }
   } else if (interaction.type === 'paint') {
     const { start, current, paintSize } = interaction;

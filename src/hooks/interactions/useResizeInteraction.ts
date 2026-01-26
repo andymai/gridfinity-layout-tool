@@ -5,7 +5,7 @@ import { calculateResizeRect, capturePointer } from '@/utils/interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, ResizeStartArgs } from './types';
-import type { Coord, Rect } from '@/core/types';
+import type { Coord, Rect, ValidationReason, BlockingInfo } from '@/core/types';
 
 /**
  * Hook for resize mode interactions: resizing bins via corner/edge handles.
@@ -99,6 +99,8 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
       // Resize all selected bins by same delta
       const newRects = new Map<string, Rect>();
       let allValid = true;
+      let invalidReason: ValidationReason | undefined;
+      let blockingInfo: BlockingInfo | undefined;
       const otherBinIds = new Set(interaction.binIds);
 
       for (const binId of interaction.binIds) {
@@ -127,6 +129,9 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
 
         if (!result.valid) {
           allValid = false;
+          invalidReason = result.reason;
+          blockingInfo = result.blockingInfo;
+          break; // Preserve first blocking reason, consistent with drag interaction
         }
       }
 
@@ -134,6 +139,8 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
         ...interaction,
         currentRects: newRects,
         valid: allValid,
+        invalidReason,
+        blockingInfo,
       });
     },
     [layout, activeLayerId, setInteraction]

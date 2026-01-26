@@ -5,7 +5,7 @@ import { capturePointer } from '@/utils/interaction';
 import { findBinById } from '@/utils/entity';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { InteractionContext, ModeHandlers, StagingDragStartArgs } from './types';
-import type { Coord } from '@/core/types';
+import type { Coord, ValidationReason, BlockingInfo } from '@/core/types';
 
 /**
  * Hook for staging drag mode interactions: dragging bins from the stash onto the grid.
@@ -98,10 +98,20 @@ export function useStagingDragInteraction(
         bin.id
       );
 
+      // Track validation reason and blocking info for user feedback
+      let invalidReason: ValidationReason | undefined;
+      let blockingInfo: BlockingInfo | undefined;
+      if (!result.valid) {
+        invalidReason = result.reason;
+        blockingInfo = result.blockingInfo;
+      }
+
       setInteraction({
         ...interaction,
         currentCoord: { x: targetX, y: targetY },
         valid: result.valid,
+        invalidReason,
+        blockingInfo,
       });
     },
     [layout, activeLayerId, setInteraction]
