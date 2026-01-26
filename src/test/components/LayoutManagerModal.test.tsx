@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import { LayoutManagerModal } from '@/features/layout-library/components/LayoutManagerModal';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
@@ -286,10 +286,12 @@ describe('LayoutManagerModal Accessibility', () => {
     it('layout items have role="option" with aria-selected', () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
-      const options = screen.getAllByRole('option');
-      // In grid view, there are 2 layouts rendered as LayoutGridItem components
-      // In list view, there are 2 layouts rendered as LayoutListItem components
-      // The default is now grid view on desktop
+      // Scope query to the layouts listbox to avoid matching select options
+      const listbox = screen.getByRole('listbox', { name: /available layouts/i });
+      const options = within(listbox).getAllByRole('option');
+
+      // In grid view: 1 "New Layout" card + 2 layouts = 3 options
+      // In list view: 2 layouts = 2 options
       expect(options.length).toBeGreaterThanOrEqual(2);
 
       // Active layout should have aria-selected="true"

@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useTranslation } from '@/i18n';
 
 export type ViewMode = 'list' | 'grid';
@@ -9,19 +10,43 @@ interface ViewModeToggleProps {
 
 /**
  * Toggle button pair for switching between list and grid view.
+ * Implements proper radiogroup keyboard navigation.
  */
 export function ViewModeToggle({ value, onChange }: ViewModeToggleProps) {
   const t = useTranslation();
+
+  // Handle arrow key navigation for radiogroup
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        onChange('list');
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        onChange('grid');
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        onChange('list');
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        onChange('grid');
+      }
+    },
+    [onChange]
+  );
 
   return (
     <div
       className="flex rounded-lg bg-surface p-0.5 border border-stroke"
       role="radiogroup"
       aria-label={t('layouts.viewMode')}
+      onKeyDown={handleKeyDown}
     >
       <button
+        type="button"
         role="radio"
         aria-checked={value === 'list'}
+        tabIndex={value === 'list' ? 0 : -1}
         onClick={() => onChange('list')}
         className={`
           p-1.5 rounded-md transition-colors
@@ -50,8 +75,10 @@ export function ViewModeToggle({ value, onChange }: ViewModeToggleProps) {
         </svg>
       </button>
       <button
+        type="button"
         role="radio"
         aria-checked={value === 'grid'}
+        tabIndex={value === 'grid' ? 0 : -1}
         onClick={() => onChange('grid')}
         className={`
           p-1.5 rounded-md transition-colors

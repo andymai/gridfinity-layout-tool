@@ -155,9 +155,11 @@ export function LayoutList({
         // In grid view, index 0 is the "New Layout" card
         if (viewMode === 'grid') {
           if (newIndex === 0) {
-            // Focus the "New Layout" card
-            const newCard = gridRef.current?.querySelector('[data-new-layout-card]') as HTMLElement;
-            newCard?.focus();
+            // Focus the actionable button within the "New Layout" card
+            const newCardButton = gridRef.current?.querySelector(
+              '[data-new-layout-card] button, [data-new-layout-card][role="button"]'
+            ) as HTMLElement | null;
+            newCardButton?.focus();
           } else {
             const entry = sortedEntries[newIndex - 1];
             if (entry) {
@@ -364,8 +366,17 @@ export function LayoutList({
           {/* New Layout Card (first item in grid) */}
           <div
             data-new-layout-card
+            role="option"
+            aria-selected={focusedIndex === 0}
             tabIndex={focusedIndex === 0 ? 0 : -1}
             onFocus={() => setFocusedIndex(0)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                onCreate();
+              }
+            }}
           >
             <NewLayoutCard onCreate={onCreate} />
           </div>
