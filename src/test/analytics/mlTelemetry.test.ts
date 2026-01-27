@@ -36,7 +36,7 @@ vi.mock('@/core/store/settings', () => ({
   useSettingsStore: {
     getState: vi.fn(() => ({
       settings: {
-        mlTelemetryEnabled: true,
+        analyticsEnabled: true,
       },
     })),
   },

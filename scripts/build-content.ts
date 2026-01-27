@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Build script for static content pages.
  * Converts Markdown files in content/ to HTML in public/.
@@ -29,11 +30,7 @@ interface Frontmatter {
 /**
  * Generate the HTML template for a content page
  */
-function generateHtml(
-  content: string,
-  frontmatter: Frontmatter,
-  slug: string
-): string {
+function generateHtml(content: string, frontmatter: Frontmatter, slug: string): string {
   const { title, description, keywords, ogImage, schema } = frontmatter;
   const canonicalUrl = `${SITE_URL}/${slug}`;
   const image = ogImage || `${SITE_URL}/og-image.png`;
@@ -156,6 +153,8 @@ ${content}
       <div class="content-footer__links">
         <a href="/what-is-gridfinity">What is Gridfinity?</a>
         <a href="/guide">Planning Guide</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
       </div>
       <p class="content-footer__copyright">
         © ${new Date().getFullYear()} Gridfinity Layout Tool. Free to use.
@@ -183,9 +182,7 @@ function escapeHtml(str: string): string {
  * Escapes < and > to their Unicode equivalents
  */
 function safeJsonLd(data: object): string {
-  return JSON.stringify(data, null, 2)
-    .replace(/</g, '\\u003c')
-    .replace(/>/g, '\\u003e');
+  return JSON.stringify(data, null, 2).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
 }
 
 /**
@@ -203,9 +200,7 @@ function configureMarked(): void {
       // Add classes to lists
       list(token) {
         const type = token.ordered ? 'ol' : 'ul';
-        const body = token.items
-          .map((item) => this.listitem(item))
-          .join('');
+        const body = token.items.map((item) => this.listitem(item)).join('');
         return `<${type} class="content-list">${body}</${type}>\n`;
       },
       // Handle special CTA syntax: [CTA: text](url)

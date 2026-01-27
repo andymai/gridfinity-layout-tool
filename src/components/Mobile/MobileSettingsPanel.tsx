@@ -16,21 +16,29 @@ import { SectionHeader } from '@/shared/components/SectionHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import type { STLSearchSite } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
+import { optInAnalytics, optOutAnalytics } from '@/utils/analytics';
 
 /**
  * Privacy settings section for mobile.
  */
 function MobilePrivacySection() {
   const t = useTranslation();
-  const { mlTelemetryEnabled, updateSetting } = useSettingsStore(
+  const { analyticsEnabled, updateSetting } = useSettingsStore(
     useShallow((state) => ({
-      mlTelemetryEnabled: state.settings.mlTelemetryEnabled,
+      analyticsEnabled: state.settings.analyticsEnabled,
       updateSetting: state.updateSetting,
     }))
   );
 
   const handleToggle = () => {
-    updateSetting('mlTelemetryEnabled', !mlTelemetryEnabled);
+    const newValue = !analyticsEnabled;
+    updateSetting('analyticsEnabled', newValue);
+    // Apply the change to PostHog immediately
+    if (newValue) {
+      optInAnalytics();
+    } else {
+      optOutAnalytics();
+    }
   };
 
   return (
@@ -40,7 +48,7 @@ function MobilePrivacySection() {
         className="flex items-center justify-between py-2 cursor-pointer"
         onClick={handleToggle}
         role="checkbox"
-        aria-checked={mlTelemetryEnabled}
+        aria-checked={analyticsEnabled}
         aria-label={t('mobile.settings.toggleUsageDataCollection')}
         tabIndex={0}
         onKeyDown={(e) => {
@@ -52,7 +60,7 @@ function MobilePrivacySection() {
       >
         <div>
           <span
-            className={`text-sm ${mlTelemetryEnabled ? 'text-content' : 'text-content-secondary'}`}
+            className={`text-sm ${analyticsEnabled ? 'text-content' : 'text-content-secondary'}`}
           >
             {t('mobile.settings.helpImproveSuggestions')}
           </span>
@@ -60,7 +68,7 @@ function MobilePrivacySection() {
             {t('mobile.settings.shareBinSizesAndPlacementPatternsNo')}
           </p>
         </div>
-        <Checkbox checked={mlTelemetryEnabled} variant="mobile" />
+        <Checkbox checked={analyticsEnabled} variant="mobile" />
       </div>
     </section>
   );
@@ -384,6 +392,25 @@ export function MobileSettingsPanel() {
             className="hover:underline text-content-tertiary"
           >
             Andy Aragon
+          </a>
+        </div>
+        <div className="text-xs text-content-disabled mt-3 space-x-3">
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-content-tertiary"
+          >
+            {t('settings.privacyPolicy')}
+          </a>
+          <span>·</span>
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-content-tertiary"
+          >
+            {t('settings.termsOfService')}
           </a>
         </div>
       </section>

@@ -81,11 +81,11 @@ import {
 // ============================================
 
 /**
- * Check if ML telemetry is enabled.
+ * Check if analytics/telemetry is enabled.
  */
 export function isEnabled(): boolean {
   const settings = useSettingsStore.getState().settings;
-  return settings.mlTelemetryEnabled ?? true;
+  return settings.analyticsEnabled ?? true;
 }
 
 /**

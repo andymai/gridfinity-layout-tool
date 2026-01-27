@@ -185,11 +185,11 @@ export interface UserSettings {
 
   // Privacy settings
   /**
-   * Enable ML telemetry for bin prediction training.
-   * Collects anonymous usage patterns (bin sizes, labels) to improve suggestions.
+   * Enable anonymous analytics and telemetry.
+   * Controls both PostHog analytics and ML telemetry for bin suggestions.
    * Default: true (opt-out model)
    */
-  mlTelemetryEnabled: boolean;
+  analyticsEnabled: boolean;
 
   // Language preference
   /**
@@ -234,7 +234,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   stlSearchSites: [...DEFAULT_STL_SEARCH_SITES],
 
   // Privacy - opt-out by default (enabled)
-  mlTelemetryEnabled: true,
+  analyticsEnabled: true,
 
   // Language - auto-detect from browser by default
   locale: 'auto' as const,
