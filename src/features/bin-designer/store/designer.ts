@@ -448,6 +448,26 @@ export const useDesignerStore = create<DesignerState>()(
       });
     },
 
+    setPreviewCompartments: (preview: BinParams['compartments'] | null) => {
+      set((state) => {
+        state.ui.previewCompartments = preview;
+      });
+    },
+
+    setPreviewSelection: (
+      selection: {
+        action: 'merge' | 'split';
+        minCol: number;
+        maxCol: number;
+        minRow: number;
+        maxRow: number;
+      } | null
+    ) => {
+      set((state) => {
+        state.ui.previewSelection = selection;
+      });
+    },
+
     toggleHalfBinMode: () => {
       set((state) => {
         const enabling = !state.ui.halfBinMode;

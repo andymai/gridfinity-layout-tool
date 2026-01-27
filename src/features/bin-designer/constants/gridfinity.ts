@@ -100,4 +100,4 @@ export const DESIGNER_CONSTRAINTS = {
  * Valid wall thickness options — multiples of common FDM nozzle sizes (0.4, 0.6, 0.8mm).
  * Used for both exterior wall thickness and interior divider walls.
  */
-export const WALL_THICKNESS_OPTIONS = [0.4, 0.6, 0.8, 1.2, 1.6, 1.8, 2.0, 2.4] as const;
+export const WALL_THICKNESS_OPTIONS = [0.4, 0.6, 0.8, 1.2, 1.6, 1.8, 2.0, 2.4, 2.6] as const;

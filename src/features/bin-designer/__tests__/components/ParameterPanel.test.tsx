@@ -250,27 +250,27 @@ describe('ParameterPanel', () => {
   });
 
   describe('walls section', () => {
-    it('shows wall thickness selector (expanded by default)', () => {
-      render(<ParameterPanel />);
+    it('shows wall thickness slider (expanded by default)', () => {
+      const { container } = render(<ParameterPanel />);
 
-      expect(screen.getByLabelText('Wall thickness')).toBeInTheDocument();
+      // SnappingSlider has both a div and hidden input with slider role - query the visible div
+      const sliderDiv = container.querySelector('div[role="slider"][aria-label*="Wall thickness"]');
+      expect(sliderDiv).toBeInTheDocument();
     });
 
-    it('wall thickness selector shows discrete options', () => {
+    it('wall thickness slider shows tick marks for options', () => {
       render(<ParameterPanel />);
 
-      const thicknessGroup = screen.getByRole('radiogroup', { name: 'Wall thickness' });
-      const options = within(thicknessGroup).getAllByRole('radio');
-      expect(options).toHaveLength(8);
-      expect(screen.getByLabelText('0.4mm')).toBeInTheDocument();
-      expect(screen.getByLabelText('1.2mm')).toBeInTheDocument();
-      expect(screen.getByLabelText('2.4mm')).toBeInTheDocument();
+      // SnappingSlider shows tick buttons for each option
+      expect(screen.getByLabelText('Select 0.4mm')).toBeInTheDocument();
+      expect(screen.getByLabelText('Select 1.2mm')).toBeInTheDocument();
+      expect(screen.getByLabelText('Select 2.4mm')).toBeInTheDocument();
     });
 
-    it('clicking a thickness option updates the store', () => {
+    it('clicking a tick mark updates the store', () => {
       render(<ParameterPanel />);
 
-      fireEvent.click(screen.getByLabelText('1.6mm'));
+      fireEvent.click(screen.getByLabelText('Select 1.6mm'));
 
       expect(useDesignerStore.getState().params.wallThickness).toBe(1.6);
     });
