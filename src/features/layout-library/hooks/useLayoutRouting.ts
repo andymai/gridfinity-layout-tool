@@ -199,14 +199,19 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
     }
 
     // Navigate asynchronously to the requested layout
-    navigateToLayout(layoutId, false).then((success) => {
-      if (!success) {
-        // Layout not found - silently redirect to current layout.
-        // No toast needed: this commonly happens when users bookmark a layout
-        // and later delete it. The URL redirect is sufficient feedback.
+    navigateToLayout(layoutId, false)
+      .then((success) => {
+        if (!success) {
+          // Layout not found - silently redirect to current layout.
+          // No toast needed: this commonly happens when users bookmark a layout
+          // and later delete it. The URL redirect is sufficient feedback.
+          syncUrlToActiveLayout(false);
+        }
+      })
+      .catch(() => {
+        // Handle unexpected navigation errors gracefully
         syncUrlToActiveLayout(false);
-      }
-    });
+      });
   }, [
     isLoaded,
     activeLayoutId,
@@ -231,12 +236,18 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
       if (!layoutId || layoutId === activeLayoutId) return;
 
       // Navigate asynchronously
-      navigateToLayout(layoutId, false).then((success) => {
-        if (!success) {
+      navigateToLayout(layoutId, false)
+        .then((success) => {
+          if (!success) {
+            addToast(t('toast.layoutNotFound'), 'error');
+            syncUrlToActiveLayout(false);
+          }
+        })
+        .catch(() => {
+          // Handle unexpected navigation errors on popstate
           addToast(t('toast.layoutNotFound'), 'error');
           syncUrlToActiveLayout(false);
-        }
-      });
+        });
     };
 
     window.addEventListener('popstate', handlePopState);
