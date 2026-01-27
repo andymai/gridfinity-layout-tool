@@ -658,6 +658,11 @@ export function generateBin(params: BinParams, onProgress?: ProgressFn, forExpor
   const innerD = outerD - 2 * wallThickness;
   const keepFull = params.style === 'solid';
 
+  // Dynamic quality: small bins (< 4x4) get higher fidelity preview
+  const cellCount = params.width * params.depth;
+  const isSmallBin = cellCount < 16; // 4x4 = 16 cells threshold
+  const useHighQuality = forExport || isSmallBin;
+
   const withMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
   const withScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
 
@@ -671,7 +676,7 @@ export function generateBin(params: BinParams, onProgress?: ProgressFn, forExpor
     params.base.magnetDiameter / 2,
     params.base.magnetDepth,
     params.base.screwDiameter / 2,
-    forExport
+    useHighQuality // Full socket detail for small bins + export
   );
 
   // Stage 2: Build bin box (walls + floor)
@@ -732,21 +737,32 @@ export function generateBin(params: BinParams, onProgress?: ProgressFn, forExpor
   onProgress?.('merge', 0.9);
   lastSolid = bin as unknown as Solid;
 
-  // Balanced tessellation for preview - fast but still looks good
-  // (flat walls, 4mm rounded corners, tapered sockets)
-  // Tolerance: 1-3mm based on size (vs 0.01mm for export)
-  // Angular: 30° (vs 5° for export) - corners ~12-sided
+  // Dynamic tessellation based on bin size:
+  // - Small bins (< 4x4): fine tessellation for smooth curves
+  // - Large bins (>= 4x4): coarse tessellation for speed
+  // - Export: highest quality for 3D printing
   const maxDimension = Math.max(outerW, outerD, totalHeight);
-  const previewTolerance = Math.min(3, Math.max(1, maxDimension / 100));
-  const previewAngular = 30;
+  let tolerance: number;
+  let angularTolerance: number;
 
-  const shapeMesh = bin.mesh({
-    tolerance: previewTolerance,
-    angularTolerance: previewAngular,
-  });
+  if (forExport) {
+    // Export: highest quality for 3D printing
+    tolerance = 0.01;
+    angularTolerance = 5;
+  } else if (isSmallBin) {
+    // Small bins: smooth preview (~24-sided corners)
+    tolerance = Math.min(0.5, Math.max(0.2, maxDimension / 500));
+    angularTolerance = 15;
+  } else {
+    // Large bins: fast preview (~12-sided corners)
+    tolerance = Math.min(3, Math.max(1, maxDimension / 100));
+    angularTolerance = 30;
+  }
+
+  const shapeMesh = bin.mesh({ tolerance, angularTolerance });
 
   onProgress?.('merge', 1.0);
-  // Skip normals for preview (Three.js computes flat normals on GPU)
-  // Keep normals for export (needed for STL/3MF smooth shading)
-  return indexedMeshToFlat(shapeMesh, !forExport);
+  // Skip normals for large bin preview (flat shading on GPU)
+  // Compute normals for small bins + export (smooth shading)
+  return indexedMeshToFlat(shapeMesh, !useHighQuality);
 }

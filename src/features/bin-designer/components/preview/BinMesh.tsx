@@ -3,8 +3,9 @@
  * Uses scene lighting (hemisphere + directional) for natural shading
  * with FrontSide face culling for correct visibility.
  *
- * Shows subtle edge lines to indicate this is a fast preview sketch,
- * not the final export quality.
+ * Dynamic quality based on bin size:
+ * - Small bins (< 4x4): smooth shading with pre-computed normals
+ * - Large bins (>= 4x4): flat shading with edge lines for sketch look
  */
 
 import { useMemo, useEffect } from 'react';
@@ -33,21 +34,24 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     }))
   );
 
+  // Track if we have smooth normals (small bins) vs flat shading (large bins)
+  const hasPrecomputedNormals = normals && normals.length > 0;
+
   const geometry = useMemo(() => {
     if (!vertices || vertices.length === 0) return null;
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 
-    // Use provided normals if available, otherwise compute flat normals
-    if (normals && normals.length > 0) {
+    // Small bins: use pre-computed smooth normals
+    // Large bins: compute vertex normals for flat shading fallback
+    if (hasPrecomputedNormals) {
       geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
     } else {
-      // Compute face normals for flat shading (GPU-side)
       geo.computeVertexNormals();
     }
     return geo;
-  }, [vertices, normals]);
+  }, [vertices, normals, hasPrecomputedNormals]);
 
   // Create edge geometry for sketch-like appearance
   const edgesGeometry = useMemo(() => {
@@ -79,22 +83,24 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
 
   return (
     <group position={[0, 0, 0.1]}>
-      {/* Solid mesh with flat shading for intentional low-poly sketch look */}
+      {/* Dynamic shading based on bin size:
+          - Small bins: smooth shading (pre-computed normals)
+          - Large bins: flat shading (sketch look) */}
       <mesh geometry={geometry}>
         <meshStandardMaterial
           color={color}
           roughness={0.45}
           metalness={0}
           wireframe={wireframe}
-          flatShading
+          flatShading={!hasPrecomputedNormals}
           side={THREE.DoubleSide}
           emissive={color}
           emissiveIntensity={0.08}
         />
       </mesh>
 
-      {/* Edge lines for sketch appearance (hidden in wireframe mode) */}
-      {!wireframe && edgesGeometry && (
+      {/* Edge lines for large bin sketch appearance (hidden for small bins + wireframe) */}
+      {!wireframe && !hasPrecomputedNormals && edgesGeometry && (
         <lineSegments geometry={edgesGeometry}>
           <lineBasicMaterial
             color={EDGE_COLOR}

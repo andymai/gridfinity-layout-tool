@@ -62,20 +62,36 @@ describe('replicad bin generation', () => {
     expect(result.triangleCount).toBeGreaterThan(100);
   }, 30000);
 
-  it('preview mode skips normals for performance', () => {
+  it('large bins skip normals for performance (4x4+)', () => {
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
-      width: 1,
-      depth: 1,
+      width: 4,
+      depth: 4,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
     };
 
-    // Default (preview mode) skips normals
+    // Large bins (>= 4x4) skip normals for speed
     const result = generateBin(params);
 
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.normals).toBeNull();
-    expect(result.triangleCount).toBeGreaterThan(50);
-  }, 30000);
+    expect(result.triangleCount).toBeGreaterThan(100);
+  }, 60000);
+
+  it('small bins include normals for smooth shading (< 4x4)', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 2,
+      depth: 2,
+    };
+
+    // Small bins get smooth normals
+    const result = generateBin(params);
+
+    expect(result.vertices.length).toBeGreaterThan(0);
+    expect(result.normals).not.toBeNull();
+    expect(result.normals!.length).toBe(result.vertices.length);
+  }, 60000);
 
   it('generates a 2x2 bin (DEFAULT_BIN_PARAMS)', () => {
     // Use forExport=true to test full mesh with normals
