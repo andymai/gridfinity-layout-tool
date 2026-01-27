@@ -13,10 +13,10 @@ import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 
-/** Edge line color - subtle dark gray */
-const EDGE_COLOR = '#555555';
+/** Edge line color - dark for high contrast */
+const EDGE_COLOR = '#1a1a1a';
 /** Edge line opacity */
-const EDGE_OPACITY = 0.3;
+const EDGE_OPACITY = 0.6;
 
 interface BinMeshProps {
   wireframe: boolean;
