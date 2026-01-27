@@ -430,7 +430,17 @@ const SUBCATEGORY_PATTERNS: SubcategoryPattern[] = [
   // Note: /\bd\d+\b/i could match vitamins like D3, so require dice-related context
   {
     patterns: [/\bd(?:4|6|8|10|12|20|100)\b/i, /dice/i, /\bmini(?:ature)?s?\b/i, /token/i],
-    keywords: ['dice', 'mini', 'miniature', 'token', 'figure', 'dnd', 'rpg', 'warhammer', 'pathfinder'],
+    keywords: [
+      'dice',
+      'mini',
+      'miniature',
+      'token',
+      'figure',
+      'dnd',
+      'rpg',
+      'warhammer',
+      'pathfinder',
+    ],
     names: ['Dice & Minis', 'Tabletop Kit', 'D&D Stuff', 'Game Night Drawer'],
     minMatches: 2,
     confidenceBoost: 0.2,
@@ -668,7 +678,7 @@ const SUBCATEGORY_PATTERNS: SubcategoryPattern[] = [
   {
     patterns: [/cookie\s*cutter/i, /piping\s*tip/i, /measuring\s*cup/i, /baking/i],
     keywords: ['baking', 'cookie', 'piping', 'decorating', 'measuring', 'fondant'],
-    names: ['Baking Supplies', 'Baking Drawer', 'Cookie Decorating', 'Baker\'s Drawer'],
+    names: ['Baking Supplies', 'Baking Drawer', 'Cookie Decorating', "Baker's Drawer"],
     minMatches: 2,
     confidenceBoost: 0.2,
   },
@@ -795,26 +805,16 @@ const SUBCATEGORY_PATTERNS: SubcategoryPattern[] = [
 ];
 
 /**
- * Size descriptor based on drawer dimensions.
+ * Size descriptors based on drawer dimensions.
+ * Returns both a descriptor ("Compact", "Large") and an adjective ("Small", "Full-Size").
  */
-function getSizeDescriptor(width: number, depth: number): string {
+function getSizeInfo(width: number, depth: number): { descriptor: string; adjective: string } {
   const area = width * depth;
 
-  if (area <= 16) return 'Compact';
-  if (area <= 40) return 'Medium';
-  if (area <= 80) return 'Large';
-  return 'Extra Large';
-}
-
-/**
- * Get a size-based adjective for variety.
- */
-function getSizeAdjective(width: number, depth: number): string {
-  const area = width * depth;
-  if (area <= 16) return 'Small';
-  if (area <= 40) return 'Standard';
-  if (area <= 80) return 'Full-Size';
-  return 'XL';
+  if (area <= 16) return { descriptor: 'Compact', adjective: 'Small' };
+  if (area <= 40) return { descriptor: 'Medium', adjective: 'Standard' };
+  if (area <= 80) return { descriptor: 'Large', adjective: 'Full-Size' };
+  return { descriptor: 'Extra Large', adjective: 'XL' };
 }
 
 // ============================================
@@ -969,22 +969,26 @@ const SIMPLE_SUFFIXES: string[] = [
 ];
 
 /**
- * Quantity-based names that sound natural.
+ * Quantity-based info for naming suggestions.
+ * Returns a prefix for formal names (e.g., "Complete") and standalone casual names.
  */
-function getQuantityName(binCount: number): string | null {
+function getQuantityInfo(binCount: number): { prefix: string | null; casualNames: string[] } {
   if (binCount >= 30) {
-    const options = ['Everything', 'The Full Set', 'All of It', 'Complete Set'];
-    return options[binCount % options.length];
+    return { prefix: 'Complete', casualNames: ['Everything', 'The Full Set', 'All of It'] };
   }
   if (binCount >= 20) {
-    const options = ['Well Stocked', 'Fully Loaded', 'The Works'];
-    return options[binCount % options.length];
+    return { prefix: 'Full', casualNames: ['Well Stocked', 'Fully Loaded', 'The Works'] };
+  }
+  if (binCount >= 15) {
+    return { prefix: 'Comprehensive', casualNames: ['Lots of Stuff'] };
+  }
+  if (binCount >= 10) {
+    return { prefix: 'Standard', casualNames: ['Various Things'] };
   }
   if (binCount <= 5 && binCount > 0) {
-    const options = ['The Basics', 'Essentials', 'Just What I Need', 'Starter Set'];
-    return options[binCount % options.length];
+    return { prefix: 'Starter', casualNames: ['The Basics', 'Essentials', 'Just What I Need'] };
   }
-  return null;
+  return { prefix: null, casualNames: [] };
 }
 
 /**
@@ -1176,18 +1180,6 @@ function detectLocation(labels: string[]): string | null {
 }
 
 /**
- * Get quantity descriptor based on bin count.
- */
-function getQuantityDescriptor(binCount: number): string | null {
-  if (binCount >= 30) return 'Complete';
-  if (binCount >= 20) return 'Full';
-  if (binCount >= 15) return 'Comprehensive';
-  if (binCount >= 10) return 'Standard';
-  if (binCount <= 5) return 'Starter';
-  return null;
-}
-
-/**
  * Analyze categories to find dominant theme.
  */
 function analyzeCategories(categories: CategoryCount[]): {
@@ -1267,8 +1259,7 @@ export function generateSuggestions(input: SuggestionInput): SuggestionResult {
   const suggestions: NameSuggestion[] = [];
   const { labels, categories, drawer, purpose } = input;
 
-  const sizeDesc = getSizeDescriptor(drawer.width, drawer.depth);
-  const sizeAdj = getSizeAdjective(drawer.width, drawer.depth);
+  const { descriptor: sizeDesc, adjective: sizeAdj } = getSizeInfo(drawer.width, drawer.depth);
 
   // Analyze labels for domains and specific terms
   const domainAnalysis = analyzeLabels(labels);
@@ -1474,55 +1465,26 @@ export function generateSuggestions(input: SuggestionInput): SuggestionResult {
     });
   }
 
-  // Strategy 7: Quantity-based suggestions
-  const quantityDesc = getQuantityDescriptor(labels.length);
-  if (quantityDesc && domainAnalysis.primaryDomain) {
+  // Strategy 7: Quantity-based suggestions (consolidated from former strategies 7-9)
+  const quantityInfo = getQuantityInfo(labels.length);
+  if (quantityInfo.prefix && domainAnalysis.primaryDomain) {
     const naming = DOMAIN_NAMING[domainAnalysis.primaryDomain];
     suggestions.push({
-      name: `${quantityDesc} ${naming.name} Set`,
+      name: `${quantityInfo.prefix} ${naming.name} Set`,
       source: 'labels',
       confidence: 0.5,
     });
   }
+  // Add casual quantity-based names
+  quantityInfo.casualNames.forEach((name, index) => {
+    suggestions.push({
+      name,
+      source: 'dimensions',
+      confidence: 0.45 - index * 0.05,
+    });
+  });
 
-  // Strategy 8: Quantity-based names (based on how full/complete)
-  const quantityName = getQuantityName(labels.length);
-  if (quantityName) {
-    suggestions.push({
-      name: quantityName,
-      source: 'labels',
-      confidence: 0.45,
-    });
-  }
-
-  // Strategy 9: Bin count based suggestions
-  if (labels.length >= 25) {
-    suggestions.push({
-      name: 'Everything',
-      source: 'dimensions',
-      confidence: 0.38,
-    });
-  } else if (labels.length >= 15) {
-    suggestions.push({
-      name: 'Lots of Stuff',
-      source: 'dimensions',
-      confidence: 0.36,
-    });
-  } else if (labels.length >= 10) {
-    suggestions.push({
-      name: 'Various Things',
-      source: 'dimensions',
-      confidence: 0.35,
-    });
-  } else if (labels.length <= 4 && labels.length > 0) {
-    suggestions.push({
-      name: 'The Basics',
-      source: 'dimensions',
-      confidence: 0.35,
-    });
-  }
-
-  // Strategy 10: Dimensions-based fallback (always available)
+  // Strategy 8: Dimensions-based fallback (always available)
   // Simple, natural-sounding names with personality
   const fallbacks = [
     { name: `${sizeDesc} Drawer`, confidence: 0.3 },
@@ -1541,15 +1503,15 @@ export function generateSuggestions(input: SuggestionInput): SuggestionResult {
   const area = drawer.width * drawer.depth;
   if (area <= 12) {
     fallbacks.unshift({ name: 'Tiny Treasures', confidence: 0.31 });
-    fallbacks.unshift({ name: 'Small but Mighty', confidence: 0.30 });
+    fallbacks.unshift({ name: 'Small but Mighty', confidence: 0.3 });
   } else if (area <= 20) {
-    fallbacks.unshift({ name: 'Compact Drawer', confidence: 0.30 });
+    fallbacks.unshift({ name: 'Compact Drawer', confidence: 0.3 });
     fallbacks.unshift({ name: 'Little Things', confidence: 0.29 });
   } else if (area >= 150) {
     fallbacks.unshift({ name: 'The Big One', confidence: 0.31 });
-    fallbacks.unshift({ name: 'Everything Drawer', confidence: 0.30 });
+    fallbacks.unshift({ name: 'Everything Drawer', confidence: 0.3 });
   } else if (area >= 100) {
-    fallbacks.unshift({ name: 'Big Drawer', confidence: 0.30 });
+    fallbacks.unshift({ name: 'Big Drawer', confidence: 0.3 });
     fallbacks.unshift({ name: 'Room for More', confidence: 0.29 });
   }
 
@@ -1562,9 +1524,7 @@ export function generateSuggestions(input: SuggestionInput): SuggestionResult {
   }
 
   // Build set of existing names (case-insensitive) to avoid duplicates
-  const existingNamesSet = new Set(
-    (input.existingNames ?? []).map((n) => n.toLowerCase().trim())
-  );
+  const existingNamesSet = new Set((input.existingNames ?? []).map((n) => n.toLowerCase().trim()));
 
   // Sort by confidence (highest first), deduplicate, and filter out existing names
   const sorted = suggestions.sort((a, b) => b.confidence - a.confidence);
