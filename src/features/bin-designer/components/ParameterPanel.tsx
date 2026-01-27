@@ -6,9 +6,9 @@
  *
  * Layout:
  * - Dimensions (expanded) — Width, Depth, Height
- * - Base (expanded) — Magnets, Screws, Stacking lip
  * - Walls (expanded) — Wall thickness
  * - Interior (expanded) — Compartments
+ * - Base (expanded) — Magnets, Screws, Stacking lip
  * - Physical Units — Grid unit size (mm)
  */
 
@@ -26,13 +26,13 @@ export function ParameterPanel() {
           <DimensionsSection />
         </div>
         <div className="px-4 py-4 border-b border-stroke-subtle">
-          <BaseSection />
-        </div>
-        <div className="px-4 py-4 border-b border-stroke-subtle">
           <WallsSection />
         </div>
         <div className="px-4 py-4 border-b border-stroke-subtle">
           <InteriorSection />
+        </div>
+        <div className="px-4 py-4 border-b border-stroke-subtle">
+          <BaseSection />
         </div>
         <div className="px-4 py-4">
           <PhysicalUnitsSection />

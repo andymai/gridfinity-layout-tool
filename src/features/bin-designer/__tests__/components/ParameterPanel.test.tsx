@@ -46,9 +46,30 @@ describe('ParameterPanel', () => {
   it('shows mm info for dimensions', () => {
     render(<ParameterPanel />);
 
-    // Default width=2, depth=2 both show 84mm
-    const mmLabels = screen.getAllByText('84mm');
-    expect(mmLabels.length).toBe(2);
+    // Default width=2, depth=2, height=3 shows combined dimensions
+    // Format: "84 × 84 × 21 mm" (using gridUnitMm=42, heightUnitMm=7)
+    expect(screen.getByText(/84\s*×\s*84\s*×\s*21\s*mm/)).toBeInTheDocument();
+  });
+
+  it('swap button swaps width and depth values', () => {
+    // Set different width and depth so swap is visible
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 2, depth: 4 },
+    });
+    render(<ParameterPanel />);
+
+    const widthInput = screen.getByLabelText('Width') as HTMLInputElement;
+    const depthInput = screen.getByLabelText('Depth') as HTMLInputElement;
+    expect(widthInput.value).toBe('2');
+    expect(depthInput.value).toBe('4');
+
+    // Click swap button
+    const swapBtn = screen.getByLabelText('Swap width and depth');
+    fireEvent.click(swapBtn);
+
+    // Values should be swapped
+    expect(useDesignerStore.getState().params.width).toBe(4);
+    expect(useDesignerStore.getState().params.depth).toBe(2);
   });
 
   it('toggling magnet holes updates base style', () => {
