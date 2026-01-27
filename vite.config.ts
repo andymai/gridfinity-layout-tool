@@ -78,6 +78,8 @@ export default defineConfig({
           /^\/robots\.txt$/,
           /^\/what-is-gridfinity(?:\/|$)/,
           /^\/guide(?:\/|$)/,
+          /^\/privacy(?:\/|$)/,
+          /^\/terms(?:\/|$)/,
         ],
         runtimeCaching: [
           {
