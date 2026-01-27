@@ -453,7 +453,6 @@ export function PreviewCanvas() {
             <GhostDividers />
             <GhostCompartmentPreview />
 
-
             {/* Footprint grid */}
             <FootprintGrid width={width} depth={depth} />
 

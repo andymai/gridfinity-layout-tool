@@ -103,9 +103,7 @@ describe('SnappingSlider', () => {
   });
 
   it('shows default value marker when defaultValue is provided', () => {
-    const { container } = render(
-      <SnappingSlider {...defaultProps} defaultValue={1.2} />
-    );
+    const { container } = render(<SnappingSlider {...defaultProps} defaultValue={1.2} />);
     // Default marker has title="Default"
     const marker = container.querySelector('[title="Default"]');
     expect(marker).not.toBeNull();
@@ -124,6 +122,98 @@ describe('SnappingSlider', () => {
     expect(description).toHaveAttribute('aria-live', 'polite');
   });
 
+  describe('keyboard navigation', () => {
+    it('increments value with ArrowRight', () => {
+      const onChange = vi.fn();
+      render(<SnappingSlider {...defaultProps} value={1.2} onChange={onChange} />);
+
+      const input = document.querySelector('input[type="range"]') as HTMLElement;
+      fireEvent.keyDown(input, { key: 'ArrowRight' });
+
+      expect(onChange).toHaveBeenCalledWith(1.6);
+    });
+
+    it('decrements value with ArrowLeft', () => {
+      const onChange = vi.fn();
+      render(<SnappingSlider {...defaultProps} value={1.2} onChange={onChange} />);
+
+      const input = document.querySelector('input[type="range"]') as HTMLElement;
+      fireEvent.keyDown(input, { key: 'ArrowLeft' });
+
+      expect(onChange).toHaveBeenCalledWith(0.8);
+    });
+
+    it('increments value with ArrowUp', () => {
+      const onChange = vi.fn();
+      render(<SnappingSlider {...defaultProps} value={0.8} onChange={onChange} />);
+
+      const input = document.querySelector('input[type="range"]') as HTMLElement;
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+
+      expect(onChange).toHaveBeenCalledWith(1.2);
+    });
+
+    it('decrements value with ArrowDown', () => {
+      const onChange = vi.fn();
+      render(<SnappingSlider {...defaultProps} value={0.8} onChange={onChange} />);
+
+      const input = document.querySelector('input[type="range"]') as HTMLElement;
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+      expect(onChange).toHaveBeenCalledWith(0.4);
+    });
+
+    it('jumps to first value with Home', () => {
+      const onChange = vi.fn();
+      render(<SnappingSlider {...defaultProps} value={1.6} onChange={onChange} />);
+
+      const input = document.querySelector('input[type="range"]') as HTMLElement;
+      fireEvent.keyDown(input, { key: 'Home' });
+
+      expect(onChange).toHaveBeenCalledWith(0.4);
+    });
+
+    it('jumps to last value with End', () => {
+      const onChange = vi.fn();
+      render(<SnappingSlider {...defaultProps} value={0.8} onChange={onChange} />);
+
+      const input = document.querySelector('input[type="range"]') as HTMLElement;
+      fireEvent.keyDown(input, { key: 'End' });
+
+      expect(onChange).toHaveBeenCalledWith(2.0);
+    });
+
+    it('does not change value when at min and pressing ArrowLeft', () => {
+      const onChange = vi.fn();
+      render(<SnappingSlider {...defaultProps} value={0.4} onChange={onChange} />);
+
+      const input = document.querySelector('input[type="range"]') as HTMLElement;
+      fireEvent.keyDown(input, { key: 'ArrowLeft' });
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('does not change value when at max and pressing ArrowRight', () => {
+      const onChange = vi.fn();
+      render(<SnappingSlider {...defaultProps} value={2.0} onChange={onChange} />);
+
+      const input = document.querySelector('input[type="range"]') as HTMLElement;
+      fireEvent.keyDown(input, { key: 'ArrowRight' });
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('does not respond to keyboard when disabled', () => {
+      const onChange = vi.fn();
+      render(<SnappingSlider {...defaultProps} value={1.2} onChange={onChange} disabled />);
+
+      const input = document.querySelector('input[type="range"]') as HTMLElement;
+      fireEvent.keyDown(input, { key: 'ArrowRight' });
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+  });
+
   describe('snap behavior', () => {
     it('snaps to nearest value on pointer release', () => {
       const onChange = vi.fn();
@@ -131,7 +221,15 @@ describe('SnappingSlider', () => {
 
       const slider = container.querySelector('div[role="slider"]') as HTMLElement;
       vi.spyOn(slider, 'getBoundingClientRect').mockReturnValue({
-        left: 0, right: 100, width: 100, top: 0, bottom: 32, height: 32, x: 0, y: 0, toJSON: () => ({}),
+        left: 0,
+        right: 100,
+        width: 100,
+        top: 0,
+        bottom: 32,
+        height: 32,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
       });
 
       // Drag to ~5% of track (close to 0.4), release
@@ -146,7 +244,15 @@ describe('SnappingSlider', () => {
 
       const slider = container.querySelector('div[role="slider"]') as HTMLElement;
       vi.spyOn(slider, 'getBoundingClientRect').mockReturnValue({
-        left: 0, right: 100, width: 100, top: 0, bottom: 32, height: 32, x: 0, y: 0, toJSON: () => ({}),
+        left: 0,
+        right: 100,
+        width: 100,
+        top: 0,
+        bottom: 32,
+        height: 32,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
       });
 
       // Drag to ~30% of track (between 0.8 and 1.2, closer to 0.8)

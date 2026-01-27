@@ -1225,5 +1225,7 @@
   "toolbar.zoomInKey": "Aumentar zoom (+)",
   "toolbar.zoomOut": "Reduzir zoom",
   "toolbar.zoomOutKey": "Reduzir zoom (−)",
-  "print.summary.piecesShort": "{count} pcs"
+  "print.summary.piecesShort": "{count} pcs",
+  "snappingSlider.default": "Default",
+  "snappingSlider.select": "Select {value}{unit}"
 }

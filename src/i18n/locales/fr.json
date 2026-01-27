@@ -1225,5 +1225,7 @@
   "toolbar.zoomInKey": "Zoomer (+)",
   "toolbar.zoomOut": "Dézoomer",
   "toolbar.zoomOutKey": "Dézoomer (−)",
-  "print.summary.piecesShort": "{count} pcs"
+  "print.summary.piecesShort": "{count} pcs",
+  "snappingSlider.default": "Default",
+  "snappingSlider.select": "Select {value}{unit}"
 }

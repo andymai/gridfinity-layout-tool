@@ -68,7 +68,7 @@ function hexToHsl(hex: string): { h: number; s: number; l: number } {
 function getCompartmentFill(id: number, previewColor: string): string {
   const { h, s, l } = hexToHsl(previewColor);
   // Slight lightness variation for different compartments (±3%)
-  const offset = (id % 3 - 1) * 3;
+  const offset = ((id % 3) - 1) * 3;
   const adjustedL = Math.max(10, Math.min(95, l + offset));
   return `hsl(${h}, ${s}%, ${adjustedL}%)`;
 }
@@ -427,105 +427,105 @@ export function CompartmentEditor() {
       {(cols > 1 || rows > 1) && (
         <section>
           <div className="mb-3 flex items-center justify-between">
-          <p
-            id="compartment-grid-instructions"
-            className={`text-xs transition-colors duration-150 ${
-              isDragging && selectionAction !== 'none'
-                ? 'text-accent font-medium'
-                : hoveredIsSplittable
-                  ? 'text-content-secondary'
-                  : 'text-content-tertiary'
-            }`}
-            aria-live={isDragging ? 'off' : 'polite'}
-          >
-            {instructionText}
-          </p>
-          {hasMergedCompartments && (
-            <button
-              type="button"
-              onClick={handleReset}
-              className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
-              aria-label={t('binDesigner.resetCompartmentLayoutToUniformGrid')}
+            <p
+              id="compartment-grid-instructions"
+              className={`text-xs transition-colors duration-150 ${
+                isDragging && selectionAction !== 'none'
+                  ? 'text-accent font-medium'
+                  : hoveredIsSplittable
+                    ? 'text-content-secondary'
+                    : 'text-content-tertiary'
+              }`}
+              aria-live={isDragging ? 'off' : 'polite'}
             >
-              {t('common.reset')}
-            </button>
-          )}
-        </div>
-        <div
-          ref={gridRef}
-          className="relative mx-auto max-w-[360px] select-none rounded-lg border-2 border-stroke-subtle bg-surface-elevated p-2"
-          style={{ aspectRatio }}
-          role="application"
-          aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
-          aria-describedby="compartment-grid-instructions"
-          onPointerUp={handlePointerUp}
-          onPointerLeave={() => {
-            handlePointerUp();
-            setHoverIdx(null);
-          }}
-        >
-          {/* Grid dots overlay at intersections */}
-          {gridDots.length > 0 && (
-            <div className="pointer-events-none absolute inset-2">
-              {gridDots.map(({ x, y }, i) => (
-                <div
-                  key={i}
-                  className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-content-tertiary/40"
-                  style={{ left: `${x * 100}%`, top: `${(1 - y) * 100}%` }}
-                />
-              ))}
-            </div>
-          )}
-          {/* Use flex-col-reverse to match 3D orientation: row 0 = front = bottom of UI */}
-          {/* No gap - merged cells should visually connect; borders handle separation */}
-          <div className="relative flex h-full w-full flex-col-reverse">
-            {Array.from({ length: rows }, (_, visualRow) => {
-              const dataRow = visualRow; // flex-col-reverse handles the flip
-              return (
-                <div
-                  key={dataRow}
-                  className="grid flex-1"
-                  style={{
-                    gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                  }}
-                >
-                  {Array.from({ length: cols }, (_, col) => {
-                    const idx = dataRow * cols + col;
-                    const compartmentId = cells[idx];
-                    return (
-                      <GridCell
-                        key={idx}
-                        idx={idx}
-                        compartmentId={compartmentId}
-                        isSelected={selection.has(idx)}
-                        isHovered={hoverIdx === idx && !isDragging}
-                        isSplittable={
-                          !isDragging && (compartmentCellCounts.get(compartmentId) ?? 0) > 1
-                        }
-                        isDragging={isDragging}
-                        config={compartments}
-                        previewColor={previewColor}
-                        onPointerDown={handleCellPointerDown}
-                        onPointerEnter={handleCellPointerEnter}
-                        onPointerLeave={handleCellPointerLeave}
-                      />
-                    );
-                  })}
-                </div>
-              );
-            })}
+              {instructionText}
+            </p>
+            {hasMergedCompartments && (
+              <button
+                type="button"
+                onClick={handleReset}
+                className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+                aria-label={t('binDesigner.resetCompartmentLayoutToUniformGrid')}
+              >
+                {t('common.reset')}
+              </button>
+            )}
           </div>
-          {/* Ghost preview overlay during drag */}
-          {isDragging && selection.size >= 2 && (
-            <GhostPreview
-              selection={selection}
-              selectionAction={selectionAction}
-              cols={cols}
-              rows={rows}
-            />
-          )}
-        </div>
-      </section>
+          <div
+            ref={gridRef}
+            className="relative mx-auto max-w-[360px] select-none rounded-lg border-2 border-stroke-subtle bg-surface-elevated p-2"
+            style={{ aspectRatio }}
+            role="application"
+            aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
+            aria-describedby="compartment-grid-instructions"
+            onPointerUp={handlePointerUp}
+            onPointerLeave={() => {
+              handlePointerUp();
+              setHoverIdx(null);
+            }}
+          >
+            {/* Grid dots overlay at intersections */}
+            {gridDots.length > 0 && (
+              <div className="pointer-events-none absolute inset-2">
+                {gridDots.map(({ x, y }, i) => (
+                  <div
+                    key={i}
+                    className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-content-tertiary/40"
+                    style={{ left: `${x * 100}%`, top: `${(1 - y) * 100}%` }}
+                  />
+                ))}
+              </div>
+            )}
+            {/* Use flex-col-reverse to match 3D orientation: row 0 = front = bottom of UI */}
+            {/* No gap - merged cells should visually connect; borders handle separation */}
+            <div className="relative flex h-full w-full flex-col-reverse">
+              {Array.from({ length: rows }, (_, visualRow) => {
+                const dataRow = visualRow; // flex-col-reverse handles the flip
+                return (
+                  <div
+                    key={dataRow}
+                    className="grid flex-1"
+                    style={{
+                      gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                    }}
+                  >
+                    {Array.from({ length: cols }, (_, col) => {
+                      const idx = dataRow * cols + col;
+                      const compartmentId = cells[idx];
+                      return (
+                        <GridCell
+                          key={idx}
+                          idx={idx}
+                          compartmentId={compartmentId}
+                          isSelected={selection.has(idx)}
+                          isHovered={hoverIdx === idx && !isDragging}
+                          isSplittable={
+                            !isDragging && (compartmentCellCounts.get(compartmentId) ?? 0) > 1
+                          }
+                          isDragging={isDragging}
+                          config={compartments}
+                          previewColor={previewColor}
+                          onPointerDown={handleCellPointerDown}
+                          onPointerEnter={handleCellPointerEnter}
+                          onPointerLeave={handleCellPointerLeave}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+            {/* Ghost preview overlay during drag */}
+            {isDragging && selection.size >= 2 && (
+              <GhostPreview
+                selection={selection}
+                selectionAction={selectionAction}
+                cols={cols}
+                rows={rows}
+              />
+            )}
+          </div>
+        </section>
       )}
 
       {/* Wall thickness (only when there are dividers) */}
@@ -591,7 +591,6 @@ function GridCell({
     col > 0 && config.cells[cellIndex(config.cols, col - 1, row)] === compartmentId;
   const hasVisualBottomNeighbor =
     row > 0 && config.cells[cellIndex(config.cols, col, row - 1)] === compartmentId;
-
 
   // Round only the outer corners of the entire grid (not interior compartment corners)
   const cornerRadius = 5;

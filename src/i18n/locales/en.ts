@@ -1108,7 +1108,8 @@ const en: Record<string, string> = {
   'binDesigner.wallThickness.2': 'Very strong for demanding use',
   'binDesigner.wallThickness.2.4': 'Extra thick for maximum strength',
   'binDesigner.wallThickness.2.6': 'Maximum rigidity for large bins',
-  'binDesigner.wallThickness.nozzleTip': 'For best results, use a multiple of your nozzle size (e.g., 1.2mm = 3× 0.4mm nozzle)',
+  'binDesigner.wallThickness.nozzleTip':
+    'For best results, use a multiple of your nozzle size (e.g., 1.2mm = 3× 0.4mm nozzle)',
   'binDesigner.base': 'Base',
   'binDesigner.physicalUnits': 'Physical Units',
   'binDesigner.resetView': 'Reset view (R)',
@@ -1466,6 +1467,12 @@ const en: Record<string, string> = {
   'commandPalette.footer.navigate': 'Navigate',
   'commandPalette.footer.close': 'Close',
   'commandPalette.footer.commandCount': '{count} commands',
+
+  // ===========================================================================
+  // Snapping Slider (shared component)
+  // ===========================================================================
+  'snappingSlider.default': 'Default',
+  'snappingSlider.select': 'Select {value}{unit}',
 };
 
 export default en;

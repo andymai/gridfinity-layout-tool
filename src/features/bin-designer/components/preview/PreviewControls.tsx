@@ -27,7 +27,6 @@ const PRESETS: Array<{ key: CameraPreset; label: string; shortcut: string }> = [
   { key: 'isometric', label: 'Iso', shortcut: '4' },
 ];
 
-
 /** SVG icon for Front preset — cube with front face highlighted */
 function IconFront() {
   return (
@@ -299,10 +298,7 @@ export function PreviewControls({
             role="listbox"
             aria-label={t('binDesigner.previewColorOptions')}
           >
-            <ColorPickerContent
-              previewColor={previewColor}
-              onColorSelect={handleColorSelect}
-            />
+            <ColorPickerContent previewColor={previewColor} onColorSelect={handleColorSelect} />
           </div>
         )}
       </div>
@@ -390,10 +386,7 @@ export function PreviewControls({
             role="listbox"
             aria-label={t('binDesigner.previewColorOptions')}
           >
-            <ColorPickerContent
-              previewColor={previewColor}
-              onColorSelect={handleColorSelect}
-            />
+            <ColorPickerContent previewColor={previewColor} onColorSelect={handleColorSelect} />
           </div>
         )}
       </div>

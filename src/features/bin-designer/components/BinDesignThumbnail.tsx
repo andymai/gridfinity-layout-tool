@@ -28,11 +28,7 @@ const SIN_ISO = Math.sin(ISO_ANGLE);
  * Convert 3D coordinates to 2D isometric projection.
  * X goes right-down, Y goes left-down, Z goes up.
  */
-function toIsometric(
-  x: number,
-  y: number,
-  z: number
-): { x: number; y: number } {
+function toIsometric(x: number, y: number, z: number): { x: number; y: number } {
   return {
     x: (x - y) * COS_ISO,
     y: (x + y) * SIN_ISO - z,
@@ -42,11 +38,7 @@ function toIsometric(
 /**
  * SVG thumbnail showing an isometric 3D view of a bin's compartments.
  */
-export function BinDesignThumbnail({
-  params,
-  size = 48,
-  className = '',
-}: BinDesignThumbnailProps) {
+export function BinDesignThumbnail({ params, size = 48, className = '' }: BinDesignThumbnailProps) {
   const { width, depth, height, compartments } = params;
 
   // Scale factor to fit the bin in the SVG
@@ -304,10 +296,12 @@ function getCompartmentRects(
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
       const id = cells[row * cols + col];
-      if (!compartmentCells.has(id)) {
-        compartmentCells.set(id, []);
+      const existing = compartmentCells.get(id);
+      if (existing) {
+        existing.push({ col, row });
+      } else {
+        compartmentCells.set(id, [{ col, row }]);
       }
-      compartmentCells.get(id)!.push({ col, row });
     }
   }
 

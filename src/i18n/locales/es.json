@@ -1225,5 +1225,7 @@
   "toolbar.zoomInKey": "Acercar (+)",
   "toolbar.zoomOut": "Alejar",
   "toolbar.zoomOutKey": "Alejar (−)",
-  "print.summary.piecesShort": "{count} pcs"
+  "print.summary.piecesShort": "{count} pcs",
+  "snappingSlider.default": "Default",
+  "snappingSlider.select": "Select {value}{unit}"
 }

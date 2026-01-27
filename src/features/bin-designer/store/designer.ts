@@ -181,7 +181,9 @@ export const useDesignerStore = create<DesignerState>()(
         state.params = migrateParams(design.params);
         state.currentDesignId = design.id;
         state.designName = design.name;
-        state.exportFileNameConfig = design.exportFileNameConfig ?? { ...DEFAULT_EXPORT_FILE_NAME_CONFIG };
+        state.exportFileNameConfig = design.exportFileNameConfig ?? {
+          ...DEFAULT_EXPORT_FILE_NAME_CONFIG,
+        };
         state.history = { past: [], future: [] };
         state.saveStatus = 'saved';
         state.generation.epoch += 1;

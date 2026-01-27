@@ -149,7 +149,9 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
             <button
               onClick={handleNewDesign}
               className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-surface transition-colors hover:bg-accent-hover"
-            >{t('binDesigner.newDesign')}</button>
+            >
+              {t('binDesigner.newDesign')}
+            </button>
             <button
               onClick={onClose}
               className="rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
@@ -212,8 +214,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                   />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-content-secondary">{t('binDesigner.noSavedDesignsYet')}</p>
-              <p className="mt-1 text-xs text-content-disabled">{t('binDesigner.changesAreSavedAutomaticallyAsYouDe')}</p>
+              <p className="text-sm font-medium text-content-secondary">
+                {t('binDesigner.noSavedDesignsYet')}
+              </p>
+              <p className="mt-1 text-xs text-content-disabled">
+                {t('binDesigner.changesAreSavedAutomaticallyAsYouDe')}
+              </p>
               <button
                 onClick={() => {
                   handleNewDesign();
@@ -233,7 +239,9 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                     strokeWidth={2}
                     d="M12 4v16m8-8H4"
                   />
-                </svg>{t('binDesigner.startANewDesign')}</button>
+                </svg>
+                {t('binDesigner.startANewDesign')}
+              </button>
             </div>
           ) : (
             <ul className="space-y-2">
@@ -301,7 +309,9 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                           onClick={() => handleLoad(design)}
                           className="rounded px-2 py-1 text-xs font-medium text-accent hover:bg-accent/10"
                           aria-label={`Load ${design.name}`}
-                        >{t('binDesigner.load')}</button>
+                        >
+                          {t('binDesigner.load')}
+                        </button>
                       )}
                       <button
                         onClick={() => handleRenameStart(design)}
