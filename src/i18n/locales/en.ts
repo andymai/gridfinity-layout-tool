@@ -321,6 +321,8 @@ const en: Record<string, string> = {
   'layers.layerButtonAria': '{name}, {height}u height, {coverage}% filled{suffix}',
   'layers.maxHeightFull': 'Drawer height full ({current}/{max}u)',
   'layers.maxLayersReached': 'Maximum {max} layers reached',
+  'layers.cannotAddLayerTallBins':
+    'Cannot add layer: bins on {layerName} are {binHeight}u tall but layer is only {layerHeight}u. Adjusting would exceed drawer height. Try reducing bin heights or increasing drawer height.',
   'layers.noBins': 'No bins',
   'layers.noBinsToClear': 'No bins to clear',
   'layers.noGaps': 'No gaps',

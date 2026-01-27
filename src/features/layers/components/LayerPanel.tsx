@@ -9,6 +9,7 @@ import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
+import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
 
 // Drop position indicator for drag-and-drop reordering
 type DropPosition = { index: number; position: 'above' | 'below' } | null;
@@ -65,12 +66,55 @@ export function LayerPanel() {
   const displayLayers = getDisplayLayers(layers);
 
   const handleAddLayer = () => {
-    execute(() => {
-      const result = addLayer();
-      if (isOk(result)) {
-        setActiveLayer(result.value);
-      }
-    });
+    const topLayer = layers[layers.length - 1];
+    if (!topLayer) return;
+
+    // Calculate if layer expansion is needed before adding new layer
+    const expansion = calculateLayerAutoExpansion(
+      topLayer,
+      layout.bins,
+      totalLayerHeight,
+      drawerHeight
+    );
+
+    if (expansion.wouldExceedCapacity && expansion.smallestExceedingHeight !== undefined) {
+      // Show friendly error explaining the issue and suggesting solutions
+      addToast(
+        t('layers.cannotAddLayerTallBins', {
+          layerName: topLayer.name,
+          binHeight: expansion.smallestExceedingHeight,
+          layerHeight: topLayer.height,
+        }),
+        'error'
+      );
+      return;
+    }
+
+    if (expansion.needsExpansion && expansion.newHeight !== undefined) {
+      // Auto-expand the top layer, then add the new layer (atomic via execute)
+      const newHeight = expansion.newHeight; // Capture for closure
+      execute(() => {
+        const expandResult = updateLayer(topLayer.id, { height: newHeight });
+        if (isErr(expandResult)) {
+          addToast(getUserMessage(expandResult.error), 'error');
+          return;
+        }
+        const addResult = addLayer();
+        if (isOk(addResult)) {
+          setActiveLayer(addResult.value);
+        } else if (isErr(addResult)) {
+          addToast(getUserMessage(addResult.error), 'error');
+        }
+      });
+    } else {
+      // Normal case - no adjustment needed
+      execute(() => {
+        const result = addLayer();
+        if (isOk(result)) {
+          setActiveLayer(result.value);
+        }
+      });
+    }
   };
 
   const handleDeleteLayer = useCallback(() => {
@@ -342,8 +386,17 @@ export function LayerPanel() {
                         }
                       }}
                       aria-pressed={isActive}
-                      aria-label={t('layers.layerButtonAria', { name: layer.name, height: layer.height, coverage: layerCoverage, suffix: isActive ? t('layers.activeClickToRename') : '' })}
-                      title={isActive ? t('layers.clickToRename') : t('layers.selectLayer', { name: layer.name })}
+                      aria-label={t('layers.layerButtonAria', {
+                        name: layer.name,
+                        height: layer.height,
+                        coverage: layerCoverage,
+                        suffix: isActive ? t('layers.activeClickToRename') : '',
+                      })}
+                      title={
+                        isActive
+                          ? t('layers.clickToRename')
+                          : t('layers.selectLayer', { name: layer.name })
+                      }
                     >
                       {layer.name}
                     </button>
@@ -475,7 +528,10 @@ export function LayerPanel() {
       <ConfirmDialog
         isOpen={deleteLayerId !== null}
         title={t('layers.confirmDelete.title')}
-        message={t('layers.confirmDelete.message', { name: layerToDelete?.name || '', count: binsInDeleteLayer })}
+        message={t('layers.confirmDelete.message', {
+          name: layerToDelete?.name || '',
+          count: binsInDeleteLayer,
+        })}
         confirmText={t('layers.confirmDelete.confirm')}
         destructive
         onConfirm={handleDeleteLayer}

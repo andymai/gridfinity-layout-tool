@@ -637,6 +637,7 @@
   "layers.layerNamePlaceholder": "Layer-Name",
   "layers.maxHeightFull": "Maximale Höhe ({max} Einheiten)",
   "layers.maxLayersReached": "Maximale Layers erreicht",
+  "layers.cannotAddLayerTallBins": "Layer kann nicht hinzugefügt werden: Bins auf {layerName} sind {binHeight}u hoch, aber der Layer ist nur {layerHeight}u. Anpassung würde die Schubladenhöhe überschreiten. Verringere die Bin-Höhen oder erhöhe die Schubladenhöhe.",
   "layers.noBins": "Keine Bins",
   "layers.noBinsToClear": "Keine Bins zum Löschen",
   "layers.noGaps": "Keine Lücken",
