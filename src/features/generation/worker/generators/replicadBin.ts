@@ -138,7 +138,8 @@ function buildBaseSocket(
   const totalD_mm = gridD * SIZE;
 
   // Build and position each cell socket
-  let baseSocket: Shape3D | null = null;
+  // OPTIMIZATION: Collect all sockets, then batch fuse (Phase 2.3)
+  const allSockets: Shape3D[] = [];
 
   // Track X position as we iterate cells
   let xOffset = 0; // mm from left edge
@@ -159,16 +160,21 @@ function buildBaseSocket(
         0,
       ]);
 
-      baseSocket = baseSocket ? baseSocket.fuse(cellSocket) : cellSocket;
+      allSockets.push(cellSocket);
 
       yOffset += cellD_units * SIZE;
     }
     xOffset += cellW_units * SIZE;
   }
 
-  let result = baseSocket as Shape3D;
+  // Batch fuse: single operation instead of O(cells) fuses
+  let result = allSockets[0];
+  for (let i = 1; i < allSockets.length; i++) {
+    result = result.fuse(allSockets[i]);
+  }
 
   // Cut magnet/screw holes only in full-size (1.0 × 1.0 unit) cells
+  // OPTIMIZATION: Batch all holes into a single cut operation
   if (withScrew || withMagnet) {
     const HOLE_OFFSET = 13; // mm from cell center to hole center
 
@@ -188,7 +194,9 @@ function buildBaseSocket(
         ? magnetCutout.fuse(screwCutout)
         : ((magnetCutout || screwCutout) as Shape3D);
 
-    // Iterate cells again and cut holes only where both axes are full-unit
+    // Collect all hole positions, then batch into a single compound cut
+    const allHoles: Shape3D[] = [];
+
     xOffset = 0;
     for (let ix = 0; ix < cellsW.length; ix++) {
       const cellW_units = cellsW[ix];
@@ -208,31 +216,33 @@ function buildBaseSocket(
         const cellCenterY = yOffset2 + (cellD_units * SIZE) / 2 - totalD_mm / 2;
 
         // 4 holes per full cell at ±HOLE_OFFSET from center
-        result = result
-          .cut(
-            cutout
-              .clone()
-              .translate([cellCenterX - HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT])
-          )
-          .cut(
-            cutout
-              .clone()
-              .translate([cellCenterX - HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT])
-          )
-          .cut(
-            cutout
-              .clone()
-              .translate([cellCenterX + HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT])
-          )
-          .cut(
-            cutout
-              .clone()
-              .translate([cellCenterX + HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT])
-          );
+        allHoles.push(
+          cutout
+            .clone()
+            .translate([cellCenterX - HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT]),
+          cutout
+            .clone()
+            .translate([cellCenterX - HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT]),
+          cutout
+            .clone()
+            .translate([cellCenterX + HOLE_OFFSET, cellCenterY + HOLE_OFFSET, -SOCKET_HEIGHT]),
+          cutout
+            .clone()
+            .translate([cellCenterX + HOLE_OFFSET, cellCenterY - HOLE_OFFSET, -SOCKET_HEIGHT])
+        );
 
         yOffset2 += cellD_units * SIZE;
       }
       xOffset += cellW_units * SIZE;
+    }
+
+    // Batch cut: fuse all holes into compound, then single cut
+    if (allHoles.length > 0) {
+      let holeCompound = allHoles[0];
+      for (let i = 1; i < allHoles.length; i++) {
+        holeCompound = holeCompound.fuse(allHoles[i]);
+      }
+      result = result.cut(holeCompound);
     }
   }
 
@@ -379,7 +389,8 @@ function buildCompartmentWalls(
   // Safety net: skip wall generation if cells are too small for viable geometry
   if (effectiveCellW < thickness * 2 || effectiveCellD < thickness * 2) return null;
 
-  let dividers: Shape3D | null = null;
+  // Collect all wall segments, then batch fuse (Phase 2.2 optimization)
+  const allWalls: Shape3D[] = [];
 
   // Derive wall segments from cell boundaries
 
@@ -404,8 +415,7 @@ function buildCompartmentWalls(
           const wall = (
             drawRectangle(thickness, segLength).sketchOnPlane('XY') as unknown as Sketch
           ).extrude(wallHeight) as Shape3D;
-          const positioned = wall.translate([xPos, yCenter, 0]);
-          dividers = dividers ? dividers.fuse(positioned) : positioned;
+          allWalls.push(wall.translate([xPos, yCenter, 0]));
           segStart = null;
         }
       }
@@ -417,8 +427,7 @@ function buildCompartmentWalls(
       const wall = (
         drawRectangle(thickness, segLength).sketchOnPlane('XY') as unknown as Sketch
       ).extrude(wallHeight) as Shape3D;
-      const positioned = wall.translate([xPos, yCenter, 0]);
-      dividers = dividers ? dividers.fuse(positioned) : positioned;
+      allWalls.push(wall.translate([xPos, yCenter, 0]));
     }
   }
 
@@ -441,8 +450,7 @@ function buildCompartmentWalls(
           const wall = (
             drawRectangle(segLength, thickness).sketchOnPlane('XY') as unknown as Sketch
           ).extrude(wallHeight) as Shape3D;
-          const positioned = wall.translate([xCenter, yPos, 0]);
-          dividers = dividers ? dividers.fuse(positioned) : positioned;
+          allWalls.push(wall.translate([xCenter, yPos, 0]));
           segStart = null;
         }
       }
@@ -453,9 +461,15 @@ function buildCompartmentWalls(
       const wall = (
         drawRectangle(segLength, thickness).sketchOnPlane('XY') as unknown as Sketch
       ).extrude(wallHeight) as Shape3D;
-      const positioned = wall.translate([xCenter, yPos, 0]);
-      dividers = dividers ? dividers.fuse(positioned) : positioned;
+      allWalls.push(wall.translate([xCenter, yPos, 0]));
     }
+  }
+
+  // Batch fuse: single operation instead of O(walls) fuses
+  if (allWalls.length === 0) return null;
+  let dividers = allWalls[0];
+  for (let i = 1; i < allWalls.length; i++) {
+    dividers = dividers.fuse(allWalls[i]);
   }
 
   return dividers;
