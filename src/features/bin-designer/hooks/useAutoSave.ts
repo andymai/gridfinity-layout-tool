@@ -9,7 +9,10 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { isOk } from '@/core/result';
-import { updateDesignParams } from '@/features/bin-designer/storage/DesignerStorage';
+import {
+  updateDesignParams,
+  setActiveDesignId,
+} from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { captureThumbnail } from '../utils/thumbnail';
 import { upsertRegistryEntry } from '../store/customBinRegistry';
@@ -39,7 +42,8 @@ export function useAutoSave(): void {
   const isFirstRender = useRef(true);
   const lastSavedParams = useRef<BinParams | null>(null);
   const lastSavedConfig = useRef<ExportFileNameConfig | null>(null);
-  const abortRef = useRef(false);
+  // Abort token for the current pending save (new object per effect run)
+  const abortTokenRef = useRef<{ current: boolean }>({ current: false });
 
   const performSave = useCallback(
     async (
@@ -59,6 +63,8 @@ export function useAutoSave(): void {
         lastSavedParams.current = paramsToSave;
         lastSavedConfig.current = configToSave;
         setSaveStatus('saved');
+        // Track active design for session restoration
+        setActiveDesignId(result.value.id);
         // Sync lightweight ref to registry for Layout Planner
         upsertRegistryEntry({
           id: result.value.id,
@@ -97,14 +103,14 @@ export function useAutoSave(): void {
     }
 
     // Abort any in-flight save and clear pending timer
-    abortRef.current = true;
+    abortTokenRef.current.current = true;
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
 
-    // Reset abort flag for the new save
-    abortRef.current = false;
-    const abortToken = abortRef;
+    // Create a new abort token for this save (separate object per timeout)
+    const abortToken = { current: false };
+    abortTokenRef.current = abortToken;
 
     const designId = currentDesignId; // Narrowed to string by guard above
     timerRef.current = setTimeout(() => {
@@ -112,7 +118,7 @@ export function useAutoSave(): void {
     }, AUTO_SAVE_DELAY_MS);
 
     return () => {
-      abortRef.current = true;
+      abortToken.current = true;
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
