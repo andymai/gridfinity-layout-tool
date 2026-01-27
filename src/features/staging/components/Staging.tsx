@@ -5,7 +5,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';
 import { STAGING_ID, BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
-import { getBinTextColors } from '@/shared/utils';
+import { getBinTextColors, clamp } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
@@ -16,11 +16,13 @@ const DEFAULT_STASH_MAX_HEIGHT_VH = 33;
 const MIN_STASH_HEIGHT = 80;
 /** Maximum height in pixels (90% of viewport) */
 const MAX_STASH_HEIGHT_VH = 90;
+/** Long-press duration for context menu on touch devices (ms) */
+const LONG_PRESS_DURATION = 500;
+/** Movement threshold to cancel long-press (px) */
+const MOVEMENT_THRESHOLD = 10;
 
-/** Clamp a value between min and max */
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
+/** Format dimension for display - show decimal only if fractional */
+const formatDim = (val: number): string => (val % 1 === 0 ? val.toString() : val.toFixed(1));
 
 interface PackedBin {
   id: string;
@@ -59,32 +61,16 @@ function clusterBins(bins: PackedBin[]): PackedBin[] {
   const clusters = new Map<string, PackedBin[]>();
   for (const bin of bins) {
     const key = getClusterKey(bin);
-    const group = clusters.get(key);
-    if (group) {
-      group.push(bin);
-    } else {
-      clusters.set(key, [bin]);
-    }
+    const existing = clusters.get(key);
+    if (existing) existing.push(bin);
+    else clusters.set(key, [bin]);
   }
 
-  // Convert to array and sort clusters by size (most bins first)
-  // Use cluster key as tiebreaker for stable ordering when clusters have equal size
-  // Note: a[0] is safe because clusters only exist if at least one bin was added
-  const clusterArray = Array.from(clusters.values());
-  clusterArray.sort((a, b) => {
-    const sizeDiff = b.length - a.length;
-    if (sizeDiff !== 0) return sizeDiff;
-    return getClusterKey(a[0]).localeCompare(getClusterKey(b[0]));
-  });
-
-  // Flatten with intra-cluster area sort (largest bins first for better packing)
-  const result: PackedBin[] = [];
-  for (const cluster of clusterArray) {
-    cluster.sort((a, b) => b.width * b.depth - a.width * a.depth);
-    result.push(...cluster);
-  }
-
-  return result;
+  // Sort clusters by size (most bins first), then by key for stability
+  // Within each cluster, sort by area (largest first) for better packing
+  return Array.from(clusters.values())
+    .sort((a, b) => b.length - a.length || getClusterKey(a[0]).localeCompare(getClusterKey(b[0])))
+    .flatMap((cluster) => cluster.sort((a, b) => b.width * b.depth - a.width * a.depth));
 }
 
 /**
@@ -96,24 +82,27 @@ function packBins(bins: PackedBin[], gridWidth: number): PackedBin[] {
   const packed: PackedBin[] = [];
   const occupied = new Set<string>();
 
-  // Use ceiling for fractional dimensions so bins occupy at least 1 cell
   const isOccupied = (x: number, y: number, w: number, d: number): boolean => {
     const ceilW = Math.ceil(w) || 1;
     const ceilD = Math.ceil(d) || 1;
+    const baseX = Math.floor(x);
+    const baseY = Math.floor(y);
     for (let dx = 0; dx < ceilW; dx++) {
       for (let dy = 0; dy < ceilD; dy++) {
-        if (occupied.has(`${Math.floor(x) + dx},${Math.floor(y) + dy}`)) return true;
+        if (occupied.has(`${baseX + dx},${baseY + dy}`)) return true;
       }
     }
     return false;
   };
 
-  const occupy = (x: number, y: number, w: number, d: number) => {
+  const occupy = (x: number, y: number, w: number, d: number): void => {
     const ceilW = Math.ceil(w) || 1;
     const ceilD = Math.ceil(d) || 1;
+    const baseX = Math.floor(x);
+    const baseY = Math.floor(y);
     for (let dx = 0; dx < ceilW; dx++) {
       for (let dy = 0; dy < ceilD; dy++) {
-        occupied.add(`${Math.floor(x) + dx},${Math.floor(y) + dy}`);
+        occupied.add(`${baseX + dx},${baseY + dy}`);
       }
     }
   };
@@ -206,8 +195,6 @@ export function Staging() {
   const longPressTimerRef = useRef<number | null>(null);
   const longPressTriggeredRef = useRef(false);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
-  const LONG_PRESS_DURATION = 500; // ms
-  const MOVEMENT_THRESHOLD = 10; // px
 
   const clearLongPress = () => {
     if (longPressTimerRef.current) {
@@ -348,12 +335,7 @@ export function Staging() {
     }
   };
 
-  const handleBinPointerUp = () => {
-    clearLongPress();
-    pointerStartRef.current = null;
-  };
-
-  const handleBinPointerCancel = () => {
+  const handleBinPointerEnd = () => {
     clearLongPress();
     pointerStartRef.current = null;
   };
@@ -521,13 +503,8 @@ export function Staging() {
     }
   }, [updateSetting]);
 
-  // Calculate the max-height style for the scroll container
-  const scrollContainerMaxHeight = useMemo(() => {
-    if (stashMaxHeight !== null) {
-      return `${stashMaxHeight}px`;
-    }
-    return `${DEFAULT_STASH_MAX_HEIGHT_VH}vh`;
-  }, [stashMaxHeight]);
+  const scrollContainerMaxHeight =
+    stashMaxHeight !== null ? `${stashMaxHeight}px` : `${DEFAULT_STASH_MAX_HEIGHT_VH}vh`;
 
   // Track pointer position to set drop target when hovering over stash
   useEffect(() => {
@@ -554,44 +531,44 @@ export function Staging() {
     return () => document.removeEventListener('pointermove', handlePointerMove);
   }, [isDraggingFromGrid, dropTarget, setDropTarget]);
 
-  // Generate grid cells for visual reference (integer cells only)
-  const cells: React.JSX.Element[] = [];
-  for (let y = gridHeight - 1; y >= 0; y--) {
-    for (let x = 0; x < integerWidth; x++) {
-      cells.push(
-        <div
-          key={`staging-${x}-${y}`}
-          style={{
-            gridColumn: x + 1,
-            gridRow: gridHeight - y,
-            width: cellSize,
-            height: cellSize,
-            backgroundColor: 'var(--staging-cell)',
-            borderRadius: '2px',
-          }}
-        />
-      );
-    }
-  }
-
-  // Add fractional column cells if drawer has fractional width
-  if (hasFractionalWidth) {
+  // Generate grid cells for visual reference
+  const cells = useMemo(() => {
+    const result: React.JSX.Element[] = [];
     for (let y = gridHeight - 1; y >= 0; y--) {
-      cells.push(
-        <div
-          key={`staging-frac-${y}`}
-          style={{
-            gridColumn: gridCols,
-            gridRow: gridHeight - y,
-            width: fractionalCellWidth,
-            height: cellSize,
-            backgroundColor: 'var(--staging-cell)',
-            borderRadius: '2px',
-          }}
-        />
-      );
+      for (let x = 0; x < integerWidth; x++) {
+        result.push(
+          <div
+            key={`staging-${x}-${y}`}
+            style={{
+              gridColumn: x + 1,
+              gridRow: gridHeight - y,
+              width: cellSize,
+              height: cellSize,
+              backgroundColor: 'var(--staging-cell)',
+              borderRadius: '2px',
+            }}
+          />
+        );
+      }
+      // Add fractional column cell for this row if drawer has fractional width
+      if (hasFractionalWidth) {
+        result.push(
+          <div
+            key={`staging-frac-${y}`}
+            style={{
+              gridColumn: gridCols,
+              gridRow: gridHeight - y,
+              width: fractionalCellWidth,
+              height: cellSize,
+              backgroundColor: 'var(--staging-cell)',
+              borderRadius: '2px',
+            }}
+          />
+        );
+      }
     }
-  }
+    return result;
+  }, [gridHeight, integerWidth, cellSize, hasFractionalWidth, gridCols, fractionalCellWidth]);
 
   // Helper to calculate pixel width for bins accounting for fractional column
   const calcBinPixelWidth = (x: number, width: number): number => {
@@ -832,9 +809,6 @@ export function Staging() {
                 const gridRowStart = gridHeight - Math.ceil(bin.y + bin.depth) + 1;
 
                 // ========== ADAPTIVE LABEL SYSTEM (matches Grid/Bin.tsx) ==========
-                // Format dimensions - show decimal if fractional
-                const formatDim = (val: number) =>
-                  val % 1 === 0 ? val.toString() : val.toFixed(1);
                 const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;
                 const hasLabel = showLabels && bin.label;
 
@@ -912,8 +886,8 @@ export function Staging() {
                     onClick={(e) => handleBinClick(bin.id, e)}
                     onPointerDown={(e) => handleBinPointerDown(bin.id, e)}
                     onPointerMove={handleBinPointerMove}
-                    onPointerUp={handleBinPointerUp}
-                    onPointerCancel={handleBinPointerCancel}
+                    onPointerUp={handleBinPointerEnd}
+                    onPointerCancel={handleBinPointerEnd}
                     onContextMenu={(e) => handleBinContextMenu(bin.id, e)}
                     onPointerEnter={() => setHoveredBinId(bin.id)}
                     onPointerLeave={() => setHoveredBinId(null)}

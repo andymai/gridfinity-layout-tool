@@ -152,6 +152,7 @@ const DOMAIN_NAMING: Record<LabelDomain, DomainNaming> = {
 
 /**
  * Purpose display names for suggestion formatting.
+ * Maps purpose values from inferDrawerPurpose to display names.
  */
 const PURPOSE_NAMES: Record<string, string> = {
   workshop: 'Workshop',
@@ -159,8 +160,6 @@ const PURPOSE_NAMES: Record<string, string> = {
   office: 'Office',
   craft: 'Craft',
   bathroom: 'Bathroom',
-  kitchen: 'Kitchen',
-  garage: 'Garage',
   general: 'Storage',
 };
 
@@ -1027,8 +1026,6 @@ interface SubcategoryMatch {
   names: string[];
   /** Confidence boost */
   confidenceBoost: number;
-  /** Number of matches */
-  matchCount: number;
 }
 
 /**
@@ -1108,7 +1105,6 @@ function detectSubcategories(labels: string[]): SubcategoryMatch | null {
       return {
         names: subcategory.names,
         confidenceBoost: subcategory.confidenceBoost,
-        matchCount: matchedIndices.size,
       };
     }
   }
@@ -1183,21 +1179,16 @@ function detectLocation(labels: string[]): string | null {
  * Analyze categories to find dominant theme.
  */
 function analyzeCategories(categories: CategoryCount[]): {
-  primaryCategory: string | null;
-  secondaryCategory: string | null;
   concentration: number;
   categoryNames: string[];
 } {
   if (categories.length === 0) {
-    return { primaryCategory: null, secondaryCategory: null, concentration: 0, categoryNames: [] };
+    return { concentration: 0, categoryNames: [] };
   }
 
   const sorted = [...categories].sort((a, b) => b.count - a.count);
   const totalBins = categories.reduce((sum, c) => sum + c.count, 0);
-
-  const primaryCategory = sorted[0]?.name ?? null;
   const primaryCount = sorted[0]?.count ?? 0;
-  const secondaryCategory = sorted[1]?.name ?? null;
   const concentration = totalBins > 0 ? primaryCount / totalBins : 0;
 
   // Collect all meaningful category names (excluding default color names)
@@ -1206,7 +1197,7 @@ function analyzeCategories(categories: CategoryCount[]): {
     .filter((c) => !defaultColors.includes(c.name))
     .map((c) => c.name);
 
-  return { primaryCategory, secondaryCategory, concentration, categoryNames };
+  return { concentration, categoryNames };
 }
 
 /**

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
@@ -126,32 +126,26 @@ export function ActiveLayerPanel() {
     }, 0);
   };
 
-  // Add bin directly to stash (Shift+click on size button)
-  const handleAddToStash = useCallback(
-    (w: number, d: number) => {
-      const layer = layout.layers.find((l) => l.id === activeLayerId);
-      if (!layer) return;
-
-      execute(() => {
-        addBin({
-          layerId: STAGING_ID,
-          x: 0,
-          y: 0,
-          width: w,
-          depth: d,
-          height: layer.height,
-          category: activeCategoryId,
-          label: '',
-          notes: '',
-        });
-      });
-
-      addToast(t('toast.binAddedToStash', { width: w, depth: d }), 'success');
-    },
-    [activeLayerId, activeCategoryId, layout.layers, execute, addBin, addToast, t]
-  );
-
   if (!activeLayer) return null;
+
+  // Add bin directly to stash (Shift+click on size button)
+  const handleAddToStash = (w: number, d: number) => {
+    execute(() => {
+      addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: w,
+        depth: d,
+        height: activeLayer.height,
+        category: activeCategoryId,
+        label: '',
+        notes: '',
+      });
+    });
+
+    addToast(t('toast.binAddedToStash', { width: w, depth: d }), 'success');
+  };
 
   // Helper to render a size button with proportional preview
   const SizeButton = ({ w, d, className = '' }: { w: number; d: number; className?: string }) => {

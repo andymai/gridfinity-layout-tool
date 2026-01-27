@@ -77,7 +77,6 @@ function createDeskDrawer(): InspirationLayout {
     description:
       'Sections for pens, pencils, and markers. Small bins for clips, pins, and rubber bands. Larger slots for scissors and tape.',
     shortDescription: 'Pens, clips, and desk essentials',
-    complexity: 'beginner',
     tags: ['office', 'desk', 'pens', 'supplies', 'ikea-alex'],
   });
 }
@@ -157,7 +156,6 @@ function createCableDrawer(): InspirationLayout {
     description:
       'Charging cables organized by type (USB-C, Lightning, Micro). Separate sections for power cables, adapters, and dongles.',
     shortDescription: 'Charging cables, cords, and adapters',
-    complexity: 'intermediate',
     tags: ['office', 'cables', 'charging', 'tech'],
   });
 }

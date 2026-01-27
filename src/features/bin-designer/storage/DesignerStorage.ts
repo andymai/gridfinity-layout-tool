@@ -17,10 +17,15 @@ import {
   storageUnavailable,
 } from '@/core/result';
 import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bin-designer/types';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 
 const DB_NAME = 'gridfinity-designer-v1';
 const DB_VERSION = 1;
 const DESIGNS_STORE = 'designs';
+
+/** localStorage key for tracking the active design ID across sessions */
+const ACTIVE_DESIGN_KEY = 'gridfinity-designer-active-v1';
 
 let dbInstance: IDBPDatabase | null = null;
 
@@ -182,4 +187,79 @@ export async function updateDesignParams(
     ...(thumbnail !== undefined ? { thumbnail } : {}),
     ...(exportFileNameConfig !== undefined ? { exportFileNameConfig } : {}),
   });
+}
+
+// === Active Design Tracking ===
+
+/**
+ * Get the active design ID from localStorage.
+ * Returns null if no active design is set.
+ */
+export function getActiveDesignId(): string | null {
+  try {
+    return localStorage.getItem(ACTIVE_DESIGN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Save the active design ID to localStorage.
+ * Pass null to clear the active design.
+ */
+export function setActiveDesignId(id: string | null): void {
+  try {
+    if (id === null) {
+      localStorage.removeItem(ACTIVE_DESIGN_KEY);
+    } else {
+      localStorage.setItem(ACTIVE_DESIGN_KEY, id);
+    }
+  } catch {
+    // Storage unavailable - silently fail
+  }
+}
+
+/**
+ * Create a new design with default parameters and save it to IndexedDB.
+ * Returns the saved design.
+ */
+export async function createNewDesign(
+  name: string = 'Untitled Bin'
+): Promise<Result<SavedDesign, StorageError>> {
+  return saveDesign({
+    name,
+    params: { ...DEFAULT_BIN_PARAMS },
+    thumbnail: null,
+    exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG },
+  });
+}
+
+/**
+ * Initialize the designer storage system.
+ *
+ * Similar to how the grid editor's initializeLayoutLibrary() works:
+ * - If there's an active design ID saved, try to load it
+ * - If loading fails or no active design, create a new one
+ * - Always returns a valid SavedDesign
+ *
+ * @returns The active design (loaded or newly created)
+ */
+export async function initializeDesigner(): Promise<Result<SavedDesign, StorageError>> {
+  // Try to load the previously active design
+  const activeId = getActiveDesignId();
+  if (activeId) {
+    const loadResult = await loadDesign(activeId);
+    if (!isErr(loadResult)) {
+      return loadResult;
+    }
+    // Active design not found - clear the stale reference
+    setActiveDesignId(null);
+  }
+
+  // No active design or failed to load - create a new one
+  const createResult = await createNewDesign();
+  if (!isErr(createResult)) {
+    setActiveDesignId(createResult.value.id);
+  }
+  return createResult;
 }

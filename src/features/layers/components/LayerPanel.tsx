@@ -102,7 +102,7 @@ export function LayerPanel() {
         const addResult = addLayer();
         if (isOk(addResult)) {
           setActiveLayer(addResult.value);
-        } else if (isErr(addResult)) {
+        } else {
           addToast(getUserMessage(addResult.error), 'error');
         }
       });
@@ -153,6 +153,11 @@ export function LayerPanel() {
   };
 
   // Drag and drop handlers
+  const resetDragState = () => {
+    setDragSourceIndex(null);
+    setDropPosition(null);
+  };
+
   const handleDragStart = (e: React.DragEvent, displayIndex: number) => {
     setDragSourceIndex(displayIndex);
     setReorderError(null);
@@ -202,8 +207,7 @@ export function LayerPanel() {
     e.preventDefault();
 
     if (dragSourceIndex === null || !dropPosition) {
-      setDragSourceIndex(null);
-      setDropPosition(null);
+      resetDragState();
       return;
     }
 
@@ -219,8 +223,7 @@ export function LayerPanel() {
     }
 
     if (targetDisplayIndex === dragSourceIndex) {
-      setDragSourceIndex(null);
-      setDropPosition(null);
+      resetDragState();
       return;
     }
 
@@ -236,14 +239,10 @@ export function LayerPanel() {
       }
     });
 
-    setDragSourceIndex(null);
-    setDropPosition(null);
+    resetDragState();
   };
 
-  const handleDragEnd = () => {
-    setDragSourceIndex(null);
-    setDropPosition(null);
-  };
+  const handleDragEnd = resetDragState;
 
   const layerToDelete = deleteLayerId ? layers.find((l) => l.id === deleteLayerId) : null;
   const binsInDeleteLayer = deleteLayerId

@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
 import {
   calcFractionalPixelSize,
+  toPixels,
   type FractionalGridContext,
 } from '@/features/grid-editor/utils/fractionalPixels';
 import { useTranslation } from '@/i18n';
@@ -13,11 +14,6 @@ interface OverlayProps {
   gap: number;
 }
 
-/**
- * Draw/drag/resize preview overlay.
- * Shows amber dashed border for draw, green/red for drag/resize.
- * Supports multi-bin drag and resize previews.
- */
 /**
  * Floating indicator component that shows why placement is invalid.
  * Positioned relative to the preview rectangle.
@@ -78,6 +74,11 @@ function PlacementIndicator({
   );
 }
 
+/**
+ * Draw/drag/resize preview overlay.
+ * Shows amber dashed border for draw, green/red for drag/resize.
+ * Supports multi-bin drag and resize previews.
+ */
 export function Overlay({ cellSize, gap }: OverlayProps) {
   // Performance: Use focused stores directly instead of facade
   const interaction = useInteractionStore((state) => state.interaction);
@@ -121,7 +122,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
   };
 
   // Helper to calculate pixel dimension for grid elements (standard calculation)
-  const toPixels = (units: number) => units * visualCellSize + Math.max(0, units - 1) * gap;
+  const calcPixels = (units: number) => toPixels(units, visualCellSize, gap);
 
   // Calculate pixel width/height accounting for fractional edges
   const calcPixelWidth = (x: number, width: number) => calcFractionalPixelSize(x, width, widthCtx);
@@ -381,8 +382,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
       const left = calcLeft(currentRect.x);
       const top = calcTop(currentRect.y, currentRect.depth);
-      const rectWidth = toPixels(currentRect.width);
-      const rectHeight = toPixels(currentRect.depth);
+      const rectWidth = calcPixels(currentRect.width);
+      const rectHeight = calcPixels(currentRect.depth);
 
       // Track first preview position for indicator
       if (isFirstBin) {
@@ -401,8 +402,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
       if (sizeChanged) {
         const origLeft = calcLeft(originalBin.x);
         const origTop = calcTop(originalBin.y, originalBin.depth);
-        const origWidth = toPixels(originalBin.width);
-        const origHeight = toPixels(originalBin.depth);
+        const origWidth = calcPixels(originalBin.width);
+        const origHeight = calcPixels(originalBin.depth);
 
         previews.push(
           <div
@@ -465,8 +466,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
       const left = calcLeft(currentCoord.x);
       const top = calcTop(currentCoord.y, bin.depth);
-      const rectWidth = toPixels(bin.width);
-      const rectHeight = toPixels(bin.depth);
+      const rectWidth = calcPixels(bin.width);
+      const rectHeight = calcPixels(bin.depth);
 
       previews.push(
         <div
@@ -522,8 +523,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     // Outer selection area (amber dashed like draw)
     const areaLeft = calcLeft(x1);
     const areaTop = calcTop(y1, areaDepth);
-    const areaPixelWidth = toPixels(areaWidth);
-    const areaPixelHeight = toPixels(areaDepth);
+    const areaPixelWidth = calcPixels(areaWidth);
+    const areaPixelHeight = calcPixels(areaDepth);
 
     previews.push(
       <div
@@ -550,8 +551,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
           const left = calcLeft(binX);
           const top = calcTop(binY, paintSize.depth);
-          const rectWidth = toPixels(paintSize.width);
-          const rectHeight = toPixels(paintSize.depth);
+          const rectWidth = calcPixels(paintSize.width);
+          const rectHeight = calcPixels(paintSize.depth);
 
           previews.push(
             <div
@@ -580,8 +581,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
         const stripLeft = calcLeft(stripX);
         const stripTop = calcTop(y1, usedDepth);
-        const stripWidth = toPixels(remainderWidth);
-        const stripHeight = toPixels(usedDepth);
+        const stripWidth = calcPixels(remainderWidth);
+        const stripHeight = calcPixels(usedDepth);
 
         previews.push(
           <div
@@ -605,8 +606,8 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
 
         const stripLeft = calcLeft(x1);
         const stripTop = calcTop(stripY, remainderDepth);
-        const stripWidth = toPixels(areaWidth);
-        const stripHeight = toPixels(remainderDepth);
+        const stripWidth = calcPixels(areaWidth);
+        const stripHeight = calcPixels(remainderDepth);
 
         previews.push(
           <div

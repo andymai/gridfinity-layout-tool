@@ -1,2 +1,2 @@
 // Barrel export for layers hooks
-export { useAdvancedLayerMode } from './useAdvancedLayerMode';
+// (Currently no hooks exported - useAdvancedLayerMode was removed as unused)

@@ -16,6 +16,7 @@ import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
+import { useDesignerInit } from '@/features/bin-designer/hooks/useDesignerInit';
 import { useAutoSave } from '@/features/bin-designer/hooks/useAutoSave';
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
 import { fetchDesignerShare } from '@/features/bin-designer/hooks/useDesignerSharing';
@@ -128,6 +129,10 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
  * @returns The rendered Designer page element.
  */
 export function DesignerPage(_props: DesignerPageProps) {
+  // Initialize designer - ensures we always have an active design
+  // Must be called before useAutoSave to set currentDesignId
+  useDesignerInit();
+
   // Initialize generation bridge - auto-generates mesh when params change
   useGeneration();
 

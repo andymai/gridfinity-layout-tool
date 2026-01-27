@@ -21,6 +21,7 @@ import {
   PreviewSkeleton,
   GhostDividers,
   GhostWireframe,
+  GhostCompartmentPreview,
   type CameraPreset,
 } from './preview';
 import { GradientBackground } from './preview/GradientBackground';
@@ -303,6 +304,8 @@ export function PreviewCanvas() {
   const handleColorChange = useCallback((color: string) => {
     setPreviewColor(color);
     localStorage.setItem(PREVIEW_COLOR_KEY, color);
+    // Dispatch custom event for same-window listeners (CompartmentEditor)
+    window.dispatchEvent(new CustomEvent('preview-color-change', { detail: color }));
   }, []);
 
   // Clean up canvas ref on unmount
@@ -448,7 +451,7 @@ export function PreviewCanvas() {
             {/* Ghost outlines during generation */}
             <GhostWireframe />
             <GhostDividers />
-
+            <GhostCompartmentPreview />
 
             {/* Footprint grid */}
             <FootprintGrid width={width} depth={depth} />

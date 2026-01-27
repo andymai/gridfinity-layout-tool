@@ -1,0 +1,21 @@
+{
+  "$schema": "https://cdn.jsdelivr.net/npm/@anthropic-ai/claude-code@latest/marketplace.schema.json",
+  "name": "gridfinity-tools",
+  "displayName": "Gridfinity Layout Tool Plugins",
+  "description": "Custom plugins for the Gridfinity Layout Tool project",
+  "plugins": [
+    {
+      "id": "code-simplifier",
+      "name": "Code Simplifier",
+      "description": "Simplifies and refines code for clarity, consistency, and maintainability while preserving functionality",
+      "version": "1.0.0",
+      "skills": [
+        {
+          "name": "code-simplifier",
+          "description": "Simplify and refine recently modified code",
+          "prompt_file": "../.claude/agents/code-simplifier.md"
+        }
+      ]
+    }
+  ]
+}

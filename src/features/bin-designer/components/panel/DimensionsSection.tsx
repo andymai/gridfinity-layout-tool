@@ -191,7 +191,7 @@ export function DimensionsSection() {
 
         {/* Half-bin mode toggle */}
         <div
-          className="flex items-center justify-between pt-2 cursor-pointer rounded-md px-1 -mx-1 py-1 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+          className="group flex items-center justify-between pt-2 cursor-pointer rounded-md px-1 -mx-1 py-1 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
           onClick={toggleHalfBinMode}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -205,7 +205,7 @@ export function DimensionsSection() {
           tabIndex={0}
         >
           <span
-            className={`text-xs leading-none ${halfBinMode ? 'text-content' : 'text-content-tertiary'}`}
+            className={`text-xs leading-none transition-colors ${halfBinMode ? 'text-content' : 'text-content-tertiary group-hover:text-content-secondary'}`}
           >
             {t('binDesigner.halfBinMode')}
           </span>

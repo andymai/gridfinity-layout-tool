@@ -95,7 +95,6 @@ function create3DPrintingSupplies(): InspirationLayout {
     description:
       'Heat inserts sorted by size (M3-M5), magnets, 608/625 bearings, and filament samples. Includes nozzles and finishing supplies.',
     shortDescription: 'Heat inserts, magnets, bearings, and filament',
-    complexity: 'intermediate',
     tags: ['hobby', '3d-printing', 'filament', 'maker', 'ikea-alex'],
   });
 }
@@ -197,7 +196,6 @@ function createMakerStation(): InspirationLayout {
     description:
       'Arduino, ESP32, Wemos D1, Raspberry Pi, and microcontroller organization. Includes slots for sensors, breadboards, jumper wires, and SD cards.',
     shortDescription: 'Arduino, ESP32, Wemos D1, and maker supplies',
-    complexity: 'intermediate',
     tags: ['hobby', 'arduino', 'electronics', 'maker', 'raspberry-pi', 'ikea-alex'],
   });
 }
@@ -251,7 +249,6 @@ function createCraftSupplies(): InspirationLayout {
     description:
       'Adhesives, cutting tools, and small notions. Dedicated slots sized for scissors, X-Acto knives, and glue bottles.',
     shortDescription: 'Adhesives, cutting tools, and notions',
-    complexity: 'intermediate',
     tags: ['hobby', 'craft', 'sewing', 'diy'],
   });
 }
@@ -333,7 +330,6 @@ function createArtStation(): InspirationLayout {
     description:
       'Tall bins for brushes and markers stored upright. Separate sections for pencils, charcoal, erasers, and sharpeners.',
     shortDescription: 'Brushes, markers, pencils, and art supplies',
-    complexity: 'beginner',
     tags: ['hobby', 'art', 'brushes', 'markers', 'drawing'],
   });
 }
@@ -387,7 +383,6 @@ function createSewingKit(): InspirationLayout {
     description:
       'Half-bin compartments for thread spools organized by color. Includes slots for needles, pins, buttons, and shears.',
     shortDescription: 'Thread, needles, and sewing notions',
-    complexity: 'advanced',
     tags: ['hobby', 'sewing', 'thread', 'half-bins'],
   });
 }

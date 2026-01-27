@@ -201,6 +201,16 @@ export interface DesignerUIState {
   readonly wireframeMode: boolean;
   /** Whether half-bin mode is enabled (0.5 grid unit increments for width/depth) */
   readonly halfBinMode: boolean;
+  /** Preview compartments during drag-to-merge/split (shown as ghost in 3D view) */
+  readonly previewCompartments: CompartmentConfig | null;
+  /** Preview selection info for 3D ghost overlay */
+  readonly previewSelection: {
+    readonly action: 'merge' | 'split';
+    readonly minCol: number;
+    readonly maxCol: number;
+    readonly minRow: number;
+    readonly maxRow: number;
+  } | null;
 }
 
 /** Undo/redo history for bin parameters with optional mesh cache */
@@ -299,6 +309,16 @@ export interface DesignerState {
   setExportDialogOpen: (open: boolean) => void;
   setDesignListOpen: (open: boolean) => void;
   setWireframeMode: (enabled: boolean) => void;
+  setPreviewCompartments: (preview: CompartmentConfig | null) => void;
+  setPreviewSelection: (
+    selection: {
+      action: 'merge' | 'split';
+      minCol: number;
+      maxCol: number;
+      minRow: number;
+      maxRow: number;
+    } | null
+  ) => void;
   toggleHalfBinMode: () => void;
 }
 
