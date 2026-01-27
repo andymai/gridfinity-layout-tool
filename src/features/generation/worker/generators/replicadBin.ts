@@ -322,8 +322,7 @@ function buildBinBox(
 function buildTopShape(
   gridW: number,
   gridD: number,
-  includeLip: boolean,
-  wallThickness: number
+  includeLip: boolean
 ): Shape3D {
   const outerW = gridW * SIZE - CLEARANCE;
   const outerD = gridD * SIZE - CLEARANCE;
@@ -337,10 +336,14 @@ function buildTopShape(
       .line(LIP_BIG_TAPER, LIP_BIG_TAPER);
 
     if (includeLip) {
-      // Extend wall downward to replace top wall section
+      // Extend wall downward with a FIXED depth to create consistent lip geometry.
+      // Use 1.2mm (standard wall thickness) for the extension - this ensures the
+      // lip profile is identical regardless of actual wall thickness. The overlap
+      // with thicker walls is handled by the fuse operation.
+      const LIP_EXTENSION = 1.2;
       sketcher = sketcher
-        .vLineTo(-(LIP_TAPER_WIDTH + wallThickness))
-        .lineTo([-LIP_TAPER_WIDTH, -wallThickness]);
+        .vLineTo(-(LIP_TAPER_WIDTH + LIP_EXTENSION))
+        .lineTo([-LIP_TAPER_WIDTH, -LIP_EXTENSION]);
     } else {
       sketcher = sketcher.vLineTo(0);
     }
@@ -359,8 +362,9 @@ function buildTopShape(
 
     if (includeLip) {
       // Remove the wall portion that the lip replaces
+      const LIP_EXTENSION = 1.2;
       topProfileShape = topProfileShape.cut(
-        drawRoundedRectangle(wallThickness, 10).translate(-wallThickness / 2, -5)
+        drawRectangle(LIP_EXTENSION, 10).translate(-LIP_EXTENSION / 2, -5)
       );
     }
 
@@ -712,13 +716,18 @@ export function generateBin(
   let bin: Shape3D;
   if (params.base.stackingLip && !keepFull) {
     try {
-      const top = buildTopShape(params.width, params.depth, true, wallThickness).translateZ(
+      const top = buildTopShape(params.width, params.depth, true).translateZ(
         wallHeight
       );
       bin = base
         .fuse(box, { optimisation: 'commonFace' })
         .fuse(top, { optimisation: 'commonFace' });
-    } catch {
+    } catch (e) {
+      console.warn(
+        '[BinGen] Stacking lip failed, skipping:',
+        e instanceof Error ? e.message : e,
+        { wallThickness }
+      );
       bin = base.fuse(box, { optimisation: 'commonFace' });
     }
   } else {
