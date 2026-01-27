@@ -68,7 +68,9 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   designListOpen: false,
   wireframeMode: false,
   halfBinMode: false,
-} as const;
+  previewCompartments: null,
+  previewSelection: null,
+};
 
 /** Default empty history */
 export const DEFAULT_HISTORY: DesignerHistory = {

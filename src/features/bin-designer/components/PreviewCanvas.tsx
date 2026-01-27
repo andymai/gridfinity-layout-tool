@@ -21,6 +21,7 @@ import {
   PreviewSkeleton,
   GhostDividers,
   GhostWireframe,
+  GhostCompartmentPreview,
   type CameraPreset,
 } from './preview';
 import { GradientBackground } from './preview/GradientBackground';
@@ -448,6 +449,7 @@ export function PreviewCanvas() {
             {/* Ghost outlines during generation */}
             <GhostWireframe />
             <GhostDividers />
+            <GhostCompartmentPreview />
 
 
             {/* Footprint grid */}
