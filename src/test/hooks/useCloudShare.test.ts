@@ -13,7 +13,7 @@ import { ok, err, apiRateLimited, apiNotFound } from '@/core/result';
 // Mock the share API module
 vi.mock('../../core/api/share', () => ({
   createShare: vi.fn(),
-  updateShare: vi.fn(),
+  updatePermission: vi.fn(),
   deleteShare: vi.fn(),
   fetchShare: vi.fn(),
   reportShare: vi.fn(),
@@ -225,83 +225,6 @@ describe('useCloudShare', () => {
       await waitFor(() => {
         expect(result.current.status).toBe('success');
       });
-    });
-  });
-
-  describe('update', () => {
-    it('updates existing share successfully', async () => {
-      const existingShare: CloudShareInfo = {
-        id: 'existing-id',
-        deleteToken: 'existing-token',
-        sharedAt: Date.now(),
-        permission: 'view',
-      };
-
-      useLibraryStore.setState({
-        library: createTestLibrary(existingShare),
-      });
-
-      const mockData = {
-        id: 'existing-id',
-        url: 'https://example.com/s/existing-id',
-        permission: 'edit' as const,
-      };
-
-      vi.mocked(shareApi.updateShare).mockResolvedValue(ok(mockData));
-
-      const { result } = renderHook(() => useCloudShare());
-
-      let success: boolean | undefined;
-      await act(async () => {
-        success = await result.current.update('edit');
-      });
-
-      expect(success).toBe(true);
-      expect(result.current.status).toBe('success');
-      expect(shareApi.updateShare).toHaveBeenCalledWith(
-        'existing-id',
-        'existing-token',
-        expect.anything(),
-        'edit'
-      );
-    });
-
-    it('fails when no existing share', async () => {
-      const { result } = renderHook(() => useCloudShare());
-
-      let success: boolean | undefined;
-      await act(async () => {
-        success = await result.current.update('edit');
-      });
-
-      expect(success).toBe(false);
-      expect(result.current.error?.code).toBe('NOT_FOUND');
-    });
-
-    it('clears local share when NOT_FOUND on server', async () => {
-      const existingShare: CloudShareInfo = {
-        id: 'deleted-on-server',
-        deleteToken: 'token',
-        sharedAt: Date.now(),
-        permission: 'view',
-      };
-
-      useLibraryStore.setState({
-        library: createTestLibrary(existingShare),
-      });
-
-      vi.mocked(shareApi.updateShare).mockResolvedValue(err(apiNotFound('deleted-on-server')));
-
-      const clearCloudShareSpy = vi.fn();
-      useLibraryStore.setState({ clearCloudShare: clearCloudShareSpy });
-
-      const { result } = renderHook(() => useCloudShare());
-
-      await act(async () => {
-        await result.current.update('edit');
-      });
-
-      expect(clearCloudShareSpy).toHaveBeenCalledWith(TEST_LAYOUT_ID);
     });
   });
 
