@@ -637,6 +637,7 @@
   "layers.layerNamePlaceholder": "Nombre del layer",
   "layers.maxHeightFull": "Altura máxima ({max} unidades)",
   "layers.maxLayersReached": "Se alcanzó el máximo de layers",
+  "layers.cannotAddLayerTallBins": "No se puede añadir layer: los bins en {layerName} tienen {binHeight}u de altura pero el layer solo tiene {layerHeight}u. Ajustar excedería la altura del cajón. Reduce la altura de los bins o aumenta la altura del cajón.",
   "layers.noBins": "Sin bins",
   "layers.noBinsToClear": "No hay bins para borrar",
   "layers.noGaps": "Sin huecos",

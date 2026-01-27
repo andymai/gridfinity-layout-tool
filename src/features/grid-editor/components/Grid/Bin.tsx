@@ -671,6 +671,18 @@ function BinComponent({
       tabIndex={isGhost ? -1 : 0}
       title={isGhost ? undefined : bin.label ? `${dimensionsText} - ${bin.label}` : undefined}
     >
+      {/* Gradient fade for bins protruding above layer height - subtle top edge indicator */}
+      {isTall && !isGhost && (
+        <div
+          className="absolute inset-0 pointer-events-none rounded-[inherit]"
+          style={{
+            background:
+              'linear-gradient(to top, transparent 50%, rgba(251, 191, 36, 0.15) 85%, rgba(251, 191, 36, 0.25) 100%)',
+          }}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Tall bin indicator badge */}
       {isTall && !isGhost && (
         <div

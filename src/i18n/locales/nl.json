@@ -637,6 +637,7 @@
   "layers.layerNamePlaceholder": "Layernaam",
   "layers.maxHeightFull": "Maximale hoogte ({max} eenheden)",
   "layers.maxLayersReached": "Maximaal aantal layers bereikt",
+  "layers.cannotAddLayerTallBins": "Kan layer niet toevoegen: bins op {layerName} zijn {binHeight}u hoog maar de layer is slechts {layerHeight}u. Aanpassing zou de ladehoogte overschrijden. Verlaag de binhoogte of verhoog de ladehoogte.",
   "layers.noBins": "Geen bins",
   "layers.noBinsToClear": "Geen bins om te wissen",
   "layers.noGaps": "Geen gaten",
