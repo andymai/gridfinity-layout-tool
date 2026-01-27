@@ -289,23 +289,23 @@ await Promise.all(bins.map((bin) => workerPool.generate(bin)));
 
 ## Implementation Priority
 
-### Immediate (This Week)
+### Immediate (This Week) ✅
 
 1. [x] ~~Fix ghost wireframe timing~~ (already done)
-2. [ ] Display progress stages in UI (Phase 1.2)
-3. [ ] Dynamic tessellation tolerance (Phase 1.1)
+2. [x] Display progress stages in UI (Phase 1.2)
+3. [x] Dynamic tessellation tolerance (Phase 1.1)
 
-### Short-term (Next 2 Weeks)
+### Short-term (Next 2 Weeks) ✅
 
-4. [ ] Batch magnet hole cuts (Phase 2.1)
-5. [ ] Batch compartment wall fusion (Phase 2.2)
-6. [ ] Progressive ghost animation (Phase 4.1)
+4. [x] Batch magnet hole cuts (Phase 2.1)
+5. [x] Batch compartment wall fusion (Phase 2.2)
+6. [x] Progressive ghost animation (Phase 4.1)
 
-### Medium-term (Next Month)
+### Medium-term (Next Month) ✅
 
-7. [ ] Batch cell socket fusion (Phase 2.3)
-8. [ ] Generation time prediction (Phase 4.2)
-9. [ ] Complexity warning (Phase 4.3)
+7. [x] Batch cell socket fusion (Phase 2.3)
+8. [x] Generation time prediction (Phase 4.2)
+9. [x] Complexity warning (Phase 4.3)
 
 ### Long-term (Future)
 
