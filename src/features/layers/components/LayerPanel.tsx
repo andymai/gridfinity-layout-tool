@@ -9,7 +9,7 @@ import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { isOk, isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
-import { calculateLayerAutoExpansion } from '../utils/layerAutoExpansion';
+import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
 
 // Drop position indicator for drag-and-drop reordering
 type DropPosition = { index: number; position: 'above' | 'below' } | null;
@@ -90,7 +90,7 @@ export function LayerPanel() {
       return;
     }
 
-    if (expansion.needsExpansion && expansion.newHeight) {
+    if (expansion.needsExpansion && expansion.newHeight !== undefined) {
       // Auto-expand the top layer, then add the new layer (atomic via execute)
       const newHeight = expansion.newHeight; // Capture for closure
       execute(() => {

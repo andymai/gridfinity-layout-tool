@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { calculateLayerAutoExpansion } from '../utils/layerAutoExpansion';
 import type { Layer, Bin } from '@/core/types';
 
-// Helper to create a test bin
+// Helper to create a test bin with required fields
 const createBin = (id: string, layerId: string, height: number): Bin => ({
   id,
   layerId,
@@ -11,6 +11,9 @@ const createBin = (id: string, layerId: string, height: number): Bin => ({
   width: 1,
   depth: 1,
   height,
+  category: 'default',
+  label: '',
+  notes: '',
 });
 
 describe('calculateLayerAutoExpansion', () => {

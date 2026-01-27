@@ -124,7 +124,7 @@ export function LayersTab() {
       return;
     }
 
-    if (expansion.needsExpansion && expansion.newHeight) {
+    if (expansion.needsExpansion && expansion.newHeight !== undefined) {
       // Auto-expand the top layer, then add the new layer (atomic via execute)
       const newHeight = expansion.newHeight; // Capture for closure
       execute(() => {

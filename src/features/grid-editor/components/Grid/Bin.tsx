@@ -677,7 +677,7 @@ function BinComponent({
           className="absolute inset-0 pointer-events-none rounded-[inherit]"
           style={{
             background:
-              'linear-gradient(to top, transparent 50%, rgba(251, 191, 36, 0.15) 85%, rgba(251, 191, 36, 0.25) 100%)',
+              'linear-gradient(to top, transparent 50%, color-mix(in srgb, var(--color-warning) 15%, transparent) 85%, color-mix(in srgb, var(--color-warning) 25%, transparent) 100%)',
           }}
           aria-hidden="true"
         />
