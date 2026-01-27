@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import type { LayoutEntry } from '@/core/types';
 import { LayoutThumbnail } from '@/components/LayoutThumbnail';
 import { LayoutActions } from './LayoutActions';
+import { useInlineEdit } from './useInlineEdit';
 import { useTranslation, useFormatting } from '@/i18n';
 
 interface LayoutGridItemProps {
@@ -41,42 +42,19 @@ export function LayoutGridItem({
 }: LayoutGridItemProps) {
   const t = useTranslation();
   const { formatRelativeDate } = useFormatting();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingName, setEditingName] = useState(entry.name);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Focus input when editing starts
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
-  const handleStartRename = useCallback(() => {
-    setEditingName(entry.name);
-    setIsEditing(true);
-  }, [entry.name]);
-
-  const handleFinishRename = useCallback(() => {
-    const trimmed = editingName.trim();
-    if (trimmed && trimmed !== entry.name) {
-      onRename(trimmed);
-    }
-    setIsEditing(false);
-  }, [editingName, entry.name, onRename]);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleFinishRename();
-      } else if (e.key === 'Escape') {
-        setIsEditing(false);
-        setEditingName(entry.name);
-      }
-    },
-    [handleFinishRename, entry.name]
-  );
+  const {
+    isEditing,
+    editingValue,
+    inputRef,
+    startEditing,
+    handleChange,
+    handleFinish,
+    handleKeyDown,
+  } = useInlineEdit({
+    initialValue: entry.name,
+    onSave: onRename,
+  });
 
   const handleItemKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -110,7 +88,12 @@ export function LayoutGridItem({
     >
       {/* Thumbnail - portrait aspect like inspiration gallery */}
       <div className="aspect-[3/4] bg-surface rounded overflow-hidden mb-2 flex items-center justify-center relative p-2">
-        <LayoutThumbnail preview={entry.preview} size={160} showLabels className="max-w-full max-h-full" />
+        <LayoutThumbnail
+          preview={entry.preview}
+          size={160}
+          showLabels
+          className="max-w-full max-h-full"
+        />
         {/* Active badge - top right corner (matches inspiration gallery theme badge) */}
         {isActive && (
           <span
@@ -127,9 +110,9 @@ export function LayoutGridItem({
         <input
           ref={inputRef}
           type="text"
-          value={editingName}
-          onChange={(e) => setEditingName(e.target.value)}
-          onBlur={handleFinishRename}
+          value={editingValue}
+          onChange={(e) => handleChange(e.target.value)}
+          onBlur={handleFinish}
           onKeyDown={handleKeyDown}
           onClick={(e) => e.stopPropagation()}
           className="w-full bg-surface px-2 py-1 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm mb-0.5"
@@ -137,7 +120,10 @@ export function LayoutGridItem({
           aria-label={t('layouts.layoutName')}
         />
       ) : (
-        <h3 className="font-medium text-content text-base leading-tight line-clamp-1" title={entry.name}>
+        <h3
+          className="font-medium text-content text-base leading-tight line-clamp-1"
+          title={entry.name}
+        >
           {entry.name}
         </h3>
       )}
@@ -145,7 +131,8 @@ export function LayoutGridItem({
       {/* Metadata row - matches inspiration gallery format */}
       <div className="flex items-center mt-0.5">
         <span className="text-sm text-content-tertiary">
-          {entry.preview.binCount} {t('layouts.bins')} · {entry.preview.drawerWidth}×{entry.preview.drawerDepth}
+          {entry.preview.binCount} {t('layouts.bins')} · {entry.preview.drawerWidth}×
+          {entry.preview.drawerDepth}
         </span>
       </div>
 
@@ -162,17 +149,14 @@ export function LayoutGridItem({
       )}
 
       {/* Action Buttons - positioned at bottom */}
-      <div
-        className="mt-1.5 flex justify-end"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="mt-1.5 flex justify-end" onClick={(e) => e.stopPropagation()}>
         <LayoutActions
           entry={entry}
           isOnlyLayout={isOnlyLayout}
           isActive={isActive}
           onCopyLink={onCopyLink}
           onDownload={onDownload}
-          onRename={handleStartRename}
+          onRename={startEditing}
           onDuplicate={onDuplicate}
           onDelete={onDelete}
           onSuggestName={onSuggestName}
