@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore, useUndoableAction, useSettingsStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
-import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useToastStore } from '@/core/store/toast';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
@@ -10,24 +10,33 @@ import { isOk, isErr, getUserMessage } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 
-// Curated color palette optimized for dark UI backgrounds
-// Colors chosen for: visual distinction, balanced saturation, good contrast
-const COLOR_PALETTE = [
-  { color: '#f87171', name: 'Coral' }, // Warm red, softer than pure red
-  { color: '#fb923c', name: 'Orange' }, // Vibrant orange
-  { color: '#fbbf24', name: 'Amber' }, // Golden yellow
-  { color: '#a3e635', name: 'Lime' }, // Yellow-green, high visibility
-  { color: '#4ade80', name: 'Green' }, // Fresh green
-  { color: '#2dd4bf', name: 'Teal' }, // Blue-green
-  { color: '#38bdf8', name: 'Sky' }, // Light blue
-  { color: '#818cf8', name: 'Indigo' }, // Purple-blue
-  { color: '#c084fc', name: 'Purple' }, // Vibrant purple
-  { color: '#f472b6', name: 'Pink' }, // Warm pink
-  { color: '#e2e8f0', name: 'Cloud' }, // Soft off-white
-  { color: '#334155', name: 'Charcoal' }, // Near-black
-  { color: '#94a3b8', name: 'Slate' }, // Cool neutral
-  { color: '#a8a29e', name: 'Stone' }, // Warm neutral
-];
+interface ColorPaletteGridProps {
+  selectedColor: string;
+  onColorSelect: (color: string) => void;
+  t: ReturnType<typeof useTranslation>;
+}
+
+function ColorPaletteGrid({ selectedColor, onColorSelect, t }: ColorPaletteGridProps) {
+  return (
+    <div className="grid grid-cols-7 gap-1.5">
+      {CATEGORY_COLOR_PALETTE.map(({ color, name }) => (
+        <button
+          key={color}
+          onClick={() => onColorSelect(color)}
+          className="w-6 h-6 rounded transition-all duration-150 hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-accent"
+          style={{
+            backgroundColor: color,
+            boxShadow:
+              selectedColor === color ? '0 0 0 2px var(--color-primary)' : 'var(--shadow-sm)',
+          }}
+          title={name}
+          aria-label={t('categories.setColorTo', { name })}
+          aria-pressed={selectedColor === color}
+        />
+      ))}
+    </div>
+  );
+}
 
 export function CategoriesPanel() {
   const t = useTranslation();
@@ -137,11 +146,7 @@ export function CategoriesPanel() {
         }
       });
 
-      // Track once per batch (not per bin)
-      if (binsToUpdate.length > 0) {
-        mlTracking.trackCategory(binsToUpdate[0], categoryName, binCount);
-      }
-
+      mlTracking.trackCategory(binsToUpdate[0], categoryName, binCount);
       addToast(t('toast.categoryChanged', { count: binCount, name: categoryName }), 'success');
     }
   };
@@ -293,26 +298,11 @@ export function CategoriesPanel() {
                       autoFocus
                       placeholder={t('categories.categoryNamePlaceholder')}
                     />
-                    {/* Color palette - 7 columns for better fit with 14 colors */}
-                    <div className="grid grid-cols-7 gap-1.5">
-                      {COLOR_PALETTE.map(({ color, name }) => (
-                        <button
-                          key={color}
-                          onClick={() => handleUpdateCategory(category.id, 'color', color)}
-                          className="w-6 h-6 rounded transition-all duration-150 hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-accent"
-                          style={{
-                            backgroundColor: color,
-                            boxShadow:
-                              category.color === color
-                                ? '0 0 0 2px var(--color-primary)'
-                                : 'var(--shadow-sm)',
-                          }}
-                          title={name}
-                          aria-label={t('categories.setColorTo', { name })}
-                          aria-pressed={category.color === color}
-                        />
-                      ))}
-                    </div>
+                    <ColorPaletteGrid
+                      selectedColor={category.color}
+                      onColorSelect={(color) => handleUpdateCategory(category.id, 'color', color)}
+                      t={t}
+                    />
                     {/* Footer row: hint + delete link */}
                     <div className="flex items-center justify-between text-xs text-content-tertiary mt-0.5">
                       <span>{t('categories.clickOutsideToClose')}</span>
@@ -362,35 +352,20 @@ export function CategoriesPanel() {
                         )}
                       </button>
 
-                      {/* Quick color picker popover */}
                       {colorPickerId === category.id && (
                         <div
                           ref={colorPickerRef}
                           className="absolute left-0 top-full mt-1.5 z-50 p-2 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg animate-scale-in"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="grid grid-cols-7 gap-1.5">
-                            {COLOR_PALETTE.map(({ color, name }) => (
-                              <button
-                                key={color}
-                                onClick={() => {
-                                  handleUpdateCategory(category.id, 'color', color);
-                                  setColorPickerId(null);
-                                }}
-                                className="w-6 h-6 rounded transition-all duration-150 hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-accent"
-                                style={{
-                                  backgroundColor: color,
-                                  boxShadow:
-                                    category.color === color
-                                      ? '0 0 0 2px var(--color-primary)'
-                                      : 'var(--shadow-sm)',
-                                }}
-                                title={name}
-                                aria-label={t('categories.setColorTo', { name })}
-                                aria-pressed={category.color === color}
-                              />
-                            ))}
-                          </div>
+                          <ColorPaletteGrid
+                            selectedColor={category.color}
+                            onColorSelect={(color) => {
+                              handleUpdateCategory(category.id, 'color', color);
+                              setColorPickerId(null);
+                            }}
+                            t={t}
+                          />
                         </div>
                       )}
                     </div>
