@@ -9,7 +9,12 @@ import type { BinParams } from '@/shared/types/bin';
 
 // ─── Main → Worker Messages ──────────────────────────────────────────────────
 
-export type WorkerMessage = InitMessage | GenerateMessage | CancelMessage | ExportMessage;
+export type WorkerMessage =
+  | InitMessage
+  | GenerateMessage
+  | CancelMessage
+  | ExportMessage
+  | GenerateForExportMessage;
 
 export interface InitMessage {
   readonly type: 'INIT';
@@ -28,6 +33,24 @@ export interface CancelMessage {
 export interface GeneratePayload {
   readonly params: BinParams;
   readonly requestId: string;
+}
+
+/**
+ * Request high-quality mesh generation for export.
+ * Uses forExport=true for full BREP fidelity and fine tessellation.
+ */
+export interface GenerateForExportMessage {
+  readonly type: 'GENERATE_FOR_EXPORT';
+  readonly payload: GenerateForExportPayload;
+}
+
+export interface GenerateForExportPayload {
+  readonly params: BinParams;
+  readonly requestId: string;
+  /** STL tessellation tolerance in mm (default 0.01) */
+  readonly tolerance?: number;
+  /** STL angular tolerance in degrees (default 5) */
+  readonly angularTolerance?: number;
 }
 
 export interface ExportMessage {
@@ -54,6 +77,7 @@ export type WorkerResponse =
   | InitReadyResponse
   | ProgressResponse
   | MeshResultResponse
+  | ExportMeshResultResponse
   | ExportResultResponse
   | ErrorResponse;
 
@@ -70,6 +94,19 @@ export interface ProgressResponse {
 
 export interface MeshResultResponse {
   readonly type: 'MESH_RESULT';
+  readonly requestId: string;
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly triangleCount: number;
+  readonly timingMs: number;
+}
+
+/**
+ * High-quality mesh result for export.
+ * Contains full-fidelity geometry suitable for 3D printing.
+ */
+export interface ExportMeshResultResponse {
+  readonly type: 'EXPORT_MESH_RESULT';
   readonly requestId: string;
   readonly vertices: Float32Array;
   readonly normals: Float32Array;

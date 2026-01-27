@@ -14,8 +14,8 @@
 import { setOC } from 'replicad';
 import type { WorkerMessage, WorkerResponse } from '../bridge/types';
 import type { BinParams } from '@/shared/types/bin';
-import type { ExportPayload } from '../bridge/types';
-import { generateBin, exportBin } from './generators/replicadBin';
+import type { ExportPayload, GenerateForExportPayload } from '../bridge/types';
+import { generateBin, exportBin, generateForExport } from './generators/replicadBin';
 
 import opencascade from 'replicad-opencascadejs/src/replicad_single.js';
 import opencascadeWasm from 'replicad-opencascadejs/src/replicad_single.wasm?url';
@@ -122,6 +122,68 @@ function generate(params: BinParams, requestId: string): void {
 }
 
 /**
+ * Generate export-quality mesh for STL/3MF export.
+ * Uses forExport=true for full BREP fidelity and configurable tessellation.
+ */
+function generateExportMesh(payload: GenerateForExportPayload): void {
+  if (!ocInitialized) {
+    respond({
+      type: 'ERROR',
+      requestId: payload.requestId,
+      error: 'OpenCascade not initialized',
+    });
+    return;
+  }
+
+  activeRequestId = payload.requestId;
+  const startTime = performance.now();
+
+  try {
+    const meshData = generateForExport(
+      payload.params,
+      payload.tolerance ?? 0.01,
+      payload.angularTolerance ?? 5,
+      (stage, progress) => {
+        if (activeRequestId !== payload.requestId) return;
+        reportProgress(
+          payload.requestId,
+          stage as 'base' | 'shell' | 'features' | 'merge',
+          progress
+        );
+      }
+    );
+
+    if (activeRequestId !== payload.requestId) return;
+
+    const timingMs = performance.now() - startTime;
+
+    // Transfer arrays to main thread (zero-copy)
+    const response = {
+      type: 'EXPORT_MESH_RESULT' as const,
+      requestId: payload.requestId,
+      vertices: meshData.vertices,
+      normals: meshData.normals,
+      triangleCount: meshData.triangleCount,
+      timingMs,
+    };
+    self.postMessage(response, {
+      transfer: [meshData.vertices.buffer, meshData.normals.buffer],
+    });
+  } catch (e) {
+    if (activeRequestId !== payload.requestId) return;
+    respond({
+      type: 'ERROR',
+      requestId: payload.requestId,
+      error: `Export mesh generation failed: ${e instanceof Error ? e.message : String(e)}`,
+    });
+  } finally {
+    if (activeRequestId === payload.requestId) {
+      activeRequestId = null;
+    }
+  }
+}
+
+/**
  * Export pipeline — generates file (STL/STEP) from BREP solid.
  * Uses the cached solid from the last GENERATE call if available.
  */
@@ -182,6 +244,10 @@ self.addEventListener('message', async (event: MessageEvent<WorkerMessage>) => {
 
     case 'GENERATE':
       generate(message.payload.params, message.payload.requestId);
+      break;
+
+    case 'GENERATE_FOR_EXPORT':
+      generateExportMesh(message.payload);
       break;
 
     case 'EXPORT':

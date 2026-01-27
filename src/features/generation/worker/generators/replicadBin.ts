@@ -606,7 +606,8 @@ export interface ExportResult {
 
 /**
  * Export the last generated solid in the requested format.
- * If no solid is cached (e.g., worker restarted), regenerates from params.
+ * If no solid is cached (e.g., worker restarted), regenerates from params
+ * with full export quality (forExport=true).
  *
  * STL: binary mesh with configurable tessellation quality
  * STEP: exact BREP geometry (lossless, CAD-interoperable)
@@ -617,9 +618,9 @@ export async function exportBin(
   tolerance = 0.01,
   angularTolerance = 5
 ): Promise<ExportResult> {
-  // Regenerate if no cached solid
+  // Regenerate with export quality if no cached solid
   if (!lastSolid) {
-    generateBin(params);
+    generateBin(params, undefined, true);
   }
 
   const solid = lastSolid;
@@ -643,6 +644,117 @@ export async function exportBin(
   });
   const data = await blob.arrayBuffer();
   return { data, fileName: `${name}.stl` };
+}
+
+/**
+ * Generate export-quality mesh from parameters.
+ *
+ * Always uses forExport=true for full BREP fidelity (5-section sockets,
+ * accurate Gridfinity profile). Tessellation quality is configurable.
+ *
+ * @param params Bin configuration parameters
+ * @param tolerance STL tessellation tolerance in mm (default 0.01)
+ * @param angularTolerance Angular tolerance in degrees (default 5)
+ * @param onProgress Optional progress callback
+ */
+export function generateForExport(
+  params: BinParams,
+  tolerance = 0.01,
+  angularTolerance = 5,
+  onProgress?: ProgressFn
+): MeshData {
+  // Generate with full export quality
+  const wallThickness = params.wallThickness;
+  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const wallHeight = totalHeight - GRIDFINITY.BASE_HEIGHT;
+
+  const outerW = params.width * SIZE - CLEARANCE;
+  const outerD = params.depth * SIZE - CLEARANCE;
+  const innerW = outerW - 2 * wallThickness;
+  const innerD = outerD - 2 * wallThickness;
+  const keepFull = params.style === 'solid';
+
+  const withMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
+  const withScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
+
+  // Always use high quality for export
+  const useHighQuality = true;
+
+  // Stage 1: Build base socket with full 5-section profile
+  onProgress?.('base', 0.1);
+  const base = buildBaseSocket(
+    params.width,
+    params.depth,
+    withMagnet,
+    withScrew,
+    params.base.magnetDiameter / 2,
+    params.base.magnetDepth,
+    params.base.screwDiameter / 2,
+    useHighQuality
+  );
+
+  // Stage 2: Build bin box (walls + floor)
+  onProgress?.('shell', 0.3);
+  const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness, keepFull);
+
+  // Stage 3: Assemble base + shell + stacking lip
+  onProgress?.('features', 0.4);
+  let bin: Shape3D;
+  if (params.base.stackingLip && !keepFull) {
+    try {
+      const top = buildTopShape(params.width, params.depth, true, wallThickness).translateZ(
+        wallHeight
+      );
+      bin = base
+        .fuse(box, { optimisation: 'commonFace' })
+        .fuse(top, { optimisation: 'commonFace' });
+    } catch {
+      bin = base.fuse(box, { optimisation: 'commonFace' });
+    }
+  } else {
+    bin = base.fuse(box, { optimisation: 'commonFace' });
+  }
+
+  // Stage 4: Features (dividers, inserts)
+  onProgress?.('features', 0.5);
+
+  if (!keepFull) {
+    const compartmentWalls = buildCompartmentWalls(params, innerW, innerD, wallHeight);
+    if (compartmentWalls) {
+      try {
+        bin = bin.fuse(compartmentWalls);
+      } catch (e) {
+        console.warn(
+          '[BinGen] Divider fusion failed, skipping:',
+          e instanceof Error ? e.message : e
+        );
+      }
+    }
+
+    const insertCuts = buildInsertCuts(params);
+    if (insertCuts) {
+      try {
+        bin = bin.cut(insertCuts);
+      } catch (e) {
+        console.warn('[BinGen] Insert cut failed, skipping:', e instanceof Error ? e.message : e);
+      }
+    }
+  }
+
+  // Stage 5: Translate so Z=0 = absolute bottom (socket bottom)
+  onProgress?.('merge', 0.8);
+  bin = bin.translateZ(SOCKET_HEIGHT);
+
+  // Cache solid for potential STEP export
+  lastSolid = bin as unknown as Solid;
+
+  // Stage 6: Tessellate with export-quality settings
+  onProgress?.('merge', 0.9);
+  const shapeMesh = bin.mesh({ tolerance, angularTolerance });
+
+  onProgress?.('merge', 1.0);
+  // Always include normals for export
+  return indexedMeshToFlat(shapeMesh, false);
 }
 
 /**

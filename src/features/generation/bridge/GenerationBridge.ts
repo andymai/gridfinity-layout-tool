@@ -31,6 +31,14 @@ export interface ExportResult {
   readonly format: ExportFormat;
 }
 
+/** Options for export-quality mesh generation */
+export interface ExportMeshOptions {
+  /** STL tessellation tolerance in mm (default 0.01) */
+  readonly tolerance?: number;
+  /** Angular tolerance in degrees (default 5) */
+  readonly angularTolerance?: number;
+}
+
 /**
  * GenerationBridge manages a single Web Worker instance for geometry generation.
  *
@@ -52,6 +60,9 @@ export class GenerationBridge {
   private pendingExportResolve: ((result: ExportResult) => void) | null = null;
   private pendingExportReject: ((error: Error) => void) | null = null;
   private exportRequestId: string | null = null;
+  private pendingExportMeshResolve: ((result: GenerationResult) => void) | null = null;
+  private pendingExportMeshReject: ((error: Error) => void) | null = null;
+  private exportMeshRequestId: string | null = null;
   private adaptiveDebounce = new AdaptiveDebounce();
 
   /**
@@ -175,6 +186,14 @@ export class GenerationBridge {
       this.exportRequestId = null;
     }
 
+    // Reject pending export mesh
+    if (this.pendingExportMeshReject) {
+      this.pendingExportMeshReject(new Error('Bridge destroyed'));
+      this.pendingExportMeshResolve = null;
+      this.pendingExportMeshReject = null;
+      this.exportMeshRequestId = null;
+    }
+
     if (this.worker) {
       this.worker.terminate();
       this.worker = null;
@@ -230,6 +249,55 @@ export class GenerationBridge {
     });
   }
 
+/**
+   * Generate export-quality mesh for STL/3MF file creation.
+   *
+   * Unlike generate(), this always uses forExport=true for full BREP fidelity
+   * (5-section socket profiles) and fine tessellation (0.01mm, 5° by default).
+   *
+   * The mesh is suitable for direct conversion to STL/3MF on the main thread.
+   */
+  async generateForExport(
+    params: BinParams,
+    options?: ExportMeshOptions,
+    onProgress?: ProgressCallback
+  ): Promise<GenerationResult> {
+    if (this.destroyed) {
+      throw new Error('Bridge has been destroyed');
+    }
+
+    // Ensure worker is initialized
+    await this.init();
+
+    // Cancel any pending preview generation (export takes priority)
+    this.cancelCurrentRequest();
+
+    // Reject any pending export mesh (only one at a time)
+    if (this.pendingExportMeshReject) {
+      this.pendingExportMeshReject(new Error('Export mesh superseded'));
+      this.pendingExportMeshResolve = null;
+      this.pendingExportMeshReject = null;
+    }
+
+    const requestId = this.nextRequestId();
+    this.exportMeshRequestId = requestId;
+    this.onProgress = onProgress ?? null;
+
+    return new Promise<GenerationResult>((resolve, reject) => {
+      this.pendingExportMeshResolve = resolve;
+      this.pendingExportMeshReject = reject;
+      this.postMessage({
+        type: 'GENERATE_FOR_EXPORT',
+        payload: {
+          params,
+          requestId,
+          tolerance: options?.tolerance,
+          angularTolerance: options?.angularTolerance,
+        },
+      });
+    });
+  }
+
   /** Whether the bridge has been destroyed */
   get isDestroyed(): boolean {
     return this.destroyed;
@@ -255,7 +323,12 @@ export class GenerationBridge {
 
       switch (response.type) {
         case 'PROGRESS':
-          if (response.requestId === this.currentRequestId && this.onProgress) {
+          // Handle progress for both preview generation and export mesh generation
+          if (
+            (response.requestId === this.currentRequestId ||
+              response.requestId === this.exportMeshRequestId) &&
+            this.onProgress
+          ) {
             this.onProgress(response.stage, response.progress);
           }
           break;
@@ -287,6 +360,16 @@ export class GenerationBridge {
             this.pendingExportReject = null;
             this.exportRequestId = null;
             reject(new Error(response.error));
+          } else if (
+            response.requestId === this.exportMeshRequestId &&
+            this.pendingExportMeshReject
+          ) {
+            const reject = this.pendingExportMeshReject;
+            this.pendingExportMeshResolve = null;
+            this.pendingExportMeshReject = null;
+            this.exportMeshRequestId = null;
+            this.onProgress = null;
+            reject(new Error(response.error));
           }
           break;
 
@@ -300,6 +383,27 @@ export class GenerationBridge {
               data: response.data,
               fileName: response.fileName,
               format: response.format,
+            });
+          }
+          break;
+
+        case 'EXPORT_MESH_RESULT':
+          if (
+            response.requestId === this.exportMeshRequestId &&
+            this.pendingExportMeshResolve
+          ) {
+            const resolve = this.pendingExportMeshResolve;
+            this.pendingExportMeshResolve = null;
+            this.pendingExportMeshReject = null;
+            this.exportMeshRequestId = null;
+            this.onProgress = null;
+            resolve({
+              mesh: {
+                vertices: response.vertices,
+                normals: response.normals,
+                triangleCount: response.triangleCount,
+              },
+              timingMs: response.timingMs,
             });
           }
           break;

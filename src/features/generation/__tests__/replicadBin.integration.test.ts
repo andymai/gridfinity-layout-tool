@@ -6,9 +6,19 @@ import type { MeshData } from '@/features/generation/bridge/types';
 
 type GenerateFn = (
   params: BinParams,
+  onProgress?: (stage: string, progress: number) => void,
+  forExport?: boolean
+) => MeshData;
+
+type GenerateForExportFn = (
+  params: BinParams,
+  tolerance?: number,
+  angularTolerance?: number,
   onProgress?: (stage: string, progress: number) => void
 ) => MeshData;
+
 let generateBin: GenerateFn;
+let generateForExport: GenerateForExportFn;
 
 beforeAll(async () => {
   const { setOC } = await import('replicad');
@@ -26,6 +36,7 @@ beforeAll(async () => {
 
   const mod = await import('@/features/generation/worker/generators/replicadBin');
   generateBin = mod.generateBin as GenerateFn;
+  generateForExport = mod.generateForExport as GenerateForExportFn;
 }, 30000);
 
 describe('replicad bin generation', () => {
@@ -143,4 +154,68 @@ describe('replicad bin generation', () => {
     }, 60000);
   });
 
+  describe('export quality vs preview quality', () => {
+    it('generateForExport produces more triangles than preview for large bins', () => {
+      // Large bin (4x4) uses coarse tessellation in preview mode
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 4,
+        depth: 4,
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+      };
+
+      const previewResult = generateBin(params, undefined, false);
+      const exportResult = generateForExport(params);
+
+      // Export should have significantly more triangles due to finer tessellation
+      expect(exportResult.triangleCount).toBeGreaterThan(previewResult.triangleCount);
+      // Export should always have normals
+      expect(exportResult.normals.length).toBe(exportResult.vertices.length);
+    }, 120000);
+
+    it('generateForExport always includes normals', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 4,
+        depth: 4,
+      };
+
+      const result = generateForExport(params);
+
+      // Export mesh should always have normals (not skipped like large preview)
+      expect(result.normals.length).toBe(result.vertices.length);
+      expect(result.normals.length).toBeGreaterThan(0);
+    }, 60000);
+
+    it('generateForExport uses configurable tessellation tolerance', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+      };
+
+      // Fine tessellation (default 0.01mm)
+      const fineResult = generateForExport(params, 0.01, 5);
+      // Coarse tessellation
+      const coarseResult = generateForExport(params, 1.0, 30);
+
+      // Finer tolerance should produce more triangles
+      expect(fineResult.triangleCount).toBeGreaterThan(coarseResult.triangleCount);
+    }, 120000);
+
+    it('forExport flag in generateBin produces higher quality', () => {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+      };
+
+      const previewResult = generateBin(params, undefined, false);
+      const exportResult = generateBin(params, undefined, true);
+
+      // Export mode should produce more triangles
+      expect(exportResult.triangleCount).toBeGreaterThan(previewResult.triangleCount);
+    }, 120000);
+  });
 });

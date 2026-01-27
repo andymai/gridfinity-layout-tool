@@ -1,17 +1,19 @@
 /**
  * Export hook for the bin designer.
  *
- * Manages export lifecycle: generates file from mesh or BREP solid,
+ * Manages export lifecycle: generates high-quality mesh via worker,
  * triggers browser download, and computes live print estimates.
  *
  * Formats:
- * - STL: Binary mesh from tessellated preview (fast, main-thread)
- * - 3MF: XML container with mesh + metadata (main-thread)
+ * - STL: High-quality mesh via worker (forExport=true, 0.01mm tolerance)
+ * - 3MF: High-quality mesh + metadata (via worker, 0.01mm tolerance)
  * - STEP: Exact BREP geometry via worker (lossless CAD interchange)
+ *
+ * All mesh exports regenerate with full BREP fidelity (5-section socket
+ * profiles) and fine tessellation, ensuring print-ready geometry.
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { exportSTL, export3MF } from '@/shared/generation/export';
 import { getActiveBridge } from '@/shared/generation/bridge';
@@ -27,49 +29,49 @@ export type ExportFormat = 'stl' | '3mf' | 'step';
 interface UseExportReturn {
   /** Whether an export is currently being generated */
   readonly isExporting: boolean;
-  /** Whether mesh data is available for export */
+  /** Whether the generation bridge is available for export */
   readonly canExport: boolean;
   /** Whether BREP export (STEP) is available */
   readonly canExportBREP: boolean;
   /** Current print estimates based on params */
   readonly estimates: PrintEstimate;
-  /** Trigger STL download */
-  readonly downloadSTL: (config: ExportFileNameConfig, designName?: string) => void;
-  /** Trigger 3MF download (with thumbnail & print settings) */
+  /** Trigger STL download (generates high-quality mesh via worker) */
+  readonly downloadSTL: (config: ExportFileNameConfig, designName?: string) => Promise<void>;
+  /** Trigger 3MF download (generates high-quality mesh via worker, with thumbnail & metadata) */
   readonly download3MF: (config: ExportFileNameConfig, designName?: string) => Promise<void>;
   /** Trigger STEP download (exact BREP via worker, lossless) */
   readonly downloadSTEP: () => Promise<void>;
 }
 
 export function useExport(): UseExportReturn {
-  const { params, mesh } = useDesignerStore(
-    useShallow((state) => ({
-      params: state.params,
-      mesh: state.generation.mesh,
-    }))
-  );
+  const params = useDesignerStore((state) => state.params);
 
   const [isExporting, setIsExporting] = useState(false);
 
-  const canExport =
-    mesh !== null && mesh.vertices !== null && mesh.normals !== null && mesh.error === null;
+  // Export requires the generation bridge to be active
+  const canExport = getActiveBridge() !== null;
 
-  // BREP export requires the generation worker to be active
-  const canExportBREP = canExport && getActiveBridge() !== null;
+  // BREP export uses the same bridge
+  const canExportBREP = canExport;
 
   const estimates = useMemo(() => estimatePrint(params), [params]);
 
   const downloadSTL = useCallback(
-    (config: ExportFileNameConfig, designName?: string) => {
-      if (!canExport || !mesh?.vertices || !mesh?.normals) return;
+    async (config: ExportFileNameConfig, designName?: string) => {
+      const bridge = getActiveBridge();
+      if (!bridge) return;
 
       setIsExporting(true);
 
       let url: string | null = null;
       let anchor: HTMLAnchorElement | null = null;
       try {
+        // Generate high-quality mesh via worker
+        const result = await bridge.generateForExport(params);
+        const { vertices, normals } = result.mesh;
+
         const name = generateFileName(params, 'stl', config, designName);
-        const blob = exportSTL(mesh.vertices, mesh.normals, name);
+        const blob = exportSTL(vertices, normals, name);
 
         // Trigger browser download via hidden anchor
         url = URL.createObjectURL(blob);
@@ -84,24 +86,29 @@ export function useExport(): UseExportReturn {
         setIsExporting(false);
       }
     },
-    [canExport, mesh, params]
+    [params]
   );
 
   const download3MF = useCallback(
     async (config: ExportFileNameConfig, designName?: string) => {
-      if (!canExport || !mesh?.vertices || !mesh?.normals) return;
+      const bridge = getActiveBridge();
+      if (!bridge) return;
 
       setIsExporting(true);
 
       let url: string | null = null;
       let anchor: HTMLAnchorElement | null = null;
       try {
+        // Generate high-quality mesh via worker
+        const result = await bridge.generateForExport(params);
+        const { vertices, normals } = result.mesh;
+
         const name = generateFileName(params, '3mf', config, designName);
 
         // Capture thumbnail from 3D preview (async canvas → PNG)
         const thumbnail = (await captureThumbnailPNG()) ?? undefined;
 
-        const blob = export3MF(mesh.vertices, mesh.normals, {
+        const blob = export3MF(vertices, normals, {
           name: name.replace(/\.3mf$/, ''),
           thumbnail,
           printSettings: {
@@ -126,7 +133,7 @@ export function useExport(): UseExportReturn {
         setIsExporting(false);
       }
     },
-    [canExport, mesh, params, estimates]
+    [params, estimates]
   );
 
   const downloadSTEP = useCallback(async () => {

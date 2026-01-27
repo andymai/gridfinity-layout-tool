@@ -1,8 +1,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+
+// Mock the bridge module
+const mockGenerateForExport = vi.fn();
+const mockBridge = {
+  generateForExport: mockGenerateForExport,
+  exportBin: vi.fn(),
+};
+
+vi.mock('@/shared/generation/bridge', () => ({
+  getActiveBridge: vi.fn(() => mockBridge),
+}));
+
+// Import after mocking
+import { getActiveBridge } from '@/shared/generation/bridge';
 
 // Mock URL.createObjectURL and URL.revokeObjectURL
 const originalURL = globalThis.URL;
@@ -21,6 +35,15 @@ describe('useExport', () => {
       },
       writable: true,
     });
+    // Set up mock bridge to return export-quality mesh
+    mockGenerateForExport.mockResolvedValue({
+      mesh: {
+        vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        triangleCount: 1,
+      },
+      timingMs: 100,
+    });
     // Reset store to defaults
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
@@ -37,45 +60,24 @@ describe('useExport', () => {
     vi.restoreAllMocks();
   });
 
-  it('canExport is false when no mesh is available', () => {
-    const { result } = renderHook(() => useExport());
-    expect(result.current.canExport).toBe(false);
-  });
-
-  it('canExport is true when mesh with vertices exists', () => {
-    useDesignerStore.setState({
-      generation: {
-        status: 'complete',
-        mesh: {
-          vertices: new Float32Array(9),
-          normals: new Float32Array(9),
-          error: null,
-          timingMs: 10,
-        },
-        progress: 1,
-      },
-    });
-
+  it('canExport is true when bridge is available', () => {
     const { result } = renderHook(() => useExport());
     expect(result.current.canExport).toBe(true);
   });
 
-  it('canExport is false when mesh has an error', () => {
-    useDesignerStore.setState({
-      generation: {
-        status: 'error',
-        mesh: {
-          vertices: null,
-          normals: null,
-          error: 'Generation failed',
-          timingMs: 0,
-        },
-        progress: 0,
-      },
-    });
+  it('canExport is false when bridge is not available', () => {
+    vi.mocked(getActiveBridge).mockReturnValue(null);
 
     const { result } = renderHook(() => useExport());
     expect(result.current.canExport).toBe(false);
+
+    // Restore mock for other tests
+    vi.mocked(getActiveBridge).mockReturnValue(mockBridge);
+  });
+
+  it('canExportBREP mirrors canExport (uses same bridge)', () => {
+    const { result } = renderHook(() => useExport());
+    expect(result.current.canExportBREP).toBe(result.current.canExport);
   });
 
   it('provides print estimates', () => {
@@ -96,31 +98,23 @@ describe('useExport', () => {
     expect(result.current.isExporting).toBe(false);
   });
 
-  it('downloadSTL does nothing when canExport is false', () => {
+  it('downloadSTL does nothing when bridge is not available', async () => {
+    vi.mocked(getActiveBridge).mockReturnValue(null);
+
     const { result } = renderHook(() => useExport());
 
-    act(() => {
-      result.current.downloadSTL({ style: 'descriptive', customName: '' });
+    await act(async () => {
+      await result.current.downloadSTL({ style: 'descriptive', customName: '' });
     });
 
+    expect(mockGenerateForExport).not.toHaveBeenCalled();
     expect(mockCreateObjectURL).not.toHaveBeenCalled();
+
+    // Restore mock for other tests
+    vi.mocked(getActiveBridge).mockReturnValue(mockBridge);
   });
 
-  it('downloadSTL creates blob URL and triggers download', () => {
-    // Set up valid mesh
-    useDesignerStore.setState({
-      generation: {
-        status: 'complete',
-        mesh: {
-          vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
-          normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
-          error: null,
-          timingMs: 10,
-        },
-        progress: 1,
-      },
-    });
-
+  it('downloadSTL generates high-quality mesh via bridge and triggers download', async () => {
     // Mock DOM APIs - only intercept 'a' elements to not break renderHook container
     const mockAnchor = {
       href: '',
@@ -137,10 +131,12 @@ describe('useExport', () => {
 
     const { result } = renderHook(() => useExport());
 
-    act(() => {
-      result.current.downloadSTL({ style: 'descriptive', customName: '' });
+    await act(async () => {
+      await result.current.downloadSTL({ style: 'descriptive', customName: '' });
     });
 
+    // Verify bridge was called to generate high-quality mesh
+    expect(mockGenerateForExport).toHaveBeenCalled();
     expect(mockCreateObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     expect(mockAnchor.click).toHaveBeenCalled();
     expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
@@ -150,20 +146,7 @@ describe('useExport', () => {
     removeChildSpy.mockRestore();
   });
 
-  it('downloadSTL respects name style parameter', () => {
-    useDesignerStore.setState({
-      generation: {
-        status: 'complete',
-        mesh: {
-          vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
-          normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
-          error: null,
-          timingMs: 10,
-        },
-        progress: 1,
-      },
-    });
-
+  it('downloadSTL respects name style parameter', async () => {
     const mockAnchor = { href: '', download: '', click: vi.fn() };
     const originalCreateElement = document.createElement.bind(document);
     const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
@@ -175,8 +158,8 @@ describe('useExport', () => {
 
     const { result } = renderHook(() => useExport());
 
-    act(() => {
-      result.current.downloadSTL('compact');
+    await act(async () => {
+      await result.current.downloadSTL({ style: 'compact', customName: '' });
     });
 
     expect(mockAnchor.download).toContain('gf_');
