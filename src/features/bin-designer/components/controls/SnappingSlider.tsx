@@ -10,6 +10,7 @@
  */
 
 import { useId, useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from '@/i18n';
 
 export interface SnappingSliderOption {
   /** The numeric value */
@@ -50,6 +51,7 @@ export function SnappingSlider({
   disabled = false,
   tip,
 }: SnappingSliderProps) {
+  const t = useTranslation();
   const id = useId();
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -57,9 +59,10 @@ export function SnappingSlider({
   const [isDragging, setIsDragging] = useState(false);
   const [dragValue, setDragValue] = useState(value);
 
-  const values = useMemo(() => options.map((o) => o.value), [options]);
-  const min = values[0];
-  const max = values[values.length - 1];
+  // Sort options to ensure correct positioning and keyboard navigation
+  const values = useMemo(() => [...options].map((o) => o.value).sort((a, b) => a - b), [options]);
+  const min = values[0] ?? 0;
+  const max = values[values.length - 1] ?? 0;
   const range = max - min;
 
   // Find nearest option to a given value
@@ -86,10 +89,10 @@ export function SnappingSlider({
     return option?.description ?? '';
   }, [options, displayValue]);
 
-  // Calculate position percentage for a value
+  // Calculate position percentage for a value (guard against empty options)
   const getPosition = useCallback(
     (v: number): number => {
-      return ((v - min) / range) * 100;
+      return range === 0 ? 0 : ((v - min) / range) * 100;
     },
     [min, range]
   );
@@ -148,7 +151,7 @@ export function SnappingSlider({
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (disabled) return;
       const currentIndex = values.findIndex((v) => Math.abs(v - value) < 0.001);
-      let newIndex = currentIndex;
+      let newIndex: number;
 
       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
         e.preventDefault();
@@ -192,9 +195,11 @@ export function SnappingSlider({
         <label htmlFor={id} className="text-xs font-medium text-content-secondary">
           {label}
         </label>
-        <span className={`rounded px-2 py-0.5 text-sm font-semibold tabular-nums transition-colors ${
-          isDragging ? 'bg-accent/20 text-accent' : 'bg-surface-secondary text-content'
-        }`}>
+        <span
+          className={`rounded px-2 py-0.5 text-sm font-semibold tabular-nums transition-colors ${
+            isDragging ? 'bg-accent/20 text-accent' : 'bg-surface-secondary text-content'
+          }`}
+        >
           {displayValue} {unit}
         </span>
       </div>
@@ -230,7 +235,12 @@ export function SnappingSlider({
             const isActive = Math.abs(option.value - value) < 0.001;
             const isBehindThumb = option.value <= thumbPosition;
             // Ticks on the filled track need to contrast with accent color
-            const tickColor = isActive ? 'bg-accent' : isBehindThumb ? 'bg-surface' : 'bg-content-secondary';
+            // eslint-disable-next-line i18next/no-literal-string
+            const tickColor = isActive
+              ? 'bg-accent'
+              : isBehindThumb
+                ? 'bg-surface'
+                : 'bg-content-secondary';
             return (
               <div
                 key={option.value}
@@ -247,7 +257,7 @@ export function SnappingSlider({
             <div
               className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-dashed border-content-tertiary opacity-40"
               style={{ left: `${getPosition(defaultValue)}%` }}
-              title="Default"
+              title={t('snappingSlider.default')}
             />
           )}
 
@@ -294,7 +304,7 @@ export function SnappingSlider({
                   disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:text-content'
                 } ${isActive ? 'font-semibold text-accent' : 'text-content-tertiary'}`}
                 style={{ left: `${getPosition(option.value)}%` }}
-                aria-label={`Select ${option.value}${unit}`}
+                aria-label={t('snappingSlider.select', { value: option.value, unit })}
               >
                 {option.value}
               </button>
@@ -304,18 +314,12 @@ export function SnappingSlider({
       </div>
 
       {/* Help text */}
-      <p
-        id={descriptionId}
-        className="mt-2 text-xs text-content-secondary"
-        aria-live="polite"
-      >
+      <p id={descriptionId} className="mt-2 text-xs text-content-secondary" aria-live="polite">
         {currentDescription}
       </p>
 
       {/* Optional tip */}
-      {tip && (
-        <p className="mt-1 text-[10px] text-content-tertiary italic">{tip}</p>
-      )}
+      {tip && <p className="mt-1 text-[10px] text-content-tertiary italic">{tip}</p>}
     </div>
   );
 }
