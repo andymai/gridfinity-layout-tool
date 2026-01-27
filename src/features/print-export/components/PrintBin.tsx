@@ -1,6 +1,7 @@
 import type { Bin, Category, Drawer } from '@/core/types';
 import type { PrintViewSettings } from '@/core/store/settings';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { usePrintBinLayout, getPrintTextColors } from './printBinLayout';
 
 interface PrintBinProps {
   bin: Bin;
@@ -9,30 +10,6 @@ interface PrintBinProps {
   cellSize: number;
   gap: number;
   settings: PrintViewSettings;
-}
-
-/**
- * Calculate print-friendly text colors based on background luminance.
- * Uses hardcoded colors instead of CSS variables for print compatibility.
- */
-function getPrintTextColors(hexColor: string): { primary: string; secondary: string } {
-  const hex = hexColor.replace('#', '');
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-  if (luminance > 0.5) {
-    return {
-      primary: 'rgba(0, 0, 0, 0.85)',
-      secondary: 'rgba(0, 0, 0, 0.6)',
-    };
-  } else {
-    return {
-      primary: 'rgba(255, 255, 255, 0.95)',
-      secondary: 'rgba(255, 255, 255, 0.75)',
-    };
-  }
 }
 
 /**
@@ -55,165 +32,19 @@ export function PrintBin({ bin, category, drawer, cellSize, gap, settings }: Pri
     : '#e5e7eb'; // Light gray when color disabled
   const textColors = getPrintTextColors(color);
 
-  // Calculate grid position (CSS Grid is 1-indexed)
-  // Grid y=0 is bottom, but CSS row 1 is top
-  const integerWidth = Math.floor(drawer.width);
-  const integerDepth = Math.floor(drawer.depth);
-  const hasFractionalDrawerWidth = drawer.width % 1 !== 0;
-  const hasFractionalDrawerDepth = drawer.depth % 1 !== 0;
-  const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
-  const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
-  const fractionalWidthPart = drawer.width - integerWidth;
-  const fractionalDepthPart = drawer.depth - integerDepth;
-  const gridRows = Math.ceil(drawer.depth);
-
-  // Helper: Get CSS column for a grid x coordinate
-  const getCssColForX = (x: number): number => {
-    if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
-      if (x < fractionalWidthPart) return 1;
-      return Math.floor(x - fractionalWidthPart) + 2;
-    }
-    return Math.floor(x) + 1;
-  };
-
-  // Helper: Get CSS row for a grid y coordinate (y=0 at bottom, CSS row 1 at top)
-  const getCssRowForY = (y: number): number => {
-    if (hasFractionalDrawerDepth) {
-      if (fractionalEdgeY === 'start') {
-        if (y < fractionalDepthPart) return gridRows;
-        return integerDepth - Math.floor(y - fractionalDepthPart);
-      } else {
-        if (y >= integerDepth) return 1;
-        return integerDepth - Math.floor(y) + 1;
-      }
-    }
-    return integerDepth - Math.floor(y);
-  };
-
-  // Calculate CSS column placement
-  const binEndX = bin.x + bin.width;
-  const startCol = getCssColForX(bin.x);
-  const endCol = getCssColForX(binEndX > 0 ? binEndX - 0.001 : binEndX);
-  const gridCol = startCol;
-  const colSpan = Math.max(1, endCol - startCol + 1);
-
-  // Calculate CSS row placement
-  const binEndY = bin.y + bin.depth;
-  const topRow = getCssRowForY(binEndY > 0 ? binEndY - 0.001 : binEndY);
-  const bottomRow = getCssRowForY(bin.y);
-  const gridRow = topRow;
-  const rowSpan = Math.max(1, bottomRow - topRow + 1);
-
-  // Calculate pixel dimensions accounting for fractional drawer cells
-  const hasFractionalBin =
-    bin.x % 1 !== 0 || bin.y % 1 !== 0 || bin.width % 1 !== 0 || bin.depth % 1 !== 0;
-  const needsCustomSizing =
-    hasFractionalBin || hasFractionalDrawerWidth || hasFractionalDrawerDepth;
-
-  // Calculate fractional cell sizes in pixels
-  const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
-  const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
-
-  // Calculate pixel width accounting for fractional edge
-  let pixelWidth: number | undefined;
-  if (!needsCustomSizing) {
-    pixelWidth = undefined;
-  } else if (!hasFractionalDrawerWidth) {
-    pixelWidth = bin.width * cellSize + Math.max(0, bin.width - 1) * gap;
-  } else if (fractionalEdgeX === 'start') {
-    const inFractional = Math.max(0, Math.min(binEndX, fractionalWidthPart) - Math.max(bin.x, 0));
-    const inInteger = bin.width - inFractional;
-    let width = 0;
-    if (inFractional > 0) {
-      width += (inFractional / fractionalWidthPart) * fractionalCellWidth;
-    }
-    if (inInteger > 0) {
-      if (inFractional > 0) width += gap;
-      width += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-    }
-    pixelWidth = width;
-  } else {
-    const inInteger = Math.max(0, Math.min(binEndX, integerWidth) - bin.x);
-    const inFractional = bin.width - inInteger;
-    let width = 0;
-    if (inInteger > 0) {
-      width += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-    }
-    if (inFractional > 0) {
-      if (inInteger > 0) width += gap;
-      width += (inFractional / fractionalWidthPart) * fractionalCellWidth;
-    }
-    pixelWidth = width;
-  }
-
-  // Calculate pixel height accounting for fractional edge
-  let pixelHeight: number | undefined;
-  if (!needsCustomSizing) {
-    pixelHeight = undefined;
-  } else if (!hasFractionalDrawerDepth) {
-    pixelHeight = bin.depth * cellSize + Math.max(0, bin.depth - 1) * gap;
-  } else if (fractionalEdgeY === 'start') {
-    const inFractional = Math.max(0, Math.min(binEndY, fractionalDepthPart) - Math.max(bin.y, 0));
-    const inInteger = bin.depth - inFractional;
-    let height = 0;
-    if (inFractional > 0) {
-      height += (inFractional / fractionalDepthPart) * fractionalCellHeight;
-    }
-    if (inInteger > 0) {
-      if (inFractional > 0) height += gap;
-      height += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-    }
-    pixelHeight = height;
-  } else {
-    const inInteger = Math.max(0, Math.min(binEndY, integerDepth) - bin.y);
-    const inFractional = bin.depth - inInteger;
-    let height = 0;
-    if (inInteger > 0) {
-      height += inInteger * cellSize + Math.max(0, Math.floor(inInteger + 0.001) - 1) * gap;
-    }
-    if (inFractional > 0) {
-      if (inInteger > 0) height += gap;
-      height += (inFractional / fractionalDepthPart) * fractionalCellHeight;
-    }
-    pixelHeight = height;
-  }
-
-  // Calculate pixel offsets for fractional positioning within the cell
-  let offsetX = 0;
-  let offsetY = 0;
-  if (needsCustomSizing) {
-    // X offset
-    if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
-      if (bin.x < fractionalWidthPart) {
-        offsetX = (bin.x / fractionalWidthPart) * fractionalCellWidth;
-      } else {
-        const integerX = bin.x - fractionalWidthPart;
-        offsetX = (integerX - Math.floor(integerX)) * (cellSize + gap);
-      }
-    } else {
-      offsetX = (bin.x - Math.floor(bin.x)) * (cellSize + gap);
-    }
-
-    // Y offset (from top of cell)
-    if (hasFractionalDrawerDepth && fractionalEdgeY === 'start') {
-      if (binEndY <= fractionalDepthPart) {
-        offsetY = ((fractionalDepthPart - binEndY) / fractionalDepthPart) * fractionalCellHeight;
-      } else {
-        const integerY = binEndY - fractionalDepthPart;
-        offsetY = (Math.ceil(integerY) - integerY) * (cellSize + gap);
-      }
-    } else if (hasFractionalDrawerDepth && fractionalEdgeY === 'end') {
-      if (binEndY > integerDepth) {
-        const fractionalY = binEndY - integerDepth;
-        offsetY =
-          ((fractionalDepthPart - fractionalY) / fractionalDepthPart) * fractionalCellHeight;
-      } else {
-        offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
-      }
-    } else {
-      offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
-    }
-  }
+  // Use extracted layout calculation
+  const layout = usePrintBinLayout(bin, drawer, cellSize, gap);
+  const {
+    gridCol,
+    colSpan,
+    gridRow,
+    rowSpan,
+    pixelWidth,
+    pixelHeight,
+    offsetX,
+    offsetY,
+    needsCustomSizing,
+  } = layout;
 
   // Determine what text to display based on settings
   const wantsLabel = settings.showLabel && bin.label;

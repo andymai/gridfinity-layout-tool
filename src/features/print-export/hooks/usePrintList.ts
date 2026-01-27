@@ -7,12 +7,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLayoutStore, useUIStore } from '@/core/store';
 import { calcMaxGridUnits } from '@/core/constants';
-import {
-  generateEnhancedPrintList,
-  getTotalBins,
-  getTotalPieces,
-  getSpoolEstimate,
-} from '@/features/print-export/utils/split';
+import { generateEnhancedPrintList } from '@/features/print-export/utils/split';
 import {
   applyFiltersAndSort,
   groupByCategory,
@@ -115,27 +110,24 @@ export function usePrintList(): UsePrintListReturn {
     return groupByCategory(rows, layout.categories);
   }, [rows, filters.groupByCategory, layout.categories]);
 
-  // Aggregates (computed from filtered rows)
-  const totalBins = useMemo(() => getTotalBins(rows), [rows]);
-  const totalPieces = useMemo(() => getTotalPieces(rows), [rows]);
-  const totalFilament = useMemo(
-    () => Math.round(rows.reduce((sum, r) => sum + r.filament, 0) * 10) / 10,
-    [rows]
-  );
-  const totalCost = useMemo(
-    () => calcFilamentCost(totalFilament, config.filamentCostPerKg, config.metersPerKg),
-    [totalFilament, config]
-  );
-  const totalPrintTimeHours = useMemo(
-    () => calcPrintTimeHours(totalFilament, rows.length),
-    [totalFilament, rows.length]
-  );
-  const spoolEstimate = useMemo(() => getSpoolEstimate(totalFilament), [totalFilament]);
-  const spoolPercentage = useMemo(
-    () => calcSpoolPercentage(totalFilament, config.metersPerKg),
-    [totalFilament, config.metersPerKg]
-  );
-  const hasAnySplits = useMemo(() => rows.some((r) => r.needsSplit), [rows]);
+  // Compute all aggregates in a single memo to reduce memoization overhead
+  const aggregates = useMemo(() => {
+    const totalBins = rows.reduce((sum, r) => sum + r.binCount, 0);
+    const totalPieces = rows.reduce((sum, r) => sum + r.totalPieces, 0);
+    const totalFilament = Math.round(rows.reduce((sum, r) => sum + r.filament, 0) * 10) / 10;
+    const hasAnySplits = rows.some((r) => r.needsSplit);
+
+    return {
+      totalBins,
+      totalPieces,
+      totalFilament,
+      totalCost: calcFilamentCost(totalFilament, config.filamentCostPerKg, config.metersPerKg),
+      totalPrintTimeHours: calcPrintTimeHours(totalFilament, rows.length),
+      spoolEstimate: Math.ceil((totalFilament / config.metersPerKg) * 10) / 10,
+      spoolPercentage: calcSpoolPercentage(totalFilament, config.metersPerKg),
+      hasAnySplits,
+    };
+  }, [rows, config.filamentCostPerKg, config.metersPerKg]);
 
   // Actions
   const setSort = useCallback((key: PrintListSortKey) => {
@@ -185,14 +177,7 @@ export function usePrintList(): UsePrintListReturn {
   return {
     rows,
     groupedRows,
-    totalBins,
-    totalPieces,
-    totalFilament,
-    totalCost,
-    totalPrintTimeHours,
-    spoolEstimate,
-    spoolPercentage,
-    hasAnySplits,
+    ...aggregates,
     filters,
     setSort,
     toggleSortOrder,
