@@ -132,6 +132,10 @@ vi.mock('three', () => {
     return { x, y };
   }
 
+  function EdgesGeometry() {
+    return { dispose: vi.fn() };
+  }
+
   return {
     Vector2,
     Vector3,
@@ -140,6 +144,7 @@ vi.mock('three', () => {
     Float32BufferAttribute,
     Color,
     ShaderMaterial,
+    EdgesGeometry,
     FrontSide: 0,
     DoubleSide: 2,
   };
