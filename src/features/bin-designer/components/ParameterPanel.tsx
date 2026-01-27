@@ -9,17 +9,14 @@
  * - Base (expanded) — Magnets, Screws, Stacking lip
  * - Walls (expanded) — Wall thickness
  * - Interior (expanded) — Compartments
- * - Coming Soon (collapsed) — Feature roadmap teaser
+ * - Physical Units — Grid unit size (mm)
  */
 
 import { DimensionsSection } from './panel/DimensionsSection';
 import { BaseSection } from './panel/BaseSection';
 import { InteriorSection } from './panel/InteriorSection';
 import { WallsSection } from './panel/WallsSection';
-import { ScoopSection } from './panel/ScoopSection';
-import { WallCutoutsSection } from './panel/WallCutoutsSection';
 import { PhysicalUnitsSection } from './panel/PhysicalUnitsSection';
-import { ComingSoonSection } from './panel/ComingSoonSection';
 
 export function ParameterPanel() {
   return (
@@ -37,17 +34,8 @@ export function ParameterPanel() {
         <div className="px-4 py-4 border-b border-stroke-subtle">
           <InteriorSection />
         </div>
-        <div className="px-4 py-4 border-b border-stroke-subtle">
-          <ScoopSection />
-        </div>
-        <div className="px-4 py-4 border-b border-stroke-subtle">
-          <WallCutoutsSection />
-        </div>
-        <div className="px-4 py-4 border-b border-stroke-subtle">
-          <PhysicalUnitsSection />
-        </div>
         <div className="px-4 py-4">
-          <ComingSoonSection />
+          <PhysicalUnitsSection />
         </div>
       </div>
     </div>

@@ -55,28 +55,6 @@ describe('a11y utilities', () => {
       expect(describeBin(params)).toContain('label tab');
     });
 
-    it('includes scoop when enabled', () => {
-      const params: BinParams = {
-        ...DEFAULT_BIN_PARAMS,
-        scoop: { enabled: true, radius: 'auto', allRows: false },
-      };
-      expect(describeBin(params)).toContain('front scoop');
-    });
-
-    it('includes wall cutouts with side names', () => {
-      const params: BinParams = {
-        ...DEFAULT_BIN_PARAMS,
-        walls: {
-          front: { width: 50, depth: 60 },
-          back: { width: 0, depth: 0 },
-          left: { width: 30, depth: 40 },
-          right: { width: 0, depth: 0 },
-          interior: { width: 0, depth: 0 },
-        },
-      };
-      expect(describeBin(params)).toContain('front/left wall cutouts');
-    });
-
     it('includes insert count', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
@@ -139,13 +117,11 @@ describe('a11y utilities', () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
-        scoop: { enabled: true, radius: 'auto', allRows: false },
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
       };
       const result = describeBin(params);
       expect(result).toContain('stacking lip');
       expect(result).toContain('label tab');
-      expect(result).toContain('front scoop');
     });
 
     it('returns simple description when no features enabled', () => {
