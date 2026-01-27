@@ -169,11 +169,6 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
     setSelectedLayerIds(layout.layers.map((l) => l.id));
   }, [layout.layers]);
 
-  // Handle print
-  const handlePrint = useCallback(() => {
-    window.print();
-  }, []);
-
   const printViewSettings = settings.printViewSettings;
   const allLayersSelected = selectedLayerIds.length === layout.layers.length;
   const noLayersSelected = selectedLayerIds.length === 0;
@@ -421,13 +416,15 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
           {/* Footer */}
           <div className="flex items-center justify-end gap-3 p-4 border-t border-stroke-subtle print-modal-footer">
             {noLayersSelected && (
-              <span className="text-xs text-warning mr-auto">{t('print.selectAtLeastOneLayerToPrint')}</span>
+              <span className="text-xs text-warning mr-auto">
+                {t('print.selectAtLeastOneLayerToPrint')}
+              </span>
             )}
             <button onClick={onClose} className="btn btn-secondary">
               {t('common.cancel')}
             </button>
             <button
-              onClick={handlePrint}
+              onClick={() => window.print()}
               disabled={noLayersSelected}
               className="btn btn-primary flex items-center gap-2"
             >
