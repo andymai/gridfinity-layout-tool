@@ -31,11 +31,6 @@ import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegi
 import type { SaveStatus } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 
-interface DesignerPageProps {
-  /** Unused - navigation is handled by ToolSwitcher */
-  onNavigateBack?: () => void;
-}
-
 /** CSS class for each save status */
 const SAVE_STATUS_CLASSES: Record<Exclude<SaveStatus, 'idle'>, string> = {
   saving: 'text-content-tertiary',
@@ -127,7 +122,7 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
  * @param onNavigateBack - Callback invoked when the user requests navigation back to the layout planner.
  * @returns The rendered Designer page element.
  */
-export function DesignerPage(_props: DesignerPageProps) {
+export function DesignerPage() {
   // Initialize generation bridge - auto-generates mesh when params change
   useGeneration();
 

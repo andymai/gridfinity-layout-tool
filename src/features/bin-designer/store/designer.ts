@@ -33,7 +33,10 @@ import {
 import { isErr } from '@/core/result';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '../utils/fileNaming';
 import { isFractional } from '@/core/constants';
-import { isRectangularSelection, normalizeIds } from '../utils/compartments';
+import {
+  mergeCells as mergeCompartmentCells,
+  splitCompartment as splitCompartmentCells,
+} from '../utils/compartments';
 import { validateCompartmentSizes } from '../utils/validation';
 import { createCachedMesh, evictIfNeeded } from './meshCacheManager';
 
@@ -181,7 +184,9 @@ export const useDesignerStore = create<DesignerState>()(
         state.params = migrateParams(design.params);
         state.currentDesignId = design.id;
         state.designName = design.name;
-        state.exportFileNameConfig = design.exportFileNameConfig ?? { ...DEFAULT_EXPORT_FILE_NAME_CONFIG };
+        state.exportFileNameConfig = design.exportFileNameConfig ?? {
+          ...DEFAULT_EXPORT_FILE_NAME_CONFIG,
+        };
         state.history = { past: [], future: [] };
         state.saveStatus = 'saved';
         state.generation.epoch += 1;
@@ -300,23 +305,13 @@ export const useDesignerStore = create<DesignerState>()(
     mergeCells: (cellIndices: readonly number[]) => {
       if (cellIndices.length < 2) return;
       const { params } = get();
-      const { cols } = params.compartments;
 
-      if (!isRectangularSelection(cols, cellIndices)) return;
-
-      const existingIds = cellIndices.map((i) => params.compartments.cells[i]);
-      const targetId = Math.min(...existingIds);
+      const merged = mergeCompartmentCells(params.compartments, cellIndices);
+      if (!merged) return;
 
       set((state) => {
         pushHistoryEntry(state);
-        const newCells = [...state.params.compartments.cells];
-        for (const idx of cellIndices) {
-          newCells[idx] = targetId;
-        }
-        state.params.compartments = {
-          ...state.params.compartments,
-          cells: normalizeIds(newCells),
-        };
+        state.params.compartments = merged;
       });
     },
 
@@ -335,22 +330,7 @@ export const useDesignerStore = create<DesignerState>()(
 
       set((state) => {
         pushHistoryEntry(state);
-        const newCells = [...state.params.compartments.cells];
-        let nextId = Math.max(...newCells) + 1;
-        let first = true;
-        for (let i = 0; i < newCells.length; i++) {
-          if (newCells[i] === compartmentId) {
-            if (first) {
-              first = false;
-            } else {
-              newCells[i] = nextId++;
-            }
-          }
-        }
-        state.params.compartments = {
-          ...state.params.compartments,
-          cells: normalizeIds(newCells),
-        };
+        state.params.compartments = splitCompartmentCells(state.params.compartments, compartmentId);
       });
     },
 

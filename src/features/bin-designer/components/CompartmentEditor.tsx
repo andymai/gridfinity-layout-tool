@@ -261,142 +261,132 @@ export function CompartmentEditor() {
   const aspectRatio = depth > 0 ? Math.min(2, Math.max(0.5, width / depth)) : 1;
 
   return (
-    <div>
-      <div>
-        <div className="space-y-5">
-          {/* Grid dimensions */}
-          <section>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
-              {t('binDesigner.gridSize')}
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <span className="mb-1 block text-xs text-content-tertiary">
-                  {t('binDesigner.columns')}
-                </span>
-                <StepperControl
-                  value={cols}
-                  onChange={handleColsChange}
-                  onStep={handleColsStep}
-                  min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
-                  max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
-                  step={1}
-                  variant="compact"
-                  ariaLabel="Columns"
-                />
-              </div>
-              <div>
-                <span className="mb-1 block text-xs text-content-tertiary">
-                  {t('binDesigner.rows')}
-                </span>
-                <StepperControl
-                  value={rows}
-                  onChange={handleRowsChange}
-                  onStep={handleRowsStep}
-                  min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
-                  max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
-                  step={1}
-                  variant="compact"
-                  ariaLabel="Rows"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Visual grid editor (hidden for single-cell grids) */}
-          {(cols > 1 || rows > 1) && (
-            <section>
-              <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-content-tertiary">
-                  {t('binDesigner.layout')}
-                </h3>
-                <div className="flex items-center gap-2">
-                  {hasMergedCompartments && (
-                    <button
-                      type="button"
-                      onClick={handleReset}
-                      className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
-                      aria-label={t('binDesigner.resetCompartmentLayoutToUniformGrid')}
-                    >
-                      {t('common.reset')}
-                    </button>
-                  )}
-                  <span className="text-xs tabular-nums text-content-tertiary">
-                    {t('binDesigner.compartments.count', { count: compartmentCount })}
-                  </span>
-                </div>
-              </div>
-              <p
-                id="compartment-grid-instructions"
-                className={`mb-3 text-xs transition-all ${
-                  isDragging && selectionAction !== 'none'
-                    ? 'text-accent font-medium'
-                    : hoveredIsSplittable
-                      ? 'text-content-secondary'
-                      : 'text-content-tertiary'
-                }`}
-                aria-live={isDragging ? 'off' : 'polite'}
-              >
-                {instructionText}
-              </p>
-              <div
-                ref={gridRef}
-                className="mx-auto max-w-[280px] select-none rounded-lg border border-stroke-subtle bg-surface-elevated p-1.5"
-                style={{ aspectRatio }}
-                role="application"
-                aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
-                aria-describedby="compartment-grid-instructions"
-                onPointerUp={handlePointerUp}
-                onPointerLeave={() => {
-                  handlePointerUp();
-                  setHoverIdx(null);
-                }}
-              >
-                <div
-                  className="grid h-full w-full"
-                  style={{
-                    gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                    gridTemplateRows: `repeat(${rows}, 1fr)`,
-                    gap: '1px',
-                  }}
-                >
-                  {cells.map((compartmentId, idx) => (
-                    <GridCell
-                      key={idx}
-                      idx={idx}
-                      compartmentId={compartmentId}
-                      isSelected={selection.has(idx)}
-                      isHovered={hoverIdx === idx && !isDragging}
-                      isSplittable={
-                        !isDragging && (compartmentCellCounts.get(compartmentId) ?? 0) > 1
-                      }
-                      isDragging={isDragging}
-                      config={compartments}
-                      onPointerDown={handleCellPointerDown}
-                      onPointerEnter={handleCellPointerEnter}
-                      onPointerLeave={handleCellPointerLeave}
-                    />
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Wall thickness (only when there are dividers) */}
-          {compartmentCount > 1 && (
-            <section>
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
-                {t('binDesigner.dividerWalls')}
-              </h3>
-              <ThicknessSelector
-                label="Thickness"
-                value={thickness}
-                onChange={handleThicknessChange}
-              />
-            </section>
-          )}
+    <div className="space-y-5">
+      {/* Grid dimensions */}
+      <section>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
+          {t('binDesigner.gridSize')}
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <span className="mb-1 block text-xs text-content-tertiary">
+              {t('binDesigner.columns')}
+            </span>
+            <StepperControl
+              value={cols}
+              onChange={handleColsChange}
+              onStep={handleColsStep}
+              min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
+              max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
+              step={1}
+              variant="compact"
+              ariaLabel="Columns"
+            />
+          </div>
+          <div>
+            <span className="mb-1 block text-xs text-content-tertiary">
+              {t('binDesigner.rows')}
+            </span>
+            <StepperControl
+              value={rows}
+              onChange={handleRowsChange}
+              onStep={handleRowsStep}
+              min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
+              max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
+              step={1}
+              variant="compact"
+              ariaLabel="Rows"
+            />
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Visual grid editor (hidden for single-cell grids) */}
+      {(cols > 1 || rows > 1) && (
+        <section>
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-content-tertiary">
+              {t('binDesigner.layout')}
+            </h3>
+            <div className="flex items-center gap-2">
+              {hasMergedCompartments && (
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+                  aria-label={t('binDesigner.resetCompartmentLayoutToUniformGrid')}
+                >
+                  {t('common.reset')}
+                </button>
+              )}
+              <span className="text-xs tabular-nums text-content-tertiary">
+                {t('binDesigner.compartments.count', { count: compartmentCount })}
+              </span>
+            </div>
+          </div>
+          <p
+            id="compartment-grid-instructions"
+            className={`mb-3 text-xs transition-all ${
+              isDragging && selectionAction !== 'none'
+                ? 'text-accent font-medium'
+                : hoveredIsSplittable
+                  ? 'text-content-secondary'
+                  : 'text-content-tertiary'
+            }`}
+            aria-live={isDragging ? 'off' : 'polite'}
+          >
+            {instructionText}
+          </p>
+          <div
+            ref={gridRef}
+            className="mx-auto max-w-[280px] select-none rounded-lg border border-stroke-subtle bg-surface-elevated p-1.5"
+            style={{ aspectRatio }}
+            role="application"
+            aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
+            aria-describedby="compartment-grid-instructions"
+            onPointerUp={handlePointerUp}
+            onPointerLeave={() => {
+              handlePointerUp();
+              setHoverIdx(null);
+            }}
+          >
+            <div
+              className="grid h-full w-full"
+              style={{
+                gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                gridTemplateRows: `repeat(${rows}, 1fr)`,
+                gap: '1px',
+              }}
+            >
+              {cells.map((compartmentId, idx) => (
+                <GridCell
+                  key={idx}
+                  idx={idx}
+                  compartmentId={compartmentId}
+                  isSelected={selection.has(idx)}
+                  isHovered={hoverIdx === idx && !isDragging}
+                  isSplittable={!isDragging && (compartmentCellCounts.get(compartmentId) ?? 0) > 1}
+                  isDragging={isDragging}
+                  config={compartments}
+                  onPointerDown={handleCellPointerDown}
+                  onPointerEnter={handleCellPointerEnter}
+                  onPointerLeave={handleCellPointerLeave}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Wall thickness (only when there are dividers) */}
+      {compartmentCount > 1 && (
+        <section>
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-content-tertiary">
+            {t('binDesigner.dividerWalls')}
+          </h3>
+          <ThicknessSelector label="Thickness" value={thickness} onChange={handleThicknessChange} />
+        </section>
+      )}
     </div>
   );
 }
