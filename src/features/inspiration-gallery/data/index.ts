@@ -88,10 +88,3 @@ export function getLayoutsByTheme(theme: InspirationTheme | 'all'): InspirationL
   if (theme === 'all') return INSPIRATION_LAYOUTS;
   return INSPIRATION_LAYOUTS.filter((l) => l.theme === theme);
 }
-
-/**
- * Get a single layout by ID.
- */
-export function getLayoutById(id: string): InspirationLayout | undefined {
-  return INSPIRATION_LAYOUTS.find((l) => l.id === id);
-}
