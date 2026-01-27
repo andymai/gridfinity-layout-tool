@@ -7,7 +7,9 @@ import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk, isErr, getUserMessage } from '@/core/result';
+import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
+import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
 
 /**
  * Layers tab content - layer list with selection, height controls, reordering, and deletion.
@@ -54,6 +56,7 @@ export function LayersTab() {
   );
 
   const { execute } = useUndoableAction();
+  const addToast = useToastStore((state) => state.addToast);
 
   const handleRenameRequest = (layerId: string) => {
     const layer = layers.find((l) => l.id === layerId);
@@ -102,12 +105,50 @@ export function LayersTab() {
   const displayToArrayIndex = (displayIndex: number) => layers.length - 1 - displayIndex;
 
   const handleAddLayer = () => {
-    execute(() => {
-      const result = addLayer();
-      if (isOk(result)) {
-        setActiveLayer(result.value);
-      }
-    });
+    const topLayer = layers[layers.length - 1];
+    if (!topLayer) return;
+
+    // Calculate if layer expansion is needed before adding new layer
+    const expansion = calculateLayerAutoExpansion(topLayer, bins, totalLayerHeight, drawer.height);
+
+    if (expansion.wouldExceedCapacity && expansion.smallestExceedingHeight !== undefined) {
+      // Show friendly error explaining the issue and suggesting solutions
+      addToast(
+        t('layers.cannotAddLayerTallBins', {
+          layerName: topLayer.name,
+          binHeight: expansion.smallestExceedingHeight,
+          layerHeight: topLayer.height,
+        }),
+        'error'
+      );
+      return;
+    }
+
+    if (expansion.needsExpansion && expansion.newHeight !== undefined) {
+      // Auto-expand the top layer, then add the new layer (atomic via execute)
+      const newHeight = expansion.newHeight; // Capture for closure
+      execute(() => {
+        const expandResult = updateLayer(topLayer.id, { height: newHeight });
+        if (isErr(expandResult)) {
+          addToast(getUserMessage(expandResult.error), 'error');
+          return;
+        }
+        const addResult = addLayer();
+        if (isOk(addResult)) {
+          setActiveLayer(addResult.value);
+        } else if (isErr(addResult)) {
+          addToast(getUserMessage(addResult.error), 'error');
+        }
+      });
+    } else {
+      // Normal case - no adjustment needed
+      execute(() => {
+        const result = addLayer();
+        if (isOk(result)) {
+          setActiveLayer(result.value);
+        }
+      });
+    }
   };
 
   // Selection behavior: select only, don't close panel

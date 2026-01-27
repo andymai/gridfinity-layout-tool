@@ -637,6 +637,7 @@
   "layers.layerNamePlaceholder": "Nom du layer",
   "layers.maxHeightFull": "Hauteur maximale ({max} unités)",
   "layers.maxLayersReached": "Maximum de layers atteint",
+  "layers.cannotAddLayerTallBins": "Impossible d'ajouter un layer : les bins sur {layerName} font {binHeight}u de haut mais le layer ne fait que {layerHeight}u. L'ajustement dépasserait la hauteur du tiroir. Réduisez la hauteur des bins ou augmentez la hauteur du tiroir.",
   "layers.noBins": "Aucun bin",
   "layers.noBinsToClear": "Aucun bin à effacer",
   "layers.noGaps": "Aucun trou",
