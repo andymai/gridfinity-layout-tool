@@ -26,6 +26,7 @@ vi.mock('@react-three/fiber', () => ({
       lookAt: vi.fn(),
     },
     invalidate: vi.fn(),
+    size: { width: 800, height: 600 },
   }),
   useFrame: () => {
     /* noop */
@@ -120,6 +121,9 @@ vi.mock('three', () => {
       setHSL: function () {
         return this;
       },
+      getHex: function () {
+        return 0xfbbf24; // Returns a numeric hex value
+      },
       _hex: hex,
     };
   }
@@ -129,7 +133,15 @@ vi.mock('three', () => {
   }
 
   function Vector2(x = 0, y = 0) {
-    return { x, y };
+    return {
+      x,
+      y,
+      set: function (newX: number, newY: number) {
+        this.x = newX;
+        this.y = newY;
+        return this;
+      },
+    };
   }
 
   function EdgesGeometry() {
@@ -152,6 +164,31 @@ vi.mock('three', () => {
 
 vi.mock('three-stdlib', () => ({
   OrbitControls: vi.fn(),
+}));
+
+// Mock three/examples line modules
+vi.mock('three/examples/jsm/lines/LineSegments2.js', () => ({
+  LineSegments2: class MockLineSegments2 {
+    constructor() {
+      /* mock */
+    }
+  },
+}));
+
+vi.mock('three/examples/jsm/lines/LineMaterial.js', () => ({
+  LineMaterial: class MockLineMaterial {
+    constructor() {
+      /* mock */
+    }
+    dispose = vi.fn();
+  },
+}));
+
+vi.mock('three/examples/jsm/lines/LineSegmentsGeometry.js', () => ({
+  LineSegmentsGeometry: class MockLineSegmentsGeometry {
+    setPositions = vi.fn();
+    dispose = vi.fn();
+  },
 }));
 
 // Mock the generation hook to avoid worker initialization
@@ -258,7 +295,10 @@ describe('PreviewCanvas', () => {
     render(<PreviewCanvas />);
 
     expect(screen.getByTestId('r3f-canvas')).toBeInTheDocument();
-    expect(screen.getByText('Updating')).toBeInTheDocument();
+    // Should show the nostalgic loading indicator with one of the messages
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    // Check that it contains one of the loading messages (ends with "...")
+    expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
   });
 
   it('does not show updating overlay when generation is complete', () => {

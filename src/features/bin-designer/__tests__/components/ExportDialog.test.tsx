@@ -5,8 +5,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 
-const mockDownloadSTL = vi.fn();
-const mockDownload3MF = vi.fn().mockResolvedValue(undefined);
+const mockDownloadSTL = vi.fn().mockResolvedValue(undefined);
 
 // Mock useExport hook
 vi.mock('@/features/bin-designer/hooks/useExport', () => ({
@@ -21,9 +20,6 @@ vi.mock('@/features/bin-designer/hooks/useExport', () => ({
       costUSD: 0.47,
     },
     downloadSTL: mockDownloadSTL,
-    download3MF: mockDownload3MF,
-    downloadSTEP: vi.fn(),
-    canExportBREP: false,
   }),
 }));
 
@@ -77,13 +73,6 @@ describe('ExportDialog', () => {
   it('renders when dialog is open', () => {
     render(<ExportDialog />);
     expect(screen.getByText('Export')).toBeInTheDocument();
-  });
-
-  it('shows format options with STL active', () => {
-    render(<ExportDialog />);
-    expect(screen.getByText('STL')).toBeInTheDocument();
-    expect(screen.getByText('STEP')).toBeInTheDocument();
-    expect(screen.getByText('3MF')).toBeInTheDocument();
   });
 
   it('shows file name preview in descriptive mode', () => {
