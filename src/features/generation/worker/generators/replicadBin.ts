@@ -19,7 +19,6 @@ import type { Solid, Shape3D, Sketch, Plane, Point } from 'replicad';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
-import type { StageCache, InvalidationLevel } from '../stageCache';
 
 /** Progress callback for reporting generation stages */
 export type ProgressFn = (stage: string, progress: number) => void;
@@ -613,15 +612,8 @@ export async function exportBin(
  * Generate a complete Gridfinity bin from parameters.
  * Assembly order: base socket + box body + top shape (stacking lip)
  * Then features: dividers, inserts
- *
- * When a StageCache is provided, skips recomputation of stages whose
- * parameters haven't changed since the last generation.
  */
-export function generateBin(
-  params: BinParams,
-  onProgress?: ProgressFn,
-  stageCache?: StageCache
-): MeshData {
+export function generateBin(params: BinParams, onProgress?: ProgressFn): MeshData {
   const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const wallHeight = totalHeight - GRIDFINITY.BASE_HEIGHT;
@@ -635,71 +627,38 @@ export function generateBin(
   const withMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
   const withScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
 
-  // Determine which stages need rebuilding
-  const invalidationLevel: InvalidationLevel = stageCache
-    ? stageCache.getInvalidationLevel(params)
-    : 'base';
-
-  if (stageCache) {
-    stageCache.invalidateFrom(invalidationLevel);
-  }
-
   // Stage 1: Build base socket
   onProgress?.('base', 0.1);
-  let base: Shape3D;
-  if (invalidationLevel === 'base' || !stageCache?.getBase()) {
-    base = buildBaseSocket(
-      params.width,
-      params.depth,
-      withMagnet,
-      withScrew,
-      params.base.magnetDiameter / 2,
-      params.base.magnetDepth,
-      params.base.screwDiameter / 2
-    );
-    stageCache?.setBase(base);
-  } else {
-    // Safe: else branch only reachable when stageCache is defined (condition checks stageCache?.getBase())
-    base = (stageCache as StageCache).getBase() as Shape3D;
-  }
+  const base = buildBaseSocket(
+    params.width,
+    params.depth,
+    withMagnet,
+    withScrew,
+    params.base.magnetDiameter / 2,
+    params.base.magnetDepth,
+    params.base.screwDiameter / 2
+  );
 
   // Stage 2: Build bin box (walls + floor)
   onProgress?.('shell', 0.3);
-  let box: Shape3D;
-  const needsShell =
-    invalidationLevel === 'base' || invalidationLevel === 'shell' || !stageCache?.getShell();
-  if (needsShell) {
-    box = buildBinBox(params.width, params.depth, wallHeight, wallThickness, keepFull);
-    stageCache?.setShell(box);
-  } else {
-    // Safe: else branch only reachable when stageCache is defined (needsShell false implies getShell() truthy)
-    box = (stageCache as StageCache).getShell() as Shape3D;
-  }
+  const box = buildBinBox(params.width, params.depth, wallHeight, wallThickness, keepFull);
 
   // Stage 3: Assemble base + shell + stacking lip
   onProgress?.('features', 0.4);
   let bin: Shape3D;
-  const needsAssembly =
-    needsShell || invalidationLevel === 'assembly' || !stageCache?.getAssembly();
-  if (needsAssembly) {
-    if (params.base.stackingLip && !keepFull) {
-      try {
-        const top = buildTopShape(params.width, params.depth, true, wallThickness).translateZ(
-          wallHeight
-        );
-        bin = base
-          .fuse(box, { optimisation: 'commonFace' })
-          .fuse(top, { optimisation: 'commonFace' });
-      } catch {
-        bin = base.fuse(box, { optimisation: 'commonFace' });
-      }
-    } else {
+  if (params.base.stackingLip && !keepFull) {
+    try {
+      const top = buildTopShape(params.width, params.depth, true, wallThickness).translateZ(
+        wallHeight
+      );
+      bin = base
+        .fuse(box, { optimisation: 'commonFace' })
+        .fuse(top, { optimisation: 'commonFace' });
+    } catch {
       bin = base.fuse(box, { optimisation: 'commonFace' });
     }
-    stageCache?.setAssembly(bin);
   } else {
-    // Safe: else branch only reachable when stageCache is defined (needsAssembly false implies getAssembly() truthy)
-    bin = (stageCache as StageCache).getAssembly() as Shape3D;
+    bin = base.fuse(box, { optimisation: 'commonFace' });
   }
 
   // Stage 4: Features (dividers, inserts)
@@ -737,9 +696,6 @@ export function generateBin(
   // Stage 6: Tessellate to triangle mesh
   onProgress?.('merge', 0.9);
   lastSolid = bin as unknown as Solid;
-
-  // Update cache with current params
-  stageCache?.setParams(params);
 
   const shapeMesh = bin.mesh({
     tolerance: 0.1,
