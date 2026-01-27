@@ -98,34 +98,11 @@ export class GenerationBridge {
   /**
    * Generate mesh geometry from bin parameters.
    *
-   * Debounces calls by 200ms. Cancels any in-flight request.
+   * Debounces calls by adaptive delay (50-300ms). Cancels any in-flight request.
    * Returns the generated mesh data and timing information.
    */
   generate(params: BinParams, onProgress?: ProgressCallback): Promise<GenerationResult> {
-    if (this.destroyed) {
-      return Promise.reject(new Error('Bridge has been destroyed'));
-    }
-
-    // Cancel any pending debounce
-    if (this.debounceTimer !== null) {
-      clearTimeout(this.debounceTimer);
-      this.debounceTimer = null;
-    }
-
-    // Reject any in-flight request
-    this.cancelCurrentRequest();
-
-    this.onProgress = onProgress ?? null;
-
-    return new Promise<GenerationResult>((resolve, reject) => {
-      this.pendingResolve = resolve;
-      this.pendingReject = reject;
-
-      this.debounceTimer = setTimeout(() => {
-        this.debounceTimer = null;
-        this.sendGenerateMessage(params);
-      }, this.adaptiveDebounce.getDelay());
-    });
+    return this.generateInternal(params, onProgress, true);
   }
 
   /**
@@ -133,6 +110,17 @@ export class GenerationBridge {
    * Useful for initial generation or user-triggered regeneration.
    */
   generateImmediate(params: BinParams, onProgress?: ProgressCallback): Promise<GenerationResult> {
+    return this.generateInternal(params, onProgress, false);
+  }
+
+  /**
+   * Internal generation handler shared by generate and generateImmediate.
+   */
+  private generateInternal(
+    params: BinParams,
+    onProgress: ProgressCallback | undefined,
+    debounce: boolean
+  ): Promise<GenerationResult> {
     if (this.destroyed) {
       return Promise.reject(new Error('Bridge has been destroyed'));
     }
@@ -151,7 +139,15 @@ export class GenerationBridge {
     return new Promise<GenerationResult>((resolve, reject) => {
       this.pendingResolve = resolve;
       this.pendingReject = reject;
-      this.sendGenerateMessage(params);
+
+      if (debounce) {
+        this.debounceTimer = setTimeout(() => {
+          this.debounceTimer = null;
+          this.sendGenerateMessage(params);
+        }, this.adaptiveDebounce.getDelay());
+      } else {
+        this.sendGenerateMessage(params);
+      }
     });
   }
 
