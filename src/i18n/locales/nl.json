@@ -989,6 +989,8 @@
   "settings.helpImproveHint": "Deel bin formaten en plaatsingspatronen (geen persoonlijke gegevens)",
   "settings.labs": "Labs",
   "settings.labsCheckBack": "Kom later terug!",
+  "settings.privacyPolicy": "Privacybeleid",
+  "settings.termsOfService": "Servicevoorwaarden",
   "settings.labsEmpty": "Momenteel geen experimentele functies beschikbaar.",
   "settings.labsHint": "Probeer nieuwe functies voordat ze beschikbaar komen. Functies kunnen wijzigen op basis van feedback.",
   "settings.language": "Taal",

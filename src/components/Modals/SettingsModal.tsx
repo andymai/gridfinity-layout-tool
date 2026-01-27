@@ -13,6 +13,7 @@ import { useTranslation, useLocale, SUPPORTED_LOCALES, detectBrowserLocale } fro
 import type { Locale } from '@/i18n';
 import type { STLSearchSite } from '@/core/store/settings';
 import { DEFAULT_CATEGORIES } from '@/core/constants';
+import { optInAnalytics, optOutAnalytics } from '@/utils/analytics';
 
 // Style constants
 const STYLES = {
@@ -63,9 +64,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     handleSaveCategoriesAsDefaults,
   } = useDrawerSettings();
 
-  const { mlTelemetryEnabled, settingsLocale, updateSetting } = useSettingsStore(
+  const { analyticsEnabled, settingsLocale, updateSetting } = useSettingsStore(
     useShallow((state) => ({
-      mlTelemetryEnabled: state.settings.mlTelemetryEnabled,
+      analyticsEnabled: state.settings.analyticsEnabled,
       settingsLocale: state.settings.locale,
       updateSetting: state.updateSetting,
     }))
@@ -104,7 +105,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const graduatedFeatures = getGraduatedFeatures();
 
   const handlePrivacyToggle = () => {
-    updateSetting('mlTelemetryEnabled', !mlTelemetryEnabled);
+    const newValue = !analyticsEnabled;
+    updateSetting('analyticsEnabled', newValue);
+    // Apply the change to PostHog immediately
+    if (newValue) {
+      optInAnalytics();
+    } else {
+      optOutAnalytics();
+    }
   };
 
   // Use portal to escape parent stacking contexts (e.g., BottomSheet with transform)
@@ -397,7 +405,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 className="flex items-center justify-between text-sm cursor-pointer group rounded-md p-1 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
                 onClick={handlePrivacyToggle}
                 role="checkbox"
-                aria-checked={mlTelemetryEnabled}
+                aria-checked={analyticsEnabled}
                 aria-label={t('settings.toggleUsageData')}
                 tabIndex={0}
                 onKeyDown={(e) => {
@@ -409,7 +417,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               >
                 <div>
                   <span
-                    className={`${mlTelemetryEnabled ? 'text-content' : 'text-content-tertiary'} group-hover:text-content transition-colors`}
+                    className={`${analyticsEnabled ? 'text-content' : 'text-content-tertiary'} group-hover:text-content transition-colors`}
                   >
                     {t('settings.helpImprove')}
                   </span>
@@ -417,7 +425,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     {t('settings.helpImproveHint')}
                   </p>
                 </div>
-                <Checkbox checked={mlTelemetryEnabled} variant="desktop" />
+                <Checkbox checked={analyticsEnabled} variant="desktop" />
               </div>
             </section>
 
@@ -453,6 +461,29 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
               <GraduatedSection features={graduatedFeatures} />
             </section>
+
+            {/* Legal Links */}
+            <div className="pt-4 border-t border-stroke-subtle text-center">
+              <div className="text-xs text-content-disabled space-x-3">
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-content-tertiary transition-colors"
+                >
+                  {t('settings.privacyPolicy')}
+                </a>
+                <span>·</span>
+                <a
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-content-tertiary transition-colors"
+                >
+                  {t('settings.termsOfService')}
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>

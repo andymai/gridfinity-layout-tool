@@ -989,6 +989,8 @@
   "settings.helpImproveHint": "Compartilhar tamanhos de bins e padrões de posicionamento (nenhum dado pessoal)",
   "settings.labs": "Labs",
   "settings.labsCheckBack": "Volte mais tarde!",
+  "settings.privacyPolicy": "Política de Privacidade",
+  "settings.termsOfService": "Termos de Serviço",
   "settings.labsEmpty": "Nenhum recurso experimental disponível no momento.",
   "settings.labsHint": "Experimente novos recursos antes de serem lançados. Os recursos podem mudar com base no feedback.",
   "settings.language": "Idioma",

@@ -19,7 +19,7 @@ import {
   hasFractionalDimensions,
   BREAKPOINTS,
 } from '@/core/constants';
-import { useLabsStore, useInteractionStore, useLayoutStore } from '@/core/store';
+import { useLabsStore, useInteractionStore, useLayoutStore, useSettingsStore } from '@/core/store';
 import { getFeature } from '@/core/labs';
 import { generateUUID } from '@/shared/utils';
 
@@ -81,6 +81,10 @@ export function initAnalytics(): void {
   if (typeof window === 'undefined') return;
   if (import.meta.env.DEV) return; // Skip in development
 
+  // Check if analytics is enabled in settings
+  const { analyticsEnabled } = useSettingsStore.getState().settings;
+  if (!analyticsEnabled) return;
+
   const key = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
 
   if (!key) {
@@ -126,6 +130,30 @@ export function initAnalytics(): void {
     .catch(() => {
       // Fail silently
     });
+}
+
+/**
+ * Opt out of analytics tracking.
+ * Called when user disables analytics in settings.
+ */
+export function optOutAnalytics(): void {
+  if (posthogInstance) {
+    posthogInstance.opt_out_capturing();
+  }
+}
+
+/**
+ * Opt back into analytics tracking.
+ * Called when user re-enables analytics in settings.
+ */
+export function optInAnalytics(): void {
+  if (posthogInstance) {
+    posthogInstance.opt_in_capturing();
+  } else {
+    // If posthog wasn't initialized, try to initialize now
+    initPromise = null;
+    initAnalytics();
+  }
 }
 
 /**

@@ -638,6 +638,8 @@ const en: Record<string, string> = {
     "Try new features before they're released. Features may change based on feedback.",
   'settings.labsEmpty': 'No experimental features available right now.',
   'settings.labsCheckBack': 'Check back later!',
+  'settings.privacyPolicy': 'Privacy Policy',
+  'settings.termsOfService': 'Terms of Service',
   'settings.experimental': 'Experimental',
   'settings.drawerDimensions': 'Drawer Dimensions',
   'settings.gridSettings': 'Grid Settings',

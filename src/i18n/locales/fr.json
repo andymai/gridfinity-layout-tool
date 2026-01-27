@@ -989,6 +989,8 @@
   "settings.helpImproveHint": "Partager les tailles de bins et les motifs de placement (aucune donnée personnelle)",
   "settings.labs": "Laboratoire",
   "settings.labsCheckBack": "Reviens plus tard !",
+  "settings.privacyPolicy": "Politique de confidentialité",
+  "settings.termsOfService": "Conditions d'utilisation",
   "settings.labsEmpty": "Aucune fonctionnalité expérimentale disponible pour le moment.",
   "settings.labsHint": "Essayer de nouvelles fonctionnalités avant leur sortie. Les fonctionnalités peuvent changer selon les retours.",
   "settings.language": "Langue",

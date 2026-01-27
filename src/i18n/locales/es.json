@@ -989,6 +989,8 @@
   "settings.helpImproveHint": "Compartir tamaños de bins y patrones de ubicación (sin datos personales)",
   "settings.labs": "Labs",
   "settings.labsCheckBack": "¡Vuelve más tarde!",
+  "settings.privacyPolicy": "Política de privacidad",
+  "settings.termsOfService": "Términos de servicio",
   "settings.labsEmpty": "No hay funciones experimentales disponibles en este momento.",
   "settings.labsHint": "Prueba nuevas funciones antes de su lanzamiento. Las funciones pueden cambiar según los comentarios.",
   "settings.language": "Idioma",
