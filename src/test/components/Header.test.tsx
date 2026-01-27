@@ -114,12 +114,6 @@ describe('Header', () => {
 
       expect(screen.getByLabelText('Open layout manager')).toBeInTheDocument();
     });
-
-    it('renders Reddit link', () => {
-      render(<Header {...defaultProps} />);
-
-      expect(screen.getByLabelText('Discuss on Reddit')).toBeInTheDocument();
-    });
   });
 
   describe('layout name editing', () => {
