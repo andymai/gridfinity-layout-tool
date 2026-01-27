@@ -24,7 +24,6 @@ const CONSTRAINTS = {
   MAX_COMPARTMENT_GRID: 8,
   MIN_COMPARTMENT_THICKNESS: 0.8,
   MAX_COMPARTMENT_THICKNESS: 2.4,
-  MAX_WALL_CUTOUT: 100,
   MAX_LABEL_LENGTH: 20,
   MAGNET_MIN_DEPTH: 2.0,
   MAGNET_MAX_DEPTH: 4.0,
@@ -207,62 +206,6 @@ function validateLabel(label: unknown): string | null {
 }
 
 /**
- * Validate a single WallCutout object (width + depth percentages).
- */
-function validateWallCutout(cutout: unknown, side: string): string | null {
-  if (!isObject(cutout)) return `walls.${side} must be an object with width and depth`;
-  if (!isNumber(cutout.width) || !inRange(cutout.width, 0, CONSTRAINTS.MAX_WALL_CUTOUT)) {
-    return `walls.${side}.width must be 0-${CONSTRAINTS.MAX_WALL_CUTOUT}`;
-  }
-  if (!isNumber(cutout.depth) || !inRange(cutout.depth, 0, CONSTRAINTS.MAX_WALL_CUTOUT)) {
-    return `walls.${side}.depth must be 0-${CONSTRAINTS.MAX_WALL_CUTOUT}`;
-  }
-  return null;
-}
-
-/**
- * Validate wall cutout sizes for the four sides of a bin.
- * Accepts both legacy format (number per side) and new format (WallCutout objects).
- *
- * @param walls - Expected to be an object containing cutout values for `front`, `back`, `left`, `right`, and optionally `interior`.
- * @returns `null` if `walls` is valid; otherwise a string describing the first validation failure.
- */
-function validateWalls(walls: unknown): string | null {
-  if (!isObject(walls)) return 'walls must be an object';
-
-  for (const side of ['front', 'back', 'left', 'right'] as const) {
-    const val = walls[side];
-    if (isNumber(val)) {
-      // Legacy format: single number (width percentage)
-      if (!inRange(val, 0, CONSTRAINTS.MAX_WALL_CUTOUT)) {
-        return `walls.${side} must be 0-${CONSTRAINTS.MAX_WALL_CUTOUT}`;
-      }
-    } else if (isObject(val)) {
-      // New format: WallCutout object
-      const err = validateWallCutout(val, side);
-      if (err) return err;
-    } else {
-      return `walls.${side} must be a number or object with width and depth`;
-    }
-  }
-
-  // Interior is optional
-  if (walls.interior !== undefined) {
-    if (isObject(walls.interior)) {
-      const err = validateWallCutout(walls.interior, 'interior');
-      if (err) return err;
-    } else if (
-      !isNumber(walls.interior) ||
-      !inRange(walls.interior as number, 0, CONSTRAINTS.MAX_WALL_CUTOUT)
-    ) {
-      return `walls.interior must be 0-${CONSTRAINTS.MAX_WALL_CUTOUT} or an object`;
-    }
-  }
-
-  return null;
-}
-
-/**
  * Validates a single insert object from the payload and returns a descriptive error message when invalid.
  *
  * @param insert - The insert value to validate (expected object with id, shape, x, y, width, depth, cutDepth, rotation, cornerRadius, and label)
@@ -386,37 +329,6 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
     };
   }
 
-  // Scoop (accept both legacy boolean and new ScoopConfig format)
-  if (isObject(params.scoop)) {
-    const scoopObj = params.scoop as Record<string, unknown>;
-    if (!isBoolean(scoopObj.enabled)) {
-      return {
-        valid: false,
-        error: { code: 'INVALID_PARAMS', message: 'scoop.enabled must be boolean' },
-      };
-    }
-    if (scoopObj.radius !== undefined && scoopObj.radius !== 'auto' && !isNumber(scoopObj.radius)) {
-      return {
-        valid: false,
-        error: { code: 'INVALID_PARAMS', message: 'scoop.radius must be "auto" or a number' },
-      };
-    }
-    if (scoopObj.allRows !== undefined && !isBoolean(scoopObj.allRows)) {
-      return {
-        valid: false,
-        error: { code: 'INVALID_PARAMS', message: 'scoop.allRows must be boolean' },
-      };
-    }
-  } else if (!isBoolean(params.scoop)) {
-    return {
-      valid: false,
-      error: {
-        code: 'INVALID_PARAMS',
-        message: 'scoop must be boolean or object with enabled field',
-      },
-    };
-  }
-
   // Sub-objects
   const baseErr = validateBase(params.base);
   if (baseErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: baseErr } };
@@ -433,9 +345,6 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
 
   const labelErr = validateLabel(params.label);
   if (labelErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: labelErr } };
-
-  const wallsErr = validateWalls(params.walls);
-  if (wallsErr) return { valid: false, error: { code: 'INVALID_PARAMS', message: wallsErr } };
 
   // Inserts
   if (!Array.isArray(params.inserts)) {

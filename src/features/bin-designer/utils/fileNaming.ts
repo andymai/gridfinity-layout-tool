@@ -42,10 +42,10 @@ export type { FileNameStyle };
  * Generates a file name from bin parameters, export format, and naming config.
  *
  * @example
- * // Descriptive (no design name): "gridfinity_2x3x6_scoop.stl"
+ * // Descriptive (no design name): "gridfinity_2x3x6_magnets.stl"
  * generateFileName(params, 'stl', { style: 'descriptive', customName: '' })
  *
- * // Descriptive (with design name): "Screwdriver Bin_2x3x6_scoop.stl"
+ * // Descriptive (with design name): "Screwdriver Bin_2x3x6_magnets.stl"
  * generateFileName(params, 'stl', { style: 'descriptive', customName: '' }, 'Screwdriver Bin')
  *
  * // Compact (no design name): "gf_2x3x6.stl"
@@ -120,9 +120,6 @@ function collectFeatures(params: BinParams): string[] {
   if (params.compartments.cols > 1 || params.compartments.rows > 1) {
     const count = new Set(params.compartments.cells).size;
     features.push(`${count}comp`);
-  }
-  if (params.scoop.enabled) {
-    features.push('scoop');
   }
   if (params.label.enabled) {
     features.push('label');

@@ -73,14 +73,6 @@ describe('getInvalidationLevel', () => {
     expect(getInvalidationLevel(prev, next)).toBe('features');
   });
 
-  it('returns "features" when scoop changes', () => {
-    const prev = makeParams();
-    const next = makeParams({
-      scoop: { enabled: true, radius: 'auto', allRows: false },
-    });
-    expect(getInvalidationLevel(prev, next)).toBe('features');
-  });
-
   it('returns "features" when inserts change', () => {
     const prev = makeParams();
     const next = makeParams({

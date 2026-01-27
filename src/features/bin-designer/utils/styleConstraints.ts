@@ -8,7 +8,7 @@
 import type { BinStyle } from '../types';
 
 /** Features that can be constrained by a style */
-export type ConstrainedFeature = 'dividers' | 'scoop' | 'label' | 'walls';
+export type ConstrainedFeature = 'dividers' | 'label';
 
 /** Constraint information for a bin style */
 export interface StyleConstraints {
