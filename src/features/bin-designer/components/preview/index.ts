@@ -7,3 +7,4 @@ export { PreviewSkeleton } from './PreviewSkeleton';
 export { GradientBackground } from './GradientBackground';
 export { FootprintGrid } from './FootprintGrid';
 export { GhostDividers } from './GhostDividers';
+export { GhostWireframe } from './GhostWireframe';
