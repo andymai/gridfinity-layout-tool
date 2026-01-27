@@ -78,18 +78,9 @@ function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
   const maxRadius = Math.min(cellW_mm, cellD_mm) / 2 - 0.1;
   const cornerR = Math.min(CORNER_RADIUS, maxRadius);
 
-  // Profile insets from outer boundary at each Z breakpoint
-  // (derived from socketProfile after translate(CLEARANCE/2, 0))
-  const INSET_TOP = 0;
-  const INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
+  // Simplified socket: 2-section loft (top to bottom) instead of 5-section
+  // This is much faster and visually similar since socket is on bottom
   const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
-
-  // Z positions of profile breakpoints
-  const Z1 = 0;
-  const Z2 = -(CLEARANCE / 2); // -0.25
-  const Z3 = -SOCKET_BIG_TAPER; // -2.4
-  const Z4 = -(SOCKET_BIG_TAPER + SOCKET_VERTICAL_PART); // -4.2
-  const Z5 = -SOCKET_HEIGHT; // -5.0
 
   // Helper to create a rounded rect sketch at a given Z with a given inset
   const sectionAt = (z: number, inset: number): Sketch => {
@@ -99,16 +90,11 @@ function buildSingleCellSocket(cellW_mm: number, cellD_mm: number): Shape3D {
     return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as unknown as Sketch;
   };
 
-  // Build 5 cross-sections matching the socket profile breakpoints
-  const s1 = sectionAt(Z1, INSET_TOP);
-  const s2 = sectionAt(Z2, INSET_TOP);
-  const s3 = sectionAt(Z3, INSET_MID);
-  const s4 = sectionAt(Z4, INSET_MID);
-  const s5 = sectionAt(Z5, INSET_BOT);
+  // Simple 2-section loft: top (full size) to bottom (inset)
+  const top = sectionAt(0, 0);
+  const bottom = sectionAt(-SOCKET_HEIGHT, INSET_BOT);
 
-  // Ruled loft through all sections — straight-line connections between
-  // corresponding points, matching the angular profile exactly
-  return s1.loftWith([s2, s3, s4, s5], { ruled: true }) as Shape3D;
+  return top.loftWith([bottom], { ruled: true }) as Shape3D;
 }
 
 /**
