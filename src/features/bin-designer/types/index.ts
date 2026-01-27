@@ -268,6 +268,7 @@ export interface DesignerState {
   designName: string;
   saveStatus: SaveStatus;
   exportFileNameConfig: ExportFileNameConfig;
+  pendingBinLink: string | null;
 
   // Param actions
   setParam: <K extends keyof BinParams>(key: K, value: BinParams[K]) => void;
@@ -284,6 +285,8 @@ export interface DesignerState {
   setDesignName: (name: string) => void;
   setSaveStatus: (status: SaveStatus) => void;
   setExportFileNameConfig: (config: ExportFileNameConfig) => void;
+  setPendingBinLink: (binId: string | null) => void;
+  clearPendingBinLink: () => void;
   newDesign: () => void;
   loadDesign: (design: SavedDesign) => void;
 

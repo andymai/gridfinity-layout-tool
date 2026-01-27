@@ -17,6 +17,11 @@ export function DeleteDesignWarningDialog() {
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
+  const handleCancel = useCallback(() => {
+    pendingDeleteWarning?.onCancel();
+    hideDeleteWarning();
+  }, [pendingDeleteWarning, hideDeleteWarning]);
+
   // Focus management
   useEffect(() => {
     if (!pendingDeleteWarning) return;
@@ -39,12 +44,7 @@ export function DeleteDesignWarningDialog() {
         previousFocusRef.current.focus();
       }
     };
-  }, [pendingDeleteWarning, hideDeleteWarning]);
-
-  const handleCancel = useCallback(() => {
-    pendingDeleteWarning?.onCancel();
-    hideDeleteWarning();
-  }, [pendingDeleteWarning, hideDeleteWarning]);
+  }, [pendingDeleteWarning, handleCancel]);
 
   const handleConfirm = useCallback(() => {
     pendingDeleteWarning?.onConfirm();
@@ -102,7 +102,7 @@ export function DeleteDesignWarningDialog() {
         <div className="mb-6 p-3 bg-surface rounded-lg border border-stroke-subtle">
           <div className="text-sm font-medium text-content">{designName}</div>
           <div className="text-xs text-content-disabled mt-1">
-            {count} linked bin{count !== 1 ? 's' : ''}
+            {t('designLinking.deleteWarning.linkedBinsCount', { count })}
           </div>
         </div>
 

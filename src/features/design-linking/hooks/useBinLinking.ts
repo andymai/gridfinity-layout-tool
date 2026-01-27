@@ -22,6 +22,7 @@ import {
 } from '../domain';
 import type { BinId, DesignId, SyncResult } from '../types';
 import { isErr } from '@/core/result';
+import { useTranslation } from '@/i18n';
 
 interface UseBinLinkingReturn {
   /** Link a bin to a design (undoable) */
@@ -59,6 +60,7 @@ interface UseBinLinkingReturn {
  * Hook providing all bin-design linking operations.
  */
 export function useBinLinking(): UseBinLinkingReturn {
+  const t = useTranslation();
   const layout = useLayoutStore(useShallow((state) => state.layout));
   const { updateBin } = useMutations();
   const { execute } = useUndoableAction();
@@ -83,13 +85,13 @@ export function useBinLinking(): UseBinLinkingReturn {
       const design = registry.find((r) => r.id === designId);
       if (design) {
         addToast({
-          message: `Linked to "${design.name}"`,
+          message: t('designLinking.toast.linked', { name: design.name }),
           type: 'success',
           duration: 2000,
         });
       }
     },
-    [layout.bins, execute, updateBin, registry, addToast]
+    [layout.bins, execute, updateBin, registry, addToast, t]
   );
 
   // Unlink a bin from its design
@@ -103,12 +105,12 @@ export function useBinLinking(): UseBinLinkingReturn {
       });
 
       addToast({
-        message: 'Design unlinked',
+        message: t('designLinking.toast.unlinked'),
         type: 'info',
         duration: 2000,
       });
     },
-    [layout.bins, execute, updateBin, addToast]
+    [layout.bins, execute, updateBin, addToast, t]
   );
 
   // Unlink multiple bins
@@ -153,7 +155,7 @@ export function useBinLinking(): UseBinLinkingReturn {
       const designResult = await loadDesign(designId);
       if (isErr(designResult)) {
         addToast({
-          message: 'Failed to load design',
+          message: t('designLinking.toast.failedToLoad'),
           type: 'error',
           duration: 3000,
         });
@@ -161,14 +163,14 @@ export function useBinLinking(): UseBinLinkingReturn {
       }
 
       const designName =
-        registry.find((r) => r.id === designId)?.name ?? 'Unknown Design';
+        registry.find((r) => r.id === designId)?.name ?? t('designLinking.toast.unknownDesign');
       const designDims = extractDesignDimensions(designResult.value.params);
       const binDims = extractBinDimensions(bins[0]);
       const comparison = compareDimensions(designDims, binDims);
 
       if (comparison.matched) {
         addToast({
-          message: 'Dimensions already match',
+          message: t('designLinking.toast.dimensionsMatch'),
           type: 'info',
           duration: 2000,
         });
@@ -180,7 +182,7 @@ export function useBinLinking(): UseBinLinkingReturn {
 
       showSyncDialog(binIds, designId, designName, comparison, eligibility);
     },
-    [layout, registry, addToast, showSyncDialog]
+    [layout, registry, addToast, showSyncDialog, t]
   );
 
   // Execute sync from design to bins
@@ -219,19 +221,22 @@ export function useBinLinking(): UseBinLinkingReturn {
       // Show result toast
       if (synced.length > 0 && unlinked.length === 0) {
         addToast({
-          message: `Updated ${synced.length} bin${synced.length > 1 ? 's' : ''}`,
+          message: t('designLinking.toast.synced', { count: synced.length }),
           type: 'success',
           duration: 2000,
         });
       } else if (synced.length > 0 && unlinked.length > 0) {
         addToast({
-          message: `Updated ${synced.length}, unlinked ${unlinked.length} (didn't fit)`,
+          message: t('designLinking.toast.syncedWithUnlink', {
+            synced: synced.length,
+            unlinked: unlinked.length,
+          }),
           type: 'info',
           duration: 3000,
         });
       } else if (unlinked.length > 0) {
         addToast({
-          message: `Unlinked ${unlinked.length} bin${unlinked.length > 1 ? 's' : ''} (didn't fit)`,
+          message: t('designLinking.toast.unlinkedDidntFit', { count: unlinked.length }),
           type: 'info',
           duration: 3000,
         });
@@ -239,7 +244,7 @@ export function useBinLinking(): UseBinLinkingReturn {
 
       return { synced, unlinked, totalLinked };
     },
-    [layout, execute, updateBin, addToast]
+    [layout, execute, updateBin, addToast, t]
   );
 
   // Navigate to designer to create new design and auto-link

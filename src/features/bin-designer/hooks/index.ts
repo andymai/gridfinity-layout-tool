@@ -1,4 +1,5 @@
 export { useAutoSave } from './useAutoSave';
+export { useCreateFromBin } from './useCreateFromBin';
 export { useDesignerInit } from './useDesignerInit';
 export { useDesignerKeyboard } from './useDesignerKeyboard';
 export { useDesignerUrlSync } from './useDesignerUrlSync';

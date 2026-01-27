@@ -1197,6 +1197,8 @@ const en: Record<string, string> = {
   'binDesigner.updating': 'Updating',
   'binDesigner.updatingMesh': 'Updating mesh',
   'binDesigner.wire': 'Wire',
+  'binDesigner.creatingFromBin': 'Creating "{name}" — save to link to bin',
+  'binDesigner.designCreatedAndLinked': 'Design created and linked to bin',
 
   // ===========================================================================
   // Bin List Modal
@@ -1500,6 +1502,8 @@ const en: Record<string, string> = {
   'designLinking.createDialog.useLabel': 'Use bin label',
   'designLinking.createDialog.dimensions': 'Dimensions: {width}×{depth}×{height}',
   'designLinking.createDialog.create': 'Create & Open Designer',
+  'designLinking.createDialog.useLabelTooltip': 'Use "{label}"',
+  'designLinking.createDialog.gridUnits': '{dimensions} grid units',
 
   // Sync dialog
   'designLinking.syncDialog.title': 'Sync Dimensions',
@@ -1508,8 +1512,7 @@ const en: Record<string, string> = {
   'designLinking.syncDialog.designDimensions': 'Design: {dimensions}',
   'designLinking.syncDialog.binDimensions': 'Bins: {dimensions}',
   'designLinking.syncDialog.binsToUpdate': '{count} bin(s) will be updated',
-  'designLinking.syncDialog.binsToUnlink':
-    "{count} bin(s) can't fit and will be unlinked",
+  'designLinking.syncDialog.binsToUnlink': "{count} bin(s) can't fit and will be unlinked",
   'designLinking.syncDialog.sync': 'Update Bins',
 
   // Delete warning dialog
@@ -1517,6 +1520,7 @@ const en: Record<string, string> = {
   'designLinking.deleteWarning.description':
     'This design is linked to {count} bin(s) in your layout. Deleting it will unlink those bins.',
   'designLinking.deleteWarning.confirm': 'Delete Anyway',
+  'designLinking.deleteWarning.linkedBinsCount': '{count} linked bin(s)',
 
   // Custom bins palette (sidebar)
   'designLinking.palette.title': 'Custom Bins',
@@ -1530,9 +1534,10 @@ const en: Record<string, string> = {
   'designLinking.toast.unlinked': 'Design unlinked',
   'designLinking.toast.dimensionsMatch': 'Dimensions already match',
   'designLinking.toast.synced': 'Updated {count} bin(s)',
-  'designLinking.toast.syncedWithUnlink':
-    'Updated {synced}, unlinked {unlinked} (didn\'t fit)',
+  'designLinking.toast.syncedWithUnlink': "Updated {synced}, unlinked {unlinked} (didn't fit)",
+  'designLinking.toast.unlinkedDidntFit': "Unlinked {count} bin(s) (didn't fit)",
   'designLinking.toast.failedToLoad': 'Failed to load design',
+  'designLinking.toast.unknownDesign': 'Unknown Design',
 };
 
 export default en;

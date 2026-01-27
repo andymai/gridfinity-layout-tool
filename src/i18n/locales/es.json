@@ -111,6 +111,8 @@
   "binDesigner.wallThickness.2.6": "Máxima rigidez para bins grandes",
   "binDesigner.wallThickness.nozzleTip": "Para mejores resultados, usa un múltiplo del tamaño de boquilla (ej: 1,2mm = 3× boquilla 0,4mm)",
   "binDesigner.wire": "Alambre",
+  "binDesigner.creatingFromBin": "Creando \"{name}\" — guarda para vincular al bin",
+  "binDesigner.designCreatedAndLinked": "Diseño creado y vinculado al bin",
   "binList.binList": "Lista de Bins",
   "binList.binTypes": "Tipos de Bin",
   "binList.byCategory": "Por Categoría",
@@ -1230,12 +1232,15 @@
   "snappingSlider.select": "Select {value}{unit}",
   "designLinking.createDialog.create": "Create & Open Designer",
   "designLinking.createDialog.dimensions": "Dimensions: {width}×{depth}×{height}",
+  "designLinking.createDialog.gridUnits": "{dimensions} unidades de rejilla",
   "designLinking.createDialog.nameLabel": "Design name",
   "designLinking.createDialog.namePlaceholder": "Enter design name",
   "designLinking.createDialog.title": "Create Design from Bin",
   "designLinking.createDialog.useLabel": "Use bin label",
+  "designLinking.createDialog.useLabelTooltip": "Usar \"{label}\"",
   "designLinking.deleteWarning.confirm": "Delete Anyway",
   "designLinking.deleteWarning.description": "This design is linked to {count} bin(s) in your layout. Deleting it will unlink those bins.",
+  "designLinking.deleteWarning.linkedBinsCount": "{count} bin(s) vinculado(s)",
   "designLinking.deleteWarning.title": "Design has linked bins",
   "designLinking.inspector.createDesign": "Create Design",
   "designLinking.inspector.designDeleted": "Design deleted",
@@ -1265,5 +1270,7 @@
   "designLinking.toast.linked": "Linked to \"{name}\"",
   "designLinking.toast.synced": "Updated {count} bin(s)",
   "designLinking.toast.syncedWithUnlink": "Updated {synced}, unlinked {unlinked} (didn't fit)",
-  "designLinking.toast.unlinked": "Design unlinked"
+  "designLinking.toast.unknownDesign": "Diseño desconocido",
+  "designLinking.toast.unlinked": "Design unlinked",
+  "designLinking.toast.unlinkedDidntFit": "Desvinculados {count} bin(s) (no cabían)"
 }

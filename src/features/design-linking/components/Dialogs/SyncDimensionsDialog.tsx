@@ -19,6 +19,10 @@ export function SyncDimensionsDialog() {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
+  const handleCancel = useCallback(() => {
+    hideSyncDialog();
+  }, [hideSyncDialog]);
+
   // Focus management
   useEffect(() => {
     if (!pendingSync) return;
@@ -40,11 +44,7 @@ export function SyncDimensionsDialog() {
         previousFocusRef.current.focus();
       }
     };
-  }, [pendingSync, hideSyncDialog]);
-
-  const handleCancel = useCallback(() => {
-    hideSyncDialog();
-  }, [hideSyncDialog]);
+  }, [pendingSync, handleCancel]);
 
   const handleSync = useCallback(async () => {
     if (!pendingSync) return;

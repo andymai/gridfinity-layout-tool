@@ -22,16 +22,17 @@ export function CreateDesignDialog() {
   const inputRef = useRef<HTMLInputElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Initialize name when dialog opens
-  useEffect(() => {
-    if (pendingCreateDesign) {
-      setName(pendingCreateDesign.defaultName);
-    }
-  }, [pendingCreateDesign]);
+  const handleCancel = useCallback(() => {
+    hideCreateDesignDialog();
+    setName('');
+  }, [hideCreateDesignDialog]);
 
-  // Focus management
+  // Initialize name and focus management when dialog opens
   useEffect(() => {
     if (!pendingCreateDesign) return;
+
+    // Initialize name with default (deferred to avoid synchronous setState in effect)
+    queueMicrotask(() => setName(pendingCreateDesign.defaultName));
 
     previousFocusRef.current = document.activeElement as HTMLElement;
     setTimeout(() => inputRef.current?.select(), 0);
@@ -51,12 +52,7 @@ export function CreateDesignDialog() {
         previousFocusRef.current.focus();
       }
     };
-  }, [pendingCreateDesign, hideCreateDesignDialog]);
-
-  const handleCancel = useCallback(() => {
-    hideCreateDesignDialog();
-    setName('');
-  }, [hideCreateDesignDialog]);
+  }, [pendingCreateDesign, handleCancel]);
 
   const handleCreate = useCallback(() => {
     if (!pendingCreateDesign || !name.trim()) return;
@@ -76,7 +72,7 @@ export function CreateDesignDialog() {
     if (pendingCreateDesign?.binLabel) {
       setName(pendingCreateDesign.binLabel);
     }
-  }, [pendingCreateDesign?.binLabel]);
+  }, [pendingCreateDesign]);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -113,10 +109,7 @@ export function CreateDesignDialog() {
         <form onSubmit={handleSubmit}>
           {/* Name input */}
           <div className="mb-4">
-            <label
-              htmlFor="design-name"
-              className="block text-sm text-content-secondary mb-1"
-            >
+            <label htmlFor="design-name" className="block text-sm text-content-secondary mb-1">
               {t('designLinking.createDialog.nameLabel')}
             </label>
             <div className="flex gap-2">
@@ -136,7 +129,7 @@ export function CreateDesignDialog() {
                   type="button"
                   onClick={handleUseBinLabel}
                   className="btn btn-secondary text-sm whitespace-nowrap"
-                  title={`Use "${binLabel}"`}
+                  title={t('designLinking.createDialog.useLabelTooltip', { label: binLabel })}
                 >
                   {t('designLinking.createDialog.useLabel')}
                 </button>
@@ -154,7 +147,7 @@ export function CreateDesignDialog() {
               })}
             </div>
             <div className="text-xs text-content-disabled mt-1">
-              {dimensionStr} grid units
+              {t('designLinking.createDialog.gridUnits', { dimensions: dimensionStr })}
             </div>
           </div>
 
@@ -163,11 +156,7 @@ export function CreateDesignDialog() {
             <button type="button" onClick={handleCancel} className="btn btn-secondary">
               {t('common.cancel')}
             </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={!name.trim()}
-            >
+            <button type="submit" className="btn btn-primary" disabled={!name.trim()}>
               {t('designLinking.createDialog.create')}
             </button>
           </div>
