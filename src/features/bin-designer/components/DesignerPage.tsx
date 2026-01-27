@@ -377,7 +377,7 @@ export function DesignerPage(_props: DesignerPageProps) {
           <button
             onClick={() => setDesignListOpen(true)}
             className="sm:hidden btn btn-ghost btn-icon"
-            title={t('binDesigner.myDesigns')}
+            title={t('binDesigner.savedDesigns')}
             aria-label={t('binDesigner.openDesignList')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

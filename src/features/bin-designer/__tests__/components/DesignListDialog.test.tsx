@@ -56,7 +56,7 @@ describe('DesignListDialog', () => {
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('My Designs')).toBeInTheDocument();
+    expect(screen.getByText('Saved Designs')).toBeInTheDocument();
     expect(screen.getByText('New Design')).toBeInTheDocument();
   });
 

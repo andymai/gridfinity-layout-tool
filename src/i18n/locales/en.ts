@@ -1093,7 +1093,6 @@ const en: Record<string, string> = {
   'binDesigner.format3MF': '3MF',
   'binDesigner.clickToRename': 'Click to rename design',
   'binDesigner.openDesignList': 'Open design list',
-  'binDesigner.myDesigns': 'My Designs',
   'binDesigner.dimensions': 'Dimensions',
   'binDesigner.interior': 'Interior Dividers',
   'binDesigner.interiorSummary': '{count} compartment(s)',
@@ -1538,6 +1537,12 @@ const en: Record<string, string> = {
   'designLinking.toast.unlinkedDidntFit': "Unlinked {count} bin(s) (didn't fit)",
   'designLinking.toast.failedToLoad': 'Failed to load design',
   'designLinking.toast.unknownDesign': 'Unknown Design',
+
+  // ===========================================================================
+  // Snapping Slider (shared component)
+  // ===========================================================================
+  'snappingSlider.default': 'Default',
+  'snappingSlider.select': 'Select {value}{unit}',
 };
 
 export default en;

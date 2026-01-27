@@ -61,7 +61,6 @@
   "binDesigner.loading": "Cargando",
   "binDesigner.loadingSharedDesign": "Cargando diseño compartido",
   "binDesigner.mmBody": "mm cuerpo",
-  "binDesigner.myDesigns": "Mis Diseños",
   "binDesigner.newDesign": "Nuevo Diseño",
   "binDesigner.noSavedDesignsYet": "Aún no hay diseños guardados",
   "binDesigner.openDesignList": "Abrir lista de diseños",
@@ -1273,4 +1272,7 @@
   "designLinking.toast.unknownDesign": "Diseño desconocido",
   "designLinking.toast.unlinked": "Design unlinked",
   "designLinking.toast.unlinkedDidntFit": "Desvinculados {count} bin(s) (no cabían)"
+,
+  "snappingSlider.default": "Default",
+  "snappingSlider.select": "Select {value}{unit}"
 }

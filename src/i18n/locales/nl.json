@@ -61,7 +61,6 @@
   "binDesigner.loading": "Laden",
   "binDesigner.loadingSharedDesign": "Gedeeld design laden",
   "binDesigner.mmBody": "mm lichaam",
-  "binDesigner.myDesigns": "Mijn designs",
   "binDesigner.newDesign": "Nieuw design",
   "binDesigner.noSavedDesignsYet": "Nog geen opgeslagen designs",
   "binDesigner.openDesignList": "Designlijst openen",
@@ -1273,4 +1272,7 @@
   "designLinking.toast.unknownDesign": "Onbekend design",
   "designLinking.toast.unlinked": "Design unlinked",
   "designLinking.toast.unlinkedDidntFit": "Ontkoppeld {count} bin(s) (pasten niet)"
+,
+  "snappingSlider.default": "Default",
+  "snappingSlider.select": "Select {value}{unit}"
 }

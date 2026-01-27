@@ -136,7 +136,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label={t('binDesigner.myDesigns')}
+      aria-label={t('binDesigner.savedDesigns')}
     >
       <div
         className="mx-4 max-h-[70vh] w-full max-w-lg overflow-hidden rounded-xl border border-stroke-subtle bg-surface-secondary shadow-xl"
@@ -144,7 +144,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
-          <h2 className="text-lg font-semibold text-content">{t('binDesigner.myDesigns')}</h2>
+          <h2 className="text-lg font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={handleNewDesign}
