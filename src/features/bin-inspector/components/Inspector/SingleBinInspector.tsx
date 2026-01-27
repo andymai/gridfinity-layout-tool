@@ -7,6 +7,8 @@ import { StepperControl } from '@/shared/components/StepperControl';
 import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from './CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/components/STLSearchDropdown';
+import { LinkedDesignSection } from '@/features/design-linking';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 
 interface SingleBinInspectorProps {
@@ -40,6 +42,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   } = inspector;
 
   const halfBinMode = useUIStore((state) => state.halfBinMode);
+  const isDesignerEnabled = useFeatureFlag('bin_designer');
   const t = useTranslation();
 
   if (!bin) return null;
@@ -297,6 +300,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           needsSplit={bin.width > constraints.maxGridUnits || bin.depth > constraints.maxGridUnits}
           className="w-full justify-center py-2 rounded-lg bg-surface-elevated/50 hover:bg-surface-hover border border-stroke-subtle"
         />
+
+        {/* Linked Design - requires Bin Designer feature flag */}
+        {isDesignerEnabled && <LinkedDesignSection bin={bin} variant={variant} />}
 
         {/* Notes */}
         <div>

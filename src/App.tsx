@@ -38,6 +38,7 @@ import { LiveRegion } from './components/LiveRegion';
 import { LocalMutationsProvider } from './shared/contexts';
 import { useTranslation } from '@/i18n';
 import { CommandPalette, useCommandPalette } from '@/features/command-palette';
+import { DesignLinkingDialogs } from '@/features/design-linking';
 
 // Lazy load cloud-share components - only needed when viewing/sharing layouts
 const SharedLayoutImporter = lazyWithRetry(() =>
@@ -433,6 +434,9 @@ export default function App() {
         {/* Toast notifications */}
         <ToastContainer />
 
+        {/* Design linking dialogs - requires Bin Designer feature flag */}
+        {isDesignerEnabled && <DesignLinkingDialogs />}
+
         {/* Shared layout URL importer - only load when URL has share params */}
         {hasShareUrl && (
           <Suspense fallback={null}>
@@ -531,6 +535,9 @@ export default function App() {
 
       {/* ARIA live region for screen reader announcements */}
       <LiveRegion />
+
+      {/* Design linking dialogs - requires Bin Designer feature flag */}
+      {isDesignerEnabled && <DesignLinkingDialogs />}
 
       {/* Shared layout URL importer - only load when URL has share params */}
       {hasShareUrl && (

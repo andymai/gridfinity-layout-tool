@@ -1473,6 +1473,66 @@ const en: Record<string, string> = {
   // ===========================================================================
   'snappingSlider.default': 'Default',
   'snappingSlider.select': 'Select {value}{unit}',
+
+  // ===========================================================================
+  // Design Linking (Bin Designer ↔ Layout Planner integration)
+  // ===========================================================================
+
+  // Context menu actions
+  'designLinking.menu.editDesign': 'Edit Design',
+  'designLinking.menu.createDesign': 'Create Design',
+  'designLinking.menu.unlinkDesign': 'Unlink Design',
+
+  // Inspector section
+  'designLinking.inspector.linkedDesign': 'Linked Design',
+  'designLinking.inspector.noDesign': 'No design linked',
+  'designLinking.inspector.designDeleted': 'Design deleted',
+  'designLinking.inspector.editDesign': 'Edit',
+  'designLinking.inspector.unlink': 'Unlink',
+  'designLinking.inspector.syncDimensions': 'Sync Dimensions',
+  'designLinking.inspector.createDesign': 'Create Design',
+  'designLinking.inspector.dimensionsMismatch': 'Dimensions differ from design',
+
+  // Create design dialog
+  'designLinking.createDialog.title': 'Create Design from Bin',
+  'designLinking.createDialog.nameLabel': 'Design name',
+  'designLinking.createDialog.namePlaceholder': 'Enter design name',
+  'designLinking.createDialog.useLabel': 'Use bin label',
+  'designLinking.createDialog.dimensions': 'Dimensions: {width}×{depth}×{height}',
+  'designLinking.createDialog.create': 'Create & Open Designer',
+
+  // Sync dialog
+  'designLinking.syncDialog.title': 'Sync Dimensions',
+  'designLinking.syncDialog.description':
+    'The design "{name}" has different dimensions than the linked bins.',
+  'designLinking.syncDialog.designDimensions': 'Design: {dimensions}',
+  'designLinking.syncDialog.binDimensions': 'Bins: {dimensions}',
+  'designLinking.syncDialog.binsToUpdate': '{count} bin(s) will be updated',
+  'designLinking.syncDialog.binsToUnlink':
+    "{count} bin(s) can't fit and will be unlinked",
+  'designLinking.syncDialog.sync': 'Update Bins',
+
+  // Delete warning dialog
+  'designLinking.deleteWarning.title': 'Design has linked bins',
+  'designLinking.deleteWarning.description':
+    'This design is linked to {count} bin(s) in your layout. Deleting it will unlink those bins.',
+  'designLinking.deleteWarning.confirm': 'Delete Anyway',
+
+  // Custom bins palette (sidebar)
+  'designLinking.palette.title': 'Custom Bins',
+  'designLinking.palette.empty': 'No saved designs',
+  'designLinking.palette.emptyHint': 'Create a design in the Bin Designer to see it here',
+  'designLinking.palette.dragHint': 'Drag to place',
+  'designLinking.palette.openDesigner': 'Open Bin Designer',
+
+  // Toasts
+  'designLinking.toast.linked': 'Linked to "{name}"',
+  'designLinking.toast.unlinked': 'Design unlinked',
+  'designLinking.toast.dimensionsMatch': 'Dimensions already match',
+  'designLinking.toast.synced': 'Updated {count} bin(s)',
+  'designLinking.toast.syncedWithUnlink':
+    'Updated {synced}, unlinked {unlinked} (didn\'t fit)',
+  'designLinking.toast.failedToLoad': 'Failed to load design',
 };
 
 export default en;

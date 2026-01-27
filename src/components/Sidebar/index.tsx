@@ -16,6 +16,8 @@ import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { lazyWithRetry, namedExport } from '@/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
+import { CustomBinsPalette } from '@/features/design-linking';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
 const InspirationGallery = lazyWithRetry(() =>
@@ -37,8 +39,10 @@ export function Sidebar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [customBinsPaletteExpanded, setCustomBinsPaletteExpanded] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { isDesktop } = useResponsive();
+  const isDesignerEnabled = useFeatureFlag('bin_designer');
 
   const handleScroll = useCallback(() => {
     if (scrollRef.current) {
@@ -221,6 +225,16 @@ export function Sidebar() {
                 </svg>
               </button>
             </div>
+
+            {/* Custom Bins Palette - requires Bin Designer feature flag */}
+            {isDesignerEnabled && (
+              <div className="px-4 py-2 border-b border-stroke-subtle">
+                <CustomBinsPalette
+                  isExpanded={customBinsPaletteExpanded}
+                  onToggleExpand={() => setCustomBinsPaletteExpanded(!customBinsPaletteExpanded)}
+                />
+              </div>
+            )}
 
             {/* Grid Size */}
             <div data-grid-size-panel className="mt-auto px-4 py-4">

@@ -49,6 +49,7 @@ export interface Bin {
   label: string; // max 24 chars
   notes: string; // max 256 chars
   customProperties?: Record<string, string>; // custom key-value properties for user-defined metadata
+  linkedDesignId?: string; // reference to saved design in bin-designer (for one-to-many linking)
 }
 
 // === Coordinate Types ===

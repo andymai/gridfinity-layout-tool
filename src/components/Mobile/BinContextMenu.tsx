@@ -13,6 +13,8 @@ import { STLSearchDropdown } from '@/components/STLSearchDropdown';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
+import { useLinkedDesign, useBinLinking } from '@/features/design-linking';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import type { Bin } from '@/core/types';
 
 interface BinContextMenuProps {
@@ -52,6 +54,11 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
 
   const { execute } = useUndoableAction();
   const { isDesktop } = useResponsive();
+
+  // Design linking - requires Bin Designer feature flag
+  const isDesignerEnabled = useFeatureFlag('bin_designer');
+  const { linkedDesign, hasLink } = useLinkedDesign(bin.linkedDesignId);
+  const { editLinkedDesign, showCreateDesignDialog, unlinkBin } = useBinLinking();
 
   const handleDelete = () => {
     // Track deletion BEFORE executing (need bin data)
@@ -121,6 +128,24 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
       addToast(t('toast.rotateRepositioned', { distance: result.movedTo.distance }), 'info');
     }
 
+    onClose();
+  };
+
+  // Design linking handlers
+  const handleEditDesign = () => {
+    if (linkedDesign) {
+      editLinkedDesign(linkedDesign.id);
+    }
+    onClose();
+  };
+
+  const handleCreateDesign = () => {
+    showCreateDesignDialog(bin.id);
+    onClose();
+  };
+
+  const handleUnlinkDesign = () => {
+    unlinkBin(bin.id);
     onClose();
   };
 
@@ -231,6 +256,66 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
         />
 
         <ContextMenuDivider />
+
+        {/* Design Linking Actions - requires Bin Designer feature flag */}
+        {isDesignerEnabled && (
+          <>
+            {hasLink && linkedDesign ? (
+              <>
+                <ContextMenuItem
+                  icon={
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                      />
+                    </svg>
+                  }
+                  label={t('designLinking.menu.editDesign')}
+                  onClick={handleEditDesign}
+                />
+                <ContextMenuItem
+                  icon={
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6"
+                      />
+                    </svg>
+                  }
+                  label={t('designLinking.menu.unlinkDesign')}
+                  onClick={handleUnlinkDesign}
+                />
+              </>
+            ) : (
+              <ContextMenuItem
+                icon={
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                }
+                label={t('designLinking.menu.createDesign')}
+                onClick={handleCreateDesign}
+              />
+            )}
+            <ContextMenuDivider />
+          </>
+        )}
 
         <ContextMenuItem
           icon={

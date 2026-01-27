@@ -9,6 +9,7 @@ import { DragPreview } from '@/components/DragPreview';
 import { ToastContainer } from '@/shared/components/Toast';
 import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
 import { SharedLayoutImporter, SharedLayoutBanner } from '@/features/cloud-share/components';
+import { DesignLinkingDialogs } from '@/features/design-linking';
 import {
   MobileHeader,
   BottomNavBar,
@@ -30,6 +31,7 @@ const LabsDrawer = lazyWithRetry(() =>
 );
 import { usePresence } from '@/hooks/usePresence';
 import { useCollabMode } from '@/hooks/useCollabMode';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import type { SaveStatus } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 
@@ -72,6 +74,7 @@ export function MobileLayout({
   const setActiveMobilePanel = useMobileStore((state) => state.setActiveMobilePanel);
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
+  const isDesignerEnabled = useFeatureFlag('bin_designer');
 
   return (
     <div className="h-screen-safe flex flex-col overflow-hidden bg-surface text-content">
@@ -120,6 +123,9 @@ export function MobileLayout({
 
       {/* Toast notifications */}
       <ToastContainer />
+
+      {/* Design linking dialogs - requires Bin Designer feature flag */}
+      {isDesignerEnabled && <DesignLinkingDialogs />}
 
       {/* Mobile help modal (touch gestures guide) */}
       {isMobileHelpOpen && (
