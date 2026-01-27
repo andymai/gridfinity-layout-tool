@@ -19,6 +19,7 @@ import {
   BinNameLabel,
   PreviewControls,
   PreviewSkeleton,
+  GhostWireframe,
   type CameraPreset,
 } from './preview';
 import { GradientBackground } from './preview/GradientBackground';
@@ -309,18 +310,27 @@ export function PreviewCanvas() {
     return () => clearPreviewCanvas();
   }, []);
 
-  const { wasmStatus, generationStatus, hasMesh, meshError, params, designName, canRevert } =
-    useDesignerStore(
-      useShallow((s) => ({
-        wasmStatus: s.wasmStatus,
-        generationStatus: s.generation.status,
-        hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
-        meshError: s.generation.mesh?.error ?? null,
-        params: s.params,
-        designName: s.designName,
-        canRevert: s.history.past.length > 0,
-      }))
-    );
+  const {
+    wasmStatus,
+    generationStatus,
+    generationStage,
+    hasMesh,
+    meshError,
+    params,
+    designName,
+    canRevert,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      wasmStatus: s.wasmStatus,
+      generationStatus: s.generation.status,
+      generationStage: s.generation.stage,
+      hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
+      meshError: s.generation.mesh?.error ?? null,
+      params: s.params,
+      designName: s.designName,
+      canRevert: s.history.past.length > 0,
+    }))
+  );
 
   // Screen reader description
   const binDescription = describeBin(params);
@@ -448,6 +458,9 @@ export function PreviewCanvas() {
             {/* Bin mesh with vertex coloring */}
             <BinMesh wireframe={wireframe} color={previewColor} />
 
+            {/* Ghost wireframe during generation */}
+            <GhostWireframe />
+
             {/* Contact shadows for grounding */}
             <ContactShadows
               position={[0, 0, 0.01]}
@@ -496,7 +509,7 @@ export function PreviewCanvas() {
             />
           </Canvas>
 
-          {/* Subtle corner spinner (previous mesh stays visible) */}
+          {/* Subtle corner spinner with stage indicator (previous mesh stays visible) */}
           {showOverlay && (
             <div
               className="absolute right-2 top-2 flex items-center gap-1.5 rounded-full bg-surface-elevated/90 px-2.5 py-1 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur-sm"
@@ -523,7 +536,9 @@ export function PreviewCanvas() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
               </svg>
-              {t('binDesigner.updating')}
+              {generationStage
+                ? t(`binDesigner.stage.${generationStage}` as const)
+                : t('binDesigner.updating')}
             </div>
           )}
 

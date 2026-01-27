@@ -15,12 +15,14 @@ import type {
   ExportFileNameConfig,
   GenerationStatus,
   GenerationResult,
+  GenerationStage,
   WasmStatus,
   DesignerTab,
   SaveStatus,
   SavedDesign,
   HistoryEntry,
   CachedMesh,
+  GhostPhase,
 } from '../types';
 import {
   DEFAULT_BIN_PARAMS,
@@ -181,7 +183,9 @@ export const useDesignerStore = create<DesignerState>()(
         state.params = migrateParams(design.params);
         state.currentDesignId = design.id;
         state.designName = design.name;
-        state.exportFileNameConfig = design.exportFileNameConfig ?? { ...DEFAULT_EXPORT_FILE_NAME_CONFIG };
+        state.exportFileNameConfig = design.exportFileNameConfig ?? {
+          ...DEFAULT_EXPORT_FILE_NAME_CONFIG,
+        };
         state.history = { past: [], future: [] };
         state.saveStatus = 'saved';
         state.generation.epoch += 1;
@@ -399,10 +403,19 @@ export const useDesignerStore = create<DesignerState>()(
       });
     },
 
+    setGenerationProgress: (stage: GenerationStage, progress: number) => {
+      set((state) => {
+        state.generation.stage = stage;
+        state.generation.progress = progress;
+      });
+    },
+
     setGenerationResult: (result: GenerationResult) => {
       set((state) => {
         state.generation.mesh = result;
         state.generation.status = result.error ? 'error' : 'complete';
+        state.generation.stage = null; // Clear stage when generation completes
+        state.generation.progress = 0;
       });
 
       // Cache the mesh for the next history push
@@ -420,6 +433,15 @@ export const useDesignerStore = create<DesignerState>()(
     setWasmStatus: (status: WasmStatus) => {
       set((state) => {
         state.wasmStatus = status;
+      });
+    },
+
+    setGhostPhase: (phase: GhostPhase) => {
+      set((state) => {
+        state.generation.ghostTransition = {
+          phase,
+          startTime: performance.now(),
+        };
       });
     },
 

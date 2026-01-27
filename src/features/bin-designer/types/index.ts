@@ -149,6 +149,16 @@ export interface Insert {
 /** Current status of the generation engine */
 export type GenerationStatus = 'idle' | 'generating' | 'complete' | 'error';
 
+/** Ghost wireframe transition phase */
+export type GhostPhase = 'hidden' | 'showing' | 'morphing';
+
+/** Ghost wireframe transition state for preview feedback during generation */
+export interface GhostTransitionState {
+  readonly phase: GhostPhase;
+  /** Timestamp when current phase started (for animation progress) */
+  readonly startTime: number;
+}
+
 /** WASM/Worker initialization status */
 export type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error';
 
@@ -160,13 +170,20 @@ export interface GenerationResult {
   readonly timingMs: number;
 }
 
+/** Generation stage names */
+export type GenerationStage = 'base' | 'shell' | 'features' | 'merge' | null;
+
 /** Generation state tracked in the store */
 export interface GenerationState {
   readonly status: GenerationStatus;
   readonly mesh: GenerationResult | null;
   readonly progress: number;
+  /** Current generation stage for progress display */
+  readonly stage: GenerationStage;
   /** Increments on changes needing regeneration; cache hits leave epoch unchanged */
   readonly epoch: number;
+  /** Ghost wireframe transition state for preview feedback */
+  readonly ghostTransition: GhostTransitionState;
 }
 
 /** Cached mesh data for undo/redo history entries */
@@ -291,8 +308,10 @@ export interface DesignerState {
 
   // Generation actions
   setGenerationStatus: (status: GenerationStatus) => void;
+  setGenerationProgress: (stage: GenerationStage, progress: number) => void;
   setGenerationResult: (result: GenerationResult) => void;
   setWasmStatus: (status: WasmStatus) => void;
+  setGhostPhase: (phase: GhostPhase) => void;
 
   // UI actions
   setActiveTab: (tab: DesignerTab) => void;

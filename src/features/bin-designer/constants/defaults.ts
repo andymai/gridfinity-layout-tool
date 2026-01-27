@@ -58,7 +58,12 @@ export const DEFAULT_GENERATION_STATE: GenerationState = {
   status: 'idle',
   mesh: null,
   progress: 0,
+  stage: null,
   epoch: 0,
+  ghostTransition: {
+    phase: 'hidden',
+    startTime: 0,
+  },
 } as const;
 
 /** Default UI state */

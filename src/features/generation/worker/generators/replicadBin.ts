@@ -697,9 +697,15 @@ export function generateBin(params: BinParams, onProgress?: ProgressFn): MeshDat
   onProgress?.('merge', 0.9);
   lastSolid = bin as unknown as Solid;
 
+  // Dynamic tessellation: scale tolerance based on bin size for faster preview
+  // Larger bins use coarser mesh (0.1-0.4mm), smaller bins stay precise
+  const maxDimension = Math.max(outerW, outerD, totalHeight);
+  const previewTolerance = Math.min(0.4, Math.max(0.1, maxDimension / 400));
+  const previewAngular = maxDimension > 100 ? 20 : 15;
+
   const shapeMesh = bin.mesh({
-    tolerance: 0.1,
-    angularTolerance: 15,
+    tolerance: previewTolerance,
+    angularTolerance: previewAngular,
   });
 
   onProgress?.('merge', 1.0);

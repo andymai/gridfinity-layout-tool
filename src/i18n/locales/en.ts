@@ -1177,6 +1177,10 @@ const en: Record<string, string> = {
   'binDesigner.touchGestureHints': 'Touch gesture hints',
   'binDesigner.updating': 'Updating',
   'binDesigner.updatingMesh': 'Updating mesh',
+  'binDesigner.stage.base': 'Building base',
+  'binDesigner.stage.shell': 'Creating shell',
+  'binDesigner.stage.features': 'Adding features',
+  'binDesigner.stage.merge': 'Finalizing',
   'binDesigner.wire': 'Wire',
 
   // ===========================================================================

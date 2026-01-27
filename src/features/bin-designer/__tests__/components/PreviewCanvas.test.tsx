@@ -50,6 +50,20 @@ vi.mock('three', () => {
     /* noop */
   };
 
+  function BoxGeometry(_w: number, _d: number, _h: number) {
+    /* mock */
+  }
+  BoxGeometry.prototype.dispose = function () {
+    /* noop */
+  };
+
+  function EdgesGeometry(_geo: unknown) {
+    /* mock */
+  }
+  EdgesGeometry.prototype.dispose = function () {
+    /* noop */
+  };
+
   function Float32BufferAttribute(array: Float32Array, _itemSize: number) {
     return { array };
   }
@@ -137,6 +151,8 @@ vi.mock('three', () => {
     Vector3,
     Spherical,
     BufferGeometry,
+    BoxGeometry,
+    EdgesGeometry,
     Float32BufferAttribute,
     Color,
     ShaderMaterial,
@@ -166,6 +182,10 @@ describe('PreviewCanvas', () => {
         mesh: null,
         progress: 0,
         epoch: 0,
+        ghostTransition: {
+          phase: 'hidden',
+          startTime: 0,
+        },
       },
     });
   });
@@ -187,7 +207,13 @@ describe('PreviewCanvas', () => {
   it('shows skeleton when no mesh is available', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
-      generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        status: 'idle',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+        ghostTransition: { phase: 'hidden', startTime: 0 },
+      },
     });
     render(<PreviewCanvas />);
 
@@ -197,7 +223,13 @@ describe('PreviewCanvas', () => {
   it('shows skeleton when generating with no prior mesh', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
-      generation: { status: 'generating', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        status: 'generating',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+        ghostTransition: { phase: 'hidden', startTime: 0 },
+      },
     });
     render(<PreviewCanvas />);
 
@@ -207,7 +239,13 @@ describe('PreviewCanvas', () => {
   it('shows skeleton when generation has error with no mesh', () => {
     useDesignerStore.setState({
       wasmStatus: 'ready',
-      generation: { status: 'error', mesh: null, progress: 0, epoch: 0 },
+      generation: {
+        status: 'error',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+        ghostTransition: { phase: 'hidden', startTime: 0 },
+      },
     });
     render(<PreviewCanvas />);
 
@@ -227,6 +265,7 @@ describe('PreviewCanvas', () => {
         },
         progress: 0,
         epoch: 0,
+        ghostTransition: { phase: 'hidden', startTime: 0 },
       },
     });
     render(<PreviewCanvas />);
@@ -248,6 +287,7 @@ describe('PreviewCanvas', () => {
         },
         progress: 0,
         epoch: 0,
+        ghostTransition: { phase: 'showing', startTime: 0 },
       },
     });
     render(<PreviewCanvas />);
@@ -269,6 +309,7 @@ describe('PreviewCanvas', () => {
         },
         progress: 0,
         epoch: 0,
+        ghostTransition: { phase: 'hidden', startTime: 0 },
       },
     });
     render(<PreviewCanvas />);
@@ -289,6 +330,7 @@ describe('PreviewCanvas', () => {
         },
         progress: 0,
         epoch: 0,
+        ghostTransition: { phase: 'hidden', startTime: 0 },
       },
     });
     render(<PreviewCanvas />);
@@ -315,6 +357,7 @@ describe('PreviewCanvas', () => {
           mesh: { vertices: null, normals: null, error: 'Test error', timingMs: 0 },
           progress: 0,
           epoch: 1,
+          ghostTransition: { phase: 'hidden', startTime: 0 },
         },
         history: {
           past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }],
@@ -335,6 +378,7 @@ describe('PreviewCanvas', () => {
           mesh: { vertices: null, normals: null, error: 'Test error', timingMs: 0 },
           progress: 0,
           epoch: 1,
+          ghostTransition: { phase: 'hidden', startTime: 0 },
         },
         history: {
           past: [],
@@ -358,6 +402,7 @@ describe('PreviewCanvas', () => {
           mesh: { vertices: null, normals: null, error: 'Test error', timingMs: 0 },
           progress: 0,
           epoch: 1,
+          ghostTransition: { phase: 'hidden', startTime: 0 },
         },
         history: {
           past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }],
@@ -384,7 +429,13 @@ describe('PreviewCanvas', () => {
     it('does not show revert button for WASM errors (only retry)', () => {
       useDesignerStore.setState({
         wasmStatus: 'error',
-        generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
+        generation: {
+          status: 'idle',
+          mesh: null,
+          progress: 0,
+          epoch: 0,
+          ghostTransition: { phase: 'hidden', startTime: 0 },
+        },
         history: {
           past: [{ params: DEFAULT_BIN_PARAMS, mesh: null }],
           future: [],

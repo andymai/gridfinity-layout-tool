@@ -4,10 +4,10 @@
  * Adjusts the debounce delay based on recent generation timings:
  * - Fast generations (<150ms) → ~50ms debounce (snappy UX)
  * - Medium generations (200-600ms) → ~100-200ms debounce
- * - Slow generations (>800ms) → ~280-300ms debounce (avoid stacking)
+ * - Slow generations (>800ms) → ~280-500ms debounce (avoid stacking)
  *
  * Uses a rolling window of the last 5 timings to compute the average,
- * then returns avg * 0.35 clamped to [50, 300].
+ * then returns avg * 0.35 clamped to [50, 500].
  */
 
 /** Rolling window size for averaging timings */
@@ -19,8 +19,8 @@ const TIMING_FACTOR = 0.35;
 /** Minimum debounce delay (ms) */
 const MIN_DELAY = 50;
 
-/** Maximum debounce delay (ms) */
-const MAX_DELAY = 300;
+/** Maximum debounce delay (ms) - increased to reduce wasted generations for complex bins */
+const MAX_DELAY = 500;
 
 /** Default delay when no timing history exists */
 const DEFAULT_DELAY = 200;

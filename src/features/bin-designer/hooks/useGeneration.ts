@@ -40,8 +40,10 @@ export function useGeneration(): void {
   );
 
   const setGenerationStatus = useDesignerStore((state) => state.setGenerationStatus);
+  const setGenerationProgress = useDesignerStore((state) => state.setGenerationProgress);
   const setGenerationResult = useDesignerStore((state) => state.setGenerationResult);
   const setWasmStatus = useDesignerStore((state) => state.setWasmStatus);
+  const setGhostPhase = useDesignerStore((state) => state.setGhostPhase);
 
   // Generate mesh from current params
   const runGeneration = useCallback(
@@ -71,10 +73,15 @@ export function useGeneration(): void {
 
       setGenerationStatus('generating');
 
+      // Show ghost wireframe during generation (only when WASM is ready)
+      const currentWasmStatus = useDesignerStore.getState().wasmStatus;
+      if (currentWasmStatus === 'ready') {
+        setGhostPhase('showing');
+      }
+
       try {
         const result = await bridge.generate(currentParams, (stage, progress) => {
-          void stage;
-          void progress;
+          setGenerationProgress(stage, progress);
         });
 
         setGenerationResult({
@@ -84,8 +91,12 @@ export function useGeneration(): void {
           timingMs: result.timingMs,
         });
         setGenerationStatus('complete');
+
+        // Trigger ghost morph - GhostWireframe enforces minimum display time
+        setGhostPhase('morphing');
       } catch (e) {
         // Cancelled requests are expected during rapid param changes
+        // Don't hide ghost - the new generation will continue showing it
         if (e instanceof Error && e.message === 'Generation cancelled') {
           return;
         }
@@ -97,9 +108,12 @@ export function useGeneration(): void {
           timingMs: 0,
         });
         setGenerationStatus('error');
+
+        // Hide ghost on error
+        setGhostPhase('hidden');
       }
     },
-    [setGenerationStatus, setGenerationResult]
+    [setGenerationStatus, setGenerationProgress, setGenerationResult, setGhostPhase]
   );
 
   // Initialize bridge on mount
