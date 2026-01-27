@@ -29,7 +29,8 @@ interface LinkingStoreState {
     designId: DesignId,
     designName: string,
     comparison: DimensionComparison,
-    eligibility: SyncEligibility[]
+    eligibility: SyncEligibility[],
+    binsHaveVaryingDimensions: boolean
   ) => void;
   hideSyncDialog: () => void;
 
@@ -60,7 +61,14 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
   pendingCreateDesign: null,
 
   // Sync dialog
-  showSyncDialog: (binIds, designId, designName, comparison, eligibility) =>
+  showSyncDialog: (
+    binIds,
+    designId,
+    designName,
+    comparison,
+    eligibility,
+    binsHaveVaryingDimensions
+  ) =>
     set({
       pendingSync: {
         binIds,
@@ -68,6 +76,7 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
         designName,
         comparison,
         eligibility,
+        binsHaveVaryingDimensions,
       },
     }),
   hideSyncDialog: () => set({ pendingSync: null }),

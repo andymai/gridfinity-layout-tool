@@ -168,7 +168,21 @@ export function useBinLinking(): UseBinLinkingReturn {
       const binDims = extractBinDimensions(bins[0]);
       const comparison = compareDimensions(designDims, binDims);
 
-      if (comparison.matched) {
+      // Check if bins have varying dimensions (for display in dialog)
+      let binsHaveVaryingDimensions = false;
+      if (bins.length > 1) {
+        const firstDims = binDims;
+        binsHaveVaryingDimensions = bins.some((bin) => {
+          const dims = extractBinDimensions(bin);
+          return (
+            dims.width !== firstDims.width ||
+            dims.depth !== firstDims.depth ||
+            dims.height !== firstDims.height
+          );
+        });
+      }
+
+      if (comparison.matched && !binsHaveVaryingDimensions) {
         addToast({
           message: t('designLinking.toast.dimensionsMatch'),
           type: 'info',
@@ -180,7 +194,14 @@ export function useBinLinking(): UseBinLinkingReturn {
       // Check eligibility for each bin
       const eligibility = checkBatchSyncEligibility(bins, designDims, layout);
 
-      showSyncDialog(binIds, designId, designName, comparison, eligibility);
+      showSyncDialog(
+        binIds,
+        designId,
+        designName,
+        comparison,
+        eligibility,
+        binsHaveVaryingDimensions
+      );
     },
     [layout, registry, addToast, showSyncDialog, t]
   );

@@ -1483,6 +1483,8 @@ const en: Record<string, string> = {
   'designLinking.menu.editDesign': 'Edit Design',
   'designLinking.menu.createDesign': 'Create Design',
   'designLinking.menu.unlinkDesign': 'Unlink Design',
+  'designLinking.menu.designDeleted': 'Design Deleted',
+  'designLinking.menu.unlinkStale': 'Remove Stale Link',
 
   // Inspector section
   'designLinking.inspector.linkedDesign': 'Linked Design',
@@ -1510,6 +1512,7 @@ const en: Record<string, string> = {
     'The design "{name}" has different dimensions than the linked bins.',
   'designLinking.syncDialog.designDimensions': 'Design: {dimensions}',
   'designLinking.syncDialog.binDimensions': 'Bins: {dimensions}',
+  'designLinking.syncDialog.binsVary': 'Note: Selected bins have different dimensions',
   'designLinking.syncDialog.binsToUpdate': '{count} bin(s) will be updated',
   'designLinking.syncDialog.binsToUnlink': "{count} bin(s) can't fit and will be unlinked",
   'designLinking.syncDialog.sync': 'Update Bins',
@@ -1537,12 +1540,6 @@ const en: Record<string, string> = {
   'designLinking.toast.unlinkedDidntFit': "Unlinked {count} bin(s) (didn't fit)",
   'designLinking.toast.failedToLoad': 'Failed to load design',
   'designLinking.toast.unknownDesign': 'Unknown Design',
-
-  // ===========================================================================
-  // Snapping Slider (shared component)
-  // ===========================================================================
-  'snappingSlider.default': 'Default',
-  'snappingSlider.select': 'Select {value}{unit}',
 };
 
 export default en;

@@ -271,15 +271,25 @@ export default function App() {
   // Helper to wrap content with appropriate MutationsProvider
   // - Collaborative mode: CollabProvider provides CollabMutationsProvider (lazy loaded)
   // - Local mode: LocalMutationsProvider
+  // Also renders DesignLinkingDialogs once (uses portal, so placement doesn't matter)
   const wrapWithMutations = (content: React.ReactNode) => {
+    const dialogs = isDesignerEnabled ? <DesignLinkingDialogs /> : null;
     if (isCollaborative && shareId) {
       return (
         <Suspense fallback={<LoadingFallback label={t('loading.collaboration')} />}>
-          <CollabProvider shareId={shareId}>{content}</CollabProvider>
+          <CollabProvider shareId={shareId}>
+            {content}
+            {dialogs}
+          </CollabProvider>
         </Suspense>
       );
     }
-    return <LocalMutationsProvider>{content}</LocalMutationsProvider>;
+    return (
+      <LocalMutationsProvider>
+        {content}
+        {dialogs}
+      </LocalMutationsProvider>
+    );
   };
 
   if (initialLoadError) {
@@ -434,9 +444,6 @@ export default function App() {
         {/* Toast notifications */}
         <ToastContainer />
 
-        {/* Design linking dialogs - requires Bin Designer feature flag */}
-        {isDesignerEnabled && <DesignLinkingDialogs />}
-
         {/* Shared layout URL importer - only load when URL has share params */}
         {hasShareUrl && (
           <Suspense fallback={null}>
@@ -535,9 +542,6 @@ export default function App() {
 
       {/* ARIA live region for screen reader announcements */}
       <LiveRegion />
-
-      {/* Design linking dialogs - requires Bin Designer feature flag */}
-      {isDesignerEnabled && <DesignLinkingDialogs />}
 
       {/* Shared layout URL importer - only load when URL has share params */}
       {hasShareUrl && (

@@ -54,7 +54,7 @@ export function SyncDimensionsDialog() {
 
   if (!pendingSync) return null;
 
-  const { designName, comparison, eligibility } = pendingSync;
+  const { designName, comparison, eligibility, binsHaveVaryingDimensions } = pendingSync;
   const canSyncCount = eligibility.filter((e) => e.canSync).length;
   const willUnlinkCount = eligibility.filter((e) => !e.canSync).length;
 
@@ -97,6 +97,11 @@ export function SyncDimensionsDialog() {
               })}
             </span>
           </div>
+          {binsHaveVaryingDimensions && (
+            <div className="text-xs text-status-warning mt-1">
+              {t('designLinking.syncDialog.binsVary')}
+            </div>
+          )}
         </div>
 
         {/* Sync results preview */}

@@ -93,10 +93,12 @@ export interface PendingSyncState {
   readonly designId: DesignId;
   /** Design name for display */
   readonly designName: string;
-  /** Comparison showing dimension differences */
+  /** Comparison showing dimension differences (uses first bin) */
   readonly comparison: DimensionComparison;
   /** Eligibility for each bin */
   readonly eligibility: SyncEligibility[];
+  /** True if selected bins have varying dimensions */
+  readonly binsHaveVaryingDimensions: boolean;
 }
 
 /** State for the delete warning dialog */

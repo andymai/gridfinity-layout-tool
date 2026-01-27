@@ -1252,12 +1252,15 @@
   "designLinking.menu.createDesign": "Create Design",
   "designLinking.menu.editDesign": "Edit Design",
   "designLinking.menu.unlinkDesign": "Unlink Design",
+  "designLinking.menu.designDeleted": "Design Deleted",
+  "designLinking.menu.unlinkStale": "Remove Stale Link",
   "designLinking.palette.dragHint": "Drag to place",
   "designLinking.palette.empty": "No saved designs",
   "designLinking.palette.emptyHint": "Create a design in the Bin Designer to see it here",
   "designLinking.palette.openDesigner": "Open Bin Designer",
   "designLinking.palette.title": "Custom Bins",
   "designLinking.syncDialog.binDimensions": "Bins: {dimensions}",
+  "designLinking.syncDialog.binsVary": "Note: Selected bins have different dimensions",
   "designLinking.syncDialog.binsToUnlink": "{count} bin(s) can't fit and will be unlinked",
   "designLinking.syncDialog.binsToUpdate": "{count} bin(s) will be updated",
   "designLinking.syncDialog.description": "The design \"{name}\" has different dimensions than the linked bins.",
@@ -1272,7 +1275,4 @@
   "designLinking.toast.unknownDesign": "Diseño desconocido",
   "designLinking.toast.unlinked": "Design unlinked",
   "designLinking.toast.unlinkedDidntFit": "Desvinculados {count} bin(s) (no cabían)"
-,
-  "snappingSlider.default": "Default",
-  "snappingSlider.select": "Select {value}{unit}"
 }
