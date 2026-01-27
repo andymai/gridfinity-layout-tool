@@ -460,43 +460,6 @@ describe('useCloudShare', () => {
     });
   });
 
-  describe('copyDeleteToken', () => {
-    it('copies delete token', async () => {
-      const existingShare: CloudShareInfo = {
-        id: 'share-id',
-        deleteToken: 'secret-token-123',
-        sharedAt: Date.now(),
-        permission: 'view',
-      };
-
-      useLibraryStore.setState({
-        library: createTestLibrary(existingShare),
-      });
-
-      const { result } = renderHook(() => useCloudShare());
-
-      let success: boolean | undefined;
-      await act(async () => {
-        success = await result.current.copyDeleteToken();
-      });
-
-      expect(success).toBe(true);
-      expect(storage.copyToClipboard).toHaveBeenCalledWith('secret-token-123');
-      expect(mockAnnounce).toHaveBeenCalledWith(expect.stringContaining('token copied'));
-    });
-
-    it('returns false when no token available', async () => {
-      const { result } = renderHook(() => useCloudShare());
-
-      let success: boolean | undefined;
-      await act(async () => {
-        success = await result.current.copyDeleteToken();
-      });
-
-      expect(success).toBe(false);
-    });
-  });
-
   describe('reset', () => {
     it('resets state to idle', async () => {
       const { apiNetworkError } = await import('@/core/result');

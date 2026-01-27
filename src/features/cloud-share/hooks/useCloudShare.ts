@@ -7,7 +7,7 @@ import { useShallow } from 'zustand/shallow';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore } from '@/core/store/ui';
-import type { SharePermission, CloudShareInfo, Layout } from '@/core/types';
+import type { SharePermission, CloudShareInfo } from '@/core/types';
 import {
   createShare,
   updateShare,
@@ -51,7 +51,6 @@ interface CloudShareActions {
   updatePermission: (permission: SharePermission) => Promise<boolean>;
   remove: () => Promise<boolean>;
   copyUrl: () => Promise<boolean>;
-  copyDeleteToken: () => Promise<boolean>;
   reset: () => void;
 }
 
@@ -95,10 +94,6 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
 
   // Shares are now permanent, so active share is simply whether one exists
   const hasActiveShare = !!existingShare;
-
-  const getLayoutToShare = useCallback((): Layout => {
-    return layout;
-  }, [layout]);
 
   const handleSuccess = useCallback(
     (response: ShareResponse, isUpdate: boolean) => {
@@ -166,8 +161,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       setStatus('sharing');
       setError(null);
 
-      const layoutToShare = getLayoutToShare();
-      const result = await createShare(targetLayoutId, layoutToShare, permission, authorName);
+      const result = await createShare(targetLayoutId, layout, permission, authorName);
 
       // Prevent state updates if component unmounted during async operation
       if (!mountedRef.current) return false;
@@ -181,7 +175,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         return false;
       }
     },
-    [targetLayoutId, getLayoutToShare, authorName, handleSuccess, handleError]
+    [targetLayoutId, layout, authorName, handleSuccess, handleError]
   );
 
   const update = useCallback(
@@ -207,11 +201,10 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       setStatus('updating');
       setError(null);
 
-      const layoutToShare = getLayoutToShare();
       const result = await updateShare(
         existingShare.id,
         existingShare.deleteToken,
-        layoutToShare,
+        layout,
         permission
       );
 
@@ -263,7 +256,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     [
       existingShare,
       targetLayoutId,
-      getLayoutToShare,
+      layout,
       setCloudShare,
       handleError,
       clearCloudShare,
@@ -411,17 +404,6 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     return success;
   }, [result, existingShare, layout.name, announceToScreenReader]);
 
-  const copyDeleteToken = useCallback(async (): Promise<boolean> => {
-    const token = result?.deleteToken || existingShare?.deleteToken;
-    if (!token) return false;
-
-    const success = await copyToClipboard(token);
-    if (success) {
-      announceToScreenReader('Delete token copied to clipboard.');
-    }
-    return success;
-  }, [result, existingShare, announceToScreenReader]);
-
   const reset = useCallback(() => {
     setStatus('idle');
     setResult(null);
@@ -439,7 +421,6 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     updatePermission: updatePermissionAction,
     remove,
     copyUrl,
-    copyDeleteToken,
     reset,
   };
 }

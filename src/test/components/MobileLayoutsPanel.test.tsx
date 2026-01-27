@@ -503,7 +503,6 @@ describe('MobileLayoutsPanel', () => {
       updatePermission: vi.fn().mockResolvedValue(true),
       remove: mockRemove,
       copyUrl: mockCopyUrl,
-      copyDeleteToken: vi.fn(),
       reset: mockReset,
     };
 

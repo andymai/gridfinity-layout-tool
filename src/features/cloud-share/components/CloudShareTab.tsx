@@ -34,13 +34,15 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
     reset,
   } = useCloudShare(layoutId);
 
-  // Derive permission from existing share (controlled by parent state)
+  // Derive permission from existing share
   const permission: SharePermission = existingShare?.permission ?? 'view';
-  const setPermission = (newPermission: SharePermission) => {
-    if (existingShare && newPermission !== existingShare.permission) {
-      updatePermission(newPermission);
-    }
-  };
+  // Track local permission for new shares (before first share)
+  const [localPermission, setLocalPermission] = useState<SharePermission>(permission);
+
+  // Sync local permission when existing share changes
+  useEffect(() => {
+    setLocalPermission(permission);
+  }, [permission]);
 
   // Auto-focus URL on success
   useEffect(() => {
@@ -58,11 +60,11 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
   }, [urlCopied]);
 
   const handleShare = async () => {
-    await share(permission);
+    await share(localPermission);
   };
 
   const handlePermissionChange = async (newPermission: SharePermission) => {
-    setPermission(newPermission);
+    setLocalPermission(newPermission);
     if (hasActiveShare) {
       await updatePermission(newPermission);
     }
@@ -84,9 +86,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
   if (status === 'idle' && !hasActiveShare) {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-content-secondary">
-          {t('share.cloud.description')}
-        </p>
+        <p className="text-sm text-content-secondary">{t('share.cloud.description')}</p>
 
         <div className="flex items-center gap-3">
           <label htmlFor="permission" className="text-sm text-content-secondary whitespace-nowrap">
@@ -94,8 +94,8 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           </label>
           <select
             id="permission"
-            value={permission}
-            onChange={(e) => setPermission(e.target.value as SharePermission)}
+            value={localPermission}
+            onChange={(e) => setLocalPermission(e.target.value as SharePermission)}
             className="bg-surface text-content px-3 py-2 rounded border border-stroke focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <option value="view">{t('share.cloud.viewOnly')}</option>
@@ -135,7 +135,7 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
             {urlCopied ? t('share.cloud.linkCopied') : t('share.cloud.copyLink')}
           </button>
           <select
-            value={permission}
+            value={localPermission}
             onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
             className="btn btn-secondary"
             aria-label={t('share.cloud.permissions')}
@@ -189,7 +189,12 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
     return (
       <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
         <div className="flex items-center gap-3 text-content-secondary">
-          <svg className="w-5 h-5 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <svg
+            className="w-5 h-5 animate-spin motion-reduce:animate-none"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
             <circle
               className="opacity-25"
               cx="12"
@@ -239,16 +244,16 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         </div>
 
         <div className="text-sm text-content-secondary">
-          {result.permission === 'edit'
-            ? t('share.cloud.canEdit')
-            : t('share.cloud.viewOnly')}
+          {result.permission === 'edit' ? t('share.cloud.canEdit') : t('share.cloud.viewOnly')}
         </div>
 
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="btn btn-primary">
             {t('common.done')}
           </button>
-          <button onClick={reset} className="btn btn-secondary">{t('share.shareAnother')}</button>
+          <button onClick={reset} className="btn btn-secondary">
+            {t('share.shareAnother')}
+          </button>
         </div>
       </div>
     );
@@ -276,7 +281,9 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           <button onClick={reset} className="btn btn-primary">
             {t('error.tryAgain')}
           </button>
-          <button onClick={onSwitchToUrlTab} className="btn btn-secondary">{t('share.useShareLinkInstead')}</button>
+          <button onClick={onSwitchToUrlTab} className="btn btn-secondary">
+            {t('share.useShareLinkInstead')}
+          </button>
         </div>
       </div>
     );

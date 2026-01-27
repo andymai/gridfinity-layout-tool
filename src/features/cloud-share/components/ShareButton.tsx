@@ -196,7 +196,6 @@ function SharePopover({
     // Calculate initial position after mount when ref is available
     const position = calculatePosition();
     if (position) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- DOM ref unavailable during render, must setState after mount
       setPopoverPosition(position);
     }
 
@@ -235,31 +234,18 @@ function SharePopover({
   const [urlCopied, setUrlCopied] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Determine the effective permission:
-  // - If viewing a shared layout, use that permission
-  // - If we have our own share, use that
-  // - Otherwise default to 'view'
-  const effectivePermission = isViewingSharedLayout
+  // Permission from existing share or shared layout (default to 'view' for new shares)
+  const serverPermission = isViewingSharedLayout
     ? (sharedLayoutPermission ?? 'view')
     : (existingShare?.permission ?? 'view');
 
-  // Track local permission override (only when user changes it before sharing)
-  // Key tracks the "version" of effective permission - when it changes, we reset
-  const effectivePermissionKey = `${isViewingSharedLayout}-${existingShare?.id ?? 'none'}-${effectivePermission}`;
-  const [localPermissionState, setLocalPermissionState] = useState<{
-    key: string;
-    override: SharePermission | null;
-  }>({ key: effectivePermissionKey, override: null });
+  // Local permission state for new shares (before first share)
+  const [localPermission, setLocalPermission] = useState<SharePermission>(serverPermission);
 
-  // Use local override if set and key matches, otherwise use effective permission
-  const localPermission =
-    localPermissionState.key === effectivePermissionKey && localPermissionState.override !== null
-      ? localPermissionState.override
-      : effectivePermission;
-
-  const setLocalPermission = (newPermission: SharePermission) => {
-    setLocalPermissionState({ key: effectivePermissionKey, override: newPermission });
-  };
+  // Sync local permission when server state changes (e.g., after sharing, or switching layouts)
+  useEffect(() => {
+    setLocalPermission(serverPermission);
+  }, [serverPermission]);
 
   // Reset copy state after timeout
   useEffect(() => {
