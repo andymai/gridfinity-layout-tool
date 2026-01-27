@@ -22,7 +22,7 @@ describe('ParameterPanel', () => {
 
     expect(screen.getByText('Dimensions')).toBeInTheDocument();
     expect(screen.getByText('Base')).toBeInTheDocument();
-    expect(screen.getByText('Interior')).toBeInTheDocument();
+    expect(screen.getByText('Interior Dividers')).toBeInTheDocument();
     expect(screen.getByText('Walls')).toBeInTheDocument();
   });
 
