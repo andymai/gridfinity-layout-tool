@@ -25,8 +25,11 @@ export const GRIDFINITY = {
   // Base profile (total dead space from bottom to cavity floor)
   BASE_HEIGHT: 7, // mm total (profile + bridge structure per spec)
 
-  // Stacking lip (sits on top of bin body)
-  LIP_HEIGHT: 4.4, // mm nominal (actual ~3.55mm with fillet)
+  // Stacking lip (sits on top of bin body) - per spec v5
+  LIP_HEIGHT: 4.4, // mm total (0.7 + 1.8 + 1.9)
+  LIP_SMALL_TAPER: 0.7, // mm bottom 45° chamfer
+  LIP_VERTICAL_PART: 1.8, // mm vertical section
+  LIP_BIG_TAPER: 1.9, // mm top 45° chamfer
 
   // Magnet holes (spec defaults; configurable via BinParams.base)
   MAGNET_DIAMETER: 6.5, // mm (6mm magnet + tolerance)
@@ -64,7 +67,7 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_DIMENSION: 0.5, // grid units
   MAX_DIMENSION: 8, // grid units (expanded: standard Gridfinity supports large bins)
   DIMENSION_STEP: 0.5, // grid units
-  MIN_HEIGHT: 2, // height units (1U = base only, no cavity)
+  MIN_HEIGHT: 2, // height units (1U = base only, 2U minimum for usable cavity)
   MAX_HEIGHT: 20, // height units (expanded: tall bins for tools/bottles)
   HEIGHT_STEP: 1, // height units
   // Compartment grid

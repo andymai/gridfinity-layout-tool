@@ -36,6 +36,14 @@ const SOCKET_TAPER_WIDTH = SOCKET_SMALL_TAPER + SOCKET_BIG_TAPER;
 const AXIS_CLEARANCE = (CLEARANCE * Math.sqrt(2)) / 4;
 const TOP_FILLET = GRIDFINITY.TOP_FILLET;
 
+// ─── Stacking Lip Constants (per spec v5) ─────────────────────────────────────
+
+const LIP_SMALL_TAPER = GRIDFINITY.LIP_SMALL_TAPER; // 0.7mm bottom chamfer
+const LIP_VERTICAL_PART = GRIDFINITY.LIP_VERTICAL_PART; // 1.8mm vertical
+const LIP_BIG_TAPER = GRIDFINITY.LIP_BIG_TAPER; // 1.9mm top chamfer
+const LIP_HEIGHT = LIP_SMALL_TAPER + LIP_VERTICAL_PART + LIP_BIG_TAPER; // 4.4mm total
+const LIP_TAPER_WIDTH = LIP_SMALL_TAPER + LIP_BIG_TAPER; // 2.6mm horizontal inset
+
 // ─── Socket Builder ───────────────────────────────────────────────────────────
 
 /**
@@ -301,12 +309,12 @@ function buildBinBox(
 /**
  * Build the stacking lip at the top of the bin.
  *
- * The lip is the inverse of the socket profile — it provides the mating
- * interface that allows bins to stack. The profile sweeps around the bin
- * perimeter, then gets filleted at the peak for a smooth junction.
+ * The lip provides the mating interface that allows bins to stack.
+ * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
+ * The profile sweeps around the bin perimeter, then gets filleted at the peak.
  *
  * Profile traces (in XZ plane, X=outward, Z=up):
- *   Socket taper shape upward (matching socket cavity when stacked)
+ *   Lip taper shape upward (mates with socket cavity when stacked)
  *   + wall extension downward (if includeLip, replaces top wall section)
  *
  * Built at Z=0 locally, caller translates to wallHeight.
@@ -321,17 +329,18 @@ function buildTopShape(
   const outerD = gridD * SIZE - CLEARANCE;
 
   const topProfile = (_plane: Plane, _startPoint: Point): Sketch => {
-    // Draw the socket profile inverted (going upward from the sweep path)
-    let sketcher = draw([-SOCKET_TAPER_WIDTH, 0])
-      .line(SOCKET_SMALL_TAPER, SOCKET_SMALL_TAPER)
-      .vLine(SOCKET_VERTICAL_PART)
-      .line(SOCKET_BIG_TAPER, SOCKET_BIG_TAPER);
+    // Draw the lip profile (going upward from the sweep path)
+    // Per spec: 0.7mm bottom chamfer, 1.8mm vertical, 1.9mm top chamfer
+    let sketcher = draw([-LIP_TAPER_WIDTH, 0])
+      .line(LIP_SMALL_TAPER, LIP_SMALL_TAPER)
+      .vLine(LIP_VERTICAL_PART)
+      .line(LIP_BIG_TAPER, LIP_BIG_TAPER);
 
     if (includeLip) {
       // Extend wall downward to replace top wall section
       sketcher = sketcher
-        .vLineTo(-(SOCKET_TAPER_WIDTH + wallThickness))
-        .lineTo([-SOCKET_TAPER_WIDTH, -wallThickness]);
+        .vLineTo(-(LIP_TAPER_WIDTH + wallThickness))
+        .lineTo([-LIP_TAPER_WIDTH, -wallThickness]);
     } else {
       sketcher = sketcher.vLineTo(0);
     }
@@ -369,8 +378,8 @@ function buildTopShape(
     .sweepSketch(topProfile, { withContact: true })
     .fillet(TOP_FILLET, (e) =>
       e.inBox(
-        [-gridW * SIZE, -gridD * SIZE, SOCKET_HEIGHT],
-        [gridW * SIZE, gridD * SIZE, SOCKET_HEIGHT - 1]
+        [-gridW * SIZE, -gridD * SIZE, LIP_HEIGHT],
+        [gridW * SIZE, gridD * SIZE, LIP_HEIGHT - 1]
       )
     );
 }
@@ -662,7 +671,10 @@ export function generateBin(
 ): MeshData {
   const wallThickness = params.wallThickness;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
-  const wallHeight = totalHeight - GRIDFINITY.BASE_HEIGHT;
+  // Wall extends from socket top to bin top. Per Gridfinity spec, base is 1u (7mm),
+  // but the physical socket structure is 5mm deep. Wall = total - socket depth.
+  // Total height: e.g., 3u + lip = 21 + 4.4 = 25.4mm
+  const wallHeight = totalHeight - SOCKET_HEIGHT;
 
   const outerW = params.width * SIZE - CLEARANCE;
   const outerD = params.depth * SIZE - CLEARANCE;

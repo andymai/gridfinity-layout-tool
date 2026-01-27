@@ -31,7 +31,7 @@ interface BinDimensionsProps {
 // Layout constants matched to planner's DrawerDimensions proportions
 // (planner: OFFSET=0.8, END_CAP=0.15, FONT_SIZE=0.32, label_gap=0.3)
 const OFFSET = 14; // Distance from bin edge to dimension line
-const END_CAP = 2; // Length of end cap markers
+const END_CAP = 1; // Length of end cap markers (half-length, extends both directions)
 const LABEL_GAP = 4; // Additional offset from line to label text
 const LINE_COLOR = '#ffffff';
 const LINE_OPACITY = 0.5;
@@ -54,12 +54,16 @@ export function BinDimensions({
   const outerW = width * GRIDFINITY.GRID_SIZE;
   const outerD = depth * GRIDFINITY.GRID_SIZE;
   const lipHeight = stackingLip ? GRIDFINITY.LIP_HEIGHT : 0;
+  // Total height per Gridfinity spec: height units + lip
+  // e.g., 3u + lip = 21 + 4.4 = 25.4mm
   const totalH = height * GRIDFINITY.HEIGHT_UNIT + lipHeight;
 
   // Display labels use the user's configured unit sizes
   const widthMm = Math.round(width * gridUnitMm);
   const depthMm = Math.round(depth * gridUnitMm);
-  const heightMm = Math.round(height * heightUnitMm + lipHeight);
+  // Height uses user's heightUnitMm setting + lip
+  const heightMmRaw = height * heightUnitMm + lipHeight;
+  const heightMm = Number.isInteger(heightMmRaw) ? heightMmRaw : heightMmRaw.toFixed(1);
 
   const dimensions = useMemo(() => {
     const halfW = outerW / 2;

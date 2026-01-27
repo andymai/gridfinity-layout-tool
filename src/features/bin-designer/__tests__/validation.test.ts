@@ -82,7 +82,7 @@ describe('validateBinParams', () => {
     it('should accept boundary values', () => {
       expect(isOk(validateBinParams(makeParams({ width: 0.5 })))).toBe(true);
       expect(isOk(validateBinParams(makeParams({ width: 8 })))).toBe(true);
-      // MIN_HEIGHT is 2 (1U = base only, no usable cavity)
+      // MIN_HEIGHT is 2 (1U = base only, 2U minimum for usable cavity)
       expect(isOk(validateBinParams(makeParams({ height: 2 })))).toBe(true);
       expect(isOk(validateBinParams(makeParams({ height: 20 })))).toBe(true);
     });
