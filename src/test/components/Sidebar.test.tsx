@@ -441,7 +441,8 @@ describe('Sidebar', () => {
     it('renders Gridfinity attribution', () => {
       render(<Sidebar />);
 
-      expect(screen.getByText(/by Zack Freedman/)).toBeInTheDocument();
+      // "Gridfinity by" is a text node, "Zack Freedman" is in a separate <a> element
+      expect(screen.getByText(/Gridfinity by/)).toBeInTheDocument();
       expect(screen.getByText('Zack Freedman')).toBeInTheDocument();
     });
 

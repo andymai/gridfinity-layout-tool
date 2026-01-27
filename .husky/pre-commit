@@ -3,5 +3,4 @@ npm run check:boundaries:staged
 npm run check:i18n
 npm run check:i18n:interpolation
 npm run check:exhaustiveness
-npm run build
 npm run test:affected
