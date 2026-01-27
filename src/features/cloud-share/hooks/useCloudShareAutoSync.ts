@@ -14,7 +14,7 @@ import { useStorage } from '@/liveblocks.config';
 import { useLayoutStore } from '@/core/store/layout';
 import { updateShare } from '@/core/api/share';
 import { isOk } from '@/core/result';
-import { STAGING_ID } from '@/core/constants';
+import { createLayoutFingerprint } from '@/features/cloud-share/utils';
 
 /** Debounce delay for cloud share updates (1 second) */
 const CLOUD_SYNC_DEBOUNCE_MS = 1000;
@@ -45,14 +45,7 @@ export function useCloudShareAutoSync(shareId: string | null, enabled: boolean):
     // Set syncing flag immediately to prevent race conditions
     isSyncingRef.current = true;
 
-    // Create a fingerprint of the current layout for comparison
-    const layoutFingerprint = JSON.stringify({
-      bins: layout.bins.filter((b) => b.layerId !== STAGING_ID),
-      layers: layout.layers,
-      categories: layout.categories,
-      drawer: layout.drawer,
-      name: layout.name,
-    });
+    const layoutFingerprint = createLayoutFingerprint(layout);
 
     // Skip if nothing changed since last sync
     if (layoutFingerprint === lastSyncedRef.current) {
