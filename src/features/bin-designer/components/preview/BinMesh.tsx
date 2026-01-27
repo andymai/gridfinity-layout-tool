@@ -5,19 +5,21 @@
  *
  * Dynamic quality based on bin size:
  * - Small bins (< 4x4): smooth shading with pre-computed normals
- * - Large bins (>= 4x4): flat shading with edge lines for sketch look
+ * - Large bins (>= 4x4): flat shading for faster generation
+ * Edge lines shown for all sizes for sketch-like appearance.
  */
 
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
+import { Edges } from '@react-three/drei';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 
 /** Edge line color - black for maximum contrast */
 const EDGE_COLOR = '#000000';
-/** Edge line opacity */
-const EDGE_OPACITY = 0.85;
+/** Edge line width in pixels */
+const EDGE_WIDTH = 1.5;
 
 interface BinMeshProps {
   wireframe: boolean;
@@ -53,21 +55,12 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     return geo;
   }, [vertices, normals, hasPrecomputedNormals]);
 
-  // Create edge geometry for sketch-like appearance
-  const edgesGeometry = useMemo(() => {
-    if (!geometry) return null;
-    // Threshold angle: only show edges where face angle > 30°
-    // This highlights the major edges without showing every triangle
-    return new THREE.EdgesGeometry(geometry, 30);
-  }, [geometry]);
-
-  // Dispose old geometries on unmount or change
+  // Dispose old geometry on unmount or change
   useEffect(() => {
     return () => {
       geometry?.dispose();
-      edgesGeometry?.dispose();
     };
-  }, [geometry, edgesGeometry]);
+  }, [geometry]);
 
   // Invalidate frame when mesh data changes
   useEffect(() => {
@@ -97,19 +90,12 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           emissive={color}
           emissiveIntensity={0.08}
         />
+        {/* Thick edge lines for sketch appearance (hidden in wireframe mode)
+            Lower threshold (15°) shows edges on rounded corners */}
+        {!wireframe && (
+          <Edges threshold={15} color={EDGE_COLOR} lineWidth={EDGE_WIDTH} />
+        )}
       </mesh>
-
-      {/* Edge lines for large bin sketch appearance (hidden for small bins + wireframe) */}
-      {!wireframe && !hasPrecomputedNormals && edgesGeometry && (
-        <lineSegments geometry={edgesGeometry}>
-          <lineBasicMaterial
-            color={EDGE_COLOR}
-            transparent
-            opacity={EDGE_OPACITY}
-            linewidth={1}
-          />
-        </lineSegments>
-      )}
     </group>
   );
 }
