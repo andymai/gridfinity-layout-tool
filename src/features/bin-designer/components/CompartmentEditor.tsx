@@ -116,15 +116,23 @@ export function CompartmentEditor() {
   // Preview color synced with 3D preview
   const [previewColor, setPreviewColor] = useState(getPreviewColor);
 
-  // Listen for storage changes (when user changes color in 3D preview)
+  // Listen for color changes from 3D preview (same window + cross-tab)
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === PREVIEW_COLOR_KEY) {
         setPreviewColor(e.newValue ?? DEFAULT_PREVIEW_COLOR);
       }
     };
+    const handleColorChange = (e: Event) => {
+      const color = (e as CustomEvent<string>).detail;
+      setPreviewColor(color);
+    };
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    window.addEventListener('preview-color-change', handleColorChange);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('preview-color-change', handleColorChange);
+    };
   }, []);
 
   // Selection state for drag-to-merge
@@ -415,9 +423,10 @@ export function CompartmentEditor() {
         </div>
       </section>
 
-      {/* 2D Layout editor (always visible) */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
+      {/* 2D Layout editor (hidden when 1x1 grid) */}
+      {(cols > 1 || rows > 1) && (
+        <section>
+          <div className="mb-3 flex items-center justify-between">
           <p
             id="compartment-grid-instructions"
             className={`text-xs transition-colors duration-150 ${
@@ -517,6 +526,7 @@ export function CompartmentEditor() {
           )}
         </div>
       </section>
+      )}
 
       {/* Wall thickness (only when there are dividers) */}
       {compartmentCount > 1 && (

@@ -97,6 +97,12 @@ export function BaseSection() {
     >
       <div className="space-y-1">
         <FeatureToggle
+          label="Stacking lip"
+          checked={base.stackingLip}
+          onChange={toggleStackingLip}
+        />
+
+        <FeatureToggle
           label="Magnet holes"
           checked={hasMagnet}
           onChange={toggleMagnet}
@@ -138,14 +144,6 @@ export function BaseSection() {
             unit="mm"
           />
         </FeatureToggle>
-
-        <FeatureToggle
-          label="Stacking lip"
-          checked={base.stackingLip}
-          onChange={toggleStackingLip}
-        />
-
-        <FeatureToggle label="Flat bottom" checked={false} onChange={() => {}} comingSoon />
       </div>
     </CollapsibleSection>
   );
