@@ -2,6 +2,9 @@
  * Renders generated bin geometry as a Three.js mesh with PBR material.
  * Uses scene lighting (hemisphere + directional) for natural shading
  * with FrontSide face culling for correct visibility.
+ *
+ * Shows subtle edge lines to indicate this is a fast preview sketch,
+ * not the final export quality.
  */
 
 import { useMemo, useEffect } from 'react';
@@ -9,6 +12,11 @@ import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
+
+/** Edge line color - subtle dark gray */
+const EDGE_COLOR = '#555555';
+/** Edge line opacity */
+const EDGE_OPACITY = 0.3;
 
 interface BinMeshProps {
   wireframe: boolean;
@@ -34,12 +42,21 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     return geo;
   }, [vertices, normals]);
 
-  // Dispose old geometry on unmount or change
+  // Create edge geometry for sketch-like appearance
+  const edgesGeometry = useMemo(() => {
+    if (!geometry) return null;
+    // Threshold angle: only show edges where face angle > 30°
+    // This highlights the major edges without showing every triangle
+    return new THREE.EdgesGeometry(geometry, 30);
+  }, [geometry]);
+
+  // Dispose old geometries on unmount or change
   useEffect(() => {
     return () => {
       geometry?.dispose();
+      edgesGeometry?.dispose();
     };
-  }, [geometry]);
+  }, [geometry, edgesGeometry]);
 
   // Invalidate frame when mesh data changes
   useEffect(() => {
@@ -54,16 +71,31 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
   if (!geometry) return null;
 
   return (
-    <mesh geometry={geometry} position={[0, 0, 0.1]}>
-      <meshStandardMaterial
-        color={color}
-        roughness={0.45}
-        metalness={0}
-        wireframe={wireframe}
-        side={THREE.DoubleSide}
-        emissive={color}
-        emissiveIntensity={0.08}
-      />
-    </mesh>
+    <group position={[0, 0, 0.1]}>
+      {/* Solid mesh */}
+      <mesh geometry={geometry}>
+        <meshStandardMaterial
+          color={color}
+          roughness={0.45}
+          metalness={0}
+          wireframe={wireframe}
+          side={THREE.DoubleSide}
+          emissive={color}
+          emissiveIntensity={0.08}
+        />
+      </mesh>
+
+      {/* Edge lines for sketch appearance (hidden in wireframe mode) */}
+      {!wireframe && edgesGeometry && (
+        <lineSegments geometry={edgesGeometry}>
+          <lineBasicMaterial
+            color={EDGE_COLOR}
+            transparent
+            opacity={EDGE_OPACITY}
+            linewidth={1}
+          />
+        </lineSegments>
+      )}
+    </group>
   );
 }
