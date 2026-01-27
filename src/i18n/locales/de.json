@@ -989,6 +989,8 @@
   "settings.helpImproveHint": "Bin-Größen und Platzierungsmuster teilen (keine persönlichen Daten)",
   "settings.labs": "Labs",
   "settings.labsCheckBack": "Schauen Sie später wieder vorbei!",
+  "settings.privacyPolicy": "Datenschutzrichtlinie",
+  "settings.termsOfService": "Nutzungsbedingungen",
   "settings.labsEmpty": "Derzeit keine experimentellen Funktionen verfügbar.",
   "settings.labsHint": "Probieren Sie neue Funktionen aus, bevor sie veröffentlicht werden. Funktionen können sich basierend auf Feedback ändern.",
   "settings.language": "Sprache",

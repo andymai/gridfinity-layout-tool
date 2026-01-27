@@ -110,9 +110,9 @@ export function flush(): void {
 
   if (eventBuffer.length === 0) return;
 
-  // Check if telemetry is still enabled
+  // Check if analytics/telemetry is still enabled
   const settings = useSettingsStore.getState().settings;
-  if (!settings.mlTelemetryEnabled) {
+  if (!settings.analyticsEnabled) {
     eventBuffer = [];
     return;
   }
