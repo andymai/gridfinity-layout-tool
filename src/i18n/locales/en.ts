@@ -1181,6 +1181,7 @@ const en: Record<string, string> = {
   'binDesigner.stage.shell': 'Creating shell',
   'binDesigner.stage.features': 'Adding features',
   'binDesigner.stage.merge': 'Finalizing',
+  'binDesigner.complexDesignHint': 'Complex design — may take a moment',
   'binDesigner.wire': 'Wire',
 
   // ===========================================================================

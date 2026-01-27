@@ -25,10 +25,18 @@ const MIN_DISPLAY_TIME = 150;
 /** Maximum scale increase during morph (3% larger) */
 const MORPH_SCALE_FACTOR = 0.03;
 
+/** Pulse animation frequency in Hz */
+const PULSE_FREQUENCY = 1.2;
+
+/** Opacity range for pulse: oscillates between (1 - PULSE_AMPLITUDE) and 1 */
+const PULSE_AMPLITUDE = 0.25;
+
 interface AnimatedState {
   visible: boolean;
   opacity: number;
   scale: number;
+  /** Pulse phase for smooth animation (0-1) */
+  pulsePhase: number;
 }
 
 /**
@@ -56,9 +64,9 @@ export function GhostWireframe() {
   // Animated state - initialize based on current phase for correct SSR/first render
   const [animated, setAnimated] = useState<AnimatedState>(() => {
     if (ghostTransition.phase === 'showing') {
-      return { visible: true, opacity: 1, scale: 1 };
+      return { visible: true, opacity: 1, scale: 1, pulsePhase: 0 };
     }
-    return { visible: false, opacity: 0, scale: 1 };
+    return { visible: false, opacity: 0, scale: 1, pulsePhase: 0 };
   });
 
   // Initialize showStartTime if already in 'showing' phase on mount
@@ -107,11 +115,27 @@ export function GhostWireframe() {
       prevPhaseRef.current = phase;
 
       if (phase === 'hidden') {
-        updateAnimated(() => ({ visible: false, opacity: 0, scale: 1 }));
+        updateAnimated(() => ({ visible: false, opacity: 0, scale: 1, pulsePhase: 0 }));
       } else if (phase === 'showing') {
         showStartTimeRef.current = performance.now();
-        updateAnimated(() => ({ visible: true, opacity: 1, scale: 1 }));
+        updateAnimated(() => ({ visible: true, opacity: 1, scale: 1, pulsePhase: 0 }));
       }
+      invalidate();
+      return;
+    }
+
+    // Handle pulse animation during 'showing' phase
+    if (phase === 'showing') {
+      const elapsed = performance.now() - showStartTimeRef.current;
+      // Smooth sine wave pulse: oscillates opacity between (1 - PULSE_AMPLITUDE) and 1
+      const pulsePhase = (elapsed / 1000) * PULSE_FREQUENCY * Math.PI * 2;
+      const pulseOpacity = 1 - PULSE_AMPLITUDE * (0.5 + 0.5 * Math.sin(pulsePhase));
+
+      updateAnimated((prev) => ({
+        ...prev,
+        opacity: pulseOpacity,
+        pulsePhase,
+      }));
       invalidate();
       return;
     }
@@ -137,6 +161,7 @@ export function GhostWireframe() {
         visible: progress < 1,
         opacity: 1 - eased,
         scale: 1 + eased * MORPH_SCALE_FACTOR,
+        pulsePhase: 0,
       }));
       invalidate();
 

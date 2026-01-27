@@ -71,4 +71,67 @@ export class AdaptiveDebounce {
   get size(): number {
     return this.timings.length;
   }
+
+  /**
+   * Get the average timing from recent history.
+   * Returns null if no history available.
+   */
+  getAverageTiming(): number | null {
+    if (this.timings.length === 0) return null;
+    const sum = this.timings.reduce((a, b) => a + b, 0);
+    return sum / this.timings.length;
+  }
+
+  /**
+   * Get the last recorded timing.
+   * Returns null if no history available.
+   */
+  getLastTiming(): number | null {
+    if (this.timings.length === 0) return null;
+    return this.timings[this.timings.length - 1];
+  }
 }
+
+/**
+ * Estimate generation complexity factor based on bin parameters.
+ * Returns a multiplier relative to a baseline 1x1x3 bin (1.0).
+ *
+ * Factors:
+ * - Cell count: O(n) for base socket building
+ * - Compartments: O(cols * rows) for walls
+ * - Magnets/screws: adds holes per full cell
+ * - Inserts: O(count) boolean cuts
+ */
+export function estimateComplexity(params: {
+  width: number;
+  depth: number;
+  height: number;
+  compartments: { cols: number; rows: number };
+  base: { style: string };
+  inserts: unknown[];
+}): number {
+  // Base complexity from cell count
+  const cells = Math.ceil(params.width) * Math.ceil(params.depth);
+  let complexity = 1 + cells * 0.15;
+
+  // Height adds slight complexity
+  complexity += params.height * 0.02;
+
+  // Compartment walls
+  const wallCount = Math.max(0, params.compartments.cols - 1) + Math.max(0, params.compartments.rows - 1);
+  complexity += wallCount * 0.1;
+
+  // Magnet/screw holes (4 per full cell)
+  if (params.base.style !== 'standard') {
+    const fullCells = Math.floor(params.width) * Math.floor(params.depth);
+    complexity += fullCells * 0.05;
+  }
+
+  // Inserts
+  complexity += params.inserts.length * 0.15;
+
+  return complexity;
+}
+
+/** Threshold for showing complexity warning (ms) */
+export const COMPLEXITY_WARNING_THRESHOLD = 1500;

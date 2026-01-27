@@ -184,6 +184,10 @@ export interface GenerationState {
   readonly epoch: number;
   /** Ghost wireframe transition state for preview feedback */
   readonly ghostTransition: GhostTransitionState;
+  /** Last generation time in ms (for complexity warning) */
+  readonly lastTimingMs: number | null;
+  /** True if current params are estimated to be complex (>1.5s generation) */
+  readonly isComplex: boolean;
 }
 
 /** Cached mesh data for undo/redo history entries */

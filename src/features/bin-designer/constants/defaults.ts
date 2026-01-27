@@ -64,6 +64,8 @@ export const DEFAULT_GENERATION_STATE: GenerationState = {
     phase: 'hidden',
     startTime: 0,
   },
+  lastTimingMs: null,
+  isComplex: false,
 } as const;
 
 /** Default UI state */

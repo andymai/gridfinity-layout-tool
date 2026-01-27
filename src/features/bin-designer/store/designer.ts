@@ -416,6 +416,9 @@ export const useDesignerStore = create<DesignerState>()(
         state.generation.status = result.error ? 'error' : 'complete';
         state.generation.stage = null; // Clear stage when generation completes
         state.generation.progress = 0;
+        // Track timing for complexity warning (Phase 4.2/4.3)
+        state.generation.lastTimingMs = result.timingMs;
+        state.generation.isComplex = result.timingMs > 1500;
       });
 
       // Cache the mesh for the next history push

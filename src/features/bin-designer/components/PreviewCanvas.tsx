@@ -319,6 +319,8 @@ export function PreviewCanvas() {
     params,
     designName,
     canRevert,
+    isComplex,
+    lastTimingMs,
   } = useDesignerStore(
     useShallow((s) => ({
       wasmStatus: s.wasmStatus,
@@ -329,6 +331,8 @@ export function PreviewCanvas() {
       params: s.params,
       designName: s.designName,
       canRevert: s.history.past.length > 0,
+      isComplex: s.generation.isComplex,
+      lastTimingMs: s.generation.lastTimingMs,
     }))
   );
 
@@ -512,33 +516,41 @@ export function PreviewCanvas() {
           {/* Subtle corner spinner with stage indicator (previous mesh stays visible) */}
           {showOverlay && (
             <div
-              className="absolute right-2 top-2 flex items-center gap-1.5 rounded-full bg-surface-elevated/90 px-2.5 py-1 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur-sm"
+              className="absolute right-2 top-2 flex flex-col items-end gap-1"
               role="status"
               aria-label={t('binDesigner.updatingMesh')}
             >
-              <svg
-                className="h-3 w-3 animate-spin motion-reduce:animate-none"
-                fill="none"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              {generationStage
-                ? t(`binDesigner.stage.${generationStage}` as const)
-                : t('binDesigner.updating')}
+              <div className="flex items-center gap-1.5 rounded-full bg-surface-elevated/90 px-2.5 py-1 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur-sm">
+                <svg
+                  className="h-3 w-3 animate-spin motion-reduce:animate-none"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+                {generationStage
+                  ? t(`binDesigner.stage.${generationStage}` as const)
+                  : t('binDesigner.updating')}
+              </div>
+              {/* Show estimated time for complex designs */}
+              {isComplex && lastTimingMs && (
+                <div className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-700 dark:text-amber-400">
+                  {t('binDesigner.complexDesignHint')}
+                </div>
+              )}
             </div>
           )}
 
