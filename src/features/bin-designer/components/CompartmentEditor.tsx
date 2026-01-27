@@ -354,30 +354,45 @@ export function CompartmentEditor() {
                 }}
               >
                 <div
-                  className="grid h-full w-full"
-                  style={{
-                    gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                    gridTemplateRows: `repeat(${rows}, 1fr)`,
-                    gap: '1px',
-                  }}
+                  className="flex h-full w-full flex-col-reverse"
+                  style={{ gap: '1px' }}
                 >
-                  {cells.map((compartmentId, idx) => (
-                    <GridCell
-                      key={idx}
-                      idx={idx}
-                      compartmentId={compartmentId}
-                      isSelected={selection.has(idx)}
-                      isHovered={hoverIdx === idx && !isDragging}
-                      isSplittable={
-                        !isDragging && (compartmentCellCounts.get(compartmentId) ?? 0) > 1
-                      }
-                      isDragging={isDragging}
-                      config={compartments}
-                      onPointerDown={handleCellPointerDown}
-                      onPointerEnter={handleCellPointerEnter}
-                      onPointerLeave={handleCellPointerLeave}
-                    />
-                  ))}
+                  {/* Render rows in reverse order to match 3D view (row 0 = front = bottom of UI) */}
+                  {Array.from({ length: rows }, (_, visualRow) => {
+                    const dataRow = visualRow; // Visual row 0 renders at bottom due to flex-col-reverse
+                    return (
+                      <div
+                        key={dataRow}
+                        className="grid flex-1"
+                        style={{
+                          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                          gap: '1px',
+                        }}
+                      >
+                        {Array.from({ length: cols }, (_, col) => {
+                          const idx = dataRow * cols + col;
+                          const compartmentId = cells[idx];
+                          return (
+                            <GridCell
+                              key={idx}
+                              idx={idx}
+                              compartmentId={compartmentId}
+                              isSelected={selection.has(idx)}
+                              isHovered={hoverIdx === idx && !isDragging}
+                              isSplittable={
+                                !isDragging && (compartmentCellCounts.get(compartmentId) ?? 0) > 1
+                              }
+                              isDragging={isDragging}
+                              config={compartments}
+                              onPointerDown={handleCellPointerDown}
+                              onPointerEnter={handleCellPointerEnter}
+                              onPointerLeave={handleCellPointerLeave}
+                            />
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </section>
@@ -432,33 +447,36 @@ function GridCell({
   const row = Math.floor(idx / config.cols);
 
   // Determine which edges are at the boundary of this compartment
+  // Note: Visual top/bottom are flipped since we use flex-col-reverse
   const hasRightNeighbor =
     col < config.cols - 1 && config.cells[cellIndex(config.cols, col + 1, row)] === compartmentId;
-  const hasBottomNeighbor =
-    row < config.rows - 1 && config.cells[cellIndex(config.cols, col, row + 1)] === compartmentId;
   const hasLeftNeighbor =
     col > 0 && config.cells[cellIndex(config.cols, col - 1, row)] === compartmentId;
-  const hasTopNeighbor =
+  // Data "top" (row-1) is visually below due to flex-col-reverse
+  const hasVisualBottomNeighbor =
     row > 0 && config.cells[cellIndex(config.cols, col, row - 1)] === compartmentId;
+  // Data "bottom" (row+1) is visually above due to flex-col-reverse
+  const hasVisualTopNeighbor =
+    row < config.rows - 1 && config.cells[cellIndex(config.cols, col, row + 1)] === compartmentId;
 
   // Compute rounded corners for outer edges of compartments
   const cornerRadius = 4;
-  const topLeft = !hasTopNeighbor && !hasLeftNeighbor ? cornerRadius : 0;
-  const topRight = !hasTopNeighbor && !hasRightNeighbor ? cornerRadius : 0;
-  const bottomRight = !hasBottomNeighbor && !hasRightNeighbor ? cornerRadius : 0;
-  const bottomLeft = !hasBottomNeighbor && !hasLeftNeighbor ? cornerRadius : 0;
+  const topLeft = !hasVisualTopNeighbor && !hasLeftNeighbor ? cornerRadius : 0;
+  const topRight = !hasVisualTopNeighbor && !hasRightNeighbor ? cornerRadius : 0;
+  const bottomRight = !hasVisualBottomNeighbor && !hasRightNeighbor ? cornerRadius : 0;
+  const bottomLeft = !hasVisualBottomNeighbor && !hasLeftNeighbor ? cornerRadius : 0;
 
   const fillColor = getCompartmentFill(compartmentId);
   const borderColor = getCompartmentBorder(compartmentId);
 
   // Build border widths: use integer pixels for consistent rendering
-  const borderTop = hasTopNeighbor ? 0 : 2;
+  const borderTop = hasVisualTopNeighbor ? 0 : 2;
   const borderRight = hasRightNeighbor ? 0 : 2;
-  const borderBottom = hasBottomNeighbor ? 0 : 2;
+  const borderBottom = hasVisualBottomNeighbor ? 0 : 2;
   const borderLeft = hasLeftNeighbor ? 0 : 2;
 
-  // Show dimension label on the top-left cell of multi-cell compartments
-  const isTopLeftOfCompartment = !hasTopNeighbor && !hasLeftNeighbor;
+  // Show dimension label on the visual top-left cell of multi-cell compartments
+  const isTopLeftOfCompartment = !hasVisualTopNeighbor && !hasLeftNeighbor;
   let dimensionLabel: string | null = null;
   if (isTopLeftOfCompartment && isSplittable) {
     const bounds = getCompartmentBounds(config, compartmentId);

@@ -20,6 +20,7 @@ import {
   PreviewControls,
   PreviewSkeleton,
   GhostWireframe,
+  GhostDividers,
   type CameraPreset,
 } from './preview';
 import { GradientBackground } from './preview/GradientBackground';
@@ -464,6 +465,9 @@ export function PreviewCanvas() {
 
             {/* Ghost wireframe during generation */}
             <GhostWireframe />
+
+            {/* Ghost divider lines during compartment changes */}
+            <GhostDividers />
 
             {/* Contact shadows for grounding */}
             <ContactShadows
