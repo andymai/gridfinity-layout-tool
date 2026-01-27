@@ -6,15 +6,14 @@
  * The filename preference is persisted per-design via the designer store.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
-import type { ExportFormat } from '@/features/bin-designer/hooks/useExport';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import type { FileNameStyle } from '@/features/bin-designer/types';
-import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
+import { getSTLFileSize } from '@/shared/generation/export';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
@@ -36,9 +35,8 @@ export function ExportDialog() {
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const setExportFileNameConfig = useDesignerStore((s) => s.setExportFileNameConfig);
 
-  const { canExport, estimates, isExporting, downloadSTL, download3MF } = useExport();
+  const { canExport, estimates, isExporting, downloadSTL } = useExport();
   const addToast = useToastStore((s) => s.addToast);
-  const [format, setFormat] = useState<ExportFormat>('stl');
 
   const closeDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
   const dialogRef = useFocusTrap<HTMLDivElement>({
@@ -57,8 +55,8 @@ export function ExportDialog() {
   }, [exportFileNameConfig.style]);
 
   const fileName = useMemo(
-    () => generateFileName(params, format, exportFileNameConfig, designName),
-    [params, format, exportFileNameConfig, designName]
+    () => generateFileName(params, 'stl', exportFileNameConfig, designName),
+    [params, exportFileNameConfig, designName]
   );
 
   // The display name (without extension) for the input field
@@ -88,8 +86,7 @@ export function ExportDialog() {
 
   if (!exportDialogOpen) return null;
 
-  const fileSizeBytes =
-    format === 'stl' ? getSTLFileSize(triangleCount) : estimate3MFFileSize(triangleCount);
+  const fileSizeBytes = getSTLFileSize(triangleCount);
   const fileSizeLabel =
     fileSizeBytes < 1024 ? `${fileSizeBytes} B` : `${Math.round(fileSizeBytes / 1024)} KB`;
 
@@ -126,26 +123,6 @@ export function ExportDialog() {
           </button>
         </div>
 
-        {/* Format Selection */}
-        <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-content-secondary">{t('binDesigner.format')}</label>
-          <div className="grid grid-cols-3 gap-2">
-            <FormatOption
-              label={t('binDesigner.formatSTL')}
-              active={format === 'stl'}
-              onClick={() => setFormat('stl')}
-              description="Binary STL mesh"
-            />
-            <FormatOption
-              label={t('binDesigner.format3MF')}
-              active={format === '3mf'}
-              onClick={() => setFormat('3mf')}
-              description="Mesh + metadata"
-            />
-            <FormatOption label="STEP" disabled description="Coming soon" />
-          </div>
-        </div>
-
         {/* File Name */}
         <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-content-secondary">{t('binDesigner.fileName')}</label>
@@ -167,7 +144,7 @@ export function ExportDialog() {
               </span>
             )}
             <span className="shrink-0 border-l border-stroke-subtle px-2 py-2 text-sm text-content-tertiary">
-              .{format}
+              .stl
             </span>
           </div>
           <div className="mt-2 flex gap-2">
@@ -210,20 +187,16 @@ export function ExportDialog() {
         <button
           onClick={async () => {
             try {
-              if (format === '3mf') {
-                await download3MF(exportFileNameConfig, designName);
-              } else {
-                downloadSTL(exportFileNameConfig, designName);
-              }
+              await downloadSTL(exportFileNameConfig, designName);
               addToast({
-                message: `${format.toUpperCase()} exported successfully`,
+                message: t('binDesigner.stlExportedSuccessfully'),
                 type: 'success',
                 duration: 3000,
               });
               closeDialog();
             } catch {
               addToast({
-                message: 'Export failed — please try again',
+                message: t('binDesigner.exportFailed'),
                 type: 'error',
                 duration: 5000,
               });
@@ -254,7 +227,7 @@ export function ExportDialog() {
               />
             </svg>
           )}
-          {isExporting ? t('binDesigner.exporting') : t('binDesigner.downloadFormat', { format: format.toUpperCase() })}
+          {isExporting ? t('binDesigner.exporting') : t('binDesigner.downloadSTL')}
         </button>
 
         {!canExport && (
@@ -266,39 +239,6 @@ export function ExportDialog() {
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
-
-function FormatOption({
-  label,
-  active,
-  disabled,
-  description,
-  onClick,
-}: {
-  label: string;
-  active?: boolean;
-  disabled?: boolean;
-  description: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
-      aria-pressed={active}
-      className={`rounded-lg border px-3 py-2 text-center transition-colors ${
-        active
-          ? 'border-accent bg-accent-muted text-accent'
-          : disabled
-            ? 'cursor-not-allowed border-stroke-subtle bg-surface text-content-disabled'
-            : 'cursor-pointer border-stroke-subtle text-content-secondary hover:border-accent/50 hover:bg-surface-hover'
-      }`}
-    >
-      <div className="text-sm font-medium">{label}</div>
-      <div className="text-xs">{description}</div>
-    </button>
-  );
-}
 
 function NameStyleButton({
   active,

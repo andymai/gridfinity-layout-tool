@@ -1,12 +1,12 @@
 /**
  * Three.js 3D preview canvas for the bin designer.
- * Renders the generated mesh with enhanced lighting, contact shadows,
+ * Renders the generated mesh with enhanced lighting, gradient background,
  * smooth camera transitions, auto-framing, dimension lines, and a footprint grid.
  */
 
 import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { OrbitControls, ContactShadows } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
 import { Vector3, Spherical } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
@@ -280,7 +280,7 @@ function usePresetTransition(
  * Render the 3D preview canvas for the bin designer.
  *
  * Features:
- * - 3-point lighting (hemisphere + key + fill) with contact shadows
+ * - 3-point lighting (hemisphere + key + fill)
  * - Gradient background for studio photography feel
  * - Normal-based vertex coloring with user-selectable base color
  * - Smooth camera preset transitions (spherical interpolation)
@@ -293,7 +293,6 @@ export function PreviewCanvas() {
   const controlsRef = useRef<OrbitControlsType>(null);
   const invalidateRef = useRef<(() => void) | null>(null);
   const [wireframe, setWireframe] = useState(false);
-  const [isInteracting, setIsInteracting] = useState(false);
   const [activePreset, setActivePreset] = useState<CameraPreset | null>('isometric');
 
   // Preview color persisted in localStorage
@@ -361,7 +360,6 @@ export function PreviewCanvas() {
 
   // Clear active preset when user manually orbits
   const handleOrbitStart = useCallback(() => {
-    setIsInteracting(true);
     setActivePreset(null);
   }, []);
 
@@ -390,9 +388,6 @@ export function PreviewCanvas() {
   // Bin dimensions for scene elements
   const { width, depth, height } = params;
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
-  const outerW = width * GRIDFINITY.GRID_SIZE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE;
-  const shadowScale = Math.max(outerW, outerD) * 1.3;
 
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';
   const showOverlay = generationStatus === 'generating' && hasMesh;
@@ -454,17 +449,6 @@ export function PreviewCanvas() {
             <GhostWireframe />
             <GhostDividers />
 
-            {/* Contact shadows for grounding */}
-            <ContactShadows
-              position={[0, 0, 0.01]}
-              opacity={0.25}
-              scale={shadowScale}
-              blur={3}
-              far={totalH * 1.5}
-              resolution={128}
-              color="#000000"
-              frames={isInteracting ? 0 : Infinity}
-            />
 
             {/* Footprint grid */}
             <FootprintGrid width={width} depth={depth} />
@@ -498,40 +482,11 @@ export function PreviewCanvas() {
               maxPolarAngle={Math.PI * 0.85}
               minPolarAngle={Math.PI * 0.05}
               onStart={handleOrbitStart}
-              onEnd={() => setIsInteracting(false)}
             />
           </Canvas>
 
-          {/* Subtle corner spinner (previous mesh stays visible) */}
-          {showOverlay && (
-            <div
-              className="absolute right-2 top-2 flex items-center gap-1.5 rounded-full bg-surface-elevated/90 px-2.5 py-1 text-[11px] font-medium text-content-secondary shadow-sm backdrop-blur-sm"
-              role="status"
-              aria-label={t('binDesigner.updatingMesh')}
-            >
-              <svg
-                className="h-3 w-3 animate-spin motion-reduce:animate-none"
-                fill="none"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              {t('binDesigner.updating')}
-            </div>
-          )}
+          {/* Nostalgic loading indicator (bottom center) */}
+          {showOverlay && <GeneratingIndicator />}
 
           {/* Control buttons */}
           <PreviewControls
@@ -607,6 +562,72 @@ function TouchHint() {
             <path d="M3 3l6 6M9 3l-6 6" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
+      </div>
+    </div>
+  );
+}
+
+/** Nostalgic loading messages inspired by SimCity/Maxis games */
+const LOADING_MESSAGES = [
+  'Reticulating splines...',
+  'Tessellating surfaces...',
+  'Calibrating geometry...',
+  'Computing topology...',
+  'Refining edges...',
+  'Optimizing vertices...',
+  'Calculating normals...',
+  'Subdividing mesh...',
+  'Extruding polygons...',
+  'Filleting corners...',
+  'Lofting profiles...',
+  'Projecting curves...',
+];
+
+/**
+ * Nostalgic loading indicator that cycles through SimCity-style messages.
+ * Shows at the bottom center of the 3D preview during mesh regeneration.
+ */
+function GeneratingIndicator() {
+  const [messageIndex, setMessageIndex] = useState(() =>
+    Math.floor(Math.random() * LOADING_MESSAGES.length)
+  );
+
+  // Cycle through messages every 1.5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div
+      className="absolute inset-x-0 bottom-4 flex justify-center"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="flex items-center gap-2.5 rounded-lg border border-stroke-subtle bg-surface-elevated/95 px-4 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
+        <svg
+          className="h-4 w-4 shrink-0 text-accent animate-spin motion-reduce:animate-none"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <circle
+            className="opacity-20"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="3"
+          />
+          <path
+            className="opacity-80"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
+        </svg>
+        <span className="text-content-secondary">{LOADING_MESSAGES[messageIndex]}</span>
       </div>
     </div>
   );

@@ -1,8 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+
+// Mock the bridge module
+const mockExportBin = vi.fn();
+vi.mock('@/shared/generation/bridge', () => ({
+  getActiveBridge: () => ({
+    exportBin: mockExportBin,
+  }),
+}));
 
 // Mock URL.createObjectURL and URL.revokeObjectURL
 const originalURL = globalThis.URL;
@@ -12,6 +20,7 @@ const mockRevokeObjectURL = vi.fn();
 describe('useExport', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockExportBin.mockReset();
     // Apply URL mock before each test
     Object.defineProperty(globalThis, 'URL', {
       value: {
@@ -88,7 +97,6 @@ describe('useExport', () => {
   it('provides export function', () => {
     const { result } = renderHook(() => useExport());
     expect(result.current.downloadSTL).toBeTypeOf('function');
-    expect(result.current.download3MF).toBeTypeOf('function');
   });
 
   it('isExporting is initially false', () => {
@@ -96,17 +104,7 @@ describe('useExport', () => {
     expect(result.current.isExporting).toBe(false);
   });
 
-  it('downloadSTL does nothing when canExport is false', () => {
-    const { result } = renderHook(() => useExport());
-
-    act(() => {
-      result.current.downloadSTL({ style: 'descriptive', customName: '' });
-    });
-
-    expect(mockCreateObjectURL).not.toHaveBeenCalled();
-  });
-
-  it('downloadSTL creates blob URL and triggers download', () => {
+  it('downloadSTL creates blob URL and triggers download via bridge', async () => {
     // Set up valid mesh
     useDesignerStore.setState({
       generation: {
@@ -119,6 +117,12 @@ describe('useExport', () => {
         },
         progress: 1,
       },
+    });
+
+    // Mock bridge to return STL data
+    mockExportBin.mockResolvedValue({
+      data: new ArrayBuffer(100),
+      fileName: 'test.stl',
     });
 
     // Mock DOM APIs - only intercept 'a' elements to not break renderHook container
@@ -137,10 +141,11 @@ describe('useExport', () => {
 
     const { result } = renderHook(() => useExport());
 
-    act(() => {
-      result.current.downloadSTL({ style: 'descriptive', customName: '' });
+    await act(async () => {
+      await result.current.downloadSTL({ style: 'descriptive', customName: '' });
     });
 
+    expect(mockExportBin).toHaveBeenCalledWith(expect.any(Object), 'stl');
     expect(mockCreateObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     expect(mockAnchor.click).toHaveBeenCalled();
     expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
@@ -150,7 +155,7 @@ describe('useExport', () => {
     removeChildSpy.mockRestore();
   });
 
-  it('downloadSTL respects name style parameter', () => {
+  it('downloadSTL respects name style parameter', async () => {
     useDesignerStore.setState({
       generation: {
         status: 'complete',
@@ -164,6 +169,12 @@ describe('useExport', () => {
       },
     });
 
+    // Mock bridge
+    mockExportBin.mockResolvedValue({
+      data: new ArrayBuffer(100),
+      fileName: 'test.stl',
+    });
+
     const mockAnchor = { href: '', download: '', click: vi.fn() };
     const originalCreateElement = document.createElement.bind(document);
     const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
@@ -175,8 +186,8 @@ describe('useExport', () => {
 
     const { result } = renderHook(() => useExport());
 
-    act(() => {
-      result.current.downloadSTL('compact');
+    await act(async () => {
+      await result.current.downloadSTL({ style: 'compact', customName: '' });
     });
 
     expect(mockAnchor.download).toContain('gf_');
