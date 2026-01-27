@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import type { LayoutEntry } from '@/core/types';
 import { LayoutThumbnail } from '@/components/LayoutThumbnail';
 import { LayoutActions } from './LayoutActions';
+import { useInlineEdit } from './useInlineEdit';
 import { useTranslation, useFormatting } from '@/i18n';
 
 interface LayoutListItemProps {
@@ -41,42 +42,19 @@ export function LayoutListItem({
 }: LayoutListItemProps) {
   const t = useTranslation();
   const { formatRelativeDate } = useFormatting();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingName, setEditingName] = useState(entry.name);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Focus input when editing starts
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
-  const handleStartRename = useCallback(() => {
-    setEditingName(entry.name);
-    setIsEditing(true);
-  }, [entry.name]);
-
-  const handleFinishRename = useCallback(() => {
-    const trimmed = editingName.trim();
-    if (trimmed && trimmed !== entry.name) {
-      onRename(trimmed);
-    }
-    setIsEditing(false);
-  }, [editingName, entry.name, onRename]);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleFinishRename();
-      } else if (e.key === 'Escape') {
-        setIsEditing(false);
-        setEditingName(entry.name);
-      }
-    },
-    [handleFinishRename, entry.name]
-  );
+  const {
+    isEditing,
+    editingValue,
+    inputRef,
+    startEditing,
+    handleChange,
+    handleFinish,
+    handleKeyDown,
+  } = useInlineEdit({
+    initialValue: entry.name,
+    onSave: onRename,
+  });
 
   const handleItemKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -122,9 +100,9 @@ export function LayoutListItem({
             <input
               ref={inputRef}
               type="text"
-              value={editingName}
-              onChange={(e) => setEditingName(e.target.value)}
-              onBlur={handleFinishRename}
+              value={editingValue}
+              onChange={(e) => handleChange(e.target.value)}
+              onBlur={handleFinish}
               onKeyDown={handleKeyDown}
               onClick={(e) => e.stopPropagation()}
               className="w-full bg-surface px-2 py-1 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm"
@@ -172,7 +150,7 @@ export function LayoutListItem({
             isActive={isActive}
             onCopyLink={onCopyLink}
             onDownload={onDownload}
-            onRename={handleStartRename}
+            onRename={startEditing}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
             onSuggestName={onSuggestName}

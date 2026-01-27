@@ -18,22 +18,26 @@ export function ViewModeToggle({ value, onChange }: ViewModeToggleProps) {
   // Handle arrow key navigation for radiogroup
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      const listKeys = ['ArrowLeft', 'ArrowUp', 'Home'];
+      const gridKeys = ['ArrowRight', 'ArrowDown', 'End'];
+
+      if (listKeys.includes(e.key)) {
         e.preventDefault();
         onChange('list');
-      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        onChange('grid');
-      } else if (e.key === 'Home') {
-        e.preventDefault();
-        onChange('list');
-      } else if (e.key === 'End') {
+      } else if (gridKeys.includes(e.key)) {
         e.preventDefault();
         onChange('grid');
       }
     },
     [onChange]
   );
+
+  const buttonClass = (isSelected: boolean): string =>
+    `p-1.5 rounded-md transition-colors ${
+      isSelected
+        ? 'bg-accent text-on-dark'
+        : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
+    }`;
 
   return (
     <div
@@ -48,14 +52,7 @@ export function ViewModeToggle({ value, onChange }: ViewModeToggleProps) {
         aria-checked={value === 'list'}
         tabIndex={value === 'list' ? 0 : -1}
         onClick={() => onChange('list')}
-        className={`
-          p-1.5 rounded-md transition-colors
-          ${
-            value === 'list'
-              ? 'bg-accent text-on-dark'
-              : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
-          }
-        `}
+        className={buttonClass(value === 'list')}
         aria-label={t('layouts.listView')}
         title={t('layouts.listView')}
       >
@@ -80,14 +77,7 @@ export function ViewModeToggle({ value, onChange }: ViewModeToggleProps) {
         aria-checked={value === 'grid'}
         tabIndex={value === 'grid' ? 0 : -1}
         onClick={() => onChange('grid')}
-        className={`
-          p-1.5 rounded-md transition-colors
-          ${
-            value === 'grid'
-              ? 'bg-accent text-on-dark'
-              : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
-          }
-        `}
+        className={buttonClass(value === 'grid')}
         aria-label={t('layouts.gridView')}
         title={t('layouts.gridView')}
       >
