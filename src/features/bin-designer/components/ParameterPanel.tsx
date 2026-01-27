@@ -9,6 +9,7 @@
  * - Base (expanded) — Magnets, Screws, Stacking lip
  * - Walls (expanded) — Wall thickness
  * - Interior (expanded) — Compartments
+ * - Physical Units — Grid unit size (mm)
  */
 
 import { DimensionsSection } from './panel/DimensionsSection';
