@@ -91,9 +91,9 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           emissiveIntensity={0.08}
         />
         {/* Thick edge lines for sketch appearance (hidden in wireframe mode)
-            Lower threshold (15°) shows edges on rounded corners */}
+            Low threshold (5°) shows edges on rounded corners */}
         {!wireframe && (
-          <Edges threshold={15} color={EDGE_COLOR} lineWidth={EDGE_WIDTH} />
+          <Edges threshold={5} color={EDGE_COLOR} lineWidth={EDGE_WIDTH} />
         )}
       </mesh>
     </group>
