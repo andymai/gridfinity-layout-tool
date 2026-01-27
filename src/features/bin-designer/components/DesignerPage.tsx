@@ -509,7 +509,7 @@ export function DesignerPage(_props: DesignerPageProps) {
             <PreviewCanvas />
           </div>
 
-          {/* Tabbed parameter panel */}
+          {/* Parameter panel */}
           <div className="flex-1 overflow-hidden bg-surface-secondary">
             <ParameterPanel />
           </div>
