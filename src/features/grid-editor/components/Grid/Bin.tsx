@@ -12,19 +12,14 @@ import {
 import { useToastStore } from '@/core/store/toast';
 import { useResponsive } from '@/shared/hooks';
 import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
-import { getBinTextColors } from '@/shared/utils';
+import { getBinTextColors, clamp } from '@/shared/utils';
 import { calcFractionalPixelSize } from '@/features/grid-editor/utils/fractionalPixels';
 import { ResizeHandles } from './ResizeHandles';
 import { useTranslation } from '@/i18n';
 
-/** Clamp a value between min and max */
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
-
 const LONG_PRESS_DURATION = 500; // ms
 const DOUBLE_TAP_THRESHOLD = 300; // ms
-const WARNING_ICON = '⚠';
+const WARNING_ICON = '\u26A0'; // Unicode warning sign
 
 interface BinProps {
   bin: BinType;
@@ -590,6 +585,24 @@ function BinComponent({
     return 'none';
   };
 
+  const getOpacity = (): number => {
+    if (isGhost) return 0.3;
+    if (isBeingDragged) return 0.5;
+    if (isAnyCategoryHighlighted && !isCategoryHighlighted) return 0.4;
+    if (isAnyRowColHighlighted && !isRowColHighlighted) return 0.6;
+    return 1;
+  };
+
+  const getZIndex = (): number => {
+    // Selected bins need higher z-index (40) to ensure resize handles appear above axis labels (30)
+    // Hovered bins (30) need to be above regular bins (10) so resize handles aren't clipped by neighbors
+    if (isGhost) return 5;
+    if (isSelected) return 40;
+    if (isHovered) return 30;
+    if (isCategoryHighlighted || isRowColHighlighted) return 15;
+    return 10;
+  };
+
   return (
     <div
       data-bin-id={bin.id}
@@ -619,26 +632,8 @@ function BinComponent({
         WebkitUserSelect: 'none',
         userSelect: 'none',
         pointerEvents: isGhost || isBeingDragged ? 'none' : 'auto',
-        opacity: isGhost
-          ? 0.3
-          : isBeingDragged
-            ? 0.5
-            : isAnyCategoryHighlighted && !isCategoryHighlighted
-              ? 0.4
-              : isAnyRowColHighlighted && !isRowColHighlighted
-                ? 0.6
-                : 1,
-        // Selected bins need higher z-index (40) to ensure resize handles appear above axis labels (30)
-        // Hovered bins (30) need to be above regular bins (10) so resize handles aren't clipped by neighbors
-        zIndex: isGhost
-          ? 5
-          : isSelected
-            ? 40
-            : isHovered
-              ? 30
-              : isCategoryHighlighted || isRowColHighlighted
-                ? 15
-                : 10,
+        opacity: getOpacity(),
+        zIndex: getZIndex(),
         boxShadow: getBoxShadow(),
         transform: getTransform(),
         // Allow resize handles to extend outside bin (text constrained by whitespace-nowrap and sizing)
