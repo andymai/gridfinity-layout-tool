@@ -6,6 +6,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
+import { CATEGORY_COLOR_PALETTE } from '@/core/constants';
 
 export type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
 
@@ -26,18 +27,6 @@ const PRESETS: Array<{ key: CameraPreset; label: string; shortcut: string }> = [
   { key: 'isometric', label: 'Iso', shortcut: '4' },
 ];
 
-/** Preset color swatches for the bin preview */
-const COLOR_SWATCHES = [
-  { color: '#d4d8dc', label: 'Gray' },
-  { color: '#93c5fd', label: 'Blue' },
-  { color: '#86efac', label: 'Green' },
-  { color: '#fdba74', label: 'Orange' },
-  { color: '#f9fafb', label: 'White' },
-  { color: '#fca5a5', label: 'Red' },
-  { color: '#1f2937', label: 'Black' },
-  { color: '#c4b5fd', label: 'Purple' },
-  { color: '#fde047', label: 'Yellow' },
-];
 
 /** SVG icon for Front preset — cube with front face highlighted */
 function IconFront() {
@@ -135,54 +124,33 @@ const PRESET_ICONS: Record<CameraPreset, () => ReactNode> = {
 function ColorPickerContent({
   previewColor,
   onColorSelect,
-  onColorChange,
 }: {
   previewColor: string;
   onColorSelect: (color: string) => void;
-  onColorChange: (color: string) => void;
 }) {
-  const t = useTranslation();
   return (
-    <>
-      <div className="grid grid-cols-3 gap-2">
-        {COLOR_SWATCHES.map(({ color, label }) => (
-          <button
-            key={color}
-            type="button"
-            onClick={() => onColorSelect(color)}
-            className={`flex flex-col items-center gap-1 rounded-md p-1.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
-              previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
+    <div className="grid grid-cols-7 gap-1.5">
+      {CATEGORY_COLOR_PALETTE.map(({ color, name }) => (
+        <button
+          key={color}
+          type="button"
+          onClick={() => onColorSelect(color)}
+          className={`rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
+            previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
+          }`}
+          aria-label={`${name} color`}
+          aria-selected={previewColor === color}
+          role="option"
+        >
+          <span
+            className={`inline-block h-6 w-6 rounded border transition-transform hover:scale-105 ${
+              previewColor === color ? 'border-accent' : 'border-stroke-subtle/50'
             }`}
-            aria-label={`${label} color`}
-            aria-selected={previewColor === color}
-            role="option"
-          >
-            <span
-              className={`inline-block h-8 w-8 rounded-md border transition-transform hover:scale-105 ${
-                previewColor === color ? 'border-accent' : 'border-stroke-subtle/50'
-              }`}
-              style={{ backgroundColor: color }}
-            />
-            <span className="text-[9px] text-content-tertiary">{label}</span>
-          </button>
-        ))}
-      </div>
-      {/* Custom color input */}
-      <div className="mt-2.5 border-t border-stroke-subtle pt-2.5">
-        <label className="flex items-center gap-2 rounded-md px-2 py-1.5 cursor-pointer hover:bg-surface-hover transition-colors">
-          <input
-            type="color"
-            value={previewColor}
-            onChange={(e) => onColorChange(e.target.value)}
-            className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent p-0"
-            title={t('binDesigner.customColor')}
+            style={{ backgroundColor: color }}
           />
-          <span className="text-[11px] text-content-secondary font-medium">
-            {t('binDesigner.customColor')}
-          </span>
-        </label>
-      </div>
-    </>
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -241,7 +209,7 @@ export function PreviewControls({
   return (
     <>
       {/* Desktop: horizontal toolbar in top-right */}
-      <div className="absolute right-2 top-2 hidden md:flex items-center">
+      <div className="absolute right-2 top-2 hidden md:flex items-center" ref={desktopPickerRef}>
         <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
           {/* Camera presets group */}
           {PRESETS.map(({ key, label, shortcut }) => {
@@ -307,38 +275,36 @@ export function PreviewControls({
           {/* Divider */}
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
-          {/* Color picker */}
-          <div className="relative" ref={desktopPickerRef}>
-            <button
-              type="button"
-              onClick={() => setColorPickerOpen((v) => !v)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
-              title={t('binDesigner.changeColor')}
-              aria-label={t('binDesigner.changePreviewColor')}
-              aria-expanded={colorPickerOpen}
-            >
-              <span
-                className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
-                style={{ backgroundColor: previewColor }}
-              />
-              <span>{t('common.color')}</span>
-            </button>
-
-            {colorPickerOpen && (
-              <div
-                className="absolute right-0 top-full mt-2 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 shadow-xl"
-                role="listbox"
-                aria-label={t('binDesigner.previewColorOptions')}
-              >
-                <ColorPickerContent
-                  previewColor={previewColor}
-                  onColorSelect={handleColorSelect}
-                  onColorChange={onColorChange}
-                />
-              </div>
-            )}
-          </div>
+          {/* Color picker button */}
+          <button
+            type="button"
+            onClick={() => setColorPickerOpen((v) => !v)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            title={t('binDesigner.changeColor')}
+            aria-label={t('binDesigner.changePreviewColor')}
+            aria-expanded={colorPickerOpen}
+          >
+            <span
+              className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
+              style={{ backgroundColor: previewColor }}
+            />
+            <span>{t('common.color')}</span>
+          </button>
         </div>
+
+        {/* Color picker dropdown - outside overflow-hidden container */}
+        {colorPickerOpen && (
+          <div
+            className="absolute right-0 top-full z-50 mt-2 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 shadow-xl"
+            role="listbox"
+            aria-label={t('binDesigner.previewColorOptions')}
+          >
+            <ColorPickerContent
+              previewColor={previewColor}
+              onColorSelect={handleColorSelect}
+            />
+          </div>
+        )}
       </div>
 
       {/* Mobile: compact vertical column in bottom-left */}
@@ -420,14 +386,13 @@ export function PreviewControls({
         {colorPickerOpen && (
           <div
             ref={mobilePickerRef}
-            className="absolute bottom-full left-0 mb-2 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 shadow-xl"
+            className="absolute bottom-full left-0 z-50 mb-2 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 shadow-xl"
             role="listbox"
             aria-label={t('binDesigner.previewColorOptions')}
           >
             <ColorPickerContent
               previewColor={previewColor}
               onColorSelect={handleColorSelect}
-              onColorChange={onColorChange}
             />
           </div>
         )}
