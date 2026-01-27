@@ -3,25 +3,10 @@ import { useShallow } from 'zustand/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useUIStore, useUndoableAction } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
-import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
-
-const COLOR_PALETTE = [
-  { color: '#f87171', name: 'Coral' },
-  { color: '#fb923c', name: 'Orange' },
-  { color: '#fbbf24', name: 'Amber' },
-  { color: '#a3e635', name: 'Lime' },
-  { color: '#4ade80', name: 'Green' },
-  { color: '#2dd4bf', name: 'Teal' },
-  { color: '#38bdf8', name: 'Sky' },
-  { color: '#818cf8', name: 'Indigo' },
-  { color: '#c084fc', name: 'Purple' },
-  { color: '#f472b6', name: 'Pink' },
-  { color: '#e2e8f0', name: 'Cloud' },
-  { color: '#334155', name: 'Charcoal' },
-];
 
 /**
  * Mobile-optimized categories panel with large touch targets.
@@ -109,10 +94,7 @@ export function MobileCategoriesPanel() {
 
     // Show helpful message if category is in use
     if (binCount > 0) {
-      addToast(
-        t('categories.deleteInUse', { count: binCount, name }),
-        'error'
-      );
+      addToast(t('categories.deleteInUse', { count: binCount, name }), 'error');
       return;
     }
 
@@ -178,7 +160,7 @@ export function MobileCategoriesPanel() {
 
                   {/* Color grid */}
                   <div className="grid grid-cols-6 gap-2">
-                    {COLOR_PALETTE.map(({ color, name }) => (
+                    {CATEGORY_COLOR_PALETTE.map(({ color, name }) => (
                       <button
                         key={color}
                         onClick={() => handleUpdateColor(category.id, color)}
@@ -200,9 +182,13 @@ export function MobileCategoriesPanel() {
                     <button
                       onClick={() => handleDelete(category.id, category.name)}
                       className={`btn flex-1 ${canDelete ? 'btn-danger' : 'btn-secondary opacity-50'}`}
-                    >{t('common.delete')}{binCount > 0 ? ` (${binCount} bins)` : ''}
+                    >
+                      {t('common.delete')}
+                      {binCount > 0 ? ` (${binCount} bins)` : ''}
                     </button>
-                    <button onClick={() => setEditingId(null)} className="btn btn-secondary flex-1">{t('common.done')}</button>
+                    <button onClick={() => setEditingId(null)} className="btn btn-secondary flex-1">
+                      {t('common.done')}
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -211,7 +197,10 @@ export function MobileCategoriesPanel() {
                   onClick={() => handleSelectCategory(category.id, category.name)}
                   aria-label={
                     selectedBinIds.length > 0
-                      ? t('mobile.categories.applyToSelected', { count: selectedBinIds.length, name: category.name })
+                      ? t('mobile.categories.applyToSelected', {
+                          count: selectedBinIds.length,
+                          name: category.name,
+                        })
                       : t('mobile.categories.selectForNew', { name: category.name })
                   }
                 >
@@ -228,7 +217,9 @@ export function MobileCategoriesPanel() {
                     </span>
                   )}
                   {isActive && (
-                    <span className="px-2 py-1 rounded text-xs font-medium bg-accent text-black">{t('mobile.categories.active')}</span>
+                    <span className="px-2 py-1 rounded text-xs font-medium bg-accent text-black">
+                      {t('mobile.categories.active')}
+                    </span>
                   )}
                   <button
                     onClick={(e) => {
@@ -262,7 +253,9 @@ export function MobileCategoriesPanel() {
       >
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>{t('mobile.categories.addCategory')}</button>
+        </svg>
+        {t('mobile.categories.addCategory')}
+      </button>
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}

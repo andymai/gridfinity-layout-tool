@@ -124,6 +124,24 @@ export function hasFractionalDimensions(rect: {
 /** Default category color (slate gray) - used as fallback when category is undefined */
 export const DEFAULT_CATEGORY_COLOR = '#6b7280';
 
+/** Curated color palette for categories, optimized for dark UI backgrounds */
+export const CATEGORY_COLOR_PALETTE = [
+  { color: '#f87171', name: 'Coral' },
+  { color: '#fb923c', name: 'Orange' },
+  { color: '#fbbf24', name: 'Amber' },
+  { color: '#a3e635', name: 'Lime' },
+  { color: '#4ade80', name: 'Green' },
+  { color: '#2dd4bf', name: 'Teal' },
+  { color: '#38bdf8', name: 'Sky' },
+  { color: '#818cf8', name: 'Indigo' },
+  { color: '#c084fc', name: 'Purple' },
+  { color: '#f472b6', name: 'Pink' },
+  { color: '#e2e8f0', name: 'Cloud' },
+  { color: '#334155', name: 'Charcoal' },
+  { color: '#94a3b8', name: 'Slate' },
+  { color: '#a8a29e', name: 'Stone' },
+] as const;
+
 /** Default layout name for new layouts */
 export const DEFAULT_LAYOUT_NAME = 'Untitled layout';
 
