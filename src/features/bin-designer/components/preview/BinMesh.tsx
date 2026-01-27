@@ -12,14 +12,13 @@
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
-import { Edges } from '@react-three/drei';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 
 /** Edge line color - black for maximum contrast */
 const EDGE_COLOR = '#000000';
-/** Edge line width in pixels */
-const EDGE_WIDTH = 1.5;
+/** Edge threshold angle in degrees */
+const EDGE_THRESHOLD = 12;
 
 interface BinMeshProps {
   wireframe: boolean;
@@ -55,12 +54,19 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     return geo;
   }, [vertices, normals, hasPrecomputedNormals]);
 
-  // Dispose old geometry on unmount or change
+  // Create edge geometry for sketch-like appearance
+  const edgesGeometry = useMemo(() => {
+    if (!geometry) return null;
+    return new THREE.EdgesGeometry(geometry, EDGE_THRESHOLD);
+  }, [geometry]);
+
+  // Dispose old geometries on unmount or change
   useEffect(() => {
     return () => {
       geometry?.dispose();
+      edgesGeometry?.dispose();
     };
-  }, [geometry]);
+  }, [geometry, edgesGeometry]);
 
   // Invalidate frame when mesh data changes
   useEffect(() => {
@@ -89,12 +95,19 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           side={THREE.DoubleSide}
           emissive={color}
           emissiveIntensity={0.08}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
-        {/* Thick edge lines for sketch appearance (hidden in wireframe mode) */}
-        {!wireframe && (
-          <Edges threshold={12} color={EDGE_COLOR} lineWidth={EDGE_WIDTH} />
-        )}
       </mesh>
+
+      {/* Edge lines for sketch appearance (hidden in wireframe mode)
+          Rendered separately with depthTest to ensure consistent visibility */}
+      {!wireframe && edgesGeometry && (
+        <lineSegments geometry={edgesGeometry} renderOrder={1}>
+          <lineBasicMaterial color={EDGE_COLOR} depthTest={true} />
+        </lineSegments>
+      )}
     </group>
   );
 }
