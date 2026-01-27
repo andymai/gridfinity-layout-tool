@@ -6,4 +6,4 @@ export type { InspirationLayout, InspirationTheme, LayoutComplexity, LayoutFeatu
 export { THEME_CONFIG, FEATURE_CONFIG } from './types';
 
 // Data
-export { INSPIRATION_LAYOUTS, getLayoutsByTheme, getLayoutById } from './data';
+export { INSPIRATION_LAYOUTS, getLayoutsByTheme } from './data';

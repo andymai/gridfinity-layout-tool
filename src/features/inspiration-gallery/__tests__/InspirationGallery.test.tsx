@@ -138,7 +138,9 @@ vi.mock('../data', () => {
   return {
     INSPIRATION_LAYOUTS: mockLayouts,
     getLayoutsByTheme: (theme: string) =>
-      mockLayouts.filter((l: { theme: string }) => l.theme === theme),
+      theme === 'all'
+        ? mockLayouts
+        : mockLayouts.filter((l: { theme: string }) => l.theme === theme),
   };
 });
 
@@ -336,7 +338,9 @@ describe('InspirationGallery', () => {
       fireEvent.click(screen.getByText('Workshop (2)'));
 
       await waitFor(() => {
-        expect(screen.getByText((content) => content.includes('2 layout(s) in Workshop'))).toBeInTheDocument();
+        expect(
+          screen.getByText((content) => content.includes('2 layout(s) in Workshop'))
+        ).toBeInTheDocument();
       });
     });
 

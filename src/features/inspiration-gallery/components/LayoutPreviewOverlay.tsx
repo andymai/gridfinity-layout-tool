@@ -150,7 +150,9 @@ export function LayoutPreviewOverlay({
 
             {/* Metrics - streamlined, no redundant drawer size */}
             <div>
-              <h3 className="text-sm font-medium text-content mb-3">{t('gallery.layoutDetails')}</h3>
+              <h3 className="text-sm font-medium text-content mb-3">
+                {t('gallery.layoutDetails')}
+              </h3>
               <div className="grid grid-cols-3 gap-2">
                 <MetricCard label="Bins" value={metrics.binCount.toString()} />
                 <MetricCard label="Layers" value={metrics.layerCount.toString()} />
@@ -161,7 +163,9 @@ export function LayoutPreviewOverlay({
             {/* Example items */}
             {labeledBins.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-content mb-2">{t('gallery.exampleItems')}</h3>
+                <h3 className="text-sm font-medium text-content mb-2">
+                  {t('gallery.exampleItems')}
+                </h3>
                 <div className="flex flex-wrap gap-1">
                   {labeledBins.slice(0, 8).map((bin) => (
                     <span
@@ -173,7 +177,8 @@ export function LayoutPreviewOverlay({
                   ))}
                   {labeledBins.length > 8 && (
                     <span className="text-xs px-2 py-1 text-content-tertiary">
-                      {t('gallery.moreCount', { count: labeledBins.length - 8 })}</span>
+                      {t('gallery.moreCount', { count: labeledBins.length - 8 })}
+                    </span>
                   )}
                 </div>
               </div>
@@ -182,7 +187,9 @@ export function LayoutPreviewOverlay({
             {/* Related layouts */}
             {relatedLayouts.length > 0 && onSelectRelated && (
               <div>
-                <h3 className="text-sm font-medium text-content mb-2">{t('gallery.moreInTheme', { theme: THEME_CONFIG[theme].label })}</h3>
+                <h3 className="text-sm font-medium text-content mb-2">
+                  {t('gallery.moreInTheme', { theme: THEME_CONFIG[theme].label })}
+                </h3>
                 <div className="flex gap-2">
                   {relatedLayouts.map((related) => (
                     <button
@@ -204,7 +211,9 @@ export function LayoutPreviewOverlay({
                         {related.name}
                       </div>
                       <div className="text-[10px] text-content-tertiary">
-                        {related.metrics.binCount}{t('gallery.bins')}</div>
+                        {related.metrics.binCount}
+                        {t('gallery.bins')}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -216,7 +225,9 @@ export function LayoutPreviewOverlay({
         {/* Footer with CTA */}
         <div className="p-4 md:p-6 border-t border-stroke-subtle bg-surface shrink-0">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-sm text-content-secondary">{t('gallery.useAsAStartingPointCustomizeToFitYo')}</p>
+            <p className="text-sm text-content-secondary">
+              {t('gallery.useAsAStartingPointCustomizeToFitYo')}
+            </p>
             <button
               onClick={onUseLayout}
               disabled={isImporting}
@@ -224,7 +235,11 @@ export function LayoutPreviewOverlay({
             >
               {isImporting ? (
                 <>
-                  <svg className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <svg
+                    className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
                     <circle
                       className="opacity-25"
                       cx="12"
@@ -294,7 +309,11 @@ function DrawerSizeInfo({
         </svg>
         <div>
           <div className="text-sm font-medium text-success">{t('gallery.matchesYourDrawer')}</div>
-          <div className="text-xs text-success/70">{t('gallery.sameSizeAsYourCurrent', { size: `${currentSize.width}×${currentSize.depth}` })}</div>
+          <div className="text-xs text-success/70">
+            {t('gallery.sameSizeAsYourCurrent', {
+              size: `${currentSize.width}×${currentSize.depth}`,
+            })}
+          </div>
         </div>
       </div>
     );
@@ -318,13 +337,14 @@ function DrawerSizeInfo({
       </svg>
       <div>
         <div className="text-sm font-medium text-content-secondary">
-          {templateSize.width}×{templateSize.depth}{t('gallery.drawer')}</div>
+          {templateSize.width}×{templateSize.depth}
+          {t('gallery.drawer')}
+        </div>
         <div className="text-xs text-content-tertiary">
           {realWidth}×{realDepth}mm
-          {(templateSize.width !== currentSize.width ||
-            templateSize.depth !== currentSize.depth) && (
-            <span className="ml-1 text-content-disabled">{t('gallery.yourSize', { size: `${currentSize.width}×${currentSize.depth}` })}</span>
-          )}
+          <span className="ml-1 text-content-disabled">
+            {t('gallery.yourSize', { size: `${currentSize.width}×${currentSize.depth}` })}
+          </span>
         </div>
       </div>
     </div>

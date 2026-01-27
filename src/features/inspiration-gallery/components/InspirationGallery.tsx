@@ -58,23 +58,17 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
   const addToast = useToastStore((state) => state.addToast);
 
   // Filter by theme
-  const filteredLayouts =
-    selectedTheme === 'all'
-      ? INSPIRATION_LAYOUTS
-      : INSPIRATION_LAYOUTS.filter((l) => l.theme === selectedTheme);
+  const filteredLayouts = getLayoutsByTheme(selectedTheme);
 
-  // Count layouts per theme (memoized since INSPIRATION_LAYOUTS is static)
-  const themeCounts = useMemo(
-    () => ({
-      all: INSPIRATION_LAYOUTS.length,
-      kitchen: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'kitchen').length,
-      workshop: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'workshop').length,
-      office: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'office').length,
-      hobby: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'hobby').length,
-      personal: INSPIRATION_LAYOUTS.filter((l) => l.theme === 'personal').length,
-    }),
-    []
-  );
+  // Count layouts per theme in a single pass (memoized since INSPIRATION_LAYOUTS is static)
+  const themeCounts = useMemo(() => {
+    const counts = { all: 0, kitchen: 0, workshop: 0, office: 0, hobby: 0, personal: 0 };
+    for (const layout of INSPIRATION_LAYOUTS) {
+      counts.all++;
+      counts[layout.theme]++;
+    }
+    return counts;
+  }, []);
 
   // Handle escape key
   useEffect(() => {
@@ -136,7 +130,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
   const handleThemeChange = useCallback(
     (theme: InspirationTheme | 'all') => {
       setSelectedTheme(theme);
-      const count = theme === 'all' ? INSPIRATION_LAYOUTS.length : getLayoutsByTheme(theme).length;
+      const count = themeCounts[theme];
       const label = theme === 'all' ? 'all themes' : THEME_CONFIG[theme].label;
       announceToScreenReader(`Showing ${count} ${label} layouts`);
       trackEvent('gallery_filter_changed', {
@@ -144,7 +138,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
         result_count: count,
       });
     },
-    [announceToScreenReader]
+    [announceToScreenReader, themeCounts]
   );
 
   const handleSelectLayout = useCallback((layout: InspirationLayout) => {
@@ -290,7 +284,9 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
               <h2 id="inspiration-gallery-title" className="text-lg font-semibold text-content">
                 {t('gallery.title')}
               </h2>
-              <p className="text-sm text-content-secondary">{t('gallery.seeWhatSPossibleThenMakeItYours')}</p>
+              <p className="text-sm text-content-secondary">
+                {t('gallery.seeWhatSPossibleThenMakeItYours')}
+              </p>
             </div>
             <div className="flex items-center gap-2">
               {/* Grid size slider (desktop only) */}
@@ -391,7 +387,9 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
               <button
                 onClick={() => setSelectedTheme('all')}
                 className="text-sm text-accent hover:underline"
-              >{t('gallery.browseAllLayouts')}</button>
+              >
+                {t('gallery.browseAllLayouts')}
+              </button>
             </div>
           )}
         </div>
@@ -399,7 +397,10 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
         {/* Footer with count */}
         <div className="px-3 py-1.5 border-t border-stroke-subtle text-xs text-content-tertiary shrink-0">
           {selectedTheme !== 'all'
-            ? t('gallery.layoutsInTheme', { count: filteredLayouts.length, theme: THEME_CONFIG[selectedTheme].label })
+            ? t('gallery.layoutsInTheme', {
+                count: filteredLayouts.length,
+                theme: THEME_CONFIG[selectedTheme].label,
+              })
             : t('gallery.layoutCount', { count: filteredLayouts.length })}
         </div>
       </div>
